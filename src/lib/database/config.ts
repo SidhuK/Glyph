@@ -3,72 +3,10 @@ import { defaultDatabaseColumnIconName } from "./columnIcons";
 import type {
 	DatabaseCellValue,
 	DatabaseColumn,
-	DatabaseConfig,
 	DatabaseFilter,
 	DatabasePropertyOption,
 	DatabaseRow,
 } from "./types";
-
-function normalizeDir(dirPath: string): string {
-	return dirPath.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
-}
-
-export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
-	const normalized = normalizeDir(dirPath);
-	return {
-		source: {
-			kind: "all_notes",
-			value: normalized,
-			recursive: true,
-		},
-		new_note: {
-			folder: normalized,
-		},
-		view: {
-			layout: "table",
-			board_group_by: null,
-			board_lane_colors: {},
-			board_lane_order: {},
-		},
-		columns: [
-			{
-				id: "title",
-				type: "title",
-				label: "Title",
-				icon: defaultDatabaseColumnIconName({
-					type: "title",
-					property_kind: null,
-				}),
-				width: 320,
-				visible: true,
-			},
-			{
-				id: "tags",
-				type: "tags",
-				label: "Tags",
-				icon: defaultDatabaseColumnIconName({
-					type: "tags",
-					property_kind: null,
-				}),
-				width: 220,
-				visible: true,
-			},
-			{
-				id: "updated",
-				type: "updated",
-				label: "Updated",
-				icon: defaultDatabaseColumnIconName({
-					type: "updated",
-					property_kind: null,
-				}),
-				width: 180,
-				visible: true,
-			},
-		],
-		sorts: [],
-		filters: [],
-	};
-}
 
 export function createPropertyColumn(
 	property: DatabasePropertyOption,

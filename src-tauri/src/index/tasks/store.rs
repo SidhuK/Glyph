@@ -3,21 +3,13 @@ use std::path::Path;
 use crate::{io_atomic, paths};
 
 use super::{
-    parse::{apply_task_metadata, is_valid_date, parse_tasks},
-    types::{IndexedTask, NoteTaskSummaryItem, ParsedTask, TaskBucket},
+    parse::{apply_task_metadata, parse_tasks},
+    types::{NoteTaskSummaryItem, ParsedTask},
 };
 
 fn task_id_for(note_id: &str, list_path: &str, line_start: i64, text_norm: &str) -> String {
     let key = format!("{note_id}|{list_path}|{line_start}|{text_norm}");
     super::super::helpers::sha256_hex(key.as_bytes())
-}
-
-fn like_prefix_pattern(folder: &str) -> String {
-    let escaped = folder
-        .replace('\\', "\\\\")
-        .replace('%', "\\%")
-        .replace('_', "\\_");
-    format!("{escaped}/%")
 }
 
 pub fn delete_note_tasks(conn: &rusqlite::Connection, note_id: &str) -> Result<(), String> {
@@ -102,84 +94,6 @@ pub fn reindex_note_tasks(
         insert_task(conn, note_id, note_path, note_updated, note_etag, &task)?;
     }
     Ok(())
-}
-
-pub fn query_tasks(
-    conn: &rusqlite::Connection,
-    bucket: TaskBucket,
-    today: &str,
-    limit: i64,
-    folders: Option<&[String]>,
-) -> Result<Vec<IndexedTask>, String> {
-    if !is_valid_date(today) {
-        return Err("invalid today date".to_string());
-    }
-    let (where_sql, order_sql) = match bucket {
-        TaskBucket::Inbox => (
-            "t.checked = 0 AND t.scheduled_date IS NULL AND t.due_date IS NULL",
-            "t.note_updated DESC, n.title ASC, t.line_start ASC",
-        ),
-        TaskBucket::Today => (
-            "t.checked = 0 AND ((t.scheduled_date IS NOT NULL AND t.scheduled_date <= ?) OR (t.due_date IS NOT NULL AND t.due_date <= ?))",
-            "COALESCE(t.scheduled_date, t.due_date) ASC, t.priority ASC, n.title ASC, t.line_start ASC",
-        ),
-        TaskBucket::Upcoming => (
-            "t.checked = 0 AND ((t.scheduled_date IS NOT NULL AND t.scheduled_date > ?) OR (t.due_date IS NOT NULL AND t.due_date > ?))",
-            "COALESCE(t.scheduled_date, t.due_date) ASC, t.priority ASC, n.title ASC, t.line_start ASC",
-        ),
-    };
-    let folder_where = match folders {
-        Some(folders) if !folders.is_empty() => {
-            let clauses = std::iter::repeat_n("t.note_path LIKE ? ESCAPE '\\'", folders.len())
-                .collect::<Vec<_>>()
-                .join(" OR ");
-            format!(" AND ({clauses})")
-        }
-        _ => String::new(),
-    };
-
-    let sql = format!(
-        "SELECT t.task_id, t.note_id, n.title, t.note_path, t.line_start, t.raw_text, t.checked,
-            t.status, t.priority, t.due_date, t.scheduled_date, t.section, t.note_updated
-         FROM tasks t JOIN notes n ON n.id = t.note_id
-         WHERE {where_sql}{folder_where} ORDER BY {order_sql} LIMIT ?"
-    );
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let mut params: Vec<rusqlite::types::Value> = Vec::new();
-    match bucket {
-        TaskBucket::Inbox => {}
-        _ => {
-            params.push(rusqlite::types::Value::from(today.to_string()));
-            params.push(rusqlite::types::Value::from(today.to_string()));
-        }
-    }
-    for folder in folders.unwrap_or(&[]) {
-        params.push(rusqlite::types::Value::from(like_prefix_pattern(folder)));
-    }
-    params.push(rusqlite::types::Value::from(limit));
-    let mut rows = stmt
-        .query(rusqlite::params_from_iter(params.iter()))
-        .map_err(|e| e.to_string())?;
-
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(IndexedTask {
-            task_id: row.get(0).map_err(|e| e.to_string())?,
-            note_id: row.get(1).map_err(|e| e.to_string())?,
-            note_title: row.get(2).map_err(|e| e.to_string())?,
-            note_path: row.get(3).map_err(|e| e.to_string())?,
-            line_start: row.get(4).map_err(|e| e.to_string())?,
-            raw_text: row.get(5).map_err(|e| e.to_string())?,
-            checked: row.get::<_, i64>(6).map_err(|e| e.to_string())? == 1,
-            status: row.get(7).map_err(|e| e.to_string())?,
-            priority: row.get(8).map_err(|e| e.to_string())?,
-            due_date: row.get(9).map_err(|e| e.to_string())?,
-            scheduled_date: row.get(10).map_err(|e| e.to_string())?,
-            section: row.get(11).map_err(|e| e.to_string())?,
-            note_updated: row.get(12).map_err(|e| e.to_string())?,
-        });
-    }
-    Ok(out)
 }
 
 pub fn query_note_task_summaries(

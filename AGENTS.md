@@ -27,9 +27,8 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 
 ## Frontend Overview (`src/`)
 
-- `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (all contexts)
-- `SettingsApp.tsx` — Separate settings window entry
-- **`contexts/`** — App state via React Context: `SpaceContext`, `FileTreeContext`, `ViewContext`, `UIContext`, `EditorContext`, composed in `AppProviders`
+- `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (app contexts)
+- **`contexts/`** — App state via React Context: `SpaceContext`, `FileTreeContext`, `UIContext`, `EditorContext`, composed in `AppProviders`
 - **`components/app/`** — App shell and navigation: `AppShell`, `Sidebar`, `MainContent`, `TabBar`, `CommandPalette`, welcome flow, command search helpers
 - **`components/editor/`** — TipTap markdown editor, note properties UI, extensions, markdown serialization, slash commands, editor hooks
 - **`components/ai/`** — AI workspace: `AIPanel`, `AIComposer`, `AIChatThread`, `AIToolTimeline`, `ModelSelector`, history/context/profile helpers, `hooks/useRigChat`

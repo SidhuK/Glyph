@@ -19,10 +19,6 @@ import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
-function Root() {
-	return <App />;
-}
-
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
 	const [accent, setAccent] = React.useState<UiAccent | null>(null);
@@ -224,7 +220,7 @@ ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<ThemeAndTypographyBridge />
-			<Root />
+			<App />
 			<Toaster />
 		</ThemeProvider>
 	</React.StrictMode>,

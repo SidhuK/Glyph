@@ -9,7 +9,7 @@ import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
 import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
 
-export interface UseFileTreeResult {
+interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	openFile: (relPath: string) => Promise<void>;
@@ -28,10 +28,14 @@ export interface UseFileTreeResult {
 		kind: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
-	onMovePath: (fromPath: string, toDirPath: string) => Promise<string | null>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 }
 
-export interface UseFileTreeDeps {
+interface UseFileTreeDeps {
 	spacePath: string | null;
 	expandedDirs: Set<string>;
 	updateChildrenByDir: (

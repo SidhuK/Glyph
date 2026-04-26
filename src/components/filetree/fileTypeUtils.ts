@@ -136,9 +136,3 @@ export function getFileTypeInfo(
 	}
 	return { Icon: File, color: "var(--text-tertiary)", label: "file" };
 }
-
-export function basename(relPath: string): string {
-	if (!relPath) return "";
-	const parts = relPath.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? relPath;
-}

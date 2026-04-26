@@ -12,6 +12,12 @@ import {
 	normalizeTagToken,
 } from "./noteProperties/utils";
 
+function normalizeFrontmatter(fm: string | null): string | null {
+	if (fm == null) return null;
+	const trimmed = fm.trim();
+	return trimmed.length ? trimmed : null;
+}
+
 interface NotePropertiesPanelProps {
 	frontmatter: string | null;
 	readOnly?: boolean;
@@ -74,7 +80,10 @@ export function NotePropertiesPanel({
 			);
 			return;
 		}
-		if ((frontmatter ?? null) === lastCommittedFrontmatterRef.current) {
+		if (
+			normalizeFrontmatter(frontmatter) ===
+			normalizeFrontmatter(lastCommittedFrontmatterRef.current)
+		) {
 			parseRequestIdRef.current += 1;
 			setEditorState((current) =>
 				current.rawDraft === nextRawDraft
@@ -102,7 +111,7 @@ export function NotePropertiesPanel({
 				});
 				setTagDrafts({});
 				tagInputRefs.current = {};
-				lastCommittedFrontmatterRef.current = frontmatter ?? null;
+				lastCommittedFrontmatterRef.current = normalizeFrontmatter(frontmatter);
 				onErrorChange?.("");
 			})
 			.catch((error) => {
@@ -144,7 +153,8 @@ export function NotePropertiesPanel({
 					...current,
 					rawDraft: nextFrontmatter ?? "",
 				}));
-				lastCommittedFrontmatterRef.current = nextFrontmatter ?? null;
+				lastCommittedFrontmatterRef.current =
+					normalizeFrontmatter(nextFrontmatter);
 				onErrorChange?.("");
 				onChange(nextFrontmatter);
 			})

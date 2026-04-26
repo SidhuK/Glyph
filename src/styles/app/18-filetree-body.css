@@ -2,72 +2,17 @@
    FILE TREE PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .fileTreePane {
-	flex: 1;
 	display: flex;
 	flex-direction: column;
-	min-height: 0;
-	overflow: hidden;
 	background: transparent;
-}
-
-.fileTreeHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-1);
-	height: 36px;
-	padding: 0 var(--space-2) 0 var(--space-3);
-	flex-shrink: 0;
-	border-bottom: none;
-}
-
-.fileTreeSpaceName {
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: var(--space-1);
-	flex: 1;
-	min-height: 32px;
-	padding: var(--space-1) var(--space-2);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-	background: transparent;
-	border: none;
-	border-radius: var(--radius-md);
-	transition: all var(--transition-fast);
-	cursor: pointer;
-	flex-shrink: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-
-	&:hover {
-		background: var(--bg-hover);
-		color: var(--text-primary);
-	}
-
-	&:active {
-		background: var(--selection-bg-muted);
-		color: var(--text-primary);
-	}
-}
-
-.fileTreeHeaderActions {
-	display: flex;
-	align-items: center;
-	gap: var(--space-1);
-	flex-shrink: 0;
 }
 
 .fileTreeScroll {
-	flex: 1;
-	min-height: 0;
-	padding: var(--space-2) var(--space-2)
-		calc(var(--sidebar-footer-overlay-height) + var(--space-2));
-	overflow-x: hidden;
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
+	padding: 4px 8px 4px;
+}
+
+.fileTreeScroll[data-drop-target="true"] {
+	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
 }
 
 .fileTreePinnedSection {
@@ -137,14 +82,19 @@
 .fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow,
 .fileTreeItem:hover > .fileTreeRowShell > .fileTreePinnedRow {
 	background: var(--bg-hover);
-	border-radius: var(--radius-md);
+	border-radius: 8px;
+}
+
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow .fileTreeIcon,
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreePinnedRow .fileTreeIcon {
+	color: var(--text-primary);
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow,
 .fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow {
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: var(--bg-active);
 	color: var(--text-primary);
-	border-radius: var(--radius-md);
+	border-radius: 8px;
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName,
@@ -161,7 +111,7 @@
 .fileTreeRowShell {
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
+	gap: 6px;
 	min-width: 0;
 }
 
@@ -170,47 +120,14 @@
 	flex: 1;
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
+	gap: 6px;
 	min-width: 0;
 	min-height: 28px;
-	padding: 2px var(--space-2);
+	padding: 1px 8px;
 	text-align: left;
-	border-radius: var(--radius-md);
+	border-radius: 8px;
 	margin: 0;
 	border-left: none;
-}
-
-.fileTreeRowActions {
-	display: inline-flex;
-	gap: 4px;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity var(--transition-fast);
-}
-
-.fileTreeItem:hover > .fileTreeRowShell .fileTreeRowActions,
-.fileTreeItem:focus-within > .fileTreeRowShell .fileTreeRowActions {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-.fileTreeActionBtn {
-	width: 18px;
-	height: 18px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	color: var(--text-tertiary);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-}
-
-.fileTreeActionBtn:hover {
-	color: var(--text-primary);
-	border-color: var(--border-default);
-	background: var(--bg-hover);
 }
 
 .fileTreeCreateMenu {
@@ -225,7 +142,7 @@
 }
 
 .fileTreeCreateMenuItem {
-	min-height: 30px;
+	min-height: 28px;
 	border-radius: var(--radius-md);
 	padding: 0 10px;
 	gap: 8px;
@@ -255,8 +172,19 @@
 
 /* hierarchy connector lines intentionally removed */
 
-.fileTreeRow:hover {
-	background: transparent;
+.fileTreeRow[data-dragging="true"] {
+	opacity: 0.62;
+	cursor: grabbing;
+}
+
+.fileTreeRow[data-drop-target="true"] {
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+}
+
+.fileTreeRow[data-draggable="true"]:not([data-dragging="true"]) {
+	cursor: grab;
 }
 
 .fileTreeRow:disabled {
@@ -270,7 +198,7 @@
 	height: 14px;
 	justify-content: center;
 	align-items: center;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
 	flex-shrink: 0;
 	border-radius: var(--radius-sm);
 	transition: background var(--transition-fast);
@@ -285,10 +213,6 @@
 
 .fileTreeChevron:hover {
 	background: var(--bg-active);
-}
-
-.fileTreeFolderIcon {
-	color: currentcolor;
 }
 
 .fileTreeIcon {
@@ -352,9 +276,9 @@
 	height: 12px;
 }
 
-.fileTreeTaskProgress .markdownEditorTaskProgressRing {
-	width: 12px;
-	height: 12px;
+.fileTreeTaskProgress .markdownEditorTaskProgressDonut {
+	width: 6px;
+	height: 6px;
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
@@ -374,9 +298,7 @@
 	line-height: 1.2;
 }
 
-.fileTreeSpaceName:focus-visible,
 .fileTreeRow:focus-visible,
-.fileTreeActionBtn:focus-visible,
 .fileTreeRenameInput:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);

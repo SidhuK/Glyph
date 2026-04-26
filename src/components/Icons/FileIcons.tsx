@@ -7,17 +7,13 @@ import {
 	Doc01Icon,
 	Document,
 	DocumentCodeIcon,
-	FileCheck as FileCheckIcon,
 	FileCode as FileCodeIcon,
 	File as FileIcon,
 	FileImage as FileImageIcon,
-	FileX as FileXIcon,
 	Film as FilmIcon,
 	Hash as HashIcon,
 	HtmlFile01Icon,
-	Image as ImageIcon,
 	KanbanIcon,
-	Link2,
 	Music as MusicIcon,
 	Palette as PaletteIcon,
 	Pdf01Icon,
@@ -45,23 +41,11 @@ export const FileImage = (props: IconProps) => (
 export const FileJson = (props: IconProps) => (
 	<HugeiconsIcon icon={DocumentCodeIcon} strokeWidth={0.9} {...props} />
 );
-export const FileVideo = (props: IconProps) => (
-	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />
-);
-export const FileAudio = (props: IconProps) => (
-	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />
-);
-export const FileArchive = (props: IconProps) => (
-	<HugeiconsIcon icon={ArchiveIcon} strokeWidth={0.9} {...props} />
-);
 export const FileSpreadsheet = (props: IconProps) => (
 	<HugeiconsIcon icon={Xls01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileCsv = (props: IconProps) => (
 	<HugeiconsIcon icon={Csv01Icon} strokeWidth={0.9} {...props} />
-);
-export const FileBox = (props: IconProps) => (
-	<HugeiconsIcon icon={FileXIcon} strokeWidth={0.9} {...props} />
 );
 export const FilePdf = (props: IconProps) => (
 	<HugeiconsIcon icon={Pdf01Icon} strokeWidth={0.9} {...props} />
@@ -83,18 +67,6 @@ export const FileXml = (props: IconProps) => (
 );
 export const FilePpt = (props: IconProps) => (
 	<HugeiconsIcon icon={Ppt01Icon} strokeWidth={0.9} {...props} />
-);
-export const FileSymlink = (props: IconProps) => (
-	<HugeiconsIcon icon={Link2} strokeWidth={0.9} {...props} />
-);
-export const FileX = (props: IconProps) => (
-	<HugeiconsIcon icon={FileXIcon} strokeWidth={0.9} {...props} />
-);
-export const FileCheck = (props: IconProps) => (
-	<HugeiconsIcon icon={FileCheckIcon} strokeWidth={0.9} {...props} />
-);
-export const Image = (props: IconProps) => (
-	<HugeiconsIcon icon={ImageIcon} strokeWidth={0.9} {...props} />
 );
 export const Film = (props: IconProps) => (
 	<HugeiconsIcon icon={FilmIcon} strokeWidth={0.9} {...props} />

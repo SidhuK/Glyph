@@ -10,8 +10,6 @@ export interface DatabaseBoardLane {
 	rows: DatabaseRow[];
 }
 
-export type BoardLaneDropPosition = "before" | "after";
-
 function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	return (
 		column.type === "tags" ||
@@ -222,32 +220,6 @@ export function orderBoardLanes(
 		.filter((lane): lane is DatabaseBoardLane => lane != null);
 }
 
-export function moveBoardLaneIds(
-	laneIds: string[],
-	sourceLaneId: string,
-	targetLaneId: string,
-	position: BoardLaneDropPosition,
-): string[] {
-	if (sourceLaneId === targetLaneId) return laneIds;
-	const normalizedLaneIds = laneIds.filter(
-		(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
-	);
-	const sourceIndex = normalizedLaneIds.indexOf(sourceLaneId);
-	const targetIndex = normalizedLaneIds.indexOf(targetLaneId);
-	if (sourceIndex === -1 || targetIndex === -1) {
-		return normalizedLaneIds;
-	}
-	const nextLaneIds = [...normalizedLaneIds];
-	const [movedLaneId] = nextLaneIds.splice(sourceIndex, 1);
-	if (!movedLaneId) return normalizedLaneIds;
-	const adjustedTargetIndex =
-		sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-	const insertionIndex =
-		position === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
-	nextLaneIds.splice(insertionIndex, 0, movedLaneId);
-	return nextLaneIds;
-}
-
 export function moveBoardLaneToIndex(
 	laneIds: string[],
 	sourceLaneId: string,
@@ -295,7 +267,6 @@ export function boardDropValue(
 	row: DatabaseRow,
 	column: DatabaseColumn,
 	laneId: string,
-	// Kept for move semantics if multi-value board drops later remove source membership.
 	_sourceLaneId?: string | null,
 ): DatabaseCellValue {
 	if (isMultiValueBoardColumn(column)) {

@@ -1,3 +1,4 @@
+import { basename, parentDir } from "../utils/path";
 import { invoke } from "./tauri";
 
 export interface TemplateEntry {
@@ -63,16 +64,6 @@ function getWeekdayNames() {
 		],
 		short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
 	};
-}
-
-function basename(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? relPath;
-}
-
-function parentDir(relPath: string): string {
-	const index = relPath.lastIndexOf("/");
-	return index === -1 ? "" : relPath.slice(0, index);
 }
 
 function stem(fileName: string): string {

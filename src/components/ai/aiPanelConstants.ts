@@ -1,6 +1,6 @@
 import type { UIMessage } from "./hooks/useRigChat";
 
-export type AddTrigger = { start: number; query: string };
+type AddTrigger = { start: number; query: string };
 export type ToolPhase = "call" | "result" | "error";
 export type ResponsePhase =
 	| "idle"

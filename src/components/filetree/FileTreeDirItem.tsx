@@ -1,3 +1,4 @@
+import { useDraggable, useDroppable } from "@dnd-kit/react";
 import {
 	DocumentCodeIcon,
 	Folder01Icon,
@@ -7,8 +8,8 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import type { ReactNode } from "react";
-import { memo, useEffect, useRef, useState } from "react";
+import type { MutableRefObject, ReactNode } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
@@ -21,6 +22,11 @@ import {
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
 import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
+import {
+	FILE_TREE_ENTRY_SENSORS,
+	FILE_TREE_ENTRY_TYPE,
+	fileTreeEntryDragId,
+} from "./fileTreeDnd";
 import {
 	buildRowStyle,
 	rowVariants,
@@ -105,6 +111,7 @@ interface FileTreeDirItemProps {
 	appearance?: FileTreeAppearance | null;
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 	fileCount?: number | null;
+	onMoveClickSuppressRef: MutableRefObject<boolean>;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -127,6 +134,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	appearance,
 	onChangeAppearance,
 	fileCount,
+	onMoveClickSuppressRef,
 }: FileTreeDirItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -134,12 +142,38 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			: null;
 	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
 	const displayDirName = entry.name.trim() || "New Folder";
+	const {
+		ref: draggableRef,
+		handleRef,
+		isDragging,
+	} = useDraggable({
+		id: fileTreeEntryDragId("dir", entry.rel_path),
+		type: FILE_TREE_ENTRY_TYPE,
+		sensors: FILE_TREE_ENTRY_SENSORS,
+		data: {
+			path: entry.rel_path,
+			kind: "dir",
+		},
+	});
+	const { ref: droppableRef, isDropTarget } = useDroppable({
+		id: `file-tree-dir:${entry.rel_path}`,
+		data: { targetDirPath: entry.rel_path },
+		accept: FILE_TREE_ENTRY_TYPE,
+	});
+	const setRowRef = useCallback(
+		(element: HTMLButtonElement | null) => {
+			draggableRef(element);
+			droppableRef(element);
+			handleRef(element);
+		},
+		[draggableRef, droppableRef, handleRef],
+	);
 
 	return (
 		<li className="fileTreeItem">
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
-					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
+					<div className="fileTreeRow" style={rowStyle}>
 						<DirectoryRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
 							initialName={entry.name.trim() || "New Folder"}
@@ -152,9 +186,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
 							<m.button
+								ref={setRowRef}
 								type="button"
 								className="fileTreeRow"
 								onClick={() => {
+									if (onMoveClickSuppressRef.current) return;
 									onSelectDir(entry.rel_path);
 									onToggleDir(entry.rel_path);
 								}}
@@ -165,6 +201,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
 								title={entry.rel_path || entry.name || "Folder"}
+								data-draggable="true"
+								data-dragging={isDragging ? "true" : undefined}
+								data-drop-target={isDropTarget ? "true" : undefined}
 								data-has-custom-color={customColor ? "true" : "false"}
 							>
 								{appearance?.icon ? (

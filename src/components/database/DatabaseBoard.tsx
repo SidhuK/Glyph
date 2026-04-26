@@ -1,8 +1,26 @@
+import { PointerActivationConstraints } from "@dnd-kit/dom";
+import {
+	DragDropProvider,
+	type DragEndEvent,
+	KeyboardSensor,
+	PointerSensor,
+	useDraggable,
+	useDroppable,
+} from "@dnd-kit/react";
 import { m, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type MutableRefObject,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
+	type DatabaseBoardLane,
 	boardDropValue,
 	boardRowHasLane,
 } from "../../lib/database/board";
@@ -81,6 +99,14 @@ const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	completed_count: 0,
 	open_count: 0,
 };
+const DATABASE_BOARD_CARD_SENSORS = [
+	PointerSensor.configure({
+		activationConstraints: [
+			new PointerActivationConstraints.Distance({ value: 5 }),
+		],
+	}),
+	KeyboardSensor,
+];
 
 function getLaneColor(
 	laneColors: Record<string, string>,
@@ -214,6 +240,222 @@ function formatCardValue(row: DatabaseRow, column: DatabaseColumn): string {
 	return cell.value_text?.trim() ?? "";
 }
 
+function boardCardDragId(notePath: string, laneId: string): string {
+	return `${laneId}:${notePath}`;
+}
+
+interface DatabaseBoardLaneViewProps {
+	lane: DatabaseBoardLane;
+	laneIndex: number;
+	showColumnColor: boolean;
+	laneColors: Record<string, string>;
+	shouldReduceMotion: boolean | null;
+	onLaneColorChange?:
+		| ((laneId: string, color: EditorTextColor | null) => void)
+		| null;
+	reorderableLanes: DatabaseBoardLane[];
+	moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => void;
+	children: ReactNode;
+}
+
+function DatabaseBoardLaneView({
+	lane,
+	laneIndex,
+	showColumnColor,
+	laneColors,
+	shouldReduceMotion,
+	onLaneColorChange,
+	reorderableLanes,
+	moveLaneToIndex,
+	children,
+}: DatabaseBoardLaneViewProps) {
+	const { ref, isDropTarget } = useDroppable({
+		id: lane.id,
+		data: { laneId: lane.id },
+		accept: "database-board-card",
+	});
+
+	return (
+		<m.div
+			ref={ref}
+			className="databaseBoardLane"
+			data-show-column-color={showColumnColor ? "true" : "false"}
+			style={databaseValueToneStyleForColor(
+				lane.id,
+				getLaneColor(laneColors, lane.id),
+			)}
+			data-active={isDropTarget ? "true" : "false"}
+			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={
+				shouldReduceMotion
+					? { duration: 0 }
+					: {
+							...springPresets.snappy,
+							delay: Math.min(laneIndex * 0.04, 0.18),
+						}
+			}
+		>
+			<div className="databaseBoardLaneHeader">
+				{onLaneColorChange ? (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
+								aria-label={`Set color for ${lane.label}`}
+								title={`Set color for ${lane.label}`}
+							>
+								<span className="databaseBoardLaneDot" />
+								<div className="databaseBoardLaneTitle">{lane.label}</div>
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align="start"
+							className="databaseBoardColorMenu"
+						>
+							<div className="databaseBoardColorRibbon">
+								{EDITOR_TEXT_COLORS.map((color) => (
+									<button
+										key={color.id}
+										type="button"
+										className="databaseBoardColorRibbonSwatch"
+										style={databaseValueToneStyleForColor(color.id, color.id)}
+										onClick={() => onLaneColorChange(lane.id, color.id)}
+										title={color.label}
+										aria-label={`Set ${lane.label} color to ${color.label}`}
+									/>
+								))}
+								<button
+									type="button"
+									className="databaseBoardColorRibbonClear"
+									onClick={() => onLaneColorChange(lane.id, null)}
+									title="Clear color"
+									aria-label={`Clear color for ${lane.label}`}
+								>
+									<span />
+								</button>
+							</div>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				) : (
+					<div className="databaseBoardLaneTitleGroup">
+						<span className="databaseBoardLaneDot" />
+						<div className="databaseBoardLaneTitle">{lane.label}</div>
+					</div>
+				)}
+				<div className="databaseBoardLaneHeaderActions">
+					<div className="databaseBoardLaneCount">{lane.cardCount}</div>
+					<ContextMenu>
+						<ContextMenuTrigger asChild>
+							<button
+								type="button"
+								className="databaseBoardLaneHandle"
+								disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
+								aria-label={`Reorder ${lane.label} column`}
+								title={
+									lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+										? "No value stays last"
+										: `Right-click to move ${lane.label}`
+								}
+							>
+								<span className="databaseBoardLaneHandleDots" />
+							</button>
+						</ContextMenuTrigger>
+						{lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? (
+							<ContextMenuContent className="databaseBoardContextMenu">
+								<div className="databaseBoardMoveLabel">Move column to</div>
+								{reorderableLanes.map((targetLane, index) => {
+									const isCurrentLane = targetLane.id === lane.id;
+									return (
+										<ContextMenuItem
+											key={`${lane.id}:position:${targetLane.id}`}
+											className="databaseBoardContextMenuItem"
+											disabled={isCurrentLane}
+											onSelect={() => moveLaneToIndex(lane.id, index)}
+										>
+											Position {index + 1}: {targetLane.label}
+										</ContextMenuItem>
+									);
+								})}
+							</ContextMenuContent>
+						) : null}
+					</ContextMenu>
+				</div>
+			</div>
+			<div className="databaseBoardLaneBody">{children}</div>
+		</m.div>
+	);
+}
+
+interface DatabaseBoardCardViewProps {
+	row: DatabaseRow;
+	laneId: string;
+	selected: boolean;
+	suppressClickRef: MutableRefObject<boolean>;
+	onSelectRow: (notePath: string) => void;
+	onOpenRow: (notePath: string) => void;
+	children: ReactNode;
+}
+
+function DatabaseBoardCardView({
+	row,
+	laneId,
+	selected,
+	suppressClickRef,
+	onSelectRow,
+	onOpenRow,
+	children,
+}: DatabaseBoardCardViewProps) {
+	const dragId = boardCardDragId(row.note_path, laneId);
+	const { ref, handleRef, isDragging } = useDraggable({
+		id: dragId,
+		type: "database-board-card",
+		sensors: DATABASE_BOARD_CARD_SENSORS,
+		data: {
+			notePath: row.note_path,
+			sourceLaneId: laneId,
+		},
+	});
+	const setCardRef = useCallback(
+		(element: HTMLButtonElement | null) => {
+			ref(element);
+			handleRef(element);
+		},
+		[handleRef, ref],
+	);
+
+	return (
+		<ContextMenuTrigger asChild>
+			<button
+				ref={setCardRef}
+				type="button"
+				className="databaseBoardCard"
+				data-draggable="true"
+				data-state={selected ? "selected" : undefined}
+				data-dragging={isDragging ? "true" : undefined}
+				onClick={() => {
+					if (suppressClickRef.current) return;
+					onSelectRow(row.note_path);
+				}}
+				onDoubleClick={() => onOpenRow(row.note_path)}
+				onKeyDown={(event) => {
+					if (event.key === "Enter") {
+						event.preventDefault();
+						onOpenRow(row.note_path);
+					} else if (event.key === " ") {
+						event.preventDefault();
+						onSelectRow(row.note_path);
+					}
+				}}
+				title="Double-click to open note"
+			>
+				{children}
+			</button>
+		</ContextMenuTrigger>
+	);
+}
+
 export function DatabaseBoard({
 	rows,
 	columns,
@@ -240,40 +482,8 @@ export function DatabaseBoard({
 			onGroupColumnIdChange,
 			onLaneOrderChange,
 		});
-	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
-	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
-	const draggingRowPathRef = useRef<string | null>(null);
-	const draggingLaneIdRef = useRef<string | null>(null);
-	const dragActiveRef = useRef(false);
 	const suppressClickRef = useRef(false);
-	const dragPreviewRef = useRef<{
-		notePath: string;
-		sourceLaneId: string;
-		title: string;
-		x: number;
-		y: number;
-		width: number;
-	} | null>(null);
-	const dropLaneIdRef = useRef<string | null>(null);
-	const dragStartRef = useRef<{
-		notePath: string;
-		sourceLaneId: string;
-		startX: number;
-		startY: number;
-		offsetX: number;
-		offsetY: number;
-		width: number;
-		title: string;
-	} | null>(null);
-	const [dragPreview, setDragPreview] = useState<{
-		notePath: string;
-		sourceLaneId: string;
-		title: string;
-		x: number;
-		y: number;
-		width: number;
-	} | null>(null);
 	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
 		Record<string, NoteTaskSummary>
 	>({});
@@ -289,17 +499,6 @@ export function DatabaseBoard({
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
 	);
-	const clearDragState = useCallback(() => {
-		dragStartRef.current = null;
-		draggingRowPathRef.current = null;
-		draggingLaneIdRef.current = null;
-		dragActiveRef.current = false;
-		dragPreviewRef.current = null;
-		dropLaneIdRef.current = null;
-		setDraggingRowPath(null);
-		setDropLaneId(null);
-		setDragPreview(null);
-	}, []);
 
 	useEffect(() => {
 		if (showTaskProgressIndicator !== true) {
@@ -371,11 +570,9 @@ export function DatabaseBoard({
 			const row = rows.find((entry) => entry.note_path === notePath);
 			if (!row) return;
 			if (targetLaneId === sourceLaneId) {
-				clearDragState();
 				return;
 			}
 			if (boardRowHasLane(row, groupColumn, targetLaneId)) {
-				clearDragState();
 				return;
 			}
 			try {
@@ -387,94 +584,33 @@ export function DatabaseBoard({
 				);
 			} catch (error) {
 				setMoveError(extractErrorMessage(error));
-			} finally {
-				clearDragState();
 			}
 		},
-		[clearDragState, groupColumn, onSaveCell, rows],
+		[groupColumn, onSaveCell, rows],
 	);
 
-	useEffect(() => {
-		const handlePointerMove = (event: PointerEvent) => {
-			const dragStart = dragStartRef.current;
-			if (!dragStart) return;
-			const deltaX = event.clientX - dragStart.startX;
-			const deltaY = event.clientY - dragStart.startY;
-			const hasExceededThreshold = Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
-			if (!hasExceededThreshold && !dragPreviewRef.current) return;
-
-			if (!dragPreviewRef.current) {
-				dragActiveRef.current = true;
-				draggingRowPathRef.current = dragStart.notePath;
-				draggingLaneIdRef.current = dragStart.sourceLaneId;
-				const nextPreview = {
-					notePath: dragStart.notePath,
-					sourceLaneId: dragStart.sourceLaneId,
-					title: dragStart.title,
-					x: event.clientX - dragStart.offsetX,
-					y: event.clientY - dragStart.offsetY,
-					width: dragStart.width,
-				};
-				dragPreviewRef.current = nextPreview;
-				setDraggingRowPath(dragStart.notePath);
-				setDragPreview(nextPreview);
-			} else {
-				const nextPreview = {
-					...dragPreviewRef.current,
-					x: event.clientX - dragStart.offsetX,
-					y: event.clientY - dragStart.offsetY,
-				};
-				dragPreviewRef.current = nextPreview;
-				setDragPreview(nextPreview);
-			}
-
-			const laneElement = document
-				.elementFromPoint(event.clientX, event.clientY)
-				?.closest<HTMLElement>("[data-board-lane-id]");
-			const nextDropLaneId = laneElement?.dataset.boardLaneId ?? null;
-			dropLaneIdRef.current = nextDropLaneId;
-			setDropLaneId(nextDropLaneId);
-		};
-
-		const handlePointerUp = (event: PointerEvent) => {
-			const dragStart = dragStartRef.current;
-			dragStartRef.current = null;
-			if (!dragStart) return;
-			if (!dragActiveRef.current) {
-				dropLaneIdRef.current = null;
-				setDropLaneId(null);
-				return;
-			}
-			dragActiveRef.current = false;
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
 			suppressClickRef.current = true;
 			window.setTimeout(() => {
 				suppressClickRef.current = false;
 			}, 0);
-			const laneElement = document
-				.elementFromPoint(event.clientX, event.clientY)
-				?.closest<HTMLElement>("[data-board-lane-id]");
-			const targetLaneId =
-				laneElement?.dataset.boardLaneId ?? dropLaneIdRef.current ?? null;
-			if (targetLaneId) {
-				void handleLaneDrop(
-					dragStart.notePath,
-					targetLaneId,
-					dragStart.sourceLaneId,
-				);
-				return;
-			}
-			clearDragState();
-		};
+			if (event.canceled) return;
 
-		window.addEventListener("pointermove", handlePointerMove);
-		window.addEventListener("pointerup", handlePointerUp);
-		window.addEventListener("pointercancel", handlePointerUp);
-		return () => {
-			window.removeEventListener("pointermove", handlePointerMove);
-			window.removeEventListener("pointerup", handlePointerUp);
-			window.removeEventListener("pointercancel", handlePointerUp);
-		};
-	}, [clearDragState, handleLaneDrop]);
+			const { source, target } = event.operation;
+			const notePath =
+				typeof source?.data.notePath === "string" ? source.data.notePath : null;
+			const targetLaneId = typeof target?.id === "string" ? target.id : null;
+			const sourceLaneId =
+				typeof source?.data.sourceLaneId === "string"
+					? source.data.sourceLaneId
+					: null;
+			if (!targetLaneId) return;
+
+			void handleLaneDrop(notePath, targetLaneId, sourceLaneId);
+		},
+		[handleLaneDrop],
+	);
 
 	return (
 		<div className="databaseBoardShell">
@@ -518,129 +654,21 @@ export function DatabaseBoard({
 					</div>
 				</m.div>
 			) : (
-				<div className="databaseBoardHorizontal">
-					<div className="databaseBoardScroller">
-						{lanes.map((lane, laneIndex) => (
-							<m.div
-								key={lane.id}
-								className="databaseBoardLane"
-								data-board-lane-id={lane.id}
-								data-show-column-color={showColumnColor ? "true" : "false"}
-								style={databaseValueToneStyleForColor(
-									lane.id,
-									getLaneColor(laneColors, lane.id),
-								)}
-								data-active={dropLaneId === lane.id ? "true" : "false"}
-								initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={
-									shouldReduceMotion
-										? { duration: 0 }
-										: {
-												...springPresets.snappy,
-												delay: Math.min(laneIndex * 0.04, 0.18),
-											}
-								}
-							>
-								<div className="databaseBoardLaneHeader">
-									{onLaneColorChange ? (
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<button
-													type="button"
-													className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-													aria-label={`Set color for ${lane.label}`}
-													title={`Set color for ${lane.label}`}
-												>
-													<span className="databaseBoardLaneDot" />
-													<div className="databaseBoardLaneTitle">
-														{lane.label}
-													</div>
-												</button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent
-												align="start"
-												className="databaseBoardColorMenu"
-											>
-												<div className="databaseBoardColorRibbon">
-													{EDITOR_TEXT_COLORS.map((color) => (
-														<button
-															key={color.id}
-															type="button"
-															className="databaseBoardColorRibbonSwatch"
-															style={databaseValueToneStyleForColor(
-																color.id,
-																color.id,
-															)}
-															onClick={() =>
-																onLaneColorChange(lane.id, color.id)
-															}
-															title={color.label}
-															aria-label={`Set ${lane.label} color to ${color.label}`}
-														/>
-													))}
-													<button
-														type="button"
-														className="databaseBoardColorRibbonClear"
-														onClick={() => onLaneColorChange(lane.id, null)}
-														title="Clear color"
-														aria-label={`Clear color for ${lane.label}`}
-													>
-														<span />
-													</button>
-												</div>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									) : (
-										<div className="databaseBoardLaneTitleGroup">
-											<span className="databaseBoardLaneDot" />
-											<div className="databaseBoardLaneTitle">{lane.label}</div>
-										</div>
-									)}
-									<div className="databaseBoardLaneHeaderActions">
-										<div className="databaseBoardLaneCount">
-											{lane.cardCount}
-										</div>
-										<ContextMenu>
-											<ContextMenuTrigger asChild>
-												<button
-													type="button"
-													className="databaseBoardLaneHandle"
-													disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-													aria-label={`Reorder ${lane.label} column`}
-													title={
-														lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-															? "No value stays last"
-															: `Right-click to move ${lane.label}`
-													}
-												>
-													<span className="databaseBoardLaneHandleDots" />
-												</button>
-											</ContextMenuTrigger>
-											{lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? (
-												<ContextMenuContent className="databaseBoardContextMenu">
-													<div className="databaseBoardMoveLabel">
-														Move column to
-													</div>
-													{reorderableLanes.map((targetLane, index) => {
-														const isCurrentLane = targetLane.id === lane.id;
-														return (
-															<ContextMenuItem
-																key={`${lane.id}:position:${targetLane.id}`}
-																className="databaseBoardContextMenuItem"
-																disabled={isCurrentLane}
-																onSelect={() => moveLaneToIndex(lane.id, index)}
-															>
-																Position {index + 1}: {targetLane.label}
-															</ContextMenuItem>
-														);
-													})}
-												</ContextMenuContent>
-											) : null}
-										</ContextMenu>
-									</div>
-								</div>
-								<div className="databaseBoardLaneBody">
+				<DragDropProvider onDragEnd={handleDragEnd}>
+					<div className="databaseBoardHorizontal">
+						<div className="databaseBoardScroller">
+							{lanes.map((lane, laneIndex) => (
+								<DatabaseBoardLaneView
+									key={lane.id}
+									lane={lane}
+									laneIndex={laneIndex}
+									showColumnColor={showColumnColor}
+									laneColors={laneColors}
+									shouldReduceMotion={shouldReduceMotion}
+									onLaneColorChange={onLaneColorChange}
+									reorderableLanes={reorderableLanes}
+									moveLaneToIndex={moveLaneToIndex}
+								>
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
@@ -671,145 +699,106 @@ export function DatabaseBoard({
 
 											return (
 												<ContextMenu key={row.note_path}>
-													<ContextMenuTrigger asChild>
-														<button
-															type="button"
-															className="databaseBoardCard"
-															data-state={
-																row.note_path === selectedRowPath
-																	? "selected"
-																	: undefined
-															}
-															data-dragging={
-																row.note_path === draggingRowPath
-																	? "true"
-																	: undefined
-															}
-															onPointerDown={(event) => {
-																if (event.button !== 0) return;
-																dragActiveRef.current = false;
-																const rect =
-																	event.currentTarget.getBoundingClientRect();
-																dragStartRef.current = {
-																	notePath: row.note_path,
-																	sourceLaneId: lane.id,
-																	startX: event.clientX,
-																	startY: event.clientY,
-																	offsetX: event.clientX - rect.left,
-																	offsetY: event.clientY - rect.top,
-																	width: rect.width,
-																	title,
-																};
-															}}
-															onClick={() => {
-																if (suppressClickRef.current) return;
-																onSelectRow(row.note_path);
-															}}
-															onDoubleClick={() => onOpenRow(row.note_path)}
-															onKeyDown={(event) => {
-																if (event.key === "Enter") {
-																	event.preventDefault();
-																	onOpenRow(row.note_path);
-																} else if (event.key === " ") {
-																	event.preventDefault();
-																	onSelectRow(row.note_path);
-																}
-															}}
-															title="Double-click to open note"
-														>
-															<div className="databaseBoardCardHead">
-																<div className="databaseBoardCardHeaderRow">
-																	<span className="databaseBoardCardTitle">
-																		{title}
-																	</span>
-																	{showTaskProgressIndicator &&
-																	taskSummary.total_count > 0 ? (
-																		<TaskProgressIndicator
-																			summary={taskSummary}
-																			className="databaseBoardCardTaskProgress"
-																		/>
-																	) : null}
-																</div>
-																{preview.length > 0 ? (
-																	<div className="databaseBoardCardPreview">
-																		{preview.map((line, lineIndex) => (
-																			<div
-																				key={`${row.note_path}:preview:${lineIndex}`}
-																				className={`databaseBoardCardPreviewLine is-${line.kind}`}
-																			>
-																				{line.text}
-																			</div>
-																		))}
-																	</div>
+													<DatabaseBoardCardView
+														row={row}
+														laneId={lane.id}
+														selected={row.note_path === selectedRowPath}
+														suppressClickRef={suppressClickRef}
+														onSelectRow={onSelectRow}
+														onOpenRow={onOpenRow}
+													>
+														<div className="databaseBoardCardHead">
+															<div className="databaseBoardCardHeaderRow">
+																<span className="databaseBoardCardTitle">
+																	{title}
+																</span>
+																{showTaskProgressIndicator &&
+																taskSummary.total_count > 0 ? (
+																	<TaskProgressIndicator
+																		summary={taskSummary}
+																		className="databaseBoardCardTaskProgress"
+																	/>
 																) : null}
 															</div>
-															{visibleTags.length > 0 ? (
-																<div className="databaseBoardCardTags">
-																	{visibleTags.map((tag) => (
-																		<span
-																			key={`${row.note_path}:${tag}`}
-																			className="databaseBoardTag"
-																			style={
-																				groupColumn?.id === "tags"
-																					? databaseValueToneStyleForColor(
-																							tag,
-																							(laneColors[tag] as
-																								| EditorTextColor
-																								| undefined) ?? null,
-																						)
-																					: databaseValueToneStyle(tag)
-																			}
-																			title={formatDatabaseTagLabel(tag)}
-																		>
-																			{formatDatabaseTagLabel(tag)}
-																		</span>
-																	))}
-																	{extraTagCount > 0 ? (
-																		<span className="databaseBoardTag is-muted">
-																			+{extraTagCount}
-																		</span>
-																	) : null}
-																</div>
-															) : null}
-															{cardDetails.length > 0 ? (
-																<div className="databaseBoardCardDetails">
-																	{cardDetails.map((column) => (
+															{preview.length > 0 ? (
+																<div className="databaseBoardCardPreview">
+																	{preview.map((line, lineIndex) => (
 																		<div
-																			key={`${row.note_path}:${column.id}`}
-																			className="databaseBoardCardDetail"
+																			key={`${row.note_path}:preview:${lineIndex}`}
+																			className={`databaseBoardCardPreviewLine is-${line.kind}`}
 																		>
-																			<span
-																				className="databaseBoardCardDetailLabel"
-																				title={column.label}
-																			>
-																				<DatabaseColumnIcon
-																					column={column}
-																					size={12}
-																				/>
-																			</span>
-																			<span
-																				className="databaseBoardCardDetailValue"
-																				title={`${column.label}: ${formatCardValue(row, column)}`}
-																			>
-																				{formatCardValue(row, column)}
-																			</span>
+																			{line.text}
 																		</div>
 																	))}
 																</div>
 															) : null}
-															<div className="databaseBoardCardFooter">
-																<span
-																	className="databaseBoardCardPath"
-																	title={folderLabel}
-																>
-																	{folderLabel}
-																</span>
-																<span className="databaseBoardCardTimestamp">
-																	{formatDatabaseDateTime(row.updated)}
-																</span>
+														</div>
+														{visibleTags.length > 0 ? (
+															<div className="databaseBoardCardTags">
+																{visibleTags.map((tag) => (
+																	<span
+																		key={`${row.note_path}:${tag}`}
+																		className="databaseBoardTag"
+																		style={
+																			groupColumn?.id === "tags"
+																				? databaseValueToneStyleForColor(
+																						tag,
+																						(laneColors[tag] as
+																							| EditorTextColor
+																							| undefined) ?? null,
+																					)
+																				: databaseValueToneStyle(tag)
+																		}
+																		title={formatDatabaseTagLabel(tag)}
+																	>
+																		{formatDatabaseTagLabel(tag)}
+																	</span>
+																))}
+																{extraTagCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraTagCount}
+																	</span>
+																) : null}
 															</div>
-														</button>
-													</ContextMenuTrigger>
+														) : null}
+														{cardDetails.length > 0 ? (
+															<div className="databaseBoardCardDetails">
+																{cardDetails.map((column) => (
+																	<div
+																		key={`${row.note_path}:${column.id}`}
+																		className="databaseBoardCardDetail"
+																	>
+																		<span
+																			className="databaseBoardCardDetailLabel"
+																			title={column.label}
+																		>
+																			<DatabaseColumnIcon
+																				column={column}
+																				size={12}
+																			/>
+																		</span>
+																		<span
+																			className="databaseBoardCardDetailValue"
+																			title={`${column.label}: ${formatCardValue(row, column)}`}
+																		>
+																			{formatCardValue(row, column)}
+																		</span>
+																	</div>
+																))}
+															</div>
+														) : null}
+														<div className="databaseBoardCardFooter">
+															<span
+																className="databaseBoardCardPath"
+																title={folderLabel}
+															>
+																{folderLabel}
+															</span>
+															<span className="databaseBoardCardTimestamp">
+																{formatDatabaseDateTime(row.updated)}
+															</span>
+														</div>
+													</DatabaseBoardCardView>
 													<ContextMenuContent className="databaseBoardContextMenu">
 														<ContextMenuItem
 															className="databaseBoardContextMenuItem"
@@ -847,23 +836,12 @@ export function DatabaseBoard({
 									) : (
 										<div className="databaseBoardLaneEmptyCard">No notes</div>
 									)}
-								</div>
-							</m.div>
-						))}
+								</DatabaseBoardLaneView>
+							))}
+						</div>
 					</div>
-				</div>
+				</DragDropProvider>
 			)}
-			{dragPreview ? (
-				<div
-					className="databaseBoardDragGhost"
-					style={{
-						width: dragPreview.width,
-						transform: `translate3d(${dragPreview.x}px, ${dragPreview.y}px, 0)`,
-					}}
-				>
-					{dragPreview.title}
-				</div>
-			) : null}
 		</div>
 	);
 }

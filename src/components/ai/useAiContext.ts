@@ -11,7 +11,7 @@ type ContextManifestItem = {
 	truncated: boolean;
 };
 
-export type ContextManifest = {
+type ContextManifest = {
 	items: ContextManifestItem[];
 	totalChars: number;
 	estTokens: number;

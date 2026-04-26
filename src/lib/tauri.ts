@@ -1,4 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import type { AttachmentStorageMode } from "./settings";
 
 export interface AppInfo {
 	name: string;
@@ -24,13 +25,6 @@ export interface FileTreeAppearance {
 }
 
 export type PinnedFiles = string[];
-
-export interface RecentEntry {
-	rel_path: string;
-	name: string;
-	is_markdown: boolean;
-	mtime_ms: number;
-}
 
 export interface TextFileDoc {
 	rel_path: string;
@@ -76,41 +70,11 @@ export interface BinaryFilePreviewDoc {
 	mtime_ms: number;
 }
 
-export interface NoteMeta {
-	id: string;
-	title: string;
-	created: string;
-	updated: string;
-}
-
-export interface NoteDoc {
-	meta: NoteMeta;
-	markdown: string;
-	etag: string;
-	mtime_ms: number;
-}
-
-export interface NoteWriteResult {
-	meta: NoteMeta;
-	etag: string;
-	mtime_ms: number;
-}
-
-export interface AttachmentResult {
-	asset_rel_path: string;
-	markdown: string;
-}
-
 export interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
 	markdown: string;
 }
-
-export type AttachmentStorageMode =
-	| "space-root"
-	| "specific-folder"
-	| "note-folder";
 
 export interface NoteProperty {
 	key: string;
@@ -400,12 +364,6 @@ export interface NoteTaskSummaryItem extends NoteTaskSummary {
 	note_path: string;
 }
 
-export interface LinkSuggestionItem {
-	path: string;
-	title: string;
-	insert_text: string;
-}
-
 export interface AiContextAttachment {
 	kind: "folder" | "file";
 	path: string;
@@ -441,8 +399,6 @@ export interface AiContextBuildResponse {
 	manifest: AiContextManifestResponse;
 	resolved_paths: string[];
 }
-
-export type TaskBucket = "inbox" | "today" | "upcoming";
 
 export interface TaskItem {
 	task_id: string;
@@ -498,17 +454,6 @@ export interface CalendarRangeResponse {
 	days: CalendarDaySummary[];
 	detail: CalendarDayDetail;
 	tasks: CalendarTaskGroups;
-}
-
-export interface LinkPreview {
-	url: string;
-	hostname: string;
-	title: string;
-	description: string;
-	image_url: string | null;
-	image_cache_rel_path: string | null;
-	fetched_at_ms: number;
-	ok: boolean;
 }
 
 export type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
@@ -734,8 +679,6 @@ export interface CodexRateLimits {
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
-	greet: CommandDef<{ name: string }, string>;
-	ping: CommandDef<void, string>;
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
@@ -757,10 +700,6 @@ interface TauriCommands {
 	space_get_current: CommandDef<void, string | null>;
 	space_close: CommandDef<void, void>;
 	export_write_text: CommandDef<{ abs_path: string; text: string }, void>;
-	space_list_dirs: CommandDef<
-		{ dir?: string | null; limit?: number | null },
-		FsEntry[]
-	>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	file_tree_appearance_list: CommandDef<
 		void,
@@ -785,14 +724,6 @@ interface TauriCommands {
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
-	>;
-	space_list_files: CommandDef<
-		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
-		FsEntry[]
-	>;
-	space_dir_recent_entries: CommandDef<
-		{ dir?: string | null; limit?: number | null },
-		RecentEntry[]
 	>;
 	space_dir_children_summary: CommandDef<
 		{ dir?: string | null; preview_limit?: number | null },
@@ -851,16 +782,8 @@ interface TauriCommands {
 				limit?: number | null;
 			};
 		},
-		LinkSuggestionItem[]
+		{ path: string; title: string; insert_text: string }[]
 	>;
-	notes_list: CommandDef<void, NoteMeta[]>;
-	note_create: CommandDef<{ title: string }, NoteMeta>;
-	note_read: CommandDef<{ id: string }, NoteDoc>;
-	note_write: CommandDef<
-		{ id: string; markdown: string; base_etag?: string | null },
-		NoteWriteResult
-	>;
-	note_delete: CommandDef<{ id: string }, void>;
 	note_frontmatter_parse_properties: CommandDef<
 		{ frontmatter?: string | null },
 		NoteProperty[]
@@ -868,10 +791,6 @@ interface TauriCommands {
 	note_frontmatter_render_properties: CommandDef<
 		{ properties: NoteProperty[] },
 		string | null
-	>;
-	note_attach_file: CommandDef<
-		{ note_id: string; source_path: string },
-		AttachmentResult
 	>;
 	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
 	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
@@ -924,15 +843,10 @@ interface TauriCommands {
 		{ enabled: boolean },
 		void
 	>;
-	search_with_tags: CommandDef<
-		{ tags: string[]; query?: string | null; limit?: number | null },
-		SearchResult[]
-	>;
 	all_docs_list: CommandDef<
 		{ limit?: number | null; folder_prefix?: string | null },
 		AllDocsItem[]
 	>;
-	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	calendar_query_range: CommandDef<
 		{
 			start_date: string;
@@ -944,16 +858,6 @@ interface TauriCommands {
 	>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	people_list: CommandDef<{ limit?: number | null }, PersonCount[]>;
-	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
-	tasks_query: CommandDef<
-		{
-			bucket: TaskBucket;
-			today: string;
-			limit?: number | null;
-			folders?: string[] | null;
-		},
-		TaskItem[]
-	>;
 	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
 	task_set_dates: CommandDef<
 		{
@@ -986,7 +890,6 @@ interface TauriCommands {
 		BacklinkItem[]
 	>;
 	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
-	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 	web_clip_save: CommandDef<
 		{ url: string; folder?: string },
 		{ rel_path: string; title: string }
@@ -1010,7 +913,6 @@ interface TauriCommands {
 	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
 	ai_secret_list: CommandDef<void, string[]>;
 	ai_provider_support: CommandDef<void, ProviderSupportDocument>;
-	ai_audit_mark: CommandDef<{ job_id: string; outcome: string }, void>;
 	ai_chat_start: CommandDef<
 		{
 			request: {
@@ -1059,19 +961,6 @@ interface TauriCommands {
 	>;
 	codex_logout: CommandDef<void, void>;
 	codex_rate_limits_read: CommandDef<void, CodexRateLimits>;
-	codex_chat_start: CommandDef<
-		{
-			request: {
-				profile_id: string;
-				thread_id?: string | null;
-				messages: AiMessage[];
-				context?: string | null;
-				mode?: AiAssistantMode | null;
-			};
-		},
-		{ job_id: string }
-	>;
-	codex_chat_cancel: CommandDef<{ job_id: string }, void>;
 	ai_context_index: CommandDef<void, AiContextIndexResponse>;
 	ai_context_build: CommandDef<
 		{

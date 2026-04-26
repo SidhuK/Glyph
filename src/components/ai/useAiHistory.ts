@@ -38,7 +38,7 @@ function toUIMessages(
 	return out;
 }
 
-export interface LoadedAiChat {
+interface LoadedAiChat {
 	messages: UIMessage[];
 	toolEvents: AiStoredToolEvent[];
 }

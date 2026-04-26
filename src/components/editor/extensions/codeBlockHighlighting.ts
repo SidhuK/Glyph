@@ -40,7 +40,7 @@ const CODE_BLOCK_LANGUAGE_ALIASES = {
 
 lowlight.registerAlias(CODE_BLOCK_LANGUAGE_ALIASES);
 
-export const SUPPORTED_CODE_BLOCK_LANGUAGES = [
+const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"plaintext",
 	"bash",
 	"javascript",

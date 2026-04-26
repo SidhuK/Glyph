@@ -248,27 +248,21 @@
 	height: 12px;
 }
 
-.markdownEditorTaskProgressRing {
-	width: 12px;
-	height: 12px;
-	display: block;
-	transform: rotate(-90deg);
+.markdownEditorTaskProgressDonut {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	position: relative;
+	transition: background 180ms ease;
 }
 
-.markdownEditorTaskProgressTrack,
-.markdownEditorTaskProgressStroke {
-	fill: none;
-	stroke-width: 2;
-}
-
-.markdownEditorTaskProgressTrack {
-	stroke: color-mix(in srgb, var(--interactive-accent) 28%, transparent);
-}
-
-.markdownEditorTaskProgressStroke {
-	stroke: var(--interactive-accent);
-	stroke-linecap: round;
-	transition: stroke-dashoffset 180ms ease;
+.markdownEditorTaskProgressDonut::after {
+	content: "";
+	position: absolute;
+	inset: -3px;
+	border-radius: 50%;
+	border: 1px solid var(--task-progress-color);
+	pointer-events: none;
 }
 
 .markdownEditorSaveState {
@@ -799,19 +793,6 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-	}
-}
-
-@keyframes markdownEditorSavePulse {
-	0%,
-	100% {
-		opacity: 0.75;
-		transform: scale(1);
-	}
-
-	50% {
-		opacity: 1;
-		transform: scale(1.2);
 	}
 }
 

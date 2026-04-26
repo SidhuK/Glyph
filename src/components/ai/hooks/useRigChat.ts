@@ -7,7 +7,7 @@ import {
 } from "../../../lib/tauri";
 import { listenTauriEvent } from "../../../lib/tauriEvents";
 
-export type UIMessagePart = { type: "text"; text: string };
+type UIMessagePart = { type: "text"; text: string };
 
 export interface UIMessage {
 	id: string;

@@ -2,9 +2,9 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 use tracing::warn;
 
-use crate::{io_atomic, space::SpaceState};
+use crate::space::SpaceState;
 
-use super::audit::{audit_log_path, write_audit_log, AuditLogParams};
+use super::audit::{write_audit_log, AuditLogParams};
 use super::helpers::{http_client, parse_base_url, split_system_and_messages};
 use super::history;
 use super::local_secrets;
@@ -269,33 +269,6 @@ pub async fn ai_provider_support(app: AppHandle) -> Result<ProviderSupportDocume
             ))
         }
     }
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn ai_audit_mark(
-    space_state: State<'_, SpaceState>,
-    job_id: String,
-    outcome: String,
-) -> Result<(), String> {
-    let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
-    let root = space_state.current_root()?;
-    let path = audit_log_path(&root, &job_id)?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
-        let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-        let mut v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-        if let Some(obj) = v.as_object_mut() {
-            let out = outcome.trim();
-            let out = if out.len() > 200 { &out[..200] } else { out };
-            obj.insert(
-                "outcome".to_string(),
-                serde_json::Value::String(out.to_string()),
-            );
-        }
-        let out = serde_json::to_vec_pretty(&v).map_err(|e| e.to_string())?;
-        io_atomic::write_atomic(&path, &out).map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

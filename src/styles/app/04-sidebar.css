@@ -2,7 +2,6 @@
    LEFT SIDEBAR - Floating Navigation Panel
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebar {
-	--sidebar-traffic-light-pad: 78px;
 	display: flex;
 	flex-direction: column;
 	width: var(--sidebar-width);
@@ -69,24 +68,6 @@
 	-webkit-app-region: drag;
 }
 
-.sidebarBrand {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-}
-
-.brandIcon {
-	font-size: var(--text-lg);
-	color: var(--interactive-accent);
-}
-
-.brandName {
-	font-size: var(--text-base);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	letter-spacing: -0.02em;
-}
-
 .sidebarActions {
 	display: flex;
 	align-items: center;
@@ -96,124 +77,6 @@
 	left: var(--window-control-toggle-offset, 90px);
 	transform: none;
 	z-index: 30;
-}
-
-.sidebarHeaderSpaceMenu {
-	position: relative;
-	-webkit-app-region: no-drag;
-	z-index: 35;
-}
-
-.sidebarHeaderSpaceMenuPanel {
-	position: absolute;
-	top: calc(100% + 8px);
-	left: 0;
-	z-index: 60;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	max-width: min(420px, calc(100vw - 24px));
-	max-height: min(360px, calc(100vh - 96px));
-	padding: 10px;
-	border-radius: 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
-	backdrop-filter: blur(14px) saturate(1.2);
-	-webkit-backdrop-filter: blur(14px) saturate(1.2);
-	box-shadow: 0 12px 26px
-		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent), 0 2px 12px
-		color-mix(in srgb, var(--shadow-color, #000) 10%, transparent);
-	overflow: auto;
-}
-
-.sidebarHeaderSpaceMenuTitle {
-	padding: 2px 2px 4px;
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.sidebarHeaderSpaceMenuItem {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 2px;
-	width: 100%;
-	padding: 8px 10px;
-	border: 1px solid transparent;
-	border-radius: 9px;
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
-	color: var(--text-primary);
-	text-align: left;
-	cursor: pointer;
-	transition: background-color 120ms ease, border-color 120ms ease;
-	overflow: hidden;
-}
-
-.sidebarHeaderSpaceMenuItem:hover,
-.sidebarHeaderSpaceMenuItem:focus-visible {
-	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--interactive-accent) 22%, transparent);
-	outline: none;
-}
-
-.sidebarHeaderSpaceMenuItemName {
-	display: block;
-	font-size: 13px;
-	font-weight: var(--font-medium);
-	flex-shrink: 0;
-	min-width: 0;
-	width: 100%;
-	max-width: 180px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.sidebarHeaderSpaceMenuItemPath {
-	display: block;
-	font-size: 11px;
-	line-height: 1.25;
-	color: var(--text-tertiary);
-	flex-shrink: 0;
-	min-width: 0;
-	width: 100%;
-	max-width: 260px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.sidebarHeaderSpaceMenuEmpty {
-	padding: 12px 10px;
-	border: 1px dashed color-mix(in srgb, var(--border-light) 62%, transparent);
-	border-radius: 9px;
-	font-size: 12px;
-	color: var(--text-tertiary);
-}
-
-.sidebarHeaderSpaceMenuAction {
-	width: 100%;
-	margin-top: 2px;
-	padding: 8px 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: 9px;
-	background: color-mix(in srgb, var(--bg-tertiary) 62%, transparent);
-	color: var(--text-secondary);
-	font-size: 12px;
-	font-weight: var(--font-medium);
-	text-align: center;
-	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
-}
-
-.sidebarHeaderSpaceMenuAction:hover,
-.sidebarHeaderSpaceMenuAction:focus-visible {
-	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-primary));
-	color: var(--text-primary);
-	outline: none;
 }
 
 .windowChromeSidebarToggle {
@@ -282,268 +145,15 @@
 	height: 12px;
 }
 
-.windowChromeGitSyncButton {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	height: 24px;
-	padding: 0 9px 0 8px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 28%, transparent);
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	color: var(--text-secondary);
-	font-size: 10px;
-	font-weight: var(--font-bold);
-	letter-spacing: 0.08em;
-	line-height: 1;
-	white-space: nowrap;
-	cursor: pointer;
-	-webkit-app-region: no-drag;
-	transition: background-color 120ms ease, border-color 120ms ease, color 120ms
-		ease;
-}
-
-.windowChromeGitSyncButton:hover {
-	background: color-mix(in srgb, var(--bg-hover) 92%, var(--bg-primary));
-	color: var(--text-primary);
-}
-
-.windowChromeGitSyncButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 28%, white 72%);
-	outline-offset: 2px;
-}
-
-.windowChromeGitSyncIndicator {
-	width: 5px;
-	height: 5px;
-	border-radius: 999px;
-	flex: 0 0 auto;
-	background: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
-}
-
-.windowChromeGitSyncIndicator-idle,
-.windowChromeGitSyncIndicator-paused {
-	background: color-mix(in srgb, var(--text-tertiary) 76%, transparent);
-}
-
-.windowChromeGitSyncButton-healthy {
-	color: var(--text-primary);
-}
-
-.windowChromeGitSyncIndicator-healthy {
-	background: color-mix(in srgb, var(--color-green-500) 80%, white 20%);
-}
-
-.windowChromeGitSyncButton-syncing {
-	border-color: color-mix(in srgb, var(--interactive-accent) 24%, transparent);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 7%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 82%, var(--text-primary));
-}
-
-.windowChromeGitSyncIndicator-syncing {
-	background: color-mix(in srgb, var(--interactive-accent) 84%, white 16%);
-}
-
-.windowChromeGitSyncButton-error {
-	border-color: color-mix(in srgb, var(--status-danger-border) 82%, transparent);
-	background: color-mix(in srgb, var(--status-danger-bg) 72%, var(--bg-primary));
-	color: var(--status-danger-fg);
-}
-
-.windowChromeGitSyncIndicator-error {
-	background: color-mix(in srgb, var(--status-danger-fg) 84%, white 16%);
-}
-
-.windowChromeGitSyncButton-paused {
-	color: var(--text-tertiary);
-}
-
-.windowChromeGitSyncButtonIcon {
-	opacity: 0.72;
-}
-
-.windowChromeGitSyncButtonLabel {
-	font-size: 10px;
-	font-weight: var(--font-bold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
-
-.windowChromeGitSyncPopover {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	width: 276px;
-	padding: 12px;
-	border-color: color-mix(in srgb, var(--border-light) 65%, transparent);
-	box-shadow: 0 12px 24px
-		color-mix(in srgb, var(--shadow-color, #000) 14%, transparent), 0 4px 12px
-		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
-}
-
-.windowChromeGitSyncPopoverHeader {
-	gap: 6px;
-}
-
-.windowChromeGitSyncTitleRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-}
-
-.windowChromeGitSyncTitleGroup {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.windowChromeGitSyncSubtitle {
-	margin-top: 1px;
-	font-size: 11px;
-	color: var(--text-tertiary);
-}
-
-.windowChromeGitSyncStatusBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 3px 7px;
-	border-radius: var(--radius-full);
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.04em;
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-tertiary) 92%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 52%, transparent);
-}
-
-.windowChromeGitSyncStatusBadge-healthy {
-	color: color-mix(in srgb, var(--color-green-500) 84%, var(--text-primary));
-	background: color-mix(in srgb, var(--color-green-500) 10%, transparent);
-	border-color: color-mix(in srgb, var(--color-green-500) 20%, transparent);
-}
-
-.windowChromeGitSyncStatusBadge-syncing {
-	color: color-mix(in srgb, var(--interactive-accent) 84%, var(--text-primary));
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
-}
-
-.windowChromeGitSyncStatusBadge-error {
-	color: var(--status-danger-fg);
-	background: var(--status-danger-bg);
-	border-color: var(--status-danger-border);
-}
-
-.windowChromeGitSyncMeta {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--text-secondary);
-}
-
-.windowChromeGitSyncMetaList {
-	display: flex;
-	flex-direction: column;
-	gap: 0;
-	padding: 2px 0;
-}
-
-.windowChromeGitSyncMetaRow {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 7px 2px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 36%, transparent);
-}
-
-.windowChromeGitSyncMetaRow:last-child {
-	border-bottom: none;
-}
-
-.windowChromeGitSyncRemote {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 9px 10px;
-	border-radius: var(--radius-lg);
-	background: color-mix(
-		in srgb,
-		color-mix(in srgb, var(--bg-tertiary) 58%, transparent) 72%,
-		transparent
-	);
-	border: 1px solid color-mix(in srgb, var(--border-light) 34%, transparent);
-}
-
-.windowChromeGitSyncMetaKey {
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.windowChromeGitSyncMetaValue {
-	font-size: 12px;
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-	text-align: right;
-}
-
-.windowChromeGitSyncRemoteValue {
-	font-family: var(--font-family-mono, monospace);
-	font-size: 11px;
-	color: var(--text-secondary);
-}
-
-.windowChromeGitSyncError {
-	margin-top: 2px;
-	padding: 8px 10px;
-	border-radius: var(--radius-lg);
-	background: var(--status-danger-bg);
-	border: 1px solid var(--status-danger-border);
-	color: var(--status-danger-fg);
-}
-
-.windowChromeGitSyncActions {
-	display: flex;
-	gap: 8px;
-	padding-top: 2px;
-}
-
-.windowChromeGitSyncActions > * {
-	flex: 1 1 0%;
-}
-
-.windowChromeGitSyncActionPrimary,
-.windowChromeGitSyncActionSecondary {
-	border-radius: var(--radius-md);
-}
-
-.windowChromeGitSyncActionPrimary:disabled {
-	opacity: 0.5;
-}
-
 .sidebarSection {
 	border-bottom: none;
-	padding: var(--space-1) 0;
+	padding: 0;
 }
 
 .sidebarSectionGrow {
 	flex: 1;
 	min-height: 0;
-	overflow: hidden;
+	overflow: visible;
 	display: flex;
 	flex-direction: column;
 }
@@ -551,16 +161,9 @@
 .sidebarQuickActions {
 	display: flex;
 	flex-direction: column;
-	align-items: flex-start;
 	gap: 4px;
-	padding: var(--space-1) var(--space-2) var(--space-2);
+	padding: 6px 8px 4px;
 	flex-shrink: 0;
-	margin-bottom: 2px;
-}
-
-.sidebarQuickActionsSpacer {
-	width: 100%;
-	height: 6px;
 }
 
 .sidebarFooter {
@@ -570,7 +173,7 @@
 	justify-content: flex-start;
 	gap: var(--space-2);
 	width: 100%;
-	padding: var(--space-2) var(--space-3) var(--space-3);
+	padding: 8px 8px 12px;
 	background: transparent;
 	border-top: none;
 	flex-shrink: 0;
@@ -582,10 +185,10 @@
 }
 
 .sidebarFooterSettingsButton {
-	flex: 0 0 28px;
-	width: 28px;
-	min-width: 28px;
-	min-height: 28px;
+	flex: 0 0 26px;
+	width: 26px;
+	min-width: 26px;
+	min-height: 26px;
 	padding: 0;
 	justify-content: center;
 	-webkit-app-region: no-drag;
@@ -593,10 +196,6 @@
 
 .sidebarFooterSettingsButton svg {
 	flex-shrink: 0;
-}
-
-.sidebarFooterSpacer {
-	flex: 1 1 auto;
 }
 
 .gitSyncFooterShell {
@@ -675,7 +274,6 @@
 	gap: 6px;
 }
 
-.gitSyncFooterStatusBadge,
 .gitSyncFooterBranchBadge {
 	display: inline-flex;
 	align-items: center;
@@ -703,62 +301,18 @@
 	color: var(--status-danger-fg);
 }
 
-.sidebarSectionHeader {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: var(--space-1) var(--space-3) var(--space-2);
-	border-bottom: none;
-	flex-shrink: 0;
-}
-
-.sidebarSectionToggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 0;
-	padding: 0;
-	border: none;
-	border-radius: var(--radius-full);
-	overflow: hidden;
-	background: transparent;
-	box-shadow: none;
-}
-
-.sidebarSectionToggle [data-slot="tabs-trigger"] {
-	position: relative;
-	height: calc(var(--button-height-sm) - 2px);
-	padding: 0 calc(var(--space-2) - 1px);
-	border-radius: var(--radius-full);
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	border: 1px solid transparent;
-	transition: background var(--transition-fast), color var(--transition-fast),
-		border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.sidebarSectionToggle [data-slot="tabs-trigger"]:hover {
-	transform: none;
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.sidebarSectionToggle [data-slot="tabs-trigger"][data-state="active"] {
-	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
-	color: var(--text-primary);
-	border-color: color-mix(in srgb, var(--border-light) 35%, transparent);
-	box-shadow: var(--shadow-sm);
-}
-
 .sidebarSectionContent {
 	flex: 1;
 	min-height: 0;
-	overflow: hidden;
+	overflow-y: auto;
+	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
 	position: relative;
 	z-index: 1;
 	pointer-events: auto;
 	-webkit-app-region: no-drag;
+	padding-bottom: calc(var(--sidebar-footer-overlay-height) + var(--space-2));
 }
 
 .sidebarSectionContent * {
@@ -770,7 +324,6 @@
 	min-width: 0 !important;
 }
 
-.sidebarSectionToggle [data-slot="tabs-trigger"]:focus-visible,
 .sidebarSectionContent button:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
@@ -778,56 +331,56 @@
 }
 
 .sidebarStack {
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	gap: 0;
-	container-type: size;
-	container-name: sidebar-stack;
+}
+
+.sidebarStackHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 24px;
+	padding: 8px 16px 2px;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	letter-spacing: 0;
+	flex-shrink: 0;
+}
+
+.sidebarStackHeader svg {
+	color: currentcolor;
+	flex-shrink: 0;
+}
+
+button.sidebarStackHeader {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	margin: 0;
+	width: 100%;
+	cursor: pointer;
+	text-align: left;
+	font: inherit;
+	color: var(--text-primary);
+	font-weight: var(--font-normal);
+	font-size: var(--text-sm);
+	display: flex;
+	justify-content: flex-start;
+}
+
+.sidebarStackHeaderChevron {
+	color: var(--text-tertiary);
+	flex-shrink: 0;
 }
 
 .sidebarStackItem {
-	flex: 0 0 180px;
-	min-height: 0;
-	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 }
 
 .sidebarStackItemGrow {
-	flex: 1 1 0;
-}
-
-@container sidebar-stack (max-height: 460px) {
-	.sidebarStackItem[data-section="tags"] {
-		display: none;
-	}
-}
-
-@container sidebar-stack (max-height: 300px) {
-	.sidebarStackItem[data-section="recent"] {
-		display: none;
-	}
-}
-
-.spaceInfo {
-	padding: var(--space-2) var(--space-3);
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-}
-
-.spacePath {
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-	font-weight: var(--font-medium);
-}
-
-.spaceMeta {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
+	flex: 0 0 auto;
 }
 
 .sidebarEmpty {

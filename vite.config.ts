@@ -36,4 +36,7 @@ export default defineConfig(async () => ({
 			ignored: ["**/src-tauri/**"],
 		},
 	},
+	test: {
+		setupFiles: ["./src/test/setup.ts"],
+	},
 }));

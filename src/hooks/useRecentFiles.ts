@@ -5,7 +5,7 @@ import {
 	getRecentFiles as getRecentFilesFromStore,
 } from "../lib/settings";
 
-export interface UseRecentFilesReturn {
+interface UseRecentFilesReturn {
 	recentFiles: RecentFile[];
 	addRecentFile: (path: string, spacePath: string) => Promise<void>;
 	refreshRecentFiles: () => Promise<void>;

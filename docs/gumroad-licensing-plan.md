@@ -223,7 +223,7 @@ New files:
 
 Update [src/main.tsx](/Users/karatsidhu/Code/Glyph/src/main.tsx):
 
-- call `license_bootstrap_status` before rendering `<Root />`
+- call `license_bootstrap_status` before rendering the app
 - if `community_build`, continue normally
 - if `trial_active` or `licensed`, render app
 - if `trial_expired`, render full-screen lock UI instead of the app shell

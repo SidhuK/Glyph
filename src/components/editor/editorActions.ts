@@ -1,8 +1,8 @@
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
 
-export type EditorActionId = string;
-export type EditorActionCategory =
+type EditorActionId = string;
+type EditorActionCategory =
 	| "format"
 	| "structure"
 	| "insert"
@@ -11,7 +11,7 @@ export type EditorActionCategory =
 	| "highlight"
 	| "link";
 
-export interface EditorActionDefinition {
+interface EditorActionDefinition {
 	id: EditorActionId;
 	label: string;
 	description: string;
@@ -221,14 +221,3 @@ export const EDITOR_ACTIONS: EditorActionDefinition[] = [
 		menuId: `editor.highlight_${highlight.id}`,
 	})),
 ];
-
-const EDITOR_ACTION_RECORD: Record<string, EditorActionDefinition> =
-	Object.fromEntries(EDITOR_ACTIONS.map((action) => [action.id, action]));
-
-export function isEditorActionId(value: string): value is EditorActionId {
-	return value in EDITOR_ACTION_RECORD;
-}
-
-export function getEditorActionDefinition(actionId: EditorActionId) {
-	return EDITOR_ACTION_RECORD[actionId];
-}

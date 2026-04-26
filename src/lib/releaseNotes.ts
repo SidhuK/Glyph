@@ -7,9 +7,4 @@ export const RELEASE_NOTE_CATEGORIES = [
 
 export type ReleaseNoteCategory = (typeof RELEASE_NOTE_CATEGORIES)[number];
 
-export interface ReleaseNotesSection {
-	category: ReleaseNoteCategory;
-	items: string[];
-}
-
 export const PUBLIC_CHANGELOG_URL = "https://glyphformac.com/changelog";

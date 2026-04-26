@@ -9,24 +9,6 @@ const PERSON_PATTERN = /(^|[^A-Za-z0-9_.-])@([A-Za-z0-9_][A-Za-z0-9_-]*)/g;
 
 const pluginKey = new PluginKey("tag-decorations");
 
-export function findDecoratedTokens(text: string): Array<{
-	kind: "tag" | "person";
-	value: string;
-}> {
-	const out: Array<{ kind: "tag" | "person"; value: string }> = [];
-	TAG_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(TAG_PATTERN)) {
-		const tag = match[2] ?? "";
-		if (tag) out.push({ kind: "tag", value: tag });
-	}
-	PERSON_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(PERSON_PATTERN)) {
-		const handle = match[2] ?? "";
-		if (handle) out.push({ kind: "person", value: handle });
-	}
-	return out;
-}
-
 function buildDecorations(doc: Node): DecorationSet {
 	const decorations: Decoration[] = [];
 	doc.descendants((node, pos, parent) => {

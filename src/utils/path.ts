@@ -15,6 +15,7 @@ export function isMarkdownPath(relPath: string): boolean {
 export function normalizeRelPath(path: string): string {
 	return path
 		.trim()
+		.replace(/\u200b/g, "")
 		.replace(/\\/g, "/")
 		.replace(/^\/+|\/+$/g, "");
 }

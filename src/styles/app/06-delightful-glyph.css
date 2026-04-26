@@ -2,41 +2,20 @@
 	--delightful-glyph-rose: oklch(0.67 0.2 18);
 	--delightful-glyph-apricot: oklch(0.76 0.15 58);
 	--delightful-glyph-gold: oklch(0.82 0.17 92);
-	--delightful-glyph-lime: oklch(0.81 0.16 136);
 	--delightful-glyph-mint: oklch(0.78 0.13 170);
 	--delightful-glyph-cyan: oklch(0.73 0.14 220);
 	--delightful-glyph-blue: oklch(0.64 0.16 255);
 	--delightful-glyph-violet: oklch(0.63 0.17 305);
-	--delightful-glyph-shadow: color-mix(
-		in srgb,
-		var(--text-primary) 10%,
-		transparent
-	);
 }
 
 .dark:root[data-delightful-glyph="true"] {
 	--delightful-glyph-rose: oklch(0.78 0.16 18);
 	--delightful-glyph-apricot: oklch(0.82 0.13 58);
 	--delightful-glyph-gold: oklch(0.87 0.14 98);
-	--delightful-glyph-lime: oklch(0.85 0.13 138);
 	--delightful-glyph-mint: oklch(0.82 0.11 176);
 	--delightful-glyph-cyan: oklch(0.8 0.11 222);
 	--delightful-glyph-blue: oklch(0.75 0.13 255);
 	--delightful-glyph-violet: oklch(0.78 0.12 304);
-	--delightful-glyph-shadow: color-mix(
-		in srgb,
-		var(--text-primary) 20%,
-		transparent
-	);
-}
-
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="new-note"]
-	> svg,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="new-note"]
-	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-mint);
 }
 
 :root[data-delightful-glyph="true"]
@@ -44,55 +23,43 @@
 	> svg,
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="dashboard"]
-	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-cyan);
-}
-
+	.sidebarQuickActionLabel,
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="databases"]
 	> svg,
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="databases"]
-	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-gold);
-}
-
+	.sidebarQuickActionLabel,
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="all-notes"]
 	> svg,
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="all-notes"]
 	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-blue);
+	color: inherit;
 }
 
 :root[data-delightful-glyph="true"]
-	.sidebarSectionToggle
-	[data-slot="tabs-trigger"][data-kind="files"] {
-	color: var(--delightful-glyph-blue);
+	.sidebarStackItem[data-section="files"]
+	.sidebarStackHeader {
+	color: var(--text-tertiary);
 }
 
 :root[data-delightful-glyph="true"]
-	.sidebarSectionToggle
-	[data-slot="tabs-trigger"][data-kind="tags"] {
-	color: var(--delightful-glyph-rose);
-}
-
-:root[data-delightful-glyph="true"]
-	.sidebarSectionToggle
-	[data-slot="tabs-trigger"][data-kind="recent"] {
-	color: var(--delightful-glyph-violet);
+	.sidebarStackItem[data-section="tags"]
+	.tagsHeaderTitle {
+	color: var(--text-tertiary);
 }
 
 :root[data-delightful-glyph="true"] .fileTreeFolderIcon,
 :root[data-delightful-glyph="true"] .fileTreeActionBtn svg {
-	color: var(--delightful-glyph-apricot);
+	color: var(--text-secondary);
 }
 
 :root[data-delightful-glyph="true"]
 	.fileTreeRow:not([data-has-custom-color="true"])
 	.fileTreeIcon {
-	color: var(--delightful-glyph-apricot) !important;
+	color: var(--text-secondary) !important;
 }
 
 :root[data-delightful-glyph="true"]
@@ -208,12 +175,6 @@
 	.tagsNameWrap
 	> svg {
 	color: var(--delightful-glyph-rose);
-}
-
-:root[data-delightful-glyph="true"]
-	.tagsPane[data-sidebar-list="recent"]
-	.sidebarRecentFileIcon {
-	color: var(--delightful-glyph-blue) !important;
 }
 
 :root[data-delightful-glyph="true"]

@@ -192,52 +192,6 @@
 	margin-top: 0;
 }
 
-.settingsTaskSourceFolders {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.settingsTaskSourcePicker {
-	display: flex;
-	align-items: stretch;
-	gap: 8px;
-	flex-wrap: wrap;
-	width: 100%;
-}
-
-.settingsTaskSourceChipList {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
-.settingsTaskSourceChip {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	cursor: pointer;
-	transition: border-color var(--transition-base), background
-		var(--transition-base), color var(--transition-base);
-}
-
-.settingsTaskSourceChip:hover {
-	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	color: var(--text-primary);
-}
-
-.settingsTaskSourceChipX {
-	font-size: 11px;
-	line-height: 1;
-	opacity: 0.45;
-	transition: opacity var(--transition-base);
-}
-
-.settingsTaskSourceChip:hover .settingsTaskSourceChipX {
-	opacity: 1;
-}
-
 .settingsSectionMuted {
 	opacity: 0.56;
 }
@@ -297,61 +251,6 @@
 	--early-access-color: #d97706;
 }
 
-.settingsPathCard {
-	width: 100%;
-	padding: 10px 12px;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--settings-surface-soft) 78%, transparent);
-}
-
-.settingsPathValue {
-	font-size: 12px;
-	line-height: 1.55;
-	color: var(--text-primary);
-	word-break: normal;
-	overflow-wrap: break-word;
-}
-
-.settingsPathList {
-	width: 100%;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.settingsPathListItem {
-	display: flex;
-	align-items: flex-start;
-	justify-content: flex-end;
-	gap: 10px;
-	padding: 10px 12px;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--settings-surface-soft) 66%, transparent);
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--text-secondary);
-}
-
-.settingsPathListItemIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
-	color: var(--text-secondary);
-	flex: 0 0 auto;
-}
-
-.settingsPathListItemText {
-	overflow-wrap: break-word;
-	text-align: right;
-}
-
 .settingsValueCard {
 	width: 100%;
 	display: flex;
@@ -384,39 +283,6 @@
 	text-align: right;
 }
 
-.gitSettingMetaList {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding-top: 2px;
-}
-
-.gitSettingMetaRow {
-	display: flex;
-	align-items: baseline;
-	justify-content: flex-end;
-	gap: 12px;
-	font-size: 12px;
-	line-height: 1.45;
-}
-
-.gitSettingMetaKey {
-	color: var(--text-tertiary);
-}
-
-.gitSettingMetaValue {
-	color: var(--text-primary);
-	text-align: right;
-}
-
-.gitSyncConnectionField {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	width: 100%;
-}
-
 .gitSettingsActionRow {
 	display: flex;
 	align-items: center;
@@ -427,10 +293,6 @@
 .gitSettingsInlineStatus {
 	flex: 0 1 auto;
 	min-width: 0;
-}
-
-.gitSyncRemoteInput {
-	width: 100%;
 }
 
 @media (max-width: 760px) {

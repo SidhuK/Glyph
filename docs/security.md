@@ -7,7 +7,7 @@
 
 ## Network Hardening
 
-- Link preview fetching blocks `localhost` and private IP ranges by default and uses strict timeouts and size limits.
+- Web clipping blocks `localhost` and private IP ranges by default and uses strict timeouts and size limits.
 - AI providers validate `base_url` hosts similarly; non-HTTPS base URLs are blocked unless the profile explicitly enables `allow_private_hosts` (intended for local providers like Ollama).
 
 ## Secrets Handling

@@ -12,8 +12,7 @@ export const rowVariants = {
 	idle: { x: 0, backgroundColor: "transparent" },
 	hover: { x: 0, backgroundColor: "var(--bg-hover)" },
 	active: {
-		backgroundColor:
-			"color-mix(in srgb, var(--interactive-accent) 14%, transparent)",
+		backgroundColor: "var(--bg-active)",
 	},
 	tap: { scale: 0.98 },
 };

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-	createDefaultDatabaseConfig,
-	createPropertyColumn,
-	rowMatchesFilters,
-} from "./config";
-import type { DatabaseRow } from "./types";
+import { createPropertyColumn, rowMatchesFilters } from "./config";
+import type { DatabaseColumn, DatabaseFilter, DatabaseRow } from "./types";
 
 const sampleRow: DatabaseRow = {
 	note_path: "Projects/Roadmap.md",
@@ -21,19 +17,38 @@ const sampleRow: DatabaseRow = {
 	},
 };
 
+const baseColumns: DatabaseColumn[] = [
+	{
+		id: "title",
+		type: "title",
+		label: "Title",
+		width: 320,
+		visible: true,
+	},
+	{
+		id: "tags",
+		type: "tags",
+		label: "Tags",
+		width: 220,
+		visible: true,
+	},
+];
+
 describe("database config helpers", () => {
 	it("matches text filters against property-backed columns", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		config.columns.push({
-			id: "property:status",
-			type: "property",
-			label: "Status",
-			width: 180,
-			visible: true,
-			property_key: "status",
-			property_kind: "text",
-		});
-		config.filters = [
+		const columns: DatabaseColumn[] = [
+			...baseColumns,
+			{
+				id: "property:status",
+				type: "property",
+				label: "Status",
+				width: 180,
+				visible: true,
+				property_key: "status",
+				property_kind: "text",
+			},
+		];
+		const filters: DatabaseFilter[] = [
 			{
 				column_id: "property:status",
 				operator: "contains",
@@ -41,14 +56,11 @@ describe("database config helpers", () => {
 				value_list: [],
 			},
 		];
-		expect(rowMatchesFilters(sampleRow, config.columns, config.filters)).toBe(
-			true,
-		);
+		expect(rowMatchesFilters(sampleRow, columns, filters)).toBe(true);
 	});
 
 	it("matches tags_contains filters against built-in tags", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		config.filters = [
+		const filters: DatabaseFilter[] = [
 			{
 				column_id: "tags",
 				operator: "tags_contains",
@@ -56,14 +68,11 @@ describe("database config helpers", () => {
 				value_list: [],
 			},
 		];
-		expect(rowMatchesFilters(sampleRow, config.columns, config.filters)).toBe(
-			true,
-		);
+		expect(rowMatchesFilters(sampleRow, baseColumns, filters)).toBe(true);
 	});
 
 	it("matches contains filters against tag-backed columns", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		config.filters = [
+		const filters: DatabaseFilter[] = [
 			{
 				column_id: "tags",
 				operator: "contains",
@@ -71,22 +80,22 @@ describe("database config helpers", () => {
 				value_list: [],
 			},
 		];
-		expect(rowMatchesFilters(sampleRow, config.columns, config.filters)).toBe(
-			true,
-		);
+		expect(rowMatchesFilters(sampleRow, baseColumns, filters)).toBe(true);
 	});
 
 	it("treats false checkbox values as non-empty", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		config.columns.push({
-			id: "property:done",
-			type: "property",
-			label: "Done",
-			width: 120,
-			visible: true,
-			property_key: "done",
-			property_kind: "checkbox",
-		});
+		const columns: DatabaseColumn[] = [
+			...baseColumns,
+			{
+				id: "property:done",
+				type: "property",
+				label: "Done",
+				width: 120,
+				visible: true,
+				property_key: "done",
+				property_kind: "checkbox",
+			},
+		];
 		const row: DatabaseRow = {
 			...sampleRow,
 			properties: {
@@ -98,33 +107,14 @@ describe("database config helpers", () => {
 				},
 			},
 		};
-		config.filters = [
+		const filters: DatabaseFilter[] = [
 			{
 				column_id: "property:done",
 				operator: "is_not_empty",
 				value_list: [],
 			},
 		];
-		expect(rowMatchesFilters(row, config.columns, config.filters)).toBe(true);
-	});
-
-	it("seeds built-in column icons in the starter config", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		expect(config.columns.map((column) => column.icon)).toEqual([
-			"text-font",
-			"tag",
-			"clock",
-		]);
-	});
-
-	it("seeds persisted view defaults in the starter config", () => {
-		const config = createDefaultDatabaseConfig("Projects");
-		expect(config.view).toEqual({
-			layout: "table",
-			board_group_by: null,
-			board_lane_colors: {},
-			board_lane_order: {},
-		});
+		expect(rowMatchesFilters(row, columns, filters)).toBe(true);
 	});
 
 	it("assigns default icons to property columns from their kind", () => {

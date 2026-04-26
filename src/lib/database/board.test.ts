@@ -9,7 +9,6 @@ import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
-	moveBoardLaneIds,
 	moveBoardLaneToIndex,
 	orderBoardLanes,
 } from "./board";
@@ -216,26 +215,6 @@ describe("database board helpers", () => {
 		expect(
 			orderBoardLanes(unordered, ["backlog", "done"]).map((lane) => lane.id),
 		).toEqual(["backlog", "done", "review", DATABASE_BOARD_EMPTY_LANE_ID]);
-	});
-
-	it("moves lanes before or after the target while keeping no value pinned last", () => {
-		expect(
-			moveBoardLaneIds(
-				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
-				"review",
-				"backlog",
-				"before",
-			),
-		).toEqual(["review", "backlog", "doing"]);
-
-		expect(
-			moveBoardLaneIds(
-				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
-				"backlog",
-				"doing",
-				"after",
-			),
-		).toEqual(["doing", "backlog", "review"]);
 	});
 
 	it("moves lanes to an explicit position while keeping no value pinned last", () => {

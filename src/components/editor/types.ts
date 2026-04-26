@@ -9,6 +9,7 @@ export interface CanvasNoteInlineEditorProps {
 	mode: CanvasInlineEditorMode;
 	zenModeActive?: boolean;
 	onChange: (nextMarkdown: string) => void;
+	onFrontmatterCommit?: () => void;
 	interactive?: boolean;
 	showBacklinks?: boolean;
 	deferHeavyFeatures?: boolean;

@@ -5,6 +5,7 @@ import {
 	PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { emit } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -12,6 +13,7 @@ import {
 	getPrefetchedDatabaseRows,
 	getPrefetchedDatabaseSummaries,
 	invalidateDatabasePrefetch,
+	invalidateDatabaseRowsPrefetch,
 	invalidateDatabaseSummariesPrefetch,
 	prefetchDatabaseDocument,
 	prefetchDatabaseRows,
@@ -506,6 +508,9 @@ function DatabasesPaneContent({
 		}
 		fsRowsRefreshTimerRef.current = window.setTimeout(() => {
 			fsRowsRefreshTimerRef.current = null;
+			if (selectedDatabaseId) {
+				invalidateDatabaseRowsPrefetch(selectedDatabaseId);
+			}
 			void loadRows({ background: true });
 		}, 150);
 	});
@@ -648,6 +653,10 @@ function DatabasesPaneContent({
 					setPrefetchedDatabaseDocument(document.database.id, document);
 				}
 				void loadRows({ background: true });
+				void emit("notes:external_changed", {
+					rel_path: notePath,
+					removed: false,
+				});
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
 				throw cause;

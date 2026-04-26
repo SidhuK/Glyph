@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useMemo, useState } from "react";
+import { startTransition, useCallback, useMemo, useRef, useState } from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
@@ -52,6 +52,8 @@ export function useDatabaseBoard({
 		[effectiveGroupColumnId, groupColumns],
 	);
 
+	const displayedLaneIdsRef = useRef<Record<string, string[]>>({});
+
 	const lanes = useMemo(() => {
 		const rawLanes = createBoardLanes(rows, groupColumn);
 		if (!groupColumn) return rawLanes;
@@ -77,13 +79,20 @@ export function useDatabaseBoard({
 			) {
 				return;
 			}
+			const activeGroupIds = new Set(groupColumns.map((column) => column.id));
+			displayedLaneIdsRef.current = Object.fromEntries(
+				Object.entries({
+					...displayedLaneIdsRef.current,
+					[groupColumn.id]: nextLaneOrder,
+				}).filter(([groupColumnId]) => activeGroupIds.has(groupColumnId)),
+			);
 			setLaneOrderByGroup((current) => ({
 				...current,
 				[groupColumn.id]: nextLaneOrder,
 			}));
 			void onLaneOrderChange?.(groupColumn.id, nextLaneOrder);
 		},
-		[groupColumn, laneOrderByGroup, lanes, onLaneOrderChange],
+		[groupColumn, groupColumns, laneOrderByGroup, lanes, onLaneOrderChange],
 	);
 
 	return {

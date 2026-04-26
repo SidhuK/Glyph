@@ -1,6 +1,7 @@
 import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
+import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -14,15 +15,6 @@ import { errMessage } from "./ai/utils";
 
 const MISSING_FILE_RETRY_DELAY_MS = 80;
 const IS_DEV = import.meta.env.DEV;
-
-const isMissingFileError = (error: unknown): boolean => {
-	// Upstream Tauri/Rust I/O surfaces missing profile files as "os error 2".
-	const message = errMessage(error).toLowerCase();
-	return (
-		message.includes("no such file or directory") ||
-		message.includes("os error 2")
-	);
-};
 
 async function setActiveProfileWithRetry(id: string | null) {
 	try {

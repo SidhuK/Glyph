@@ -593,8 +593,6 @@ if (import.meta.env.DEV) {
 const SHORTCUT_ACTION_RECORD: Record<string, ShortcutActionDefinition> =
 	Object.fromEntries(SHORTCUT_ACTIONS.map((action) => [action.id, action]));
 
-export const SHORTCUT_ACTION_IDS = SHORTCUT_ACTIONS.map((action) => action.id);
-
 export const SHORTCUT_CATEGORY_LABELS: Record<ShortcutCategory, string> = {
 	workspace: "Workspace",
 	navigation: "Navigation",
@@ -614,14 +612,6 @@ export function getShortcutActionDefinition(actionId: ShortcutActionId) {
 	return SHORTCUT_ACTION_RECORD[actionId];
 }
 
-export function getShortcutActionDefinitions() {
-	return SHORTCUT_ACTIONS;
-}
-
 export function getShortcutActionsForCommandPalette() {
 	return SHORTCUT_ACTIONS.filter((action) => action.commandPalette);
-}
-
-export function getShortcutActionsForMenu() {
-	return SHORTCUT_ACTIONS.filter((action) => Boolean(action.menuId));
 }

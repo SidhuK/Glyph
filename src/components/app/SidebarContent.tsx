@@ -1,37 +1,24 @@
 import {
-	Clock01Icon,
 	CollectionsBookmarkIcon,
-	DocumentCodeIcon,
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
 	SearchIcon,
 	Settings01Icon,
-	Tag01Icon,
-	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import {
-	useFileTreeContext,
-	useSpace,
-	useUILayoutContext,
-} from "../../contexts";
-import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFileTreeContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { shouldShowGitSync } from "../../lib/gitSyncUi";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type GitSyncStatus, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { FileTreePane } from "../FileTreePane";
-import { ChevronDown, Files, FolderPlus } from "../Icons";
-import { RecentFilesPane } from "../RecentFilesPane";
+import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
-import { directionVariants } from "../ui/animations";
-import { ScrollArea } from "../ui/shadcn/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
+import { FileTreePane } from "../filetree";
 import { GitSyncFooterCard } from "./GitSyncFooterCard";
 
 interface SidebarContentProps {
@@ -50,6 +37,11 @@ interface SidebarContentProps {
 		kind: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
@@ -61,7 +53,24 @@ interface SidebarContentProps {
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenSearchPalette: () => void;
+	spacePath: string | null;
+	recentSpaces: string[];
+	onOpenSpace: () => Promise<void>;
+	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
 	activeTopSection: "home" | "all-notes" | "databases" | null;
+}
+
+function formatSpaceLabel(path: string): string {
+	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
+	const parts = normalized.split("/").filter(Boolean);
+	if (parts.length === 0) return path;
+	return parts[parts.length - 1] ?? path;
+}
+
+function spaceInitial(label: string): string {
+	const trimmed = label.trim();
+	if (!trimmed) return "G";
+	return trimmed.slice(0, 1).toUpperCase();
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -76,6 +85,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onDuplicateFile,
 	onRenameDir,
 	onDeletePath,
+	onMovePath,
 	onSelectTag,
 	onOpenCalendar,
 	onOpenDatabases,
@@ -87,10 +97,13 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenSettings,
 	onOpenAllDocs,
 	onOpenSearchPalette,
+	spacePath,
+	recentSpaces,
+	onOpenSpace,
+	onOpenRecentSpaceAtPath,
 	activeTopSection,
 }: SidebarContentProps) {
 	// Contexts
-	const { spacePath } = useSpace();
 	const { getBinding } = useShortcutBindings();
 	const {
 		rootEntries,
@@ -102,23 +115,27 @@ export const SidebarContent = memo(function SidebarContent({
 		togglePinnedFile,
 		tags,
 		people,
-		tagsError,
 		refreshTags,
 	} = useFileTreeContext();
-	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
-	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 15);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
 	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
-	const [newMenuOpen, setNewMenuOpen] = useState(false);
+	const [spaceMenuOpen, setSpaceMenuOpen] = useState(false);
 	const [gitExpanded, setGitExpanded] = useState(false);
-	const newMenuRef = useRef<HTMLDivElement | null>(null);
+	const [notesExpanded, setNotesExpanded] = useState(true);
+	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
 	const showGitButton = shouldShowGitSync(gitSyncStatus);
 	const effectiveGitExpanded = showGitButton && gitExpanded;
+	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
+	const displayRecentSpaces = useMemo(
+		() =>
+			recentSpaces.filter((path) => path && path !== spacePath).slice(0, 10),
+		[recentSpaces, spacePath],
+	);
 
 	const handleStartRename = useCallback((path: string) => {
 		const nextPath = path.trim();
@@ -240,15 +257,15 @@ export const SidebarContent = memo(function SidebarContent({
 	});
 
 	useEffect(() => {
-		if (!newMenuOpen) return;
+		if (!spaceMenuOpen) return;
 		const handlePointerDown = (event: PointerEvent) => {
 			if (!(event.target instanceof Node)) return;
-			if (newMenuRef.current?.contains(event.target)) return;
-			setNewMenuOpen(false);
+			if (spaceMenuRef.current?.contains(event.target)) return;
+			setSpaceMenuOpen(false);
 		};
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
-				setNewMenuOpen(false);
+				setSpaceMenuOpen(false);
 			}
 		};
 		window.addEventListener("pointerdown", handlePointerDown);
@@ -257,12 +274,20 @@ export const SidebarContent = memo(function SidebarContent({
 			window.removeEventListener("pointerdown", handlePointerDown);
 			window.removeEventListener("keydown", handleKeyDown);
 		};
-	}, [newMenuOpen]);
+	}, [spaceMenuOpen]);
 
-	const runNewMenuAction = useCallback((action: () => void) => {
-		setNewMenuOpen(false);
-		action();
-	}, []);
+	const handleOpenPicker = useCallback(() => {
+		setSpaceMenuOpen(false);
+		void onOpenSpace();
+	}, [onOpenSpace]);
+
+	const handleSwitchToRecent = useCallback(
+		(path: string) => {
+			setSpaceMenuOpen(false);
+			void onOpenRecentSpaceAtPath(path);
+		},
+		[onOpenRecentSpaceAtPath],
+	);
 
 	if (!spacePath) {
 		return (
@@ -282,136 +307,108 @@ export const SidebarContent = memo(function SidebarContent({
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarQuickActions">
 					<div
-						ref={newMenuRef}
-						className="sidebarNewActionGroup"
-						data-open={newMenuOpen ? "true" : "false"}
+						className="sidebarTopRow"
+						data-open={spaceMenuOpen ? "true" : "false"}
 					>
-						<div className="sidebarQuickActionSplit" data-kind="new-note">
+						<div ref={spaceMenuRef} className="sidebarSpaceMenuAnchor">
 							<button
 								type="button"
-								className="sidebarQuickActionBtn sidebarQuickActionPrimary"
-								data-kind="new-note"
-								onClick={onNewNote}
-								title={`Create a new note${
-									newNoteShortcut
-										? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-										: ""
-								}`}
+								className="sidebarSpaceSwitcher"
+								aria-expanded={spaceMenuOpen}
+								onClick={() => setSpaceMenuOpen((value) => !value)}
+								title={spacePath ?? "Open space"}
 							>
-								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
-								<span className="sidebarQuickActionLabel">New Note</span>
-							</button>
-							<button
-								type="button"
-								className="sidebarQuickActionBtn sidebarQuickActionChevron"
-								data-kind="new-note"
-								aria-label="Open new note menu"
-								aria-expanded={newMenuOpen}
-								title="More create options"
-								onClick={() => setNewMenuOpen((value) => !value)}
-							>
+								<span className="sidebarSpaceBadge">
+									{spaceInitial(spaceLabel)}
+								</span>
+								<span className="sidebarSpaceName">{spaceLabel}</span>
 								<ChevronDown
 									size={12}
 									className={
-										newMenuOpen
-											? "sidebarQuickActionChevronIcon is-open"
-											: "sidebarQuickActionChevronIcon"
+										spaceMenuOpen
+											? "sidebarSpaceChevron is-open"
+											: "sidebarSpaceChevron"
 									}
 								/>
 							</button>
+							<AnimatePresence>
+								{spaceMenuOpen ? (
+									<m.div
+										className="sidebarSpaceMenuPanel"
+										initial={{ opacity: 0, y: -6, scale: 0.98 }}
+										animate={{ opacity: 1, y: 0, scale: 1 }}
+										exit={{ opacity: 0, y: -4, scale: 0.985 }}
+										transition={{ duration: 0.14, ease: "easeOut" }}
+									>
+										<div className="sidebarSpaceMenuTitle">Recent Spaces</div>
+										{displayRecentSpaces.length > 0 ? (
+											displayRecentSpaces.map((path) => (
+												<button
+													key={path}
+													type="button"
+													className="sidebarSpaceMenuItem"
+													onClick={() => handleSwitchToRecent(path)}
+													title={path}
+												>
+													<span className="sidebarSpaceMenuItemName">
+														{formatSpaceLabel(path)}
+													</span>
+													<span className="sidebarSpaceMenuItemPath">
+														{path}
+													</span>
+												</button>
+											))
+										) : (
+											<div className="sidebarSpaceMenuEmpty">
+												No recent spaces yet.
+											</div>
+										)}
+										<button
+											type="button"
+											className="sidebarSpaceMenuAction"
+											onClick={handleOpenPicker}
+										>
+											Open Space...
+										</button>
+									</m.div>
+								) : null}
+							</AnimatePresence>
 						</div>
-						<AnimatePresence>
-							{newMenuOpen ? (
-								<m.div
-									className="sidebarQuickActionMenu"
-									initial={{ opacity: 0, y: -6, scale: 0.98 }}
-									animate={{ opacity: 1, y: 0, scale: 1 }}
-									exit={{ opacity: 0, y: -4, scale: 0.985 }}
-									transition={{ duration: 0.14, ease: "easeOut" }}
-								>
-									<button
-										type="button"
-										className="sidebarQuickActionMenuItem"
-										onClick={() =>
-											runNewMenuAction(() => onCreateFromTemplateInDir(""))
-										}
-									>
-										<HugeiconsIcon
-											icon={DocumentCodeIcon}
-											size={15}
-											strokeWidth={0.9}
-										/>
-										<span>Template</span>
-									</button>
-									<button
-										type="button"
-										className="sidebarQuickActionMenuItem"
-										onClick={() =>
-											runNewMenuAction(() => {
-												void onNewDatabaseInDir("");
-											})
-										}
-									>
-										<HugeiconsIcon
-											icon={LibraryIcon}
-											size={15}
-											strokeWidth={0.9}
-										/>
-										<span>Collection</span>
-									</button>
-									<button
-										type="button"
-										className="sidebarQuickActionMenuItem"
-										onClick={() => runNewMenuAction(onOpenCalendar)}
-									>
-										<HugeiconsIcon
-											icon={TaskAdd02Icon}
-											size={15}
-											strokeWidth={0.9}
-										/>
-										<span>Task</span>
-									</button>
-									<button
-										type="button"
-										className="sidebarQuickActionMenuItem"
-										onClick={() =>
-											runNewMenuAction(() => {
-												void onNewFolderInDir("");
-											})
-										}
-									>
-										<FolderPlus size={15} />
-										<span>Folder</span>
-									</button>
-								</m.div>
-							) : null}
-						</AnimatePresence>
+						<button
+							type="button"
+							className="sidebarTopIconButton"
+							onClick={onOpenSearchPalette}
+							aria-label="Search notes"
+							title={`Search notes${
+								quickOpenShortcut
+									? ` (${formatShortcutForPlatform(quickOpenShortcut)})`
+									: ""
+							}`}
+						>
+							<HugeiconsIcon icon={SearchIcon} size={16} strokeWidth={0.9} />
+						</button>
+						<button
+							type="button"
+							className="sidebarTopIconButton"
+							onClick={onNewNote}
+							aria-label="Create a new note"
+							title={`Create a new note${
+								newNoteShortcut
+									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+									: ""
+							}`}
+						>
+							<HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />
+						</button>
 					</div>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn sidebarSearchBtn"
-						onClick={onOpenSearchPalette}
-						title={`Search notes${
-							quickOpenShortcut
-								? ` (${formatShortcutForPlatform(quickOpenShortcut)})`
-								: ""
-						}`}
-					>
-						<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
-						<span className="sidebarQuickActionLabel">Search Notes</span>
-						<span className="sidebarSearchShortcut">
-							{quickOpenShortcut
-								? formatShortcutForPlatform(quickOpenShortcut)
-								: ""}
-						</span>
-					</button>
-					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
+				</div>
+				<div className="sidebarSectionContent">
 					<div className="sidebarNavRow">
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="dashboard"
-							data-expanded={activeTopSection === "home" ? "true" : "false"}
+							data-active={activeTopSection === "home" ? "true" : "false"}
 							aria-label="Home"
 							aria-pressed={activeTopSection === "home"}
 							aria-current={activeTopSection === "home" ? "page" : undefined}
@@ -420,21 +417,14 @@ export const SidebarContent = memo(function SidebarContent({
 							onFocus={onPrefetchCalendar}
 							title="Open Home"
 						>
-							<HugeiconsIcon
-								icon={Home01Icon}
-								size={14}
-								strokeWidth={0.9}
-								className="sidebarQuickActionHomeIcon"
-							/>
+							<HugeiconsIcon icon={Home01Icon} size={14} strokeWidth={0.9} />
 							<span className="sidebarQuickActionLabel">Home</span>
 						</button>
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="all-notes"
-							data-expanded={
-								activeTopSection === "all-notes" ? "true" : "false"
-							}
+							data-active={activeTopSection === "all-notes" ? "true" : "false"}
 							aria-label={
 								allNotesCount !== null
 									? `All Notes (${allNotesCount})`
@@ -463,9 +453,7 @@ export const SidebarContent = memo(function SidebarContent({
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="databases"
-							data-expanded={
-								activeTopSection === "databases" ? "true" : "false"
-							}
+							data-active={activeTopSection === "databases" ? "true" : "false"}
 							aria-label="Collections"
 							aria-pressed={activeTopSection === "databases"}
 							aria-current={
@@ -482,111 +470,70 @@ export const SidebarContent = memo(function SidebarContent({
 							<span className="sidebarQuickActionLabel">Collections</span>
 						</button>
 					</div>
-				</div>
-				<div className="sidebarSectionHeader">
-					<Tabs
-						value={sidebarViewMode}
-						onValueChange={(value) =>
-							setSidebarViewMode(value as "files" | "tags" | "recent")
-						}
-						className="sidebarSectionToggle"
-					>
-						<TabsList className="w-full rounded-full bg-transparent">
-							<TabsTrigger value="files" title="Files" data-kind="files">
-								<Files size={14} />
-								{sidebarViewMode === "files" ? <span>Files</span> : null}
-							</TabsTrigger>
-							<TabsTrigger value="tags" title="Tags" data-kind="tags">
-								<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
-								{sidebarViewMode === "tags" ? <span>Tags</span> : null}
-							</TabsTrigger>
-							<TabsTrigger
-								value="recent"
-								title="Recent Files"
-								data-kind="recent"
+					<div className="sidebarStack">
+						<section
+							className="sidebarStackItem sidebarStackItemGrow"
+							data-section="files"
+						>
+							<button
+								type="button"
+								className="sidebarStackHeader sidebarStackHeaderToggle"
+								onClick={() => setNotesExpanded((v) => !v)}
+								aria-expanded={notesExpanded}
+								aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
 							>
-								<HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={0.9} />
-								{sidebarViewMode === "recent" ? (
-									<span>Recent Files</span>
-								) : null}
-							</TabsTrigger>
-						</TabsList>
-					</Tabs>
-				</div>
-				<AnimatePresence mode="wait">
-					{sidebarViewMode === "files" ? (
-						<m.div
-							key="files"
-							{...directionVariants.left}
-							transition={{ duration: 0.18 }}
-							className="sidebarSectionContent"
-						>
-							<FileTreePane
-								rootEntries={rootEntries}
-								childrenByDir={childrenByDir}
-								expandedDirs={expandedDirs}
-								activeFilePath={activeFilePath}
-								activeDirPath={activeDirPath}
-								onToggleDir={onToggleDir}
-								onSelectDir={onSelectDir}
-								onOpenFile={onOpenFile}
-								onPrefetchFile={onPrefetchFile}
-								onNewFileInDir={onNewFileInDir}
-								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewDatabaseInDir={onNewDatabaseInDir}
-								onNewFolderInDir={onNewFolderInDir}
-								onDuplicateFile={onDuplicateFile}
-								onDeletePath={onDeletePath}
-								renamingPath={renamingPath}
-								onStartRename={handleStartRename}
-								onCancelRename={handleCancelRename}
-								onCommitFileRename={handleCommitFileRename}
-								onCommitDirRename={handleCommitDirRename}
-								pinnedFiles={pinnedFiles}
-								onTogglePinnedFile={togglePinnedFile}
-							/>
-						</m.div>
-					) : null}
-					{sidebarViewMode === "recent" ? (
-						<m.div
-							key="recent"
-							{...directionVariants.right}
-							transition={{ duration: 0.18 }}
-							className="sidebarSectionContent"
-						>
-							<ScrollArea className="h-full">
-								<RecentFilesPane
-									recentFiles={recentFiles}
+								<span>Notes</span>
+								{notesExpanded ? (
+									<ChevronDown
+										size={10}
+										className="sidebarStackHeaderChevron"
+									/>
+								) : (
+									<ChevronRight
+										size={10}
+										className="sidebarStackHeaderChevron"
+									/>
+								)}
+							</button>
+							{notesExpanded ? (
+								<FileTreePane
+									rootEntries={rootEntries}
+									childrenByDir={childrenByDir}
+									expandedDirs={expandedDirs}
 									activeFilePath={activeFilePath}
+									activeDirPath={activeDirPath}
+									onToggleDir={onToggleDir}
+									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
-									onRefresh={() => void refreshRecentFiles()}
+									onNewFileInDir={onNewFileInDir}
+									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+									onNewDatabaseInDir={onNewDatabaseInDir}
+									onNewFolderInDir={onNewFolderInDir}
+									onDuplicateFile={onDuplicateFile}
+									onDeletePath={onDeletePath}
+									renamingPath={renamingPath}
+									onStartRename={handleStartRename}
+									onCancelRename={handleCancelRename}
+									onCommitFileRename={handleCommitFileRename}
+									onCommitDirRename={handleCommitDirRename}
+									onMovePath={onMovePath}
+									pinnedFiles={pinnedFiles}
+									onTogglePinnedFile={togglePinnedFile}
 								/>
-							</ScrollArea>
-						</m.div>
-					) : null}
-					{sidebarViewMode === "tags" ? (
-						<m.div
-							key="tags"
-							{...directionVariants.right}
-							transition={{ duration: 0.18 }}
-							className="sidebarSectionContent"
-						>
-							<ScrollArea className="h-full">
-								{tagsError ? (
-									<div className="searchError">{tagsError}</div>
-								) : null}
-								<TagsPane
-									tags={tags}
-									people={people}
-									onSelectTag={onSelectTag}
-									onSelectPerson={onSelectTag}
-									onRefresh={() => void refreshTags()}
-								/>
-							</ScrollArea>
-						</m.div>
-					) : null}
-				</AnimatePresence>
+							) : null}
+						</section>
+						<section className="sidebarStackItem" data-section="tags">
+							<TagsPane
+								tags={tags}
+								people={people}
+								onSelectTag={onSelectTag}
+								onSelectPerson={onSelectTag}
+								onRefresh={() => void refreshTags()}
+							/>
+						</section>
+					</div>
+				</div>
 			</div>
 			<div className="sidebarFooter">
 				<button

@@ -10,7 +10,7 @@ interface UseGitSyncOptions {
 	saveCurrentEditor: () => Promise<boolean>;
 }
 
-export interface GitSyncController {
+interface GitSyncController {
 	status: GitSyncStatus | null;
 	loading: boolean;
 	error: string;
