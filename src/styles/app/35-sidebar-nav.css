@@ -68,6 +68,7 @@
 .sidebarSpaceSwitcher {
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 8px;
 	flex: 1 1 auto;
 	min-width: 0;
@@ -148,6 +149,17 @@
 	color: var(--text-primary);
 }
 
+.sidebarTopNewNoteButton {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.sidebarTopNewNoteButton:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
 .sidebarTopIconButton:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
@@ -162,7 +174,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	width: 100%;
+	width: calc(100% + 68px);
 	min-width: 0;
 	max-height: min(360px, calc(100vh - 132px));
 	padding: 8px;
@@ -181,8 +193,7 @@
 	padding: 2px 4px 4px;
 	font-size: 11px;
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
+	letter-spacing: 0;
 	color: var(--text-tertiary);
 }
 
@@ -245,9 +256,15 @@
 	color: var(--text-tertiary);
 }
 
-.sidebarSpaceMenuAction {
-	width: 100%;
+.sidebarSpaceMenuActions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	margin-top: 2px;
+}
+
+.sidebarSpaceMenuAction,
+.sidebarSpaceMenuIconAction {
 	min-height: 36px;
 	padding: 8px 10px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
@@ -257,13 +274,28 @@
 	font-size: 12px;
 	font-weight: var(--font-medium);
 	line-height: 1.35;
-	text-align: center;
 	cursor: pointer;
 	transition: background-color 120ms ease, color 120ms ease;
 }
 
+.sidebarSpaceMenuAction {
+	flex: 1 1 auto;
+	text-align: center;
+}
+
+.sidebarSpaceMenuIconAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 36px;
+	width: 36px;
+	padding: 0;
+}
+
 .sidebarSpaceMenuAction:hover,
-.sidebarSpaceMenuAction:focus-visible {
+.sidebarSpaceMenuAction:focus-visible,
+.sidebarSpaceMenuIconAction:hover,
+.sidebarSpaceMenuIconAction:focus-visible {
 	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-primary));
 	color: var(--text-primary);
 	outline: none;

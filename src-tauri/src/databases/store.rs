@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use uuid::Uuid;
@@ -11,7 +12,7 @@ use super::types::{
 };
 
 const DATABASES_STORE_FILE: &str = "databases.json";
-const DATABASES_STORE_VERSION: u32 = 1;
+const DATABASES_STORE_VERSION: u32 = 3;
 
 fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
@@ -139,9 +140,50 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
     }
 }
 
+fn normalize_frontmatter_property_kind(kind: &mut String) {
+    if matches!(
+        kind.as_str(),
+        "text" | "url" | "date" | "checkbox" | "tags" | "status" | "relation" | "multi_select"
+    ) {
+        return;
+    }
+    *kind = "text".to_string();
+}
+
+fn normalize_store_property_kinds(store: &mut DatabaseStore) {
+    for database in &mut store.databases {
+        for field in &mut database.schema {
+            if field.property_key.is_some() {
+                normalize_frontmatter_property_kind(&mut field.kind);
+            }
+        }
+        for view in &mut database.views {
+            for column in &mut view.columns {
+                if let Some(kind) = &mut column.property_kind {
+                    normalize_frontmatter_property_kind(kind);
+                }
+            }
+        }
+    }
+}
+
+fn is_valid_status_color(color: &str) -> bool {
+    matches!(
+        color,
+        "gray" | "brown" | "orange" | "yellow" | "green" | "blue" | "purple" | "red"
+    )
+}
+
+fn normalize_status_colors(store: &mut DatabaseStore) {
+    store
+        .status_colors
+        .retain(|status, color| !status.trim().is_empty() && is_valid_status_color(color));
+}
+
 fn default_store() -> DatabaseStore {
     DatabaseStore {
         version: DATABASES_STORE_VERSION,
+        status_colors: BTreeMap::new(),
         databases: vec![
             system_database("all-notes", "All Notes", false),
             system_database("recently-edited", "Recently Edited", true),
@@ -164,6 +206,8 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
             if store.version == 0 {
                 store.version = DATABASES_STORE_VERSION;
             }
+            normalize_store_property_kinds(&mut store);
+            normalize_status_colors(&mut store);
             Ok(bootstrap_defaults(store))
         }
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(default_store()),
@@ -186,6 +230,7 @@ pub fn bootstrap_defaults(mut store: DatabaseStore) -> DatabaseStore {
         store.databases.push(database);
     }
     store.version = DATABASES_STORE_VERSION;
+    normalize_status_colors(&mut store);
     store
 }
 

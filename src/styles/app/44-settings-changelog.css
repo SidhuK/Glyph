@@ -85,19 +85,19 @@
 }
 
 .settingsChangelogVersionBadge {
-	padding: 3px 8px;
-	border-radius: var(--radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 52%, transparent);
+	padding: 4px 8px;
+	border-radius: var(--pill-radius);
+	border: 0;
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 10%,
+		var(--interactive-accent) 11%,
 		var(--bg-primary)
 	);
 	font-size: 10px;
-	font-weight: var(--font-medium);
-	color: color-mix(in srgb, var(--interactive-accent) 40%, var(--text-primary));
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--interactive-accent) 66%, var(--text-primary));
 	line-height: 1;
+	box-shadow: var(--pill-shadow);
 }
 
 /* Date on the right side */

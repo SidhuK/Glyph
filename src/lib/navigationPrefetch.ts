@@ -47,6 +47,8 @@ const databaseRowsPromiseCache = new Map<
 const allDocsCache = new Map<string, AllDocsItem[]>();
 const allDocsPromiseCache = new Map<string, Promise<AllDocsItem[]>>();
 let cacheGeneration = 0;
+let databaseRowsCacheGeneration = 0;
+let allDocsCacheGeneration = 0;
 
 function trimCache<T>(
 	cache: Map<string, T>,
@@ -360,9 +362,13 @@ export function prefetchDatabaseRows(databaseId: string, viewId: string) {
 	const existingPromise = databaseRowsPromiseCache.get(key);
 	if (existingPromise) return existingPromise;
 	const generation = cacheGeneration;
+	const rowsGeneration = databaseRowsCacheGeneration;
 	const promise = loadAllDatabaseRows(databaseId, viewId)
 		.then((result) => {
-			if (generation === cacheGeneration) {
+			if (
+				generation === cacheGeneration &&
+				rowsGeneration === databaseRowsCacheGeneration
+			) {
 				databaseRowsCache.set(key, result);
 				trimCache(databaseRowsCache);
 			}
@@ -391,7 +397,13 @@ export function setPrefetchedDatabaseRows(
 	databaseRowsPromiseCache.delete(databaseRowsCacheKey(databaseId, viewId));
 }
 
-export function invalidateDatabaseRowsPrefetch(databaseId: string) {
+export function invalidateDatabaseRowsPrefetch(databaseId?: string | null) {
+	databaseRowsCacheGeneration += 1;
+	if (!databaseId) {
+		databaseRowsCache.clear();
+		databaseRowsPromiseCache.clear();
+		return;
+	}
 	for (const key of [...databaseRowsCache.keys()]) {
 		if (key.startsWith(`${databaseId}::`)) {
 			databaseRowsCache.delete(key);
@@ -405,6 +417,7 @@ export function invalidateDatabaseRowsPrefetch(databaseId: string) {
 }
 
 export function invalidateDatabasePrefetch(databaseId?: string | null) {
+	databaseRowsCacheGeneration += 1;
 	if (!databaseId) {
 		databaseDocumentCache.clear();
 		databaseDocumentPromiseCache.clear();
@@ -451,7 +464,7 @@ export function prefetchAllDocs(folderPrefix?: string | null) {
 	if (cached) return Promise.resolve(cached);
 	const existingPromise = allDocsPromiseCache.get(key);
 	if (existingPromise) return existingPromise;
-	const generation = cacheGeneration;
+	const generation = allDocsCacheGeneration;
 	const promise = invoke("all_docs_list", {
 		limit: 2000,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
@@ -471,7 +484,7 @@ export function prefetchAllDocs(folderPrefix?: string | null) {
 								normalizedPath.startsWith(`${normalized}/`)
 							);
 						});
-			if (generation === cacheGeneration) {
+			if (generation === allDocsCacheGeneration) {
 				allDocsCache.set(key, nextItems);
 				trimCache(allDocsCache);
 			}
@@ -489,6 +502,7 @@ export function getPrefetchedAllDocs(folderPrefix?: string | null) {
 }
 
 export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
+	allDocsCacheGeneration += 1;
 	if (typeof folderPrefix === "string" || folderPrefix === null) {
 		const key = allDocsCacheKey(folderPrefix);
 		allDocsCache.delete(key);

@@ -360,15 +360,22 @@
 	justify-content: center;
 	min-height: 24px;
 	padding: 0 10px;
-	border-radius: calc(var(--radius-md) + 1px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 42%, transparent);
-	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-primary));
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+	border-radius: var(--pill-radius);
+	border: 0;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-primary)
+	);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 58%,
+		var(--text-secondary)
+	);
 	font-size: 12px;
-	font-weight: 540;
-	letter-spacing: -0.02em;
-	box-shadow: 0 1px 2px
-		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0;
+	box-shadow: var(--pill-shadow);
 	white-space: nowrap;
 }
 

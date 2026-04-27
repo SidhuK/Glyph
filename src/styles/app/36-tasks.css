@@ -49,12 +49,21 @@
 	align-items: center;
 	height: 20px;
 	padding: 0 var(--space-2);
-	border-radius: var(--radius-7);
-	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
-	background: var(--bg-secondary);
+	border-radius: var(--pill-radius);
+	border: 0;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-secondary)
+	);
 	font-size: 0.68rem;
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
+	font-weight: var(--font-semibold);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 58%,
+		var(--text-secondary)
+	);
+	box-shadow: var(--pill-shadow);
 }
 
 .tasksPaneToolbarActions {
@@ -358,7 +367,6 @@
 }
 
 .tasksPaneToolbarBadge[data-tone="danger"] {
-	border-color: color-mix(in srgb, var(--status-danger-border) 78%, transparent);
 	background: color-mix(in srgb, var(--status-danger-bg) 86%, transparent);
 	color: var(--status-danger-fg);
 }
@@ -701,14 +709,23 @@
 .tasksMetaTag {
 	display: inline-flex;
 	align-items: center;
-	height: 20px;
-	padding: 0 7px;
-	border-radius: var(--radius-7);
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: var(--bg-primary);
+	height: 22px;
+	padding: 0 8px;
+	border-radius: var(--pill-radius);
+	border: 0;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-primary)
+	);
 	font-size: 0.62rem;
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
+	font-weight: var(--font-semibold);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 58%,
+		var(--text-secondary)
+	);
+	box-shadow: var(--pill-shadow);
 }
 
 .tasksMetaTagInline {
@@ -743,17 +760,19 @@
 }
 
 .tasksMetaBadge {
-	height: 20px;
+	height: 22px;
 	max-width: 160px;
-	padding-inline: 7px;
-	border-radius: var(--radius-7);
-	border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: var(--bg-primary);
+	padding-inline: 8px;
+	border-radius: var(--pill-radius);
+	border: 0;
+	background: color-mix(in srgb, var(--bg-secondary) 60%, var(--bg-primary));
 	color: var(--text-secondary);
+	box-shadow: var(--pill-shadow);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-size: 0.62rem;
+	font-weight: var(--font-semibold);
 }
 
 .tasksMetaBadge-default {
@@ -761,13 +780,11 @@
 }
 
 .tasksMetaBadge-today {
-	border-color: color-mix(in srgb, var(--task-bucket-today) 32%, transparent);
 	background: color-mix(in srgb, var(--task-bucket-today) 12%, transparent);
 	color: color-mix(in srgb, var(--task-bucket-today) 78%, var(--text-primary));
 }
 
 .tasksMetaBadge-upcoming {
-	border-color: color-mix(in srgb, var(--task-bucket-upcoming) 28%, transparent);
 	background: color-mix(in srgb, var(--task-bucket-upcoming) 10%, transparent);
 	color: color-mix(
 		in srgb,
@@ -777,13 +794,11 @@
 }
 
 .tasksMetaBadge-pastScheduled {
-	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-secondary);
 }
 
 .tasksMetaBadge-overdue {
-	border-color: color-mix(in srgb, var(--status-danger-border) 76%, transparent);
 	background: color-mix(in srgb, var(--status-danger-bg) 86%, transparent);
 	color: var(--status-danger-fg);
 }

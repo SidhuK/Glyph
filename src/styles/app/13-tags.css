@@ -92,6 +92,7 @@ button.tagsHeaderTitle {
 	min-height: 28px;
 	border-radius: 8px;
 	color: var(--text-primary);
+	font-size: var(--text-sm);
 }
 
 .tagsButton[data-explicit="false"] {
@@ -110,6 +111,11 @@ button.tagsHeaderTitle {
 .tagsNameWrap > :first-child {
 	flex-shrink: 0;
 	color: currentcolor;
+}
+
+.tagsIcon {
+	width: 12px;
+	height: 12px;
 }
 
 .tagsName {
@@ -131,11 +137,13 @@ button.tagsHeaderTitle {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	cursor: pointer;
-	transition: color var(--transition-fast);
+	background: transparent;
+}
 
-	&:hover {
-		color: var(--text-secondary);
-	}
+.tagsToggle:hover,
+.tagsToggle:active {
+	background: transparent;
+	color: var(--text-tertiary);
 }
 
 .tagsEmpty {

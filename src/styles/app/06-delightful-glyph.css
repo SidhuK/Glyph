@@ -20,23 +20,20 @@
 
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="dashboard"]
-	> svg,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="dashboard"]
-	.sidebarQuickActionLabel,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="databases"]
-	> svg,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="databases"]
-	.sidebarQuickActionLabel,
+	> svg {
+	color: var(--delightful-glyph-blue);
+}
+
 :root[data-delightful-glyph="true"]
 	.sidebarQuickActionBtn[data-kind="all-notes"]
-	> svg,
+	> svg {
+	color: var(--delightful-glyph-cyan);
+}
+
 :root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="all-notes"]
-	.sidebarQuickActionLabel {
-	color: inherit;
+	.sidebarQuickActionBtn[data-kind="databases"]
+	> svg {
+	color: var(--delightful-glyph-violet);
 }
 
 :root[data-delightful-glyph="true"]

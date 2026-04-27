@@ -1,3 +1,4 @@
+import { statusLabel, statusOptionFromValue } from "../statusProperties";
 import { databaseCellValueFromRow } from "./config";
 import type { DatabaseCellValue, DatabaseColumn, DatabaseRow } from "./types";
 
@@ -11,11 +12,7 @@ export interface DatabaseBoardLane {
 }
 
 function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
-	return (
-		column.type === "tags" ||
-		column.property_kind === "tags" ||
-		column.property_kind === "list"
-	);
+	return column.type === "tags" || column.property_kind === "tags";
 }
 
 function isBoardGroupColumn(column: DatabaseColumn): boolean {
@@ -90,6 +87,10 @@ function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 		return [cell.value_bool ? "true" : "false"];
 	}
 	const value = cell.value_text?.trim() ?? "";
+	if (column.property_kind === "status") {
+		const option = statusOptionFromValue(value);
+		return option ? [option.label] : value ? [value] : [];
+	}
 	return value ? [value] : [];
 }
 
@@ -257,7 +258,12 @@ export function boardLaneValue(
 
 	return {
 		kind: column.property_kind ?? "text",
-		value_text: laneId === DATABASE_BOARD_EMPTY_LANE_ID ? "" : laneId,
+		value_text:
+			laneId === DATABASE_BOARD_EMPTY_LANE_ID
+				? ""
+				: column.property_kind === "status"
+					? statusLabel(laneId)
+					: laneId,
 		value_bool: null,
 		value_list: [],
 	};

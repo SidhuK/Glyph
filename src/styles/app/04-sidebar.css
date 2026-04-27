@@ -184,20 +184,6 @@
 	content: none;
 }
 
-.sidebarFooterSettingsButton {
-	flex: 0 0 26px;
-	width: 26px;
-	min-width: 26px;
-	min-height: 26px;
-	padding: 0;
-	justify-content: center;
-	-webkit-app-region: no-drag;
-}
-
-.sidebarFooterSettingsButton svg {
-	flex-shrink: 0;
-}
-
 .gitSyncFooterShell {
 	position: relative;
 	flex: 0 0 auto;

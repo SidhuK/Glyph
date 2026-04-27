@@ -37,7 +37,7 @@ export function isColumnEditable(column: DatabaseColumn): boolean {
 		return false;
 	}
 	if (column.type !== "property") return true;
-	return column.property_kind !== "yaml";
+	return true;
 }
 
 export function databaseCellValueFromRow(

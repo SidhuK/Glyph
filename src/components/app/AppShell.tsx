@@ -77,6 +77,7 @@ import { getLicenseStatus } from "../../lib/license";
 import {
 	invalidateAllDocsPrefetch,
 	invalidateCalendarPrefetch,
+	invalidateDatabaseRowsPrefetch,
 	invalidatePrefetchedNote,
 	prefetchAllDocs,
 	prefetchCalendarData,
@@ -877,6 +878,7 @@ export function AppShell() {
 		const relPath = normalizeRelPath(payload.rel_path);
 		invalidateAllDocsPrefetch();
 		invalidateCalendarPrefetch();
+		invalidateDatabaseRowsPrefetch();
 		if (relPath) {
 			invalidatePrefetchedNote(relPath);
 		}

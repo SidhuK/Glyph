@@ -365,125 +365,6 @@
 	padding: 0 18px;
 }
 
-.databasesViewTabs {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 10px 0 8px;
-	overflow-x: auto;
-}
-
-.databasesViewTabWrapper {
-	display: flex;
-	align-items: center;
-	position: relative;
-	gap: 3px;
-	padding: 2px;
-	border-radius: calc(var(--database-radius-md) + 3px);
-	transition: background-color 140ms ease;
-}
-
-.databasesViewTabWrapper::after {
-	content: "";
-	position: absolute;
-	left: 8px;
-	right: 8px;
-	bottom: -1px;
-	height: 2px;
-	border-radius: 999px;
-	background: transparent;
-	transition: background-color 140ms ease;
-}
-
-.databasesViewTabWrapper.is-active::after {
-	background: var(--interactive-accent);
-}
-
-.databasesViewTab {
-	position: relative;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	height: 32px;
-	padding: 0 12px;
-	border: 1px solid transparent;
-	border-radius: calc(var(--database-radius-md) + 2px);
-	background: transparent;
-	color: var(--text-secondary);
-	cursor: pointer;
-	transition: color 140ms ease, background-color 140ms ease, border-color 140ms
-		ease, transform 140ms ease;
-	white-space: nowrap;
-	font-size: 0.82rem;
-	line-height: 1;
-	font-weight: var(--font-medium);
-	flex: 0 0 auto;
-}
-
-.databasesViewTab:hover {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
-}
-
-.databasesViewTab[data-active="true"] {
-	color: var(--text-primary);
-	border-color: transparent;
-	background: transparent;
-	box-shadow: none;
-}
-
-.databasesViewTab[data-active="true"]:hover {
-	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
-	color: var(--text-primary);
-}
-
-.databasesViewTabBg {
-	position: absolute;
-	inset: 0;
-	border-radius: inherit;
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 56%, transparent);
-}
-
-.databasesViewTab[data-active="true"] .databasesViewTabBg {
-	background: transparent;
-	border-color: transparent;
-}
-
-.databasesViewTab > *:not(.databasesViewTabBg) {
-	position: relative;
-	z-index: 1;
-}
-
-.databasesViewTabMenu {
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	padding: 0;
-	border: 1px solid transparent;
-	border-radius: calc(var(--database-radius-sm) + 1px);
-	background: transparent;
-	color: var(--text-tertiary);
-	cursor: pointer;
-	transition: background-color 140ms ease, border-color 140ms ease, color 140ms
-		ease;
-}
-
-.databasesViewTabWrapper.is-active .databasesViewTabMenu {
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-hover) 76%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
-}
-
-.databasesViewTabMenu:hover {
-	background: color-mix(in srgb, var(--bg-hover) 92%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 52%, transparent);
-	color: var(--text-primary);
-}
-
 .databasesViewTabMenuIcon {
 	display: block;
 	width: 14px;
@@ -493,41 +374,19 @@
 	flex: 0 0 14px;
 }
 
-.databasesViewTabCreate {
-	gap: 0;
-	padding: 0 11px;
-	height: 32px;
-	color: var(--text-tertiary);
-	border: 1px dashed color-mix(in srgb, var(--border-light) 84%, transparent);
-	border-radius: calc(var(--database-radius-md) + 2px);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-}
-
-.databasesViewTabCreate:hover {
-	color: var(--text-primary);
-	border-color: color-mix(in srgb, var(--border-default) 58%, transparent);
-	background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
-}
-
-.databasesViewTabName {
-	font-size: 0.82rem;
-	font-weight: var(--font-medium);
-	letter-spacing: -0.01em;
-}
-
 .databasesViewTabRenameInput {
 	width: 100px;
-	height: 32px;
-	margin: 2px;
+	min-height: 30px;
+	margin: 0;
 	padding: 0 10px;
-	font-size: 0.82rem;
+	font-size: 11px;
 	font-weight: var(--font-medium);
-	border: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
-	border-radius: calc(var(--database-radius-md) + 2px);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	border: 0;
+	border-radius: 0;
+	background: var(--settings-surface);
 	color: var(--text-primary);
 	outline: none;
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 7%, transparent);
+	box-shadow: none;
 }
 
 .databasesViewTabMenuContent {
@@ -749,6 +608,86 @@
 
 .databaseTableShell [data-slot="table-container"] {
 	overflow: visible;
+}
+
+.databaseListShell {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 8px 18px 18px;
+}
+
+.databaseList {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.databaseListItem {
+	display: block;
+}
+
+.databaseListRow {
+	display: grid;
+	grid-template-columns: minmax(140px, 1fr) minmax(0, auto) minmax(0, auto);
+	align-items: center;
+	gap: 8px;
+	min-height: 28px;
+	width: 100%;
+	border: 0;
+	border-radius: 7px;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	padding: 1px 8px;
+	transition: background-color 120ms ease;
+}
+
+.databaseListRow:hover {
+	background: var(--bg-hover);
+}
+
+.databaseListRow[data-state="selected"] {
+	background: var(--bg-active);
+}
+
+.databaseListRow:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: -2px;
+}
+
+.databaseListTitle {
+	min-width: 0;
+}
+
+.databaseListTags {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 4px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.databaseListTag {
+	max-width: 112px;
+	min-height: 18px;
+	padding: 0 6px;
+	font-size: 10px;
+}
+
+.databaseListPath {
+	min-width: 72px;
+	max-width: 260px;
+	text-align: right;
+	color: var(--text-tertiary);
+}
+
+.databaseListEmpty {
+	padding: 20px 8px;
 }
 
 .databaseBoardShell {
@@ -1108,7 +1047,7 @@
 .databaseBoardCardTags {
 	display: flex;
 	flex-wrap: nowrap;
-	gap: 5px;
+	gap: 6px;
 	min-width: 0;
 	overflow: hidden;
 	flex: 0 0 auto;
@@ -1119,19 +1058,29 @@
 
 	display: inline-flex;
 	align-items: center;
+	gap: 5px;
 	max-width: 100%;
 	flex: 0 0 auto;
-	padding: 3px 7px;
-	border-radius: var(--radius-full);
+	padding: 3px 8px;
+	border: 0;
+	border-radius: var(--pill-radius);
 	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-secondary));
 	font-size: 0.7rem;
+	font-weight: var(--font-semibold);
 	line-height: 1.2;
-	color: var(--pill-contrast-fg);
+	color: color-mix(in srgb, var(--database-tone) 70%, var(--text-primary));
+	box-shadow: var(--pill-shadow);
 	white-space: nowrap;
 }
 
 .databaseBoardTag.is-muted {
 	color: var(--text-tertiary);
+	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+}
+
+.databaseTagPillIcon {
+	flex: 0 0 auto;
+	color: currentcolor;
 }
 
 .databaseBoardCardDetails {
@@ -1474,18 +1423,18 @@
 
 .databaseTagField .notePropertyToken {
 	--database-tone: var(--color-blue-500);
+	--pill-tone: var(--database-tone);
+
 	border-color: transparent;
-	background: color-mix(in srgb, var(--database-tone) 10%, transparent);
-	color: var(--pill-contrast-fg);
 }
 
 .databaseTagField .notePropertyToken:hover,
 .databaseTagField .notePropertyToken:focus-visible {
-	background: color-mix(in srgb, var(--database-tone) 16%, transparent);
+	background: color-mix(in srgb, var(--database-tone) 16%, var(--bg-secondary));
 }
 
 .databaseTagField .notePropertyToken svg {
-	color: var(--pill-contrast-fg);
+	color: currentcolor;
 }
 
 .databaseTagEditor .databaseTagSuggestions {
@@ -1536,13 +1485,17 @@
 .databaseCellPill {
 	--database-tone: var(--color-blue-500);
 
-	display: inline-block;
-	padding: 1px 7px;
-	border-radius: var(--database-radius-sm);
-	border: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 8px;
+	border-radius: var(--pill-radius);
+	border: 0;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: 0.76rem;
-	color: var(--pill-contrast-fg);
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
+	box-shadow: var(--pill-shadow);
 	white-space: nowrap;
 	flex: 0 0 auto;
 }
@@ -1551,6 +1504,8 @@
 	--database-tone: var(--text-tertiary);
 
 	flex: 0 0 auto;
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
 }
 
 .databaseCellPillsMeasure {
@@ -1572,11 +1527,14 @@
 }
 
 .databaseCellButton {
-	display: block;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
 	min-width: 0;
 	min-height: 18px;
 	line-height: 1.25;
 	cursor: default;
+	text-align: left;
 }
 
 .databaseCellButton.is-pill-list {

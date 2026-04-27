@@ -75,6 +75,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
 - Make sure we dont over-engineer CSS and use default components as much as possible unless explicitly stated.
 - Make sure we always narrow the code and apply fixes instead of patching the code by adding un-necessary LOCs in places that it doesn't need.
+- NEVER make test files unless specifically requested by users.
 
 ## Migration Policy
 

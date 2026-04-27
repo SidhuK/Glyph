@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { NoteTaskSummary } from "../../lib/tauri";
 
 interface TaskProgressIndicatorProps {
@@ -38,35 +39,20 @@ function getProgressColor(ratio: number): string {
 	return `rgb(${last.rgb.join(", ")})`;
 }
 
-function buildGradient(
+function buildPieGradient(
 	completed: number,
 	total: number,
 	color: string,
 ): string {
-	const muted = `color-mix(in srgb, ${color} 20%, transparent)`;
-	if (total === 0) {
-		return `conic-gradient(${muted} 0deg 360deg)`;
+	const empty = "transparent";
+	if (total === 0 || completed <= 0) {
+		return `conic-gradient(${empty} 0deg 360deg)`;
 	}
-
-	if (total <= 12) {
-		const slice = 360 / total;
-		const stops: string[] = [];
-		for (let i = 0; i < total; i++) {
-			const start = i * slice;
-			const end = (i + 1) * slice;
-			stops.push(`${i < completed ? color : muted} ${start}deg ${end}deg`);
-		}
-		return `conic-gradient(${stops.join(", ")})`;
-	}
-
-	const completedDeg = (completed / total) * 360;
-	if (completedDeg <= 0) {
-		return `conic-gradient(${muted} 0deg 360deg)`;
-	}
-	if (completedDeg >= 360) {
+	if (completed >= total) {
 		return `conic-gradient(${color} 0deg 360deg)`;
 	}
-	return `conic-gradient(${color} 0deg ${completedDeg}deg, ${muted} ${completedDeg}deg 360deg)`;
+	const completedDeg = (completed / total) * 360;
+	return `conic-gradient(${color} 0deg ${completedDeg}deg, ${empty} ${completedDeg}deg 360deg)`;
 }
 
 export function TaskProgressIndicator({
@@ -84,14 +70,16 @@ export function TaskProgressIndicator({
 				.join(" ")}
 			title={`${completed_count}/${total_count} tasks completed`}
 			aria-label={`${completed_count} of ${total_count} tasks completed`}
-			style={{ "--task-progress-color": color } as React.CSSProperties}
+			style={{ "--task-progress-color": color } as CSSProperties}
 		>
-			<div
-				className="markdownEditorTaskProgressDonut"
-				style={{
-					background: buildGradient(completed_count, total_count, color),
-				}}
-			/>
+			<span className="markdownEditorTaskProgressRing" aria-hidden="true">
+				<span
+					className="markdownEditorTaskProgressPie"
+					style={{
+						background: buildPieGradient(completed_count, total_count, color),
+					}}
+				/>
+			</span>
 		</div>
 	);
 }

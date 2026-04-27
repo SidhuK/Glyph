@@ -6,7 +6,15 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { emit } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	Fragment,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -34,8 +42,9 @@ import {
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
+import { ChevronDown, Edit, Kanban, List, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
+import { DatabaseList } from "../database/DatabaseList";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
@@ -224,6 +233,7 @@ function nextDatabaseName(summaries: WorkspaceDatabaseSummary[]): string {
 
 function ViewLayoutIcon({ layout }: { layout: string }) {
 	if (layout === "board") return <Kanban size={13} />;
+	if (layout === "list") return <List size={13} />;
 	return <Table size={13} />;
 }
 
@@ -273,10 +283,12 @@ function DatabasesPaneContent({
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
+	const startingViewRenameRef = useRef(false);
 	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
+	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 
 	const loadSummaries = useCallback(async () => {
@@ -501,19 +513,26 @@ function DatabasesPaneContent({
 		[loadRows],
 	);
 
-	useTauriEvent("space:fs_changed", (payload) => {
-		if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
-		if (fsRowsRefreshTimerRef.current !== null) {
-			window.clearTimeout(fsRowsRefreshTimerRef.current);
-		}
-		fsRowsRefreshTimerRef.current = window.setTimeout(() => {
-			fsRowsRefreshTimerRef.current = null;
-			if (selectedDatabaseId) {
-				invalidateDatabaseRowsPrefetch(selectedDatabaseId);
+	const scheduleRowsRefreshForNoteChange = useCallback(
+		(payload: { rel_path: string; removed: boolean }) => {
+			if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
+			rowRequestTokenRef.current += 1;
+			if (fsRowsRefreshTimerRef.current !== null) {
+				window.clearTimeout(fsRowsRefreshTimerRef.current);
 			}
-			void loadRows({ background: true });
-		}, 150);
-	});
+			fsRowsRefreshTimerRef.current = window.setTimeout(() => {
+				fsRowsRefreshTimerRef.current = null;
+				if (selectedDatabaseId) {
+					invalidateDatabaseRowsPrefetch(selectedDatabaseId);
+				}
+				void loadRows({ background: true });
+			}, 150);
+		},
+		[loadRows, selectedDatabaseId],
+	);
+
+	useTauriEvent("space:fs_changed", scheduleRowsRefreshForNoteChange);
+	useTauriEvent("notes:external_changed", scheduleRowsRefreshForNoteChange);
 
 	const saveDatabase = useCallback(
 		async (nextDatabase: WorkspaceDatabaseDefinition) => {
@@ -779,13 +798,23 @@ function DatabasesPaneContent({
 		void saveDatabase({ ...document.database, name: nameDraft.trim() });
 	}, [document, nameDraft, saveDatabase]);
 
+	useEffect(() => {
+		if (!renamingViewId) return;
+		const frame = requestAnimationFrame(() => {
+			viewNameInputRef.current?.focus({ preventScroll: true });
+			viewNameInputRef.current?.select();
+			startingViewRenameRef.current = false;
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [renamingViewId]);
+
 	const startViewRename = useCallback(
 		(viewId: string) => {
 			const view = document?.database.views.find((v) => v.id === viewId);
 			if (!view) return;
+			startingViewRenameRef.current = true;
 			setViewNameDraft(view.name);
 			setRenamingViewId(viewId);
-			requestAnimationFrame(() => viewNameInputRef.current?.select());
 		},
 		[document],
 	);
@@ -968,14 +997,12 @@ function DatabasesPaneContent({
 			{document && activeConfig && activeView ? (
 				<>
 					<div className="databasesViewBar">
-						<div className="databasesViewTabs">
+						<fieldset className="settingsSegmented appearanceThemeModeSegmented">
+							<legend className="sr-only">Database views</legend>
 							{document.database.views.map((view) => {
 								const isActive = view.id === selectedViewId;
 								return (
-									<div
-										key={view.id}
-										className={`databasesViewTabWrapper${isActive ? " is-active" : ""}`}
-									>
+									<Fragment key={view.id}>
 										{renamingViewId === view.id ? (
 											<input
 												ref={viewNameInputRef}
@@ -986,7 +1013,6 @@ function DatabasesPaneContent({
 												onChange={(event) =>
 													setViewNameDraft(event.target.value)
 												}
-												onBlur={commitViewRename}
 												onKeyDown={(event) => {
 													if (event.key === "Enter") {
 														event.preventDefault();
@@ -999,112 +1025,131 @@ function DatabasesPaneContent({
 												}}
 											/>
 										) : (
-											<>
-												<button
-													type="button"
-													className="databasesViewTab"
-													data-active={isActive}
-													onClick={() => setSelectedViewId(view.id)}
+											<button
+												type="button"
+												className={isActive ? "active" : ""}
+												aria-pressed={isActive}
+												onClick={() => setSelectedViewId(view.id)}
+											>
+												<span
+													className="settingsSegmentedIcon"
+													aria-hidden="true"
 												>
 													<ViewLayoutIcon layout={view.layout} />
-													<span className="databasesViewTabName">
-														{view.name}
-													</span>
-												</button>
-												{isActive ? (
-													<DropdownMenu>
-														<DropdownMenuTrigger asChild>
-															<button
-																type="button"
-																className="databasesViewTabMenu"
-																title="View options"
-																aria-label={`View options for ${view.name}`}
-															>
-																<HugeiconsIcon
-																	icon={MoreVerticalIcon}
-																	className="databasesViewTabMenuIcon"
-																	size={14}
-																	strokeWidth={0.9}
-																	color="currentColor"
-																	aria-hidden
-																/>
-															</button>
-														</DropdownMenuTrigger>
-														<DropdownMenuContent
-															align="start"
-															className="databasesDropdownContent databasesViewTabMenuContent"
-														>
-															<DropdownMenuLabel className="databasesViewTabMenuLabel">
-																View type
-															</DropdownMenuLabel>
-															<DropdownMenuItem
-																onSelect={() => {
-																	if (!activeConfig || view.layout === "table")
-																		return;
-																	void handleSaveConfig({
-																		...activeConfig,
-																		view: {
-																			...activeConfig.view,
-																			layout: "table",
-																		},
-																	});
-																}}
-																className="databasesDropdownItem databasesViewTabMenuItem"
-															>
-																<Table size={13} />
-																<span>Table</span>
-															</DropdownMenuItem>
-															<DropdownMenuItem
-																onSelect={() => {
-																	if (!activeConfig || view.layout === "board")
-																		return;
-																	void handleSaveConfig({
-																		...activeConfig,
-																		view: {
-																			...activeConfig.view,
-																			layout: "board",
-																		},
-																	});
-																}}
-																className="databasesDropdownItem databasesViewTabMenuItem"
-															>
-																<Kanban size={13} />
-																<span>Board</span>
-															</DropdownMenuItem>
-															<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
-															<DropdownMenuItem
-																onSelect={() => startViewRename(view.id)}
-																className="databasesDropdownItem databasesViewTabMenuItem"
-															>
-																<Edit size={13} />
-																<span>Rename</span>
-															</DropdownMenuItem>
-															<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
-															<DropdownMenuItem
-																disabled={document.database.views.length <= 1}
-																onSelect={() => void handleDeleteView(view.id)}
-																className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
-															>
-																<Trash2 size={13} />
-																<span>Delete view</span>
-															</DropdownMenuItem>
-														</DropdownMenuContent>
-													</DropdownMenu>
-												) : null}
-											</>
+												</span>
+												{view.name}
+											</button>
 										)}
-									</div>
+									</Fragment>
 								);
 							})}
-							<button
-								type="button"
-								className="databasesViewTab databasesViewTabCreate"
-								onClick={() => void handleCreateView()}
-								title="Add view"
+						</fieldset>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button
+									type="button"
+									className="databasesViewTabMenu databaseToolbarChip"
+									title="View options"
+									aria-label={`View options for ${activeView.name}`}
+								>
+									<HugeiconsIcon
+										icon={MoreVerticalIcon}
+										className="databasesViewTabMenuIcon"
+										size={14}
+										strokeWidth={0.9}
+										color="currentColor"
+										aria-hidden
+									/>
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="databasesDropdownContent databasesViewTabMenuContent"
+								onCloseAutoFocus={(event) => {
+									if (startingViewRenameRef.current) {
+										event.preventDefault();
+									}
+								}}
 							>
-								<Plus size={12} />
-							</button>
-						</div>
+								<DropdownMenuLabel className="databasesViewTabMenuLabel">
+									View type
+								</DropdownMenuLabel>
+								<DropdownMenuItem
+									onSelect={() => {
+										if (!activeConfig || activeView.layout === "table") return;
+										void handleSaveConfig({
+											...activeConfig,
+											view: {
+												...activeConfig.view,
+												layout: "table",
+											},
+										});
+									}}
+									className="databasesDropdownItem databasesViewTabMenuItem"
+								>
+									<Table size={13} />
+									<span>Table</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => {
+										if (!activeConfig || activeView.layout === "board") return;
+										void handleSaveConfig({
+											...activeConfig,
+											view: {
+												...activeConfig.view,
+												layout: "board",
+											},
+										});
+									}}
+									className="databasesDropdownItem databasesViewTabMenuItem"
+								>
+									<Kanban size={13} />
+									<span>Board</span>
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => {
+										if (!activeConfig || activeView.layout === "list") return;
+										void handleSaveConfig({
+											...activeConfig,
+											view: {
+												...activeConfig.view,
+												layout: "list",
+											},
+										});
+									}}
+									className="databasesDropdownItem databasesViewTabMenuItem"
+								>
+									<List size={13} />
+									<span>List</span>
+								</DropdownMenuItem>
+								<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
+								<DropdownMenuItem
+									onSelect={() => startViewRename(activeView.id)}
+									className="databasesDropdownItem databasesViewTabMenuItem"
+								>
+									<Edit size={13} />
+									<span>Rename</span>
+								</DropdownMenuItem>
+								<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
+								<DropdownMenuItem
+									disabled={document.database.views.length <= 1}
+									onSelect={() => void handleDeleteView(activeView.id)}
+									className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
+								>
+									<Trash2 size={13} />
+									<span>Delete view</span>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<button
+							type="button"
+							className="databasesViewTabCreate databaseToolbarChip"
+							onClick={() => void handleCreateView()}
+							title="Add view"
+							aria-label="Add view"
+						>
+							<Plus size={12} />
+						</button>
 						<DatabaseToolbar
 							className="databaseToolbarInline"
 							databaseView={activeConfig.view.layout}
@@ -1142,6 +1187,7 @@ function DatabasesPaneContent({
 								activeConfig.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER
 							}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
+							statusColors={statusColors}
 							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
@@ -1186,13 +1232,23 @@ function DatabasesPaneContent({
 									},
 								})
 							}
+							onStatusColorChange={setStatusColor}
 							onSaveCell={handleUpdateCell}
+						/>
+					) : activeConfig.view.layout === "list" ? (
+						<DatabaseList
+							rows={rows}
+							selectedRowPath={selectedRowPath}
+							onSelectRow={setSelectedRowPath}
+							onOpenRow={(notePath) => void onOpenFile(notePath)}
 						/>
 					) : (
 						<DatabaseTable
 							rows={rows}
 							columns={visibleColumns}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
+							statusColors={statusColors}
+							onStatusColorChange={setStatusColor}
 							selectedRowPath={selectedRowPath}
 							activeSort={
 								(activeConfig.sorts[0] as DatabaseSort | null) ?? null

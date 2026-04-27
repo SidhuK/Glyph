@@ -245,24 +245,25 @@
 	align-items: center;
 	justify-content: center;
 	width: 16px;
-	height: 12px;
+	height: 16px;
 }
 
-.markdownEditorTaskProgressDonut {
-	width: 6px;
-	height: 6px;
+.markdownEditorTaskProgressRing {
+	width: 14px;
+	height: 14px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	border-radius: 50%;
-	position: relative;
+	border: 2px solid var(--task-progress-color);
+	box-sizing: border-box;
+}
+
+.markdownEditorTaskProgressPie {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
 	transition: background 180ms ease;
-}
-
-.markdownEditorTaskProgressDonut::after {
-	content: "";
-	position: absolute;
-	inset: -3px;
-	border-radius: 50%;
-	border: 1px solid var(--task-progress-color);
-	pointer-events: none;
 }
 
 .markdownEditorSaveState {
@@ -431,13 +432,14 @@
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	height: calc(var(--header-height) - 6px);
-	padding: 0 12px;
+	height: 32px;
+	padding: 0 10px;
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
 	border-bottom: none;
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	backdrop-filter: blur(8px);
 }
 
 .markdownEditorInfoClose {
@@ -449,13 +451,14 @@
 	border: none;
 	background: transparent;
 	color: var(--text-secondary);
-	border-radius: 0;
+	border-radius: var(--radius-sm);
 	cursor: pointer;
-	transition: none;
+	transition: background-color 120ms ease, color 120ms ease;
 }
 
 .markdownEditorInfoClose:hover {
-	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	color: var(--text-primary);
 }
 
 .markdownEditorInfoClose:focus-visible {
@@ -473,45 +476,38 @@
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
-	padding: 0 12px 16px;
+	padding: 0 10px 14px;
 	background: transparent;
 }
 
 .markdownEditorInfoSection {
 	position: relative;
-	padding: 13px 0 15px;
+	padding: 10px 0 12px;
 }
 
-.markdownEditorInfoSection:not(:last-child)::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: -1px;
-	height: 1px;
-	pointer-events: none;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 86%, transparent) 14%,
-		color-mix(in srgb, var(--border-light) 96%, transparent) 50%,
-		color-mix(in srgb, var(--border-light) 86%, transparent) 86%,
-		transparent 100%
-	);
+.markdownEditorInfoSection + .markdownEditorInfoSection {
+	padding-top: 12px;
+}
+
+.markdownEditorInfoSectionFrontmatter {
+	padding-top: 2px;
+	padding-bottom: 14px;
 }
 
 .markdownEditorInfoSectionLabel {
-	margin: 0 0 10px;
-	font-size: 11px;
-	letter-spacing: 0.05em;
+	margin: 0 0 7px;
+	font-size: 10.5px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.035em;
 	text-transform: uppercase;
 	color: var(--text-tertiary);
+	line-height: 1.15;
 }
 
 .markdownEditorInfoRows {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px;
 }
 
 .markdownEditorInfoRow {
@@ -519,7 +515,8 @@
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 10px;
-	font-size: 12px;
+	font-size: 11.5px;
+	line-height: 1.28;
 	color: var(--text-secondary);
 }
 
@@ -542,15 +539,16 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: 12px;
+	font-size: 11.5px;
 	color: var(--text-primary);
 }
 
 .markdownEditorInfoTaskSummary {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	font-size: 12px;
+	gap: 7px;
+	font-size: 11.5px;
+	line-height: 1.3;
 	color: var(--text-secondary);
 }
 
@@ -569,30 +567,30 @@
 	margin: 0;
 	font: inherit;
 	text-align: left;
-	padding: 5px 8px;
+	padding: 4px 6px;
 	border-radius: 4px;
-	border-left: 2px solid transparent;
-	font-size: 12px;
+	border-left: 0;
+	font-size: 11.5px;
 	color: var(--text-secondary);
 	cursor: pointer;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	line-height: 1.35;
+	line-height: 1.28;
 }
 
 .markdownEditorInfoOutlineItem[data-level="2"] {
-	padding-left: 14px;
+	padding-left: 12px;
 }
 
 .markdownEditorInfoOutlineItem[data-level="3"] {
-	padding-left: 20px;
+	padding-left: 18px;
 }
 
 .markdownEditorInfoOutlineItem[data-level="4"],
 .markdownEditorInfoOutlineItem[data-level="5"],
 .markdownEditorInfoOutlineItem[data-level="6"] {
-	padding-left: 24px;
+	padding-left: 22px;
 }
 
 .markdownEditorInfoOutlineItem:hover {
@@ -602,16 +600,12 @@
 
 .markdownEditorInfoOutlineItem[data-active="true"] {
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-	border-left-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 62%,
-		transparent
-	);
 	color: var(--text-primary);
 }
 
 .markdownEditorInfoEmpty {
-	font-size: 12px;
+	font-size: 11.5px;
+	line-height: 1.3;
 	color: var(--text-tertiary);
 }
 
@@ -619,7 +613,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 6px 8px;
+	gap: 5px 6px;
 }
 
 .markdownEditorInfoLinkItem {
@@ -656,7 +650,7 @@
 .markdownEditorPane .frontmatterPreview {
 	width: var(--readable-content-outer-width);
 	box-sizing: border-box;
-	padding-inline: clamp(10px, 1.6vw, 16px);
+	padding-inline: clamp(8px, 1.4vw, 14px);
 }
 
 .markdownEditorPane .editorBacklinks {

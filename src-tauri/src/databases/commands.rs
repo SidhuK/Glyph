@@ -1,7 +1,8 @@
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use serde_yaml::{Mapping, Number, Value};
+use serde_yaml::{Mapping, Value};
 use tauri::State;
 use uuid::Uuid;
 
@@ -56,6 +57,32 @@ fn normalize_database_name(name: &str) -> Result<String, String> {
         return Err("database name cannot be empty".to_string());
     }
     Ok(normalized.to_string())
+}
+
+fn normalize_status_id(status: &str) -> Result<String, String> {
+    let normalized = status
+        .trim()
+        .to_lowercase()
+        .replace([' ', '-'], "_")
+        .split('_')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("_");
+    if normalized.is_empty() {
+        return Err("status is required".to_string());
+    }
+    Ok(normalized)
+}
+
+fn validate_status_color(color: &str) -> Result<(), String> {
+    if matches!(
+        color,
+        "gray" | "brown" | "orange" | "yellow" | "green" | "blue" | "purple" | "red"
+    ) {
+        Ok(())
+    } else {
+        Err("unsupported status color".to_string())
+    }
 }
 
 fn database_name_exists(
@@ -114,21 +141,7 @@ fn yaml_value_from_cell(
         )),
         "property" => match column.property_kind.as_deref().unwrap_or("text") {
             "checkbox" => Ok(Value::Bool(value.value_bool.unwrap_or(false))),
-            "number" => {
-                let text = value.value_text.clone().unwrap_or_default();
-                let trimmed = text.trim();
-                if trimmed.is_empty() {
-                    return Ok(Value::Null);
-                }
-                if let Ok(int) = trimmed.parse::<i64>() {
-                    return Ok(Value::Number(Number::from(int)));
-                }
-                let float = trimmed
-                    .parse::<f64>()
-                    .map_err(|_| "invalid number value".to_string())?;
-                Ok(Value::Number(Number::from(float)))
-            }
-            "list" | "tags" | "relation" | "multi_select" => Ok(Value::Sequence(
+            "tags" | "relation" | "multi_select" => Ok(Value::Sequence(
                 value
                     .value_list
                     .iter()
@@ -234,9 +247,6 @@ fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Resul
                 .property_key
                 .as_deref()
                 .ok_or_else(|| "property column is missing property_key".to_string())?;
-            if column.property_kind.as_deref() == Some("yaml") {
-                return Err("yaml properties are read-only".to_string());
-            }
             if row.properties.contains_key(property_key) || column.property_kind.is_some() {
                 Ok(())
             } else {
@@ -612,6 +622,49 @@ pub async fn databases_preview_context(
             reading_time_minutes,
             backlinks,
         })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn databases_status_colors_get(
+    state: State<'_, SpaceState>,
+) -> Result<BTreeMap<String, String>, String> {
+    let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
+        Ok(load_store(&root)?.status_colors)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn databases_status_color_set(
+    state: State<'_, SpaceState>,
+    status: String,
+    color: Option<String>,
+) -> Result<BTreeMap<String, String>, String> {
+    let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
+        let mut store = load_store(&root)?;
+        let status_id = normalize_status_id(&status)?;
+        if let Some(color) = color {
+            validate_status_color(&color)?;
+            store.status_colors.insert(status_id, color);
+        } else {
+            store.status_colors.remove(&status_id);
+        }
+        save_store(&root, &store)?;
+        Ok(store.status_colors)
     })
     .await
     .map_err(|e| e.to_string())?

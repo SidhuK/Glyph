@@ -30,6 +30,7 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	isMarkdownPath,
+	normalizeRelPath,
 	parentDir,
 	basename as relBasename,
 } from "../../utils/path";
@@ -327,6 +328,8 @@ export const FileTreePane = memo(function FileTreePane({
 	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
 		Record<string, NoteTaskSummary>
 	>({});
+	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
+	const taskSummaryRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 
 	useEffect(() => {
@@ -450,8 +453,28 @@ export const FileTreePane = memo(function FileTreePane({
 
 		return [...paths].sort();
 	}, [childrenByDir, expandedDirs, pinnedFiles, rootEntries]);
+	const taskSummaryRequestKey = useMemo(
+		() => `${taskSummaryRefreshKey}:${taskSummaryPaths.join("\0")}`,
+		[taskSummaryPaths, taskSummaryRefreshKey],
+	);
+
+	useTauriEvent("notes:external_changed", (payload) => {
+		const relPath = normalizeRelPath(payload.rel_path);
+		if (!relPath || !isMarkdownPath(relPath)) return;
+		if (!taskSummaryPaths.includes(relPath)) return;
+		if (payload.removed) {
+			setTaskSummariesByPath((current) => {
+				const next = { ...current };
+				delete next[relPath];
+				return next;
+			});
+			return;
+		}
+		setTaskSummaryRefreshKey((key) => key + 1);
+	});
 
 	useEffect(() => {
+		taskSummaryRequestRef.current = taskSummaryRequestKey;
 		if (
 			!spacePath ||
 			!showTaskProgressIndicator ||
@@ -464,7 +487,12 @@ export const FileTreePane = memo(function FileTreePane({
 		let cancelled = false;
 		void invoke("task_summaries_for_paths", { note_paths: taskSummaryPaths })
 			.then((items) => {
-				if (cancelled) return;
+				if (
+					cancelled ||
+					taskSummaryRequestRef.current !== taskSummaryRequestKey
+				) {
+					return;
+				}
 				const next: Record<string, NoteTaskSummary> = {};
 				for (const item of items) {
 					next[item.note_path] = {
@@ -483,7 +511,12 @@ export const FileTreePane = memo(function FileTreePane({
 		return () => {
 			cancelled = true;
 		};
-	}, [showTaskProgressIndicator, spacePath, taskSummaryPaths]);
+	}, [
+		showTaskProgressIndicator,
+		spacePath,
+		taskSummaryRequestKey,
+		taskSummaryPaths,
+	]);
 
 	const handleCreateFolder = useCallback(
 		async (dirPath: string) => {

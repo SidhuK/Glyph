@@ -140,6 +140,8 @@ pub struct DatabaseStore {
     pub version: u32,
     #[serde(default)]
     pub databases: Vec<DatabaseDefinition>,
+    #[serde(default)]
+    pub status_colors: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

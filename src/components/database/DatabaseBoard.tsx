@@ -7,6 +7,8 @@ import {
 	useDraggable,
 	useDroppable,
 } from "@dnd-kit/react";
+import { Tag01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import {
 	type MutableRefObject,
@@ -36,6 +38,7 @@ import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { loadSettings } from "../../lib/settings";
+import { statusToneStyle } from "../../lib/statusProperties";
 import { type NoteTaskSummary, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { parentDir } from "../../utils/path";
@@ -44,6 +47,7 @@ import {
 	type EditorTextColor,
 	isEditorTextColor,
 } from "../editor/textColors";
+import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -78,9 +82,11 @@ interface DatabaseBoardProps {
 		laneOrder: string[],
 	) => void | Promise<void>;
 	laneColors?: Record<string, string>;
+	statusColors?: Record<string, EditorTextColor>;
 	onLaneColorChange?:
 		| ((laneId: string, color: EditorTextColor | null) => void)
 		| null;
+	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -249,6 +255,8 @@ interface DatabaseBoardLaneViewProps {
 	laneIndex: number;
 	showColumnColor: boolean;
 	laneColors: Record<string, string>;
+	statusColors: Record<string, EditorTextColor>;
+	isStatusGroup: boolean;
 	shouldReduceMotion: boolean | null;
 	onLaneColorChange?:
 		| ((laneId: string, color: EditorTextColor | null) => void)
@@ -263,6 +271,8 @@ function DatabaseBoardLaneView({
 	laneIndex,
 	showColumnColor,
 	laneColors,
+	statusColors,
+	isStatusGroup,
 	shouldReduceMotion,
 	onLaneColorChange,
 	reorderableLanes,
@@ -280,10 +290,14 @@ function DatabaseBoardLaneView({
 			ref={ref}
 			className="databaseBoardLane"
 			data-show-column-color={showColumnColor ? "true" : "false"}
-			style={databaseValueToneStyleForColor(
-				lane.id,
-				getLaneColor(laneColors, lane.id),
-			)}
+			style={
+				isStatusGroup
+					? statusToneStyle(lane.label, statusColors)
+					: databaseValueToneStyleForColor(
+							lane.id,
+							getLaneColor(laneColors, lane.id),
+						)
+			}
 			data-active={isDropTarget ? "true" : "false"}
 			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
 			animate={{ opacity: 1, y: 0 }}
@@ -306,8 +320,18 @@ function DatabaseBoardLaneView({
 								aria-label={`Set color for ${lane.label}`}
 								title={`Set color for ${lane.label}`}
 							>
-								<span className="databaseBoardLaneDot" />
-								<div className="databaseBoardLaneTitle">{lane.label}</div>
+								{isStatusGroup ? (
+									<StatusPropertyPill
+										value={lane.label}
+										colors={statusColors}
+										className="databaseBoardLaneStatus"
+									/>
+								) : (
+									<>
+										<span className="databaseBoardLaneDot" />
+										<div className="databaseBoardLaneTitle">{lane.label}</div>
+									</>
+								)}
 							</button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
@@ -340,8 +364,18 @@ function DatabaseBoardLaneView({
 					</DropdownMenu>
 				) : (
 					<div className="databaseBoardLaneTitleGroup">
-						<span className="databaseBoardLaneDot" />
-						<div className="databaseBoardLaneTitle">{lane.label}</div>
+						{isStatusGroup ? (
+							<StatusPropertyPill
+								value={lane.label}
+								colors={statusColors}
+								className="databaseBoardLaneStatus"
+							/>
+						) : (
+							<>
+								<span className="databaseBoardLaneDot" />
+								<div className="databaseBoardLaneTitle">{lane.label}</div>
+							</>
+						)}
 					</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
@@ -469,7 +503,9 @@ export function DatabaseBoard({
 	laneOrderByGroup = {},
 	onLaneOrderChange,
 	laneColors = EMPTY_LANE_COLORS,
+	statusColors = {},
 	onLaneColorChange,
+	onStatusColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
 	const shouldReduceMotion = useReducedMotion();
@@ -498,6 +534,17 @@ export function DatabaseBoard({
 	const reorderableLanes = useMemo(
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
+	);
+	const isStatusGroup = groupColumn?.property_kind === "status";
+	const handleLaneColorChange = useCallback(
+		(laneId: string, color: EditorTextColor | null) => {
+			if (isStatusGroup) {
+				onStatusColorChange?.(laneId, color);
+				return;
+			}
+			onLaneColorChange?.(laneId, color);
+		},
+		[isStatusGroup, onLaneColorChange, onStatusColorChange],
 	);
 
 	useEffect(() => {
@@ -664,8 +711,10 @@ export function DatabaseBoard({
 									laneIndex={laneIndex}
 									showColumnColor={showColumnColor}
 									laneColors={laneColors}
+									statusColors={statusColors}
+									isStatusGroup={isStatusGroup}
 									shouldReduceMotion={shouldReduceMotion}
-									onLaneColorChange={onLaneColorChange}
+									onLaneColorChange={handleLaneColorChange}
 									reorderableLanes={reorderableLanes}
 									moveLaneToIndex={moveLaneToIndex}
 								>
@@ -751,6 +800,12 @@ export function DatabaseBoard({
 																		}
 																		title={formatDatabaseTagLabel(tag)}
 																	>
+																		<HugeiconsIcon
+																			icon={Tag01Icon}
+																			className="databaseTagPillIcon"
+																			size={11}
+																			strokeWidth={1.2}
+																		/>
 																		{formatDatabaseTagLabel(tag)}
 																	</span>
 																))}

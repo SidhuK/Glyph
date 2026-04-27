@@ -35,19 +35,19 @@
 
 .earlyAccessBadge {
 	--early-access-color: var(--interactive-accent);
-	padding: 3px 8px;
-	border-radius: var(--radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--early-access-color) 52%, transparent);
+	padding: 4px 8px;
+	border-radius: var(--pill-radius);
+	border: 0;
 	font-size: 10px;
-	font-weight: var(--font-medium);
+	font-weight: var(--font-semibold);
 	line-height: 1;
-	color: color-mix(in srgb, var(--early-access-color) 40%, var(--text-primary));
+	color: color-mix(in srgb, var(--early-access-color) 66%, var(--text-primary));
 	background: color-mix(
 		in srgb,
-		var(--early-access-color) 10%,
+		var(--early-access-color) 11%,
 		var(--bg-primary)
 	);
+	box-shadow: var(--pill-shadow);
 }
 
 .settingsSection {

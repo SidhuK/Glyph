@@ -1,13 +1,22 @@
+import type { CSSProperties } from "react";
+import {
+	statusColorKey,
+	statusOptionsWithCustomValues,
+} from "../../../lib/statusProperties";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Toggle } from "../../base/toggle/toggle";
-import { Input } from "../../ui/shadcn/input";
+import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import {
-	buildTagSuggestions,
-	formatTagLabel,
-	fromListText,
-	listText,
-} from "./utils";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../../ui/shadcn/dropdown-menu";
+import { Input } from "../../ui/shadcn/input";
+import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../textColors";
+import { buildTagSuggestions, formatTagLabel } from "./utils";
 
 interface NotePropertyValueFieldProps {
 	rowId: string;
@@ -16,10 +25,12 @@ interface NotePropertyValueFieldProps {
 	readOnly: boolean;
 	availableTags: TagCount[];
 	tagDraft: string;
+	statusColors: Record<string, EditorTextColor>;
 	onSetTagDraft: (rowId: string, value: string) => void;
 	onAddTag: (rowId: string, index: number, rawValue: string) => void;
 	onRemoveTag: (index: number, tag: string) => void;
 	onUpdate: (index: number, patch: Partial<NoteProperty>) => void;
+	onStatusColorChange: (status: string, color: EditorTextColor | null) => void;
 	onSetTagInputRef: (rowId: string, node: HTMLInputElement | null) => void;
 	tagInputRef: HTMLInputElement | null;
 }
@@ -31,15 +42,26 @@ export function NotePropertyValueField({
 	readOnly,
 	availableTags,
 	tagDraft,
+	statusColors,
 	onSetTagDraft,
 	onAddTag,
 	onRemoveTag,
 	onUpdate,
+	onStatusColorChange,
 	onSetTagInputRef,
 	tagInputRef,
 }: NotePropertyValueFieldProps) {
 	if (readOnly) {
-		if (property.kind === "tags" || property.kind === "list") {
+		if (property.kind === "status") {
+			return (
+				<StatusPropertyPill
+					value={property.value_text}
+					colors={statusColors}
+					className="notePropertyStatusStatic"
+				/>
+			);
+		}
+		if (property.kind === "tags") {
 			return (
 				<div className="notePropertyPills">
 					{property.value_list.map((value, valueIndex) => (
@@ -47,7 +69,7 @@ export function NotePropertyValueField({
 							key={`${property.key || rowId}-${valueIndex}-${value}`}
 							className="notePropertyPill"
 						>
-							{property.kind === "tags" ? formatTagLabel(value) : value}
+							{formatTagLabel(value)}
 						</span>
 					))}
 				</div>
@@ -60,6 +82,84 @@ export function NotePropertyValueField({
 			<span style={{ color: "var(--text-primary)" }}>
 				{property.value_text ?? ""}
 			</span>
+		);
+	}
+
+	if (property.kind === "status") {
+		const currentValue = property.value_text ?? "";
+		const currentStatusId = statusColorKey(currentValue);
+		const statusOptions = statusOptionsWithCustomValues([currentValue]);
+		return (
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<button
+						type="button"
+						className="notePropertyStatusTrigger"
+						aria-label={property.key || "Status property"}
+					>
+						<StatusPropertyPill
+							value={currentValue || "not_started"}
+							colors={statusColors}
+						/>
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent
+					align="start"
+					sideOffset={6}
+					className="databasePickerMenu notePropertyStatusMenu"
+				>
+					<div className="notePropertyStatusOptions">
+						{statusOptions.map((option) => (
+							<DropdownMenuItem
+								key={option.id}
+								className="notePropertyStatusOption"
+								data-selected={
+									statusColorKey(option.label) === currentStatusId
+										? "true"
+										: "false"
+								}
+								onClick={() => onUpdate(index, { value_text: option.label })}
+							>
+								<StatusPropertyPill
+									value={option.label}
+									colors={statusColors}
+								/>
+							</DropdownMenuItem>
+						))}
+					</div>
+					{currentStatusId ? (
+						<>
+							<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
+							<div className="notePropertyStatusColorRibbon">
+								{EDITOR_TEXT_COLORS.map((color) => (
+									<button
+										key={color.id}
+										type="button"
+										className="databaseBoardColorRibbonSwatch"
+										style={
+											{
+												"--database-tone": `var(${color.cssVar})`,
+											} as CSSProperties
+										}
+										onClick={() => onStatusColorChange(currentValue, color.id)}
+										title={color.label}
+										aria-label={`Set ${currentValue} color to ${color.label}`}
+									/>
+								))}
+								<button
+									type="button"
+									className="databaseBoardColorRibbonClear"
+									onClick={() => onStatusColorChange(currentValue, null)}
+									title="Clear color"
+									aria-label={`Clear color for ${currentValue}`}
+								>
+									<span />
+								</button>
+							</div>
+						</>
+					) : null}
+				</DropdownMenuContent>
+			</DropdownMenu>
 		);
 	}
 
@@ -155,48 +255,16 @@ export function NotePropertyValueField({
 		);
 	}
 
-	if (property.kind === "list") {
-		return (
-			<Input
-				className="notePropertyFieldInput"
-				style={{ color: "var(--text-primary)" }}
-				value={listText(property)}
-				placeholder="item1, item2"
-				onChange={(event) =>
-					onUpdate(index, {
-						value_list: fromListText(event.target.value),
-					})
-				}
-			/>
-		);
-	}
-
-	if (property.kind === "yaml") {
-		return (
-			<textarea
-				className="notePropertyYamlInput"
-				value={property.value_text ?? ""}
-				onChange={(event) =>
-					onUpdate(index, { value_text: event.target.value })
-				}
-			/>
-		);
-	}
-
 	return (
 		<Input
 			className="notePropertyFieldInput"
 			style={{ color: "var(--text-primary)" }}
 			type={
-				property.kind === "number"
-					? "number"
-					: property.kind === "date"
-						? "date"
-						: property.kind === "datetime"
-							? "text"
-							: property.kind === "url"
-								? "url"
-								: "text"
+				property.kind === "date"
+					? "date"
+					: property.kind === "url"
+						? "url"
+						: "text"
 			}
 			value={property.value_text ?? ""}
 			placeholder="Value"
