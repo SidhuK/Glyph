@@ -1,6 +1,43 @@
 {
 	"versions": [
 		{
+			"version": "0.2.14",
+			"publishedAt": "2026-04-27",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"New status property type for project planning, giving databases a clearer way to track project stages",
+						"List view is now available for databases, alongside refreshed view tabs that make switching layouts faster"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Kanban cards are now draggable with a much smoother and more reliable board experience",
+						"Task progress now uses a vibrant segmented pie chart with a thin status ring, making completion easier to read across the file tree, editor, and database views",
+						"Files and folders can now be dragged directly in the file tree for faster organization",
+						"Major sidebar UI overhaul with cleaner navigation, sharper spacing, and a calmer workspace feel",
+						"Sidebar rendering has been redesigned and tuned for a cleaner feel, with average performance improvements of around 50 to 60 percent",
+						"Space names in the sidebar are now better aligned for a cleaner navigation layout",
+						"New Note button styling now uses the app accent more clearly",
+						"Tags UI has been refined with clearer spacing, contrast, and interaction states",
+						"Editing ribbon colors have been inverted for better readability",
+						"AI panel input box UI has been cleaned up for a more polished writing flow",
+						"YAML handling has been cleaned up for a smoother note editing experience",
+						"Removed a large amount of dead code and refactored close to 5000 lines so Glyph stays lighter and easier to maintain"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Sidebar note info now refreshes correctly when frontmatter and properties change",
+						"Sidebar no longer closes immediately when it should stay open"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.13",
 			"publishedAt": "2026-04-24",
 			"sections": [
