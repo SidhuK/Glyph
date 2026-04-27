@@ -61,10 +61,7 @@ fn normalized_status_text(value: &str) -> String {
 
 fn is_status_key(key: &str) -> bool {
     let normalized = normalized_status_text(key);
-    matches!(
-        normalized.as_str(),
-        "status" | "state" | "stage" | "phase" | "progress"
-    ) || normalized.ends_with(" status")
+    normalized == "status" || normalized.ends_with(" status")
 }
 
 pub fn reindex_note_properties(
@@ -138,7 +135,7 @@ mod tests {
         );
         assert_eq!(
             property_kind("stage", &Value::String("blocked".to_string())),
-            "status"
+            "text"
         );
         assert_eq!(
             property_kind("status", &Value::String("someday".to_string())),

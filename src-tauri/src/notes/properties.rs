@@ -41,12 +41,18 @@ fn scalar_text(value: &Value) -> Option<String> {
 }
 
 fn property_text(value: &Value) -> String {
-    scalar_text(value).unwrap_or_else(|| {
-        serde_yaml::to_string(value)
-            .unwrap_or_default()
-            .trim()
-            .to_string()
-    })
+    if let Some(text) = scalar_text(value) {
+        return text;
+    }
+    if let Value::Sequence(items) = value {
+        if let Some(joined) = items.iter().map(scalar_text).collect::<Option<Vec<_>>>() {
+            return joined.join(", ");
+        }
+    }
+    serde_yaml::to_string(value)
+        .unwrap_or_default()
+        .trim()
+        .to_string()
 }
 
 fn infer_string_kind(value: &str) -> &'static str {
@@ -76,10 +82,7 @@ fn normalized_status_text(value: &str) -> String {
 
 fn is_status_key(key: &str) -> bool {
     let normalized = normalized_status_text(key);
-    matches!(
-        normalized.as_str(),
-        "status" | "state" | "stage" | "phase" | "progress"
-    ) || normalized.ends_with(" status")
+    normalized == "status" || normalized.ends_with(" status")
 }
 
 fn yaml_value_to_property(key: &str, value: &Value) -> Result<NoteProperty, String> {
@@ -238,7 +241,7 @@ tags:
             .find(|property| property.key == "author")
             .unwrap();
         assert_eq!(author.kind, "text");
-        assert_eq!(author.value_text.as_deref(), Some("- '[[Eric Topol]]'"));
+        assert_eq!(author.value_text.as_deref(), Some("[[Eric Topol]]"));
 
         let published = properties
             .iter()
@@ -287,7 +290,7 @@ Review Status: someday
                 .find(|property| property.key == "stage")
                 .unwrap()
                 .kind,
-            "status"
+            "text"
         );
         let custom_status = properties
             .iter()

@@ -1084,7 +1084,8 @@
 
 .aiComposerInputShell:focus-within {
 	border-color: var(--border-focus);
-	box-shadow: 0 0 0 3px var(--selection-bg-muted), 0 1px 3px rgba(0, 0, 0, 0.06);
+	box-shadow: 0 0 0 1px var(--border-focus), 0 0 0 4px var(--selection-bg-muted),
+		0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .aiComposerBar {

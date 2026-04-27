@@ -63,7 +63,7 @@ export const DATABASE_COLUMN_ICON_OPTIONS = [
 	{ id: "reminder", label: "Reminder", iconKey: "AppleReminderIcon" },
 	{ id: "activity", label: "Activity", iconKey: "Activity01Icon" },
 	{ id: "workflow", label: "Workflow", iconKey: "WorkflowCircle01Icon" },
-	{ id: "status", label: "Status", iconKey: "StatusIcon" },
+	{ id: "status", label: "Status", iconKey: "CheckmarkCircle02Icon" },
 ] as const satisfies readonly DatabaseColumnIconOption[];
 
 const DATABASE_COLUMN_ICON_BY_ID = new Map<string, DatabaseColumnIconOption>(

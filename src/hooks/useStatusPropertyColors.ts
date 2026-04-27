@@ -43,7 +43,9 @@ export function useStatusPropertyColors() {
 		(value: string, color: EditorTextColor | null) => {
 			const statusId = statusColorKey(value);
 			if (!statusId) return;
+			let previousColor: EditorTextColor | undefined;
 			setColors((current) => {
+				previousColor = current[statusId];
 				if (color) {
 					return { ...current, [statusId]: color };
 				}
@@ -51,10 +53,25 @@ export function useStatusPropertyColors() {
 				delete next[statusId];
 				return next;
 			});
-			void invoke("databases_status_color_set", {
+			return invoke("databases_status_color_set", {
 				status: statusId,
 				color,
-			}).catch(() => undefined);
+			}).catch((error) => {
+				console.error("Failed to save status color", error);
+				setColors((current) => {
+					const stillOptimistic = color
+						? current[statusId] === color
+						: !(statusId in current);
+					if (!stillOptimistic) return current;
+					const next = { ...current };
+					if (previousColor) {
+						next[statusId] = previousColor;
+					} else {
+						delete next[statusId];
+					}
+					return next;
+				});
+			});
 		},
 		[],
 	);

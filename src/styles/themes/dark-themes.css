@@ -12,6 +12,7 @@
 		var(--text-primary, #f3f5f8) 94%,
 		#ffffff
 	);
+	--pill-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
 	--shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0px 0
 		rgba(0, 0, 0, 0.25);

@@ -95,7 +95,7 @@ fn migrate_status_property_kinds(conn: &rusqlite::Connection) -> Result<(), Stri
          WHERE value_type = 'text'
            AND (
              lower(replace(replace(trim(key), '_', ' '), '-', ' ')) IN
-               ('status', 'state', 'stage', 'phase', 'progress')
+               ('status')
              OR lower(replace(replace(trim(key), '_', ' '), '-', ' ')) LIKE '% status'
            )",
         [],

@@ -1013,6 +1013,7 @@ function DatabasesPaneContent({
 												onChange={(event) =>
 													setViewNameDraft(event.target.value)
 												}
+												onBlur={commitViewRename}
 												onKeyDown={(event) => {
 													if (event.key === "Enter") {
 														event.preventDefault();

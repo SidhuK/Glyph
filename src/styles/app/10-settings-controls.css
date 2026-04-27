@@ -35,6 +35,7 @@
 
 .earlyAccessBadge {
 	--early-access-color: var(--interactive-accent);
+
 	padding: 4px 8px;
 	border-radius: var(--pill-radius);
 	border: 0;

@@ -633,12 +633,17 @@ function DatabaseCellEditor({
 											: "false"
 									}
 									onClick={async () => {
-										await onSave(row.note_path, column, {
-											kind: "status",
-											value_text: option.label,
-											value_bool: null,
-											value_list: [],
-										});
+										try {
+											await onSave(row.note_path, column, {
+												kind: "status",
+												value_text: option.label,
+												value_bool: null,
+												value_list: [],
+											});
+										} catch (error) {
+											setSaveError(extractErrorMessage(error));
+											return;
+										}
 										onClose();
 									}}
 								>
@@ -1022,12 +1027,16 @@ export function DatabaseCell({
 												: "false"
 										}
 										onClick={async () => {
-											await onSave(row.note_path, column, {
-												kind: "status",
-												value_text: option.label,
-												value_bool: null,
-												value_list: [],
-											});
+											try {
+												await onSave(row.note_path, column, {
+													kind: "status",
+													value_text: option.label,
+													value_bool: null,
+													value_list: [],
+												});
+											} catch (error) {
+												console.error("Failed to save database status", error);
+											}
 										}}
 									>
 										<StatusPropertyPill
@@ -1082,9 +1091,12 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={displayText || "Double-click to edit status"}
+					title={displayText || "Status"}
 				>
-					<StatusPropertyPill value={currentValue} colors={statusColors} />
+					<StatusPropertyPill
+						value={currentValue || "not_started"}
+						colors={statusColors}
+					/>
 				</button>
 			);
 		}
