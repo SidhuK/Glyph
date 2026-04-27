@@ -10,11 +10,7 @@ export function emptyProperty(): NoteProperty {
 	};
 }
 
-export function listText(property: NoteProperty): string {
-	return property.value_list.join(", ");
-}
-
-export function fromListText(value: string): string[] {
+function fromDelimitedText(value: string): string[] {
 	return value
 		.split(",")
 		.map((item) => item.trim())
@@ -66,24 +62,22 @@ export function normalizeForKind(property: NoteProperty): NoteProperty {
 					(property.value_text ?? "").trim().toLowerCase() === "true",
 			};
 		case "tags":
-		case "list":
 			return {
 				...property,
 				value_list:
 					property.value_list.length > 0
 						? property.value_list
-						: fromListText(property.value_text ?? ""),
+						: fromDelimitedText(property.value_text ?? ""),
 			};
-		case "yaml":
+		case "status":
 			return {
 				...property,
 				value_text:
-					property.value_text ??
-					(property.value_list.length > 0
-						? property.value_list.join(", ")
-						: property.value_bool != null
-							? String(property.value_bool)
-							: ""),
+					property.value_text?.trim() ||
+					(property.value_list.length > 0 ? property.value_list[0] : "") ||
+					"Not started",
+				value_bool: null,
+				value_list: [],
 			};
 		default:
 			return {

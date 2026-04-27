@@ -33,6 +33,8 @@ interface DatabaseTableProps {
 	onOpenRow: (notePath: string) => void;
 	onToggleSort: (column: DatabaseColumn) => void;
 	laneColors?: Record<string, string>;
+	statusColors?: Record<string, EditorTextColor>;
+	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -88,6 +90,8 @@ export function DatabaseTable({
 	onOpenRow,
 	onToggleSort,
 	laneColors = EMPTY_LANE_COLORS,
+	statusColors,
+	onStatusColorChange,
 	onSaveCell,
 	onRenameTitle,
 	onResizeColumn,
@@ -146,9 +150,11 @@ export function DatabaseTable({
 						column={column}
 						isRowSelected={row.original.note_path === selectedRowPath}
 						laneColors={safeLaneColors}
+						statusColors={statusColors}
 						onOpenNote={onOpenRow}
 						onSelectRow={onSelectRow}
 						onSave={onSaveCell}
+						onStatusColorChange={onStatusColorChange}
 						onRenameTitle={onRenameTitle}
 						valueOptions={columnValueOptions[column.id] ?? []}
 					/>
@@ -166,6 +172,8 @@ export function DatabaseTable({
 			onToggleSort,
 			selectedRowPath,
 			safeLaneColors,
+			statusColors,
+			onStatusColorChange,
 		],
 	);
 

@@ -125,7 +125,7 @@ export function NotesInfoSidebar({
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">
-				<section className="markdownEditorInfoSection">
+				<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
 					<NotePropertiesPanel
 						frontmatter={frontmatter}
 						onChange={onFrontmatterChange}

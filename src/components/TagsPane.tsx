@@ -135,17 +135,9 @@ export const TagsPane = memo(function TagsPane({
 							hidden: {},
 						}}
 					>
-						{visibleRows.map((tag, index) => {
+						{visibleRows.map((tag) => {
 							return (
-								<m.li
-									key={tag.tag}
-									className="tagsItem"
-									variants={{
-										hidden: { scale: 0.9 },
-										visible: { scale: 1 },
-									}}
-									transition={{ ...springTransition, delay: index * 0.015 }}
-								>
+								<m.li key={tag.tag} className="tagsItem">
 									<m.button
 										type="button"
 										className="tagsButton"
@@ -167,6 +159,7 @@ export const TagsPane = memo(function TagsPane({
 										<span className="tagsNameWrap">
 											<HugeiconsIcon
 												icon={Tag01Icon}
+												className="tagsIcon"
 												size={12}
 												strokeWidth={0.9}
 											/>

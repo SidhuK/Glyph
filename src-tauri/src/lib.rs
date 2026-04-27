@@ -1342,6 +1342,8 @@ pub fn run() {
             databases::commands::databases_update_cell,
             databases::commands::databases_create_row,
             databases::commands::databases_preview_context,
+            databases::commands::databases_status_colors_get,
+            databases::commands::databases_status_color_set,
             file_tree_appearance::commands::file_tree_appearance_list,
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,

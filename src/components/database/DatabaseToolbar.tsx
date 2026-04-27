@@ -15,7 +15,7 @@ import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
 import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
 
 interface DatabaseToolbarProps {
-	databaseView: "table" | "board";
+	databaseView: "table" | "board" | "list";
 	groupColumns: DatabaseColumn[];
 	groupColumnId: string | null;
 	config: DatabaseConfig;

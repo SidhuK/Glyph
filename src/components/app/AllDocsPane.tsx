@@ -2,6 +2,7 @@ import {
 	CalendarAdd01Icon,
 	CollectionsBookmarkIcon,
 	DocumentCodeIcon,
+	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -503,6 +504,12 @@ export const AllDocsPane = memo(function AllDocsPane({
 															key={`${note.note_path}:${tag}`}
 															className="databaseBoardTag"
 														>
+															<HugeiconsIcon
+																icon={Tag01Icon}
+																className="databaseTagPillIcon"
+																size={11}
+																strokeWidth={1.2}
+															/>
 															{formatDatabaseTagLabel(tag)}
 														</span>
 													))}

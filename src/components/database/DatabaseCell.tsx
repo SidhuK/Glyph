@@ -1,3 +1,5 @@
+import { Tag01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type CSSProperties,
 	useCallback,
@@ -15,10 +17,22 @@ import {
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import {
+	statusColorKey,
+	statusOptionsWithCustomValues,
+} from "../../lib/statusProperties";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import { normalizeTagToken } from "../editor/noteProperties/utils";
-import type { EditorTextColor } from "../editor/textColors";
+import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
+import { StatusPropertyPill } from "../status/StatusPropertyPill";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
@@ -30,9 +44,11 @@ interface DatabaseCellProps {
 	column: DatabaseColumn;
 	isRowSelected?: boolean;
 	laneColors?: Record<string, EditorTextColor>;
+	statusColors?: Record<string, EditorTextColor>;
 	onOpenNote?: (notePath: string) => void;
 	onSelectRow?: (notePath: string) => void;
 	valueOptions?: string[];
+	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	onRenameTitle?: (notePath: string, nextTitle: string) => Promise<boolean>;
 	onSave: (
 		notePath: string,
@@ -44,6 +60,7 @@ interface DatabaseCellProps {
 interface DatabaseDisplayPill {
 	key: string;
 	label: string;
+	kind?: "tag";
 	style?: CSSProperties;
 	title?: string;
 }
@@ -52,7 +69,26 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const itemMeasureRefs = useRef<Array<HTMLSpanElement | null>>([]);
 	const moreMeasureRefs = useRef<Array<HTMLSpanElement | null>>([]);
-	const [visibleCount, setVisibleCount] = useState(0);
+	const [visibleCount, setVisibleCount] = useState(() => items.length);
+
+	const renderPill = (item: DatabaseDisplayPill) => (
+		<span
+			key={item.key}
+			className="databaseCellPill"
+			style={item.style}
+			title={item.title}
+		>
+			{item.kind === "tag" ? (
+				<HugeiconsIcon
+					icon={Tag01Icon}
+					className="databaseTagPillIcon"
+					size={11}
+					strokeWidth={1.2}
+				/>
+			) : null}
+			{item.label}
+		</span>
+	);
 
 	useLayoutEffect(() => {
 		const container = containerRef.current;
@@ -63,6 +99,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 		const measure = () => {
 			const containerWidth = container.clientWidth;
 			if (!Number.isFinite(containerWidth) || containerWidth <= 0) {
+				setVisibleCount(items.length);
 				return;
 			}
 
@@ -96,6 +133,9 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 					break;
 				}
 			}
+			if (items.length > 0 && nextVisibleCount === 0) {
+				nextVisibleCount = 1;
+			}
 			setVisibleCount((current) =>
 				current === nextVisibleCount ? current : nextVisibleCount,
 			);
@@ -113,8 +153,16 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	}, [items]);
 
 	useLayoutEffect(() => {
-		setVisibleCount((current) => Math.min(current, items.length));
+		if (items.length <= 2) {
+			setVisibleCount(items.length);
+			return;
+		}
+		setVisibleCount((current) => Math.min(Math.max(current, 1), items.length));
 	}, [items.length]);
+
+	if (items.length <= 2) {
+		return <div className="databaseCellPills">{items.map(renderPill)}</div>;
+	}
 
 	const visibleItems = items.slice(0, visibleCount);
 	const hiddenCount = Math.max(0, items.length - visibleCount);
@@ -122,16 +170,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	return (
 		<>
 			<div ref={containerRef} className="databaseCellPills">
-				{visibleItems.map((item) => (
-					<span
-						key={item.key}
-						className="databaseCellPill"
-						style={item.style}
-						title={item.title}
-					>
-						{item.label}
-					</span>
-				))}
+				{visibleItems.map(renderPill)}
 				{hiddenCount > 0 ? (
 					<span className="databaseCellPill databaseCellPillMore">
 						+{hiddenCount}
@@ -148,6 +187,14 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 						className="databaseCellPill"
 						style={item.style}
 					>
+						{item.kind === "tag" ? (
+							<HugeiconsIcon
+								icon={Tag01Icon}
+								className="databaseTagPillIcon"
+								size={11}
+								strokeWidth={1.2}
+							/>
+						) : null}
 						{item.label}
 					</span>
 				))}
@@ -168,6 +215,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 }
 
 const EMPTY_LANE_COLORS: Record<string, EditorTextColor> = {};
+const EMPTY_STATUS_COLORS: Record<string, EditorTextColor> = {};
 
 function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 	const value = databaseCellValueFromRow(row, column);
@@ -176,7 +224,6 @@ function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 
 function isListLikeColumn(column: DatabaseColumn): boolean {
 	return (
-		column.property_kind === "list" ||
 		column.property_kind === "relation" ||
 		column.property_kind === "multi_select"
 	);
@@ -204,8 +251,10 @@ function DatabaseCellEditor({
 	row,
 	column,
 	laneColors = EMPTY_LANE_COLORS,
+	statusColors = EMPTY_STATUS_COLORS,
 	onSelectRow,
 	valueOptions = [],
+	onStatusColorChange,
 	onRenameTitle,
 	onSave,
 	onClose,
@@ -245,6 +294,8 @@ function DatabaseCellEditor({
 	}, []);
 	const isTagsColumn =
 		column.type === "tags" || column.property_kind === "tags";
+	const isStatusColumn =
+		column.type === "property" && column.property_kind === "status";
 	const isListLike = isListLikeColumn(column);
 	const toneStyleForValue = (value: string) =>
 		databaseValueToneStyleForColor(value, laneColors[value] ?? null);
@@ -365,6 +416,16 @@ function DatabaseCellEditor({
 				if (!renamed) return;
 				return;
 			}
+			if (isStatusColumn) {
+				await onSave(row.note_path, column, {
+					kind: "status",
+					value_text: draft,
+					value_bool: null,
+					value_list: [],
+				});
+				onClose();
+				return;
+			}
 			if (column.type === "tags" || column.property_kind === "tags") {
 				await onSave(row.note_path, column, {
 					kind: column.property_kind ?? "tags",
@@ -425,6 +486,12 @@ function DatabaseCellEditor({
 							}}
 							title={`Remove ${formatDatabaseTagLabel(value)}`}
 						>
+							<HugeiconsIcon
+								icon={Tag01Icon}
+								className="databaseTagPillIcon"
+								size={11}
+								strokeWidth={1.2}
+							/>
 							<span>{formatDatabaseTagLabel(value)}</span>
 							<X size={10} />
 						</button>
@@ -520,6 +587,108 @@ function DatabaseCellEditor({
 				{saveError ? (
 					<div className="databaseCellError">{saveError}</div>
 				) : null}
+			</div>
+		);
+	}
+
+	if (isStatusColumn) {
+		const currentValue = cellValue.value_text ?? "";
+		const currentStatusId = statusColorKey(currentValue);
+		const statusOptions = statusOptionsWithCustomValues([
+			currentValue,
+			...valueOptions,
+		]);
+		return (
+			<div className="databaseTagEditor">
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							className="notePropertyStatusTrigger databaseStatusTrigger"
+							onFocus={handleSelectRow}
+							onClick={(event) => {
+								handleSelectRow();
+								event.stopPropagation();
+							}}
+						>
+							<StatusPropertyPill
+								value={currentValue || "not_started"}
+								colors={statusColors}
+							/>
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="start"
+						sideOffset={6}
+						className="databasePickerMenu notePropertyStatusMenu"
+					>
+						<div className="notePropertyStatusOptions">
+							{statusOptions.map((option) => (
+								<DropdownMenuItem
+									key={option.id}
+									className="notePropertyStatusOption"
+									data-selected={
+										statusColorKey(option.label) === currentStatusId
+											? "true"
+											: "false"
+									}
+									onClick={async () => {
+										try {
+											await onSave(row.note_path, column, {
+												kind: "status",
+												value_text: option.label,
+												value_bool: null,
+												value_list: [],
+											});
+										} catch (error) {
+											setSaveError(extractErrorMessage(error));
+											return;
+										}
+										onClose();
+									}}
+								>
+									<StatusPropertyPill
+										value={option.label}
+										colors={statusColors}
+									/>
+								</DropdownMenuItem>
+							))}
+						</div>
+						{currentStatusId && onStatusColorChange ? (
+							<>
+								<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
+								<div className="notePropertyStatusColorRibbon">
+									{EDITOR_TEXT_COLORS.map((color) => (
+										<button
+											key={color.id}
+											type="button"
+											className="databaseBoardColorRibbonSwatch"
+											style={
+												{
+													"--database-tone": `var(${color.cssVar})`,
+												} as CSSProperties
+											}
+											onClick={() =>
+												onStatusColorChange(currentValue, color.id)
+											}
+											title={color.label}
+											aria-label={`Set ${currentValue} color to ${color.label}`}
+										/>
+									))}
+									<button
+										type="button"
+										className="databaseBoardColorRibbonClear"
+										onClick={() => onStatusColorChange(currentValue, null)}
+										title="Clear color"
+										aria-label={`Clear color for ${currentValue}`}
+									>
+										<span />
+									</button>
+								</div>
+							</>
+						) : null}
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 		);
 	}
@@ -644,8 +813,8 @@ function DatabaseCellEditor({
 				ref={focusTextInput}
 				className="databaseCellInput"
 				type={
-					column.property_kind === "number"
-						? "number"
+					column.property_kind === "date"
+						? "date"
 						: column.property_kind === "url"
 							? "url"
 							: "text"
@@ -703,9 +872,11 @@ export function DatabaseCell({
 	column,
 	isRowSelected = false,
 	laneColors = EMPTY_LANE_COLORS,
+	statusColors = EMPTY_STATUS_COLORS,
 	onOpenNote,
 	onSelectRow,
 	valueOptions = [],
+	onStatusColorChange,
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
@@ -723,17 +894,14 @@ export function DatabaseCell({
 		if (cellValue.kind !== "tags") return [];
 		return cellValue.value_list.map((value) => ({
 			key: `${column.id}:${value}`,
+			kind: "tag",
 			label: formatDatabaseTagLabel(value),
 			style: databaseValueToneStyleForColor(value, laneColors[value] ?? null),
 			title: formatDatabaseTagLabel(value),
 		}));
 	}, [cellValue.kind, cellValue.value_list, column.id, laneColors]);
 	const listPillItems = useMemo<DatabaseDisplayPill[]>(() => {
-		if (
-			cellValue.kind !== "list" &&
-			cellValue.kind !== "relation" &&
-			cellValue.kind !== "multi_select"
-		) {
+		if (cellValue.kind !== "relation" && cellValue.kind !== "multi_select") {
 			return [];
 		}
 		return cellValue.value_list.map((value) => ({
@@ -798,11 +966,7 @@ export function DatabaseCell({
 				</button>
 			);
 		}
-		if (
-			cellValue.kind === "list" ||
-			cellValue.kind === "relation" ||
-			cellValue.kind === "multi_select"
-		) {
+		if (cellValue.kind === "relation" || cellValue.kind === "multi_select") {
 			const fullValue = cellValue.value_list.join(", ");
 			return (
 				<button
@@ -821,10 +985,119 @@ export function DatabaseCell({
 				</button>
 			);
 		}
-		if (column.type === "property" && column.property_kind === "yaml") {
-			if (!cellValue.value_text?.trim()) return null;
+		if (cellValue.kind === "status") {
+			const currentValue = cellValue.value_text ?? "";
+			const currentStatusId = statusColorKey(currentValue);
+			const statusOptions = statusOptionsWithCustomValues([
+				currentValue,
+				...valueOptions,
+			]);
+			if (editable) {
+				return (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								className="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
+								onClick={(event) => {
+									handleSelectRow();
+									event.stopPropagation();
+								}}
+								title={displayText || "Change status"}
+							>
+								<StatusPropertyPill
+									value={currentValue || "not_started"}
+									colors={statusColors}
+								/>
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align="start"
+							sideOffset={6}
+							className="databasePickerMenu notePropertyStatusMenu"
+						>
+							<div className="notePropertyStatusOptions">
+								{statusOptions.map((option) => (
+									<DropdownMenuItem
+										key={option.id}
+										className="notePropertyStatusOption"
+										data-selected={
+											statusColorKey(option.label) === currentStatusId
+												? "true"
+												: "false"
+										}
+										onClick={async () => {
+											try {
+												await onSave(row.note_path, column, {
+													kind: "status",
+													value_text: option.label,
+													value_bool: null,
+													value_list: [],
+												});
+											} catch (error) {
+												console.error("Failed to save database status", error);
+											}
+										}}
+									>
+										<StatusPropertyPill
+											value={option.label}
+											colors={statusColors}
+										/>
+									</DropdownMenuItem>
+								))}
+							</div>
+							{currentStatusId && onStatusColorChange ? (
+								<>
+									<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
+									<div className="notePropertyStatusColorRibbon">
+										{EDITOR_TEXT_COLORS.map((color) => (
+											<button
+												key={color.id}
+												type="button"
+												className="databaseBoardColorRibbonSwatch"
+												style={
+													{
+														"--database-tone": `var(${color.cssVar})`,
+													} as CSSProperties
+												}
+												onClick={() =>
+													onStatusColorChange(currentValue, color.id)
+												}
+												title={color.label}
+												aria-label={`Set ${currentValue} color to ${color.label}`}
+											/>
+										))}
+										<button
+											type="button"
+											className="databaseBoardColorRibbonClear"
+											onClick={() => onStatusColorChange(currentValue, null)}
+											title="Clear color"
+											aria-label={`Clear color for ${currentValue}`}
+										>
+											<span />
+										</button>
+									</div>
+								</>
+							) : null}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				);
+			}
 			return (
-				<pre className="databaseCellYaml">{cellValue.value_text.trim()}</pre>
+				<button
+					type="button"
+					className="databaseCellButton is-pill-list"
+					onClick={(event) => {
+						handleSelectRow();
+						event.stopPropagation();
+					}}
+					title={displayText || "Status"}
+				>
+					<StatusPropertyPill
+						value={currentValue || "not_started"}
+						colors={statusColors}
+					/>
+				</button>
 			);
 		}
 		if (column.type === "title") {
@@ -891,9 +1164,11 @@ export function DatabaseCell({
 			row={row}
 			column={column}
 			laneColors={laneColors}
+			statusColors={statusColors}
 			onOpenNote={onOpenNote}
 			onSelectRow={onSelectRow}
 			valueOptions={valueOptions}
+			onStatusColorChange={onStatusColorChange}
 			onRenameTitle={onRenameTitle}
 			onSave={onSave}
 			onClose={() => setEditing(false)}

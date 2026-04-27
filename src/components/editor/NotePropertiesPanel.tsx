@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
 import type { NoteProperty, TagCount } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Plus } from "../Icons";
@@ -45,6 +46,7 @@ export function NotePropertiesPanel({
 	});
 	const [availableTags, setAvailableTags] = useState<TagCount[]>([]);
 	const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
+	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 	const lastCommittedFrontmatterRef = useRef<string | null>(null);
 	const propertyRowIdCounterRef = useRef(0);
 	const tagInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -207,6 +209,7 @@ export function NotePropertiesPanel({
 								readOnly={readOnly}
 								availableTags={availableTags}
 								tagDraft={tagDrafts[rowId] ?? ""}
+								statusColors={statusColors}
 								onSetTagDraft={(nextRowId, value) =>
 									setTagDrafts((current) => ({
 										...current,
@@ -241,6 +244,7 @@ export function NotePropertiesPanel({
 									})
 								}
 								onUpdate={updateProperty}
+								onStatusColorChange={setStatusColor}
 								onRemove={(propertyIndex) => {
 									const removedRowId = propertyRowIds[propertyIndex];
 									if (removedRowId) {

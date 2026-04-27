@@ -4,10 +4,9 @@ use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
-use super::properties::backfill_inferred_string_property_kinds;
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 2;
+const INDEX_DB_VERSION: i32 = 5;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -24,15 +23,16 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
         return Ok(());
     }
 
-    if current_version < 1 {
-        let backfilled = backfill_inferred_string_property_kinds(conn)?;
-        if backfilled > 0 {
-            tracing::info!(backfilled, "Backfilled legacy note property kinds");
-        }
-    }
-
     if current_version < 2 {
         migrate_tags_table(conn)?;
+    }
+
+    if current_version < 3 {
+        migrate_frontmatter_property_kinds(conn)?;
+    }
+
+    if current_version < 5 {
+        migrate_status_property_kinds(conn)?;
     }
 
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
@@ -74,6 +74,33 @@ fn migrate_tags_table(conn: &rusqlite::Connection) -> Result<(), String> {
     conn.execute("DELETE FROM tags", [])
         .map_err(|e| e.to_string())?;
     tracing::info!("Cleared legacy tag rows; next rebuild will repopulate hierarchical tags");
+    Ok(())
+}
+
+fn migrate_frontmatter_property_kinds(conn: &rusqlite::Connection) -> Result<(), String> {
+    conn.execute(
+        "UPDATE note_properties
+         SET value_type = 'text'
+         WHERE value_type NOT IN ('text', 'url', 'date', 'checkbox', 'tags', 'status')",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn migrate_status_property_kinds(conn: &rusqlite::Connection) -> Result<(), String> {
+    conn.execute(
+        "UPDATE note_properties
+         SET value_type = 'status'
+         WHERE value_type = 'text'
+           AND (
+             lower(replace(replace(trim(key), '_', ' '), '-', ' ')) IN
+               ('status')
+             OR lower(replace(replace(trim(key), '_', ' '), '-', ' ')) LIKE '% status'
+           )",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 

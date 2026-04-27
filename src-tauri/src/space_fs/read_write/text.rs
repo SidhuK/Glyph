@@ -1,5 +1,6 @@
+use serde::Serialize;
 use std::{ffi::OsStr, io::Write, path::PathBuf};
-use tauri::State;
+use tauri::{Emitter, State};
 
 use crate::space::state::mark_recent_local_change;
 use crate::{index, io_atomic, paths, space::SpaceState};
@@ -8,6 +9,12 @@ use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::super::types::{
     OpenOrCreateTextResult, TextFileDoc, TextFileDocBatch, TextFileWriteResult,
 };
+
+#[derive(Serialize, Clone)]
+struct NoteChangeEvent {
+    rel_path: String,
+    removed: bool,
+}
 
 #[tauri::command]
 pub async fn space_read_text(
@@ -76,6 +83,7 @@ pub async fn space_read_texts_batch(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_write_text(
+    app: tauri::AppHandle,
     state: State<'_, SpaceState>,
     path: String,
     text: String,
@@ -83,40 +91,57 @@ pub async fn space_write_text(
 ) -> Result<TextFileWriteResult, String> {
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
-    tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
-        let rel = PathBuf::from(&path);
-        deny_hidden_rel_path(&rel)?;
-        let abs = paths::join_under(&root, &rel)?;
-        if let Some(expected) = base_mtime_ms {
-            let actual = file_mtime_ms(&abs);
-            if actual != 0 && actual != expected {
-                return Err("conflict: on-disk file changed since it was opened".to_string());
+    let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
+    let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
+    let result =
+        tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
+            let rel = PathBuf::from(&path);
+            deny_hidden_rel_path(&rel)?;
+            let abs = paths::join_under(&root, &rel)?;
+            if let Some(expected) = base_mtime_ms {
+                let actual = file_mtime_ms(&abs);
+                if actual != 0 && actual != expected {
+                    return Err("conflict: on-disk file changed since it was opened".to_string());
+                }
             }
-        }
-        if let Some(parent) = abs.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-
-        let rel_path = rel.to_string_lossy().to_string();
-        let should_index = rel.extension() == Some(OsStr::new("md"));
-        let bytes = text.into_bytes();
-        if should_index {
-            mark_recent_local_change(&recent_local_changes, &rel_path);
-        }
-        io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
-        if should_index {
-            if let Ok(markdown) = std::str::from_utf8(&bytes) {
-                let _ = index::index_note(&root, &rel_path, markdown);
+            if let Some(parent) = abs.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-        }
 
-        Ok(TextFileWriteResult {
-            etag: etag_for(&bytes),
-            mtime_ms: file_mtime_ms(&abs),
+            let rel_path = rel.to_string_lossy().to_string();
+            let should_index = rel.extension() == Some(OsStr::new("md"));
+            let bytes = text.into_bytes();
+            if should_index {
+                mark_recent_local_change(&recent_local_changes, &rel_path);
+            }
+            io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
+            if should_index {
+                if let Ok(markdown) = std::str::from_utf8(&bytes) {
+                    let _ = index::index_note(&root, &rel_path, markdown);
+                }
+            }
+
+            Ok(TextFileWriteResult {
+                etag: etag_for(&bytes),
+                mtime_ms: file_mtime_ms(&abs),
+            })
         })
-    })
-    .await
-    .map_err(|e| e.to_string())?
+        .await
+        .map_err(|e| e.to_string())??;
+
+    if should_emit_note_change {
+        // Local writes are filtered out by the filesystem watcher, so publish the
+        // same note-change event here after the note has been indexed.
+        let _ = app.emit(
+            "notes:external_changed",
+            NoteChangeEvent {
+                rel_path: event_rel_path,
+                removed: false,
+            },
+        );
+    }
+
+    Ok(result)
 }
 
 #[tauri::command(rename_all = "snake_case")]

@@ -3,7 +3,7 @@ use std::path::Path;
 
 use chrono::{Duration, NaiveDate};
 use serde::Serialize;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
 
 use crate::space::state::mark_recent_local_change;
@@ -24,6 +24,12 @@ use super::types::{
     SearchResult, TagCount, TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
+
+#[derive(Serialize, Clone)]
+struct NoteChangeEvent {
+    rel_path: String,
+    removed: bool,
+}
 
 #[derive(Serialize)]
 pub struct CalendarDaySummary {
@@ -887,13 +893,14 @@ mod tests {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_checked(
+    app: AppHandle,
     state: State<'_, SpaceState>,
     task_id: String,
     checked: bool,
 ) -> Result<(), String> {
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+    let note_path = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
             .prepare("SELECT note_id, note_path, line_start FROM tasks WHERE task_id = ? LIMIT 1")
@@ -909,14 +916,23 @@ pub async fn task_set_checked(
         mark_recent_local_change(&recent_local_changes, &note_path);
         write_note(&abs, &next)?;
         let _ = index_note(&root, &note_id, &next);
-        Ok(())
+        Ok(note_path)
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    let _ = app.emit(
+        "notes:external_changed",
+        NoteChangeEvent {
+            rel_path: note_path,
+            removed: false,
+        },
+    );
+    Ok(())
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_dates(
+    app: AppHandle,
     state: State<'_, SpaceState>,
     task_id: String,
     scheduled_date: Option<String>,
@@ -924,7 +940,7 @@ pub async fn task_set_dates(
 ) -> Result<(), String> {
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+    let note_path = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
             .prepare("SELECT note_id, note_path, line_start FROM tasks WHERE task_id = ? LIMIT 1")
@@ -946,10 +962,18 @@ pub async fn task_set_dates(
         mark_recent_local_change(&recent_local_changes, &note_path);
         write_note(&abs, &next)?;
         let _ = index_note(&root, &note_id, &next);
-        Ok(())
+        Ok(note_path)
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    let _ = app.emit(
+        "notes:external_changed",
+        NoteChangeEvent {
+            rel_path: note_path,
+            removed: false,
+        },
+    );
+    Ok(())
 }
 
 #[tauri::command(rename_all = "snake_case")]

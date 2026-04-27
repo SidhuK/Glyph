@@ -452,25 +452,23 @@ fn compare_rows(
     let left_cell = cell_value_from_row(left, column);
     let right_cell = cell_value_from_row(right, column);
     match left_cell.kind.as_str() {
-        "number" => {
-            let left_number = left_cell
+        "date" => {
+            let left_date = left_cell
                 .value_text
                 .as_deref()
-                .and_then(|value| value.trim().parse::<f64>().ok());
-            let right_number = right_cell
+                .and_then(|value| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").ok());
+            let right_date = right_cell
                 .value_text
                 .as_deref()
-                .and_then(|value| value.trim().parse::<f64>().ok());
-            match (left_number, right_number) {
-                (Some(left_number), Some(right_number)) => left_number
-                    .partial_cmp(&right_number)
-                    .unwrap_or(std::cmp::Ordering::Equal),
+                .and_then(|value| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").ok());
+            match (left_date, right_date) {
+                (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
                 (Some(_), None) => std::cmp::Ordering::Greater,
                 (None, Some(_)) => std::cmp::Ordering::Less,
                 (None, None) => std::cmp::Ordering::Equal,
             }
         }
-        "date" | "datetime" => {
+        "datetime" => {
             let left_date = left_cell
                 .value_text
                 .as_deref()
@@ -614,7 +612,7 @@ fn property_value_from_index(
             value_bool: serde_json::from_str::<bool>(&value_json).ok(),
             value_list: Vec::new(),
         },
-        "list" | "tags" | "relation" => DatabaseCellValue {
+        "tags" | "relation" => DatabaseCellValue {
             kind: value_type.to_string(),
             value_text: None,
             value_bool: None,

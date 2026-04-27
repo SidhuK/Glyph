@@ -95,7 +95,7 @@ export interface DatabaseNewNoteConfig {
 }
 
 export interface DatabaseViewState {
-	layout: "table" | "board";
+	layout: "table" | "board" | "list";
 	board_group_by?: string | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
@@ -183,7 +183,7 @@ export interface WorkspaceDatabaseGrouping {
 export interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
-	layout: "table" | "board";
+	layout: "table" | "board" | "list";
 	icon?: string | null;
 	color?: string | null;
 	columns: DatabaseColumn[];
@@ -828,6 +828,11 @@ interface TauriCommands {
 	databases_preview_context: CommandDef<
 		{ note_path: string; space_path?: string | null },
 		WorkspaceDatabasePreviewContext
+	>;
+	databases_status_colors_get: CommandDef<void, Record<string, string>>;
+	databases_status_color_set: CommandDef<
+		{ status: string; color?: string | null },
+		Record<string, string>
 	>;
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;

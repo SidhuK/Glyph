@@ -260,14 +260,16 @@
 	flex-shrink: 0;
 	font-size: 9px;
 	line-height: 1;
-	padding: 1px 4px;
-	border-radius: var(--radius-sm);
-	background: var(--bg-hover);
-	color: var(--text-tertiary);
+	padding: 2px 5px;
+	border: 0;
+	border-radius: var(--pill-radius);
+	background: color-mix(in srgb, var(--bg-hover) 78%, var(--bg-secondary));
+	color: color-mix(in srgb, var(--text-secondary) 78%, var(--text-tertiary));
 	text-transform: uppercase;
 	letter-spacing: 0.03em;
 	margin-left: auto;
 	white-space: nowrap;
+	box-shadow: var(--pill-shadow);
 }
 
 .fileTreeTaskProgress {
@@ -276,14 +278,20 @@
 	height: 12px;
 }
 
-.fileTreeTaskProgress .markdownEditorTaskProgressDonut {
-	width: 6px;
-	height: 6px;
+.fileTreeTaskProgress .markdownEditorTaskProgressRing {
+	width: 14px;
+	height: 14px;
+	border-width: 2px;
+}
+
+.fileTreeTaskProgress .markdownEditorTaskProgressPie {
+	width: 7px;
+	height: 7px;
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
-	color: var(--pill-contrast-fg);
+	color: color-mix(in srgb, var(--database-tone) 66%, var(--text-primary));
 }
 
 .fileTreeRenameInput {

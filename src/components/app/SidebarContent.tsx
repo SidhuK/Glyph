@@ -281,6 +281,11 @@ export const SidebarContent = memo(function SidebarContent({
 		void onOpenSpace();
 	}, [onOpenSpace]);
 
+	const handleOpenAppSettings = useCallback(() => {
+		setSpaceMenuOpen(false);
+		onOpenSettings();
+	}, [onOpenSettings]);
+
 	const handleSwitchToRecent = useCallback(
 		(path: string) => {
 			setSpaceMenuOpen(false);
@@ -363,13 +368,28 @@ export const SidebarContent = memo(function SidebarContent({
 												No recent spaces yet.
 											</div>
 										)}
-										<button
-											type="button"
-											className="sidebarSpaceMenuAction"
-											onClick={handleOpenPicker}
-										>
-											Open Space...
-										</button>
+										<div className="sidebarSpaceMenuActions">
+											<button
+												type="button"
+												className="sidebarSpaceMenuAction"
+												onClick={handleOpenPicker}
+											>
+												Open Spaces
+											</button>
+											<button
+												type="button"
+												className="sidebarSpaceMenuIconAction"
+												onClick={handleOpenAppSettings}
+												aria-label="Open app settings"
+												title="Open app settings"
+											>
+												<HugeiconsIcon
+													icon={Settings01Icon}
+													size={15}
+													strokeWidth={0.9}
+												/>
+											</button>
+										</div>
 									</m.div>
 								) : null}
 							</AnimatePresence>
@@ -389,7 +409,7 @@ export const SidebarContent = memo(function SidebarContent({
 						</button>
 						<button
 							type="button"
-							className="sidebarTopIconButton"
+							className="sidebarTopIconButton sidebarTopNewNoteButton"
 							onClick={onNewNote}
 							aria-label="Create a new note"
 							title={`Create a new note${
@@ -535,25 +555,15 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
-			<div className="sidebarFooter">
-				<button
-					type="button"
-					className="sidebarQuickActionBtn sidebarFooterSettingsButton"
-					onClick={onOpenSettings}
-					title="Open settings"
-					aria-label="Open settings"
-					data-kind="settings"
-				>
-					<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
-				</button>
-				{showGitButton ? (
+			{showGitButton ? (
+				<div className="sidebarFooter">
 					<GitSyncFooterCard
 						status={gitSyncStatus}
 						expanded={effectiveGitExpanded}
 						onToggleExpanded={() => setGitExpanded((value) => !value)}
 					/>
-				) : null}
-			</div>
+				</div>
+			) : null}
 		</>
 	);
 });

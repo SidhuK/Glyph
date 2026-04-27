@@ -20,7 +20,7 @@ const statusColumn: DatabaseColumn = {
 	label: "Status",
 	visible: true,
 	property_key: "status",
-	property_kind: "text",
+	property_kind: "status",
 };
 
 const checkboxColumn: DatabaseColumn = {
@@ -30,15 +30,6 @@ const checkboxColumn: DatabaseColumn = {
 	visible: true,
 	property_key: "done",
 	property_kind: "checkbox",
-};
-
-const priorityColumn: DatabaseColumn = {
-	id: "property:project_priority",
-	type: "property",
-	label: "Project priority",
-	visible: true,
-	property_key: "project_priority",
-	property_kind: "list",
 };
 
 const tagsColumn: DatabaseColumn = {
@@ -58,13 +49,9 @@ const rows: DatabaseRow[] = [
 		tags: [],
 		properties: {
 			status: {
-				kind: "text",
+				kind: "status",
 				value_text: "Backlog",
 				value_list: [],
-			},
-			project_priority: {
-				kind: "list",
-				value_list: ["Medium Priority", "Client Work"],
 			},
 		},
 	},
@@ -77,7 +64,7 @@ const rows: DatabaseRow[] = [
 		tags: ["#swift", "#ios"],
 		properties: {
 			status: {
-				kind: "text",
+				kind: "status",
 				value_text: "Doing",
 				value_list: [],
 			},
@@ -85,10 +72,6 @@ const rows: DatabaseRow[] = [
 				kind: "checkbox",
 				value_bool: true,
 				value_list: [],
-			},
-			project_priority: {
-				kind: "list",
-				value_list: ["Medium Priority"],
 			},
 		},
 	},
@@ -118,15 +101,9 @@ describe("database board helpers", () => {
 				{ id: "title", type: "title", label: "Title", visible: true },
 				statusColumn,
 				checkboxColumn,
-				priorityColumn,
 				tagsColumn,
 			]).map((column) => column.id),
-		).toEqual([
-			"property:status",
-			"property:done",
-			"property:project_priority",
-			"tags",
-		]);
+		).toEqual(["property:status", "property:done", "tags"]);
 		expect(
 			defaultBoardGroupColumnId([
 				{ id: "title", type: "title", label: "Title", visible: true },
@@ -138,8 +115,8 @@ describe("database board helpers", () => {
 	it("creates lanes from the current property values", () => {
 		const lanes = createBoardLanes(rows, statusColumn);
 		expect(lanes.map((lane) => lane.label)).toEqual([
-			"Backlog",
-			"Doing",
+			"Not started",
+			"In progress",
 			"No value",
 		]);
 		expect(lanes[0]?.rows[0]?.title).toBe("One");
@@ -169,16 +146,7 @@ describe("database board helpers", () => {
 		]);
 	});
 
-	it("creates multiple lanes from list and tag values", () => {
-		const priorityLanes = createBoardLanes(rows, priorityColumn);
-		expect(priorityLanes.map((lane) => lane.label)).toEqual([
-			"Medium Priority",
-			"Client Work",
-			"No value",
-		]);
-		expect(priorityLanes[0]?.cardCount).toBe(2);
-		expect(priorityLanes[1]?.cardCount).toBe(1);
-
+	it("creates multiple lanes from tag values", () => {
 		const tagLanes = createBoardLanes(rows, tagsColumn);
 		expect(tagLanes.map((lane) => lane.label)).toEqual([
 			"swift",
@@ -237,8 +205,8 @@ describe("database board helpers", () => {
 
 	it("creates update payloads for the target lane", () => {
 		expect(boardLaneValue(statusColumn, "Review")).toEqual({
-			kind: "text",
-			value_text: "Review",
+			kind: "status",
+			value_text: "In review",
 			value_bool: null,
 			value_list: [],
 		});
@@ -246,16 +214,6 @@ describe("database board helpers", () => {
 			kind: "checkbox",
 			value_bool: true,
 			value_list: [],
-		});
-		expect(boardDropValue(firstRow, priorityColumn, "Urgent")).toEqual({
-			kind: "list",
-			value_list: ["Medium Priority", "Client Work", "Urgent"],
-		});
-		expect(
-			boardDropValue(firstRow, priorityColumn, "Urgent", "Medium Priority"),
-		).toEqual({
-			kind: "list",
-			value_list: ["Medium Priority", "Client Work", "Urgent"],
 		});
 		expect(
 			boardDropValue(secondRow, tagsColumn, DATABASE_BOARD_EMPTY_LANE_ID),
@@ -265,12 +223,10 @@ describe("database board helpers", () => {
 		});
 	});
 
-	it("adds missing values and preserves existing multi-value memberships", () => {
-		expect(boardRowHasLane(firstRow, priorityColumn, "Client Work")).toBe(true);
-		expect(boardRowHasLane(firstRow, priorityColumn, "Urgent")).toBe(false);
+	it("adds missing tag values and preserves existing memberships", () => {
 		expect(boardDropValue(thirdRow, statusColumn, "In Progress")).toEqual({
-			kind: "text",
-			value_text: "In Progress",
+			kind: "status",
+			value_text: "In progress",
 			value_bool: null,
 			value_list: [],
 		});
