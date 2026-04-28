@@ -1,6 +1,18 @@
 {
 	"versions": [
 		{
+			"version": "0.2.16",
+			"publishedAt": "2026-04-28",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Quick Notes are here: press Hyperkey + Q anywhere on your Mac to capture thoughts the moment they arrive, with a focused flow built for Quick Notes and Scratchpad notes"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.15",
 			"publishedAt": "2026-04-28",
 			"sections": [
