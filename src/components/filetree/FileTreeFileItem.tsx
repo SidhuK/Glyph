@@ -139,6 +139,7 @@ interface FileTreeFileItemProps {
 		currentTarget: HTMLButtonElement,
 	) => void;
 	taskSummary?: NoteTaskSummary | null;
+	previewText?: string | null;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -165,6 +166,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onMoveClickSuppressRef = DEFAULT_MOVE_CLICK_SUPPRESS_REF,
 	onArrowNavigate,
 	taskSummary = null,
+	previewText = null,
 }: FileTreeFileItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -244,7 +246,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							<m.button
 								ref={setRowRef}
 								type="button"
-								className="fileTreeRow"
+								className={
+									previewText ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"
+								}
 								onClick={() => {
 									if (onMoveClickSuppressRef.current) return;
 									onOpenFile(entry.rel_path);
@@ -279,7 +283,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 										aria-hidden="true"
 									/>
 								)}
-								<span className="fileTreeName">{displayStem}</span>
+								<span className="fileTreeFileText">
+									<span className="fileTreeName">{displayStem}</span>
+									{previewText ? (
+										<span className="fileTreeFilePreview">{previewText}</span>
+									) : null}
+								</span>
 								{taskSummary && taskSummary.total_count > 0 ? (
 									<TaskProgressIndicator
 										summary={taskSummary}

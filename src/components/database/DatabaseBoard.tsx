@@ -7,7 +7,11 @@ import {
 	useDraggable,
 	useDroppable,
 } from "@dnd-kit/react";
-import { Tag01Icon } from "@hugeicons/core-free-icons";
+import {
+	Calendar03Icon,
+	Folder03Icon,
+	Tag01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import {
@@ -244,6 +248,22 @@ function formatCardValue(row: DatabaseRow, column: DatabaseColumn): string {
 		return cell.value_list.join(", ");
 	}
 	return cell.value_text?.trim() ?? "";
+}
+
+function formatCompactBoardDateTime(value: string): string {
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return formatDatabaseDateTime(value);
+	const month = date.toLocaleString("en-US", { month: "short" });
+	const day = date.getDate();
+	const time = date
+		.toLocaleString("en-US", {
+			hour: "numeric",
+			minute: "2-digit",
+			hour12: true,
+		})
+		.toLowerCase()
+		.replace(/\s/g, "");
+	return `${month} ${day}, ${time}`;
 }
 
 function boardCardDragId(notePath: string, laneId: string): string {
@@ -721,7 +741,7 @@ export function DatabaseBoard({
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
-											const preview = cardPreviewLines(row, title);
+											const preview = cardPreviewLines(row, title).slice(0, 3);
 											const maxVisibleTags = 2;
 											const visibleTags = row.tags.slice(0, maxVisibleTags);
 											const extraTagCount = Math.max(
@@ -736,6 +756,10 @@ export function DatabaseBoard({
 												.slice(0, 1);
 											const folderLabel =
 												row.folder?.trim() || parentDir(row.note_path) || "/";
+											const updatedLabel = formatDatabaseDateTime(row.updated);
+											const compactUpdatedLabel = formatCompactBoardDateTime(
+												row.updated,
+											);
 											const taskSummary =
 												taskSummariesByPath[row.note_path] ??
 												EMPTY_TASK_SUMMARY;
@@ -761,6 +785,20 @@ export function DatabaseBoard({
 																<span className="databaseBoardCardTitle">
 																	{title}
 																</span>
+																<div className="databaseBoardCardTitleMeta">
+																	<span
+																		className="databaseBoardCardTimestamp"
+																		title={`Updated ${updatedLabel}`}
+																	>
+																		<HugeiconsIcon
+																			icon={Calendar03Icon}
+																			size={10}
+																			strokeWidth={1}
+																			aria-hidden="true"
+																		/>
+																		{compactUpdatedLabel}
+																	</span>
+																</div>
 																{showTaskProgressIndicator &&
 																taskSummary.total_count > 0 ? (
 																	<TaskProgressIndicator
@@ -847,10 +885,13 @@ export function DatabaseBoard({
 																className="databaseBoardCardPath"
 																title={folderLabel}
 															>
+																<HugeiconsIcon
+																	icon={Folder03Icon}
+																	size={10}
+																	strokeWidth={1}
+																	aria-hidden="true"
+																/>
 																{folderLabel}
-															</span>
-															<span className="databaseBoardCardTimestamp">
-																{formatDatabaseDateTime(row.updated)}
 															</span>
 														</div>
 													</DatabaseBoardCardView>
@@ -889,7 +930,9 @@ export function DatabaseBoard({
 											);
 										})
 									) : (
-										<div className="databaseBoardLaneEmptyCard">No notes</div>
+										<div className="databaseBoardLaneEmptyCard">
+											Drop notes here
+										</div>
 									)}
 								</DatabaseBoardLaneView>
 							))}

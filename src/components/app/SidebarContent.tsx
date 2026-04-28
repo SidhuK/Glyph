@@ -23,6 +23,7 @@ import { GitSyncFooterCard } from "./GitSyncFooterCard";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
+	onLoadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
@@ -75,6 +76,7 @@ function spaceInitial(label: string): string {
 
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
+	onLoadDir,
 	onSelectDir,
 	onOpenFile,
 	onNewNote,
@@ -523,6 +525,7 @@ export const SidebarContent = memo(function SidebarContent({
 									activeFilePath={activeFilePath}
 									activeDirPath={activeDirPath}
 									onToggleDir={onToggleDir}
+									onLoadDir={onLoadDir}
 									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}

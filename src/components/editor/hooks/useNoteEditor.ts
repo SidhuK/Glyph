@@ -426,6 +426,7 @@ export function useNoteEditor({
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
 				getZenModeEnabled: () => zenModeActiveRef.current,
+				placeholder: "Start writing or press / for commands",
 			}),
 		[
 			enableMarkdownLinkAutocomplete,
