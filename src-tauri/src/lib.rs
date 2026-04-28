@@ -30,14 +30,19 @@ use tauri::menu::{
     WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
-use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
+use tauri::{
+    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
+    WebviewWindowBuilder,
+};
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
+const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -117,6 +122,11 @@ struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
+}
+
+#[derive(Default)]
+struct QuickNoteShortcutState {
+    current_accelerator: Mutex<Option<String>>,
 }
 
 fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
@@ -947,6 +957,110 @@ fn print_current_window(window: tauri::WebviewWindow) -> Result<(), String> {
     window.print().map_err(|error| error.to_string())
 }
 
+fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
+    if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
+        return Ok(window);
+    }
+
+    let window = WebviewWindowBuilder::new(
+        app,
+        QUICK_NOTE_WINDOW_LABEL,
+        WebviewUrl::App("index.html?window=quick-note".into()),
+    )
+    .title("Quick Note")
+    .inner_size(640.0, 360.0)
+    .min_inner_size(520.0, 300.0)
+    .resizable(false)
+    .decorations(true)
+    .title_bar_style(TitleBarStyle::Overlay)
+    .hidden_title(true)
+    .transparent(true)
+    .always_on_top(true)
+    .visible_on_all_workspaces(true)
+    .skip_taskbar(true)
+    .shadow(true)
+    .visible(false)
+    .center()
+    .build()
+    .map_err(|error| error.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    apply_main_window_vibrancy(&window, None)?;
+
+    Ok(window)
+}
+
+fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    let window = quick_note_window(app)?;
+    let _ = window.center();
+    window.show().map_err(|error| error.to_string())?;
+    window.unminimize().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn show_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
+    show_quick_note_window_for_app(&app)
+}
+
+#[tauri::command]
+fn hide_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
+        window.hide().map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window.show().map_err(|error| error.to_string())?;
+        window.unminimize().map_err(|error| error.to_string())?;
+        window.set_focus().map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_quick_note_global_shortcut(
+    app: tauri::AppHandle,
+    state: State<'_, QuickNoteShortcutState>,
+    accelerator: Option<String>,
+) -> Result<(), String> {
+    let next = accelerator
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
+    let mut current = state
+        .current_accelerator
+        .lock()
+        .map_err(|_| "failed to lock quick note shortcut state".to_string())?;
+
+    if current.as_ref() == next.as_ref() {
+        return Ok(());
+    }
+
+    if let Some(previous) = current.take() {
+        if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
+            warn!("Failed to unregister previous quick note shortcut: {error}");
+        }
+    }
+
+    if let Some(next_accelerator) = next {
+        app.global_shortcut()
+            .on_shortcut(next_accelerator.as_str(), |app, _shortcut, event| {
+                if event.state == ShortcutState::Pressed {
+                    if let Err(error) = show_quick_note_window_for_app(app) {
+                        warn!("Failed to show quick note window: {error}");
+                    }
+                }
+            })
+            .map_err(|error| error.to_string())?;
+        *current = Some(next_accelerator);
+    }
+
+    Ok(())
+}
+
 #[tauri::command]
 fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
     let menu_state = app
@@ -1276,6 +1390,13 @@ pub fn run() {
                 }
             }
 
+            if window.label() == QUICK_NOTE_WINDOW_LABEL {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+
             #[cfg(target_os = "macos")]
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
@@ -1291,6 +1412,8 @@ pub fn run() {
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
         .manage(MenuState::default())
+        .manage(QuickNoteShortcutState::default())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
@@ -1302,6 +1425,10 @@ pub fn run() {
             system_fonts_list,
             system_monospace_fonts_list,
             print_current_window,
+            show_quick_note_window,
+            hide_quick_note_window,
+            show_main_window,
+            set_quick_note_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
             set_menu_shortcuts,

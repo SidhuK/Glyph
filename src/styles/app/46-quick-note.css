@@ -1,0 +1,121 @@
+.quickNoteRoot {
+	position: relative;
+	height: 100%;
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	border-radius: 22px;
+	box-shadow: 0 24px 64px color-mix(in srgb, black 24%, transparent);
+	overflow: hidden;
+}
+
+.quickNoteDragHandle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 18px;
+	z-index: 1;
+}
+
+.quickNoteTextarea {
+	width: 100%;
+	min-width: 0;
+	height: 100%;
+	resize: none;
+	border: 0;
+	outline: none;
+	background: transparent;
+	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+	padding: 30px 28px 72px;
+	font: inherit;
+	font-size: var(--editor-inline-font-size);
+	line-height: 1.68;
+	letter-spacing: 0;
+	caret-color: var(--interactive-accent);
+	text-rendering: optimizeLegibility;
+}
+
+.quickNoteTextarea::placeholder {
+	color: var(--text-placeholder);
+}
+
+.quickNoteEditorChrome {
+	position: absolute;
+	left: 24px;
+	right: 20px;
+	bottom: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	pointer-events: none;
+}
+
+.quickNoteSaveButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	min-height: 28px;
+	padding: 3px 7px 3px 8px;
+	border: 0;
+	border-radius: 7px;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	cursor: pointer;
+	pointer-events: auto;
+	box-shadow: 0 10px 28px color-mix(in srgb, black 12%, transparent);
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.quickNoteSaveButton:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.quickNoteSaveButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.quickNoteSaveButton:disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.quickNoteSaveButton > svg {
+	flex: 0 0 auto;
+	color: currentColor;
+}
+
+.quickNoteSaveLabel {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	color: currentColor;
+}
+
+.quickNoteSaveButton .commandPaletteShortcut {
+	margin-left: 0;
+}
+
+.quickNoteSaveButton .commandPaletteShortcut kbd {
+	height: 20px;
+	min-width: 0;
+	background: transparent;
+	border-color: currentColor;
+	color: currentColor;
+	box-shadow: none;
+}
+
+.quickNoteStatus {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	pointer-events: none;
+}

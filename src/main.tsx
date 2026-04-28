@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyEditorWidthMode,
@@ -216,11 +217,21 @@ function ThemeAndTypographyBridge() {
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Missing #root element");
 
+function currentWindowLabel(): string {
+	try {
+		return getCurrentWindow().label;
+	} catch {
+		return "main";
+	}
+}
+
+const isQuickNoteWindow = currentWindowLabel() === "quick-note";
+
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<ThemeAndTypographyBridge />
-			<App />
+			{isQuickNoteWindow ? <QuickNoteWindow /> : <App />}
 			<Toaster />
 		</ThemeProvider>
 	</React.StrictMode>,

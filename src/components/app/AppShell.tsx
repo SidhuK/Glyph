@@ -415,6 +415,17 @@ export function AppShell() {
 		[fileTree, openFileTab, setActiveDirPath],
 	);
 
+	const openQuickNoteWindow = useCallback(() => {
+		void invoke("show_quick_note_window").catch((cause) => {
+			const message = cause instanceof Error ? cause.message : String(cause);
+			setError(message);
+		});
+	}, [setError]);
+
+	useTauriEvent("quick-note:open_note", (payload) => {
+		void openWorkspaceFile(payload.path);
+	});
+
 	const { openOrCreateDailyNote } = useDailyNote({
 		onOpenFile: (path) => openWorkspaceFile(path),
 		setError,
@@ -1401,6 +1412,15 @@ export function AppShell() {
 				},
 			},
 			{
+				id: "open-quick-note",
+				label: "Open quick note",
+				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				category: "File Operations",
+				enabled: true,
+				allowInEditable: true,
+				action: openQuickNoteWindow,
+			},
+			{
 				id: "create-from-template",
 				label: "Create from template",
 				icon: <HugeiconsIcon icon={ColorsIcon} size={16} strokeWidth={0.9} />,
@@ -1957,6 +1977,7 @@ export function AppShell() {
 		openDatabasesTab,
 		openGettingStarted,
 		openBlankTab,
+		openQuickNoteWindow,
 		openWorkspaceFile,
 		gitSync,
 		getBinding,
@@ -2032,6 +2053,14 @@ export function AppShell() {
 		);
 		void invoke("set_menu_shortcuts", { accelerators }).catch(() => {});
 	}, [actionsWithBindings]);
+
+	useEffect(() => {
+		void invoke("set_quick_note_global_shortcut", {
+			accelerator: toTauriAccelerator(getBinding("open-quick-note")),
+		}).catch((cause) => {
+			console.warn("Failed to register quick note shortcut", cause);
+		});
+	}, [getBinding]);
 
 	return (
 		<div

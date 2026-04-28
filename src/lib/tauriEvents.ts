@@ -31,6 +31,7 @@ type TauriEventMap = {
 	"menu:ai_attach_all_open_notes": undefined;
 	"menu:open_ai_settings": undefined;
 	"menu:editor_action": { action: string };
+	"quick-note:open_note": { path: string };
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
@@ -82,6 +83,9 @@ type TauriEventMap = {
 		};
 		dailyNotes?: {
 			folder?: string | null;
+		};
+		quickNotes?: {
+			folder?: string;
 		};
 		templates?: {
 			folder?: string | null;

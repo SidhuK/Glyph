@@ -36,6 +36,7 @@
 @import "./styles/app/43-web-clip.css";
 @import "./styles/app/44-settings-changelog.css";
 @import "./styles/app/45-local-graph.css";
+@import "./styles/app/46-quick-note.css";
 
 /* Shadow reset: Intentionally disables Tailwind's default shadows.
    The app uses custom shadow variables (--shadow-sm, --shadow-md, etc.)

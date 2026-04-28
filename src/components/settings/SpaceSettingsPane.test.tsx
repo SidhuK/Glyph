@@ -14,6 +14,7 @@ const {
 	setDailyNotesFolderMock,
 	setEditorAttachmentFolderMock,
 	setEditorAttachmentStorageModeMock,
+	setQuickNotesFolderMock,
 	setWebClippingsFolderMock,
 } = vi.hoisted(() => ({
 	getDailyNotesFolderMock: vi.fn(() => Promise.resolve(null)),
@@ -26,11 +27,15 @@ const {
 				attachmentStorageMode: "note-folder",
 				attachmentFolder: "assets",
 			},
+			quickNotes: {
+				folder: "Quick Notes",
+			},
 		}),
 	),
 	setDailyNotesFolderMock: vi.fn(() => Promise.resolve()),
 	setEditorAttachmentFolderMock: vi.fn(() => Promise.resolve()),
 	setEditorAttachmentStorageModeMock: vi.fn(() => Promise.resolve()),
+	setQuickNotesFolderMock: vi.fn(() => Promise.resolve()),
 	setWebClippingsFolderMock: vi.fn(() => Promise.resolve()),
 }));
 
@@ -41,12 +46,14 @@ const {
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("../../lib/settings", () => ({
+	DEFAULT_QUICK_NOTES_FOLDER: "Quick Notes",
 	getDailyNotesFolder: getDailyNotesFolderMock,
 	getWebClippingsFolder: getWebClippingsFolderMock,
 	loadSettings: loadSettingsMock,
 	setDailyNotesFolder: setDailyNotesFolderMock,
 	setEditorAttachmentFolder: setEditorAttachmentFolderMock,
 	setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
+	setQuickNotesFolder: setQuickNotesFolderMock,
 	setWebClippingsFolder: setWebClippingsFolderMock,
 }));
 

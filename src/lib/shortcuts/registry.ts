@@ -100,6 +100,22 @@ const APP_SHORTCUT_ACTIONS: ShortcutActionDefinition[] = [
 		commandPalette: true,
 	},
 	{
+		id: "open-quick-note",
+		label: "Open Quick Note",
+		description: "Open the floating quick note scratchpad.",
+		category: "file",
+		context: "global",
+		defaultBinding: {
+			meta: true,
+			ctrl: true,
+			alt: true,
+			shift: true,
+			key: "q",
+		},
+		allowInEditable: true,
+		commandPalette: true,
+	},
+	{
 		id: "create-from-template",
 		label: "Create From Template",
 		description: "Create a new note from a template.",
