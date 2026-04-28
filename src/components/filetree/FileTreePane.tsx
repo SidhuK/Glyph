@@ -180,12 +180,14 @@ function FolderBreadcrumb({
 	useEffect(() => {
 		const nav = navRef.current;
 		if (!nav) return;
+		if (nav.dataset.dirPath !== dirPath) return;
 		nav.scrollLeft = nav.scrollWidth;
-	});
+	}, [dirPath]);
 
 	return (
 		<nav
 			ref={navRef}
+			data-dir-path={dirPath}
 			className="fileTreeBreadcrumb"
 			aria-label="Folder breadcrumb"
 		>
@@ -269,7 +271,7 @@ interface TreeEntriesProps {
 	showTaskProgressIndicator: boolean;
 	taskSummariesByPath: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
-	filePreviewsByPath?: Record<string, string | undefined>;
+	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
 
 function TreeEntries({
@@ -479,7 +481,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(null);
 	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
-		Record<string, string | undefined>
+		Record<string, string | null | undefined>
 	>({});
 	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
 	const taskSummaryRequestRef = useRef("");
@@ -752,11 +754,7 @@ export const FileTreePane = memo(function FileTreePane({
 		(dirPath: string) => {
 			setFocusedDirPath(dirPath);
 			onSelectDir(dirPath);
-			if (onLoadDir) {
-				void onLoadDir(dirPath);
-				return;
-			}
-			if (!childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
+			if (!onLoadDir && !childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
 				onToggleDir(dirPath);
 			}
 		},
@@ -797,7 +795,9 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 
 		const missingPaths = filePreviewPaths.filter(
-			(path) => filePreviewsByPath[path] === undefined,
+			(path) =>
+				filePreviewsByPath[path] === undefined ||
+				filePreviewsByPath[path] === "",
 		);
 		if (missingPaths.length === 0) return;
 
@@ -821,16 +821,24 @@ export const FileTreePane = memo(function FileTreePane({
 				return;
 			}
 			setFilePreviewsByPath((prev) => {
+				let changed = false;
 				const next = { ...prev };
 				for (const [index, result] of results.entries()) {
 					if (result.status === "fulfilled") {
-						next[result.value.path] = result.value.snippet;
+						const snippet = result.value.snippet || null;
+						if (next[result.value.path] !== snippet) {
+							next[result.value.path] = snippet;
+							changed = true;
+						}
 					} else {
 						const path = missingPaths[index];
-						if (path) next[path] = "";
+						if (path && path in next) {
+							delete next[path];
+							changed = true;
+						}
 					}
 				}
-				return next;
+				return changed ? next : prev;
 			});
 		});
 

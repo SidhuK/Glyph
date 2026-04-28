@@ -394,7 +394,8 @@
 	font-size: 11px;
 	line-height: 1.2;
 	white-space: normal;
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeName {

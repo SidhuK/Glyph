@@ -965,7 +965,6 @@
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;
-	display: block;
 	font-size: 0.93rem;
 	font-weight: var(--font-semibold);
 	line-height: 1.24;

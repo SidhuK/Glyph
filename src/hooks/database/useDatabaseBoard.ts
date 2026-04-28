@@ -42,13 +42,13 @@ function laneOrderRecordsEqual(
 ): boolean {
 	const leftKeys = Object.keys(left);
 	const rightKeys = Object.keys(right);
-	return (
-		leftKeys.length === rightKeys.length &&
-		leftKeys.every((key) => {
-			const leftOrder = left[key] ?? [];
-			const rightOrder = right[key] ?? [];
-			return laneOrdersEqual(leftOrder, rightOrder);
-		})
+	if (leftKeys.length !== rightKeys.length) return false;
+
+	const rightKeySet = new Set(rightKeys);
+	return leftKeys.every(
+		(key) =>
+			rightKeySet.has(key) &&
+			laneOrdersEqual(left[key] ?? [], right[key] ?? []),
 	);
 }
 
@@ -103,6 +103,11 @@ export function useDatabaseBoard({
 	const displayedLaneIdsRef = useRef<Record<string, string[]>>(
 		initialLaneOrderByGroup,
 	);
+	const onLaneOrderChangeRef = useRef(onLaneOrderChange);
+
+	useEffect(() => {
+		onLaneOrderChangeRef.current = onLaneOrderChange;
+	}, [onLaneOrderChange]);
 
 	useEffect(() => {
 		if (
@@ -178,8 +183,8 @@ export function useDatabaseBoard({
 				? current
 				: nextLaneOrderByGroup;
 		});
-		void onLaneOrderChange?.(groupColumn.id, nextLaneOrder);
-	}, [groupColumn, groupColumns, laneOrderByGroup, lanes, onLaneOrderChange]);
+		void onLaneOrderChangeRef.current?.(groupColumn.id, nextLaneOrder);
+	}, [groupColumn, groupColumns, laneOrderByGroup, lanes]);
 
 	const moveLaneToIndex = useCallback(
 		(sourceLaneId: string, targetIndex: number) => {
@@ -206,9 +211,9 @@ export function useDatabaseBoard({
 				...current,
 				[groupColumn.id]: nextLaneOrder,
 			}));
-			void onLaneOrderChange?.(groupColumn.id, nextLaneOrder);
+			void onLaneOrderChangeRef.current?.(groupColumn.id, nextLaneOrder);
 		},
-		[groupColumn, groupColumns, laneOrderByGroup, lanes, onLaneOrderChange],
+		[groupColumn, groupColumns, laneOrderByGroup, lanes],
 	);
 
 	return {
