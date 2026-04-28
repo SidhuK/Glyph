@@ -12,7 +12,6 @@ import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
-	fileTitleFromRelPath,
 	normalizeEntry,
 	normalizeRelPath,
 	rewritePrefix,
@@ -210,10 +209,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					fileName = `Untitled ${suffix}.md`;
 				}
 				const markdownRel = dirPath ? `${dirPath}/${fileName}` : fileName;
-				const fileTitle = fileTitleFromRelPath(markdownRel);
 				const createdPath = await createMarkdownFileAtPath({
 					path: markdownRel,
-					text: `# ${fileTitle}\n`,
+					text: "",
 					openParentDir: dirPath,
 				});
 				if (createdPath) {

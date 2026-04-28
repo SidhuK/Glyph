@@ -31,6 +31,10 @@
 		ease, box-shadow 220ms ease;
 }
 
+.mainArea:has(.canvasWrapper) {
+	background: transparent;
+}
+
 .mainAreaWelcome {
 	background: var(--bg-primary);
 }
@@ -708,7 +712,7 @@
 	position: relative;
 	min-height: 0;
 	overflow: hidden;
-	background: var(--bg-primary);
+	background: transparent;
 	display: flex;
 }
 
@@ -719,6 +723,24 @@
 	display: flex;
 	flex-direction: column;
 	position: relative;
+	background: var(--bg-primary);
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	overflow: hidden;
+	transition: border-radius 180ms ease;
+}
+
+.canvasWrapper:has(.notesInfoSidebarHost:not(:empty)) .canvasPaneHost {
+	border-top-right-radius: calc(
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
+	);
+	border-bottom-right-radius: calc(
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
+	);
 }
 
 .notesInfoSidebarHost {
@@ -731,7 +753,8 @@
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	border-left: 0 solid transparent;
-	transition: width 180ms ease, flex-basis 180ms ease, border-color 180ms ease;
+	transition: width 180ms ease, flex-basis 180ms ease, border-color 180ms ease,
+		background-color 180ms ease;
 }
 
 .notesInfoSidebarResizeHandle {
@@ -773,12 +796,17 @@
 .notesInfoSidebarHost:not(:empty) {
 	flex-basis: var(--markdown-info-sidebar-width, 340px);
 	width: var(--markdown-info-sidebar-width, 340px);
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
 	border-left-width: 1px;
-	border-left-color: color-mix(in srgb, var(--border-light) 82%, transparent);
+	border-left-color: transparent;
 }
 
 :root[data-translucent-sidebar="false"] .notesInfoSidebarHost:not(:empty) {
 	background: var(--bg-sidebar);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
 	border-left-color: var(--border-light);
 }
 

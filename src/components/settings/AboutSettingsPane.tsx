@@ -128,6 +128,18 @@ export function AboutSettingsPane() {
 							</div>
 						</div>
 					</div>
+					<p className="aboutAttribution">
+						Glyph is an independent app made by{" "}
+						<button
+							type="button"
+							className="settingsInlineLink"
+							onClick={() => void openUrl("https://x.com/karat_sidhu")}
+						>
+							Karat Sidhu
+						</button>
+						. Feel free to get in touch with questions, issues, or any feedback
+						you might have.
+					</p>
 				</section>
 
 				<SettingsSection
@@ -182,7 +194,7 @@ export function AboutSettingsPane() {
 					) : (
 						<SettingsRow
 							label="Community build"
-							description="Thanks for downloading and building Glyph yourself. To get updates, download the latest source and build again, or get the official licensed build to support the project and unlock automatic updates."
+							description="You’re using the Community and Open Source version of Glyph. Purchase an official license to support Glyph’s development and receive the latest updates automatically."
 							stacked
 							interactive={false}
 						>

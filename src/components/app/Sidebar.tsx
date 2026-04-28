@@ -9,6 +9,7 @@ import { SidebarSettingsContent } from "./SidebarSettingsContent";
 
 interface SidebarProps {
 	onToggleDir: (dirPath: string) => void;
+	onLoadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
@@ -50,6 +51,7 @@ interface SidebarProps {
 
 export const Sidebar = memo(function Sidebar({
 	onToggleDir,
+	onLoadDir,
 	onSelectDir,
 	onOpenFile,
 	onNewNote,
@@ -130,6 +132,7 @@ export const Sidebar = memo(function Sidebar({
 								/>
 								<SidebarContent
 									onToggleDir={onToggleDir}
+									onLoadDir={onLoadDir}
 									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
 									onNewNote={onNewNote}

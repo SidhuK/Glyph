@@ -514,6 +514,48 @@ const TableEnterNavigation = Extension.create({
 	},
 });
 
+interface EditorPlaceholderOptions {
+	placeholder: string;
+}
+
+const EditorPlaceholder = Extension.create<EditorPlaceholderOptions>({
+	name: "editor-placeholder",
+	addOptions() {
+		return {
+			placeholder: "",
+		};
+	},
+	addProseMirrorPlugins() {
+		const key = new PluginKey("editor-placeholder");
+		return [
+			new Plugin({
+				key,
+				props: {
+					decorations: (state) => {
+						const firstChild = state.doc.firstChild;
+						if (
+							!this.options.placeholder ||
+							state.doc.childCount !== 1 ||
+							!firstChild ||
+							firstChild.type.name !== "paragraph" ||
+							firstChild.content.size !== 0
+						) {
+							return DecorationSet.empty;
+						}
+
+						return DecorationSet.create(state.doc, [
+							Decoration.node(0, firstChild.nodeSize, {
+								class: "is-editor-empty",
+								"data-placeholder": this.options.placeholder,
+							}),
+						]);
+					},
+				},
+			}),
+		];
+	},
+});
+
 const EditorLink = Link.extend({
 	inclusive: false,
 	addKeyboardShortcuts() {
@@ -536,6 +578,7 @@ interface CreateEditorExtensionsOptions {
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	getZenModeEnabled?: (() => boolean) | null;
+	placeholder?: string | null;
 }
 
 export function createEditorExtensions(
@@ -550,6 +593,7 @@ export function createEditorExtensions(
 		currentPath = "",
 		currentPathResolver = null,
 		getZenModeEnabled = null,
+		placeholder = null,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -584,6 +628,13 @@ export function createEditorExtensions(
 				breaks: false,
 			},
 		}),
+		...(placeholder
+			? [
+					EditorPlaceholder.configure({
+						placeholder,
+					}),
+				]
+			: []),
 		...(enableWikiLinks ? [WikiLink] : []),
 		...(enableMarkdownLinkAutocomplete
 			? [

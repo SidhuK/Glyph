@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/react";
 import {
+	ArrowRight02Icon,
 	DocumentCodeIcon,
 	Folder01Icon,
 	Folder03Icon,
@@ -11,7 +12,7 @@ import { AnimatePresence, m } from "motion/react";
 import type { MutableRefObject, ReactNode } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
-import { FolderPlus, Trash2 } from "../Icons";
+import { FolderPlus, Plus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import {
@@ -108,6 +109,7 @@ interface FileTreeDirItemProps {
 	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
+	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 	fileCount?: number | null;
@@ -131,6 +133,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
+	onEnterDir,
 	appearance,
 	onChangeAppearance,
 	fileCount,
@@ -226,6 +229,40 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								) : null}
 							</m.button>
 						</ContextMenuTrigger>
+						{onEnterDir ? (
+							<div className="fileTreeRowActions">
+								<button
+									type="button"
+									className="fileTreeRowAction"
+									title={`Add file to ${displayDirName}`}
+									aria-label={`Add file to ${displayDirName}`}
+									onClick={(event) => {
+										event.preventDefault();
+										event.stopPropagation();
+										void onNewFileInDir(entry.rel_path);
+									}}
+								>
+									<Plus size={13} />
+								</button>
+								<button
+									type="button"
+									className="fileTreeRowAction"
+									title={`Open ${displayDirName}`}
+									aria-label={`Open ${displayDirName}`}
+									onClick={(event) => {
+										event.preventDefault();
+										event.stopPropagation();
+										onEnterDir(entry.rel_path);
+									}}
+								>
+									<HugeiconsIcon
+										icon={ArrowRight02Icon}
+										size={13}
+										strokeWidth={0.9}
+									/>
+								</button>
+							</div>
+						) : null}
 						<ContextMenuContent
 							className="fileTreeCreateMenu"
 							onCloseAutoFocus={(event) => event.preventDefault()}

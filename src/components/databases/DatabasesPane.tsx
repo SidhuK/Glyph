@@ -283,7 +283,7 @@ function DatabasesPaneContent({
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
-	const startingViewRenameRef = useRef(false);
+	const skipNextViewMenuAutoFocusRef = useRef(false);
 	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
@@ -803,7 +803,6 @@ function DatabasesPaneContent({
 		const frame = requestAnimationFrame(() => {
 			viewNameInputRef.current?.focus({ preventScroll: true });
 			viewNameInputRef.current?.select();
-			startingViewRenameRef.current = false;
 		});
 		return () => cancelAnimationFrame(frame);
 	}, [renamingViewId]);
@@ -812,7 +811,7 @@ function DatabasesPaneContent({
 		(viewId: string) => {
 			const view = document?.database.views.find((v) => v.id === viewId);
 			if (!view) return;
-			startingViewRenameRef.current = true;
+			skipNextViewMenuAutoFocusRef.current = true;
 			setViewNameDraft(view.name);
 			setRenamingViewId(viewId);
 		},
@@ -820,6 +819,7 @@ function DatabasesPaneContent({
 	);
 
 	const commitViewRename = useCallback(() => {
+		skipNextViewMenuAutoFocusRef.current = false;
 		if (!document || !renamingViewId || !viewNameDraft.trim()) {
 			setRenamingViewId(null);
 			return;
@@ -1021,6 +1021,7 @@ function DatabasesPaneContent({
 													}
 													if (event.key === "Escape") {
 														event.preventDefault();
+														skipNextViewMenuAutoFocusRef.current = false;
 														setRenamingViewId(null);
 													}
 												}}
@@ -1067,8 +1068,9 @@ function DatabasesPaneContent({
 								align="start"
 								className="databasesDropdownContent databasesViewTabMenuContent"
 								onCloseAutoFocus={(event) => {
-									if (startingViewRenameRef.current) {
+									if (skipNextViewMenuAutoFocusRef.current) {
 										event.preventDefault();
+										skipNextViewMenuAutoFocusRef.current = false;
 									}
 								}}
 							>

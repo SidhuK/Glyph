@@ -908,6 +908,14 @@ input.notePropertyValue {
 	margin-bottom: 0;
 }
 
+.tiptapContentInline p.is-editor-empty:first-child::before {
+	content: attr(data-placeholder);
+	float: left;
+	height: 0;
+	color: var(--text-placeholder);
+	pointer-events: none;
+}
+
 .tiptapContentInline {
 	letter-spacing: 0;
 	line-height: 1.68;

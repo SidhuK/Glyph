@@ -620,11 +620,9 @@ export function AppShell() {
 			const nextRelPath = nextRelPathBase.toLowerCase().endsWith(".md")
 				? nextRelPathBase
 				: `${nextRelPathBase}.md`;
-			const fileName = nextRelPath.split("/").pop() ?? nextRelPath;
-			const fileTitle = fileName.replace(/\.md$/i, "") || "Untitled";
 			const createdPath = await fileTree.createMarkdownFileAtPath({
 				path: nextRelPath,
-				text: `# ${fileTitle}\n`,
+				text: "",
 				openParentDir: parentDir(nextRelPath),
 			});
 			if (createdPath) {
@@ -2085,6 +2083,7 @@ export function AppShell() {
 					fileTree.onMovePath(fromPath, toDirPath, kind)
 				}
 				onToggleDir={fileTree.toggleDir}
+				onLoadDir={fileTree.loadDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}

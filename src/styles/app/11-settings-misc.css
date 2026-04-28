@@ -50,8 +50,10 @@
 
 .aboutHeroCard {
 	display: flex;
-	justify-content: flex-end;
+	justify-content: flex-start;
+	position: relative;
 	padding: 20px 24px;
+	min-height: 152px;
 }
 
 .aboutIdentity {
@@ -59,7 +61,8 @@
 	align-items: center;
 	gap: 18px;
 	padding: 2px 0 6px;
-	max-width: fit-content;
+	min-width: 0;
+	max-width: 760px;
 }
 
 .aboutIdentityCopy {
@@ -68,6 +71,7 @@
 	justify-content: center;
 	gap: 10px;
 	min-width: 0;
+	text-align: left;
 }
 
 .aboutLogoWrap {
@@ -115,7 +119,6 @@
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 8px;
-	align-self: flex-start;
 }
 
 .aboutOpenSourceMark {
@@ -133,6 +136,42 @@
 
 .aboutActions {
 	justify-content: flex-end;
+}
+
+.aboutAttribution {
+	position: absolute;
+	top: 50%;
+	right: 24px;
+	width: min(620px, 46%);
+	margin: 0;
+	color: var(--text-secondary);
+	font-size: 12px;
+	line-height: 1.5;
+	text-align: right;
+	transform: translateY(-50%);
+}
+
+.settingsInlineLink {
+	height: auto;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.settingsInlineLink:hover {
+	background: transparent;
+	color: var(--text-primary);
+}
+
+.settingsInlineLink:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	outline-offset: 3px;
 }
 
 .dailyNotesFolderField {
@@ -296,8 +335,21 @@
 }
 
 @media (max-width: 760px) {
+	.aboutHeroCard {
+		align-items: flex-start;
+		min-height: 0;
+	}
+
 	.aboutIdentity {
 		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.aboutAttribution {
+		position: static;
+		width: auto;
+		text-align: left;
+		transform: none;
 	}
 
 	.aboutTitleRow {

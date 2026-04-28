@@ -161,8 +161,8 @@
 .sidebarQuickActions {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: 6px 8px 4px;
+	gap: 2px;
+	padding: 5px 8px 3px;
 	flex-shrink: 0;
 }
 
@@ -325,8 +325,8 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	min-height: 24px;
-	padding: 8px 16px 2px;
+	min-height: 22px;
+	padding: 6px 16px 1px;
 	color: var(--text-primary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-normal);

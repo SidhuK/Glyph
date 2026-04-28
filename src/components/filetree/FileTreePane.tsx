@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { loadSettings } from "../../lib/settings";
 import type {
 	DirChildSummary,
@@ -34,6 +35,7 @@ import {
 	parentDir,
 	basename as relBasename,
 } from "../../utils/path";
+import { ChevronRight } from "../Icons";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -48,6 +50,7 @@ interface FileTreePaneProps {
 	activeFilePath: string | null;
 	activeDirPath: string | null;
 	onToggleDir: (dirPath: string) => void;
+	onLoadDir?: (dirPath: string, force?: boolean) => Promise<void>;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onPrefetchFile?: (filePath: string) => void;
@@ -73,15 +76,77 @@ interface FileTreePaneProps {
 }
 
 const springTransition = springPresets.bouncy;
+const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
+const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
+
+function spaceLabelFromPath(path: string | null): string {
+	if (!path) return "Glyph";
+	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
+	const parts = normalized.split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? path;
+}
+
+function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
+	const parts = [
+		{ label: spaceLabelFromPath(spacePath), path: "" },
+		...dirPath
+			.split("/")
+			.filter(Boolean)
+			.map((label, index, segments) => ({
+				label,
+				path: segments.slice(0, index + 1).join("/"),
+			})),
+	];
+	return parts;
+}
+
+function plainMarkdownLine(line: string): string {
+	return line
+		.replace(/^#{1,6}\s+/, "")
+		.replace(/^>\s?/, "")
+		.replace(/^[-*+]\s+\[[ xX]\]\s+/, "")
+		.replace(/^[-*+]\s+/, "")
+		.replace(/^\d+\.\s+/, "")
+		.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		.replace(/[*_`~]/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function markdownPreviewSnippet(markdown: string): string {
+	const { body } = splitYamlFrontmatter(markdown);
+	const lines: string[] = [];
+	let inFence = false;
+
+	for (const rawLine of body.replace(/\r\n?/g, "\n").split("\n")) {
+		const trimmed = rawLine.trim();
+		if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+			inFence = !inFence;
+			continue;
+		}
+		if (inFence || !trimmed) continue;
+		const line = plainMarkdownLine(trimmed);
+		if (!line) continue;
+		lines.push(line);
+		if (lines.length >= MARKDOWN_PREVIEW_LINE_LIMIT) break;
+	}
+
+	return lines.join(" ");
+}
 
 interface FileTreeRootDropProps {
 	children: ReactNode;
+	targetDirPath?: string;
 }
 
-function FileTreeRootDrop({ children }: FileTreeRootDropProps) {
+function FileTreeRootDrop({
+	children,
+	targetDirPath = "",
+}: FileTreeRootDropProps) {
 	const { ref, isDropTarget } = useDroppable({
-		id: "file-tree-root",
-		data: { targetDirPath: "" },
+		id: targetDirPath ? `file-tree-focused:${targetDirPath}` : "file-tree-root",
+		data: { targetDirPath },
 		accept: FILE_TREE_ENTRY_TYPE,
 	});
 
@@ -96,6 +161,75 @@ function FileTreeRootDrop({ children }: FileTreeRootDropProps) {
 	);
 }
 
+interface FolderBreadcrumbProps {
+	spacePath: string | null;
+	dirPath: string;
+	onNavigate: (dirPath: string) => void;
+	onExit: () => void;
+}
+
+function FolderBreadcrumb({
+	spacePath,
+	dirPath,
+	onNavigate,
+	onExit,
+}: FolderBreadcrumbProps) {
+	const parts = folderBreadcrumbParts(spacePath, dirPath);
+	const navRef = useRef<HTMLElement | null>(null);
+
+	useEffect(() => {
+		const nav = navRef.current;
+		if (!nav) return;
+		if (nav.dataset.dirPath !== dirPath) return;
+		nav.scrollLeft = nav.scrollWidth;
+	}, [dirPath]);
+
+	return (
+		<nav
+			ref={navRef}
+			data-dir-path={dirPath}
+			className="fileTreeBreadcrumb"
+			aria-label="Folder breadcrumb"
+		>
+			{parts.map((part, index) => {
+				const isLast = index === parts.length - 1;
+				const handleClick = () => {
+					if (isLast) return;
+					if (!part.path) {
+						onExit();
+						return;
+					}
+					onNavigate(part.path);
+				};
+
+				return (
+					<span
+						key={part.path || "__root__"}
+						className="fileTreeBreadcrumbPart"
+					>
+						<button
+							type="button"
+							className="fileTreeBreadcrumbButton"
+							aria-current={isLast ? "page" : undefined}
+							disabled={isLast}
+							onClick={handleClick}
+						>
+							{part.label}
+						</button>
+						{!isLast ? (
+							<ChevronRight
+								size={11}
+								className="fileTreeBreadcrumbSeparator"
+								aria-hidden="true"
+							/>
+						) : null}
+					</span>
+				);
+			})}
+		</nav>
+	);
+}
+
 interface TreeEntriesProps {
 	entries: FsEntry[];
 	parentDepth: number;
@@ -105,6 +239,7 @@ interface TreeEntriesProps {
 	activeDirPath: string | null;
 	renamingPath: string | null;
 	onToggleDir: (dirPath: string) => void;
+	onEnterDir?: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onPrefetchFile?: (filePath: string) => void;
@@ -135,6 +270,8 @@ interface TreeEntriesProps {
 	) => void;
 	showTaskProgressIndicator: boolean;
 	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	showFilePreviews?: boolean;
+	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
 
 function TreeEntries({
@@ -146,6 +283,7 @@ function TreeEntries({
 	activeDirPath,
 	renamingPath,
 	onToggleDir,
+	onEnterDir,
 	onSelectDir,
 	onOpenFile,
 	onPrefetchFile,
@@ -169,6 +307,8 @@ function TreeEntries({
 	onArrowNavigate,
 	showTaskProgressIndicator,
 	taskSummariesByPath,
+	showFilePreviews = false,
+	filePreviewsByPath = {},
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -193,6 +333,7 @@ function TreeEntries({
 							isActive={e.rel_path === activeDirPath}
 							isRenaming={renamingPath === e.rel_path}
 							onToggleDir={onToggleDir}
+							onEnterDir={onEnterDir}
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
@@ -223,6 +364,7 @@ function TreeEntries({
 									activeDirPath={activeDirPath}
 									renamingPath={renamingPath}
 									onToggleDir={onToggleDir}
+									onEnterDir={onEnterDir}
 									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
@@ -246,6 +388,8 @@ function TreeEntries({
 									onArrowNavigate={onArrowNavigate}
 									showTaskProgressIndicator={showTaskProgressIndicator}
 									taskSummariesByPath={taskSummariesByPath}
+									showFilePreviews={showFilePreviews}
+									filePreviewsByPath={filePreviewsByPath}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -284,6 +428,11 @@ function TreeEntries({
 								? (taskSummariesByPath[e.rel_path] ?? null)
 								: null
 						}
+						previewText={
+							showFilePreviews && e.is_markdown
+								? (filePreviewsByPath[e.rel_path] ?? null)
+								: null
+						}
 					/>
 				);
 			})}
@@ -298,6 +447,7 @@ export const FileTreePane = memo(function FileTreePane({
 	activeFilePath,
 	activeDirPath,
 	onToggleDir,
+	onLoadDir,
 	onSelectDir,
 	onOpenFile,
 	onPrefetchFile,
@@ -329,8 +479,22 @@ export const FileTreePane = memo(function FileTreePane({
 		Record<string, NoteTaskSummary>
 	>({});
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
+	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(null);
+	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
+		Record<string, string | null | undefined>
+	>({});
+	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
 	const taskSummaryRequestRef = useRef("");
+	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
+	const previousSpacePathRef = useRef(spacePath);
+
+	useEffect(() => {
+		if (previousSpacePathRef.current === spacePath) return;
+		previousSpacePathRef.current = spacePath;
+		setFocusedDirPath(null);
+		setFilePreviewsByPath({});
+	}, [spacePath]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -359,8 +523,11 @@ export const FileTreePane = memo(function FileTreePane({
 		for (const dirPath of expandedDirs) {
 			parents.add(dirPath);
 		}
+		if (focusedDirPath) {
+			parents.add(focusedDirPath);
+		}
 		return [...parents].sort();
-	}, [expandedDirs]);
+	}, [expandedDirs, focusedDirPath]);
 
 	const folderCountTreeRevision = useMemo(() => {
 		const serializeEntries = (entries: FsEntry[] | undefined) =>
@@ -445,6 +612,9 @@ export const FileTreePane = memo(function FileTreePane({
 		for (const dirPath of expandedDirs) {
 			collectEntries(childrenByDir[dirPath]);
 		}
+		if (focusedDirPath) {
+			collectEntries(childrenByDir[focusedDirPath]);
+		}
 		for (const pinnedPath of pinnedFiles) {
 			if (isMarkdownPath(pinnedPath)) {
 				paths.add(pinnedPath);
@@ -452,7 +622,7 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 
 		return [...paths].sort();
-	}, [childrenByDir, expandedDirs, pinnedFiles, rootEntries]);
+	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
 	const taskSummaryRequestKey = useMemo(
 		() => `${taskSummaryRefreshKey}:${taskSummaryPaths.join("\0")}`,
 		[taskSummaryPaths, taskSummaryRefreshKey],
@@ -462,6 +632,16 @@ export const FileTreePane = memo(function FileTreePane({
 		const relPath = normalizeRelPath(payload.rel_path);
 		if (!relPath || !isMarkdownPath(relPath)) return;
 		if (!taskSummaryPaths.includes(relPath)) return;
+		if (filePreviewPaths.includes(relPath)) {
+			setFilePreviewsByPath((current) => {
+				const next = { ...current };
+				delete next[relPath];
+				return next;
+			});
+			if (!payload.removed) {
+				setFilePreviewRefreshKey((key) => key + 1);
+			}
+		}
 		if (payload.removed) {
 			setTaskSummariesByPath((current) => {
 				const next = { ...current };
@@ -570,6 +750,109 @@ export const FileTreePane = memo(function FileTreePane({
 		[setError, setItemAppearance],
 	);
 
+	const handleEnterDir = useCallback(
+		(dirPath: string) => {
+			setFocusedDirPath(dirPath);
+			onSelectDir(dirPath);
+			if (!onLoadDir && !childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
+				onToggleDir(dirPath);
+			}
+		},
+		[childrenByDir, expandedDirs, onLoadDir, onSelectDir, onToggleDir],
+	);
+
+	const handleExitFocusedDir = useCallback(() => {
+		setFocusedDirPath(null);
+		onSelectDir("");
+	}, [onSelectDir]);
+
+	const focusedEntries = focusedDirPath
+		? (childrenByDir[focusedDirPath] ?? null)
+		: null;
+	const focusedEntriesLoading = Boolean(focusedDirPath && !focusedEntries);
+
+	useEffect(() => {
+		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
+		void onLoadDir(focusedDirPath);
+	}, [focusedDirPath, focusedEntries, onLoadDir]);
+
+	const filePreviewPaths = useMemo(() => {
+		if (!focusedEntries) return [];
+		return focusedEntries
+			.filter((entry) => entry.kind === "file" && entry.is_markdown)
+			.map((entry) => entry.rel_path)
+			.sort();
+	}, [focusedEntries]);
+	const filePreviewRequestKey = useMemo(
+		() => `${filePreviewRefreshKey}:${filePreviewPaths.join("\0")}`,
+		[filePreviewPaths, filePreviewRefreshKey],
+	);
+
+	useEffect(() => {
+		filePreviewRequestRef.current = filePreviewRequestKey;
+		if (!spacePath || !focusedDirPath || filePreviewPaths.length === 0) {
+			return;
+		}
+
+		const missingPaths = filePreviewPaths.filter(
+			(path) =>
+				filePreviewsByPath[path] === undefined ||
+				filePreviewsByPath[path] === "",
+		);
+		if (missingPaths.length === 0) return;
+
+		let cancelled = false;
+		void Promise.allSettled(
+			missingPaths.map(async (path) => {
+				const preview = await invoke("space_read_text_preview", {
+					path,
+					max_bytes: MARKDOWN_PREVIEW_MAX_BYTES,
+				});
+				return {
+					path,
+					snippet: markdownPreviewSnippet(preview.text),
+				};
+			}),
+		).then((results) => {
+			if (
+				cancelled ||
+				filePreviewRequestRef.current !== filePreviewRequestKey
+			) {
+				return;
+			}
+			setFilePreviewsByPath((prev) => {
+				let changed = false;
+				const next = { ...prev };
+				for (const [index, result] of results.entries()) {
+					if (result.status === "fulfilled") {
+						const snippet = result.value.snippet || null;
+						if (next[result.value.path] !== snippet) {
+							next[result.value.path] = snippet;
+							changed = true;
+						}
+					} else {
+						const path = missingPaths[index];
+						if (path && path in next) {
+							delete next[path];
+							changed = true;
+						}
+					}
+				}
+				return changed ? next : prev;
+			});
+		});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [
+		filePreviewPaths,
+		filePreviewRequestKey,
+		filePreviewsByPath,
+		focusedDirPath,
+		spacePath,
+	]);
+
 	const pinnedFileItems = useMemo(
 		() =>
 			pinnedFiles.map((path) => {
@@ -641,7 +924,70 @@ export const FileTreePane = memo(function FileTreePane({
 				animate={{ y: 0 }}
 				transition={springTransition}
 			>
-				{rootEntries.length || pinnedFileItems.length ? (
+				{focusedDirPath ? (
+					<FileTreeRootDrop targetDirPath={focusedDirPath}>
+						<FolderBreadcrumb
+							spacePath={spacePath}
+							dirPath={focusedDirPath}
+							onNavigate={handleEnterDir}
+							onExit={handleExitFocusedDir}
+						/>
+						{focusedEntriesLoading ? (
+							<m.div
+								className="fileTreeEmpty"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+							>
+								Loading folder...
+							</m.div>
+						) : focusedEntries?.length ? (
+							<TreeEntries
+								entries={focusedEntries}
+								parentDepth={-1}
+								childrenByDir={childrenByDir}
+								expandedDirs={expandedDirs}
+								activeFilePath={activeFilePath}
+								activeDirPath={activeDirPath}
+								renamingPath={renamingPath}
+								onToggleDir={onToggleDir}
+								onEnterDir={handleEnterDir}
+								onSelectDir={onSelectDir}
+								onOpenFile={onOpenFile}
+								onPrefetchFile={onPrefetchFile}
+								onNewFileInDir={onNewFileInDir}
+								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+								onNewDatabaseInDir={onNewDatabaseInDir}
+								onNewFolderInDir={handleCreateFolder}
+								onDuplicateFile={handleDuplicateFile}
+								onDeletePath={handleDeletePath}
+								onStartRename={onStartRename}
+								onCommitDirRename={onCommitDirRename}
+								onCommitFileRename={onCommitFileRename}
+								onCancelRename={onCancelRename}
+								itemAppearance={itemAppearance}
+								folderFileCounts={folderFileCounts}
+								showFolderFileCounts={showFolderFileCounts}
+								onChangeAppearance={handleChangeAppearance}
+								pinnedFiles={pinnedFiles}
+								onTogglePinnedFile={onTogglePinnedFile}
+								onMoveClickSuppressRef={moveClickSuppressRef}
+								onArrowNavigate={handleArrowNavigate}
+								showTaskProgressIndicator={showTaskProgressIndicator}
+								taskSummariesByPath={taskSummariesByPath}
+								showFilePreviews
+								filePreviewsByPath={filePreviewsByPath}
+							/>
+						) : (
+							<m.div
+								className="fileTreeEmpty"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+							>
+								No files found.
+							</m.div>
+						)}
+					</FileTreeRootDrop>
+				) : rootEntries.length || pinnedFileItems.length ? (
 					<FileTreeRootDrop>
 						{pinnedFileItems.length > 0 ? (
 							<section className="fileTreePinnedSection">
@@ -748,6 +1094,7 @@ export const FileTreePane = memo(function FileTreePane({
 								activeDirPath={activeDirPath}
 								renamingPath={renamingPath}
 								onToggleDir={onToggleDir}
+								onEnterDir={handleEnterDir}
 								onSelectDir={onSelectDir}
 								onOpenFile={onOpenFile}
 								onPrefetchFile={onPrefetchFile}
