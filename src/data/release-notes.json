@@ -1,6 +1,33 @@
 {
 	"versions": [
 		{
+			"version": "0.2.15",
+			"publishedAt": "2026-04-28",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Smarter editor empty state with a gentler prompt to start writing or press slash to discover commands",
+						"Focused folder navigation in the file tree, so you can step into individual folders and keep busy workspaces easier to scan"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Hover states across the app have been refined for clearer feedback and a more polished feel",
+						"Kanban boards now feel cleaner and more dependable, with UI refinements and columns that stay where you left them",
+						"Notes Info Sidebar now uses a transparent treatment to better match the left sidebar and keep the editor feeling calm"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Database views now rename correctly, keeping view management smooth and predictable"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.14",
 			"publishedAt": "2026-04-27",
 			"sections": [
