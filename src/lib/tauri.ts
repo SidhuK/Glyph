@@ -684,6 +684,13 @@ interface TauriCommands {
 	system_monospace_fonts_list: CommandDef<void, string[]>;
 	print_current_window: CommandDef<void, void>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
+	show_quick_note_window: CommandDef<void, void>;
+	hide_quick_note_window: CommandDef<void, void>;
+	show_main_window: CommandDef<void, void>;
+	set_quick_note_global_shortcut: CommandDef<
+		{ accelerator?: string | null },
+		void
+	>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
 	set_menu_shortcuts: CommandDef<
 		{

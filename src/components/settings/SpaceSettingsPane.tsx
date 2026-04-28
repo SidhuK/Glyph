@@ -2,12 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AttachmentStorageMode,
+	DEFAULT_QUICK_NOTES_FOLDER,
 	getDailyNotesFolder,
 	getWebClippingsFolder,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
 	setEditorAttachmentStorageMode,
+	setQuickNotesFolder,
 	setWebClippingsFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -79,6 +81,11 @@ export function SpaceSettingsPane() {
 	const [webClippingsError, setWebClippingsError] = useState<string | null>(
 		null,
 	);
+	const [quickNotesFolder, setQuickNotesFolderState] = useState(
+		DEFAULT_QUICK_NOTES_FOLDER,
+	);
+	const [quickNotesLoading, setQuickNotesLoading] = useState(true);
+	const [quickNotesError, setQuickNotesError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
 	const [isIndexing, setIsIndexing] = useState(false);
@@ -105,6 +112,7 @@ export function SpaceSettingsPane() {
 		setDailyNotesLoading(true);
 		setAttachmentsLoading(true);
 		setWebClippingsLoading(true);
+		setQuickNotesLoading(true);
 		try {
 			const [dailyFolder, webClipFolder, settings] = await Promise.all([
 				getDailyNotesFolder(),
@@ -114,6 +122,7 @@ export function SpaceSettingsPane() {
 			setCurrentSpacePath(settings.currentSpacePath);
 			setDailyNotesFolderState(dailyFolder);
 			setWebClippingsFolderState(webClipFolder);
+			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
 				settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
@@ -124,6 +133,7 @@ export function SpaceSettingsPane() {
 			setDailyNotesLoading(false);
 			setAttachmentsLoading(false);
 			setWebClippingsLoading(false);
+			setQuickNotesLoading(false);
 		}
 	}, []);
 
@@ -228,6 +238,36 @@ export function SpaceSettingsPane() {
 		}
 	}, []);
 
+	const handleBrowseQuickNotesFolder = useCallback(async () => {
+		setQuickNotesError(null);
+		try {
+			const relativePath = await selectFolderRelativeToSpace();
+			if (relativePath === null) return;
+			await setQuickNotesFolder(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
+			setQuickNotesFolderState(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
+		} catch (cause) {
+			setQuickNotesError(
+				cause instanceof Error
+					? cause.message
+					: "Failed to select quick notes folder",
+			);
+		}
+	}, []);
+
+	const handleResetQuickNotesFolder = useCallback(async () => {
+		setQuickNotesError(null);
+		try {
+			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER);
+			setQuickNotesFolderState(DEFAULT_QUICK_NOTES_FOLDER);
+		} catch (cause) {
+			setQuickNotesError(
+				cause instanceof Error
+					? cause.message
+					: "Failed to reset quick notes folder",
+			);
+		}
+	}, []);
+
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
@@ -281,6 +321,53 @@ export function SpaceSettingsPane() {
 							{dailyNotesError ? (
 								<div className="settingsError dailyNotesError">
 									{dailyNotesError}
+								</div>
+							) : null}
+						</div>
+					</SettingsRow>
+				</SettingsSection>
+
+				<SettingsSection title="Quick Notes">
+					<SettingsRow
+						label="Folder"
+						description="New quick notes are added to today's note in this folder."
+						stacked
+						interactive={false}
+					>
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderRow">
+								<div className="dailyNotesFolderPath">
+									{quickNotesLoading ? "Loading..." : quickNotesFolder}
+								</div>
+								<div className="settingsActions dailyNotesActions">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+										disabled={quickNotesLoading}
+										onClick={() => void handleBrowseQuickNotesFolder()}
+									>
+										<FolderOpen size={14} />
+										Browse
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="icon-sm"
+										className="rounded-md border-border bg-background justify-center shadow-none"
+										onClick={() => void handleResetQuickNotesFolder()}
+										disabled={quickNotesLoading}
+										aria-label="Reset quick notes folder"
+										title="Reset quick notes folder"
+									>
+										<Trash2 size={14} />
+									</Button>
+								</div>
+							</div>
+							{quickNotesError ? (
+								<div className="settingsError dailyNotesError">
+									{quickNotesError}
 								</div>
 							) : null}
 						</div>

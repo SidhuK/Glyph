@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyEditorWidthMode,
@@ -18,6 +19,7 @@ import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
+import { MAIN_WINDOW_LABEL, QUICK_NOTE_WINDOW_LABEL } from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
@@ -216,11 +218,21 @@ function ThemeAndTypographyBridge() {
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Missing #root element");
 
+function currentWindowLabel(): string {
+	try {
+		return getCurrentWindow().label;
+	} catch {
+		return MAIN_WINDOW_LABEL;
+	}
+}
+
+const isQuickNoteWindow = currentWindowLabel() === QUICK_NOTE_WINDOW_LABEL;
+
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<ThemeAndTypographyBridge />
-			<App />
+			{isQuickNoteWindow ? <QuickNoteWindow /> : <App />}
 			<Toaster />
 		</ThemeProvider>
 	</React.StrictMode>,

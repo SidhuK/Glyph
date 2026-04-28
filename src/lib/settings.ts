@@ -84,6 +84,7 @@ export const MIN_EDITOR_FONT_SIZE = 10;
 export const MAX_EDITOR_FONT_SIZE = 40;
 const DEFAULT_EDITOR_FONT_SIZE = 16;
 const DEFAULT_AI_ENABLED = true;
+export const DEFAULT_QUICK_NOTES_FOLDER = "Quick Notes";
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -119,6 +120,10 @@ export interface TaskSourceSetting {
 export interface DatabaseSettings {
 	showColumnColor: boolean;
 	showNoteCount: boolean;
+}
+
+export interface QuickNotesSettings {
+	folder: string;
 }
 
 export interface EditorSettings {
@@ -276,6 +281,9 @@ async function emitSettingsUpdated(payload: {
 	webClippings?: {
 		folder?: string | null;
 	};
+	quickNotes?: {
+		folder?: string;
+	};
 	templates?: {
 		folder?: string | null;
 		dailyNoteTemplate?: string | null;
@@ -344,6 +352,7 @@ interface AppSettings {
 	webClippings: {
 		folder: string | null;
 	};
+	quickNotes: QuickNotesSettings;
 	templates: {
 		folder: string | null;
 		dailyNoteTemplate: string | null;
@@ -387,6 +396,7 @@ const KEYS = {
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	webClippingsFolder: "webClippings.folder",
+	quickNotesFolder: "quickNotes.folder",
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
@@ -554,6 +564,12 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	};
 }
 
+export function normalizeQuickNotesFolder(value: unknown): string {
+	if (typeof value !== "string") return DEFAULT_QUICK_NOTES_FOLDER;
+	const normalized = normalizeRelPath(value);
+	return normalized || DEFAULT_QUICK_NOTES_FOLDER;
+}
+
 export async function reloadFromDisk(): Promise<void> {
 	const store = await getStore();
 	await store.reload();
@@ -606,6 +622,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawShowTaskProgressIndicatorLegacy,
 		dailyNotesFolderRaw,
 		rawWebClippingsFolder,
+		rawQuickNotesFolder,
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
@@ -649,6 +666,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.webClippingsFolder),
+		store.get<unknown>(KEYS.quickNotesFolder),
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
@@ -722,6 +740,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		typeof rawWebClippingsFolder === "string"
 			? normalizeRelPath(rawWebClippingsFolder) || null
 			: null;
+	const quickNotesFolder = normalizeQuickNotesFolder(rawQuickNotesFolder);
 	const templatesFolder =
 		typeof templatesFolderRaw === "string"
 			? normalizeRelPath(templatesFolderRaw)
@@ -807,6 +826,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		webClippings: {
 			folder: webClippingsFolder,
+		},
+		quickNotes: {
+			folder: quickNotesFolder,
 		},
 		templates: {
 			folder: templatesFolder,
@@ -1190,6 +1212,19 @@ export async function setWebClippingsFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ webClippings: { folder: nextFolder } });
+}
+
+export async function getQuickNotesFolder(): Promise<string> {
+	const settings = await loadSettings();
+	return settings.quickNotes.folder;
+}
+
+export async function setQuickNotesFolder(folder: string): Promise<void> {
+	const store = await getStore();
+	const nextFolder = normalizeQuickNotesFolder(folder);
+	await store.set(KEYS.quickNotesFolder, nextFolder);
+	await store.save();
+	void emitSettingsUpdated({ quickNotes: { folder: nextFolder } });
 }
 
 export async function getTemplatesFolder(): Promise<string | null> {
