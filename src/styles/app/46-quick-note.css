@@ -33,7 +33,6 @@
 	line-height: 1.68;
 	letter-spacing: 0;
 	caret-color: var(--interactive-accent);
-	text-rendering: optimizeLegibility;
 }
 
 .quickNoteTextarea::placeholder {
@@ -87,14 +86,14 @@
 
 .quickNoteSaveButton > svg {
 	flex: 0 0 auto;
-	color: currentColor;
+	color: currentcolor;
 }
 
 .quickNoteSaveLabel {
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1;
-	color: currentColor;
+	color: currentcolor;
 }
 
 .quickNoteSaveButton .commandPaletteShortcut {
@@ -105,8 +104,8 @@
 	height: 20px;
 	min-width: 0;
 	background: transparent;
-	border-color: currentColor;
-	color: currentColor;
+	border-color: currentcolor;
+	color: currentcolor;
 	box-shadow: none;
 }
 

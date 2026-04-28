@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { emit } from "@tauri-apps/api/event";
+import {
+	type KeyboardEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, reloadFromDisk } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -63,6 +70,11 @@ export function QuickNoteWindow() {
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
 	const hasText = draft.trim().length > 0;
+	const isMac =
+		navigator.platform.toLowerCase().includes("mac") ||
+		navigator.userAgent.includes("Mac");
+	const shortcutLabel = isMac ? "⌘+Enter" : "Ctrl+Enter";
+	const shortcutModifierLabel = isMac ? "⌘" : "Ctrl";
 
 	const refreshSettings = useCallback(async (withReload = false) => {
 		if (withReload) await reloadFromDisk();
@@ -94,6 +106,7 @@ export function QuickNoteWindow() {
 			const path = await appendQuickNote(folder, text);
 			setDraft("");
 			setStatus(`Saved ${savedLabel(path)}`);
+			void emit("quick-note:open_note", { path }).catch(() => {});
 			window.setTimeout(() => setStatus(""), 1600);
 			window.setTimeout(() => textareaRef.current?.focus(), 20);
 		} catch (cause) {
@@ -103,7 +116,7 @@ export function QuickNoteWindow() {
 		}
 	}, [draft, folder, saving]);
 
-	const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
 		const primary = event.metaKey || event.ctrlKey;
 		if (event.key === "Escape") {
 			event.preventDefault();
@@ -137,7 +150,7 @@ export function QuickNoteWindow() {
 					className="quickNoteSaveButton"
 					aria-label={saving ? "Saving quick note" : "Save quick note"}
 					title={
-						saving ? "Saving quick note" : "Save quick note (Command+Enter)"
+						saving ? "Saving quick note" : `Save quick note (${shortcutLabel})`
 					}
 					disabled={saving || !hasText}
 					onClick={() => void save()}
@@ -147,7 +160,9 @@ export function QuickNoteWindow() {
 					<span className="commandPaletteShortcut" aria-hidden="true">
 						<kbd>
 							<span className="commandPaletteShortcutCombo">
-								<span className="commandPaletteShortcutPart">⌘</span>
+								<span className="commandPaletteShortcutPart">
+									{shortcutModifierLabel}
+								</span>
 								<span className="commandPaletteShortcutPart">↵</span>
 							</span>
 						</kbd>

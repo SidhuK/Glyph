@@ -423,7 +423,12 @@ export function AppShell() {
 	}, [setError]);
 
 	useTauriEvent("quick-note:open_note", (payload) => {
-		void openWorkspaceFile(payload.path);
+		void openWorkspaceFile(payload.path).catch((cause) => {
+			console.error("Failed to open quick note", cause);
+			const message = cause instanceof Error ? cause.message : String(cause);
+			setError(message);
+			toast.error("Could not open quick note", { description: message });
+		});
 	});
 
 	const { openOrCreateDailyNote } = useDailyNote({

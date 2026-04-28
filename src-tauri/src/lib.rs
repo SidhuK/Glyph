@@ -965,11 +965,10 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     let window = WebviewWindowBuilder::new(
         app,
         QUICK_NOTE_WINDOW_LABEL,
-        WebviewUrl::App("index.html?window=quick-note".into()),
+        WebviewUrl::App(format!("index.html?window={QUICK_NOTE_WINDOW_LABEL}").into()),
     )
     .title("Quick Note")
     .inner_size(640.0, 360.0)
-    .min_inner_size(520.0, 300.0)
     .resizable(false)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
@@ -1039,12 +1038,6 @@ fn set_quick_note_global_shortcut(
         return Ok(());
     }
 
-    if let Some(previous) = current.take() {
-        if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
-            warn!("Failed to unregister previous quick note shortcut: {error}");
-        }
-    }
-
     if let Some(next_accelerator) = next {
         app.global_shortcut()
             .on_shortcut(next_accelerator.as_str(), |app, _shortcut, event| {
@@ -1055,7 +1048,20 @@ fn set_quick_note_global_shortcut(
                 }
             })
             .map_err(|error| error.to_string())?;
+
+        if let Some(previous) = current.take() {
+            if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
+                warn!("Failed to unregister previous quick note shortcut: {error}");
+            }
+        }
         *current = Some(next_accelerator);
+        return Ok(());
+    }
+
+    if let Some(previous) = current.take() {
+        if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
+            warn!("Failed to unregister previous quick note shortcut: {error}");
+        }
     }
 
     Ok(())

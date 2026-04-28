@@ -19,6 +19,7 @@ import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
+import { MAIN_WINDOW_LABEL, QUICK_NOTE_WINDOW_LABEL } from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
@@ -221,11 +222,11 @@ function currentWindowLabel(): string {
 	try {
 		return getCurrentWindow().label;
 	} catch {
-		return "main";
+		return MAIN_WINDOW_LABEL;
 	}
 }
 
-const isQuickNoteWindow = currentWindowLabel() === "quick-note";
+const isQuickNoteWindow = currentWindowLabel() === QUICK_NOTE_WINDOW_LABEL;
 
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
