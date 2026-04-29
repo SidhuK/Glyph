@@ -9,7 +9,7 @@ import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
 import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
 
-interface UseFileTreeResult {
+export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	openFile: (relPath: string) => Promise<void>;

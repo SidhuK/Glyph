@@ -1,0 +1,195 @@
+.welcomeEmptyState {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 40px;
+	cursor: default;
+	overflow: hidden;
+	background: var(--bg-primary);
+}
+
+/* --- Folder Scene --- */
+
+.welcomeFolderScene {
+	position: relative;
+	width: 200px;
+	height: 180px;
+	margin-bottom: 30px;
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	background: transparent;
+	transition: background 0.6s ease;
+}
+
+.welcomeFolderBack {
+	position: absolute;
+	bottom: 18px;
+	width: 140px;
+	height: 95px;
+	z-index: 1;
+	filter: none;
+	color: var(--interactive-accent-hover);
+	transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.welcomeFile {
+	position: absolute;
+	bottom: 25px;
+	width: 86px;
+	height: 104px;
+	border-radius: 6px;
+	box-shadow: none;
+	transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transform-origin: bottom center;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--text-inverse) 40%, transparent);
+}
+
+:root.light .welcomeFile {
+	border-color: color-mix(in srgb, var(--text-primary) 20%, transparent);
+}
+
+.welcomeFile svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	padding: 12px;
+	opacity: 0.8;
+}
+
+.welcomeFile1 {
+	background: #fff;
+	z-index: 2;
+	transform: translateY(-5px) rotate(-4deg);
+}
+
+.welcomeFile2 {
+	background: #fff;
+	z-index: 3;
+	transform: translateY(-8px) rotate(-1deg);
+}
+
+.welcomeFile3 {
+	background: #fff;
+	z-index: 4;
+	transform: translateY(-8px) rotate(2deg);
+}
+
+.welcomeFile4 {
+	background: #fff;
+	z-index: 5;
+	transform: translateY(-5px) rotate(5deg);
+}
+
+.welcomeFolderFront {
+	position: absolute;
+	bottom: 12px;
+	width: 148px;
+	height: 82px;
+	z-index: 10;
+	border-radius: 8px;
+	background: var(--interactive-accent);
+	box-shadow: none;
+	transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.welcomeFolderFront::after {
+	content: "";
+	position: absolute;
+	bottom: 10px;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: color-mix(in srgb, var(--text-inverse) 15%, transparent);
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+/* --- Text --- */
+
+.welcomeTextContent {
+	margin-bottom: 32px;
+	z-index: 20;
+}
+
+.welcomeHeading {
+	font-size: 1.85rem;
+	font-weight: 600;
+	letter-spacing: -0.5px;
+	margin-bottom: 10px;
+	color: var(--text-primary);
+}
+
+.welcomeSubtext {
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+	font-weight: 400;
+	margin: 0;
+	max-width: 360px;
+	line-height: var(--leading-relaxed, 1.6);
+}
+
+/* --- Button --- */
+
+.welcomeActionBtn {
+	color: var(--text-inverse);
+	background: var(--interactive-accent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	padding: 10px 24px;
+	border-radius: var(--radius-md);
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	transition: all 0.3s ease;
+	position: relative;
+	z-index: 20;
+}
+
+/* ── Hover: fan-out files ─────────────────────────────────────────────── */
+
+.welcomeActionBtn:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+	transform: translateY(-2px);
+	box-shadow: none;
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFolderFront {
+	transform: translateY(-4px);
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFolderBack {
+	transform: translateY(-2px);
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFile1 {
+	transform: translate(-55px, -65px) rotate(-18deg);
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFile2 {
+	transform: translate(-18px, -85px) rotate(-6deg);
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFile3 {
+	transform: translate(22px, -80px) rotate(8deg);
+}
+
+.welcomeEmptyState:has(.welcomeActionBtn:hover, .welcomeFolderScene:hover)
+	.welcomeFile4 {
+	transform: translate(60px, -55px) rotate(20deg);
+}

@@ -1,0 +1,487 @@
+.tableInlineAddBtn {
+	position: absolute;
+	z-index: 15;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 92%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	backdrop-filter: blur(6px);
+	transform: translate(-50%, -50%);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 82%, transparent);
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast), box-shadow var(--transition-fast), transform
+		var(--transition-fast);
+}
+
+.tableInlineAddBtn.is-row {
+	transform: translate(-50%, -50%) rotate(270deg);
+}
+
+.tableInlineAddBtn:hover {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 18%,
+		var(--bg-primary)
+	);
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+}
+
+.codeBlockInlineControls {
+	position: absolute;
+	z-index: 15;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.codeBlockLanguageBtn {
+	height: 18px;
+	padding: 0 5px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: var(--font-normal);
+	backdrop-filter: blur(4px);
+	z-index: 15;
+}
+
+.codeBlockLanguageBtn:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.codeBlockLanguageBtnIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
+.codeBlockLanguageBtnLabel {
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.codeBlockPreviewBtn {
+	height: 18px;
+	padding: 0 7px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 18%,
+		var(--bg-primary)
+	);
+	color: var(--text-primary);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	backdrop-filter: blur(4px);
+}
+
+.codeBlockPreviewBtn:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 26%, var(--bg-hover));
+}
+
+.codeBlockPreviewBtnLabel {
+	white-space: nowrap;
+}
+
+.codeBlockCopyBtn {
+	position: absolute;
+	z-index: 15;
+	width: 22px;
+	height: 18px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	backdrop-filter: blur(4px);
+	cursor: pointer;
+	transition: color 150ms ease, background-color 150ms ease;
+	transform: translateX(-100%);
+}
+
+.codeBlockCopyBtn:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.codeBlockCopyBtn[data-copied] {
+	color: var(--success);
+}
+
+.codeBlockLanguagePopover {
+	width: 176px;
+	padding: 8px;
+}
+
+.codeBlockLanguagePopoverHeader {
+	padding: 2px 4px 8px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.codeBlockLanguageOptions {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px;
+}
+
+.codeBlockLanguageOption {
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.mermaidCodeBlockHiddenInPreview {
+	display: none;
+}
+
+.mermaidPreviewWidget {
+	margin: 8px 0 14px;
+}
+
+.mermaidPreviewSpacer {
+	pointer-events: none;
+}
+
+.mermaidPreviewPanel {
+	position: absolute;
+	z-index: 14;
+	pointer-events: none;
+}
+
+.mermaidPreviewPanel * {
+	pointer-events: none;
+}
+
+.mermaidPreviewCanvas {
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
+	padding: 14px;
+	overflow-x: auto;
+	color: var(--text-secondary);
+}
+
+.mermaidPreviewWidget[data-state="ready"] .mermaidPreviewCanvas {
+	color: var(--text-primary);
+}
+
+.mermaidPreviewCanvas svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin: 0 auto;
+}
+
+.mermaidPreviewLoading {
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.mermaidPreviewError {
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	color: var(--status-danger-fg, var(--text-primary));
+}
+
+.mermaidPreviewSource {
+	margin: 12px 0 0;
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	color: var(--text-secondary);
+	white-space: pre-wrap;
+}
+.editorColorDropdown {
+	min-width: auto;
+	padding: 6px;
+}
+
+.editorColorGrid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 4px;
+}
+
+.editorColorSwatchButton {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-secondary);
+	outline: none;
+	box-shadow: none;
+	transition: background-color var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast), transform
+		var(--transition-fast);
+}
+
+.editorColorSwatchButton:hover {
+	background: var(--interactive-hover);
+	color: var(--text-primary);
+}
+
+.editorColorSwatchButton.active {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 44%,
+		var(--border-default)
+	);
+	color: var(--interactive-accent);
+}
+
+.editorColorSwatchButton:focus-visible {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 38%,
+		var(--border-default)
+	);
+	background: var(--interactive-hover);
+}
+
+.editorColorSwatch {
+	width: 14px;
+	height: 14px;
+	border-radius: var(--radius-round);
+	border: 1px solid color-mix(in srgb, currentcolor 18%, var(--border-default));
+	flex: 0 0 auto;
+}
+
+.editorColorClearButton {
+	border-color: var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+}
+
+.taskInlineDateBtn {
+	position: absolute;
+	left: calc(
+		var(--editor-readable-content-gutter-compact) +
+		var(--heading-toggle-rail-width) +
+		var(--heading-rail-gap) -
+		1px
+	);
+	z-index: 15;
+	width: 18px;
+	height: 18px;
+	border: none;
+	background: transparent;
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border-radius: var(--radius-sm);
+	transform: translateY(-1px);
+}
+
+.taskInlineDateBtn:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
+}
+
+.taskInlineDatePopover {
+	width: 286px;
+}
+
+.taskInlineDateActions {
+	margin-top: 0;
+}
+
+.slashCommandMenu {
+	position: fixed;
+	min-width: 220px;
+	max-width: 280px;
+	max-height: min(212px, 60vh);
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent)
+		transparent;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+	padding: 6px;
+	z-index: 2000;
+}
+
+.slashCommandMenu::-webkit-scrollbar {
+	width: 8px;
+}
+
+.slashCommandMenu::-webkit-scrollbar-thumb {
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 48%, transparent);
+}
+
+.slashCommandMenu::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.slashCommandItem {
+	width: 100%;
+	text-align: left;
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	border: none;
+	background: transparent;
+	color: var(--text-primary);
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.slashCommandItem:hover,
+.slashCommandItem.active {
+	background: var(--bg-hover);
+}
+
+.slashCommandIcon {
+	width: 18px;
+	flex: 0 0 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	line-height: 1;
+	color: var(--text-tertiary);
+}
+
+.slashCommandTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.wikiLinkSuggestionMenu {
+	position: fixed;
+	width: 280px;
+	max-height: 260px;
+	overflow-y: auto;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+	padding: 4px;
+	z-index: 2100;
+}
+
+.wikiLinkSuggestionItem {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	text-align: left;
+	padding: 6px 10px;
+	border-radius: var(--radius-md);
+	border: none;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.wikiLinkSuggestionItem:hover,
+.wikiLinkSuggestionItem.active {
+	background: var(--bg-hover);
+}
+
+.wikiLinkSuggestionTitle {
+	display: block;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wikiLinkSuggestionPath {
+	display: block;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.editorLinkPopover {
+	width: 320px;
+	padding: 10px;
+}
+
+.editorLinkPopoverRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.editorLinkPopoverCheckbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.editorLinkPopoverActions {
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.editorLinkDialog {
+	max-width: min(420px, calc(100vw - 32px));
+}
+
+.editorLinkDialogForm {
+	display: grid;
+	gap: 12px;
+}
+
+.editorLinkDialogCheckbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.editorLinkDialogActions {
+	margin-top: 4px;
+}

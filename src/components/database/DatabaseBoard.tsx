@@ -18,12 +18,13 @@ import {
 	type MutableRefObject,
 	type ReactNode,
 	useCallback,
-	useEffect,
 	useMemo,
 	useRef,
 	useState,
 } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
+import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
@@ -41,10 +42,8 @@ import {
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
-import { loadSettings } from "../../lib/settings";
 import { statusToneStyle } from "../../lib/statusProperties";
-import { type NoteTaskSummary, invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
+import type { NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import {
 	EDITOR_TEXT_COLORS,
@@ -540,13 +539,15 @@ export function DatabaseBoard({
 		});
 	const [moveError, setMoveError] = useState("");
 	const suppressClickRef = useRef(false);
-	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
-		Record<string, NoteTaskSummary>
-	>({});
-	const [showTaskProgressIndicator, setShowTaskProgressIndicator] = useState<
-		boolean | null
-	>(null);
-	const taskProgressSettingVersionRef = useRef(0);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
+	const taskSummaryPaths = useMemo(
+		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
+		[rows],
+	);
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		taskSummaryPaths,
+		showTaskProgressIndicator,
+	);
 	const boardCardColumns = useMemo(
 		() => cardCandidateColumns(columns, groupColumnId),
 		[columns, groupColumnId],
@@ -566,66 +567,6 @@ export function DatabaseBoard({
 		},
 		[isStatusGroup, onLaneColorChange, onStatusColorChange],
 	);
-
-	useEffect(() => {
-		if (showTaskProgressIndicator !== true) {
-			setTaskSummariesByPath({});
-			return;
-		}
-		const notePaths = Array.from(
-			new Set(rows.map((row) => row.note_path).filter(Boolean)),
-		);
-		if (notePaths.length === 0) {
-			setTaskSummariesByPath({});
-			return;
-		}
-
-		let cancelled = false;
-		void invoke("task_summaries_for_paths", { note_paths: notePaths })
-			.then((items) => {
-				if (cancelled) return;
-				const next: Record<string, NoteTaskSummary> = {};
-				for (const item of items) {
-					next[item.note_path] = {
-						total_count: item.total_count,
-						completed_count: item.completed_count,
-						open_count: item.open_count,
-					};
-				}
-				setTaskSummariesByPath(next);
-			})
-			.catch(() => {
-				if (cancelled) return;
-				setTaskSummariesByPath({});
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [rows, showTaskProgressIndicator]);
-
-	useEffect(() => {
-		let cancelled = false;
-		const requestedAtVersion = taskProgressSettingVersionRef.current;
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				if (taskProgressSettingVersionRef.current !== requestedAtVersion)
-					return;
-				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
-			})
-			.catch(() => undefined);
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
-			taskProgressSettingVersionRef.current += 1;
-			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
-		}
-	});
 
 	const handleLaneDrop = useCallback(
 		async (

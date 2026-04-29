@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
-import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
+import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 
 interface NoteExportDocumentProps {
 	relPath: string;
@@ -17,7 +17,7 @@ export const NoteExportDocument = memo(function NoteExportDocument({
 		<main className="noteExportPage" data-export-root="true">
 			<article className="noteExportCard">
 				<div className="noteExportBody">
-					<CanvasNoteInlineEditor
+					<NoteInlineEditor
 						markdown={body}
 						relPath={relPath}
 						mode="preview"

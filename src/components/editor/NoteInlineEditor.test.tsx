@@ -3,7 +3,7 @@
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CanvasNoteInlineEditor } from "./CanvasNoteInlineEditor";
+import { NoteInlineEditor } from "./NoteInlineEditor";
 
 const {
 	chainCommands,
@@ -240,7 +240,7 @@ vi.mock("../ui/shadcn/popover", () => ({
 	),
 }));
 
-describe("CanvasNoteInlineEditor table controls", () => {
+describe("NoteInlineEditor table controls", () => {
 	let container: HTMLDivElement;
 	let root: Root;
 
@@ -304,7 +304,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 	function render(mode: "plain" | "rich" | "preview" = "rich") {
 		act(() => {
 			root.render(
-				<CanvasNoteInlineEditor
+				<NoteInlineEditor
 					markdown=""
 					mode={mode}
 					onChange={() => {}}

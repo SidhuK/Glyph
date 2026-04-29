@@ -3,6 +3,7 @@ import {
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
 import { buildMonthRange } from "./calendar";
+import { readStoredSelectedViewId } from "./database/selectedViewStorage";
 import type {
 	AllDocsItem,
 	CalendarRangeResponse,
@@ -17,7 +18,6 @@ import { invoke } from "./tauri";
 const NOTE_PREFETCH_DEBOUNCE_MS = 24;
 const NOTE_PREFETCH_MAX_PATHS = 12;
 const SPECIAL_DATA_CACHE_LIMIT = 8;
-const DATABASE_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
 
 const prefetchedNoteDocs = new Map<string, TextFileDoc>();
 const notePrefetchPromises = new Map<string, Promise<TextFileDoc | null>>();
@@ -142,22 +142,6 @@ function allDocsCacheKey(folderPrefix?: string | null) {
 		.replace(/\\/g, "/")
 		.replace(/^\/+|\/+$/g, "");
 	return normalized || "__all__";
-}
-
-function readStoredSelectedViewId(databaseId: string): string | null {
-	if (typeof window === "undefined") return null;
-	try {
-		const raw = window.localStorage.getItem(
-			DATABASE_SELECTED_VIEWS_STORAGE_KEY,
-		);
-		if (!raw) return null;
-		const parsed = JSON.parse(raw);
-		const candidate =
-			parsed && typeof parsed === "object" ? parsed[databaseId] : null;
-		return typeof candidate === "string" ? candidate : null;
-	} catch {
-		return null;
-	}
 }
 
 async function loadAllDatabaseRows(
@@ -446,14 +430,10 @@ export async function prefetchDatabasesLanding(
 	const databaseId = initialDatabaseId ?? summaries[0]?.id ?? null;
 	if (!databaseId) return;
 	const document = await prefetchDatabaseDocument(databaseId);
-	const storedViewId = readStoredSelectedViewId(databaseId);
+	const viewIds = document.database.views.map((view) => view.id);
+	const storedViewId = readStoredSelectedViewId(databaseId, viewIds);
 	const preferredViewId =
-		(storedViewId &&
-		document.database.views.some((view) => view.id === storedViewId)
-			? storedViewId
-			: null) ??
-		document.database.views[0]?.id ??
-		null;
+		storedViewId ?? document.database.views[0]?.id ?? null;
 	if (!preferredViewId) return;
 	await prefetchDatabaseRows(databaseId, preferredViewId);
 }

@@ -7,12 +7,12 @@ import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
 const {
-	canvasNoteInlineEditorMock,
+	noteInlineEditorMock,
 	localNoteGraphDialogMock,
 	invokeMock,
 	mockZenModeState,
 } = vi.hoisted(() => ({
-	canvasNoteInlineEditorMock: vi.fn(),
+	noteInlineEditorMock: vi.fn(),
 	localNoteGraphDialogMock: vi.fn(),
 	invokeMock: vi.fn(),
 	mockZenModeState: { active: false },
@@ -62,8 +62,8 @@ vi.mock("motion/react", () => ({
 	useReducedMotion: () => true,
 }));
 
-vi.mock("../editor/CanvasNoteInlineEditor", () => ({
-	CanvasNoteInlineEditor: ({
+vi.mock("../editor/NoteInlineEditor", () => ({
+	NoteInlineEditor: ({
 		onChange,
 		mode,
 		pasteMarkdownBehavior,
@@ -81,7 +81,7 @@ vi.mock("../editor/CanvasNoteInlineEditor", () => ({
 			data-mode={mode}
 			data-zen-mode={zenModeActive ? "true" : "false"}
 			ref={() => {
-				canvasNoteInlineEditorMock({
+				noteInlineEditorMock({
 					mode,
 					pasteMarkdownBehavior,
 					zenModeActive,
@@ -226,7 +226,7 @@ describe("MarkdownEditorPane", () => {
 		} as typeof ResizeObserver;
 		invokeMock.mockReset();
 		invokeMock.mockImplementation(mockInvoke);
-		canvasNoteInlineEditorMock.mockReset();
+		noteInlineEditorMock.mockReset();
 		localNoteGraphDialogMock.mockReset();
 
 		container = document.createElement("div");
@@ -287,7 +287,7 @@ describe("MarkdownEditorPane", () => {
 			);
 		});
 
-		expect(canvasNoteInlineEditorMock).toHaveBeenCalledWith({
+		expect(noteInlineEditorMock).toHaveBeenCalledWith({
 			mode: "rich",
 			pasteMarkdownBehavior: "smart-markdown",
 			zenModeActive: false,
@@ -409,7 +409,7 @@ describe("MarkdownEditorPane", () => {
 				?.classList.contains("is-zen-hidden"),
 		).toBe(true);
 		expect(container.querySelector(".markdownEditorPaneZen")).toBeTruthy();
-		expect(canvasNoteInlineEditorMock).toHaveBeenCalledWith({
+		expect(noteInlineEditorMock).toHaveBeenCalledWith({
 			mode: "rich",
 			pasteMarkdownBehavior: "smart-markdown",
 			zenModeActive: true,

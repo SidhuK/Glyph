@@ -1,0 +1,216 @@
+.aiScrollFab {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: 140px;
+	z-index: 10;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	color: var(--text-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 10%, transparent);
+	transition: border-color var(--transition-fast), color var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.aiScrollFab:hover {
+	border-color: var(--border-default);
+	color: var(--text-primary);
+	box-shadow: 0 4px 12px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+
+/* ── CODE BLOCK ENHANCEMENTS ── */
+
+.aiMessageMarkdown pre {
+	position: relative;
+}
+
+.aiCodeBlockHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	margin: -8px -8px 8px -8px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	font-size: 0;
+}
+
+.aiCodeBlockLang {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.aiCodeBlockCopy {
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	background: transparent;
+	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+	border-radius: var(--radius-sm);
+	padding: 2px 8px;
+	cursor: pointer;
+	transition: color var(--transition-fast), border-color var(--transition-fast),
+		background var(--transition-fast);
+}
+
+.aiCodeBlockCopy:hover {
+	color: var(--text-primary);
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+}
+
+/* ── ENHANCED THINKING INDICATOR ── */
+
+@keyframes ai-thinking-bar {
+	0%,
+	100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 0.7;
+	}
+}
+
+.aiPendingSkeleton {
+	opacity: 0.4;
+}
+
+/* ── GROUPED TOOL STEP CARDS ── */
+
+.aiToolGroupCard {
+	align-self: flex-start;
+	max-width: 92%;
+	padding: 6px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	transform-origin: center;
+}
+
+.aiToolGroupCard-done {
+	border-color: color-mix(in srgb, var(--status-success-fg) 18%, transparent);
+}
+
+.aiToolGroupCard-error {
+	border-color: var(--status-danger-border);
+}
+
+.aiToolGroupCard-running {
+	border-color: color-mix(in srgb, var(--interactive-accent) 33%, transparent);
+}
+
+.aiToolGroupTop {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	color: inherit;
+	text-align: left;
+}
+
+.aiToolDuration {
+	font-size: 10px;
+	padding: 1px 6px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* ── AI AGENT PANE (main content area) ── */
+
+.aiAgentPane {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.aiAgentHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 0;
+	flex-shrink: 0;
+}
+
+.aiAgentHeaderRight {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* ── Empty state: composer centered ── */
+
+.aiAgentEmpty {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	justify-content: center;
+}
+
+.aiAgentEmpty .aiComposer {
+	padding: 0;
+}
+
+/* ── Active chat: thread + composer at bottom ── */
+
+.aiAgentBody {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	position: relative;
+}
+
+.aiAgentThread {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 0 0 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	scrollbar-width: thin;
+}
+
+.aiAgentBody .aiComposer {
+	padding: 10px 0 16px;
+}
+
+.aiAgentPane .aiPanelError {
+	margin: 0 0 8px;
+}
+
+.aiAgentPane .aiComposerInputShell {
+	background: var(--bg-secondary);
+}
+
+.aiAgentPane .aiComposerInner {
+	background: var(--bg-secondary);
+}

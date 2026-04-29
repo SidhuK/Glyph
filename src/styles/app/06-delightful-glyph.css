@@ -65,17 +65,6 @@
 	color: var(--file-tree-row-icon-color) !important;
 }
 
-:root[data-delightful-glyph="true"] .mainTabsAiToggle {
-	color: var(--delightful-glyph-violet);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--delightful-glyph-violet) 24%, transparent);
-}
-
-:root[data-delightful-glyph="true"] .mainTabsAiToggle:hover,
-:root[data-delightful-glyph="true"] .mainTabsAiToggle.is-active {
-	color: var(--delightful-glyph-cyan);
-}
-
 :root[data-delightful-glyph="true"] .aiPanelTitle svg {
 	color: currentColor;
 	filter: none;

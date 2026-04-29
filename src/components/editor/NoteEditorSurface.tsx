@@ -24,17 +24,17 @@ import { Save, Trash2, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import type {
-	SelectedCodeBlockState,
-	SelectedTableState,
-	SelectionRibbonPosition,
-} from "./CanvasNoteInlineEditor";
 import { EditorRibbon } from "./EditorRibbon";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
 import { dispatchWikiLinkClick } from "./markdown/editorEvents";
+import type {
+	SelectedCodeBlockState,
+	SelectedTableState,
+	SelectionRibbonPosition,
+} from "./noteEditorOverlayTypes";
 
 function MermaidPreviewPanel({
 	source,
@@ -137,7 +137,7 @@ function MermaidPreviewPanel({
 	);
 }
 
-export interface CanvasNoteEditorSurfaceProps {
+export interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
 	zenModeActive: boolean;
@@ -207,7 +207,7 @@ export interface CanvasNoteEditorSurfaceProps {
 	};
 }
 
-export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
+export const NoteEditorSurface = memo(function NoteEditorSurface({
 	editor,
 	mode,
 	zenModeActive,
@@ -221,7 +221,7 @@ export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
 	codeBlock,
 	task,
 	backlinks,
-}: CanvasNoteEditorSurfaceProps) {
+}: NoteEditorSurfaceProps) {
 	return (
 		<div
 			ref={hostRef}

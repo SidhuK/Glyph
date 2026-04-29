@@ -1,0 +1,285 @@
+.mainTabsBarWrap {
+	flex-shrink: 0;
+}
+
+.mainTabsBar {
+	--main-tabs-right-reserve: 78px;
+
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	padding: 0 calc(var(--space-3) + var(--main-tabs-right-reserve)) 0
+		var(--space-3);
+	border-bottom: 0;
+	background: var(--bg-primary);
+}
+
+.mainTabsBar[data-empty-state="true"] {
+	background: var(--bg-primary);
+}
+
+.mainTabNavControls {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+.mainTabNavBtn {
+	height: 28px;
+	width: 28px;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		opacity var(--transition-fast);
+}
+
+.mainTabNavBtn:hover:not(:disabled) {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+}
+
+.mainTabNavBtn:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+	color: var(--text-tertiary);
+}
+
+.mainTabNavBtn:active:not(:disabled) {
+	opacity: 0.85;
+}
+
+.mainTabsBreadcrumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	padding: 4px var(--space-3);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 140ms ease, opacity 140ms ease, padding 140ms ease;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.mainTabsBreadcrumb.is-visible {
+	max-height: 24px;
+	opacity: 1;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+.mainTabsBreadcrumbItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	white-space: nowrap;
+}
+
+.mainTabsBreadcrumbSep {
+	color: var(--text-tertiary);
+	opacity: 0.4;
+	margin: 0 2px;
+}
+
+.mainTabsBreadcrumbSegment {
+	color: var(--text-tertiary);
+}
+
+.mainTabsBreadcrumbCurrent {
+	color: var(--text-secondary);
+	font-weight: var(--font-medium);
+}
+
+.mainTabsStrip {
+	flex: 0 1 auto;
+	width: fit-content;
+	max-width: calc(100% - 40px - var(--main-tabs-right-reserve));
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 6px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 24%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 66%, transparent);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.mainTabsStrip::-webkit-scrollbar {
+	display: none;
+}
+
+.mainTabWrap {
+	position: relative;
+	flex: 0 0 auto;
+	width: clamp(96px, 12vw, 178px);
+	min-width: 0;
+}
+
+.mainTabWrap[data-dragging="true"] {
+	z-index: 2;
+	opacity: 0.82;
+}
+
+.mainTabWrap[data-drop-target="true"] .mainTab {
+	border-color: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
+}
+
+.mainTab {
+	position: relative;
+	height: 28px;
+	width: 100%;
+	min-width: 0;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	padding: 0 10px 0 26px;
+	border-radius: var(--radius-2xl);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast), box-shadow
+		var(--transition-fast);
+}
+
+.mainTab:hover {
+	color: var(--text-primary);
+}
+
+.mainTab:active {
+	opacity: 0.85;
+}
+
+.mainTab.is-active {
+	background: var(--bg-primary);
+	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
+	color: var(--text-primary);
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+}
+
+.mainTabText {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mainTabLabel {
+	font-size: 12px;
+	line-height: 1.2;
+	font-weight: var(--font-medium);
+}
+
+.mainTabClose {
+	position: absolute;
+	top: 50%;
+	left: 6px;
+	z-index: 1;
+	transform: translateY(-50%);
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: var(--radius-2xl);
+	border: 1px solid transparent;
+	color: var(--text-secondary);
+	opacity: 0;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast), opacity
+		var(--transition-fast);
+}
+
+.mainTabWrap:hover .mainTabClose {
+	opacity: 0.9;
+	color: var(--text-primary);
+}
+
+.mainTabCloseGlyph {
+	font-size: 12px;
+	line-height: 1;
+	font-weight: var(--font-semibold);
+}
+
+.mainTabClose:hover {
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 74%, transparent);
+	color: var(--text-primary);
+	opacity: 1;
+	transform: translateY(-50%);
+}
+
+.mainTabClose:active {
+	background: color-mix(in srgb, var(--bg-hover) 94%, transparent);
+}
+
+.mainTabAdd {
+	height: 28px;
+	width: 28px;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 15px;
+	font-weight: var(--font-medium);
+	line-height: 1;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.mainTabAdd:hover {
+	color: var(--text-primary);
+}
+
+.mainTabAdd:active {
+	opacity: 0.85;
+}
+
+.mainTab:focus-visible,
+.mainTabClose:focus-visible,
+.mainTabAdd:focus-visible,
+.mainTabNavBtn:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mainTab,
+	.mainTab::before,
+	.mainTabClose,
+	.mainTabAdd {
+		transition: none;
+		transform: none;
+	}
+
+	.mainTabClose:hover {
+		transform: translateY(-50%);
+	}
+}

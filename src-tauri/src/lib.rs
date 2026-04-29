@@ -1491,6 +1491,7 @@ pub fn run() {
             index::commands::search_parse_and_run,
             index::commands::index_set_people_mentions_as_tags_enabled,
             index::commands::all_docs_list,
+            index::commands::all_docs_count,
             index::commands::calendar_query_range,
             index::commands::tags_list,
             index::commands::people_list,

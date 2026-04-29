@@ -44,7 +44,6 @@ export function useTabManager(spacePath: string | null) {
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
 	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
-	const [dragTabId, setDragTabId] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const [historyByTabId, setHistoryByTabId] = useState<TabHistoryById>({});
 	const tabIdCounterRef = useRef(0);
@@ -164,7 +163,6 @@ export function useTabManager(spacePath: string | null) {
 		historyByTabIdRef.current = {};
 		setTabs([]);
 		setActiveTabIdState(null);
-		setDragTabId(null);
 		setDirtyByPath({});
 		setHistoryByTabId({});
 	}, [spacePath]);
@@ -673,8 +671,6 @@ export function useTabManager(spacePath: string | null) {
 		activeTabId,
 		activeTabPath,
 		setActiveTabId,
-		dragTabId,
-		setDragTabId,
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,

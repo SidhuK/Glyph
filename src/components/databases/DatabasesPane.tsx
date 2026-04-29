@@ -16,6 +16,12 @@ import {
 } from "react";
 import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
+import {
+	readStoredSelectedDatabaseId,
+	readStoredSelectedViewId,
+	writeStoredSelectedDatabaseId,
+	writeStoredSelectedViewId,
+} from "../../lib/database/selectedViewStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	getPrefetchedDatabaseRows,
@@ -70,9 +76,6 @@ interface DatabasesPaneProps {
 	openRequestNonce?: number;
 }
 
-const DATABASES_SELECTED_DATABASE_STORAGE_KEY =
-	"glyph.databases.selectedDatabaseId";
-const DATABASES_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
 
@@ -87,82 +90,6 @@ function fileNameFromTitle(notePath: string, nextTitle: string): string {
 	const fallbackStem = currentName.slice(0, fallbackDotIndex).trim();
 	const stem = trimmedTitle || fallbackStem || "Untitled";
 	return `${stem}${ext}`;
-}
-
-function readStoredSelectedDatabaseId(): string | null {
-	if (typeof window === "undefined") return null;
-	try {
-		const raw = window.localStorage.getItem(
-			DATABASES_SELECTED_DATABASE_STORAGE_KEY,
-		);
-		return raw?.trim() ? raw : null;
-	} catch {
-		return null;
-	}
-}
-
-function writeStoredSelectedDatabaseId(databaseId: string | null) {
-	if (typeof window === "undefined") return;
-	try {
-		if (databaseId) {
-			window.localStorage.setItem(
-				DATABASES_SELECTED_DATABASE_STORAGE_KEY,
-				databaseId,
-			);
-			return;
-		}
-		window.localStorage.removeItem(DATABASES_SELECTED_DATABASE_STORAGE_KEY);
-	} catch {
-		// Best-effort UI persistence.
-	}
-}
-
-function readStoredSelectedViews(): Record<string, string> {
-	if (typeof window === "undefined") return {};
-	try {
-		const raw = window.localStorage.getItem(
-			DATABASES_SELECTED_VIEWS_STORAGE_KEY,
-		);
-		if (!raw) return {};
-		const parsed = JSON.parse(raw);
-		if (!parsed || typeof parsed !== "object") return {};
-		const next: Record<string, string> = {};
-		for (const [databaseId, viewId] of Object.entries(parsed)) {
-			if (typeof viewId === "string") {
-				next[databaseId] = viewId;
-			}
-		}
-		return next;
-	} catch {
-		return {};
-	}
-}
-
-function readStoredSelectedViewId(databaseId: string | null): string | null {
-	if (!databaseId) return null;
-	const selectedViews = readStoredSelectedViews();
-	return selectedViews[databaseId] ?? null;
-}
-
-function writeStoredSelectedViewId(
-	databaseId: string | null,
-	viewId: string | null,
-) {
-	if (typeof window === "undefined" || !databaseId) return;
-	try {
-		const selectedViews = readStoredSelectedViews();
-		if (viewId) {
-			selectedViews[databaseId] = viewId;
-		} else {
-			delete selectedViews[databaseId];
-		}
-		window.localStorage.setItem(
-			DATABASES_SELECTED_VIEWS_STORAGE_KEY,
-			JSON.stringify(selectedViews),
-		);
-	} catch {
-		// Best-effort UI persistence.
-	}
 }
 
 function currentConfig(

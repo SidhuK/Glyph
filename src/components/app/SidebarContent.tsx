@@ -128,10 +128,12 @@ export const SidebarContent = memo(function SidebarContent({
 	const [gitExpanded, setGitExpanded] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
+	const allNotesCountRequestRef = useRef(0);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
 	const showGitButton = shouldShowGitSync(gitSyncStatus);
 	const effectiveGitExpanded = showGitButton && gitExpanded;
+	const showAllNotesCount = allNotesCount !== null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
 	const displayRecentSpaces = useMemo(
 		() =>
@@ -237,15 +239,19 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 
 	const refreshAllNotesCount = useCallback(() => {
+		const requestId = allNotesCountRequestRef.current + 1;
+		allNotesCountRequestRef.current = requestId;
 		if (!spacePath) {
 			setAllNotesCount(null);
 			return;
 		}
-		void invoke("all_docs_list", { limit: 5000 })
-			.then((items) => {
-				setAllNotesCount(items.length);
+		void invoke("all_docs_count", {})
+			.then((count) => {
+				if (allNotesCountRequestRef.current !== requestId) return;
+				setAllNotesCount(count);
 			})
 			.catch(() => {
+				if (allNotesCountRequestRef.current !== requestId) return;
 				setAllNotesCount(null);
 			});
 	}, [spacePath]);
@@ -448,9 +454,7 @@ export const SidebarContent = memo(function SidebarContent({
 							data-kind="all-notes"
 							data-active={activeTopSection === "all-notes" ? "true" : "false"}
 							aria-label={
-								allNotesCount !== null
-									? `All Notes (${allNotesCount})`
-									: "All Notes"
+								showAllNotesCount ? `All Notes (${allNotesCount})` : "All Notes"
 							}
 							aria-pressed={activeTopSection === "all-notes"}
 							aria-current={
@@ -467,7 +471,7 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
-							{activeTopSection === "all-notes" && allNotesCount !== null ? (
+							{showAllNotesCount ? (
 								<span className="sidebarQuickActionCount">{allNotesCount}</span>
 							) : null}
 						</button>
