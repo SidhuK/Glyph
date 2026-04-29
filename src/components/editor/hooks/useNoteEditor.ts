@@ -29,7 +29,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
-import type { CanvasInlineEditorMode, PasteMarkdownBehavior } from "../types";
+import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
@@ -241,7 +241,7 @@ function shouldHandleSmartMarkdownPaste(
 
 interface UseNoteEditorOptions {
 	markdown: string;
-	mode: CanvasInlineEditorMode;
+	mode: NoteInlineEditorMode;
 	zenModeActive?: boolean;
 	relPath?: string;
 	interactive?: boolean;

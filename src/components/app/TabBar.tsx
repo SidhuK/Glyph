@@ -1,5 +1,12 @@
-import { memo, useCallback, useState } from "react";
-import type { DragEvent, MouseEvent } from "react";
+import { PointerActivationConstraints } from "@dnd-kit/dom";
+import {
+	DragDropProvider,
+	type DragEndEvent,
+	PointerSensor,
+} from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
+import { memo, useCallback, useRef, useState } from "react";
+import type { MouseEvent, MutableRefObject } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
@@ -13,7 +20,6 @@ interface TabBarProps {
 	tabs: WorkspaceTab[];
 	activeTabId: string | null;
 	activeTabPath: string | null;
-	dragTabId: string | null;
 	useWindowBackground?: boolean;
 	canGoBack: boolean;
 	canGoForward: boolean;
@@ -24,10 +30,18 @@ interface TabBarProps {
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
-	onDragStart: (tabId: string) => void;
-	onDragEnd: () => void;
 	onReorder: (fromTabId: string, toTabId: string) => void;
 }
+
+const MAIN_TAB_DND_TYPE = "main-tab";
+const MAIN_TAB_DND_GROUP = "main-tabs";
+const MAIN_TAB_SENSORS = [
+	PointerSensor.configure({
+		activationConstraints: [
+			new PointerActivationConstraints.Distance({ value: 5 }),
+		],
+	}),
+];
 
 function isPathSpecial(path: string): boolean {
 	return (
@@ -43,7 +57,6 @@ export function TabBar({
 	tabs,
 	activeTabId,
 	activeTabPath,
-	dragTabId,
 	useWindowBackground = false,
 	canGoBack,
 	canGoForward,
@@ -54,11 +67,10 @@ export function TabBar({
 	onSelectTab,
 	onCloseTab,
 	onStartRenamePath,
-	onDragStart,
-	onDragEnd,
 	onReorder,
 }: TabBarProps) {
 	const { getBinding } = useShortcutBindings();
+	const suppressClickRef = useRef(false);
 	const stripFileExtension = useCallback((name: string) => {
 		if (!name || name.startsWith(".")) return name;
 		const withoutExt = name.replace(/\.[^./]+$/, "");
@@ -93,6 +105,25 @@ export function TabBar({
 		activeTabPath && !isPathSpecial(activeTabPath)
 			? activeTabPath.split("/").filter(Boolean)
 			: [];
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			suppressClickRef.current = true;
+			window.setTimeout(() => {
+				suppressClickRef.current = false;
+			}, 0);
+			if (event.canceled) return;
+
+			const { source, target } = event.operation;
+			const sourceTabId =
+				typeof source?.data.tabId === "string" ? source.data.tabId : null;
+			const targetTabId =
+				typeof target?.data.tabId === "string" ? target.data.tabId : null;
+			if (!sourceTabId || !targetTabId || sourceTabId === targetTabId) return;
+
+			onReorder(sourceTabId, targetTabId);
+		},
+		[onReorder],
+	);
 
 	return (
 		<div className="mainTabsBarWrap">
@@ -124,28 +155,28 @@ export function TabBar({
 				</div>
 				{showTabs ? (
 					<>
-						<div
-							className="mainTabsStrip"
-							onPointerEnter={() => setHovered(true)}
-							onPointerLeave={() => setHovered(false)}
-						>
-							{tabs.map((tab) => (
-								<TabItem
-									key={tab.id}
-									tab={tab}
-									label={tabLabel(tab)}
-									isActive={tab.id === activeTabId}
-									dragTabId={dragTabId}
-									onPrefetchTab={onPrefetchTab}
-									onSelectTab={onSelectTab}
-									onCloseTab={onCloseTab}
-									onStartRenamePath={onStartRenamePath}
-									onDragStart={onDragStart}
-									onDragEnd={onDragEnd}
-									onReorder={onReorder}
-								/>
-							))}
-						</div>
+						<DragDropProvider onDragEnd={handleDragEnd}>
+							<div
+								className="mainTabsStrip"
+								onPointerEnter={() => setHovered(true)}
+								onPointerLeave={() => setHovered(false)}
+							>
+								{tabs.map((tab, index) => (
+									<TabItem
+										key={tab.id}
+										tab={tab}
+										index={index}
+										label={tabLabel(tab)}
+										isActive={tab.id === activeTabId}
+										suppressClickRef={suppressClickRef}
+										onPrefetchTab={onPrefetchTab}
+										onSelectTab={onSelectTab}
+										onCloseTab={onCloseTab}
+										onStartRenamePath={onStartRenamePath}
+									/>
+								))}
+							</div>
+						</DragDropProvider>
 						<button
 							type="button"
 							className="mainTabAdd"
@@ -195,48 +226,39 @@ export function TabBar({
 
 const TabItem = memo(function TabItem({
 	tab,
+	index,
 	label,
 	isActive,
-	dragTabId,
+	suppressClickRef,
 	onSelectTab,
 	onPrefetchTab,
 	onCloseTab,
 	onStartRenamePath,
-	onDragStart,
-	onDragEnd,
-	onReorder,
 }: {
 	tab: WorkspaceTab;
+	index: number;
 	label: string;
 	isActive: boolean;
-	dragTabId: string | null;
+	suppressClickRef: MutableRefObject<boolean>;
 	onSelectTab: (tabId: string) => void;
 	onPrefetchTab: (target: string | null) => void;
 	onCloseTab: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
-	onDragStart: (tabId: string) => void;
-	onDragEnd: () => void;
-	onReorder: (fromTabId: string, toTabId: string) => void;
 }) {
-	const handleSelect = useCallback(
-		() => onSelectTab(tab.id),
-		[onSelectTab, tab.id],
-	);
-	const handleDragStart = useCallback(
-		() => onDragStart(tab.id),
-		[onDragStart, tab.id],
-	);
-	const handleDragOver = useCallback((event: DragEvent<HTMLButtonElement>) => {
-		event.preventDefault();
-	}, []);
-	const handleDrop = useCallback(
-		(event: DragEvent<HTMLButtonElement>) => {
-			event.preventDefault();
-			if (dragTabId) onReorder(dragTabId, tab.id);
-			onDragEnd();
-		},
-		[dragTabId, onDragEnd, onReorder, tab.id],
-	);
+	const { ref, handleRef, isDragging, isDropTarget } = useSortable({
+		id: tab.id,
+		index,
+		group: MAIN_TAB_DND_GROUP,
+		type: MAIN_TAB_DND_TYPE,
+		accept: MAIN_TAB_DND_TYPE,
+		sensors: MAIN_TAB_SENSORS,
+		data: { tabId: tab.id },
+		transition: { duration: 160, easing: "ease" },
+	});
+	const handleSelect = useCallback(() => {
+		if (suppressClickRef.current) return;
+		onSelectTab(tab.id);
+	}, [onSelectTab, suppressClickRef, tab.id]);
 	const handleClose = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
 			event.stopPropagation();
@@ -258,7 +280,12 @@ const TabItem = memo(function TabItem({
 				: (tab.target ?? label);
 
 	return (
-		<div className="mainTabWrap">
+		<div
+			ref={ref}
+			className="mainTabWrap"
+			data-dragging={isDragging ? "true" : undefined}
+			data-drop-target={isDropTarget ? "true" : undefined}
+		>
 			<button
 				type="button"
 				className="mainTabClose"
@@ -270,17 +297,13 @@ const TabItem = memo(function TabItem({
 				</span>
 			</button>
 			<button
+				ref={handleRef}
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
 				onMouseEnter={() => onPrefetchTab(tab.target)}
 				onFocus={() => onPrefetchTab(tab.target)}
 				title={title}
-				draggable
-				onDragStart={handleDragStart}
-				onDragEnd={onDragEnd}
-				onDragOver={handleDragOver}
-				onDrop={handleDrop}
 				onDoubleClick={handleDoubleClick}
 			>
 				<span className="mainTabText">

@@ -1,0 +1,379 @@
+.allDocsPane {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-height: 0;
+	overflow-y: auto;
+	padding: clamp(20px, 2.8vw, 32px);
+	background: var(--bg-primary);
+	gap: 18px;
+}
+
+.allDocsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.allDocsHeaderControls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.allDocsTitleGroup {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.allDocsTitle {
+	font-size: clamp(24px, 2.2vw, 30px);
+	line-height: 1.08;
+	font-weight: 800;
+	letter-spacing: -0.03em;
+	color: var(--text-primary);
+}
+
+.allDocsCountBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 24px;
+	padding: 0 10px;
+	border-radius: var(--pill-radius);
+	border: 0;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-primary)
+	);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 58%,
+		var(--text-secondary)
+	);
+	font-size: 12px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0;
+	box-shadow: var(--pill-shadow);
+	white-space: nowrap;
+}
+
+.allDocsScopeToggle {
+	flex: 0 0 auto;
+	width: auto;
+	max-width: none;
+}
+
+.allDocsScopeToggle.appearanceThemeModeSegmented .settingsSegmentedIcon {
+	display: inline-flex;
+	flex: 0 0 18px;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	overflow: visible;
+}
+
+.allDocsScopeToggle.appearanceThemeModeSegmented .settingsSegmentedIcon > * {
+	width: 100%;
+	height: 100%;
+}
+
+.allDocsHeader .allDocsScopeToggle.appearanceThemeModeSegmented button.active {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.allDocsHeader
+	.allDocsScopeToggle.appearanceThemeModeSegmented
+	button:not(.active):hover:not(:disabled) {
+	background: color-mix(in srgb, white 42%, transparent);
+	color: var(--text-primary);
+}
+
+.allDocsHeader
+	.allDocsScopeToggle.appearanceThemeModeSegmented
+	button.active:hover:not(:disabled) {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.allDocsScopeToggle button:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
+.allDocsHeader
+	.allDocsScopeToggle.appearanceThemeModeSegmented
+	button.active:focus-visible {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent), 0
+		1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.allDocsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+	gap: 18px 16px;
+	align-content: start;
+}
+
+.allDocsSections {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+
+.allDocsSection {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.allDocsSectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.allDocsSectionTitle {
+	font-size: 0.92rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.01em;
+	color: var(--text-primary);
+}
+
+.allDocsSectionCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 8px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+}
+
+.allDocsCard {
+	appearance: none;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+	height: auto;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	line-height: normal;
+	text-align: left;
+	white-space: normal;
+	outline: none;
+	transition: none;
+	user-select: none;
+}
+
+.allDocsCard:hover,
+.allDocsCard:active {
+	background: transparent;
+	color: inherit;
+}
+
+.allDocsCardSurface {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	min-width: 0;
+	padding: 10px;
+	border-radius: 5px;
+	background: var(--bg-primary);
+	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+	overflow: hidden;
+	transition: background-color 120ms ease, outline-color 120ms ease, transform
+		120ms ease;
+}
+
+.allDocsCard:hover .allDocsCardSurface {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-hover) 94%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
+	);
+	outline-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
+	transform: translateY(-1px);
+}
+
+.allDocsCard[data-state="selected"] .allDocsCardSurface {
+	outline: 1.5px solid
+		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
+	);
+}
+
+.allDocsCard:focus-visible .allDocsCardSurface {
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.allDocsCardPreview {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1 1 auto;
+	min-height: 0;
+	font-size: 0.76rem;
+	line-height: 1.4;
+	color: var(--text-secondary);
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.allDocsCardPreviewLine {
+	display: block;
+	line-height: inherit;
+}
+
+.allDocsCardPreviewLine.is-heading,
+.databaseBoardCardPreviewLine.is-heading {
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.allDocsCardPreviewLine.is-quote,
+.databaseBoardCardPreviewLine.is-quote {
+	padding-left: 6px;
+	border-left: 2px solid
+		color-mix(in srgb, var(--border-light) 88%, transparent);
+	color: var(--text-tertiary);
+}
+
+.allDocsCardPreviewLine.is-list,
+.databaseBoardCardPreviewLine.is-list {
+	color: var(--text-secondary);
+}
+
+.allDocsCardPreviewLine.is-code,
+.databaseBoardCardPreviewLine.is-code {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+}
+
+.allDocsCardPreview.is-placeholder {
+	color: var(--text-tertiary);
+	font-style: italic;
+}
+
+.allDocsCardTags {
+	display: flex;
+	flex: 0 0 auto;
+	flex-wrap: nowrap;
+	gap: 5px;
+	min-width: 0;
+	margin-top: auto;
+	overflow: hidden;
+}
+
+.allDocsCardCaption {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+	padding: 0 2px;
+}
+
+.allDocsCardTitle {
+	min-width: 0;
+	display: block;
+	font-size: 0.8rem;
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.allDocsCardPath {
+	min-width: 0;
+	flex: 1 1 auto;
+	font-size: 0.66rem;
+	line-height: 1.2;
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.allDocsCardMetaRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.allDocsCardTime {
+	flex: 0 0 auto;
+	margin-left: auto;
+	font-size: 0.66rem;
+	line-height: 1.2;
+	color: var(--text-tertiary);
+	text-align: right;
+	white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+	.allDocsGrid {
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	}
+}
+
+@media (max-width: 640px) {
+	.allDocsPane {
+		padding: 18px;
+	}
+
+	.allDocsHeader {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.allDocsHeaderControls {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.allDocsScopeToggle {
+		max-width: none;
+		width: auto;
+	}
+
+	.allDocsGrid {
+		grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+	}
+}

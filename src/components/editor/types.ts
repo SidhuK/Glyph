@@ -1,12 +1,12 @@
 import type { Editor } from "@tiptap/core";
 
-export type CanvasInlineEditorMode = "plain" | "rich" | "preview";
+export type NoteInlineEditorMode = "plain" | "rich" | "preview";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
-export interface CanvasNoteInlineEditorProps {
+export interface NoteInlineEditorProps {
 	markdown: string;
 	relPath?: string;
-	mode: CanvasInlineEditorMode;
+	mode: NoteInlineEditorMode;
 	zenModeActive?: boolean;
 	onChange: (nextMarkdown: string) => void;
 	onFrontmatterCommit?: () => void;

@@ -444,10 +444,46 @@ fn string_cell(cell: &DatabaseCellValue) -> String {
     String::new()
 }
 
+fn parse_sort_number(value: &str) -> Option<f64> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let parsed = trimmed.parse::<f64>().ok()?;
+    parsed.is_finite().then_some(parsed)
+}
+
+fn order_for_direction(ordering: std::cmp::Ordering, descending: bool) -> std::cmp::Ordering {
+    if descending {
+        ordering.reverse()
+    } else {
+        ordering
+    }
+}
+
+fn compare_text_cells(left: &str, right: &str, descending: bool) -> std::cmp::Ordering {
+    let left_number = parse_sort_number(left);
+    let right_number = parse_sort_number(right);
+    match (left_number, right_number) {
+        (Some(left_number), Some(right_number)) => order_for_direction(
+            left_number
+                .total_cmp(&right_number)
+                .then_with(|| normalize_text(left).cmp(&normalize_text(right))),
+            descending,
+        ),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => {
+            order_for_direction(normalize_text(left).cmp(&normalize_text(right)), descending)
+        }
+    }
+}
+
 fn compare_rows(
     left: &DatabaseRow,
     right: &DatabaseRow,
     column: &DatabaseColumn,
+    descending: bool,
 ) -> std::cmp::Ordering {
     let left_cell = cell_value_from_row(left, column);
     let right_cell = cell_value_from_row(right, column);
@@ -461,12 +497,15 @@ fn compare_rows(
                 .value_text
                 .as_deref()
                 .and_then(|value| chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").ok());
-            match (left_date, right_date) {
-                (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
-                (Some(_), None) => std::cmp::Ordering::Greater,
-                (None, Some(_)) => std::cmp::Ordering::Less,
-                (None, None) => std::cmp::Ordering::Equal,
-            }
+            order_for_direction(
+                match (left_date, right_date) {
+                    (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
+                    (Some(_), None) => std::cmp::Ordering::Greater,
+                    (None, Some(_)) => std::cmp::Ordering::Less,
+                    (None, None) => std::cmp::Ordering::Equal,
+                },
+                descending,
+            )
         }
         "datetime" => {
             let left_date = left_cell
@@ -479,17 +518,24 @@ fn compare_rows(
                 .as_deref()
                 .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
                 .map(|value| value.with_timezone(&chrono::Local));
-            match (left_date, right_date) {
-                (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
-                (Some(_), None) => std::cmp::Ordering::Greater,
-                (None, Some(_)) => std::cmp::Ordering::Less,
-                (None, None) => std::cmp::Ordering::Equal,
-            }
+            order_for_direction(
+                match (left_date, right_date) {
+                    (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
+                    (Some(_), None) => std::cmp::Ordering::Greater,
+                    (None, Some(_)) => std::cmp::Ordering::Less,
+                    (None, None) => std::cmp::Ordering::Equal,
+                },
+                descending,
+            )
         }
-        "checkbox" => left_cell.value_bool.cmp(&right_cell.value_bool),
-        _ => string_cell(&left_cell)
-            .to_lowercase()
-            .cmp(&string_cell(&right_cell).to_lowercase()),
+        "checkbox" => {
+            order_for_direction(left_cell.value_bool.cmp(&right_cell.value_bool), descending)
+        }
+        _ => compare_text_cells(
+            &string_cell(&left_cell),
+            &string_cell(&right_cell),
+            descending,
+        ),
     }
 }
 
@@ -785,12 +831,7 @@ pub fn query_database_rows(
         for sort in view.sorts.iter().rev() {
             if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
                 rows.sort_by(|left, right| {
-                    let ordering = compare_rows(left, right, column);
-                    if sort.direction == "desc" {
-                        ordering.reverse()
-                    } else {
-                        ordering
-                    }
+                    compare_rows(left, right, column, sort.direction == "desc")
                 });
             }
         }

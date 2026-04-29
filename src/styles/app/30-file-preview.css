@@ -78,7 +78,40 @@
 .filePreviewActions {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--space-1);
+	gap: 6px;
+	flex: 0 0 auto;
+}
+
+.filePreviewActionButton {
+	height: 28px;
+	padding: 0 10px;
+	gap: 6px;
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	border-radius: var(--radius-md);
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	transition: background var(--transition-fast), color var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.filePreviewActionButton:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.filePreviewActionButton:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-primary) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
+.filePreviewActionButton > svg,
+.filePreviewActionButton > span {
+	color: inherit;
 }
 
 .filePreviewTextWrap {

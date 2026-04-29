@@ -1,6 +1,29 @@
 {
 	"versions": [
 		{
+			"version": "0.2.17",
+			"publishedAt": "2026-04-29",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"Tabs can now be dragged and rearranged, making it easier to organize active notes and views",
+						"All Notes in the sidebar now shows the number of notes, so larger spaces are easier to scan at a glance",
+						"Number fields from frontmatter can now be sorted in increasing or decreasing order in table databases",
+						"Text fields in databases are now more flexible and easier to work with",
+						"Task notes are now possible in the editor: Shift+Enter adds quieter detail text under a task, and Cmd+Enter creates the next checkbox task when you are inside those details or a numbered sub-list",
+						"Preview toolbar actions for PNG, JPEG, PDF, and other files now use icons and compact accent buttons that match the sidebar New Note button"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"The sidebar edge has been cleaned up so the old right-side sliver no longer appears"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.16",
 			"publishedAt": "2026-04-28",
 			"sections": [

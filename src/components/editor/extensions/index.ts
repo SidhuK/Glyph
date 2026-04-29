@@ -10,7 +10,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
@@ -399,6 +399,58 @@ const TaskListMarkdownShortcut = Extension.create({
 	},
 });
 
+const TaskDetailShortcut = Extension.create({
+	name: "task-detail-shortcut",
+	priority: 1000,
+	addKeyboardShortcuts() {
+		return {
+			"Mod-Enter": () => {
+				const { editor } = this;
+				if (!editor.isEditable || !editor.isActive("taskItem")) return false;
+
+				const { state, view } = editor;
+				const taskItem = state.schema.nodes.taskItem;
+				const paragraph = state.schema.nodes.paragraph;
+				if (!taskItem || !paragraph) return false;
+
+				const { $from } = state.selection;
+				let taskDepth = -1;
+				for (let depth = $from.depth; depth > 0; depth -= 1) {
+					if ($from.node(depth).type === taskItem) {
+						taskDepth = depth;
+						break;
+					}
+				}
+				if (taskDepth < 1) return false;
+
+				const parentDepth = taskDepth - 1;
+				const parent = $from.node(parentDepth);
+				const insertIndex = $from.indexAfter(parentDepth);
+				if (!parent.canReplaceWith(insertIndex, insertIndex, taskItem)) {
+					return false;
+				}
+
+				const insertAt = $from.after(taskDepth);
+				const nextTask = taskItem.create(
+					{ checked: false },
+					paragraph.create(),
+				);
+				let tr = state.tr.insert(insertAt, nextTask);
+				tr = tr
+					.setSelection(TextSelection.create(tr.doc, insertAt + 2))
+					.scrollIntoView();
+				view.dispatch(tr);
+				return true;
+			},
+			"Shift-Enter": () => {
+				const { editor } = this;
+				if (!editor.isEditable || !editor.isActive("taskItem")) return false;
+				return editor.chain().focus().splitBlock().run();
+			},
+		};
+	},
+});
+
 const MarkdownImageShortcut = Extension.create({
 	name: "markdown-image-shortcut",
 	addProseMirrorPlugins() {
@@ -610,6 +662,7 @@ export function createEditorExtensions(
 		TaskList,
 		TaskItem.configure({ nested: true }),
 		TaskListMarkdownShortcut,
+		TaskDetailShortcut,
 		MarkdownLinkSyntaxCollapse,
 		MarkdownImageShortcut,
 		TableEnterNavigation,

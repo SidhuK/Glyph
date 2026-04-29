@@ -1,5 +1,4 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { format, isValid, parseISO } from "date-fns";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
@@ -17,7 +16,6 @@ import {
 } from "../../lib/appEvents";
 import { MERMAID_CODE_BLOCK_LANGUAGE } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { todayIsoDateLocal } from "../../lib/tasks";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -30,29 +28,32 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
-import { CanvasNoteEditorSurface } from "./CanvasNoteEditorSurface";
+import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
+import {
+	getMountedEditorContentRoot,
+	getOffsetWithinAncestor,
+	isVisibleEditorHost,
+} from "./hooks/editorDomUtils";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
+import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
+import { useTableInlineControls } from "./hooks/useTableInlineControls";
+import { useTaskInlineDates } from "./hooks/useTaskInlineDates";
 import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import { isEditorTextColor } from "./textColors";
 import { isEditorTextHighlight } from "./textHighlights";
-import type { CanvasNoteInlineEditorProps } from "./types";
-
-function safeParseISO(value?: string): Date | undefined {
-	if (!value) return undefined;
-	const parsed = parseISO(value);
-	return isValid(parsed) ? parsed : undefined;
-}
+import type { NoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -64,39 +65,12 @@ type FrontmatterLinkToken =
 
 const FRONTMATTER_LINK_PATTERN =
 	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
-const SELECTION_RIBBON_MARGIN_PX = 12;
-const SELECTION_RIBBON_HEIGHT_PX = 40;
-const SELECTION_RIBBON_EDGE_PADDING_PX = 18;
-const SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX = 176;
-const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
-const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
-const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
 
-let lastFocusedCanvasEditorHost: HTMLDivElement | null = null;
-
-type SelectionRibbonPlacement = "above" | "below";
+let lastFocusedNoteEditorHost: HTMLDivElement | null = null;
 
 interface LinkDialogState {
 	href: string;
 	target: "_self" | "_blank";
-}
-
-export interface SelectionRibbonPosition {
-	top: number;
-	left: number;
-	placement: SelectionRibbonPlacement;
-}
-
-export interface SelectedCodeBlockState {
-	top: number;
-	controlsLeft: number;
-	controlsRight: number;
-	previewLeft: number;
-	width: number;
-	previewTop: number;
-	pos: number;
-	language: string | null;
-	source: string;
 }
 
 function areSelectedCodeBlocksEqual(
@@ -127,13 +101,6 @@ function areSelectedCodeBlocksSameBlock(
 	return a.pos === b.pos && a.language === b.language && a.source === b.source;
 }
 
-export interface SelectedTableState {
-	rowControlLeft: number;
-	rowControlTop: number;
-	columnControlLeft: number;
-	columnControlTop: number;
-}
-
 function markdownHrefFromToken(raw: string): string | null {
 	const match = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
 	return match?.[1] ?? null;
@@ -158,35 +125,6 @@ function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
 		tokens.push({ kind: "href", raw, href: raw, start, end });
 	}
 	return tokens;
-}
-
-function getMountedEditorContentRoot(
-	host: HTMLElement | null,
-): HTMLElement | null {
-	if (!host) return null;
-	return host.querySelector(".ProseMirror");
-}
-
-function getOffsetWithinAncestor(
-	element: HTMLElement,
-	ancestor: HTMLElement,
-): { left: number; top: number } {
-	const elementRect = element.getBoundingClientRect();
-	const ancestorRect = ancestor.getBoundingClientRect();
-	return {
-		left: elementRect.left - ancestorRect.left,
-		top: elementRect.top - ancestorRect.top,
-	};
-}
-
-function isVisibleEditorHost(host: HTMLDivElement): boolean {
-	const style = window.getComputedStyle(host);
-	return (
-		host.isConnected &&
-		host.offsetParent !== null &&
-		style.display !== "none" &&
-		style.visibility !== "hidden"
-	);
 }
 
 function normalizeEditorHref(value: string): string {
@@ -217,55 +155,7 @@ async function openFrontmatterHref(
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
-function getSelectionRibbonPosition(
-	host: HTMLElement,
-	selection: Selection,
-): SelectionRibbonPosition | null {
-	if (selection.rangeCount === 0 || selection.isCollapsed) return null;
-	const range = selection.getRangeAt(0);
-	if (range.collapsed) return null;
-	if (!host.contains(range.commonAncestorContainer)) return null;
-
-	const lineRects = Array.from(range.getClientRects()).filter(
-		(rect) => rect.width > 0 || rect.height > 0,
-	);
-	if (lineRects.length === 0) return null;
-
-	const hostRect = host.getBoundingClientRect();
-	const firstLineRect = lineRects[0];
-	const lastLineRect = lineRects[lineRects.length - 1];
-	const firstLineTopWithinHost = firstLineRect.top - hostRect.top;
-	const lastLineBottomWithinHost = lastLineRect.bottom - hostRect.top;
-	const placeAbove =
-		firstLineTopWithinHost >=
-		SELECTION_RIBBON_HEIGHT_PX + SELECTION_RIBBON_MARGIN_PX;
-	const placement: SelectionRibbonPlacement = placeAbove ? "above" : "below";
-	const anchorRect = placement === "above" ? firstLineRect : lastLineRect;
-	const top =
-		placement === "above"
-			? firstLineTopWithinHost - SELECTION_RIBBON_MARGIN_PX
-			: lastLineBottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
-	const left = anchorRect.left - hostRect.left + anchorRect.width / 2;
-	const centerFallback = host.clientWidth / 2;
-	const minLeft = Math.min(
-		centerFallback,
-		SELECTION_RIBBON_EDGE_PADDING_PX + SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
-	);
-	const maxLeft = Math.max(
-		centerFallback,
-		host.clientWidth -
-			SELECTION_RIBBON_EDGE_PADDING_PX -
-			SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
-	);
-
-	return {
-		top: Math.max(0, top),
-		left: Math.min(Math.max(left, minLeft), maxLeft),
-		placement,
-	};
-}
-
-export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
+export const NoteInlineEditor = memo(function NoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
@@ -278,7 +168,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	onEditorReady,
 	onChange,
 	onFrontmatterCommit,
-}: CanvasNoteInlineEditorProps) {
+}: NoteInlineEditorProps) {
 	const {
 		editor,
 		frontmatter,
@@ -307,34 +197,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		null,
 	);
 	const [editorFocused, setEditorFocused] = useState(false);
-	const [taskAnchors, setTaskAnchors] = useState<
-		Array<{
-			left: number;
-			ordinal: number;
-			top: number;
-		}>
-	>([]);
-	const [selectedTaskOrdinal, setSelectedTaskOrdinal] = useState<number | null>(
-		null,
-	);
-	const [scheduleAnchor, setScheduleAnchor] = useState<{
-		left: number;
-		ordinal: number;
-		top: number;
-	} | null>(null);
-	const [activeDateField, setActiveDateField] = useState<"scheduled" | "due">(
-		"scheduled",
-	);
-	const [pickerMonth, setPickerMonth] = useState<Date>(() => new Date());
-	const [scheduledDate, setScheduledDate] = useState("");
-	const [dueDate, setDueDate] = useState("");
-	const [selectionRibbon, setSelectionRibbon] =
-		useState<SelectionRibbonPosition | null>(null);
-	const selectionRibbonHideTimerRef = useRef<number | null>(null);
-	const selectedTableSyncRafRef = useRef<number | null>(null);
-	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
-		null,
-	);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
@@ -412,81 +274,26 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [deferHeavyFeatures, relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
-
-	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
-			if (selectionRibbonHideTimerRef.current !== null) {
-				window.clearTimeout(selectionRibbonHideTimerRef.current);
-				selectionRibbonHideTimerRef.current = null;
-			}
-			setSelectionRibbon(null);
-			return;
-		}
-		const host = tiptapHostRef.current;
-		if (!host || !getMountedEditorContentRoot(host)) return;
-		let raf = 0;
-
-		const syncSelectionRibbon = () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			raf = window.requestAnimationFrame(() => {
-				raf = 0;
-				const selection = window.getSelection();
-				if (!selection) {
-					if (selectionRibbonHideTimerRef.current !== null) {
-						window.clearTimeout(selectionRibbonHideTimerRef.current);
-					}
-					selectionRibbonHideTimerRef.current = window.setTimeout(() => {
-						selectionRibbonHideTimerRef.current = null;
-						setSelectionRibbon(null);
-					}, SELECTION_RIBBON_HIDE_DELAY_MS);
-					return;
-				}
-				const next = getSelectionRibbonPosition(host, selection);
-				if (next) {
-					if (selectionRibbonHideTimerRef.current !== null) {
-						window.clearTimeout(selectionRibbonHideTimerRef.current);
-						selectionRibbonHideTimerRef.current = null;
-					}
-				} else {
-					if (selectionRibbonHideTimerRef.current !== null) {
-						window.clearTimeout(selectionRibbonHideTimerRef.current);
-					}
-					selectionRibbonHideTimerRef.current = window.setTimeout(() => {
-						selectionRibbonHideTimerRef.current = null;
-						setSelectionRibbon(null);
-					}, SELECTION_RIBBON_HIDE_DELAY_MS);
-					return;
-				}
-				setSelectionRibbon((current) => {
-					if (
-						current &&
-						next &&
-						current.top === next.top &&
-						current.left === next.left &&
-						current.placement === next.placement
-					) {
-						return current;
-					}
-					return next;
-				});
-			});
-		};
-
-		syncSelectionRibbon();
-		document.addEventListener("selectionchange", syncSelectionRibbon);
-		editor.on("selectionUpdate", syncSelectionRibbon);
-		window.addEventListener("resize", syncSelectionRibbon);
-		return () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			if (selectionRibbonHideTimerRef.current !== null) {
-				window.clearTimeout(selectionRibbonHideTimerRef.current);
-				selectionRibbonHideTimerRef.current = null;
-			}
-			document.removeEventListener("selectionchange", syncSelectionRibbon);
-			editor.off("selectionUpdate", syncSelectionRibbon);
-			window.removeEventListener("resize", syncSelectionRibbon);
-		};
-	}, [canEdit, editor, mode]);
+	const selectionRibbon = useSelectionRibbon({
+		canEdit,
+		editor,
+		hostRef: tiptapHostRef,
+		mode,
+	});
+	const selectedTable = useTableInlineControls({
+		canEdit,
+		editor,
+		hostRef: tiptapHostRef,
+		mode,
+	});
+	const taskInlineDates = useTaskInlineDates({
+		deferHeavyFeatures,
+		editor,
+		hostRef: tiptapHostRef,
+		markdown,
+		mode,
+		onChange,
+	});
 
 	useEffect(() => {
 		if (!editor || mode !== "rich") return;
@@ -497,11 +304,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const activeElement = document.activeElement;
 			if (activeElement instanceof HTMLElement) {
 				if (host.contains(activeElement)) {
-					lastFocusedCanvasEditorHost = host;
-				} else if (lastFocusedCanvasEditorHost !== host) {
+					lastFocusedNoteEditorHost = host;
+				} else if (lastFocusedNoteEditorHost !== host) {
 					return;
 				}
-			} else if (lastFocusedCanvasEditorHost !== host) {
+			} else if (lastFocusedNoteEditorHost !== host) {
 				return;
 			}
 			const scrollHost = host.closest(
@@ -799,195 +606,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
-			setSelectedTable(null);
-			return;
-		}
-		const host = tiptapHostRef.current;
-		const contentRoot = getMountedEditorContentRoot(host);
-		if (!host || !contentRoot) return;
-
-		const syncSelectedTable = () => {
-			const selection = window.getSelection();
-			const anchorElement =
-				selection?.anchorNode instanceof HTMLElement
-					? selection.anchorNode
-					: selection?.anchorNode?.parentElement;
-
-			if (!anchorElement || !contentRoot.contains(anchorElement)) {
-				setSelectedTable(null);
-				return;
-			}
-
-			const activeCell = anchorElement.closest("td, th") as HTMLElement | null;
-			if (!activeCell || !contentRoot.contains(activeCell)) {
-				setSelectedTable(null);
-				return;
-			}
-
-			const activeRow = activeCell.closest("tr") as HTMLElement | null;
-			const activeTable = activeCell.closest("table") as HTMLElement | null;
-			if (!activeRow || !activeTable || !contentRoot.contains(activeTable)) {
-				setSelectedTable(null);
-				return;
-			}
-
-			const rowOffset = getOffsetWithinAncestor(activeRow, host);
-			const cellOffset = getOffsetWithinAncestor(activeCell, host);
-			const tableOffset = getOffsetWithinAncestor(activeTable, host);
-			const nextState: SelectedTableState = {
-				rowControlLeft: Math.max(
-					TABLE_INLINE_CONTROL_EDGE_PADDING_PX,
-					tableOffset.left - TABLE_INLINE_CONTROL_OFFSET_PX,
-				),
-				rowControlTop: rowOffset.top + activeRow.offsetHeight / 2,
-				columnControlLeft: cellOffset.left + activeCell.offsetWidth / 2,
-				columnControlTop: Math.max(
-					TABLE_INLINE_CONTROL_EDGE_PADDING_PX,
-					tableOffset.top - TABLE_INLINE_CONTROL_OFFSET_PX,
-				),
-			};
-
-			setSelectedTable((current) => {
-				if (
-					current &&
-					current.rowControlLeft === nextState.rowControlLeft &&
-					current.rowControlTop === nextState.rowControlTop &&
-					current.columnControlLeft === nextState.columnControlLeft &&
-					current.columnControlTop === nextState.columnControlTop
-				) {
-					return current;
-				}
-				return nextState;
-			});
-		};
-
-		const scheduleSyncSelectedTable = () => {
-			if (selectedTableSyncRafRef.current !== null) return;
-			selectedTableSyncRafRef.current = window.requestAnimationFrame(() => {
-				selectedTableSyncRafRef.current = null;
-				syncSelectedTable();
-			});
-		};
-
-		scheduleSyncSelectedTable();
-		const scrollHost = host.closest(".rfNodeNoteEditorBody");
-		scrollHost?.addEventListener("scroll", scheduleSyncSelectedTable, {
-			passive: true,
-		});
-		window.addEventListener("resize", scheduleSyncSelectedTable);
-		document.addEventListener("selectionchange", scheduleSyncSelectedTable);
-		editor.on("selectionUpdate", scheduleSyncSelectedTable);
-		editor.on("transaction", scheduleSyncSelectedTable);
-		return () => {
-			if (selectedTableSyncRafRef.current !== null) {
-				window.cancelAnimationFrame(selectedTableSyncRafRef.current);
-				selectedTableSyncRafRef.current = null;
-			}
-			scrollHost?.removeEventListener("scroll", scheduleSyncSelectedTable);
-			window.removeEventListener("resize", scheduleSyncSelectedTable);
-			document.removeEventListener(
-				"selectionchange",
-				scheduleSyncSelectedTable,
-			);
-			editor.off("selectionUpdate", scheduleSyncSelectedTable);
-			editor.off("transaction", scheduleSyncSelectedTable);
-		};
-	}, [canEdit, editor, mode]);
-
-	useEffect(() => {
-		if (!editor || mode !== "rich" || deferHeavyFeatures) {
-			setTaskAnchors([]);
-			setSelectedTaskOrdinal(null);
-			setScheduleAnchor(null);
-			return;
-		}
-		const host = tiptapHostRef.current;
-		const contentRoot = getMountedEditorContentRoot(host);
-		if (!host || !contentRoot) return;
-
-		const syncAnchors = () => {
-			const items = Array.from(
-				contentRoot.querySelectorAll(
-					"li[data-type='taskItem'], li[data-checked]",
-				),
-			) as HTMLElement[];
-			const nextAnchors = items.map((item, ordinal) => {
-				const { left, top } = getOffsetWithinAncestor(item, host);
-				const nextTop =
-					top + Math.max(0, Math.round((item.offsetHeight - 18) / 2));
-				return {
-					left: Math.max(12, left - 24),
-					ordinal,
-					top: nextTop,
-				};
-			});
-			setTaskAnchors((current) => {
-				if (
-					current.length === nextAnchors.length &&
-					current.every(
-						(anchor, index) =>
-							anchor.left === nextAnchors[index]?.left &&
-							anchor.ordinal === nextAnchors[index]?.ordinal &&
-							anchor.top === nextAnchors[index]?.top,
-					)
-				) {
-					return current;
-				}
-				return nextAnchors;
-			});
-		};
-		const syncSelectedTask = () => {
-			const selection = window.getSelection();
-			if (!selection?.anchorNode) {
-				setSelectedTaskOrdinal(null);
-				return;
-			}
-			const anchorElement =
-				selection.anchorNode instanceof HTMLElement
-					? selection.anchorNode
-					: selection.anchorNode.parentElement;
-			if (!anchorElement || !contentRoot.contains(anchorElement)) {
-				setSelectedTaskOrdinal(null);
-				return;
-			}
-			const taskEl = anchorElement.closest(
-				"li[data-type='taskItem'], li[data-checked]",
-			) as HTMLElement | null;
-			if (!taskEl) {
-				setSelectedTaskOrdinal(null);
-				return;
-			}
-			const items = Array.from(
-				contentRoot.querySelectorAll(
-					"li[data-type='taskItem'], li[data-checked]",
-				),
-			) as HTMLElement[];
-			const ordinal = items.indexOf(taskEl);
-			setSelectedTaskOrdinal((current) => {
-				const nextOrdinal = ordinal >= 0 ? ordinal : null;
-				return current === nextOrdinal ? current : nextOrdinal;
-			});
-		};
-
-		syncAnchors();
-		syncSelectedTask();
-		const observer = new MutationObserver(() => syncAnchors());
-		observer.observe(contentRoot, {
-			childList: true,
-			subtree: true,
-			characterData: true,
-		});
-		document.addEventListener("selectionchange", syncSelectedTask);
-		editor.on("selectionUpdate", syncSelectedTask);
-		return () => {
-			observer.disconnect();
-			document.removeEventListener("selectionchange", syncSelectedTask);
-			editor.off("selectionUpdate", syncSelectedTask);
-		};
-	}, [deferHeavyFeatures, editor, mode]);
-
-	useEffect(() => {
 		if (!editor || mode !== "rich") {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
@@ -1107,11 +725,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		};
 	}, [editor, mode]);
 
-	const selectedTaskAnchor =
-		selectedTaskOrdinal == null
-			? null
-			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
-				null);
 	const selectedCodeBlockLanguage = useMemo(
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
 		[selectedCodeBlock?.language],
@@ -1124,76 +737,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const isSelectedMermaidPreviewActive =
 		isSelectedMermaidCodeBlock &&
 		selectedCodeBlock?.pos === activeMermaidPreviewPos;
-
-	const openTaskPopover = async (anchor: {
-		left: number;
-		ordinal: number;
-		top: number;
-	}) => {
-		setScheduleAnchor(anchor);
-		try {
-			const existing = await invoke("task_dates_by_ordinal", {
-				markdown,
-				ordinal: anchor.ordinal,
-			});
-			setScheduledDate(existing?.scheduled_date ?? "");
-			setDueDate(existing?.due_date ?? "");
-			const nextField = existing?.due_date ? "due" : "scheduled";
-			setActiveDateField(nextField);
-			setPickerMonth(
-				safeParseISO(existing?.due_date) ??
-					safeParseISO(existing?.scheduled_date) ??
-					new Date(),
-			);
-		} catch {
-			setScheduledDate("");
-			setDueDate("");
-			setActiveDateField("scheduled");
-			setPickerMonth(new Date());
-		}
-	};
-	const applyTaskDates = async () => {
-		if (!scheduleAnchor) return;
-		const next = await invoke("task_update_by_ordinal", {
-			markdown,
-			ordinal: scheduleAnchor.ordinal,
-			scheduled_date: scheduledDate,
-			due_date: dueDate,
-		});
-		if (!next) return;
-		onChange(next);
-		setScheduleAnchor(null);
-	};
-
-	const activeDateValue =
-		activeDateField === "scheduled" ? scheduledDate : dueDate;
-
-	const activeDate = useMemo(() => {
-		return safeParseISO(activeDateValue);
-	}, [activeDateValue]);
-
-	const formatPickerValue = (value: string) => {
-		if (!value) return "Select date";
-		const parsed = safeParseISO(value);
-		return parsed ? format(parsed, "MMM d, yyyy") : value;
-	};
-
-	const updateActiveDate = (date?: Date) => {
-		const next = date ? todayIsoDateLocal(date) : "";
-		if (activeDateField === "scheduled") {
-			setScheduledDate(next);
-			return;
-		}
-		setDueDate(next);
-	};
-	const focusTaskDateField = useCallback(
-		(field: "scheduled" | "due") => {
-			setActiveDateField(field);
-			const nextValue = field === "scheduled" ? scheduledDate : dueDate;
-			setPickerMonth(safeParseISO(nextValue) ?? new Date());
-		},
-		[dueDate, scheduledDate],
-	);
 
 	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
 		if (!editor) return;
@@ -1297,7 +840,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		const host = tiptapHostNode;
 		if (!host) return;
 		const handleFocusIn = () => {
-			lastFocusedCanvasEditorHost = host;
+			lastFocusedNoteEditorHost = host;
 			setEditorFocused(true);
 		};
 		const handleFocusOut = () => {
@@ -1311,8 +854,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			host.removeEventListener("focusin", handleFocusIn);
 			host.removeEventListener("focusout", handleFocusOut);
-			if (lastFocusedCanvasEditorHost === host) {
-				lastFocusedCanvasEditorHost = null;
+			if (lastFocusedNoteEditorHost === host) {
+				lastFocusedNoteEditorHost = null;
 			}
 		};
 	}, [tiptapHostNode]);
@@ -1398,7 +941,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 				{mode !== "plain" ? (
-					<CanvasNoteEditorSurface
+					<NoteEditorSurface
 						editor={editor}
 						mode={mode}
 						zenModeActive={zenModeActive}
@@ -1458,27 +1001,27 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							onMermaidHeightChange: setActiveMermaidPreviewHeight,
 						}}
 						task={{
-							selectedAnchor: selectedTaskAnchor,
-							scheduleAnchor,
-							onScheduleAnchorChange: setScheduleAnchor,
-							onOpenPopover: openTaskPopover,
-							activeDateField,
-							onActiveDateFieldChange: setActiveDateField,
-							onFocusDateField: focusTaskDateField,
-							pickerMonth,
-							onPickerMonthChange: setPickerMonth,
-							scheduledDate,
-							dueDate,
-							onScheduledDateChange: setScheduledDate,
-							onDueDateChange: setDueDate,
-							onApplyDates: applyTaskDates,
+							selectedAnchor: taskInlineDates.selectedTaskAnchor,
+							scheduleAnchor: taskInlineDates.scheduleAnchor,
+							onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
+							onOpenPopover: taskInlineDates.openTaskPopover,
+							activeDateField: taskInlineDates.activeDateField,
+							onActiveDateFieldChange: taskInlineDates.setActiveDateField,
+							onFocusDateField: taskInlineDates.focusTaskDateField,
+							pickerMonth: taskInlineDates.pickerMonth,
+							onPickerMonthChange: taskInlineDates.setPickerMonth,
+							scheduledDate: taskInlineDates.scheduledDate,
+							dueDate: taskInlineDates.dueDate,
+							onScheduledDateChange: taskInlineDates.setScheduledDate,
+							onDueDateChange: taskInlineDates.setDueDate,
+							onApplyDates: taskInlineDates.applyTaskDates,
 							onClearDates: () => {
-								setScheduledDate("");
-								setDueDate("");
+								taskInlineDates.setScheduledDate("");
+								taskInlineDates.setDueDate("");
 							},
-							activeDate,
-							onActiveDateChange: updateActiveDate,
-							formatPickerValue,
+							activeDate: taskInlineDates.activeDate,
+							onActiveDateChange: taskInlineDates.updateActiveDate,
+							formatPickerValue: taskInlineDates.formatPickerValue,
 						}}
 						backlinks={{
 							show: showBacklinks,

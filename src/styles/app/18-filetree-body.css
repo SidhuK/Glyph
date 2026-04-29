@@ -291,7 +291,7 @@
 
 .fileTreeRow[data-dragging="true"] {
 	opacity: 0.62;
-	cursor: grabbing;
+	cursor: pointer;
 }
 
 .fileTreeRow[data-drop-target="true"] {
@@ -301,7 +301,7 @@
 }
 
 .fileTreeRow[data-draggable="true"]:not([data-dragging="true"]) {
-	cursor: grab;
+	cursor: pointer;
 }
 
 .fileTreeRow:disabled {

@@ -22,6 +22,8 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useMarkdownTaskSummary } from "../../hooks/useMarkdownTaskSummary";
+import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import {
 	FORCE_NOTE_EDIT_MODE_EVENT,
 	type ForceNoteEditModeDetail,
@@ -38,10 +40,8 @@ import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../lib/notePreview";
-import { loadSettings } from "../../lib/settings";
 import {
 	type BacklinkItem,
-	type NoteTaskSummary,
 	type TextFileDoc,
 	type WorkspaceDatabasePreviewContext,
 	invoke,
@@ -50,11 +50,11 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
-import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { FloatingTOC } from "../editor/FloatingTOC";
+import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
-import type { CanvasInlineEditorMode } from "../editor/types";
+import type { NoteInlineEditorMode } from "../editor/types";
 import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
 import { Button } from "../ui/shadcn/button";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
@@ -85,11 +85,6 @@ interface SidebarBacklinkItem {
 	label: string;
 }
 
-const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
-	total_count: 0,
-	completed_count: 0,
-	open_count: 0,
-};
 const UTF8_ENCODER = new TextEncoder();
 
 function countLines(markdown: string): number {
@@ -101,26 +96,6 @@ function countLines(markdown: string): number {
 		}
 	}
 	return lines;
-}
-
-function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
-	let total_count = 0;
-	let completed_count = 0;
-
-	for (const line of markdown.split(/\r?\n/)) {
-		const match = line.match(/^\s*[-*+] \[([ xX])\] /);
-		if (!match) continue;
-		total_count += 1;
-		if (match[1].toLowerCase() === "x") {
-			completed_count += 1;
-		}
-	}
-
-	return {
-		total_count,
-		completed_count,
-		open_count: total_count - completed_count,
-	};
 }
 
 function noteLabelFromPath(path: string): string {
@@ -194,7 +169,7 @@ export function MarkdownEditorPane({
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
 	const [savedText, setSavedText] = useState(() => initialText);
-	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
+	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
@@ -205,11 +180,8 @@ export function MarkdownEditorPane({
 		initialDoc?.mtime_ms ?? null,
 	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
-	const [taskSummary, setTaskSummary] =
-		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
-	const [showTaskProgressIndicator, setShowTaskProgressIndicator] =
-		useState(true);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(true);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
@@ -221,8 +193,6 @@ export function MarkdownEditorPane({
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
 	const syncPulseTimerRef = useRef<number | null>(null);
-	const taskSummaryTimerRef = useRef<number | null>(null);
-	const taskSummaryRequestTokenRef = useRef(0);
 	const pendingExternalReloadRef = useRef(false);
 	const activeRelPathRef = useRef(relPath);
 	const paneRef = useRef<HTMLElement | null>(null);
@@ -259,14 +229,10 @@ export function MarkdownEditorPane({
 			readingTime: formatReadingTime(words),
 		};
 	}, [currentBody]);
-	const fallbackTaskSummary = useMemo(
-		() => summarizeTasksFromMarkdown(text),
-		[text],
+	const visibleTaskSummary = useMarkdownTaskSummary(
+		text,
+		showTaskProgressIndicator,
 	);
-	const visibleTaskSummary =
-		taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
-			? taskSummary
-			: fallbackTaskSummary;
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
 		return UTF8_ENCODER.encode(text).length;
@@ -359,10 +325,6 @@ export function MarkdownEditorPane({
 		return () => {
 			mountedRef.current = false;
 			documentSessionRef.current += 1;
-			if (taskSummaryTimerRef.current !== null) {
-				window.clearTimeout(taskSummaryTimerRef.current);
-				taskSummaryTimerRef.current = null;
-			}
 		};
 	}, []);
 
@@ -391,7 +353,6 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
-		setTaskSummary(EMPTY_TASK_SUMMARY);
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setActionsOpen(false);
@@ -429,7 +390,6 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
-		setTaskSummary(EMPTY_TASK_SUMMARY);
 		clearMarkdownDocCache();
 		if (spacePath === null) {
 			return;
@@ -645,25 +605,6 @@ export function MarkdownEditorPane({
 	);
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
-			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
-		}
-	});
-
-	useEffect(() => {
-		let cancelled = false;
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
-			})
-			.catch(() => undefined);
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
 	useEffect(() => {
 		const handleForceEditMode = (event: Event) => {
 			const detail = (event as CustomEvent<ForceNoteEditModeDetail>).detail;
@@ -791,9 +732,6 @@ export function MarkdownEditorPane({
 			if (syncPulseTimerRef.current !== null) {
 				window.clearTimeout(syncPulseTimerRef.current);
 			}
-			if (taskSummaryTimerRef.current !== null) {
-				window.clearTimeout(taskSummaryTimerRef.current);
-			}
 		},
 		[],
 	);
@@ -871,55 +809,6 @@ export function MarkdownEditorPane({
 		},
 		[currentBody, runAutosave],
 	);
-
-	useEffect(() => {
-		if (taskSummaryTimerRef.current !== null) {
-			window.clearTimeout(taskSummaryTimerRef.current);
-			taskSummaryTimerRef.current = null;
-		}
-		setTaskSummary(EMPTY_TASK_SUMMARY);
-		if (!showTaskProgressIndicator) {
-			return;
-		}
-
-		const requestToken = taskSummaryRequestTokenRef.current + 1;
-		taskSummaryRequestTokenRef.current = requestToken;
-
-		taskSummaryTimerRef.current = window.setTimeout(() => {
-			taskSummaryTimerRef.current = null;
-			void invoke("task_summary", { markdown: text })
-				.then((summary) => {
-					if (
-						!mountedRef.current ||
-						taskSummaryRequestTokenRef.current !== requestToken
-					) {
-						return;
-					}
-					const fallback = summarizeTasksFromMarkdown(text);
-					setTaskSummary(
-						summary.total_count > 0 || fallback.total_count === 0
-							? summary
-							: fallback,
-					);
-				})
-				.catch(() => {
-					if (
-						!mountedRef.current ||
-						taskSummaryRequestTokenRef.current !== requestToken
-					) {
-						return;
-					}
-					setTaskSummary(summarizeTasksFromMarkdown(text));
-				});
-		}, 90);
-
-		return () => {
-			if (taskSummaryTimerRef.current !== null) {
-				window.clearTimeout(taskSummaryTimerRef.current);
-				taskSummaryTimerRef.current = null;
-			}
-		};
-	}, [showTaskProgressIndicator, text]);
 
 	return (
 		<section
@@ -1142,7 +1031,7 @@ export function MarkdownEditorPane({
 					className="filePreviewTextWrap markdownEditorContent"
 				>
 					<div className="markdownEditorCenter">
-						<CanvasNoteInlineEditor
+						<NoteInlineEditor
 							markdown={text}
 							relPath={relPath}
 							mode={mode}

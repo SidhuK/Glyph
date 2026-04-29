@@ -67,7 +67,7 @@
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	cursor: grab;
+	cursor: pointer;
 	background: radial-gradient(
 			circle at center,
 			color-mix(in srgb, var(--bg-secondary) 85%, transparent),
@@ -78,10 +78,6 @@
 			color-mix(in srgb, var(--bg-primary) 92%, transparent),
 			color-mix(in srgb, var(--bg-secondary) 94%, transparent)
 		);
-}
-
-.localNoteGraphViewport:active {
-	cursor: grabbing;
 }
 
 .localNoteGraphEdges,

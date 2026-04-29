@@ -394,6 +394,7 @@ const KEYS = {
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	editorVimKeybindings: "editor.vimKeybindings",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
+	releaseNotesLastSeenVersion: "updates.releaseNotes.lastSeenVersion",
 	dailyNotesFolder: "dailyNotes.folder",
 	webClippingsFolder: "webClippings.folder",
 	quickNotesFolder: "quickNotes.folder",
@@ -960,6 +961,23 @@ export async function resetAllShortcutBindings(): Promise<void> {
 		await store.save();
 		void emitSettingsUpdated({ shortcuts: { bindings: {} } });
 	});
+}
+
+export async function getLastSeenReleaseNotesVersion(): Promise<string | null> {
+	const store = await getStore();
+	const version = await store.get<unknown>(KEYS.releaseNotesLastSeenVersion);
+	const normalized = typeof version === "string" ? version.trim() : "";
+	return normalized || null;
+}
+
+export async function setLastSeenReleaseNotesVersion(
+	version: string,
+): Promise<void> {
+	const normalized = version.trim();
+	if (!normalized) return;
+	const store = await getStore();
+	await store.set(KEYS.releaseNotesLastSeenVersion, normalized);
+	await store.save();
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {

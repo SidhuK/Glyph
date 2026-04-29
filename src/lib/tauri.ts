@@ -859,6 +859,7 @@ interface TauriCommands {
 		{ limit?: number | null; folder_prefix?: string | null },
 		AllDocsItem[]
 	>;
+	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;
 	calendar_query_range: CommandDef<
 		{
 			start_date: string;

@@ -1,0 +1,480 @@
+.codexRateLimitList {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	overflow-x: auto;
+	padding: 2px 2px 6px;
+	scroll-snap-type: x proximity;
+}
+
+.codexRateLimitItem {
+	--codex-tone: var(--interactive-accent);
+	flex: 0 0 clamp(188px, 46%, 228px);
+	padding: 12px;
+	border-radius: var(--radius-8);
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
+	box-shadow: none;
+	scroll-snap-align: start;
+}
+
+.codexRateLimitItem--ok {
+	--codex-tone: var(--color-green-500);
+}
+
+.codexRateLimitItem--warn {
+	--codex-tone: var(--color-yellow-500);
+}
+
+.codexRateLimitItem--danger {
+	--codex-tone: var(--color-red-500);
+}
+
+.codexRateLimitRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: flex-start;
+	gap: 8px;
+	color: var(--text-primary);
+}
+
+.codexRateLimitWindow {
+	font-size: 11px;
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-primary));
+}
+
+.codexRateLimitMeasureRow {
+	margin-top: 8px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.codexRateLimitBattery {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	flex: 0 0 auto;
+}
+
+.codexRateLimitBatteryBody {
+	width: 62px;
+	height: 28px;
+	padding: 4px;
+	border-radius: var(--radius-8);
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 2px;
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
+}
+
+.codexRateLimitBatteryCell {
+	border-radius: var(--radius-2xs);
+	background: color-mix(in srgb, var(--bg-tertiary) 92%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.codexRateLimitBatteryCell--active {
+	background: color-mix(in srgb, var(--codex-tone) 75%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--codex-tone) 50%, transparent);
+}
+
+.codexRateLimitBatteryCap {
+	width: 4px;
+	height: 13px;
+	border-radius: var(--radius-2xs);
+	background: color-mix(in srgb, var(--codex-tone) 46%, var(--border-light));
+}
+
+.codexRateLimitRemainingValue {
+	font-size: 13px;
+	line-height: 1.05;
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--codex-tone) 82%, var(--text-primary));
+}
+
+.codexRateLimitStats {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	text-align: right;
+}
+
+.codexRateLimitMeta {
+	margin-top: 6px;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	display: flex;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.codexRateLimitResetMeta {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 7px;
+	border-radius: var(--radius-sm);
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 28%, var(--border-light));
+	background: color-mix(in srgb, var(--codex-tone) 9%, transparent);
+	color: color-mix(in srgb, var(--codex-tone) 35%, var(--text-secondary));
+	font-size: 10px;
+	line-height: 1.35;
+}
+
+.settingsTextarea {
+	max-width: 100%;
+	min-width: 0;
+	width: 100%;
+}
+
+.settingsSegmented {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	min-inline-size: 0;
+	width: auto;
+	max-width: max-content;
+	padding: 0;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	gap: 0;
+	overflow: hidden;
+}
+
+.settingsFieldControl > .settingsSegmented {
+	margin-left: auto;
+}
+
+.settingsSegmented button {
+	min-height: 30px;
+	padding: 0 12px;
+	border-radius: 0;
+	border-left: 1px solid var(--border-light);
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 11px;
+	color: var(--text-secondary);
+}
+
+.settingsSegmentedIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: currentcolor;
+	flex: 0 0 auto;
+}
+
+.settingsSegmented button:first-of-type {
+	border-left: 0;
+}
+
+.settingsSegmented button:hover:not(:disabled) {
+	background: var(--settings-surface-soft);
+	color: var(--text-primary);
+}
+
+.settingsSegmented button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.settingsSegmented button.active {
+	background: var(--settings-surface);
+	color: var(--text-primary);
+}
+
+.appearanceThemeModeRow {
+	gap: 8px;
+	align-items: center;
+}
+
+.appearanceThemeModeRow .settingsFieldCopy {
+	flex: 1 1 auto;
+	gap: 2px;
+}
+
+.appearanceThemeModeRow .settingsLabel {
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	letter-spacing: -0.02em;
+	color: color-mix(in srgb, var(--text-primary) 82%, var(--text-secondary));
+}
+
+.appearanceThemeModeRow .settingsFieldControl {
+	flex: 0 0 auto;
+	width: auto;
+	max-width: none;
+	justify-content: flex-end;
+}
+
+.appearanceThemeModeSegmented {
+	position: relative;
+	width: auto;
+	max-width: none;
+	padding: 1px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 42%, transparent);
+	border-radius: calc(var(--radius-md) + 1px);
+	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-primary));
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	gap: 2px;
+	overflow: visible;
+}
+
+.appearanceThemeModeSegmented button {
+	position: relative;
+	flex: 0 0 auto;
+	justify-content: center;
+	min-height: 20px;
+	padding: 0 16px;
+	border: none;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+	font-size: 12px;
+	font-weight: 540;
+	letter-spacing: -0.02em;
+	gap: 6px;
+	line-height: 1;
+	transition: background-color 140ms ease, color 140ms ease, box-shadow 180ms
+		ease, transform 140ms ease;
+	white-space: nowrap;
+}
+
+.appearanceThemeModeSegmented button:first-of-type {
+	border-left: none;
+}
+
+.appearanceThemeModeSegmented .settingsSegmentedIcon {
+	width: 11px;
+	height: 11px;
+	opacity: 0.9;
+}
+
+.appearanceThemeModeSegmented button:hover:not(:disabled) {
+	background: color-mix(in srgb, white 42%, transparent);
+	color: var(--text-primary);
+}
+
+.appearanceThemeModeSegmented button.active {
+	background: color-mix(in srgb, var(--bg-primary) 98%, white 2%);
+	color: color-mix(in srgb, var(--text-primary) 96%, black 4%);
+	box-shadow: 0 2px 6px
+		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent), 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
+}
+
+.appearanceThemeModeSegmented button.active .settingsSegmentedIcon {
+	opacity: 1;
+}
+
+.gitSettingsIntervalSegmented {
+	margin-left: 0;
+}
+
+.settingsSwatches {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+	gap: 8px;
+}
+
+.settingsSwatch {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 36px;
+	padding: 5px 9px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 70%, transparent);
+	font-size: 9px;
+	text-transform: capitalize;
+}
+
+.settingsSwatch span {
+	height: 14px;
+	width: 14px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+}
+
+.settingsSwatch.active {
+	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+}
+
+.settingsSwatch[data-swatch="graphite"] span {
+	background: #2b2b2b;
+}
+
+.settingsSwatch[data-swatch="blue"] span {
+	background: #2b6cb0;
+}
+
+.settingsSwatch[data-swatch="green"] span {
+	background: #2f855a;
+}
+
+.settingsSwatch[data-swatch="amber"] span {
+	background: #b7791f;
+}
+
+.settingsSwatch[data-swatch="rose"] span {
+	background: #b83280;
+}
+
+.settingsAccentPicker {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	width: 100%;
+}
+
+.settingsAccentCurrent {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.settingsAccentSwatch {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	border-radius: var(--radius-full);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.settingsAccentName {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	white-space: nowrap;
+}
+
+.settingsAccentOptions {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.settingsAccentDot {
+	--settings-accent-swatch: var(--text-primary);
+	height: 28px;
+	width: 28px;
+	padding: 0;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
+	background: transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	position: relative;
+	transition: border-color var(--transition-base), box-shadow
+		var(--transition-base), background var(--transition-base);
+}
+
+.settingsAccentInput {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.settingsAccentDotInner {
+	height: 18px;
+	width: 18px;
+	border-radius: var(--radius-full);
+	background: var(--settings-accent-swatch);
+	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 8%, transparent);
+	transition: transform var(--transition-base), box-shadow
+		var(--transition-base);
+}
+
+.settingsAccentDot:hover {
+	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
+}
+
+.settingsAccentDot.is-active {
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.settingsAccentDot.is-active .settingsAccentDotInner {
+	transform: scale(1.02);
+}
+
+.settingsAccentInput:focus-visible + .settingsAccentDotInner {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 8%, transparent), 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+@media (max-width: 760px) {
+	.settingsField {
+		gap: 10px;
+		padding: 12px;
+	}
+
+	.settingsFieldCopy,
+	.settingsFieldControl {
+		flex-basis: 100%;
+		max-width: none;
+	}
+
+	.settingsField::after {
+		left: 12px;
+		right: 12px;
+	}
+
+	.settingsAccentPicker {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.settingsAccentOptions {
+		flex-wrap: wrap;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.settingsField,
+	.settingsAccentDot,
+	.settingsKeySaved {
+		transition: none;
+		animation: none;
+	}
+
+	.settingsAccentDot:hover {
+		transform: none;
+	}
+}
+
+@keyframes settings-toast-in {
+	0% {
+		opacity: 0;
+		transform: translateY(2px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

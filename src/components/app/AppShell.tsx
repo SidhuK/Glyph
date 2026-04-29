@@ -1,38 +1,6 @@
 import { cn } from "@/lib/utils";
-import {
-	AiEditingIcon,
-	ArrowLeft,
-	ArrowRight,
-	Calendar03Icon,
-	CalendarAdd01Icon,
-	ColorsIcon,
-	CursorInWindowIcon,
-	DocumentCodeIcon,
-	File01Icon,
-	FlowConnectionIcon,
-	Folder01Icon,
-	FolderOpenIcon,
-	FolderRemoveIcon,
-	Home01Icon,
-	InformationCircleIcon,
-	LibraryIcon,
-	Link01Icon,
-	MoveIcon,
-	NoteIcon,
-	PencilEdit02Icon,
-	PinIcon,
-	PinOffIcon,
-	Plant01Icon,
-	PrinterIcon,
-	SearchIcon,
-	Settings01Icon,
-	SidebarLeftIcon,
-	SquareLock02Icon,
-	TableIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { join } from "@tauri-apps/api/path";
-import { openPath, openUrl } from "@tauri-apps/plugin-opener";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
 import {
 	Suspense,
@@ -52,6 +20,10 @@ import {
 	useUILayoutContext,
 	useUpdaterContext,
 } from "../../contexts";
+import {
+	CHANGELOG_DATA,
+	type VersionReleaseNotes,
+} from "../../data/releaseNotes";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
@@ -59,21 +31,15 @@ import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
-	dispatchForceNoteEditMode,
-	dispatchOpenLocalGraph,
 	dispatchPathRemoved,
-	dispatchToggleNoteInfoSidebar,
-	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { promptNoteExportPath } from "../../lib/export";
-import { getLicenseStatus } from "../../lib/license";
 import {
 	invalidateAllDocsPrefetch,
 	invalidateCalendarPrefetch,
@@ -84,9 +50,13 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
+import {
+	getLastSeenReleaseNotesVersion,
+	loadSettings,
+	setLastSeenReleaseNotesVersion,
+	updateOnboardingSettings,
+} from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
-import { isShortcutActionId } from "../../lib/shortcuts/registry";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -95,28 +65,17 @@ import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { ChevronDown, ChevronUp, FileHtml, LayoutAlignLeft } from "../Icons";
+import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
-import { EDITOR_ACTIONS } from "../editor/editorActions";
-import {
-	MARKDOWN_LINK_CLICK_EVENT,
-	type MarkdownLinkClickDetail,
-	PERSON_CLICK_EVENT,
-	type PersonClickDetail,
-	TAG_CLICK_EVENT,
-	type TagClickDetail,
-	WIKI_LINK_CLICK_EVENT,
-	type WikiLinkClickDetail,
-} from "../editor/markdown/editorEvents";
 import { NoteExportHtmlHost } from "../export/NoteExportHtmlHost";
-import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
-import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
+import { WebClipDialog } from "./WebClipDialog";
+import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
@@ -124,54 +83,21 @@ import {
 	loadCalendarPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
+import { useAppCommands } from "./useAppCommands";
 import { useTabManager } from "./useTabManager";
+import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
 
 const loadCommandPalette = () =>
 	import("./CommandPalette").then((module) => ({
 		default: module.CommandPalette,
 	}));
 
-const loadKeyboardShortcutsHelp = () =>
-	import("./KeyboardShortcutsHelp").then((module) => ({
-		default: module.KeyboardShortcutsHelp,
-	}));
-
 const LazyCommandPalette = lazy(loadCommandPalette);
-const LazyKeyboardShortcutsHelp = lazy(loadKeyboardShortcutsHelp);
 
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const PRINT_EDITOR_BODY_CLASS = "glyphPrintEditorMode";
 const PRINT_EDITOR_TARGET_CLASS = "glyphPrintEditorTarget";
-const IMAGE_EXTENSIONS = new Set([
-	"png",
-	"jpg",
-	"jpeg",
-	"webp",
-	"gif",
-	"svg",
-	"bmp",
-	"avif",
-	"tif",
-	"tiff",
-]);
-
-function fileExtension(path: string): string {
-	const name = path.split("/").pop() ?? path;
-	const dot = name.lastIndexOf(".");
-	if (dot <= 0 || dot === name.length - 1) return "";
-	return name.slice(dot + 1).toLowerCase();
-}
-
-function isImageWikiTarget(target: string): boolean {
-	return IMAGE_EXTENSIONS.has(fileExtension(target));
-}
-
-function isMarkdownWikiTarget(target: string): boolean {
-	const ext = fileExtension(target);
-	return !ext || ext === "md";
-}
-
 export function AppShell() {
 	const space = useSpace();
 	const {
@@ -237,9 +163,7 @@ export function AppShell() {
 	const [webClipDialogOpen, setWebClipDialogOpen] = useState(false);
 	const [webClipUrl, setWebClipUrl] = useState("");
 	const [webClipLoading, setWebClipLoading] = useState(false);
-	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
-	const [shortcutsHelpMounted, setShortcutsHelpMounted] = useState(false);
 	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
 	const [templatePickerItems, setTemplatePickerItems] = useState<
@@ -253,6 +177,8 @@ export function AppShell() {
 		markdown: string;
 		outputPath: string;
 	} | null>(null);
+	const [whatsNewVersion, setWhatsNewVersion] =
+		useState<VersionReleaseNotes | null>(null);
 	const htmlExportResolversRef = useRef(
 		new Map<
 			string,
@@ -289,9 +215,6 @@ export function AppShell() {
 			void loadCommandPalette().then(() => {
 				if (!cancelled) setCommandPaletteMounted(true);
 			});
-			void loadKeyboardShortcutsHelp().then(() => {
-				if (!cancelled) setShortcutsHelpMounted(true);
-			});
 		}, 500);
 		return () => {
 			cancelled = true;
@@ -313,6 +236,36 @@ export function AppShell() {
 			cancelled = true;
 		};
 	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			try {
+				const [appInfo, lastSeenVersion] = await Promise.all([
+					invoke("app_info"),
+					getLastSeenReleaseNotesVersion(),
+				]);
+				const version =
+					CHANGELOG_DATA.versions.find(
+						(entry) => entry.version === appInfo.version,
+					) ?? CHANGELOG_DATA.versions[0];
+				if (cancelled || !version || lastSeenVersion === version.version)
+					return;
+				setWhatsNewVersion(version);
+			} catch (error) {
+				console.warn("Failed to load release notes prompt state", error);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const closeWhatsNewDialog = useCallback(() => {
+		const version = whatsNewVersion?.version;
+		setWhatsNewVersion(null);
+		if (version) void setLastSeenReleaseNotesVersion(version);
+	}, [whatsNewVersion?.version]);
 
 	useTauriEvent(
 		"settings:updated",
@@ -372,9 +325,7 @@ export function AppShell() {
 		tabs,
 		activeTabId,
 		activeTabPath,
-		dragTabId,
 		setActiveTabId,
-		setDragTabId,
 		setDirtyByPath,
 		closeTab,
 		closeAllTabs,
@@ -607,154 +558,13 @@ export function AppShell() {
 		}
 	}, []);
 
-	const openOrCreateWikiLinkTarget = useCallback(
-		async (rawTarget: string) => {
-			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
-			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
-			if (!normalizedTarget) return;
-			if (!isMarkdownWikiTarget(normalizedTarget)) {
-				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
-				return;
-			}
-
-			const resolved = await invoke("space_resolve_wikilink", {
-				target: normalizedTarget,
-			});
-			if (resolved) {
-				await openWorkspaceFile(resolved);
-				return;
-			}
-
-			const sourceDir = activeMarkdownTabPath
-				? parentDir(activeMarkdownTabPath)
-				: "";
-			const hasExplicitPath = normalizedTarget.includes("/");
-			const nextRelPathBase =
-				hasExplicitPath || !sourceDir
-					? normalizedTarget
-					: `${sourceDir}/${normalizedTarget}`;
-			const nextRelPath = nextRelPathBase.toLowerCase().endsWith(".md")
-				? nextRelPathBase
-				: `${nextRelPathBase}.md`;
-			const createdPath = await fileTree.createMarkdownFileAtPath({
-				path: nextRelPath,
-				text: "",
-				openParentDir: parentDir(nextRelPath),
-			});
-			if (createdPath) {
-				await openWorkspaceFile(createdPath);
-				return;
-			}
-
-			setError("");
-			const fallbackResolved = await invoke("space_resolve_wikilink", {
-				target: normalizedTarget,
-			});
-			if (fallbackResolved) {
-				await openWorkspaceFile(fallbackResolved);
-				return;
-			}
-
-			setError(`Could not resolve wikilink: ${rawTarget}`);
-		},
-		[activeMarkdownTabPath, fileTree, openWorkspaceFile, setError],
-	);
-
-	useEffect(() => {
-		const onWikiLinkClick = (event: Event) => {
-			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
-			if (!detail?.target) return;
-			void (async () => {
-				try {
-					const targetWithoutAnchor =
-						detail.target.split("#", 1)[0] ?? detail.target;
-					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
-					if (!normalizedTarget) return;
-
-					if (detail.embed || isImageWikiTarget(normalizedTarget)) {
-						const resolvedImage = await invoke("space_resolve_image_wikilink", {
-							target: normalizedTarget,
-						});
-						if (resolvedImage) {
-							await openWorkspaceFile(resolvedImage);
-							return;
-						}
-						setError(`Could not resolve image wikilink: ${detail.target}`);
-						return;
-					}
-
-					if (!isMarkdownWikiTarget(normalizedTarget)) {
-						setError(
-							`Unsupported non-markdown wikilink target: ${detail.target}`,
-						);
-						return;
-					}
-					await openOrCreateWikiLinkTarget(detail.target);
-				} catch (e) {
-					setError(
-						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
-					);
-				}
-			})();
-		};
-		const onMarkdownLinkClick = (event: Event) => {
-			const detail = (event as CustomEvent<MarkdownLinkClickDetail>).detail;
-			if (!detail?.href) return;
-			void (async () => {
-				try {
-					const resolved = await invoke("space_resolve_markdown_link", {
-						href: detail.href,
-						sourcePath: detail.sourcePath,
-					});
-					if (resolved) {
-						await openWorkspaceFile(resolved);
-						return;
-					}
-					const wikiFallback = await invoke("space_resolve_wikilink", {
-						target: detail.href,
-					});
-					if (wikiFallback) {
-						await openWorkspaceFile(wikiFallback);
-						return;
-					}
-					setError(`Could not resolve markdown link: ${detail.href}`);
-				} catch (e) {
-					setError(
-						`Failed to open markdown link: ${e instanceof Error ? e.message : String(e)}`,
-					);
-				}
-			})();
-		};
-		const onTagClick = (event: Event) => {
-			const detail = (event as CustomEvent<TagClickDetail>).detail;
-			if (!detail?.tag) return;
-			openPalette(
-				"search",
-				detail.tag.startsWith("#") ? detail.tag : `#${detail.tag}`,
-			);
-		};
-		const onPersonClick = (event: Event) => {
-			const detail = (event as CustomEvent<PersonClickDetail>).detail;
-			if (!detail?.handle) return;
-			openPalette(
-				"search",
-				detail.handle.startsWith("@") ? detail.handle : `@${detail.handle}`,
-			);
-		};
-		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-		window.addEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
-		window.addEventListener(TAG_CLICK_EVENT, onTagClick);
-		window.addEventListener(PERSON_CLICK_EVENT, onPersonClick);
-		return () => {
-			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-			window.removeEventListener(
-				MARKDOWN_LINK_CLICK_EVENT,
-				onMarkdownLinkClick,
-			);
-			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
-			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
-		};
-	}, [openOrCreateWikiLinkTarget, openPalette, openWorkspaceFile, setError]);
+	useWorkspaceLinkEvents({
+		activeMarkdownTabPath,
+		fileTree,
+		openPalette,
+		openWorkspaceFile,
+		setError,
+	});
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
@@ -1292,713 +1102,73 @@ export function AppShell() {
 		},
 	});
 
-	const commands = useMemo<Command[]>(() => {
-		if (movePickerSourcePath) {
-			return [
-				{
-					id: "move-picker-root",
-					label: "/",
-					icon: (
-						<HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />
-					),
-					category: "Move Destination",
-					action: async () => {
-						const n = await fileTree.onMovePath(movePickerSourcePath, "");
-						if (n) await openWorkspaceFile(n);
-					},
-				},
-				...moveTargetDirs.map((dir) => ({
-					id: `move-picker:${dir}`,
-					label: `/${dir}`,
-					icon: (
-						<HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />
-					),
-					category: "Move Destination",
-					action: async () => {
-						const n = await fileTree.onMovePath(movePickerSourcePath, dir);
-						if (n) await openWorkspaceFile(n);
-					},
-				})),
-			];
-		}
-		const aiCommands: Command[] = aiEnabled
-			? [
-					{
-						id: "toggle-ai",
-						label: "Toggle AI",
-						icon: (
-							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
-						),
-						category: "AI",
-						shortcut: { meta: true, shift: true, key: "a" },
-						enabled: Boolean(spacePath),
-						action: () => setAiPanelOpen((v) => !v),
-					},
-					{
-						id: "close-ai-pane",
-						label: "Close AI",
-						icon: (
-							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
-						),
-						category: "AI",
-						enabled: Boolean(spacePath),
-						action: handleCloseAiPaneFromMenu,
-					},
-					{
-						id: "ai-attach-current-note",
-						label: "AI: Attach current note",
-						icon: (
-							<HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />
-						),
-						category: "AI",
-						shortcut: { meta: true, alt: true, key: "a" },
-						enabled: Boolean(activeMarkdownTabPath),
-						action: () => void attachCurrentNoteToAi(),
-					},
-					{
-						id: "ai-attach-all-open-notes",
-						label: "AI: Attach all open notes",
-						icon: (
-							<HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />
-						),
-						category: "AI",
-						shortcut: { meta: true, alt: true, shift: true, key: "a" },
-						enabled: openMarkdownTabs.length > 0,
-						action: () => void attachAllOpenNotesToAi(),
-					},
-					{
-						id: "open-ai-agent",
-						label: "Open AI Agent",
-						icon: (
-							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
-						),
-						category: "AI",
-						enabled: Boolean(spacePath),
-						action: () => openSpecialTab(AI_AGENT_TAB_ID),
-					},
-				]
-			: [];
-		const editorCommands: Command[] = EDITOR_ACTIONS.filter(
-			(action) =>
-				action.id !== "collapse_all_headings" &&
-				action.id !== "expand_all_headings",
-		).map((action) => ({
-			id: action.id,
-			label: action.label,
-			category: "Editor",
-			enabled: Boolean(activeMarkdownTabPath),
-			allowInEditable: true,
-			action: () => {
-				dispatchEditorMenuAction({ action: action.id });
-			},
-		}));
-
-		const baseCommands: Command[] = [
-			{
-				id: "new-note",
-				label: "New note",
-				icon: (
-					<HugeiconsIcon icon={PencilEdit02Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "File Operations",
-				shortcut: { meta: true, key: "n" },
-				enabled: Boolean(spacePath),
-				action: () => void createNoteInSelectedFolder(),
-			},
-			{
-				id: "save-web-page",
-				label: "Save web page",
-				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath),
-				action: () => {
-					setWebClipUrl("");
-					setWebClipDialogOpen(true);
-				},
-			},
-			{
-				id: "open-quick-note",
-				label: "Open quick note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: true,
-				allowInEditable: true,
-				action: openQuickNoteWindow,
-			},
-			{
-				id: "create-from-template",
-				label: "Create from template",
-				icon: <HugeiconsIcon icon={ColorsIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "m" },
-				enabled: Boolean(spacePath),
-				action: handleCreateFromTemplateFromMenu,
-			},
-			{
-				id: "new-tab",
-				label: "New tab",
-				icon: (
-					<HugeiconsIcon
-						icon={CursorInWindowIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				shortcut: { meta: true, key: "t" },
-				enabled: Boolean(spacePath),
-				allowInEditable: true,
-				action: openBlankTab,
-			},
-			{
-				id: "close-active-tab",
-				label: "Close current tab",
-				category: "Tabs",
-				enabled: tabs.length > 0,
-				action: closeActiveTab,
-			},
-			{
-				id: "close-all-tabs",
-				label: "Close all tabs",
-				category: "Tabs",
-				enabled: tabs.length > 0,
-				action: closeAllTabs,
-			},
-			{
-				id: "next-tab",
-				label: "Next tab",
-				category: "Tabs",
-				enabled: tabs.length > 1,
-				action: activateNextTab,
-			},
-			{
-				id: "previous-tab",
-				label: "Previous tab",
-				category: "Tabs",
-				enabled: tabs.length > 1,
-				action: activatePreviousTab,
-			},
-			{
-				id: "new-database",
-				label: "New collection",
-				icon: <HugeiconsIcon icon={TableIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath),
-				action: () => void createDatabaseAndOpen(),
-			},
-			{
-				id: "new-folder",
-				label: "New folder",
-				icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						await fileTree.onNewFolderInDir(dir);
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create folder", error);
-						setError(message);
-						toast.error("Could not create folder", {
-							description: message,
-						});
-					}
-				},
-			},
-			{
-				id: "duplicate-current-note",
-				label: "Duplicate current note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled:
-					activeMarkdownTabPath !== null &&
-					isMarkdownPath(activeMarkdownTabPath),
-				action: () => void handleDuplicateActiveMarkdown(),
-			},
-			{
-				id: "open-daily-note",
-				label: "Open daily note (today)",
-				icon: (
-					<HugeiconsIcon icon={CalendarAdd01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "d" },
-				enabled: Boolean(spacePath),
-				action: requestOpenDailyNote,
-			},
-			{
-				id: "toggle-pin-active-file",
-				label:
-					activeFilePath && pinnedFiles.includes(activeFilePath)
-						? "Unpin current file"
-						: "Pin current file",
-				icon: (
-					<HugeiconsIcon
-						icon={
-							activeFilePath && pinnedFiles.includes(activeFilePath)
-								? PinOffIcon
-								: PinIcon
-						}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "File Operations",
-				enabled: Boolean(spacePath) && Boolean(activeFilePath),
-				allowInEditable: true,
-				action: () => {
-					if (!activeFilePath) return;
-					void togglePinnedFile(activeFilePath);
-				},
-			},
-			{
-				id: "save-note",
-				label: "Save",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				shortcut: { meta: true, key: "s" },
-				enabled: Boolean(spacePath),
-				allowInEditable: true,
-				action: () => void saveCurrentEditor(),
-			},
-			{
-				id: "collapse_all_headings",
-				label: "Collapse all headings",
-				icon: <ChevronUp size={16} />,
-				category: "Editor",
-				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
-				allowInEditable: true,
-				action: () =>
-					dispatchEditorMenuAction({ action: "collapse_all_headings" }),
-			},
-			{
-				id: "expand_all_headings",
-				label: "Expand all headings",
-				icon: <ChevronDown size={16} />,
-				category: "Editor",
-				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
-				allowInEditable: true,
-				action: () =>
-					dispatchEditorMenuAction({ action: "expand_all_headings" }),
-			},
-			{
-				id: "open-local-graph",
-				label: "Open local graph",
-				icon: (
-					<HugeiconsIcon
-						icon={FlowConnectionIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "g" },
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => {
-					if (!activeMarkdownTabPath) return;
-					dispatchOpenLocalGraph({ path: activeMarkdownTabPath });
-				},
-			},
-			{
-				id: "toggle-note-info-sidebar",
-				label: "Toggle note info sidebar",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "i" },
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => {
-					if (!activeMarkdownTabPath) return;
-					dispatchToggleNoteInfoSidebar({ path: activeMarkdownTabPath });
-				},
-			},
-			{
-				id: "copy-note-markdown",
-				label: "Copy note as Markdown",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "c" },
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => void handleCopyOpenNoteAsMarkdown(),
-			},
-			{
-				id: "export-note-html",
-				label: "Export note as HTML",
-				icon: <FileHtml size={16} />,
-				category: "File Operations",
-				enabled: Boolean(activeMarkdownTabPath),
-				action: handleExportHtml,
-			},
-			{
-				id: "print-editor-pane",
-				label: "Print Note",
-				icon: <HugeiconsIcon icon={PrinterIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled:
-					activeMarkdownTabPath !== null &&
-					isMarkdownPath(activeMarkdownTabPath),
-				action: handlePrintEditorPane,
-			},
-			{
-				id: "move-active-file",
-				label: "Move to…",
-				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath) && Boolean(activeFilePath),
-				action: () => {
-					if (!activeFilePath) return;
-					setMovePickerSourcePath(activeFilePath);
-					void refreshMoveTargetDirs(activeFilePath);
-					openPalette("commands");
-				},
-			},
-			{
-				id: "close-preview",
-				label: "Close preview",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				shortcut: { meta: true, key: "w" },
-				enabled: Boolean(spacePath),
-				action: () => setActivePreviewPath(null),
-			},
-			{
-				id: "go-back-note",
-				label: "Go back",
-				icon: <HugeiconsIcon icon={ArrowLeft} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				shortcut: { meta: true, key: "[" },
-				enabled: canGoBack,
-				allowInEditable: true,
-				action: goBack,
-			},
-			{
-				id: "go-forward-note",
-				label: "Go forward",
-				icon: <HugeiconsIcon icon={ArrowRight} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				shortcut: { meta: true, key: "]" },
-				enabled: canGoForward,
-				allowInEditable: true,
-				action: goForward,
-			},
-			{
-				id: "quick-open",
-				label: "Quick open",
-				icon: <HugeiconsIcon icon={SearchIcon} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				shortcut: { meta: true, key: "p" },
-				enabled: Boolean(spacePath),
-				allowInEditable: true,
-				action: openSearchPalette,
-			},
-			{
-				id: "open-all-docs",
-				label: "Open all notes",
-				icon: <HugeiconsIcon icon={File01Icon} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openAllDocsTab,
-			},
-			{
-				id: "open-templates",
-				label: "Open templates",
-				icon: (
-					<HugeiconsIcon icon={DocumentCodeIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openTemplatesTab,
-			},
-			{
-				id: "open-calendar",
-				label: "Open calendar",
-				icon: (
-					<HugeiconsIcon icon={Calendar03Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openCalendarTab,
-			},
-			{
-				id: "open-dashboard",
-				label: "Open home",
-				icon: <HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openCalendarTab,
-			},
-			{
-				id: "open-databases",
-				label: "Open collections",
-				icon: <HugeiconsIcon icon={LibraryIcon} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: () => openDatabasesTab(),
-			},
-			{
-				id: "create-space",
-				label: "Create space",
-				icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				shortcut: { meta: true, shift: true, key: "n" },
-				action: onCreateSpace,
-			},
-			{
-				id: "open-space",
-				label: spacePath ? "Open another space" : "Open space",
-				icon: (
-					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, key: "o" },
-				action: onOpenSpace,
-			},
-			{
-				id: "reveal-space",
-				label: "Reveal space",
-				icon: (
-					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: handleRevealSpaceFromMenu,
-			},
-			{
-				id: "close-space",
-				label: "Close current space",
-				icon: (
-					<HugeiconsIcon icon={FolderRemoveIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: closeSpace,
-			},
-			{
-				id: "git-sync-now",
-				label: "Sync now",
-				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						await gitSync.syncNow();
-					} catch (error) {
-						handleGitSyncFailure(error);
-					}
-				},
-			},
-			{
-				id: "toggle-sidebar",
-				label: "Toggle sidebar",
-				icon: (
-					<HugeiconsIcon icon={SidebarLeftIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, shift: true, key: "b" },
-				action: () => setSidebarCollapsed(!sidebarCollapsed),
-			},
-			{
-				id: "toggle-zen-mode",
-				label: zenModeActive ? "Exit zen mode" : "Toggle zen mode",
-				icon: <HugeiconsIcon icon={Plant01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => {
-					if (zenModeActive) {
-						if (activeMarkdownTabPath) {
-							dispatchZenModeWillToggle({
-								path: activeMarkdownTabPath,
-								nextActive: false,
-							});
-						}
-						setZenModeActive(false);
-						return;
-					}
-					if (!activeMarkdownTabPath) return;
-					dispatchZenModeWillToggle({
-						path: activeMarkdownTabPath,
-						nextActive: true,
-					});
-					dispatchForceNoteEditMode({ path: activeMarkdownTabPath });
-					setZenModeActive(true);
-				},
-			},
-			{
-				id: "buy-glyph-license",
-				label: "Buy Glyph license",
-				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				action: async () => {
-					try {
-						const status = await getLicenseStatus();
-						await openUrl(status.purchase_url);
-					} catch (error) {
-						console.error("Failed to open Gumroad purchase page", error);
-						toast.error("Could not open the license page", {
-							description:
-								error instanceof Error
-									? error.message
-									: "Try again in a moment.",
-						});
-					}
-				},
-			},
-			{
-				id: "open-settings",
-				label: "Settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, key: "," },
-				action: () => openSettings(),
-			},
-			{
-				id: "open-space-settings",
-				label: "Space settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: handleOpenSpaceSettings,
-			},
-			{
-				id: "open-license-settings",
-				label: "Manage license",
-				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				action: () => openSettings("general"),
-			},
-			{
-				id: "open-git-sync-settings",
-				label: "Git Sync settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: gitSync.openGitSettings,
-			},
-			{
-				id: "open-ai-settings",
-				label: "AI settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				action: handleOpenAiSettings,
-			},
-			{
-				id: "show-getting-started",
-				label: "Show getting started",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Help",
-				enabled: Boolean(spacePath),
-				action: openGettingStarted,
-			},
-		];
-		return [...baseCommands, ...aiCommands, ...editorCommands].map((command) =>
-			isShortcutActionId(command.id)
-				? {
-						...command,
-						shortcut: getBinding(command.id) ?? undefined,
-					}
-				: command,
-		);
-	}, [
-		activeMarkdownTabPath,
+	const commands = useAppCommands({
+		activeDirPath,
 		activeFilePath,
+		activeMarkdownTabPath,
+		aiEnabled,
 		activateNextTab,
 		activatePreviousTab,
-		pinnedFiles,
-		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
-		activeDirPath,
+		canGoBack,
+		canGoForward,
 		closeActiveTab,
 		closeAllTabs,
-		handleGitSyncFailure,
-		handleCopyOpenNoteAsMarkdown,
-		handleDuplicateActiveMarkdown,
-		handleCloseAiPaneFromMenu,
-		handleOpenAiSettings,
-		handleOpenSpaceSettings,
-		handleExportHtml,
-		handlePrintEditorPane,
-		handleRevealSpaceFromMenu,
-		fileTree,
 		closeSpace,
-		onCreateSpace,
-		onOpenSpace,
-		openMarkdownTabs.length,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
-		requestOpenDailyNote,
-		saveCurrentEditor,
+		fileTree,
+		getBinding,
+		gitSync,
+		goBack,
+		goForward,
+		handleCloseAiPaneFromMenu,
+		handleCopyOpenNoteAsMarkdown,
 		handleCreateFromTemplateFromMenu,
-		setAiPanelOpen,
-		togglePinnedFile,
-		setActivePreviewPath,
-		setSidebarCollapsed,
-		setZenModeActive,
-		sidebarCollapsed,
-		showCollapsibleHeadings,
-		spacePath,
-		zenModeActive,
+		handleDuplicateActiveMarkdown,
+		handleExportHtml,
+		handleGitSyncFailure,
+		handleOpenAiSettings,
+		handleOpenSpaceSettings,
+		handlePrintEditorPane,
+		handleRevealSpaceFromMenu,
+		movePickerSourcePath,
+		moveTargetDirs,
+		onCreateSpace,
+		onOpenSpace,
 		openAllDocsTab,
-		openTemplatesTab,
-		openSearchPalette,
+		openBlankTab,
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
-		openBlankTab,
-		openQuickNoteWindow,
-		openWorkspaceFile,
-		gitSync,
-		getBinding,
-		moveTargetDirs,
-		movePickerSourcePath,
-		openSpecialTab,
-		setError,
-		openSettings,
-		refreshMoveTargetDirs,
+		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
-		tabs.length,
-		canGoBack,
-		canGoForward,
-		goBack,
-		goForward,
-	]);
+		openQuickNoteWindow,
+		openSearchPalette,
+		openSettings,
+		openSpecialTab,
+		openTemplatesTab,
+		openWorkspaceFile,
+		pinnedFiles,
+		requestOpenDailyNote,
+		saveCurrentEditor,
+		setActivePreviewPath,
+		setAiPanelOpen,
+		setError,
+		setMovePickerSourcePath,
+		setSidebarCollapsed,
+		setWebClipDialogOpen,
+		setWebClipUrl,
+		setZenModeActive,
+		showCollapsibleHeadings,
+		sidebarCollapsed,
+		spacePath,
+		tabsLength: tabs.length,
+		togglePinnedFile,
+		refreshMoveTargetDirs,
+		zenModeActive,
+	});
 
 	const shortcutHandlers = useMemo(
 		() => [
@@ -2157,9 +1327,7 @@ export function AppShell() {
 				tabs={tabs}
 				activeTabId={activeTabId}
 				activeTabPath={activeTabPath}
-				dragTabId={dragTabId}
 				setActiveTabId={setActiveTabId}
-				setDragTabId={setDragTabId}
 				setDirtyByPath={setDirtyByPath}
 				closeTab={closeTab}
 				closeActiveTab={closeActiveTab}
@@ -2195,15 +1363,6 @@ export function AppShell() {
 					/>
 				</Suspense>
 			) : null}
-			{shortcutsHelpMounted ? (
-				<Suspense fallback={null}>
-					<LazyKeyboardShortcutsHelp
-						actions={actionsWithBindings}
-						open={shortcutsHelpOpen}
-						onClose={() => setShortcutsHelpOpen(false)}
-					/>
-				</Suspense>
-			) : null}
 			<TemplatePickerDialog
 				open={templatePickerOpen}
 				templates={templatePickerItems}
@@ -2219,50 +1378,21 @@ export function AppShell() {
 				}}
 				onError={handleHtmlExportError}
 			/>
-			<Dialog
+			<WhatsNewDialog
+				open={whatsNewVersion !== null}
+				version={whatsNewVersion}
+				onClose={closeWhatsNewDialog}
+			/>
+			<WebClipDialog
 				open={webClipDialogOpen}
+				url={webClipUrl}
+				loading={webClipLoading}
 				onOpenChange={(open) => {
 					if (!open) setWebClipDialogOpen(false);
 				}}
-			>
-				<DialogContent
-					className="webClipDialog"
-					showCloseButton={false}
-					onOpenAutoFocus={(e) => {
-						e.preventDefault();
-						const target = e.currentTarget as HTMLElement | null;
-						target
-							?.querySelector<HTMLInputElement>(".webClipDialogInput")
-							?.focus();
-					}}
-				>
-					<DialogTitle className="webClipDialogTitle">
-						Save web page
-					</DialogTitle>
-					<form
-						className="webClipDialogForm"
-						onSubmit={(e) => {
-							e.preventDefault();
-							void handleWebClipSave();
-						}}
-					>
-						<label className="sr-only" htmlFor="web-clip-url-input">
-							URL to fetch and save as Markdown
-						</label>
-						<input
-							id="web-clip-url-input"
-							className="webClipDialogInput"
-							placeholder="https://example.com/article"
-							value={webClipUrl}
-							onChange={(e) => setWebClipUrl(e.target.value)}
-							disabled={webClipLoading}
-						/>
-					</form>
-					<p className="webClipDialogHint">
-						Press Enter to fetch and save as Markdown
-					</p>
-				</DialogContent>
-			</Dialog>
+				onUrlChange={setWebClipUrl}
+				onSubmit={() => void handleWebClipSave()}
+			/>
 		</div>
 	);
 }

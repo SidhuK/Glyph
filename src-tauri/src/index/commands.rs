@@ -414,6 +414,37 @@ pub async fn all_docs_list(
     .map_err(|e| e.to_string())?
 }
 
+#[tauri::command]
+pub async fn all_docs_count(
+    state: State<'_, SpaceState>,
+    folder_prefix: Option<String>,
+) -> Result<u32, String> {
+    let root = state.current_root()?;
+    let folder_prefix = folder_prefix
+        .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
+        .filter(|value| !value.is_empty());
+    tauri::async_runtime::spawn_blocking(move || -> Result<u32, String> {
+        let conn = open_db(&root)?;
+        let mut sql = String::from("SELECT COUNT(*) FROM notes n ");
+        let mut params: Vec<rusqlite::types::Value> = Vec::new();
+        if let Some(prefix) = folder_prefix.as_ref() {
+            sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
+            params.push(rusqlite::types::Value::from(format!(
+                "{}/%",
+                escape_like(prefix)
+            )));
+        }
+        let count: i64 = conn
+            .query_row(&sql, rusqlite::params_from_iter(params.iter()), |row| {
+                row.get(0)
+            })
+            .map_err(|e| e.to_string())?;
+        Ok(count.max(0) as u32)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn calendar_query_range(
     state: State<'_, SpaceState>,

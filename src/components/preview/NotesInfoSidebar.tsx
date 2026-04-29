@@ -10,7 +10,7 @@ import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "../editor/markdown/editorEvents";
-import type { CanvasInlineEditorMode } from "../editor/types";
+import type { NoteInlineEditorMode } from "../editor/types";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 
 interface SidebarBacklinkItem {
@@ -26,7 +26,7 @@ interface LinkedNoteItem {
 
 interface NotesInfoSidebarProps {
 	open: boolean;
-	mode: CanvasInlineEditorMode;
+	mode: NoteInlineEditorMode;
 	zenModeActive: boolean;
 	hasError: boolean;
 	relPath: string;

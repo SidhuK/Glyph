@@ -30,6 +30,7 @@ import {
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
+import { readStoredSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedAllDocs,
@@ -92,24 +93,6 @@ function readStorage(key: string): string | null {
 	if (typeof window === "undefined") return null;
 	try {
 		return window.localStorage.getItem(key);
-	} catch {
-		return null;
-	}
-}
-
-function preferredDatabaseViewId(
-	databaseId: string,
-	viewIds: string[],
-): string | null {
-	const raw = readStorage("glyph.databases.selectedViews");
-	if (!raw) return null;
-	try {
-		const parsed = JSON.parse(raw);
-		const candidate =
-			parsed && typeof parsed === "object" ? parsed[databaseId] : null;
-		return typeof candidate === "string" && viewIds.includes(candidate)
-			? candidate
-			: null;
 	} catch {
 		return null;
 	}
@@ -283,9 +266,7 @@ interface MainContentProps {
 	tabs: WorkspaceTab[];
 	activeTabId: string | null;
 	activeTabPath: string | null;
-	dragTabId: string | null;
 	setActiveTabId: (tabId: string | null) => void;
-	setDragTabId: (tabId: string | null) => void;
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	closeTab: (tabId: string) => void;
 	closeActiveTab: () => void;
@@ -385,9 +366,7 @@ export const MainContent = memo(function MainContent({
 	tabs,
 	activeTabId,
 	activeTabPath,
-	dragTabId,
 	setActiveTabId,
-	setDragTabId,
 	setDirtyByPath,
 	closeTab,
 	closeActiveTab,
@@ -672,7 +651,7 @@ export const MainContent = memo(function MainContent({
 				: null;
 			const initialViewId =
 				initialDatabaseId && initialDocument
-					? (preferredDatabaseViewId(
+					? (readStoredSelectedViewId(
 							initialDatabaseId,
 							initialDocument.database.views.map((view) => view.id),
 						) ??
@@ -872,7 +851,6 @@ export const MainContent = memo(function MainContent({
 								tabs={tabs}
 								activeTabId={activeTabId}
 								activeTabPath={activeTabPath}
-								dragTabId={dragTabId}
 								useWindowBackground={!content}
 								canGoBack={canGoBack}
 								canGoForward={canGoForward}
@@ -883,8 +861,6 @@ export const MainContent = memo(function MainContent({
 								onSelectTab={setActiveTabId}
 								onCloseTab={closeTab}
 								onStartRenamePath={onStartRenamePath}
-								onDragStart={setDragTabId}
-								onDragEnd={() => setDragTabId(null)}
 								onReorder={reorderTabs}
 							/>
 						</div>
