@@ -245,10 +245,9 @@ export function AppShell() {
 					invoke("app_info"),
 					getLastSeenReleaseNotesVersion(),
 				]);
-				const version =
-					CHANGELOG_DATA.versions.find(
-						(entry) => entry.version === appInfo.version,
-					) ?? CHANGELOG_DATA.versions[0];
+				const version = CHANGELOG_DATA.versions.find(
+					(entry) => entry.version === appInfo.version,
+				);
 				if (cancelled || !version || lastSeenVersion === version.version)
 					return;
 				setWhatsNewVersion(version);

@@ -181,7 +181,7 @@ export function MarkdownEditorPane({
 	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(true);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
@@ -231,7 +231,7 @@ export function MarkdownEditorPane({
 	}, [currentBody]);
 	const visibleTaskSummary = useMarkdownTaskSummary(
 		text,
-		showTaskProgressIndicator,
+		showTaskProgressIndicator === true,
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;

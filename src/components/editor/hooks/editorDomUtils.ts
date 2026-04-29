@@ -2,7 +2,7 @@ export function getMountedEditorContentRoot(
 	host: HTMLElement | null,
 ): HTMLElement | null {
 	if (!host) return null;
-	return host.querySelector(".ProseMirror");
+	return host.querySelector<HTMLElement>(".ProseMirror");
 }
 
 export function getOffsetWithinAncestor(
@@ -12,8 +12,8 @@ export function getOffsetWithinAncestor(
 	const elementRect = element.getBoundingClientRect();
 	const ancestorRect = ancestor.getBoundingClientRect();
 	return {
-		left: elementRect.left - ancestorRect.left,
-		top: elementRect.top - ancestorRect.top,
+		left: elementRect.left - ancestorRect.left + ancestor.scrollLeft,
+		top: elementRect.top - ancestorRect.top + ancestor.scrollTop,
 	};
 }
 

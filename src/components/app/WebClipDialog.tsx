@@ -35,6 +35,7 @@ export function WebClipDialog({
 					className="webClipDialogForm"
 					onSubmit={(event) => {
 						event.preventDefault();
+						if (loading) return;
 						onSubmit();
 					}}
 				>

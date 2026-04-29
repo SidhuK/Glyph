@@ -944,26 +944,25 @@ export const FileTreePane = memo(function FileTreePane({
 													isActive ? "fileTreeItem active" : "fileTreeItem"
 												}
 											>
-												<div className="fileTreeRowShell">
-													{/* biome-ignore lint/a11y/useSemanticElements: the row contains a real unpin button, so it cannot itself be a button. */}
-													<m.div
-														role="button"
-														tabIndex={0}
+												<m.div
+													className="fileTreeRowShell"
+													variants={rowVariants}
+													whileHover="hover"
+													whileTap="tap"
+													animate={isActive ? "active" : "idle"}
+													transition={springTransition}
+												>
+													<button
+														type="button"
 														className="fileTreeRow fileTreePinnedRow"
 														onClick={() => onOpenFile(file.path)}
 														onKeyDown={(event) => {
-															if (event.key === "Enter" || event.key === " ") {
-																event.preventDefault();
-																onOpenFile(file.path);
-																return;
-															}
 															if (
 																event.key !== "ArrowDown" &&
 																event.key !== "ArrowUp"
 															)
 																return;
 															event.preventDefault();
-															event.stopPropagation();
 															handleArrowNavigate(
 																file.path,
 																event.key === "ArrowDown" ? 1 : -1,
@@ -971,26 +970,33 @@ export const FileTreePane = memo(function FileTreePane({
 															);
 														}}
 														title={file.path}
-														variants={rowVariants}
-														whileHover="hover"
-														whileTap="tap"
-														animate={isActive ? "active" : "idle"}
-														transition={springTransition}
 														data-file-tree-file="true"
 														data-file-tree-path={file.path}
 													>
+														<span className="fileTreeName">
+															{file.displayName}
+														</span>
+														{showTaskProgressIndicator &&
+														(taskSummariesByPath[file.path]?.total_count ?? 0) >
+															0 ? (
+															<TaskProgressIndicator
+																summary={taskSummariesByPath[file.path]}
+																className="fileTreeTaskProgress"
+															/>
+														) : null}
+														{file.parent ? (
+															<span className="fileTreePinnedPath">
+																{file.parent}
+															</span>
+														) : null}
+													</button>
+													<m.div className="fileTreePinnedActions">
 														<button
 															type="button"
+															aria-label={`Unpin ${file.displayName}`}
 															title="Unpin"
-															onClick={(e) => {
-																e.stopPropagation();
+															onClick={() => {
 																onTogglePinnedFile(file.path);
-															}}
-															onKeyDown={(e) => {
-																if (e.key === "Enter" || e.key === " ") {
-																	e.stopPropagation();
-																	onTogglePinnedFile(file.path);
-																}
 															}}
 															className="fileTreePinToggle fileTreeIcon"
 														>
@@ -1009,24 +1015,8 @@ export const FileTreePane = memo(function FileTreePane({
 																aria-hidden="true"
 															/>
 														</button>
-														<span className="fileTreeName">
-															{file.displayName}
-														</span>
-														{showTaskProgressIndicator &&
-														(taskSummariesByPath[file.path]?.total_count ?? 0) >
-															0 ? (
-															<TaskProgressIndicator
-																summary={taskSummariesByPath[file.path]}
-																className="fileTreeTaskProgress"
-															/>
-														) : null}
-														{file.parent ? (
-															<span className="fileTreePinnedPath">
-																{file.parent}
-															</span>
-														) : null}
 													</m.div>
-												</div>
+												</m.div>
 											</li>
 										);
 									})}

@@ -35,13 +35,14 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 	const mountedRef = useRef(true);
 
 	const fallbackTaskSummary = useMemo(
-		() => summarizeTasksFromMarkdown(markdown),
-		[markdown],
+		() => (enabled ? summarizeTasksFromMarkdown(markdown) : EMPTY_TASK_SUMMARY),
+		[enabled, markdown],
 	);
-	const visibleTaskSummary =
-		taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
+	const visibleTaskSummary = enabled
+		? taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
 			? taskSummary
-			: fallbackTaskSummary;
+			: fallbackTaskSummary
+		: taskSummary;
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -59,11 +60,11 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 			window.clearTimeout(timerRef.current);
 			timerRef.current = null;
 		}
+		requestTokenRef.current += 1;
 		setTaskSummary(EMPTY_TASK_SUMMARY);
 		if (!enabled) return;
 
-		const requestToken = requestTokenRef.current + 1;
-		requestTokenRef.current = requestToken;
+		const requestToken = requestTokenRef.current;
 
 		timerRef.current = window.setTimeout(() => {
 			timerRef.current = null;

@@ -128,6 +128,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [gitExpanded, setGitExpanded] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
+	const allNotesCountRequestRef = useRef(0);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
 	const showGitButton = shouldShowGitSync(gitSyncStatus);
@@ -238,15 +239,19 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 
 	const refreshAllNotesCount = useCallback(() => {
+		const requestId = allNotesCountRequestRef.current + 1;
+		allNotesCountRequestRef.current = requestId;
 		if (!spacePath) {
 			setAllNotesCount(null);
 			return;
 		}
 		void invoke("all_docs_count", {})
 			.then((count) => {
+				if (allNotesCountRequestRef.current !== requestId) return;
 				setAllNotesCount(count);
 			})
 			.catch(() => {
+				if (allNotesCountRequestRef.current !== requestId) return;
 				setAllNotesCount(null);
 			});
 	}, [spacePath]);
