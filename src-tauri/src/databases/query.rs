@@ -471,8 +471,8 @@ fn compare_text_cells(left: &str, right: &str, descending: bool) -> std::cmp::Or
                 .then_with(|| normalize_text(left).cmp(&normalize_text(right))),
             descending,
         ),
-        (Some(_), None) => std::cmp::Ordering::Less,
-        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (Some(_), None) => order_for_direction(std::cmp::Ordering::Less, descending),
+        (None, Some(_)) => order_for_direction(std::cmp::Ordering::Greater, descending),
         (None, None) => {
             order_for_direction(normalize_text(left).cmp(&normalize_text(right)), descending)
         }

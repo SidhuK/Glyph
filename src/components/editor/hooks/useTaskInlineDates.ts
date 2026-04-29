@@ -155,42 +155,49 @@ export function useTaskInlineDates({
 			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
 				null);
 
-	const openTaskPopover = async (anchor: TaskAnchor) => {
-		setScheduleAnchor(anchor);
-		try {
-			const existing = await invoke("task_dates_by_ordinal", {
-				markdown,
-				ordinal: anchor.ordinal,
-			});
-			setScheduledDate(existing?.scheduled_date ?? "");
-			setDueDate(existing?.due_date ?? "");
-			const nextField = existing?.due_date ? "due" : "scheduled";
-			setActiveDateField(nextField);
-			setPickerMonth(
-				safeParseISO(existing?.due_date) ??
-					safeParseISO(existing?.scheduled_date) ??
-					new Date(),
-			);
-		} catch {
-			setScheduledDate("");
-			setDueDate("");
-			setActiveDateField("scheduled");
-			setPickerMonth(new Date());
-		}
-	};
+	const openTaskPopover = useCallback(
+		async (anchor: TaskAnchor) => {
+			setScheduleAnchor(anchor);
+			try {
+				const existing = await invoke("task_dates_by_ordinal", {
+					markdown,
+					ordinal: anchor.ordinal,
+				});
+				setScheduledDate(existing?.scheduled_date ?? "");
+				setDueDate(existing?.due_date ?? "");
+				const nextField = existing?.due_date ? "due" : "scheduled";
+				setActiveDateField(nextField);
+				setPickerMonth(
+					safeParseISO(existing?.due_date) ??
+						safeParseISO(existing?.scheduled_date) ??
+						new Date(),
+				);
+			} catch {
+				setScheduledDate("");
+				setDueDate("");
+				setActiveDateField("scheduled");
+				setPickerMonth(new Date());
+			}
+		},
+		[markdown],
+	);
 
-	const applyTaskDates = async () => {
+	const applyTaskDates = useCallback(async () => {
 		if (!scheduleAnchor) return;
-		const next = await invoke("task_update_by_ordinal", {
-			markdown,
-			ordinal: scheduleAnchor.ordinal,
-			scheduled_date: scheduledDate,
-			due_date: dueDate,
-		});
-		if (!next) return;
-		onChange(next);
-		setScheduleAnchor(null);
-	};
+		try {
+			const next = await invoke("task_update_by_ordinal", {
+				markdown,
+				ordinal: scheduleAnchor.ordinal,
+				scheduled_date: scheduledDate,
+				due_date: dueDate,
+			});
+			if (!next) return;
+			onChange(next);
+			setScheduleAnchor(null);
+		} catch (error) {
+			console.error("Failed to update task dates", error);
+		}
+	}, [dueDate, markdown, onChange, scheduleAnchor, scheduledDate]);
 
 	const activeDateValue =
 		activeDateField === "scheduled" ? scheduledDate : dueDate;
