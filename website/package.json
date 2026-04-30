@@ -10,18 +10,15 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"@astrojs/mdx": "^5.0.4",
+		"@astrojs/mdx": "^4.3.13",
 		"@playform/compress": "^0.2.1",
 		"@vercel/analytics": "^1.6.1",
 		"@vercel/speed-insights": "^1.3.1",
-		"astro": "^6.1.9",
+		"astro": "^5.17.1",
 		"astro-critters": "^2.2.1"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"sharp"
-		],
+		"onlyBuiltDependencies": ["esbuild", "sharp"],
 		"overrides": {
 			"svgo": "^4.0.1",
 			"h3": ">=1.15.9",
@@ -32,8 +29,5 @@
 			"defu": ">=6.1.5",
 			"vite": ">=6.4.2"
 		}
-	},
-	"devDependencies": {
-		"sharp": "^0.34.5"
 	}
 }

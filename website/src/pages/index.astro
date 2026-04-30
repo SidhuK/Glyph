@@ -1,5 +1,4 @@
 ---
-import { getImage } from "astro:assets";
 import showcaseAsset from "../../assets/imageforWebsite.png";
 
 import Layout from "../layouts/Layout.astro";
@@ -50,29 +49,14 @@ const softwareJsonLd = [
 		},
 	},
 ];
-
-// Build a responsive AVIF source set so the browser can preload the same
-// image variants the <Picture> in Showcase.astro will render.
-const showcaseWidths = [640, 960, 1200, 1600, showcaseAsset.width];
-const preloadImages = await Promise.all(
-	showcaseWidths.map((width) =>
-		getImage({ src: showcaseAsset, format: "avif", width }),
-	),
-);
-const preloadSrcSet = preloadImages
-	.map((img, i) => `${img.src} ${showcaseWidths[i]}w`)
-	.join(", ");
-const preloadHref = preloadImages[preloadImages.length - 1].src;
 ---
 
 <Layout
 	title={pageTitle}
 	description={pageDescription}
 	jsonLd={softwareJsonLd}
-	preloadImage={preloadHref}
+	preloadImage={showcaseAsset.src}
 	preloadImageSizes="(max-width: 1200px) 96vw, 1100px"
-	preloadImageSrcSet={preloadSrcSet}
-	preloadImageType="image/avif"
 >
 	<div class="page">
 		<Header />

@@ -10,7 +10,6 @@ interface Props {
 	preloadImage?: string;
 	preloadImageSizes?: string;
 	preloadImageSrcSet?: string;
-	preloadImageType?: string;
 	noIndex?: boolean;
 	jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 	bodyClass?: string;
@@ -29,7 +28,6 @@ const {
 	preloadImage,
 	preloadImageSizes,
 	preloadImageSrcSet,
-	preloadImageType,
 	noIndex = false,
 	jsonLd,
 	bodyClass,
@@ -128,7 +126,6 @@ const socialImageType =
 					href={preloadImage}
 					imagesrcset={preloadImageSrcSet}
 					imagesizes={preloadImageSizes}
-					type={preloadImageType}
 					fetchpriority="high"
 				/>
 			)

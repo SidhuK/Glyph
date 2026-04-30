@@ -314,43 +314,6 @@ h1 {
 	border-radius: 1rem;
 }
 
-.mode-toggle-wrap {
-	display: flex;
-	justify-content: center;
-	margin-top: 0.8rem;
-}
-
-.mode-toggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.3rem 0.6rem;
-	background: transparent;
-	border: 1px solid var(--border);
-	cursor: pointer;
-	transition: border-color 0.15s;
-}
-
-.mode-toggle:hover {
-	border-color: var(--faint);
-}
-
-.mode-icon {
-	display: block;
-	color: var(--faint);
-	transition: color 0.2s;
-}
-
-.icon-sun {
-	color: var(--ink);
-}
-.showcase.is-dark .icon-sun {
-	color: var(--faint);
-}
-.showcase.is-dark .icon-moon {
-	color: var(--ink);
-}
-
 /* ── Sections ── */
 .section {
 	padding: 4.5rem 0;
