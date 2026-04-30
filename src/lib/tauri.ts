@@ -871,8 +871,14 @@ interface TauriCommands {
 		},
 		CalendarRangeResponse
 	>;
-	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
-	people_list: CommandDef<{ limit?: number | null }, PersonCount[]>;
+	tags_list: CommandDef<
+		{ limit?: number | null; offset?: number | null },
+		TagCount[]
+	>;
+	people_list: CommandDef<
+		{ limit?: number | null; offset?: number | null },
+		PersonCount[]
+	>;
 	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
 	task_set_dates: CommandDef<
 		{

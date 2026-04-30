@@ -218,6 +218,7 @@ export function DatabaseTable({
 		[rows, groupColumn],
 	);
 	const displayRows = table.getRowModel().rows;
+	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
 	const rowsByPath = useMemo(
 		() => new Map(displayRows.map((row) => [row.original.note_path, row])),
 		[displayRows],
@@ -311,12 +312,13 @@ export function DatabaseTable({
 								<Fragment key={group.id}>
 									<tr className="databaseGroupHeaderRow">
 										<td
-											colSpan={columns.length || 1}
+											colSpan={visibleColumnCount}
 											className="databaseGroupCell"
 										>
 											<span className="databaseGroupLabel">{group.label}</span>
 											<span className="databaseGroupCount">
-												{group.rowCount}
+												{group.rowCount}{" "}
+												{group.rowCount === 1 ? "note" : "notes"}
 											</span>
 										</td>
 									</tr>
@@ -334,7 +336,7 @@ export function DatabaseTable({
 					) : (
 						<TableRow>
 							<TableCell
-								colSpan={columns.length || 1}
+								colSpan={visibleColumnCount}
 								className="databaseEmptyCell"
 							>
 								No matching notes

@@ -178,6 +178,8 @@ export function LinkedNotePreviewSheet() {
 		(link: HTMLElement, target: string) => {
 			clearOpenTimer();
 			clearCloseTimer();
+			requestIdRef.current += 1;
+			const requestId = requestIdRef.current;
 			const anchor = link.getBoundingClientRect();
 			const position = positionSheet(
 				anchor,
@@ -186,8 +188,7 @@ export function LinkedNotePreviewSheet() {
 			);
 
 			openTimerRef.current = window.setTimeout(() => {
-				const requestId = requestIdRef.current + 1;
-				requestIdRef.current = requestId;
+				if (requestIdRef.current !== requestId) return;
 				setPreview({
 					target,
 					content: "",

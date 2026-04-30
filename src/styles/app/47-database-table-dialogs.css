@@ -456,12 +456,6 @@
 	line-height: 1.15;
 }
 
-.databaseGroupCount::after {
-	content: " notes";
-	font-weight: var(--font-medium);
-	color: var(--text-tertiary);
-}
-
 .databaseLoadingState,
 .databaseNotice {
 	padding: 14px 18px;

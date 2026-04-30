@@ -117,6 +117,14 @@ export function DatabaseColumnDropdown({
 		() => new Map(config.columns.map((column) => [column.id, column])),
 		[config.columns],
 	);
+	const propertyColumnsByKey = useMemo(() => {
+		const entries = new Map<string, DatabaseColumn>();
+		for (const column of config.columns) {
+			if (column.type !== "property" || !column.property_key) continue;
+			entries.set(column.property_key.trim().toLowerCase(), column);
+		}
+		return entries;
+	}, [config.columns]);
 
 	const updateColumns = async (
 		updater: (columns: DatabaseColumn[]) => DatabaseColumn[],
@@ -159,37 +167,43 @@ export function DatabaseColumnDropdown({
 
 	const propertyEntries = useMemo<ColumnMenuEntry[]>(() => {
 		const entriesById = new Map<string, ColumnMenuEntry>();
-		const seenKeys = new Set<string>();
 		for (const property of availableProperties) {
 			if (isReservedPropertyKey(property.key)) continue;
-			const propertyKey = property.key.trim().toLowerCase();
-			if (seenKeys.has(propertyKey)) continue;
-			seenKeys.add(propertyKey);
-			const id = `property:${property.key}`;
-			const existing = columnsById.get(id);
-			entriesById.set(id, {
-				key: id,
-				column: existing ?? createPropertyColumn(property),
+			const trimmedKey = property.key.trim();
+			const propertyKey = trimmedKey.toLowerCase();
+			const normalizedId = `property:${propertyKey}`;
+			if (entriesById.has(normalizedId)) continue;
+			const id = `property:${trimmedKey}`;
+			const existing =
+				columnsById.get(normalizedId) ??
+				columnsById.get(id) ??
+				propertyColumnsByKey.get(propertyKey);
+			entriesById.set(normalizedId, {
+				key: normalizedId,
+				column:
+					existing ?? createPropertyColumn({ ...property, key: trimmedKey }),
 				enabled: existing?.visible ?? false,
 			});
 		}
 		for (const column of config.columns) {
+			const normalized = column.property_key?.trim().toLowerCase() ?? "";
+			const normalizedId = `property:${normalized}`;
 			if (
 				column.type !== "property" ||
 				!column.property_key ||
 				isReservedPropertyKey(column.property_key) ||
-				entriesById.has(column.id)
+				entriesById.has(normalizedId)
 			) {
 				continue;
 			}
-			entriesById.set(column.id, {
-				key: column.id,
+			entriesById.set(normalizedId, {
+				key: normalizedId,
 				column,
 				enabled: column.visible,
 			});
 		}
 		return [...entriesById.values()];
-	}, [availableProperties, columnsById, config.columns]);
+	}, [availableProperties, columnsById, config.columns, propertyColumnsByKey]);
 
 	const menuEntries = useMemo(
 		() => [...builtInEntries, ...propertyEntries],

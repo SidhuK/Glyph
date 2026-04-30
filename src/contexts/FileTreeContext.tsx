@@ -63,6 +63,33 @@ export interface FileTreeContextValue {
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
 
+// Tags and people share a page size so metadata lists do not silently truncate.
+const TAG_METADATA_PAGE_SIZE = 500;
+
+async function fetchAllTags(): Promise<TagCount[]> {
+	const tags: TagCount[] = [];
+	for (let offset = 0; ; offset += TAG_METADATA_PAGE_SIZE) {
+		const page = await invoke("tags_list", {
+			limit: TAG_METADATA_PAGE_SIZE,
+			offset,
+		});
+		tags.push(...page);
+		if (page.length < TAG_METADATA_PAGE_SIZE) return tags;
+	}
+}
+
+async function fetchAllPeople(): Promise<PersonCount[]> {
+	const people: PersonCount[] = [];
+	for (let offset = 0; ; offset += TAG_METADATA_PAGE_SIZE) {
+		const page = await invoke("people_list", {
+			limit: TAG_METADATA_PAGE_SIZE,
+			offset,
+		});
+		people.push(...page);
+		if (page.length < TAG_METADATA_PAGE_SIZE) return people;
+	}
+}
+
 export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const { spacePath, isIndexing, startIndexRebuild } = useSpace();
 
@@ -108,10 +135,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				setTagsError("");
 			}
 			const [nextTags, nextPeople] = await Promise.all([
-				invoke("tags_list", { limit: 2000 }),
-				peopleEnabled
-					? invoke("people_list", { limit: 250 })
-					: Promise.resolve([] as PersonCount[]),
+				fetchAllTags(),
+				peopleEnabled ? fetchAllPeople() : Promise.resolve([] as PersonCount[]),
 			]);
 			if (requestId !== tagsRequestIdRef.current) {
 				return;

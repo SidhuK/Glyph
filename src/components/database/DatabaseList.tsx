@@ -117,7 +117,9 @@ export function DatabaseList({
 							<li key={group.id} className="databaseListGroup">
 								<div className="databaseGroupCell">
 									<span className="databaseGroupLabel">{group.label}</span>
-									<span className="databaseGroupCount">{group.rowCount}</span>
+									<span className="databaseGroupCount">
+										{group.rowCount} {group.rowCount === 1 ? "note" : "notes"}
+									</span>
 								</div>
 								<ul className="databaseListGroupRows">
 									{group.rows.map((row) => renderRow(row))}

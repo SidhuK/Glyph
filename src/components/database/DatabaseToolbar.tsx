@@ -46,8 +46,11 @@ export function DatabaseToolbar({
 	const searchValue = config.view.search ?? "";
 	const searchInputId = useId();
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
+	const justExpandedRef = useRef(false);
+	const configRef = useRef(config);
 	const [searchDraft, setSearchDraft] = useState(searchValue);
 	const [searchExpanded, setSearchExpanded] = useState(Boolean(searchValue));
+	configRef.current = config;
 	const hasSelectedGroupColumn =
 		groupColumnId != null &&
 		groupColumns.some((column) => column.id === groupColumnId);
@@ -64,19 +67,21 @@ export function DatabaseToolbar({
 	useEffect(() => {
 		if (searchDraft === searchValue) return;
 		const timer = window.setTimeout(() => {
+			const latestConfig = configRef.current;
 			void onChangeConfig({
-				...config,
+				...latestConfig,
 				view: {
-					...config.view,
+					...latestConfig.view,
 					search: searchDraft,
 				},
 			});
 		}, 300);
 		return () => window.clearTimeout(timer);
-	}, [config, onChangeConfig, searchDraft, searchValue]);
+	}, [onChangeConfig, searchDraft, searchValue]);
 
 	useEffect(() => {
-		if (!searchExpanded) return;
+		if (!searchExpanded || !justExpandedRef.current) return;
+		justExpandedRef.current = false;
 		searchInputRef.current?.focus();
 	}, [searchExpanded]);
 
@@ -126,7 +131,10 @@ export function DatabaseToolbar({
 						variant="ghost"
 						size="icon-sm"
 						className="databaseToolbarChip databaseToolbarSearchButton"
-						onClick={() => setSearchExpanded(true)}
+						onClick={() => {
+							justExpandedRef.current = true;
+							setSearchExpanded(true);
+						}}
 						title="Search view"
 						aria-label="Search view"
 					>

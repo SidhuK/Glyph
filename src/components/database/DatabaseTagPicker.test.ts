@@ -63,7 +63,11 @@ describe("DatabaseTagPicker", () => {
 			is_explicit: true,
 		}));
 
-		expect(buildDatabaseTagPickerOptions(manyTags, "")).toHaveLength(45);
+		const result = buildDatabaseTagPickerOptions(manyTags, "");
+		const resultTags = result.map(({ tag }) => tag);
+
+		expect(resultTags).toEqual(manyTags.map(({ tag }) => tag));
+		expect(new Set(resultTags).size).toBe(45);
 	});
 
 	it("returns every matching explicit tag for typed queries", () => {
@@ -75,6 +79,11 @@ describe("DatabaseTagPicker", () => {
 			is_explicit: true,
 		}));
 
-		expect(buildDatabaseTagPickerOptions(manyTags, "project")).toHaveLength(12);
+		const result = buildDatabaseTagPickerOptions(manyTags, "project");
+		const resultTags = result.map(({ tag }) => tag);
+		const expectedTags = manyTags.map(({ tag }) => tag);
+
+		expect(new Set(resultTags)).toEqual(new Set(expectedTags));
+		expect(new Set(resultTags).size).toBe(12);
 	});
 });
