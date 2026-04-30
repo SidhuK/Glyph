@@ -17,6 +17,13 @@ import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
 const WIKI_LINK_SUGGESTION_KEY = new PluginKey("wiki-link-suggestion");
+const WIKI_LINK_FILE_ICON = [
+	"span",
+	{
+		class: "wikiLinkIcon",
+		"aria-hidden": "true",
+	},
+];
 
 interface WikiLinkSuggestionItem {
 	path: string;
@@ -189,6 +196,7 @@ export const WikiLink = Node.create({
 				"data-unresolved": String(Boolean(node.attrs.unresolved)),
 				class: "wikiLink",
 			}),
+			WIKI_LINK_FILE_ICON,
 			displayName,
 		];
 	},

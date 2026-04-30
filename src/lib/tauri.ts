@@ -96,6 +96,7 @@ export interface DatabaseNewNoteConfig {
 
 export interface DatabaseViewState {
 	layout: "table" | "board" | "list";
+	search?: string;
 	board_group_by?: string | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
@@ -184,6 +185,7 @@ export interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
 	layout: "table" | "board" | "list";
+	search?: string;
 	icon?: string | null;
 	color?: string | null;
 	columns: DatabaseColumn[];

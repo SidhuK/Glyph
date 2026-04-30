@@ -32,6 +32,7 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         id: Uuid::new_v4().to_string(),
         name: name.to_string(),
         layout: "table".to_string(),
+        search: String::new(),
         icon: None,
         color: None,
         columns: vec![

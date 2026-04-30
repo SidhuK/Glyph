@@ -11,6 +11,13 @@ export interface DatabaseBoardLane {
 	rows: DatabaseRow[];
 }
 
+export interface DatabaseRowGroup {
+	id: string;
+	label: string;
+	rowCount: number;
+	rows: DatabaseRow[];
+}
+
 function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	return column.type === "tags" || column.property_kind === "tags";
 }
@@ -192,6 +199,53 @@ export function createBoardLanes(
 		...orderedLanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		...orderedLanes.filter((lane) => lane.id === DATABASE_BOARD_EMPTY_LANE_ID),
 	];
+}
+
+function groupLabel(column: DatabaseColumn, laneId: string): string {
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) return "No value";
+	if (column.property_kind === "checkbox") {
+		return checkboxLaneLabel(laneId === "true");
+	}
+	return laneId;
+}
+
+export function createDatabaseRowGroups(
+	rows: DatabaseRow[],
+	column: DatabaseColumn | null,
+	ascending = true,
+): DatabaseRowGroup[] {
+	if (!column) return [];
+
+	const groups = new Map<string, DatabaseRowGroup>();
+	for (const row of rows) {
+		for (const laneId of boardLaneIdsForRow(row, column)) {
+			const existing = groups.get(laneId);
+			if (existing) {
+				existing.rows.push(row);
+				existing.rowCount += 1;
+				continue;
+			}
+			groups.set(laneId, {
+				id: laneId,
+				label: groupLabel(column, laneId),
+				rowCount: 1,
+				rows: [row],
+			});
+		}
+	}
+
+	const filledGroups = [...groups.values()].filter(
+		(group) => group.id !== DATABASE_BOARD_EMPTY_LANE_ID,
+	);
+	const emptyGroup = groups.get(DATABASE_BOARD_EMPTY_LANE_ID);
+	filledGroups.sort((left, right) =>
+		left.label.localeCompare(right.label, undefined, {
+			numeric: true,
+			sensitivity: "base",
+		}),
+	);
+	if (!ascending) filledGroups.reverse();
+	return emptyGroup ? [...filledGroups, emptyGroup] : filledGroups;
 }
 
 export function orderBoardLanes(

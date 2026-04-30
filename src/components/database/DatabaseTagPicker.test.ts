@@ -53,4 +53,28 @@ describe("DatabaseTagPicker", () => {
 			"personal",
 		]);
 	});
+
+	it("returns every explicit tag when query is empty", () => {
+		const manyTags = Array.from({ length: 45 }, (_, index) => ({
+			tag: `tag-${index}`,
+			direct_count: 1,
+			total_count: 1,
+			depth: 0,
+			is_explicit: true,
+		}));
+
+		expect(buildDatabaseTagPickerOptions(manyTags, "")).toHaveLength(45);
+	});
+
+	it("returns every matching explicit tag for typed queries", () => {
+		const manyTags = Array.from({ length: 12 }, (_, index) => ({
+			tag: `project-${index}`,
+			direct_count: 1,
+			total_count: 1,
+			depth: 0,
+			is_explicit: true,
+		}));
+
+		expect(buildDatabaseTagPickerOptions(manyTags, "project")).toHaveLength(12);
+	});
 });

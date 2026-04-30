@@ -97,6 +97,7 @@ export function buildTagSuggestions(
 	availableTags: TagCount[],
 	selectedTags: string[],
 	draft: string,
+	limit = 8,
 ): Array<{ tag: string; count: number }> {
 	const normalizedDraft = normalizeTagDraftPrefix(draft);
 	if (!normalizedDraft || normalizedDraft.length < 2) {
@@ -134,7 +135,7 @@ export function buildTagSuggestions(
 			return left.tag.localeCompare(right.tag);
 		})
 		.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
-		.slice(0, 8);
+		.slice(0, limit);
 }
 
 function rankSuggestion(

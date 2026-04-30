@@ -7,6 +7,7 @@ import {
 	boardLaneValue,
 	boardRowHasLane,
 	createBoardLanes,
+	createDatabaseRowGroups,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
 	moveBoardLaneToIndex,
@@ -155,6 +156,21 @@ describe("database board helpers", () => {
 		]);
 		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual(["swift", "ios"]);
 		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("swift");
+	});
+
+	it("groups rows while preserving current row order inside each group", () => {
+		const groups = createDatabaseRowGroups(
+			[secondRow, firstRow, thirdRow],
+			statusColumn,
+		);
+
+		expect(groups.map((group) => group.label)).toEqual([
+			"In progress",
+			"Not started",
+			"No value",
+		]);
+		expect(groups[1]?.rows.map((row) => row.title)).toEqual(["One"]);
+		expect(groups[2]?.rows.map((row) => row.title)).toEqual(["Three"]);
 	});
 
 	it("creates stable checkbox lanes including blank values", () => {

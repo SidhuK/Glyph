@@ -3,14 +3,16 @@ import {
 	SlidersVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useEffect, useId, useRef, useState } from "react";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { RefreshCw } from "../Icons";
+import { RefreshCw, Search, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
 import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
 
@@ -41,19 +43,107 @@ export function DatabaseToolbar({
 	onColumnsMenuOpenChange,
 	className,
 }: DatabaseToolbarProps) {
+	const searchValue = config.view.search ?? "";
+	const searchInputId = useId();
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
+	const [searchDraft, setSearchDraft] = useState(searchValue);
+	const [searchExpanded, setSearchExpanded] = useState(Boolean(searchValue));
+	const hasSelectedGroupColumn =
+		groupColumnId != null &&
+		groupColumns.some((column) => column.id === groupColumnId);
+	const selectedGroupColumnId =
+		(hasSelectedGroupColumn ? groupColumnId : null) ??
+		(databaseView === "board" ? groupColumns[0]?.id : "") ??
+		"";
+
+	useEffect(() => {
+		setSearchDraft(searchValue);
+		if (searchValue) setSearchExpanded(true);
+	}, [searchValue]);
+
+	useEffect(() => {
+		if (searchDraft === searchValue) return;
+		const timer = window.setTimeout(() => {
+			void onChangeConfig({
+				...config,
+				view: {
+					...config.view,
+					search: searchDraft,
+				},
+			});
+		}, 300);
+		return () => window.clearTimeout(timer);
+	}, [config, onChangeConfig, searchDraft, searchValue]);
+
+	useEffect(() => {
+		if (!searchExpanded) return;
+		searchInputRef.current?.focus();
+	}, [searchExpanded]);
+
 	return (
 		<div className={["databaseToolbar", className].filter(Boolean).join(" ")}>
 			<div className="databaseToolbarActions">
-				{databaseView === "board" && groupColumns.length > 0 ? (
+				{searchExpanded || searchDraft ? (
+					<label className="databaseToolbarSearch" htmlFor={searchInputId}>
+						<Search size={13} aria-hidden="true" />
+						<Input
+							ref={searchInputRef}
+							id={searchInputId}
+							className="databaseToolbarSearchInput"
+							value={searchDraft}
+							placeholder="Search view"
+							aria-label="Search this view"
+							onBlur={() => {
+								if (!searchDraft) setSearchExpanded(false);
+							}}
+							onKeyDown={(event) => {
+								if (event.key !== "Escape") return;
+								event.preventDefault();
+								setSearchDraft("");
+								setSearchExpanded(false);
+							}}
+							onChange={(event) => setSearchDraft(event.target.value)}
+						/>
+						{searchDraft ? (
+							<button
+								type="button"
+								className="databaseToolbarSearchClear"
+								onMouseDown={(event) => event.preventDefault()}
+								onClick={() => {
+									setSearchDraft("");
+									setSearchExpanded(false);
+								}}
+								title="Clear search"
+								aria-label="Clear search"
+							>
+								<X size={12} />
+							</button>
+						) : null}
+					</label>
+				) : (
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="databaseToolbarChip databaseToolbarSearchButton"
+						onClick={() => setSearchExpanded(true)}
+						title="Search view"
+						aria-label="Search view"
+					>
+						<Search size={13} />
+					</Button>
+				)}
+				{groupColumns.length > 0 ? (
 					<label className="databaseToolbarGroupBy">
 						<span className="databaseToolbarGroupByLabel">Group by</span>
 						<select
 							className="databaseToolbarGroupBySelect"
-							value={groupColumnId ?? ""}
+							value={selectedGroupColumnId}
 							onChange={(event) =>
 								onGroupColumnIdChange(event.target.value || null)
 							}
 						>
+							{databaseView === "board" ? null : <option value="">None</option>}
 							{groupColumns.map((column) => (
 								<option key={column.id} value={column.id}>
 									{column.label}

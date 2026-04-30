@@ -82,6 +82,8 @@ pub struct DatabaseViewDefinition {
     #[serde(default = "default_database_layout")]
     pub layout: String,
     #[serde(default)]
+    pub search: String,
+    #[serde(default)]
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,

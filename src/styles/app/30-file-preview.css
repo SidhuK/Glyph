@@ -654,14 +654,60 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 5px 6px;
+	font-size: 11px;
 }
 
-.markdownEditorInfoLinkItem {
-	max-width: 100%;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	font-size: 11px;
+.linkedNotePreviewSheet {
+	position: fixed;
+	z-index: 2200;
+	width: min(360px, calc(100vw - 24px));
+	max-height: min(420px, calc(100vh - 24px));
+	display: flex;
+	flex-direction: column;
+	overflow: visible;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	background: var(--bg-secondary);
+	box-shadow: var(--shadow-lg);
+	color: var(--text-primary);
+}
+
+.linkedNotePreviewSheet::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 18px;
+	pointer-events: none;
+}
+
+.linkedNotePreviewSheet[data-side="right"]::before {
+	left: -18px;
+}
+
+.linkedNotePreviewSheet[data-side="left"]::before {
+	right: -18px;
+}
+
+:root[data-translucent-sidebar="true"] .linkedNotePreviewSheet {
+	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+}
+
+.linkedNotePreviewBody {
+	min-height: 0;
+	overflow: auto;
+	padding: 10px;
+}
+
+.linkedNotePreviewText {
+	margin: 0;
+	white-space: pre-wrap;
+	font: inherit;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary);
 }
 
 .markdownEditorPane .rfNodeNoteEditor {

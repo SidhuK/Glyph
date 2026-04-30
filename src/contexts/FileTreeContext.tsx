@@ -108,7 +108,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				setTagsError("");
 			}
 			const [nextTags, nextPeople] = await Promise.all([
-				invoke("tags_list", { limit: 250 }),
+				invoke("tags_list", { limit: 2000 }),
 				peopleEnabled
 					? invoke("people_list", { limit: 250 })
 					: Promise.resolve([] as PersonCount[]),

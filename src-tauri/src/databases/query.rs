@@ -444,6 +444,45 @@ fn string_cell(cell: &DatabaseCellValue) -> String {
     String::new()
 }
 
+fn row_matches_search(row: &DatabaseRow, search: &str) -> bool {
+    let terms = search
+        .split_whitespace()
+        .map(normalize_text)
+        .filter(|term| !term.is_empty())
+        .collect::<Vec<_>>();
+    if terms.is_empty() {
+        return true;
+    }
+
+    let mut text = vec![
+        row.title.as_str(),
+        row.note_path.as_str(),
+        row.folder.as_str(),
+        row.preview.as_str(),
+    ]
+    .join(" ");
+    if !row.tags.is_empty() {
+        text.push(' ');
+        text.push_str(&row.tags.join(" "));
+    }
+    if !row.linked_notes.is_empty() {
+        text.push(' ');
+        text.push_str(&row.linked_notes.join(" "));
+    }
+    for value in row
+        .properties
+        .values()
+        .map(string_cell)
+        .filter(|v| !v.is_empty())
+    {
+        text.push(' ');
+        text.push_str(&value);
+    }
+
+    let haystack = normalize_text(&text);
+    terms.iter().all(|term| haystack.contains(term))
+}
+
 fn parse_sort_number(value: &str) -> Option<f64> {
     let trimmed = value.trim();
     if trimmed.is_empty() {
@@ -826,6 +865,7 @@ pub fn query_database_rows(
     let mut rows = hydrate_rows_by_paths(&conn, &ids)?;
     let catalog = field_catalog(database, view);
     rows.retain(|row| row_matches_filters(row, &catalog, &view.filters));
+    rows.retain(|row| row_matches_search(row, &view.search));
     if !view.sorts.is_empty() {
         rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
         for sort in view.sorts.iter().rev() {
@@ -879,8 +919,8 @@ mod tests {
 
     use crate::index::schema::ensure_schema;
 
-    use super::super::types::{DatabaseColumn, DatabaseFilter, DatabaseRow};
-    use super::{row_matches_filters, tag_source_ids};
+    use super::super::types::{DatabaseCellValue, DatabaseColumn, DatabaseFilter, DatabaseRow};
+    use super::{row_matches_filters, row_matches_search, tag_source_ids};
 
     fn tags_column() -> DatabaseColumn {
         DatabaseColumn {
@@ -907,6 +947,46 @@ mod tests {
             linked_notes: Vec::new(),
             properties: BTreeMap::new(),
         }
+    }
+
+    #[test]
+    fn in_view_search_matches_core_row_text() {
+        let mut row = sample_row(vec!["projects/research"]);
+        row.title = "Launch Brief".to_string();
+        row.note_path = "projects/launch.md".to_string();
+        row.folder = "projects".to_string();
+        row.preview = "Collect customer interviews and launch notes.".to_string();
+        row.linked_notes = vec!["people/maya.md".to_string()];
+
+        assert!(row_matches_search(&row, "launch customer"));
+        assert!(row_matches_search(&row, "projects/research"));
+        assert!(row_matches_search(&row, "maya"));
+        assert!(!row_matches_search(&row, "missing"));
+    }
+
+    #[test]
+    fn in_view_search_matches_property_values() {
+        let mut row = sample_row(Vec::new());
+        row.properties.insert(
+            "status".to_string(),
+            DatabaseCellValue {
+                kind: "status".to_string(),
+                value_text: Some("In Review".to_string()),
+                value_bool: None,
+                value_list: Vec::new(),
+            },
+        );
+        row.properties.insert(
+            "owners".to_string(),
+            DatabaseCellValue {
+                kind: "tags".to_string(),
+                value_text: None,
+                value_bool: None,
+                value_list: vec!["Design".to_string(), "Product".to_string()],
+            },
+        );
+
+        assert!(row_matches_search(&row, "review product"));
     }
 
     #[test]

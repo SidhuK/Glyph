@@ -22,6 +22,21 @@ interface ColumnMenuEntry {
 	enabled: boolean;
 }
 
+const RESERVED_PROPERTY_KEYS = new Set([
+	"created",
+	"folder",
+	"glyph",
+	"linked_notes",
+	"path",
+	"tags",
+	"title",
+	"updated",
+]);
+
+function isReservedPropertyKey(key: string): boolean {
+	return RESERVED_PROPERTY_KEYS.has(key.trim().toLowerCase());
+}
+
 const builtInColumns: DatabaseColumn[] = [
 	{
 		id: "title",
@@ -142,19 +157,39 @@ export function DatabaseColumnDropdown({
 		[columnsById],
 	);
 
-	const propertyEntries = useMemo<ColumnMenuEntry[]>(
-		() =>
-			availableProperties.map((property) => {
-				const id = `property:${property.key}`;
-				const existing = columnsById.get(id);
-				return {
-					key: id,
-					column: existing ?? createPropertyColumn(property),
-					enabled: existing?.visible ?? false,
-				};
-			}),
-		[availableProperties, columnsById],
-	);
+	const propertyEntries = useMemo<ColumnMenuEntry[]>(() => {
+		const entriesById = new Map<string, ColumnMenuEntry>();
+		const seenKeys = new Set<string>();
+		for (const property of availableProperties) {
+			if (isReservedPropertyKey(property.key)) continue;
+			const propertyKey = property.key.trim().toLowerCase();
+			if (seenKeys.has(propertyKey)) continue;
+			seenKeys.add(propertyKey);
+			const id = `property:${property.key}`;
+			const existing = columnsById.get(id);
+			entriesById.set(id, {
+				key: id,
+				column: existing ?? createPropertyColumn(property),
+				enabled: existing?.visible ?? false,
+			});
+		}
+		for (const column of config.columns) {
+			if (
+				column.type !== "property" ||
+				!column.property_key ||
+				isReservedPropertyKey(column.property_key) ||
+				entriesById.has(column.id)
+			) {
+				continue;
+			}
+			entriesById.set(column.id, {
+				key: column.id,
+				column,
+				enabled: column.visible,
+			});
+		}
+		return [...entriesById.values()];
+	}, [availableProperties, columnsById, config.columns]);
 
 	const menuEntries = useMemo(
 		() => [...builtInEntries, ...propertyEntries],

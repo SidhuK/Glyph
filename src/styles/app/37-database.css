@@ -336,6 +336,70 @@
 	gap: 3px;
 }
 
+.databaseToolbarSearch {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	width: min(220px, 28vw);
+	min-width: 150px;
+	height: var(--database-control-height);
+	padding: 0 7px;
+	border: 1px solid var(--database-control-border);
+	border-radius: var(--database-control-radius);
+	background: var(--database-control-background);
+	color: var(--text-tertiary);
+	margin-right: 8px;
+	cursor: text;
+}
+
+.databaseToolbarSearchButton {
+	margin-right: 8px;
+}
+
+.databaseToolbarSearch:focus-within {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 50%,
+		var(--border-default)
+	);
+	color: var(--text-secondary);
+}
+
+.databaseToolbarSearchInput {
+	height: calc(var(--database-control-height) - 2px);
+	min-width: 0;
+	flex: 1 1 auto;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+	font-size: var(--text-xs);
+	color: var(--text-primary);
+}
+
+.databaseToolbarSearchInput:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.databaseToolbarSearchClear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	flex: 0 0 auto;
+}
+
+.databaseToolbarSearchClear:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
 .databaseFooterPath,
 .databaseCellEmpty {
 	color: var(--text-secondary);

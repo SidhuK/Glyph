@@ -4,7 +4,8 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { createDatabaseRowGroups } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
 import type {
 	DatabaseColumn,
@@ -29,6 +30,7 @@ interface DatabaseTableProps {
 	columns: DatabaseColumn[];
 	selectedRowPath: string | null;
 	activeSort: DatabaseSort | null;
+	groupColumn?: DatabaseColumn | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onToggleSort: (column: DatabaseColumn) => void;
@@ -52,17 +54,27 @@ interface DatabaseTableProps {
 const EMPTY_LANE_COLORS: Record<string, string> = {};
 
 function uniqueOptionValues(values: string[]): string[] {
-	const seen = new Set<string>();
-	const out: string[] = [];
+	const counts = new Map<string, { value: string; count: number }>();
 	for (const raw of values) {
 		const trimmed = raw.trim();
 		if (!trimmed) continue;
 		const key = trimmed.toLowerCase();
-		if (seen.has(key)) continue;
-		seen.add(key);
-		out.push(trimmed);
+		const existing = counts.get(key);
+		if (existing) {
+			existing.count += 1;
+			continue;
+		}
+		counts.set(key, { value: trimmed, count: 1 });
 	}
-	return out;
+	return [...counts.values()]
+		.sort(
+			(left, right) =>
+				right.count - left.count ||
+				left.value.localeCompare(right.value, undefined, {
+					sensitivity: "base",
+				}),
+		)
+		.map((entry) => entry.value);
 }
 
 function SortIndicator({
@@ -86,6 +98,7 @@ export function DatabaseTable({
 	columns,
 	selectedRowPath,
 	activeSort,
+	groupColumn = null,
 	onSelectRow,
 	onOpenRow,
 	onToggleSort,
@@ -200,6 +213,39 @@ export function DatabaseTable({
 
 	const resizingInfo = table.getState().columnSizingInfo;
 	const activeResizingColumnId = resizingInfo.isResizingColumn;
+	const rowGroups = useMemo(
+		() => createDatabaseRowGroups(rows, groupColumn),
+		[rows, groupColumn],
+	);
+	const displayRows = table.getRowModel().rows;
+	const rowsByPath = useMemo(
+		() => new Map(displayRows.map((row) => [row.original.note_path, row])),
+		[displayRows],
+	);
+	const hasGroups = groupColumn != null && rowGroups.length > 0;
+	const renderRow = (row: (typeof displayRows)[number], keyPrefix = "") => (
+		<TableRow
+			key={`${keyPrefix}${row.id}`}
+			data-state={
+				row.original.note_path === selectedRowPath ? "selected" : undefined
+			}
+			className="databaseRow"
+			onClick={() => onSelectRow(row.original.note_path)}
+		>
+			{row.getVisibleCells().map((cell) => (
+				<TableCell
+					key={cell.id}
+					style={{
+						width: cell.column.getSize(),
+						minWidth: cell.column.getSize(),
+					}}
+					className="databaseBodyCell"
+				>
+					{flexRender(cell.column.columnDef.cell, cell.getContext())}
+				</TableCell>
+			))}
+		</TableRow>
+	);
 
 	useEffect(() => {
 		if (!resizingColumnId) return;
@@ -259,32 +305,32 @@ export function DatabaseTable({
 					))}
 				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows.length > 0 ? (
-						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.id}
-								data-state={
-									row.original.note_path === selectedRowPath
-										? "selected"
-										: undefined
-								}
-								className="databaseRow"
-								onClick={() => onSelectRow(row.original.note_path)}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell
-										key={cell.id}
-										style={{
-											width: cell.column.getSize(),
-											minWidth: cell.column.getSize(),
-										}}
-										className="databaseBodyCell"
-									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
-									</TableCell>
-								))}
-							</TableRow>
-						))
+					{displayRows.length > 0 ? (
+						hasGroups ? (
+							rowGroups.map((group) => (
+								<Fragment key={group.id}>
+									<tr className="databaseGroupHeaderRow">
+										<td
+											colSpan={columns.length || 1}
+											className="databaseGroupCell"
+										>
+											<span className="databaseGroupLabel">{group.label}</span>
+											<span className="databaseGroupCount">
+												{group.rowCount}
+											</span>
+										</td>
+									</tr>
+									{group.rows
+										.map((row) => rowsByPath.get(row.note_path))
+										.filter(
+											(row): row is (typeof displayRows)[number] => row != null,
+										)
+										.map((row) => renderRow(row, `${group.id}:`))}
+								</Fragment>
+							))
+						) : (
+							displayRows.map((row) => renderRow(row))
+						)
 					) : (
 						<TableRow>
 							<TableCell
