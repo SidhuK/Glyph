@@ -41,6 +41,7 @@ import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 const DATABASE_CELL_PILL_GAP = 6;
+const DATABASE_CELL_TAG_SUGGESTION_LIMIT = 8;
 
 interface DatabaseCellProps {
 	row: DatabaseRow;
@@ -339,8 +340,9 @@ function DatabaseCellEditor({
 			if (query && !normalized.includes(query)) continue;
 			seenTags.add(normalized);
 			suggestions.push({ tag: normalized, count: 0 });
+			if (suggestions.length >= DATABASE_CELL_TAG_SUGGESTION_LIMIT) break;
 		}
-		return suggestions;
+		return suggestions.slice(0, DATABASE_CELL_TAG_SUGGESTION_LIMIT);
 	}, [availableTags, cellValue.value_list, tagDraft, valueOptions]);
 	const valueSuggestions = useMemo(() => {
 		if (!isListLike) return [];
