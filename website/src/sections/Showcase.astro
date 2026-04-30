@@ -1,19 +1,18 @@
 ---
+import { Picture } from "astro:assets";
 import showcaseAsset from "../../assets/imageforWebsite.png";
 
 const showcaseSizes = "(max-width: 1200px) 96vw, 1100px";
-const showcaseWidth = showcaseAsset.width;
-const showcaseHeight = showcaseAsset.height;
 ---
 
 <section class="showcase">
 	<div class="showcase-wrap">
-		<img
+		<Picture
 			class="showcase-img"
-			src={showcaseAsset.src}
+			src={showcaseAsset}
+			formats={["avif", "webp"]}
+			widths={[640, 960, 1200, 1600, showcaseAsset.width]}
 			sizes={showcaseSizes}
-			width={showcaseWidth}
-			height={showcaseHeight}
 			alt="Glyph app showcase"
 			loading="eager"
 			decoding="async"

@@ -10,6 +10,7 @@ interface Props {
 	preloadImage?: string;
 	preloadImageSizes?: string;
 	preloadImageSrcSet?: string;
+	preloadImageType?: string;
 	noIndex?: boolean;
 	jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 	bodyClass?: string;
@@ -18,7 +19,7 @@ interface Props {
 const defaultDescription =
 	"Glyph is a local-first desktop notebook for writing, connecting, and exploring ideas. Markdown, wikilinks, AI. Built with Tauri and Rust.";
 const defaultSocialImageAlt =
-	"Glyph for macOS shown on a soft neutral background with the line 'A quiet place for your thoughts and ideas'.";
+	"Glyph app icon next to the wordmark 'Glyph' and the tagline 'A quiet place for your thoughts and ideas.' on a dark background.";
 const twitterHandle = "@karat_sidhu";
 const {
 	title = "Glyph — A space to think",
@@ -28,6 +29,7 @@ const {
 	preloadImage,
 	preloadImageSizes,
 	preloadImageSrcSet,
+	preloadImageType,
 	noIndex = false,
 	jsonLd,
 	bodyClass,
@@ -73,7 +75,7 @@ const socialImageType =
 			<meta property="og:image" content={socialImageUrl} />
 			<meta property="og:image:secure_url" content={socialImageUrl} />
 			<meta property="og:image:width" content="1200" />
-			<meta property="og:image:height" content="686" />
+			<meta property="og:image:height" content="630" />
 			<meta property="og:image:type" content={socialImageType} />
 			<meta property="og:image:alt" content={defaultSocialImageAlt} />
 			{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
@@ -126,6 +128,7 @@ const socialImageType =
 					href={preloadImage}
 					imagesrcset={preloadImageSrcSet}
 					imagesizes={preloadImageSizes}
+					type={preloadImageType}
 					fetchpriority="high"
 				/>
 			)

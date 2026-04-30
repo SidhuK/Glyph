@@ -60,39 +60,6 @@ export function initRevealAnimation(): void {
 	}
 }
 
-export function initModeToggle(): void {
-	const toggle =
-		document.querySelector<HTMLButtonElement>("[data-mode-toggle]");
-	const showcase = toggle?.closest<HTMLDivElement>(".showcase");
-	const showcaseImage =
-		showcase?.querySelector<HTMLImageElement>(".showcase-img");
-
-	if (!toggle || !showcase || !showcaseImage) return;
-
-	let isDarkMode = false;
-
-	const setShowcaseMode = (darkMode: boolean): void => {
-		const nextSrc = darkMode
-			? showcaseImage.dataset.darkSrc
-			: showcaseImage.dataset.lightSrc;
-		const nextAlt = darkMode
-			? showcaseImage.dataset.darkAlt
-			: showcaseImage.dataset.lightAlt;
-
-		if (nextSrc) showcaseImage.src = nextSrc;
-		showcaseImage.removeAttribute("srcset");
-		if (nextAlt) showcaseImage.alt = nextAlt;
-
-		showcase.classList.toggle("is-dark", darkMode);
-		toggle.setAttribute("aria-pressed", String(darkMode));
-	};
-
-	toggle.addEventListener("click", () => {
-		isDarkMode = !isDarkMode;
-		setShowcaseMode(isDarkMode);
-	});
-}
-
 function buildFlaps(container: HTMLSpanElement, word: string): void {
 	container.innerHTML = "";
 	for (const char of word) {

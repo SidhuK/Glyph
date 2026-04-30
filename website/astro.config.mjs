@@ -11,7 +11,7 @@ export default defineConfig({
 		mdx(),
 		critters(),
 		compress({
-			CSS: false,
+			CSS: true,
 			HTML: true,
 			JavaScript: true,
 			Image: false,
