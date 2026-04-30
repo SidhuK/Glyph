@@ -1,6 +1,44 @@
 {
 	"versions": [
 		{
+			"version": "0.2.18",
+			"publishedAt": "2026-04-30",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Linked note hover previews are here: hover over a wikilink to quickly see what the note is about"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Database search now works inside each view and stays saved with that view",
+						"Table and list views can now group notes into clear sections",
+						"Database property and value suggestions are cleaner when editing columns and cells",
+						"Saved column widths and view settings are now more reliable",
+						"Database grouping uses the existing saved view settings, so each view remembers how it is grouped",
+						"Backlinks, wikilinks, and linked notes in the sidebar now share the same clean, consistent style"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Tag picking and suggestions in table databases are now much more dependable"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Board cards have been simplified by removing markdown previews and extra detail text",
+						"Property suggestions are simpler now that count-based ranking has been removed",
+						"Board cards now use flatter styling, with gradients, lift effects, heavy drag shadows, and extra drop styling removed",
+						"Board lane titles and color swatches have cleaner, simpler hover states"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.17",
 			"publishedAt": "2026-04-29",
 			"sections": [
