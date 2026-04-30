@@ -76,6 +76,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - Make sure we dont over-engineer CSS and use default components as much as possible unless explicitly stated.
 - Make sure we always narrow the code and apply fixes instead of patching the code by adding un-necessary LOCs in places that it doesn't need.
 - NEVER make test files unless specifically requested by users.
+- For TSX files extract hooks/subcomponents when rendering, state, effects, and commands start mixing.
 
 ## Migration Policy
 

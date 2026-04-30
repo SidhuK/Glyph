@@ -29,6 +29,30 @@
 	display: block;
 }
 
+.databaseListGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-top: 8px;
+}
+
+.databaseListGroup:first-child {
+	padding-top: 0;
+}
+
+.databaseListGroup > .databaseGroupCell {
+	padding: 7px 8px 4px;
+	background: transparent;
+}
+
+.databaseListGroupRows {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
 .databaseListRow {
 	display: grid;
 	grid-template-columns: minmax(140px, 1fr) minmax(0, auto) minmax(0, auto);
@@ -144,16 +168,11 @@
 	flex-direction: column;
 	min-height: 0;
 	height: auto;
-	border-radius: 18px;
+	border-radius: var(--database-radius-lg);
 	border: none;
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary)),
-		color-mix(in srgb, var(--database-tone) 5.5%, var(--bg-secondary))
-	);
+	background: color-mix(in srgb, var(--database-tone) 6%, var(--bg-secondary));
 	box-shadow: none;
-	transition: background-color 140ms ease, box-shadow 140ms ease, transform
-		140ms ease;
+	transition: background-color 140ms ease, outline-color 140ms ease;
 }
 
 .databaseBoardLane[data-show-column-color="false"] {
@@ -161,20 +180,13 @@
 }
 
 .databaseBoardLane[data-active="true"] {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--database-tone) 10.5%, var(--bg-secondary)),
-		color-mix(in srgb, var(--database-tone) 7.5%, var(--bg-secondary))
-	);
-	box-shadow: 0 8px 18px
-		color-mix(in srgb, var(--database-tone) 8%, transparent);
-	transform: translateY(-1px);
+	background: color-mix(in srgb, var(--database-tone) 9%, var(--bg-secondary));
+	outline: 1px solid color-mix(in srgb, var(--database-tone) 24%, transparent);
 }
 
 .databaseBoardLane[data-show-column-color="false"][data-active="true"] {
-	background: transparent;
-	box-shadow: 0 8px 18px
-		color-mix(in srgb, var(--border-light) 18%, transparent);
+	background: var(--bg-hover);
+	outline-color: color-mix(in srgb, var(--border-default) 70%, transparent);
 }
 
 .databaseBoardLaneHeader {
@@ -271,15 +283,12 @@
 	line-height: 1;
 	color: inherit;
 	white-space: nowrap;
-	background: color-mix(in srgb, var(--database-tone) 91%, var(--bg-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent), 0 1px
-		2px color-mix(in srgb, var(--database-tone) 14%, transparent);
-	transition: transform 140ms ease, filter 140ms ease;
+	background: color-mix(in srgb, var(--database-tone) 88%, var(--bg-primary));
+	transition: background-color 140ms ease;
 }
 
 .databaseBoardLaneTitleButton:hover {
-	filter: brightness(1.02);
-	transform: translateY(-1px);
+	background: color-mix(in srgb, var(--database-tone) 82%, var(--bg-primary));
 }
 
 .databaseBoardLaneBody {
@@ -304,11 +313,7 @@
 	padding: 11px 10px 10px;
 	border: none;
 	border-radius: var(--database-radius-md);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary)) 100%
-	);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 	color: inherit;
 	cursor: pointer;
 	font: inherit;
@@ -316,50 +321,32 @@
 	justify-content: flex-start;
 	white-space: normal;
 	line-height: normal;
-	box-shadow: 0 1px 2px color-mix(in srgb, black 4%, transparent);
 	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
-	transition: background-color 120ms ease, box-shadow 120ms ease, outline-color
-		120ms ease, transform 120ms ease;
+	transition: background-color 120ms ease, outline-color 120ms ease, opacity
+		120ms ease;
 	overflow: hidden;
 	user-select: none;
 	-webkit-user-select: none;
 	-webkit-user-drag: none;
 }
 
-.databaseBoardCard[data-draggable="true"] {
-	cursor: pointer;
-}
-
 .databaseBoardCard[data-dragging="true"] {
-	opacity: 0.76;
-	cursor: pointer;
-	box-shadow: 0 16px 36px color-mix(in srgb, black 16%, transparent);
-	outline-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
-	transform: translateY(-3px) scale(1.01);
+	opacity: 0.7;
+	outline-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
 }
 
 .databaseBoardCard:hover {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-hover) 94%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
-	);
-	box-shadow: 0 8px 20px color-mix(in srgb, black 8%, transparent);
-	outline-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-	transform: translateY(-1px);
+	background: var(--bg-hover);
+	outline-color: color-mix(in srgb, var(--text-primary) 16%, transparent);
 }
 
 .databaseBoardCard[data-state="selected"] {
-	box-shadow: 0 10px 24px
-		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
-	outline: 1.5px solid
-		color-mix(in srgb, var(--interactive-accent) 48%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-primary)
 	);
-	transform: translateY(-1px);
+	outline-color: color-mix(in srgb, var(--interactive-accent) 46%, transparent);
 }
 
 .databaseBoardCardTitle {
@@ -406,36 +393,12 @@
 	width: 24px;
 	height: 12px;
 	opacity: 0.9;
-	transition: opacity 120ms ease, transform 120ms ease;
+	transition: opacity 120ms ease;
 }
 
 .databaseBoardCard:hover .databaseBoardCardTaskProgress,
 .databaseBoardCard[data-state="selected"] .databaseBoardCardTaskProgress {
 	opacity: 1;
-	transform: translateY(-0.5px);
-}
-
-.databaseBoardCardPreview {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	overflow: hidden;
-	font-size: 0.76rem;
-	line-height: 1.42;
-	color: var(--text-secondary);
-	white-space: normal;
-	overflow-wrap: anywhere;
-	max-height: calc(1.42em * 3);
-}
-
-.databaseBoardCardPreviewLine {
-	display: block;
-	line-height: inherit;
-}
-
-.databaseBoardCardPreview.is-placeholder {
-	color: var(--text-tertiary);
-	font-style: italic;
 }
 
 .databaseBoardCardTags {
@@ -479,46 +442,6 @@
 
 .databaseBoardTag .databaseTagPillIcon {
 	display: none;
-}
-
-.databaseBoardCardDetails {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	min-width: 0;
-	padding-top: 0;
-	flex: 0 0 auto;
-}
-
-.databaseBoardCardDetail {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.databaseBoardCardDetailLabel {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	height: 20px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
-	color: var(--text-tertiary);
-}
-
-.databaseBoardCardDetailValue {
-	min-width: 0;
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
-	font-size: 0.7rem;
-	line-height: 1.25;
-	color: var(--text-secondary);
-	overflow: hidden;
-	white-space: normal;
 }
 
 .databaseBoardCardFooter {

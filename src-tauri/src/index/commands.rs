@@ -739,18 +739,24 @@ pub async fn calendar_query_range(
 pub async fn tags_list(
     state: State<'_, SpaceState>,
     limit: Option<u32>,
+    offset: Option<u32>,
 ) -> Result<Vec<TagCount>, String> {
     let root = state.current_root()?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
+    let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
         let conn = open_db(&root)?;
-        list_tags(&conn, limit)
+        list_tags(&conn, limit, offset)
     })
     .await
     .map_err(|e| e.to_string())?
 }
 
-fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, String> {
+fn list_tags(
+    conn: &rusqlite::Connection,
+    limit: i64,
+    offset: i64,
+) -> Result<Vec<TagCount>, String> {
     let mut stmt = conn
         .prepare(
             "SELECT tag,
@@ -761,10 +767,12 @@ fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, S
              WHERE tag NOT LIKE 'people/%'
              GROUP BY tag
              ORDER BY tag ASC
-             LIMIT ?",
+             LIMIT ? OFFSET ?",
         )
         .map_err(|e| e.to_string())?;
-    let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(rusqlite::params![limit, offset])
+        .map_err(|e| e.to_string())?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
         let tag = row.get::<_, String>(0).map_err(|e| e.to_string())?;
@@ -783,18 +791,24 @@ fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, S
 pub async fn people_list(
     state: State<'_, SpaceState>,
     limit: Option<u32>,
+    offset: Option<u32>,
 ) -> Result<Vec<PersonCount>, String> {
     let root = state.current_root()?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
+    let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<PersonCount>, String> {
         let conn = open_db(&root)?;
-        list_people(&conn, limit)
+        list_people(&conn, limit, offset)
     })
     .await
     .map_err(|e| e.to_string())?
 }
 
-fn list_people(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<PersonCount>, String> {
+fn list_people(
+    conn: &rusqlite::Connection,
+    limit: i64,
+    offset: i64,
+) -> Result<Vec<PersonCount>, String> {
     if !people_mentions_as_tags_enabled() {
         return Ok(Vec::new());
     }
@@ -805,11 +819,15 @@ fn list_people(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<PersonCoun
              WHERE tag LIKE ? AND is_explicit = 1
              GROUP BY tag
              ORDER BY tag ASC
-             LIMIT ?",
+             LIMIT ? OFFSET ?",
         )
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
-        .query(rusqlite::params![format!("{PEOPLE_TAG_NAMESPACE}%"), limit])
+        .query(rusqlite::params![
+            format!("{PEOPLE_TAG_NAMESPACE}%"),
+            limit,
+            offset
+        ])
         .map_err(|e| e.to_string())?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -863,7 +881,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50).unwrap();
+        let tags = list_tags(&conn, 50, 0).unwrap();
         assert_eq!(tags.len(), 3);
 
         let root = tags.iter().find(|tag| tag.tag == "work").unwrap();
@@ -908,13 +926,13 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50).unwrap();
+        let tags = list_tags(&conn, 50, 0).unwrap();
         assert_eq!(
             tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(),
             vec!["work"]
         );
 
-        let people = list_people(&conn, 50).unwrap();
+        let people = list_people(&conn, 50, 0).unwrap();
         assert_eq!(people.len(), 1);
         assert_eq!(people[0].handle, "alice");
         assert_eq!(people[0].count, 1);

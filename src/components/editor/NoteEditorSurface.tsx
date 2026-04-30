@@ -601,7 +601,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 								<button
 									key={item.id}
 									type="button"
-									className="editorBacklinkInline"
+									className="wikiLink"
+									data-target={item.id}
 									onClick={() =>
 										dispatchWikiLinkClick({
 											raw: `[[${item.id}]]`,
@@ -613,14 +614,17 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 										})
 									}
 								>
+									<span className="wikiLinkIcon" aria-hidden="true" />
 									{item.title || item.id}
 								</button>
 							) : (
 								<span
 									key={item.id}
-									className="editorBacklinkInline"
+									className="wikiLink"
+									data-target={item.id}
 									aria-disabled
 								>
+									<span className="wikiLinkIcon" aria-hidden="true" />
 									{item.title || item.id}
 								</span>
 							),

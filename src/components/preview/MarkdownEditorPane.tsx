@@ -57,6 +57,7 @@ import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import type { NoteInlineEditorMode } from "../editor/types";
 import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
 import { Button } from "../ui/shadcn/button";
+import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
 	clearMarkdownDocCache,
@@ -104,6 +105,10 @@ function noteLabelFromPath(path: string): string {
 	return tail.endsWith(".md") ? tail.slice(0, -3) : tail;
 }
 
+function noteLinkLabel(label: string | null | undefined, fallbackPath: string) {
+	return label?.trim() || noteLabelFromPath(fallbackPath);
+}
+
 function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	const out = new Map<string, LinkedNoteItem>();
 
@@ -114,7 +119,7 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 		const target = parsed.target.trim();
 		if (!target) continue;
 		const existing = out.get(target);
-		const nextLabel = parsed.alias?.trim() || parsed.target;
+		const nextLabel = noteLinkLabel(parsed.alias, target);
 		if (!existing || existing.label === existing.id) {
 			out.set(target, {
 				id: target,
@@ -147,7 +152,7 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 		const withoutFragment = href.split("#")[0]?.split("?")[0]?.trim() ?? "";
 		if (!withoutFragment) continue;
 		const existing = out.get(withoutFragment);
-		const nextLabel = linkText || noteLabelFromPath(withoutFragment);
+		const nextLabel = noteLinkLabel(linkText, withoutFragment);
 		if (!existing || existing.label === existing.id) {
 			out.set(withoutFragment, {
 				id: withoutFragment,
@@ -257,7 +262,7 @@ export function MarkdownEditorPane({
 			if (!id) continue;
 			merged.set(id, {
 				id,
-				label: item.title?.trim() || noteLabelFromPath(id),
+				label: noteLinkLabel(item.title, id),
 			});
 		}
 
@@ -1074,6 +1079,7 @@ export function MarkdownEditorPane({
 				saveLabel={saveSignal.label}
 				onClose={() => setInfoPanelOpen(false)}
 			/>
+			<LinkedNotePreviewSheet />
 
 			<LocalNoteGraphDialog
 				open={localGraphOpen}

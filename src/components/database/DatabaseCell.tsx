@@ -23,7 +23,10 @@ import {
 } from "../../lib/statusProperties";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
-import { normalizeTagToken } from "../editor/noteProperties/utils";
+import {
+	normalizeTagDraftPrefix,
+	normalizeTagToken,
+} from "../editor/noteProperties/utils";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
 import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import {
@@ -38,6 +41,7 @@ import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 const DATABASE_CELL_PILL_GAP = 6;
+const DATABASE_CELL_TAG_SUGGESTION_LIMIT = 8;
 
 interface DatabaseCellProps {
 	row: DatabaseRow;
@@ -305,10 +309,41 @@ function DatabaseCellEditor({
 				.map((value) => normalizeTagToken(value))
 				.filter((value): value is string => Boolean(value)),
 		);
-		return buildDatabaseTagPickerOptions(availableTags, tagDraft)
-			.filter(({ tag }) => !selectedTags.has(tag))
-			.slice(0, 8);
-	}, [availableTags, cellValue.value_list, tagDraft]);
+		const seenTags = new Set<string>();
+		const query = normalizeTagDraftPrefix(tagDraft);
+		const suggestions = buildDatabaseTagPickerOptions(availableTags, tagDraft)
+			.filter(({ tag }) => {
+				const normalized = normalizeTagToken(tag);
+				if (
+					!normalized ||
+					selectedTags.has(normalized) ||
+					seenTags.has(normalized)
+				) {
+					return false;
+				}
+				seenTags.add(normalized);
+				return true;
+			})
+			.map(({ tag, count }) => ({
+				tag: normalizeTagToken(tag) ?? tag,
+				count,
+			}));
+		for (const value of valueOptions) {
+			const normalized = normalizeTagToken(value);
+			if (
+				!normalized ||
+				selectedTags.has(normalized) ||
+				seenTags.has(normalized)
+			) {
+				continue;
+			}
+			if (query && !normalized.includes(query)) continue;
+			seenTags.add(normalized);
+			suggestions.push({ tag: normalized, count: 0 });
+			if (suggestions.length >= DATABASE_CELL_TAG_SUGGESTION_LIMIT) break;
+		}
+		return suggestions.slice(0, DATABASE_CELL_TAG_SUGGESTION_LIMIT);
+	}, [availableTags, cellValue.value_list, tagDraft, valueOptions]);
 	const valueSuggestions = useMemo(() => {
 		if (!isListLike) return [];
 		const query = valueDraft.trim().toLowerCase();

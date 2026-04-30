@@ -194,7 +194,8 @@ export function NotesInfoSidebar({
 								<button
 									key={item.id}
 									type="button"
-									className="editorBacklinkInline markdownEditorInfoLinkItem"
+									className="wikiLink"
+									data-target={item.id}
 									onClick={() =>
 										dispatchWikiLinkClick({
 											raw: `[[${item.id}]]`,
@@ -207,6 +208,7 @@ export function NotesInfoSidebar({
 									}
 									title={item.id}
 								>
+									<span className="wikiLinkIcon" aria-hidden="true" />
 									{item.label}
 								</button>
 							))}
@@ -222,7 +224,8 @@ export function NotesInfoSidebar({
 								<button
 									key={`${item.kind}:${item.id}`}
 									type="button"
-									className="editorBacklinkInline markdownEditorInfoLinkItem"
+									className="wikiLink"
+									data-target={item.kind === "wiki" ? item.id : undefined}
 									onClick={() => {
 										if (item.kind === "wiki") {
 											dispatchWikiLinkClick({
@@ -242,6 +245,7 @@ export function NotesInfoSidebar({
 									}}
 									title={item.id}
 								>
+									<span className="wikiLinkIcon" aria-hidden="true" />
 									{item.label}
 								</button>
 							))}

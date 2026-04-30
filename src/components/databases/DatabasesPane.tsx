@@ -78,6 +78,8 @@ interface DatabasesPaneProps {
 
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
+const MIN_DATABASE_COLUMN_WIDTH = 120;
+const MAX_DATABASE_COLUMN_WIDTH = 900;
 
 function fileNameFromTitle(notePath: string, nextTitle: string): string {
 	const currentName = notePath.split("/").pop()?.trim() || "Untitled.md";
@@ -103,6 +105,7 @@ function currentConfig(
 		new_note: database.new_note,
 		view: {
 			layout: view.layout,
+			search: view.search ?? "",
 			board_group_by: view.grouping?.column_id ?? null,
 			board_lane_colors: view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
 			board_lane_order: view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
@@ -127,6 +130,7 @@ function replaceCurrentView(
 				? {
 						...view,
 						layout: config.view.layout,
+						search: config.view.search ?? "",
 						grouping: config.view.board_group_by
 							? {
 									column_id: config.view.board_group_by,
@@ -359,6 +363,14 @@ function DatabasesPaneContent({
 		[activeConfig?.columns],
 	);
 
+	const activeGroupColumn = useMemo(
+		() =>
+			groupColumns.find(
+				(column) => column.id === activeConfig?.view.board_group_by,
+			) ?? null,
+		[groupColumns, activeConfig?.view.board_group_by],
+	);
+
 	const visibleColumns = useMemo(
 		() => activeConfig?.columns.filter((column) => column.visible) ?? [],
 		[activeConfig?.columns],
@@ -497,7 +509,10 @@ function DatabasesPaneContent({
 	const handleResizeColumn = useCallback(
 		(columnId: string, width: number) => {
 			if (!activeConfig) return;
-			const nextWidth = Math.max(120, Math.round(width));
+			const nextWidth = Math.min(
+				MAX_DATABASE_COLUMN_WIDTH,
+				Math.max(MIN_DATABASE_COLUMN_WIDTH, Math.round(width)),
+			);
 			const currentWidth =
 				activeConfig.columns.find((column) => column.id === columnId)?.width ??
 				null;
@@ -687,6 +702,7 @@ function DatabasesPaneContent({
 					id: nextViewId,
 					name: nextName,
 					layout: "table",
+					search: "",
 					icon: null,
 					color: null,
 					columns: document.database.views[0]?.columns ?? [
@@ -1106,6 +1122,13 @@ function DatabasesPaneContent({
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
 					) : null}
+					{activeConfig.filters.length > 0 ? (
+						<div className="databaseNotice databaseNoticeInfo">
+							Filters only check database fields, tags, metadata, and
+							frontmatter/properties. Use source Search or in-view search to
+							match note body text.
+						</div>
+					) : null}
 					{rowsLoading ? (
 						<div className="databaseLoadingState">Loading rows…</div>
 					) : activeConfig.view.layout === "board" ? (
@@ -1168,6 +1191,7 @@ function DatabasesPaneContent({
 					) : activeConfig.view.layout === "list" ? (
 						<DatabaseList
 							rows={rows}
+							groupColumn={activeGroupColumn}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
@@ -1183,6 +1207,7 @@ function DatabasesPaneContent({
 							activeSort={
 								(activeConfig.sorts[0] as DatabaseSort | null) ?? null
 							}
+							groupColumn={activeGroupColumn}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onToggleSort={(column) =>

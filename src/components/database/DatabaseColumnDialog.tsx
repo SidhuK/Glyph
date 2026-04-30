@@ -22,6 +22,21 @@ interface ColumnMenuEntry {
 	enabled: boolean;
 }
 
+const RESERVED_PROPERTY_KEYS = new Set([
+	"created",
+	"folder",
+	"glyph",
+	"linked_notes",
+	"path",
+	"tags",
+	"title",
+	"updated",
+]);
+
+function isReservedPropertyKey(key: string): boolean {
+	return RESERVED_PROPERTY_KEYS.has(key.trim().toLowerCase());
+}
+
 const builtInColumns: DatabaseColumn[] = [
 	{
 		id: "title",
@@ -102,6 +117,14 @@ export function DatabaseColumnDropdown({
 		() => new Map(config.columns.map((column) => [column.id, column])),
 		[config.columns],
 	);
+	const propertyColumnsByKey = useMemo(() => {
+		const entries = new Map<string, DatabaseColumn>();
+		for (const column of config.columns) {
+			if (column.type !== "property" || !column.property_key) continue;
+			entries.set(column.property_key.trim().toLowerCase(), column);
+		}
+		return entries;
+	}, [config.columns]);
 
 	const updateColumns = async (
 		updater: (columns: DatabaseColumn[]) => DatabaseColumn[],
@@ -142,19 +165,45 @@ export function DatabaseColumnDropdown({
 		[columnsById],
 	);
 
-	const propertyEntries = useMemo<ColumnMenuEntry[]>(
-		() =>
-			availableProperties.map((property) => {
-				const id = `property:${property.key}`;
-				const existing = columnsById.get(id);
-				return {
-					key: id,
-					column: existing ?? createPropertyColumn(property),
-					enabled: existing?.visible ?? false,
-				};
-			}),
-		[availableProperties, columnsById],
-	);
+	const propertyEntries = useMemo<ColumnMenuEntry[]>(() => {
+		const entriesById = new Map<string, ColumnMenuEntry>();
+		for (const property of availableProperties) {
+			if (isReservedPropertyKey(property.key)) continue;
+			const trimmedKey = property.key.trim();
+			const propertyKey = trimmedKey.toLowerCase();
+			const normalizedId = `property:${propertyKey}`;
+			if (entriesById.has(normalizedId)) continue;
+			const id = `property:${trimmedKey}`;
+			const existing =
+				columnsById.get(normalizedId) ??
+				columnsById.get(id) ??
+				propertyColumnsByKey.get(propertyKey);
+			entriesById.set(normalizedId, {
+				key: normalizedId,
+				column:
+					existing ?? createPropertyColumn({ ...property, key: trimmedKey }),
+				enabled: existing?.visible ?? false,
+			});
+		}
+		for (const column of config.columns) {
+			const normalized = column.property_key?.trim().toLowerCase() ?? "";
+			const normalizedId = `property:${normalized}`;
+			if (
+				column.type !== "property" ||
+				!column.property_key ||
+				isReservedPropertyKey(column.property_key) ||
+				entriesById.has(normalizedId)
+			) {
+				continue;
+			}
+			entriesById.set(normalizedId, {
+				key: normalizedId,
+				column,
+				enabled: column.visible,
+			});
+		}
+		return [...entriesById.values()];
+	}, [availableProperties, columnsById, config.columns, propertyColumnsByKey]);
 
 	const menuEntries = useMemo(
 		() => [...builtInEntries, ...propertyEntries],
