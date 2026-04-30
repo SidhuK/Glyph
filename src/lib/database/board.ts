@@ -218,20 +218,19 @@ export function createDatabaseRowGroups(
 
 	const groups = new Map<string, DatabaseRowGroup>();
 	for (const row of rows) {
-		for (const laneId of boardLaneIdsForRow(row, column)) {
-			const existing = groups.get(laneId);
-			if (existing) {
-				existing.rows.push(row);
-				existing.rowCount += 1;
-				continue;
-			}
-			groups.set(laneId, {
-				id: laneId,
-				label: groupLabel(column, laneId),
-				rowCount: 1,
-				rows: [row],
-			});
+		const laneId = boardLaneIdForRow(row, column);
+		const existing = groups.get(laneId);
+		if (existing) {
+			existing.rows.push(row);
+			existing.rowCount += 1;
+			continue;
 		}
+		groups.set(laneId, {
+			id: laneId,
+			label: groupLabel(column, laneId),
+			rowCount: 1,
+			rows: [row],
+		});
 	}
 
 	const filledGroups = [...groups.values()].filter(

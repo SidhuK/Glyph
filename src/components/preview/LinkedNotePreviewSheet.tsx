@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { parseNotePreview } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
+import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 
 interface Position {
 	left: number;
@@ -19,6 +20,7 @@ type PointerPosition = Position;
 
 interface PreviewState {
 	target: string;
+	relPath: string;
 	content: string;
 	error: string;
 	loading: boolean;
@@ -191,6 +193,7 @@ export function LinkedNotePreviewSheet() {
 				if (requestIdRef.current !== requestId) return;
 				setPreview({
 					target,
+					relPath: "",
 					content: "",
 					error: "",
 					loading: true,
@@ -212,6 +215,7 @@ export function LinkedNotePreviewSheet() {
 						if (requestIdRef.current !== requestId) return;
 						setPreview({
 							target,
+							relPath,
 							content,
 							error: "",
 							loading: false,
@@ -222,6 +226,7 @@ export function LinkedNotePreviewSheet() {
 						if (requestIdRef.current !== requestId) return;
 						setPreview({
 							target,
+							relPath: "",
 							content: "",
 							error: e instanceof Error ? e.message : String(e),
 							loading: false,
@@ -329,9 +334,21 @@ export function LinkedNotePreviewSheet() {
 					<div className="markdownEditorInfoEmpty">{preview.error}</div>
 				) : null}
 				{!preview.loading && !preview.error ? (
-					<pre className="linkedNotePreviewText">
-						{preview.content.trim() || "Empty note"}
-					</pre>
+					<div className="linkedNotePreviewText">
+						{preview.content.trim() ? (
+							<NoteInlineEditor
+								markdown={preview.content}
+								relPath={preview.relPath || preview.target}
+								mode="preview"
+								onChange={() => {}}
+								interactive={false}
+								showBacklinks={false}
+								deferHeavyFeatures
+							/>
+						) : (
+							<div className="markdownEditorInfoEmpty">Empty note</div>
+						)}
+					</div>
 				) : null}
 			</div>
 		</aside>,

@@ -173,6 +173,13 @@ describe("database board helpers", () => {
 		expect(groups[2]?.rows.map((row) => row.title)).toEqual(["Three"]);
 	});
 
+	it("groups multi-value rows into only their first group", () => {
+		const groups = createDatabaseRowGroups([secondRow], tagsColumn);
+
+		expect(groups.map((group) => group.id)).toEqual(["swift"]);
+		expect(groups[0]?.rows.map((row) => row.title)).toEqual(["Two"]);
+	});
+
 	it("creates stable checkbox lanes including blank values", () => {
 		const lanes = createBoardLanes(rows, checkboxColumn);
 		expect(lanes.map((lane) => lane.label)).toEqual([

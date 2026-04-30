@@ -703,11 +703,27 @@
 
 .linkedNotePreviewText {
 	margin: 0;
-	white-space: pre-wrap;
 	font: inherit;
 	font-size: 12px;
 	line-height: 1.45;
 	color: var(--text-secondary);
+}
+
+.linkedNotePreviewText .rfNodeNoteEditor {
+	border: none;
+	border-radius: 0;
+	background: transparent;
+}
+
+.linkedNotePreviewText .rfNodeNoteEditorBody {
+	padding: 0;
+}
+
+.linkedNotePreviewText .ProseMirror {
+	min-height: 0;
+	padding: 0;
+	font-size: 12px;
+	line-height: 1.45;
 }
 
 .markdownEditorPane .rfNodeNoteEditor {
