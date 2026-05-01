@@ -6,8 +6,7 @@ import { downloadUrl } from "../lib/site";
 
 const changelog = getChangelogPageData(10);
 const pageTitle = "Glyph Changelog";
-const pageDescription =
-	"What shipped in Glyph and what's in progress.";
+const pageDescription = "What shipped in Glyph and what's in progress.";
 const repositoryUrl = changelog.repositoryUrl;
 
 function getCommitHref(hash: string): string | undefined {

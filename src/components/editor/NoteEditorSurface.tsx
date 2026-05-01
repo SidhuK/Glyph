@@ -148,6 +148,7 @@ export interface NoteEditorSurfaceProps {
 	onPointerDownCapture: (event: React.PointerEvent<HTMLDivElement>) => void;
 
 	selectionRibbon: SelectionRibbonPosition | null;
+	onExtractSelectionToNote?: () => void;
 
 	table: {
 		selected: SelectedTableState | null;
@@ -217,6 +218,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	hostRef,
 	onPointerDownCapture,
 	selectionRibbon,
+	onExtractSelectionToNote,
 	table,
 	codeBlock,
 	task,
@@ -247,6 +249,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					<EditorRibbon
 						editor={editor}
 						canEdit={canEdit}
+						onExtractSelectionToNote={onExtractSelectionToNote}
 						style={{
 							top: `${selectionRibbon.top}px`,
 							left: `${selectionRibbon.left}px`,

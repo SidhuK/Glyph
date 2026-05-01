@@ -1,7 +1,7 @@
 import {
 	AiEditingIcon,
-	BadgeInfoIcon,
 	FlowConnectionIcon,
+	InformationCircleIcon,
 	SlidersHorizontalIcon,
 	SourceCodeIcon,
 } from "@hugeicons/core-free-icons";
@@ -54,7 +54,10 @@ import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
-import type { NoteInlineEditorMode } from "../editor/types";
+import type {
+	ExtractToNoteActions,
+	NoteInlineEditorMode,
+} from "../editor/types";
 import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
 import { Button } from "../ui/shadcn/button";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
@@ -70,6 +73,7 @@ interface MarkdownEditorPaneProps {
 	onDirtyChange?: (dirty: boolean) => void;
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
+	extractToNoteActions?: ExtractToNoteActions;
 }
 
 type SyncPulse = "saved" | "reloaded" | null;
@@ -170,6 +174,7 @@ export function MarkdownEditorPane({
 	onDirtyChange,
 	initialDoc = null,
 	initialError = "",
+	extractToNoteActions,
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
@@ -921,7 +926,7 @@ export function MarkdownEditorPane({
 										}}
 									>
 										<HugeiconsIcon
-											icon={BadgeInfoIcon}
+											icon={InformationCircleIcon}
 											size={12}
 											strokeWidth={0.9}
 										/>
@@ -1049,6 +1054,7 @@ export function MarkdownEditorPane({
 							}}
 							onFrontmatterCommit={runAutosave}
 							onEditorReady={setTocEditor}
+							extractToNoteActions={extractToNoteActions}
 						/>
 					</div>
 				</div>

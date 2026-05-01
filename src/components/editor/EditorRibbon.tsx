@@ -1,3 +1,5 @@
+import { NoteAddIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { type CSSProperties, memo } from "react";
@@ -17,6 +19,7 @@ interface EditorRibbonProps {
 	editor: Editor;
 	canEdit: boolean;
 	className?: string;
+	onExtractSelectionToNote?: () => void;
 	style?: CSSProperties;
 }
 
@@ -52,6 +55,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 	editor,
 	canEdit,
 	className,
+	onExtractSelectionToNote,
 	style,
 }: EditorRibbonProps) {
 	const focusChain = () =>
@@ -114,6 +118,20 @@ export const EditorRibbon = memo(function EditorRibbon({
 						focusChain={focusChain}
 						preventMouseDown={preventMouseDown}
 					/>
+					{onExtractSelectionToNote ? (
+						<m.button
+							type="button"
+							className="ribbonBtn"
+							title="Extract to note"
+							disabled={!canEdit}
+							onMouseDown={preventMouseDown}
+							onClick={() => canEdit && onExtractSelectionToNote()}
+							whileTap={canEdit ? { scale: 0.97 } : undefined}
+							transition={springPresets.snappy}
+						>
+							<HugeiconsIcon icon={NoteAddIcon} size={15} strokeWidth={0.9} />
+						</m.button>
+					) : null}
 					<span className="ribbonDivider" />
 					<RibbonButtonList
 						buttons={getHeadingButtons(editor, runCommand, focusChain)}

@@ -28,6 +28,7 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
+import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
@@ -40,6 +41,7 @@ import {
 	getOffsetWithinAncestor,
 	isVisibleEditorHost,
 } from "./hooks/editorDomUtils";
+import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
@@ -168,6 +170,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onEditorReady,
 	onChange,
 	onFrontmatterCommit,
+	extractToNoteActions,
 }: NoteInlineEditorProps) {
 	const {
 		editor,
@@ -294,6 +297,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		mode,
 		onChange,
 	});
+	const extractToNote = useExtractSelectionToNote({
+		actions: extractToNoteActions,
+		canEdit,
+		editor,
+		hostRef: tiptapHostRef,
+		relPath,
+	});
 
 	useEffect(() => {
 		if (!editor || mode !== "rich") return;
@@ -371,6 +381,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 							.run();
 					case "divider":
 						return chain.setHorizontalRule().run();
+					case "extract_selection_to_note":
+						extractToNote.openExtractDialog();
+						return true;
 					case "callout_info":
 						return chain
 							.insertContent({
@@ -493,7 +506,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		return () => {
 			window.removeEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
 		};
-	}, [canEdit, editor, mode]);
+	}, [canEdit, editor, extractToNote.openExtractDialog, mode]);
 
 	useEffect(() => {
 		if (!onRegisterCalloutInserter) return;
@@ -951,6 +964,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						hostRef={handleTiptapHostRef}
 						onPointerDownCapture={handleEditorPointerDownCapture}
 						selectionRibbon={selectionRibbon}
+						onExtractSelectionToNote={
+							extractToNote.canExtractToNote
+								? extractToNote.openExtractDialog
+								: undefined
+						}
 						table={{
 							selected: selectedTable,
 							onControlMouseDown: preventTableControlMouseDown,
@@ -1031,6 +1049,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</div>
+			<ExtractToNoteDialog
+				state={extractToNote.dialogState}
+				onClose={extractToNote.closeExtractDialog}
+				onSubmit={extractToNote.submitExtractDialog}
+				onTitleChange={extractToNote.setExtractTitle}
+				onDestinationDirChange={extractToNote.setExtractDestinationDir}
+			/>
 			<Dialog
 				open={linkDialog !== null}
 				onOpenChange={(open) => {

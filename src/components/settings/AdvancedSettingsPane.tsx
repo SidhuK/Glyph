@@ -1,4 +1,4 @@
-import { BadgeInfoIcon } from "@hugeicons/core-free-icons";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useSpace } from "../../contexts";
@@ -68,7 +68,11 @@ function VimKeybindingsHelp() {
 					className="vimKeybindingsInfoButton"
 					aria-label="Vim keybindings help"
 				>
-					<HugeiconsIcon icon={BadgeInfoIcon} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						size={14}
+						strokeWidth={0.9}
+					/>
 				</button>
 			</PopoverTrigger>
 			<PopoverContent

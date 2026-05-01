@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import {
 	AiEditingIcon,
 	ChatAdd01Icon,
-	Logout01Icon,
+	Logout05Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -346,7 +346,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={Logout01Icon} size={13} strokeWidth={0.9} />
+						<HugeiconsIcon icon={Logout05Icon} size={13} strokeWidth={0.9} />
 					</Button>
 				</div>
 			</div>

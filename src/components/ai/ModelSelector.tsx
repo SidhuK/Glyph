@@ -1,4 +1,4 @@
-import { BadgeInfoIcon } from "@hugeicons/core-free-icons";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -320,7 +320,7 @@ export function ModelSelector({
 														aria-pressed={infoActive}
 													>
 														<HugeiconsIcon
-															icon={BadgeInfoIcon}
+															icon={InformationCircleIcon}
 															size={14}
 															strokeWidth={0.9}
 														/>

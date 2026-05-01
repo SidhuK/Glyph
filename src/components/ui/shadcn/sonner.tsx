@@ -3,7 +3,7 @@
 import {
 	Alert02Icon,
 	CheckCircle,
-	Info,
+	InformationCircleIcon,
 	LoaderCircle,
 	OctagonIcon,
 } from "@hugeicons/core-free-icons";
@@ -27,7 +27,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
 					/>
 				),
 				info: (
-					<HugeiconsIcon icon={Info} className="size-4" strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						className="size-4"
+						strokeWidth={0.9}
+					/>
 				),
 				warning: (
 					<HugeiconsIcon

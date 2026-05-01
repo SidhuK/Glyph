@@ -3,6 +3,20 @@ import type { Editor } from "@tiptap/core";
 export type NoteInlineEditorMode = "plain" | "rich" | "preview";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
+export interface CreateMarkdownFileOptions {
+	openParentDir?: string | null;
+	path: string;
+	text: string;
+}
+
+export interface ExtractToNoteActions {
+	createMarkdownFile: (
+		options: CreateMarkdownFileOptions,
+	) => Promise<string | null>;
+	openNote: (path: string) => Promise<void> | void;
+	openNoteInNewTab: (path: string) => Promise<void> | void;
+}
+
 export interface NoteInlineEditorProps {
 	markdown: string;
 	relPath?: string;
@@ -10,6 +24,7 @@ export interface NoteInlineEditorProps {
 	zenModeActive?: boolean;
 	onChange: (nextMarkdown: string) => void;
 	onFrontmatterCommit?: () => void;
+	extractToNoteActions?: ExtractToNoteActions;
 	interactive?: boolean;
 	showBacklinks?: boolean;
 	deferHeavyFeatures?: boolean;

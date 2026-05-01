@@ -9,14 +9,15 @@ type EditorActionCategory =
 	| "callout"
 	| "color"
 	| "highlight"
-	| "link";
+	| "link"
+	| "note";
 
 interface EditorActionDefinition {
 	id: EditorActionId;
 	label: string;
 	description: string;
 	category: EditorActionCategory;
-	menuId: string;
+	menuId?: string;
 }
 
 const BASE_EDITOR_ACTIONS: EditorActionDefinition[] = [
@@ -187,6 +188,12 @@ const BASE_EDITOR_ACTIONS: EditorActionDefinition[] = [
 		description: "Remove the current link from the selection.",
 		category: "link",
 		menuId: "editor.link_clear",
+	},
+	{
+		id: "extract_selection_to_note",
+		label: "Extract to Note",
+		description: "Create a note from the current selection.",
+		category: "note",
 	},
 	{
 		id: "color_clear",
