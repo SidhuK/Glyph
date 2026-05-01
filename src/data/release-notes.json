@@ -1,6 +1,25 @@
 {
 	"versions": [
 		{
+			"version": "0.2.19",
+			"publishedAt": "2026-05-01",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"Extract Selection to Note is now smoother for wikilink-heavy workflows: select text, turn it into a new note, and leave a clean wikilink behind in one focused motion",
+						"The editor ribbon now includes Extract to Note next to the link action, making it faster to turn important ideas into connected notes"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Several flashier icons across the app have been replaced with minimal, sleeker alternatives for a calmer Glyph workspace"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.18",
 			"publishedAt": "2026-04-30",
 			"sections": [
