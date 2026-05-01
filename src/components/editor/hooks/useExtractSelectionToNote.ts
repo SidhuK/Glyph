@@ -139,9 +139,18 @@ export function useExtractSelectionToNote({
 				})
 				.run();
 			if (!inserted) {
-				throw new Error(
-					"Created the note, but could not replace the selection.",
-				);
+				setDialogState(null);
+				toast.error("Note created, but selection was not replaced.", {
+					className: "extractToNoteToast",
+					description: finalTitle,
+					action: {
+						label: "Open",
+						onClick: () => {
+							void actions.openNote(createdPath);
+						},
+					},
+				});
+				return;
 			}
 			if (scrollHost) {
 				requestAnimationFrame(() => {
@@ -156,12 +165,6 @@ export function useExtractSelectionToNote({
 					label: "Open",
 					onClick: () => {
 						void actions.openNote(createdPath);
-					},
-				},
-				cancel: {
-					label: "New Tab",
-					onClick: () => {
-						void actions.openNoteInNewTab(createdPath);
 					},
 				},
 			});

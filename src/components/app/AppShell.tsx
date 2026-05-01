@@ -368,10 +368,18 @@ export function AppShell() {
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
+			if (!isMarkdownPath(path) && !isInAppPreviewable(path)) {
+				await openWorkspaceFile(path);
+				return;
+			}
+			if (tabs.some((tab) => tab.target === path)) {
+				await openWorkspaceFile(path);
+				return;
+			}
 			openBlankTab();
 			await openWorkspaceFile(path);
 		},
-		[openBlankTab, openWorkspaceFile],
+		[openBlankTab, openWorkspaceFile, tabs],
 	);
 
 	const openQuickNoteWindow = useCallback(() => {
