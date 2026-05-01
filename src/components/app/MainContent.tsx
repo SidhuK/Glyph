@@ -56,6 +56,10 @@ import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
+import type {
+	CreateMarkdownFileOptions,
+	ExtractToNoteActions,
+} from "../editor/types";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
@@ -252,6 +256,9 @@ function ContextualEmptyState({
 
 interface MainContentProps {
 	fileTree: {
+		createMarkdownFileAtPath: (
+			options: CreateMarkdownFileOptions,
+		) => Promise<string | null>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 		onRenameDir: (
 			path: string,
@@ -260,6 +267,7 @@ interface MainContentProps {
 		) => Promise<string | null>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
@@ -360,6 +368,7 @@ function DailyNotesSetupToast({
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenFile,
+	onOpenFileInNewTab,
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
@@ -682,10 +691,16 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			const initialDoc = getPrefetchedNote(viewerPath);
+			const extractToNoteActions = {
+				createMarkdownFile: fileTree.createMarkdownFileAtPath,
+				openNote: onOpenFile,
+				openNoteInNewTab: onOpenFileInNewTab,
+			} satisfies ExtractToNoteActions;
 			return (
 				<NotePane
 					relPath={viewerPath}
 					initialDoc={initialDoc}
+					extractToNoteActions={extractToNoteActions}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -713,6 +728,7 @@ export const MainContent = memo(function MainContent({
 		closeTab,
 		fileTree,
 		onOpenFile,
+		onOpenFileInNewTab,
 		onOpenDailyNotesSettings,
 		onCreateNote,
 		openDatabasesId,

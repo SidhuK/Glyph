@@ -485,3 +485,77 @@
 .editorLinkDialogActions {
 	margin-top: 4px;
 }
+
+.extractToNoteDialog {
+	max-width: min(440px, calc(100vw - 32px));
+	gap: 16px;
+	padding: 20px;
+	border-radius: var(--radius-lg);
+}
+
+.extractToNoteDialog [data-slot="dialog-close"] {
+	top: 18px;
+	right: 18px;
+}
+
+.extractToNoteHeader {
+	padding-right: 34px;
+	gap: 0;
+}
+
+.extractToNoteForm {
+	display: grid;
+	gap: 14px;
+}
+
+.extractToNoteField {
+	display: grid;
+	gap: 6px;
+}
+
+.extractToNoteLabel {
+	font-size: 0.75rem;
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+}
+
+.extractToNoteInput {
+	height: 38px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	box-shadow: none;
+}
+
+.extractToNoteFolderTrigger {
+	width: 100%;
+	max-width: none;
+	align-self: stretch;
+}
+
+.extractToNoteActions {
+	margin-top: 4px;
+}
+
+.extractToNoteToast[data-sonner-toast][data-styled="true"] {
+	gap: 10px;
+}
+
+.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-content] {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-title],
+.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-description] {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-button] {
+	height: 28px;
+	padding-inline: 10px;
+	margin-left: 0;
+	white-space: nowrap;
+}

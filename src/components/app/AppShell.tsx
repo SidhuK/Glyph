@@ -365,6 +365,15 @@ export function AppShell() {
 		[fileTree, openFileTab, setActiveDirPath],
 	);
 
+	const openWorkspaceFileInNewTab = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			openBlankTab();
+			await openWorkspaceFile(path);
+		},
+		[openBlankTab, openWorkspaceFile],
+	);
+
 	const openQuickNoteWindow = useCallback(() => {
 		void invoke("show_quick_note_window").catch((cause) => {
 			const message = cause instanceof Error ? cause.message : String(cause);
@@ -1320,6 +1329,7 @@ export function AppShell() {
 			<MainContent
 				fileTree={fileTree}
 				onOpenFile={openWorkspaceFile}
+				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
