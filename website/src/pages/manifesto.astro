@@ -3,7 +3,7 @@ import logoG from "../../assets/logo_g.PNG";
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Manifesto - Glyph" description="Why I built Glyph. A quiet place for your thoughts in a noisy world." bodyClass="has-dot-grid">
+<Layout title="Manifesto - Glyph" description="Why I built Glyph: a local-first markdown notes app for macOS." bodyClass="has-dot-grid">
 	<div class="manifesto-page">
 		<header class="manifesto-header">
 			<a href="/" class="manifesto-logo">
@@ -15,90 +15,82 @@ import Layout from "../layouts/Layout.astro";
 
 		<main class="manifesto-main">
 			<p class="manifesto-label">MANIFESTO</p>
-			<h1>Reclaiming your thoughts from the noise</h1>
+			<h1>Why I built Glyph</h1>
 
 			<div class="manifesto-body">
 				<section class="manifesto-section">
 					<p class="section-numeral">I</p>
-					<p>Where do your ideas go?</p>
+					<p>Where do your notes actually live?</p>
 					<p>
-						Into apps that sync to someone else's server. Into feeds that
-						rearrange your words for engagement. Into tools that lock your
-						thinking behind a subscription, an API call, a terms-of-service
-						update you never read.
+						Most note apps ship them to a server you don't own. Some rank
+						your words for engagement. Others lock your writing behind a
+						subscription you have to keep paying to read what you wrote
+						last year.
 					</p>
 					<p>
-						You opened a blank page to think. Somewhere along the way, thinking
-						became a product, and you became the input.
+						You wanted a blank page. The industry sold you a workflow.
 					</p>
 				</section>
 
 				<section class="manifesto-section">
 					<p class="section-numeral">II</p>
-					<p>Ideas need a home that belongs to you.</p>
+					<p>Notes belong on your machine.</p>
 					<p>
-						Somewhere without a platform underneath, a cloud overhead, or
-						a workspace with seventeen integrations and a Kanban board between
-						you and a blank page. A place as simple and direct as pen on paper,
-						except your paper can link to other paper, search itself, and never
-						run out of room.
+						In files you can open with any text editor. A markdown file
+						from 2010 still opens today. A note inside a defunct cloud
+						app does not.
 					</p>
 					<p>
-						Your notes should live on your machine, in files you can open with
-						anything, files that will outlast every app that ever claimed to
-						organize your life.
+						So Glyph keeps every note as a plain .md file in a folder
+						you choose, on a disk you own.
 					</p>
 				</section>
 
 				<section class="manifesto-section">
 					<p class="section-numeral">III</p>
-					<p>Good tools get out of the way.</p>
+					<p>A notebook should be quiet.</p>
 					<p>
-						A good notebook does not ping you. It does not suggest you upgrade,
-						collaborate, or share. It does not harvest your half-formed thoughts
-						to train a model. It sits quietly until you need it, and when you do,
-						it opens fast and stays steady.
+						It shouldn't ping you, push an upgrade, or feed your drafts
+						into someone's training set. It should open fast and hold
+						your words.
 					</p>
 					<p>
-						AI can sharpen thinking, when you control it. When you choose the
-						model, own the context, and can pull the plug without losing a word.
-						Intelligence should serve the writer, never surveil them.
+						You decide when AI helps. You pick the model. You can turn
+						it off and lose nothing.
 					</p>
 				</section>
 
 				<section class="manifesto-section">
 					<p class="section-numeral">IV</p>
-					<p>Complexity is a slow poison.</p>
+					<p>Less is harder.</p>
 					<p>
-						Every feature you do not need is friction you carry. Every toggle,
-						panel, and permission system is a small tax on your attention. The
-						tools that endure are the ones that do less, and do it so well you
-						forget they are there.
+						Every feature you don't use still costs you a toggle, a
+						panel, or a permission you have to dismiss. I'd rather ship
+						a small app that fits your workflow than a big one you have
+						to manage.
 					</p>
 					<p>
-						I would rather ship fewer things that feel right than many things
-						that feel busy.
+						So Glyph stays small on purpose.
 					</p>
 				</section>
 
 				<section class="manifesto-section">
 					<p class="section-numeral">V</p>
-					<p>Your freedom is already here.</p>
+					<p>You own the files.</p>
 					<p>
-						Markdown files on your disk. A local database only your machine
-						touches. Nothing between you and your files — no account, no
-						connection, no permission gate. If Glyph disappeared tomorrow, your
-						notes would still be yours. Readable, portable, complete.
+						Glyph keeps everything in markdown on your disk and indexes
+						it with a local SQLite database. Nothing leaves your machine
+						unless you ask. If I shut Glyph down tomorrow, every note
+						still opens in any editor.
 					</p>
 					<p>
-						That is the whole point, not a feature.
+						That's the point of the whole project.
 					</p>
 				</section>
 
 				<div class="manifesto-coda">
-					<p>Open the page.</p>
-					<p>Write the thought.</p>
-					<p>Own the words.</p>
+					<p>Open Glyph.</p>
+					<p>Your words stay yours.</p>
 				</div>
 			</div>
 		</main>
