@@ -2,7 +2,7 @@
 import logoG from "../../assets/logo_g.PNG";
 import Layout from "../layouts/Layout.astro";
 import { getChangelogPageData } from "../lib/changelog";
-import { downloadUrl } from "../lib/site";
+import { discordUrl, downloadUrl } from "../lib/site";
 
 const changelog = getChangelogPageData(10);
 const pageTitle = "Glyph Changelog";
@@ -28,6 +28,7 @@ function getTagHref(tag: string): string | undefined {
 			<nav class="nav">
 				<a href="/">Home</a>
 				<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
+				<a href={discordUrl} target="_blank" rel="noopener">Discord</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 			</nav>
 			<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Download</a>
@@ -166,6 +167,7 @@ function getTagHref(tag: string): string | undefined {
 					<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
 					<a href="/changelog">Changelog</a>
 					<a href="https://glyph.userjot.com/?cursor=1&order=top&limit=10" target="_blank" rel="noopener">Feedback</a>
+					<a href={discordUrl} target="_blank" rel="noopener">Discord</a>
 					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				</div>
 				<div class="footer-col">

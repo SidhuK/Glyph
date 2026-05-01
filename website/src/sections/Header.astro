@@ -1,6 +1,6 @@
 ---
 import logoG from "../../assets/logo_g.PNG";
-import { downloadUrl } from "../lib/site";
+import { discordUrl, downloadUrl } from "../lib/site";
 ---
 
 <header class="header">
@@ -13,6 +13,7 @@ import { downloadUrl } from "../lib/site";
 		<a href="#features">Features</a>
 		<a href="#pricing">Pricing</a>
 		<a href="/manifesto">Manifesto</a>
+		<a href={discordUrl} target="_blank" rel="noopener">Discord</a>
 	</nav>
 	<a href={downloadUrl} class="header-cta header-cta--desktop" target="_blank" rel="noopener">Download</a>
 	<button class="header-hamburger" type="button" aria-label="Toggle menu" data-hamburger>
@@ -27,5 +28,6 @@ import { downloadUrl } from "../lib/site";
 	<a href="#features">Features</a>
 	<a href="#pricing">Pricing</a>
 	<a href="/manifesto">Manifesto</a>
+	<a href={discordUrl} target="_blank" rel="noopener">Discord</a>
 	<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Download</a>
 </div>
