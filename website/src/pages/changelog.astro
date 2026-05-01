@@ -7,7 +7,7 @@ import { downloadUrl } from "../lib/site";
 const changelog = getChangelogPageData(10);
 const pageTitle = "Glyph Changelog";
 const pageDescription =
-	"Track what shipped in Glyph, what changed between releases, and what is currently in progress.";
+	"What shipped in Glyph and what's in progress.";
 const repositoryUrl = changelog.repositoryUrl;
 
 function getCommitHref(hash: string): string | undefined {
@@ -36,10 +36,9 @@ function getTagHref(tag: string): string | undefined {
 
 		<section class="hero">
 			<p class="label">CHANGELOG</p>
-			<h1>What’s new in Glyph,<br />and what’s coming next</h1>
+			<h1>What shipped,<br />and what's in progress</h1>
 			<p class="hero-sub">
-				Follow recent improvements, fixes, and polish as Glyph keeps getting
-				faster, cleaner, and more capable.
+				Recent commits, tagged releases, and the work I'm doing right now.
 			</p>
 		</section>
 
