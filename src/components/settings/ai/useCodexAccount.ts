@@ -1,5 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type AiProfile, invoke } from "../../../lib/tauri";
 import {
 	CODEX_RATE_LIMIT_REFRESH_MS,
@@ -27,6 +28,18 @@ interface CodexState {
 	loading: boolean;
 }
 
+const disconnectedState: CodexState = {
+	status: "disconnected",
+	email: null,
+	displayName: null,
+	authMode: null,
+	rateLimits: [],
+	error: "",
+	loading: false,
+};
+
+const codexAccountQueryKey = ["ai", "codex", "account"] as const;
+
 function dedupeRateLimits(
 	rateLimits: CodexRateLimitItem[],
 ): CodexRateLimitItem[] {
@@ -49,102 +62,70 @@ function dedupeRateLimits(
 	});
 }
 
+async function readCodexAccount(): Promise<
+	Omit<CodexState, "error" | "loading">
+> {
+	const info = await invoke("codex_account_read");
+	let rateLimits: CodexRateLimitItem[] = [];
+	try {
+		const limits = await invoke("codex_rate_limits_read");
+		rateLimits = dedupeRateLimits(
+			(limits.buckets ?? []).flatMap((bucket, bucketIndex) => {
+				const bucketName =
+					bucket.limit_name || bucket.limit_id || `limit-${bucketIndex + 1}`;
+				const windows: CodexRateLimitItem[] = [];
+				const pushWindow = (
+					kind: "primary" | "secondary",
+					window:
+						| {
+								used_percent: number;
+								window_duration_mins?: number | null;
+								resets_at?: number | null;
+						  }
+						| null
+						| undefined,
+				) => {
+					if (!window || !Number.isFinite(window.used_percent)) return;
+					const windowMinutes =
+						typeof window.window_duration_mins === "number"
+							? window.window_duration_mins
+							: null;
+					windows.push({
+						key: `${bucketName}:${kind}`,
+						label: formatRateLimitWindow(windowMinutes),
+						usedPercent: window.used_percent,
+						windowMinutes,
+						resetsAt:
+							typeof window.resets_at === "number" ? window.resets_at : null,
+					});
+				};
+				pushWindow("primary", bucket.primary);
+				pushWindow("secondary", bucket.secondary);
+				return windows;
+			}),
+		);
+	} catch {
+		// Non-fatal for account status.
+	}
+	return {
+		status: info.status,
+		email: info.email ?? null,
+		displayName: info.display_name ?? null,
+		authMode: info.auth_mode ?? null,
+		rateLimits,
+	};
+}
+
 export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
-	const [codexState, setCodexState] = useState<CodexState>({
-		status: "disconnected",
-		email: null,
-		displayName: null,
-		authMode: null,
-		rateLimits: [],
-		error: "",
-		loading: false,
-	});
 	const [nowMs, setNowMs] = useState(() => Date.now());
 	const isCodexProvider = provider === "codex_chatgpt";
-	const latestRefreshIdRef = useRef(0);
-
-	const refreshCodexAccount = useCallback(async () => {
-		const requestId = ++latestRefreshIdRef.current;
-		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
-		try {
-			const info = await invoke("codex_account_read");
-			let rateLimits: CodexRateLimitItem[] = [];
-			try {
-				const limits = await invoke("codex_rate_limits_read");
-				rateLimits = dedupeRateLimits(
-					(limits.buckets ?? []).flatMap((bucket, bucketIndex) => {
-						const bucketName =
-							bucket.limit_name ||
-							bucket.limit_id ||
-							`limit-${bucketIndex + 1}`;
-						const windows: CodexRateLimitItem[] = [];
-						const pushWindow = (
-							kind: "primary" | "secondary",
-							window:
-								| {
-										used_percent: number;
-										window_duration_mins?: number | null;
-										resets_at?: number | null;
-								  }
-								| null
-								| undefined,
-						) => {
-							if (!window || !Number.isFinite(window.used_percent)) return;
-							const windowMinutes =
-								typeof window.window_duration_mins === "number"
-									? window.window_duration_mins
-									: null;
-							windows.push({
-								key: `${bucketName}:${kind}`,
-								label: formatRateLimitWindow(windowMinutes),
-								usedPercent: window.used_percent,
-								windowMinutes,
-								resetsAt:
-									typeof window.resets_at === "number"
-										? window.resets_at
-										: null,
-							});
-						};
-						pushWindow("primary", bucket.primary);
-						pushWindow("secondary", bucket.secondary);
-						return windows;
-					}),
-				);
-			} catch {
-				// Non-fatal for account status.
-			}
-			if (requestId !== latestRefreshIdRef.current) return;
-			setCodexState({
-				status: info.status,
-				email: info.email ?? null,
-				displayName: info.display_name ?? null,
-				authMode: info.auth_mode ?? null,
-				rateLimits,
-				error: "",
-				loading: false,
-			});
-		} catch (error) {
-			if (requestId !== latestRefreshIdRef.current) return;
-			setCodexState((prev) => ({
-				...prev,
-				error: errMessage(error),
-				loading: false,
-			}));
-		}
-	}, []);
-
-	useEffect(() => {
-		if (!isCodexProvider) return;
-		void refreshCodexAccount();
-	}, [isCodexProvider, refreshCodexAccount]);
-
-	useEffect(() => {
-		if (!isCodexProvider) return;
-		const timer = window.setInterval(() => {
-			void refreshCodexAccount();
-		}, CODEX_RATE_LIMIT_REFRESH_MS);
-		return () => window.clearInterval(timer);
-	}, [isCodexProvider, refreshCodexAccount]);
+	const queryClient = useQueryClient();
+	const accountQuery = useQuery({
+		queryKey: codexAccountQueryKey,
+		queryFn: readCodexAccount,
+		enabled: isCodexProvider,
+		refetchInterval: CODEX_RATE_LIMIT_REFRESH_MS,
+	});
 
 	useEffect(() => {
 		if (!isCodexProvider) return;
@@ -154,9 +135,8 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 		return () => window.clearInterval(timer);
 	}, [isCodexProvider]);
 
-	const handleCodexConnect = useCallback(async () => {
-		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
-		try {
+	const connectMutation = useMutation({
+		mutationFn: async () => {
 			const started = await invoke("codex_login_start");
 			await openUrl(started.auth_url);
 			try {
@@ -166,29 +146,54 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 					throw error;
 				}
 			}
-			await refreshCodexAccount();
-		} catch (error) {
-			setCodexState((prev) => ({
-				...prev,
-				error: errMessage(error),
-				loading: false,
-			}));
-		}
-	}, [refreshCodexAccount]);
+		},
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: codexAccountQueryKey });
+		},
+	});
+
+	const disconnectMutation = useMutation({
+		mutationFn: () => invoke("codex_logout"),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: codexAccountQueryKey });
+		},
+	});
+
+	const refreshCodexAccount = useCallback(async () => {
+		await accountQuery.refetch();
+	}, [accountQuery]);
+
+	const handleCodexConnect = useCallback(async () => {
+		await connectMutation.mutateAsync();
+	}, [connectMutation]);
 
 	const handleCodexDisconnect = useCallback(async () => {
-		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
-		try {
-			await invoke("codex_logout");
-			await refreshCodexAccount();
-		} catch (error) {
-			setCodexState((prev) => ({
-				...prev,
-				error: errMessage(error),
-				loading: false,
-			}));
-		}
-	}, [refreshCodexAccount]);
+		await disconnectMutation.mutateAsync();
+	}, [disconnectMutation]);
+
+	const error =
+		(accountQuery.error && errMessage(accountQuery.error)) ||
+		(connectMutation.error && errMessage(connectMutation.error)) ||
+		(disconnectMutation.error && errMessage(disconnectMutation.error)) ||
+		"";
+	const codexState = useMemo<CodexState>(() => {
+		if (!isCodexProvider) return disconnectedState;
+		return {
+			...(accountQuery.data ?? disconnectedState),
+			error,
+			loading:
+				accountQuery.isFetching ||
+				connectMutation.isPending ||
+				disconnectMutation.isPending,
+		};
+	}, [
+		accountQuery.data,
+		accountQuery.isFetching,
+		connectMutation.isPending,
+		disconnectMutation.isPending,
+		error,
+		isCodexProvider,
+	]);
 
 	return {
 		codexState,

@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { queryClient } from "../../lib/queryClient";
 import {
 	type AiChatHistoryDetail,
 	type AiChatHistorySummary,
@@ -8,17 +10,16 @@ import {
 } from "../../lib/tauri";
 import type { UIMessage } from "./hooks/useRigChat";
 
-const aiHistorySummaryCache = new Map<number, AiChatHistorySummary[]>();
-const aiHistorySummaryPromiseCache = new Map<
-	number,
-	Promise<AiChatHistorySummary[]>
->();
-let aiHistoryGeneration = 0;
+const aiHistoryQueryKeys = {
+	all: ["ai", "history"] as const,
+	summaries: (limit: number) =>
+		[...aiHistoryQueryKeys.all, "summaries", limit] as const,
+	detail: (jobId: string) =>
+		[...aiHistoryQueryKeys.all, "detail", jobId] as const,
+};
 
 export function clearAiHistoryCache() {
-	aiHistoryGeneration += 1;
-	aiHistorySummaryCache.clear();
-	aiHistorySummaryPromiseCache.clear();
+	queryClient.removeQueries({ queryKey: aiHistoryQueryKeys.all });
 }
 
 function toUIMessages(
@@ -43,30 +44,13 @@ interface LoadedAiChat {
 	toolEvents: AiStoredToolEvent[];
 }
 
-export async function preloadAiHistorySummaries(
+export function preloadAiHistorySummaries(
 	limit = 20,
 ): Promise<AiChatHistorySummary[]> {
-	const cached = aiHistorySummaryCache.get(limit);
-	if (cached) return cached;
-	const inFlight = aiHistorySummaryPromiseCache.get(limit);
-	if (inFlight) return inFlight;
-	const generation = aiHistoryGeneration;
-	const request = invoke("ai_chat_history_list", { limit })
-		.then((list) => {
-			if (generation === aiHistoryGeneration) {
-				aiHistorySummaryCache.set(limit, list);
-			}
-			return list;
-		})
-		.finally(() => {
-			if (generation === aiHistoryGeneration) {
-				aiHistorySummaryPromiseCache.delete(limit);
-			}
-		});
-	if (generation === aiHistoryGeneration) {
-		aiHistorySummaryPromiseCache.set(limit, request);
-	}
-	return request;
+	return queryClient.fetchQuery({
+		queryKey: aiHistoryQueryKeys.summaries(limit),
+		queryFn: () => invoke("ai_chat_history_list", { limit }),
+	});
 }
 
 interface UseAiHistoryOptions {
@@ -75,65 +59,68 @@ interface UseAiHistoryOptions {
 
 export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 	const enabled = options?.enabled ?? true;
-	const [summaries, setSummaries] = useState<AiChatHistorySummary[]>(
-		() => aiHistorySummaryCache.get(limit) ?? [],
-	);
+	const localQueryClient = useQueryClient();
 	const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-	const [listLoading, setListLoading] = useState(false);
-	const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
-	const [error, setError] = useState("");
+	const [loadError, setLoadError] = useState("");
 
-	const refresh = useCallback(async () => {
-		const generation = aiHistoryGeneration;
-		setListLoading(true);
-		setError("");
-		try {
-			aiHistorySummaryCache.delete(limit);
-			const list = await preloadAiHistorySummaries(limit);
-			if (generation !== aiHistoryGeneration) return;
-			setSummaries(list);
-			setSelectedJobId((prev) =>
-				prev && !list.some((item) => item.job_id === prev) ? null : prev,
-			);
-		} catch (err) {
-			if (generation === aiHistoryGeneration) {
-				setError(extractErrorMessage(err));
-			}
-		} finally {
-			if (generation === aiHistoryGeneration) {
-				setListLoading(false);
-			}
-		}
-	}, [limit]);
+	const summariesQuery = useQuery({
+		queryKey: aiHistoryQueryKeys.summaries(limit),
+		queryFn: () => invoke("ai_chat_history_list", { limit }),
+		enabled,
+	});
 
-	const loadChatMessages = useCallback(async (jobId: string) => {
-		setLoadingJobId(jobId);
-		setError("");
-		try {
-			const detail = await invoke("ai_chat_history_get", { job_id: jobId });
-			setSelectedJobId(jobId);
+	const loadChatMutation = useMutation({
+		mutationFn: async (jobId: string): Promise<LoadedAiChat> => {
+			const detail = await localQueryClient.fetchQuery({
+				queryKey: aiHistoryQueryKeys.detail(jobId),
+				queryFn: () => invoke("ai_chat_history_get", { job_id: jobId }),
+			});
 			return {
 				messages: toUIMessages(jobId, detail.messages),
 				toolEvents: detail.tool_events ?? [],
-			} satisfies LoadedAiChat;
-		} catch (err) {
-			setError(extractErrorMessage(err));
-			return null;
-		} finally {
-			setLoadingJobId(null);
-		}
-	}, []);
+			};
+		},
+		onMutate: () => {
+			setLoadError("");
+		},
+		onSuccess: (_data, jobId) => {
+			setSelectedJobId(jobId);
+		},
+		onError: (error) => {
+			setLoadError(extractErrorMessage(error));
+		},
+	});
 
-	useEffect(() => {
-		if (!enabled) return;
-		void refresh();
-	}, [enabled, refresh]);
+	const refresh = useCallback(async () => {
+		await localQueryClient.invalidateQueries({
+			queryKey: aiHistoryQueryKeys.summaries(limit),
+		});
+	}, [limit, localQueryClient]);
+
+	const loadChatMessages = useCallback(
+		async (jobId: string) => {
+			try {
+				return await loadChatMutation.mutateAsync(jobId);
+			} catch {
+				return null;
+			}
+		},
+		[loadChatMutation],
+	);
+
+	const summaries = summariesQuery.data ?? [];
+	const error =
+		loadError ||
+		(summariesQuery.error && extractErrorMessage(summariesQuery.error)) ||
+		"";
 
 	return {
 		summaries,
 		selectedJobId,
-		listLoading,
-		loadingJobId,
+		listLoading: summariesQuery.isFetching,
+		loadingJobId: loadChatMutation.isPending
+			? loadChatMutation.variables
+			: null,
 		error,
 		refresh,
 		loadChatMessages,

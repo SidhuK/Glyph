@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { queryClient } from "../../lib/queryClient";
 import { invoke } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
 
@@ -39,14 +41,10 @@ const DEFAULT_CHAR_BUDGET = 12_000;
 const MAX_VISIBLE_FOLDERS = 120;
 const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 
-let aiContextIndexCache: AiContextIndexData | null = null;
-let aiContextIndexPromise: Promise<AiContextIndexData | null> | null = null;
-let aiContextEpoch = 0;
+const aiContextIndexQueryKey = ["ai", "context", "index"] as const;
 
 export function clearAiContextCache() {
-	aiContextEpoch += 1;
-	aiContextIndexCache = null;
-	aiContextIndexPromise = null;
+	queryClient.removeQueries({ queryKey: aiContextIndexQueryKey });
 }
 
 function folderLabel(path: string): string {
@@ -62,44 +60,33 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 }
 
 export async function preloadAiContextIndex(): Promise<AiContextIndexData | null> {
-	if (aiContextIndexCache) return aiContextIndexCache;
-	if (!aiContextIndexPromise) {
-		const epoch = aiContextEpoch;
-		aiContextIndexPromise = invoke("ai_context_index")
-			.then((index) => {
-				if (epoch !== aiContextEpoch) {
-					return null;
-				}
-				const data = {
-					folders: index.folders,
-					files: index.files,
-				};
-				aiContextIndexCache = data;
-				return data;
-			})
-			.finally(() => {
-				if (epoch === aiContextEpoch) {
-					aiContextIndexPromise = null;
-				}
-			});
-	}
-	return aiContextIndexPromise;
+	return queryClient.fetchQuery({
+		queryKey: aiContextIndexQueryKey,
+		queryFn: async () => {
+			const index = await invoke("ai_context_index");
+			return {
+				folders: index.folders,
+				files: index.files,
+			};
+		},
+	});
 }
 
 export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
-	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>(
-		() => aiContextIndexCache?.folders ?? [],
-	);
-	const [fileIndex, setFileIndex] = useState<FolderEntry[]>(
-		() => aiContextIndexCache?.files ?? [],
-	);
-	const [folderIndexError, setFolderIndexError] = useState("");
-	const [payloadManifest, setPayloadManifest] =
-		useState<ContextManifest | null>(null);
-	const [payloadError, setPayloadError] = useState("");
-	const [payloadBuilding, setPayloadBuilding] = useState(false);
 	const [charBudget, setCharBudget] = useState(DEFAULT_CHAR_BUDGET);
+	const indexQuery = useQuery({
+		queryKey: aiContextIndexQueryKey,
+		queryFn: async () => {
+			const index = await invoke("ai_context_index");
+			return {
+				folders: index.folders,
+				files: index.files,
+			} satisfies AiContextIndexData;
+		},
+	});
+	const folderIndex = indexQuery.data?.folders ?? [];
+	const fileIndex = indexQuery.data?.files ?? [];
 
 	const attachedFolders = useMemo(() => {
 		const seen = new Set<string>();
@@ -133,25 +120,6 @@ export function useAiContext(contextSearch = "") {
 		},
 		[],
 	);
-
-	useEffect(() => {
-		let cancelled = false;
-		setFolderIndexError("");
-		void (async () => {
-			try {
-				const index = await preloadAiContextIndex();
-				if (cancelled || !index) return;
-				setFolderIndex(index.folders);
-				setFileIndex(index.files);
-			} catch (e) {
-				if (cancelled) return;
-				setFolderIndexError(extractErrorMessage(e));
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
 
 	const visibleSuggestions = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
@@ -194,11 +162,8 @@ export function useAiContext(contextSearch = "") {
 		[addContext, fileIndex, folderIndex],
 	);
 
-	const buildPayload = useCallback(async () => {
-		setPayloadError("");
-		setPayloadBuilding(true);
-
-		try {
+	const buildPayloadMutation = useMutation({
+		mutationFn: async () => {
 			const built = await invoke("ai_context_build", {
 				request: {
 					attachments: attachedFolders,
@@ -216,36 +181,48 @@ export function useAiContext(contextSearch = "") {
 				totalChars: built.manifest.total_chars,
 				estTokens: built.manifest.est_tokens,
 			};
-			setPayloadManifest(manifest);
 			return { payload: built.payload, manifest };
-		} catch (e) {
-			setPayloadError(extractErrorMessage(e));
+		},
+	});
+
+	const resolveAttachedPathsMutation = useMutation({
+		mutationFn: () =>
+			invoke("ai_context_resolve_paths", {
+				attachments: attachedFolders,
+			}),
+	});
+
+	const buildPayload = useCallback(async () => {
+		try {
+			return await buildPayloadMutation.mutateAsync();
+		} catch {
 			return { payload: "", manifest: null };
-		} finally {
-			setPayloadBuilding(false);
 		}
-	}, [attachedFolders, charBudget]);
+	}, [buildPayloadMutation]);
 
 	const ensurePayload = useCallback(async () => {
 		return buildPayload();
 	}, [buildPayload]);
 
-	const resolveAttachedPaths = useCallback(async () => {
-		return invoke("ai_context_resolve_paths", {
-			attachments: attachedFolders,
-		});
-	}, [attachedFolders]);
+	const resolveAttachedPaths = useCallback(
+		() => resolveAttachedPathsMutation.mutateAsync(),
+		[resolveAttachedPathsMutation],
+	);
 
 	return {
 		attachedFolders,
 		addContext,
 		removeContext,
 		resolveMentionsFromInput,
-		folderIndexError,
+		folderIndexError:
+			indexQuery.error != null ? extractErrorMessage(indexQuery.error) : "",
 		visibleSuggestions,
-		payloadManifest,
-		payloadError,
-		payloadBuilding,
+		payloadManifest: buildPayloadMutation.data?.manifest ?? null,
+		payloadError:
+			buildPayloadMutation.error != null
+				? extractErrorMessage(buildPayloadMutation.error)
+				: "",
+		payloadBuilding: buildPayloadMutation.isPending,
 		buildPayload,
 		ensurePayload,
 		resolveAttachedPaths,

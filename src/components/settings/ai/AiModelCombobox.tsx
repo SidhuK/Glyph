@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
 
 interface AiModelComboboxProps {
@@ -15,20 +16,6 @@ const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
 	provider !== "llama_cpp" &&
 	provider !== "codex_chatgpt";
 
-interface ModelFetchState {
-	models: AiModel[] | null;
-	loading: boolean;
-	error: string;
-	hasAttemptedFetch: boolean;
-}
-
-const INITIAL_MODEL_FETCH_STATE: ModelFetchState = {
-	models: null,
-	loading: false,
-	error: "",
-	hasAttemptedFetch: false,
-};
-
 export function AiModelCombobox({
 	profileId,
 	provider,
@@ -37,86 +24,35 @@ export function AiModelCombobox({
 	onChange,
 	onModelsChange,
 }: AiModelComboboxProps) {
-	const [modelFetchState, setModelFetchState] = useState<ModelFetchState>(
-		INITIAL_MODEL_FETCH_STATE,
-	);
-	const requestTokenRef = useRef(`${profileId}:${provider}`);
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
-	const visibleFetchState = canFetchModels
-		? modelFetchState
-		: INITIAL_MODEL_FETCH_STATE;
-	const { models, loading, error } = visibleFetchState;
-	const { hasAttemptedFetch } = modelFetchState;
-	const modelFetchStateRef = useRef(modelFetchState);
-	modelFetchStateRef.current = modelFetchState;
+	const modelsQuery = useQuery({
+		queryKey: ["ai", "models", profileId, provider],
+		queryFn: () =>
+			invoke("ai_models_list", {
+				profile_id: profileId,
+				provider,
+			}),
+		enabled: canFetchModels,
+	});
+	const models = canFetchModels ? (modelsQuery.data ?? null) : null;
+	const loading = canFetchModels && modelsQuery.isFetching;
+	const error =
+		canFetchModels && modelsQuery.error
+			? modelsQuery.error instanceof Error
+				? modelsQuery.error.message
+				: String(modelsQuery.error)
+			: "";
 
 	useEffect(() => {
-		requestTokenRef.current = `${profileId}:${provider}`;
-		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
-		onModelsChange?.(null);
-	}, [onModelsChange, profileId, provider]);
-
-	const fetchModels = useCallback(
-		async (force = false) => {
-			const requestToken = `${profileId}:${provider}`;
-			const current = modelFetchStateRef.current;
-			if (
-				!force &&
-				(current.models || current.loading || current.hasAttemptedFetch)
-			) {
-				return;
-			}
-			const nextState: ModelFetchState = {
-				models: force ? null : current.models,
-				loading: true,
-				error: "",
-				hasAttemptedFetch: true,
-			};
-			setModelFetchState(nextState);
-			try {
-				const result = await invoke("ai_models_list", {
-					profile_id: profileId,
-					provider,
-				});
-				if (requestToken !== requestTokenRef.current) return;
-				setModelFetchState({
-					models: result,
-					loading: false,
-					error: "",
-					hasAttemptedFetch: true,
-				});
-				onModelsChange?.(result);
-			} catch (e) {
-				if (requestToken !== requestTokenRef.current) return;
-				setModelFetchState({
-					models: null,
-					loading: false,
-					error: e instanceof Error ? e.message : String(e),
-					hasAttemptedFetch: true,
-				});
-				onModelsChange?.(null);
-			}
-		},
-		[onModelsChange, profileId, provider],
-	);
-
-	useEffect(() => {
-		if (!canFetchModels || hasAttemptedFetch) return;
-		void fetchModels();
-	}, [canFetchModels, hasAttemptedFetch, fetchModels]);
-
-	useEffect(() => {
-		if (canFetchModels || modelFetchState === INITIAL_MODEL_FETCH_STATE) return;
-		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
-		onModelsChange?.(null);
-	}, [canFetchModels, modelFetchState, onModelsChange]);
+		onModelsChange?.(models);
+	}, [models, onModelsChange]);
 
 	const handleRetry = useCallback(() => {
 		if (!canFetchModels) return;
 		onModelsChange?.(null);
-		void fetchModels(true);
-	}, [canFetchModels, fetchModels, onModelsChange]);
+		void modelsQuery.refetch();
+	}, [canFetchModels, modelsQuery, onModelsChange]);
 
 	const statusLabel = loading
 		? "Connecting..."

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import {
 	type RecentFile,
 	addRecentFile as addRecentFileToStore,
@@ -15,34 +16,45 @@ export function useRecentFiles(
 	currentSpacePath: string | null,
 	limit = 7,
 ): UseRecentFilesReturn {
-	const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
-
-	const refreshRecentFiles = useCallback(async () => {
-		try {
+	const queryClient = useQueryClient();
+	const queryKey = [
+		"settings",
+		"recent-files",
+		currentSpacePath ?? "__all__",
+		limit,
+	] as const;
+	const recentFilesQuery = useQuery({
+		queryKey,
+		queryFn: async () => {
 			const all = await getRecentFilesFromStore();
-			const filtered = currentSpacePath
+			return currentSpacePath
 				? all.filter((f) => f.spacePath === currentSpacePath).slice(0, limit)
 				: all.slice(0, limit);
-			setRecentFiles(filtered);
-		} catch {
-			setRecentFiles([]);
-		}
-	}, [currentSpacePath, limit]);
+		},
+	});
+	const addRecentFileMutation = useMutation({
+		mutationFn: ({ path, spacePath }: { path: string; spacePath: string }) =>
+			addRecentFileToStore(path, spacePath),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: ["settings", "recent-files"],
+			});
+		},
+	});
+
+	const refreshRecentFiles = useCallback(async () => {
+		await recentFilesQuery.refetch();
+	}, [recentFilesQuery]);
 
 	const addRecentFile = useCallback(
 		async (path: string, spacePath: string) => {
-			await addRecentFileToStore(path, spacePath);
-			await refreshRecentFiles();
+			await addRecentFileMutation.mutateAsync({ path, spacePath });
 		},
-		[refreshRecentFiles],
+		[addRecentFileMutation],
 	);
 
-	useEffect(() => {
-		void refreshRecentFiles();
-	}, [refreshRecentFiles]);
-
 	return {
-		recentFiles,
+		recentFiles: recentFilesQuery.data ?? [],
 		addRecentFile,
 		refreshRecentFiles,
 	};

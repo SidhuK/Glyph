@@ -1,5 +1,6 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	type MouseEvent as ReactMouseEvent,
 	useCallback,
@@ -10,11 +11,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import type {
-	AiModel,
-	AiProviderKind,
-	ProviderSupportEntry,
-} from "../../lib/tauri";
+import type { AiModel, AiProviderKind } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 
 import { ChevronDown } from "../Icons";
@@ -42,9 +39,6 @@ export function ModelSelector({
 	provider,
 }: ModelSelectorProps) {
 	const [open, setOpen] = useState(false);
-	const [models, setModels] = useState<AiModel[] | null>(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
 	const [detailModelId, setDetailModelId] = useState<string | null>(null);
 	const [modelQuery, setModelQuery] = useState("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
@@ -53,65 +47,43 @@ export function ModelSelector({
 		bottom: number;
 		right: number;
 	} | null>(null);
-	const [providerSupportMap, setProviderSupportMap] = useState<Record<
-		string,
-		ProviderSupportEntry
-	> | null>(null);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			try {
-				const r = await invoke("ai_provider_support");
-				if (!cancelled) setProviderSupportMap(r.providers);
-			} catch {
-				if (!cancelled) setProviderSupportMap(null);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	const fetchModels = useCallback(async () => {
-		if (!profileId || models || loading) return;
-		setLoading(true);
-		setError("");
-		try {
-			setModels(await invoke("ai_models_list", { profile_id: profileId }));
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		} finally {
-			setLoading(false);
-		}
-	}, [profileId, models, loading]);
+	const providerSupportQuery = useQuery({
+		queryKey: ["ai", "provider-support"],
+		queryFn: async () => {
+			const result = await invoke("ai_provider_support");
+			return result.providers;
+		},
+		staleTime: 24 * 60 * 60 * 1000,
+	});
+	const modelsQuery = useQuery({
+		queryKey: ["ai", "models", profileId, provider],
+		queryFn: () => {
+			if (!profileId) return Promise.resolve([] as AiModel[]);
+			return invoke("ai_models_list", { profile_id: profileId });
+		},
+		enabled: open && Boolean(profileId),
+	});
+	const models = modelsQuery.data ?? null;
+	const loading = modelsQuery.isFetching;
+	const error = modelsQuery.error
+		? modelsQuery.error instanceof Error
+			? modelsQuery.error.message
+			: String(modelsQuery.error)
+		: "";
 
 	const handleOpen = useCallback(() => {
 		setOpen(true);
 		setDetailModelId(null);
 		setModelQuery("");
-		void fetchModels();
-	}, [fetchModels]);
+	}, []);
 	const handleClose = useCallback(() => {
 		setOpen(false);
 		setDetailModelId(null);
 		setModelQuery("");
 	}, []);
 	const handleRetry = useCallback(() => {
-		setModels(null);
-		setError("");
-		void (async () => {
-			if (!profileId) return;
-			setLoading(true);
-			try {
-				setModels(await invoke("ai_models_list", { profile_id: profileId }));
-			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
-			} finally {
-				setLoading(false);
-			}
-		})();
-	}, [profileId]);
+		void modelsQuery.refetch();
+	}, [modelsQuery]);
 
 	useLayoutEffect(() => {
 		if (!open || !triggerRef.current) return;
@@ -157,15 +129,15 @@ export function ModelSelector({
 		? providerSupportKeyMap[detailProviderKind]
 		: undefined;
 	const detailProviderSupport =
-		detailProviderKey && providerSupportMap
-			? providerSupportMap[detailProviderKey]
+		detailProviderKey && providerSupportQuery.data
+			? providerSupportQuery.data[detailProviderKey]
 			: undefined;
 	const listProviderKey = provider
 		? providerSupportKeyMap[provider]
 		: undefined;
 	const listProviderSupport =
-		listProviderKey && providerSupportMap
-			? providerSupportMap[listProviderKey]
+		listProviderKey && providerSupportQuery.data
+			? providerSupportQuery.data[listProviderKey]
 			: undefined;
 	const providerTitle = logoProvider
 		? (providerLogoMap[logoProvider]?.label ?? logoProvider)

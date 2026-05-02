@@ -5,6 +5,7 @@ import {
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	formatDistanceToNow,
 	isSameDay,
@@ -14,22 +15,11 @@ import {
 	subDays,
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
-import {
-	type Dispatch,
-	type ReactNode,
-	type SetStateAction,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, memo, useMemo, useState } from "react";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
-	getPrefetchedAllDocs,
-	invalidateAllDocsPrefetch,
-	prefetchAllDocs,
+	loadAllDocs,
+	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
@@ -164,19 +154,6 @@ type AllDocsSection = {
 
 type NotesScope = "all" | "templates" | "daily";
 
-function applyNotesResult(
-	items: AllDocsItem[],
-	setNotes: Dispatch<SetStateAction<AllDocsItem[]>>,
-	setSelectedNotePath: Dispatch<SetStateAction<string | null>>,
-) {
-	setNotes(items);
-	setSelectedNotePath((current) =>
-		items.some((item) => item.note_path === current)
-			? current
-			: (items[0]?.note_path ?? null),
-	);
-}
-
 function sectionForDate(iso: string): AllDocsSection["id"] {
 	const today = startOfToday();
 	const yesterday = subDays(today, 1);
@@ -213,14 +190,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 	dailyNotesFolder = null,
 }: AllDocsPaneProps) {
 	const shouldReduceMotion = useReducedMotion() ?? false;
-	const [notes, setNotes] = useState<AllDocsItem[]>(
-		() => initialNotes ?? getPrefetchedAllDocs(folderPrefix) ?? [],
-	);
-	const [loading, setLoading] = useState(
-		() => (initialNotes ?? getPrefetchedAllDocs(folderPrefix)) === null,
-	);
-	const [error, setError] = useState("");
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const queryClient = useQueryClient();
 	const normalizedFolderPrefix = useMemo(
 		() => normalizeFolderPrefix(folderPrefix),
 		[folderPrefix],
@@ -234,47 +205,18 @@ export const AllDocsPane = memo(function AllDocsPane({
 		[dailyNotesFolder],
 	);
 	const [notesScope, setNotesScope] = useState<NotesScope>("all");
-	const hasSeededNotesRef = useRef(notes.length > 0);
-
-	const fetchNotes = useCallback(
-		async ({
-			cancelled,
-			blocking = true,
-		}: {
-			cancelled?: { current: boolean };
-			blocking?: boolean;
-		} = {}) => {
-			if (blocking) {
-				setLoading(true);
-			}
-			setError("");
-			try {
-				const items = await prefetchAllDocs(normalizedFolderPrefix);
-				if (cancelled?.current) return;
-				applyNotesResult(items, setNotes, setSelectedNotePath);
-			} catch (cause) {
-				if (cancelled?.current) return;
-				setError(cause instanceof Error ? cause.message : String(cause));
-				setNotes([]);
-			} finally {
-				if (blocking && !cancelled?.current) setLoading(false);
-			}
-		},
-		[normalizedFolderPrefix],
-	);
+	const notesQuery = useQuery({
+		queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
+		queryFn: () => loadAllDocs(normalizedFolderPrefix),
+		initialData: initialNotes ?? undefined,
+	});
+	const notes = notesQuery.data ?? [];
 
 	useTauriEvent("notes:external_changed", () => {
-		invalidateAllDocsPrefetch(normalizedFolderPrefix);
-		void fetchNotes({ blocking: false });
+		void queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
+		});
 	});
-
-	useEffect(() => {
-		const cancelled = { current: false };
-		void fetchNotes({ cancelled, blocking: !hasSeededNotesRef.current });
-		return () => {
-			cancelled.current = true;
-		};
-	}, [fetchNotes]);
 
 	const visibleNotes = useMemo(() => {
 		if (!showNotesScopeToggle || notesScope === "all") {
@@ -386,13 +328,18 @@ export const AllDocsPane = memo(function AllDocsPane({
 		[],
 	);
 
-	if (loading) {
+	if (notesQuery.isLoading) {
 		return <div className="databaseLoadingState">Loading all docs…</div>;
 	}
 
-	if (error) {
+	if (notesQuery.error) {
 		return (
-			<div className="databaseLoadingState">Could not load docs: {error}</div>
+			<div className="databaseLoadingState">
+				Could not load docs:{" "}
+				{notesQuery.error instanceof Error
+					? notesQuery.error.message
+					: String(notesQuery.error)}
+			</div>
 		);
 	}
 
