@@ -75,12 +75,20 @@ export function useAiProfiles() {
 		mutationFn: (id: string | null) => invoke("ai_active_profile_set", { id }),
 		onMutate: async (id) => {
 			await localQueryClient.cancelQueries({ queryKey: aiProfilesQueryKey });
+			const previous =
+				localQueryClient.getQueryData<AiProfilesBootstrap>(aiProfilesQueryKey);
 			updateProfilesCache((current) => ({
 				...current,
 				activeProfileId: id,
 				secretConfigured:
 					current.activeProfileId === id ? current.secretConfigured : null,
 			}));
+			return { previous };
+		},
+		onError: (_error, _id, context) => {
+			if (context?.previous) {
+				localQueryClient.setQueryData(aiProfilesQueryKey, context.previous);
+			}
 		},
 		onSuccess: async () => {
 			await localQueryClient.invalidateQueries({
