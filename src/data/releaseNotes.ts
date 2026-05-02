@@ -1,4 +1,5 @@
 import type { ReleaseNoteCategory } from "../lib/releaseNotes";
+import changelogJson from "./release-notes.json";
 
 export interface VersionReleaseNotes {
 	version: string;
@@ -12,13 +13,4 @@ export interface ChangelogData {
 	versions: VersionReleaseNotes[];
 }
 
-import changelogJson from "./release-notes.json";
-
-export const MAX_CHANGELOG_VERSIONS = 6;
-
-const changelogData = changelogJson as ChangelogData;
-
-export const CHANGELOG_DATA: ChangelogData = {
-	...changelogData,
-	versions: changelogData.versions.slice(0, MAX_CHANGELOG_VERSIONS),
-};
+export const CHANGELOG_DATA = changelogJson as ChangelogData;
