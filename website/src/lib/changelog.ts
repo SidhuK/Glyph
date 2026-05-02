@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 export interface ChangelogEntry {
 	hash: string;
 	shortHash: string;
-	date: string;
 	message: string;
 	category: string;
 }
@@ -84,13 +83,12 @@ function parseLogOutput(output: string): ChangelogEntry[] {
 		.map((line) => line.trim())
 		.filter(Boolean)
 		.map((line) => line.split(FIELD_SEPARATOR))
-		.filter((parts) => parts.length >= 3 && parts[0] && parts[1] && parts[2])
-		.map(([hash, date, ...messageParts]) => {
+		.filter((parts) => parts.length >= 2 && parts[0] && parts[1])
+		.map(([hash, ...messageParts]) => {
 			const message = messageParts.join(FIELD_SEPARATOR).trim();
 			return {
 				hash,
 				shortHash: hash.slice(0, 7),
-				date,
 				message,
 				category: categorizeCommit(message),
 			};
@@ -131,9 +129,9 @@ function getRepositoryUrl(): string | null {
 }
 
 function getLog(range: string, limit = 8): ChangelogEntry[] {
-	const pretty = "%H%x1f%ad%x1f%s%x1e";
+	const pretty = "%H%x1f%s%x1e";
 	const output = runGit(
-		`git log ${range} --no-merges --date=short --pretty=format:'${pretty}' -n ${limit}`,
+		`git log ${range} --no-merges --pretty=format:'${pretty}' -n ${limit}`,
 	);
 	return parseLogOutput(output);
 }
@@ -160,7 +158,7 @@ export function getChangelogData(): ChangelogData {
 	};
 }
 
-export function getChangelogPageData(limit = 8): ChangelogPageData {
+export function getChangelogPageData(limit = 6): ChangelogPageData {
 	const tags = listTags();
 	const base = getChangelogData();
 	const releaseHistory: ChangelogRelease[] = [];

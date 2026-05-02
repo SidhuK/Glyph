@@ -111,16 +111,17 @@
 	box-shadow: none;
 }
 
-.fileTreePinToggle .fileTreePinOffIcon {
+.fileTreePinnedLeadingPin:is(:hover, :focus-visible) .fileTreePinIcon,
+.fileTreePinnedLeadingPin:not(:is(:hover, :focus-visible)) .fileTreePinOffIcon {
 	display: none;
 }
 
-.fileTreePinToggle:hover .fileTreePinIcon {
-	display: none;
-}
-
-.fileTreePinToggle:hover .fileTreePinOffIcon {
-	display: block;
+.fileTreePinnedRow {
+	flex: 1;
+	justify-content: flex-start;
+	gap: 6px;
+	min-width: 0;
+	text-align: left;
 }
 
 .fileTreePinnedPath {
@@ -148,32 +149,27 @@
 	transition: background var(--transition-fast);
 }
 
-.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow,
-.fileTreeItem:hover > .fileTreeRowShell > .fileTreePinnedRow {
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow {
 	background: var(--bg-hover);
 	border-radius: 6px;
 }
 
-.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow .fileTreeIcon,
-.fileTreeItem:hover > .fileTreeRowShell > .fileTreePinnedRow .fileTreeIcon {
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
 	color: var(--text-primary);
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow,
-.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
 	background: var(--bg-active);
 	color: var(--text-primary);
 	border-radius: 6px;
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName,
-.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow .fileTreeName {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
 	font-weight: var(--font-medium);
 	color: var(--text-primary);
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon,
-.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow .fileTreeIcon {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
 	color: var(--text-primary);
 }
 
@@ -185,8 +181,7 @@
 	position: relative;
 }
 
-.fileTreeRow,
-.fileTreePinnedRow {
+.fileTreeRow {
 	flex: 1;
 	display: flex;
 	align-items: center;

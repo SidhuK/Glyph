@@ -96,7 +96,7 @@
 }
 
 .sidebarSpaceSwitcher:hover {
-	background: var(--bg-hover);
+	background: transparent;
 }
 
 .sidebarSpaceSwitcher:focus-visible {

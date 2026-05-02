@@ -1,240 +1,192 @@
-/* ── Settings Changelog Section ── */
-
 .settingsChangelog {
 	display: flex;
 	flex-direction: column;
+	gap: 12px;
 }
 
-/* Card container matching .settingsCard pattern */
+.settingsChangelogSummary {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 14px;
+	border: 1px solid var(--border-light);
+	background: var(--settings-surface-soft);
+}
+
+.settingsChangelogSummaryIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+}
+
+.settingsChangelogSummaryCopy {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.settingsChangelogSummaryEyebrow {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	color: var(--text-secondary);
+	text-transform: uppercase;
+}
+
+.settingsChangelogSummaryTitle {
+	font-size: 16px;
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	color: var(--text-primary);
+}
+
+.settingsChangelogSummaryMeta {
+	font-size: 12px;
+	line-height: 1.2;
+	color: var(--text-secondary);
+}
+
 .settingsChangelogList {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
-	border-radius: calc(var(--radius-lg) + 2px);
+	border: 1px solid var(--border-light);
 	overflow: hidden;
 	background: transparent;
 }
 
-/* Each version row - styled like .settingsField */
 .settingsChangelogVersion {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 }
 
-.settingsChangelogVersion::after {
-	content: "";
-	position: absolute;
-	left: 14px;
-	right: 14px;
-	bottom: 0;
-	height: 1px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+.settingsChangelogVersion + .settingsChangelogVersion {
+	border-top: 1px solid var(--border-light);
 }
 
-.settingsChangelogVersion:last-child::after {
-	display: none;
-}
-
-/* Header row styled like .settingsFieldInteractive - single line layout */
 .settingsChangelogVersionHeader {
-	display: flex;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
-	justify-content: space-between;
 	gap: 12px;
-	min-height: 44px;
-	padding: 12px 14px;
+	min-height: 42px;
+	width: 100%;
+	padding: 10px 12px;
 	background: transparent;
 	border: none;
+	color: var(--text-primary);
+	font: inherit;
+	text-align: inherit;
 	cursor: pointer;
-	text-align: left;
-	width: 100%;
-	transition: background-color var(--transition-base);
 }
 
 .settingsChangelogVersionHeader:hover {
-	background: var(--settings-surface-muted);
+	background: transparent;
 }
 
 .settingsChangelogVersionHeader:focus-visible {
 	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: -2px;
 }
 
-/* Left side: version + badge */
 .settingsChangelogVersionMeta {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	flex: 1 1 auto;
-	min-width: 0;
-}
-
-.settingsChangelogVersionTitleRow {
-	display: flex;
-	align-items: center;
 	gap: 8px;
+	min-width: 0;
 }
 
 .settingsChangelogVersionNumber {
 	font-size: 12px;
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.01em;
 	color: var(--text-primary);
 }
 
 .settingsChangelogVersionBadge {
-	padding: 4px 8px;
-	border-radius: var(--pill-radius);
-	border: 0;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 11%,
-		var(--bg-primary)
-	);
+	padding: 3px 6px;
+	background: var(--settings-surface-muted);
 	font-size: 10px;
 	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, var(--interactive-accent) 66%, var(--text-primary));
-	line-height: 1;
-	box-shadow: var(--pill-shadow);
-}
-
-/* Date on the right side */
-.settingsChangelogVersionDate {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 12px;
 	color: var(--text-secondary);
-	margin-left: auto;
+	line-height: 1;
 }
 
-/* Right side: toggle chevron */
 .settingsChangelogToggle {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
-	flex-shrink: 0;
-	border-radius: var(--radius-md);
+	width: 18px;
+	height: 18px;
 	color: var(--text-tertiary);
-	transition: background-color var(--transition-base);
 }
 
 .settingsChangelogToggleIcon {
-	transition: transform var(--transition-base);
+	transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
 .settingsChangelogVersionHeader[aria-expanded="true"]
 	.settingsChangelogToggleIcon {
-	transform: rotate(0deg);
+	color: var(--text-secondary);
+	transform: rotate(90deg);
 }
 
 .settingsChangelogVersionHeader[aria-expanded="false"]
 	.settingsChangelogToggleIcon {
-	transform: rotate(-90deg);
+	transform: rotate(0deg);
 }
 
-.settingsChangelogVersionHeader:hover .settingsChangelogToggle {
-	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-}
-
-/* Expanded content area */
 .settingsChangelogVersionContent {
-	padding: 0 14px 12px;
-	background: var(--settings-surface-muted);
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	padding: 2px 12px 14px;
+	background: transparent;
 }
 
 .settingsChangelogCategory {
-	margin-top: 14px;
-}
-
-.settingsChangelogCategory:first-child {
-	margin-top: 14px;
-}
-
-.settingsChangelogCategory:last-child {
-	margin-bottom: 0;
-}
-
-.settingsChangelogCategoryLabel {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-	margin-bottom: 8px;
-}
-
-.settingsChangelogCategoryLabel[data-category="Added"] {
-	color: color-mix(in srgb, var(--color-green-600) 86%, var(--text-primary));
-}
-
-.settingsChangelogCategoryLabel[data-category="Improved"] {
-	color: color-mix(in srgb, var(--color-blue-600) 86%, var(--text-primary));
-}
-
-.settingsChangelogCategoryLabel[data-category="Fixed"] {
-	color: color-mix(in srgb, var(--color-orange-600) 86%, var(--text-primary));
-}
-
-.settingsChangelogCategoryLabel[data-category="Removed"] {
-	color: color-mix(in srgb, var(--color-red-600) 86%, var(--text-primary));
-}
-
-.settingsChangelogItemList {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.settingsChangelogItem {
-	position: relative;
-	padding-left: 14px;
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--text-secondary);
-}
-
-.settingsChangelogItem::before {
-	content: "";
-	position: absolute;
-	left: 0;
-	top: 7px;
-	width: 4px;
-	height: 4px;
-	border-radius: var(--radius-full);
-	background: var(--text-tertiary);
-}
-
-/* Footer with full changelog link */
-.settingsChangelogFooter {
-	display: flex;
-	justify-content: flex-end;
+	display: grid;
+	grid-template-columns: 76px minmax(0, 1fr);
+	gap: 14px;
 	padding-top: 10px;
 }
 
-.settingsChangelogFooter > [data-slot="button"] {
-	min-height: 32px;
-	border-radius: var(--radius-md);
-	background: transparent;
-	color: var(--text-secondary);
-	border: none;
-	box-shadow: none;
+.settingsChangelogCategoryLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
 }
 
-.settingsChangelogFooter > [data-slot="button"]:hover:not(:disabled) {
-	background: var(--settings-surface-soft);
-	color: var(--text-primary);
+.settingsChangelogCategoryLabel[data-category="Added"] {
+	color: color-mix(in srgb, var(--color-green-600) 70%, var(--text-secondary));
+}
+
+.settingsChangelogCategoryLabel[data-category="Improved"] {
+	color: color-mix(in srgb, var(--color-blue-600) 70%, var(--text-secondary));
+}
+
+.settingsChangelogCategoryLabel[data-category="Fixed"] {
+	color: color-mix(in srgb, var(--color-orange-600) 70%, var(--text-secondary));
+}
+
+.settingsChangelogCategoryLabel[data-category="Removed"] {
+	color: color-mix(in srgb, var(--color-red-600) 70%, var(--text-secondary));
+}
+
+.settingsChangelogItemList {
+	margin: 0;
+	padding: 0 0 0 15px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.settingsChangelogItem {
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-secondary);
 }
 
 .settingsChangelogEmpty {
@@ -296,11 +248,6 @@
 	font-size: 24px;
 	line-height: 1.1;
 	color: var(--text-primary);
-}
-
-.whatsNewMeta {
-	flex: 0 0 auto;
-	padding-top: 4px;
 }
 
 .whatsNewDialog [data-slot="dialog-description"] {
@@ -400,18 +347,26 @@
 }
 
 @media (max-width: 760px) {
+	.settingsChangelogSummary {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.settingsChangelogSummaryMeta {
+		grid-column: 2 / 3;
+	}
+
 	.settingsChangelogVersionHeader {
 		padding: 10px 12px;
 		gap: 8px;
 	}
 
-	.settingsChangelogVersion::after {
-		left: 12px;
-		right: 12px;
-	}
-
 	.settingsChangelogVersionContent {
 		padding: 0 12px 10px;
+	}
+
+	.settingsChangelogCategory {
+		grid-template-columns: 1fr;
+		gap: 6px;
 	}
 
 	.whatsNewHeader {
@@ -439,8 +394,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.settingsChangelogVersionHeader,
-	.settingsChangelogToggle {
+	.settingsChangelogToggleIcon {
 		transition: none;
 	}
 }

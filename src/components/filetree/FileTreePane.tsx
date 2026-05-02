@@ -944,61 +944,21 @@ export const FileTreePane = memo(function FileTreePane({
 													isActive ? "fileTreeItem active" : "fileTreeItem"
 												}
 											>
-												<m.div
-													className="fileTreeRowShell"
-													variants={rowVariants}
-													whileHover="hover"
-													whileTap="tap"
-													animate={isActive ? "active" : "idle"}
-													transition={springTransition}
-												>
-													<button
-														type="button"
-														className="fileTreeRow fileTreePinnedRow"
-														onClick={() => onOpenFile(file.path)}
-														onKeyDown={(event) => {
-															if (
-																event.key !== "ArrowDown" &&
-																event.key !== "ArrowUp"
-															)
-																return;
-															event.preventDefault();
-															handleArrowNavigate(
-																file.path,
-																event.key === "ArrowDown" ? 1 : -1,
-																event.currentTarget,
-															);
-														}}
-														title={file.path}
-														data-file-tree-file="true"
-														data-file-tree-path={file.path}
+												<div className="fileTreeRowShell">
+													<m.div
+														className="fileTreeRow"
+														variants={rowVariants}
+														whileHover="hover"
+														whileTap="tap"
+														animate={isActive ? "active" : "idle"}
+														transition={springTransition}
 													>
-														<span className="fileTreeName">
-															{file.displayName}
-														</span>
-														{showTaskProgressIndicator &&
-														(taskSummariesByPath[file.path]?.total_count ?? 0) >
-															0 ? (
-															<TaskProgressIndicator
-																summary={taskSummariesByPath[file.path]}
-																className="fileTreeTaskProgress"
-															/>
-														) : null}
-														{file.parent ? (
-															<span className="fileTreePinnedPath">
-																{file.parent}
-															</span>
-														) : null}
-													</button>
-													<m.div className="fileTreePinnedActions">
 														<button
 															type="button"
 															aria-label={`Unpin ${file.displayName}`}
 															title="Unpin"
-															onClick={() => {
-																onTogglePinnedFile(file.path);
-															}}
-															className="fileTreePinToggle fileTreeIcon"
+															onClick={() => onTogglePinnedFile(file.path)}
+															className="fileTreePinToggle fileTreeIcon fileTreePinnedLeadingPin"
 														>
 															<HugeiconsIcon
 																icon={PinIcon}
@@ -1015,8 +975,46 @@ export const FileTreePane = memo(function FileTreePane({
 																aria-hidden="true"
 															/>
 														</button>
+														<button
+															type="button"
+															className="fileTreePinToggle fileTreePinnedRow"
+															onClick={() => onOpenFile(file.path)}
+															onKeyDown={(event) => {
+																if (
+																	event.key !== "ArrowDown" &&
+																	event.key !== "ArrowUp"
+																)
+																	return;
+																event.preventDefault();
+																handleArrowNavigate(
+																	file.path,
+																	event.key === "ArrowDown" ? 1 : -1,
+																	event.currentTarget,
+																);
+															}}
+															title={file.path}
+															data-file-tree-file="true"
+															data-file-tree-path={file.path}
+														>
+															<span className="fileTreeName">
+																{file.displayName}
+															</span>
+															{showTaskProgressIndicator &&
+															(taskSummariesByPath[file.path]?.total_count ??
+																0) > 0 ? (
+																<TaskProgressIndicator
+																	summary={taskSummariesByPath[file.path]}
+																	className="fileTreeTaskProgress"
+																/>
+															) : null}
+															{file.parent ? (
+																<span className="fileTreePinnedPath">
+																	{file.parent}
+																</span>
+															) : null}
+														</button>
 													</m.div>
-												</m.div>
+												</div>
 											</li>
 										);
 									})}
