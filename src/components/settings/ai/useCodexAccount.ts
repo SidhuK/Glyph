@@ -159,10 +159,6 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 		},
 	});
 
-	const refreshCodexAccount = useCallback(async () => {
-		await accountQuery.refetch();
-	}, [accountQuery]);
-
 	const handleCodexConnect = useCallback(async () => {
 		await connectMutation.mutateAsync();
 	}, [connectMutation]);
@@ -198,7 +194,6 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 	return {
 		codexState,
 		nowMs,
-		refreshCodexAccount,
 		handleCodexConnect,
 		handleCodexDisconnect,
 	};

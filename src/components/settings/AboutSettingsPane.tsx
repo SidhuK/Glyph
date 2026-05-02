@@ -1,6 +1,7 @@
 import {
 	BubbleChatQuestionIcon,
 	CodesandboxIcon,
+	DiscordIcon,
 	NewTwitterIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -221,10 +222,7 @@ export function AboutSettingsPane() {
 					) : null}
 				</SettingsSection>
 
-				<SettingsSection
-					title="What’s New"
-					description="See what’s new in recent versions of Glyph."
-				>
+				<SettingsSection title="Changelog">
 					<ChangelogSection versions={CHANGELOG_DATA.versions} />
 				</SettingsSection>
 
@@ -250,6 +248,16 @@ export function AboutSettingsPane() {
 									size={16}
 									strokeWidth={0.9}
 								/>
+							</Button>
+							<Button
+								type="button"
+								size="icon-sm"
+								variant="outline"
+								onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
+								aria-label="Discord"
+								title="Discord"
+							>
+								<HugeiconsIcon icon={DiscordIcon} size={16} strokeWidth={0.9} />
 							</Button>
 							<Button
 								type="button"

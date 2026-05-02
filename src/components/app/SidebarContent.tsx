@@ -117,7 +117,6 @@ export const SidebarContent = memo(function SidebarContent({
 		togglePinnedFile,
 		tags,
 		people,
-		refreshTags,
 	} = useFileTreeContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
@@ -556,7 +555,6 @@ export const SidebarContent = memo(function SidebarContent({
 								people={people}
 								onSelectTag={onSelectTag}
 								onSelectPerson={onSelectTag}
-								onRefresh={() => void refreshTags()}
 							/>
 						</section>
 					</div>

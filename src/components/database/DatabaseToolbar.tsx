@@ -9,7 +9,7 @@ import type {
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { RefreshCw, Search, X } from "../Icons";
+import { Search, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
@@ -23,7 +23,6 @@ interface DatabaseToolbarProps {
 	config: DatabaseConfig;
 	availableProperties: DatabasePropertyOption[];
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
-	onReload: () => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 	columnsMenuOpen?: boolean;
 	onColumnsMenuOpenChange?: (open: boolean) => void;
@@ -37,7 +36,6 @@ export function DatabaseToolbar({
 	config,
 	availableProperties,
 	onGroupColumnIdChange,
-	onReload,
 	onChangeConfig,
 	columnsMenuOpen,
 	onColumnsMenuOpenChange,
@@ -208,17 +206,6 @@ export function DatabaseToolbar({
 						onChangeConfig={onChangeConfig}
 					/>
 				</DropdownMenu>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip"
-					onClick={onReload}
-					title="Reload"
-					aria-label="Reload"
-				>
-					<RefreshCw size={14} />
-				</Button>
 			</div>
 		</div>
 	);

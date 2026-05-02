@@ -1,42 +1,17 @@
-import {
-	AddCircleIcon,
-	ArrowDown01Icon,
-	ArrowRight01Icon,
-	Calendar03Icon,
-	CheckmarkCircle02Icon,
-	Delete02Icon,
-	PencilEdit02Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowRight01Icon, NewReleasesIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { openUrl } from "@tauri-apps/plugin-opener";
-import type { ComponentProps } from "react";
 import { useState } from "react";
 import type { VersionReleaseNotes } from "../../data/releaseNotes";
-import { PUBLIC_CHANGELOG_URL } from "../../lib/releaseNotes";
-import { Button } from "../ui/shadcn/button";
-
-const CATEGORY_ICONS: Record<
-	string,
-	ComponentProps<typeof HugeiconsIcon>["icon"]
-> = {
-	Added: AddCircleIcon,
-	Improved: PencilEdit02Icon,
-	Fixed: CheckmarkCircle02Icon,
-	Removed: Delete02Icon,
-};
 
 interface ChangelogSectionProps {
 	versions: VersionReleaseNotes[];
 }
 
-function formatPublishedDate(value: string): string {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return value;
-	return new Intl.DateTimeFormat(undefined, {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	}).format(date);
+function countVersionItems(version: VersionReleaseNotes): number {
+	return version.sections.reduce((total, section) => {
+		if (!Array.isArray(section.items)) return total;
+		return total + section.items.length;
+	}, 0);
 }
 
 function VersionAccordion({
@@ -50,7 +25,6 @@ function VersionAccordion({
 	onToggle: () => void;
 	isLatest: boolean;
 }) {
-	const publishedDate = formatPublishedDate(version.publishedAt);
 	const hasContent = version.sections.some(
 		(s) => Array.isArray(s.items) && s.items.length > 0,
 	);
@@ -71,14 +45,10 @@ function VersionAccordion({
 						<span className="settingsChangelogVersionBadge">Latest</span>
 					)}
 				</div>
-				<div className="settingsChangelogVersionDate">
-					<HugeiconsIcon icon={Calendar03Icon} size={12} strokeWidth={0.9} />
-					<span>{publishedDate}</span>
-				</div>
 				<span className="settingsChangelogToggle">
 					<HugeiconsIcon
-						icon={ArrowDown01Icon}
-						size={16}
+						icon={ArrowRight01Icon}
+						size={14}
 						strokeWidth={0.9}
 						className="settingsChangelogToggleIcon"
 					/>
@@ -98,13 +68,6 @@ function VersionAccordion({
 									className="settingsChangelogCategoryLabel"
 									data-category={section.category}
 								>
-									{CATEGORY_ICONS[section.category] && (
-										<HugeiconsIcon
-											icon={CATEGORY_ICONS[section.category]}
-											size={12}
-											strokeWidth={0.9}
-										/>
-									)}
 									{section.category}
 								</div>
 								<ul className="settingsChangelogItemList">
@@ -129,15 +92,10 @@ export function ChangelogSection({ versions }: ChangelogSectionProps) {
 	const [openVersion, setOpenVersion] = useState<string | null>(
 		() => versions[0]?.version ?? null,
 	);
+	const latestVersion = versions[0] ?? null;
 
 	const toggleVersion = (version: string) => {
 		setOpenVersion((prev) => (prev === version ? null : version));
-	};
-
-	const handleOpenFullChangelog = () => {
-		void openUrl(PUBLIC_CHANGELOG_URL).catch((error) => {
-			console.error("Failed to open changelog URL", error);
-		});
 	};
 
 	if (versions.length === 0) {
@@ -150,6 +108,24 @@ export function ChangelogSection({ versions }: ChangelogSectionProps) {
 
 	return (
 		<div className="settingsChangelog">
+			{latestVersion ? (
+				<div className="settingsChangelogSummary">
+					<div className="settingsChangelogSummaryIcon" aria-hidden="true">
+						<HugeiconsIcon icon={NewReleasesIcon} size={18} strokeWidth={0.9} />
+					</div>
+					<div className="settingsChangelogSummaryCopy">
+						<div className="settingsChangelogSummaryEyebrow">
+							Latest release
+						</div>
+						<div className="settingsChangelogSummaryTitle">
+							v{latestVersion.version}
+						</div>
+					</div>
+					<div className="settingsChangelogSummaryMeta">
+						<span>{countVersionItems(latestVersion)} changes</span>
+					</div>
+				</div>
+			) : null}
 			<div className="settingsChangelogList">
 				{versions.map((version, index) => (
 					<VersionAccordion
@@ -160,17 +136,6 @@ export function ChangelogSection({ versions }: ChangelogSectionProps) {
 						isLatest={index === 0}
 					/>
 				))}
-			</div>
-			<div className="settingsChangelogFooter">
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					onClick={handleOpenFullChangelog}
-				>
-					Full changelog
-					<HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={0.9} />
-				</Button>
 			</div>
 		</div>
 	);

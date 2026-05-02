@@ -1113,7 +1113,6 @@ function DatabasesPaneContent({
 									},
 								});
 							}}
-							onReload={() => void loadRows()}
 							onChangeConfig={handleSaveConfig}
 							columnsMenuOpen={columnsMenuOpen}
 							onColumnsMenuOpenChange={setColumnsMenuOpen}

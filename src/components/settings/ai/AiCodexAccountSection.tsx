@@ -27,7 +27,6 @@ interface AiCodexAccountSectionProps {
 	nowMs: number;
 	onConnect: () => Promise<void>;
 	onDisconnect: () => Promise<void>;
-	onRefresh: () => Promise<void>;
 }
 
 export function AiCodexAccountSection({
@@ -35,7 +34,6 @@ export function AiCodexAccountSection({
 	nowMs,
 	onConnect,
 	onDisconnect,
-	onRefresh,
 }: AiCodexAccountSectionProps) {
 	return (
 		<SettingsSection
@@ -68,15 +66,6 @@ export function AiCodexAccountSection({
 								disabled={codexState.loading}
 							>
 								Disconnect
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								variant="ghost"
-								onClick={() => void onRefresh()}
-								disabled={codexState.loading}
-							>
-								Refresh Status
 							</Button>
 						</>
 					) : (

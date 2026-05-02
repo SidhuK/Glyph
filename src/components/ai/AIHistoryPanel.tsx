@@ -18,13 +18,6 @@ export function AIHistoryPanel({
 		<div className="aiHistory">
 			<div className="aiHistoryHeader">
 				<span>Recent Chats</span>
-				<button
-					type="button"
-					onClick={() => void history.refresh()}
-					disabled={history.listLoading}
-				>
-					Refresh
-				</button>
 			</div>
 			<div className="aiHistoryList">
 				{history.summaries.length > 0 ? (

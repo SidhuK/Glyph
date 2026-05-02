@@ -70,7 +70,6 @@ export function generateReleaseNotesArtifacts({
 	repoRoot = DEFAULT_REPO_ROOT,
 	latestTag = "",
 	nextTag,
-	publishedAt = new Date().toISOString(),
 }) {
 	const version = String(nextTag ?? "")
 		.replace(/^v/i, "")
@@ -110,7 +109,7 @@ export function generateReleaseNotesArtifacts({
 	const markdown = `${lines.join("\n").trim()}\n`;
 
 	return {
-		manifest: { version, publishedAt, commits },
+		manifest: { version, commits },
 		markdown,
 	};
 }

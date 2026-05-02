@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 import { getChangelogPageData } from "../lib/changelog";
 import { discordUrl, downloadUrl } from "../lib/site";
 
-const changelog = getChangelogPageData(10);
+const changelog = getChangelogPageData(6);
 const pageTitle = "Glyph Changelog";
 const pageDescription = "What shipped in Glyph and what's in progress.";
 const repositoryUrl = changelog.repositoryUrl;
@@ -64,7 +64,6 @@ function getTagHref(tag: string): string | undefined {
 							<li class="entry-card">
 								<div class="entry-meta">
 									<span class="entry-badge">{entry.category}</span>
-									<span>{entry.date}</span>
 								</div>
 								<p class="entry-message">{entry.message}</p>
 								{href ? (
@@ -129,7 +128,6 @@ function getTagHref(tag: string): string | undefined {
 											<li class="release-item">
 												<div class="entry-meta">
 													<span class="entry-badge">{entry.category}</span>
-													<span>{entry.date}</span>
 												</div>
 												<p class="entry-message">{entry.message}</p>
 												{href ? (

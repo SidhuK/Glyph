@@ -34,35 +34,11 @@ interface WhatsNewDialogProps {
 	onClose: () => void;
 }
 
-function formatPublishedDate(value: string): string {
-	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-	if (!match) return value;
-	const [, yearValue, monthValue, dayValue] = match;
-	const year = Number(yearValue);
-	const month = Number(monthValue);
-	const day = Number(dayValue);
-	const date = new Date(Date.UTC(year, month - 1, day));
-	if (
-		Number.isNaN(date.getTime()) ||
-		date.getUTCFullYear() !== year ||
-		date.getUTCMonth() !== month - 1 ||
-		date.getUTCDate() !== day
-	)
-		return value;
-	return new Intl.DateTimeFormat(undefined, {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-		timeZone: "UTC",
-	}).format(date);
-}
-
 export function WhatsNewDialog({
 	version,
 	open,
 	onClose,
 }: WhatsNewDialogProps) {
-	const publishedDate = version ? formatPublishedDate(version.publishedAt) : "";
 	const sections =
 		version?.sections.filter(
 			(section) => Array.isArray(section.items) && section.items.length > 0,
@@ -89,11 +65,9 @@ export function WhatsNewDialog({
 							<DialogTitle>Glyph v{version?.version}</DialogTitle>
 						</div>
 					</div>
-					<div className="whatsNewMeta">
-						<DialogDescription>
-							{publishedDate ? `Released ${publishedDate}` : "Latest release"}
-						</DialogDescription>
-					</div>
+					<DialogDescription className="sr-only">
+						Latest release notes for Glyph.
+					</DialogDescription>
 				</DialogHeader>
 				<div className="whatsNewBody">
 					{sections.map((section) => (
