@@ -62,13 +62,8 @@ function AiProfileSectionsBody({
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);
-	const {
-		codexState,
-		nowMs,
-		refreshCodexAccount,
-		handleCodexConnect,
-		handleCodexDisconnect,
-	} = useCodexAccount(profileDraft?.provider);
+	const { codexState, nowMs, handleCodexConnect, handleCodexDisconnect } =
+		useCodexAccount(profileDraft?.provider);
 
 	const providerUsesApiKey = useMemo(
 		() => profileDraft?.provider !== "codex_chatgpt",
@@ -125,7 +120,6 @@ function AiProfileSectionsBody({
 					nowMs={nowMs}
 					onConnect={handleCodexConnect}
 					onDisconnect={handleCodexDisconnect}
-					onRefresh={refreshCodexAccount}
 				/>
 			) : null}
 

@@ -5,14 +5,12 @@ import { type CSSProperties, memo, useCallback, useState } from "react";
 import type { PersonCount, TagCount } from "../lib/tauri";
 import { ChevronDown, ChevronRight } from "./Icons";
 import { springPresets } from "./ui/animations";
-import { Button } from "./ui/shadcn/button";
 
 interface TagsPaneProps {
 	tags: TagCount[];
 	people: PersonCount[];
 	onSelectTag: (tag: string) => void;
 	onSelectPerson: (handle: string) => void;
-	onRefresh: () => void;
 }
 
 const springTransition = springPresets.bouncy;
@@ -69,7 +67,6 @@ export const TagsPane = memo(function TagsPane({
 	people,
 	onSelectTag,
 	onSelectPerson,
-	onRefresh,
 }: TagsPaneProps) {
 	const onClick = useCallback(
 		(tag: string) => onSelectTag(tag.startsWith("#") ? tag : `#${tag}`),
@@ -112,17 +109,6 @@ export const TagsPane = memo(function TagsPane({
 						<ChevronRight size={10} className="tagsHeaderChevron" />
 					)}
 				</button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					onClick={onRefresh}
-					title="Refresh tags"
-				>
-					<m.span whileHover={{ rotate: 180 }} transition={{ duration: 0.3 }}>
-						↻
-					</m.span>
-				</Button>
 			</div>
 			{!sectionExpanded ? null : rows.length ? (
 				<>

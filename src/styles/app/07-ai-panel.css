@@ -236,15 +236,6 @@
 	margin-bottom: 4px;
 }
 
-.aiHistoryHeader button {
-	font-size: 11px;
-	color: var(--text-tertiary);
-}
-
-.aiHistoryHeader button:disabled {
-	opacity: 0.4;
-}
-
 .aiToolExpandBtn,
 .aiToolGroupTop {
 	height: auto;
