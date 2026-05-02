@@ -8,7 +8,8 @@ import {
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -28,9 +29,8 @@ import {
 } from "../../lib/dailyNotes";
 import { isMissingFileError } from "../../lib/fsErrors";
 import {
-	getPrefetchedCalendarData,
-	invalidateCalendarPrefetch,
-	prefetchCalendarData,
+	loadCalendarData,
+	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { todayIsoDateLocal } from "../../lib/tasks";
@@ -106,15 +106,12 @@ export function CalendarPane({
 	const [selectedDate, setSelectedDate] = useState(
 		() => readStorage(SELECTED_STORAGE_KEY) ?? todayIsoDateLocal(),
 	);
-	const [data, setData] = useState<CalendarRangeResponse | null>(initialData);
-	const [loading, setLoading] = useState(() => initialData === null);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
-	const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 	const [selectedRecentNotePath, setSelectedRecentNotePath] = useState<
 		string | null
 	>(null);
-	const loadRequestIdRef = useRef(0);
+	const queryClient = useQueryClient();
 	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
 	const { spacePath } = useSpace();
 	const { openOrCreateDailyNoteAtDate } = useDailyNote({
@@ -124,37 +121,29 @@ export function CalendarPane({
 		templatePath: dailyNoteTemplatePath,
 	});
 
-	const loadCalendar = useCallback(
-		async (options?: { background?: boolean }) => {
-			const requestId = ++loadRequestIdRef.current;
-			if (!options?.background) {
-				setLoading(true);
-			}
-			setError("");
-			try {
-				const next = await prefetchCalendarData({
-					anchorDate,
-					selectedDate,
-					dailyNotesFolder,
-				});
-				if (loadRequestIdRef.current !== requestId) {
-					return;
-				}
-				setData(next);
-			} catch (cause) {
-				if (loadRequestIdRef.current !== requestId) {
-					return;
-				}
-				setError(cause instanceof Error ? cause.message : String(cause));
-				setData(null);
-			} finally {
-				if (!options?.background && loadRequestIdRef.current === requestId) {
-					setLoading(false);
-				}
-			}
-		},
+	const calendarArgs = useMemo(
+		() => ({ anchorDate, selectedDate, dailyNotesFolder }),
 		[anchorDate, dailyNotesFolder, selectedDate],
 	);
+	const calendarQuery = useQuery({
+		queryKey: navigationQueryKeys.calendarRange(calendarArgs),
+		queryFn: () => loadCalendarData(calendarArgs),
+		initialData: initialData ?? undefined,
+	});
+	const data = calendarQuery.data ?? null;
+	const loading = calendarQuery.isFetching;
+
+	const invalidateCalendar = useCallback(async () => {
+		await queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.calendar(),
+		});
+		await queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.taskSummaries(),
+		});
+		await queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocs(),
+		});
+	}, [queryClient]);
 
 	const setAnchorDateAndPersist = useCallback((nextDate: string) => {
 		writeStorage(ANCHOR_STORAGE_KEY, nextDate);
@@ -166,24 +155,8 @@ export function CalendarPane({
 		setSelectedDate(nextDate);
 	}, []);
 
-	useEffect(() => {
-		const cached = getPrefetchedCalendarData({
-			anchorDate,
-			selectedDate,
-			dailyNotesFolder,
-		});
-		if (cached) {
-			setData(cached);
-			setLoading(false);
-			void loadCalendar({ background: true });
-			return;
-		}
-		void loadCalendar();
-	}, [anchorDate, dailyNotesFolder, loadCalendar, selectedDate]);
-
 	useTauriEvent("notes:external_changed", () => {
-		invalidateCalendarPrefetch();
-		void loadCalendar({ background: true });
+		void invalidateCalendar();
 	});
 
 	const selectedTasks = data?.tasks;
@@ -252,16 +225,15 @@ export function CalendarPane({
 		[dailyNoteTemplatePath, dailyNotesFolder, spacePath],
 	);
 
-	const submitTask = useCallback(async () => {
-		const normalized = taskDraft.replace(/\s+/g, " ").trim();
-		if (!normalized) return;
-		if (!dailyNotesFolder) {
-			onOpenDailyNotesSettings();
-			return;
-		}
-		setIsSubmittingTask(true);
-		setError("");
-		try {
+	const submitTaskMutation = useMutation({
+		mutationFn: async () => {
+			const normalized = taskDraft.replace(/\s+/g, " ").trim();
+			if (!normalized) return;
+			if (!dailyNotesFolder) {
+				onOpenDailyNotesSettings();
+				return;
+			}
+			setError("");
 			const noteDoc = await ensureDailyNoteExistsForTask(selectedDate);
 			const nextMarkdown = insertTaskIntoDailyNote(
 				noteDoc.text,
@@ -274,42 +246,76 @@ export function CalendarPane({
 				base_mtime_ms: noteDoc.mtime_ms,
 			});
 			setTaskDraft("");
-			invalidateCalendarPrefetch();
-			await loadCalendar();
-		} catch (cause) {
+			queryClient.setQueryData(navigationQueryKeys.note(noteDoc.rel_path), {
+				...noteDoc,
+				text: nextMarkdown,
+			});
+		},
+		onSuccess: async () => {
+			await invalidateCalendar();
+		},
+		onError: (cause) => {
 			setError(
 				cause instanceof Error
 					? cause.message
 					: "Failed to create calendar task.",
 			);
-		} finally {
-			setIsSubmittingTask(false);
-		}
-	}, [
-		dailyNotesFolder,
-		ensureDailyNoteExistsForTask,
-		onOpenDailyNotesSettings,
-		loadCalendar,
-		selectedDate,
-		taskDraft,
-	]);
+		},
+	});
+
+	const submitTask = useCallback(async () => {
+		await submitTaskMutation.mutateAsync();
+	}, [submitTaskMutation]);
+
+	const toggleTaskMutation = useMutation({
+		mutationFn: ({ task, checked }: { task: TaskItem; checked: boolean }) =>
+			invoke("task_set_checked", {
+				task_id: task.task_id,
+				checked,
+			}),
+		onMutate: () => setError(""),
+		onSuccess: async () => {
+			await invalidateCalendar();
+		},
+		onError: (cause) => {
+			setError(cause instanceof Error ? cause.message : String(cause));
+		},
+	});
 
 	const toggleTask = useCallback(
 		async (task: TaskItem, checked: boolean) => {
 			try {
-				setError("");
-				await invoke("task_set_checked", {
-					task_id: task.task_id,
-					checked,
-				});
-				invalidateCalendarPrefetch();
-				await loadCalendar();
-			} catch (cause) {
-				setError(cause instanceof Error ? cause.message : String(cause));
+				await toggleTaskMutation.mutateAsync({ task, checked });
+			} catch {
+				// Mutation state owns the visible error.
 			}
 		},
-		[loadCalendar],
+		[toggleTaskMutation],
 	);
+
+	const scheduleTaskMutation = useMutation({
+		mutationFn: ({
+			task,
+			scheduled,
+			due,
+		}: {
+			task: TaskItem;
+			scheduled: string | null;
+			due: string | null;
+		}) =>
+			invoke("task_set_dates", {
+				task_id: task.task_id,
+				scheduled_date: scheduled,
+				due_date: due,
+			}),
+		onMutate: () => setError(""),
+		onSuccess: async () => {
+			await invalidateCalendar();
+		},
+		onError: (cause) => {
+			setError(cause instanceof Error ? cause.message : String(cause));
+		},
+	});
 
 	const scheduleTask = useCallback(
 		async (
@@ -318,21 +324,13 @@ export function CalendarPane({
 			due: string | null,
 		): Promise<boolean> => {
 			try {
-				setError("");
-				await invoke("task_set_dates", {
-					task_id: task.task_id,
-					scheduled_date: scheduled,
-					due_date: due,
-				});
-				invalidateCalendarPrefetch();
-				await loadCalendar();
+				await scheduleTaskMutation.mutateAsync({ task, scheduled, due });
 				return true;
-			} catch (cause) {
-				setError(cause instanceof Error ? cause.message : String(cause));
+			} catch {
 				return false;
 			}
 		},
-		[loadCalendar],
+		[scheduleTaskMutation],
 	);
 
 	const openDailyNoteForDate = useCallback(
@@ -342,13 +340,13 @@ export function CalendarPane({
 				return;
 			}
 			await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
-			await loadCalendar();
+			await invalidateCalendar();
 		},
 		[
 			dailyNotesFolder,
+			invalidateCalendar,
 			onOpenDailyNotesSettings,
 			openOrCreateDailyNoteAtDate,
-			loadCalendar,
 		],
 	);
 
@@ -459,7 +457,14 @@ export function CalendarPane({
 	return (
 		<div className="calendarPaneOuter">
 			<section className="calendarPane">
-				{error ? <div className="calendarError">{error}</div> : null}
+				{error || calendarQuery.error ? (
+					<div className="calendarError">
+						{error ||
+							(calendarQuery.error instanceof Error
+								? calendarQuery.error.message
+								: String(calendarQuery.error))}
+					</div>
+				) : null}
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
@@ -515,7 +520,7 @@ export function CalendarPane({
 								variant="outline"
 								className="calendarTaskBtn"
 								onClick={() => void submitTask()}
-								disabled={isSubmittingTask || !taskDraft.trim()}
+								disabled={submitTaskMutation.isPending || !taskDraft.trim()}
 								aria-label="Add task"
 							>
 								<HugeiconsIcon

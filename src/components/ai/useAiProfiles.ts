@@ -1,7 +1,8 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { queryClient } from "../../lib/queryClient";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 
@@ -11,28 +12,15 @@ type AiProfilesBootstrap = {
 	secretConfigured: boolean | null;
 };
 
-let aiProfilesBootstrapCache: AiProfilesBootstrap | null = null;
-let aiProfilesBootstrapPromise: Promise<AiProfilesBootstrap> | null = null;
-let aiProfilesGeneration = 0;
-
-export function clearAiProfilesCache() {
-	aiProfilesGeneration += 1;
-	aiProfilesBootstrapCache = null;
-	aiProfilesBootstrapPromise = null;
-}
+const aiProfilesQueryKey = ["ai", "profiles", "bootstrap"] as const;
 
 async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
-	const generation = aiProfilesGeneration;
 	const [list, active] = await Promise.all([
 		invoke("ai_profiles_list"),
 		invoke("ai_active_profile_get"),
 	]);
 	const nextActive = resolveActiveProfileId(list, active);
-	if (
-		generation === aiProfilesGeneration &&
-		active !== nextActive &&
-		nextActive
-	) {
+	if (active !== nextActive && nextActive) {
 		await invoke("ai_active_profile_set", { id: nextActive });
 	}
 	const secretConfigured = nextActive
@@ -47,182 +35,95 @@ async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
 	};
 }
 
-export async function preloadAiProfilesData(): Promise<AiProfilesBootstrap> {
-	if (aiProfilesBootstrapCache) return aiProfilesBootstrapCache;
-	if (!aiProfilesBootstrapPromise) {
-		const generation = aiProfilesGeneration;
-		aiProfilesBootstrapPromise = fetchAiProfilesBootstrap()
-			.then((data) => {
-				if (generation === aiProfilesGeneration) {
-					aiProfilesBootstrapCache = data;
-				}
-				return data;
-			})
-			.finally(() => {
-				if (generation === aiProfilesGeneration) {
-					aiProfilesBootstrapPromise = null;
-				}
-			});
-	}
-	return aiProfilesBootstrapPromise;
+export function clearAiProfilesCache() {
+	queryClient.removeQueries({ queryKey: aiProfilesQueryKey });
+}
+
+export function preloadAiProfilesData(): Promise<AiProfilesBootstrap> {
+	return queryClient.fetchQuery({
+		queryKey: aiProfilesQueryKey,
+		queryFn: fetchAiProfilesBootstrap,
+	});
+}
+
+function updateProfilesCache(
+	updater: (current: AiProfilesBootstrap) => AiProfilesBootstrap,
+) {
+	queryClient.setQueryData<AiProfilesBootstrap>(aiProfilesQueryKey, (current) =>
+		updater(
+			current ?? {
+				profiles: [],
+				activeProfileId: null,
+				secretConfigured: null,
+			},
+		),
+	);
 }
 
 export function useAiProfiles() {
-	const [profiles, setProfiles] = useState<AiProfile[]>(
-		() => aiProfilesBootstrapCache?.profiles ?? [],
-	);
-	const [activeProfileId, setActiveProfileId] = useState<string | null>(
-		() => aiProfilesBootstrapCache?.activeProfileId ?? null,
-	);
-	const [secretConfigured, setSecretConfigured] = useState<boolean | null>(
-		() => aiProfilesBootstrapCache?.secretConfigured ?? null,
-	);
-	const [error, setError] = useState("");
-	const lastSetRequestIdRef = useRef(0);
-	const bootstrapRequestIdRef = useRef(0);
-	const secretStatusRequestIdRef = useRef(0);
-
-	const applyBootstrap = useCallback(
-		(data: AiProfilesBootstrap, generation = aiProfilesGeneration) => {
-			if (generation !== aiProfilesGeneration) return;
-			setProfiles(data.profiles);
-			setActiveProfileId(data.activeProfileId);
-			setSecretConfigured(data.secretConfigured);
-			aiProfilesBootstrapCache = data;
-		},
-		[],
-	);
-
-	const reloadProfiles = useCallback(async () => {
-		const generation = aiProfilesGeneration;
-		const requestId = ++bootstrapRequestIdRef.current;
-		setError("");
-		try {
-			const data = await fetchAiProfilesBootstrap();
-			if (
-				requestId !== bootstrapRequestIdRef.current ||
-				generation !== aiProfilesGeneration
-			)
-				return;
-			applyBootstrap(data, generation);
-		} catch (e) {
-			if (
-				requestId !== bootstrapRequestIdRef.current ||
-				generation !== aiProfilesGeneration
-			)
-				return;
-			setError(extractErrorMessage(e));
-		}
-	}, [applyBootstrap]);
-
-	useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			const generation = aiProfilesGeneration;
-			const requestId = ++bootstrapRequestIdRef.current;
-			setError("");
-			try {
-				const data = await preloadAiProfilesData();
-				if (
-					cancelled ||
-					requestId !== bootstrapRequestIdRef.current ||
-					generation !== aiProfilesGeneration
-				)
-					return;
-				applyBootstrap(data, generation);
-			} catch (e) {
-				if (
-					!cancelled &&
-					requestId === bootstrapRequestIdRef.current &&
-					generation === aiProfilesGeneration
-				) {
-					setError(extractErrorMessage(e));
-				}
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [applyBootstrap]);
-
-	useTauriEvent("ai:profiles-updated", () => {
-		void reloadProfiles();
+	const localQueryClient = useQueryClient();
+	const profilesQuery = useQuery({
+		queryKey: aiProfilesQueryKey,
+		queryFn: fetchAiProfilesBootstrap,
 	});
 
-	useEffect(() => {
-		let cancelled = false;
-		let unlistenPromise: Promise<() => void> | null = null;
-		let focusReloadTimeout: number | null = null;
-		try {
-			const win = getCurrentWindow();
-			unlistenPromise = win.onFocusChanged(({ payload: focused }) => {
-				if (!focused || cancelled) return;
-				if (focusReloadTimeout != null) {
-					window.clearTimeout(focusReloadTimeout);
-				}
-				focusReloadTimeout = window.setTimeout(() => {
-					if (cancelled) return;
-					void reloadProfiles();
-				}, 400);
+	useTauriEvent("ai:profiles-updated", () => {
+		void localQueryClient.invalidateQueries({ queryKey: aiProfilesQueryKey });
+	});
+
+	const setActiveMutation = useMutation({
+		mutationFn: (id: string | null) => invoke("ai_active_profile_set", { id }),
+		onMutate: async (id) => {
+			await localQueryClient.cancelQueries({ queryKey: aiProfilesQueryKey });
+			const previous =
+				localQueryClient.getQueryData<AiProfilesBootstrap>(aiProfilesQueryKey);
+			updateProfilesCache((current) => ({
+				...current,
+				activeProfileId: id,
+				secretConfigured:
+					current.activeProfileId === id ? current.secretConfigured : null,
+			}));
+			return { previous };
+		},
+		onError: (_error, _id, context) => {
+			if (context?.previous) {
+				localQueryClient.setQueryData(aiProfilesQueryKey, context.previous);
+			}
+		},
+		onSuccess: async () => {
+			await localQueryClient.invalidateQueries({
+				queryKey: aiProfilesQueryKey,
 			});
-		} catch {
-			// not running inside tauri window context
-		}
-		return () => {
-			cancelled = true;
-			if (focusReloadTimeout != null) {
-				window.clearTimeout(focusReloadTimeout);
-			}
-			void unlistenPromise?.then((unlisten) => unlisten());
-		};
-	}, [reloadProfiles]);
+		},
+	});
 
-	useEffect(() => {
-		if (!activeProfileId) {
-			secretStatusRequestIdRef.current += 1;
-			setSecretConfigured(null);
-			return;
-		}
-		if (aiProfilesBootstrapCache?.activeProfileId === activeProfileId) {
-			secretStatusRequestIdRef.current += 1;
-			setSecretConfigured(aiProfilesBootstrapCache.secretConfigured);
-			return;
-		}
-		let cancelled = false;
-		(async () => {
-			const generation = aiProfilesGeneration;
-			const requestId = ++secretStatusRequestIdRef.current;
-			try {
-				const configured = await invoke("ai_secret_status", {
-					profile_id: activeProfileId,
-				});
-				if (
-					!cancelled &&
-					requestId === secretStatusRequestIdRef.current &&
-					generation === aiProfilesGeneration
-				) {
-					setSecretConfigured(configured);
-					aiProfilesBootstrapCache = {
-						profiles,
-						activeProfileId,
-						secretConfigured: configured,
-					};
-				}
-			} catch {
-				if (
-					!cancelled &&
-					requestId === secretStatusRequestIdRef.current &&
-					generation === aiProfilesGeneration
-				) {
-					setSecretConfigured(null);
-				}
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [activeProfileId, profiles]);
+	const setModelMutation = useMutation({
+		mutationFn: async (modelId: string) => {
+			const current =
+				localQueryClient.getQueryData<AiProfilesBootstrap>(aiProfilesQueryKey);
+			const profile = current?.profiles.find(
+				(p) => p.id === current.activeProfileId,
+			);
+			if (!profile) return null;
+			return invoke("ai_profile_upsert", {
+				profile: { ...profile, model: modelId },
+			});
+		},
+		onSuccess: (saved) => {
+			if (!saved) return;
+			updateProfilesCache((current) => ({
+				...current,
+				profiles: current.profiles.map((profile) =>
+					profile.id === saved.id ? saved : profile,
+				),
+			}));
+		},
+	});
 
+	const data = profilesQuery.data;
+	const profiles = data?.profiles ?? [];
+	const activeProfileId = data?.activeProfileId ?? null;
+	const secretConfigured = data?.secretConfigured ?? null;
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
 		return profiles.find((p) => p.id === activeProfileId) ?? null;
@@ -230,69 +131,23 @@ export function useAiProfiles() {
 
 	const setActive = useCallback(
 		async (id: string | null) => {
-			const generation = aiProfilesGeneration;
-			const previous = activeProfileId;
-			const requestId = ++lastSetRequestIdRef.current;
-			setActiveProfileId(id);
-			setError("");
-			try {
-				await invoke("ai_active_profile_set", { id });
-				if (
-					requestId !== lastSetRequestIdRef.current ||
-					generation !== aiProfilesGeneration
-				)
-					return;
-				aiProfilesBootstrapCache = {
-					profiles,
-					activeProfileId: id,
-					secretConfigured:
-						aiProfilesBootstrapCache?.activeProfileId === id
-							? aiProfilesBootstrapCache.secretConfigured
-							: null,
-				};
-			} catch (e) {
-				if (
-					requestId !== lastSetRequestIdRef.current ||
-					generation !== aiProfilesGeneration
-				)
-					return;
-				setActiveProfileId(previous);
-				setError(extractErrorMessage(e));
-			}
+			await setActiveMutation.mutateAsync(id);
 		},
-		[activeProfileId, profiles],
+		[setActiveMutation],
 	);
 
 	const setModel = useCallback(
 		async (modelId: string) => {
-			const profile = profiles.find((p) => p.id === activeProfileId);
-			if (!profile) return;
-			const generation = aiProfilesGeneration;
-			const updated = { ...profile, model: modelId };
-			setError("");
-			try {
-				const saved = await invoke("ai_profile_upsert", {
-					profile: updated,
-				});
-				if (generation !== aiProfilesGeneration) return;
-				setProfiles((prev) => {
-					if (generation !== aiProfilesGeneration) return prev;
-					const next = prev.map((p) => (p.id === saved.id ? saved : p));
-					aiProfilesBootstrapCache = {
-						profiles: next,
-						activeProfileId,
-						secretConfigured,
-					};
-					return next;
-				});
-			} catch (e) {
-				if (generation === aiProfilesGeneration) {
-					setError(extractErrorMessage(e));
-				}
-			}
+			await setModelMutation.mutateAsync(modelId);
 		},
-		[activeProfileId, profiles, secretConfigured],
+		[setModelMutation],
 	);
+
+	const error =
+		(profilesQuery.error && extractErrorMessage(profilesQuery.error)) ||
+		(setActiveMutation.error && extractErrorMessage(setActiveMutation.error)) ||
+		(setModelMutation.error && extractErrorMessage(setModelMutation.error)) ||
+		"";
 
 	return {
 		profiles,

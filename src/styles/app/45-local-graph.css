@@ -1,56 +1,48 @@
 .localNoteGraphDialog {
-	width: clamp(560px, 64vw, 980px);
+	width: clamp(620px, 68vw, 1040px);
 	max-width: calc(100vw - 2rem);
 	padding: 0;
 	gap: 0;
 	overflow: hidden;
-	background: radial-gradient(
-			circle at top left,
-			color-mix(in srgb, var(--interactive-accent) 10%, transparent),
-			transparent 30%
-		),
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)),
-			color-mix(in srgb, var(--bg-secondary) 95%, var(--bg-primary))
-		);
-	border-color: color-mix(in srgb, var(--border-default) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 98%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--border-default) 82%, transparent);
 	box-shadow: 0 26px 70px
 		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
 }
 
-.localNoteGraphHeader {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	padding: 18px 20px 14px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 82%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-}
-
-.localNoteGraphHeaderText {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.localNoteGraphTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	font-size: 15px;
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.01em;
-}
-
 .localNoteGraphBody {
-	height: clamp(420px, 64vh, 740px);
+	height: clamp(460px, 66vh, 760px);
 	min-height: min(420px, calc(100vh - 7rem));
 	max-height: calc(100vh - 5.5rem);
 	position: relative;
+}
+
+.localNoteGraphClose {
+	appearance: none;
+	position: absolute;
+	top: 12px;
+	right: 14px;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 15px;
+	line-height: 1;
+	cursor: default;
+	outline: none;
+	box-shadow: none;
+}
+
+.localNoteGraphClose:focus,
+.localNoteGraphClose:focus-visible,
+.localNoteGraphClose:hover {
+	color: var(--text-secondary);
+	outline: none;
+	box-shadow: none;
 }
 
 .localNoteGraphState {
@@ -63,156 +55,23 @@
 }
 
 .localNoteGraphViewport {
-	position: relative;
 	width: 100%;
 	height: 100%;
-	overflow: hidden;
-	cursor: pointer;
-	background: radial-gradient(
-			circle at center,
-			color-mix(in srgb, var(--bg-secondary) 85%, transparent),
-			transparent 70%
+	cursor: grab;
+	background: linear-gradient(
+			color-mix(in srgb, var(--border-light) 30%, transparent) 1px,
+			transparent 1px
 		),
 		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--bg-primary) 92%, transparent),
-			color-mix(in srgb, var(--bg-secondary) 94%, transparent)
-		);
+			90deg,
+			color-mix(in srgb, var(--border-light) 30%, transparent) 1px,
+			transparent 1px
+		), color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
+	background-size: 34px 34px;
 }
 
-.localNoteGraphEdges,
-.localNoteGraphNodes {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-}
-
-.localNoteGraphEdges {
-	pointer-events: none;
-}
-
-.localNoteGraphNodes {
-	pointer-events: none;
-}
-
-.localNoteGraphEdge {
-	fill: none;
-	stroke: color-mix(in srgb, var(--text-tertiary) 26%, transparent);
-	stroke-width: 2;
-	transition: opacity var(--transition-base), stroke var(--transition-base),
-		stroke-width var(--transition-base);
-}
-
-.localNoteGraphEdge.is-highlighted {
-	opacity: 1;
-	stroke: color-mix(
-		in srgb,
-		var(--interactive-accent) 54%,
-		var(--text-secondary)
-	);
-	stroke-width: 2.3;
-}
-
-.localNoteGraphEdge.is-dimmed {
-	opacity: 0.14;
-}
-
-.localNoteGraphNode {
-	position: absolute;
-	z-index: 2;
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	max-width: 260px;
-	transform: translate(-50%, -50%);
-	padding: 11px 16px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
-	box-shadow: 0 16px 38px
-		color-mix(in srgb, var(--shadow-color, #000) 12%, transparent);
-	color: var(--text-primary);
-	cursor: pointer;
-	pointer-events: auto;
-	touch-action: none;
-	user-select: none;
-	transition: transform var(--transition-base), opacity var(--transition-base),
-		border-color var(--transition-base), box-shadow var(--transition-base),
-		background-color var(--transition-base);
-}
-
-.localNoteGraphNode:hover,
-.localNoteGraphNode.is-focused {
-	transform: translate(-50%, -50%) translateY(-1px);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 42%,
-		var(--border-default)
-	);
-	box-shadow: 0 18px 42px
-		color-mix(in srgb, var(--shadow-color, #000) 14%, transparent);
-}
-
-.localNoteGraphNode.is-dimmed {
-	opacity: 0.18;
-}
-
-.localNoteGraphNode.is-center {
-	padding: 13px 18px;
-	background: color-mix(
-		in srgb,
-		var(--bg-primary) 84%,
-		var(--interactive-accent) 4%
-	);
-}
-
-.localNoteGraphNodeDot {
-	width: 10px;
-	height: 10px;
-	border-radius: 999px;
-	flex: none;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 68%,
-		var(--text-primary)
-	);
-	box-shadow: 0 0 0 5px
-		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
-}
-
-.localNoteGraphNode.is-center .localNoteGraphNodeDot {
-	width: 12px;
-	height: 12px;
-}
-
-.localNoteGraphNodeLabel {
-	display: block;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	letter-spacing: -0.01em;
-}
-
-.localNoteGraphLegend {
-	position: absolute;
-	right: 16px;
-	bottom: 16px;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 12px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	color: var(--text-secondary);
-	font-size: 11px;
+.localNoteGraphViewport:active {
+	cursor: grabbing;
 }
 
 @media (max-width: 900px) {
@@ -221,23 +80,9 @@
 		max-width: calc(100vw - 1rem);
 	}
 
-	.localNoteGraphHeader {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 12px;
-	}
-
 	.localNoteGraphBody {
 		height: min(60vh, calc(100vh - 7rem));
 		min-height: 360px;
-	}
-
-	.localNoteGraphLegend {
-		left: 16px;
-		right: 16px;
-		justify-content: center;
-		flex-wrap: wrap;
-		border-radius: var(--radius-full);
 	}
 }
 
@@ -247,18 +92,9 @@
 		max-width: calc(100vw - 0.5rem);
 	}
 
-	.localNoteGraphHeader {
-		padding: 14px 16px 12px;
-	}
-
 	.localNoteGraphBody {
 		height: min(58vh, calc(100vh - 6rem));
 		min-height: 320px;
 		max-height: calc(100vh - 6rem);
-	}
-
-	.localNoteGraphNode {
-		max-width: 220px;
-		padding: 10px 14px;
 	}
 }

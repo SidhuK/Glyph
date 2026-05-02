@@ -1,4 +1,6 @@
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { queryClient } from "../lib/queryClient";
 import { EditorProvider } from "./EditorContext";
 import { FileTreeProvider } from "./FileTreeContext";
 import { SpaceProvider } from "./SpaceContext";
@@ -46,13 +48,15 @@ class ProvidersErrorBoundary extends Component<
 export function AppProviders({ children }: { children: ReactNode }) {
 	return (
 		<ProvidersErrorBoundary>
-			<SpaceProvider>
-				<FileTreeProvider>
-					<UIProvider>
-						<EditorProvider>{children}</EditorProvider>
-					</UIProvider>
-				</FileTreeProvider>
-			</SpaceProvider>
+			<QueryClientProvider client={queryClient}>
+				<SpaceProvider>
+					<FileTreeProvider>
+						<UIProvider>
+							<EditorProvider>{children}</EditorProvider>
+						</UIProvider>
+					</FileTreeProvider>
+				</SpaceProvider>
+			</QueryClientProvider>
 		</ProvidersErrorBoundary>
 	);
 }
