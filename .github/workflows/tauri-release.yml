@@ -204,40 +204,6 @@ jobs:
           prerelease: false
           includeUpdaterJson: true
 
-      - name: Update website download link
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
-          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
-        run: |
-          set -euo pipefail
-
-          dmg_url="https://github.com/SidhuK/Glyph/releases/download/${NEXT_TAG}/Glyph_${NEXT_VERSION}_aarch64.dmg"
-
-          # Verify the asset actually exists before updating
-          status=$(curl -sL -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${GITHUB_TOKEN}" "${dmg_url}")
-          if [ "${status}" -lt 200 ] || [ "${status}" -ge 400 ]; then
-            echo "DMG asset not found at ${dmg_url} (HTTP ${status}), skipping website update"
-            exit 0
-          fi
-
-          echo "DMG verified at ${dmg_url}"
-
-          cat > website/src/lib/site.ts << EOF
-          export const downloadUrl =
-          	"${dmg_url}";
-          EOF
-
-          # Clean up leading whitespace from heredoc
-          sed -i.bak 's/^          //' website/src/lib/site.ts && rm -f website/src/lib/site.ts.bak
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add website/src/lib/site.ts
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "chore(website): update download link to ${NEXT_TAG}"
-          git push
-
       - name: Notify Homebrew tap
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_DISPATCH_TOKEN }}

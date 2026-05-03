@@ -38,8 +38,6 @@ pnpm format
 pnpm test
 cd src-tauri && cargo check
 cd src-tauri && cargo clippy
-cd website && pnpm dev
-cd website && pnpm build
 ```
 
 ### Pre-push checks
@@ -56,7 +54,6 @@ cd src-tauri && cargo check
 
 - `src/` - React frontend
 - `src-tauri/` - Tauri and Rust backend
-- `website/` - Astro marketing site
 - `docs/` - product, release, and engineering documentation
 
 ## Coding guidelines

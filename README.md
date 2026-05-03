@@ -1,7 +1,7 @@
 # Glyph
 
 <p align="center">
-  <img src=".logo_g.PNG" alt="Glyph logo" width="140" />
+  <img src="logo_g.PNG" alt="Glyph logo" width="140" />
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
 
 Offline-first desktop note-taking application. Tauri 2 shell with a React 19 / TypeScript / Vite 8 frontend and a Rust backend. Data lives entirely on-disk in a per-space `.glyph/` directory backed by SQLite and the local filesystem. No cloud sync, no server.
 
-![Glyph](.imageforWebsite.png)
+![Glyph](imageforWebsite.png)
 
 ## Prerequisites
 
@@ -55,9 +55,6 @@ pnpm test -- -t "test name"            # single test by name
 cd src-tauri && cargo check            # typecheck
 cd src-tauri && cargo clippy           # lint
 
-# Marketing site (Astro, separate workspace)
-cd website && pnpm dev
-cd website && pnpm build
 ```
 
 ### Pre-push checklist
