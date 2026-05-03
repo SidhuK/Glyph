@@ -14,8 +14,8 @@ use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::properties::{delete_note_properties, reindex_note_properties};
 use super::relationships::{
-    delete_note_relationships, insert_note_relationships, parse_frontmatter_relationships,
-    reindex_note_relationships,
+    delete_note_relationships, ensure_note_relationships_indexed, insert_note_relationships,
+    parse_frontmatter_relationships, reindex_note_relationships,
 };
 use super::tags::{
     expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people,
@@ -114,6 +114,7 @@ fn index_note_with_conn(
         )
         .ok();
     if existing_etag.as_deref() == Some(etag.as_str()) {
+        ensure_note_relationships_indexed(conn, note_id, markdown)?;
         refresh_indexed_timestamps_if_needed(conn, note_id, file_path)?;
         return Ok(());
     }

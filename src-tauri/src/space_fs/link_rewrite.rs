@@ -32,7 +32,7 @@ pub fn rewrite_links_after_rename(
         }
         let abs = paths::join_under(space_root, Path::new(&rel_path))?;
         let original = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
-        let rewrite = rewrite_markdown_links(&original, plan);
+        let rewrite = rewrite_markdown_links_for_path(&original, plan, &rel_path);
 
         if rewrite.markdown != original {
             crate::io_atomic::write_atomic(&abs, rewrite.markdown.as_bytes())
@@ -45,7 +45,11 @@ pub fn rewrite_links_after_rename(
     Ok(result)
 }
 
-pub fn rewrite_markdown_links(markdown: &str, plan: &LinkRewritePlan) -> RewriteMarkdownResult {
+pub fn rewrite_markdown_links_for_path(
+    markdown: &str,
+    plan: &LinkRewritePlan,
+    source_rel_path: &str,
+) -> RewriteMarkdownResult {
     let mut out = String::with_capacity(markdown.len());
     let mut changed_links = 0;
     let mut in_fence = false;
@@ -65,7 +69,7 @@ pub fn rewrite_markdown_links(markdown: &str, plan: &LinkRewritePlan) -> Rewrite
         }
 
         let wiki = rewrite_wikilinks(line, plan);
-        let markdown_links = rewrite_markdown_link_targets(&wiki.markdown, plan);
+        let markdown_links = rewrite_markdown_link_targets(&wiki.markdown, plan, source_rel_path);
         changed_links += wiki.changed_links + markdown_links.changed_links;
         out.push_str(&markdown_links.markdown);
         out.push_str(newline);
@@ -117,7 +121,11 @@ fn rewrite_wikilinks(markdown: &str, plan: &LinkRewritePlan) -> RewriteMarkdownR
     }
 }
 
-fn rewrite_markdown_link_targets(markdown: &str, plan: &LinkRewritePlan) -> RewriteMarkdownResult {
+fn rewrite_markdown_link_targets(
+    markdown: &str,
+    plan: &LinkRewritePlan,
+    source_rel_path: &str,
+) -> RewriteMarkdownResult {
     let mut out = String::with_capacity(markdown.len());
     let mut changed_links = 0;
     let mut i = 0;
@@ -129,7 +137,7 @@ fn rewrite_markdown_link_targets(markdown: &str, plan: &LinkRewritePlan) -> Rewr
         let close = start + close_rel;
         out.push_str(&markdown[i..start]);
         let target = &markdown[start..close];
-        if let Some(next_target) = rewrite_markdown_target(target, plan) {
+        if let Some(next_target) = rewrite_markdown_target(target, plan, source_rel_path) {
             out.push_str(&next_target);
             changed_links += 1;
         } else {
@@ -152,7 +160,11 @@ fn rewrite_wikilink_inner(inner: &str, plan: &LinkRewritePlan) -> Option<String>
     Some(format!("{replacement}{heading_part}{alias_part}"))
 }
 
-fn rewrite_markdown_target(target: &str, plan: &LinkRewritePlan) -> Option<String> {
+fn rewrite_markdown_target(
+    target: &str,
+    plan: &LinkRewritePlan,
+    source_rel_path: &str,
+) -> Option<String> {
     let trimmed = target.trim();
     let bare = trimmed.trim_matches('<').trim_matches('>');
     if is_external_target(bare) {
@@ -160,7 +172,8 @@ fn rewrite_markdown_target(target: &str, plan: &LinkRewritePlan) -> Option<Strin
     }
 
     let (without_fragment, fragment) = split_once_preserve(bare, '#');
-    let replacement = rewrite_target(without_fragment.trim(), plan, true)?;
+    let raw_target = without_fragment.trim();
+    let replacement = rewrite_markdown_target_path(raw_target, plan, source_rel_path)?;
     let wrapped = if trimmed.starts_with('<') && trimmed.ends_with('>') {
         format!("<{replacement}{fragment}>")
     } else {
@@ -193,6 +206,34 @@ fn rewrite_target(target: &str, plan: &LinkRewritePlan, markdown_link: bool) -> 
     None
 }
 
+fn rewrite_markdown_target_path(
+    target: &str,
+    plan: &LinkRewritePlan,
+    source_rel_path: &str,
+) -> Option<String> {
+    if target.is_empty() {
+        return None;
+    }
+
+    if target.starts_with('/') {
+        let root_target = target.trim_start_matches('/');
+        return rewrite_target(root_target, plan, true).map(|replacement| format!("/{replacement}"));
+    }
+
+    if let Some(replacement) = rewrite_target(target, plan, true) {
+        return Some(replacement);
+    }
+
+    let source_dir = source_dir(source_rel_path);
+    let root_target = if source_dir.is_empty() {
+        target.to_string()
+    } else {
+        format!("{source_dir}/{target}")
+    };
+    let replacement = rewrite_target(&root_target, plan, true)?;
+    Some(relative_path_from_source_dir(&replacement, &source_dir))
+}
+
 fn rewrite_prefix_target(target: &str, from_prefix: &str, to_prefix: &str) -> Option<String> {
     if target == from_prefix {
         return Some(to_prefix.to_string());
@@ -201,6 +242,24 @@ fn rewrite_prefix_target(target: &str, from_prefix: &str, to_prefix: &str) -> Op
         return Some(format!("{to_prefix}/{rest}"));
     }
     None
+}
+
+fn source_dir(source_rel_path: &str) -> String {
+    Path::new(source_rel_path)
+        .parent()
+        .and_then(|path| path.to_str())
+        .unwrap_or("")
+        .replace('\\', "/")
+}
+
+fn relative_path_from_source_dir(target: &str, source_dir: &str) -> String {
+    if source_dir.is_empty() {
+        return target.to_string();
+    }
+    target
+        .strip_prefix(&format!("{source_dir}/"))
+        .unwrap_or(target)
+        .to_string()
 }
 
 fn split_once_preserve(value: &str, delimiter: char) -> (&str, String) {
@@ -299,7 +358,7 @@ fn to_slash(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{LinkRewritePlan, rewrite_markdown_links};
+    use super::{LinkRewritePlan, rewrite_markdown_links_for_path};
 
     fn plan() -> LinkRewritePlan {
         LinkRewritePlan {
@@ -314,7 +373,7 @@ mod tests {
     #[test]
     fn rewrites_title_alias_heading_path_and_markdown_links() {
         let input = "[[Old Title]] [[Old Title|Alias]] [[Old Title#Part]] [[folder/old-title]] [label](folder/old-title.md)";
-        let output = rewrite_markdown_links(input, &plan());
+        let output = rewrite_markdown_links_for_path(input, &plan(), "");
 
         assert_eq!(
             output.markdown,
@@ -326,7 +385,7 @@ mod tests {
     #[test]
     fn does_not_rewrite_external_partial_or_fenced_links() {
         let input = "https://example.com/old-title.md [[Old Title Extended]]\n```\n[[Old Title]]\n```\n";
-        let output = rewrite_markdown_links(input, &plan());
+        let output = rewrite_markdown_links_for_path(input, &plan(), "");
 
         assert_eq!(output.markdown, input);
         assert_eq!(output.changed_links, 0);
@@ -338,9 +397,21 @@ mod tests {
         plan.from_rel_path = "old-dir".to_string();
         plan.to_rel_path = "new-dir".to_string();
         plan.is_dir = true;
-        let output = rewrite_markdown_links("[[old-dir/a]] [a](old-dir/a.md)", &plan);
+        let output = rewrite_markdown_links_for_path("[[old-dir/a]] [a](old-dir/a.md)", &plan, "");
 
         assert_eq!(output.markdown, "[[new-dir/a]] [a](new-dir/a.md)");
+        assert_eq!(output.changed_links, 2);
+    }
+
+    #[test]
+    fn rewrites_markdown_links_relative_to_source_note() {
+        let input = "[label](old-title.md) [root](folder/old-title.md)";
+        let output = rewrite_markdown_links_for_path(input, &plan(), "folder/source.md");
+
+        assert_eq!(
+            output.markdown,
+            "[label](new-title.md) [root](folder/new-title.md)"
+        );
         assert_eq!(output.changed_links, 2);
     }
 }

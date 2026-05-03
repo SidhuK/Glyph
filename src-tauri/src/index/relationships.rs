@@ -59,6 +59,28 @@ pub fn reindex_note_relationships(
     insert_note_relationships(conn, note_id, parse_frontmatter_relationships(markdown))
 }
 
+pub fn ensure_note_relationships_indexed(
+    conn: &Connection,
+    note_id: &str,
+    markdown: &str,
+) -> Result<(), String> {
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM note_relationships WHERE from_id = ? LIMIT 1)",
+            [note_id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    if exists {
+        return Ok(());
+    }
+    let relationships = parse_frontmatter_relationships(markdown);
+    if relationships.is_empty() {
+        return Ok(());
+    }
+    insert_note_relationships(conn, note_id, relationships)
+}
+
 pub fn insert_note_relationships(
     conn: &Connection,
     note_id: &str,
@@ -203,7 +225,10 @@ fn resolve_title_to_id(conn: &Connection, title: &str) -> Result<Option<String>,
 mod tests {
     use rusqlite::Connection;
 
-    use super::{parse_frontmatter_relationships, reindex_note_relationships};
+    use super::{
+        ensure_note_relationships_indexed, parse_frontmatter_relationships,
+        reindex_note_relationships,
+    };
     use crate::index::schema::ensure_schema;
 
     #[test]
@@ -264,5 +289,24 @@ Body
             .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| row.get(0))
             .unwrap();
         assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn ensure_indexes_missing_rows_for_unchanged_notes() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+             VALUES('a.md', 'A', '2026-01-01', '2026-01-01', 'a.md', 'a', '')",
+            [],
+        )
+        .unwrap();
+
+        ensure_note_relationships_indexed(&conn, "source.md", "---\nproject: [[A]]\n---\n")
+            .unwrap();
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(count, 1);
     }
 }

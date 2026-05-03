@@ -297,14 +297,41 @@ pub async fn space_rename_path(
             &recent_local_changes,
         );
         let rewrite_result = if let Some(plan) = rewrite_plan {
-            let result = link_rewrite::rewrite_links_after_rename(&root, &plan)?;
-            for changed in &result.changed_files {
-                mark_recent_local_change(&recent_local_changes, changed);
-                if let Ok(markdown) = std::fs::read_to_string(root.join(changed)) {
-                    let _ = index::index_note(&root, changed, &markdown);
+            match link_rewrite::rewrite_links_after_rename(&root, &plan) {
+                Ok(result) => {
+                    for changed in &result.changed_files {
+                        mark_recent_local_change(&recent_local_changes, changed);
+                        match std::fs::read_to_string(root.join(changed)) {
+                            Ok(markdown) => {
+                                if let Err(error) = index::index_note(&root, changed, &markdown) {
+                                    tracing::warn!(
+                                        note_id = %changed,
+                                        error = %error,
+                                        "failed to index rewritten links after rename"
+                                    );
+                                }
+                            }
+                            Err(error) => {
+                                tracing::warn!(
+                                    note_id = %changed,
+                                    error = %error,
+                                    "failed to read rewritten note after rename"
+                                );
+                            }
+                        }
+                    }
+                    result
+                }
+                Err(error) => {
+                    tracing::warn!(
+                        from_path = %from_path,
+                        to_path = %to_path,
+                        error = %error,
+                        "link rewrite failed after successful rename"
+                    );
+                    LinkRewriteResult::default()
                 }
             }
-            result
         } else {
             LinkRewriteResult::default()
         };
