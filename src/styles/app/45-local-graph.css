@@ -4,8 +4,8 @@
 	padding: 0;
 	gap: 0;
 	overflow: hidden;
-	background: color-mix(in srgb, var(--bg-primary) 98%, var(--bg-secondary));
-	border-color: color-mix(in srgb, var(--border-default) 82%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--border-default) 76%, transparent);
 	box-shadow: 0 26px 70px
 		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
 }
@@ -32,7 +32,7 @@
 	color: var(--text-secondary);
 	font-size: 15px;
 	line-height: 1;
-	cursor: default;
+	cursor: pointer;
 	outline: none;
 	box-shadow: none;
 }
@@ -54,24 +54,139 @@
 	font-size: var(--text-sm);
 }
 
+.localNoteGraphStage {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
 .localNoteGraphViewport {
+	--local-graph-dot: color-mix(in srgb, var(--text-secondary) 18%, transparent);
+	--local-graph-surface: color-mix(
+		in srgb,
+		var(--bg-secondary) 88%,
+		var(--bg-primary)
+	);
 	width: 100%;
 	height: 100%;
 	cursor: grab;
-	background: linear-gradient(
-			color-mix(in srgb, var(--border-light) 30%, transparent) 1px,
-			transparent 1px
-		),
-		linear-gradient(
-			90deg,
-			color-mix(in srgb, var(--border-light) 30%, transparent) 1px,
-			transparent 1px
-		), color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
-	background-size: 34px 34px;
+	background-color: var(--local-graph-surface);
+	background-image: radial-gradient(
+		circle at center,
+		var(--local-graph-dot) 0.85px,
+		transparent 1px
+	);
+	background-position: center;
+	background-size: 22px 22px;
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 38%, transparent), inset 0 24px 70px
+		color-mix(in srgb, var(--bg-primary) 20%, transparent);
 }
 
 .localNoteGraphViewport:active {
 	cursor: grabbing;
+}
+
+.localNoteGraphLegend {
+	position: absolute;
+	left: 14px;
+	bottom: 14px;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(92px, max-content));
+	gap: 7px 12px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+	font-size: 10.5px;
+	line-height: 1;
+	pointer-events: none;
+	box-shadow: 0 12px 30px
+		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
+}
+
+.localNoteGraphLegendItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	white-space: nowrap;
+}
+
+.localNoteGraphLegendItem:last-child {
+	grid-column: 1 / -1;
+}
+
+.localNoteGraphLegendNode {
+	display: inline-block;
+	width: 28px;
+	height: 10px;
+	border: 1px solid var(--border-default);
+	border-radius: 4px;
+	background: var(--bg-primary);
+}
+
+.localNoteGraphLegendNode.is-current {
+	border-color: var(--interactive-accent);
+	background: var(--interactive-accent);
+}
+
+.localNoteGraphLegendNode.is-note {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 52%,
+		var(--border-default)
+	);
+}
+
+.localNoteGraphLegendNode.is-tag {
+	border-style: dashed;
+	border-color: var(--interactive-accent);
+	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+}
+
+.localNoteGraphLegendEdge {
+	position: relative;
+	display: inline-block;
+	width: 28px;
+	height: 1px;
+	background: color-mix(in srgb, var(--text-secondary) 68%, transparent);
+}
+
+.localNoteGraphLegendEdge::after {
+	position: absolute;
+	top: 50%;
+	right: -1px;
+	width: 0;
+	height: 0;
+	border-top: 3px solid transparent;
+	border-bottom: 3px solid transparent;
+	border-left: 5px solid currentcolor;
+	color: inherit;
+	content: "";
+	transform: translateY(-50%);
+}
+
+.localNoteGraphLegendEdge.is-link {
+	height: 2px;
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+	background: currentcolor;
+}
+
+.localNoteGraphLegendEdge.is-tag-link {
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		var(--text-secondary)
+	);
+	background: repeating-linear-gradient(
+		90deg,
+		currentcolor 0 2px,
+		transparent 2px 5px
+	);
 }
 
 @media (max-width: 900px) {
@@ -83,6 +198,11 @@
 	.localNoteGraphBody {
 		height: min(60vh, calc(100vh - 7rem));
 		min-height: 360px;
+	}
+
+	.localNoteGraphLegend {
+		grid-template-columns: repeat(2, minmax(88px, max-content));
+		gap: 6px 10px;
 	}
 }
 
@@ -96,5 +216,14 @@
 		height: min(58vh, calc(100vh - 6rem));
 		min-height: 320px;
 		max-height: calc(100vh - 6rem);
+	}
+
+	.localNoteGraphLegend {
+		right: 10px;
+		bottom: 10px;
+		left: 10px;
+		grid-template-columns: repeat(2, minmax(88px, max-content));
+		gap: 6px 8px;
+		justify-content: center;
 	}
 }

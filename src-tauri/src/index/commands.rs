@@ -20,8 +20,8 @@ use super::tasks::{
     IndexedTask, NoteTaskSummary, NoteTaskSummaryItem,
 };
 use super::types::{
-    BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalNoteGraph, PersonCount,
-    SearchResult, TagCount, TaskDateInfo,
+    BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalGraphTagEdge,
+    LocalGraphTagNode, LocalNoteGraph, PersonCount, SearchResult, TagCount, TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1146,6 +1146,8 @@ fn local_note_graph_for_conn(
     conn: &rusqlite::Connection,
     note_id: &str,
 ) -> Result<LocalNoteGraph, String> {
+    const COMMON_TAG_LIMIT: usize = 12;
+
     let center = conn
         .query_row(
             "SELECT id, title FROM notes WHERE id = ? LIMIT 1",
@@ -1195,6 +1197,13 @@ fn local_note_graph_for_conn(
         );
     }
 
+    let seed_node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
+    let (tags, tagged_nodes, tag_edges) =
+        local_graph_tag_expansion_for_seed_nodes(conn, &seed_node_ids, COMMON_TAG_LIMIT)?;
+    for node in tagged_nodes {
+        nodes_by_id.entry(node.id.clone()).or_insert(node);
+    }
+
     let node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
     let placeholders = std::iter::repeat_n("?", node_ids.len())
         .collect::<Vec<_>>()
@@ -1231,7 +1240,120 @@ fn local_note_graph_for_conn(
         center,
         nodes,
         edges,
+        tags,
+        tag_edges,
     })
+}
+
+fn local_graph_tag_id(tag: &str) -> String {
+    format!("glyph:tag:{tag}")
+}
+
+fn local_graph_tag_expansion_for_seed_nodes(
+    conn: &rusqlite::Connection,
+    seed_node_ids: &[String],
+    limit: usize,
+) -> Result<
+    (
+        Vec<LocalGraphTagNode>,
+        Vec<LocalGraphNode>,
+        Vec<LocalGraphTagEdge>,
+    ),
+    String,
+> {
+    if seed_node_ids.len() < 2 {
+        return Ok((Vec::new(), Vec::new(), Vec::new()));
+    }
+
+    let seed_placeholders = std::iter::repeat_n("?", seed_node_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let tag_query = format!(
+        "SELECT tag
+         FROM tags
+         WHERE is_explicit = 1
+           AND tag NOT LIKE ?
+           AND note_id IN ({seed_placeholders})
+         GROUP BY tag
+         HAVING COUNT(*) > 1
+         ORDER BY COUNT(*) DESC, tag COLLATE NOCASE ASC
+         LIMIT ?"
+    );
+    let mut params = Vec::<rusqlite::types::Value>::new();
+    params.push(format!("{PEOPLE_TAG_NAMESPACE}%").into());
+    params.extend(seed_node_ids.iter().cloned().map(Into::into));
+    params.push((limit as i64).into());
+
+    let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
+    let mut tag_rows = tag_stmt
+        .query(rusqlite::params_from_iter(params))
+        .map_err(|e| e.to_string())?;
+    let mut tag_names = Vec::new();
+    while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
+        tag_names.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
+    }
+
+    if tag_names.is_empty() {
+        return Ok((Vec::new(), Vec::new(), Vec::new()));
+    }
+
+    let tag_placeholders = std::iter::repeat_n("?", tag_names.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let edge_query = format!(
+        "SELECT t.tag, n.id, n.title
+         FROM tags t
+         JOIN notes n ON n.id = t.note_id
+         WHERE t.is_explicit = 1
+           AND t.tag IN ({tag_placeholders})
+         ORDER BY t.tag COLLATE NOCASE ASC, n.title COLLATE NOCASE ASC, n.id ASC"
+    );
+    let mut edge_params = Vec::<rusqlite::types::Value>::new();
+    edge_params.extend(tag_names.iter().cloned().map(Into::into));
+
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    let mut edge_rows = edge_stmt
+        .query(rusqlite::params_from_iter(edge_params))
+        .map_err(|e| e.to_string())?;
+    let mut tag_edges = Vec::new();
+    let mut tagged_nodes_by_id = HashMap::<String, LocalGraphNode>::new();
+    let mut note_count_by_tag = HashMap::<String, u32>::new();
+    while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
+        let tag: String = row.get(0).map_err(|e| e.to_string())?;
+        let note_id: String = row.get(1).map_err(|e| e.to_string())?;
+        let title: String = row.get(2).map_err(|e| e.to_string())?;
+        *note_count_by_tag.entry(tag.clone()).or_insert(0) += 1;
+        tagged_nodes_by_id
+            .entry(note_id.clone())
+            .or_insert(LocalGraphNode {
+                id: note_id.clone(),
+                title,
+                is_center: false,
+            });
+        tag_edges.push(LocalGraphTagEdge {
+            tag_id: local_graph_tag_id(&tag),
+            note_id,
+        });
+    }
+
+    let tags = tag_names
+        .into_iter()
+        .filter_map(|tag| {
+            let note_count = note_count_by_tag.get(&tag).copied()?;
+            Some(LocalGraphTagNode {
+                id: local_graph_tag_id(&tag),
+                title: format!("#{tag}"),
+                tag,
+                note_count,
+            })
+        })
+        .collect::<Vec<_>>();
+
+    Ok((
+        tags,
+        tagged_nodes_by_id.into_values().collect::<Vec<_>>(),
+        tag_edges,
+    ))
 }
 
 #[tauri::command(rename_all = "snake_case")]

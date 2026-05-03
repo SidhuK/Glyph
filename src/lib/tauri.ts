@@ -320,10 +320,24 @@ export interface LocalGraphEdge {
 	target: string;
 }
 
+export interface LocalGraphTagNode {
+	id: string;
+	tag: string;
+	title: string;
+	note_count: number;
+}
+
+export interface LocalGraphTagEdge {
+	tag_id: string;
+	note_id: string;
+}
+
 export interface LocalNoteGraph {
 	center: LocalGraphNode;
 	nodes: LocalGraphNode[];
 	edges: LocalGraphEdge[];
+	tags: LocalGraphTagNode[];
+	tag_edges: LocalGraphTagEdge[];
 }
 
 export interface TagCount {

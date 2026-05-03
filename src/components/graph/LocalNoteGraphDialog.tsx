@@ -27,6 +27,8 @@ interface GraphTheme {
 	background: string;
 	border: string;
 	edge: string;
+	edgeIncoming: string;
+	edgeInternal: string;
 	nodeActiveBorder: string;
 	node: string;
 	nodeActive: string;
@@ -69,6 +71,8 @@ function graphThemeFor(element: HTMLElement): GraphTheme {
 		background,
 		border,
 		edge: textMuted,
+		edgeIncoming: text,
+		edgeInternal: border,
 		nodeActiveBorder: accent,
 		node,
 		nodeActive: node,
@@ -79,11 +83,31 @@ function graphThemeFor(element: HTMLElement): GraphTheme {
 	};
 }
 
+function nodeClasses(node: LocalNoteGraph["nodes"][number], weight: number) {
+	const classes = [];
+	if (node.is_center) {
+		classes.push("center");
+	} else if (weight >= 5) {
+		classes.push("hub-strong");
+	} else if (weight >= 3) {
+		classes.push("hub");
+	} else if (weight >= 2) {
+		classes.push("connected");
+	}
+	return classes.join(" ");
+}
+
 function graphElements(graph: LocalNoteGraph): ElementDefinition[] {
 	const degreeById = new Map(graph.nodes.map((node) => [node.id, 0]));
+	const edgeKeys = new Set(
+		graph.edges.map((edge) => `${edge.source}->${edge.target}`),
+	);
 	for (const edge of graph.edges) {
 		degreeById.set(edge.source, (degreeById.get(edge.source) ?? 0) + 1);
 		degreeById.set(edge.target, (degreeById.get(edge.target) ?? 0) + 1);
+	}
+	for (const edge of graph.tag_edges) {
+		degreeById.set(edge.note_id, (degreeById.get(edge.note_id) ?? 0) + 1);
 	}
 
 	return [
@@ -93,15 +117,48 @@ function graphElements(graph: LocalNoteGraph): ElementDefinition[] {
 				label: node.title || node.id,
 				weight: degreeById.get(node.id) ?? 0,
 			},
-			classes: node.is_center ? "center" : "",
+			classes: nodeClasses(node, degreeById.get(node.id) ?? 0),
 			grabbable: !node.is_center,
 		})),
-		...graph.edges.map((edge, index) => ({
+		...graph.tags.map((tag) => ({
 			data: {
-				id: `${edge.source}->${edge.target}:${index}`,
-				source: edge.source,
-				target: edge.target,
+				id: tag.id,
+				label: tag.title,
+				noteCount: tag.note_count,
+				tag: tag.tag,
 			},
+			classes: tag.note_count >= 4 ? "tag tag-strong" : "tag",
+			grabbable: true,
+		})),
+		...graph.edges.map((edge, index) => {
+			const classes = ["link"];
+			if (edge.source === graph.center.id) {
+				classes.push("from-center");
+			} else if (edge.target === graph.center.id) {
+				classes.push("to-center");
+			} else {
+				classes.push("internal");
+			}
+			if (edgeKeys.has(`${edge.target}->${edge.source}`)) {
+				classes.push("reciprocal");
+			}
+
+			return {
+				data: {
+					id: `${edge.source}->${edge.target}:${index}`,
+					source: edge.source,
+					target: edge.target,
+				},
+				classes: classes.join(" "),
+			};
+		}),
+		...graph.tag_edges.map((edge, index) => ({
+			data: {
+				id: `${edge.tag_id}->${edge.note_id}:tag:${index}`,
+				source: edge.tag_id,
+				target: edge.note_id,
+			},
+			classes: "tag-link",
 		})),
 	];
 }
@@ -135,10 +192,10 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 				height: "label",
 				label: "data(label)",
 				"line-height": 1.25,
-				"min-height": "34px",
-				"min-width": "58px",
+				"min-height": "30px",
+				"min-width": "54px",
 				"overlay-opacity": 0,
-				padding: "12px",
+				padding: "9px 11px",
 				shape: "round-rectangle",
 				"text-events": "yes",
 				"text-halign": "center",
@@ -151,6 +208,37 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			},
 		},
 		{
+			selector: "node.connected",
+			style: {
+				"border-color": theme.nodeActiveBorder,
+				"border-width": 1.35,
+			},
+		},
+		{
+			selector: "node.hub",
+			style: {
+				"border-color": theme.nodeActiveBorder,
+				"border-width": 1.7,
+				"font-size": 13.5,
+				"font-weight": 580,
+				"min-height": "34px",
+				"min-width": "64px",
+				padding: "10px 12px",
+			},
+		},
+		{
+			selector: "node.hub-strong",
+			style: {
+				"border-color": theme.nodeActiveBorder,
+				"border-width": 2,
+				"font-size": 14,
+				"font-weight": 620,
+				"min-height": "38px",
+				"min-width": "74px",
+				padding: "12px 14px",
+			},
+		},
+		{
 			selector: "node.center",
 			style: {
 				"background-color": theme.nodeCenter,
@@ -159,9 +247,35 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 				color: theme.textInverse,
 				"font-size": 14,
 				"font-weight": 650,
-				"min-height": "42px",
-				"min-width": "76px",
-				padding: "15px",
+				"min-height": "38px",
+				"min-width": "74px",
+				padding: "12px 14px",
+			},
+		},
+		{
+			selector: "node.tag",
+			style: {
+				"background-color": theme.background,
+				"border-color": theme.nodeActiveBorder,
+				"border-style": "dashed",
+				"border-width": 1.4,
+				color: theme.accent,
+				"font-size": 12,
+				"font-weight": 600,
+				"min-height": "26px",
+				"min-width": "44px",
+				padding: "7px 9px",
+				"text-max-width": "150px",
+			},
+		},
+		{
+			selector: "node.tag-strong",
+			style: {
+				"border-width": 1.8,
+				"font-size": 12.5,
+				"min-height": "30px",
+				"min-width": "52px",
+				padding: "8px 10px",
 			},
 		},
 		{
@@ -190,10 +304,65 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			style: {
 				"curve-style": "bezier",
 				"line-color": theme.edge,
-				opacity: 0.28,
+				"source-arrow-shape": "none",
+				"target-arrow-color": theme.edge,
+				"target-endpoint": "outside-to-node",
+				"target-arrow-shape": "triangle",
+				"arrow-scale": 0.9,
+				opacity: 0.34,
 				"transition-duration": 120,
-				"transition-property": "opacity",
-				width: 1.35,
+				"transition-property": "line-color, opacity, target-arrow-color",
+				width: 1.9,
+			},
+		},
+		{
+			selector: "edge.tag-link",
+			style: {
+				"curve-style": "bezier",
+				"line-color": theme.accent,
+				"line-style": "dotted",
+				"source-arrow-shape": "none",
+				"target-arrow-color": theme.accent,
+				"target-endpoint": "outside-to-node",
+				"target-arrow-shape": "triangle",
+				"arrow-scale": 0.7,
+				opacity: 0.3,
+				width: 1.55,
+			},
+		},
+		{
+			selector: "edge.from-center",
+			style: {
+				"line-color": theme.accent,
+				"target-arrow-color": theme.accent,
+				opacity: 0.64,
+				width: 2.4,
+			},
+		},
+		{
+			selector: "edge.to-center",
+			style: {
+				"line-color": theme.edgeIncoming,
+				"target-arrow-color": theme.edgeIncoming,
+				opacity: 0.48,
+				width: 2.05,
+			},
+		},
+		{
+			selector: "edge.internal",
+			style: {
+				"line-color": theme.edgeInternal,
+				"target-arrow-color": theme.edgeInternal,
+				opacity: 0.42,
+				width: 1.8,
+			},
+		},
+		{
+			selector: "edge.reciprocal",
+			style: {
+				"control-point-distance": 38,
+				"control-point-weight": 0.5,
+				"curve-style": "unbundled-bezier",
 			},
 		},
 		{
@@ -205,19 +374,45 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 	];
 }
 
+function graphLayoutSpacing(cy: Core) {
+	const nodeCount = cy.nodes().length;
+	const density = Math.min(nodeCount / 52, 1);
+	const idealEdgeLength = Math.round(150 + density * 70);
+
+	return {
+		idealEdgeLength,
+		nodeRepulsion: Math.round(12_000 + nodeCount * 650),
+		nodeSeparation: Math.round(105 + density * 65),
+		padding: Math.round(72 + density * 28),
+		tilePadding: Math.round(18 + density * 16),
+	};
+}
+
 function runGraphLayout(cy: Core) {
-	cy.layout({
+	const spacing = graphLayoutSpacing(cy);
+	const layout = cy.layout({
 		name: "fcose",
-		animate: true,
-		animationDuration: 240,
+		animate: false,
 		fit: true,
-		idealEdgeLength: 130,
+		idealEdgeLength: (edge: cytoscape.EdgeSingular) =>
+			edge.hasClass("tag-link")
+				? spacing.idealEdgeLength + 36
+				: spacing.idealEdgeLength,
 		nodeDimensionsIncludeLabels: true,
-		nodeRepulsion: 8000,
-		padding: 56,
-		quality: "default",
-		randomize: false,
-	} as cytoscape.LayoutOptions).run();
+		nodeRepulsion: spacing.nodeRepulsion,
+		nodeSeparation: spacing.nodeSeparation,
+		numIter: 3200,
+		padding: spacing.padding,
+		quality: "proof",
+		randomize: true,
+		tile: true,
+		tilingPaddingHorizontal: spacing.tilePadding,
+		tilingPaddingVertical: spacing.tilePadding,
+	} as cytoscape.LayoutOptions);
+	layout.one("layoutstop", () => {
+		cy.fit(undefined, spacing.padding);
+	});
+	layout.run();
 }
 
 function highlightNeighborhood(cy: Core, nodeId: string | null) {
@@ -316,6 +511,10 @@ export function LocalNoteGraphDialog({
 			highlightNeighborhood(cy, null);
 		});
 		cy.on("tap", "node", (event) => {
+			if (event.target.hasClass("tag")) {
+				highlightNeighborhood(cy, event.target.id());
+				return;
+			}
 			openNode(event.target.id());
 		});
 		cy.on("tap", (event) => {
@@ -363,11 +562,50 @@ export function LocalNoteGraphDialog({
 						</div>
 					) : null}
 					{!loading && !error ? (
-						<div
-							ref={containerRef}
-							className="localNoteGraphViewport"
-							aria-label="Connected notes graph"
-						/>
+						<div className="localNoteGraphStage">
+							<div
+								ref={containerRef}
+								className="localNoteGraphViewport"
+								aria-label="Connected notes graph"
+							/>
+							<div className="localNoteGraphLegend" aria-label="Graph legend">
+								<span className="localNoteGraphLegendItem">
+									<span
+										className="localNoteGraphLegendNode is-current"
+										aria-hidden="true"
+									/>
+									Open note
+								</span>
+								<span className="localNoteGraphLegendItem">
+									<span
+										className="localNoteGraphLegendNode is-note"
+										aria-hidden="true"
+									/>
+									Note
+								</span>
+								<span className="localNoteGraphLegendItem">
+									<span
+										className="localNoteGraphLegendNode is-tag"
+										aria-hidden="true"
+									/>
+									Tag
+								</span>
+								<span className="localNoteGraphLegendItem">
+									<span
+										className="localNoteGraphLegendEdge is-link"
+										aria-hidden="true"
+									/>
+									Note link
+								</span>
+								<span className="localNoteGraphLegendItem">
+									<span
+										className="localNoteGraphLegendEdge is-tag-link"
+										aria-hidden="true"
+									/>
+									Shares tag
+								</span>
+							</div>
+						</div>
 					) : null}
 				</div>
 			</DialogContent>
