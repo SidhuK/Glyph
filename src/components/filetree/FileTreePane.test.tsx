@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import type React from "react";
 import { type Root, createRoot } from "react-dom/client";
@@ -93,6 +94,7 @@ vi.mock("../../lib/tauri", () => ({
 describe("FileTreePane", () => {
 	let container: HTMLDivElement;
 	let root: Root;
+	let queryClient: QueryClient;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -111,6 +113,13 @@ describe("FileTreePane", () => {
 			setError: vi.fn(),
 		});
 		useTauriEventMock.mockImplementation(() => {});
+		queryClient = new QueryClient({
+			defaultOptions: {
+				queries: {
+					retry: false,
+				},
+			},
+		});
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -129,30 +138,32 @@ describe("FileTreePane", () => {
 
 		await act(async () => {
 			root.render(
-				<FileTreePane
-					rootEntries={[]}
-					childrenByDir={{}}
-					expandedDirs={new Set()}
-					activeFilePath="notes/alpha.md"
-					activeDirPath={null}
-					onToggleDir={vi.fn()}
-					onSelectDir={vi.fn()}
-					onOpenFile={onOpenFile}
-					onNewFileInDir={vi.fn()}
-					onCreateFromTemplateInDir={vi.fn()}
-					onNewDatabaseInDir={vi.fn()}
-					onNewFolderInDir={vi.fn()}
-					onDuplicateFile={vi.fn()}
-					onDeletePath={vi.fn()}
-					renamingPath={null}
-					onStartRename={vi.fn()}
-					onCancelRename={vi.fn()}
-					onCommitFileRename={vi.fn()}
-					onCommitDirRename={vi.fn()}
-					onMovePath={vi.fn()}
-					pinnedFiles={["notes/alpha.md", "docs/beta.md"]}
-					onTogglePinnedFile={vi.fn()}
-				/>,
+				<QueryClientProvider client={queryClient}>
+					<FileTreePane
+						rootEntries={[]}
+						childrenByDir={{}}
+						expandedDirs={new Set()}
+						activeFilePath="notes/alpha.md"
+						activeDirPath={null}
+						onToggleDir={vi.fn()}
+						onSelectDir={vi.fn()}
+						onOpenFile={onOpenFile}
+						onNewFileInDir={vi.fn()}
+						onCreateFromTemplateInDir={vi.fn()}
+						onNewDatabaseInDir={vi.fn()}
+						onNewFolderInDir={vi.fn()}
+						onDuplicateFile={vi.fn()}
+						onDeletePath={vi.fn()}
+						renamingPath={null}
+						onStartRename={vi.fn()}
+						onCancelRename={vi.fn()}
+						onCommitFileRename={vi.fn()}
+						onCommitDirRename={vi.fn()}
+						onMovePath={vi.fn()}
+						pinnedFiles={["notes/alpha.md", "docs/beta.md"]}
+						onTogglePinnedFile={vi.fn()}
+					/>
+				</QueryClientProvider>,
 			);
 		});
 
@@ -176,30 +187,32 @@ describe("FileTreePane", () => {
 	it("hides the pinned rows when no files are pinned", async () => {
 		await act(async () => {
 			root.render(
-				<FileTreePane
-					rootEntries={[]}
-					childrenByDir={{}}
-					expandedDirs={new Set()}
-					activeFilePath={null}
-					activeDirPath={null}
-					onToggleDir={vi.fn()}
-					onSelectDir={vi.fn()}
-					onOpenFile={vi.fn()}
-					onNewFileInDir={vi.fn()}
-					onCreateFromTemplateInDir={vi.fn()}
-					onNewDatabaseInDir={vi.fn()}
-					onNewFolderInDir={vi.fn()}
-					onDuplicateFile={vi.fn()}
-					onDeletePath={vi.fn()}
-					renamingPath={null}
-					onStartRename={vi.fn()}
-					onCancelRename={vi.fn()}
-					onCommitFileRename={vi.fn()}
-					onCommitDirRename={vi.fn()}
-					onMovePath={vi.fn()}
-					pinnedFiles={[]}
-					onTogglePinnedFile={vi.fn()}
-				/>,
+				<QueryClientProvider client={queryClient}>
+					<FileTreePane
+						rootEntries={[]}
+						childrenByDir={{}}
+						expandedDirs={new Set()}
+						activeFilePath={null}
+						activeDirPath={null}
+						onToggleDir={vi.fn()}
+						onSelectDir={vi.fn()}
+						onOpenFile={vi.fn()}
+						onNewFileInDir={vi.fn()}
+						onCreateFromTemplateInDir={vi.fn()}
+						onNewDatabaseInDir={vi.fn()}
+						onNewFolderInDir={vi.fn()}
+						onDuplicateFile={vi.fn()}
+						onDeletePath={vi.fn()}
+						renamingPath={null}
+						onStartRename={vi.fn()}
+						onCancelRename={vi.fn()}
+						onCommitFileRename={vi.fn()}
+						onCommitDirRename={vi.fn()}
+						onMovePath={vi.fn()}
+						pinnedFiles={[]}
+						onTogglePinnedFile={vi.fn()}
+					/>
+				</QueryClientProvider>,
 			);
 		});
 

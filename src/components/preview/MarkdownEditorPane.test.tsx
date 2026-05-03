@@ -162,6 +162,7 @@ describe("MarkdownEditorPane", () => {
 			| [command: "space_read_text", params: ReadTextArgs]
 			| [command: "space_write_text", params: WriteTextArgs]
 			| [command: "backlinks", params: { note_id: string }]
+			| [command: "note_relationships", params: { note_id: string }]
 			| [
 					command: "note_frontmatter_parse_properties",
 					params: { frontmatter?: string | null },
@@ -201,6 +202,9 @@ describe("MarkdownEditorPane", () => {
 			});
 		}
 		if (command === "backlinks") {
+			return Promise.resolve([]);
+		}
+		if (command === "note_relationships") {
 			return Promise.resolve([]);
 		}
 		if (command === "note_frontmatter_parse_properties") {
@@ -330,6 +334,9 @@ describe("MarkdownEditorPane", () => {
 				});
 			}
 			if (command === "backlinks") {
+				return Promise.resolve([]);
+			}
+			if (command === "note_relationships") {
 				return Promise.resolve([]);
 			}
 			if (command === "note_frontmatter_parse_properties") {

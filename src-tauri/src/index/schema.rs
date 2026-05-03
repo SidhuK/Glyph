@@ -26,6 +26,20 @@ CREATE TABLE IF NOT EXISTS links (
 
 CREATE INDEX IF NOT EXISTS links_to_id_idx ON links(to_id);
 
+CREATE TABLE IF NOT EXISTS note_relationships (
+  from_id TEXT NOT NULL,
+  field_key TEXT NOT NULL,
+  to_id TEXT,
+  to_title TEXT,
+  target_title TEXT NOT NULL,
+  ordinal INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (from_id, field_key, target_title, ordinal)
+);
+
+CREATE INDEX IF NOT EXISTS note_relationships_from_idx ON note_relationships(from_id);
+CREATE INDEX IF NOT EXISTS note_relationships_to_id_idx ON note_relationships(to_id);
+CREATE INDEX IF NOT EXISTS note_relationships_to_title_idx ON note_relationships(to_title);
+
 CREATE TABLE IF NOT EXISTS tags (
   note_id TEXT NOT NULL,
   tag TEXT NOT NULL,

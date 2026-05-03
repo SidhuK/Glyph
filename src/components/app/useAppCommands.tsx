@@ -42,9 +42,11 @@ import {
 	dispatchToggleNoteInfoSidebar,
 	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
+import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import { getLicenseStatus } from "../../lib/license";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
+	SHORTCUT_CATEGORY_LABELS,
 	type ShortcutActionId,
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
@@ -254,14 +256,25 @@ function resolveCommandShortcuts(
 	commands: Command[],
 	getBinding: UseAppCommandsDeps["getBinding"],
 ): Command[] {
-	return commands.map((command) =>
-		isShortcutActionId(command.id)
+	return commands.map((command) => {
+		const definition = getCommandDefinition(command.id);
+		const commandWithManifest = definition
 			? {
 					...command,
+					label: definition.label,
+					category: SHORTCUT_CATEGORY_LABELS[definition.category],
+					allowInEditable: definition.allowInEditable,
+					shortcut: definition.defaultBinding ?? command.shortcut,
+				}
+			: command;
+
+		return isShortcutActionId(command.id)
+			? {
+					...commandWithManifest,
 					shortcut: getBinding(command.id) ?? undefined,
 				}
-			: command,
-	);
+			: commandWithManifest;
+	});
 }
 
 export function useAppCommands({

@@ -657,6 +657,20 @@
 	font-size: 11px;
 }
 
+.markdownEditorInfoRelationshipGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	font-size: 11.5px;
+	line-height: 1.28;
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoRelationshipGroup > span {
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+}
+
 .linkedNotePreviewSheet {
 	position: fixed;
 	z-index: 2200;

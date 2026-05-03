@@ -1,0 +1,1190 @@
+{
+	"commands": {
+		"activate-tab-1": {
+			"id": "activate-tab-1",
+			"label": "Activate Tab 1",
+			"description": "Switch to tab 1.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "1"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-2": {
+			"id": "activate-tab-2",
+			"label": "Activate Tab 2",
+			"description": "Switch to tab 2.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "2"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-3": {
+			"id": "activate-tab-3",
+			"label": "Activate Tab 3",
+			"description": "Switch to tab 3.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "3"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-4": {
+			"id": "activate-tab-4",
+			"label": "Activate Tab 4",
+			"description": "Switch to tab 4.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "4"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-5": {
+			"id": "activate-tab-5",
+			"label": "Activate Tab 5",
+			"description": "Switch to tab 5.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "5"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-6": {
+			"id": "activate-tab-6",
+			"label": "Activate Tab 6",
+			"description": "Switch to tab 6.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "6"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-7": {
+			"id": "activate-tab-7",
+			"label": "Activate Tab 7",
+			"description": "Switch to tab 7.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "7"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-8": {
+			"id": "activate-tab-8",
+			"label": "Activate Tab 8",
+			"description": "Switch to tab 8.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "8"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"activate-tab-9": {
+			"id": "activate-tab-9",
+			"label": "Activate Tab 9",
+			"description": "Switch to tab 9.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "9"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"ai-attach-all-open-notes": {
+			"id": "ai-attach-all-open-notes",
+			"label": "AI: Attach All Open Notes",
+			"description": "Attach all open notes to AI.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"shift": true,
+				"key": "a"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "ai.attach_all_open_notes"
+		},
+		"ai-attach-current-note": {
+			"id": "ai-attach-current-note",
+			"label": "AI: Attach Current Note",
+			"description": "Attach the current note to AI.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "a"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "ai.attach_current_note"
+		},
+		"bold": {
+			"id": "bold",
+			"label": "Bold",
+			"description": "Toggle bold formatting for the current selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.bold"
+		},
+		"bullet_list": {
+			"id": "bullet_list",
+			"label": "Bullet List",
+			"description": "Toggle a bullet list.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.bullet_list"
+		},
+		"buy-glyph-license": {
+			"id": "buy-glyph-license",
+			"label": "Buy Glyph License",
+			"description": "Open the purchase page for Glyph.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"callout_error": {
+			"id": "callout_error",
+			"label": "Error Callout",
+			"description": "Insert an error callout block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.callout_error"
+		},
+		"callout_info": {
+			"id": "callout_info",
+			"label": "Info Callout",
+			"description": "Insert an info callout block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.callout_info"
+		},
+		"callout_success": {
+			"id": "callout_success",
+			"label": "Success Callout",
+			"description": "Insert a success callout block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.callout_success"
+		},
+		"callout_tip": {
+			"id": "callout_tip",
+			"label": "Tip Callout",
+			"description": "Insert a tip callout block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.callout_tip"
+		},
+		"callout_warning": {
+			"id": "callout_warning",
+			"label": "Warning Callout",
+			"description": "Insert a warning callout block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.callout_warning"
+		},
+		"close-active-tab": {
+			"id": "close-active-tab",
+			"label": "Close Active Tab",
+			"description": "Close the current tab.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "w"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.close_tab"
+		},
+		"close-ai-pane": {
+			"id": "close-ai-pane",
+			"label": "Close AI Panel",
+			"description": "Close the AI assistant panel.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "ai.close"
+		},
+		"close-all-tabs": {
+			"id": "close-all-tabs",
+			"label": "Close All Tabs",
+			"description": "Close every open tab.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "w"
+			},
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"close-preview": {
+			"id": "close-preview",
+			"label": "Close Preview",
+			"description": "Close the active preview pane.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"close-space": {
+			"id": "close-space",
+			"label": "Close Current Space",
+			"description": "Close the currently open space.",
+			"category": "workspace",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.close"
+		},
+		"code_block": {
+			"id": "code_block",
+			"label": "Code Block",
+			"description": "Toggle a code block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.code_block"
+		},
+		"collapse_all_headings": {
+			"id": "collapse_all_headings",
+			"label": "Collapse All Headings",
+			"description": "Collapse every heading in the current note.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.collapse_all_headings"
+		},
+		"color_blue": {
+			"id": "color_blue",
+			"label": "Text Color: Blue",
+			"description": "Apply blue text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_blue"
+		},
+		"color_brown": {
+			"id": "color_brown",
+			"label": "Text Color: Brown",
+			"description": "Apply brown text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_brown"
+		},
+		"color_clear": {
+			"id": "color_clear",
+			"label": "Clear Text Color",
+			"description": "Remove text color formatting.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_clear"
+		},
+		"color_gray": {
+			"id": "color_gray",
+			"label": "Text Color: Gray",
+			"description": "Apply gray text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_gray"
+		},
+		"color_green": {
+			"id": "color_green",
+			"label": "Text Color: Green",
+			"description": "Apply green text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_green"
+		},
+		"color_orange": {
+			"id": "color_orange",
+			"label": "Text Color: Orange",
+			"description": "Apply orange text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_orange"
+		},
+		"color_purple": {
+			"id": "color_purple",
+			"label": "Text Color: Purple",
+			"description": "Apply purple text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_purple"
+		},
+		"color_red": {
+			"id": "color_red",
+			"label": "Text Color: Red",
+			"description": "Apply red text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_red"
+		},
+		"color_yellow": {
+			"id": "color_yellow",
+			"label": "Text Color: Yellow",
+			"description": "Apply yellow text color.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.color_yellow"
+		},
+		"copy-note-markdown": {
+			"id": "copy-note-markdown",
+			"label": "Copy Note as Markdown",
+			"description": "Copy the current note as markdown.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "c"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"create-from-template": {
+			"id": "create-from-template",
+			"label": "Create From Template",
+			"description": "Create a new note from a template.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "m"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.create_from_template"
+		},
+		"create-space": {
+			"id": "create-space",
+			"label": "Create Space",
+			"description": "Create a new space.",
+			"category": "workspace",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "n"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.create"
+		},
+		"divider": {
+			"id": "divider",
+			"label": "Divider",
+			"description": "Insert a horizontal divider.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.divider"
+		},
+		"duplicate-current-note": {
+			"id": "duplicate-current-note",
+			"label": "Duplicate Current Note",
+			"description": "Duplicate the current note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"expand_all_headings": {
+			"id": "expand_all_headings",
+			"label": "Expand All Headings",
+			"description": "Expand every heading in the current note.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.expand_all_headings"
+		},
+		"export-note-html": {
+			"id": "export-note-html",
+			"label": "Export Note as HTML",
+			"description": "Export the current note as HTML.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.export_html"
+		},
+		"extract_selection_to_note": {
+			"id": "extract_selection_to_note",
+			"label": "Extract to Note",
+			"description": "Create a note from the current selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"git-sync-now": {
+			"id": "git-sync-now",
+			"label": "Sync Now",
+			"description": "Run Git Sync now.",
+			"category": "workspace",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.git_sync_now"
+		},
+		"go-back-note": {
+			"id": "go-back-note",
+			"label": "Go Back",
+			"description": "Go back in the current tab's note history.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "["
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"go-forward-note": {
+			"id": "go-forward-note",
+			"label": "Go Forward",
+			"description": "Go forward in the current tab's note history.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "]"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"heading_1": {
+			"id": "heading_1",
+			"label": "Heading 1",
+			"description": "Convert the current block to a level 1 heading.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.heading_1"
+		},
+		"heading_2": {
+			"id": "heading_2",
+			"label": "Heading 2",
+			"description": "Convert the current block to a level 2 heading.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.heading_2"
+		},
+		"heading_3": {
+			"id": "heading_3",
+			"label": "Heading 3",
+			"description": "Convert the current block to a level 3 heading.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.heading_3"
+		},
+		"highlight_blue": {
+			"id": "highlight_blue",
+			"label": "Highlight: Blue",
+			"description": "Apply blue text highlight.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.highlight_blue"
+		},
+		"highlight_clear": {
+			"id": "highlight_clear",
+			"label": "Clear Highlight",
+			"description": "Remove text highlight formatting.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.highlight_clear"
+		},
+		"highlight_green": {
+			"id": "highlight_green",
+			"label": "Highlight: Green",
+			"description": "Apply green text highlight.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.highlight_green"
+		},
+		"highlight_red": {
+			"id": "highlight_red",
+			"label": "Highlight: Red",
+			"description": "Apply red text highlight.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.highlight_red"
+		},
+		"highlight_yellow": {
+			"id": "highlight_yellow",
+			"label": "Highlight: Yellow",
+			"description": "Apply yellow text highlight.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.highlight_yellow"
+		},
+		"italic": {
+			"id": "italic",
+			"label": "Italic",
+			"description": "Toggle italic formatting for the current selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.italic"
+		},
+		"link_clear": {
+			"id": "link_clear",
+			"label": "Remove Link",
+			"description": "Remove the current link from the selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.link_clear"
+		},
+		"link_set": {
+			"id": "link_set",
+			"label": "Insert or Edit Link",
+			"description": "Insert a link or edit the current link.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.link_set"
+		},
+		"mermaid_chart": {
+			"id": "mermaid_chart",
+			"label": "Mermaid Chart",
+			"description": "Insert a Mermaid code block.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.mermaid_chart"
+		},
+		"move-active-file": {
+			"id": "move-active-file",
+			"label": "Move Active File",
+			"description": "Move the current file to a different folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"new-database": {
+			"id": "new-database",
+			"label": "New Collection",
+			"description": "Create a new collection.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"new-folder": {
+			"id": "new-folder",
+			"label": "New Folder",
+			"description": "Create a new folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"new-note": {
+			"id": "new-note",
+			"label": "New Note",
+			"description": "Create a new note in the current folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "n"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.new_note"
+		},
+		"new-tab": {
+			"id": "new-tab",
+			"label": "New Tab",
+			"description": "Open a blank tab.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "t"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"next-tab": {
+			"id": "next-tab",
+			"label": "Next Tab",
+			"description": "Move to the next tab.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "]"
+			},
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"numbered_list": {
+			"id": "numbered_list",
+			"label": "Numbered List",
+			"description": "Toggle a numbered list.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.numbered_list"
+		},
+		"open-about": {
+			"id": "open-about",
+			"label": "Open About",
+			"description": "Open the about screen.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "app.about"
+		},
+		"open-ai-agent": {
+			"id": "open-ai-agent",
+			"label": "Open AI Agent",
+			"description": "Open the AI agent workspace.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-ai-settings": {
+			"id": "open-ai-settings",
+			"label": "Open AI Settings",
+			"description": "Open AI settings.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "ai.settings"
+		},
+		"open-all-docs": {
+			"id": "open-all-docs",
+			"label": "Open All Notes",
+			"description": "Open the all notes view.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-calendar": {
+			"id": "open-calendar",
+			"label": "Open Calendar",
+			"description": "Open the home calendar view.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-command-palette": {
+			"id": "open-command-palette",
+			"label": "Open Command Palette",
+			"description": "Open the command palette.",
+			"category": "search",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"key": "k"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"open-daily-note": {
+			"id": "open-daily-note",
+			"label": "Open Daily Note",
+			"description": "Open or create today's daily note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "d"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.open_daily_note"
+		},
+		"open-dashboard": {
+			"id": "open-dashboard",
+			"label": "Open Home",
+			"description": "Open the home dashboard.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-databases": {
+			"id": "open-databases",
+			"label": "Open Collections",
+			"description": "Open the collections view.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-git-sync-settings": {
+			"id": "open-git-sync-settings",
+			"label": "Open Git Sync Settings",
+			"description": "Open the Git Sync section in settings.",
+			"category": "settings",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.git_settings"
+		},
+		"open-license-settings": {
+			"id": "open-license-settings",
+			"label": "Open License Settings",
+			"description": "Open the license section in settings.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"open-local-graph": {
+			"id": "open-local-graph",
+			"label": "Open Local Graph",
+			"description": "Open the local graph for the current note.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "g"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"open-quick-note": {
+			"id": "open-quick-note",
+			"label": "Open Quick Note",
+			"description": "Open the floating quick note scratchpad.",
+			"category": "file",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"ctrl": true,
+				"alt": true,
+				"shift": true,
+				"key": "q"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"open-search-palette": {
+			"id": "open-search-palette",
+			"label": "Open Search Palette",
+			"description": "Open search in the command palette.",
+			"category": "search",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"key": "f"
+			},
+			"allowInEditable": false,
+			"commandPalette": false
+		},
+		"open-settings": {
+			"id": "open-settings",
+			"label": "Open Settings",
+			"description": "Open the settings view.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"key": ","
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "app.settings"
+		},
+		"open-space": {
+			"id": "open-space",
+			"label": "Open Space",
+			"description": "Open an existing space.",
+			"category": "workspace",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"key": "o"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.open"
+		},
+		"open-space-settings": {
+			"id": "open-space-settings",
+			"label": "Open Space Settings",
+			"description": "Open settings for the current space.",
+			"category": "settings",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.settings"
+		},
+		"open-templates": {
+			"id": "open-templates",
+			"label": "Open Templates",
+			"description": "Open the templates view.",
+			"category": "navigation",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"previous-tab": {
+			"id": "previous-tab",
+			"label": "Previous Tab",
+			"description": "Move to the previous tab.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"key": "["
+			},
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"print-editor-pane": {
+			"id": "print-editor-pane",
+			"label": "Print Note",
+			"description": "Print the current note.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"quick-open": {
+			"id": "quick-open",
+			"label": "Quick Open",
+			"description": "Open the command palette directly in file mode.",
+			"category": "search",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"key": "p"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"quote": {
+			"id": "quote",
+			"label": "Quote",
+			"description": "Toggle a blockquote.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.quote"
+		},
+		"reveal-space": {
+			"id": "reveal-space",
+			"label": "Reveal Space",
+			"description": "Show the current space in the system file browser.",
+			"category": "workspace",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "space.reveal"
+		},
+		"save-note": {
+			"id": "save-note",
+			"label": "Save Note",
+			"description": "Save the current note if modified.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"key": "s"
+			},
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "file.save_note"
+		},
+		"save-web-page": {
+			"id": "save-web-page",
+			"label": "Save Web Page",
+			"description": "Capture and save a web page into the current space.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"show-getting-started": {
+			"id": "show-getting-started",
+			"label": "Show Getting Started",
+			"description": "Open the getting started flow.",
+			"category": "settings",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"strikethrough": {
+			"id": "strikethrough",
+			"label": "Strikethrough",
+			"description": "Toggle strikethrough formatting for the current selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.strikethrough"
+		},
+		"table": {
+			"id": "table",
+			"label": "Table",
+			"description": "Insert a markdown table.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.table"
+		},
+		"todo_list": {
+			"id": "todo_list",
+			"label": "To-do List",
+			"description": "Toggle a task list.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.todo_list"
+		},
+		"toggle-ai": {
+			"id": "toggle-ai",
+			"label": "Toggle AI Panel",
+			"description": "Show or hide the AI assistant panel.",
+			"category": "ai",
+			"context": "space",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "a"
+			},
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "ai.toggle"
+		},
+		"toggle-note-info-sidebar": {
+			"id": "toggle-note-info-sidebar",
+			"label": "Toggle Note Info Sidebar",
+			"description": "Show or hide the note info sidebar.",
+			"category": "file",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "i"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"toggle-pin-active-file": {
+			"id": "toggle-pin-active-file",
+			"label": "Pin or Unpin Current File",
+			"description": "Pin or unpin the active file.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"toggle-sidebar": {
+			"id": "toggle-sidebar",
+			"label": "Toggle Sidebar",
+			"description": "Show or hide the file tree sidebar.",
+			"category": "navigation",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"shift": true,
+				"key": "b"
+			},
+			"allowInEditable": false,
+			"commandPalette": true
+		},
+		"toggle-zen-mode": {
+			"id": "toggle-zen-mode",
+			"label": "Toggle Zen Mode",
+			"description": "Enter or exit zen mode.",
+			"category": "navigation",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"underline": {
+			"id": "underline",
+			"label": "Underline",
+			"description": "Toggle underline formatting for the current selection.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.underline"
+		}
+	}
+}

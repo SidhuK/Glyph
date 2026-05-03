@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+	type RelationshipGroup,
+	relationshipTargetLabel,
+} from "../../lib/relationships";
 import type {
 	NoteTaskSummary,
 	WorkspaceDatabasePreviewContext,
@@ -43,6 +47,7 @@ interface NotesInfoSidebarProps {
 	onSelectHeading: (heading: TOCHeading) => void;
 	backlinks: SidebarBacklinkItem[];
 	linkedNotes: LinkedNoteItem[];
+	relationshipGroups: RelationshipGroup[];
 	previewContext: WorkspaceDatabasePreviewContext | null;
 	lastSavedMtimeMs: number | null;
 	lineCount: number;
@@ -95,6 +100,7 @@ export function NotesInfoSidebar({
 	onSelectHeading,
 	backlinks,
 	linkedNotes,
+	relationshipGroups,
 	previewContext,
 	lastSavedMtimeMs,
 	lineCount,
@@ -211,6 +217,49 @@ export function NotesInfoSidebar({
 									<span className="wikiLinkIcon" aria-hidden="true" />
 									{item.label}
 								</button>
+							))}
+						</div>
+					</section>
+				) : null}
+
+				{relationshipGroups.length > 0 ? (
+					<section className="markdownEditorInfoSection">
+						<h3 className="markdownEditorInfoSectionLabel">Relationships</h3>
+						<div className="markdownEditorInfoRows">
+							{relationshipGroups.map((group) => (
+								<div
+									key={group.field_key}
+									className="markdownEditorInfoRelationshipGroup"
+								>
+									<span>{group.field_key}</span>
+									<div className="markdownEditorInfoLinkList">
+										{group.items.map((item) => {
+											const target = item.to_id ?? item.target_title;
+											return (
+												<button
+													key={`${group.field_key}:${item.ordinal}:${target}`}
+													type="button"
+													className="wikiLink"
+													data-target={target}
+													onClick={() =>
+														dispatchWikiLinkClick({
+															raw: `[[${target}]]`,
+															target,
+															alias: null,
+															anchorKind: "none",
+															anchor: null,
+															unresolved: item.to_id === null,
+														})
+													}
+													title={target}
+												>
+													<span className="wikiLinkIcon" aria-hidden="true" />
+													{relationshipTargetLabel(item)}
+												</button>
+											);
+										})}
+									</div>
+								</div>
 							))}
 						</div>
 					</section>

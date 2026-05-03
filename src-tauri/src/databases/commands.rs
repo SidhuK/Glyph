@@ -282,16 +282,23 @@ fn backlink_note_paths(root: &Path, note_path: &str) -> Result<Vec<String>, Stri
         .to_string();
     let mut stmt = conn
         .prepare(
-            "SELECT n.id
-             FROM links l
-             JOIN notes n ON n.id = l.from_id
-             WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+            "SELECT DISTINCT n.id
+             FROM notes n
+             JOIN (
+                SELECT l.from_id
+                FROM links l
+                WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+                UNION
+                SELECT r.from_id
+                FROM note_relationships r
+                WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
+             ) refs ON refs.from_id = n.id
              ORDER BY n.updated DESC
              LIMIT 100",
         )
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
-        .query(rusqlite::params![note_path, stem])
+        .query(rusqlite::params![note_path, stem, note_path, stem, stem])
         .map_err(|e| e.to_string())?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {

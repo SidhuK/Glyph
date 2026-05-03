@@ -31,11 +31,9 @@ pub fn run_search_advanced(
     let limit = req.limit.unwrap_or(200).clamp(1, 2_000) as usize;
     let text = req.query.unwrap_or_default().trim().to_string();
     let mut tags = normalize_tags(req.tags)?;
-    if people_mentions_as_tags_enabled() {
-        for person in normalize_people(req.people)? {
-            if !tags.contains(&person) {
-                tags.push(person);
-            }
+    for person in normalize_people(req.people)? {
+        if !tags.contains(&person) {
+            tags.push(person);
         }
     }
     if req.tag_only {

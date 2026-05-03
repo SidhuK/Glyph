@@ -9,6 +9,7 @@ import type {
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
+	"menu:app_command": { command_id: string };
 	"menu:new_note": undefined;
 	"menu:create_from_template": undefined;
 	"menu:open_daily_note": undefined;

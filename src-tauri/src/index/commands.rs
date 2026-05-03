@@ -12,6 +12,7 @@ use crate::space::state::mark_recent_local_change;
 use super::db::open_db;
 use super::indexer::index_note;
 use super::indexer::rebuild;
+use super::relationships::{NoteRelationship, query_note_relationships};
 use super::search_advanced::{SearchAdvancedRequest, run_search_advanced};
 use super::search_hybrid::hybrid_search;
 use super::tags::{PEOPLE_TAG_NAMESPACE, people_tag_to_handle, tag_depth};
@@ -1117,16 +1118,23 @@ pub async fn backlinks(
             .to_string();
         let mut stmt = conn
             .prepare(
-                "SELECT n.id, n.title, n.updated
-                 FROM links l
-                 JOIN notes n ON n.id = l.from_id
-                 WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+                "SELECT DISTINCT n.id, n.title, n.updated
+                 FROM notes n
+                 JOIN (
+                    SELECT l.from_id
+                    FROM links l
+                    WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+                    UNION
+                    SELECT r.from_id
+                    FROM note_relationships r
+                    WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
+                 ) refs ON refs.from_id = n.id
                  ORDER BY n.updated DESC
                  LIMIT 100",
             )
             .map_err(|e| e.to_string())?;
         let mut rows = stmt
-            .query(rusqlite::params![note_id, stem])
+            .query(rusqlite::params![note_id, stem, note_id, stem, stem])
             .map_err(|e| e.to_string())?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1137,6 +1145,20 @@ pub async fn backlinks(
             });
         }
         Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn note_relationships(
+    state: State<'_, SpaceState>,
+    note_id: String,
+) -> Result<Vec<NoteRelationship>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteRelationship>, String> {
+        let conn = open_db(&root)?;
+        query_note_relationships(&conn, &note_id)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -1179,12 +1201,20 @@ fn local_note_graph_for_conn(
                 SELECT l.from_id AS note_id
                 FROM links l
                 WHERE l.to_id = ?
+                UNION
+                SELECT r.to_id AS note_id
+                FROM note_relationships r
+                WHERE r.from_id = ? AND r.to_id IS NOT NULL
+                UNION
+                SELECT r.from_id AS note_id
+                FROM note_relationships r
+                WHERE r.to_id = ?
              ) related ON related.note_id = n.id
              WHERE n.id <> ?",
         )
         .map_err(|e| e.to_string())?;
     let mut neighbor_rows = neighbor_stmt
-        .query(rusqlite::params![note_id, note_id, note_id])
+        .query(rusqlite::params![note_id, note_id, note_id, note_id, note_id])
         .map_err(|e| e.to_string())?;
     while let Some(row) = neighbor_rows.next().map_err(|e| e.to_string())? {
         let id: String = row.get(0).map_err(|e| e.to_string())?;
@@ -1217,9 +1247,16 @@ fn local_note_graph_for_conn(
         .join(", ");
     let edge_query = format!(
         "SELECT DISTINCT from_id, to_id
-         FROM links
-         WHERE to_id IS NOT NULL
-           AND from_id IN ({placeholders})
+         FROM (
+            SELECT from_id, to_id
+            FROM links
+            WHERE to_id IS NOT NULL
+            UNION
+            SELECT from_id, to_id
+            FROM note_relationships
+            WHERE to_id IS NOT NULL
+         )
+         WHERE from_id IN ({placeholders})
            AND to_id IN ({placeholders})
            AND from_id <> to_id"
     );
