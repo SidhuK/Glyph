@@ -6,18 +6,18 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
 
-use crate::space::state::mark_recent_local_change;
 use crate::space::SpaceState;
+use crate::space::state::mark_recent_local_change;
 
 use super::db::open_db;
 use super::indexer::index_note;
 use super::indexer::rebuild;
-use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
+use super::search_advanced::{SearchAdvancedRequest, run_search_advanced};
 use super::search_hybrid::hybrid_search;
-use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
+use super::tags::{PEOPLE_TAG_NAMESPACE, people_tag_to_handle, tag_depth};
 use super::tasks::{
-    mutate_task_line, note_abs_path, query_note_task_summaries, summarize_tasks, write_note,
-    IndexedTask, NoteTaskSummary, NoteTaskSummaryItem,
+    IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, mutate_task_line, note_abs_path,
+    query_note_task_summaries, summarize_tasks, write_note,
 };
 use super::types::{
     BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalGraphTagEdge,
@@ -1147,6 +1147,8 @@ fn local_note_graph_for_conn(
     note_id: &str,
 ) -> Result<LocalNoteGraph, String> {
     const COMMON_TAG_LIMIT: usize = 12;
+    const TAGGED_NOTES_PER_TAG_LIMIT: usize = 12;
+    const TOTAL_TAGGED_NOTES_LIMIT: usize = 64;
 
     let center = conn
         .query_row(
@@ -1198,8 +1200,13 @@ fn local_note_graph_for_conn(
     }
 
     let seed_node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
-    let (tags, tagged_nodes, tag_edges) =
-        local_graph_tag_expansion_for_seed_nodes(conn, &seed_node_ids, COMMON_TAG_LIMIT)?;
+    let (tags, tagged_nodes, tag_edges) = local_graph_tag_expansion_for_seed_nodes(
+        conn,
+        &seed_node_ids,
+        COMMON_TAG_LIMIT,
+        TAGGED_NOTES_PER_TAG_LIMIT,
+        TOTAL_TAGGED_NOTES_LIMIT,
+    )?;
     for node in tagged_nodes {
         nodes_by_id.entry(node.id.clone()).or_insert(node);
     }
@@ -1252,7 +1259,9 @@ fn local_graph_tag_id(tag: &str) -> String {
 fn local_graph_tag_expansion_for_seed_nodes(
     conn: &rusqlite::Connection,
     seed_node_ids: &[String],
-    limit: usize,
+    tag_limit: usize,
+    notes_per_tag_limit: usize,
+    total_tagged_notes_limit: usize,
 ) -> Result<
     (
         Vec<LocalGraphTagNode>,
@@ -1282,7 +1291,7 @@ fn local_graph_tag_expansion_for_seed_nodes(
     let mut params = Vec::<rusqlite::types::Value>::new();
     params.push(format!("{PEOPLE_TAG_NAMESPACE}%").into());
     params.extend(seed_node_ids.iter().cloned().map(Into::into));
-    params.push((limit as i64).into());
+    params.push((tag_limit as i64).into());
 
     let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
     let mut tag_rows = tag_stmt
@@ -1297,43 +1306,58 @@ fn local_graph_tag_expansion_for_seed_nodes(
         return Ok((Vec::new(), Vec::new(), Vec::new()));
     }
 
-    let tag_placeholders = std::iter::repeat_n("?", tag_names.len())
-        .collect::<Vec<_>>()
-        .join(", ");
     let edge_query = format!(
-        "SELECT t.tag, n.id, n.title
+        "SELECT n.id, n.title
          FROM tags t
          JOIN notes n ON n.id = t.note_id
          WHERE t.is_explicit = 1
-           AND t.tag IN ({tag_placeholders})
-         ORDER BY t.tag COLLATE NOCASE ASC, n.title COLLATE NOCASE ASC, n.id ASC"
+           AND t.tag = ?
+         ORDER BY CASE WHEN n.id IN ({seed_placeholders}) THEN 0 ELSE 1 END,
+                  n.title COLLATE NOCASE ASC,
+                  n.id ASC
+         LIMIT ?"
     );
-    let mut edge_params = Vec::<rusqlite::types::Value>::new();
-    edge_params.extend(tag_names.iter().cloned().map(Into::into));
-
-    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
-    let mut edge_rows = edge_stmt
-        .query(rusqlite::params_from_iter(edge_params))
-        .map_err(|e| e.to_string())?;
     let mut tag_edges = Vec::new();
     let mut tagged_nodes_by_id = HashMap::<String, LocalGraphNode>::new();
     let mut note_count_by_tag = HashMap::<String, u32>::new();
-    while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
-        let tag: String = row.get(0).map_err(|e| e.to_string())?;
-        let note_id: String = row.get(1).map_err(|e| e.to_string())?;
-        let title: String = row.get(2).map_err(|e| e.to_string())?;
-        *note_count_by_tag.entry(tag.clone()).or_insert(0) += 1;
-        tagged_nodes_by_id
-            .entry(note_id.clone())
-            .or_insert(LocalGraphNode {
-                id: note_id.clone(),
-                title,
-                is_center: false,
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    for tag in &tag_names {
+        if tagged_nodes_by_id.len() >= total_tagged_notes_limit {
+            break;
+        }
+
+        let mut edge_params = Vec::<rusqlite::types::Value>::new();
+        edge_params.push(tag.clone().into());
+        edge_params.extend(seed_node_ids.iter().cloned().map(Into::into));
+        edge_params.push((notes_per_tag_limit as i64).into());
+        let mut edge_rows = edge_stmt
+            .query(rusqlite::params_from_iter(edge_params))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
+            if tagged_nodes_by_id.len() >= total_tagged_notes_limit {
+                break;
+            }
+
+            let tag_note_count = note_count_by_tag.get(tag).copied().unwrap_or(0) as usize;
+            if tag_note_count >= notes_per_tag_limit {
+                break;
+            }
+
+            let note_id: String = row.get(0).map_err(|e| e.to_string())?;
+            let title: String = row.get(1).map_err(|e| e.to_string())?;
+            tagged_nodes_by_id
+                .entry(note_id.clone())
+                .or_insert(LocalGraphNode {
+                    id: note_id.clone(),
+                    title,
+                    is_center: false,
+                });
+            *note_count_by_tag.entry(tag.clone()).or_insert(0) += 1;
+            tag_edges.push(LocalGraphTagEdge {
+                tag_id: local_graph_tag_id(tag),
+                note_id,
             });
-        tag_edges.push(LocalGraphTagEdge {
-            tag_id: local_graph_tag_id(&tag),
-            note_id,
-        });
+        }
     }
 
     let tags = tag_names
@@ -1376,7 +1400,7 @@ mod local_graph_tests {
 
     use crate::index::schema::ensure_schema;
 
-    use super::local_note_graph_for_conn;
+    use super::{local_graph_tag_expansion_for_seed_nodes, local_note_graph_for_conn};
 
     #[test]
     fn local_note_graph_returns_center_neighbors_and_internal_edges() {
@@ -1462,5 +1486,105 @@ mod local_graph_tests {
         assert_eq!(graph.nodes.len(), 1);
         assert!(graph.nodes[0].is_center);
         assert!(graph.edges.is_empty());
+    }
+
+    #[test]
+    fn local_note_graph_caps_tag_expansion_per_tag() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/center.md".to_string(), "Center".to_string()),
+            ("notes/neighbor.md".to_string(), "Neighbor".to_string()),
+        ]
+        .into_iter()
+        .chain((0..20).map(|index| {
+            (
+                format!("notes/common-{index:02}.md"),
+                format!("Common {index:02}"),
+            )
+        })) {
+            conn.execute(
+                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+                 VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
+                rusqlite::params![&id, &title, &id, format!("{id}-etag")],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, 'project', 1)",
+                [&id],
+            )
+            .unwrap();
+        }
+
+        conn.execute(
+            "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+            rusqlite::params!["notes/center.md", "notes/neighbor.md"],
+        )
+        .unwrap();
+
+        let graph = local_note_graph_for_conn(&conn, "notes/center.md").unwrap();
+        assert_eq!(graph.nodes.len(), 12);
+        assert_eq!(graph.tag_edges.len(), 12);
+        assert!(graph.nodes.iter().any(|node| node.id == "notes/center.md"));
+        assert!(
+            graph
+                .nodes
+                .iter()
+                .any(|node| node.id == "notes/neighbor.md")
+        );
+        assert!(
+            !graph
+                .nodes
+                .iter()
+                .any(|node| node.id == "notes/common-10.md")
+        );
+        assert_eq!(graph.tags.len(), 1);
+        assert_eq!(graph.tags[0].tag, "project");
+        assert_eq!(graph.tags[0].note_count, 12);
+    }
+
+    #[test]
+    fn local_graph_tag_expansion_caps_total_expanded_nodes() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/center.md".to_string(), "Center".to_string()),
+            ("notes/neighbor.md".to_string(), "Neighbor".to_string()),
+        ]
+        .into_iter()
+        .chain((0..20).map(|index| {
+            (
+                format!("notes/tagged-{index:02}.md"),
+                format!("Tagged {index:02}"),
+            )
+        })) {
+            conn.execute(
+                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+                 VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
+                rusqlite::params![&id, &title, &id, format!("{id}-etag")],
+            )
+            .unwrap();
+            for tag in ["project", "todo"] {
+                conn.execute(
+                    "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
+                    rusqlite::params![&id, tag],
+                )
+                .unwrap();
+            }
+        }
+
+        let seed_node_ids = vec![
+            "notes/center.md".to_string(),
+            "notes/neighbor.md".to_string(),
+        ];
+        let (tags, tagged_nodes, tag_edges) =
+            local_graph_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5).unwrap();
+
+        assert_eq!(tagged_nodes.len(), 5);
+        assert_eq!(tag_edges.len(), 5);
+        assert_eq!(tags.len(), 1);
+        assert_eq!(tags[0].note_count, 5);
     }
 }

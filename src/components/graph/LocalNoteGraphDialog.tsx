@@ -525,7 +525,7 @@ export function LocalNoteGraphDialog({
 
 		const observer = new ResizeObserver(() => {
 			cy.resize();
-			cy.fit(undefined, 56);
+			cy.fit(undefined, graphLayoutSpacing(cy).padding);
 		});
 		observer.observe(container);
 

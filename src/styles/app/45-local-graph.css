@@ -67,6 +67,7 @@
 		var(--bg-secondary) 88%,
 		var(--bg-primary)
 	);
+
 	width: 100%;
 	height: 100%;
 	cursor: grab;
