@@ -33,11 +33,27 @@ pub struct LocalGraphEdge {
     pub target: String,
 }
 
+#[derive(Clone, Serialize)]
+pub struct LocalGraphTagNode {
+    pub id: String,
+    pub tag: String,
+    pub title: String,
+    pub note_count: u32,
+}
+
+#[derive(Serialize)]
+pub struct LocalGraphTagEdge {
+    pub tag_id: String,
+    pub note_id: String,
+}
+
 #[derive(Serialize)]
 pub struct LocalNoteGraph {
     pub center: LocalGraphNode,
     pub nodes: Vec<LocalGraphNode>,
     pub edges: Vec<LocalGraphEdge>,
+    pub tags: Vec<LocalGraphTagNode>,
+    pub tag_edges: Vec<LocalGraphTagEdge>,
 }
 
 #[derive(Serialize)]
