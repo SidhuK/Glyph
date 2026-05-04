@@ -8,6 +8,7 @@ use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, paths, space::SpaceState, utils};
 
 use super::super::helpers::deny_hidden_rel_path;
+use super::super::link_rewrite::{self, LinkRewriteResult};
 use super::super::types::FsEntry;
 use super::trash::move_path_to_trash;
 
@@ -259,10 +260,10 @@ pub async fn space_rename_path(
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
-) -> Result<(), String> {
+) -> Result<LinkRewriteResult, String> {
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<LinkRewriteResult, String> {
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
         deny_hidden_rel_path(&from_rel)?;
@@ -279,6 +280,13 @@ pub async fn space_rename_path(
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
         let is_dir = from_abs.is_dir();
+        let rewrite_plan = if is_dir || utils::is_markdown_path(&from_abs) {
+            Some(link_rewrite::plan_for_rename(
+                &root, &from_abs, &from_path, &to_path,
+            ))
+        } else {
+            None
+        };
         std::fs::rename(&from_abs, &to_abs).map_err(|e| e.to_string())?;
         reindex_after_rename(
             &root,
@@ -288,7 +296,46 @@ pub async fn space_rename_path(
             is_dir,
             &recent_local_changes,
         );
-        Ok(())
+        let rewrite_result = if let Some(plan) = rewrite_plan {
+            match link_rewrite::rewrite_links_after_rename(&root, &plan) {
+                Ok(result) => {
+                    for changed in &result.changed_files {
+                        mark_recent_local_change(&recent_local_changes, changed);
+                        match std::fs::read_to_string(root.join(changed)) {
+                            Ok(markdown) => {
+                                if let Err(error) = index::index_note(&root, changed, &markdown) {
+                                    tracing::warn!(
+                                        note_id = %changed,
+                                        error = %error,
+                                        "failed to index rewritten links after rename"
+                                    );
+                                }
+                            }
+                            Err(error) => {
+                                tracing::warn!(
+                                    note_id = %changed,
+                                    error = %error,
+                                    "failed to read rewritten note after rename"
+                                );
+                            }
+                        }
+                    }
+                    result
+                }
+                Err(error) => {
+                    tracing::warn!(
+                        from_path = %from_path,
+                        to_path = %to_path,
+                        error = %error,
+                        "link rewrite failed after successful rename"
+                    );
+                    LinkRewriteResult::default()
+                }
+            }
+        } else {
+            LinkRewriteResult::default()
+        };
+        Ok(rewrite_result)
     })
     .await
     .map_err(|e| e.to_string())?

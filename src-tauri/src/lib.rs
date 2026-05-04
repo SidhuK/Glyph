@@ -8,6 +8,7 @@ mod index;
 mod io_atomic;
 mod license;
 mod links;
+mod menu_manifest;
 mod net;
 mod note_export;
 mod notes;
@@ -113,8 +114,8 @@ struct AppInfo {
 }
 
 #[derive(Clone, Serialize)]
-struct EditorMenuActionPayload {
-    action: String,
+struct AppCommandPayload {
+    command_id: String,
 }
 
 #[derive(Default)]
@@ -137,10 +138,19 @@ fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
     enabled: bool,
     default_accelerator: Option<&str>,
 ) -> tauri::Result<MenuItem<R>> {
+    let manifest_command = menu_manifest::command_for_menu_id(id);
+    let manifest_accelerator = manifest_command
+        .as_ref()
+        .and_then(|command| command.default_binding.as_ref())
+        .map(menu_manifest::accelerator_for_shortcut);
     let accelerator = match menu_shortcuts.get(id) {
         Some(override_val) => override_val.clone(),
-        None => default_accelerator.map(str::to_string),
+        None => manifest_accelerator.or_else(|| default_accelerator.map(str::to_string)),
     };
+    let label = manifest_command
+        .as_ref()
+        .map(|command| command.label.as_str())
+        .unwrap_or(label);
     MenuItem::with_id(app, id, label, enabled, accelerator.as_deref())
 }
 
@@ -1268,27 +1278,6 @@ pub fn run() {
     tauri::Builder::default()
         .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "file.new_note" => {
-                let _ = app.emit("menu:new_note", ());
-            }
-            "file.create_from_template" => {
-                let _ = app.emit("menu:create_from_template", ());
-            }
-            "file.open_daily_note" => {
-                let _ = app.emit("menu:open_daily_note", ());
-            }
-            "file.save_note" => {
-                let _ = app.emit("menu:save_note", ());
-            }
-            "file.export_html" => {
-                let _ = app.emit("menu:export_html", ());
-            }
-            "file.close_tab" => {
-                let _ = app.emit("menu:close_tab", ());
-            }
-            "space.open" => {
-                let _ = app.emit("menu:open_space", ());
-            }
             id if id.starts_with("space.recent.") => {
                 let Some(index) = parse_recent_space_index(id) else {
                     return;
@@ -1315,50 +1304,17 @@ pub fn run() {
                 }
                 let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
             }
-            "space.create" => {
-                let _ = app.emit("menu:create_space", ());
+            id => {
+                let Some(command) = menu_manifest::command_for_menu_id(id) else {
+                    return;
+                };
+                let _ = app.emit(
+                    "menu:app_command",
+                    AppCommandPayload {
+                        command_id: command.id,
+                    },
+                );
             }
-            "space.close" => {
-                let _ = app.emit("menu:close_space", ());
-            }
-            "space.reveal" => {
-                let _ = app.emit("menu:reveal_space", ());
-            }
-            "space.settings" => {
-                let _ = app.emit("menu:open_space_settings", ());
-            }
-            "space.git_sync_now" => {
-                let _ = app.emit("menu:git_sync_now", ());
-            }
-            "space.git_settings" => {
-                let _ = app.emit("menu:open_git_settings", ());
-            }
-            "app.about" => {
-                let _ = app.emit("menu:open_about", ());
-            }
-            "app.settings" => {
-                let _ = app.emit("menu:open_settings", ());
-            }
-            "ai.toggle" => {
-                let _ = app.emit("menu:toggle_ai", ());
-            }
-            "ai.close" => {
-                let _ = app.emit("menu:close_ai", ());
-            }
-            "ai.attach_current_note" => {
-                let _ = app.emit("menu:ai_attach_current_note", ());
-            }
-            "ai.attach_all_open_notes" => {
-                let _ = app.emit("menu:ai_attach_all_open_notes", ());
-            }
-            "ai.settings" => {
-                let _ = app.emit("menu:open_ai_settings", ());
-            }
-            id if id.starts_with("editor.") => {
-                let action = id.trim_start_matches("editor.").to_string();
-                let _ = app.emit("menu:editor_action", EditorMenuActionPayload { action });
-            }
-            _ => {}
         })
         .setup(|app| {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
@@ -1502,6 +1458,7 @@ pub fn run() {
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
             index::commands::backlinks,
+            index::commands::note_relationships,
             index::commands::note_local_graph,
             space_fs::list::space_list_dir,
             space_fs::list::space_list_markdown_files,

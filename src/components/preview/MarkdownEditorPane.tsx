@@ -40,8 +40,10 @@ import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../lib/notePreview";
+import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
+	type NoteRelationship,
 	type TextFileDoc,
 	type WorkspaceDatabasePreviewContext,
 	invoke,
@@ -191,6 +193,7 @@ export function MarkdownEditorPane({
 	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
+	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -282,6 +285,10 @@ export function MarkdownEditorPane({
 
 		return Array.from(merged.values());
 	}, [linkedMentions, previewContext?.backlinks]);
+	const relationshipGroups = useMemo(
+		() => groupRelationshipsByField(relationships),
+		[relationships],
+	);
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
 		if (syncPulseTimerRef.current !== null) {
@@ -800,6 +807,23 @@ export function MarkdownEditorPane({
 		};
 	}, [infoPanelOpen, relPath, spacePath]);
 
+	useEffect(() => {
+		if (!infoPanelOpen) return;
+		let cancelled = false;
+		void invoke("note_relationships", { note_id: relPath })
+			.then((items) => {
+				if (cancelled) return;
+				setRelationships(items);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setRelationships([]);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [infoPanelOpen, relPath]);
+
 	const handleInfoFrontmatterChange = useCallback(
 		(nextFrontmatter: string | null) => {
 			const normalizedFrontmatter = nextFrontmatter?.trim().length
@@ -1078,6 +1102,7 @@ export function MarkdownEditorPane({
 				onSelectHeading={scrollToHeading}
 				backlinks={sidebarBacklinks}
 				linkedNotes={linkedNotes}
+				relationshipGroups={relationshipGroups}
 				previewContext={previewContext}
 				lastSavedMtimeMs={lastSavedMtimeMs}
 				lineCount={lineCount}

@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { toast } from "sonner";
 import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
@@ -7,7 +8,7 @@ import {
 import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
 import { updateOnboardingSettings } from "../lib/settings";
-import type { FsEntry } from "../lib/tauri";
+import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
@@ -50,6 +51,18 @@ export interface CreateMarkdownFileOptions {
 	path: string;
 	text: string;
 	openParentDir?: string | null;
+}
+
+function showLinkRewriteToast(result: LinkRewriteResult) {
+	if (result.changed_files.length === 0) return;
+	const linkLabel = result.changed_links === 1 ? "link" : "links";
+	const fileLabel = result.changed_files.length === 1 ? "file" : "files";
+	toast.success(
+		`Updated ${result.changed_links.toLocaleString()} ${linkLabel}`,
+		{
+			description: `Repaired references in ${result.changed_files.length.toLocaleString()} ${fileLabel}.`,
+		},
+	);
 }
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
@@ -315,10 +328,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (nextPath === dirPath) return nextPath;
 			setError("");
 			try {
-				await invoke("space_rename_path", {
+				const rewriteResult = await invoke("space_rename_path", {
 					from_path: dirPath,
 					to_path: nextPath,
 				});
+				showLinkRewriteToast(rewriteResult);
 				updateExpandedDirs((prev) => {
 					const next = new Set<string>();
 					for (const expanded of prev)
@@ -525,10 +539,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			}
 			setError("");
 			try {
-				await invoke("space_rename_path", {
+				const rewriteResult = await invoke("space_rename_path", {
 					from_path: from,
 					to_path: nextPath,
 				});
+				showLinkRewriteToast(rewriteResult);
 				const fromParent = parentDir(from);
 				const toParent = parentDir(nextPath);
 				const nextName = nextPath.split("/").pop() ?? fileName;

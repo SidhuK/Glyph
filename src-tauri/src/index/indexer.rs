@@ -13,6 +13,10 @@ use super::frontmatter::{
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::properties::{delete_note_properties, reindex_note_properties};
+use super::relationships::{
+    delete_note_relationships, ensure_note_relationships_indexed, insert_note_relationships,
+    parse_frontmatter_relationships, reindex_note_relationships,
+};
 use super::tags::{
     expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people,
 };
@@ -110,6 +114,7 @@ fn index_note_with_conn(
         )
         .ok();
     if existing_etag.as_deref() == Some(etag.as_str()) {
+        ensure_note_relationships_indexed(conn, note_id, markdown)?;
         refresh_indexed_timestamps_if_needed(conn, note_id, file_path)?;
         return Ok(());
     }
@@ -176,6 +181,7 @@ fn index_note_with_conn(
             "Skipping note property indexing after frontmatter parse error"
         );
     }
+    reindex_note_relationships(&tx, note_id, markdown)?;
     reindex_note_tasks(&tx, note_id, &rel_path, &updated, &etag, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
@@ -260,6 +266,14 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
     tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     delete_note_properties(&tx, note_id)?;
+    delete_note_relationships(&tx, note_id)?;
+    tx.execute(
+        "UPDATE note_relationships
+         SET to_id = NULL, to_title = target_title
+         WHERE to_id = ?",
+        [note_id],
+    )
+    .map_err(|e| e.to_string())?;
     delete_note_tasks(&tx, note_id)?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
@@ -280,6 +294,8 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM note_properties", [])
         .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM note_relationships", [])
+        .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM tasks", [])
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM tasks_fts", [])
@@ -288,6 +304,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     let note_paths = collect_markdown_files(space_root)?;
     let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =
         Vec::with_capacity(note_paths.len());
+    let mut relationship_data = Vec::with_capacity(note_paths.len());
     let count = note_paths.len();
 
     for (rel, path) in &note_paths {
@@ -350,6 +367,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
 
         let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
         link_data.push((rel.clone(), to_ids, to_titles));
+        relationship_data.push((rel.clone(), parse_frontmatter_relationships(&markdown)));
     }
 
     for (rel, to_ids, to_titles) in &link_data {
@@ -371,6 +389,10 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
             )
             .map_err(|e| e.to_string())?;
         }
+    }
+
+    for (rel, relationships) in relationship_data {
+        insert_note_relationships(&tx, &rel, relationships)?;
     }
 
     tx.commit().map_err(|e| e.to_string())?;

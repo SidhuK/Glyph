@@ -19,6 +19,11 @@ export interface FsEntry {
 	is_markdown: boolean;
 }
 
+export interface LinkRewriteResult {
+	changed_files: string[];
+	changed_links: number;
+}
+
 export interface FileTreeAppearance {
 	color?: string | null;
 	icon?: string | null;
@@ -307,6 +312,15 @@ export interface BacklinkItem {
 	id: string;
 	title: string;
 	updated: string;
+}
+
+export interface NoteRelationship {
+	from_id: string;
+	field_key: string;
+	to_id: string | null;
+	to_title: string | null;
+	target_title: string;
+	ordinal: number;
 }
 
 export interface LocalGraphNode {
@@ -781,7 +795,10 @@ interface TauriCommands {
 	>;
 	space_create_dir: CommandDef<{ path: string }, void>;
 	space_duplicate_path: CommandDef<{ path: string }, FsEntry>;
-	space_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
+	space_rename_path: CommandDef<
+		{ from_path: string; to_path: string },
+		LinkRewriteResult
+	>;
 	space_delete_path: CommandDef<
 		{ path: string; recursive?: boolean | null },
 		void
@@ -924,6 +941,7 @@ interface TauriCommands {
 		{ note_id: string; space_path?: string | null },
 		BacklinkItem[]
 	>;
+	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
 	web_clip_save: CommandDef<
 		{ url: string; folder?: string },
