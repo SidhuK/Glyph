@@ -15,7 +15,9 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::Gemini
         | AiProviderKind::Ollama
         | AiProviderKind::LlamaCpp
-        | AiProviderKind::CodexChatgpt => ProviderCapabilities {
+        | AiProviderKind::CodexChatgpt
+        | AiProviderKind::Amp
+        | AiProviderKind::Opencode => ProviderCapabilities {
             requires_max_tokens: false,
         },
     }

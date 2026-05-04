@@ -45,6 +45,8 @@ export const providerSupportKeyMap: Record<AiProviderKind, string> = {
 	ollama: "ollama",
 	llama_cpp: "llama_cpp",
 	codex_chatgpt: "openai",
+	amp: "amp",
+	opencode: "opencode",
 };
 
 const endpointLabelMap: Record<string, string> = {

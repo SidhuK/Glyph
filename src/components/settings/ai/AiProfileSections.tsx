@@ -66,7 +66,10 @@ function AiProfileSectionsBody({
 		useCodexAccount(profileDraft?.provider);
 
 	const providerUsesApiKey = useMemo(
-		() => profileDraft?.provider !== "codex_chatgpt",
+		() =>
+			profileDraft?.provider !== "codex_chatgpt" &&
+			profileDraft?.provider !== "amp" &&
+			profileDraft?.provider !== "opencode",
 		[profileDraft?.provider],
 	);
 

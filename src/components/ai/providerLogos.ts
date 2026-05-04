@@ -1,4 +1,5 @@
 import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
+import ampLogoUrl from "../../assets/provider-logos/amp.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
 import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
@@ -7,6 +8,8 @@ import llamacppLogoUrl from "../../assets/provider-logos/llamacpp.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
 import openaiDarkThemeLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
+import opencodeDarkThemeLogoUrl from "../../assets/provider-logos/opencode-dark.svg?url";
+import opencodeLightThemeLogoUrl from "../../assets/provider-logos/opencode-light.svg?url";
 import type { AiProviderKind } from "../../lib/tauri";
 
 export const providerLogoMeta: Record<
@@ -32,6 +35,12 @@ export const providerLogoMeta: Record<
 		src: codexLightThemeLogoUrl,
 		darkSrc: codexDarkThemeLogoUrl,
 		label: "Codex (ChatGPT)",
+	},
+	amp: { src: ampLogoUrl, label: "Amp" },
+	opencode: {
+		src: opencodeLightThemeLogoUrl,
+		darkSrc: opencodeDarkThemeLogoUrl,
+		label: "OpenCode",
 	},
 };
 

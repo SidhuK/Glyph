@@ -54,6 +54,8 @@ export function AiProviderSection({
 						}
 					>
 						<option value="codex_chatgpt">Codex (ChatGPT)</option>
+						<option value="amp">Amp</option>
+						<option value="opencode">OpenCode</option>
 						<option value="openai">OpenAI</option>
 						<option value="openrouter">OpenRouter</option>
 						<option value="anthropic">Anthropic</option>

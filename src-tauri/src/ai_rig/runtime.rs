@@ -360,9 +360,9 @@ pub async fn run_with_rig(
                 Err(e) => return Err(e),
             }
         }
-        AiProviderKind::CodexChatgpt => {
+        AiProviderKind::CodexChatgpt | AiProviderKind::Amp | AiProviderKind::Opencode => {
             return Err(
-                "Codex provider uses dedicated app-server flow; not available in Rig runtime"
+                "This provider uses a dedicated native runtime; not available in Rig runtime"
                     .to_string(),
             );
         }
@@ -624,6 +624,12 @@ pub async fn generate_chat_title_with_rig(
         }
         AiProviderKind::CodexChatgpt => {
             return Ok("Codex Chat".to_string());
+        }
+        AiProviderKind::Amp => {
+            return Ok("Amp Chat".to_string());
+        }
+        AiProviderKind::Opencode => {
+            return Ok("OpenCode Chat".to_string());
         }
     };
 
