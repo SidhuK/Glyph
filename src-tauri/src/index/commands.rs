@@ -49,6 +49,7 @@ pub struct AllDocsItem {
     pub updated: String,
     pub created: String,
     pub tags: Vec<String>,
+    pub people: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -375,6 +376,16 @@ pub async fn all_docs_list(
                                   AND tag NOT LIKE 'people/%'
                                 ORDER BY is_explicit DESC, tag COLLATE NOCASE ASC
                             ) ordered_tags
+                        ), ''),
+                        COALESCE((
+                            SELECT GROUP_CONCAT(ordered_people.tag, '\n')
+                            FROM (
+                                SELECT tag
+                                FROM tags
+                                WHERE note_id = n.id
+                                  AND tag LIKE 'people/%'
+                                ORDER BY tag COLLATE NOCASE ASC
+                            ) ordered_people
                         ), '')
                  FROM notes n ",
         );
@@ -395,6 +406,7 @@ pub async fn all_docs_list(
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
             let tag_blob: String = row.get(5).map_err(|e| e.to_string())?;
+            let people_blob: String = row.get(6).map_err(|e| e.to_string())?;
             out.push(AllDocsItem {
                 note_path: row.get(0).map_err(|e| e.to_string())?,
                 title: row.get(1).map_err(|e| e.to_string())?,
@@ -406,6 +418,10 @@ pub async fn all_docs_list(
                     .map(str::trim)
                     .filter(|tag| !tag.is_empty())
                     .map(ToOwned::to_owned)
+                    .collect(),
+                people: people_blob
+                    .split('\n')
+                    .filter_map(people_tag_to_handle)
                     .collect(),
             });
         }

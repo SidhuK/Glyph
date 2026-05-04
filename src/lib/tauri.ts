@@ -297,6 +297,7 @@ export interface AllDocsItem {
 	updated: string;
 	created: string;
 	tags: string[];
+	people?: string[];
 }
 
 export interface SearchAdvancedRequest {

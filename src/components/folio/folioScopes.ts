@@ -2,6 +2,7 @@ export type FolioScope =
 	| { kind: "all" }
 	| { kind: "folder"; folderPrefix: string }
 	| { kind: "tag"; tag: string }
+	| { kind: "person"; handle: string }
 	| { kind: "daily"; folderPrefix: string | null }
 	| { kind: "templates"; folderPrefix: string | null }
 	| { kind: "search"; query: string };
@@ -25,6 +26,8 @@ export function folioScopeTitle(scope: FolioScope): string {
 			return scope.tag.startsWith("#") || scope.tag.startsWith("@")
 				? scope.tag
 				: `#${scope.tag}`;
+		case "person":
+			return scope.handle.startsWith("@") ? scope.handle : `@${scope.handle}`;
 		case "daily":
 			return "Daily Notes";
 		case "templates":

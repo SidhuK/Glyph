@@ -30,6 +30,18 @@ function tagMatches(noteTags: string[], tag: string): boolean {
 	);
 }
 
+function personMatches(
+	notePeople: string[] | undefined,
+	handle: string,
+): boolean {
+	const normalizedHandle = handle.trim().replace(/^@/, "").toLowerCase();
+	if (!normalizedHandle) return false;
+	return (notePeople ?? []).some(
+		(notePerson) =>
+			notePerson.trim().replace(/^@/, "").toLowerCase() === normalizedHandle,
+	);
+}
+
 function filterNotesForScope(
 	notes: AllDocsItem[],
 	scope: FolioScope,
@@ -37,6 +49,8 @@ function filterNotesForScope(
 	switch (scope.kind) {
 		case "tag":
 			return notes.filter((note) => tagMatches(note.tags, scope.tag));
+		case "person":
+			return notes.filter((note) => personMatches(note.people, scope.handle));
 		case "search": {
 			const query = scope.query.trim().toLowerCase();
 			if (!query) return notes;

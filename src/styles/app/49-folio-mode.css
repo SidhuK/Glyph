@@ -52,8 +52,16 @@
 	font-size: 11px;
 }
 
+.folioNotesControls {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
 .folioNotesSearch {
 	height: 28px;
+	flex: 1 1 auto;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -95,6 +103,52 @@
 .folioNotesSearch input:focus-visible {
 	outline: none;
 	border-color: transparent;
+	box-shadow: none;
+}
+
+.folioNotesSort {
+	position: relative;
+	flex: 0 0 auto;
+	width: 30px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 1px solid var(--border-light);
+	border-radius: 6px;
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+}
+
+.folioNotesSort svg {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.folioNotesSortSelect {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-xs);
+	opacity: 0;
+	cursor: pointer;
+}
+
+.folioNotesSort:focus-within {
+	border-color: var(--border-focus);
+}
+
+.folioNotesSortSelect:focus,
+.folioNotesSortSelect:focus-visible {
+	outline: none;
 	box-shadow: none;
 }
 

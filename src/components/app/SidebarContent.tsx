@@ -390,6 +390,16 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 		[folioMode, onSelectTag, setFolioScope],
 	);
+	const handleSelectPerson = useCallback(
+		(handle: string) => {
+			if (!folioMode) {
+				onSelectTag(handle);
+				return;
+			}
+			setFolioScope({ kind: "person", handle });
+		},
+		[folioMode, onSelectTag, setFolioScope],
+	);
 
 	if (!spacePath) {
 		return (
@@ -646,7 +656,7 @@ export const SidebarContent = memo(function SidebarContent({
 								tags={tags}
 								people={people}
 								onSelectTag={handleSelectTag}
-								onSelectPerson={handleSelectTag}
+								onSelectPerson={handleSelectPerson}
 							/>
 						</section>
 					</div>

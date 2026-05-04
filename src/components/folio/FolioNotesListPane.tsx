@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
@@ -15,6 +15,8 @@ interface FolioNotesListPaneProps {
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
 
+type FolioNotesSortMode = "alphabetical" | "edited" | "created";
+
 function noteTitle(note: AllDocsItem): string {
 	return note.title.trim() || basename(note.note_path).replace(/\.md$/i, "");
 }
@@ -28,6 +30,34 @@ function noteMatchesFilter(note: AllDocsItem, query: string): boolean {
 	return haystack.includes(normalized);
 }
 
+function compareNotes(
+	left: AllDocsItem,
+	right: AllDocsItem,
+	sortMode: FolioNotesSortMode,
+): number {
+	if (sortMode === "edited") {
+		return Date.parse(right.updated) - Date.parse(left.updated);
+	}
+	if (sortMode === "created") {
+		return Date.parse(right.created) - Date.parse(left.created);
+	}
+	return (
+		noteTitle(left).localeCompare(noteTitle(right), undefined, {
+			sensitivity: "base",
+			numeric: true,
+		}) || left.note_path.localeCompare(right.note_path)
+	);
+}
+
+function isFolioHeaderControl(target: EventTarget | null): boolean {
+	return (
+		target instanceof HTMLInputElement ||
+		target instanceof HTMLSelectElement ||
+		target instanceof HTMLTextAreaElement ||
+		(target instanceof HTMLElement && target.isContentEditable)
+	);
+}
+
 export const FolioNotesListPane = memo(function FolioNotesListPane({
 	activeTabPath,
 	onOpenFile,
@@ -39,10 +69,15 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const { notes, isLoading, error, title, missingFolder } =
 		useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
 	const paneRef = useRef<HTMLElement | null>(null);
 	const visibleNotes = useMemo(
-		() => notes.filter((note) => noteMatchesFilter(note, searchQuery)),
-		[notes, searchQuery],
+		() =>
+			notes
+				.filter((note) => noteMatchesFilter(note, searchQuery))
+				.slice()
+				.sort((left, right) => compareNotes(left, right, sortMode)),
+		[notes, searchQuery, sortMode],
 	);
 	const selectedIndex = useMemo(
 		() =>
@@ -55,6 +90,19 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		requestAnimationFrame(() =>
 			paneRef.current?.focus({ preventScroll: true }),
 		);
+	}, []);
+	const scrollNoteIntoView = useCallback((path: string) => {
+		requestAnimationFrame(() => {
+			const rows =
+				paneRef.current?.querySelectorAll<HTMLElement>(
+					"[data-folio-note-path]",
+				) ?? [];
+			for (const row of rows) {
+				if (row.dataset.folioNotePath !== path) continue;
+				row.scrollIntoView?.({ block: "nearest" });
+				return;
+			}
+		});
 	}, []);
 	const openNote = useCallback(
 		(path: string) => {
@@ -96,10 +144,17 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			const nextIndex =
 				(selectedIndex + direction + visibleNotes.length) % visibleNotes.length;
 			const nextNote = visibleNotes[nextIndex];
-			if (nextNote) openNote(nextNote.note_path);
+			if (!nextNote) return;
+			scrollNoteIntoView(nextNote.note_path);
+			openNote(nextNote.note_path);
 		},
-		[openNote, selectedIndex, visibleNotes],
+		[openNote, scrollNoteIntoView, selectedIndex, visibleNotes],
 	);
+
+	useEffect(() => {
+		if (!activeTabPath) return;
+		scrollNoteIntoView(activeTabPath);
+	}, [activeTabPath, scrollNoteIntoView]);
 
 	const body = (() => {
 		if (missingFolder) {
@@ -153,7 +208,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			aria-label="Notes list"
 			tabIndex={-1}
 			onKeyDown={(event) => {
-				if (event.target instanceof HTMLInputElement) return;
+				if (isFolioHeaderControl(event.target)) return;
 				if (event.key === "ArrowDown" || event.key === "ArrowUp") {
 					event.preventDefault();
 					openAdjacentNote(event.key === "ArrowDown" ? 1 : -1);
@@ -170,7 +225,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				title={title}
 				count={visibleNotes.length}
 				searchQuery={searchQuery}
+				sortMode={sortMode}
 				onSearchQueryChange={setSearchQuery}
+				onSortModeChange={setSortMode}
 			/>
 			{body}
 		</aside>

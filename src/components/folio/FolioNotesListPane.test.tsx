@@ -64,20 +64,22 @@ vi.mock("../ui/shadcn/context-menu", () => ({
 
 const notes = [
 	{
+		note_path: "Ideas/Sketch.md",
+		title: "Sketch",
+		preview: "A fast idea",
+		updated: "2026-05-02T10:00:00.000Z",
+		created: "2026-04-30T09:00:00.000Z",
+		tags: ["ideas"],
+		people: ["mira"],
+	},
+	{
 		note_path: "Projects/Roadmap.md",
 		title: "Roadmap",
 		preview: "# Roadmap\n\nLaunch   planning\nand milestones",
 		updated: "2026-05-01T10:00:00.000Z",
 		created: "2026-05-01T09:00:00.000Z",
 		tags: ["planning"],
-	},
-	{
-		note_path: "Ideas/Sketch.md",
-		title: "Sketch",
-		preview: "A fast idea",
-		updated: "2026-05-02T10:00:00.000Z",
-		created: "2026-05-02T09:00:00.000Z",
-		tags: ["ideas"],
+		people: ["alex"],
 	},
 ];
 
@@ -88,6 +90,12 @@ async function waitFor(check: () => boolean) {
 			await new Promise((resolve) => window.setTimeout(resolve, 0));
 		});
 	}
+}
+
+function renderedNotePaths(container: Element): string[] {
+	return Array.from(container.querySelectorAll("[data-folio-note-path]")).map(
+		(row) => row.getAttribute("data-folio-note-path") ?? "",
+	);
 }
 
 describe("FolioNotesListPane", () => {
@@ -101,6 +109,7 @@ describe("FolioNotesListPane", () => {
 		nextName: string,
 	) => Promise<string | null>;
 	let onDeleteFile: (relPath: string) => Promise<boolean>;
+	let scrollIntoViewArgs: Array<boolean | ScrollIntoViewOptions | undefined>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -113,6 +122,12 @@ describe("FolioNotesListPane", () => {
 		onOpenFileInNewTab = vi.fn(async () => {});
 		onRenameFile = vi.fn(async () => null);
 		onDeleteFile = vi.fn(async () => true);
+		scrollIntoViewArgs = [];
+		HTMLElement.prototype.scrollIntoView = (
+			arg?: boolean | ScrollIntoViewOptions,
+		) => {
+			scrollIntoViewArgs.push(arg);
+		};
 		container = document.createElement("div");
 		document.body.appendChild(container);
 		root = createRoot(container);
@@ -149,6 +164,10 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
 		expect(loadAllDocsMock).toHaveBeenCalledWith(null);
+		expect(renderedNotePaths(container)).toEqual([
+			"Projects/Roadmap.md",
+			"Ideas/Sketch.md",
+		]);
 		expect(
 			container
 				.querySelector('[data-folio-note-path="Projects/Roadmap.md"]')
@@ -177,6 +196,91 @@ describe("FolioNotesListPane", () => {
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
+	});
+
+	it("sorts by edited time when selected", async () => {
+		await act(async () => renderPane());
+		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
+
+		const select = container.querySelector(
+			'select[aria-label="Sort notes"]',
+		) as HTMLSelectElement | null;
+		expect(select).toBeTruthy();
+		expect(
+			Array.from(select?.options ?? []).map((option) => option.textContent),
+		).toEqual(["Alphabetically", "Edited", "Created"]);
+
+		await act(async () => {
+			if (!select) return;
+			const valueSetter = Object.getOwnPropertyDescriptor(
+				HTMLSelectElement.prototype,
+				"value",
+			)?.set;
+			valueSetter?.call(select, "edited");
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+		});
+
+		expect(renderedNotePaths(container)).toEqual([
+			"Ideas/Sketch.md",
+			"Projects/Roadmap.md",
+		]);
+	});
+
+	it("sorts by created time when selected", async () => {
+		await act(async () => renderPane());
+		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
+
+		const select = container.querySelector(
+			'select[aria-label="Sort notes"]',
+		) as HTMLSelectElement | null;
+		expect(select).toBeTruthy();
+
+		await act(async () => {
+			if (!select) return;
+			const valueSetter = Object.getOwnPropertyDescriptor(
+				HTMLSelectElement.prototype,
+				"value",
+			)?.set;
+			valueSetter?.call(select, "created");
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+		});
+
+		expect(renderedNotePaths(container)).toEqual([
+			"Projects/Roadmap.md",
+			"Ideas/Sketch.md",
+		]);
+	});
+
+	it("keeps sort control arrow keys inside the select", async () => {
+		await act(async () => renderPane("Projects/Roadmap.md"));
+		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
+
+		const select = container.querySelector(
+			'select[aria-label="Sort notes"]',
+		) as HTMLSelectElement | null;
+		expect(select).toBeTruthy();
+
+		const event = new KeyboardEvent("keydown", {
+			key: "ArrowDown",
+			bubbles: true,
+			cancelable: true,
+		});
+		await act(async () => {
+			select?.dispatchEvent(event);
+		});
+
+		expect(event.defaultPrevented).toBe(false);
+		expect(vi.mocked(onOpenFile)).not.toHaveBeenCalled();
+	});
+
+	it("filters person scopes by indexed people metadata", async () => {
+		scopeRef.current = { kind: "person", handle: "@mira" };
+		await act(async () => renderPane());
+		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
+
+		expect(container.textContent).toContain("@mira");
+		expect(renderedNotePaths(container)).toEqual(["Ideas/Sketch.md"]);
+		expect(container.textContent).not.toContain("Roadmap");
 	});
 
 	it("opens a note on row click", async () => {
@@ -241,6 +345,32 @@ describe("FolioNotesListPane", () => {
 		});
 
 		expect(event.defaultPrevented).toBe(true);
+		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
+	});
+
+	it("scrolls the selected row into view during keyboard navigation", async () => {
+		await act(async () => renderPane("Projects/Roadmap.md"));
+		await waitFor(
+			() =>
+				container.querySelector(
+					'[data-folio-note-path="Projects/Roadmap.md"]',
+				) !== null,
+		);
+		scrollIntoViewArgs = [];
+
+		const list = container.querySelector(".folioNotesList");
+		await act(async () => {
+			list?.dispatchEvent(
+				new KeyboardEvent("keydown", {
+					key: "ArrowDown",
+					bubbles: true,
+					cancelable: true,
+				}),
+			);
+			await new Promise((resolve) => window.requestAnimationFrame(resolve));
+		});
+
+		expect(scrollIntoViewArgs).toContainEqual({ block: "nearest" });
 		expect(vi.mocked(onOpenFile)).toHaveBeenCalledWith("Ideas/Sketch.md");
 	});
 });
