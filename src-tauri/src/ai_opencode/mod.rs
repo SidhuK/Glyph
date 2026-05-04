@@ -1,6 +1,5 @@
 use std::{
     collections::{HashMap, HashSet},
-    env,
     net::TcpListener,
     path::{Path, PathBuf},
     time::{Duration, Instant},
@@ -19,10 +18,10 @@ use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
     events::AiStatusEvent,
-    helpers::now_ms,
+    helpers::{emit_tool, find_cli_binary},
     providers::build_transcript,
     types::AiModel,
-    types::{AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiStoredToolEvent, AiToolEvent},
+    types::{AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiStoredToolEvent},
 };
 
 const DEFAULT_MODEL_ID: &str = "opencode/default";
@@ -42,47 +41,12 @@ impl OpenCodeServer {
     }
 }
 
-fn executable_exists(path: &Path) -> bool {
-    path.is_file()
-}
-
-fn home_dir() -> Option<PathBuf> {
-    env::var_os("HOME").map(PathBuf::from)
-}
-
-fn candidate_binary_paths() -> Vec<PathBuf> {
-    let mut paths = Vec::new();
-    if let Some(path) = env::var_os("OPENCODE_CLI_PATH") {
-        paths.push(PathBuf::from(path));
-    }
-    if let Some(path) = env::var_os("PATH") {
-        paths.extend(env::split_paths(&path).map(|dir| dir.join("opencode")));
-    }
-    paths.push(PathBuf::from("/opt/homebrew/bin/opencode"));
-    paths.push(PathBuf::from("/usr/local/bin/opencode"));
-    paths.push(PathBuf::from("/usr/bin/opencode"));
-    if let Some(home) = home_dir() {
-        paths.push(home.join(".local/bin/opencode"));
-        paths.push(home.join(".bun/bin/opencode"));
-        paths.push(home.join(".npm-global/bin/opencode"));
-        paths.push(home.join(".volta/bin/opencode"));
-    }
-    paths
-}
-
 fn find_opencode_binary() -> Result<PathBuf, String> {
-    for path in candidate_binary_paths() {
-        if executable_exists(&path) {
-            return Ok(path);
-        }
-    }
-    Err(
-        "OpenCode CLI not found. Install opencode or set OPENCODE_CLI_PATH to the native binary."
-            .to_string(),
-    )
+    find_cli_binary("OpenCode", "OPENCODE_CLI_PATH", "opencode")
 }
 
 fn free_local_port() -> Result<u16, String> {
+    // The caller retries if the child loses the short race to bind this port.
     let listener = TcpListener::bind(("127.0.0.1", 0)).map_err(|e| e.to_string())?;
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
     drop(listener);
@@ -108,10 +72,36 @@ async fn health_ready(client: &Client, base_url: &str) -> bool {
         .unwrap_or(false)
 }
 
+fn is_port_bind_failure(message: &str) -> bool {
+    let lower = message.to_lowercase();
+    lower.contains("address already in use")
+        || lower.contains("eaddrinuse")
+        || lower.contains("addrinuse")
+}
+
 async fn start_server(root: &Path) -> Result<OpenCodeServer, String> {
     let binary = find_opencode_binary()?;
+    let mut last_error = String::new();
+    for _ in 0..3 {
+        match start_server_on_port(root, &binary).await {
+            Ok(server) => return Ok(server),
+            Err(error) if is_port_bind_failure(&error) => {
+                last_error = error;
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    Err(last_error)
+}
+
+async fn start_server_on_port(root: &Path, binary: &Path) -> Result<OpenCodeServer, String> {
     let port = free_local_port()?;
     let base_url = format!("http://127.0.0.1:{port}");
+    let client = Client::builder()
+        .timeout(Duration::from_secs(120))
+        .user_agent("Glyph/0.1 (opencode)")
+        .build()
+        .map_err(|e| e.to_string())?;
     let mut child = Command::new(binary)
         .arg("serve")
         .arg("--hostname=127.0.0.1")
@@ -130,17 +120,13 @@ async fn start_server(root: &Path) -> Result<OpenCodeServer, String> {
         tokio::spawn(pipe_lines(stderr, tx));
     }
 
-    let client = Client::builder()
-        .timeout(Duration::from_secs(120))
-        .user_agent("Glyph/0.1 (opencode)")
-        .build()
-        .map_err(|e| e.to_string())?;
     let deadline = Instant::now() + SERVER_START_TIMEOUT;
     let mut last_line = String::new();
 
     loop {
         if Instant::now() > deadline {
             let _ = child.kill().await;
+            let _ = child.wait().await;
             return Err(if last_line.trim().is_empty() {
                 "Timed out waiting for OpenCode server to start".to_string()
             } else {
@@ -148,9 +134,11 @@ async fn start_server(root: &Path) -> Result<OpenCodeServer, String> {
             });
         }
         if let Ok(Some(status)) = child.try_wait() {
-            return Err(format!(
-                "OpenCode server exited before it was ready: {status}"
-            ));
+            return Err(if last_line.trim().is_empty() {
+                format!("OpenCode server exited before it was ready: {status}")
+            } else {
+                format!("OpenCode server exited before it was ready: {status}: {last_line}")
+            });
         }
         tokio::select! {
             maybe_line = rx.recv() => {
@@ -521,39 +509,6 @@ fn tool_phase_for_status(status: &str) -> &'static str {
         "error" => "error",
         _ => "call",
     }
-}
-
-fn emit_tool(
-    app: &AppHandle,
-    job_id: &str,
-    tool_events: &mut Vec<AiStoredToolEvent>,
-    tool: &str,
-    phase: &str,
-    call_id: Option<String>,
-    payload: Option<Value>,
-    error: Option<String>,
-) {
-    let at_ms = now_ms();
-    let _ = app.emit(
-        "ai:tool",
-        AiToolEvent {
-            job_id: job_id.to_string(),
-            tool: tool.to_string(),
-            phase: phase.to_string(),
-            at_ms,
-            call_id: call_id.clone(),
-            payload: payload.clone(),
-            error: error.clone(),
-        },
-    );
-    tool_events.push(AiStoredToolEvent {
-        tool: tool.to_string(),
-        phase: phase.to_string(),
-        at_ms,
-        call_id,
-        payload,
-        error,
-    });
 }
 
 enum EventOutcome {

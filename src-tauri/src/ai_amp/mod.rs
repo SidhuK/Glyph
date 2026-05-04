@@ -1,5 +1,4 @@
 use std::{
-    env,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -15,51 +14,15 @@ use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::{
     events::AiStatusEvent,
-    helpers::now_ms,
+    helpers::{emit_tool, find_cli_binary},
     providers::build_transcript,
-    types::{
-        AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiStoredToolEvent,
-        AiToolEvent,
-    },
+    types::{AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiStoredToolEvent},
 };
 
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 
-fn executable_exists(path: &Path) -> bool {
-    path.is_file()
-}
-
-fn home_dir() -> Option<PathBuf> {
-    env::var_os("HOME").map(PathBuf::from)
-}
-
-fn candidate_binary_paths() -> Vec<PathBuf> {
-    let mut paths = Vec::new();
-    if let Some(path) = env::var_os("AMP_CLI_PATH") {
-        paths.push(PathBuf::from(path));
-    }
-    if let Some(path) = env::var_os("PATH") {
-        paths.extend(env::split_paths(&path).map(|dir| dir.join("amp")));
-    }
-    paths.push(PathBuf::from("/opt/homebrew/bin/amp"));
-    paths.push(PathBuf::from("/usr/local/bin/amp"));
-    paths.push(PathBuf::from("/usr/bin/amp"));
-    if let Some(home) = home_dir() {
-        paths.push(home.join(".local/bin/amp"));
-        paths.push(home.join(".bun/bin/amp"));
-        paths.push(home.join(".npm-global/bin/amp"));
-        paths.push(home.join(".volta/bin/amp"));
-    }
-    paths
-}
-
 fn find_amp_binary() -> Result<PathBuf, String> {
-    for path in candidate_binary_paths() {
-        if executable_exists(&path) {
-            return Ok(path);
-        }
-    }
-    Err("Amp CLI not found. Install amp or set AMP_CLI_PATH to the native binary.".to_string())
+    find_cli_binary("Amp", "AMP_CLI_PATH", "amp")
 }
 
 fn mode_from_profile(profile: &AiProfile) -> &str {
@@ -85,7 +48,7 @@ fn prompt_text(system: &str, messages: &[AiMessage]) -> String {
     }
 }
 
-async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
+fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
     let (tx, rx) = mpsc::channel::<String>(64);
     if let Some(stderr) = child.stderr.take() {
         tokio::spawn(async move {
@@ -101,39 +64,6 @@ async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
 async fn stop_child(child: &mut Child) {
     let _ = child.kill().await;
     let _ = child.wait().await;
-}
-
-fn emit_tool(
-    app: &AppHandle,
-    job_id: &str,
-    tool_events: &mut Vec<AiStoredToolEvent>,
-    tool: &str,
-    phase: &str,
-    call_id: Option<String>,
-    payload: Option<Value>,
-    error: Option<String>,
-) {
-    let at_ms = now_ms();
-    let _ = app.emit(
-        "ai:tool",
-        AiToolEvent {
-            job_id: job_id.to_string(),
-            tool: tool.to_string(),
-            phase: phase.to_string(),
-            at_ms,
-            call_id: call_id.clone(),
-            payload: payload.clone(),
-            error: error.clone(),
-        },
-    );
-    tool_events.push(AiStoredToolEvent {
-        tool: tool.to_string(),
-        phase: phase.to_string(),
-        at_ms,
-        call_id,
-        payload,
-        error,
-    });
 }
 
 fn handle_amp_event(
@@ -332,7 +262,7 @@ pub async fn run_with_amp(
         .take()
         .ok_or_else(|| "failed to capture Amp stdout".to_string())?;
     let mut stdout_lines = BufReader::new(stdout).lines();
-    let mut stderr_lines = pipe_stderr(&mut child).await;
+    let mut stderr_lines = pipe_stderr(&mut child);
     let deadline = tokio::time::sleep(RUN_TIMEOUT);
     tokio::pin!(deadline);
 
