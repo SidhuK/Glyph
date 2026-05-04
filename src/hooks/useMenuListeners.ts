@@ -182,12 +182,20 @@ export function useMenuListeners({
 				highlight_green: () => onEditorAction("highlight_green"),
 				highlight_red: () => onEditorAction("highlight_red"),
 				highlight_clear: () => onEditorAction("highlight_clear"),
-			}).catch((error) => {
-				console.error(
-					`[useMenuListeners] command "${payload.command_id}" failed:`,
-					error,
-				);
-			});
+			})
+				.then((handled) => {
+					if (!handled) {
+						console.warn(
+							`[useMenuListeners] command "${payload.command_id}" has no handler`,
+						);
+					}
+				})
+				.catch((error) => {
+					console.error(
+						`[useMenuListeners] command "${payload.command_id}" failed:`,
+						error,
+					);
+				});
 		},
 		[
 			closeSpace,

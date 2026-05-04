@@ -1,4 +1,6 @@
-export type CommandHandlerMap = Record<string, () => void | Promise<void>>;
+export type CommandHandlerMap = Partial<
+	Record<string, () => void | Promise<void>>
+>;
 
 export async function dispatchAppCommand(
 	commandId: string,

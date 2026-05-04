@@ -419,10 +419,21 @@ fn note_title_for_path(root: &Path, rel_path: &str) -> Option<String> {
 }
 
 fn is_external_target(target: &str) -> bool {
-    target.starts_with("http://")
-        || target.starts_with("https://")
-        || target.starts_with("mailto:")
-        || target.starts_with('#')
+    target.starts_with('#') || has_uri_scheme(target)
+}
+
+fn has_uri_scheme(target: &str) -> bool {
+    let Some((first, _rest)) = target.split_once(':') else {
+        return false;
+    };
+    !first.is_empty()
+        && first
+            .chars()
+            .next()
+            .is_some_and(|value| value.is_ascii_alphabetic())
+        && first
+            .chars()
+            .all(|value| value.is_ascii_alphanumeric() || matches!(value, '+' | '.' | '-'))
 }
 
 fn collect_markdown_files(space_root: &Path) -> Result<Vec<String>, String> {
@@ -440,14 +451,18 @@ fn collect_markdown_files(space_root: &Path) -> Result<Vec<String>, String> {
             if name.to_string_lossy().starts_with('.') {
                 continue;
             }
-            let Ok(meta) = entry.metadata() else {
+            let Ok(meta) = std::fs::symlink_metadata(&path) else {
                 continue;
             };
-            if meta.is_dir() {
+            let file_type = meta.file_type();
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
                 stack.push(path);
                 continue;
             }
-            if !meta.is_file() || !utils::is_markdown_path(&path) {
+            if !file_type.is_file() || !utils::is_markdown_path(&path) {
                 continue;
             }
             let rel = path
@@ -493,8 +508,7 @@ mod tests {
 
     #[test]
     fn does_not_rewrite_external_partial_or_fenced_links() {
-        let input =
-            "https://example.com/old-title.md [[Old Title Extended]]\n```\n[[Old Title]]\n```\n";
+        let input = "https://example.com/old-title.md obsidian://open?vault=x file:///old-title.md tel:+15551212 [[Old Title Extended]]\n```\n[[Old Title]]\n```\n";
         let output = rewrite_markdown_links_for_path(input, &plan(), "");
 
         assert_eq!(output.markdown, input);
