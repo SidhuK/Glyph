@@ -1,11 +1,11 @@
 export type CommandHandlerMap = Record<string, () => void | Promise<void>>;
 
-export function dispatchAppCommand(
+export async function dispatchAppCommand(
 	commandId: string,
 	handlers: CommandHandlerMap,
-): boolean {
+): Promise<boolean> {
 	const handler = handlers[commandId];
 	if (!handler) return false;
-	void handler();
+	await handler();
 	return true;
 }

@@ -235,6 +235,7 @@ export function NotesInfoSidebar({
 									<div className="markdownEditorInfoLinkList">
 										{group.items.map((item) => {
 											const target = item.to_id ?? item.target_title;
+											if (!target) return null;
 											return (
 												<button
 													key={`${group.field_key}:${item.ordinal}:${target}`}

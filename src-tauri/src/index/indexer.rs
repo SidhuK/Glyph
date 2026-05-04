@@ -267,6 +267,13 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     delete_note_properties(&tx, note_id)?;
     delete_note_relationships(&tx, note_id)?;
+    tx.execute(
+        "UPDATE note_relationships
+         SET to_id = NULL, to_title = target_title
+         WHERE to_id = ?",
+        [note_id],
+    )
+    .map_err(|e| e.to_string())?;
     delete_note_tasks(&tx, note_id)?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())

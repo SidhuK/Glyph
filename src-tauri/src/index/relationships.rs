@@ -45,8 +45,11 @@ pub fn parse_frontmatter_relationships(markdown: &str) -> Vec<FrontmatterRelatio
 }
 
 pub fn delete_note_relationships(conn: &Connection, note_id: &str) -> Result<(), String> {
-    conn.execute("DELETE FROM note_relationships WHERE from_id = ?", [note_id])
-        .map_err(|e| e.to_string())?;
+    conn.execute(
+        "DELETE FROM note_relationships WHERE from_id = ?",
+        [note_id],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -137,11 +140,7 @@ pub fn query_note_relationships(
     Ok(out)
 }
 
-fn collect_relationship_values(
-    key: &str,
-    value: &Value,
-    out: &mut Vec<FrontmatterRelationship>,
-) {
+fn collect_relationship_values(key: &str, value: &Value, out: &mut Vec<FrontmatterRelationship>) {
     match value {
         Value::String(text) => {
             for (ordinal, target) in extract_wikilink_targets(text).into_iter().enumerate() {
@@ -153,7 +152,8 @@ fn collect_relationship_values(
             }
         }
         Value::Sequence(items) => {
-            for (ordinal, item) in items.iter().enumerate() {
+            let mut ordinal = 0_i64;
+            for item in items {
                 let targets = match item {
                     Value::String(text) => extract_wikilink_targets(text),
                     Value::Sequence(nested) => collect_unquoted_wikilink_targets(nested),
@@ -163,8 +163,9 @@ fn collect_relationship_values(
                     out.push(FrontmatterRelationship {
                         field_key: key.to_string(),
                         target_title: target,
-                        ordinal: ordinal as i64,
+                        ordinal,
                     });
+                    ordinal += 1;
                 }
             }
         }
@@ -236,7 +237,7 @@ mod tests {
         let markdown = r#"---
 project: [[Launch]]
 related:
-  - "[[Pricing]]"
+  - "[[Pricing]] and [[Budget]]"
   - "[[Onboarding|Start here]]"
 source: "[[Research#Section]]"
 plain: no link
@@ -261,7 +262,8 @@ Body
             vec![
                 ("project", "Launch", 0),
                 ("related", "Pricing", 0),
-                ("related", "Onboarding", 1),
+                ("related", "Budget", 1),
+                ("related", "Onboarding", 2),
                 ("source", "Research", 0),
             ]
         );
@@ -280,13 +282,17 @@ Body
 
         reindex_note_relationships(&conn, "source.md", "---\nproject: [[A]]\n---\n").unwrap();
         let count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| {
+                row.get(0)
+            })
             .unwrap();
         assert_eq!(count, 1);
 
         reindex_note_relationships(&conn, "source.md", "---\nproject: none\n---\n").unwrap();
         let count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| {
+                row.get(0)
+            })
             .unwrap();
         assert_eq!(count, 0);
     }
@@ -305,7 +311,9 @@ Body
         ensure_note_relationships_indexed(&conn, "source.md", "---\nproject: [[A]]\n---\n")
             .unwrap();
         let count: i64 = conn
-            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM note_relationships", [], |row| {
+                row.get(0)
+            })
             .unwrap();
         assert_eq!(count, 1);
     }

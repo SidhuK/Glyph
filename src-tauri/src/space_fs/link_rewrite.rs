@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Component, Path};
 
 use serde::Serialize;
 
@@ -24,25 +24,51 @@ pub fn rewrite_links_after_rename(
     plan: &LinkRewritePlan,
 ) -> Result<LinkRewriteResult, String> {
     let markdown_files = collect_markdown_files(space_root)?;
-    let mut result = LinkRewriteResult::default();
+    let mut rewrites = Vec::new();
 
     for rel_path in markdown_files {
-        if rel_path == plan.to_rel_path {
-            continue;
-        }
         let abs = paths::join_under(space_root, Path::new(&rel_path))?;
         let original = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
         let rewrite = rewrite_markdown_links_for_path(&original, plan, &rel_path);
 
         if rewrite.markdown != original {
-            crate::io_atomic::write_atomic(&abs, rewrite.markdown.as_bytes())
-                .map_err(|e| e.to_string())?;
-            result.changed_files.push(rel_path);
-            result.changed_links += rewrite.changed_links;
+            rewrites.push((rel_path, abs, rewrite.markdown, rewrite.changed_links));
+        }
+    }
+
+    let mut result = LinkRewriteResult::default();
+    for (rel_path, abs, markdown, changed_links) in rewrites {
+        match crate::io_atomic::write_atomic(&abs, markdown.as_bytes()) {
+            Ok(()) => {
+                result.changed_files.push(rel_path);
+                result.changed_links += changed_links;
+            }
+            Err(error) => {
+                tracing::warn!(
+                    note_id = %rel_path,
+                    error = %error,
+                    "failed to write rewritten links after rename"
+                );
+            }
         }
     }
 
     Ok(result)
+}
+
+fn old_source_rel_path_for(source_rel_path: &str, plan: &LinkRewritePlan) -> Option<String> {
+    if plan.is_dir {
+        let to_prefix = format!("{}/", plan.to_rel_path.trim_end_matches('/'));
+        if let Some(rest) = source_rel_path.strip_prefix(&to_prefix) {
+            return Some(format!(
+                "{}/{rest}",
+                plan.from_rel_path.trim_end_matches('/')
+            ));
+        }
+        return None;
+    }
+
+    (source_rel_path == plan.to_rel_path).then(|| plan.from_rel_path.clone())
 }
 
 pub fn rewrite_markdown_links_for_path(
@@ -187,17 +213,20 @@ fn rewrite_target(target: &str, plan: &LinkRewritePlan, markdown_link: bool) -> 
         return None;
     }
 
+    let normalized_target = normalize_rel_path(target);
+    let path_target = normalized_target.as_str();
+
     if plan.is_dir {
-        return rewrite_prefix_target(target, &plan.from_rel_path, &plan.to_rel_path);
+        return rewrite_prefix_target(path_target, &plan.from_rel_path, &plan.to_rel_path);
     }
 
     let from_no_ext = strip_md_extension(&plan.from_rel_path);
     let to_no_ext = strip_md_extension(&plan.to_rel_path);
 
-    if target == plan.from_rel_path {
+    if path_target == plan.from_rel_path {
         return Some(plan.to_rel_path.clone());
     }
-    if target == from_no_ext {
+    if path_target == from_no_ext {
         return Some(to_no_ext);
     }
     if !markdown_link && target == plan.from_title {
@@ -217,21 +246,43 @@ fn rewrite_markdown_target_path(
 
     if target.starts_with('/') {
         let root_target = target.trim_start_matches('/');
-        return rewrite_target(root_target, plan, true).map(|replacement| format!("/{replacement}"));
+        return rewrite_target(root_target, plan, true)
+            .map(|replacement| format!("/{replacement}"));
     }
 
     if let Some(replacement) = rewrite_target(target, plan, true) {
         return Some(replacement);
     }
 
-    let source_dir = source_dir(source_rel_path);
-    let root_target = if source_dir.is_empty() {
-        target.to_string()
+    let current_source_dir = source_dir(source_rel_path);
+    let old_source_rel_path = old_source_rel_path_for(source_rel_path, plan);
+    let resolution_source_dir = old_source_rel_path
+        .as_deref()
+        .map(source_dir)
+        .unwrap_or_else(|| current_source_dir.clone());
+    let root_target = join_rel_path(&resolution_source_dir, target);
+
+    if let Some(replacement) = rewrite_target(&root_target, plan, true) {
+        let relative = relative_path_from_source_dir(&replacement, &current_source_dir);
+        return (relative != target).then_some(relative);
+    }
+
+    if old_source_rel_path.is_some() {
+        let relocated = relative_path_from_source_dir(&root_target, &current_source_dir);
+        if relocated != target {
+            return Some(relocated);
+        }
+    }
+
+    None
+}
+
+fn join_rel_path(base: &str, target: &str) -> String {
+    if base.is_empty() {
+        normalize_rel_path(target)
     } else {
-        format!("{source_dir}/{target}")
-    };
-    let replacement = rewrite_target(&root_target, plan, true)?;
-    Some(relative_path_from_source_dir(&replacement, &source_dir))
+        normalize_rel_path(&format!("{base}/{target}"))
+    }
 }
 
 fn rewrite_prefix_target(target: &str, from_prefix: &str, to_prefix: &str) -> Option<String> {
@@ -245,21 +296,67 @@ fn rewrite_prefix_target(target: &str, from_prefix: &str, to_prefix: &str) -> Op
 }
 
 fn source_dir(source_rel_path: &str) -> String {
-    Path::new(source_rel_path)
+    let parent = Path::new(source_rel_path)
         .parent()
         .and_then(|path| path.to_str())
-        .unwrap_or("")
-        .replace('\\', "/")
+        .unwrap_or("");
+    normalize_rel_path(parent)
 }
 
 fn relative_path_from_source_dir(target: &str, source_dir: &str) -> String {
+    let target = normalize_rel_path(target);
+    let source_dir = normalize_rel_path(source_dir);
     if source_dir.is_empty() {
-        return target.to_string();
+        return target;
     }
-    target
-        .strip_prefix(&format!("{source_dir}/"))
-        .unwrap_or(target)
-        .to_string()
+
+    let target_parts = split_rel_parts(&target);
+    let source_parts = split_rel_parts(&source_dir);
+    let mut common = 0;
+    while common < target_parts.len()
+        && common < source_parts.len()
+        && target_parts[common] == source_parts[common]
+    {
+        common += 1;
+    }
+
+    let mut parts = Vec::new();
+    for _ in common..source_parts.len() {
+        parts.push("..".to_string());
+    }
+    parts.extend(target_parts[common..].iter().cloned());
+
+    if parts.is_empty() {
+        ".".to_string()
+    } else {
+        parts.join("/")
+    }
+}
+
+fn split_rel_parts(path: &str) -> Vec<String> {
+    path.split('/')
+        .filter(|part| !part.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+fn normalize_rel_path(path: &str) -> String {
+    let mut parts = Vec::new();
+    for component in Path::new(path).components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                if parts.last().is_some_and(|part| part != "..") {
+                    parts.pop();
+                } else {
+                    parts.push("..".to_string());
+                }
+            }
+            Component::Normal(part) => parts.push(part.to_string_lossy().to_string()),
+            Component::RootDir | Component::Prefix(_) => {}
+        }
+    }
+    parts.join("/")
 }
 
 fn split_once_preserve(value: &str, delimiter: char) -> (&str, String) {
@@ -282,8 +379,18 @@ fn title_from_rel_path(path: &str) -> String {
         .to_string()
 }
 
-pub fn plan_for_rename(root: &Path, from_abs: &Path, from_path: &str, to_path: &str) -> LinkRewritePlan {
+pub fn plan_for_rename(
+    root: &Path,
+    from_abs: &Path,
+    from_path: &str,
+    to_path: &str,
+) -> LinkRewritePlan {
     let is_dir = from_abs.is_dir();
+    let from_title =
+        note_title_for_path(root, from_path).unwrap_or_else(|| title_from_rel_path(from_path));
+    let to_title = note_title_for_path(root, to_path)
+        .or_else(|| note_title_for_path(root, from_path))
+        .unwrap_or_else(|| title_from_rel_path(to_path));
     LinkRewritePlan {
         from_rel_path: if is_dir {
             from_path.trim_end_matches('/').to_string()
@@ -295,17 +402,19 @@ pub fn plan_for_rename(root: &Path, from_abs: &Path, from_path: &str, to_path: &
         } else {
             to_path.to_string()
         },
-        from_title: note_title_for_path(root, from_path).unwrap_or_else(|| title_from_rel_path(from_path)),
-        to_title: note_title_for_path(root, to_path).unwrap_or_else(|| title_from_rel_path(to_path)),
+        from_title,
+        to_title,
         is_dir,
     }
 }
 
 fn note_title_for_path(root: &Path, rel_path: &str) -> Option<String> {
     let conn = index::open_db(root).ok()?;
-    conn.query_row("SELECT title FROM notes WHERE id = ? LIMIT 1", [rel_path], |row| {
-        row.get(0)
-    })
+    conn.query_row(
+        "SELECT title FROM notes WHERE id = ? LIMIT 1",
+        [rel_path],
+        |row| row.get(0),
+    )
     .ok()
 }
 
@@ -358,7 +467,7 @@ fn to_slash(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{LinkRewritePlan, rewrite_markdown_links_for_path};
+    use super::{rewrite_markdown_links_for_path, LinkRewritePlan};
 
     fn plan() -> LinkRewritePlan {
         LinkRewritePlan {
@@ -384,7 +493,8 @@ mod tests {
 
     #[test]
     fn does_not_rewrite_external_partial_or_fenced_links() {
-        let input = "https://example.com/old-title.md [[Old Title Extended]]\n```\n[[Old Title]]\n```\n";
+        let input =
+            "https://example.com/old-title.md [[Old Title Extended]]\n```\n[[Old Title]]\n```\n";
         let output = rewrite_markdown_links_for_path(input, &plan(), "");
 
         assert_eq!(output.markdown, input);
@@ -411,6 +521,31 @@ mod tests {
         assert_eq!(
             output.markdown,
             "[label](new-title.md) [root](folder/new-title.md)"
+        );
+        assert_eq!(output.changed_links, 2);
+    }
+
+    #[test]
+    fn normalizes_parent_segments_in_relative_markdown_links() {
+        let input = "[label](../old-title.md)";
+        let output = rewrite_markdown_links_for_path(input, &plan(), "folder/sub/source.md");
+
+        assert_eq!(output.markdown, "[label](../new-title.md)");
+        assert_eq!(output.changed_links, 1);
+    }
+
+    #[test]
+    fn rewrites_outbound_relative_links_inside_moved_note() {
+        let mut plan = plan();
+        plan.from_rel_path = "folder/moved.md".to_string();
+        plan.to_rel_path = "archive/moved.md".to_string();
+
+        let input = "[sibling](sibling.md) [nested](sub/other.md)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "archive/moved.md");
+
+        assert_eq!(
+            output.markdown,
+            "[sibling](../folder/sibling.md) [nested](../folder/sub/other.md)"
         );
         assert_eq!(output.changed_links, 2);
     }

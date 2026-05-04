@@ -123,7 +123,7 @@ export function useMenuListeners({
 	);
 	const handleAppCommand = useCallback(
 		(payload: { command_id: string }) => {
-			dispatchAppCommand(payload.command_id, {
+			void dispatchAppCommand(payload.command_id, {
 				"new-note": onNewNote,
 				"create-from-template": onCreateFromTemplate,
 				"open-daily-note": onOpenDailyNote,
@@ -182,6 +182,11 @@ export function useMenuListeners({
 				highlight_green: () => onEditorAction("highlight_green"),
 				highlight_red: () => onEditorAction("highlight_red"),
 				highlight_clear: () => onEditorAction("highlight_clear"),
+			}).catch((error) => {
+				console.error(
+					`[useMenuListeners] command "${payload.command_id}" failed:`,
+					error,
+				);
 			});
 		},
 		[
