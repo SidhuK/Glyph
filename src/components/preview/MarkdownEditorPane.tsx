@@ -1066,6 +1066,7 @@ export function MarkdownEditorPane({
 				>
 					<div className="markdownEditorCenter">
 						<NoteInlineEditor
+							key={relPath}
 							markdown={text}
 							relPath={relPath}
 							mode={mode}
