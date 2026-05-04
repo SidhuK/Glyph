@@ -1,0 +1,269 @@
+.folioWorkspace {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	background: var(--bg-primary);
+}
+
+.folioNotesPane {
+	flex: 0 0 var(--folio-notes-width, 320px);
+	width: var(--folio-notes-width, 320px);
+	min-width: 260px;
+	max-width: 420px;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid
+		color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: var(--bg-primary);
+}
+
+.folioNotesHeader {
+	flex: 0 0 auto;
+	padding: 12px 12px 9px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 58%, transparent);
+}
+
+.folioNotesTitleRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+
+.folioNotesTitle {
+	min-width: 0;
+	margin: 0;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folioNotesCount {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: 11px;
+}
+
+.folioNotesSearch {
+	height: 28px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 9px;
+	border: 1px solid var(--border-light);
+	border-radius: 6px;
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
+	cursor: text;
+}
+
+.folioNotesSearch svg {
+	flex: 0 0 auto;
+}
+
+.folioNotesSearch input {
+	height: 18px;
+	min-width: 0;
+	flex: 1;
+	border: 0;
+	outline: 0;
+	box-shadow: none;
+	padding: 0;
+	appearance: none;
+	background: transparent;
+	border-radius: 0;
+	caret-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 70%,
+		var(--text-secondary)
+	);
+	color: var(--text-primary);
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 18px;
+}
+
+.folioNotesSearch input:focus,
+.folioNotesSearch input:focus-visible {
+	outline: none;
+	border-color: transparent;
+	box-shadow: none;
+}
+
+.folioNotesList {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.folioNoteListItem {
+	margin: 0;
+	padding: 0;
+}
+
+.folioNoteRow {
+	width: 100%;
+	min-height: 116px;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	gap: 6px;
+	padding: 10px 16px 9px;
+	border: 0;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 58%, transparent);
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	cursor: default;
+}
+
+.folioNoteRow:hover,
+.folioNoteRow:focus-visible {
+	background: var(--bg-hover);
+	outline: none;
+}
+
+.folioNoteRow[data-state="selected"] {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+}
+
+.folioNoteRowTop {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
+}
+
+.folioNoteTitle {
+	min-width: 0;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-primary);
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	line-height: 1.25;
+}
+
+.folioNotePreview {
+	min-width: 0;
+	flex: 0 0 auto;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	color: color-mix(in srgb, var(--text-secondary) 90%, transparent);
+	font-size: 12px;
+	line-height: 1.38;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.folioNoteFooter {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
+	margin-top: auto;
+}
+
+.folioNoteTags {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	overflow: hidden;
+}
+
+.folioNoteTag {
+	max-width: 104px;
+	min-height: 18px;
+	padding: 1px 7px;
+	font-size: 10px;
+	line-height: 1.2;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folioNoteFolder {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: 10px;
+	line-height: 16px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folioNoteDates {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-tertiary);
+	font-size: 10px;
+	white-space: nowrap;
+}
+
+.folioNotesState {
+	margin: 14px 12px;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	line-height: 1.4;
+	text-align: left;
+}
+
+.folioNotesResizeHandle {
+	position: relative;
+	flex: 0 0 7px;
+	margin-left: -3px;
+	margin-right: -3px;
+	cursor: col-resize;
+	user-select: none;
+	background: transparent;
+	z-index: 2;
+}
+
+.folioNotesResizeHandle::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 1px;
+	transform: translateX(-50%);
+	background: transparent;
+}
+
+.folioNotesResizeHandle:hover::before {
+	background: color-mix(in srgb, var(--border-medium) 64%, transparent);
+}
+
+.folioEditorHost {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	background: var(--bg-primary);
+}

@@ -132,6 +132,7 @@ export function AppShell() {
 		setSidebarCollapsed,
 		zenModeActive,
 		setZenModeActive,
+		folioMode,
 		paletteOpen,
 		setPaletteOpen,
 		activePreviewPath,
@@ -1259,6 +1260,7 @@ export function AppShell() {
 				"appShell",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				zenModeActive && "appShellZenMode",
+				folioMode && "appShellFolioMode",
 			)}
 		>
 			<div
@@ -1335,7 +1337,12 @@ export function AppShell() {
 				/>
 			) : null}
 			<MainContent
-				fileTree={fileTree}
+				fileTree={{
+					createMarkdownFileAtPath: fileTree.createMarkdownFileAtPath,
+					openNonMarkdownExternally: fileTree.openNonMarkdownExternally,
+					onRenameDir: fileTree.onRenameDir,
+					onDeletePath: fileTree.onDeletePath,
+				}}
 				onOpenFile={openWorkspaceFile}
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}

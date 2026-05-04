@@ -9,12 +9,12 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useFileTreeContext } from "../../contexts";
+import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { shouldShowGitSync } from "../../lib/gitSyncUi";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { type GitSyncStatus, invoke } from "../../lib/tauri";
+import { type FsEntry, type GitSyncStatus, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
@@ -74,6 +74,34 @@ function spaceInitial(label: string): string {
 	return trimmed.slice(0, 1).toUpperCase();
 }
 
+function isSpaceContainerEntry(entry: FsEntry, spaceLabel: string): boolean {
+	const normalizedSpaceLabel = spaceLabel.trim().toLocaleLowerCase();
+	return (
+		entry.kind === "dir" &&
+		normalizedSpaceLabel.length > 0 &&
+		entry.name.trim().toLocaleLowerCase() === normalizedSpaceLabel
+	);
+}
+
+function folderEntries(entries: FsEntry[] | undefined): FsEntry[] {
+	return (entries ?? []).filter((entry) => entry.kind === "dir");
+}
+
+function folioTreeRootEntries(
+	rootEntries: FsEntry[],
+	childrenByDir: Record<string, FsEntry[] | undefined>,
+	spaceLabel: string,
+): FsEntry[] {
+	const spaceContainer = rootEntries.find((entry) =>
+		isSpaceContainerEntry(entry, spaceLabel),
+	);
+	if (!spaceContainer) return folderEntries(rootEntries);
+	return folderEntries([
+		...rootEntries.filter((entry) => entry !== spaceContainer),
+		...(childrenByDir[spaceContainer.rel_path] ?? []),
+	]);
+}
+
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -118,6 +146,7 @@ export const SidebarContent = memo(function SidebarContent({
 		tags,
 		people,
 	} = useFileTreeContext();
+	const { folioMode, folioScope, setFolioScope } = useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
@@ -133,12 +162,38 @@ export const SidebarContent = memo(function SidebarContent({
 	const showGitButton = shouldShowGitSync(gitSyncStatus);
 	const effectiveGitExpanded = showGitButton && gitExpanded;
 	const showAllNotesCount = allNotesCount !== null;
+	const activeFolioFolder =
+		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
+	const folioSpaceContainerPath = useMemo(() => {
+		if (!folioMode) return null;
+		return (
+			rootEntries.find((entry) => isSpaceContainerEntry(entry, spaceLabel))
+				?.rel_path ?? null
+		);
+	}, [folioMode, rootEntries, spaceLabel]);
+	const folioRootEntries = useMemo(
+		() => folioTreeRootEntries(rootEntries, childrenByDir, spaceLabel),
+		[rootEntries, childrenByDir, spaceLabel],
+	);
+	const folioChildrenByDir = useMemo(() => {
+		const next: Record<string, FsEntry[] | undefined> = {};
+		for (const [dirPath, entries] of Object.entries(childrenByDir)) {
+			next[dirPath] = entries ? folderEntries(entries) : entries;
+		}
+		return next;
+	}, [childrenByDir]);
 	const displayRecentSpaces = useMemo(
 		() =>
 			recentSpaces.filter((path) => path && path !== spacePath).slice(0, 10),
 		[recentSpaces, spacePath],
 	);
+
+	useEffect(() => {
+		if (!folioMode || !folioSpaceContainerPath) return;
+		if (childrenByDir[folioSpaceContainerPath] !== undefined) return;
+		void onLoadDir(folioSpaceContainerPath);
+	}, [childrenByDir, folioMode, folioSpaceContainerPath, onLoadDir]);
 
 	const handleStartRename = useCallback((path: string) => {
 		const nextPath = path.trim();
@@ -300,6 +355,41 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 		[onOpenRecentSpaceAtPath],
 	);
+	const handleOpenAllNotes = useCallback(() => {
+		if (!folioMode) {
+			onOpenAllDocs();
+			return;
+		}
+		setFolioScope({ kind: "all" });
+		onPrefetchAllDocs();
+	}, [folioMode, onOpenAllDocs, onPrefetchAllDocs, setFolioScope]);
+	const handleNotesHeaderClick = useCallback(() => {
+		setNotesExpanded((value) => !value);
+		if (!folioMode) return;
+		setFolioScope({ kind: "all" });
+		onPrefetchAllDocs();
+	}, [folioMode, onPrefetchAllDocs, setFolioScope]);
+	const handleSelectFolioFolder = useCallback(
+		(dirPath: string) => {
+			onSelectDir(dirPath);
+			if (!dirPath) {
+				setFolioScope({ kind: "all" });
+				return;
+			}
+			setFolioScope({ kind: "folder", folderPrefix: dirPath });
+		},
+		[onSelectDir, setFolioScope],
+	);
+	const handleSelectTag = useCallback(
+		(tag: string) => {
+			if (!folioMode) {
+				onSelectTag(tag);
+				return;
+			}
+			setFolioScope({ kind: "tag", tag });
+		},
+		[folioMode, onSelectTag, setFolioScope],
+	);
 
 	if (!spacePath) {
 		return (
@@ -459,7 +549,7 @@ export const SidebarContent = memo(function SidebarContent({
 							aria-current={
 								activeTopSection === "all-notes" ? "page" : undefined
 							}
-							onClick={onOpenAllDocs}
+							onClick={handleOpenAllNotes}
 							onMouseEnter={onPrefetchAllDocs}
 							onFocus={onPrefetchAllDocs}
 							title="Open All Notes"
@@ -503,7 +593,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<button
 								type="button"
 								className="sidebarStackHeader sidebarStackHeaderToggle"
-								onClick={() => setNotesExpanded((v) => !v)}
+								onClick={handleNotesHeaderClick}
 								aria-expanded={notesExpanded}
 								aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
 							>
@@ -522,14 +612,16 @@ export const SidebarContent = memo(function SidebarContent({
 							</button>
 							{notesExpanded ? (
 								<FileTreePane
-									rootEntries={rootEntries}
-									childrenByDir={childrenByDir}
+									rootEntries={folioMode ? folioRootEntries : rootEntries}
+									childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
 									expandedDirs={expandedDirs}
-									activeFilePath={activeFilePath}
-									activeDirPath={activeDirPath}
+									activeFilePath={folioMode ? null : activeFilePath}
+									activeDirPath={folioMode ? activeFolioFolder : activeDirPath}
 									onToggleDir={onToggleDir}
 									onLoadDir={onLoadDir}
-									onSelectDir={onSelectDir}
+									onSelectDir={
+										folioMode ? handleSelectFolioFolder : onSelectDir
+									}
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
@@ -544,7 +636,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onCommitFileRename={handleCommitFileRename}
 									onCommitDirRename={handleCommitDirRename}
 									onMovePath={onMovePath}
-									pinnedFiles={pinnedFiles}
+									pinnedFiles={folioMode ? [] : pinnedFiles}
 									onTogglePinnedFile={togglePinnedFile}
 								/>
 							) : null}
@@ -553,8 +645,8 @@ export const SidebarContent = memo(function SidebarContent({
 							<TagsPane
 								tags={tags}
 								people={people}
-								onSelectTag={onSelectTag}
-								onSelectPerson={onSelectTag}
+								onSelectTag={handleSelectTag}
+								onSelectPerson={handleSelectTag}
 							/>
 						</section>
 					</div>

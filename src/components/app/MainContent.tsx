@@ -60,6 +60,7 @@ import type {
 	CreateMarkdownFileOptions,
 	ExtractToNoteActions,
 } from "../editor/types";
+import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
@@ -265,6 +266,7 @@ interface MainContentProps {
 			nextName: string,
 			kind: "dir" | "file",
 		) => Promise<string | null>;
+		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
@@ -400,6 +402,7 @@ export const MainContent = memo(function MainContent({
 		dailyNotesFolder,
 		templateFolder,
 		zenModeActive,
+		folioMode,
 		settingsMode,
 		settingsTab,
 	} = useUILayoutContext();
@@ -798,6 +801,93 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
+	const showFolioWorkspace = folioMode && !zenModeActive;
+	const editorSurface = (
+		<>
+			<div className="canvasPaneHost">
+				<DailyNotesSetupToast
+					visible={dailyNoteSetupToastVisible}
+					onDismiss={() => setDailyNoteSetupToastVisible(false)}
+					onOpenSettings={() => {
+						setDailyNoteSetupToastVisible(false);
+						onOpenDailyNotesSettings();
+					}}
+				/>
+				{showTabBar ? (
+					<div
+						className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
+						aria-hidden={zenModeActive}
+						inert={zenModeActive ? true : undefined}
+					>
+						<TabBar
+							tabs={tabs}
+							activeTabId={activeTabId}
+							activeTabPath={activeTabPath}
+							useWindowBackground={!content}
+							canGoBack={canGoBack}
+							canGoForward={canGoForward}
+							onGoBack={onGoBack}
+							onGoForward={onGoForward}
+							onOpenBlankTab={openBlankTab}
+							onPrefetchTab={handlePrefetchTab}
+							onSelectTab={setActiveTabId}
+							onCloseTab={closeTab}
+							onStartRenamePath={onStartRenamePath}
+							onReorder={reorderTabs}
+						/>
+					</div>
+				) : null}
+				{content ?? (
+					<div className="mainEmptyState">
+						{showStarterPane ? (
+							<GettingStartedPane
+								commandShortcutParts={commandShortcutParts}
+								showDailyNoteAction={Boolean(dailyNotesFolder)}
+								onCreateNote={onCreateNote}
+								onOpenCommandPalette={onOpenCommandPalette}
+								onOpenDailyNote={onOpenDailyNote}
+								onDismiss={() => {
+									setStarterOverrideVisible(false);
+									void updateOnboardingSettings({ starterDismissed: true });
+								}}
+							/>
+						) : (
+							<ContextualEmptyState
+								onboarding={onboarding}
+								commandShortcutParts={commandShortcutParts}
+								showDailyNoteAction={Boolean(dailyNotesFolder)}
+								onCreateNote={onCreateNote}
+								onOpenCommandPalette={onOpenCommandPalette}
+								onOpenDailyNote={onOpenDailyNote}
+							/>
+						)}
+					</div>
+				)}
+				{aiEnabled && !zenModeActive ? (
+					<AIFloatingHost
+						isOpen={aiPanelOpen}
+						onToggle={() => setAiPanelOpen((open) => !open)}
+					/>
+				) : null}
+			</div>
+			<div
+				ref={infoSidebarResize.resizeRef}
+				className="notesInfoSidebarResizeHandle"
+				onPointerDown={handleInfoSidebarResizePointerDown}
+				onPointerMove={infoSidebarResize.handlePointerMove}
+				onPointerUp={infoSidebarResize.handlePointerUp}
+				data-window-drag-ignore
+				style={{ cursor: zenModeActive ? "default" : "col-resize" }}
+			/>
+			<div
+				id="notes-info-sidebar-root"
+				ref={notesInfoSidebarHostRef}
+				className="notesInfoSidebarHost"
+				aria-live="polite"
+				style={notesInfoSidebarHostStyle}
+			/>
+		</>
+	);
 
 	if (settingsMode) {
 		return (
@@ -848,88 +938,21 @@ export const MainContent = memo(function MainContent({
 	return (
 		<main className={zenModeActive ? "mainArea mainAreaZen" : "mainArea"}>
 			<div className="canvasWrapper">
-				<div className="canvasPaneHost">
-					<DailyNotesSetupToast
-						visible={dailyNoteSetupToastVisible}
-						onDismiss={() => setDailyNoteSetupToastVisible(false)}
-						onOpenSettings={() => {
-							setDailyNoteSetupToastVisible(false);
-							onOpenDailyNotesSettings();
-						}}
-					/>
-					{showTabBar ? (
-						<div
-							className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
-							aria-hidden={zenModeActive}
-							inert={zenModeActive ? true : undefined}
-						>
-							<TabBar
-								tabs={tabs}
-								activeTabId={activeTabId}
-								activeTabPath={activeTabPath}
-								useWindowBackground={!content}
-								canGoBack={canGoBack}
-								canGoForward={canGoForward}
-								onGoBack={onGoBack}
-								onGoForward={onGoForward}
-								onOpenBlankTab={openBlankTab}
-								onPrefetchTab={handlePrefetchTab}
-								onSelectTab={setActiveTabId}
-								onCloseTab={closeTab}
-								onStartRenamePath={onStartRenamePath}
-								onReorder={reorderTabs}
-							/>
-						</div>
-					) : null}
-					{content ?? (
-						<div className="mainEmptyState">
-							{showStarterPane ? (
-								<GettingStartedPane
-									commandShortcutParts={commandShortcutParts}
-									showDailyNoteAction={Boolean(dailyNotesFolder)}
-									onCreateNote={onCreateNote}
-									onOpenCommandPalette={onOpenCommandPalette}
-									onOpenDailyNote={onOpenDailyNote}
-									onDismiss={() => {
-										setStarterOverrideVisible(false);
-										void updateOnboardingSettings({ starterDismissed: true });
-									}}
-								/>
-							) : (
-								<ContextualEmptyState
-									onboarding={onboarding}
-									commandShortcutParts={commandShortcutParts}
-									showDailyNoteAction={Boolean(dailyNotesFolder)}
-									onCreateNote={onCreateNote}
-									onOpenCommandPalette={onOpenCommandPalette}
-									onOpenDailyNote={onOpenDailyNote}
-								/>
-							)}
-						</div>
-					)}
-					{aiEnabled && !zenModeActive ? (
-						<AIFloatingHost
-							isOpen={aiPanelOpen}
-							onToggle={() => setAiPanelOpen((open) => !open)}
-						/>
-					) : null}
-				</div>
-				<div
-					ref={infoSidebarResize.resizeRef}
-					className="notesInfoSidebarResizeHandle"
-					onPointerDown={handleInfoSidebarResizePointerDown}
-					onPointerMove={infoSidebarResize.handlePointerMove}
-					onPointerUp={infoSidebarResize.handlePointerUp}
-					data-window-drag-ignore
-					style={{ cursor: zenModeActive ? "default" : "col-resize" }}
-				/>
-				<div
-					id="notes-info-sidebar-root"
-					ref={notesInfoSidebarHostRef}
-					className="notesInfoSidebarHost"
-					aria-live="polite"
-					style={notesInfoSidebarHostStyle}
-				/>
+				{showFolioWorkspace ? (
+					<FolioWorkspace
+						activeTabPath={activeTabPath}
+						onOpenFile={onOpenFile}
+						onOpenFileInNewTab={onOpenFileInNewTab}
+						onRenameFile={(path, nextName) =>
+							fileTree.onRenameDir(path, nextName, "file")
+						}
+						onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
+					>
+						{editorSurface}
+					</FolioWorkspace>
+				) : (
+					editorSurface
+				)}
 			</div>
 		</main>
 	);
