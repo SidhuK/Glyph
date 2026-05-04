@@ -7,6 +7,8 @@ export type FolioScope =
 	| { kind: "templates"; folderPrefix: string | null }
 	| { kind: "search"; query: string };
 
+export type FolioNotesSortMode = "alphabetical" | "edited" | "created";
+
 export const DEFAULT_FOLIO_SCOPE: FolioScope = { kind: "all" };
 
 export function normalizeFolioPath(value: string | null | undefined): string {
@@ -21,7 +23,12 @@ export function folioScopeTitle(scope: FolioScope): string {
 		case "all":
 			return "All Notes";
 		case "folder":
-			return scope.folderPrefix.split("/").filter(Boolean).pop() ?? "Folder";
+			return (
+				normalizeFolioPath(scope.folderPrefix)
+					.split("/")
+					.filter(Boolean)
+					.pop() ?? "Folder"
+			);
 		case "tag":
 			return scope.tag.startsWith("#") || scope.tag.startsWith("@")
 				? scope.tag

@@ -6,8 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo } from "react";
-
-type FolioNotesSortMode = "alphabetical" | "edited" | "created";
+import type { FolioNotesSortMode } from "./folioScopes";
 
 interface FolioScopeHeaderProps {
 	title: string;

@@ -356,12 +356,11 @@ export const SidebarContent = memo(function SidebarContent({
 		[onOpenRecentSpaceAtPath],
 	);
 	const handleOpenAllNotes = useCallback(() => {
-		if (!folioMode) {
-			onOpenAllDocs();
-			return;
+		onOpenAllDocs();
+		if (folioMode) {
+			setFolioScope({ kind: "all" });
+			onPrefetchAllDocs();
 		}
-		setFolioScope({ kind: "all" });
-		onPrefetchAllDocs();
 	}, [folioMode, onOpenAllDocs, onPrefetchAllDocs, setFolioScope]);
 	const handleNotesHeaderClick = useCallback(() => {
 		setNotesExpanded((value) => !value);

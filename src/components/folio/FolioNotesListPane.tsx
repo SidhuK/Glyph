@@ -2,23 +2,22 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
+import { dispatchFileTreeStartRename } from "../../lib/appEvents";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename } from "../../utils/path";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
+import type { FolioNotesSortMode } from "./folioScopes";
 import { useFolioNotes } from "./useFolioNotes";
 
 interface FolioNotesListPaneProps {
 	activeTabPath: string | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
-	onRenameFile: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
-
-type FolioNotesSortMode = "alphabetical" | "edited" | "created";
 
 function noteTitle(note: AllDocsItem): string {
 	return note.title.trim() || basename(note.note_path).replace(/\.md$/i, "");
@@ -65,7 +64,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	activeTabPath,
 	onOpenFile,
 	onOpenFileInNewTab,
-	onRenameFile,
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
@@ -137,24 +135,19 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[onOpenFileInNewTab],
 	);
-	const renameNote = useCallback(
-		(path: string) => {
-			const currentName = basename(path);
-			const nextName = window.prompt("Rename note", currentName);
-			if (!nextName || nextName.trim() === currentName) return;
-			const trimmed = nextName.trim();
-			const normalizedName =
-				currentName.toLowerCase().endsWith(".md") &&
-				!trimmed.toLowerCase().endsWith(".md")
-					? `${trimmed}.md`
-					: trimmed;
-			void onRenameFile(path, normalizedName);
-		},
-		[onRenameFile],
-	);
+	const renameNote = useCallback((path: string) => {
+		dispatchFileTreeStartRename({ path });
+	}, []);
 	const deleteNote = useCallback(
-		(path: string) => {
-			void onDeleteFile(path);
+		async (path: string) => {
+			const { confirm } = await import("@tauri-apps/plugin-dialog");
+			const confirmed = await confirm("Delete this note?", {
+				title: "Confirm delete",
+				okLabel: "Delete",
+				cancelLabel: "Cancel",
+			});
+			if (!confirmed) return;
+			await onDeleteFile(path);
 		},
 		[onDeleteFile],
 	);

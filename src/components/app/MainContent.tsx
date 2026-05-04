@@ -943,9 +943,6 @@ export const MainContent = memo(function MainContent({
 						activeTabPath={activeTabPath}
 						onOpenFile={onOpenFile}
 						onOpenFileInNewTab={onOpenFileInNewTab}
-						onRenameFile={(path, nextName) =>
-							fileTree.onRenameDir(path, nextName, "file")
-						}
 						onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
 					>
 						{editorSurface}

@@ -125,12 +125,9 @@ describe("FolioNotesListPane", () => {
 	let queryClient: QueryClient;
 	let onOpenFile: (relPath: string) => Promise<void>;
 	let onOpenFileInNewTab: (relPath: string) => Promise<void>;
-	let onRenameFile: (
-		relPath: string,
-		nextName: string,
-	) => Promise<string | null>;
 	let onDeleteFile: (relPath: string) => Promise<boolean>;
 	let scrollIntoViewArgs: Array<boolean | ScrollIntoViewOptions | undefined>;
+	let originalScrollIntoView: HTMLElement["scrollIntoView"];
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -143,8 +140,8 @@ describe("FolioNotesListPane", () => {
 		});
 		onOpenFile = vi.fn(async () => {});
 		onOpenFileInNewTab = vi.fn(async () => {});
-		onRenameFile = vi.fn(async () => null);
 		onDeleteFile = vi.fn(async () => true);
+		originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
 		scrollIntoViewArgs = [];
 		HTMLElement.prototype.scrollIntoView = (
 			arg?: boolean | ScrollIntoViewOptions,
@@ -162,6 +159,8 @@ describe("FolioNotesListPane", () => {
 		});
 		container.remove();
 		queryClient.clear();
+		HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+		scrollIntoViewArgs = [];
 	});
 
 	function renderPane(activeTabPath: string | null = null) {
@@ -171,7 +170,6 @@ describe("FolioNotesListPane", () => {
 					activeTabPath={activeTabPath}
 					onOpenFile={onOpenFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
-					onRenameFile={onRenameFile}
 					onDeleteFile={onDeleteFile}
 				/>
 			</QueryClientProvider>,
