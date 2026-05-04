@@ -17,7 +17,6 @@ export function NotePane({
 }: NotePaneProps) {
 	return (
 		<MarkdownEditorPane
-			key={relPath}
 			relPath={relPath}
 			initialDoc={initialDoc}
 			onDirtyChange={onDirtyChange}
