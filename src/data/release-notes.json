@@ -1,6 +1,43 @@
 {
 	"versions": [
 		{
+			"version": "0.2.20",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Folio mode is here: browse notes in a focused list beside the editor without opening the full file tree",
+						"Folio mode can show all notes, a folder, a tag, a person, daily notes, templates, or search results",
+						"The local graph now shows shared tag nodes, helping related notes appear as one wider cluster",
+						"Property links like project: [[Launch]] now count as real note relationships in backlinks, the graph, and the note info sidebar",
+						"Added a Discord link so you can join the community and help shape Glyph"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Notes, calendars, databases, AI history, AI profiles, and settings now load and update more consistently",
+						"Moving around Glyph should feel faster, with fewer repeated loads and better refreshes after changes",
+						"The local graph is smoother and more reliable, with built-in pan and zoom",
+						"The graph now has a cleaner full-surface layout with softer nodes, clearer lines, and simpler controls",
+						"Graph links now show direction more clearly with arrowheads and better spacing for two-way links",
+						"The graph opens with better spacing, clearer node sizes, a dotted background, and a compact legend",
+						"Commands, shortcuts, and menu labels now stay in sync across the command palette, settings, and native menus",
+						"Renaming or moving a note or folder now updates exact links pointing to it",
+						"Link repair now keeps aliases and headings when possible and tells you how many links were updated"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Removed extra hover effects that did not add useful feedback",
+						"The changelog in About settings is now simpler and more minimal",
+						"Removed refresh tab and refresh database buttons because Glyph now refreshes affected views automatically"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.19",
 			"sections": [
 				{

@@ -33,6 +33,16 @@
 	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
 }
 
+.settingsTinyBetaBadge {
+	padding: 2px 5px;
+	font-size: 9px;
+	letter-spacing: 0;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-yellow-600) 78%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
+	background: color-mix(in srgb, var(--color-yellow-500) 8%, transparent);
+}
+
 .earlyAccessBadge {
 	--early-access-color: var(--interactive-accent);
 

@@ -493,8 +493,13 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Folio Mode"
-						description="Use a Bear-style three-pane layout with a navigation sidebar, rich notes list, and editor."
+						label={
+							<span className="settingsLabelWithHelp">
+								Folio Mode
+								<span className="settingsPill settingsTinyBetaBadge">Beta</span>
+							</span>
+						}
+						description="Show navigation, notes, and editor in a three-column workspace."
 					>
 						<SettingsToggle
 							checked={folioMode}
