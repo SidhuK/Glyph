@@ -4,6 +4,7 @@ import {
 } from "../components/preview/markdownCache";
 import { buildMonthRange } from "./calendar";
 import { readStoredSelectedViewId } from "./database/selectedViewStorage";
+import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
 	AllDocsItem,
@@ -23,6 +24,29 @@ const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
 		.replace(/^\/+|\/+$/g, "");
 	return normalized || "__all__";
 };
+
+const normalizeAllDocsPath = (path: string) =>
+	path
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+
+const titleFromAllDocsPath = (path: string) => {
+	const name = normalizeAllDocsPath(path).split("/").pop() ?? "Untitled";
+	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
+};
+
+const allDocsFolderContainsPath = (folderKey: string, path: string) => {
+	if (folderKey === "__all__") return true;
+	const normalizedPath = normalizeAllDocsPath(path);
+	return (
+		normalizedPath === folderKey || normalizedPath.startsWith(`${folderKey}/`)
+	);
+};
+
+const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
+	Date.parse(right.updated) - Date.parse(left.updated) ||
+	left.note_path.localeCompare(right.note_path);
 
 export const navigationQueryKeys = {
 	all: ["navigation"] as const,
@@ -336,6 +360,136 @@ export function getPrefetchedAllDocs(folderPrefix?: string | null) {
 		queryClient.getQueryData<AllDocsItem[]>(
 			navigationQueryKeys.allDocsList(folderPrefix),
 		) ?? null
+	);
+}
+
+function updateAllDocsListCaches(
+	updater: (current: AllDocsItem[], folderKey: string) => AllDocsItem[],
+) {
+	const queries = queryClient
+		.getQueryCache()
+		.findAll({ queryKey: navigationQueryKeys.allDocs() });
+	for (const query of queries) {
+		const folderKey = Array.isArray(query.queryKey)
+			? String(query.queryKey[2] ?? "__all__")
+			: "__all__";
+		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
+		if (!current) continue;
+		queryClient.setQueryData<AllDocsItem[]>(
+			query.queryKey,
+			updater(current, folderKey),
+		);
+	}
+}
+
+function findCachedAllDocsItem(path: string): AllDocsItem | null {
+	const normalizedPath = normalizeAllDocsPath(path);
+	const queries = queryClient
+		.getQueryCache()
+		.findAll({ queryKey: navigationQueryKeys.allDocs() });
+	for (const query of queries) {
+		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
+		const item = current?.find(
+			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,
+		);
+		if (item) return item;
+	}
+	return null;
+}
+
+export function upsertAllDocsPrefetchItem(item: AllDocsItem) {
+	const normalizedPath = normalizeAllDocsPath(item.note_path);
+	if (!normalizedPath) return;
+	updateAllDocsListCaches((current, folderKey) => {
+		const withoutItem = current.filter(
+			(note) => normalizeAllDocsPath(note.note_path) !== normalizedPath,
+		);
+		if (!allDocsFolderContainsPath(folderKey, normalizedPath))
+			return withoutItem;
+		return [...withoutItem, { ...item, note_path: normalizedPath }].sort(
+			compareAllDocsItems,
+		);
+	});
+}
+
+export function optimisticallyAddAllDocsNote(args: {
+	path: string;
+	text?: string;
+	sourcePath?: string;
+}) {
+	const normalizedPath = normalizeAllDocsPath(args.path);
+	if (!normalizedPath.toLowerCase().endsWith(".md")) return;
+	const source = args.sourcePath
+		? findCachedAllDocsItem(args.sourcePath)
+		: null;
+	const preview = parseNotePreview(normalizedPath, args.text ?? "");
+	const now = new Date().toISOString();
+	upsertAllDocsPrefetchItem({
+		note_path: normalizedPath,
+		title:
+			source?.title ??
+			(args.text !== undefined
+				? preview.title
+				: titleFromAllDocsPath(normalizedPath)),
+		preview:
+			source?.preview ?? (args.text !== undefined ? preview.content : ""),
+		updated: now,
+		created: now,
+		tags: source?.tags ?? [],
+		people: source?.people ?? [],
+	});
+}
+
+export function optimisticallyRenameAllDocsPath(
+	fromPath: string,
+	toPath: string,
+	recursive = false,
+) {
+	const from = normalizeAllDocsPath(fromPath);
+	const to = normalizeAllDocsPath(toPath);
+	if (!from || !to) return;
+	const fromTitle = titleFromAllDocsPath(from);
+	const toTitle = titleFromAllDocsPath(to);
+	updateAllDocsListCaches((current, folderKey) => {
+		const next: AllDocsItem[] = [];
+		for (const note of current) {
+			const notePath = normalizeAllDocsPath(note.note_path);
+			const matches =
+				notePath === from || (recursive && notePath.startsWith(`${from}/`));
+			const renamedPath = matches
+				? notePath === from
+					? to
+					: `${to}${notePath.slice(from.length)}`
+				: notePath;
+			if (!allDocsFolderContainsPath(folderKey, renamedPath)) continue;
+			next.push(
+				matches
+					? {
+							...note,
+							note_path: renamedPath,
+							title: note.title === fromTitle ? toTitle : note.title,
+						}
+					: note,
+			);
+		}
+		return next.sort(compareAllDocsItems);
+	});
+}
+
+export function optimisticallyRemoveAllDocsPath(
+	path: string,
+	recursive = false,
+) {
+	const normalizedPath = normalizeAllDocsPath(path);
+	if (!normalizedPath) return;
+	updateAllDocsListCaches((current) =>
+		current.filter((note) => {
+			const notePath = normalizeAllDocsPath(note.note_path);
+			return (
+				notePath !== normalizedPath &&
+				(!recursive || !notePath.startsWith(`${normalizedPath}/`))
+			);
+		}),
 	);
 }
 
