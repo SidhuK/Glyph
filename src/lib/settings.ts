@@ -272,6 +272,7 @@ async function emitSettingsUpdated(payload: {
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		showTaskProgressIndicator?: boolean;
+		folioMode?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 	};
@@ -344,6 +345,7 @@ interface AppSettings {
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		showTaskProgressIndicator: boolean;
+		folioMode: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -385,6 +387,7 @@ const KEYS = {
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	showTaskProgressIndicator: "ui.showTaskProgressIndicator",
+	folioMode: "ui.folioMode",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
@@ -621,6 +624,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawShowFileTreeFolderCounts,
 		rawShowTaskProgressIndicator,
 		rawShowTaskProgressIndicatorLegacy,
+		rawFolioMode,
 		dailyNotesFolderRaw,
 		rawWebClippingsFolder,
 		rawQuickNotesFolder,
@@ -665,6 +669,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<boolean | null>(KEYS.showTaskProgressIndicator),
 		store.get<boolean | null>(LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY),
+		store.get<boolean | null>(KEYS.folioMode),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.webClippingsFolder),
 		store.get<unknown>(KEYS.quickNotesFolder),
@@ -733,6 +738,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			: typeof rawShowTaskProgressIndicatorLegacy === "boolean"
 				? rawShowTaskProgressIndicatorLegacy
 				: DEFAULT_SHOW_TASK_PROGRESS_INDICATOR;
+	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
@@ -820,6 +826,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			showToc,
 			showFileTreeFolderCounts,
 			showTaskProgressIndicator,
+			folioMode,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -1100,6 +1107,13 @@ export async function setShowTaskProgressIndicator(
 	await store.set(KEYS.showTaskProgressIndicator, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { showTaskProgressIndicator: enabled } });
+}
+
+export async function setFolioMode(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.folioMode, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { folioMode: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(

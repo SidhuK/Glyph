@@ -7,6 +7,12 @@ import {
 } from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
+import {
+	invalidateAllDocsPrefetch,
+	optimisticallyAddAllDocsNote,
+	optimisticallyRemoveAllDocsPath,
+	optimisticallyRenameAllDocsPath,
+} from "../lib/navigationPrefetch";
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -178,6 +184,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					kind: "file",
 					is_markdown: true,
 				});
+				optimisticallyAddAllDocsNote({ path: markdownRel, text });
 				const nextOpenParentDir =
 					typeof openParentDir === "string"
 						? openParentDir
@@ -304,6 +311,12 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const duplicatedPath = normalizeRelPath(duplicated.rel_path);
 				if (!duplicatedPath) return null;
 				insertEntryOptimistic(parentDir(duplicatedPath), duplicated);
+				if (duplicated.is_markdown) {
+					optimisticallyAddAllDocsNote({
+						path: duplicatedPath,
+						sourcePath: target,
+					});
+				}
 				await ensureDirChainLoaded(parentDir(duplicatedPath));
 				return duplicatedPath;
 			} catch (error) {
@@ -397,6 +410,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					toPath: nextPath,
 					recursive: kind === "dir",
 				});
+				optimisticallyRenameAllDocsPath(dirPath, nextPath, kind === "dir");
+				invalidateAllDocsPrefetch();
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
 				await runPinnedSync("rename", () =>
@@ -491,6 +506,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
+				optimisticallyRemoveAllDocsPath(target, kind === "dir");
+				invalidateAllDocsPrefetch();
 				await runPinnedSync("delete", () => deletePinnedPath(target));
 				try {
 					await deleteItemAppearance(target);
@@ -623,6 +640,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					toPath: nextPath,
 					recursive: kind === "dir",
 				});
+				optimisticallyRenameAllDocsPath(from, nextPath, kind === "dir");
+				invalidateAllDocsPrefetch();
 				await runPinnedSync("move", () => renamePinnedPath(from, nextPath));
 				try {
 					await renameItemAppearance(from, nextPath);

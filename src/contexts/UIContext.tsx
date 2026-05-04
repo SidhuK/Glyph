@@ -10,12 +10,17 @@ import {
 	useMemo,
 	useReducer,
 } from "react";
+import {
+	DEFAULT_FOLIO_SCOPE,
+	type FolioScope,
+} from "../components/folio/folioScopes";
 import type { SettingsTab } from "../components/settings/settingsConfig";
 import {
 	type AiAssistantMode,
 	loadSettings,
 	reloadFromDisk,
 	setAiAssistantMode as saveAiAssistantMode,
+	setFolioMode as saveFolioMode,
 	setShowToc as saveShowToc,
 } from "../lib/settings";
 import { useTauriEvent } from "../lib/tauriEvents";
@@ -41,6 +46,10 @@ export interface UILayoutContextValue {
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
 	setShowToc: (show: boolean) => void;
+	folioMode: boolean;
+	setFolioMode: (enabled: boolean) => void;
+	folioScope: FolioScope;
+	setFolioScope: (scope: FolioScope) => void;
 	settingsMode: boolean;
 	settingsTab: SettingsTab;
 	openSettings: (tab?: SettingsTab) => void;
@@ -71,6 +80,8 @@ type UIState = {
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
+	folioMode: boolean;
+	folioScope: FolioScope;
 	settingsMode: boolean;
 	settingsTab: SettingsTab;
 	aiEnabled: boolean;
@@ -94,6 +105,8 @@ type UIAction =
 	| { type: "setTemplateFolder"; value: string | null }
 	| { type: "setDailyNoteTemplatePath"; value: string | null }
 	| { type: "setShowToc"; value: boolean }
+	| { type: "setFolioMode"; value: boolean }
+	| { type: "setFolioScope"; value: FolioScope }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
@@ -109,6 +122,7 @@ type UIAction =
 			templateFolder: string | null;
 			dailyNoteTemplatePath: string | null;
 			showToc: boolean;
+			folioMode: boolean;
 	  };
 
 const initialUIState: UIState = {
@@ -123,6 +137,8 @@ const initialUIState: UIState = {
 	templateFolder: null,
 	dailyNoteTemplatePath: null,
 	showToc: true,
+	folioMode: false,
+	folioScope: DEFAULT_FOLIO_SCOPE,
 	settingsMode: false,
 	settingsTab: "general" as SettingsTab,
 	aiEnabled: true,
@@ -183,6 +199,14 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, dailyNoteTemplatePath: action.value };
 		case "setShowToc":
 			return { ...state, showToc: action.value };
+		case "setFolioMode":
+			return {
+				...state,
+				folioMode: action.value,
+				folioScope: action.value ? DEFAULT_FOLIO_SCOPE : state.folioScope,
+			};
+		case "setFolioScope":
+			return { ...state, folioScope: action.value };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -252,6 +276,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				templateFolder: action.templateFolder,
 				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
 				showToc: action.showToc,
+				folioMode: action.folioMode,
 			};
 		default:
 			return state;
@@ -273,6 +298,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		templateFolder,
 		dailyNoteTemplatePath,
 		showToc,
+		folioMode,
+		folioScope,
 		settingsMode,
 		settingsTab,
 		aiEnabled,
@@ -296,6 +323,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextShowToc = payload.ui?.showToc;
 		if (typeof nextShowToc === "boolean") {
 			dispatch({ type: "setShowToc", value: nextShowToc });
+		}
+		const nextFolioMode = payload.ui?.folioMode;
+		if (typeof nextFolioMode === "boolean") {
+			dispatch({ type: "setFolioMode", value: nextFolioMode });
 		}
 		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
 			dispatch({
@@ -331,6 +362,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					templateFolder: s.templates?.folder ?? null,
 					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
 					showToc: s.ui.showToc,
+					folioMode: s.ui.folioMode,
 				});
 			} catch {
 				// best-effort settings hydration
@@ -397,6 +429,16 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		dispatch({ type: "setShowToc", value: show });
 		void saveShowToc(show);
 	}, []);
+
+	const setFolioMode = useCallback((enabled: boolean) => {
+		dispatch({ type: "setFolioMode", value: enabled });
+		void saveFolioMode(enabled);
+	}, []);
+
+	const setFolioScope = useCallback(
+		(scope: FolioScope) => dispatch({ type: "setFolioScope", value: scope }),
+		[],
+	);
 
 	const setSidebarCollapsed = useCallback(
 		(collapsed: boolean) =>
@@ -479,6 +521,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
+			folioMode,
+			setFolioMode,
+			folioScope,
+			setFolioScope,
 			settingsMode,
 			settingsTab,
 			openSettings,
@@ -505,6 +551,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
+			folioMode,
+			setFolioMode,
+			folioScope,
+			setFolioScope,
 			settingsMode,
 			settingsTab,
 			openSettings,

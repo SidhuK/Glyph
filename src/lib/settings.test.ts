@@ -150,6 +150,36 @@ describe("settings task progress indicator", () => {
 	});
 });
 
+describe("settings Folio Mode", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults Folio Mode to false", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.folioMode).toBe(false);
+	});
+
+	it("loads Folio Mode from the store", async () => {
+		storeState.set("ui.folioMode", true);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.folioMode).toBe(true);
+	});
+
+	it("persists and emits Folio Mode changes", async () => {
+		const { setFolioMode } = await import("./settings");
+		await setFolioMode(true);
+		expect(storeState.get("ui.folioMode")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { folioMode: true },
+		});
+	});
+});
+
 describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();

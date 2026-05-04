@@ -21,12 +21,14 @@ vi.mock("../lib/settings", () => ({
 			aiEnabled: true,
 			aiAssistantMode: "create",
 			showToc: true,
+			folioMode: false,
 		},
 		dailyNotes: { folder: null },
 		templates: { folder: null, dailyNoteTemplate: null },
 	})),
 	reloadFromDisk: vi.fn(async () => {}),
 	setAiAssistantMode: vi.fn(),
+	setFolioMode: vi.fn(),
 	setShowToc: vi.fn(),
 }));
 
@@ -48,6 +50,7 @@ interface CapturedContext {
 	sidebarCollapsed: boolean;
 	zenModeActive: boolean;
 	aiPanelOpen: boolean;
+	folioMode: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	setZenModeActive: (active: boolean) => void;
 	setAiPanelOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
@@ -66,6 +69,7 @@ function Harness({
 			sidebarCollapsed: layout.sidebarCollapsed,
 			zenModeActive: layout.zenModeActive,
 			aiPanelOpen: ai.aiPanelOpen,
+			folioMode: layout.folioMode,
 			setSidebarCollapsed: layout.setSidebarCollapsed,
 			setZenModeActive: layout.setZenModeActive,
 			setAiPanelOpen: ai.setAiPanelOpen,

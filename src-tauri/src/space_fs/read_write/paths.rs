@@ -1,8 +1,9 @@
+use serde::Serialize;
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tauri::State;
+use tauri::{Emitter, State};
 
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, paths, space::SpaceState, utils};
@@ -11,6 +12,12 @@ use super::super::helpers::deny_hidden_rel_path;
 use super::super::link_rewrite::{self, LinkRewriteResult};
 use super::super::types::FsEntry;
 use super::trash::move_path_to_trash;
+
+#[derive(Serialize, Clone)]
+struct NoteChangeEvent {
+    rel_path: String,
+    removed: bool,
+}
 
 fn split_duplicate_name(file_name: &str) -> (&str, &str) {
     match file_name.rfind('.') {
@@ -221,16 +228,27 @@ pub async fn space_create_dir(state: State<'_, SpaceState>, path: String) -> Res
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_duplicate_path(
+    app: tauri::AppHandle,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<FsEntry, String> {
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
-    tauri::async_runtime::spawn_blocking(move || {
+    let entry = tauri::async_runtime::spawn_blocking(move || {
         duplicate_file_under_root(&root, Path::new(&path), &recent_local_changes)
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    if entry.is_markdown {
+        let _ = app.emit(
+            "notes:external_changed",
+            NoteChangeEvent {
+                rel_path: entry.rel_path.clone(),
+                removed: false,
+            },
+        );
+    }
+    Ok(entry)
 }
 
 #[tauri::command]

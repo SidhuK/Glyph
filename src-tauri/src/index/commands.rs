@@ -49,6 +49,7 @@ pub struct AllDocsItem {
     pub updated: String,
     pub created: String,
     pub tags: Vec<String>,
+    pub people: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -365,17 +366,8 @@ pub async fn all_docs_list(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
         let conn = open_db(&root)?;
         let mut sql = String::from(
-            "SELECT n.path, n.title, n.preview, n.updated, n.created,
-                        COALESCE((
-                            SELECT GROUP_CONCAT(ordered_tags.tag, '\n')
-                            FROM (
-                                SELECT tag
-                                FROM tags
-                                WHERE note_id = n.id
-                                  AND tag NOT LIKE 'people/%'
-                                ORDER BY is_explicit DESC, tag COLLATE NOCASE ASC
-                            ) ordered_tags
-                        ), '')
+            "WITH visible_notes AS (
+                 SELECT n.id, n.path, n.title, n.preview, n.updated, n.created
                  FROM notes n ",
         );
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
@@ -386,7 +378,38 @@ pub async fn all_docs_list(
                 escape_like(prefix)
             )));
         }
-        sql.push_str("ORDER BY n.updated DESC LIMIT ?");
+        sql.push_str(
+            "ORDER BY n.updated DESC LIMIT ?
+             ),
+             tag_blob AS (
+                 SELECT ordered_tags.note_id, GROUP_CONCAT(ordered_tags.tag, '\n') AS tags
+                 FROM (
+                     SELECT t.note_id, t.tag, t.is_explicit
+                     FROM tags t
+                     JOIN visible_notes vn ON vn.id = t.note_id
+                     WHERE t.tag NOT LIKE 'people/%'
+                     ORDER BY t.note_id, t.is_explicit DESC, t.tag COLLATE NOCASE ASC
+                 ) ordered_tags
+                 GROUP BY ordered_tags.note_id
+             ),
+             people_blob AS (
+                 SELECT ordered_people.note_id, GROUP_CONCAT(ordered_people.tag, '\n') AS people
+                 FROM (
+                     SELECT t.note_id, t.tag
+                     FROM tags t
+                     JOIN visible_notes vn ON vn.id = t.note_id
+                     WHERE t.tag LIKE 'people/%'
+                     ORDER BY t.note_id, t.tag COLLATE NOCASE ASC
+                 ) ordered_people
+                 GROUP BY ordered_people.note_id
+             )
+             SELECT vn.path, vn.title, vn.preview, vn.updated, vn.created,
+                    COALESCE(tag_blob.tags, ''), COALESCE(people_blob.people, '')
+             FROM visible_notes vn
+             LEFT JOIN tag_blob ON tag_blob.note_id = vn.id
+             LEFT JOIN people_blob ON people_blob.note_id = vn.id
+             ORDER BY vn.updated DESC",
+        );
         params.push(rusqlite::types::Value::from(limit));
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
         let mut rows = stmt
@@ -395,6 +418,7 @@ pub async fn all_docs_list(
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
             let tag_blob: String = row.get(5).map_err(|e| e.to_string())?;
+            let people_blob: String = row.get(6).map_err(|e| e.to_string())?;
             out.push(AllDocsItem {
                 note_path: row.get(0).map_err(|e| e.to_string())?,
                 title: row.get(1).map_err(|e| e.to_string())?,
@@ -406,6 +430,10 @@ pub async fn all_docs_list(
                     .map(str::trim)
                     .filter(|tag| !tag.is_empty())
                     .map(ToOwned::to_owned)
+                    .collect(),
+                people: people_blob
+                    .split('\n')
+                    .filter_map(people_tag_to_handle)
                     .collect(),
             });
         }

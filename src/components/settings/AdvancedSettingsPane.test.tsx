@@ -18,6 +18,7 @@ const {
 	setEditorShowCollapsibleHeadingsMock,
 	setEditorWidthModeMock,
 	setEditorVimKeybindingsMock,
+	setFolioModeMock,
 	setShowFileTreeFolderCountsMock,
 	setShowTaskProgressIndicatorMock,
 	setShowTocMock,
@@ -33,6 +34,7 @@ const {
 	setEditorShowCollapsibleHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorWidthModeMock: vi.fn(() => Promise.resolve()),
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
+	setFolioModeMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
 	setShowTaskProgressIndicatorMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
@@ -57,6 +59,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorShowCollapsibleHeadings: setEditorShowCollapsibleHeadingsMock,
 	setEditorWidthMode: setEditorWidthModeMock,
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
+	setFolioMode: setFolioModeMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
 	setShowTaskProgressIndicator: setShowTaskProgressIndicatorMock,
 	setShowToc: setShowTocMock,
@@ -164,6 +167,7 @@ function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 		ui: {
 			aiAssistantMode: "create" as const,
 			delightfulGlyph: false,
+			folioMode: false,
 			showFileTreeFolderCounts: false,
 			showTaskProgressIndicator: true,
 			showToc: true,
@@ -333,5 +337,22 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setShowTaskProgressIndicatorMock).toHaveBeenCalledWith(false);
+	});
+
+	it("saves Folio Mode changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Folio Mode"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setFolioModeMock).toHaveBeenCalledWith(true);
 	});
 });

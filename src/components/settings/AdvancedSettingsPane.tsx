@@ -17,6 +17,7 @@ import {
 	setEditorShowFrontmatterInEditor,
 	setEditorVimKeybindings,
 	setEditorWidthMode,
+	setFolioMode,
 	setShowFileTreeFolderCounts,
 	setShowTaskProgressIndicator,
 	setShowToc,
@@ -118,6 +119,7 @@ export function AdvancedSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
 	const [delightfulGlyph, setDelightfulGlyphState] = useState(false);
+	const [folioMode, setFolioModeState] = useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showTaskProgressIndicator, setShowTaskProgressIndicatorState] =
@@ -140,6 +142,7 @@ export function AdvancedSettingsPane() {
 	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] = useState(false);
+	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -167,6 +170,7 @@ export function AdvancedSettingsPane() {
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setDelightfulGlyphState(settings.ui.delightfulGlyph);
+			setFolioModeState(settings.ui.folioMode);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowTaskProgressIndicatorState(settings.ui.showTaskProgressIndicator);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
@@ -214,6 +218,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.delightfulGlyph === "boolean") {
 			setDelightfulGlyphState(payload.ui.delightfulGlyph);
+		}
+		if (typeof payload.ui?.folioMode === "boolean") {
+			setFolioModeState(payload.ui.folioMode);
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
@@ -481,6 +488,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingDelightfulGlyph(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Folio Mode"
+						description="Use a Bear-style three-pane layout with a navigation sidebar, rich notes list, and editor."
+					>
+						<SettingsToggle
+							checked={folioMode}
+							disabled={isSavingFolioMode}
+							ariaLabel="Folio Mode"
+							onCheckedChange={(checked) => {
+								const previous = folioMode;
+								setError("");
+								setFolioModeState(checked);
+								setIsSavingFolioMode(true);
+								void setFolioMode(checked)
+									.catch((cause) => {
+										setFolioModeState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingFolioMode(false);
 									});
 							}}
 						/>
