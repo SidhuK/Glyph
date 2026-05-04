@@ -7,10 +7,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
-const { loadAllDocsMock, prefetchNoteMock, scopeRef } = vi.hoisted(() => ({
+const {
+	loadAllDocsMock,
+	prefetchNoteMock,
+	scopeRef,
+	taskSummariesRef,
+	showTaskProgressIndicatorRef,
+} = vi.hoisted(() => ({
 	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
 	scopeRef: { current: { kind: "all" } as FolioScope },
+	taskSummariesRef: {
+		current: {} as Record<
+			string,
+			{ total_count: number; completed_count: number; open_count: number }
+		>,
+	},
+	showTaskProgressIndicatorRef: { current: true as boolean | null },
 }));
 
 vi.mock("../../contexts", () => ({
@@ -32,6 +45,14 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 
 vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: () => {},
+}));
+
+vi.mock("../../hooks/useTaskProgressIndicatorSetting", () => ({
+	useTaskProgressIndicatorSetting: () => showTaskProgressIndicatorRef.current,
+}));
+
+vi.mock("../../hooks/useTaskSummariesForPaths", () => ({
+	useTaskSummariesForPaths: () => taskSummariesRef.current,
 }));
 
 vi.mock("../ui/shadcn/context-menu", () => ({
@@ -114,6 +135,8 @@ describe("FolioNotesListPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
+		taskSummariesRef.current = {};
+		showTaskProgressIndicatorRef.current = true;
 		loadAllDocsMock.mockResolvedValue(notes);
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false, gcTime: 0 } },
@@ -196,6 +219,30 @@ describe("FolioNotesListPane", () => {
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
+	});
+
+	it("renders task progress rings on note cards", async () => {
+		taskSummariesRef.current = {
+			"Projects/Roadmap.md": {
+				total_count: 4,
+				completed_count: 3,
+				open_count: 1,
+			},
+		};
+
+		await act(async () => renderPane());
+		await waitFor(() => container.textContent?.includes("Roadmap") ?? false);
+
+		expect(
+			container.querySelector(
+				'[data-folio-note-path="Projects/Roadmap.md"] [aria-label="3 of 4 tasks completed"]',
+			),
+		).toBeTruthy();
+		expect(
+			container.querySelector(
+				'[data-folio-note-path="Ideas/Sketch.md"] .folioNoteTaskProgress',
+			),
+		).toBeNull();
 	});
 
 	it("sorts by edited time when selected", async () => {

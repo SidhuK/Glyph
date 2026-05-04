@@ -216,6 +216,30 @@
 	line-height: 1.25;
 }
 
+.folioNoteTaskProgress {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	margin-left: auto;
+	opacity: 0.9;
+}
+
+.folioNoteTaskProgress .markdownEditorTaskProgressRing {
+	width: 14px;
+	height: 14px;
+	border-width: 2px;
+}
+
+.folioNoteTaskProgress .markdownEditorTaskProgressPie {
+	width: 7px;
+	height: 7px;
+}
+
+.folioNoteRow:hover .folioNoteTaskProgress,
+.folioNoteRow[data-state="selected"] .folioNoteTaskProgress {
+	opacity: 1;
+}
+
 .folioNotePreview {
 	min-width: 0;
 	flex: 0 0 auto;

@@ -1,7 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUILayoutContext } from "../../contexts";
+import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename } from "../../utils/path";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
@@ -70,6 +73,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
+	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const visibleNotes = useMemo(
 		() =>
@@ -86,6 +90,22 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				: -1,
 		[activeTabPath, visibleNotes],
 	);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
+	const taskSummaryPaths = useMemo(
+		() => visibleNotes.map((note) => note.note_path),
+		[visibleNotes],
+	);
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		taskSummaryPaths,
+		showTaskProgressIndicator,
+		taskSummaryRefreshKey,
+	);
+
+	useTauriEvent("notes:external_changed", (payload) => {
+		if (!payload.rel_path || !taskSummaryPaths.includes(payload.rel_path))
+			return;
+		setTaskSummaryRefreshKey((key) => key + 1);
+	});
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() =>
 			paneRef.current?.focus({ preventScroll: true }),
@@ -195,6 +215,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						onRename={renameNote}
 						onDelete={deleteNote}
 						onFocus={focusPane}
+						taskSummary={
+							showTaskProgressIndicator
+								? (taskSummariesByPath[note.note_path] ?? null)
+								: null
+						}
 					/>
 				))}
 			</ul>

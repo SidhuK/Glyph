@@ -1,9 +1,10 @@
 import { memo, useMemo } from "react";
 import { databaseValueToneStyle } from "../../lib/database/palette";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
-import type { AllDocsItem } from "../../lib/tauri";
+import type { AllDocsItem, NoteTaskSummary } from "../../lib/tauri";
 import { basename, parentDir } from "../../utils/path";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -21,6 +22,7 @@ interface FolioNoteListItemProps {
 	onRename: (path: string) => void;
 	onDelete: (path: string) => void;
 	onFocus: () => void;
+	taskSummary?: NoteTaskSummary | null;
 }
 
 function titleFromPath(notePath: string): string {
@@ -76,6 +78,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	onRename,
 	onDelete,
 	onFocus,
+	taskSummary = null,
 }: FolioNoteListItemProps) {
 	const title = note.title.trim() || titleFromPath(note.note_path);
 	const preview = useMemo(() => {
@@ -116,6 +119,12 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 					>
 						<span className="folioNoteRowTop">
 							<span className="folioNoteTitle">{title}</span>
+							{taskSummary && taskSummary.total_count > 0 ? (
+								<TaskProgressIndicator
+									summary={taskSummary}
+									className="folioNoteTaskProgress"
+								/>
+							) : null}
 						</span>
 						<span className="folioNotePreview">{preview}</span>
 						<span className="folioNoteFooter">
