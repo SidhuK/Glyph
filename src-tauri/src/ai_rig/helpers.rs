@@ -1,7 +1,16 @@
-use std::time::Duration;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+use std::{
+    env,
+    path::{Path, PathBuf},
+    time::Duration,
+};
+
+use serde_json::Value;
+use tauri::{AppHandle, Emitter};
 use url::Url;
 
-use super::types::{AiMessage, AiProfile, AiProviderKind};
+use super::types::{AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent, AiToolEvent};
 use crate::net;
 
 pub use crate::utils::now_ms;
@@ -16,6 +25,8 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Ollama => "http://localhost:11434",
         AiProviderKind::LlamaCpp => "http://localhost:8080/v1",
         AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
+        AiProviderKind::Amp => "https://ampcode.com/",
+        AiProviderKind::Opencode => "http://127.0.0.1:4096",
     }
 }
 
@@ -130,6 +141,91 @@ pub fn http_client() -> Result<reqwest::Client, String> {
         .user_agent("Glyph/0.1 (ai)")
         .build()
         .map_err(|e| e.to_string())
+}
+
+pub fn executable_exists(path: &Path) -> bool {
+    let Ok(metadata) = path.metadata() else {
+        return false;
+    };
+    if !metadata.is_file() {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        metadata.permissions().mode() & 0o111 != 0
+    }
+    #[cfg(not(unix))]
+    {
+        true
+    }
+}
+
+pub fn candidate_cli_paths(env_var_name: &str, binary_name: &str) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(path) = env::var_os(env_var_name) {
+        paths.push(PathBuf::from(path));
+    }
+    if let Some(path) = env::var_os("PATH") {
+        paths.extend(env::split_paths(&path).map(|dir| dir.join(binary_name)));
+    }
+    paths.push(PathBuf::from(format!("/opt/homebrew/bin/{binary_name}")));
+    paths.push(PathBuf::from(format!("/usr/local/bin/{binary_name}")));
+    paths.push(PathBuf::from(format!("/usr/bin/{binary_name}")));
+    if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+        paths.push(home.join(format!(".local/bin/{binary_name}")));
+        paths.push(home.join(format!(".bun/bin/{binary_name}")));
+        paths.push(home.join(format!(".npm-global/bin/{binary_name}")));
+        paths.push(home.join(format!(".volta/bin/{binary_name}")));
+    }
+    paths
+}
+
+pub fn find_cli_binary(
+    display_name: &str,
+    env_var_name: &str,
+    binary_name: &str,
+) -> Result<PathBuf, String> {
+    for path in candidate_cli_paths(env_var_name, binary_name) {
+        if executable_exists(&path) {
+            return Ok(path);
+        }
+    }
+    Err(format!(
+        "{display_name} CLI not found. Install {binary_name} or set {env_var_name} to the native binary."
+    ))
+}
+
+pub fn emit_tool(
+    app: &AppHandle,
+    job_id: &str,
+    tool_events: &mut Vec<AiStoredToolEvent>,
+    tool: &str,
+    phase: &str,
+    call_id: Option<String>,
+    payload: Option<Value>,
+    error: Option<String>,
+) {
+    let at_ms = now_ms();
+    let _ = app.emit(
+        "ai:tool",
+        AiToolEvent {
+            job_id: job_id.to_string(),
+            tool: tool.to_string(),
+            phase: phase.to_string(),
+            at_ms,
+            call_id: call_id.clone(),
+            payload: payload.clone(),
+            error: error.clone(),
+        },
+    );
+    tool_events.push(AiStoredToolEvent {
+        tool: tool.to_string(),
+        phase: phase.to_string(),
+        at_ms,
+        call_id,
+        payload,
+        error,
+    });
 }
 
 pub fn derive_chat_title(messages: &[AiMessage]) -> String {

@@ -14,7 +14,9 @@ interface AiModelComboboxProps {
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
 	provider !== "ollama" &&
 	provider !== "llama_cpp" &&
-	provider !== "codex_chatgpt";
+	provider !== "codex_chatgpt" &&
+	provider !== "amp" &&
+	provider !== "opencode";
 
 export function AiModelCombobox({
 	profileId,

@@ -193,7 +193,10 @@ pub async fn ai_profile_delete(
         profile.reasoning_effort = None;
         profile.allow_private_hosts = matches!(
             profile.provider,
-            super::types::AiProviderKind::Ollama | super::types::AiProviderKind::LlamaCpp
+            super::types::AiProviderKind::Ollama
+                | super::types::AiProviderKind::LlamaCpp
+                | super::types::AiProviderKind::Amp
+                | super::types::AiProviderKind::Opencode
         );
     }
     ensure_default_profiles(&mut store);
@@ -309,7 +312,12 @@ pub async fn ai_chat_start(
         .cloned()
         .ok_or_else(|| "unknown profile".to_string())?;
     if profile.model.trim().is_empty()
-        && !matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt)
+        && !matches!(
+            profile.provider,
+            super::types::AiProviderKind::CodexChatgpt
+                | super::types::AiProviderKind::Amp
+                | super::types::AiProviderKind::Opencode
+        )
     {
         return Err("Model not set for this profile".to_string());
     }
@@ -472,6 +480,18 @@ pub async fn run_request(
             mode,
             space_root,
             thread_id,
+        )
+        .await;
+    }
+    if matches!(profile.provider, super::types::AiProviderKind::Opencode) {
+        return crate::ai_opencode::run_with_opencode(
+            cancel, app, job_id, profile, system, messages, mode, space_root,
+        )
+        .await;
+    }
+    if matches!(profile.provider, super::types::AiProviderKind::Amp) {
+        return crate::ai_amp::run_with_amp(
+            cancel, app, job_id, profile, system, messages, mode, space_root,
         )
         .await;
     }
