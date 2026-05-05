@@ -1250,7 +1250,9 @@ fn local_note_graph_for_conn(
         )
         .map_err(|e| e.to_string())?;
     let mut neighbor_rows = neighbor_stmt
-        .query(rusqlite::params![note_id, note_id, note_id, note_id, note_id])
+        .query(rusqlite::params![
+            note_id, note_id, note_id, note_id, note_id
+        ])
         .map_err(|e| e.to_string())?;
     while let Some(row) = neighbor_rows.next().map_err(|e| e.to_string())? {
         let id: String = row.get(0).map_err(|e| e.to_string())?;
@@ -1600,18 +1602,14 @@ mod local_graph_tests {
         assert_eq!(graph.nodes.len(), 12);
         assert_eq!(graph.tag_edges.len(), 12);
         assert!(graph.nodes.iter().any(|node| node.id == "notes/center.md"));
-        assert!(
-            graph
-                .nodes
-                .iter()
-                .any(|node| node.id == "notes/neighbor.md")
-        );
-        assert!(
-            !graph
-                .nodes
-                .iter()
-                .any(|node| node.id == "notes/common-10.md")
-        );
+        assert!(graph
+            .nodes
+            .iter()
+            .any(|node| node.id == "notes/neighbor.md"));
+        assert!(!graph
+            .nodes
+            .iter()
+            .any(|node| node.id == "notes/common-10.md"));
         assert_eq!(graph.tags.len(), 1);
         assert_eq!(graph.tags[0].tag, "project");
         assert_eq!(graph.tags[0].note_count, 12);
