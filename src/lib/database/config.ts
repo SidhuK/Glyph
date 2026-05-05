@@ -141,6 +141,15 @@ function normalizeTagText(value: string | null | undefined): string {
 	return normalizeText(value).replace(/^#+/, "");
 }
 
+function parseFilterNumber(value: string): number | null {
+	const normalized = value.trim().replace(/[$,%]/g, "");
+	if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(normalized)) {
+		return null;
+	}
+	const parsed = Number(normalized);
+	return Number.isFinite(parsed) ? parsed : null;
+}
+
 function cellTextValues(cell: DatabaseCellValue): string[] {
 	const values = [
 		cell.value_text,
@@ -198,13 +207,11 @@ export function rowMatchesFilters(
 				);
 			case "greater_than":
 			case "less_than": {
-				const filterNumber = Number.parseFloat(
-					filterText.replace(/[$,%]/g, ""),
-				);
-				if (!Number.isFinite(filterNumber)) return true;
+				const filterNumber = parseFilterNumber(filterText);
+				if (filterNumber == null) return true;
 				return [...textValues, ...listValues].some((value) => {
-					const cellNumber = Number.parseFloat(value.replace(/[$,%]/g, ""));
-					if (!Number.isFinite(cellNumber)) return false;
+					const cellNumber = parseFilterNumber(value);
+					if (cellNumber == null) return false;
 					return filter.operator === "greater_than"
 						? cellNumber > filterNumber
 						: cellNumber < filterNumber;

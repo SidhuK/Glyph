@@ -240,10 +240,7 @@ fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
 }
 
 fn parse_filter_number(value: &str) -> Option<f64> {
-    let normalized = value
-        .trim()
-        .trim_start_matches('$')
-        .replace([',', '%'], "");
+    let normalized = value.trim().replace(['$', ',', '%'], "");
     let parsed = normalized.parse::<f64>().ok()?;
     parsed.is_finite().then_some(parsed)
 }

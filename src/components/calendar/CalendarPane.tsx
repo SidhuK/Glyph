@@ -132,6 +132,7 @@ export function CalendarPane({
 		const range = buildMonthRange(anchorDate);
 		const lastDay = initialData.days[initialData.days.length - 1];
 		if (
+			initialData.days.length !== range.dates.length ||
 			initialData.days[0]?.date !== range.start ||
 			lastDay?.date !== range.end
 		) {
