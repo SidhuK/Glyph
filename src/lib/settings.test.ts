@@ -395,13 +395,7 @@ describe("shortcut settings", () => {
 			shift: false,
 			key: "k",
 		});
-		expect(effective["open-search-palette"]).toEqual({
-			meta: true,
-			ctrl: false,
-			alt: false,
-			shift: false,
-			key: "f",
-		});
+		expect(effective["open-search-palette"]).toBeNull();
 	});
 
 	it("resets all shortcut overrides back to defaults", async () => {

@@ -930,10 +930,7 @@
 			"description": "Open search in the command palette.",
 			"category": "search",
 			"context": "global",
-			"defaultBinding": {
-				"meta": true,
-				"key": "f"
-			},
+			"defaultBinding": null,
 			"allowInEditable": false,
 			"commandPalette": false
 		},

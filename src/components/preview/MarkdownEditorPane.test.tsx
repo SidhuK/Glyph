@@ -26,7 +26,11 @@ const {
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("../../contexts", () => ({
-	useAISidebarContext: () => ({ aiEnabled: false, aiPanelOpen: false }),
+	useAISidebarContext: () => ({
+		aiEnabled: false,
+		aiPanelOpen: false,
+		setAiPanelOpen: vi.fn(),
+	}),
 	useEditorRegistration: () => {},
 	useSpace: () => ({ spacePath: "/spaces/test" }),
 	useUILayoutContext: () => ({

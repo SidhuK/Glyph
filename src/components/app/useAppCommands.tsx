@@ -1,5 +1,4 @@
 import {
-	AiEditingIcon,
 	ArrowLeft,
 	ArrowRight,
 	Calendar03Icon,
@@ -26,6 +25,7 @@ import {
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
+	SparklesIcon,
 	SquareLock02Icon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
@@ -209,7 +209,7 @@ function buildAiCommands({
 		{
 			id: "toggle-ai",
 			label: "Toggle AI",
-			icon: <HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />,
+			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
 			category: "AI",
 			shortcut: { meta: true, shift: true, key: "a" },
 			enabled: Boolean(spacePath),
@@ -218,7 +218,7 @@ function buildAiCommands({
 		{
 			id: "close-ai-pane",
 			label: "Close AI",
-			icon: <HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />,
+			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
 			category: "AI",
 			enabled: Boolean(spacePath),
 			action: handleCloseAiPaneFromMenu,
@@ -244,7 +244,7 @@ function buildAiCommands({
 		{
 			id: "open-ai-agent",
 			label: "Open AI Agent",
-			icon: <HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />,
+			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
 			category: "AI",
 			enabled: Boolean(spacePath),
 			action: () => openSpecialTab(AI_AGENT_TAB_ID),

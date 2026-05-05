@@ -112,6 +112,8 @@ export function AppShell() {
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
+		rootEntries,
+		childrenByDir,
 		expandedDirs,
 		activeDirPath,
 		setActiveDirPath,
@@ -1031,6 +1033,36 @@ export function AppShell() {
 		setSidebarCollapsed,
 	]);
 
+	const handleNavigateBreadcrumbPath = useCallback(
+		(dirPath: string) => {
+			const nextPath = normalizeRelPath(dirPath);
+			setSidebarCollapsed(false);
+			setActiveDirPath(nextPath);
+
+			const ancestorDirs: string[] = [];
+			let current = nextPath;
+			while (current) {
+				ancestorDirs.unshift(current);
+				current = parentDir(current);
+			}
+
+			updateExpandedDirs((prev) => {
+				const next = new Set(prev);
+				for (const dir of ancestorDirs) next.add(dir);
+				return next;
+			});
+
+			const dirsToLoad = nextPath ? ancestorDirs : [""];
+			void Promise.all(dirsToLoad.map((dir) => fileTree.loadDir(dir)));
+		},
+		[
+			fileTree.loadDir,
+			setActiveDirPath,
+			setSidebarCollapsed,
+			updateExpandedDirs,
+		],
+	);
+
 	const handleStartRenameFromTab = useCallback(
 		async (path: string) => {
 			const nextPath = path.trim();
@@ -1349,6 +1381,8 @@ export function AppShell() {
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
 				tabs={tabs}
+				rootEntries={rootEntries}
+				childrenByDir={childrenByDir}
 				activeTabId={activeTabId}
 				activeTabPath={activeTabPath}
 				setActiveTabId={setActiveTabId}
@@ -1360,6 +1394,8 @@ export function AppShell() {
 				reorderTabs={reorderTabs}
 				openBlankTab={openBlankTab}
 				onStartRenamePath={handleStartRenameFromTab}
+				onNavigateBreadcrumbPath={handleNavigateBreadcrumbPath}
+				onLoadBreadcrumbDir={fileTree.loadDir}
 				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
 				canGoBack={canGoBack}
 				canGoForward={canGoForward}

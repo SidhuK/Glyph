@@ -30,6 +30,7 @@ import {
 import { Input } from "../ui/shadcn/input";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
 import { NoteEditorSurface } from "./NoteEditorSurface";
+import { NoteFindBar } from "./NoteFindBar";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	type SupportedCodeBlockLanguage,
@@ -43,6 +44,7 @@ import {
 } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useNoteEditor } from "./hooks/useNoteEditor";
+import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
@@ -212,6 +214,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
 		useState(0);
 	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
+	const rawTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
@@ -303,6 +306,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		editor,
 		hostRef: tiptapHostRef,
 		relPath,
+	});
+	const noteFind = useNoteFind({
+		editor,
+		markdown,
+		mode,
+		relPath,
+		rawTextareaRef,
+		tiptapHostRef,
 	});
 
 	useEffect(() => {
@@ -925,10 +936,25 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			]
 				.filter(Boolean)
 				.join(" ")}
+			onKeyDownCapture={noteFind.handleEditorKeyDownCapture}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
+				{noteFind.findOpen ? (
+					<NoteFindBar
+						countLabel={noteFind.findCountLabel}
+						inputRef={noteFind.findInputRef}
+						matchCount={noteFind.findMatchCount}
+						query={noteFind.findQuery}
+						onClose={noteFind.closeFind}
+						onInputKeyDown={noteFind.handleFindInputKeyDown}
+						onNext={() => noteFind.moveFindMatch(1)}
+						onPrevious={() => noteFind.moveFindMatch(-1)}
+						onQueryChange={noteFind.updateFindQuery}
+					/>
+				) : null}
 				{mode === "plain" ? (
 					<textarea
+						ref={rawTextareaRef}
 						className="rfNodeNoteEditorRaw mono"
 						value={markdown}
 						onChange={(event) => onChange(event.target.value)}

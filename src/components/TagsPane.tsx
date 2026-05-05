@@ -78,7 +78,7 @@ export const TagsPane = memo(function TagsPane({
 		[onSelectPerson],
 	);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
-	const [sectionExpanded, setSectionExpanded] = useState(true);
+	const [sectionExpanded, setSectionExpanded] = useState(false);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
 

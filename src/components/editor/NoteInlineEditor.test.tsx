@@ -34,6 +34,7 @@ const {
 		commands: {
 			refreshMermaidPreviews: vi.fn(),
 			setActiveMermaidPreview: vi.fn(),
+			setNoteSearch: vi.fn(),
 			setRichMermaidPreviewHeight: vi.fn(),
 		},
 		off: vi.fn((event: string, callback: () => void) => {

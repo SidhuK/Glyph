@@ -21,6 +21,7 @@ import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
+import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
@@ -665,6 +666,7 @@ export function createEditorExtensions(
 		TaskDetailShortcut,
 		MarkdownLinkSyntaxCollapse,
 		MarkdownImageShortcut,
+		NoteSearch,
 		TableEnterNavigation,
 		Table.configure({ resizable: true }),
 		TableRow,
