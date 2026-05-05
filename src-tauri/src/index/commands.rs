@@ -1,24 +1,24 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use chrono::{Duration, NaiveDate};
+use chrono::{DateTime, Duration, Local, NaiveDate};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
 
-use crate::space::SpaceState;
 use crate::space::state::mark_recent_local_change;
+use crate::space::SpaceState;
 
 use super::db::open_db;
 use super::indexer::index_note;
 use super::indexer::rebuild;
-use super::relationships::{NoteRelationship, query_note_relationships};
-use super::search_advanced::{SearchAdvancedRequest, run_search_advanced};
+use super::relationships::{query_note_relationships, NoteRelationship};
+use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
-use super::tags::{PEOPLE_TAG_NAMESPACE, people_tag_to_handle, tag_depth};
+use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::tasks::{
-    IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, mutate_task_line, note_abs_path,
-    query_note_task_summaries, summarize_tasks, write_note,
+    mutate_task_line, note_abs_path, query_note_task_summaries, summarize_tasks, write_note,
+    IndexedTask, NoteTaskSummary, NoteTaskSummaryItem,
 };
 use super::types::{
     BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalGraphTagEdge,
@@ -226,6 +226,12 @@ fn parse_calendar_date(date: &str) -> Result<NaiveDate, String> {
 
 fn format_calendar_date(date: NaiveDate) -> String {
     date.format("%Y-%m-%d").to_string()
+}
+
+fn calendar_date_for_timestamp(value: &str) -> String {
+    DateTime::parse_from_rfc3339(value)
+        .map(|timestamp| format_calendar_date(timestamp.with_timezone(&Local).date_naive()))
+        .unwrap_or_else(|_| value.get(0..10).unwrap_or_default().to_string())
 }
 
 fn daily_note_path_for(folder: Option<&str>, date: &str) -> Option<String> {
@@ -574,6 +580,8 @@ pub async fn calendar_query_range(
             }
         }
 
+        let note_prefilter_start = format_calendar_date(start - Duration::days(1));
+        let note_prefilter_end = format_calendar_date(end + Duration::days(1));
         let mut note_stmt = conn
             .prepare(
                 "SELECT id, title, path, preview, created, updated,
@@ -594,10 +602,10 @@ pub async fn calendar_query_range(
             .map_err(|e| e.to_string())?;
         let mut note_rows = note_stmt
             .query([
-                start_date.as_str(),
-                end_date.as_str(),
-                start_date.as_str(),
-                end_date.as_str(),
+                note_prefilter_start.as_str(),
+                note_prefilter_end.as_str(),
+                note_prefilter_start.as_str(),
+                note_prefilter_end.as_str(),
             ])
             .map_err(|e| e.to_string())?;
 
@@ -616,8 +624,8 @@ pub async fn calendar_query_range(
                 .filter(|tag| !tag.is_empty())
                 .map(ToOwned::to_owned)
                 .collect::<Vec<_>>();
-            let created_day = created.get(0..10).unwrap_or_default().to_string();
-            let updated_day = updated.get(0..10).unwrap_or_default().to_string();
+            let created_day = calendar_date_for_timestamp(&created);
+            let updated_day = calendar_date_for_timestamp(&updated);
             let is_created_daily_note = daily_note_path_for(
                 normalized_daily_notes_folder.as_deref(),
                 &created_day,
