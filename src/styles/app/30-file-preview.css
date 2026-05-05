@@ -487,13 +487,15 @@
 }
 
 :root[data-translucent-sidebar="false"] .markdownEditorInfoHeader {
-	background: var(--bg-primary);
+	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }
 
 :root[data-translucent-sidebar="false"] .notesInfoSidebarPanel {
-	background: var(--bg-primary);
+	border: 0;
+	border-radius: 0;
+	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }

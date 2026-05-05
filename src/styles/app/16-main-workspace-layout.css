@@ -116,6 +116,7 @@
 }
 
 :root[data-translucent-sidebar="false"] .notesInfoSidebarHost:not(:empty) {
+	padding: 0;
 	background: var(--bg-sidebar);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;

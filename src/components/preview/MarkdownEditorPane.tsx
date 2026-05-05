@@ -1,9 +1,9 @@
 import {
-	AiEditingIcon,
 	FlowConnectionIcon,
 	InformationCircleIcon,
 	SlidersHorizontalIcon,
 	SourceCodeIcon,
+	SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
@@ -903,7 +903,7 @@ export function MarkdownEditorPane({
 						}
 						aria-pressed={aiEnabled ? aiPanelOpen : undefined}
 					>
-						<HugeiconsIcon icon={AiEditingIcon} size={15} strokeWidth={0.9} />
+						<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={0.9} />
 					</button>
 					<div className="markdownEditorActionsMenu">
 						<button

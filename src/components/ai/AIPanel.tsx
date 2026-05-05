@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import {
-	AiEditingIcon,
 	ChatAdd01Icon,
 	Logout05Icon,
+	SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -295,7 +295,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			<div className="aiPanelHeader">
 				<div className="aiPanelHeaderLeft">
 					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={AiEditingIcon} size={18} strokeWidth={0.9} />
+						<HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={0.9} />
 					</div>
 					<button
 						type="button"

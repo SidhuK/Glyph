@@ -1,10 +1,10 @@
 import {
-	AiEditingIcon,
 	Archive02Icon,
 	CommandIcon,
 	ConstructionIcon,
 	GitBranchIcon,
 	Settings01Icon,
+	SparklesIcon,
 	Sun03Icon,
 	ToolsIcon,
 } from "@hugeicons/core-free-icons";
@@ -62,7 +62,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "ai",
 		label: "Glyph AI",
 		renderIcon: () => (
-			<HugeiconsIcon icon={AiEditingIcon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={0.9} />
 		),
 	},
 	{
