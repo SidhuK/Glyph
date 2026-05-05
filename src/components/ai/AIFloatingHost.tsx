@@ -1,5 +1,5 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 
 const importAIPanel = () => import("./AIPanel");
 
@@ -17,9 +17,11 @@ interface AIFloatingHostProps {
 
 export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 	const shouldReduceMotion = useReducedMotion();
+	const [shouldRenderHost, setShouldRenderHost] = useState(isOpen);
 
 	useEffect(() => {
 		if (!isOpen) return;
+		setShouldRenderHost(true);
 		let cancelled = false;
 		void importAIPanel()
 			.then((module) => {
@@ -34,9 +36,15 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 		};
 	}, [isOpen]);
 
+	if (!isOpen && !shouldRenderHost) return null;
+
 	return (
 		<div className="aiFloatingWindowHost" data-window-drag-ignore>
-			<AnimatePresence>
+			<AnimatePresence
+				onExitComplete={() => {
+					if (!isOpen) setShouldRenderHost(false);
+				}}
+			>
 				{isOpen && (
 					<m.div
 						key="ai-floating-window"

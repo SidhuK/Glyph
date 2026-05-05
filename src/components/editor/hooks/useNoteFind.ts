@@ -101,7 +101,6 @@ export function useNoteFind({
 	const [findQuery, setFindQuery] = useState("");
 	const [findActiveIndex, setFindActiveIndex] = useState(0);
 	const findInputRef = useRef<HTMLInputElement | null>(null);
-	const previousRelPathRef = useRef(relPath);
 
 	const findMatches = useMemo(() => {
 		if (!findQuery) return [];
@@ -114,8 +113,9 @@ export function useNoteFind({
 	const effectiveFindActiveIndex = findMatches.length
 		? Math.min(findActiveIndex, findMatches.length - 1)
 		: 0;
-	const findCountLabel =
-		findQuery && findMatches.length
+	const findCountLabel = !findQuery
+		? ""
+		: findMatches.length
 			? `${effectiveFindActiveIndex + 1} / ${findMatches.length}`
 			: "0 / 0";
 
@@ -258,12 +258,11 @@ export function useNoteFind({
 	}, []);
 
 	useEffect(() => {
-		if (previousRelPathRef.current === relPath) return;
-		previousRelPathRef.current = relPath;
+		void relPath;
 		setFindOpen(false);
 		setFindQuery("");
 		setFindActiveIndex(0);
-	});
+	}, [relPath]);
 
 	useEffect(() => {
 		if (!findOpen) return;

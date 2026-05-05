@@ -67,30 +67,35 @@
 	align-items: center;
 	justify-content: safe center;
 	gap: 0;
-	min-height: 0;
-	max-height: 0;
-	padding: 0 calc(var(--space-3) + var(--main-tabs-right-reserve, 78px));
+	width: fit-content;
+	max-width: calc(
+		100% -
+		var(--main-tabs-right-reserve, 78px) -
+		var(--main-tabs-right-reserve, 78px)
+	);
+	min-height: 8px;
+	max-height: 8px;
+	margin: 0 auto;
+	padding: 0 8px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	overflow: hidden;
 	opacity: 0;
-	pointer-events: none;
+	pointer-events: auto;
 	scrollbar-width: none;
 	transition: max-height 140ms ease, min-height 140ms ease, opacity 140ms ease,
 		padding 140ms ease;
 }
 
-.mainTabsBarWrap:hover .mainTabsBreadcrumb,
-.mainTabsBarWrap:focus-within .mainTabsBreadcrumb,
-.mainTabsBarWrap:has(.mainTabsBreadcrumbSepButton[data-state="open"])
-	.mainTabsBreadcrumb {
+.mainTabsBreadcrumb:hover,
+.mainTabsBreadcrumb:focus-within,
+.mainTabsBreadcrumb:has(.mainTabsBreadcrumbSepButton[data-state="open"]) {
 	min-height: 32px;
 	max-height: 32px;
-	padding-bottom: 6px;
+	padding: 0 8px 6px;
 	overflow-x: auto;
 	overflow-y: hidden;
 	opacity: 1;
-	pointer-events: auto;
 }
 
 .mainTabsBreadcrumb::-webkit-scrollbar {
@@ -145,7 +150,7 @@
 .mainTabsBreadcrumbSepButton:hover .mainTabsBreadcrumbSep,
 .mainTabsBreadcrumbSepButton:focus-visible .mainTabsBreadcrumbSep,
 .mainTabsBreadcrumbSepButton[data-state="open"] .mainTabsBreadcrumbSep {
-	color: currentColor;
+	color: currentcolor;
 	opacity: 1;
 	transform: translateX(1px);
 }
@@ -198,7 +203,7 @@
 	width: 12px;
 	height: 12px;
 	flex-shrink: 0;
-	color: currentColor;
+	color: currentcolor;
 	opacity: 0.82;
 }
 

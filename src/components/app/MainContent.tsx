@@ -896,7 +896,7 @@ export const MainContent = memo(function MainContent({
 				aria-live="polite"
 				style={notesInfoSidebarHostStyle}
 			>
-				{aiEnabled && aiPanelOpen && !zenModeActive ? (
+				{aiEnabled && !zenModeActive ? (
 					<AIFloatingHost
 						isOpen={aiPanelOpen}
 						onToggle={() => setAiPanelOpen((open) => !open)}
