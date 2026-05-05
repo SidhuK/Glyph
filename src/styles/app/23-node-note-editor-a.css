@@ -224,6 +224,85 @@
 	background: var(--bg-primary);
 }
 
+.noteFindBar {
+	position: sticky;
+	top: 8px;
+	z-index: 24;
+	width: min(430px, calc(100% - 20px));
+	margin: 8px auto 0;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 6px 5px 9px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.noteFindIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.noteFindInput {
+	min-width: 0;
+	height: 26px;
+	flex: 1 1 auto;
+	border: 0;
+	padding: 0 2px;
+	background: transparent;
+	box-shadow: none;
+	font-size: 12px;
+}
+
+.noteFindInput:focus-visible {
+	box-shadow: none;
+}
+
+.noteFindCount {
+	min-width: 48px;
+	flex: 0 0 auto;
+	text-align: right;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-tertiary);
+}
+
+.noteFindIconButton {
+	width: 24px;
+	height: 24px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.noteFindButtonGlyph {
+	display: block;
+	font-size: 14px;
+	line-height: 1;
+	font-weight: var(--font-medium);
+}
+
+.noteFindIconButton:hover:not(:disabled),
+.noteFindIconButton:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
+	outline: none;
+}
+
+.noteFindIconButton:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
 .rfNodeNoteEditorLoading {
 	flex: 1;
 	min-height: 0;

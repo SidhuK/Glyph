@@ -174,6 +174,19 @@
 	);
 }
 
+.noteSearchMatch {
+	border-radius: 3px;
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+.noteSearchMatchActive {
+	background: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 46%, transparent);
+}
+
 .tiptapContentInline h1,
 .tiptapContentInline h2,
 .tiptapContentInline h3,
