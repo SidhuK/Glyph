@@ -1,3 +1,13 @@
+.appShell {
+	--right-sidebar-island-bg: var(--bg-primary);
+	--right-sidebar-island-border: color-mix(
+		in srgb,
+		var(--border-light) 88%,
+		transparent
+	);
+	--right-sidebar-island-radius: var(--radius-xl);
+}
+
 .canvasWrapper {
 	flex: 1;
 	position: relative;
@@ -21,7 +31,7 @@
 	transition: border-radius 180ms ease;
 }
 
-.canvasWrapper:has(.notesInfoSidebarHost:not(:empty)) .canvasPaneHost {
+.appShell:has(.notesInfoSidebarHost:not(:empty)) .canvasPaneHost {
 	border-top-right-radius: calc(
 		var(--app-radius) -
 		var(--app-frame-inline) +
@@ -44,8 +54,10 @@
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	border-left: 0 solid transparent;
-	transition: width 180ms ease, flex-basis 180ms ease, border-color 180ms ease,
-		background-color 180ms ease;
+	box-sizing: border-box;
+	transition:
+		width 180ms ease, flex-basis 180ms ease, padding 180ms ease,
+		border-color 180ms ease, background-color 180ms ease;
 }
 
 .notesInfoSidebarResizeHandle {
@@ -66,7 +78,7 @@
 	margin-right: -4px;
 }
 
-.canvasWrapper:not(:has(.notesInfoSidebarHost:not(:empty)))
+.appShell:not(:has(.notesInfoSidebarHost:not(:empty)))
 	.notesInfoSidebarResizeHandle {
 	width: 0;
 	margin-left: 0;
@@ -95,6 +107,7 @@
 .notesInfoSidebarHost:not(:empty) {
 	flex-basis: var(--markdown-info-sidebar-width, 340px);
 	width: var(--markdown-info-sidebar-width, 340px);
+	padding: 4px 4px 4px 0;
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
@@ -107,4 +120,8 @@
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	border-left-color: var(--border-light);
+}
+
+.notesInfoSidebarHost:has(.notesInfoSidebarPanel) .aiFloatingWindowHost {
+	display: none;
 }

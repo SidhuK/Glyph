@@ -3,7 +3,7 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
 	--app-frame-inline: var(--space-1);
-	--app-frame-block: 0px;
+	--app-frame-block: 4px;
 	--app-radius: var(--radius-15);
 	--window-control-toggle-offset: 90px;
 	isolation: isolate;
@@ -20,6 +20,10 @@
 	box-shadow: inset 1px 0 0 0
 		color-mix(in srgb, var(--text-inverse) 22%, transparent);
 	overflow: hidden;
+}
+
+.appShell:not(:has(.notesInfoSidebarHost:not(:empty))) {
+	padding-right: var(--app-frame-inline);
 }
 
 /* Native macOS vibrancy is applied via window-vibrancy crate in Rust.

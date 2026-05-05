@@ -636,7 +636,11 @@ export function MarkdownEditorPane({
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setInfoPanelOpen((open) => !open);
+			setInfoPanelOpen((open) => {
+				const nextOpen = !open;
+				if (nextOpen) setAiPanelOpen(false);
+				return nextOpen;
+			});
 		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
@@ -655,7 +659,11 @@ export function MarkdownEditorPane({
 				handleToggleInfoSidebar,
 			);
 		};
-	}, [relPath]);
+	}, [relPath, setAiPanelOpen]);
+
+	useEffect(() => {
+		if (aiPanelOpen) setInfoPanelOpen(false);
+	}, [aiPanelOpen]);
 
 	const captureZenViewportAnchor = useCallback(() => {
 		const scrollEl = contentScrollRef.current;
@@ -873,7 +881,11 @@ export function MarkdownEditorPane({
 								openSettings("ai");
 								return;
 							}
-							setAiPanelOpen((open) => !open);
+							setAiPanelOpen((open) => {
+								const nextOpen = !open;
+								if (nextOpen) setInfoPanelOpen(false);
+								return nextOpen;
+							});
 						}}
 						aria-label={
 							aiEnabled
@@ -945,7 +957,11 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										data-active={infoPanelOpen}
 										onClick={() => {
-											setInfoPanelOpen((open) => !open);
+											setInfoPanelOpen((open) => {
+												const nextOpen = !open;
+												if (nextOpen) setAiPanelOpen(false);
+												return nextOpen;
+											});
 											setActionsOpen(false);
 										}}
 									>

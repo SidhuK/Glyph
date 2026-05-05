@@ -458,7 +458,17 @@
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	background: transparent;
+	overflow: hidden;
+	border: 1px solid
+		var(
+			--right-sidebar-island-border,
+			color-mix(in srgb, var(--border-light) 88%, transparent)
+		);
+	border-radius: var(--right-sidebar-island-radius, var(--radius-xl));
+	background: var(--right-sidebar-island-bg, var(--bg-primary));
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	box-shadow: none;
 }
 
 .markdownEditorInfoHeader {
@@ -477,7 +487,13 @@
 }
 
 :root[data-translucent-sidebar="false"] .markdownEditorInfoHeader {
-	background: var(--bg-sidebar);
+	background: var(--bg-primary);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+:root[data-translucent-sidebar="false"] .notesInfoSidebarPanel {
+	background: var(--bg-primary);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }
