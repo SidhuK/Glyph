@@ -173,6 +173,7 @@ pub fn candidate_cli_paths(env_var_name: &str, binary_name: &str) -> Vec<PathBuf
     paths.push(PathBuf::from(format!("/usr/bin/{binary_name}")));
     if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
         paths.push(home.join(format!(".local/bin/{binary_name}")));
+        paths.push(home.join(format!(".{binary_name}/bin/{binary_name}")));
         paths.push(home.join(format!(".bun/bin/{binary_name}")));
         paths.push(home.join(format!(".npm-global/bin/{binary_name}")));
         paths.push(home.join(format!(".volta/bin/{binary_name}")));
