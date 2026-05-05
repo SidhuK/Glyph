@@ -51,6 +51,7 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { todayIsoDateLocal } from "../../lib/tasks";
+import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -274,6 +275,8 @@ interface MainContentProps {
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
 	tabs: WorkspaceTab[];
+	rootEntries: FsEntry[];
+	childrenByDir: Record<string, FsEntry[] | undefined>;
 	activeTabId: string | null;
 	activeTabPath: string | null;
 	setActiveTabId: (tabId: string | null) => void;
@@ -289,6 +292,8 @@ interface MainContentProps {
 	reorderTabs: (fromTabId: string, toTabId: string) => void;
 	openBlankTab: () => void;
 	onStartRenamePath: (path: string) => void;
+	onNavigateBreadcrumbPath: (dirPath: string) => void;
+	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
 	replaceActiveTabWithBlank: () => void;
 	canGoBack: boolean;
 	canGoForward: boolean;
@@ -375,6 +380,8 @@ export const MainContent = memo(function MainContent({
 	onCreateNote,
 	onOpenDailyNote,
 	tabs,
+	rootEntries,
+	childrenByDir,
 	activeTabId,
 	activeTabPath,
 	setActiveTabId,
@@ -386,6 +393,8 @@ export const MainContent = memo(function MainContent({
 	reorderTabs,
 	openBlankTab,
 	onStartRenamePath,
+	onNavigateBreadcrumbPath,
+	onLoadBreadcrumbDir,
 	replaceActiveTabWithBlank,
 	canGoBack,
 	canGoForward,
@@ -820,6 +829,8 @@ export const MainContent = memo(function MainContent({
 				>
 					<TabBar
 						tabs={tabs}
+						rootEntries={rootEntries}
+						childrenByDir={childrenByDir}
 						activeTabId={activeTabId}
 						activeTabPath={activeTabPath}
 						useWindowBackground={!content}
@@ -829,6 +840,9 @@ export const MainContent = memo(function MainContent({
 						onGoForward={onGoForward}
 						onOpenBlankTab={openBlankTab}
 						onPrefetchTab={handlePrefetchTab}
+						onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
+						onLoadBreadcrumbDir={onLoadBreadcrumbDir}
+						onOpenBreadcrumbFile={onOpenFile}
 						onSelectTab={setActiveTabId}
 						onCloseTab={closeTab}
 						onStartRenamePath={onStartRenamePath}
