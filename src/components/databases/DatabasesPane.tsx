@@ -1,5 +1,4 @@
 import {
-	ClipboardIcon,
 	LibraryIcon,
 	MoreVerticalIcon,
 	PencilEdit02Icon,
@@ -215,7 +214,7 @@ function DatabasesPaneContent({
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
 	const skipNextViewMenuAutoFocusRef = useRef(false);
-	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
+	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -561,25 +560,6 @@ function DatabasesPaneContent({
 		}
 	}, [document, loadSummaries]);
 
-	const handleDuplicateDatabase = useCallback(async () => {
-		if (!document) return;
-		try {
-			const duplicated = await invoke("databases_duplicate", {
-				database_id: document.database.id,
-			});
-			setError("");
-			invalidateDatabaseSummariesPrefetch();
-			setPrefetchedDatabaseDocument(duplicated.database.id, duplicated);
-			setSelectedDatabaseId(duplicated.database.id);
-			setDocument(duplicated);
-			setSelectedViewId(duplicated.database.views[0]?.id ?? null);
-			setNameDraft(duplicated.database.name);
-			await loadSummaries();
-		} catch (cause) {
-			setError(extractErrorMessage(cause));
-		}
-	}, [document, loadSummaries]);
-
 	const handleUpdateCell = useCallback(
 		async (
 			notePath: string,
@@ -891,17 +871,6 @@ function DatabasesPaneContent({
 							type="button"
 							variant="ghost"
 							size="icon-sm"
-							className="databasesTopActionButton"
-							onClick={() => void handleDuplicateDatabase()}
-							title="Duplicate collection"
-							aria-label="Duplicate collection"
-						>
-							<HugeiconsIcon icon={ClipboardIcon} size={14} strokeWidth={0.9} />
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
 							className="databasesTopActionButton databasesTopActionButtonDanger"
 							onClick={() => {
 								if (
@@ -1114,8 +1083,8 @@ function DatabasesPaneContent({
 								});
 							}}
 							onChangeConfig={handleSaveConfig}
-							columnsMenuOpen={columnsMenuOpen}
-							onColumnsMenuOpenChange={setColumnsMenuOpen}
+							viewOptionsOpen={viewOptionsOpen}
+							onViewOptionsOpenChange={setViewOptionsOpen}
 						/>
 					</div>
 					{error ? (
@@ -1144,7 +1113,7 @@ function DatabasesPaneContent({
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
-							onOpenColumns={() => setColumnsMenuOpen(true)}
+							onOpenColumns={() => setViewOptionsOpen(true)}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,

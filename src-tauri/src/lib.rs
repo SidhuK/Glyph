@@ -40,8 +40,7 @@ use tracing::{error, warn};
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
-    WebviewWindowBuilder,
+    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl, WebviewWindowBuilder,
 };
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
@@ -1428,7 +1427,6 @@ pub fn run() {
             databases::commands::databases_create,
             databases::commands::databases_update,
             databases::commands::databases_delete,
-            databases::commands::databases_duplicate,
             databases::commands::databases_query_rows,
             databases::commands::databases_update_cell,
             databases::commands::databases_create_row,

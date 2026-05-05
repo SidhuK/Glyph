@@ -125,10 +125,25 @@ export function CalendarPane({
 		() => ({ anchorDate, selectedDate, dailyNotesFolder }),
 		[anchorDate, dailyNotesFolder, selectedDate],
 	);
+	const matchingInitialData = useMemo(() => {
+		if (!initialData || initialData.detail.selected_date !== selectedDate) {
+			return undefined;
+		}
+		const range = buildMonthRange(anchorDate);
+		const lastDay = initialData.days[initialData.days.length - 1];
+		if (
+			initialData.days.length !== range.dates.length ||
+			initialData.days[0]?.date !== range.start ||
+			lastDay?.date !== range.end
+		) {
+			return undefined;
+		}
+		return initialData;
+	}, [anchorDate, initialData, selectedDate]);
 	const calendarQuery = useQuery({
 		queryKey: navigationQueryKeys.calendarRange(calendarArgs),
 		queryFn: () => loadCalendarData(calendarArgs),
-		initialData: initialData ?? undefined,
+		initialData: matchingInitialData,
 	});
 	const data = calendarQuery.data ?? null;
 	const loading = calendarQuery.isFetching;

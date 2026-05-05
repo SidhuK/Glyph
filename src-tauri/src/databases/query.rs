@@ -239,6 +239,12 @@ fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
     }
 }
 
+fn parse_filter_number(value: &str) -> Option<f64> {
+    let normalized = value.trim().replace(['$', ',', '%'], "");
+    let parsed = normalized.parse::<f64>().ok()?;
+    parsed.is_finite().then_some(parsed)
+}
+
 fn row_matches_filters(
     row: &DatabaseRow,
     columns: &[DatabaseColumn],
@@ -338,6 +344,25 @@ fn row_matches_filters(
                         || text_values
                             .iter()
                             .any(|value| value.ends_with(&filter_text))
+                }
+            }
+            "greater_than" | "less_than" => {
+                if is_tags_column {
+                    false
+                } else {
+                    let Some(filter_number) = parse_filter_number(raw_filter_text) else {
+                        return true;
+                    };
+                    text_values
+                        .iter()
+                        .filter_map(|value| parse_filter_number(value))
+                        .any(|value| {
+                            if filter.operator == "greater_than" {
+                                value > filter_number
+                            } else {
+                                value < filter_number
+                            }
+                        })
                 }
             }
             "tags_contains" => normalized_filter_tag.as_ref().is_some_and(|filter_tag| {

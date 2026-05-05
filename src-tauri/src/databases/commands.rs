@@ -95,27 +95,6 @@ fn database_name_exists(
     })
 }
 
-fn next_duplicate_database_name(databases: &[DatabaseDefinition], source_name: &str) -> String {
-    let normalized = source_name.trim();
-    let base = if normalized.is_empty() {
-        "Untitled".to_string()
-    } else {
-        normalized.to_string()
-    };
-    let first = format!("{base} Copy");
-    if !database_name_exists(databases, &first, None) {
-        return first;
-    }
-    let mut index = 2;
-    loop {
-        let candidate = format!("{base} Copy {index}");
-        if !database_name_exists(databases, &candidate, None) {
-            return candidate;
-        }
-        index += 1;
-    }
-}
-
 fn render_note_markdown(path: &str, markdown: &str, mapping: Mapping) -> Result<String, String> {
     let (_yaml, body) = split_frontmatter(markdown);
     let normalized = normalize_frontmatter_mapping(mapping, path, None);
@@ -442,43 +421,6 @@ pub async fn databases_delete(
         }
         store.databases.retain(|entry| entry.id != database_id);
         save_store(&root, &store)
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn databases_duplicate(
-    state: State<'_, SpaceState>,
-    database_id: String,
-) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
-    let db_store_mutex = state.db_store_mutex();
-    tauri::async_runtime::spawn_blocking(move || {
-        let _guard = db_store_mutex
-            .lock()
-            .map_err(|_| "database store mutex poisoned".to_string())?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
-        let source = store
-            .databases
-            .iter()
-            .find(|entry| entry.id == database_id)
-            .cloned()
-            .ok_or_else(|| "database not found".to_string())?;
-        let mut copy = source.clone();
-        copy.id = Uuid::new_v4().to_string();
-        copy.is_system = false;
-        copy.name = next_duplicate_database_name(&store.databases, &source.name);
-        copy.created_at = chrono::Utc::now().to_rfc3339();
-        copy.updated_at = copy.created_at.clone();
-        for view in &mut copy.views {
-            view.id = Uuid::new_v4().to_string();
-            view.created_at = copy.created_at.clone();
-            view.updated_at = copy.updated_at.clone();
-        }
-        store.databases.push(copy.clone());
-        save_store(&root, &store)?;
-        load_database_document(&root, &copy)
     })
     .await
     .map_err(|e| e.to_string())?

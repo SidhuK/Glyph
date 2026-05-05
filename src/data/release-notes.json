@@ -1,6 +1,40 @@
 {
 	"versions": [
 		{
+			"version": "0.2.21",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"OpenCode support is here: any model and provider added in the OpenCode CLI can be used automatically",
+						"Amp Code support is here, with Amp Code models available from the Amp CLI",
+						"Find inside notes with Command + F"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Tags are now closed by default in the sidebar",
+						"Breadcrumb navigation through notes has been improved",
+						"The AI panel and Info Panel UI have been refreshed",
+						"Rust formatting has been cleaned up with cargo format"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Home page dates now reflect the notes that were actually created on that day by tightening the TanStack Query calendar data handling"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Removed the Duplicate Collections button and duplicate collection functionality from collections and databases"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.20",
 			"sections": [
 				{
