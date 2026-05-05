@@ -140,6 +140,8 @@ export interface DatabaseFilter {
 		| "not_contains"
 		| "starts_with"
 		| "ends_with"
+		| "greater_than"
+		| "less_than"
 		| "is_empty"
 		| "is_not_empty"
 		| "is_true"
@@ -843,10 +845,6 @@ interface TauriCommands {
 		WorkspaceDatabaseDocument
 	>;
 	databases_delete: CommandDef<{ database_id: string }, void>;
-	databases_duplicate: CommandDef<
-		{ database_id: string },
-		WorkspaceDatabaseDocument
-	>;
 	databases_query_rows: CommandDef<
 		{
 			database_id: string;

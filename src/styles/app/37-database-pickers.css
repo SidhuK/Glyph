@@ -144,12 +144,6 @@
 		color-mix(in srgb, black 8%, transparent);
 }
 
-.databaseColumnIconPopover {
-	width: min(380px, calc(100vw - 2rem));
-	padding-bottom: 10px;
-	pointer-events: auto;
-}
-
 .databasePickerHeader {
 	gap: 4px;
 	padding: 2px 2px 6px;
@@ -250,8 +244,7 @@
 	gap: 2px;
 }
 
-.databasePickerOptionLabel,
-.databasePickerOptionPath {
+.databasePickerOptionLabel {
 	font-size: 0.84rem;
 	color: var(--text-primary);
 }
@@ -267,7 +260,6 @@
 	color: var(--text-tertiary);
 }
 
-.databasePickerOptionPath,
 .databasePickerOptionMeta {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -566,74 +558,4 @@
 [data-slot="dropdown-menu-content"].databasePickerMenu
 	[data-slot="dropdown-menu-shortcut"] {
 	margin-left: auto;
-}
-
-.databaseColumnDropdownList {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.databaseColumnDropdownRow {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	width: 100%;
-	min-height: 36px;
-	border-radius: var(--database-control-radius);
-	padding: 2px 4px 2px 8px;
-}
-
-.databaseColumnDropdownRow:hover {
-	background: transparent;
-}
-
-.databaseColumnDropdownButton {
-	display: flex;
-	align-items: center;
-	width: 100%;
-	min-width: 0;
-	min-height: 32px;
-	padding: 0;
-	border: 0;
-	border-radius: inherit;
-	background: transparent;
-	color: var(--text-secondary);
-	text-align: left;
-	cursor: pointer;
-}
-
-.databaseColumnDropdownButton:hover {
-	background: transparent;
-	color: var(--text-secondary);
-}
-
-.databaseColumnDropdownMain {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-	flex: 1 1 auto;
-}
-
-.databaseColumnDropdownLabel {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.databaseColumnDropdownToggle {
-	display: inline-flex;
-	align-items: center;
-	justify-content: flex-end;
-	flex: 0 0 auto;
-}
-
-.databaseColumnDropdownToggle .uiToggle {
-	pointer-events: auto;
-}
-
-.databaseColumnDropdownToggle .uiToggleControl {
-	background: color-mix(in srgb, var(--bg-tertiary) 84%, var(--bg-secondary));
 }

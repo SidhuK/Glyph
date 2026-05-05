@@ -196,6 +196,20 @@ export function rowMatchesFilters(
 				return cell.value_list.some(
 					(value) => normalizeTagText(value) === normalizeTagText(filterText),
 				);
+			case "greater_than":
+			case "less_than": {
+				const filterNumber = Number.parseFloat(
+					filterText.replace(/[$,%]/g, ""),
+				);
+				if (!Number.isFinite(filterNumber)) return true;
+				return [...textValues, ...listValues].some((value) => {
+					const cellNumber = Number.parseFloat(value.replace(/[$,%]/g, ""));
+					if (!Number.isFinite(cellNumber)) return false;
+					return filter.operator === "greater_than"
+						? cellNumber > filterNumber
+						: cellNumber < filterNumber;
+				});
+			}
 			default:
 				return true;
 		}

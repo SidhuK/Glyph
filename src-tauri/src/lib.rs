@@ -1427,7 +1427,6 @@ pub fn run() {
             databases::commands::databases_create,
             databases::commands::databases_update,
             databases::commands::databases_delete,
-            databases::commands::databases_duplicate,
             databases::commands::databases_query_rows,
             databases::commands::databases_update_cell,
             databases::commands::databases_create_row,

@@ -1,8 +1,3 @@
-import {
-	FilterMailIcon,
-	SlidersVerticalIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useId, useRef, useState } from "react";
 import type {
 	DatabaseColumn,
@@ -11,10 +6,8 @@ import type {
 } from "../../lib/database/types";
 import { Search, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
-import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
-import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
+import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
 	databaseView: "table" | "board" | "list";
@@ -24,8 +17,8 @@ interface DatabaseToolbarProps {
 	availableProperties: DatabasePropertyOption[];
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
-	columnsMenuOpen?: boolean;
-	onColumnsMenuOpenChange?: (open: boolean) => void;
+	viewOptionsOpen?: boolean;
+	onViewOptionsOpenChange?: (open: boolean) => void;
 	className?: string;
 }
 
@@ -37,8 +30,8 @@ export function DatabaseToolbar({
 	availableProperties,
 	onGroupColumnIdChange,
 	onChangeConfig,
-	columnsMenuOpen,
-	onColumnsMenuOpenChange,
+	viewOptionsOpen,
+	onViewOptionsOpenChange,
 	className,
 }: DatabaseToolbarProps) {
 	const searchValue = config.view.search ?? "";
@@ -158,54 +151,13 @@ export function DatabaseToolbar({
 						</select>
 					</label>
 				) : null}
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							className="databaseToolbarChip"
-							title="Source & Filters"
-							aria-label="Source & Filters"
-						>
-							<HugeiconsIcon
-								icon={FilterMailIcon}
-								size={13}
-								strokeWidth={0.9}
-							/>
-						</Button>
-					</DropdownMenuTrigger>
-					<DatabaseSourceDropdown
-						config={config}
-						onChangeConfig={onChangeConfig}
-					/>
-				</DropdownMenu>
-				<DropdownMenu
-					open={columnsMenuOpen}
-					onOpenChange={onColumnsMenuOpenChange}
-				>
-					<DropdownMenuTrigger asChild>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							className="databaseToolbarChip"
-							title="Columns"
-							aria-label="Columns"
-						>
-							<HugeiconsIcon
-								icon={SlidersVerticalIcon}
-								size={13}
-								strokeWidth={0.9}
-							/>
-						</Button>
-					</DropdownMenuTrigger>
-					<DatabaseColumnDropdown
-						config={config}
-						availableProperties={availableProperties}
-						onChangeConfig={onChangeConfig}
-					/>
-				</DropdownMenu>
+				<DatabaseViewOptionsPopover
+					open={viewOptionsOpen}
+					onOpenChange={onViewOptionsOpenChange}
+					config={config}
+					availableProperties={availableProperties}
+					onChangeConfig={onChangeConfig}
+				/>
 			</div>
 		</div>
 	);

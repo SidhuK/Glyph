@@ -444,6 +444,342 @@
 	color: var(--text-inverse);
 }
 
+.databaseViewOptionsTrigger {
+	position: relative;
+}
+
+.databaseViewOptionsPopover {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	width: auto;
+	max-width: min(calc(100vw - 28px), 880px);
+	padding: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	overflow: visible;
+}
+
+.databaseViewOptionsMenu,
+.databaseViewOptionsPanel {
+	border-radius: var(--database-dropdown-radius);
+	border: 1px solid var(--database-dropdown-border);
+	background: var(--database-dropdown-background);
+	box-shadow: var(--database-dropdown-shadow);
+}
+
+.databaseViewOptionsMenu {
+	width: min(300px, calc(100vw - 28px));
+	padding: 8px;
+}
+
+.databaseViewOptionsPanel {
+	width: min(300px, calc(100vw - 28px));
+	max-height: min(520px, calc(100vh - 96px));
+	padding: 8px;
+	overflow-y: auto;
+}
+
+.databaseViewOptionsPanel.is-wide {
+	width: min(500px, calc(100vw - 28px));
+}
+
+.databaseViewOptionsPanel.is-sort {
+	width: min(400px, calc(100vw - 28px));
+}
+
+.databaseViewPanelStack,
+.databaseViewFilterList,
+.databaseViewColumnsList {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.databaseViewOptionsRow,
+.databaseViewColumnRow,
+.databaseViewSortRow,
+.databaseViewFilterRow,
+.databaseViewEmptyAction {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	border: 0;
+	color: var(--text-primary);
+	font-size: 0.82rem;
+}
+
+.databaseViewOptionsRow,
+.databaseViewColumnRow,
+.databaseViewEmptyAction {
+	width: 100%;
+	min-height: 32px;
+	gap: 8px;
+	padding: 0 8px;
+	border-radius: var(--database-control-radius);
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 140ms ease, color 140ms ease, border-color 140ms
+		ease;
+}
+
+.databaseViewOptionsRow:hover,
+.databaseViewEmptyAction:hover,
+.databaseViewOptionsRow.is-active,
+.databaseViewColumnUtility:hover {
+	background: var(--database-dropdown-hover);
+}
+
+.databaseViewOptionsRow.is-danger,
+.databaseViewRestoreButton {
+	color: var(--text-error);
+}
+
+.databaseViewOptionsRowIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.databaseViewOptionsRowIcon {
+	width: 18px;
+}
+
+.databaseViewOptionsRowLabel,
+.databaseViewColumnLabel {
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseViewOptionsPill {
+	flex: 0 1 auto;
+	max-width: 128px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border-radius: 6px;
+	padding: 2px 6px;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
+	);
+	color: var(--interactive-accent);
+	font-size: 0.75rem;
+	font-weight: var(--font-medium);
+}
+
+.databaseViewIconButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	border: 0;
+	border-radius: var(--database-radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.databaseViewIconButton:hover {
+	background: var(--database-dropdown-hover);
+	color: var(--text-primary);
+}
+
+.databaseViewPanelDivider {
+	height: 1px;
+	margin: 8px 4px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.databaseViewPanelHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 2px 8px 10px;
+	color: var(--text-secondary);
+	font-size: 0.76rem;
+	font-weight: var(--font-medium);
+}
+
+.databaseViewPanelReset {
+	border: 0;
+	background: transparent;
+	color: var(--interactive-accent);
+	font-size: 0.76rem;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.databaseViewPanelError {
+	margin: 0 8px 8px;
+	color: var(--text-error);
+	font-size: 0.76rem;
+}
+
+.databaseViewRestoreButton {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-height: 38px;
+	gap: 8px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--database-control-radius);
+	background: transparent;
+	font-size: 0.82rem;
+	text-align: left;
+	cursor: pointer;
+}
+
+.databaseViewRestoreButton:hover {
+	background: color-mix(in srgb, var(--text-error) 8%, transparent);
+}
+
+.databaseViewField {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 0 4px;
+	color: var(--text-tertiary);
+	font-size: 0.72rem;
+	font-weight: var(--font-medium);
+}
+
+.databaseViewCheckRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 2px 4px;
+	color: var(--text-secondary);
+	font-size: 0.82rem;
+}
+
+.databaseViewCheckRow input {
+	accent-color: var(--interactive-accent);
+}
+
+.databaseViewColumnRow {
+	min-height: 32px;
+	justify-content: space-between;
+	cursor: default;
+}
+
+.databaseViewColumnRow.is-enabled {
+	color: var(--text-primary);
+}
+
+.databaseViewColumnRow:not(.is-enabled) {
+	color: var(--text-secondary);
+}
+
+.databaseViewColumnToggle {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+.databaseViewColumnUtility {
+	margin-top: 2px;
+	justify-content: flex-start;
+	color: var(--text-secondary);
+	cursor: pointer;
+}
+
+.databaseViewColumnUtility:hover {
+	color: var(--text-primary);
+}
+
+.databaseViewFilterRow,
+.databaseViewSortRow {
+	gap: 6px;
+	min-height: 42px;
+	padding: 6px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+}
+
+.databaseViewFilterRow {
+	flex-wrap: wrap;
+}
+
+.databaseViewSortRow {
+	justify-content: flex-start;
+	flex-wrap: nowrap;
+}
+
+.databaseViewSortRow .databaseViewFilterColumn {
+	flex: 0 1 190px;
+}
+
+.databaseViewSortRow > .databaseViewInlineSelect {
+	flex: 0 0 164px;
+	max-width: 164px;
+}
+
+.databaseViewOptionJoiner,
+.databaseViewFilterColumn {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 1 auto;
+	min-width: 0;
+	gap: 6px;
+	height: 30px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
+	color: var(--text-secondary);
+}
+
+.databaseViewOptionJoiner {
+	padding: 0 9px;
+}
+
+.databaseViewFilterColumn {
+	padding: 0 8px;
+}
+
+.databaseViewInlineSelect {
+	max-width: 190px;
+	min-width: 0;
+	height: 30px;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font-size: 0.8rem;
+	outline: none;
+	cursor: pointer;
+}
+
+.databaseViewFilterValue {
+	width: 116px;
+	height: 30px;
+	border: 0;
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
+	font-size: 0.8rem;
+}
+
+@media (max-width: 760px) {
+	.databaseViewOptionsPopover {
+		flex-direction: column-reverse;
+	}
+
+	.databaseViewOptionsPanel,
+	.databaseViewOptionsPanel.is-wide,
+	.databaseViewOptionsMenu {
+		width: min(340px, calc(100vw - 28px));
+	}
+}
+
 .databaseToolbarGroupBy {
 	display: inline-flex;
 	align-items: center;
