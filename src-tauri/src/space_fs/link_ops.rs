@@ -25,6 +25,7 @@ pub struct LinkSuggestRequest {
     pub source_path: Option<String>,
     pub markdown_only: Option<bool>,
     pub include_pdf: Option<bool>,
+    pub include_images: Option<bool>,
     pub strip_markdown_ext: Option<bool>,
     pub relative_to_source: Option<bool>,
     pub limit: Option<u32>,
@@ -459,6 +460,7 @@ pub async fn space_suggest_links(
     tauri::async_runtime::spawn_blocking(move || {
         let markdown_only = request.markdown_only.unwrap_or(false);
         let include_pdf = request.include_pdf.unwrap_or(false);
+        let include_images = request.include_images.unwrap_or(false);
         let strip_md = request.strip_markdown_ext.unwrap_or(false);
         let relative = request.relative_to_source.unwrap_or(false);
         let limit = request.limit.unwrap_or(10).clamp(1, 200) as usize;
@@ -467,7 +469,11 @@ pub async fn space_suggest_links(
             .as_deref()
             .map(parent_dir)
             .unwrap_or_default();
-        let entries = list_files(&root, markdown_only && !include_pdf, 100_000)?;
+        let entries = list_files(
+            &root,
+            markdown_only && !include_pdf && !include_images,
+            100_000,
+        )?;
         let q = normalize(&request.query);
 
         let mut rows: Vec<(i32, LinkSuggestionItem)> = Vec::new();
@@ -475,6 +481,7 @@ pub async fn space_suggest_links(
             if markdown_only
                 && !entry.is_markdown
                 && !(include_pdf && is_pdf_rel_path(&entry.rel_path))
+                && !(include_images && is_image_rel_path(&entry.rel_path))
             {
                 continue;
             }
