@@ -11,6 +11,7 @@ import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
+import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
@@ -78,7 +79,7 @@ const CalloutDecorations = Extension.create({
 						marker: string;
 					}> = [];
 
-					newState.doc.descendants((node, pos) => {
+					visitChangedNodes(transactions, newState, (node, pos) => {
 						if (node.type !== paragraph || node.childCount !== 1) return;
 						const text = node.textContent ?? "";
 						const match = text.match(/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/);
@@ -147,6 +148,84 @@ const CalloutDecorations = Extension.create({
 });
 
 const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
+
+interface ChangedRange {
+	from: number;
+	to: number;
+}
+
+function changedRangesFromTransactions(
+	transactions: readonly Transaction[],
+	docSize: number,
+): ChangedRange[] {
+	const ranges: ChangedRange[] = [];
+	let hasDocChange = false;
+
+	for (const transaction of transactions) {
+		if (!transaction.docChanged) continue;
+		hasDocChange = true;
+		for (const stepMap of transaction.mapping.maps) {
+			stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
+				ranges.push({
+					from: Math.max(0, Math.min(newStart, newEnd) - 1),
+					to: Math.min(docSize, Math.max(newStart, newEnd) + 1),
+				});
+			});
+		}
+	}
+
+	if (!ranges.length) {
+		return hasDocChange ? [{ from: 0, to: docSize }] : [];
+	}
+
+	ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+	const merged: ChangedRange[] = [];
+	for (const range of ranges) {
+		const previous = merged[merged.length - 1];
+		if (!previous || range.from > previous.to) {
+			merged.push({ ...range });
+			continue;
+		}
+		previous.to = Math.max(previous.to, range.to);
+	}
+	return merged;
+}
+
+function selectionRange(state: EditorState): ChangedRange {
+	return {
+		from: Math.max(0, state.selection.from - 1),
+		to: Math.min(state.doc.content.size, state.selection.to + 1),
+	};
+}
+
+function visitNodesInRanges(
+	state: EditorState,
+	ranges: readonly ChangedRange[],
+	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
+): void {
+	if (!ranges.length) return;
+
+	const seen = new Set<number>();
+	for (const range of ranges) {
+		state.doc.nodesBetween(range.from, range.to, (node, pos, parent, index) => {
+			if (seen.has(pos)) return false;
+			seen.add(pos);
+			return visitor(node, pos, parent, index);
+		});
+	}
+}
+
+function visitChangedNodes(
+	transactions: readonly Transaction[],
+	state: EditorState,
+	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
+): void {
+	visitNodesInRanges(
+		state,
+		changedRangesFromTransactions(transactions, state.doc.content.size),
+		visitor,
+	);
+}
 
 function findMarkdownLinkTextMatches(text: string) {
 	const matches: Array<{
@@ -250,7 +329,7 @@ const MarkdownLinkSyntaxCollapse = Extension.create({
 		return [
 			new Plugin({
 				key,
-				appendTransaction(_transactions, _oldState, newState) {
+				appendTransaction(transactions, oldState, newState) {
 					const linkMark = newState.schema.marks.link;
 					if (!linkMark) return null;
 
@@ -262,7 +341,15 @@ const MarkdownLinkSyntaxCollapse = Extension.create({
 					}> = [];
 					const { from: selectionFrom, to: selectionTo } = newState.selection;
 
-					newState.doc.descendants((node, pos) => {
+					const changedRanges = changedRangesFromTransactions(
+						transactions,
+						newState.doc.content.size,
+					);
+					const scanRanges = changedRanges.length
+						? changedRanges
+						: [selectionRange(oldState), selectionRange(newState)];
+
+					visitNodesInRanges(newState, scanRanges, (node, pos) => {
 						if (
 							node.type.name === "codeBlock" ||
 							node.type.name === "code_block"
@@ -339,7 +426,7 @@ const TaskListMarkdownShortcut = Extension.create({
 						text: string;
 					}> = [];
 
-					newState.doc.descendants((node, pos) => {
+					visitChangedNodes(transactions, newState, (node, pos) => {
 						if (node.type !== paragraph || node.childCount !== 1) return;
 						const text = node.textContent ?? "";
 						const match = text.match(/^\[([ xX])\]\s*(.*)$/);
@@ -474,7 +561,7 @@ const MarkdownImageShortcut = Extension.create({
 						title: string;
 					}> = [];
 
-					newState.doc.descendants((node, pos) => {
+					visitChangedNodes(transactions, newState, (node, pos) => {
 						if (node.type !== paragraph || node.childCount !== 1) return;
 						if (node.firstChild?.type.name !== "text") return;
 						const parsed = parseStandaloneMarkdownImage(node.textContent ?? "");

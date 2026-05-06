@@ -16,7 +16,6 @@ import {
 	wikiLinkAttrsToMarkdown,
 } from "./wikiLinkCodec";
 
-const EXTRA_BLANK_LINE_SENTINEL = "\u200b";
 const WHITESPACE_LINE_SENTINEL = "\u2060";
 const WHITESPACE_SPACE_SENTINEL = "\u2061";
 const WHITESPACE_TAB_SENTINEL = "\u2062";
@@ -118,15 +117,6 @@ function postprocessHighlightedText(input: string): string {
 	);
 }
 
-function encodeWhitespaceLine(line: string): string {
-	let encoded = WHITESPACE_LINE_SENTINEL;
-	for (const char of line) {
-		encoded +=
-			char === " " ? WHITESPACE_SPACE_SENTINEL : WHITESPACE_TAB_SENTINEL;
-	}
-	return encoded;
-}
-
 function decodeWhitespaceLine(line: string): string | null {
 	if (!line.startsWith(WHITESPACE_LINE_SENTINEL)) return null;
 	const payload = line.slice(WHITESPACE_LINE_SENTINEL.length);
@@ -147,30 +137,11 @@ function decodeWhitespaceLine(line: string): string | null {
 	return decoded;
 }
 
-function preprocessWhitespaceLines(input: string): string {
-	const lines = input.split("\n");
-	let blankRunLength = 0;
-	return lines
-		.map((line) => {
-			if (line.length === 0) {
-				blankRunLength += 1;
-				return blankRunLength > 1 ? EXTRA_BLANK_LINE_SENTINEL : line;
-			}
-			if (/^[ \t]+$/.test(line)) {
-				blankRunLength += 1;
-				return encodeWhitespaceLine(line);
-			}
-			blankRunLength = 0;
-			return line;
-		})
-		.join("\n");
-}
-
 function postprocessWhitespaceLines(input: string): string {
 	return input
 		.split("\n")
 		.map((line) => {
-			if (line === EXTRA_BLANK_LINE_SENTINEL) return "";
+			if (line === "\u200b") return "";
 			const decodedWhitespaceLine = decodeWhitespaceLine(line);
 			if (decodedWhitespaceLine !== null) return decodedWhitespaceLine;
 			return line;
@@ -179,11 +150,9 @@ function postprocessWhitespaceLines(input: string): string {
 }
 
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessWhitespaceLines(
-		preprocessColoredText(
-			preprocessHighlightedText(
-				encodeMarkdownImageDestinations(canonicalizeWikiLinks(markdown)),
-			),
+	return preprocessColoredText(
+		preprocessHighlightedText(
+			encodeMarkdownImageDestinations(canonicalizeWikiLinks(markdown)),
 		),
 	);
 }
