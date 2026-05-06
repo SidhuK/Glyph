@@ -9,59 +9,12 @@
 	gap: 18px;
 }
 
-.allDocsHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-}
-
-.allDocsHeaderControls {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-}
-
-.allDocsTitleGroup {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	min-width: 0;
-}
-
 .allDocsTitle {
 	font-size: clamp(24px, 2.2vw, 30px);
 	line-height: 1.08;
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	color: var(--text-primary);
-}
-
-.allDocsCountBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 24px;
-	padding: 0 10px;
-	border-radius: var(--pill-radius);
-	border: 0;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 7%,
-		var(--bg-primary)
-	);
-	color: color-mix(
-		in srgb,
-		var(--interactive-accent) 58%,
-		var(--text-secondary)
-	);
-	font-size: 12px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0;
-	box-shadow: var(--pill-shadow);
-	white-space: nowrap;
 }
 
 .allDocsGrid {
@@ -295,16 +248,6 @@
 @media (max-width: 640px) {
 	.allDocsPane {
 		padding: 18px;
-	}
-
-	.allDocsHeader {
-		align-items: flex-start;
-		flex-direction: column;
-	}
-
-	.allDocsHeaderControls {
-		width: 100%;
-		justify-content: space-between;
 	}
 
 	.allDocsGrid {

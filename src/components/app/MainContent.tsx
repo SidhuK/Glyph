@@ -607,7 +607,7 @@ export const MainContent = memo(function MainContent({
 			return (
 				<Suspense
 					fallback={
-						<div className="databaseLoadingState">Loading all docs…</div>
+						<div className="databaseLoadingState">Loading all notes…</div>
 					}
 				>
 					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />

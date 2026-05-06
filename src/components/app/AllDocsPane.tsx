@@ -188,10 +188,6 @@ export const AllDocsPane = memo(function AllDocsPane({
 		});
 	});
 
-	const countLabel = useMemo(() => {
-		const count = notes.length;
-		return `${count} ${count === 1 ? "note" : "notes"}`;
-	}, [notes.length]);
 	const sections = useMemo<AllDocsSection[]>(() => {
 		const buckets = new Map<string, AllDocsItem[]>();
 		for (const note of notes) {
@@ -213,14 +209,16 @@ export const AllDocsPane = memo(function AllDocsPane({
 		return "No notes found.";
 	}, [emptyMessage, notes.length]);
 
+	const loadingLabel = title.toLowerCase();
+
 	if (notesQuery.isLoading) {
-		return <div className="databaseLoadingState">Loading all docs…</div>;
+		return <div className="databaseLoadingState">Loading {loadingLabel}…</div>;
 	}
 
 	if (notesQuery.error) {
 		return (
 			<div className="databaseLoadingState">
-				Could not load docs:{" "}
+				Could not load {loadingLabel}:{" "}
 				{notesQuery.error instanceof Error
 					? notesQuery.error.message
 					: String(notesQuery.error)}
@@ -230,16 +228,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	return (
 		<section className="allDocsPane">
-			<div className="allDocsHeader">
-				<div className="allDocsTitleGroup">
-					<div>
-						<h1 className="allDocsTitle">{title}</h1>
-					</div>
-				</div>
-				<div className="allDocsHeaderControls">
-					<p className="allDocsCountBadge">{countLabel}</p>
-				</div>
-			</div>
+			<h1 className="allDocsTitle">{title}</h1>
 			<div className="allDocsSections">
 				{notes.length === 0 ? (
 					<div className="databaseLoadingState">{emptyStateMessage}</div>
