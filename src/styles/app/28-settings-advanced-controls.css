@@ -1,131 +1,147 @@
-.codexRateLimitList {
+.codexRateLimitTableWrap {
 	width: 100%;
 	display: flex;
-	flex-direction: row;
-	gap: 12px;
-	overflow-x: auto;
-	padding: 2px 2px 6px;
-	scroll-snap-type: x proximity;
+	justify-content: flex-end;
+	overflow-x: visible;
+	padding: 0 0 2px;
 }
 
-.codexRateLimitItem {
-	--codex-tone: var(--interactive-accent);
-	flex: 0 0 clamp(188px, 46%, 228px);
-	padding: 12px;
-	border-radius: var(--radius-8);
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
-	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
-	box-shadow: none;
-	scroll-snap-align: start;
-}
-
-.codexRateLimitItem--ok {
-	--codex-tone: var(--color-green-500);
-}
-
-.codexRateLimitItem--warn {
-	--codex-tone: var(--color-yellow-500);
-}
-
-.codexRateLimitItem--danger {
-	--codex-tone: var(--color-red-500);
-}
-
-.codexRateLimitRow {
-	display: flex;
-	align-items: baseline;
-	justify-content: flex-start;
-	gap: 8px;
+.codexRateLimitTable {
+	width: auto;
+	max-width: 100%;
+	min-width: 0;
+	border-collapse: collapse;
+	font-size: 13px;
 	color: var(--text-primary);
 }
 
+.codexRateLimitTable th {
+	padding: 11px 10px 10px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 74%, transparent);
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	text-align: left;
+}
+
+.codexRateLimitTable th:first-child {
+	width: 78px;
+	min-width: 78px;
+}
+
+.codexRateLimitTable th:nth-child(2) {
+	width: 132px;
+	min-width: 132px;
+}
+
+.codexRateLimitTable th:last-child {
+	width: 74px;
+	min-width: 74px;
+}
+
+.codexRateLimitTable td {
+	padding: 12px 10px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 64%, transparent);
+	vertical-align: middle;
+}
+
+.codexRateLimitTable tbody tr:last-child td {
+	border-bottom: 0;
+}
+
+.codexRateLimitTable th:first-child,
+.codexRateLimitTable td:first-child {
+	padding-left: 0;
+	padding-right: 8px;
+}
+
+.codexRateLimitTable th:nth-child(2),
+.codexRateLimitTable td:nth-child(2) {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+.codexRateLimitTable th:last-child,
+.codexRateLimitTable td:last-child {
+	padding-right: 0;
+	padding-left: 8px;
+}
+
+.codexRateLimitWindowHeader {
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.codexRateLimitTable tbody tr {
+	--codex-tone: var(--interactive-accent);
+}
+
+.codexRateLimitRow--ok {
+	--codex-tone: var(--color-green-500);
+}
+
+.codexRateLimitRow--warn {
+	--codex-tone: var(--color-yellow-500);
+}
+
+.codexRateLimitRow--danger {
+	--codex-tone: var(--color-red-500);
+}
+
 .codexRateLimitWindow {
-	font-size: 11px;
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-primary));
-}
-
-.codexRateLimitMeasureRow {
-	margin-top: 8px;
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.codexRateLimitBattery {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
-	flex: 0 0 auto;
-}
-
-.codexRateLimitBatteryBody {
-	width: 62px;
-	height: 28px;
-	padding: 4px;
-	border-radius: var(--radius-8);
-	display: grid;
-	grid-template-columns: repeat(12, minmax(0, 1fr));
-	gap: 2px;
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
-	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
-}
-
-.codexRateLimitBatteryCell {
-	border-radius: var(--radius-2xs);
-	background: color-mix(in srgb, var(--bg-tertiary) 92%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-}
-
-.codexRateLimitBatteryCell--active {
-	background: color-mix(in srgb, var(--codex-tone) 75%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--codex-tone) 50%, transparent);
-}
-
-.codexRateLimitBatteryCap {
-	width: 4px;
-	height: 13px;
-	border-radius: var(--radius-2xs);
-	background: color-mix(in srgb, var(--codex-tone) 46%, var(--border-light));
-}
-
-.codexRateLimitRemainingValue {
-	font-size: 13px;
-	line-height: 1.05;
-	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, var(--codex-tone) 82%, var(--text-primary));
-}
-
-.codexRateLimitStats {
+	gap: 7px;
 	min-width: 0;
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	text-align: right;
+	white-space: nowrap;
+	color: var(--text-primary);
 }
 
-.codexRateLimitMeta {
-	margin-top: 6px;
-	font-size: 11px;
+.codexRateLimitWindow svg {
+	flex: 0 0 auto;
 	color: var(--text-tertiary);
-	display: flex;
-	justify-content: flex-end;
-	width: 100%;
 }
 
-.codexRateLimitResetMeta {
+.codexRateLimitRemaining {
 	display: inline-flex;
 	align-items: center;
-	padding: 3px 7px;
-	border-radius: var(--radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 28%, var(--border-light));
-	background: color-mix(in srgb, var(--codex-tone) 9%, transparent);
-	color: color-mix(in srgb, var(--codex-tone) 35%, var(--text-secondary));
-	font-size: 10px;
-	line-height: 1.35;
+	gap: 8px;
+	min-width: 0;
+}
+
+.codexRateLimitMeter {
+	display: grid;
+	grid-template-columns: repeat(12, 4px);
+	gap: 3px;
+	align-items: center;
+}
+
+.codexRateLimitSegment {
+	width: 4px;
+	height: 18px;
+	border-radius: var(--radius-2xs);
+	background: color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.codexRateLimitSegment--active {
+	background: color-mix(in srgb, var(--codex-tone) 82%, var(--bg-primary));
+}
+
+.codexRateLimitPercent {
+	min-width: 34px;
+	color: var(--text-primary);
+	font-size: 13px;
+	line-height: 1;
+}
+
+.codexRateLimitReset {
+	white-space: nowrap;
+	color: var(--text-primary);
+	font-size: 13px;
+	line-height: 1;
 }
 
 .settingsTextarea {
