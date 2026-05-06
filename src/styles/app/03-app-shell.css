@@ -22,7 +22,7 @@
 	overflow: hidden;
 }
 
-.appShell:not(:has(.notesInfoSidebarHost:not(:empty))) {
+.appShell:not(.appShellRightSidebarOpen) {
 	padding-right: var(--app-frame-inline);
 }
 

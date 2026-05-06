@@ -54,6 +54,7 @@ import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
+import { cn } from "../../lib/utils";
 import { Calendar, FileText, Settings } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type {
@@ -304,6 +305,7 @@ interface MainContentProps {
 	openDatabasesId: string | null;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
+	onRightSidebarOpenChange?: (open: boolean) => void;
 }
 
 function DailyNotesSetupToast({
@@ -407,6 +409,7 @@ export const MainContent = memo(function MainContent({
 	openDatabasesId,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
+	onRightSidebarOpenChange,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
@@ -427,8 +430,8 @@ export const MainContent = memo(function MainContent({
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
+	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const handledShowGettingStartedRequestRef = useRef(0);
-	const notesInfoSidebarHostRef = useRef<HTMLDivElement | null>(null);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
 		[tabs, activeTabId],
@@ -502,6 +505,11 @@ export const MainContent = memo(function MainContent({
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const showTabBar = tabs.length > 0;
+	const aiSidebarVisible = aiEnabled && !zenModeActive && aiPanelOpen;
+	const rightSidebarOpen =
+		Boolean(spacePath) &&
+		!settingsMode &&
+		(aiSidebarVisible || infoSidebarOpen);
 	const infoSidebarResize = useResizablePanel({
 		min: 260,
 		max: 620,
@@ -516,6 +524,16 @@ export const MainContent = memo(function MainContent({
 				"--markdown-info-sidebar-width": `${infoSidebarWidth}px`,
 			}) as CSSProperties,
 		[infoSidebarWidth],
+	);
+	useEffect(() => {
+		onRightSidebarOpenChange?.(rightSidebarOpen);
+	}, [onRightSidebarOpenChange, rightSidebarOpen]);
+
+	useEffect(
+		() => () => {
+			onRightSidebarOpenChange?.(false);
+		},
+		[onRightSidebarOpenChange],
 	);
 
 	useEffect(() => {
@@ -585,11 +603,10 @@ export const MainContent = memo(function MainContent({
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
-			const host = notesInfoSidebarHostRef.current;
-			if (!host || host.childElementCount === 0 || zenModeActive) return;
+			if (!rightSidebarOpen || zenModeActive) return;
 			infoSidebarResize.handlePointerDown(event);
 		},
-		[infoSidebarResize, zenModeActive],
+		[infoSidebarResize, rightSidebarOpen, zenModeActive],
 	);
 
 	const content = useMemo(() => {
@@ -709,6 +726,7 @@ export const MainContent = memo(function MainContent({
 					relPath={viewerPath}
 					initialDoc={initialDoc}
 					extractToNoteActions={extractToNoteActions}
+					onInfoSidebarOpenChange={setInfoSidebarOpen}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -874,7 +892,10 @@ export const MainContent = memo(function MainContent({
 		<>
 			<div
 				ref={infoSidebarResize.resizeRef}
-				className="notesInfoSidebarResizeHandle"
+				className={cn(
+					"notesInfoSidebarResizeHandle",
+					!rightSidebarOpen && "is-hidden",
+				)}
 				onPointerDown={handleInfoSidebarResizePointerDown}
 				onPointerMove={infoSidebarResize.handlePointerMove}
 				onPointerUp={infoSidebarResize.handlePointerUp}
@@ -883,9 +904,9 @@ export const MainContent = memo(function MainContent({
 			/>
 			<div
 				id="notes-info-sidebar-root"
-				ref={notesInfoSidebarHostRef}
 				className="notesInfoSidebarHost"
 				aria-live="polite"
+				data-open={rightSidebarOpen ? "true" : undefined}
 				style={notesInfoSidebarHostStyle}
 			>
 				{aiEnabled && !zenModeActive ? (
@@ -946,7 +967,10 @@ export const MainContent = memo(function MainContent({
 
 	return (
 		<>
-			<main className={zenModeActive ? "mainArea mainAreaZen" : "mainArea"}>
+			<main
+				className={zenModeActive ? "mainArea mainAreaZen" : "mainArea"}
+				data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}
+			>
 				<div className="canvasWrapper">
 					{showFolioWorkspace ? (
 						<FolioWorkspace

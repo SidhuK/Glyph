@@ -174,6 +174,7 @@ export function AppShell() {
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
+	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 	const [htmlExportRequest, setHtmlExportRequest] = useState<{
 		id: string;
 		relPath: string;
@@ -1315,6 +1316,7 @@ export function AppShell() {
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				zenModeActive && "appShellZenMode",
 				folioMode && "appShellFolioMode",
+				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
 			<div
@@ -1429,6 +1431,7 @@ export function AppShell() {
 				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("general")}
+				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}

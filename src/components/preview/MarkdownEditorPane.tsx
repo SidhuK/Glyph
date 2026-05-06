@@ -73,6 +73,7 @@ import {
 interface MarkdownEditorPaneProps {
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
+	onInfoSidebarOpenChange?: (open: boolean) => void;
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
@@ -174,6 +175,7 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
+	onInfoSidebarOpenChange,
 	initialDoc = null,
 	initialError = "",
 	extractToNoteActions,
@@ -776,6 +778,17 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		onDirtyChange?.(isDirty);
 	}, [onDirtyChange, isDirty]);
+
+	useEffect(() => {
+		onInfoSidebarOpenChange?.(infoPanelOpen);
+	}, [infoPanelOpen, onInfoSidebarOpenChange]);
+
+	useEffect(
+		() => () => {
+			onInfoSidebarOpenChange?.(false);
+		},
+		[onInfoSidebarOpenChange],
+	);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;

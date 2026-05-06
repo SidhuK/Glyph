@@ -909,7 +909,7 @@
 }
 
 @media (max-width: 760px) {
-	.notesInfoSidebarHost:not(:empty) {
+	.notesInfoSidebarHost[data-open="true"] {
 		width: min(92vw, 340px);
 		flex-basis: min(92vw, 340px);
 	}
