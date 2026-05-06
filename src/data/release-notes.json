@@ -1,6 +1,42 @@
 {
 	"versions": [
 		{
+			"version": "0.2.23",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"Preview pane UI is cleaner",
+						"Codex rate-limit UI is simpler, with extra styling removed",
+						"Database filters are easier to read because filter details now live inside each filter option",
+						"Today view is cleaner, with extra details removed",
+						"Task date selection is simpler and faster with the native macOS calendar picker",
+						"All Notes is cleaner after removing extra daily note and template details"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Ambiguous attachment links no longer guess. If both assets/logo.png and archive/logo.png exist, [[logo.png]] stays unresolved until you use a full path like [[assets/logo.png]]",
+						"Attachment wikilinks now index as file links for PDFs and images, including [[spec.pdf]], [[assets/logo.png]], and ![[hero.webp]]",
+						"Renaming or moving supported attachments now rewrites links such as [[assets/logo.png]], ![[assets/logo.png|Logo]], and markdown links to logo.png",
+						"When a basename-only attachment link resolves to one file, rename now rewrites it to the full path. Ambiguous links stay unchanged",
+						"Table database rows no longer slide behind column headings",
+						"Folio mode now shows its own inline rename field instead of using the hidden sidebar file tree",
+						"Deletes and typing feel faster in long formatted notes because editor plugins now check only the changed area",
+						"Task rings in the sidebar no longer blink while you type in a note"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Removed the preview pane Refresh button",
+						"Removed database list view. Databases now use table and board views"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.21",
 			"sections": [
 				{
