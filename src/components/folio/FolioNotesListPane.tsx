@@ -2,7 +2,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
-import { dispatchFileTreeStartRename } from "../../lib/appEvents";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -16,6 +15,7 @@ interface FolioNotesListPaneProps {
 	activeTabPath: string | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
+	onRenameFile?: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
 
@@ -64,6 +64,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	activeTabPath,
 	onOpenFile,
 	onOpenFileInNewTab,
+	onRenameFile,
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
@@ -71,6 +72,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
+	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const visibleNotes = useMemo(
@@ -136,8 +138,23 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		[onOpenFileInNewTab],
 	);
 	const renameNote = useCallback((path: string) => {
-		dispatchFileTreeStartRename({ path });
+		setRenamingPath(path);
 	}, []);
+	const cancelRename = useCallback(() => {
+		setRenamingPath(null);
+	}, []);
+	const commitRename = useCallback(
+		async (path: string, nextName: string) => {
+			if (!onRenameFile) return false;
+			const renamed = await onRenameFile?.(path, nextName);
+			if (renamed) {
+				setRenamingPath(null);
+				return true;
+			}
+			return false;
+		},
+		[onRenameFile],
+	);
 	const deleteNote = useCallback(
 		async (path: string) => {
 			const { confirm } = await import("@tauri-apps/plugin-dialog");
@@ -208,6 +225,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						onRename={renameNote}
 						onDelete={deleteNote}
 						onFocus={focusPane}
+						isRenaming={renamingPath === note.note_path}
+						onCommitRename={commitRename}
+						onCancelRename={cancelRename}
 						taskSummary={
 							showTaskProgressIndicator
 								? (taskSummariesByPath[note.note_path] ?? null)
