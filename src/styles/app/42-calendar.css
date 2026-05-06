@@ -489,18 +489,12 @@
 	font-size: 0.62rem;
 }
 
-.calendarTaskList .tasksQuickActionBtn {
-	height: 16px;
-	padding-inline: 4px;
-}
-
 .calendarTaskList .tasksRowContent {
 	min-width: 0;
 }
 
 .calendarTaskList .tasksMetaLink,
 .calendarTaskList .tasksMetaTagInline,
-.calendarTaskList .tasksQuickActions,
 .calendarTaskList .tasksRowMeta {
 	display: none;
 }

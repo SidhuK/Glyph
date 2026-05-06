@@ -34,8 +34,8 @@
 .allDocsTitle {
 	font-size: clamp(24px, 2.2vw, 30px);
 	line-height: 1.08;
-	font-weight: 800;
-	letter-spacing: -0.03em;
+	font-weight: var(--font-medium);
+	letter-spacing: 0;
 	color: var(--text-primary);
 }
 
@@ -62,63 +62,6 @@
 	letter-spacing: 0;
 	box-shadow: var(--pill-shadow);
 	white-space: nowrap;
-}
-
-.allDocsScopeToggle {
-	flex: 0 0 auto;
-	width: auto;
-	max-width: none;
-}
-
-.allDocsScopeToggle.appearanceThemeModeSegmented .settingsSegmentedIcon {
-	display: inline-flex;
-	flex: 0 0 18px;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	overflow: visible;
-}
-
-.allDocsScopeToggle.appearanceThemeModeSegmented .settingsSegmentedIcon > * {
-	width: 100%;
-	height: 100%;
-}
-
-.allDocsHeader .allDocsScopeToggle.appearanceThemeModeSegmented button.active {
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
-}
-
-.allDocsHeader
-	.allDocsScopeToggle.appearanceThemeModeSegmented
-	button:not(.active):hover:not(:disabled) {
-	background: color-mix(in srgb, white 42%, transparent);
-	color: var(--text-primary);
-}
-
-.allDocsHeader
-	.allDocsScopeToggle.appearanceThemeModeSegmented
-	button.active:hover:not(:disabled) {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-.allDocsScopeToggle button:focus-visible {
-	outline: none;
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
-		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-}
-
-.allDocsHeader
-	.allDocsScopeToggle.appearanceThemeModeSegmented
-	button.active:focus-visible {
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
-		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent), 0
-		1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .allDocsGrid {
@@ -362,11 +305,6 @@
 	.allDocsHeaderControls {
 		width: 100%;
 		justify-content: space-between;
-	}
-
-	.allDocsScopeToggle {
-		max-width: none;
-		width: auto;
 	}
 
 	.allDocsGrid {

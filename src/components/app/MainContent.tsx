@@ -610,13 +610,7 @@ export const MainContent = memo(function MainContent({
 						<div className="databaseLoadingState">Loading all docs…</div>
 					}
 				>
-					<AllDocsPane
-						templateFolder={templateFolder}
-						showNotesScopeToggle
-						dailyNotesFolder={dailyNotesFolder}
-						onOpenFile={onOpenFile}
-						initialNotes={initialNotes}
-					/>
+					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
 				</Suspense>
 			);
 		}

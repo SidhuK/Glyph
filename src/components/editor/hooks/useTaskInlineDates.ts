@@ -1,13 +1,11 @@
 import type { Editor } from "@tiptap/core";
-import { format, isValid, parseISO } from "date-fns";
 import {
 	type RefObject,
 	useCallback,
 	useEffect,
-	useMemo,
+	useRef,
 	useState,
 } from "react";
-import { todayIsoDateLocal } from "../../../lib/tasks";
 import { invoke } from "../../../lib/tauri";
 import type { NoteInlineEditorMode } from "../types";
 import {
@@ -30,12 +28,6 @@ interface UseTaskInlineDatesArgs {
 	onChange: (nextMarkdown: string) => void;
 }
 
-function safeParseISO(value?: string): Date | undefined {
-	if (!value) return undefined;
-	const parsed = parseISO(value);
-	return isValid(parsed) ? parsed : undefined;
-}
-
 export function useTaskInlineDates({
 	deferHeavyFeatures,
 	editor,
@@ -49,18 +41,38 @@ export function useTaskInlineDates({
 		null,
 	);
 	const [scheduleAnchor, setScheduleAnchor] = useState<TaskAnchor | null>(null);
-	const [activeDateField, setActiveDateField] = useState<"scheduled" | "due">(
-		"scheduled",
-	);
-	const [pickerMonth, setPickerMonth] = useState<Date>(() => new Date());
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
+	const markdownRef = useRef(markdown);
+	const scheduleAnchorRef = useRef<TaskAnchor | null>(null);
+
+	useEffect(() => {
+		markdownRef.current = markdown;
+	}, [markdown]);
+
+	useEffect(() => {
+		scheduleAnchorRef.current = scheduleAnchor;
+	}, [scheduleAnchor]);
+
+	const setScheduleAnchorAndSelection = useCallback(
+		(anchor: TaskAnchor | null) => {
+			setScheduleAnchor(anchor);
+			if (!anchor) {
+				setSelectedTaskOrdinal(null);
+				setScheduledDate("");
+				setDueDate("");
+				return;
+			}
+			setSelectedTaskOrdinal(anchor.ordinal);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || deferHeavyFeatures) {
 			setTaskAnchors([]);
 			setSelectedTaskOrdinal(null);
-			setScheduleAnchor(null);
+			setScheduleAnchorAndSelection(null);
 			return;
 		}
 		const host = hostRef.current;
@@ -100,8 +112,17 @@ export function useTaskInlineDates({
 		};
 
 		const syncSelectedTask = () => {
+			const keepScheduledTaskSelected = () => {
+				const anchor = scheduleAnchorRef.current;
+				if (!anchor) return false;
+				setSelectedTaskOrdinal((current) =>
+					current === anchor.ordinal ? current : anchor.ordinal,
+				);
+				return true;
+			};
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
+				if (keepScheduledTaskSelected()) return;
 				setSelectedTaskOrdinal(null);
 				return;
 			}
@@ -110,6 +131,7 @@ export function useTaskInlineDates({
 					? selection.anchorNode
 					: selection.anchorNode.parentElement;
 			if (!anchorElement || !contentRoot.contains(anchorElement)) {
+				if (keepScheduledTaskSelected()) return;
 				setSelectedTaskOrdinal(null);
 				return;
 			}
@@ -117,6 +139,7 @@ export function useTaskInlineDates({
 				"li[data-type='taskItem'], li[data-checked]",
 			) as HTMLElement | null;
 			if (!taskEl) {
+				if (keepScheduledTaskSelected()) return;
 				setSelectedTaskOrdinal(null);
 				return;
 			}
@@ -147,7 +170,13 @@ export function useTaskInlineDates({
 			document.removeEventListener("selectionchange", syncSelectedTask);
 			editor.off("selectionUpdate", syncSelectedTask);
 		};
-	}, [deferHeavyFeatures, editor, hostRef, mode]);
+	}, [
+		deferHeavyFeatures,
+		editor,
+		hostRef,
+		mode,
+		setScheduleAnchorAndSelection,
+	]);
 
 	const selectedTaskAnchor =
 		selectedTaskOrdinal == null
@@ -157,7 +186,7 @@ export function useTaskInlineDates({
 
 	const openTaskPopover = useCallback(
 		async (anchor: TaskAnchor) => {
-			setScheduleAnchor(anchor);
+			setScheduleAnchorAndSelection(anchor);
 			try {
 				const existing = await invoke("task_dates_by_ordinal", {
 					markdown,
@@ -165,88 +194,67 @@ export function useTaskInlineDates({
 				});
 				setScheduledDate(existing?.scheduled_date ?? "");
 				setDueDate(existing?.due_date ?? "");
-				const nextField = existing?.due_date ? "due" : "scheduled";
-				setActiveDateField(nextField);
-				setPickerMonth(
-					safeParseISO(existing?.due_date) ??
-						safeParseISO(existing?.scheduled_date) ??
-						new Date(),
-				);
 			} catch {
 				setScheduledDate("");
 				setDueDate("");
-				setActiveDateField("scheduled");
-				setPickerMonth(new Date());
 			}
 		},
-		[markdown],
+		[markdown, setScheduleAnchorAndSelection],
 	);
 
-	const applyTaskDates = useCallback(async () => {
-		if (!scheduleAnchor) return;
-		try {
-			const next = await invoke("task_update_by_ordinal", {
-				markdown,
-				ordinal: scheduleAnchor.ordinal,
-				scheduled_date: scheduledDate,
-				due_date: dueDate,
-			});
-			if (!next) return;
-			onChange(next);
-			setScheduleAnchor(null);
-		} catch (error) {
-			console.error("Failed to update task dates", error);
-		}
-	}, [dueDate, markdown, onChange, scheduleAnchor, scheduledDate]);
-
-	const activeDateValue =
-		activeDateField === "scheduled" ? scheduledDate : dueDate;
-	const activeDate = useMemo(
-		() => safeParseISO(activeDateValue),
-		[activeDateValue],
+	const updateTaskDates = useCallback(
+		async (scheduled: string, due: string) => {
+			if (!scheduleAnchor) return false;
+			setScheduledDate(scheduled);
+			setDueDate(due);
+			try {
+				const next = await invoke("task_update_by_ordinal", {
+					markdown: markdownRef.current,
+					ordinal: scheduleAnchor.ordinal,
+					scheduled_date: scheduled,
+					due_date: due,
+				});
+				if (!next) return false;
+				markdownRef.current = next;
+				onChange(next);
+				return true;
+			} catch (error) {
+				console.error("Failed to update task dates", error);
+				return false;
+			}
+		},
+		[onChange, scheduleAnchor],
 	);
 
-	const formatPickerValue = (value: string) => {
-		if (!value) return "Select date";
-		const parsed = safeParseISO(value);
-		return parsed ? format(parsed, "MMM d, yyyy") : value;
-	};
-
-	const updateActiveDate = (date?: Date) => {
-		const next = date ? todayIsoDateLocal(date) : "";
-		if (activeDateField === "scheduled") {
-			setScheduledDate(next);
+	const resetDraftDates = useCallback(async () => {
+		if (!scheduleAnchor) {
+			setScheduledDate("");
+			setDueDate("");
 			return;
 		}
-		setDueDate(next);
-	};
-
-	const focusTaskDateField = useCallback(
-		(field: "scheduled" | "due") => {
-			setActiveDateField(field);
-			const nextValue = field === "scheduled" ? scheduledDate : dueDate;
-			setPickerMonth(safeParseISO(nextValue) ?? new Date());
-		},
-		[dueDate, scheduledDate],
-	);
+		try {
+			const existing = await invoke("task_dates_by_ordinal", {
+				markdown,
+				ordinal: scheduleAnchor.ordinal,
+			});
+			setScheduledDate(existing?.scheduled_date ?? "");
+			setDueDate(existing?.due_date ?? "");
+		} catch {
+			setScheduledDate("");
+			setDueDate("");
+		}
+	}, [markdown, scheduleAnchor]);
 
 	return {
-		activeDate,
-		activeDateField,
-		applyTaskDates,
 		dueDate,
-		focusTaskDateField,
-		formatPickerValue,
 		openTaskPopover,
-		pickerMonth,
+		resetDraftDates,
 		scheduleAnchor,
 		scheduledDate,
 		selectedTaskAnchor,
-		setActiveDateField,
 		setDueDate,
-		setPickerMonth,
-		setScheduleAnchor,
+		setScheduleAnchor: setScheduleAnchorAndSelection,
 		setScheduledDate,
-		updateActiveDate,
+		updateTaskDates,
 	};
 }

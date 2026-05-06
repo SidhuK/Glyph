@@ -1,20 +1,15 @@
-import { ArrowLeft, ArrowRight } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { addMonths, format, parseISO } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 import {
 	formatTaskCalendarDate,
 	getTaskTimingSummary,
 	stripTaskScheduleTokens,
-	todayIsoDateLocal,
 } from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
-import { Calendar, Save, Trash2, X } from "../Icons";
+import { Calendar } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
-import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { TaskCheckbox } from "./TaskCheckbox";
 
@@ -42,12 +37,8 @@ export function TaskRow({
 	onOpenNote,
 }: TaskRowProps) {
 	const [open, setOpen] = useState(false);
-	const [activeDateField, setActiveDateField] = useState<"scheduled" | "due">(
-		"scheduled",
-	);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
-	const [pickerMonth, setPickerMonth] = useState<Date>(() => new Date());
 	const shouldReduceMotion = useReducedMotion();
 	const displayText = useMemo(
 		() => stripTaskScheduleTokens(task.raw_text),
@@ -58,41 +49,32 @@ export function TaskRow({
 		[task, today],
 	);
 
-	const applyDates = useCallback(async () => {
-		const applied = await onSchedule(
-			task,
-			scheduledDate || null,
-			dueDate || null,
-		);
-		if (applied) {
-			setOpen(false);
-		}
-	}, [dueDate, onSchedule, scheduledDate, task]);
+	const resetDraftDates = useCallback(() => {
+		setScheduledDate(task.scheduled_date ?? "");
+		setDueDate(task.due_date ?? "");
+	}, [task.due_date, task.scheduled_date]);
 
-	const applyQuickSchedule = useCallback(
-		async (offsetDays: number) => {
-			const d = new Date();
-			d.setDate(d.getDate() + offsetDays);
-			const iso = todayIsoDateLocal(d);
-			const nextDueDate = dueDate || null;
-			const applied = await onSchedule(task, iso, nextDueDate);
-			if (applied) {
-				setScheduledDate(iso);
-				setDueDate(nextDueDate ?? "");
-				setOpen(false);
-			}
+	const updateScheduledDate = useCallback(
+		async (nextDate: string) => {
+			setScheduledDate(nextDate);
+			const applied = await onSchedule(task, nextDate || null, dueDate || null);
+			if (!applied) resetDraftDates();
 		},
-		[dueDate, onSchedule, task],
+		[dueDate, onSchedule, resetDraftDates, task],
 	);
 
-	const clearDates = useCallback(async () => {
-		const cleared = await onSchedule(task, null, null);
-		if (cleared) {
-			setScheduledDate("");
-			setDueDate("");
-			setOpen(false);
-		}
-	}, [onSchedule, task]);
+	const updateDueDate = useCallback(
+		async (nextDate: string) => {
+			setDueDate(nextDate);
+			const applied = await onSchedule(
+				task,
+				scheduledDate || null,
+				nextDate || null,
+			);
+			if (!applied) resetDraftDates();
+		},
+		[onSchedule, resetDraftDates, scheduledDate, task],
+	);
 
 	const scheduleButtonLabel = useMemo(() => {
 		const scheduledLabel = formatTaskCalendarDate(task.scheduled_date);
@@ -114,56 +96,6 @@ export function TaskRow({
 		}
 		return "Set a scheduled or due date";
 	}, [task.due_date, task.scheduled_date]);
-
-	const activeDateValue =
-		activeDateField === "scheduled" ? scheduledDate : dueDate;
-
-	const activeDate = useMemo(() => {
-		if (!activeDateValue) return undefined;
-		try {
-			return parseISO(activeDateValue);
-		} catch {
-			return undefined;
-		}
-	}, [activeDateValue]);
-
-	const formatPickerValue = useCallback((value: string) => {
-		if (!value) return "Select date";
-		try {
-			return format(parseISO(value), "MMM d, yyyy");
-		} catch {
-			return value;
-		}
-	}, []);
-
-	const updateActiveDate = useCallback(
-		(date?: Date) => {
-			const next = date ? todayIsoDateLocal(date) : "";
-			if (activeDateField === "scheduled") {
-				setScheduledDate(next);
-				return;
-			}
-			setDueDate(next);
-		},
-		[activeDateField],
-	);
-
-	const focusField = useCallback(
-		(field: "scheduled" | "due") => {
-			setActiveDateField(field);
-			const nextValue = field === "scheduled" ? scheduledDate : dueDate;
-			if (!nextValue) {
-				setPickerMonth(new Date());
-				return;
-			}
-			try {
-				setPickerMonth(parseISO(nextValue));
-			} catch {
-				setPickerMonth(new Date());
-			}
-		},
-		[dueDate, scheduledDate],
-	);
 
 	return (
 		<m.div
@@ -222,54 +154,15 @@ export function TaskRow({
 							</Badge>
 						))}
 					</div>
-					<div className="tasksQuickActions">
-						<Button
-							type="button"
-							variant="ghost"
-							size="xs"
-							className="tasksQuickActionBtn"
-							onClick={() => void applyQuickSchedule(0)}
-						>
-							Today
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="xs"
-							className="tasksQuickActionBtn"
-							onClick={() => void applyQuickSchedule(1)}
-						>
-							Tomorrow
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="xs"
-							className="tasksQuickActionBtn"
-							onClick={() => void applyQuickSchedule(7)}
-						>
-							Next week
-						</Button>
-					</div>
 					<Popover
 						open={open}
 						onOpenChange={(o) => {
 							setOpen(o);
 							if (o) {
-								setScheduledDate(task.scheduled_date ?? "");
-								setDueDate(task.due_date ?? "");
-								const nextField = task.due_date ? "due" : "scheduled";
-								setActiveDateField(nextField);
-								const nextValue =
-									nextField === "scheduled"
-										? (task.scheduled_date ?? "")
-										: (task.due_date ?? "");
-								try {
-									setPickerMonth(nextValue ? parseISO(nextValue) : new Date());
-								} catch {
-									setPickerMonth(new Date());
-								}
+								resetDraftDates();
+								return;
 							}
+							resetDraftDates();
 						}}
 					>
 						<PopoverTrigger asChild>
@@ -284,156 +177,28 @@ export function TaskRow({
 								{scheduleButtonLabel}
 							</Button>
 						</PopoverTrigger>
-						<PopoverContent
-							className="tasksDatePopover"
-							align="start"
-							onInteractOutside={(e) => e.preventDefault()}
-							onPointerDownOutside={(e) => e.preventDefault()}
-						>
-							<div className="tasksDatePickerFields">
-								<button
-									type="button"
-									className="tasksDateFieldCard"
-									data-active={activeDateField === "scheduled"}
-									onClick={() => focusField("scheduled")}
-								>
-									<span className="tasksDateFieldLabel">Scheduled</span>
-									<span
-										className="tasksDateFieldValue"
-										data-empty={!scheduledDate}
-									>
-										{formatPickerValue(scheduledDate)}
-									</span>
-								</button>
-								<button
-									type="button"
-									className="tasksDateFieldCard"
-									data-active={activeDateField === "due"}
-									onClick={() => focusField("due")}
-								>
-									<span className="tasksDateFieldLabel">Due</span>
-									<span className="tasksDateFieldValue" data-empty={!dueDate}>
-										{formatPickerValue(dueDate)}
-									</span>
-								</button>
-							</div>
-							<div className="tasksDatePickerShell">
-								<DateCalendar
-									mode="single"
-									selected={activeDate}
-									onSelect={updateActiveDate}
-									month={pickerMonth}
-									onMonthChange={setPickerMonth}
-									className="tasksDateCalendar"
-								/>
-							</div>
-							<div className="tasksQuickDates">
-								<Button
-									type="button"
-									variant="outline"
-									size="xs"
-									onClick={() => {
-										const d = new Date();
-										d.setDate(d.getDate() + 0);
-										setScheduledDate(todayIsoDateLocal(d));
-										setActiveDateField("scheduled");
-									}}
-								>
-									Today
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="xs"
-									onClick={() => {
-										const d = new Date();
-										d.setDate(d.getDate() + 1);
-										setScheduledDate(todayIsoDateLocal(d));
-										setActiveDateField("scheduled");
-									}}
-								>
-									Tomorrow
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="xs"
-									onClick={() => {
-										const d = new Date();
-										d.setDate(d.getDate() + 7);
-										setScheduledDate(todayIsoDateLocal(d));
-										setActiveDateField("scheduled");
-									}}
-								>
-									Next week
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									onClick={() => updateActiveDate(undefined)}
-								>
-									Clear selected
-								</Button>
-							</div>
-							<div className="tasksDateActions">
-								<Button
-									type="button"
-									variant="outline"
-									size="icon-xs"
-									title="Clear dates"
-									aria-label="Clear dates"
-									onClick={() => void clearDates()}
-								>
-									<Trash2 size={13} />
-								</Button>
-								<Button
-									type="button"
-									size="icon-xs"
-									title="Apply dates"
-									aria-label="Apply dates"
-									onClick={() => void applyDates()}
-								>
-									<Save size={13} />
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon-xs"
-									title="Previous month"
-									aria-label="Previous month"
-									onClick={() =>
-										setPickerMonth((current) => addMonths(current, -1))
-									}
-								>
-									<HugeiconsIcon icon={ArrowLeft} size={13} strokeWidth={0.9} />
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="icon-xs"
-									title="Next month"
-									aria-label="Next month"
-									onClick={() =>
-										setPickerMonth((current) => addMonths(current, 1))
-									}
-								>
-									<HugeiconsIcon
-										icon={ArrowRight}
-										size={13}
-										strokeWidth={0.9}
+						<PopoverContent className="tasksDatePopover" align="start">
+							<div className="tasksDateNativeFields">
+								<label className="tasksDateNativeField">
+									<span className="tasksDateFieldLabel">scheduled</span>
+									<input
+										type="date"
+										value={scheduledDate}
+										onChange={(event) =>
+											void updateScheduledDate(event.currentTarget.value)
+										}
 									/>
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-xs"
-									title="Close"
-									aria-label="Close"
-									onClick={() => setOpen(false)}
-								>
-									<X size={13} />
-								</Button>
+								</label>
+								<label className="tasksDateNativeField">
+									<span className="tasksDateFieldLabel">due</span>
+									<input
+										type="date"
+										value={dueDate}
+										onChange={(event) =>
+											void updateDueDate(event.currentTarget.value)
+										}
+									/>
+								</label>
 							</div>
 						</PopoverContent>
 					</Popover>

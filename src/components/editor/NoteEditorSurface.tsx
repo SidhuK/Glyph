@@ -1,6 +1,4 @@
 import {
-	ArrowLeft,
-	ArrowRight,
 	Calendar03Icon,
 	Copy01Icon,
 	LocationAdd01Icon,
@@ -10,7 +8,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
-import { addMonths } from "date-fns";
 import DOMPurify from "dompurify";
 import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useRef, useState } from "react";
@@ -18,11 +15,8 @@ import {
 	extractMermaidErrorMessage,
 	renderMermaidDiagram,
 } from "../../lib/mermaid";
-import { todayIsoDateLocal } from "../../lib/tasks";
 import type { BacklinkItem } from "../../lib/tauri";
-import { Save, Trash2, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import {
@@ -185,20 +179,12 @@ export interface NoteEditorSurfaceProps {
 			ordinal: number;
 			top: number;
 		}) => void;
-		activeDateField: "scheduled" | "due";
-		onActiveDateFieldChange: (field: "scheduled" | "due") => void;
-		onFocusDateField: (field: "scheduled" | "due") => void;
-		pickerMonth: Date;
-		onPickerMonthChange: (date: Date | ((prev: Date) => Date)) => void;
 		scheduledDate: string;
 		dueDate: string;
 		onScheduledDateChange: (date: string) => void;
 		onDueDateChange: (date: string) => void;
-		onApplyDates: () => void;
-		onClearDates: () => void;
-		activeDate: Date | undefined;
-		onActiveDateChange: (date?: Date) => void;
-		formatPickerValue: (value: string) => string;
+		onResetDraftDates: () => void;
+		onUpdateDates: (scheduled: string, due: string) => void;
 	};
 
 	backlinks: {
@@ -413,7 +399,10 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 				<Popover
 					open={task.scheduleAnchor?.ordinal === task.selectedAnchor.ordinal}
 					onOpenChange={(open) => {
-						if (!open) task.onScheduleAnchorChange(null);
+						if (!open) {
+							task.onResetDraftDates();
+							task.onScheduleAnchorChange(null);
+						}
 					}}
 				>
 					<PopoverTrigger asChild>
@@ -441,154 +430,32 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					<PopoverContent
 						className="tasksDatePopover taskInlineDatePopover"
 						align="start"
-						onInteractOutside={(event) => event.preventDefault()}
-						onPointerDownOutside={(event) => event.preventDefault()}
 					>
-						<div className="tasksDatePickerFields">
-							<button
-								type="button"
-								className="tasksDateFieldCard"
-								data-active={task.activeDateField === "scheduled"}
-								onClick={() => task.onFocusDateField("scheduled")}
-							>
-								<span className="tasksDateFieldLabel">Scheduled</span>
-								<span
-									className="tasksDateFieldValue"
-									data-empty={!task.scheduledDate}
-								>
-									{task.formatPickerValue(task.scheduledDate)}
-								</span>
-							</button>
-							<button
-								type="button"
-								className="tasksDateFieldCard"
-								data-active={task.activeDateField === "due"}
-								onClick={() => task.onFocusDateField("due")}
-							>
-								<span className="tasksDateFieldLabel">Due</span>
-								<span
-									className="tasksDateFieldValue"
-									data-empty={!task.dueDate}
-								>
-									{task.formatPickerValue(task.dueDate)}
-								</span>
-							</button>
-						</div>
-						<div className="tasksDatePickerShell">
-							<DateCalendar
-								mode="single"
-								selected={task.activeDate}
-								onSelect={task.onActiveDateChange}
-								month={task.pickerMonth}
-								onMonthChange={task.onPickerMonthChange}
-								className="tasksDateCalendar"
-							/>
-						</div>
-						<div className="tasksQuickDates">
-							<Button
-								type="button"
-								variant="outline"
-								size="xs"
-								onClick={() => {
-									const d = new Date();
-									d.setDate(d.getDate() + 0);
-									task.onScheduledDateChange(todayIsoDateLocal(d));
-									task.onActiveDateFieldChange("scheduled");
-								}}
-							>
-								Today
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="xs"
-								onClick={() => {
-									const d = new Date();
-									d.setDate(d.getDate() + 1);
-									task.onScheduledDateChange(todayIsoDateLocal(d));
-									task.onActiveDateFieldChange("scheduled");
-								}}
-							>
-								Tomorrow
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="xs"
-								onClick={() => {
-									const d = new Date();
-									d.setDate(d.getDate() + 7);
-									task.onScheduledDateChange(todayIsoDateLocal(d));
-									task.onActiveDateFieldChange("scheduled");
-								}}
-							>
-								Next week
-							</Button>
-							<Button
-								type="button"
-								size="xs"
-								variant="ghost"
-								onClick={() => task.onActiveDateChange(undefined)}
-							>
-								Clear selected
-							</Button>
-						</div>
-						<div className="tasksDateActions taskInlineDateActions">
-							<Button
-								type="button"
-								variant="outline"
-								size="icon-xs"
-								title="Clear dates"
-								aria-label="Clear dates"
-								onClick={task.onClearDates}
-							>
-								<Trash2 size={13} />
-							</Button>
-							<Button
-								type="button"
-								size="icon-xs"
-								title="Apply dates"
-								aria-label="Apply dates"
-								onClick={() => {
-									void task.onApplyDates();
-								}}
-							>
-								<Save size={13} />
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="icon-xs"
-								title="Previous month"
-								aria-label="Previous month"
-								onClick={() =>
-									task.onPickerMonthChange((current) => addMonths(current, -1))
-								}
-							>
-								<HugeiconsIcon icon={ArrowLeft} size={13} strokeWidth={0.9} />
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="icon-xs"
-								title="Next month"
-								aria-label="Next month"
-								onClick={() =>
-									task.onPickerMonthChange((current) => addMonths(current, 1))
-								}
-							>
-								<HugeiconsIcon icon={ArrowRight} size={13} strokeWidth={0.9} />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-xs"
-								title="Close"
-								aria-label="Close"
-								onClick={() => task.onScheduleAnchorChange(null)}
-							>
-								<X size={13} />
-							</Button>
+						<div className="tasksDateNativeFields">
+							<label className="tasksDateNativeField">
+								<span className="tasksDateFieldLabel">scheduled</span>
+								<input
+									type="date"
+									value={task.scheduledDate}
+									onChange={(event) => {
+										const scheduled = event.currentTarget.value;
+										task.onScheduledDateChange(scheduled);
+										task.onUpdateDates(scheduled, task.dueDate);
+									}}
+								/>
+							</label>
+							<label className="tasksDateNativeField">
+								<span className="tasksDateFieldLabel">due</span>
+								<input
+									type="date"
+									value={task.dueDate}
+									onChange={(event) => {
+										const due = event.currentTarget.value;
+										task.onDueDateChange(due);
+										task.onUpdateDates(task.scheduledDate, due);
+									}}
+								/>
+							</label>
 						</div>
 					</PopoverContent>
 				</Popover>
