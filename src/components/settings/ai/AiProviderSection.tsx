@@ -7,6 +7,44 @@ import {
 } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
 
+interface AiProviderOption {
+	value: AiProviderKind;
+	label: string;
+}
+
+interface AiProviderOptionGroup {
+	label: string;
+	options: AiProviderOption[];
+}
+
+const aiProviderGroups: AiProviderOptionGroup[] = [
+	{
+		label: "Agents",
+		options: [
+			{ value: "codex_chatgpt", label: "Codex" },
+			{ value: "opencode", label: "OpenCode" },
+			{ value: "amp", label: "Amp" },
+		],
+	},
+	{
+		label: "API",
+		options: [
+			{ value: "openai", label: "OpenAI" },
+			{ value: "anthropic", label: "Anthropic" },
+			{ value: "gemini", label: "Google" },
+			{ value: "openrouter", label: "OpenRouter" },
+			{ value: "openai_compat", label: "OpenAI compatible" },
+		],
+	},
+	{
+		label: "Local",
+		options: [
+			{ value: "llama_cpp", label: "llama.cpp" },
+			{ value: "ollama", label: "Ollama" },
+		],
+	},
+];
+
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
 	availableModels: AiModel[] | null;
@@ -53,16 +91,15 @@ export function AiProviderSection({
 							void onProviderChange(event.target.value as AiProviderKind)
 						}
 					>
-						<option value="codex_chatgpt">Codex (ChatGPT)</option>
-						<option value="amp">Amp</option>
-						<option value="opencode">OpenCode</option>
-						<option value="openai">OpenAI</option>
-						<option value="openrouter">OpenRouter</option>
-						<option value="anthropic">Anthropic</option>
-						<option value="gemini">Gemini</option>
-						<option value="ollama">Ollama</option>
-						<option value="llama_cpp">llama.cpp</option>
-						<option value="openai_compat">OpenAI-compatible</option>
+						{aiProviderGroups.map((group) => (
+							<optgroup key={group.label} label={group.label}>
+								{group.options.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</optgroup>
+						))}
 					</select>
 				</div>
 			</SettingsRow>
