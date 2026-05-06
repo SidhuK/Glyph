@@ -11,7 +11,9 @@ import {
 	normalizeFolioPath,
 } from "./folioScopes";
 
-export interface FolioItem extends AllDocsItem {
+export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
+	created: string | null;
+	updated: string | null;
 	is_markdown: boolean;
 }
 
@@ -103,8 +105,8 @@ function fileEntryToFolioItem(entry: FsEntry): FolioItem {
 		note_path: normalizeRelPath(entry.rel_path),
 		title: titleFromFilePath(entry.rel_path),
 		preview: "",
-		updated: "",
-		created: "",
+		updated: entry.updated ?? null,
+		created: entry.created ?? null,
 		tags: [],
 		people: [],
 		is_markdown: entry.is_markdown,
@@ -112,33 +114,14 @@ function fileEntryToFolioItem(entry: FsEntry): FolioItem {
 }
 
 async function listNonMarkdownFiles(folderPrefix: string | null) {
-	const startDir = folderPrefix ?? "";
-	const queue = [startDir];
-	const files: FolioItem[] = [];
-
-	while (queue.length > 0) {
-		const dir = queue.shift() ?? "";
-		let entries: FsEntry[] = [];
-		try {
-			entries = await invoke("space_list_dir", dir ? { dir } : {});
-		} catch {
-			continue;
-		}
-		for (const entry of entries) {
-			if (entry.kind === "dir") {
-				queue.push(normalizeRelPath(entry.rel_path));
-				continue;
-			}
-			if (!entry.is_markdown) {
-				files.push(fileEntryToFolioItem(entry));
-				if (files.length >= FOLIO_NON_MARKDOWN_FILE_LIMIT) {
-					return { files, truncated: true };
-				}
-			}
-		}
-	}
-
-	return { files, truncated: false };
+	const result = await invoke("space_list_non_markdown_files", {
+		dir: folderPrefix,
+		limit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
+	});
+	return {
+		files: result.files.map(fileEntryToFolioItem),
+		truncated: result.truncated,
+	};
 }
 
 function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {

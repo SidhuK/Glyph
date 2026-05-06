@@ -37,6 +37,33 @@ function noteMatchesFilter(note: FolioItem, query: string): boolean {
 	return haystack.includes(normalized);
 }
 
+function timestampMs(value: string | null): number | null {
+	if (!value) return null;
+	const parsed = Date.parse(value);
+	return Number.isNaN(parsed) ? null : parsed;
+}
+
+function compareNullableDates(
+	left: string | null,
+	right: string | null,
+): number {
+	const leftMs = timestampMs(left);
+	const rightMs = timestampMs(right);
+	if (leftMs === null && rightMs === null) return 0;
+	if (leftMs === null) return 1;
+	if (rightMs === null) return -1;
+	return rightMs - leftMs;
+}
+
+function compareTitles(left: FolioItem, right: FolioItem): number {
+	return (
+		noteTitle(left).localeCompare(noteTitle(right), undefined, {
+			sensitivity: "base",
+			numeric: true,
+		}) || left.note_path.localeCompare(right.note_path)
+	);
+}
+
 function compareNotes(
 	left: FolioItem,
 	right: FolioItem,
@@ -44,28 +71,17 @@ function compareNotes(
 ): number {
 	if (sortMode === "edited") {
 		return (
-			(Date.parse(right.updated) || 0) - (Date.parse(left.updated) || 0) ||
-			noteTitle(left).localeCompare(noteTitle(right), undefined, {
-				sensitivity: "base",
-				numeric: true,
-			})
+			compareNullableDates(left.updated, right.updated) ||
+			compareTitles(left, right)
 		);
 	}
 	if (sortMode === "created") {
 		return (
-			(Date.parse(right.created) || 0) - (Date.parse(left.created) || 0) ||
-			noteTitle(left).localeCompare(noteTitle(right), undefined, {
-				sensitivity: "base",
-				numeric: true,
-			})
+			compareNullableDates(left.created, right.created) ||
+			compareTitles(left, right)
 		);
 	}
-	return (
-		noteTitle(left).localeCompare(noteTitle(right), undefined, {
-			sensitivity: "base",
-			numeric: true,
-		}) || left.note_path.localeCompare(right.note_path)
-	);
+	return compareTitles(left, right);
 }
 
 function isFolioHeaderControl(target: EventTarget | null): boolean {

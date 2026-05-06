@@ -18,6 +18,13 @@ export interface FsEntry {
 	rel_path: string;
 	kind: "dir" | "file";
 	is_markdown: boolean;
+	created?: string | null;
+	updated?: string | null;
+}
+
+export interface FsEntryList {
+	files: FsEntry[];
+	truncated: boolean;
 }
 
 export interface LinkRewriteResult {
@@ -768,6 +775,10 @@ interface TauriCommands {
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
+	>;
+	space_list_non_markdown_files: CommandDef<
+		{ dir?: string | null; limit?: number | null },
+		FsEntryList
 	>;
 	space_dir_children_summary: CommandDef<
 		{ dir?: string | null; preview_limit?: number | null },

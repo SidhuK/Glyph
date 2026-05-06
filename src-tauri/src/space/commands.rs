@@ -1,7 +1,10 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::index::{self, db::reset_schema_cache};
+use crate::{
+    index::{self, db::reset_schema_cache},
+    paths,
+};
 
 use super::helpers::{
     canonicalize_dir, create_or_open_impl, ensure_onboarding_note_for_command, SpaceInfo,
@@ -73,7 +76,7 @@ pub async fn space_show_onboarding_note(state: State<'_, SpaceState>) -> Result<
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let note_path = ensure_onboarding_note_for_command(&root)?;
-        let abs = root.join(&note_path);
+        let abs = paths::join_under(&root, Path::new(&note_path))?;
         if let Ok(markdown) = std::fs::read_to_string(&abs) {
             let _ = index::index_note(&root, &note_path, &markdown);
         }

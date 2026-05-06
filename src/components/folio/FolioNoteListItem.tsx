@@ -72,14 +72,15 @@ function titleFromPath(notePath: string): string {
 	return basename(notePath).replace(/\.md$/i, "") || "Untitled";
 }
 
-function dateLabel(iso: string): string {
+function dateLabel(iso: string | null): string {
+	if (!iso) return "No date";
 	try {
 		return new Intl.DateTimeFormat(undefined, {
 			month: "short",
 			day: "numeric",
 		}).format(new Date(iso));
 	} catch {
-		return "";
+		return "No date";
 	}
 }
 
@@ -350,7 +351,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	const preview = useMemo(() => {
 		return previewText(note.preview, title);
 	}, [note.preview, title]);
-	const updated = isMarkdown && note.updated ? dateLabel(note.updated) : "";
+	const updated = isMarkdown ? dateLabel(note.updated) : "";
 	const visibleTags = note.tags.slice(0, 2);
 	const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 	const folder = parentDir(note.note_path);

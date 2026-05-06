@@ -73,6 +73,12 @@ If you remember one shortcut, make it `Cmd+K`. It opens the command palette, whe
 - [x] Start writing
 "#;
 
+#[derive(Serialize)]
+struct OnboardingMarker<'a> {
+    version: u32,
+    welcome_note_path: &'a str,
+}
+
 pub fn ensure_glyph_dirs(root: &Path) -> Result<(), String> {
     let _ = glyph_paths::ensure_glyph_dir(root)?;
     let _ = glyph_paths::ensure_glyph_cache_dir(root)?;
@@ -136,11 +142,14 @@ fn write_onboarding_marker(root: &Path) {
         Ok(dir) => dir.join(ONBOARDING_MARKER_NAME),
         Err(_) => return,
     };
-    let marker_body = format!(
-        "{{\"version\":2,\"welcome_note_path\":\"{}\"}}\n",
-        ONBOARDING_NOTE_PATH
-    );
-    let _ = io_atomic::write_atomic(&marker, marker_body.as_bytes());
+    let marker_body = match serde_json::to_vec(&OnboardingMarker {
+        version: 2,
+        welcome_note_path: ONBOARDING_NOTE_PATH,
+    }) {
+        Ok(body) => body,
+        Err(_) => return,
+    };
+    let _ = io_atomic::write_atomic(&marker, &marker_body);
 }
 
 fn cleanup_tmp_files(root: &Path) -> Result<(), String> {

@@ -1462,6 +1462,7 @@ pub fn run() {
             index::commands::note_local_graph,
             space_fs::list::space_list_dir,
             space_fs::list::space_list_markdown_files,
+            space_fs::list::space_list_non_markdown_files,
             space_fs::link_ops::space_resolve_wikilink,
             space_fs::link_ops::space_resolve_image_wikilink,
             space_fs::link_ops::space_resolve_markdown_link,
