@@ -1076,6 +1076,16 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"show-welcome-note": {
+			"id": "show-welcome-note",
+			"label": "Show Welcome Note",
+			"description": "Create or open the welcome note in the root of the current space.",
+			"category": "settings",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"strikethrough": {
 			"id": "strikethrough",
 			"label": "Strikethrough",

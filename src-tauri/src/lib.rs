@@ -1491,6 +1491,7 @@ pub fn run() {
             space::commands::space_create,
             space::commands::space_open,
             space::commands::space_get_current,
+            space::commands::space_show_onboarding_note,
             space::commands::space_close,
             web_clip::web_clip_save
         ])

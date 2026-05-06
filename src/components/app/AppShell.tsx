@@ -109,6 +109,8 @@ export function AppShell() {
 		onCreateSpace,
 		closeSpace,
 		recentSpaces,
+		onboardingNotePath,
+		consumeOnboardingNotePath,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -368,6 +370,33 @@ export function AppShell() {
 		},
 		[fileTree, openFileTab, setActiveDirPath],
 	);
+
+	useEffect(() => {
+		if (!spacePath || !onboardingNotePath) return;
+		consumeOnboardingNotePath();
+		void openWorkspaceFile(onboardingNotePath).catch((cause) => {
+			setError(cause instanceof Error ? cause.message : String(cause));
+		});
+	}, [
+		consumeOnboardingNotePath,
+		onboardingNotePath,
+		openWorkspaceFile,
+		setError,
+		spacePath,
+	]);
+
+	const showWelcomeNote = useCallback(async () => {
+		if (!spacePath) return;
+		try {
+			const notePath = await invoke("space_show_onboarding_note");
+			await fileTree.loadDir("", true);
+			await openWorkspaceFile(notePath);
+		} catch (cause) {
+			const message = cause instanceof Error ? cause.message : String(cause);
+			setError(message);
+			toast.error("Could not open the welcome note", { description: message });
+		}
+	}, [fileTree, openWorkspaceFile, setError, spacePath]);
 
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
@@ -1222,6 +1251,7 @@ export function AppShell() {
 		openSpecialTab,
 		openTemplatesTab,
 		openWorkspaceFile,
+		showWelcomeNote,
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,

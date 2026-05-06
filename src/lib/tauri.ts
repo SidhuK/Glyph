@@ -10,6 +10,7 @@ export interface AppInfo {
 export interface SpaceInfo {
 	root: string;
 	schema_version: number;
+	onboarding_note_path?: string | null;
 }
 
 export interface FsEntry {
@@ -740,6 +741,7 @@ interface TauriCommands {
 	space_create: CommandDef<{ path: string }, SpaceInfo>;
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
 	space_get_current: CommandDef<void, string | null>;
+	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	export_write_text: CommandDef<{ abs_path: string; text: string }, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;

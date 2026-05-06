@@ -108,6 +108,7 @@ interface UseAppCommandsDeps {
 	openSpecialTab: (id: string) => void;
 	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
+	showWelcomeNote: () => Promise<void>;
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
@@ -324,6 +325,7 @@ export function useAppCommands({
 	openSpecialTab,
 	openTemplatesTab,
 	openWorkspaceFile,
+	showWelcomeNote,
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
@@ -898,6 +900,14 @@ export function useAppCommands({
 				enabled: Boolean(spacePath),
 				action: openGettingStarted,
 			},
+			{
+				id: "show-welcome-note",
+				label: "Show welcome note",
+				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				category: "Help",
+				enabled: Boolean(spacePath),
+				action: () => void showWelcomeNote(),
+			},
 		];
 		return resolveCommandShortcuts(
 			[...baseCommands, ...aiCommands, ...editorCommands],
@@ -952,6 +962,7 @@ export function useAppCommands({
 		openBlankTab,
 		openQuickNoteWindow,
 		openWorkspaceFile,
+		showWelcomeNote,
 		gitSync,
 		getBinding,
 		moveTargetDirs,
