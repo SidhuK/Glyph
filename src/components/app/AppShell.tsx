@@ -368,6 +368,15 @@ export function AppShell() {
 		[fileTree, openFileTab, setActiveDirPath],
 	);
 
+	const openFolioWorkspaceFile = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			setActiveDirPath(parentDir(path));
+			openFileTab(path);
+		},
+		[openFileTab, setActiveDirPath],
+	);
+
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
@@ -383,6 +392,19 @@ export function AppShell() {
 			await openWorkspaceFile(path);
 		},
 		[openBlankTab, openWorkspaceFile, tabs],
+	);
+
+	const openFolioWorkspaceFileInNewTab = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			if (tabs.some((tab) => tab.target === path)) {
+				await openFolioWorkspaceFile(path);
+				return;
+			}
+			openBlankTab();
+			await openFolioWorkspaceFile(path);
+		},
+		[openBlankTab, openFolioWorkspaceFile, tabs],
 	);
 
 	const openQuickNoteWindow = useCallback(() => {
@@ -1376,7 +1398,9 @@ export function AppShell() {
 					onDeletePath: fileTree.onDeletePath,
 				}}
 				onOpenFile={openWorkspaceFile}
+				onOpenFolioFile={openFolioWorkspaceFile}
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
+				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}

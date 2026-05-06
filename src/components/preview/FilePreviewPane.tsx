@@ -4,6 +4,7 @@ import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
 import { basename } from "../../utils/path";
 import { ExternalLink, X } from "../Icons";
+import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import { Button } from "../ui/shadcn/button";
 
 interface FilePreviewPaneProps {
@@ -15,6 +16,12 @@ interface FilePreviewPaneProps {
 const TEXT_PREVIEW_MAX_BYTES = 1_048_576;
 const BINARY_PREVIEW_MAX_BYTES = 20 * 1024 * 1024;
 
+function extensionLabel(fileName: string, fallback: string): string {
+	const dot = fileName.lastIndexOf(".");
+	if (dot <= 0 || dot === fileName.length - 1) return fallback;
+	return fileName.slice(dot + 1).toLowerCase();
+}
+
 export function FilePreviewPane({
 	relPath,
 	onClose,
@@ -22,6 +29,8 @@ export function FilePreviewPane({
 }: FilePreviewPaneProps) {
 	const kind = getInAppPreviewKind(relPath);
 	const displayName = basename(relPath);
+	const { Icon, color, label } = getFileTypeInfo(relPath, false);
+	const extLabel = extensionLabel(displayName, label);
 	const [fileSrc, setFileSrc] = useState<string>("");
 	const [textDoc, setTextDoc] = useState<TextFilePreviewDoc | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -31,6 +40,11 @@ export function FilePreviewPane({
 		setLoading(true);
 		setError("");
 		try {
+			if (!kind) {
+				setFileSrc("");
+				setTextDoc(null);
+				return;
+			}
 			if (kind === "text") {
 				setFileSrc("");
 				const next = await invoke("space_read_text_preview", {
@@ -49,7 +63,6 @@ export function FilePreviewPane({
 				setFileSrc(next.data_url);
 				return;
 			}
-			throw new Error("Unsupported preview type");
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		} finally {
@@ -96,6 +109,21 @@ export function FilePreviewPane({
 			{!loading && error ? (
 				<div className="filePreviewMeta">
 					<div className="filePreviewHint">{error}</div>
+				</div>
+			) : null}
+
+			{!loading && !error && !kind ? (
+				<div className="filePreviewFallback">
+					<div className="filePreviewFileLine" title={relPath}>
+						<Icon
+							size={16}
+							className="filePreviewFileIcon"
+							style={{ color }}
+							aria-hidden="true"
+						/>
+						<span className="filePreviewFileName">{displayName}</span>
+						<span className="fileTreeExtBadge">{extLabel}</span>
+					</div>
 				</div>
 			) : null}
 

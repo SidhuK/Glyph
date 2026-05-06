@@ -54,7 +54,6 @@ import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
-import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type {
@@ -270,7 +269,9 @@ interface MainContentProps {
 		onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenFolioFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
+	onOpenFolioFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
@@ -375,7 +376,9 @@ function DailyNotesSetupToast({
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenFile,
+	onOpenFolioFile,
 	onOpenFileInNewTab,
+	onOpenFolioFileInNewTab,
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
@@ -716,18 +719,15 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
-		if (isInAppPreviewable(viewerPath)) {
-			return (
-				<FilePreviewPane
-					relPath={viewerPath}
-					onClose={() => {
-						if (activeTabId) closeTab(activeTabId);
-					}}
-					onOpenExternally={(path) => fileTree.openNonMarkdownExternally(path)}
-				/>
-			);
-		}
-		return null;
+		return (
+			<FilePreviewPane
+				relPath={viewerPath}
+				onClose={() => {
+					if (activeTabId) closeTab(activeTabId);
+				}}
+				onOpenExternally={(path) => fileTree.openNonMarkdownExternally(path)}
+			/>
+		);
 	}, [
 		activeTabId,
 		closeTab,
@@ -951,8 +951,8 @@ export const MainContent = memo(function MainContent({
 					{showFolioWorkspace ? (
 						<FolioWorkspace
 							activeTabPath={activeTabPath}
-							onOpenFile={onOpenFile}
-							onOpenFileInNewTab={onOpenFileInNewTab}
+							onOpenFile={onOpenFolioFile}
+							onOpenFileInNewTab={onOpenFolioFileInNewTab}
 							onRenameFile={(path, nextName) =>
 								fileTree.onRenameDir(path, nextName, "file")
 							}

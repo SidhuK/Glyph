@@ -1,13 +1,22 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
-import type { AllDocsItem } from "../../lib/tauri";
+import type { AllDocsItem, FsEntry } from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { basename } from "../../utils/path";
 import {
 	type FolioScope,
 	folioScopeTitle,
 	normalizeFolioPath,
 } from "./folioScopes";
+
+export interface FolioItem extends AllDocsItem {
+	is_markdown: boolean;
+}
+
+const folioFilesQueryKey = (folderPrefix: string | null) =>
+	["navigation", "folio-files", folderPrefix ?? "__all__"] as const;
 
 function folderForScope(scope: FolioScope): string | null {
 	switch (scope.kind) {
@@ -43,14 +52,18 @@ function personMatches(
 }
 
 function filterNotesForScope(
-	notes: AllDocsItem[],
+	notes: FolioItem[],
 	scope: FolioScope,
-): AllDocsItem[] {
+): FolioItem[] {
 	switch (scope.kind) {
 		case "tag":
-			return notes.filter((note) => tagMatches(note.tags, scope.tag));
+			return notes.filter(
+				(note) => note.is_markdown && tagMatches(note.tags, scope.tag),
+			);
 		case "person":
-			return notes.filter((note) => personMatches(note.people, scope.handle));
+			return notes.filter(
+				(note) => note.is_markdown && personMatches(note.people, scope.handle),
+			);
 		case "search": {
 			const query = scope.query.trim().toLowerCase();
 			if (!query) return notes;
@@ -71,6 +84,72 @@ function filterNotesForScope(
 	}
 }
 
+function normalizeRelPath(path: string): string {
+	return path
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
+function titleFromFilePath(path: string): string {
+	const name = basename(path);
+	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
+}
+
+function fileEntryToFolioItem(entry: FsEntry): FolioItem {
+	return {
+		note_path: normalizeRelPath(entry.rel_path),
+		title: titleFromFilePath(entry.rel_path),
+		preview: "",
+		updated: "",
+		created: "",
+		tags: [],
+		people: [],
+		is_markdown: entry.is_markdown,
+	};
+}
+
+async function listNonMarkdownFiles(folderPrefix: string | null) {
+	const startDir = folderPrefix ?? "";
+	const queue = [startDir];
+	const files: FolioItem[] = [];
+
+	while (queue.length > 0) {
+		const dir = queue.shift() ?? "";
+		let entries: FsEntry[] = [];
+		try {
+			entries = await invoke("space_list_dir", dir ? { dir } : {});
+		} catch {
+			continue;
+		}
+		for (const entry of entries) {
+			if (entry.kind === "dir") {
+				queue.push(normalizeRelPath(entry.rel_path));
+				continue;
+			}
+			if (!entry.is_markdown) {
+				files.push(fileEntryToFolioItem(entry));
+			}
+		}
+	}
+
+	return files;
+}
+
+function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
+	const out = new Map<string, FolioItem>();
+	for (const note of notes) {
+		const path = normalizeRelPath(note.note_path);
+		if (!path) continue;
+		out.set(path, { ...note, note_path: path, is_markdown: true });
+	}
+	for (const file of files) {
+		if (!file.note_path || out.has(file.note_path)) continue;
+		out.set(file.note_path, file);
+	}
+	return Array.from(out.values());
+}
+
 export function useFolioNotes(scope: FolioScope) {
 	const queryClient = useQueryClient();
 	const folderPrefix = folderForScope(scope);
@@ -81,22 +160,39 @@ export function useFolioNotes(scope: FolioScope) {
 		queryFn: () => loadAllDocs(folderPrefix),
 		enabled: !folderRequired,
 	});
+	const filesQuery = useQuery({
+		queryKey: folioFilesQueryKey(folderPrefix),
+		queryFn: () => listNonMarkdownFiles(folderPrefix),
+		enabled: !folderRequired,
+	});
 
 	useTauriEvent("notes:external_changed", () => {
 		void queryClient.invalidateQueries({
 			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		});
 	});
+	useTauriEvent("space:fs_changed", () => {
+		void queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		});
+		void queryClient.invalidateQueries({
+			queryKey: folioFilesQueryKey(folderPrefix),
+		});
+	});
 
-	const notes = useMemo(
-		() => filterNotesForScope(query.data ?? [], scope),
-		[query.data, scope],
+	const items = useMemo(
+		() =>
+			filterNotesForScope(
+				mergeFolioItems(query.data ?? [], filesQuery.data ?? []),
+				scope,
+			),
+		[filesQuery.data, query.data, scope],
 	);
 
 	return {
-		notes,
-		isLoading: query.isLoading,
-		error: query.error,
+		notes: items,
+		isLoading: query.isLoading || filesQuery.isLoading,
+		error: query.error ?? filesQuery.error,
 		title: folioScopeTitle(scope),
 		missingFolder: folderRequired,
 	};

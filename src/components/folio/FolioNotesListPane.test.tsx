@@ -10,12 +10,14 @@ import type { FolioScope } from "./folioScopes";
 const {
 	loadAllDocsMock,
 	prefetchNoteMock,
+	invokeMock,
 	scopeRef,
 	taskSummariesRef,
 	showTaskProgressIndicatorRef,
 } = vi.hoisted(() => ({
 	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
+	invokeMock: vi.fn(),
 	scopeRef: { current: { kind: "all" } as FolioScope },
 	taskSummariesRef: {
 		current: {} as Record<
@@ -30,7 +32,20 @@ vi.mock("../../contexts", () => ({
 	useUILayoutContext: () => ({
 		folioScope: scopeRef.current,
 	}),
+	useFileTreeContext: () => ({
+		itemAppearance: {},
+		setItemAppearance: vi.fn(),
+	}),
 }));
+
+vi.mock("../../lib/tauri", async () => {
+	const actual =
+		await vi.importActual<typeof import("../../lib/tauri")>("../../lib/tauri");
+	return {
+		...actual,
+		invoke: invokeMock,
+	};
+});
 
 vi.mock("../../lib/navigationPrefetch", async () => {
 	const actual = await vi.importActual<
@@ -75,6 +90,10 @@ vi.mock("../ui/shadcn/context-menu", () => ({
 		</button>
 	),
 	ContextMenuSeparator: () => <hr />,
+}));
+
+vi.mock("../filetree/FileTreeAppearanceMenu", () => ({
+	FileTreeAppearanceMenu: () => null,
 }));
 
 (
@@ -135,6 +154,7 @@ describe("FolioNotesListPane", () => {
 		taskSummariesRef.current = {};
 		showTaskProgressIndicatorRef.current = true;
 		loadAllDocsMock.mockResolvedValue(notes);
+		invokeMock.mockResolvedValue([]);
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false, gcTime: 0 } },
 		});
