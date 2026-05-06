@@ -1,6 +1,30 @@
 {
 	"versions": [
 		{
+			"version": "0.2.24",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"New spaces now include an editable onboarding note to help you get started with Glyph"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Folio mode now shows images, file icons, and file colors more clearly",
+						"Non-Markdown files can now open in the preview pane, with a simple file icon and name when a full preview is not available"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"The right sidebar now centers and cleans up both sides correctly when opening the Info or AI panel"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.23",
 			"sections": [
 				{

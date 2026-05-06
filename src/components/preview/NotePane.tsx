@@ -5,6 +5,7 @@ import { MarkdownEditorPane } from "./MarkdownEditorPane";
 interface NotePaneProps {
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
+	onInfoSidebarOpenChange?: (open: boolean) => void;
 	initialDoc?: TextFileDoc | null;
 	extractToNoteActions?: ExtractToNoteActions;
 }
@@ -12,6 +13,7 @@ interface NotePaneProps {
 export function NotePane({
 	relPath,
 	onDirtyChange,
+	onInfoSidebarOpenChange,
 	initialDoc = null,
 	extractToNoteActions,
 }: NotePaneProps) {
@@ -20,6 +22,7 @@ export function NotePane({
 			relPath={relPath}
 			initialDoc={initialDoc}
 			onDirtyChange={onDirtyChange}
+			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
 			extractToNoteActions={extractToNoteActions}
 		/>
 	);

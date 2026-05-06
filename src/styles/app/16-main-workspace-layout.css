@@ -31,7 +31,7 @@
 	transition: border-radius 180ms ease;
 }
 
-.appShell:has(.notesInfoSidebarHost:not(:empty)) .canvasPaneHost {
+.mainArea[data-right-sidebar-open="true"] .canvasPaneHost {
 	border-top-right-radius: calc(
 		var(--app-radius) -
 		var(--app-frame-inline) +
@@ -78,14 +78,6 @@
 	margin-right: -4px;
 }
 
-.appShell:not(:has(.notesInfoSidebarHost:not(:empty)))
-	.notesInfoSidebarResizeHandle {
-	width: 0;
-	margin-left: 0;
-	margin-right: 0;
-	pointer-events: none;
-}
-
 .notesInfoSidebarResizeHandle::before {
 	content: "";
 	position: absolute;
@@ -104,10 +96,11 @@
 	pointer-events: none;
 }
 
-.notesInfoSidebarHost:not(:empty) {
+.notesInfoSidebarHost[data-open="true"] {
 	flex-basis: var(--markdown-info-sidebar-width, 340px);
 	width: var(--markdown-info-sidebar-width, 340px);
-	padding: 4px 4px 4px 0;
+	padding: var(--app-frame-block) var(--app-frame-inline) var(--app-frame-block)
+		0;
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
@@ -115,14 +108,11 @@
 	border-left-color: transparent;
 }
 
-:root[data-translucent-sidebar="false"] .notesInfoSidebarHost:not(:empty) {
+:root[data-translucent-sidebar="false"]
+	.notesInfoSidebarHost[data-open="true"] {
 	padding: 0;
 	background: var(--bg-sidebar);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	border-left-color: var(--border-light);
-}
-
-.notesInfoSidebarHost:has(.notesInfoSidebarPanel) .aiFloatingWindowHost {
-	display: none;
 }

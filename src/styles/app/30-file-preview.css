@@ -46,6 +46,41 @@
 	font-size: var(--text-sm);
 }
 
+.filePreviewFallback {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: flex-start;
+	padding: 18px var(--space-6);
+}
+
+.filePreviewFileLine {
+	width: min(520px, 100%);
+	min-height: 36px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: 6px;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+.filePreviewFileIcon {
+	flex: 0 0 auto;
+}
+
+.filePreviewFileName {
+	min-width: 0;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
 .filePreviewPane {
 	display: flex;
 	flex-direction: column;
@@ -874,7 +909,7 @@
 }
 
 @media (max-width: 760px) {
-	.notesInfoSidebarHost:not(:empty) {
+	.notesInfoSidebarHost[data-open="true"] {
 		width: min(92vw, 340px);
 		flex-basis: min(92vw, 340px);
 	}

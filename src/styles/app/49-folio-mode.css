@@ -195,6 +195,13 @@
 	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
 }
 
+.folioNoteRow[data-kind="file"] {
+	min-height: 42px;
+	justify-content: center;
+	padding-top: 9px;
+	padding-bottom: 9px;
+}
+
 .folioNoteRowTop {
 	flex: 0 0 auto;
 	display: flex;
@@ -258,6 +265,22 @@
 	opacity: 1;
 }
 
+.folioNoteBody {
+	min-width: 0;
+	flex: 1;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-rows: 1fr auto;
+	column-gap: 10px;
+	row-gap: 6px;
+	align-items: start;
+}
+
+.folioNoteCopy {
+	min-width: 0;
+	display: block;
+}
+
 .folioNotePreview {
 	min-width: 0;
 	flex: 0 0 auto;
@@ -272,8 +295,28 @@
 	overflow-wrap: anywhere;
 }
 
+.folioNoteThumbnail {
+	grid-column: 2;
+	grid-row: 1;
+	width: 58px;
+	height: 58px;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: 6px;
+	background: var(--bg-secondary);
+}
+
+.folioNoteThumbnail img {
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
+
 .folioNoteFooter {
 	flex: 0 0 auto;
+	grid-column: 1 / -1;
+	grid-row: 2;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -320,6 +363,31 @@
 	color: var(--text-tertiary);
 	font-size: 10px;
 	white-space: nowrap;
+}
+
+.folioFileLine {
+	width: 100%;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-primary);
+}
+
+.folioNoteFileIcon {
+	flex: 0 0 auto;
+	color: var(--folio-file-color, var(--text-tertiary));
+}
+
+.folioFileName {
+	min-width: 0;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	line-height: 1.25;
 }
 
 .folioNotesState {

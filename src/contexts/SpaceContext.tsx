@@ -27,9 +27,11 @@ export interface SpaceContextValue {
 	spacePath: string | null;
 	lastSpacePath: string | null;
 	spaceSchemaVersion: number | null;
+	onboardingNotePath: string | null;
 	recentSpaces: string[];
 	isIndexing: boolean;
 	settingsLoaded: boolean;
+	consumeOnboardingNotePath: () => void;
 	startIndexRebuild: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
 	onOpenSpaceAtPath: (path: string) => Promise<void>;
@@ -74,6 +76,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [spacePath, setSpacePath] = useState<string | null>(null);
 	const [lastSpacePath, setLastSpacePath] = useState<string | null>(null);
 	const [spaceSchemaVersion, setSpaceSchemaVersion] = useState<number | null>(
+		null,
+	);
+	const [onboardingNotePath, setOnboardingNotePath] = useState<string | null>(
 		null,
 	);
 	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
@@ -142,6 +147,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						if (!cancelled) {
 							setSpacePath(spaceInfo.root);
 							setSpaceSchemaVersion(spaceInfo.schema_version);
+							setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
 						}
 					} catch {}
 				}
@@ -183,6 +189,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					invalidateNavigationPrefetch();
 					setSpacePath(null);
 					setSpaceSchemaVersion(null);
+					setOnboardingNotePath(null);
 				}
 				const spaceInfo =
 					mode === "create"
@@ -199,6 +206,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setLastSpacePath(spaceInfo.root);
 				setSpacePath(spaceInfo.root);
 				setSpaceSchemaVersion(spaceInfo.schema_version);
+				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
 			} catch (err) {
 				setError(extractErrorMessage(err));
 			} finally {
@@ -218,9 +226,14 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			invalidateNavigationPrefetch();
 			setSpacePath(null);
 			setSpaceSchemaVersion(null);
+			setOnboardingNotePath(null);
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
+	}, []);
+
+	const consumeOnboardingNotePath = useCallback(() => {
+		setOnboardingNotePath(null);
 	}, []);
 
 	const onOpenSpace = useCallback(async () => {
@@ -264,9 +277,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			spacePath,
 			lastSpacePath,
 			spaceSchemaVersion,
+			onboardingNotePath,
 			recentSpaces,
 			isIndexing,
 			settingsLoaded,
+			consumeOnboardingNotePath,
 			startIndexRebuild,
 			onOpenSpace,
 			onOpenSpaceAtPath,
@@ -280,9 +295,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			spacePath,
 			lastSpacePath,
 			spaceSchemaVersion,
+			onboardingNotePath,
 			recentSpaces,
 			isIndexing,
 			settingsLoaded,
+			consumeOnboardingNotePath,
 			startIndexRebuild,
 			onOpenSpace,
 			onOpenSpaceAtPath,

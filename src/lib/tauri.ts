@@ -10,6 +10,7 @@ export interface AppInfo {
 export interface SpaceInfo {
 	root: string;
 	schema_version: number;
+	onboarding_note_path?: string | null;
 }
 
 export interface FsEntry {
@@ -17,6 +18,13 @@ export interface FsEntry {
 	rel_path: string;
 	kind: "dir" | "file";
 	is_markdown: boolean;
+	created?: string | null;
+	updated?: string | null;
+}
+
+export interface FsEntryList {
+	files: FsEntry[];
+	truncated: boolean;
 }
 
 export interface LinkRewriteResult {
@@ -740,6 +748,7 @@ interface TauriCommands {
 	space_create: CommandDef<{ path: string }, SpaceInfo>;
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
 	space_get_current: CommandDef<void, string | null>;
+	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	export_write_text: CommandDef<{ abs_path: string; text: string }, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
@@ -766,6 +775,10 @@ interface TauriCommands {
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
+	>;
+	space_list_non_markdown_files: CommandDef<
+		{ dir?: string | null; limit?: number | null },
+		FsEntryList
 	>;
 	space_dir_children_summary: CommandDef<
 		{ dir?: string | null; preview_limit?: number | null },

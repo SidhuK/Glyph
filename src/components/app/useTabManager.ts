@@ -322,8 +322,7 @@ export function useTabManager(spacePath: string | null) {
 		(activeHistory?.index ?? -1) < (activeHistory?.entries.length ?? 0) - 1;
 
 	const canOpenInMainPane = useCallback(
-		(path: string) =>
-			path.toLowerCase().endsWith(".md") || isInAppPreviewable(path),
+		(path: string) => Boolean(path.trim()),
 		[],
 	);
 

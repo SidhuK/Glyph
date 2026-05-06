@@ -95,6 +95,8 @@ fn build_file_entry(rel_path: &Path, is_markdown: bool) -> Result<FsEntry, Strin
         rel_path: utils::to_slash(rel_path),
         kind: "file".to_string(),
         is_markdown,
+        created: None,
+        updated: None,
     })
 }
 

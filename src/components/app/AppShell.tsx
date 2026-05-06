@@ -109,6 +109,8 @@ export function AppShell() {
 		onCreateSpace,
 		closeSpace,
 		recentSpaces,
+		onboardingNotePath,
+		consumeOnboardingNotePath,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -174,6 +176,7 @@ export function AppShell() {
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
+	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 	const [htmlExportRequest, setHtmlExportRequest] = useState<{
 		id: string;
 		relPath: string;
@@ -368,6 +371,42 @@ export function AppShell() {
 		[fileTree, openFileTab, setActiveDirPath],
 	);
 
+	useEffect(() => {
+		if (!spacePath || !onboardingNotePath) return;
+		consumeOnboardingNotePath();
+		void openWorkspaceFile(onboardingNotePath).catch((cause) => {
+			setError(cause instanceof Error ? cause.message : String(cause));
+		});
+	}, [
+		consumeOnboardingNotePath,
+		onboardingNotePath,
+		openWorkspaceFile,
+		setError,
+		spacePath,
+	]);
+
+	const showWelcomeNote = useCallback(async () => {
+		if (!spacePath) return;
+		try {
+			const notePath = await invoke("space_show_onboarding_note");
+			await fileTree.loadDir("", true);
+			await openWorkspaceFile(notePath);
+		} catch (cause) {
+			const message = cause instanceof Error ? cause.message : String(cause);
+			setError(message);
+			toast.error("Could not open the welcome note", { description: message });
+		}
+	}, [fileTree, openWorkspaceFile, setError, spacePath]);
+
+	const openFolioWorkspaceFile = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			setActiveDirPath(parentDir(path));
+			openFileTab(path);
+		},
+		[openFileTab, setActiveDirPath],
+	);
+
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
@@ -383,6 +422,19 @@ export function AppShell() {
 			await openWorkspaceFile(path);
 		},
 		[openBlankTab, openWorkspaceFile, tabs],
+	);
+
+	const openFolioWorkspaceFileInNewTab = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			if (tabs.some((tab) => tab.target === path)) {
+				await openFolioWorkspaceFile(path);
+				return;
+			}
+			openBlankTab();
+			await openFolioWorkspaceFile(path);
+		},
+		[openBlankTab, openFolioWorkspaceFile, tabs],
 	);
 
 	const openQuickNoteWindow = useCallback(() => {
@@ -1199,6 +1251,7 @@ export function AppShell() {
 		openSpecialTab,
 		openTemplatesTab,
 		openWorkspaceFile,
+		showWelcomeNote,
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,
@@ -1293,6 +1346,7 @@ export function AppShell() {
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				zenModeActive && "appShellZenMode",
 				folioMode && "appShellFolioMode",
+				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
 			<div
@@ -1376,7 +1430,9 @@ export function AppShell() {
 					onDeletePath: fileTree.onDeletePath,
 				}}
 				onOpenFile={openWorkspaceFile}
+				onOpenFolioFile={openFolioWorkspaceFile}
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
+				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
@@ -1405,6 +1461,7 @@ export function AppShell() {
 				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("general")}
+				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}

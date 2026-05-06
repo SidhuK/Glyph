@@ -6,6 +6,14 @@ pub struct FsEntry {
     pub rel_path: String,
     pub kind: String,
     pub is_markdown: bool,
+    pub created: Option<String>,
+    pub updated: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct FsEntryList {
+    pub files: Vec<FsEntry>,
+    pub truncated: bool,
 }
 
 #[derive(Serialize)]

@@ -1,15 +1,16 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useUILayoutContext } from "../../contexts";
+import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
-import type { AllDocsItem } from "../../lib/tauri";
+import type { FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename } from "../../utils/path";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import type { FolioNotesSortMode } from "./folioScopes";
-import { useFolioNotes } from "./useFolioNotes";
+import { type FolioItem, useFolioNotes } from "./useFolioNotes";
 
 interface FolioNotesListPaneProps {
 	activeTabPath: string | null;
@@ -19,11 +20,15 @@ interface FolioNotesListPaneProps {
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
 
-function noteTitle(note: AllDocsItem): string {
-	return note.title.trim() || basename(note.note_path).replace(/\.md$/i, "");
+function noteTitle(note: FolioItem): string {
+	const fallback = basename(note.note_path);
+	return (
+		note.title.trim() ||
+		(note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback)
+	);
 }
 
-function noteMatchesFilter(note: AllDocsItem, query: string): boolean {
+function noteMatchesFilter(note: FolioItem, query: string): boolean {
 	const normalized = query.trim().toLowerCase();
 	if (!normalized) return true;
 	const haystack = [noteTitle(note), note.preview, note.note_path, ...note.tags]
@@ -32,23 +37,51 @@ function noteMatchesFilter(note: AllDocsItem, query: string): boolean {
 	return haystack.includes(normalized);
 }
 
-function compareNotes(
-	left: AllDocsItem,
-	right: AllDocsItem,
-	sortMode: FolioNotesSortMode,
+function timestampMs(value: string | null): number | null {
+	if (!value) return null;
+	const parsed = Date.parse(value);
+	return Number.isNaN(parsed) ? null : parsed;
+}
+
+function compareNullableDates(
+	left: string | null,
+	right: string | null,
 ): number {
-	if (sortMode === "edited") {
-		return Date.parse(right.updated) - Date.parse(left.updated);
-	}
-	if (sortMode === "created") {
-		return Date.parse(right.created) - Date.parse(left.created);
-	}
+	const leftMs = timestampMs(left);
+	const rightMs = timestampMs(right);
+	if (leftMs === null && rightMs === null) return 0;
+	if (leftMs === null) return 1;
+	if (rightMs === null) return -1;
+	return rightMs - leftMs;
+}
+
+function compareTitles(left: FolioItem, right: FolioItem): number {
 	return (
 		noteTitle(left).localeCompare(noteTitle(right), undefined, {
 			sensitivity: "base",
 			numeric: true,
 		}) || left.note_path.localeCompare(right.note_path)
 	);
+}
+
+function compareNotes(
+	left: FolioItem,
+	right: FolioItem,
+	sortMode: FolioNotesSortMode,
+): number {
+	if (sortMode === "edited") {
+		return (
+			compareNullableDates(left.updated, right.updated) ||
+			compareTitles(left, right)
+		);
+	}
+	if (sortMode === "created") {
+		return (
+			compareNullableDates(left.created, right.created) ||
+			compareTitles(left, right)
+		);
+	}
+	return compareTitles(left, right);
 }
 
 function isFolioHeaderControl(target: EventTarget | null): boolean {
@@ -68,8 +101,16 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const { notes, isLoading, error, title, missingFolder } =
-		useFolioNotes(folioScope);
+	const { itemAppearance, setItemAppearance } = useFileTreeContext();
+	const {
+		notes,
+		filesTruncated,
+		isLoading,
+		error,
+		title,
+		nonMarkdownFileLimit,
+		missingFolder,
+	} = useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
@@ -92,7 +133,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
 	const taskSummaryPaths = useMemo(
-		() => visibleNotes.map((note) => note.note_path),
+		() =>
+			visibleNotes
+				.filter((note) => note.is_markdown)
+				.map((note) => note.note_path),
 		[visibleNotes],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(
@@ -168,6 +212,19 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[onDeleteFile],
 	);
+	const changeAppearance = useCallback(
+		async (path: string, appearance: FileTreeAppearance) => {
+			try {
+				await setItemAppearance(path, appearance);
+			} catch (error) {
+				console.error(
+					"Failed to update folio file appearance",
+					extractErrorMessage(error),
+				);
+			}
+		},
+		[setItemAppearance],
+	);
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
 			if (!visibleNotes.length || selectedIndex < 0) return;
@@ -213,31 +270,40 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			);
 		}
 		return (
-			<ul className="folioNotesList">
-				{visibleNotes.map((note) => (
-					<FolioNoteListItem
-						key={note.note_path}
-						note={note}
-						selected={activeTabPath === note.note_path}
-						onOpen={openNote}
-						onOpenInNewTab={openNoteInNewTab}
-						onPrefetch={prefetchNote}
-						onRename={onRenameFile ? renameNote : undefined}
-						onDelete={deleteNote}
-						onFocus={focusPane}
-						isRenaming={
-							Boolean(onRenameFile) && renamingPath === note.note_path
-						}
-						onCommitRename={commitRename}
-						onCancelRename={cancelRename}
-						taskSummary={
-							showTaskProgressIndicator
-								? (taskSummariesByPath[note.note_path] ?? null)
-								: null
-						}
-					/>
-				))}
-			</ul>
+			<>
+				{filesTruncated ? (
+					<div className="folioNotesState">
+						Showing the first {nonMarkdownFileLimit.toLocaleString()} files.
+					</div>
+				) : null}
+				<ul className="folioNotesList">
+					{visibleNotes.map((note) => (
+						<FolioNoteListItem
+							key={note.note_path}
+							note={note}
+							selected={activeTabPath === note.note_path}
+							onOpen={openNote}
+							onOpenInNewTab={openNoteInNewTab}
+							onPrefetch={prefetchNote}
+							onRename={onRenameFile ? renameNote : undefined}
+							onDelete={deleteNote}
+							onFocus={focusPane}
+							isRenaming={
+								Boolean(onRenameFile) && renamingPath === note.note_path
+							}
+							onCommitRename={commitRename}
+							onCancelRename={cancelRename}
+							appearance={itemAppearance[note.note_path] ?? null}
+							onChangeAppearance={changeAppearance}
+							taskSummary={
+								showTaskProgressIndicator && note.is_markdown
+									? (taskSummariesByPath[note.note_path] ?? null)
+									: null
+							}
+						/>
+					))}
+				</ul>
+			</>
 		);
 	})();
 
