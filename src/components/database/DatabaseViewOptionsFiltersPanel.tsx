@@ -195,6 +195,10 @@ export function FiltersPanel({
 					</button>
 				) : null}
 			</div>
+			<p className="databaseViewPanelHint">
+				Filters use database columns, tags, and note properties. To find words
+				in note text, use Search or this view's search box.
+			</p>
 			{filterError ? (
 				<div className="databaseViewPanelError">{filterError}</div>
 			) : null}

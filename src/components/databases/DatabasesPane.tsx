@@ -1090,13 +1090,6 @@ function DatabasesPaneContent({
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
 					) : null}
-					{activeConfig.filters.length > 0 ? (
-						<div className="databaseNotice databaseNoticeInfo">
-							Filters only check database fields, tags, metadata, and
-							frontmatter/properties. Use source Search or in-view search to
-							match note body text.
-						</div>
-					) : null}
 					{rowsLoading ? (
 						<div className="databaseLoadingState">Loading rows…</div>
 					) : activeConfig.view.layout === "board" ? (
