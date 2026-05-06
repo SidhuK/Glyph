@@ -505,7 +505,8 @@ export const MainContent = memo(function MainContent({
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const showTabBar = tabs.length > 0;
-	const aiSidebarVisible = aiEnabled && !zenModeActive && aiPanelOpen;
+	const aiSidebarVisible =
+		aiEnabled && !zenModeActive && aiPanelOpen && !infoSidebarOpen;
 	const rightSidebarOpen =
 		Boolean(spacePath) &&
 		!settingsMode &&
@@ -909,7 +910,7 @@ export const MainContent = memo(function MainContent({
 				data-open={rightSidebarOpen ? "true" : undefined}
 				style={notesInfoSidebarHostStyle}
 			>
-				{aiEnabled && !zenModeActive ? (
+				{aiSidebarVisible ? (
 					<AIFloatingHost
 						isOpen={aiPanelOpen}
 						onToggle={() => setAiPanelOpen((open) => !open)}
