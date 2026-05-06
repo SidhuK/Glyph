@@ -167,27 +167,17 @@ fn is_pdf_rel_path(path: &str) -> bool {
 }
 
 fn is_standard_wikilink_rel_path(entry: &FileEntry) -> bool {
-    entry.is_markdown || is_pdf_rel_path(&entry.rel_path)
+    entry.is_markdown || is_pdf_rel_path(&entry.rel_path) || is_image_rel_path(&entry.rel_path)
 }
 
-fn choose_ambiguous_image_match(matches: Vec<String>) -> Option<String> {
-    if matches.is_empty() {
-        return None;
-    }
-    if matches.len() == 1 {
-        return matches.into_iter().next();
-    }
-    let mut root_only = matches
-        .iter()
-        .filter(|path| !path.contains('/'))
-        .cloned()
-        .collect::<Vec<_>>();
-    if root_only.len() == 1 {
-        return root_only.pop();
-    }
-    let mut sorted = matches;
-    sorted.sort_by_cached_key(|path| path.to_lowercase());
-    sorted.into_iter().next()
+fn choose_unambiguous_match(matches: Vec<String>) -> Option<String> {
+    (matches.len() == 1)
+        .then(|| matches)
+        .and_then(|matches| matches.into_iter().next())
+}
+
+fn has_explicit_extension(path: &str) -> bool {
+    basename(path).rsplit_once('.').is_some()
 }
 
 fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
@@ -239,11 +229,10 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         .map(|entry| entry.rel_path.clone())
         .collect::<Vec<_>>();
     if !exact_name_matches.is_empty() {
-        return choose_ambiguous_image_match(exact_name_matches);
+        return choose_unambiguous_match(exact_name_matches);
     }
 
-    let has_explicit_extension = file_name_query.rsplit_once('.').is_some();
-    if has_explicit_extension {
+    if has_explicit_extension(file_name_query) {
         return None;
     }
 
@@ -254,7 +243,86 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         })
         .map(|entry| entry.rel_path.clone())
         .collect::<Vec<_>>();
-    choose_ambiguous_image_match(stem_matches)
+    choose_unambiguous_match(stem_matches)
+}
+
+fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
+    let raw = target
+        .split('#')
+        .next()
+        .unwrap_or("")
+        .split('|')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .replace('\\', "/");
+    if raw.is_empty() {
+        return None;
+    }
+
+    let pre_normalized = raw.trim_start_matches("./");
+    let is_explicit_path = pre_normalized.starts_with('/') || pre_normalized.contains('/');
+    let normalized = normalize_segments(pre_normalized);
+    if normalized.is_empty() {
+        return None;
+    }
+
+    let link_entries = entries
+        .iter()
+        .filter(|entry| is_standard_wikilink_rel_path(entry))
+        .collect::<Vec<_>>();
+
+    if is_explicit_path {
+        let path_query = normalized.trim_start_matches('/').to_string();
+        if let Some(hit) = link_entries
+            .iter()
+            .find(|entry| normalize_path(&entry.rel_path).eq_ignore_ascii_case(&path_query))
+        {
+            return Some(hit.rel_path.clone());
+        }
+        if !has_explicit_extension(&path_query) {
+            let markdown_query = format!("{path_query}.md");
+            return link_entries
+                .iter()
+                .find(|entry| normalize_path(&entry.rel_path).eq_ignore_ascii_case(&markdown_query))
+                .map(|entry| entry.rel_path.clone());
+        }
+        return None;
+    }
+
+    let file_name_query = normalized.trim_start_matches('/');
+    if has_explicit_extension(file_name_query) {
+        let matches = link_entries
+            .iter()
+            .filter(|entry| basename(&entry.rel_path).eq_ignore_ascii_case(file_name_query))
+            .map(|entry| entry.rel_path.clone())
+            .collect::<Vec<_>>();
+        return choose_unambiguous_match(matches);
+    }
+
+    let lowered = normalize(file_name_query);
+    let markdown_entries = link_entries
+        .iter()
+        .filter(|entry| entry.is_markdown)
+        .collect::<Vec<_>>();
+    if let Some(hit) = markdown_entries
+        .iter()
+        .find(|entry| normalize(entry.rel_path.trim_end_matches(".md")) == lowered)
+    {
+        return Some(hit.rel_path.clone());
+    }
+    if let Some(hit) = markdown_entries
+        .iter()
+        .find(|entry| normalize(&title_from_rel(&entry.rel_path)) == lowered)
+    {
+        return Some(hit.rel_path.clone());
+    }
+    if let Some(hit) = markdown_entries.iter().find(|entry| {
+        normalize(entry.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}"))
+    }) {
+        return Some(hit.rel_path.clone());
+    }
+    None
 }
 
 #[tauri::command]
@@ -265,32 +333,7 @@ pub async fn space_resolve_wikilink(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
-        let norm = normalize_path(&target).trim_start_matches("./").to_string();
-        let lowered = normalize(norm.trim_end_matches(".md"));
-        if lowered.is_empty() {
-            return Ok(None);
-        }
-        if let Some(hit) = entries
-            .iter()
-            .filter(|e| is_standard_wikilink_rel_path(e))
-            .find(|e| normalize(e.rel_path.trim_end_matches(".md")) == lowered)
-        {
-            return Ok(Some(hit.rel_path.clone()));
-        }
-        if let Some(hit) = entries
-            .iter()
-            .filter(|e| is_standard_wikilink_rel_path(e))
-            .find(|e| normalize(&title_from_rel(&e.rel_path)) == lowered)
-        {
-            return Ok(Some(hit.rel_path.clone()));
-        }
-        if let Some(hit) = entries.iter().find(|e| {
-            is_standard_wikilink_rel_path(e)
-                && normalize(e.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}"))
-        }) {
-            return Ok(Some(hit.rel_path.clone()));
-        }
-        Ok(None)
+        Ok(resolve_standard_wikilink_target(&entries, &target))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -361,7 +404,7 @@ pub async fn space_resolve_markdown_link(
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_image_wikilink_target, FileEntry};
+    use super::{resolve_image_wikilink_target, resolve_standard_wikilink_target, FileEntry};
 
     fn entry(path: &str) -> FileEntry {
         FileEntry {
@@ -407,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn image_wikilink_ambiguous_filename_prefers_single_root_file() {
+    fn image_wikilink_ambiguous_filename_does_not_prefer_root_file() {
         let entries = vec![
             entry("photo.png"),
             entry("assets/photo.png"),
@@ -415,18 +458,38 @@ mod tests {
             entry("docs/note.md"),
         ];
         let resolved = resolve_image_wikilink_target(&entries, "photo.png");
-        assert_eq!(resolved, Some("photo.png".to_string()));
+        assert_eq!(resolved, None);
     }
 
     #[test]
-    fn image_wikilink_ambiguous_filename_falls_back_to_lexicographic() {
+    fn image_wikilink_ambiguous_filename_does_not_guess() {
         let entries = vec![
             entry("zeta/photo.png"),
             entry("alpha/photo.png"),
             entry("docs/note.md"),
         ];
         let resolved = resolve_image_wikilink_target(&entries, "photo.png");
-        assert_eq!(resolved, Some("alpha/photo.png".to_string()));
+        assert_eq!(resolved, None);
+    }
+
+    #[test]
+    fn standard_wikilink_resolves_pdf_and_image_paths_without_guessing_duplicates() {
+        let entries = vec![
+            entry("assets/logo.png"),
+            entry("archive/logo.png"),
+            entry("docs/spec.pdf"),
+            entry("docs/note.md"),
+        ];
+
+        assert_eq!(
+            resolve_standard_wikilink_target(&entries, "assets/logo.png"),
+            Some("assets/logo.png".to_string())
+        );
+        assert_eq!(
+            resolve_standard_wikilink_target(&entries, "spec.pdf"),
+            Some("docs/spec.pdf".to_string())
+        );
+        assert_eq!(resolve_standard_wikilink_target(&entries, "logo.png"), None);
     }
 
     #[test]

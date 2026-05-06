@@ -188,7 +188,12 @@ fn index_note_with_conn(
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
 
     for to_id in to_ids {
-        inserted.insert((Some(to_id), None, "note"));
+        let kind = if utils::is_markdown_path(Path::new(&to_id)) {
+            "note"
+        } else {
+            "file"
+        };
+        inserted.insert((Some(to_id), None, kind));
     }
 
     for to_title in to_titles {

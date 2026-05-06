@@ -298,7 +298,10 @@ pub async fn space_rename_path(
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
         let is_dir = from_abs.is_dir();
-        let rewrite_plan = if is_dir || utils::is_markdown_path(&from_abs) {
+        let rewrite_plan = if is_dir
+            || utils::is_markdown_path(&from_abs)
+            || link_rewrite::is_supported_attachment_path(&from_abs)
+        {
             Some(link_rewrite::plan_for_rename(
                 &root, &from_abs, &from_path, &to_path,
             ))
