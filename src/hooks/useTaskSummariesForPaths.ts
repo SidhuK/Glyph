@@ -19,6 +19,7 @@ export function useTaskSummariesForPaths(
 			taskSummaryPaths,
 		],
 		enabled: enabled === true && taskSummaryPaths.length > 0,
+		placeholderData: (previousData) => previousData,
 		queryFn: async () => {
 			const items = await invoke("task_summaries_for_paths", {
 				note_paths: taskSummaryPaths,
