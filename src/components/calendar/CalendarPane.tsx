@@ -8,6 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
@@ -105,9 +106,6 @@ export function CalendarPane({
 	);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
-	const [selectedRecentNotePath, setSelectedRecentNotePath] = useState<
-		string | null
-	>(null);
 	const queryClient = useQueryClient();
 	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
 	const { spacePath } = useSpace();
@@ -404,6 +402,14 @@ export function CalendarPane({
 		() => parseCalendarDate(selectedDate),
 		[selectedDate],
 	);
+	const selectedDateHeading = useMemo(
+		() => ({
+			dateLabel: format(selectedDateObj, "MMMM d,"),
+			weekdayLabel: format(selectedDateObj, "EEEE"),
+			yearLabel: format(selectedDateObj, "yyyy"),
+		}),
+		[selectedDateObj],
+	);
 	const anchorDateObj = useMemo(
 		() => parseCalendarDate(anchorDate),
 		[anchorDate],
@@ -446,21 +452,8 @@ export function CalendarPane({
 	const ongoingTasks = selectedTasks?.ongoing ?? [];
 	const noteActivity = data?.detail.note_activity ?? [];
 
-	const effectiveSelectedRecentNotePath = useMemo(() => {
-		if (!selectedRecentNotePath) return null;
-		return noteActivity.some(
-			(item) => item.note_path === selectedRecentNotePath,
-		)
-			? selectedRecentNotePath
-			: null;
-	}, [noteActivity, selectedRecentNotePath]);
-
-	const handleSelectRecentNote = useCallback((notePath: string) => {
-		setSelectedRecentNotePath(notePath);
-	}, []);
 	const handleOpenRecentNote = useCallback(
 		(notePath: string) => {
-			setSelectedRecentNotePath(notePath);
 			void onOpenFile(notePath);
 		},
 		[onOpenFile],
@@ -480,6 +473,23 @@ export function CalendarPane({
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
+					<div
+						className="calendarDateBanner"
+						aria-label={`Selected date ${selectedDateHeading.dateLabel}, ${selectedDateHeading.weekdayLabel}`}
+					>
+						<div className="calendarDateBannerText">
+							<h3 className="calendarDateBannerTitle">
+								<span>{selectedDateHeading.dateLabel}</span>{" "}
+								<span className="calendarDateBannerYear">
+									{selectedDateHeading.yearLabel}
+								</span>
+							</h3>
+						</div>
+						<span className="calendarDateBannerDay">
+							{selectedDateHeading.weekdayLabel}
+						</span>
+					</div>
+
 					{/* ── Task composer ── */}
 					{dailyNotesFolder ? (
 						<div className="calendarTaskComposer">
@@ -580,8 +590,6 @@ export function CalendarPane({
 								</div>
 								<RecentNotesBoardStrip
 									notes={noteActivity}
-									selectedNotePath={effectiveSelectedRecentNotePath}
-									onSelectNote={handleSelectRecentNote}
 									onOpenNote={handleOpenRecentNote}
 									onPrefetchNote={prefetchNote}
 								/>

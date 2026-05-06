@@ -3,8 +3,6 @@ import { FileText } from "../Icons";
 
 interface RecentNotesBoardStripProps {
 	notes: CalendarNoteActivityItem[];
-	selectedNotePath: string | null;
-	onSelectNote: (notePath: string) => void;
 	onOpenNote: (notePath: string) => void;
 	onPrefetchNote?: (notePath: string) => void;
 }
@@ -21,8 +19,6 @@ function noteTitle(note: CalendarNoteActivityItem): string {
 
 export function RecentNotesBoardStrip({
 	notes,
-	selectedNotePath,
-	onSelectNote,
 	onOpenNote,
 	onPrefetchNote,
 }: RecentNotesBoardStripProps) {
@@ -39,25 +35,16 @@ export function RecentNotesBoardStrip({
 						<button
 							type="button"
 							className="commandPaletteItem commandPaletteRecentItem calendarRecentListItem"
-							data-state={
-								selectedNotePath === note.note_path ? "selected" : undefined
-							}
-							onClick={() => onSelectNote(note.note_path)}
+							onClick={() => onOpenNote(note.note_path)}
 							onMouseEnter={() => onPrefetchNote?.(note.note_path)}
 							onFocus={() => onPrefetchNote?.(note.note_path)}
-							onDoubleClick={() => onOpenNote(note.note_path)}
 							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									event.preventDefault();
-									onOpenNote(note.note_path);
-									return;
-								}
 								if (event.key === " ") {
 									event.preventDefault();
-									onSelectNote(note.note_path);
+									onOpenNote(note.note_path);
 								}
 							}}
-							title="Double-click to open note"
+							title="Open note"
 						>
 							<div className="commandPaletteRecentIcon">
 								<FileText size={14} />

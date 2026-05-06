@@ -27,6 +27,47 @@
 	width: 100%;
 }
 
+/* ── Selected date banner ── */
+
+.calendarDateBanner {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 0 2px;
+}
+
+.calendarDateBannerText {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.calendarDateBannerTitle {
+	margin: 0;
+	font-size: 1.62rem;
+	font-weight: 560;
+	letter-spacing: 0;
+	line-height: 1.05;
+	color: var(--text-primary);
+}
+
+.calendarDateBannerYear {
+	color: color-mix(in srgb, var(--interactive-accent) 82%, var(--text-primary));
+	font-weight: 680;
+}
+
+.calendarDateBannerDay {
+	flex: 0 0 auto;
+	padding: 4px 0 3px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	line-height: 1;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+}
+
 /* ── Nav inside calendar box ── */
 
 .calendarLeftCol .calendarToolbarNav {
@@ -63,14 +104,14 @@
 	border-radius: 12px;
 	width: 100%;
 	margin: 0;
-	background: var(--bg-secondary);
-	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	background: transparent;
+	border: none;
 }
 
 .calendarTaskComposer input {
-	border: 1px solid color-mix(in srgb, var(--border-default) 40%, transparent);
+	border: none;
 	box-shadow: none;
-	background: var(--bg-primary);
+	background: var(--bg-tertiary);
 	color: var(--text-primary);
 	height: 28px;
 }
@@ -117,8 +158,8 @@
 	gap: 10px;
 	padding: 10px 12px;
 	border-radius: 12px;
-	background: var(--bg-secondary);
-	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	background: transparent;
+	border: none;
 	font-size: 0.8rem;
 	color: var(--text-secondary);
 }
@@ -136,8 +177,8 @@
 	grid-template-columns: 1fr auto;
 	gap: 0;
 	align-items: start;
-	background: var(--bg-secondary);
-	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	background: transparent;
+	border: none;
 	border-radius: 12px;
 	padding: clamp(8px, 1vw, 12px);
 }
@@ -157,8 +198,6 @@
 }
 
 .calendarLeftCol {
-	border-left: 1px solid
-		color-mix(in srgb, var(--border-default) 30%, transparent);
 	padding-left: clamp(12px, 1.8vw, 20px);
 	margin-left: clamp(12px, 1.8vw, 20px);
 	position: sticky;
@@ -476,8 +515,7 @@
 	width: 100%;
 	align-self: stretch;
 	background: transparent;
-	border-top: 1px solid
-		color-mix(in srgb, var(--border-default) 18%, transparent);
+	border-top: none;
 	border-radius: 0;
 	overflow: hidden;
 	padding: 12px 20px 0;
@@ -535,10 +573,6 @@
 	min-height: 34px;
 }
 
-.calendarRecentListItem[data-state="selected"] {
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
-}
-
 .calendarRecentListEmpty {
 	margin: 0;
 	padding: 8px 12px;
@@ -578,11 +612,8 @@
 
 	.calendarLeftCol {
 		position: static;
-		border-left: none;
 		padding-left: 0;
 		margin-left: 0;
-		border-top: 1px solid
-			color-mix(in srgb, var(--border-default) 30%, transparent);
 		padding-top: clamp(10px, 1.8vw, 14px);
 	}
 
@@ -609,6 +640,16 @@
 		flex-direction: column;
 		align-items: stretch;
 		width: 100%;
+	}
+
+	.calendarDateBanner {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.calendarDateBannerTitle {
+		font-size: 1.34rem;
 	}
 
 	.calendarMiniDbHeader {
