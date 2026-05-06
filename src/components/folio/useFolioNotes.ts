@@ -15,6 +15,8 @@ export interface FolioItem extends AllDocsItem {
 	is_markdown: boolean;
 }
 
+const FOLIO_NON_MARKDOWN_FILE_LIMIT = 5_000;
+
 const folioFilesQueryKey = (folderPrefix: string | null) =>
 	["navigation", "folio-files", folderPrefix ?? "__all__"] as const;
 
@@ -129,11 +131,14 @@ async function listNonMarkdownFiles(folderPrefix: string | null) {
 			}
 			if (!entry.is_markdown) {
 				files.push(fileEntryToFolioItem(entry));
+				if (files.length >= FOLIO_NON_MARKDOWN_FILE_LIMIT) {
+					return { files, truncated: true };
+				}
 			}
 		}
 	}
 
-	return files;
+	return { files, truncated: false };
 }
 
 function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
@@ -155,6 +160,8 @@ export function useFolioNotes(scope: FolioScope) {
 	const folderPrefix = folderForScope(scope);
 	const folderRequired =
 		(scope.kind === "daily" || scope.kind === "templates") && !folderPrefix;
+	const includesNonMarkdownFiles =
+		scope.kind !== "tag" && scope.kind !== "person";
 	const query = useQuery({
 		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		queryFn: () => loadAllDocs(folderPrefix),
@@ -163,7 +170,7 @@ export function useFolioNotes(scope: FolioScope) {
 	const filesQuery = useQuery({
 		queryKey: folioFilesQueryKey(folderPrefix),
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
-		enabled: !folderRequired,
+		enabled: !folderRequired && includesNonMarkdownFiles,
 	});
 
 	useTauriEvent("notes:external_changed", () => {
@@ -183,17 +190,20 @@ export function useFolioNotes(scope: FolioScope) {
 	const items = useMemo(
 		() =>
 			filterNotesForScope(
-				mergeFolioItems(query.data ?? [], filesQuery.data ?? []),
+				mergeFolioItems(query.data ?? [], filesQuery.data?.files ?? []),
 				scope,
 			),
-		[filesQuery.data, query.data, scope],
+		[filesQuery.data?.files, query.data, scope],
 	);
 
 	return {
 		notes: items,
+		filesTruncated:
+			includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
 		isLoading: query.isLoading || filesQuery.isLoading,
 		error: query.error ?? filesQuery.error,
 		title: folioScopeTitle(scope),
+		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 		missingFolder: folderRequired,
 	};
 }

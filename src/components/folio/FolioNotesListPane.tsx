@@ -86,8 +86,15 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
-	const { notes, isLoading, error, title, missingFolder } =
-		useFolioNotes(folioScope);
+	const {
+		notes,
+		filesTruncated,
+		isLoading,
+		error,
+		title,
+		nonMarkdownFileLimit,
+		missingFolder,
+	} = useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
@@ -247,33 +254,40 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			);
 		}
 		return (
-			<ul className="folioNotesList">
-				{visibleNotes.map((note) => (
-					<FolioNoteListItem
-						key={note.note_path}
-						note={note}
-						selected={activeTabPath === note.note_path}
-						onOpen={openNote}
-						onOpenInNewTab={openNoteInNewTab}
-						onPrefetch={prefetchNote}
-						onRename={onRenameFile ? renameNote : undefined}
-						onDelete={deleteNote}
-						onFocus={focusPane}
-						isRenaming={
-							Boolean(onRenameFile) && renamingPath === note.note_path
-						}
-						onCommitRename={commitRename}
-						onCancelRename={cancelRename}
-						appearance={itemAppearance[note.note_path] ?? null}
-						onChangeAppearance={changeAppearance}
-						taskSummary={
-							showTaskProgressIndicator && note.is_markdown
-								? (taskSummariesByPath[note.note_path] ?? null)
-								: null
-						}
-					/>
-				))}
-			</ul>
+			<>
+				{filesTruncated ? (
+					<div className="folioNotesState">
+						Showing the first {nonMarkdownFileLimit.toLocaleString()} files.
+					</div>
+				) : null}
+				<ul className="folioNotesList">
+					{visibleNotes.map((note) => (
+						<FolioNoteListItem
+							key={note.note_path}
+							note={note}
+							selected={activeTabPath === note.note_path}
+							onOpen={openNote}
+							onOpenInNewTab={openNoteInNewTab}
+							onPrefetch={prefetchNote}
+							onRename={onRenameFile ? renameNote : undefined}
+							onDelete={deleteNote}
+							onFocus={focusPane}
+							isRenaming={
+								Boolean(onRenameFile) && renamingPath === note.note_path
+							}
+							onCommitRename={commitRename}
+							onCancelRename={cancelRename}
+							appearance={itemAppearance[note.note_path] ?? null}
+							onChangeAppearance={changeAppearance}
+							taskSummary={
+								showTaskProgressIndicator && note.is_markdown
+									? (taskSummariesByPath[note.note_path] ?? null)
+									: null
+							}
+						/>
+					))}
+				</ul>
+			</>
 		);
 	})();
 
