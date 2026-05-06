@@ -1,13 +1,27 @@
+.databaseTableShell::before {
+	content: "";
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	display: block;
+	height: var(--database-table-header-height);
+	margin-bottom: calc(var(--database-table-header-height) * -1);
+	background: var(--bg-primary);
+	pointer-events: none;
+}
+
 .databaseTable [data-slot="table-header"] {
 	position: sticky;
 	top: 0;
-	z-index: 4;
+	z-index: 6;
+	background: var(--bg-primary);
+	isolation: isolate;
 }
 
 .databaseHeadCell {
 	position: sticky;
 	top: 0;
-	z-index: 1;
+	z-index: 7;
 	background: var(--bg-primary);
 	text-align: left;
 	padding-right: 10px;
@@ -127,6 +141,8 @@
 }
 
 .databaseBodyCell {
+	position: relative;
+	z-index: 0;
 	vertical-align: middle;
 	text-align: left;
 	padding-top: 0;
@@ -393,6 +409,8 @@
 }
 
 .databaseRow {
+	position: relative;
+	z-index: 0;
 	cursor: default;
 	transition: background-color 120ms ease;
 }
@@ -414,6 +432,8 @@
 }
 
 .databaseGroupHeaderRow {
+	position: relative;
+	z-index: 0;
 	background: var(--bg-primary);
 }
 

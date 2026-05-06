@@ -621,6 +621,13 @@
 	cursor: pointer;
 }
 
+.databaseViewPanelHint {
+	margin: -4px 8px 10px;
+	color: var(--text-tertiary);
+	font-size: 0.76rem;
+	line-height: 1.35;
+}
+
 .databaseViewPanelError {
 	margin: 0 8px 8px;
 	color: var(--text-error);

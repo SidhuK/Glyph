@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import { invoke } from "../../lib/tauri";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { isPdfTarget } from "../editor/extensions/wikiLink";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,
@@ -62,6 +63,17 @@ export function useWorkspaceLinkEvents({
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
+			if (isPdfTarget(normalizedTarget)) {
+				const resolved = await invoke("space_resolve_wikilink", {
+					target: normalizedTarget,
+				});
+				if (resolved) {
+					await openWorkspaceFile(resolved);
+					return;
+				}
+				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
+				return;
+			}
 			if (!isMarkdownWikiTarget(normalizedTarget)) {
 				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
 				return;
@@ -130,6 +142,11 @@ export function useWorkspaceLinkEvents({
 							return;
 						}
 						setError(`Could not resolve image wikilink: ${detail.target}`);
+						return;
+					}
+
+					if (isPdfTarget(normalizedTarget)) {
+						await openOrCreateWikiLinkTarget(detail.target);
 						return;
 					}
 

@@ -1049,23 +1049,16 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 							scheduleAnchor: taskInlineDates.scheduleAnchor,
 							onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
 							onOpenPopover: taskInlineDates.openTaskPopover,
-							activeDateField: taskInlineDates.activeDateField,
-							onActiveDateFieldChange: taskInlineDates.setActiveDateField,
-							onFocusDateField: taskInlineDates.focusTaskDateField,
-							pickerMonth: taskInlineDates.pickerMonth,
-							onPickerMonthChange: taskInlineDates.setPickerMonth,
 							scheduledDate: taskInlineDates.scheduledDate,
 							dueDate: taskInlineDates.dueDate,
 							onScheduledDateChange: taskInlineDates.setScheduledDate,
 							onDueDateChange: taskInlineDates.setDueDate,
-							onApplyDates: taskInlineDates.applyTaskDates,
-							onClearDates: () => {
-								taskInlineDates.setScheduledDate("");
-								taskInlineDates.setDueDate("");
+							onResetDraftDates: () => {
+								void taskInlineDates.resetDraftDates();
 							},
-							activeDate: taskInlineDates.activeDate,
-							onActiveDateChange: taskInlineDates.updateActiveDate,
-							formatPickerValue: taskInlineDates.formatPickerValue,
+							onUpdateDates: (scheduled, due) => {
+								void taskInlineDates.updateTaskDates(scheduled, due);
+							},
 						}}
 						backlinks={{
 							show: showBacklinks,

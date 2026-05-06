@@ -13,6 +13,7 @@ interface FolioWorkspaceProps {
 	activeTabPath: string | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
+	onRenameFile: (relPath: string, nextName: string) => Promise<string | null>;
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
 
@@ -21,6 +22,7 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 	activeTabPath,
 	onOpenFile,
 	onOpenFileInNewTab,
+	onRenameFile,
 	onDeleteFile,
 }: FolioWorkspaceProps) {
 	const [notesWidth, setNotesWidth] = useState(320);
@@ -45,6 +47,7 @@ export const FolioWorkspace = memo(function FolioWorkspace({
 				activeTabPath={activeTabPath}
 				onOpenFile={onOpenFile}
 				onOpenFileInNewTab={onOpenFileInNewTab}
+				onRenameFile={onRenameFile}
 				onDeleteFile={onDeleteFile}
 			/>
 			<div

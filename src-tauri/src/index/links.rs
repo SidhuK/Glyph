@@ -50,11 +50,11 @@ pub fn parse_outgoing_links(
                 let inner = inner.split('|').next().unwrap_or(inner).trim();
                 let inner = inner.split('#').next().unwrap_or(inner).trim();
                 if !inner.is_empty() {
-                    if inner.contains('/') || inner.ends_with(".md") {
-                        let p = if inner.ends_with(".md") {
-                            inner.to_string()
-                        } else {
+                    if is_file_wikilink_target(inner) {
+                        let p = if should_append_markdown_extension(inner) {
                             format!("{inner}.md")
+                        } else {
+                            inner.to_string()
                         };
                         if let Some(p) = normalize_rel_path(&p) {
                             paths.insert(p);
@@ -92,7 +92,7 @@ pub fn parse_outgoing_links(
                 j = close + 1;
                 continue;
             }
-            if !target.ends_with(".md") {
+            if !is_linkable_file_target(target) {
                 j = close + 1;
                 continue;
             }
@@ -115,4 +115,70 @@ pub fn parse_outgoing_links(
     }
 
     (paths, titles)
+}
+
+fn is_file_wikilink_target(target: &str) -> bool {
+    target.contains('/') || is_linkable_file_target(target)
+}
+
+fn should_append_markdown_extension(target: &str) -> bool {
+    target.contains('/') && !has_extension(target)
+}
+
+fn has_extension(target: &str) -> bool {
+    Path::new(target).extension().is_some()
+}
+
+fn is_linkable_file_target(target: &str) -> bool {
+    let Some(ext) = Path::new(target)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.to_ascii_lowercase())
+    else {
+        return false;
+    };
+    matches!(
+        ext.as_str(),
+        "md" | "pdf"
+            | "png"
+            | "jpg"
+            | "jpeg"
+            | "webp"
+            | "gif"
+            | "svg"
+            | "bmp"
+            | "avif"
+            | "tif"
+            | "tiff"
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_outgoing_links;
+
+    #[test]
+    fn parses_attachment_wikilinks_as_file_paths() {
+        let (paths, titles) = parse_outgoing_links(
+            "notes/source.md",
+            "[[assets/logo.png]] [[spec.pdf]] [[Project]] ![[hero.webp]]",
+        );
+
+        assert!(paths.contains("assets/logo.png"));
+        assert!(paths.contains("spec.pdf"));
+        assert!(paths.contains("hero.webp"));
+        assert!(titles.contains("Project"));
+    }
+
+    #[test]
+    fn parses_attachment_markdown_links_relative_to_source() {
+        let (paths, titles) = parse_outgoing_links(
+            "notes/source.md",
+            "[logo](../assets/logo.png) [note](peer.md)",
+        );
+
+        assert!(paths.contains("assets/logo.png"));
+        assert!(paths.contains("notes/peer.md"));
+        assert!(titles.is_empty());
+    }
 }

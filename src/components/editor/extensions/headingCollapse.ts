@@ -303,6 +303,16 @@ export const HeadingCollapse = Extension.create({
 						};
 					},
 					apply: (transaction, pluginState, _oldState, newState) => {
+						const meta = transaction.getMeta(
+							headingCollapsePluginKey,
+						) as HeadingCollapseMeta | null;
+						if (
+							!pluginState.enabled &&
+							pluginState.collapsedPositions.size === 0 &&
+							!meta
+						) {
+							return pluginState;
+						}
 						const headings = extractHeadingRanges(newState.doc);
 						const headingPositions = new Set(
 							headings.map((heading) => heading.pos),
@@ -318,9 +328,6 @@ export const HeadingCollapse = Extension.create({
 							),
 						);
 
-						const meta = transaction.getMeta(
-							headingCollapsePluginKey,
-						) as HeadingCollapseMeta | null;
 						if (meta?.type === "toggle") {
 							const next = new Set(collapsedPositions);
 							if (next.has(meta.pos)) {

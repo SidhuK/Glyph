@@ -10,7 +10,7 @@ import { Input } from "../ui/shadcn/input";
 import { DatabaseViewOptionsPopover } from "./DatabaseViewOptionsPopover";
 
 interface DatabaseToolbarProps {
-	databaseView: "table" | "board" | "list";
+	databaseView: "table" | "board";
 	groupColumns: DatabaseColumn[];
 	groupColumnId: string | null;
 	config: DatabaseConfig;

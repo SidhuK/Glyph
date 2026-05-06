@@ -1,4 +1,5 @@
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
+import { ProviderLogo } from "../../ai/modelSelectorConstants";
 import { Input } from "../../ui/shadcn/input";
 import {
 	SettingsRow,
@@ -6,6 +7,52 @@ import {
 	SettingsToggle,
 } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
+
+interface AiProviderOption {
+	value: AiProviderKind;
+	label: string;
+}
+
+interface AiProviderOptionGroup {
+	label: string;
+	options: AiProviderOption[];
+}
+
+const aiProviderGroups: AiProviderOptionGroup[] = [
+	{
+		label: "Agents",
+		options: [
+			{ value: "codex_chatgpt", label: "Codex" },
+			{ value: "opencode", label: "OpenCode" },
+			{ value: "amp", label: "Amp" },
+		],
+	},
+	{
+		label: "API",
+		options: [
+			{ value: "openai", label: "OpenAI" },
+			{ value: "anthropic", label: "Anthropic" },
+			{ value: "gemini", label: "Google" },
+			{ value: "openrouter", label: "OpenRouter" },
+			{ value: "openai_compat", label: "OpenAI compatible" },
+		],
+	},
+	{
+		label: "Local",
+		options: [
+			{ value: "llama_cpp", label: "llama.cpp" },
+			{ value: "ollama", label: "Ollama" },
+		],
+	},
+];
+
+function findProviderOption(provider: AiProviderKind): AiProviderOption {
+	for (const group of aiProviderGroups) {
+		const option = group.options.find((entry) => entry.value === provider);
+		if (option) return option;
+	}
+	return { value: provider, label: provider };
+}
 
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
@@ -34,6 +81,7 @@ export function AiProviderSection({
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
 			: "https://api.example.com/v1";
+	const selectedProvider = findProviderOption(profileDraft.provider);
 
 	return (
 		<SettingsSection
@@ -46,23 +94,33 @@ export function AiProviderSection({
 				description="Switch between provider configurations."
 			>
 				<div className="settingsInline settingsInlineWide">
+					<div
+						className="settingsProviderNativeLogo"
+						aria-hidden="true"
+						data-provider={selectedProvider.value}
+					>
+						<ProviderLogo
+							provider={selectedProvider.value}
+							className="settingsProviderNativeLogoImage"
+						/>
+					</div>
 					<select
 						id="aiProvider"
+						className="settingsProviderNativeSelect"
 						value={profileDraft.provider}
 						onChange={(event) =>
 							void onProviderChange(event.target.value as AiProviderKind)
 						}
 					>
-						<option value="codex_chatgpt">Codex (ChatGPT)</option>
-						<option value="amp">Amp</option>
-						<option value="opencode">OpenCode</option>
-						<option value="openai">OpenAI</option>
-						<option value="openrouter">OpenRouter</option>
-						<option value="anthropic">Anthropic</option>
-						<option value="gemini">Gemini</option>
-						<option value="ollama">Ollama</option>
-						<option value="llama_cpp">llama.cpp</option>
-						<option value="openai_compat">OpenAI-compatible</option>
+						{aiProviderGroups.map((group) => (
+							<optgroup key={group.label} label={group.label}>
+								{group.options.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</optgroup>
+						))}
 					</select>
 				</div>
 			</SettingsRow>

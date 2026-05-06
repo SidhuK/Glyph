@@ -1,4 +1,7 @@
-use std::path::{Component, Path};
+use std::{
+    collections::HashMap,
+    path::{Component, Path},
+};
 
 use serde::Serialize;
 
@@ -11,6 +14,8 @@ pub struct LinkRewritePlan {
     pub from_title: String,
     pub to_title: String,
     pub is_dir: bool,
+    pub from_basename_is_unique: bool,
+    markdown_files: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -23,7 +28,10 @@ pub fn rewrite_links_after_rename(
     space_root: &Path,
     plan: &LinkRewritePlan,
 ) -> Result<LinkRewriteResult, String> {
-    let markdown_files = collect_markdown_files(space_root)?;
+    let markdown_files = match &plan.markdown_files {
+        Some(files) => files.clone(),
+        None => collect_markdown_files(space_root)?,
+    };
     let mut rewrites = Vec::new();
 
     for rel_path in markdown_files {
@@ -220,16 +228,24 @@ fn rewrite_target(target: &str, plan: &LinkRewritePlan, markdown_link: bool) -> 
         return rewrite_prefix_target(path_target, &plan.from_rel_path, &plan.to_rel_path);
     }
 
+    let is_markdown_rename = is_markdown_rel_path(&plan.from_rel_path);
     let from_no_ext = strip_md_extension(&plan.from_rel_path);
     let to_no_ext = strip_md_extension(&plan.to_rel_path);
 
     if path_target == plan.from_rel_path {
         return Some(plan.to_rel_path.clone());
     }
-    if path_target == from_no_ext {
+    if is_markdown_rename && path_target == from_no_ext {
         return Some(to_no_ext);
     }
-    if !markdown_link && target == plan.from_title {
+    if !is_markdown_rename
+        && !markdown_link
+        && plan.from_basename_is_unique
+        && path_target.eq_ignore_ascii_case(&basename(&plan.from_rel_path))
+    {
+        return Some(plan.to_rel_path.clone());
+    }
+    if is_markdown_rename && !markdown_link && target == plan.from_title {
         return Some(plan.to_title.clone());
     }
     None
@@ -371,6 +387,45 @@ fn strip_md_extension(path: &str) -> String {
     path.strip_suffix(".md").unwrap_or(path).to_string()
 }
 
+fn basename(path: &str) -> String {
+    Path::new(path)
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or(path)
+        .to_string()
+}
+
+fn is_markdown_rel_path(path: &str) -> bool {
+    matches!(
+        Path::new(path)
+            .extension()
+            .and_then(|value| value.to_str())
+            .map(|value| value.to_ascii_lowercase())
+            .as_deref(),
+        Some("md") | Some("markdown")
+    )
+}
+
+pub fn is_supported_attachment_path(path: &Path) -> bool {
+    matches!(
+        path.extension()
+            .and_then(|value| value.to_str())
+            .map(|value| value.to_ascii_lowercase())
+            .as_deref(),
+        Some("pdf")
+            | Some("png")
+            | Some("jpg")
+            | Some("jpeg")
+            | Some("webp")
+            | Some("gif")
+            | Some("svg")
+            | Some("bmp")
+            | Some("avif")
+            | Some("tif")
+            | Some("tiff")
+    )
+}
+
 fn title_from_rel_path(path: &str) -> String {
     Path::new(path)
         .file_stem()
@@ -386,6 +441,12 @@ pub fn plan_for_rename(
     to_path: &str,
 ) -> LinkRewritePlan {
     let is_dir = from_abs.is_dir();
+    let is_markdown_rename = is_markdown_rel_path(from_path);
+    let attachment_link_context = if !is_dir && !is_markdown_rename {
+        collect_markdown_files_and_basename_counts(root).ok()
+    } else {
+        None
+    };
     let from_title =
         note_title_for_path(root, from_path).unwrap_or_else(|| title_from_rel_path(from_path));
     let to_title = note_title_for_path(root, to_path)
@@ -405,7 +466,70 @@ pub fn plan_for_rename(
         from_title,
         to_title,
         is_dir,
+        from_basename_is_unique: attachment_link_context.as_ref().is_some_and(
+            |(_markdown_files, basename_counts)| basename_is_unique(basename_counts, from_path),
+        ),
+        markdown_files: attachment_link_context
+            .map(|(markdown_files, _basename_counts)| markdown_files),
     }
+}
+
+fn basename_is_unique(basename_counts: &HashMap<String, usize>, rel_path: &str) -> bool {
+    let name = basename(rel_path);
+    if name.is_empty() {
+        return false;
+    }
+
+    basename_counts
+        .get(&name.to_ascii_lowercase())
+        .copied()
+        .unwrap_or(0)
+        == 1
+}
+
+fn collect_markdown_files_and_basename_counts(
+    space_root: &Path,
+) -> Result<(Vec<String>, HashMap<String, usize>), String> {
+    let mut markdown_files = Vec::new();
+    let mut basename_counts = HashMap::new();
+    let mut stack = vec![space_root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let entries = match std::fs::read_dir(&dir) {
+            Ok(entries) => entries,
+            Err(_) => continue,
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let entry_name = entry.file_name();
+            if entry_name.to_string_lossy().starts_with('.') {
+                continue;
+            }
+            let Ok(meta) = std::fs::symlink_metadata(&path) else {
+                continue;
+            };
+            let file_type = meta.file_type();
+            if file_type.is_symlink() {
+                continue;
+            }
+            if file_type.is_dir() {
+                stack.push(path);
+                continue;
+            }
+            if !file_type.is_file() {
+                continue;
+            }
+            let name = entry_name.to_string_lossy().to_ascii_lowercase();
+            *basename_counts.entry(name).or_insert(0) += 1;
+            if utils::is_markdown_path(&path) {
+                let rel = path
+                    .strip_prefix(space_root)
+                    .map_err(|error| error.to_string())?;
+                markdown_files.push(to_slash(rel));
+            }
+        }
+    }
+    markdown_files.sort();
+    Ok((markdown_files, basename_counts))
 }
 
 fn note_title_for_path(root: &Path, rel_path: &str) -> Option<String> {
@@ -437,43 +561,8 @@ fn has_uri_scheme(target: &str) -> bool {
 }
 
 fn collect_markdown_files(space_root: &Path) -> Result<Vec<String>, String> {
-    let mut out = Vec::new();
-    let mut stack = vec![space_root.to_path_buf()];
-
-    while let Some(dir) = stack.pop() {
-        let entries = match std::fs::read_dir(&dir) {
-            Ok(entries) => entries,
-            Err(_) => continue,
-        };
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let name = entry.file_name();
-            if name.to_string_lossy().starts_with('.') {
-                continue;
-            }
-            let Ok(meta) = std::fs::symlink_metadata(&path) else {
-                continue;
-            };
-            let file_type = meta.file_type();
-            if file_type.is_symlink() {
-                continue;
-            }
-            if file_type.is_dir() {
-                stack.push(path);
-                continue;
-            }
-            if !file_type.is_file() || !utils::is_markdown_path(&path) {
-                continue;
-            }
-            let rel = path
-                .strip_prefix(space_root)
-                .map_err(|error| error.to_string())?;
-            out.push(to_slash(rel));
-        }
-    }
-
-    out.sort();
-    Ok(out)
+    collect_markdown_files_and_basename_counts(space_root)
+        .map(|(markdown_files, _basename_counts)| markdown_files)
 }
 
 fn to_slash(path: &Path) -> String {
@@ -491,6 +580,8 @@ mod tests {
             from_title: "Old Title".to_string(),
             to_title: "New Title".to_string(),
             is_dir: false,
+            from_basename_is_unique: true,
+            markdown_files: None,
         }
     }
 
@@ -562,5 +653,37 @@ mod tests {
             "[sibling](../folder/sibling.md) [nested](../folder/sub/other.md)"
         );
         assert_eq!(output.changed_links, 2);
+    }
+
+    #[test]
+    fn rewrites_attachment_wikilinks_and_markdown_links() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/logo.png".to_string();
+        plan.to_rel_path = "media/logo-new.png".to_string();
+        plan.from_title = "logo".to_string();
+        plan.to_title = "logo-new".to_string();
+
+        let input =
+            "[[assets/logo.png]] [[logo.png]] ![[assets/logo.png|Logo]] [logo](../assets/logo.png)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "notes/source.md");
+
+        assert_eq!(
+            output.markdown,
+            "[[media/logo-new.png]] [[media/logo-new.png]] ![[media/logo-new.png|Logo]] [logo](../media/logo-new.png)"
+        );
+        assert_eq!(output.changed_links, 4);
+    }
+
+    #[test]
+    fn does_not_rewrite_ambiguous_attachment_basename() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/logo.png".to_string();
+        plan.to_rel_path = "media/logo-new.png".to_string();
+        plan.from_basename_is_unique = false;
+
+        let output = rewrite_markdown_links_for_path("[[logo.png]]", &plan, "");
+
+        assert_eq!(output.markdown, "[[logo.png]]");
+        assert_eq!(output.changed_links, 0);
     }
 }

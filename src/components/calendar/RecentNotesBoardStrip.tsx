@@ -3,8 +3,6 @@ import { FileText } from "../Icons";
 
 interface RecentNotesBoardStripProps {
 	notes: CalendarNoteActivityItem[];
-	selectedNotePath: string | null;
-	onSelectNote: (notePath: string) => void;
 	onOpenNote: (notePath: string) => void;
 	onPrefetchNote?: (notePath: string) => void;
 }
@@ -19,16 +17,8 @@ function noteTitle(note: CalendarNoteActivityItem): string {
 	return title || fileTitleFromPath(note.note_path);
 }
 
-function noteFolderLabel(notePath: string): string {
-	const parts = notePath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
-	return `${parts.slice(0, -1).join("/")}/`;
-}
-
 export function RecentNotesBoardStrip({
 	notes,
-	selectedNotePath,
-	onSelectNote,
 	onOpenNote,
 	onPrefetchNote,
 }: RecentNotesBoardStripProps) {
@@ -39,44 +29,22 @@ export function RecentNotesBoardStrip({
 			) : null}
 			{notes.map((note) => {
 				const title = noteTitle(note);
-				const folderLabel = noteFolderLabel(note.note_path);
-				const metaPath = folderLabel || note.note_path;
 
 				return (
 					<li key={note.note_path} className="calendarRecentListRow">
 						<button
 							type="button"
 							className="commandPaletteItem commandPaletteRecentItem calendarRecentListItem"
-							data-state={
-								selectedNotePath === note.note_path ? "selected" : undefined
-							}
-							onClick={() => onSelectNote(note.note_path)}
+							onClick={() => onOpenNote(note.note_path)}
 							onMouseEnter={() => onPrefetchNote?.(note.note_path)}
 							onFocus={() => onPrefetchNote?.(note.note_path)}
-							onDoubleClick={() => onOpenNote(note.note_path)}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									event.preventDefault();
-									onOpenNote(note.note_path);
-									return;
-								}
-								if (event.key === " ") {
-									event.preventDefault();
-									onSelectNote(note.note_path);
-								}
-							}}
-							title="Double-click to open note"
+							title="Open note"
 						>
 							<div className="commandPaletteRecentIcon">
 								<FileText size={14} />
 							</div>
 							<div className="commandPaletteRecentContent">
 								<span className="commandPaletteResultTitle">{title}</span>
-								<div className="commandPaletteRecentMeta">
-									<span className="commandPaletteRecentPath" title={metaPath}>
-										{metaPath}
-									</span>
-								</div>
 							</div>
 						</button>
 					</li>

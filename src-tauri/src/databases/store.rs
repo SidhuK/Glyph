@@ -168,6 +168,17 @@ fn normalize_store_property_kinds(store: &mut DatabaseStore) {
     }
 }
 
+fn prune_unsupported_view_layouts(store: &mut DatabaseStore) {
+    for database in &mut store.databases {
+        database
+            .views
+            .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+        if database.views.is_empty() {
+            database.views.push(default_view("Table"));
+        }
+    }
+}
+
 fn is_valid_status_color(color: &str) -> bool {
     matches!(
         color,
@@ -208,6 +219,7 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
                 store.version = DATABASES_STORE_VERSION;
             }
             normalize_store_property_kinds(&mut store);
+            prune_unsupported_view_layouts(&mut store);
             normalize_status_colors(&mut store);
             Ok(bootstrap_defaults(store))
         }
@@ -231,6 +243,7 @@ pub fn bootstrap_defaults(mut store: DatabaseStore) -> DatabaseStore {
         store.databases.push(database);
     }
     store.version = DATABASES_STORE_VERSION;
+    prune_unsupported_view_layouts(&mut store);
     normalize_status_colors(&mut store);
     store
 }

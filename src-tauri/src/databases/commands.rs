@@ -85,6 +85,15 @@ fn validate_status_color(color: &str) -> Result<(), String> {
     }
 }
 
+fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
+    database
+        .views
+        .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+    if database.views.is_empty() {
+        database.views.push(default_view("Table"));
+    }
+}
+
 fn database_name_exists(
     databases: &[DatabaseDefinition],
     candidate: &str,
@@ -390,6 +399,7 @@ pub async fn databases_update(
         }
         let mut next = database.clone();
         next.name = normalized_name;
+        prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
         save_store(&root, &store)?;

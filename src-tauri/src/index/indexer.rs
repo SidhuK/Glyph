@@ -93,6 +93,14 @@ fn collect_markdown_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, S
     Ok(out)
 }
 
+fn link_kind_for_id(to_id: &str) -> &'static str {
+    if utils::is_markdown_path(Path::new(to_id)) {
+        "note"
+    } else {
+        "file"
+    }
+}
+
 pub fn index_note(space_root: &Path, note_id: &str, markdown: &str) -> Result<(), String> {
     let conn = open_db(space_root)?;
     let file_path = space_root.join(note_id);
@@ -188,7 +196,8 @@ fn index_note_with_conn(
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
 
     for to_id in to_ids {
-        inserted.insert((Some(to_id), None, "note"));
+        let kind = link_kind_for_id(&to_id);
+        inserted.insert((Some(to_id), None, kind));
     }
 
     for to_title in to_titles {
@@ -373,11 +382,11 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     for (rel, to_ids, to_titles) in &link_data {
         let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
         for to_id in to_ids {
-            inserted.insert((Some(to_id.clone()), None, "file"));
+            inserted.insert((Some(to_id.clone()), None, link_kind_for_id(to_id)));
         }
         for to_title in to_titles {
             if let Some(to_id) = resolve_title_to_id(&tx, to_title)? {
-                inserted.insert((Some(to_id), None, "file"));
+                inserted.insert((Some(to_id), None, "note"));
             } else {
                 inserted.insert((None, Some(to_title.clone()), "wikilink"));
             }

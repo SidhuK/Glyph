@@ -4,11 +4,11 @@ import {
 	CalendarAdd01Icon,
 	Clock02Icon,
 	Note03Icon,
-	NoteIcon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
@@ -56,7 +56,6 @@ interface CalendarPaneProps {
 	initialData?: CalendarRangeResponse | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenDailyNotesSettings: () => void;
-	onNewNote?: () => void;
 }
 
 function readStorage(key: string): string | null {
@@ -97,7 +96,6 @@ export function CalendarPane({
 	initialData = null,
 	onOpenFile,
 	onOpenDailyNotesSettings,
-	onNewNote,
 }: CalendarPaneProps) {
 	const today = useMemo(() => todayIsoDateLocal(), []);
 	const [anchorDate, setAnchorDate] = useState(
@@ -108,9 +106,6 @@ export function CalendarPane({
 	);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
-	const [selectedRecentNotePath, setSelectedRecentNotePath] = useState<
-		string | null
-	>(null);
 	const queryClient = useQueryClient();
 	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
 	const { spacePath } = useSpace();
@@ -407,6 +402,14 @@ export function CalendarPane({
 		() => parseCalendarDate(selectedDate),
 		[selectedDate],
 	);
+	const selectedDateHeading = useMemo(
+		() => ({
+			dateLabel: format(selectedDateObj, "MMMM d,"),
+			weekdayLabel: format(selectedDateObj, "EEEE"),
+			yearLabel: format(selectedDateObj, "yyyy"),
+		}),
+		[selectedDateObj],
+	);
 	const anchorDateObj = useMemo(
 		() => parseCalendarDate(anchorDate),
 		[anchorDate],
@@ -449,21 +452,8 @@ export function CalendarPane({
 	const ongoingTasks = selectedTasks?.ongoing ?? [];
 	const noteActivity = data?.detail.note_activity ?? [];
 
-	const effectiveSelectedRecentNotePath = useMemo(() => {
-		if (!selectedRecentNotePath) return null;
-		return noteActivity.some(
-			(item) => item.note_path === selectedRecentNotePath,
-		)
-			? selectedRecentNotePath
-			: null;
-	}, [noteActivity, selectedRecentNotePath]);
-
-	const handleSelectRecentNote = useCallback((notePath: string) => {
-		setSelectedRecentNotePath(notePath);
-	}, []);
 	const handleOpenRecentNote = useCallback(
 		(notePath: string) => {
-			setSelectedRecentNotePath(notePath);
 			void onOpenFile(notePath);
 		},
 		[onOpenFile],
@@ -483,36 +473,21 @@ export function CalendarPane({
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
-					{/* ── Recent notes list ── */}
-					<div className="calendarMiniDb">
-						<div className="calendarCardSectionHeader calendarMiniDbHeader">
-							<div className="calendarMiniDbHeaderInfo">
-								<h4 className="calendarCardSectionTitle">
-									<HugeiconsIcon
-										icon={Clock02Icon}
-										size={14}
-										strokeWidth={0.9}
-									/>
-									<span>Activity</span>
-								</h4>
-							</div>
-							<button
-								type="button"
-								className="calendarNewNoteBtn"
-								onClick={onNewNote}
-								title="Create a new note"
-							>
-								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
-								<span>New Note</span>
-							</button>
+					<div
+						className="calendarDateBanner"
+						aria-label={`Selected date ${selectedDateHeading.dateLabel}, ${selectedDateHeading.weekdayLabel}`}
+					>
+						<div className="calendarDateBannerText">
+							<h3 className="calendarDateBannerTitle">
+								<span>{selectedDateHeading.dateLabel}</span>{" "}
+								<span className="calendarDateBannerYear">
+									{selectedDateHeading.yearLabel}
+								</span>
+							</h3>
 						</div>
-						<RecentNotesBoardStrip
-							notes={noteActivity}
-							selectedNotePath={effectiveSelectedRecentNotePath}
-							onSelectNote={handleSelectRecentNote}
-							onOpenNote={handleOpenRecentNote}
-							onPrefetchNote={prefetchNote}
-						/>
+						<span className="calendarDateBannerDay">
+							{selectedDateHeading.weekdayLabel}
+						</span>
 					</div>
 
 					{/* ── Task composer ── */}
@@ -599,6 +574,25 @@ export function CalendarPane({
 									{renderTaskGroup("Overdue", overdueTasks)}
 									{renderTaskGroup("Ongoing", ongoingTasks)}
 								</div>
+							</div>
+							<div className="calendarMiniDb">
+								<div className="calendarCardSectionHeader calendarMiniDbHeader">
+									<div className="calendarMiniDbHeaderInfo">
+										<h4 className="calendarCardSectionTitle">
+											<HugeiconsIcon
+												icon={Clock02Icon}
+												size={14}
+												strokeWidth={0.9}
+											/>
+											<span>Activity</span>
+										</h4>
+									</div>
+								</div>
+								<RecentNotesBoardStrip
+									notes={noteActivity}
+									onOpenNote={handleOpenRecentNote}
+									onPrefetchNote={prefetchNote}
+								/>
 							</div>
 						</div>
 

@@ -47,9 +47,8 @@ import {
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { ChevronDown, Edit, Kanban, List, Plus, Table, Trash2 } from "../Icons";
+import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
-import { DatabaseList } from "../database/DatabaseList";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
@@ -163,7 +162,6 @@ function nextDatabaseName(summaries: WorkspaceDatabaseSummary[]): string {
 
 function ViewLayoutIcon({ layout }: { layout: string }) {
 	if (layout === "board") return <Kanban size={13} />;
-	if (layout === "list") return <List size={13} />;
 	return <Table size={13} />;
 }
 
@@ -1021,22 +1019,6 @@ function DatabasesPaneContent({
 									<Kanban size={13} />
 									<span>Board</span>
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => {
-										if (!activeConfig || activeView.layout === "list") return;
-										void handleSaveConfig({
-											...activeConfig,
-											view: {
-												...activeConfig.view,
-												layout: "list",
-											},
-										});
-									}}
-									className="databasesDropdownItem databasesViewTabMenuItem"
-								>
-									<List size={13} />
-									<span>List</span>
-								</DropdownMenuItem>
 								<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
 								<DropdownMenuItem
 									onSelect={() => startViewRename(activeView.id)}
@@ -1089,13 +1071,6 @@ function DatabasesPaneContent({
 					</div>
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
-					) : null}
-					{activeConfig.filters.length > 0 ? (
-						<div className="databaseNotice databaseNoticeInfo">
-							Filters only check database fields, tags, metadata, and
-							frontmatter/properties. Use source Search or in-view search to
-							match note body text.
-						</div>
 					) : null}
 					{rowsLoading ? (
 						<div className="databaseLoadingState">Loading rows…</div>
@@ -1155,14 +1130,6 @@ function DatabasesPaneContent({
 							}
 							onStatusColorChange={setStatusColor}
 							onSaveCell={handleUpdateCell}
-						/>
-					) : activeConfig.view.layout === "list" ? (
-						<DatabaseList
-							rows={rows}
-							groupColumn={activeGroupColumn}
-							selectedRowPath={selectedRowPath}
-							onSelectRow={setSelectedRowPath}
-							onOpenRow={(notePath) => void onOpenFile(notePath)}
 						/>
 					) : (
 						<DatabaseTable

@@ -43,17 +43,17 @@ describe("wikiLinkMarkdownBridge", () => {
 		expect(postprocessMarkdownFromEditor(md)).toBe(md);
 	});
 
-	it("preserves extra blank lines through editor bridge round-trip", () => {
+	it("leaves extra blank lines as normal markdown input", () => {
 		const md = "alpha\n\n\nbeta";
 		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe("alpha\n\n\u200b\nbeta");
+		expect(preprocessed).toBe(md);
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
 	});
 
-	it("preserves whitespace-only separator lines through editor bridge round-trip", () => {
+	it("leaves whitespace-only separator lines as normal markdown input", () => {
 		const md = "alpha\n \n\t\nbeta";
 		const preprocessed = preprocessMarkdownForEditor(md);
-		expect(preprocessed).toBe("alpha\n\u2060\u2061\n\u2060\u2062\nbeta");
+		expect(preprocessed).toBe(md);
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
 	});
 
@@ -61,5 +61,14 @@ describe("wikiLinkMarkdownBridge", () => {
 		const md = "alpha\n  \t \n\t\t\nbeta";
 		const preprocessed = preprocessMarkdownForEditor(md);
 		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+	});
+
+	it("decodes legacy whitespace sentinels emitted by older editor sessions", () => {
+		expect(postprocessMarkdownFromEditor("alpha\n\n\u200b\nbeta")).toBe(
+			"alpha\n\n\nbeta",
+		);
+		expect(postprocessMarkdownFromEditor("alpha\n\u2060\u2061\nbeta")).toBe(
+			"alpha\n \nbeta",
+		);
 	});
 });

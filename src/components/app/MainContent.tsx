@@ -607,16 +607,10 @@ export const MainContent = memo(function MainContent({
 			return (
 				<Suspense
 					fallback={
-						<div className="databaseLoadingState">Loading all docs…</div>
+						<div className="databaseLoadingState">Loading all notes…</div>
 					}
 				>
-					<AllDocsPane
-						templateFolder={templateFolder}
-						showNotesScopeToggle
-						dailyNotesFolder={dailyNotesFolder}
-						onOpenFile={onOpenFile}
-						initialNotes={initialNotes}
-					/>
+					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
 				</Suspense>
 			);
 		}
@@ -660,7 +654,6 @@ export const MainContent = memo(function MainContent({
 						initialData={initialCalendarData}
 						onOpenFile={onOpenFile}
 						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-						onNewNote={onCreateNote}
 					/>
 				</Suspense>
 			);
@@ -742,7 +735,6 @@ export const MainContent = memo(function MainContent({
 		onOpenFile,
 		onOpenFileInNewTab,
 		onOpenDailyNotesSettings,
-		onCreateNote,
 		openDatabasesId,
 		dailyNotesFolder,
 		templateFolder,
@@ -961,6 +953,9 @@ export const MainContent = memo(function MainContent({
 							activeTabPath={activeTabPath}
 							onOpenFile={onOpenFile}
 							onOpenFileInNewTab={onOpenFileInNewTab}
+							onRenameFile={(path, nextName) =>
+								fileTree.onRenameDir(path, nextName, "file")
+							}
 							onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
 						>
 							{editorCanvas}

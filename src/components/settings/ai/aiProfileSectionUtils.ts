@@ -1,9 +1,10 @@
 export const CODEX_RATE_LIMIT_REFRESH_MS = 30 * 60 * 1000;
 export const CODEX_RESET_TIME_TICK_MS = 30 * 1000;
+export const MINUTES_PER_WEEK = 10_080;
 
 export function formatRateLimitWindow(minutes: number | null): string {
 	if (minutes == null || !Number.isFinite(minutes)) return "window";
-	if (minutes === 10080) return "weekly window";
+	if (minutes === MINUTES_PER_WEEK) return "weekly window";
 	if (minutes === 300) return "5-hour window";
 	if (minutes >= 60 && minutes % 60 === 0) {
 		const hours = minutes / 60;
@@ -70,12 +71,23 @@ function formatCountdown(targetEpochMs: number, nowMs: number): string {
 	return parts.slice(0, 2).join(" ");
 }
 
-export function formatResetMessage(
+export function formatResetDuration(
 	timestamp: number | null,
 	nowMs: number,
 ): string {
 	const resetEpochMs = toEpochMs(timestamp);
 	if (!resetEpochMs) return "Reset time unavailable";
 	if (resetEpochMs <= nowMs) return "Reset reached";
-	return `Resets in ${formatCountdown(resetEpochMs, nowMs)}`;
+	return formatCountdown(resetEpochMs, nowMs);
+}
+
+export function formatResetMessage(
+	timestamp: number | null,
+	nowMs: number,
+): string {
+	const resetDuration = formatResetDuration(timestamp, nowMs);
+	return resetDuration === "Reset time unavailable" ||
+		resetDuration === "Reset reached"
+		? resetDuration
+		: `Resets in ${resetDuration}`;
 }

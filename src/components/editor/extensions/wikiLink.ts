@@ -57,6 +57,10 @@ function isImageTarget(target: string): boolean {
 	);
 }
 
+export function isPdfTarget(target: string): boolean {
+	return target.toLowerCase().endsWith(".pdf");
+}
+
 function isEmbedSuggestionContext(
 	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
 	rangeFrom: number,
@@ -181,10 +185,8 @@ export const WikiLink = Node.create({
 			];
 		}
 
-		// Show alias if present, otherwise just the filename without path/extension
-		const displayName = imageLike
-			? (node.attrs.raw as string) || `![[${target}]]`
-			: alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
+		const targetName = target.split("/").pop()?.replace(/\.md$/i, "") || target;
+		const displayName = alias || targetName;
 		return [
 			"span",
 			mergeAttributes(HTMLAttributes, {
@@ -288,6 +290,8 @@ export const WikiLink = Node.create({
 				request: {
 					query,
 					markdown_only: !includeImagesOnly,
+					include_pdf: !includeImagesOnly,
+					include_images: !includeImagesOnly,
 					strip_markdown_ext: !includeImagesOnly,
 					relative_to_source: false,
 					limit: requestLimit,
@@ -298,7 +302,11 @@ export const WikiLink = Node.create({
 				: results;
 			return filtered.slice(0, this.options.suggestionLimit).map((item) => ({
 				path: item.path,
-				title: item.title || titleFromRelPath(item.path),
+				title:
+					item.title ||
+					(isPdfTarget(item.path) || isImageTarget(item.path)
+						? item.path.split("/").pop() || item.path
+						: titleFromRelPath(item.path)),
 				insertText: item.insert_text,
 			}));
 		};

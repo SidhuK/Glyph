@@ -100,7 +100,7 @@ export interface DatabaseNewNoteConfig {
 }
 
 export interface DatabaseViewState {
-	layout: "table" | "board" | "list";
+	layout: "table" | "board";
 	search?: string;
 	board_group_by?: string | null;
 	board_lane_colors?: Record<string, string>;
@@ -191,7 +191,7 @@ export interface WorkspaceDatabaseGrouping {
 export interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
-	layout: "table" | "board" | "list";
+	layout: "table" | "board";
 	search?: string;
 	icon?: string | null;
 	color?: string | null;
@@ -822,6 +822,8 @@ interface TauriCommands {
 				query: string;
 				source_path?: string | null;
 				markdown_only?: boolean | null;
+				include_pdf?: boolean | null;
+				include_images?: boolean | null;
 				strip_markdown_ext?: boolean | null;
 				relative_to_source?: boolean | null;
 				limit?: number | null;
