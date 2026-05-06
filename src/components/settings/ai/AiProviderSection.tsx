@@ -1,4 +1,5 @@
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
+import { ProviderLogo } from "../../ai/modelSelectorConstants";
 import { Input } from "../../ui/shadcn/input";
 import {
 	SettingsRow,
@@ -45,6 +46,14 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 	},
 ];
 
+function findProviderOption(provider: AiProviderKind): AiProviderOption {
+	for (const group of aiProviderGroups) {
+		const option = group.options.find((entry) => entry.value === provider);
+		if (option) return option;
+	}
+	return { value: provider, label: provider };
+}
+
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
 	availableModels: AiModel[] | null;
@@ -72,6 +81,7 @@ export function AiProviderSection({
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
 			: "https://api.example.com/v1";
+	const selectedProvider = findProviderOption(profileDraft.provider);
 
 	return (
 		<SettingsSection
@@ -84,8 +94,20 @@ export function AiProviderSection({
 				description="Switch between provider configurations."
 			>
 				<div className="settingsInline settingsInlineWide">
+					<div
+						className="settingsProviderNativeLogo"
+						aria-hidden="true"
+						title={`${selectedProvider.label} logo`}
+						data-provider={selectedProvider.value}
+					>
+						<ProviderLogo
+							provider={selectedProvider.value}
+							className="settingsProviderNativeLogoImage"
+						/>
+					</div>
 					<select
 						id="aiProvider"
+						className="settingsProviderNativeSelect"
 						value={profileDraft.provider}
 						onChange={(event) =>
 							void onProviderChange(event.target.value as AiProviderKind)

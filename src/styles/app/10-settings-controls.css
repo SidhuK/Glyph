@@ -277,6 +277,55 @@
 	align-items: stretch;
 }
 
+.settingsProviderNativeLogo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 34px;
+	flex: 0 0 auto;
+}
+
+.settingsProviderNativeLogoImage {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	border-radius: 3px;
+	display: block;
+}
+
+.settingsProviderNativeLogo[data-provider="amp"]
+	.settingsProviderNativeLogoImage,
+.settingsProviderNativeLogo[data-provider="gemini"]
+	.settingsProviderNativeLogoImage,
+.settingsProviderNativeLogo[data-provider="openrouter"]
+	.settingsProviderNativeLogoImage {
+	width: 19px;
+	height: 19px;
+}
+
+.settingsProviderNativeLogo[data-provider="opencode"]
+	.settingsProviderNativeLogoImage {
+	width: 21px;
+	height: 21px;
+}
+
+.settingsProviderNativeLogo[data-provider="ollama"]
+	.settingsProviderNativeLogoImage {
+	width: 15px;
+	height: 20px;
+}
+
+:root.dark
+	.settingsProviderNativeLogo[data-provider="openrouter"]
+	.settingsProviderNativeLogoImage {
+	filter: invert(1);
+}
+
+.settingsFieldControl .settingsInline > select.settingsProviderNativeSelect {
+	flex-basis: 178px;
+}
+
 .settingsActions {
 	display: inline-flex;
 	align-items: center;
