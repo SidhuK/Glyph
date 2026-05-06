@@ -37,6 +37,10 @@ function isImageWikiTarget(target: string): boolean {
 	return IMAGE_EXTENSIONS.has(fileExtension(target));
 }
 
+function isPdfWikiTarget(target: string): boolean {
+	return fileExtension(target) === "pdf";
+}
+
 function isMarkdownWikiTarget(target: string): boolean {
 	const ext = fileExtension(target);
 	return !ext || ext === "md";
@@ -62,6 +66,17 @@ export function useWorkspaceLinkEvents({
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
+			if (isPdfWikiTarget(normalizedTarget)) {
+				const resolved = await invoke("space_resolve_wikilink", {
+					target: normalizedTarget,
+				});
+				if (resolved) {
+					await openWorkspaceFile(resolved);
+					return;
+				}
+				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
+				return;
+			}
 			if (!isMarkdownWikiTarget(normalizedTarget)) {
 				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
 				return;
@@ -130,6 +145,11 @@ export function useWorkspaceLinkEvents({
 							return;
 						}
 						setError(`Could not resolve image wikilink: ${detail.target}`);
+						return;
+					}
+
+					if (isPdfWikiTarget(normalizedTarget)) {
+						await openOrCreateWikiLinkTarget(detail.target);
 						return;
 					}
 

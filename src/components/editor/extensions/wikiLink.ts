@@ -57,6 +57,10 @@ function isImageTarget(target: string): boolean {
 	);
 }
 
+function isPdfTarget(target: string): boolean {
+	return target.toLowerCase().endsWith(".pdf");
+}
+
 function isEmbedSuggestionContext(
 	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
 	rangeFrom: number,
@@ -288,6 +292,7 @@ export const WikiLink = Node.create({
 				request: {
 					query,
 					markdown_only: !includeImagesOnly,
+					include_pdf: !includeImagesOnly,
 					strip_markdown_ext: !includeImagesOnly,
 					relative_to_source: false,
 					limit: requestLimit,
@@ -298,7 +303,11 @@ export const WikiLink = Node.create({
 				: results;
 			return filtered.slice(0, this.options.suggestionLimit).map((item) => ({
 				path: item.path,
-				title: item.title || titleFromRelPath(item.path),
+				title:
+					item.title ||
+					(isPdfTarget(item.path)
+						? item.path.split("/").pop() || item.path
+						: titleFromRelPath(item.path)),
 				insertText: item.insert_text,
 			}));
 		};

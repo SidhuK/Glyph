@@ -41,6 +41,10 @@ function targetFromLink(element: HTMLElement): string | null {
 	if (element.getAttribute("data-unresolved") === "true") return null;
 	const target = element.getAttribute("data-target") ?? "";
 	const normalized = normalizeRelPath(target.split("#", 1)[0] ?? target);
+	const filename = normalized.split("/").pop() ?? normalized;
+	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
+		return null;
+	}
 	return normalized || null;
 }
 

@@ -24,6 +24,7 @@ pub struct LinkSuggestRequest {
     pub query: String,
     pub source_path: Option<String>,
     pub markdown_only: Option<bool>,
+    pub include_pdf: Option<bool>,
     pub strip_markdown_ext: Option<bool>,
     pub relative_to_source: Option<bool>,
     pub limit: Option<u32>,
@@ -160,6 +161,14 @@ fn is_image_rel_path(path: &str) -> bool {
         || lower.ends_with(".tiff")
 }
 
+fn is_pdf_rel_path(path: &str) -> bool {
+    path.to_ascii_lowercase().ends_with(".pdf")
+}
+
+fn is_standard_wikilink_rel_path(entry: &FileEntry) -> bool {
+    entry.is_markdown || is_pdf_rel_path(&entry.rel_path)
+}
+
 fn choose_ambiguous_image_match(matches: Vec<String>) -> Option<String> {
     if matches.is_empty() {
         return None;
@@ -254,7 +263,7 @@ pub async fn space_resolve_wikilink(
 ) -> Result<Option<String>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
-        let entries = list_files(&root, true, 50_000)?;
+        let entries = list_files(&root, false, 80_000)?;
         let norm = normalize_path(&target).trim_start_matches("./").to_string();
         let lowered = normalize(norm.trim_end_matches(".md"));
         if lowered.is_empty() {
@@ -262,18 +271,21 @@ pub async fn space_resolve_wikilink(
         }
         if let Some(hit) = entries
             .iter()
+            .filter(|e| is_standard_wikilink_rel_path(e))
             .find(|e| normalize(e.rel_path.trim_end_matches(".md")) == lowered)
         {
             return Ok(Some(hit.rel_path.clone()));
         }
         if let Some(hit) = entries
             .iter()
+            .filter(|e| is_standard_wikilink_rel_path(e))
             .find(|e| normalize(&title_from_rel(&e.rel_path)) == lowered)
         {
             return Ok(Some(hit.rel_path.clone()));
         }
         if let Some(hit) = entries.iter().find(|e| {
-            normalize(e.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}"))
+            is_standard_wikilink_rel_path(e)
+                && normalize(e.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}"))
         }) {
             return Ok(Some(hit.rel_path.clone()));
         }
@@ -446,6 +458,7 @@ pub async fn space_suggest_links(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let markdown_only = request.markdown_only.unwrap_or(false);
+        let include_pdf = request.include_pdf.unwrap_or(false);
         let strip_md = request.strip_markdown_ext.unwrap_or(false);
         let relative = request.relative_to_source.unwrap_or(false);
         let limit = request.limit.unwrap_or(10).clamp(1, 200) as usize;
@@ -454,12 +467,15 @@ pub async fn space_suggest_links(
             .as_deref()
             .map(parent_dir)
             .unwrap_or_default();
-        let entries = list_files(&root, markdown_only, 100_000)?;
+        let entries = list_files(&root, markdown_only && !include_pdf, 100_000)?;
         let q = normalize(&request.query);
 
         let mut rows: Vec<(i32, LinkSuggestionItem)> = Vec::new();
         for entry in entries {
-            if markdown_only && !entry.is_markdown {
+            if markdown_only
+                && !entry.is_markdown
+                && !(include_pdf && is_pdf_rel_path(&entry.rel_path))
+            {
                 continue;
             }
             let title = title_from_rel(&entry.rel_path);

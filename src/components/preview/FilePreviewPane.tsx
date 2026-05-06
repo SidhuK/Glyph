@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
-import { ExternalLink, RefreshCw, X } from "../Icons";
+import { ExternalLink, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface FilePreviewPaneProps {
@@ -14,11 +14,6 @@ interface FilePreviewPaneProps {
 const TEXT_PREVIEW_MAX_BYTES = 1_048_576;
 const BINARY_PREVIEW_MAX_BYTES = 20 * 1024 * 1024;
 
-function filenameFromPath(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? relPath;
-}
-
 export function FilePreviewPane({
 	relPath,
 	onClose,
@@ -29,8 +24,6 @@ export function FilePreviewPane({
 	const [textDoc, setTextDoc] = useState<TextFilePreviewDoc | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string>("");
-
-	const displayName = useMemo(() => filenameFromPath(relPath), [relPath]);
 
 	const loadPreview = useCallback(async () => {
 		setLoading(true);
@@ -69,23 +62,7 @@ export function FilePreviewPane({
 	return (
 		<section className="filePreviewPane">
 			<header className="filePreviewHeader">
-				<div className="filePreviewHeaderMeta">
-					<div className="filePreviewLabel">Read-only preview</div>
-					<div className="filePreviewName mono" title={relPath}>
-						{displayName}
-					</div>
-				</div>
 				<div className="filePreviewActions">
-					<Button
-						type="button"
-						size="sm"
-						className="filePreviewActionButton"
-						onClick={() => void loadPreview()}
-						disabled={loading}
-					>
-						<RefreshCw size={14} />
-						<span>Refresh</span>
-					</Button>
 					<Button
 						type="button"
 						size="sm"
@@ -98,16 +75,16 @@ export function FilePreviewPane({
 						}}
 					>
 						<ExternalLink size={14} />
-						<span>Open Externally</span>
+						<span>Open in Default App</span>
 					</Button>
 					<Button
 						type="button"
 						size="sm"
 						className="filePreviewActionButton"
 						onClick={onClose}
+						aria-label="Close"
 					>
 						<X size={14} />
-						<span>Close Preview</span>
 					</Button>
 				</div>
 			</header>
@@ -122,7 +99,7 @@ export function FilePreviewPane({
 
 			{!loading && !error && kind === "image" && fileSrc ? (
 				<div className="filePreviewCentered">
-					<img className="filePreviewImage" alt={displayName} src={fileSrc} />
+					<img className="filePreviewImage" alt={relPath} src={fileSrc} />
 				</div>
 			) : null}
 
@@ -134,7 +111,8 @@ export function FilePreviewPane({
 				>
 					<div className="filePreviewMeta">
 						<div className="filePreviewHint">
-							PDF preview unavailable in this environment. Use Open Externally.
+							PDF preview unavailable in this environment. Use Open in Default
+							App.
 						</div>
 					</div>
 				</object>

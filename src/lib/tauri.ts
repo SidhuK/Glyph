@@ -822,6 +822,7 @@ interface TauriCommands {
 				query: string;
 				source_path?: string | null;
 				markdown_only?: boolean | null;
+				include_pdf?: boolean | null;
 				strip_markdown_ext?: boolean | null;
 				relative_to_source?: boolean | null;
 				limit?: number | null;
