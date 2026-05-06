@@ -4,7 +4,6 @@ import {
 	CalendarAdd01Icon,
 	Clock02Icon,
 	Note03Icon,
-	NoteIcon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -56,7 +55,6 @@ interface CalendarPaneProps {
 	initialData?: CalendarRangeResponse | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenDailyNotesSettings: () => void;
-	onNewNote?: () => void;
 }
 
 function readStorage(key: string): string | null {
@@ -97,7 +95,6 @@ export function CalendarPane({
 	initialData = null,
 	onOpenFile,
 	onOpenDailyNotesSettings,
-	onNewNote,
 }: CalendarPaneProps) {
 	const today = useMemo(() => todayIsoDateLocal(), []);
 	const [anchorDate, setAnchorDate] = useState(
@@ -483,38 +480,6 @@ export function CalendarPane({
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
-					{/* ── Recent notes list ── */}
-					<div className="calendarMiniDb">
-						<div className="calendarCardSectionHeader calendarMiniDbHeader">
-							<div className="calendarMiniDbHeaderInfo">
-								<h4 className="calendarCardSectionTitle">
-									<HugeiconsIcon
-										icon={Clock02Icon}
-										size={14}
-										strokeWidth={0.9}
-									/>
-									<span>Activity</span>
-								</h4>
-							</div>
-							<button
-								type="button"
-								className="calendarNewNoteBtn"
-								onClick={onNewNote}
-								title="Create a new note"
-							>
-								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
-								<span>New Note</span>
-							</button>
-						</div>
-						<RecentNotesBoardStrip
-							notes={noteActivity}
-							selectedNotePath={effectiveSelectedRecentNotePath}
-							onSelectNote={handleSelectRecentNote}
-							onOpenNote={handleOpenRecentNote}
-							onPrefetchNote={prefetchNote}
-						/>
-					</div>
-
 					{/* ── Task composer ── */}
 					{dailyNotesFolder ? (
 						<div className="calendarTaskComposer">
@@ -599,6 +564,27 @@ export function CalendarPane({
 									{renderTaskGroup("Overdue", overdueTasks)}
 									{renderTaskGroup("Ongoing", ongoingTasks)}
 								</div>
+							</div>
+							<div className="calendarMiniDb">
+								<div className="calendarCardSectionHeader calendarMiniDbHeader">
+									<div className="calendarMiniDbHeaderInfo">
+										<h4 className="calendarCardSectionTitle">
+											<HugeiconsIcon
+												icon={Clock02Icon}
+												size={14}
+												strokeWidth={0.9}
+											/>
+											<span>Activity</span>
+										</h4>
+									</div>
+								</div>
+								<RecentNotesBoardStrip
+									notes={noteActivity}
+									selectedNotePath={effectiveSelectedRecentNotePath}
+									onSelectNote={handleSelectRecentNote}
+									onOpenNote={handleOpenRecentNote}
+									onPrefetchNote={prefetchNote}
+								/>
 							</div>
 						</div>
 

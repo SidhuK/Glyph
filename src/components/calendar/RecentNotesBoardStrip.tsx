@@ -19,12 +19,6 @@ function noteTitle(note: CalendarNoteActivityItem): string {
 	return title || fileTitleFromPath(note.note_path);
 }
 
-function noteFolderLabel(notePath: string): string {
-	const parts = notePath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
-	return `${parts.slice(0, -1).join("/")}/`;
-}
-
 export function RecentNotesBoardStrip({
 	notes,
 	selectedNotePath,
@@ -39,8 +33,6 @@ export function RecentNotesBoardStrip({
 			) : null}
 			{notes.map((note) => {
 				const title = noteTitle(note);
-				const folderLabel = noteFolderLabel(note.note_path);
-				const metaPath = folderLabel || note.note_path;
 
 				return (
 					<li key={note.note_path} className="calendarRecentListRow">
@@ -72,11 +64,6 @@ export function RecentNotesBoardStrip({
 							</div>
 							<div className="commandPaletteRecentContent">
 								<span className="commandPaletteResultTitle">{title}</span>
-								<div className="commandPaletteRecentMeta">
-									<span className="commandPaletteRecentPath" title={metaPath}>
-										{metaPath}
-									</span>
-								</div>
 							</div>
 						</button>
 					</li>

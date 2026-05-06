@@ -660,7 +660,6 @@ export const MainContent = memo(function MainContent({
 						initialData={initialCalendarData}
 						onOpenFile={onOpenFile}
 						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-						onNewNote={onCreateNote}
 					/>
 				</Suspense>
 			);
@@ -742,7 +741,6 @@ export const MainContent = memo(function MainContent({
 		onOpenFile,
 		onOpenFileInNewTab,
 		onOpenDailyNotesSettings,
-		onCreateNote,
 		openDatabasesId,
 		dailyNotesFolder,
 		templateFolder,
