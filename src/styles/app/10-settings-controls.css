@@ -319,7 +319,7 @@
 :root.dark
 	.settingsProviderNativeLogo[data-provider="openrouter"]
 	.settingsProviderNativeLogoImage {
-	filter: invert(1);
+	filter: brightness(0) invert(1);
 }
 
 .settingsFieldControl .settingsInline > select.settingsProviderNativeSelect {

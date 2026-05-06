@@ -20,7 +20,7 @@ interface FolioNoteListItemProps {
 	onOpen: (path: string) => void;
 	onOpenInNewTab: (path: string) => void;
 	onPrefetch: (path: string) => void;
-	onRename: (path: string) => void;
+	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
@@ -273,12 +273,14 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							Open in New Tab
 						</ContextMenuItem>
 						<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-						<ContextMenuItem
-							className="fileTreeCreateMenuItem"
-							onSelect={() => onRename(note.note_path)}
-						>
-							Rename
-						</ContextMenuItem>
+						{onRename ? (
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => onRename(note.note_path)}
+							>
+								Rename
+							</ContextMenuItem>
+						) : null}
 						<ContextMenuItem
 							variant="destructive"
 							className="fileTreeCreateMenuItem"

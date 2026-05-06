@@ -173,6 +173,9 @@ fn prune_unsupported_view_layouts(store: &mut DatabaseStore) {
         database
             .views
             .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+        if database.views.is_empty() {
+            database.views.push(default_view("Table"));
+        }
     }
 }
 

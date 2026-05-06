@@ -57,7 +57,7 @@ function isImageTarget(target: string): boolean {
 	);
 }
 
-function isPdfTarget(target: string): boolean {
+export function isPdfTarget(target: string): boolean {
 	return target.toLowerCase().endsWith(".pdf");
 }
 

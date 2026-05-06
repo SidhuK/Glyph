@@ -19,6 +19,7 @@ import {
 const WHITESPACE_LINE_SENTINEL = "\u2060";
 const WHITESPACE_SPACE_SENTINEL = "\u2061";
 const WHITESPACE_TAB_SENTINEL = "\u2062";
+const LEGACY_EXTRA_BLANK_LINE_SENTINEL = "\u200b";
 
 function canonicalizeWikiLinks(input: string): string {
 	if (!input.includes("[[")) return input;
@@ -141,7 +142,7 @@ function postprocessWhitespaceLines(input: string): string {
 	return input
 		.split("\n")
 		.map((line) => {
-			if (line === "\u200b") return "";
+			if (line === LEGACY_EXTRA_BLANK_LINE_SENTINEL) return "";
 			const decodedWhitespaceLine = decodeWhitespaceLine(line);
 			if (decodedWhitespaceLine !== null) return decodedWhitespaceLine;
 			return line;

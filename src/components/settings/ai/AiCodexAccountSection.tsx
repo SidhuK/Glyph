@@ -3,8 +3,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "../../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import {
+	MINUTES_PER_WEEK,
 	clampPercent,
-	formatResetMessage,
+	formatResetDuration,
 	labelForCodexStatus,
 	toneForCodexStatus,
 	toneForRateLimitUsed,
@@ -37,7 +38,7 @@ function formatRateLimitLabel(
 	label: string,
 	windowMinutes: number | null,
 ): string {
-	if (windowMinutes === 10080) return "Weekly";
+	if (windowMinutes === MINUTES_PER_WEEK) return "Weekly";
 	if (windowMinutes != null && Number.isFinite(windowMinutes)) {
 		if (windowMinutes >= 60 && windowMinutes % 60 === 0) {
 			return `${windowMinutes / 60}hr`;
@@ -51,10 +52,7 @@ function formatRateLimitLabel(
 }
 
 function formatResetCell(timestamp: number | null, nowMs: number): string {
-	const resetMessage = formatResetMessage(timestamp, nowMs);
-	return resetMessage.startsWith("Resets in ")
-		? resetMessage.replace("Resets in ", "")
-		: resetMessage;
+	return formatResetDuration(timestamp, nowMs);
 }
 
 export function AiCodexAccountSection({
@@ -143,7 +141,9 @@ export function AiCodexAccountSection({
 										(remainingPercent / 100) * rateLimitSegmentCount,
 									);
 									const WindowIcon =
-										item.windowMinutes === 10080 ? Calendar03Icon : Time04Icon;
+										item.windowMinutes === MINUTES_PER_WEEK
+											? Calendar03Icon
+											: Time04Icon;
 									const shortLabel = formatRateLimitLabel(
 										item.label,
 										item.windowMinutes,

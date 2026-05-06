@@ -171,13 +171,17 @@ fn is_standard_wikilink_rel_path(entry: &FileEntry) -> bool {
 }
 
 fn choose_unambiguous_match(matches: Vec<String>) -> Option<String> {
-    (matches.len() == 1)
-        .then(|| matches)
-        .and_then(|matches| matches.into_iter().next())
+    match matches.len() {
+        1 => matches.into_iter().next(),
+        _ => None,
+    }
 }
 
 fn has_explicit_extension(path: &str) -> bool {
-    basename(path).rsplit_once('.').is_some()
+    Path::new(path)
+        .file_name()
+        .and_then(|name| Path::new(name).extension())
+        .is_some()
 }
 
 fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {

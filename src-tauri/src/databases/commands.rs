@@ -89,6 +89,9 @@ fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
     database
         .views
         .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
+    if database.views.is_empty() {
+        database.views.push(default_view("Table"));
+    }
 }
 
 fn database_name_exists(

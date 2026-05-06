@@ -1,4 +1,7 @@
-use std::path::{Component, Path};
+use std::{
+    collections::HashMap,
+    path::{Component, Path},
+};
 
 use serde::Serialize;
 
@@ -12,6 +15,7 @@ pub struct LinkRewritePlan {
     pub to_title: String,
     pub is_dir: bool,
     pub from_basename_is_unique: bool,
+    markdown_files: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -24,7 +28,10 @@ pub fn rewrite_links_after_rename(
     space_root: &Path,
     plan: &LinkRewritePlan,
 ) -> Result<LinkRewriteResult, String> {
-    let markdown_files = collect_markdown_files(space_root)?;
+    let markdown_files = match &plan.markdown_files {
+        Some(files) => files.clone(),
+        None => collect_markdown_files(space_root)?,
+    };
     let mut rewrites = Vec::new();
 
     for rel_path in markdown_files {
@@ -434,6 +441,12 @@ pub fn plan_for_rename(
     to_path: &str,
 ) -> LinkRewritePlan {
     let is_dir = from_abs.is_dir();
+    let is_markdown_rename = is_markdown_rel_path(from_path);
+    let attachment_link_context = if !is_dir && !is_markdown_rename {
+        collect_markdown_files_and_basename_counts(root).ok()
+    } else {
+        None
+    };
     let from_title =
         note_title_for_path(root, from_path).unwrap_or_else(|| title_from_rel_path(from_path));
     let to_title = note_title_for_path(root, to_path)
@@ -453,18 +466,33 @@ pub fn plan_for_rename(
         from_title,
         to_title,
         is_dir,
-        from_basename_is_unique: !is_dir && basename_is_unique(root, from_path),
+        from_basename_is_unique: attachment_link_context.as_ref().is_some_and(
+            |(_markdown_files, basename_counts)| basename_is_unique(basename_counts, from_path),
+        ),
+        markdown_files: attachment_link_context
+            .map(|(markdown_files, _basename_counts)| markdown_files),
     }
 }
 
-fn basename_is_unique(root: &Path, rel_path: &str) -> bool {
+fn basename_is_unique(basename_counts: &HashMap<String, usize>, rel_path: &str) -> bool {
     let name = basename(rel_path);
     if name.is_empty() {
         return false;
     }
 
-    let mut matches = 0_usize;
-    let mut stack = vec![root.to_path_buf()];
+    basename_counts
+        .get(&name.to_ascii_lowercase())
+        .copied()
+        .unwrap_or(0)
+        == 1
+}
+
+fn collect_markdown_files_and_basename_counts(
+    space_root: &Path,
+) -> Result<(Vec<String>, HashMap<String, usize>), String> {
+    let mut markdown_files = Vec::new();
+    let mut basename_counts = HashMap::new();
+    let mut stack = vec![space_root.to_path_buf()];
     while let Some(dir) = stack.pop() {
         let entries = match std::fs::read_dir(&dir) {
             Ok(entries) => entries,
@@ -490,15 +518,18 @@ fn basename_is_unique(root: &Path, rel_path: &str) -> bool {
             if !file_type.is_file() {
                 continue;
             }
-            if entry_name.to_string_lossy().eq_ignore_ascii_case(&name) {
-                matches += 1;
-                if matches > 1 {
-                    return false;
-                }
+            let name = entry_name.to_string_lossy().to_ascii_lowercase();
+            *basename_counts.entry(name).or_insert(0) += 1;
+            if utils::is_markdown_path(&path) {
+                let rel = path
+                    .strip_prefix(space_root)
+                    .map_err(|error| error.to_string())?;
+                markdown_files.push(to_slash(rel));
             }
         }
     }
-    matches == 1
+    markdown_files.sort();
+    Ok((markdown_files, basename_counts))
 }
 
 fn note_title_for_path(root: &Path, rel_path: &str) -> Option<String> {
@@ -530,43 +561,8 @@ fn has_uri_scheme(target: &str) -> bool {
 }
 
 fn collect_markdown_files(space_root: &Path) -> Result<Vec<String>, String> {
-    let mut out = Vec::new();
-    let mut stack = vec![space_root.to_path_buf()];
-
-    while let Some(dir) = stack.pop() {
-        let entries = match std::fs::read_dir(&dir) {
-            Ok(entries) => entries,
-            Err(_) => continue,
-        };
-        for entry in entries.flatten() {
-            let path = entry.path();
-            let name = entry.file_name();
-            if name.to_string_lossy().starts_with('.') {
-                continue;
-            }
-            let Ok(meta) = std::fs::symlink_metadata(&path) else {
-                continue;
-            };
-            let file_type = meta.file_type();
-            if file_type.is_symlink() {
-                continue;
-            }
-            if file_type.is_dir() {
-                stack.push(path);
-                continue;
-            }
-            if !file_type.is_file() || !utils::is_markdown_path(&path) {
-                continue;
-            }
-            let rel = path
-                .strip_prefix(space_root)
-                .map_err(|error| error.to_string())?;
-            out.push(to_slash(rel));
-        }
-    }
-
-    out.sort();
-    Ok(out)
+    collect_markdown_files_and_basename_counts(space_root)
+        .map(|(markdown_files, _basename_counts)| markdown_files)
 }
 
 fn to_slash(path: &Path) -> String {
@@ -585,6 +581,7 @@ mod tests {
             to_title: "New Title".to_string(),
             is_dir: false,
             from_basename_is_unique: true,
+            markdown_files: None,
         }
     }
 

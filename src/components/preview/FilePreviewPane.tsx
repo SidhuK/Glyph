@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
+import { basename } from "../../utils/path";
 import { ExternalLink, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
@@ -20,6 +21,7 @@ export function FilePreviewPane({
 	onOpenExternally,
 }: FilePreviewPaneProps) {
 	const kind = getInAppPreviewKind(relPath);
+	const displayName = basename(relPath);
 	const [fileSrc, setFileSrc] = useState<string>("");
 	const [textDoc, setTextDoc] = useState<TextFilePreviewDoc | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ export function FilePreviewPane({
 
 			{!loading && !error && kind === "image" && fileSrc ? (
 				<div className="filePreviewCentered">
-					<img className="filePreviewImage" alt={relPath} src={fileSrc} />
+					<img className="filePreviewImage" alt={displayName} src={fileSrc} />
 				</div>
 			) : null}
 

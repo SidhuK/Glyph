@@ -222,10 +222,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						onOpen={openNote}
 						onOpenInNewTab={openNoteInNewTab}
 						onPrefetch={prefetchNote}
-						onRename={renameNote}
+						onRename={onRenameFile ? renameNote : undefined}
 						onDelete={deleteNote}
 						onFocus={focusPane}
-						isRenaming={renamingPath === note.note_path}
+						isRenaming={
+							Boolean(onRenameFile) && renamingPath === note.note_path
+						}
 						onCommitRename={commitRename}
 						onCancelRename={cancelRename}
 						taskSummary={

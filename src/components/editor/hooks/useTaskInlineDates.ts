@@ -186,21 +186,46 @@ export function useTaskInlineDates({
 
 	const openTaskPopover = useCallback(
 		async (anchor: TaskAnchor) => {
+			const expectedOrdinal = anchor.ordinal;
 			setScheduleAnchorAndSelection(anchor);
 			try {
 				const existing = await invoke("task_dates_by_ordinal", {
-					markdown,
-					ordinal: anchor.ordinal,
+					markdown: markdownRef.current,
+					ordinal: expectedOrdinal,
 				});
+				if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
 				setScheduledDate(existing?.scheduled_date ?? "");
 				setDueDate(existing?.due_date ?? "");
 			} catch {
+				if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
 				setScheduledDate("");
 				setDueDate("");
 			}
 		},
-		[markdown, setScheduleAnchorAndSelection],
+		[setScheduleAnchorAndSelection],
 	);
+
+	const resetDraftDates = useCallback(async () => {
+		if (!scheduleAnchor) {
+			setScheduledDate("");
+			setDueDate("");
+			return;
+		}
+		const expectedOrdinal = scheduleAnchor.ordinal;
+		try {
+			const existing = await invoke("task_dates_by_ordinal", {
+				markdown: markdownRef.current,
+				ordinal: expectedOrdinal,
+			});
+			if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
+			setScheduledDate(existing?.scheduled_date ?? "");
+			setDueDate(existing?.due_date ?? "");
+		} catch {
+			if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
+			setScheduledDate("");
+			setDueDate("");
+		}
+	}, [scheduleAnchor]);
 
 	const updateTaskDates = useCallback(
 		async (scheduled: string, due: string) => {
@@ -214,36 +239,21 @@ export function useTaskInlineDates({
 					scheduled_date: scheduled,
 					due_date: due,
 				});
-				if (!next) return false;
+				if (!next) {
+					await resetDraftDates();
+					return false;
+				}
 				markdownRef.current = next;
 				onChange(next);
 				return true;
 			} catch (error) {
 				console.error("Failed to update task dates", error);
+				await resetDraftDates();
 				return false;
 			}
 		},
-		[onChange, scheduleAnchor],
+		[onChange, resetDraftDates, scheduleAnchor],
 	);
-
-	const resetDraftDates = useCallback(async () => {
-		if (!scheduleAnchor) {
-			setScheduledDate("");
-			setDueDate("");
-			return;
-		}
-		try {
-			const existing = await invoke("task_dates_by_ordinal", {
-				markdown,
-				ordinal: scheduleAnchor.ordinal,
-			});
-			setScheduledDate(existing?.scheduled_date ?? "");
-			setDueDate(existing?.due_date ?? "");
-		} catch {
-			setScheduledDate("");
-			setDueDate("");
-		}
-	}, [markdown, scheduleAnchor]);
 
 	return {
 		dueDate,

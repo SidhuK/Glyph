@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import { invoke } from "../../lib/tauri";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { isPdfTarget } from "../editor/extensions/wikiLink";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,
@@ -37,10 +38,6 @@ function isImageWikiTarget(target: string): boolean {
 	return IMAGE_EXTENSIONS.has(fileExtension(target));
 }
 
-function isPdfWikiTarget(target: string): boolean {
-	return fileExtension(target) === "pdf";
-}
-
 function isMarkdownWikiTarget(target: string): boolean {
 	const ext = fileExtension(target);
 	return !ext || ext === "md";
@@ -66,7 +63,7 @@ export function useWorkspaceLinkEvents({
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
-			if (isPdfWikiTarget(normalizedTarget)) {
+			if (isPdfTarget(normalizedTarget)) {
 				const resolved = await invoke("space_resolve_wikilink", {
 					target: normalizedTarget,
 				});
@@ -148,7 +145,7 @@ export function useWorkspaceLinkEvents({
 						return;
 					}
 
-					if (isPdfWikiTarget(normalizedTarget)) {
+					if (isPdfTarget(normalizedTarget)) {
 						await openOrCreateWikiLinkTarget(detail.target);
 						return;
 					}

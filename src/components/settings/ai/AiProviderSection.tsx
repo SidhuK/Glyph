@@ -97,7 +97,6 @@ export function AiProviderSection({
 					<div
 						className="settingsProviderNativeLogo"
 						aria-hidden="true"
-						title={`${selectedProvider.label} logo`}
 						data-provider={selectedProvider.value}
 					>
 						<ProviderLogo

@@ -198,6 +198,10 @@ function selectionRange(state: EditorState): ChangedRange {
 	};
 }
 
+// Deduped overlapping ranges skip a repeated node's subtree because returning
+// false from nodesBetween prevents descent. Current callers either target
+// paragraph nodes or independently scan inline text, so they do not rely on
+// revisiting children from overlapping parent ranges.
 function visitNodesInRanges(
 	state: EditorState,
 	ranges: readonly ChangedRange[],

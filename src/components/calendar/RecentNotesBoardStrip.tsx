@@ -38,12 +38,6 @@ export function RecentNotesBoardStrip({
 							onClick={() => onOpenNote(note.note_path)}
 							onMouseEnter={() => onPrefetchNote?.(note.note_path)}
 							onFocus={() => onPrefetchNote?.(note.note_path)}
-							onKeyDown={(event) => {
-								if (event.key === " ") {
-									event.preventDefault();
-									onOpenNote(note.note_path);
-								}
-							}}
 							title="Open note"
 						>
 							<div className="commandPaletteRecentIcon">
