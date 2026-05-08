@@ -151,6 +151,10 @@
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
+.databaseBodyCell:has(.databaseTagSuggestions) {
+	z-index: 4;
+}
+
 .databaseTable [data-slot="table-cell"].databaseBodyCell {
 	padding-top: 0;
 	padding-bottom: 0;
@@ -415,6 +419,10 @@
 	transition: background-color 120ms ease;
 }
 
+.databaseRow:has(.databaseTagSuggestions) {
+	z-index: 4;
+}
+
 .databaseRow:hover {
 	background: var(--bg-hover);
 }
@@ -464,16 +472,6 @@
 	letter-spacing: 0.06em;
 	line-height: 1.15;
 	text-transform: uppercase;
-}
-
-.databaseGroupCount {
-	flex: 0 0 auto;
-	color: var(--text-secondary);
-	font-size: 0.65rem;
-	font-weight: var(--font-semibold);
-	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.02em;
-	line-height: 1.15;
 }
 
 .databaseLoadingState,

@@ -128,7 +128,7 @@ export function DatabaseTagPicker({
 				<ScrollArea className="databasePickerResults">
 					<div className="databasePickerList">
 						{options.length > 0
-							? options.map(({ tag, count }) => {
+							? options.map(({ tag }) => {
 									const normalizedTag = normalizeTagToken(tag) ?? tag;
 									const active = normalizedTag === selectedTag;
 									return (
@@ -147,11 +147,7 @@ export function DatabaseTagPicker({
 												<span className="databasePickerOptionLabel">
 													{formatTagLabel(normalizedTag)}
 												</span>
-												<span className="databasePickerOptionMeta">
-													Used in {count} note{count === 1 ? "" : "s"}
-												</span>
 											</span>
-											<span className="databasePickerOptionBadge">{count}</span>
 										</button>
 									);
 								})

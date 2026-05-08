@@ -78,7 +78,6 @@ type TauriEventMap = {
 			delightfulGlyph?: boolean;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
-			showTaskProgressIndicator?: boolean;
 			folioMode?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
@@ -98,7 +97,6 @@ type TauriEventMap = {
 		};
 		database?: {
 			showColumnColor?: boolean;
-			showNoteCount?: boolean;
 		};
 		editor?: {
 			showCollapsibleHeadings?: boolean;

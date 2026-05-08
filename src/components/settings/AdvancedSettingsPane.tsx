@@ -9,7 +9,6 @@ import {
 	loadSettings,
 	setAiAssistantMode,
 	setDatabaseShowColumnColor,
-	setDatabaseShowNoteCount,
 	setDelightfulGlyph,
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
@@ -19,7 +18,6 @@ import {
 	setEditorWidthMode,
 	setFolioMode,
 	setShowFileTreeFolderCounts,
-	setShowTaskProgressIndicator,
 	setShowToc,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -122,10 +120,7 @@ export function AdvancedSettingsPane() {
 	const [folioMode, setFolioModeState] = useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
-	const [showTaskProgressIndicator, setShowTaskProgressIndicatorState] =
-		useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
-	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 	const [error, setError] = useState("");
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
@@ -147,13 +142,7 @@ export function AdvancedSettingsPane() {
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
 	] = useState(false);
-	const [
-		isSavingShowTaskProgressIndicator,
-		setIsSavingShowTaskProgressIndicator,
-	] = useState(false);
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
-		useState(false);
-	const [isSavingDatabaseNoteCount, setIsSavingDatabaseNoteCount] =
 		useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
 
@@ -172,9 +161,7 @@ export function AdvancedSettingsPane() {
 			setDelightfulGlyphState(settings.ui.delightfulGlyph);
 			setFolioModeState(settings.ui.folioMode);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
-			setShowTaskProgressIndicatorState(settings.ui.showTaskProgressIndicator);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
-			setShowDatabaseNoteCount(settings.database.showNoteCount);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
 		}
@@ -225,14 +212,8 @@ export function AdvancedSettingsPane() {
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
 		}
-		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
-			setShowTaskProgressIndicatorState(payload.ui.showTaskProgressIndicator);
-		}
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
-		}
-		if (typeof payload.database?.showNoteCount === "boolean") {
-			setShowDatabaseNoteCount(payload.database.showNoteCount);
 		}
 	});
 
@@ -522,30 +503,6 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Show task progress indicators"
-						description="Show task completion rings across the app, including the editor ribbon, sidebar file tree, and database cards."
-					>
-						<SettingsToggle
-							checked={showTaskProgressIndicator}
-							disabled={isSavingShowTaskProgressIndicator}
-							ariaLabel="Show task progress indicators"
-							onCheckedChange={(checked) => {
-								const previous = showTaskProgressIndicator;
-								setError("");
-								setShowTaskProgressIndicatorState(checked);
-								setIsSavingShowTaskProgressIndicator(true);
-								void setShowTaskProgressIndicator(checked)
-									.catch((cause) => {
-										setShowTaskProgressIndicatorState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowTaskProgressIndicator(false);
-									});
-							}}
-						/>
-					</SettingsRow>
-					<SettingsRow
 						label="Show folder file counts"
 						description="Show a recursive file total at the end of each folder row in the file tree."
 					>
@@ -594,30 +551,6 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingDatabaseColumnColor(false);
-									});
-							}}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label="Show note count"
-						description="Show the total number of notes in the database header."
-					>
-						<SettingsToggle
-							checked={showDatabaseNoteCount}
-							disabled={isSavingDatabaseNoteCount}
-							ariaLabel="Show note count"
-							onCheckedChange={(checked) => {
-								const previous = showDatabaseNoteCount;
-								setError("");
-								setShowDatabaseNoteCount(checked);
-								setIsSavingDatabaseNoteCount(true);
-								void setDatabaseShowNoteCount(checked)
-									.catch((cause) => {
-										setShowDatabaseNoteCount(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingDatabaseNoteCount(false);
 									});
 							}}
 						/>

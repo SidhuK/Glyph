@@ -288,7 +288,6 @@ function DatabaseBoardLaneView({
 					</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
-					<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
 							<button

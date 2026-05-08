@@ -197,12 +197,6 @@ function DatabasesPaneContent({
 	const [rows, setRows] = useState<DatabaseRow[]>(
 		() => initialRows?.rows ?? [],
 	);
-	const [totalCount, setTotalCount] = useState(
-		() => initialRows?.total_count ?? 0,
-	);
-	const [isTruncated, setIsTruncated] = useState(
-		() => initialRows?.truncated ?? false,
-	);
 	const [loading, setLoading] = useState(() => !initialDocument);
 	const [rowsLoading, setRowsLoading] = useState(() => !initialRows);
 	const [error, setError] = useState("");
@@ -217,7 +211,6 @@ function DatabasesPaneContent({
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
-	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
@@ -246,7 +239,6 @@ function DatabasesPaneContent({
 			.then((settings) => {
 				if (!cancelled) {
 					setShowDatabaseColumnColor(settings.database.showColumnColor);
-					setShowDatabaseNoteCount(settings.database.showNoteCount);
 				}
 			})
 			.catch(() => {
@@ -260,9 +252,6 @@ function DatabasesPaneContent({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
-		}
-		if (typeof payload.database?.showNoteCount === "boolean") {
-			setShowDatabaseNoteCount(payload.database.showNoteCount);
 		}
 	});
 
@@ -386,8 +375,6 @@ function DatabasesPaneContent({
 			) {
 				if (rowRequestTokenRef.current === requestToken) {
 					setRows([]);
-					setTotalCount(0);
-					setIsTruncated(false);
 				}
 				return;
 			}
@@ -404,8 +391,6 @@ function DatabasesPaneContent({
 					return;
 				}
 				setRows(next.rows);
-				setTotalCount(next.total_count);
-				setIsTruncated(next.truncated);
 				setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
 			} catch (cause) {
 				if (rowRequestTokenRef.current !== requestToken) {
@@ -429,8 +414,6 @@ function DatabasesPaneContent({
 		);
 		if (cachedRows) {
 			setRows(cachedRows.rows);
-			setTotalCount(cachedRows.total_count);
-			setIsTruncated(cachedRows.truncated);
 			setRowsLoading(false);
 			void loadRows({ background: true });
 			return;
@@ -853,18 +836,6 @@ function DatabasesPaneContent({
 
 				{document ? (
 					<div className="databasesTopBarRight">
-						{showDatabaseNoteCount ? (
-							<span className="databasesHeaderSource">
-								{totalCount > rows.length
-									? `Showing ${rows.length} of ${totalCount} notes`
-									: `${rows.length} note${rows.length === 1 ? "" : "s"}`}
-							</span>
-						) : null}
-						{isTruncated ? (
-							<span className="databasesHeaderSource">
-								Limited to the first 200 notes
-							</span>
-						) : null}
 						<Button
 							type="button"
 							variant="ghost"

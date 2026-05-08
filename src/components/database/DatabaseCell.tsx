@@ -592,7 +592,7 @@ function DatabaseCellEditor({
 					<div className="notePropertySuggestions databaseTagSuggestions">
 						<div className="notePropertySuggestionsLabel">Suggested tags</div>
 						<div className="notePropertySuggestionList">
-							{tagSuggestions.map(({ tag, count }) => (
+							{tagSuggestions.map(({ tag }) => (
 								<button
 									key={tag}
 									type="button"
@@ -611,9 +611,6 @@ function DatabaseCellEditor({
 									}}
 								>
 									<span>{formatDatabaseTagLabel(tag)}</span>
-									<span className="notePropertySuggestionCount mono">
-										{count}
-									</span>
 								</button>
 							))}
 						</div>

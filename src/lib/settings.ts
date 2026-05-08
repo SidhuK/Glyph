@@ -76,7 +76,6 @@ const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
 const DEFAULT_UI_FONT_FAMILY = "Geist";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
-const DEFAULT_SHOW_TASK_PROGRESS_INDICATOR = true;
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
@@ -119,7 +118,6 @@ export interface TaskSourceSetting {
 
 export interface DatabaseSettings {
 	showColumnColor: boolean;
-	showNoteCount: boolean;
 }
 
 export interface QuickNotesSettings {
@@ -159,7 +157,6 @@ const DEFAULT_SHORTCUT_SETTINGS: ShortcutSettings = {
 
 const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
-	showNoteCount: false,
 };
 
 const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
@@ -271,7 +268,6 @@ async function emitSettingsUpdated(payload: {
 		delightfulGlyph?: boolean;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
-		showTaskProgressIndicator?: boolean;
 		folioMode?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
@@ -294,7 +290,6 @@ async function emitSettingsUpdated(payload: {
 	};
 	database?: {
 		showColumnColor?: boolean;
-		showNoteCount?: boolean;
 	};
 	editor?: {
 		showCollapsibleHeadings?: boolean;
@@ -344,7 +339,6 @@ interface AppSettings {
 		delightfulGlyph: boolean;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
-		showTaskProgressIndicator: boolean;
 		folioMode: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
@@ -386,7 +380,6 @@ const KEYS = {
 	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
-	showTaskProgressIndicator: "ui.showTaskProgressIndicator",
 	folioMode: "ui.folioMode",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
@@ -407,17 +400,12 @@ const KEYS = {
 	shortcutsVersion: "shortcuts.version",
 	shortcutsBindings: "shortcuts.bindings",
 	databaseShowColumnColor: "database.showColumnColor",
-	databaseShowNoteCount: "database.showNoteCount",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
 	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
 	onboardingUsedCommandPalette: "onboarding.usedCommandPalette",
 	onboardingOpenedDailyNote: "onboarding.openedDailyNote",
 } as const;
-
-// Legacy key from older builds; kept as a read-only fallback during migration.
-const LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY =
-	"ui.taskProgressIndicator.enabled";
 
 const ONBOARDING_KEYS = {
 	launcherSeen: KEYS.onboardingLauncherSeen,
@@ -622,8 +610,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawDelightfulGlyph,
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
-		rawShowTaskProgressIndicator,
-		rawShowTaskProgressIndicatorLegacy,
 		rawFolioMode,
 		dailyNotesFolderRaw,
 		rawWebClippingsFolder,
@@ -640,7 +626,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawEditorEnablePeopleMentionsAsTags,
 		rawEditorVimKeybindings,
 		rawDatabaseShowColumnColor,
-		rawDatabaseShowNoteCount,
 		rawShortcutSettingsVersion,
 		rawShortcutBindings,
 	] = await Promise.all([
@@ -667,8 +652,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.delightfulGlyph),
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
-		store.get<boolean | null>(KEYS.showTaskProgressIndicator),
-		store.get<boolean | null>(LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY),
 		store.get<boolean | null>(KEYS.folioMode),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.webClippingsFolder),
@@ -685,7 +668,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
 		store.get<boolean | null>(KEYS.editorVimKeybindings),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
-		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 		store.get<number | null>(KEYS.shortcutsVersion),
 		store.get<unknown>(KEYS.shortcutsBindings),
 	]);
@@ -732,12 +714,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		typeof rawShowFileTreeFolderCounts === "boolean"
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
-	const showTaskProgressIndicator =
-		typeof rawShowTaskProgressIndicator === "boolean"
-			? rawShowTaskProgressIndicator
-			: typeof rawShowTaskProgressIndicatorLegacy === "boolean"
-				? rawShowTaskProgressIndicatorLegacy
-				: DEFAULT_SHOW_TASK_PROGRESS_INDICATOR;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
@@ -800,10 +776,6 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawDatabaseShowColumnColor === "boolean"
 				? rawDatabaseShowColumnColor
 				: DEFAULT_DATABASE_SETTINGS.showColumnColor,
-		showNoteCount:
-			typeof rawDatabaseShowNoteCount === "boolean"
-				? rawDatabaseShowNoteCount
-				: DEFAULT_DATABASE_SETTINGS.showNoteCount,
 	};
 	return {
 		currentSpacePath,
@@ -825,7 +797,6 @@ export async function loadSettings(): Promise<AppSettings> {
 			delightfulGlyph,
 			showToc,
 			showFileTreeFolderCounts,
-			showTaskProgressIndicator,
 			folioMode,
 			aiAssistantMode,
 		},
@@ -1100,15 +1071,6 @@ export async function setShowFileTreeFolderCounts(
 	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
 }
 
-export async function setShowTaskProgressIndicator(
-	enabled: boolean,
-): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.showTaskProgressIndicator, enabled);
-	await store.save();
-	void emitSettingsUpdated({ ui: { showTaskProgressIndicator: enabled } });
-}
-
 export async function setFolioMode(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.folioMode, enabled);
@@ -1316,15 +1278,6 @@ export async function setDatabaseShowColumnColor(
 	await store.set(KEYS.databaseShowColumnColor, enabled);
 	await store.save();
 	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
-}
-
-export async function setDatabaseShowNoteCount(
-	enabled: boolean,
-): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.databaseShowNoteCount, enabled);
-	await store.save();
-	void emitSettingsUpdated({ database: { showNoteCount: enabled } });
 }
 
 export async function setAutoUpdateLastCheckedAt(

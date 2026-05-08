@@ -97,41 +97,7 @@ describe("GeneralSettingsPane", () => {
 		container.remove();
 	});
 
-	it("hides the updates section for community builds", async () => {
-		useLicenseStatusMock.mockReturnValue({
-			status: { mode: "community_build", can_auto_update: false },
-			loading: false,
-			error: "",
-			reload: vi.fn(),
-		} as never);
-
-		await act(async () => {
-			root.render(<GeneralSettingsPane />);
-		});
-
-		expect(container.textContent).not.toContain("Automatic update checks");
-		expect(container.textContent).toContain("License Card Stub");
-	});
-
-	it("shows the updates section for official builds", async () => {
-		useLicenseStatusMock.mockReturnValue({
-			status: { mode: "licensed", can_auto_update: true },
-			loading: false,
-			error: "",
-			reload: vi.fn(),
-		} as never);
-
-		await act(async () => {
-			root.render(<GeneralSettingsPane />);
-		});
-
-		expect(container.textContent).toContain("Automatic update checks");
-		expect(container.textContent).toContain(
-			"Glyph checks for updates when the app opens and again every 3 hours while it stays open.",
-		);
-	});
-
-	it("keeps the updates section visible while license status is loading", async () => {
+	it("shows license settings without automatic update check copy", async () => {
 		useLicenseStatusMock.mockReturnValue({
 			status: undefined,
 			loading: true,
@@ -143,6 +109,10 @@ describe("GeneralSettingsPane", () => {
 			root.render(<GeneralSettingsPane />);
 		});
 
-		expect(container.textContent).toContain("Automatic update checks");
+		expect(container.textContent).not.toContain("Automatic update checks");
+		expect(container.textContent).not.toContain(
+			"Automatic updates are always on.",
+		);
+		expect(container.textContent).toContain("License Card Stub");
 	});
 });
