@@ -288,7 +288,6 @@ function DatabaseBoardLaneView({
 					</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
-					<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
 							<button
@@ -428,7 +427,7 @@ export function DatabaseBoard({
 		});
 	const [moveError, setMoveError] = useState("");
 	const suppressClickRef = useRef(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
 		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
 		[rows],

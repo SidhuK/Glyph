@@ -31,8 +31,8 @@ const availableTags = [
 describe("DatabaseTagPicker", () => {
 	it("excludes virtual tags when query is empty", () => {
 		expect(buildDatabaseTagPickerOptions(availableTags, "")).toEqual([
-			{ tag: "work", count: 3 },
-			{ tag: "personal", count: 1 },
+			{ tag: "work" },
+			{ tag: "personal" },
 		]);
 	});
 
@@ -42,8 +42,8 @@ describe("DatabaseTagPicker", () => {
 
 	it("treats leading slash queries like an empty prefix", () => {
 		expect(buildDatabaseTagPickerOptions(availableTags, "/work")).toEqual([
-			{ tag: "work", count: 3 },
-			{ tag: "personal", count: 1 },
+			{ tag: "work" },
+			{ tag: "personal" },
 		]);
 	});
 

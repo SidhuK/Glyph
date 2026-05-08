@@ -60,92 +60,121 @@ function parseStandaloneMarkdownImage(
 
 const CalloutDecorations = Extension.create({
 	name: "callout-decorations",
+	addOptions() {
+		return {
+			enableShortcutTransform: true,
+		};
+	},
 	addProseMirrorPlugins() {
 		const key = new PluginKey("callout-decorations");
-		return [
-			new Plugin({
-				key: new PluginKey("callout-shortcut-transform"),
-				appendTransaction(transactions, _oldState, newState) {
-					if (!transactions.some((tr) => tr.docChanged)) return null;
+		const plugins = [
+			...(this.options.enableShortcutTransform
+				? [
+						new Plugin({
+							key: new PluginKey("callout-shortcut-transform"),
+							appendTransaction(transactions, _oldState, newState) {
+								if (!transactions.some((tr) => tr.docChanged)) return null;
 
-					const blockquote = newState.schema.nodes.blockquote;
-					const paragraph = newState.schema.nodes.paragraph;
-					const textNode = newState.schema.text.bind(newState.schema);
-					if (!blockquote || !paragraph) return null;
+								const blockquote = newState.schema.nodes.blockquote;
+								const paragraph = newState.schema.nodes.paragraph;
+								const textNode = newState.schema.text.bind(newState.schema);
+								if (!blockquote || !paragraph) return null;
 
-					const replacements: Array<{
-						pos: number;
-						size: number;
-						marker: string;
-					}> = [];
+								const replacements: Array<{
+									pos: number;
+									size: number;
+									marker: string;
+								}> = [];
 
-					visitChangedNodes(transactions, newState, (node, pos) => {
-						if (node.type !== paragraph || node.childCount !== 1) return;
-						const text = node.textContent ?? "";
-						const match = text.match(/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/);
-						if (!match) return;
-						const rawKind = (match[1] ?? "note").toLowerCase();
-						const kind = rawKind === "warn" ? "warning" : rawKind;
-						const tail = (match[2] ?? "").trim();
-						const marker = tail.length ? `[!${kind}] ${tail}` : `[!${kind}]`;
-						replacements.push({ pos, size: node.nodeSize, marker });
-					});
+								visitChangedNodes(transactions, newState, (node, pos) => {
+									if (node.type !== paragraph || node.childCount !== 1) return;
+									const text = node.textContent ?? "";
+									const match = text.match(
+										/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/,
+									);
+									if (!match) return;
+									const rawKind = (match[1] ?? "note").toLowerCase();
+									const kind = rawKind === "warn" ? "warning" : rawKind;
+									const tail = (match[2] ?? "").trim();
+									const marker = tail.length
+										? `[!${kind}] ${tail}`
+										: `[!${kind}]`;
+									replacements.push({ pos, size: node.nodeSize, marker });
+								});
 
-					if (!replacements.length) return null;
+								if (!replacements.length) return null;
 
-					let tr = newState.tr;
-					for (let i = replacements.length - 1; i >= 0; i -= 1) {
-						const replacement = replacements[i];
-						const calloutNode = blockquote.create(
-							null,
-							[
-								paragraph.create(
-									null,
-									replacement.marker ? textNode(replacement.marker) : null,
-								),
-								paragraph.create(),
-							].filter(Boolean),
-						);
-						tr = tr.replaceWith(
-							replacement.pos,
-							replacement.pos + replacement.size,
-							calloutNode,
-						);
-					}
+								let tr = newState.tr;
+								for (let i = replacements.length - 1; i >= 0; i -= 1) {
+									const replacement = replacements[i];
+									const calloutNode = blockquote.create(
+										null,
+										[
+											paragraph.create(
+												null,
+												replacement.marker
+													? textNode(replacement.marker)
+													: null,
+											),
+											paragraph.create(),
+										].filter(Boolean),
+									);
+									tr = tr.replaceWith(
+										replacement.pos,
+										replacement.pos + replacement.size,
+										calloutNode,
+									);
+								}
 
-					return tr.docChanged ? tr : null;
-				},
-			}),
-			new Plugin({
+								return tr.docChanged ? tr : null;
+							},
+						}),
+					]
+				: []),
+			new Plugin<DecorationSet>({
 				key,
+				state: {
+					init: (_config, state) => buildCalloutDecorations(state.doc),
+					apply(tr, decorations) {
+						if (!tr.docChanged) return decorations;
+						return buildCalloutDecorations(tr.doc);
+					},
+				},
 				props: {
 					decorations(state) {
-						const decorations: Decoration[] = [];
-						state.doc.descendants((node, pos) => {
-							if (node.type.name !== "blockquote") return;
-							let parsed: { kind: string; title: string } | null = null;
-							for (let i = 0; i < node.childCount; i += 1) {
-								const child = node.child(i);
-								const text = child.textContent ?? "";
-								parsed = parseCalloutMarker(text);
-								if (parsed) break;
-							}
-							if (!parsed) return;
-							decorations.push(
-								Decoration.node(pos, pos + node.nodeSize, {
-									class: `callout callout-${parsed.kind}`,
-									"data-callout": parsed.kind,
-									"data-callout-title": parsed.title,
-								}),
-							);
-						});
-						return DecorationSet.create(state.doc, decorations);
+						return key.getState(state) ?? DecorationSet.empty;
 					},
 				},
 			}),
 		];
+		return plugins;
 	},
 });
+
+function buildCalloutDecorations(doc: ProseMirrorNode): DecorationSet {
+	const decorations: Decoration[] = [];
+	doc.descendants((node, pos) => {
+		if (node.type.name !== "blockquote") return;
+		let parsed: { kind: string; title: string } | null = null;
+		for (let i = 0; i < node.childCount; i += 1) {
+			const child = node.child(i);
+			const text = child.textContent ?? "";
+			parsed = parseCalloutMarker(text);
+			if (parsed) break;
+		}
+		if (!parsed) return;
+		decorations.push(
+			Decoration.node(pos, pos + node.nodeSize, {
+				class: `callout callout-${parsed.kind}`,
+				"data-callout": parsed.kind,
+				"data-callout-title": parsed.title,
+			}),
+		);
+	});
+	return decorations.length
+		? DecorationSet.create(doc, decorations)
+		: DecorationSet.empty;
+}
 
 const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
 
@@ -714,6 +743,7 @@ const EditorLink = Link.extend({
 });
 
 interface CreateEditorExtensionsOptions {
+	enableEditingExtensions?: boolean;
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
@@ -729,6 +759,7 @@ export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
 	const {
+		enableEditingExtensions = true,
 		enableSlashCommand = true,
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
@@ -753,13 +784,17 @@ export function createEditorExtensions(
 		EditorLink,
 		TaskList,
 		TaskItem.configure({ nested: true }),
-		TaskListMarkdownShortcut,
-		TaskDetailShortcut,
-		MarkdownLinkSyntaxCollapse,
-		MarkdownImageShortcut,
-		NoteSearch,
-		TableEnterNavigation,
-		Table.configure({ resizable: true }),
+		...(enableEditingExtensions
+			? [
+					TaskListMarkdownShortcut,
+					TaskDetailShortcut,
+					MarkdownLinkSyntaxCollapse,
+					MarkdownImageShortcut,
+					NoteSearch,
+					TableEnterNavigation,
+				]
+			: []),
+		Table.configure({ resizable: enableEditingExtensions }),
 		TableRow,
 		TableHeader,
 		TableCell,
@@ -767,7 +802,7 @@ export function createEditorExtensions(
 			allowBase64: true,
 		}),
 		MermaidPreview,
-		HeadingCollapse,
+		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,
@@ -782,7 +817,7 @@ export function createEditorExtensions(
 				]
 			: []),
 		...(enableWikiLinks ? [WikiLink] : []),
-		...(enableMarkdownLinkAutocomplete
+		...(enableEditingExtensions && enableMarkdownLinkAutocomplete
 			? [
 					MarkdownLinkAutocomplete.configure({
 						currentPath,
@@ -790,13 +825,21 @@ export function createEditorExtensions(
 					}),
 				]
 			: []),
-		...(enablePeopleMentions ? [PersonAutocomplete] : []),
-		...(enableSlashCommand ? [SlashCommand] : []),
-		CalloutDecorations,
-		TagDecorations.configure({ enablePeopleMentions }),
-		ZenFocus.configure({
-			getZenModeEnabled: getZenModeEnabled ?? (() => false),
+		...(enableEditingExtensions && enablePeopleMentions
+			? [PersonAutocomplete]
+			: []),
+		...(enableEditingExtensions && enableSlashCommand ? [SlashCommand] : []),
+		CalloutDecorations.configure({
+			enableShortcutTransform: enableEditingExtensions,
 		}),
-		...(enableVimKeybindings ? [VimMode] : []),
+		TagDecorations.configure({ enablePeopleMentions }),
+		...(enableEditingExtensions
+			? [
+					ZenFocus.configure({
+						getZenModeEnabled: getZenModeEnabled ?? (() => false),
+					}),
+				]
+			: []),
+		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

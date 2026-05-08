@@ -10,7 +10,6 @@ const {
 	loadSettingsMock,
 	setAiAssistantModeMock,
 	setDatabaseShowColumnColorMock,
-	setDatabaseShowNoteCountMock,
 	setDelightfulGlyphMock,
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
@@ -20,13 +19,11 @@ const {
 	setEditorVimKeybindingsMock,
 	setFolioModeMock,
 	setShowFileTreeFolderCountsMock,
-	setShowTaskProgressIndicatorMock,
 	setShowTocMock,
 } = vi.hoisted(() => ({
 	loadSettingsMock: vi.fn(),
 	setAiAssistantModeMock: vi.fn(() => Promise.resolve()),
 	setDatabaseShowColumnColorMock: vi.fn(() => Promise.resolve()),
-	setDatabaseShowNoteCountMock: vi.fn(() => Promise.resolve()),
 	setDelightfulGlyphMock: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
@@ -36,7 +33,6 @@ const {
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setFolioModeMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
-	setShowTaskProgressIndicatorMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
 }));
 
@@ -51,7 +47,6 @@ vi.mock("../../lib/settings", () => ({
 	loadSettings: loadSettingsMock,
 	setAiAssistantMode: setAiAssistantModeMock,
 	setDatabaseShowColumnColor: setDatabaseShowColumnColorMock,
-	setDatabaseShowNoteCount: setDatabaseShowNoteCountMock,
 	setDelightfulGlyph: setDelightfulGlyphMock,
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
@@ -61,7 +56,6 @@ vi.mock("../../lib/settings", () => ({
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setFolioMode: setFolioModeMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
-	setShowTaskProgressIndicator: setShowTaskProgressIndicatorMock,
 	setShowToc: setShowTocMock,
 }));
 
@@ -169,12 +163,10 @@ function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 			delightfulGlyph: false,
 			folioMode: false,
 			showFileTreeFolderCounts: false,
-			showTaskProgressIndicator: true,
 			showToc: true,
 		},
 		database: {
 			showColumnColor: true,
-			showNoteCount: false,
 		},
 	};
 }
@@ -320,23 +312,6 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorVimKeybindingsMock).toHaveBeenCalledWith(true);
-	});
-
-	it("saves task progress indicator visibility changes", async () => {
-		await act(async () => {
-			root.render(<AdvancedSettingsPane />);
-		});
-
-		const toggle = container.querySelector(
-			'input[aria-label="Show task progress indicators"]',
-		) as HTMLInputElement | null;
-		expect(toggle).toBeTruthy();
-
-		await act(async () => {
-			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-
-		expect(setShowTaskProgressIndicatorMock).toHaveBeenCalledWith(false);
 	});
 
 	it("saves Folio Mode changes", async () => {

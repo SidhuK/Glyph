@@ -87,12 +87,21 @@ export const MarkdownLinkAutocomplete = Extension.create({
 
 					const updateMenu = (props: SuggestionProps<LinkSuggestionItem>) => {
 						if (!menu) return;
-						menu.innerHTML = "";
+						menu.replaceChildren();
 						for (const [index, item] of props.items.entries()) {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
-							button.innerHTML = `<span class="wikiLinkSuggestionTitle">${item.title}</span><span class="wikiLinkSuggestionPath">${item.insertText}</span>`;
+
+							const title = document.createElement("span");
+							title.className = "wikiLinkSuggestionTitle";
+							title.textContent = item.title;
+
+							const path = document.createElement("span");
+							path.className = "wikiLinkSuggestionPath";
+							path.textContent = item.insertText;
+
+							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);

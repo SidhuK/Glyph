@@ -8,7 +8,7 @@ export function normalizeInlineMarkdown(text: string): string {
 		"$1",
 	);
 	const withoutWikiLinks = withoutLinks.replace(
-		/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+		/!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
 		(_, target: string, label?: string) => (label ?? target).trim(),
 	);
 	const withoutInlineCode = withoutWikiLinks.replace(/`([^`]+)`/g, "$1");

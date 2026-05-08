@@ -316,10 +316,6 @@ export function DatabaseTable({
 											className="databaseGroupCell"
 										>
 											<span className="databaseGroupLabel">{group.label}</span>
-											<span className="databaseGroupCount">
-												{group.rowCount}{" "}
-												{group.rowCount === 1 ? "note" : "notes"}
-											</span>
 										</td>
 									</tr>
 									{group.rows

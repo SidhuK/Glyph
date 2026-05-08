@@ -13,6 +13,7 @@ type CopyButtonElement = HTMLButtonElement & {
 };
 
 const MARKDOWN_VIEW_EXTENSIONS = createEditorExtensions({
+	enableEditingExtensions: false,
 	enableSlashCommand: false,
 });
 

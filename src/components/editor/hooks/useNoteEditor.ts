@@ -708,9 +708,7 @@ export function useNoteEditor({
 	return {
 		editor,
 		frontmatter,
-		body,
 		colorfulHeadings,
-		showCollapsibleHeadings,
 		showFrontmatterInEditor,
 		frontmatterRef,
 		lastAppliedBodyRef,

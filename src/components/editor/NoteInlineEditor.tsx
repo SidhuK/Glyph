@@ -147,6 +147,23 @@ function normalizeEditorHref(value: string): string {
 	return `https://${trimmed}`;
 }
 
+function normalizeCalloutType(type: string): string {
+	return type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
+}
+
+function createCalloutContent(type: string) {
+	return {
+		type: "blockquote",
+		content: [
+			{
+				type: "paragraph",
+				content: [{ type: "text", text: `[!${normalizeCalloutType(type)}]` }],
+			},
+			{ type: "paragraph" },
+		],
+	};
+}
+
 async function openFrontmatterHref(
 	href: string,
 	sourcePath: string,
@@ -396,70 +413,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						extractToNote.openExtractDialog();
 						return true;
 					case "callout_info":
-						return chain
-							.insertContent({
-								type: "blockquote",
-								content: [
-									{
-										type: "paragraph",
-										content: [{ type: "text", text: "[!info]" }],
-									},
-									{ type: "paragraph" },
-								],
-							})
-							.run();
+						return chain.insertContent(createCalloutContent("info")).run();
 					case "callout_warning":
-						return chain
-							.insertContent({
-								type: "blockquote",
-								content: [
-									{
-										type: "paragraph",
-										content: [{ type: "text", text: "[!warning]" }],
-									},
-									{ type: "paragraph" },
-								],
-							})
-							.run();
+						return chain.insertContent(createCalloutContent("warning")).run();
 					case "callout_error":
-						return chain
-							.insertContent({
-								type: "blockquote",
-								content: [
-									{
-										type: "paragraph",
-										content: [{ type: "text", text: "[!error]" }],
-									},
-									{ type: "paragraph" },
-								],
-							})
-							.run();
+						return chain.insertContent(createCalloutContent("error")).run();
 					case "callout_success":
-						return chain
-							.insertContent({
-								type: "blockquote",
-								content: [
-									{
-										type: "paragraph",
-										content: [{ type: "text", text: "[!success]" }],
-									},
-									{ type: "paragraph" },
-								],
-							})
-							.run();
+						return chain.insertContent(createCalloutContent("success")).run();
 					case "callout_tip":
-						return chain
-							.insertContent({
-								type: "blockquote",
-								content: [
-									{
-										type: "paragraph",
-										content: [{ type: "text", text: "[!tip]" }],
-									},
-									{ type: "paragraph" },
-								],
-							})
-							.run();
+						return chain.insertContent(createCalloutContent("tip")).run();
 					case "link_set": {
 						const linkAttrs = editor.getAttributes("link") as {
 							href?: string;
@@ -526,8 +488,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			return;
 		}
 		onRegisterCalloutInserter((type: string) => {
-			const normalizedType =
-				type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
 			const host = tiptapHostRef.current?.closest(
 				".rfNodeNoteEditorBody",
 			) as HTMLElement | null;
@@ -535,16 +495,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			editor
 				.chain()
 				.focus(null, { scrollIntoView: false })
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: `[!${normalizedType}]` }],
-						},
-						{ type: "paragraph" },
-					],
-				})
+				.insertContent(createCalloutContent(type))
 				.run();
 			if (host) {
 				requestAnimationFrame(() => {
@@ -729,23 +680,35 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 		syncSelectedCodeBlock();
 		const scrollHost = host.closest(".rfNodeNoteEditorBody");
-		scrollHost?.addEventListener("scroll", syncSelectedCodeBlock, {
+		let codeBlockFrame = 0;
+		const scheduleSelectedCodeBlockSync = () => {
+			if (codeBlockFrame) return;
+			codeBlockFrame = window.requestAnimationFrame(() => {
+				codeBlockFrame = 0;
+				syncSelectedCodeBlock();
+			});
+		};
+		scrollHost?.addEventListener("scroll", scheduleSelectedCodeBlockSync, {
 			passive: true,
 		});
-		window.addEventListener("resize", syncSelectedCodeBlock);
-		document.addEventListener("selectionchange", syncSelectedCodeBlock);
-		editor.on("selectionUpdate", syncSelectedCodeBlock);
-		editor.on("transaction", syncSelectedCodeBlock);
+		window.addEventListener("resize", scheduleSelectedCodeBlockSync);
+		document.addEventListener("selectionchange", scheduleSelectedCodeBlockSync);
+		editor.on("selectionUpdate", scheduleSelectedCodeBlockSync);
+		editor.on("transaction", scheduleSelectedCodeBlockSync);
 		return () => {
+			if (codeBlockFrame) window.cancelAnimationFrame(codeBlockFrame);
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
 				codeBlockCopyResetTimerRef.current = null;
 			}
-			scrollHost?.removeEventListener("scroll", syncSelectedCodeBlock);
-			window.removeEventListener("resize", syncSelectedCodeBlock);
-			document.removeEventListener("selectionchange", syncSelectedCodeBlock);
-			editor.off("selectionUpdate", syncSelectedCodeBlock);
-			editor.off("transaction", syncSelectedCodeBlock);
+			scrollHost?.removeEventListener("scroll", scheduleSelectedCodeBlockSync);
+			window.removeEventListener("resize", scheduleSelectedCodeBlockSync);
+			document.removeEventListener(
+				"selectionchange",
+				scheduleSelectedCodeBlockSync,
+			);
+			editor.off("selectionUpdate", scheduleSelectedCodeBlockSync);
+			editor.off("transaction", scheduleSelectedCodeBlockSync);
 		};
 	}, [editor, mode]);
 
@@ -762,66 +725,72 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		isSelectedMermaidCodeBlock &&
 		selectedCodeBlock?.pos === activeMermaidPreviewPos;
 
-	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
-		if (!editor) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.updateAttributes("codeBlock", {
-				language: language === "plaintext" ? null : language,
-			})
-			.run();
-		if (language !== MERMAID_CODE_BLOCK_LANGUAGE) {
-			setActiveMermaidPreviewPos(null);
-		}
-		setCodeBlockPickerOpen(false);
-	};
-	const preventCodeBlockPickerMouseDown = (
-		event: ReactMouseEvent<HTMLElement>,
-	) => {
-		event.preventDefault();
-	};
-	const preventTableControlMouseDown = (
-		event: ReactMouseEvent<HTMLButtonElement>,
-	) => {
-		event.preventDefault();
-	};
-	const addRowToSelectedTable = () => {
+	const applyCodeBlockLanguage = useCallback(
+		(language: SupportedCodeBlockLanguage) => {
+			if (!editor) return;
+			editor
+				.chain()
+				.focus(null, { scrollIntoView: false })
+				.updateAttributes("codeBlock", {
+					language: language === "plaintext" ? null : language,
+				})
+				.run();
+			if (language !== MERMAID_CODE_BLOCK_LANGUAGE) {
+				setActiveMermaidPreviewPos(null);
+			}
+			setCodeBlockPickerOpen(false);
+		},
+		[editor],
+	);
+	const preventCodeBlockPickerMouseDown = useCallback(
+		(event: ReactMouseEvent<HTMLElement>) => {
+			event.preventDefault();
+		},
+		[],
+	);
+	const preventTableControlMouseDown = useCallback(
+		(event: ReactMouseEvent<HTMLButtonElement>) => {
+			event.preventDefault();
+		},
+		[],
+	);
+	const addRowToSelectedTable = useCallback(() => {
 		if (!editor) return;
 		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
-	};
-	const addColumnToSelectedTable = () => {
+	}, [editor]);
+	const addColumnToSelectedTable = useCallback(() => {
 		if (!editor) return;
 		editor
 			.chain()
 			.focus(null, { scrollIntoView: false })
 			.addColumnAfter()
 			.run();
-	};
-	const handleEditorPointerDownCapture = (
-		event: React.PointerEvent<HTMLDivElement>,
-	) => {
-		if (!canEdit || activeMermaidPreviewPos === null) return;
-		const target = event.target instanceof HTMLElement ? event.target : null;
-		if (
-			target?.closest(".codeBlockPreviewBtn") ||
-			target?.closest(".codeBlockCopyBtn") ||
-			target?.closest(".codeBlockLanguageBtn") ||
-			target?.closest(".codeBlockLanguagePopover")
-		) {
-			return;
-		}
-		flushSync(() => {
-			setActiveMermaidPreviewPos(null);
-			setActiveMermaidPreviewHeight(0);
-		});
-	};
-	const toggleSelectedMermaidPreview = () => {
+	}, [editor]);
+	const handleEditorPointerDownCapture = useCallback(
+		(event: React.PointerEvent<HTMLDivElement>) => {
+			if (!canEdit || activeMermaidPreviewPos === null) return;
+			const target = event.target instanceof HTMLElement ? event.target : null;
+			if (
+				target?.closest(".codeBlockPreviewBtn") ||
+				target?.closest(".codeBlockCopyBtn") ||
+				target?.closest(".codeBlockLanguageBtn") ||
+				target?.closest(".codeBlockLanguagePopover")
+			) {
+				return;
+			}
+			flushSync(() => {
+				setActiveMermaidPreviewPos(null);
+				setActiveMermaidPreviewHeight(0);
+			});
+		},
+		[activeMermaidPreviewPos, canEdit],
+	);
+	const toggleSelectedMermaidPreview = useCallback(() => {
 		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) return;
 		setActiveMermaidPreviewPos((prev) =>
 			prev === selectedCodeBlock.pos ? null : selectedCodeBlock.pos,
 		);
-	};
+	}, [isSelectedMermaidCodeBlock, selectedCodeBlock]);
 
 	useEffect(() => {
 		if (!editor) return;
@@ -926,6 +895,125 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		setLinkDialog(null);
 	}, [canEdit, editor]);
 
+	const copySelectedCodeBlock = useCallback(() => {
+		if (!selectedCodeBlock) return;
+		const clipboard = navigator.clipboard;
+		if (!clipboard?.writeText) {
+			console.error("Clipboard API unavailable");
+			setCodeBlockCopied(false);
+			return;
+		}
+		void clipboard
+			.writeText(selectedCodeBlock.source)
+			.then(() => {
+				if (codeBlockCopyResetTimerRef.current !== null) {
+					window.clearTimeout(codeBlockCopyResetTimerRef.current);
+				}
+				setCodeBlockCopied(true);
+				codeBlockCopyResetTimerRef.current = window.setTimeout(() => {
+					codeBlockCopyResetTimerRef.current = null;
+					setCodeBlockCopied(false);
+				}, 1500);
+			})
+			.catch((error: unknown) => {
+				console.error("Failed to copy code block contents.", error);
+				setCodeBlockCopied(false);
+			});
+	}, [selectedCodeBlock]);
+
+	const tableControls = useMemo(
+		() => ({
+			selected: selectedTable,
+			onControlMouseDown: preventTableControlMouseDown,
+			onAddRow: addRowToSelectedTable,
+			onAddColumn: addColumnToSelectedTable,
+		}),
+		[
+			addColumnToSelectedTable,
+			addRowToSelectedTable,
+			preventTableControlMouseDown,
+			selectedTable,
+		],
+	);
+
+	const codeBlockControls = useMemo(
+		() => ({
+			selected: selectedCodeBlock,
+			pickerOpen: codeBlockPickerOpen,
+			onPickerOpenChange: setCodeBlockPickerOpen,
+			language: selectedCodeBlockLanguage,
+			languageLabel: selectedCodeBlockLanguageLabel,
+			isMermaid: isSelectedMermaidCodeBlock,
+			isMermaidPreviewActive: isSelectedMermaidPreviewActive,
+			copied: codeBlockCopied,
+			onPickerMouseDown: preventCodeBlockPickerMouseDown,
+			onApplyLanguage: applyCodeBlockLanguage,
+			onToggleMermaidPreview: toggleSelectedMermaidPreview,
+			onCopy: copySelectedCodeBlock,
+			mermaidPreviewHeight: activeMermaidPreviewHeight,
+			onMermaidHeightChange: setActiveMermaidPreviewHeight,
+		}),
+		[
+			activeMermaidPreviewHeight,
+			applyCodeBlockLanguage,
+			codeBlockCopied,
+			codeBlockPickerOpen,
+			copySelectedCodeBlock,
+			isSelectedMermaidCodeBlock,
+			isSelectedMermaidPreviewActive,
+			preventCodeBlockPickerMouseDown,
+			selectedCodeBlock,
+			selectedCodeBlockLanguage,
+			selectedCodeBlockLanguageLabel,
+			toggleSelectedMermaidPreview,
+		],
+	);
+
+	const resetTaskDraftDates = useCallback(() => {
+		void taskInlineDates.resetDraftDates();
+	}, [taskInlineDates.resetDraftDates]);
+	const updateTaskDates = useCallback(
+		(scheduled: string, due: string) => {
+			void taskInlineDates.updateTaskDates(scheduled, due);
+		},
+		[taskInlineDates.updateTaskDates],
+	);
+	const taskControls = useMemo(
+		() => ({
+			selectedAnchor: taskInlineDates.selectedTaskAnchor,
+			scheduleAnchor: taskInlineDates.scheduleAnchor,
+			onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
+			onOpenPopover: taskInlineDates.openTaskPopover,
+			scheduledDate: taskInlineDates.scheduledDate,
+			dueDate: taskInlineDates.dueDate,
+			onScheduledDateChange: taskInlineDates.setScheduledDate,
+			onDueDateChange: taskInlineDates.setDueDate,
+			onResetDraftDates: resetTaskDraftDates,
+			onUpdateDates: updateTaskDates,
+		}),
+		[
+			resetTaskDraftDates,
+			taskInlineDates.dueDate,
+			taskInlineDates.openTaskPopover,
+			taskInlineDates.scheduleAnchor,
+			taskInlineDates.scheduledDate,
+			taskInlineDates.selectedTaskAnchor,
+			taskInlineDates.setDueDate,
+			taskInlineDates.setScheduleAnchor,
+			taskInlineDates.setScheduledDate,
+			updateTaskDates,
+		],
+	);
+
+	const backlinkControls = useMemo(
+		() => ({
+			show: showBacklinks,
+			items: backlinks,
+			interactive,
+		}),
+		[backlinks, interactive, showBacklinks],
+	);
+
 	return (
 		<div
 			className={[
@@ -995,76 +1083,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 								? extractToNote.openExtractDialog
 								: undefined
 						}
-						table={{
-							selected: selectedTable,
-							onControlMouseDown: preventTableControlMouseDown,
-							onAddRow: addRowToSelectedTable,
-							onAddColumn: addColumnToSelectedTable,
-						}}
-						codeBlock={{
-							selected: selectedCodeBlock,
-							pickerOpen: codeBlockPickerOpen,
-							onPickerOpenChange: setCodeBlockPickerOpen,
-							language: selectedCodeBlockLanguage,
-							languageLabel: selectedCodeBlockLanguageLabel,
-							isMermaid: isSelectedMermaidCodeBlock,
-							isMermaidPreviewActive: isSelectedMermaidPreviewActive,
-							copied: codeBlockCopied,
-							onPickerMouseDown: preventCodeBlockPickerMouseDown,
-							onApplyLanguage: applyCodeBlockLanguage,
-							onToggleMermaidPreview: toggleSelectedMermaidPreview,
-							onCopy: () => {
-								if (!selectedCodeBlock) return;
-								const clipboard = navigator.clipboard;
-								if (!clipboard?.writeText) {
-									console.error("Clipboard API unavailable");
-									setCodeBlockCopied(false);
-									return;
-								}
-								void clipboard
-									.writeText(selectedCodeBlock.source)
-									.then(() => {
-										if (codeBlockCopyResetTimerRef.current !== null) {
-											window.clearTimeout(codeBlockCopyResetTimerRef.current);
-										}
-										setCodeBlockCopied(true);
-										codeBlockCopyResetTimerRef.current = window.setTimeout(
-											() => {
-												codeBlockCopyResetTimerRef.current = null;
-												setCodeBlockCopied(false);
-											},
-											1500,
-										);
-									})
-									.catch((error: unknown) => {
-										console.error("Failed to copy code block contents.", error);
-										setCodeBlockCopied(false);
-									});
-							},
-							mermaidPreviewHeight: activeMermaidPreviewHeight,
-							onMermaidHeightChange: setActiveMermaidPreviewHeight,
-						}}
-						task={{
-							selectedAnchor: taskInlineDates.selectedTaskAnchor,
-							scheduleAnchor: taskInlineDates.scheduleAnchor,
-							onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
-							onOpenPopover: taskInlineDates.openTaskPopover,
-							scheduledDate: taskInlineDates.scheduledDate,
-							dueDate: taskInlineDates.dueDate,
-							onScheduledDateChange: taskInlineDates.setScheduledDate,
-							onDueDateChange: taskInlineDates.setDueDate,
-							onResetDraftDates: () => {
-								void taskInlineDates.resetDraftDates();
-							},
-							onUpdateDates: (scheduled, due) => {
-								void taskInlineDates.updateTaskDates(scheduled, due);
-							},
-						}}
-						backlinks={{
-							show: showBacklinks,
-							items: backlinks,
-							interactive,
-						}}
+						table={tableControls}
+						codeBlock={codeBlockControls}
+						task={taskControls}
+						backlinks={backlinkControls}
 					/>
 				) : null}
 			</div>

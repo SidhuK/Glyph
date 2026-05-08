@@ -16,6 +16,8 @@ import { Button } from "../ui/shadcn/button";
 import { ChangelogSection } from "./ChangelogSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
+const LATEST_CHANGELOG_VERSIONS = CHANGELOG_DATA.versions.slice(0, 1);
+
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
 		useLicenseStatus(false);
@@ -223,7 +225,7 @@ export function AboutSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection title="Changelog">
-					<ChangelogSection versions={CHANGELOG_DATA.versions} />
+					<ChangelogSection versions={LATEST_CHANGELOG_VERSIONS} />
 				</SettingsSection>
 
 				<SettingsSection

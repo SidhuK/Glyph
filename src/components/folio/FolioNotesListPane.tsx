@@ -131,7 +131,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				: -1,
 		[activeTabPath, visibleNotes],
 	);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
 		() =>
 			visibleNotes

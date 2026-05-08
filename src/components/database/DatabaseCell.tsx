@@ -324,9 +324,8 @@ function DatabaseCellEditor({
 				seenTags.add(normalized);
 				return true;
 			})
-			.map(({ tag, count }) => ({
+			.map(({ tag }) => ({
 				tag: normalizeTagToken(tag) ?? tag,
-				count,
 			}));
 		for (const value of valueOptions) {
 			const normalized = normalizeTagToken(value);
@@ -339,7 +338,7 @@ function DatabaseCellEditor({
 			}
 			if (query && !normalized.includes(query)) continue;
 			seenTags.add(normalized);
-			suggestions.push({ tag: normalized, count: 0 });
+			suggestions.push({ tag: normalized });
 			if (suggestions.length >= DATABASE_CELL_TAG_SUGGESTION_LIMIT) break;
 		}
 		return suggestions.slice(0, DATABASE_CELL_TAG_SUGGESTION_LIMIT);
@@ -592,7 +591,7 @@ function DatabaseCellEditor({
 					<div className="notePropertySuggestions databaseTagSuggestions">
 						<div className="notePropertySuggestionsLabel">Suggested tags</div>
 						<div className="notePropertySuggestionList">
-							{tagSuggestions.map(({ tag, count }) => (
+							{tagSuggestions.map(({ tag }) => (
 								<button
 									key={tag}
 									type="button"
@@ -611,9 +610,6 @@ function DatabaseCellEditor({
 									}}
 								>
 									<span>{formatDatabaseTagLabel(tag)}</span>
-									<span className="notePropertySuggestionCount mono">
-										{count}
-									</span>
 								</button>
 							))}
 						</div>

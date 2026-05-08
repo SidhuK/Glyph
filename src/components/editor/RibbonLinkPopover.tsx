@@ -85,6 +85,7 @@ export function RibbonLinkPopover({
 					type="button"
 					className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
 					title="Link"
+					aria-label="Link"
 					disabled={!canEdit}
 					onMouseDown={preventMouseDown}
 					onClick={() => canEdit && setLinkOpen(true)}

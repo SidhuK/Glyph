@@ -101,7 +101,6 @@ describe("FileTreePane", () => {
 		loadSettingsMock.mockResolvedValue({
 			ui: {
 				showFileTreeFolderCounts: false,
-				showTaskProgressIndicator: true,
 			},
 		});
 		useFileTreeContextMock.mockReturnValue({

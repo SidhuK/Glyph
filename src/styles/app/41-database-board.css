@@ -147,22 +147,6 @@
 	line-height: 1;
 }
 
-.databaseBoardLaneCount {
-	display: inline-flex;
-	align-items: center;
-	min-width: 0;
-	height: auto;
-	padding: 0;
-	border-radius: 0;
-	background: transparent;
-	border: none;
-	font-size: 0.7rem;
-	font-weight: var(--font-semibold);
-	font-variant-numeric: tabular-nums;
-	line-height: 1;
-	color: color-mix(in srgb, var(--database-tone) 76%, var(--text-primary));
-}
-
 .databaseBoardLaneTitleButton {
 	display: inline-flex;
 	align-items: center;
