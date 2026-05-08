@@ -289,7 +289,6 @@ export function NotePropertyValueField({
 			onKeyDown={(event) => {
 				if (event.key !== "Enter") return;
 				event.preventDefault();
-				commitTextDraft();
 				event.currentTarget.blur();
 			}}
 		/>

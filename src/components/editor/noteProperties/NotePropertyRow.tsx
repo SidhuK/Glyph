@@ -98,7 +98,6 @@ export function NotePropertyRow({
 							onKeyDown={(event) => {
 								if (event.key !== "Enter") return;
 								event.preventDefault();
-								commitKeyDraft();
 								event.currentTarget.blur();
 							}}
 						/>
