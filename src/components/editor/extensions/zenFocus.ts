@@ -3,7 +3,13 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-const zenFocusPluginKey = new PluginKey<number>("zen-focus");
+interface ZenFocusPluginState {
+	decorations: DecorationSet;
+	enabled: boolean;
+	refreshKey: number;
+}
+
+const zenFocusPluginKey = new PluginKey<ZenFocusPluginState>("zen-focus");
 
 function buildDecorations(
 	doc: ProseMirrorNode,
@@ -68,7 +74,8 @@ export const ZenFocus = Extension.create<{
 					dispatch(
 						tr.setMeta(
 							zenFocusPluginKey,
-							(zenFocusPluginKey.getState(this.editor.state) ?? 0) + 1,
+							(zenFocusPluginKey.getState(this.editor.state)?.refreshKey ?? 0) +
+								1,
 						),
 					);
 					return true;
@@ -77,23 +84,47 @@ export const ZenFocus = Extension.create<{
 	},
 
 	addProseMirrorPlugins() {
+		const getEnabled = () => this.options.getZenModeEnabled?.() ?? false;
 		return [
 			new Plugin({
 				key: zenFocusPluginKey,
 				state: {
-					init: () => 0,
+					init: (_config, state) => {
+						const enabled = getEnabled();
+						return {
+							decorations: buildDecorations(
+								state.doc,
+								state.selection.from,
+								enabled,
+							),
+							enabled,
+							refreshKey: 0,
+						};
+					},
 					apply(tr, value) {
 						const next = tr.getMeta(zenFocusPluginKey);
-						return typeof next === "number" ? next : value;
+						const enabled = getEnabled();
+						const refreshKey =
+							typeof next === "number" ? next : value.refreshKey;
+						if (
+							!tr.docChanged &&
+							!tr.selectionSet &&
+							enabled === value.enabled &&
+							refreshKey === value.refreshKey
+						) {
+							return value;
+						}
+						return {
+							decorations: buildDecorations(tr.doc, tr.selection.from, enabled),
+							enabled,
+							refreshKey,
+						};
 					},
 				},
 				props: {
 					decorations: (state) =>
-						buildDecorations(
-							state.doc,
-							state.selection.from,
-							this.options.getZenModeEnabled?.() ?? false,
-						),
+						zenFocusPluginKey.getState(state)?.decorations ??
+						DecorationSet.empty,
 				},
 			}),
 		];

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
@@ -41,6 +42,17 @@ export function NotePropertyRow({
 	onSetTagInputRef,
 	tagInputRef,
 }: NotePropertyRowProps) {
+	const [keyDraft, setKeyDraft] = useState(property.key);
+
+	useEffect(() => {
+		setKeyDraft(property.key);
+	}, [property.key]);
+
+	const commitKeyDraft = () => {
+		if (keyDraft === property.key) return;
+		onUpdate(index, { key: keyDraft });
+	};
+
 	return (
 		<div className="notePropertyRow">
 			{readOnly ? (
@@ -77,10 +89,18 @@ export function NotePropertyRow({
 							onSelect={(kind) => onUpdate(index, { kind })}
 						/>
 						<Input
-							value={property.key}
+							value={keyDraft}
 							className="notePropertyKeyInput"
 							placeholder="Property"
-							onChange={(event) => onUpdate(index, { key: event.target.value })}
+							aria-label="Property name"
+							onChange={(event) => setKeyDraft(event.target.value)}
+							onBlur={commitKeyDraft}
+							onKeyDown={(event) => {
+								if (event.key !== "Enter") return;
+								event.preventDefault();
+								commitKeyDraft();
+								event.currentTarget.blur();
+							}}
 						/>
 					</div>
 					<div className="notePropertyValue">

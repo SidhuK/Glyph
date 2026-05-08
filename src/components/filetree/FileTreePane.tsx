@@ -472,7 +472,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(true);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});

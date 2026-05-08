@@ -101,7 +101,7 @@ export const PersonAutocomplete = Extension.create({
 
 					const updateMenu = (props: SuggestionProps<PersonSuggestionItem>) => {
 						if (!menu) return;
-						menu.innerHTML = "";
+						menu.replaceChildren();
 						for (const [index, item] of props.items.entries()) {
 							const button = document.createElement("button");
 							button.type = "button";

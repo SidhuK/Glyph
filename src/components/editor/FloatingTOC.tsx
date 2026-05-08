@@ -1,6 +1,5 @@
-import type { Editor } from "@tiptap/react";
 import { memo, useId, useState } from "react";
-import { useTableOfContents } from "./hooks/useTableOfContents";
+import type { TOCHeading } from "./hooks/useTableOfContents";
 
 const MIN_HEADINGS = 2;
 
@@ -23,13 +22,16 @@ const INDENT: Record<number, number> = {
 };
 
 interface FloatingTOCProps {
-	editor: Editor | null;
+	activeId: string | null;
+	headings: TOCHeading[];
+	onSelectHeading: (heading: TOCHeading) => void;
 }
 
 export const FloatingTOC = memo(function FloatingTOC({
-	editor,
+	activeId,
+	headings,
+	onSelectHeading,
 }: FloatingTOCProps) {
-	const { headings, activeId, scrollToHeading } = useTableOfContents(editor);
 	const [expanded, setExpanded] = useState(false);
 	const panelId = useId();
 
@@ -83,7 +85,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 								data-active={h.id === activeId ? "true" : undefined}
 								data-level={h.level}
 								style={{ paddingLeft: INDENT[h.level] ?? 0 }}
-								onClick={() => scrollToHeading(h)}
+								onClick={() => onSelectHeading(h)}
 								title={h.text}
 							>
 								{h.text}

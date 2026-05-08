@@ -36,11 +36,13 @@ export function buildDatabaseTagPickerOptions(
 	tags: ReturnType<typeof useFileTreeContext>["tags"],
 	query: string,
 	limit = Number.POSITIVE_INFINITY,
-): Array<{ tag: string; count: number }> {
+): Array<{ tag: string }> {
 	const trimmed = query.trim();
 	if (trimmed.length >= 2) {
 		const suggestions = buildTagSuggestions(tags, [], trimmed, limit);
-		if (suggestions.length > 0) return suggestions;
+		if (suggestions.length > 0) {
+			return suggestions.map(({ tag }) => ({ tag }));
+		}
 	}
 
 	const normalizedQuery = normalizeTagDraftPrefix(trimmed);
@@ -51,7 +53,7 @@ export function buildDatabaseTagPickerOptions(
 				(normalizedQuery.length === 0 ||
 					tag.toLowerCase().includes(normalizedQuery)),
 		)
-		.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
+		.map(({ tag }) => ({ tag }))
 		.slice(0, limit);
 }
 

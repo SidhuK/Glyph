@@ -356,7 +356,7 @@ export const SlashCommand = Extension.create({
 							selectedIndex,
 							props.items.length,
 						);
-						menu.innerHTML = "";
+						menu.replaceChildren();
 						if (!props.items.length) return;
 						for (const [index, item] of props.items.entries()) {
 							const button = document.createElement("button");

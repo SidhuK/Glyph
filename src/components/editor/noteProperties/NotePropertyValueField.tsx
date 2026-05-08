@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import {
 	statusColorKey,
 	statusOptionsWithCustomValues,
@@ -51,6 +52,18 @@ export function NotePropertyValueField({
 	onSetTagInputRef,
 	tagInputRef,
 }: NotePropertyValueFieldProps) {
+	const textValue = property.value_text ?? "";
+	const [textDraft, setTextDraft] = useState(textValue);
+
+	useEffect(() => {
+		setTextDraft(textValue);
+	}, [textValue]);
+
+	const commitTextDraft = () => {
+		if (textDraft === textValue) return;
+		onUpdate(index, { value_text: textDraft });
+	};
+
 	if (readOnly) {
 		if (property.kind === "status") {
 			return (
@@ -200,6 +213,7 @@ export function NotePropertyValueField({
 							className="notePropertyToken"
 							onClick={() => onRemoveTag(index, value)}
 							title={`Remove ${formatTagLabel(value)}`}
+							aria-label={`Remove ${formatTagLabel(value)}`}
 						>
 							<span>{formatTagLabel(value)}</span>
 							<X size={10} />
@@ -211,6 +225,7 @@ export function NotePropertyValueField({
 						className="notePropertyTagInput"
 						value={tagDraft}
 						placeholder={property.value_list.length > 0 ? "" : "Add a tag"}
+						aria-label={`${property.key || "Tags"} value`}
 						onChange={(event) => onSetTagDraft(rowId, event.target.value)}
 						onBlur={() => onAddTag(rowId, index, tagDraft)}
 						onKeyDown={(event) => {
@@ -266,9 +281,17 @@ export function NotePropertyValueField({
 						? "url"
 						: "text"
 			}
-			value={property.value_text ?? ""}
+			value={textDraft}
 			placeholder="Value"
-			onChange={(event) => onUpdate(index, { value_text: event.target.value })}
+			aria-label={`${property.key || "Property"} value`}
+			onChange={(event) => setTextDraft(event.target.value)}
+			onBlur={commitTextDraft}
+			onKeyDown={(event) => {
+				if (event.key !== "Enter") return;
+				event.preventDefault();
+				commitTextDraft();
+				event.currentTarget.blur();
+			}}
 		/>
 	);
 }

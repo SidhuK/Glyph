@@ -35,6 +35,7 @@ export function RibbonHighlightPopover({
 					type="button"
 					className={`ribbonBtn ${button.isActive?.() ? "active" : ""}`}
 					title={button.title}
+					aria-label={button.title}
 					disabled={!canEdit}
 					onMouseDown={preventMouseDown}
 					whileTap={canEdit ? { scale: 0.97 } : undefined}

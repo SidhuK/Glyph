@@ -1,5 +1,3 @@
-export function useTaskProgressIndicatorSetting(
-	_defaultValue: boolean | null,
-): true {
+export function useTaskProgressIndicatorSetting(): true {
 	return true;
 }

@@ -157,7 +157,15 @@ export function useTaskInlineDates({
 
 		syncAnchors();
 		syncSelectedTask();
-		const observer = new MutationObserver(() => syncAnchors());
+		let anchorFrame = 0;
+		const scheduleSyncAnchors = () => {
+			if (anchorFrame) return;
+			anchorFrame = window.requestAnimationFrame(() => {
+				anchorFrame = 0;
+				syncAnchors();
+			});
+		};
+		const observer = new MutationObserver(scheduleSyncAnchors);
 		observer.observe(contentRoot, {
 			childList: true,
 			subtree: true,
@@ -166,6 +174,7 @@ export function useTaskInlineDates({
 		document.addEventListener("selectionchange", syncSelectedTask);
 		editor.on("selectionUpdate", syncSelectedTask);
 		return () => {
+			if (anchorFrame) window.cancelAnimationFrame(anchorFrame);
 			observer.disconnect();
 			document.removeEventListener("selectionchange", syncSelectedTask);
 			editor.off("selectionUpdate", syncSelectedTask);

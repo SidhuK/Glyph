@@ -13,7 +13,11 @@ interface NoteSearchState {
 	activeIndex: number;
 }
 
-const noteSearchPluginKey = new PluginKey<NoteSearchState>("note-search");
+interface NoteSearchPluginState extends NoteSearchState {
+	decorations: DecorationSet;
+}
+
+const noteSearchPluginKey = new PluginKey<NoteSearchPluginState>("note-search");
 
 export function findPlainTextSearchRanges(
 	text: string,
@@ -99,24 +103,39 @@ export const NoteSearch = Extension.create({
 
 	addProseMirrorPlugins() {
 		return [
-			new Plugin<NoteSearchState>({
+			new Plugin<NoteSearchPluginState>({
 				key: noteSearchPluginKey,
 				state: {
-					init: () => ({ query: "", activeIndex: 0 }),
+					init: () => ({
+						query: "",
+						activeIndex: 0,
+						decorations: DecorationSet.empty,
+					}),
 					apply(tr, value) {
 						const next = tr.getMeta(noteSearchPluginKey);
-						return next &&
+						if (
+							next &&
 							typeof next.query === "string" &&
 							typeof next.activeIndex === "number"
-							? next
-							: value;
+						) {
+							return {
+								...next,
+								decorations: next.query
+									? buildSearchDecorations(tr.doc, next)
+									: DecorationSet.empty,
+							};
+						}
+						if (!tr.docChanged || !value.query) return value;
+						return {
+							...value,
+							decorations: buildSearchDecorations(tr.doc, value),
+						};
 					},
 				},
 				props: {
 					decorations(state) {
 						const searchState = noteSearchPluginKey.getState(state);
-						if (!searchState?.query) return DecorationSet.empty;
-						return buildSearchDecorations(state.doc, searchState);
+						return searchState?.decorations ?? DecorationSet.empty;
 					},
 				},
 			}),

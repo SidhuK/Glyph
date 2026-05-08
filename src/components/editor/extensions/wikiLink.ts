@@ -31,10 +31,6 @@ interface WikiLinkSuggestionItem {
 	insertText: string;
 }
 
-function attrsFromRaw(raw: string): WikiLinkAttrs | null {
-	return parseWikiLink(raw);
-}
-
 function titleFromRelPath(path: string): string {
 	const parts = path.split("/").filter(Boolean);
 	const name = parts[parts.length - 1] ?? path;
@@ -207,7 +203,7 @@ export const WikiLink = Node.create({
 	},
 	parseMarkdown(token: MarkdownToken, helpers) {
 		const raw = (token.raw ?? "").trim();
-		const parsed = attrsFromRaw(raw);
+		const parsed = parseWikiLink(raw);
 		if (!parsed) return helpers.createTextNode(raw || token.text || "");
 		return helpers.createNode("wikiLink", parsed);
 	},
@@ -224,7 +220,7 @@ export const WikiLink = Node.create({
 		tokenize(src: string) {
 			const match = src.match(/^!?\[\[[^\]\n]+\]\]/);
 			if (!match) return undefined;
-			const parsed = attrsFromRaw(match[0]);
+			const parsed = parseWikiLink(match[0]);
 			if (!parsed) return undefined;
 			return {
 				type: "wikiLink",
@@ -265,7 +261,7 @@ export const WikiLink = Node.create({
 			nodeInputRule({
 				find: WIKI_LINK_INPUT_REGEX,
 				type: this.type,
-				getAttributes: (match) => attrsFromRaw(match[1]) ?? false,
+				getAttributes: (match) => parseWikiLink(match[1]) ?? false,
 			}),
 		];
 	},
@@ -274,7 +270,7 @@ export const WikiLink = Node.create({
 			nodePasteRule({
 				find: WIKI_LINK_PASTE_REGEX,
 				type: this.type,
-				getAttributes: (match) => attrsFromRaw(match[1]) ?? false,
+				getAttributes: (match) => parseWikiLink(match[1]) ?? false,
 			}),
 		];
 	},
@@ -365,13 +361,22 @@ export const WikiLink = Node.create({
 						props: SuggestionProps<WikiLinkSuggestionItem>,
 					) => {
 						if (!menu) return;
-						menu.innerHTML = "";
+						menu.replaceChildren();
 						if (!props.items.length) return;
 						for (const [index, item] of props.items.entries()) {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
-							button.innerHTML = `<span class="wikiLinkSuggestionTitle">${item.title}</span><span class="wikiLinkSuggestionPath">${item.path}</span>`;
+
+							const title = document.createElement("span");
+							title.className = "wikiLinkSuggestionTitle";
+							title.textContent = item.title;
+
+							const path = document.createElement("span");
+							path.className = "wikiLinkSuggestionPath";
+							path.textContent = item.path;
+
+							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);

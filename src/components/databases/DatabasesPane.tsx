@@ -197,6 +197,9 @@ function DatabasesPaneContent({
 	const [rows, setRows] = useState<DatabaseRow[]>(
 		() => initialRows?.rows ?? [],
 	);
+	const [rowsTruncated, setRowsTruncated] = useState(
+		() => initialRows?.truncated ?? false,
+	);
 	const [loading, setLoading] = useState(() => !initialDocument);
 	const [rowsLoading, setRowsLoading] = useState(() => !initialRows);
 	const [error, setError] = useState("");
@@ -375,6 +378,7 @@ function DatabasesPaneContent({
 			) {
 				if (rowRequestTokenRef.current === requestToken) {
 					setRows([]);
+					setRowsTruncated(false);
 				}
 				return;
 			}
@@ -391,6 +395,7 @@ function DatabasesPaneContent({
 					return;
 				}
 				setRows(next.rows);
+				setRowsTruncated(next.truncated);
 				setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
 			} catch (cause) {
 				if (rowRequestTokenRef.current !== requestToken) {
@@ -414,6 +419,7 @@ function DatabasesPaneContent({
 		);
 		if (cachedRows) {
 			setRows(cachedRows.rows);
+			setRowsTruncated(cachedRows.truncated);
 			setRowsLoading(false);
 			void loadRows({ background: true });
 			return;
@@ -535,6 +541,7 @@ function DatabasesPaneContent({
 			invalidateDatabaseSummariesPrefetch();
 			setDocument(null);
 			setRows([]);
+			setRowsTruncated(false);
 			await loadSummaries();
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
@@ -1042,6 +1049,11 @@ function DatabasesPaneContent({
 					</div>
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
+					) : null}
+					{rowsTruncated ? (
+						<div className="databaseNotice">
+							Limited to the first 200 notes.
+						</div>
 					) : null}
 					{rowsLoading ? (
 						<div className="databaseLoadingState">Loading rows…</div>

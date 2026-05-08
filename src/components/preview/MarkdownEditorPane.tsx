@@ -196,7 +196,7 @@ export function MarkdownEditorPane({
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting(null);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
@@ -303,40 +303,20 @@ export function MarkdownEditorPane({
 		}, 1400);
 	}, []);
 
-	const saveSignal = useMemo(() => {
+	const saveLabel = useMemo(() => {
 		if (saving || autosaveBusy) {
-			return {
-				state: "saving",
-				label: "Saving",
-				description: "Writing changes to disk",
-			} as const;
+			return "Saving";
 		}
 		if (isDirty) {
-			return {
-				state: "dirty",
-				label: "Edited",
-				description: "Unsaved changes",
-			} as const;
+			return "Edited";
 		}
 		if (syncPulse === "reloaded") {
-			return {
-				state: "reloaded",
-				label: "Fresh",
-				description: "Content reloaded",
-			} as const;
+			return "Fresh";
 		}
 		if (syncPulse === "saved") {
-			return {
-				state: "saved-fresh",
-				label: "Saved",
-				description: "Changes saved",
-			} as const;
+			return "Saved";
 		}
-		return {
-			state: lastSavedMtimeMs ? "saved" : "ready",
-			label: lastSavedMtimeMs ? "Saved" : "Ready",
-			description: lastSavedMtimeMs ? "All changes saved" : "Editor ready",
-		} as const;
+		return lastSavedMtimeMs ? "Saved" : "Ready";
 	}, [autosaveBusy, isDirty, lastSavedMtimeMs, saving, syncPulse]);
 
 	useEffect(() => {
@@ -1113,7 +1093,11 @@ export function MarkdownEditorPane({
 				</div>
 			) : null}
 			{showToc && !infoPanelOpen && !error && mode !== "plain" ? (
-				<FloatingTOC editor={tocEditor} />
+				<FloatingTOC
+					headings={tocHeadings}
+					activeId={tocActiveId}
+					onSelectHeading={scrollToHeading}
+				/>
 			) : null}
 
 			<NotesInfoSidebar
@@ -1136,7 +1120,7 @@ export function MarkdownEditorPane({
 				lastSavedMtimeMs={lastSavedMtimeMs}
 				lineCount={lineCount}
 				utf8SizeBytes={utf8SizeBytes}
-				saveLabel={saveSignal.label}
+				saveLabel={saveLabel}
 				onClose={() => setInfoPanelOpen(false)}
 			/>
 			<LinkedNotePreviewSheet />

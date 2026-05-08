@@ -40,6 +40,7 @@ const RibbonButtonList = memo(function RibbonButtonList({
 			type="button"
 			className={`ribbonBtn ${btn.isActive?.() ? "active" : ""}`}
 			title={btn.title}
+			aria-label={btn.title}
 			disabled={!canEdit}
 			onMouseDown={onPreventMouseDown}
 			onClick={() => canEdit && btn.onClick()}
@@ -123,6 +124,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 							type="button"
 							className="ribbonBtn"
 							title="Extract to note"
+							aria-label="Extract to note"
 							disabled={!canEdit}
 							onMouseDown={preventMouseDown}
 							onClick={() => canEdit && onExtractSelectionToNote()}

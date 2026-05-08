@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 interface RawFrontmatterEditorProps {
 	value: string;
 	readOnly: boolean;
@@ -14,16 +16,33 @@ export function RawFrontmatterEditor({
 	readOnly,
 	onChange,
 }: RawFrontmatterEditorProps) {
+	const [draft, setDraft] = useState(value);
+
+	useEffect(() => {
+		setDraft(value);
+	}, [value]);
+
+	const commitDraft = () => {
+		if (readOnly || draft === value) return;
+		onChange(draft.trim().length ? draft : null, draft);
+	};
+
 	return (
 		<textarea
 			className="frontmatterEditor"
-			value={value}
-			rows={Math.max(6, value.split("\n").length + 1)}
+			value={draft}
+			rows={Math.max(6, draft.split("\n").length + 1)}
 			onChange={(event) => {
-				const next = event.target.value;
-				onChange(next.trim().length ? next : null, next);
+				setDraft(event.target.value);
+			}}
+			onBlur={commitDraft}
+			onKeyDown={(event) => {
+				if (event.key !== "Enter" || !(event.metaKey || event.ctrlKey)) return;
+				event.preventDefault();
+				commitDraft();
 			}}
 			placeholder="---\ntitle: Untitled\n---"
+			aria-label="Raw frontmatter"
 			spellCheck={false}
 			readOnly={readOnly}
 		/>

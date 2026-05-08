@@ -307,6 +307,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 								className="codeBlockLanguageBtn"
 								onMouseDown={codeBlock.onPickerMouseDown}
 								title="Set code block language"
+								aria-label="Set code block language"
 							>
 								<span className="codeBlockLanguageBtnIcon" aria-hidden>
 									<HugeiconsIcon
@@ -356,6 +357,11 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 									? "Stop Mermaid preview"
 									: "Play Mermaid preview"
 							}
+							aria-label={
+								codeBlock.isMermaidPreviewActive
+									? "Stop Mermaid preview"
+									: "Play Mermaid preview"
+							}
 						>
 							<span className="codeBlockPreviewBtnLabel mono">
 								{codeBlock.isMermaidPreviewActive ? "Stop" : "Play"}
@@ -376,6 +382,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					onMouseDown={codeBlock.onPickerMouseDown}
 					onClick={codeBlock.onCopy}
 					title={codeBlock.copied ? "Copied!" : "Copy code to clipboard"}
+					aria-label={codeBlock.copied ? "Copied code" : "Copy code"}
 				>
 					<HugeiconsIcon
 						icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
@@ -418,6 +425,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 								void task.onOpenPopover(task.selectedAnchor);
 							}}
 							title="Schedule selected task"
+							aria-label="Schedule selected task"
 						>
 							<HugeiconsIcon
 								icon={Calendar03Icon}
@@ -438,10 +446,17 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 									type="date"
 									value={task.scheduledDate}
 									onChange={(event) => {
-										const scheduled = event.currentTarget.value;
-										task.onScheduledDateChange(scheduled);
-										task.onUpdateDates(scheduled, task.dueDate);
+										task.onScheduledDateChange(event.currentTarget.value);
 									}}
+									onBlur={(event) =>
+										task.onUpdateDates(event.currentTarget.value, task.dueDate)
+									}
+									onKeyDown={(event) => {
+										if (event.key !== "Enter") return;
+										event.preventDefault();
+										task.onUpdateDates(event.currentTarget.value, task.dueDate);
+									}}
+									aria-label="Scheduled date"
 								/>
 							</label>
 							<label className="tasksDateNativeField">
@@ -450,10 +465,23 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 									type="date"
 									value={task.dueDate}
 									onChange={(event) => {
-										const due = event.currentTarget.value;
-										task.onDueDateChange(due);
-										task.onUpdateDates(task.scheduledDate, due);
+										task.onDueDateChange(event.currentTarget.value);
 									}}
+									onBlur={(event) =>
+										task.onUpdateDates(
+											task.scheduledDate,
+											event.currentTarget.value,
+										)
+									}
+									onKeyDown={(event) => {
+										if (event.key !== "Enter") return;
+										event.preventDefault();
+										task.onUpdateDates(
+											task.scheduledDate,
+											event.currentTarget.value,
+										);
+									}}
+									aria-label="Due date"
 								/>
 							</label>
 						</div>

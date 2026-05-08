@@ -9,6 +9,7 @@ import {
 
 interface MermaidPreviewPluginState {
 	activePreviewPos: number | null;
+	decorations: DecorationSet;
 	refreshKey: number;
 	richPreviewHeight: number;
 }
@@ -88,6 +89,71 @@ function buildMermaidPreviewSpacer(height: number) {
 	return spacer;
 }
 
+function buildMermaidPreviewDecorations(
+	doc: Parameters<typeof DecorationSet.create>[0],
+	pluginState: Omit<MermaidPreviewPluginState, "decorations">,
+	editable: boolean,
+): DecorationSet {
+	const decorations: Decoration[] = [];
+
+	doc.descendants((node, pos) => {
+		if (node.type.name !== "codeBlock") return;
+
+		const language =
+			typeof node.attrs.language === "string" ? node.attrs.language : null;
+		if (!isMermaidCodeBlockLanguage(language)) return;
+
+		const isVisiblePreview = !editable || pluginState.activePreviewPos === pos;
+		if (!isVisiblePreview) return;
+
+		if (editable) {
+			if (pluginState.richPreviewHeight <= 0) return;
+			decorations.push(
+				Decoration.widget(
+					pos + node.nodeSize,
+					() =>
+						buildMermaidPreviewSpacer(
+							pluginState.richPreviewHeight + MERMAID_PREVIEW_SPACER_PADDING,
+						),
+					{
+						side: 1,
+						ignoreSelection: true,
+						key: `mermaid-preview-spacer-${pos}`,
+					},
+				),
+			);
+			return;
+		}
+
+		decorations.push(
+			Decoration.node(pos, pos + node.nodeSize, {
+				class: "mermaidCodeBlockHiddenInPreview",
+			}),
+		);
+
+		decorations.push(
+			Decoration.widget(
+				pos + node.nodeSize,
+				() =>
+					buildMermaidPreviewWidget(
+						node.textContent ?? "",
+						!editable,
+						pluginState.refreshKey,
+					),
+				{
+					side: 1,
+					ignoreSelection: true,
+					key: `mermaid-preview-widget-${pos}-${pluginState.refreshKey}`,
+				},
+			),
+		);
+	});
+
+	return decorations.length
+		? DecorationSet.create(doc, decorations)
+		: DecorationSet.empty;
+}
+
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
 		mermaidPreview: {
@@ -146,15 +212,26 @@ export const MermaidPreview = Extension.create({
 	},
 	addProseMirrorPlugins() {
 		const editor = this.editor;
+		const getEditable = () => editor.isEditable;
 		return [
 			new Plugin<MermaidPreviewPluginState>({
 				key: mermaidPreviewPluginKey,
 				state: {
-					init: () => ({
-						activePreviewPos: null,
-						refreshKey: 0,
-						richPreviewHeight: 0,
-					}),
+					init: (_config, state) => {
+						const previewState = {
+							activePreviewPos: null,
+							refreshKey: 0,
+							richPreviewHeight: 0,
+						};
+						return {
+							...previewState,
+							decorations: buildMermaidPreviewDecorations(
+								state.doc,
+								previewState,
+								getEditable(),
+							),
+						};
+					},
 					apply(transaction, value) {
 						const mappedActivePreviewPos =
 							value.activePreviewPos == null
@@ -183,100 +260,46 @@ export const MermaidPreview = Extension.create({
 										}
 										return mapped;
 									})();
-						const nextValue = {
-							...value,
+						let nextValue = {
 							activePreviewPos: mappedActivePreviewPos,
+							refreshKey: value.refreshKey,
+							richPreviewHeight: value.richPreviewHeight,
 						};
 						const meta = transaction.getMeta(mermaidPreviewPluginKey) as
 							| MermaidPreviewMeta
 							| undefined;
-						if (!meta) return nextValue;
-						if (meta.type === "set-active") {
-							return {
+						if (meta?.type === "set-active") {
+							nextValue = {
 								...nextValue,
 								activePreviewPos: meta.pos,
 							};
-						}
-						if (meta.type === "set-rich-height") {
-							return {
+						} else if (meta?.type === "set-rich-height") {
+							nextValue = {
 								...nextValue,
 								richPreviewHeight: meta.height,
 							};
+						} else if (meta?.type === "refresh") {
+							nextValue = {
+								...nextValue,
+								refreshKey: value.refreshKey + 1,
+							};
 						}
+
+						if (!transaction.docChanged && !meta) return value;
 						return {
 							...nextValue,
-							refreshKey: value.refreshKey + 1,
+							decorations: buildMermaidPreviewDecorations(
+								transaction.doc,
+								nextValue,
+								getEditable(),
+							),
 						};
 					},
 				},
 				props: {
 					decorations(state) {
 						const pluginState = mermaidPreviewPluginKey.getState(state);
-						if (!pluginState) return null;
-
-						const decorations: Decoration[] = [];
-						const editable = editor.isEditable;
-
-						state.doc.descendants((node, pos) => {
-							if (node.type.name !== "codeBlock") return;
-
-							const language =
-								typeof node.attrs.language === "string"
-									? node.attrs.language
-									: null;
-							if (!isMermaidCodeBlockLanguage(language)) return;
-
-							const isVisiblePreview =
-								!editable || pluginState.activePreviewPos === pos;
-							if (!isVisiblePreview) return;
-
-							if (editable) {
-								if (pluginState.richPreviewHeight <= 0) return;
-								decorations.push(
-									Decoration.widget(
-										pos + node.nodeSize,
-										() =>
-											buildMermaidPreviewSpacer(
-												pluginState.richPreviewHeight +
-													MERMAID_PREVIEW_SPACER_PADDING,
-											),
-										{
-											side: 1,
-											ignoreSelection: true,
-											key: `mermaid-preview-spacer-${pos}`,
-										},
-									),
-								);
-								return;
-							}
-
-							decorations.push(
-								Decoration.node(pos, pos + node.nodeSize, {
-									class: "mermaidCodeBlockHiddenInPreview",
-								}),
-							);
-
-							decorations.push(
-								Decoration.widget(
-									pos + node.nodeSize,
-									() =>
-										buildMermaidPreviewWidget(
-											node.textContent ?? "",
-											!editable,
-											pluginState.refreshKey,
-										),
-									{
-										side: 1,
-										ignoreSelection: true,
-										key: `mermaid-preview-widget-${pos}-${pluginState.refreshKey}`,
-									},
-								),
-							);
-						});
-
-						return decorations.length
-							? DecorationSet.create(state.doc, decorations)
-							: null;
+						return pluginState?.decorations ?? DecorationSet.empty;
 					},
 				},
 			}),
