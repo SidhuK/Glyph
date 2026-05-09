@@ -313,15 +313,6 @@
 	outline: none;
 }
 
-.sidebarFooter .sidebarQuickActionBtn.sidebarFooterGitButton {
-	flex: 0 0 26px;
-	width: 26px;
-	min-width: 26px;
-	min-height: 26px;
-	padding: 0;
-	justify-content: center;
-}
-
 .sidebarNavRow {
 	display: flex;
 	flex-direction: column;

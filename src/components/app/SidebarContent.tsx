@@ -12,14 +12,12 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
-import { shouldShowGitSync } from "../../lib/gitSyncUi";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { type FsEntry, type GitSyncStatus, invoke } from "../../lib/tauri";
+import { type FsEntry, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
-import { GitSyncFooterCard } from "./GitSyncFooterCard";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -50,7 +48,6 @@ interface SidebarContentProps {
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
-	gitSyncStatus: GitSyncStatus | null;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenSearchPalette: () => void;
@@ -123,7 +120,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
-	gitSyncStatus,
 	onOpenSettings,
 	onOpenAllDocs,
 	onOpenSearchPalette,
@@ -153,14 +149,11 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
 	const [spaceMenuOpen, setSpaceMenuOpen] = useState(false);
-	const [gitExpanded, setGitExpanded] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
 	const allNotesCountRequestRef = useRef(0);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
-	const showGitButton = shouldShowGitSync(gitSyncStatus);
-	const effectiveGitExpanded = showGitButton && gitExpanded;
 	const showAllNotesCount = allNotesCount !== null;
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
@@ -661,15 +654,6 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
-			{showGitButton ? (
-				<div className="sidebarFooter">
-					<GitSyncFooterCard
-						status={gitSyncStatus}
-						expanded={effectiveGitExpanded}
-						onToggleExpanded={() => setGitExpanded((value) => !value)}
-					/>
-				</div>
-			) : null}
 		</>
 	);
 });

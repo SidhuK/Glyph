@@ -2,7 +2,6 @@
    MAIN CANVAS AREA - Floating center panel
    ───────────────────────────────────────────────────────────────────────────── */
 .mainArea {
-	--main-shell-radius: calc(var(--app-radius) + 2px);
 	flex: 1;
 	display: flex;
 	flex-direction: column;
@@ -10,18 +9,8 @@
 	min-height: 0;
 	background: var(--bg-primary);
 	overflow: hidden;
-	margin: var(--app-frame-block) 0 var(--app-frame-block) 0;
-	border-radius: var(--main-shell-radius);
-	border-top-left-radius: calc(
-		var(--app-radius) -
-		var(--app-frame-inline) +
-		2px
-	);
-	border-bottom-left-radius: calc(
-		var(--app-radius) -
-		var(--app-frame-inline) +
-		2px
-	);
+	margin: 0;
+	border-radius: 0;
 	border-style: solid;
 	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
 	border-width: 0 0 0 1px;
@@ -49,26 +38,15 @@
 :root[data-translucent-app-frame="false"]
 	.appShell.appShellSidebarCollapsed
 	.mainArea {
-	border-top-left-radius: var(--app-radius);
-	border-bottom-left-radius: var(--app-radius);
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 	border-left-color: transparent;
-}
-
-.mainArea.mainAreaZen {
-	border-color: color-mix(in srgb, var(--border-light) 22%, transparent);
-	box-shadow: none;
 }
 
 .mainTabBarTransition {
 	opacity: 1;
 	transform: translateY(0);
 	transition: opacity 180ms ease, transform 220ms ease;
-}
-
-.mainTabBarTransition.is-zen-hidden {
-	opacity: 0;
-	transform: translateY(-4px);
-	pointer-events: none;
 }
 
 .appShell.appShellSidebarCollapsed .sidebarResizeHandle {

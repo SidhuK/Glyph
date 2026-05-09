@@ -198,7 +198,17 @@
 }
 
 .settingsSidebarFooter {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: var(--space-2);
+	width: 100%;
 	padding: 0 8px 12px;
+	background: transparent;
+	border-top: none;
+	flex-shrink: 0;
+	margin-top: auto;
 }
 
 .settingsSidebarFooter .settingsFeedbackCard {

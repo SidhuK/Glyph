@@ -416,7 +416,6 @@ export const MainContent = memo(function MainContent({
 	const {
 		dailyNotesFolder,
 		templateFolder,
-		zenModeActive,
 		folioMode,
 		settingsMode,
 		settingsTab,
@@ -505,8 +504,7 @@ export const MainContent = memo(function MainContent({
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const showTabBar = tabs.length > 0;
-	const aiSidebarVisible =
-		aiEnabled && !zenModeActive && aiPanelOpen && !infoSidebarOpen;
+	const aiSidebarVisible = aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const rightSidebarOpen =
 		Boolean(spacePath) &&
 		!settingsMode &&
@@ -514,7 +512,6 @@ export const MainContent = memo(function MainContent({
 	const infoSidebarResize = useResizablePanel({
 		min: 260,
 		max: 620,
-		disabled: zenModeActive,
 		direction: "left",
 		onResize: setInfoSidebarWidth,
 		currentWidth: infoSidebarWidth,
@@ -604,10 +601,10 @@ export const MainContent = memo(function MainContent({
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
-			if (!rightSidebarOpen || zenModeActive) return;
+			if (!rightSidebarOpen) return;
 			infoSidebarResize.handlePointerDown(event);
 		},
-		[infoSidebarResize, rightSidebarOpen, zenModeActive],
+		[infoSidebarResize, rightSidebarOpen],
 	);
 
 	const content = useMemo(() => {
@@ -821,7 +818,7 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const showFolioWorkspace = folioMode && !zenModeActive;
+	const showFolioWorkspace = folioMode;
 	const editorCanvas = (
 		<div className="canvasPaneHost">
 			<DailyNotesSetupToast
@@ -833,11 +830,7 @@ export const MainContent = memo(function MainContent({
 				}}
 			/>
 			{showTabBar ? (
-				<div
-					className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
-					aria-hidden={zenModeActive}
-					inert={zenModeActive ? true : undefined}
-				>
+				<div className="mainTabBarTransition">
 					<TabBar
 						tabs={tabs}
 						rootEntries={rootEntries}
@@ -901,7 +894,7 @@ export const MainContent = memo(function MainContent({
 				onPointerMove={infoSidebarResize.handlePointerMove}
 				onPointerUp={infoSidebarResize.handlePointerUp}
 				data-window-drag-ignore
-				style={{ cursor: zenModeActive ? "default" : "col-resize" }}
+				style={{ cursor: "col-resize" }}
 			/>
 			<div
 				id="notes-info-sidebar-root"
@@ -969,7 +962,7 @@ export const MainContent = memo(function MainContent({
 	return (
 		<>
 			<main
-				className={zenModeActive ? "mainArea mainAreaZen" : "mainArea"}
+				className="mainArea"
 				data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}
 			>
 				<div className="canvasWrapper">

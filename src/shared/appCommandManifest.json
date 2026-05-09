@@ -501,17 +501,6 @@
 			"commandPalette": true,
 			"menuId": "editor.expand_all_headings"
 		},
-		"export-note-html": {
-			"id": "export-note-html",
-			"label": "Export Note as HTML",
-			"description": "Export the current note as HTML.",
-			"category": "file",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true,
-			"menuId": "file.export_html"
-		},
 		"extract_selection_to_note": {
 			"id": "extract_selection_to_note",
 			"label": "Extract to Note",
@@ -997,16 +986,6 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
-		"print-editor-pane": {
-			"id": "print-editor-pane",
-			"label": "Print Note",
-			"description": "Print the current note.",
-			"category": "file",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"quick-open": {
 			"id": "quick-open",
 			"label": "Quick Open",
@@ -1055,16 +1034,6 @@
 			"allowInEditable": true,
 			"commandPalette": true,
 			"menuId": "file.save_note"
-		},
-		"save-web-page": {
-			"id": "save-web-page",
-			"label": "Save Web Page",
-			"description": "Capture and save a web page into the current space.",
-			"category": "file",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
 		},
 		"show-getting-started": {
 			"id": "show-getting-started",
@@ -1170,16 +1139,6 @@
 				"key": "b"
 			},
 			"allowInEditable": false,
-			"commandPalette": true
-		},
-		"toggle-zen-mode": {
-			"id": "toggle-zen-mode",
-			"label": "Toggle Zen Mode",
-			"description": "Enter or exit zen mode.",
-			"category": "navigation",
-			"context": "editor",
-			"defaultBinding": null,
-			"allowInEditable": true,
 			"commandPalette": true
 		},
 		"underline": {

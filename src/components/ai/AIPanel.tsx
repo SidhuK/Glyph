@@ -7,6 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
@@ -292,7 +293,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			data-ai-mode={aiAssistantMode}
 			data-window-drag-ignore
 		>
-			<div className="aiPanelHeader">
+			<div
+				className="aiPanelHeader drag"
+				data-tauri-drag-region
+				onMouseDown={onWindowDragMouseDown}
+			>
 				<div className="aiPanelHeaderLeft">
 					<div className="aiPanelTitle">
 						<HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={0.9} />

@@ -118,9 +118,10 @@ async function listNonMarkdownFiles(folderPrefix: string | null) {
 		dir: folderPrefix,
 		limit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	});
+	const files = Array.isArray(result.files) ? result.files : [];
 	return {
-		files: result.files.map(fileEntryToFolioItem),
-		truncated: result.truncated,
+		files: files.map(fileEntryToFolioItem),
+		truncated: result.truncated === true,
 	};
 }
 

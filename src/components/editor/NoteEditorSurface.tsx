@@ -134,8 +134,6 @@ function MermaidPreviewPanel({
 export interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
-	zenModeActive: boolean;
-	editorFocused: boolean;
 	colorfulHeadings: boolean;
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
@@ -197,8 +195,6 @@ export interface NoteEditorSurfaceProps {
 export const NoteEditorSurface = memo(function NoteEditorSurface({
 	editor,
 	mode,
-	zenModeActive,
-	editorFocused,
 	colorfulHeadings,
 	canEdit,
 	hostRef,
@@ -216,8 +212,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			className={[
 				"tiptapHostInline",
 				mode === "preview" ? "is-preview" : "",
-				zenModeActive ? "is-zen-mode" : "",
-				zenModeActive && !editorFocused ? "is-zen-unfocused" : "",
 				"nodrag",
 				"nopan",
 				"nowheel",

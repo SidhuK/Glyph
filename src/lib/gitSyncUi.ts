@@ -87,16 +87,6 @@ export function getGitSyncConnectionHelp(
 	return "Git Sync becomes available automatically when the opened space already contains a .git repository at its root.";
 }
 
-export function shouldShowGitSync(status: GitSyncStatus | null): boolean {
-	if (!status) return false;
-	return (
-		!status.git_installed ||
-		status.repo_detected ||
-		status.configured ||
-		status.unsupported_parent_repo
-	);
-}
-
 export function getGitSyncPresentation(
 	status: GitSyncStatus | null,
 ): GitSyncPresentation {

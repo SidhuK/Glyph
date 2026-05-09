@@ -3,6 +3,7 @@ import { ChatAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
@@ -339,7 +340,11 @@ export function AIAgentPane() {
 			data-ai-mode={aiAssistantMode}
 			data-has-messages={hasMessages}
 		>
-			<div className="aiAgentHeader">
+			<div
+				className="aiAgentHeader drag"
+				data-tauri-drag-region
+				onMouseDown={onWindowDragMouseDown}
+			>
 				<button
 					type="button"
 					className={cn(

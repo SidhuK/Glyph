@@ -960,27 +960,3 @@
 	margin: 0;
 	display: block;
 }
-
-.tiptapHostInline.is-zen-mode .tiptapContentInline > * {
-	transition: opacity 180ms ease, color 180ms ease, filter 180ms ease;
-}
-
-.tiptapHostInline.is-zen-mode .tiptapContentInline > .zenFocusBlockActive {
-	opacity: 1;
-	filter: none;
-}
-
-.tiptapHostInline.is-zen-mode .tiptapContentInline > .zenFocusBlockNeighbor {
-	opacity: 0.48;
-	filter: saturate(0.92);
-}
-
-.tiptapHostInline.is-zen-mode .tiptapContentInline > .zenFocusBlockDim {
-	opacity: 0.18;
-	filter: saturate(0.84);
-}
-
-.tiptapHostInline.is-zen-mode.is-zen-unfocused .tiptapContentInline > * {
-	opacity: 1;
-	filter: none;
-}

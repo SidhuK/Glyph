@@ -2,9 +2,9 @@
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
-	--app-frame-inline: var(--space-1);
-	--app-frame-block: 4px;
-	--app-radius: var(--radius-15);
+	--app-frame-inline: 0px;
+	--app-frame-block: 0px;
+	--app-radius: 0px;
 	--window-control-toggle-offset: 90px;
 	isolation: isolate;
 	display: flex;
@@ -12,18 +12,15 @@
 	height: 100%;
 	width: 100%;
 	background: transparent;
-	padding: 0 0 0 var(--app-frame-inline);
-	border-style: solid;
-	border-color: var(--chrome-border);
-	border-width: 0 0 0 1px;
-	border-radius: var(--app-radius) 0 0 var(--app-radius);
-	box-shadow: inset 1px 0 0 0
-		color-mix(in srgb, var(--text-inverse) 22%, transparent);
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
 	overflow: hidden;
 }
 
 .appShell:not(.appShellRightSidebarOpen) {
-	padding-right: var(--app-frame-inline);
+	padding-right: 0;
 }
 
 /* Native macOS vibrancy is applied via window-vibrancy crate in Rust.
@@ -40,13 +37,7 @@
 }
 
 :root[data-translucent-app-frame="false"] .appShell {
-	--app-frame-inline: 0px;
-	--app-frame-block: 0px;
-
 	background: var(--bg-primary);
-	border-width: 0;
-	border-color: transparent;
-	box-shadow: none;
 }
 
 :root[data-translucent-app-frame="false"] .appShell::before {
@@ -58,6 +49,36 @@
 .appShell > * {
 	position: relative;
 	z-index: 1;
+}
+
+.drag,
+[data-tauri-drag-region] {
+	-webkit-app-region: drag;
+}
+
+.no-drag,
+[data-window-drag-ignore],
+.drag
+	:is(
+		button,
+		a,
+		input,
+		textarea,
+		select,
+		[role="button"],
+		[contenteditable="true"]
+	),
+[data-tauri-drag-region]
+	:is(
+		button,
+		a,
+		input,
+		textarea,
+		select,
+		[role="button"],
+		[contenteditable="true"]
+	) {
+	-webkit-app-region: no-drag;
 }
 
 .windowDragStrip {
@@ -82,6 +103,6 @@
 
 .appShell.appShellSidebarCollapsed .mainArea {
 	margin-left: 0;
-	border-top-left-radius: var(--app-radius);
-	border-bottom-left-radius: var(--app-radius);
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }

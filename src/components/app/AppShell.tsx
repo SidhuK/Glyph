@@ -39,7 +39,6 @@ import {
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
-import { promptNoteExportPath } from "../../lib/export";
 import {
 	invalidateAllDocsPrefetch,
 	invalidateCalendarPrefetch,
@@ -67,14 +66,12 @@ import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
-import { NoteExportHtmlHost } from "../export/NoteExportHtmlHost";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
-import { WebClipDialog } from "./WebClipDialog";
 import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
@@ -96,8 +93,6 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
-const PRINT_EDITOR_BODY_CLASS = "glyphPrintEditorMode";
-const PRINT_EDITOR_TARGET_CLASS = "glyphPrintEditorTarget";
 export function AppShell() {
 	const space = useSpace();
 	const {
@@ -134,8 +129,6 @@ export function AppShell() {
 	const {
 		sidebarCollapsed,
 		setSidebarCollapsed,
-		zenModeActive,
-		setZenModeActive,
 		folioMode,
 		paletteOpen,
 		setPaletteOpen,
@@ -165,9 +158,6 @@ export function AppShell() {
 		string | null
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
-	const [webClipDialogOpen, setWebClipDialogOpen] = useState(false);
-	const [webClipUrl, setWebClipUrl] = useState("");
-	const [webClipLoading, setWebClipLoading] = useState(false);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
@@ -177,24 +167,8 @@ export function AppShell() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-	const [htmlExportRequest, setHtmlExportRequest] = useState<{
-		id: string;
-		relPath: string;
-		markdown: string;
-		outputPath: string;
-	} | null>(null);
 	const [whatsNewVersion, setWhatsNewVersion] =
 		useState<VersionReleaseNotes | null>(null);
-	const htmlExportResolversRef = useRef(
-		new Map<
-			string,
-			{
-				outputPath: string;
-				resolve: () => void;
-				reject: (reason?: unknown) => void;
-			}
-		>(),
-	);
 	const autoUpdater = useUpdaterContext();
 	const gitSync = useGitSync({
 		spacePath,
@@ -910,153 +884,6 @@ export function AppShell() {
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown]);
 
-	const handleHtmlExportComplete = useCallback(
-		async ({ id, html }: { id: string; html: string }) => {
-			const pending = htmlExportResolversRef.current.get(id);
-			if (!pending) return;
-			htmlExportResolversRef.current.delete(id);
-			setHtmlExportRequest((current) => (current?.id === id ? null : current));
-			try {
-				await invoke("export_write_text", {
-					abs_path: pending.outputPath,
-					text: html,
-				});
-				pending.resolve();
-			} catch (error) {
-				pending.reject(error);
-			}
-		},
-		[],
-	);
-
-	const handleHtmlExportError = useCallback(
-		({ id, message }: { id: string; message: string }) => {
-			const pending = htmlExportResolversRef.current.get(id);
-			if (!pending) return;
-			htmlExportResolversRef.current.delete(id);
-			setHtmlExportRequest((current) => (current?.id === id ? null : current));
-			pending.reject(new Error(message));
-		},
-		[],
-	);
-
-	const handleExportHtml = useCallback(() => {
-		if (!activeMarkdownTabPath) {
-			const message = "Open a markdown note before exporting.";
-			setError(message);
-			toast.error("Could not export as HTML", {
-				description: message,
-			});
-			return;
-		}
-		if (htmlExportRequest !== null || htmlExportResolversRef.current.size > 0) {
-			toast.message("HTML export already in progress.", {
-				description:
-					"Wait for the current export to finish before starting another.",
-			});
-			return;
-		}
-
-		void (async () => {
-			try {
-				const outputPath = await promptNoteExportPath(activeMarkdownTabPath);
-				if (!outputPath) return;
-				await saveCurrentEditor();
-				const markdown =
-					getCurrentMarkdown(activeMarkdownTabPath) ??
-					(
-						await invoke("space_read_text", {
-							path: activeMarkdownTabPath,
-						})
-					).text;
-				const requestId = crypto.randomUUID();
-				const exportPromise = new Promise<void>((resolve, reject) => {
-					htmlExportResolversRef.current.set(requestId, {
-						outputPath,
-						resolve,
-						reject,
-					});
-				});
-				setHtmlExportRequest({
-					id: requestId,
-					relPath: activeMarkdownTabPath,
-					markdown,
-					outputPath,
-				});
-				await exportPromise;
-				toast.success("Exported note as HTML.", {
-					description: outputPath,
-				});
-			} catch (error) {
-				const message =
-					error instanceof Error ? error.message : "Failed to export note.";
-				console.error("Failed to export note as HTML", error);
-				setError(message);
-				toast.error("Could not export as HTML", {
-					description: message,
-				});
-			}
-		})();
-	}, [
-		activeMarkdownTabPath,
-		getCurrentMarkdown,
-		htmlExportRequest,
-		saveCurrentEditor,
-		setError,
-	]);
-
-	const handlePrintEditorPane = useCallback(() => {
-		if (!activeMarkdownTabPath || !isMarkdownPath(activeMarkdownTabPath)) {
-			toast.error("Open a markdown note before printing.");
-			return;
-		}
-		const target = document.querySelector(
-			".markdownEditorPane",
-		) as HTMLElement | null;
-		if (!target) {
-			toast.error("Could not find an active editor to print.");
-			return;
-		}
-
-		const body = document.body;
-		const mediaQuery = window.matchMedia("print");
-		let cleanedUp = false;
-		let cleanupTimer: number | null = null;
-		const cleanup = () => {
-			if (cleanedUp) return;
-			cleanedUp = true;
-			if (cleanupTimer !== null) {
-				window.clearTimeout(cleanupTimer);
-				cleanupTimer = null;
-			}
-			body.classList.remove(PRINT_EDITOR_BODY_CLASS);
-			target.classList.remove(PRINT_EDITOR_TARGET_CLASS);
-			window.removeEventListener("afterprint", cleanup);
-			mediaQuery.removeEventListener("change", onMediaQueryChange);
-		};
-		const onMediaQueryChange = (event: MediaQueryListEvent) => {
-			if (!event.matches) cleanup();
-		};
-
-		body.classList.add(PRINT_EDITOR_BODY_CLASS);
-		target.classList.add(PRINT_EDITOR_TARGET_CLASS);
-		window.addEventListener("afterprint", cleanup, { once: true });
-		mediaQuery.addEventListener("change", onMediaQueryChange);
-		cleanupTimer = window.setTimeout(cleanup, 15_000);
-		// Let the command palette/dialog close commit before snapshotting for print.
-		window.requestAnimationFrame(() => {
-			window.requestAnimationFrame(() => {
-				void invoke("print_current_window").catch((error) => {
-					cleanup();
-					toast.error("Could not open print dialog", {
-						description:
-							error instanceof Error ? error.message : "Try again in a moment.",
-					});
-				});
-			});
-		});
-	}, [activeMarkdownTabPath]);
-
 	const duplicateFileWithActiveEditorFlush = useCallback(
 		async (path: string) => {
 			if (activeMarkdownTabPath === path) {
@@ -1155,31 +982,11 @@ export function AppShell() {
 		[setError],
 	);
 
-	const handleWebClipSave = useCallback(async () => {
-		const url = webClipUrl.trim();
-		if (!url) return;
-		setWebClipLoading(true);
-		setWebClipDialogOpen(false);
-		try {
-			const { getWebClippingsFolder } = await import("../../lib/settings");
-			const folder = (await getWebClippingsFolder()) ?? undefined;
-			const result = await invoke("web_clip_save", { url, folder });
-			toast.success(`Saved "${result.title}"`);
-			await openWorkspaceFile(result.rel_path);
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			toast.error("Failed to save web page", { description: message });
-		} finally {
-			setWebClipLoading(false);
-		}
-	}, [webClipUrl, openWorkspaceFile]);
-
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
-		onExportHtml: handleExportHtml,
 		onCloseTab: () => {
 			window.dispatchEvent(new Event("glyph:close-active-tab"));
 		},
@@ -1228,11 +1035,9 @@ export function AppShell() {
 		handleCopyOpenNoteAsMarkdown,
 		handleCreateFromTemplateFromMenu,
 		handleDuplicateActiveMarkdown,
-		handleExportHtml,
 		handleGitSyncFailure,
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,
-		handlePrintEditorPane,
 		handleRevealSpaceFromMenu,
 		movePickerSourcePath,
 		moveTargetDirs,
@@ -1260,16 +1065,12 @@ export function AppShell() {
 		setError,
 		setMovePickerSourcePath,
 		setSidebarCollapsed,
-		setWebClipDialogOpen,
-		setWebClipUrl,
-		setZenModeActive,
 		showCollapsibleHeadings,
 		sidebarCollapsed,
 		spacePath,
 		tabsLength: tabs.length,
 		togglePinnedFile,
 		refreshMoveTargetDirs,
-		zenModeActive,
 	});
 
 	const shortcutHandlers = useMemo(
@@ -1344,18 +1145,17 @@ export function AppShell() {
 			className={cn(
 				"appShell",
 				sidebarCollapsed && "appShellSidebarCollapsed",
-				zenModeActive && "appShellZenMode",
 				folioMode && "appShellFolioMode",
 				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
 			<div
 				aria-hidden="true"
-				className="windowDragStrip"
+				className="windowDragStrip drag"
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{sidebarCollapsed && !zenModeActive && (
+			{sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeIconButton
 						ariaLabel="Expand sidebar"
@@ -1399,7 +1199,6 @@ export function AppShell() {
 				recentSpaces={recentSpaces}
 				onOpenSpace={onOpenSpace}
 				onOpenRecentSpaceAtPath={onOpenSpaceAtPath}
-				gitSyncStatus={gitSync.status}
 				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
@@ -1411,17 +1210,15 @@ export function AppShell() {
 				onPrefetchFile={prefetchWorkspaceFile}
 				onOpenSearchPalette={openSearchPalette}
 			/>
-			{!zenModeActive ? (
-				<div
-					ref={sidebarResize.resizeRef}
-					className="sidebarResizeHandle"
-					onPointerDown={sidebarResize.handlePointerDown}
-					onPointerMove={sidebarResize.handlePointerMove}
-					onPointerUp={sidebarResize.handlePointerUp}
-					data-window-drag-ignore
-					style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
-				/>
-			) : null}
+			<div
+				ref={sidebarResize.resizeRef}
+				className="sidebarResizeHandle"
+				onPointerDown={sidebarResize.handlePointerDown}
+				onPointerMove={sidebarResize.handlePointerMove}
+				onPointerUp={sidebarResize.handlePointerUp}
+				data-window-drag-ignore
+				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
+			/>
 			<MainContent
 				fileTree={{
 					createMarkdownFileAtPath: fileTree.createMarkdownFileAtPath,
@@ -1487,28 +1284,10 @@ export function AppShell() {
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
 			/>
-			<NoteExportHtmlHost
-				key={htmlExportRequest?.id ?? "idle"}
-				request={htmlExportRequest}
-				onComplete={({ id, html }) => {
-					void handleHtmlExportComplete({ id, html });
-				}}
-				onError={handleHtmlExportError}
-			/>
 			<WhatsNewDialog
 				open={whatsNewVersion !== null}
 				version={whatsNewVersion}
 				onClose={closeWhatsNewDialog}
-			/>
-			<WebClipDialog
-				open={webClipDialogOpen}
-				url={webClipUrl}
-				loading={webClipLoading}
-				onOpenChange={(open) => {
-					if (!open) setWebClipDialogOpen(false);
-				}}
-				onUrlChange={setWebClipUrl}
-				onSubmit={() => void handleWebClipSave()}
 			/>
 		</div>
 	);

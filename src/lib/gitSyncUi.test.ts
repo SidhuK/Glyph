@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	getGitSyncPresentation,
-	getGitSyncRepoStateLabel,
-	shouldShowGitSync,
-} from "./gitSyncUi";
+import { getGitSyncPresentation, getGitSyncRepoStateLabel } from "./gitSyncUi";
 import type { GitSyncStatus } from "./tauri";
 
 function makeStatus(overrides: Partial<GitSyncStatus> = {}): GitSyncStatus {
@@ -82,16 +78,7 @@ describe("gitSyncUi", () => {
 		expect(presentation.showResume).toBe(true);
 	});
 
-	it("shows git footer when git is missing", () => {
-		expect(
-			shouldShowGitSync(
-				makeStatus({
-					git_installed: false,
-					configured: false,
-					repo_detected: false,
-				}),
-			),
-		).toBe(true);
+	it("labels missing git installs", () => {
 		expect(
 			getGitSyncRepoStateLabel(
 				makeStatus({

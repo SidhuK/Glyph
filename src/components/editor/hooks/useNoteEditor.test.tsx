@@ -48,7 +48,6 @@ const {
 		chain: vi.fn(() => chainCommands),
 		can: vi.fn(() => canCommands),
 		commands: {
-			refreshZenFocus: vi.fn(),
 			setContent: vi.fn(),
 			setHeadingCollapseEnabled: vi.fn(),
 		},

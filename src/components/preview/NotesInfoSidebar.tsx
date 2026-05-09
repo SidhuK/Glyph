@@ -8,6 +8,7 @@ import type {
 	NoteTaskSummary,
 	WorkspaceDatabasePreviewContext,
 } from "../../lib/tauri";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { NotePropertiesPanel } from "../editor/NotePropertiesPanel";
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
 import {
@@ -31,7 +32,6 @@ interface LinkedNoteItem {
 interface NotesInfoSidebarProps {
 	open: boolean;
 	mode: NoteInlineEditorMode;
-	zenModeActive: boolean;
 	hasError: boolean;
 	relPath: string;
 	frontmatter: string | null;
@@ -88,7 +88,6 @@ function formatFileSize(bytes: number): string {
 export function NotesInfoSidebar({
 	open,
 	mode,
-	zenModeActive,
 	hasError,
 	relPath,
 	frontmatter,
@@ -115,11 +114,15 @@ export function NotesInfoSidebar({
 		setHost(document.getElementById("notes-info-sidebar-root"));
 	}, []);
 
-	if (!open || mode === "plain" || zenModeActive || hasError) return null;
+	if (!open || mode === "plain" || hasError) return null;
 
 	const sidebar = (
 		<aside className="notesInfoSidebarPanel" aria-label="Note info panel">
-			<div className="markdownEditorInfoHeader">
+			<div
+				className="markdownEditorInfoHeader drag"
+				data-tauri-drag-region
+				onMouseDown={onWindowDragMouseDown}
+			>
 				<button
 					type="button"
 					className="markdownEditorInfoClose"

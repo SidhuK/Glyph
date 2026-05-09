@@ -294,7 +294,7 @@ export function GitSettingsPane() {
 					</SettingsRow>
 					<SettingsRow
 						label="Actions"
-						description="Use the footer card for live progress and recent sync activity."
+						description="Run a sync from settings and review the latest sync state here."
 						stacked
 					>
 						<div className="gitSettingsActionRow">

@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
-import type { GitSyncStatus } from "../../lib/tauri";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
@@ -36,7 +35,6 @@ interface SidebarProps {
 	recentSpaces: string[];
 	onOpenSpace: () => Promise<void>;
 	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
-	gitSyncStatus: GitSyncStatus | null;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
@@ -70,7 +68,6 @@ export const Sidebar = memo(function Sidebar({
 	recentSpaces,
 	onOpenSpace,
 	onOpenRecentSpaceAtPath,
-	gitSyncStatus,
 	onOpenSettings,
 	onOpenAllDocs,
 	onOpenCalendar,
@@ -151,7 +148,6 @@ export const Sidebar = memo(function Sidebar({
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}
-									gitSyncStatus={gitSyncStatus}
 									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenSearchPalette={onOpenSearchPalette}

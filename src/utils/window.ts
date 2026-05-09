@@ -2,7 +2,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { MouseEvent } from "react";
 
 const WINDOW_DRAG_INTERACTIVE_SELECTOR =
-	"button, a, input, textarea, select, [role='button'], [contenteditable='true'], [data-window-drag-ignore]";
+	"button, a, input, textarea, select, [role='button'], [contenteditable='true'], .no-drag, [data-window-drag-ignore]";
 
 export function onWindowDragMouseDown(event: MouseEvent<HTMLElement>): void {
 	if (event.button !== 0) return;

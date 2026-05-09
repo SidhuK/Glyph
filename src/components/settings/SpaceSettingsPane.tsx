@@ -4,13 +4,11 @@ import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
 	getDailyNotesFolder,
-	getWebClippingsFolder,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
 	setEditorAttachmentStorageMode,
 	setQuickNotesFolder,
-	setWebClippingsFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
@@ -74,13 +72,6 @@ export function SpaceSettingsPane() {
 	);
 	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
 	const [attachmentError, setAttachmentError] = useState<string | null>(null);
-	const [webClippingsFolder, setWebClippingsFolderState] = useState<
-		string | null
-	>(null);
-	const [webClippingsLoading, setWebClippingsLoading] = useState(true);
-	const [webClippingsError, setWebClippingsError] = useState<string | null>(
-		null,
-	);
 	const [quickNotesFolder, setQuickNotesFolderState] = useState(
 		DEFAULT_QUICK_NOTES_FOLDER,
 	);
@@ -111,17 +102,14 @@ export function SpaceSettingsPane() {
 		setError("");
 		setDailyNotesLoading(true);
 		setAttachmentsLoading(true);
-		setWebClippingsLoading(true);
 		setQuickNotesLoading(true);
 		try {
-			const [dailyFolder, webClipFolder, settings] = await Promise.all([
+			const [dailyFolder, settings] = await Promise.all([
 				getDailyNotesFolder(),
-				getWebClippingsFolder(),
 				loadSettings(),
 			]);
 			setCurrentSpacePath(settings.currentSpacePath);
 			setDailyNotesFolderState(dailyFolder);
-			setWebClippingsFolderState(webClipFolder);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
@@ -132,7 +120,6 @@ export function SpaceSettingsPane() {
 		} finally {
 			setDailyNotesLoading(false);
 			setAttachmentsLoading(false);
-			setWebClippingsLoading(false);
 			setQuickNotesLoading(false);
 		}
 	}, []);
@@ -208,32 +195,6 @@ export function SpaceSettingsPane() {
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to reset folder",
-			);
-		}
-	}, []);
-
-	const handleBrowseWebClippingsFolder = useCallback(async () => {
-		setWebClippingsError(null);
-		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setWebClippingsFolder(relativePath || null);
-			setWebClippingsFolderState(relativePath || null);
-		} catch (cause) {
-			setWebClippingsError(
-				cause instanceof Error ? cause.message : "Failed to select folder",
-			);
-		}
-	}, []);
-
-	const handleClearWebClippingsFolder = useCallback(async () => {
-		setWebClippingsError(null);
-		try {
-			await setWebClippingsFolder(null);
-			setWebClippingsFolderState(null);
-		} catch (cause) {
-			setWebClippingsError(
-				cause instanceof Error ? cause.message : "Failed to clear folder",
 			);
 		}
 	}, []);
@@ -446,60 +407,6 @@ export function SpaceSettingsPane() {
 							{attachmentError ? (
 								<div className="settingsError dailyNotesError">
 									{attachmentError}
-								</div>
-							) : null}
-						</div>
-					</SettingsRow>
-				</SettingsSection>
-
-				<SettingsSection
-					title="Web Clippings"
-					description="Choose where saved web pages are stored within the current space."
-				>
-					<SettingsRow
-						label="Folder"
-						description="Where saved web pages are stored as Markdown."
-						stacked
-						interactive={false}
-					>
-						<div className="dailyNotesFolderField">
-							<div className="dailyNotesFolderRow">
-								<div className="dailyNotesFolderPath">
-									{webClippingsLoading
-										? "Loading..."
-										: (webClippingsFolder ?? "Space root")}
-								</div>
-								<div className="settingsActions dailyNotesActions">
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleBrowseWebClippingsFolder}
-										disabled={webClippingsLoading}
-									>
-										<FolderOpen size={14} />
-										Browse
-									</Button>
-									{webClippingsFolder ? (
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-sm"
-											className="rounded-md border-border bg-background justify-center shadow-none"
-											onClick={handleClearWebClippingsFolder}
-											disabled={webClippingsLoading}
-											aria-label="Clear web clippings folder"
-											title="Clear web clippings folder"
-										>
-											<Trash2 size={14} />
-										</Button>
-									) : null}
-								</div>
-							</div>
-							{webClippingsError ? (
-								<div className="settingsError dailyNotesError">
-									{webClippingsError}
 								</div>
 							) : null}
 						</div>

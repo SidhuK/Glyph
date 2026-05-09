@@ -10,7 +10,6 @@ const FRONTEND_MENU_COMMAND_IDS = [
 	"create-from-template",
 	"open-daily-note",
 	"save-note",
-	"export-note-html",
 	"close-active-tab",
 	"open-space",
 	"create-space",
