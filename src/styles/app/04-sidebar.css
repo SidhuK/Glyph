@@ -36,7 +36,6 @@
 }
 
 .sidebarContentRoot {
-	--sidebar-footer-overlay-height: 24px;
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -166,127 +165,6 @@
 	flex-shrink: 0;
 }
 
-.sidebarFooter {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: var(--space-2);
-	width: 100%;
-	padding: 8px 8px 12px;
-	background: transparent;
-	border-top: none;
-	flex-shrink: 0;
-	margin-top: auto;
-}
-
-.sidebarFooter::before {
-	content: none;
-}
-
-.gitSyncFooterShell {
-	position: relative;
-	flex: 0 0 auto;
-	min-width: 0;
-	z-index: 30;
-}
-
-.sidebarFooterGitButton {
-	flex: 0 0 auto;
-	width: auto;
-	min-width: 0;
-	padding-right: 0;
-	-webkit-app-region: no-drag;
-}
-
-.gitSyncFooterPanel {
-	position: absolute;
-	left: 0;
-	right: auto;
-	bottom: calc(100% + 10px);
-	z-index: 31;
-	width: 248px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 54%, transparent);
-	border-radius: calc(var(--radius-lg) + 2px);
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
-	-webkit-app-region: no-drag;
-}
-
-.gitSyncFooterPanelHeader {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 8px;
-}
-
-.gitSyncFooterPanelTitle {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
-	min-width: 0;
-}
-
-.gitSyncFooterPanelTitleCopy {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	min-width: 0;
-}
-
-.gitSyncFooterPanelEyebrow {
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.gitSyncFooterPanelHeadline {
-	font-size: 12px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	line-height: 1.2;
-}
-
-.gitSyncFooterPanelBadges {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
-.gitSyncFooterBranchBadge {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	padding: 3px 7px;
-	border-radius: var(--radius-full);
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.gitSyncFooterBranchBadge {
-	border: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
-	background: color-mix(in srgb, var(--bg-tertiary) 74%, transparent);
-	color: var(--text-secondary);
-}
-
-.gitSyncFooterIssue {
-	padding: 9px 10px;
-	border-radius: var(--radius-lg);
-	background: var(--status-danger-bg);
-	border: 1px solid var(--status-danger-border);
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--status-danger-fg);
-}
-
 .sidebarSectionContent {
 	flex: 1;
 	min-height: 0;
@@ -298,7 +176,7 @@
 	z-index: 1;
 	pointer-events: auto;
 	-webkit-app-region: no-drag;
-	padding-bottom: calc(var(--sidebar-footer-overlay-height) + var(--space-2));
+	padding-bottom: var(--space-2);
 }
 
 .sidebarSectionContent * {
@@ -392,6 +270,7 @@ button.sidebarStackHeader {
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebarResizeHandle {
 	position: relative;
+	flex: none;
 	width: 8px;
 	cursor: col-resize;
 	user-select: none;
@@ -402,6 +281,8 @@ button.sidebarStackHeader {
 	/* Expanded hit area for easier dragging */
 	margin-left: -2px;
 	margin-right: -2px;
+	z-index: 7;
+	touch-action: none;
 }
 
 :root[data-translucent-app-frame="false"] .sidebarResizeHandle {

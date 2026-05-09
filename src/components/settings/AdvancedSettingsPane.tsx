@@ -9,7 +9,6 @@ import {
 	loadSettings,
 	setAiAssistantMode,
 	setDatabaseShowColumnColor,
-	setDelightfulGlyph,
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
@@ -116,7 +115,6 @@ export function AdvancedSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
-	const [delightfulGlyph, setDelightfulGlyphState] = useState(false);
 	const [folioMode, setFolioModeState] = useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
@@ -136,7 +134,6 @@ export function AdvancedSettingsPane() {
 	] = useState(false);
 	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
-	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] = useState(false);
 	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
@@ -158,7 +155,6 @@ export function AdvancedSettingsPane() {
 			setVimKeybindings(settings.editor.vimKeybindings === true);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
-			setDelightfulGlyphState(settings.ui.delightfulGlyph);
 			setFolioModeState(settings.ui.folioMode);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
@@ -202,9 +198,6 @@ export function AdvancedSettingsPane() {
 			payload.ui?.aiAssistantMode === "create"
 		) {
 			setAiAssistantModeState(payload.ui.aiAssistantMode);
-		}
-		if (typeof payload.ui?.delightfulGlyph === "boolean") {
-			setDelightfulGlyphState(payload.ui.delightfulGlyph);
 		}
 		if (typeof payload.ui?.folioMode === "boolean") {
 			setFolioModeState(payload.ui.folioMode);
@@ -449,30 +442,6 @@ export function AdvancedSettingsPane() {
 					title="App"
 					description="Global app-level controls for the sidebar and workspace UI."
 				>
-					<SettingsRow
-						label="delightful-glyph"
-						description="Enable me for a surprise."
-					>
-						<SettingsToggle
-							checked={delightfulGlyph}
-							disabled={isSavingDelightfulGlyph}
-							ariaLabel="delightful-glyph"
-							onCheckedChange={(checked) => {
-								const previous = delightfulGlyph;
-								setError("");
-								setDelightfulGlyphState(checked);
-								setIsSavingDelightfulGlyph(true);
-								void setDelightfulGlyph(checked)
-									.catch((cause) => {
-										setDelightfulGlyphState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingDelightfulGlyph(false);
-									});
-							}}
-						/>
-					</SettingsRow>
 					<SettingsRow
 						label={
 							<span className="settingsLabelWithHelp">

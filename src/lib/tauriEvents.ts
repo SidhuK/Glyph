@@ -14,7 +14,6 @@ type TauriEventMap = {
 	"menu:create_from_template": undefined;
 	"menu:open_daily_note": undefined;
 	"menu:save_note": undefined;
-	"menu:export_html": undefined;
 	"menu:close_tab": undefined;
 	"menu:open_space": undefined;
 	"menu:open_recent_space": { path: string };
@@ -75,7 +74,6 @@ type TauriEventMap = {
 			fontSize?: number;
 			editorFontSize?: number;
 			translucentApp?: boolean;
-			delightfulGlyph?: boolean;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
 			folioMode?: boolean;

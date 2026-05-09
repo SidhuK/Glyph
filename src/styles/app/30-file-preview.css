@@ -161,10 +161,6 @@
 	--markdown-info-sidebar-width: 340px;
 }
 
-.markdownEditorPaneZen {
-	background: var(--bg-primary);
-}
-
 .markdownEditorFloatActions {
 	position: absolute;
 	top: -34px;
@@ -181,13 +177,6 @@
 	gap: 8px;
 }
 
-.markdownEditorFloatActions.is-zen-hidden {
-	opacity: 0;
-	transform: translateY(-8px);
-	pointer-events: none;
-	visibility: hidden;
-}
-
 .markdownEditorStatsDock {
 	position: absolute;
 	right: 14px;
@@ -200,12 +189,6 @@
 	scrollbar-width: thin;
 	pointer-events: auto;
 	transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.markdownEditorStatsDock.is-zen-hidden {
-	opacity: 0;
-	transform: translateY(10px);
-	pointer-events: none;
 }
 
 .markdownEditorStatsDock.withAiFab {
@@ -481,11 +464,7 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border: 1px solid
-		var(
-			--right-sidebar-island-border,
-			color-mix(in srgb, var(--border-light) 88%, transparent)
-		);
+	border: 0;
 	border-radius: var(--right-sidebar-island-radius, var(--radius-xl));
 	background: var(--right-sidebar-island-bg, var(--bg-primary));
 	backdrop-filter: none;
@@ -811,101 +790,6 @@
 
 .markdownEditorPane .editorBacklinks {
 	width: var(--readable-content-outer-width);
-}
-
-@media print {
-	@page {
-		size: auto;
-		margin: 12mm;
-	}
-
-	body.glyphPrintEditorMode .appShell > :not(.mainArea) {
-		display: none !important;
-	}
-
-	body.glyphPrintEditorMode [data-slot="dialog-portal"],
-	body.glyphPrintEditorMode [data-slot="dialog-overlay"],
-	body.glyphPrintEditorMode [data-slot="dialog-content"],
-	body.glyphPrintEditorMode .commandPalette {
-		display: none !important;
-		visibility: hidden !important;
-	}
-
-	body.glyphPrintEditorMode .mainArea * {
-		visibility: hidden !important;
-	}
-
-	body.glyphPrintEditorMode .appShell,
-	body.glyphPrintEditorMode .mainArea,
-	body.glyphPrintEditorMode .canvasWrapper,
-	body.glyphPrintEditorMode .canvasPaneHost {
-		height: auto !important;
-		min-height: 0 !important;
-		max-height: none !important;
-		overflow: visible !important;
-		margin: 0 !important;
-		border: 0 !important;
-		box-shadow: none !important;
-	}
-
-	body.glyphPrintEditorMode .appShell .glyphPrintEditorTarget,
-	body.glyphPrintEditorMode .appShell .glyphPrintEditorTarget * {
-		visibility: visible !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget {
-		position: static !important;
-		inset: auto !important;
-		width: 100% !important;
-		height: auto !important;
-		max-width: none !important;
-		overflow: visible !important;
-		background: #fff !important;
-		color: #000 !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .mainTabBarTransition,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .tabBar,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .mainTabsBar,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .mainTabsBarWrap {
-		display: none !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorFloatActions,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorStatsDock,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .floatingToc {
-		display: none !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .notesInfoSidebarPanel {
-		display: none !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .notesInfoSidebarHost,
-	body.glyphPrintEditorMode
-		.glyphPrintEditorTarget
-		.notesInfoSidebarResizeHandle {
-		display: none !important;
-		width: 0 !important;
-		flex: 0 0 0 !important;
-		border: 0 !important;
-	}
-
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorContent,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .filePreviewPane,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .filePreviewTextWrap,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorCenter,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .rfNodeNoteEditor,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .rfNodeNoteEditorBody,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .tiptapHost,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .tiptapHostInline,
-	body.glyphPrintEditorMode .glyphPrintEditorTarget .tiptapContentInline {
-		overflow: visible !important;
-		height: auto !important;
-		min-height: 0 !important;
-		max-height: none !important;
-		padding-bottom: 0 !important;
-	}
 }
 
 @media (max-width: 760px) {

@@ -204,15 +204,15 @@ mod tests {
     fn infers_existing_yaml_properties_from_frontmatter() {
         let input = Some(
             r#"---
-title: "The Flawed V02 Max Craze"
-source: "https://erictopol.substack.com/p/the-flawed-v02-max-craze"
+title: "Project Research Note"
+source: "https://example.com/research-note"
 author:
-  - "[[Eric Topol]]"
+  - "[[Research Team]]"
 published: 2026-02-23
 created: 2026-02-25
-description: "Conflation With Cardiorespiratory Fitness"
+description: "Reference material for planning"
 tags:
-  - "clippings"
+  - "research"
 ---
 "#
             .to_string(),
@@ -225,10 +225,7 @@ tags:
             .find(|property| property.key == "title")
             .unwrap();
         assert_eq!(title.kind, "text");
-        assert_eq!(
-            title.value_text.as_deref(),
-            Some("The Flawed V02 Max Craze")
-        );
+        assert_eq!(title.value_text.as_deref(), Some("Project Research Note"));
 
         let source = properties
             .iter()
@@ -241,7 +238,7 @@ tags:
             .find(|property| property.key == "author")
             .unwrap();
         assert_eq!(author.kind, "text");
-        assert_eq!(author.value_text.as_deref(), Some("[[Eric Topol]]"));
+        assert_eq!(author.value_text.as_deref(), Some("[[Research Team]]"));
 
         let published = properties
             .iter()
@@ -260,7 +257,7 @@ tags:
             .find(|property| property.key == "tags")
             .unwrap();
         assert_eq!(tags.kind, "tags");
-        assert_eq!(tags.value_list, vec!["clippings".to_string()]);
+        assert_eq!(tags.value_list, vec!["research".to_string()]);
     }
 
     #[test]

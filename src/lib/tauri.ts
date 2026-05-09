@@ -725,7 +725,6 @@ interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
-	print_current_window: CommandDef<void, void>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
 	show_quick_note_window: CommandDef<void, void>;
 	hide_quick_note_window: CommandDef<void, void>;
@@ -750,7 +749,6 @@ interface TauriCommands {
 	space_get_current: CommandDef<void, string | null>;
 	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
-	export_write_text: CommandDef<{ abs_path: string; text: string }, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	file_tree_appearance_list: CommandDef<
 		void,
@@ -959,10 +957,6 @@ interface TauriCommands {
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
-	web_clip_save: CommandDef<
-		{ url: string; folder?: string },
-		{ rel_path: string; title: string }
-	>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<

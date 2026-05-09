@@ -180,7 +180,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
-	zenModeActive = false,
 	interactive = true,
 	showBacklinks = true,
 	deferHeavyFeatures = false,
@@ -202,7 +201,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	} = useNoteEditor({
 		markdown,
 		mode,
-		zenModeActive,
 		relPath,
 		interactive,
 		enableHydrateInlineImages: !deferHeavyFeatures,
@@ -218,7 +216,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
 	);
-	const [editorFocused, setEditorFocused] = useState(false);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
@@ -834,11 +831,16 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		if (!host) return;
 		const handleFocusIn = () => {
 			lastFocusedNoteEditorHost = host;
-			setEditorFocused(true);
 		};
 		const handleFocusOut = () => {
+			const currentHost = host;
 			window.setTimeout(() => {
-				setEditorFocused(host.contains(document.activeElement));
+				if (
+					lastFocusedNoteEditorHost === currentHost &&
+					!currentHost.contains(document.activeElement)
+				) {
+					lastFocusedNoteEditorHost = null;
+				}
 			}, 0);
 		};
 		handleFocusOut();
@@ -1049,20 +1051,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						spellCheck={false}
 					/>
 				) : null}
-				{mode === "rich" &&
-				showFrontmatterInEditor &&
-				frontmatterDraft &&
-				!zenModeActive ? (
+				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
 						<NotePropertiesPanel
 							frontmatter={frontmatterDraft}
 							onChange={handleFrontmatterChange}
 						/>
 					</div>
-				) : mode === "rich" &&
-					showFrontmatterInEditor &&
-					frontmatter &&
-					!zenModeActive ? (
+				) : mode === "rich" && showFrontmatterInEditor && frontmatter ? (
 					<div className="frontmatterPreview mono">
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
@@ -1071,8 +1067,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					<NoteEditorSurface
 						editor={editor}
 						mode={mode}
-						zenModeActive={zenModeActive}
-						editorFocused={editorFocused}
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}

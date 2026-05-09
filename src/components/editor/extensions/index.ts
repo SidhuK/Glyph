@@ -27,7 +27,6 @@ import { PersonAutocomplete } from "./personAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
-import { ZenFocus } from "./zenFocus";
 
 function parseCalloutMarker(
 	text: string,
@@ -751,7 +750,6 @@ interface CreateEditorExtensionsOptions {
 	enableVimKeybindings?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
-	getZenModeEnabled?: (() => boolean) | null;
 	placeholder?: string | null;
 }
 
@@ -767,7 +765,6 @@ export function createEditorExtensions(
 		enableVimKeybindings = false,
 		currentPath = "",
 		currentPathResolver = null,
-		getZenModeEnabled = null,
 		placeholder = null,
 	} = options ?? {};
 	return [
@@ -833,13 +830,6 @@ export function createEditorExtensions(
 			enableShortcutTransform: enableEditingExtensions,
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
-		...(enableEditingExtensions
-			? [
-					ZenFocus.configure({
-						getZenModeEnabled: getZenModeEnabled ?? (() => false),
-					}),
-				]
-			: []),
 		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

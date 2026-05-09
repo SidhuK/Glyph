@@ -265,7 +265,6 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
 		translucentApp?: boolean;
-		delightfulGlyph?: boolean;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		folioMode?: boolean;
@@ -273,9 +272,6 @@ async function emitSettingsUpdated(payload: {
 		aiEnabled?: boolean;
 	};
 	dailyNotes?: {
-		folder?: string | null;
-	};
-	webClippings?: {
 		folder?: string | null;
 	};
 	quickNotes?: {
@@ -336,16 +332,12 @@ interface AppSettings {
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
 		translucentApp: boolean;
-		delightfulGlyph: boolean;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		folioMode: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
-		folder: string | null;
-	};
-	webClippings: {
 		folder: string | null;
 	};
 	quickNotes: QuickNotesSettings;
@@ -377,7 +369,6 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
-	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	folioMode: "ui.folioMode",
@@ -392,7 +383,6 @@ const KEYS = {
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	releaseNotesLastSeenVersion: "updates.releaseNotes.lastSeenVersion",
 	dailyNotesFolder: "dailyNotes.folder",
-	webClippingsFolder: "webClippings.folder",
 	quickNotesFolder: "quickNotes.folder",
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
@@ -607,12 +597,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontSize,
 		rawEditorFontSize,
 		rawTranslucentApp,
-		rawDelightfulGlyph,
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
 		rawFolioMode,
 		dailyNotesFolderRaw,
-		rawWebClippingsFolder,
 		rawQuickNotesFolder,
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
@@ -649,12 +637,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontSize),
 		store.get<unknown>(KEYS.editorFontSize),
 		store.get<boolean | null>(KEYS.translucentApp),
-		store.get<boolean | null>(KEYS.delightfulGlyph),
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<boolean | null>(KEYS.folioMode),
 		store.get<string | null>(KEYS.dailyNotesFolder),
-		store.get<string | null>(KEYS.webClippingsFolder),
 		store.get<unknown>(KEYS.quickNotesFolder),
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
@@ -707,8 +693,6 @@ export async function loadSettings(): Promise<AppSettings> {
 			: asUiEditorFontSize(rawEditorFontSize);
 	const translucentApp =
 		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
-	const delightfulGlyph =
-		typeof rawDelightfulGlyph === "boolean" ? rawDelightfulGlyph : false;
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
 	const showFileTreeFolderCounts =
 		typeof rawShowFileTreeFolderCounts === "boolean"
@@ -718,10 +702,6 @@ export async function loadSettings(): Promise<AppSettings> {
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
-			: null;
-	const webClippingsFolder =
-		typeof rawWebClippingsFolder === "string"
-			? normalizeRelPath(rawWebClippingsFolder) || null
 			: null;
 	const quickNotesFolder = normalizeQuickNotesFolder(rawQuickNotesFolder);
 	const templatesFolder =
@@ -794,7 +774,6 @@ export async function loadSettings(): Promise<AppSettings> {
 			fontSize,
 			editorFontSize,
 			translucentApp,
-			delightfulGlyph,
 			showToc,
 			showFileTreeFolderCounts,
 			folioMode,
@@ -802,9 +781,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
-		},
-		webClippings: {
-			folder: webClippingsFolder,
 		},
 		quickNotes: {
 			folder: quickNotesFolder,
@@ -1048,13 +1024,6 @@ export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
 }
 
-export async function setDelightfulGlyph(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.delightfulGlyph, enabled);
-	await store.save();
-	void emitSettingsUpdated({ ui: { delightfulGlyph: enabled } });
-}
-
 export async function setShowToc(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.showToc, enabled);
@@ -1186,26 +1155,6 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
-}
-
-export async function getWebClippingsFolder(): Promise<string | null> {
-	const store = await getStore();
-	return (await store.get<string | null>(KEYS.webClippingsFolder)) ?? null;
-}
-
-export async function setWebClippingsFolder(
-	folder: string | null,
-): Promise<void> {
-	const store = await getStore();
-	const nextFolder =
-		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
-	if (nextFolder === null) {
-		await store.delete(KEYS.webClippingsFolder);
-	} else {
-		await store.set(KEYS.webClippingsFolder, nextFolder);
-	}
-	await store.save();
-	void emitSettingsUpdated({ webClippings: { folder: nextFolder } });
 }
 
 export async function getQuickNotesFolder(): Promise<string> {

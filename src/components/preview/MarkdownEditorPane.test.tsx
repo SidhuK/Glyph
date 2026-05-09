@@ -6,17 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const {
-	noteInlineEditorMock,
-	localNoteGraphDialogMock,
-	invokeMock,
-	mockZenModeState,
-} = vi.hoisted(() => ({
-	noteInlineEditorMock: vi.fn(),
-	localNoteGraphDialogMock: vi.fn(),
-	invokeMock: vi.fn(),
-	mockZenModeState: { active: false },
-}));
+const { noteInlineEditorMock, localNoteGraphDialogMock, invokeMock } =
+	vi.hoisted(() => ({
+		noteInlineEditorMock: vi.fn(),
+		localNoteGraphDialogMock: vi.fn(),
+		invokeMock: vi.fn(),
+	}));
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -35,7 +30,6 @@ vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/spaces/test" }),
 	useUILayoutContext: () => ({
 		showToc: false,
-		zenModeActive: mockZenModeState.active,
 	}),
 }));
 
@@ -71,24 +65,20 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 		onChange,
 		mode,
 		pasteMarkdownBehavior,
-		zenModeActive,
 	}: {
 		onChange: (nextText: string) => void;
 		mode: "plain" | "rich" | "preview";
 		pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
-		zenModeActive?: boolean;
 	}) => (
 		<button
 			type="button"
 			onClick={() => onChange("latest typed text")}
 			data-paste-markdown-behavior={pasteMarkdownBehavior}
 			data-mode={mode}
-			data-zen-mode={zenModeActive ? "true" : "false"}
 			ref={() => {
 				noteInlineEditorMock({
 					mode,
 					pasteMarkdownBehavior,
-					zenModeActive,
 				});
 			}}
 		>
@@ -226,7 +216,6 @@ describe("MarkdownEditorPane", () => {
 
 	beforeEach(() => {
 		vi.useFakeTimers();
-		mockZenModeState.active = false;
 		globalThis.ResizeObserver = class {
 			disconnect() {}
 			observe() {}
@@ -298,7 +287,6 @@ describe("MarkdownEditorPane", () => {
 		expect(noteInlineEditorMock).toHaveBeenCalledWith({
 			mode: "rich",
 			pasteMarkdownBehavior: "smart-markdown",
-			zenModeActive: false,
 		});
 	});
 
@@ -402,32 +390,7 @@ describe("MarkdownEditorPane", () => {
 		expect(container.textContent).toContain("Saved");
 	});
 
-	it("hides note chrome while zen mode is active", async () => {
-		mockZenModeState.active = true;
-
-		await act(async () => {
-			root.render(
-				<MarkdownEditorPane
-					relPath="notes/zen.md"
-					initialDoc={makeDoc("notes/zen.md", "seed text")}
-				/>,
-			);
-		});
-
-		expect(
-			container
-				.querySelector(".markdownEditorFloatActions")
-				?.classList.contains("is-zen-hidden"),
-		).toBe(true);
-		expect(container.querySelector(".markdownEditorPaneZen")).toBeTruthy();
-		expect(noteInlineEditorMock).toHaveBeenCalledWith({
-			mode: "rich",
-			pasteMarkdownBehavior: "smart-markdown",
-			zenModeActive: true,
-		});
-	});
-
-	it("switches the active note back to rich mode when zen mode requests edit mode", async () => {
+	it("switches the active note back to rich mode when edit mode is requested", async () => {
 		await act(async () => {
 			root.render(
 				<MarkdownEditorPane

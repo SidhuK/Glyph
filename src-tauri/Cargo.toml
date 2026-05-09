@@ -37,7 +37,7 @@ hex = "0.4"
 base64 = "0.22"
 notify = "6"
 regex = "1"
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json", "stream"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 url = "2"
 futures-util = "0.3"
@@ -47,7 +47,6 @@ window-vibrancy = "0.7"
 rig-core = { version = "0.24.0", features = ["derive"] }
 schemars = "0.8"
 tauri-plugin-process = "2"
-htmd = "0.5.4"
 tauri-plugin-global-shortcut = "2"
 
 [target.'cfg(target_os = "macos")'.dependencies]

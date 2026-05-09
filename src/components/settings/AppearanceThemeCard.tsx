@@ -77,49 +77,6 @@ function getPreviewStyle(preview: UiThemePreview): CSSProperties {
 	} as CSSProperties;
 }
 
-function ThemeShowcase({
-	label,
-	option,
-	active,
-}: {
-	label: string;
-	option: UiThemeOption<string>;
-	active: boolean;
-}) {
-	return (
-		<div
-			className={cn("appearanceThemeShowcase", active && "is-active")}
-			style={getPreviewStyle(option.preview)}
-		>
-			<div className="appearanceThemeShowcaseHeader">
-				<div>
-					<div className="appearanceThemeShowcaseLabel">{label}</div>
-					<div className="appearanceThemeShowcaseTitle">{option.label}</div>
-				</div>
-			</div>
-			<div className="appearanceThemeShowcaseCanvas" aria-hidden="true">
-				<div className="appearanceThemeShowcaseWindow">
-					<div className="appearanceThemeShowcaseSidebar" />
-					<div className="appearanceThemeShowcaseEditor">
-						<span className="appearanceThemeShowcaseLine is-accent" />
-						<span className="appearanceThemeShowcaseLine" />
-						<span className="appearanceThemeShowcaseLine is-short" />
-					</div>
-				</div>
-				<div className="appearanceThemeShowcaseMeta">
-					<span className="appearanceThemeBadge">Aa</span>
-					<div className="appearanceThemeSwatches">
-						<span />
-						<span />
-						<span />
-					</div>
-				</div>
-			</div>
-			<p className="appearanceThemeShowcaseDescription">{option.description}</p>
-		</div>
-	);
-}
-
 function ThemeSelector<T extends string>({
 	label,
 	description,
@@ -250,19 +207,10 @@ export function AppearanceThemeCard({
 	onDarkThemeChange,
 	onTranslucentAppChange,
 }: AppearanceThemeCardProps) {
-	const resolvedLightTheme = {
-		...lightTheme,
-		preview: resolvePreview(lightTheme, "light", accent),
-	};
-	const resolvedDarkTheme = {
-		...darkTheme,
-		preview: resolvePreview(darkTheme, "dark", accent),
-	};
-
 	return (
 		<SettingsSection
 			title="Theme"
-			description="Mix and match light and dark theme families with quick visual previews."
+			description="Mix and match light and dark theme families."
 		>
 			<SettingsRow
 				label="Select Theme"
@@ -299,19 +247,6 @@ export function AppearanceThemeCard({
 					]}
 				/>
 			</SettingsRow>
-
-			<div className="appearanceThemeStage">
-				<ThemeShowcase
-					label="Light theme"
-					option={resolvedLightTheme}
-					active={themeMode === "light"}
-				/>
-				<ThemeShowcase
-					label="Dark theme"
-					option={resolvedDarkTheme}
-					active={themeMode === "dark"}
-				/>
-			</div>
 
 			<ThemeSelector
 				label="Light theme"

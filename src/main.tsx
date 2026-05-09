@@ -9,7 +9,6 @@ import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyEditorWidthMode,
 	applyUiAccent,
-	applyUiDelightfulGlyph,
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
@@ -41,9 +40,6 @@ function ThemeAndTypographyBridge() {
 	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
 		null,
 	);
-	const [delightfulGlyph, setDelightfulGlyph] = React.useState<boolean | null>(
-		null,
-	);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -64,7 +60,6 @@ function ThemeAndTypographyBridge() {
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
-				setDelightfulGlyph(settings.ui.delightfulGlyph);
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -136,9 +131,6 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.translucentApp === "boolean") {
 			setTranslucentApp(payload.ui.translucentApp);
 		}
-		if (typeof payload.ui?.delightfulGlyph === "boolean") {
-			setDelightfulGlyph(payload.ui.delightfulGlyph);
-		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
 			payload.editor?.editorWidthMode === "comfortable" ||
@@ -206,11 +198,6 @@ function ThemeAndTypographyBridge() {
 			() => {},
 		);
 	}, [resolvedTheme, theme, translucentApp]);
-
-	React.useEffect(() => {
-		if (typeof delightfulGlyph !== "boolean") return;
-		applyUiDelightfulGlyph(delightfulGlyph);
-	}, [delightfulGlyph]);
 
 	return null;
 }

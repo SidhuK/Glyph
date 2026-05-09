@@ -21,7 +21,6 @@ export interface NoteInlineEditorProps {
 	markdown: string;
 	relPath?: string;
 	mode: NoteInlineEditorMode;
-	zenModeActive?: boolean;
 	onChange: (nextMarkdown: string) => void;
 	onFrontmatterCommit?: () => void;
 	extractToNoteActions?: ExtractToNoteActions;

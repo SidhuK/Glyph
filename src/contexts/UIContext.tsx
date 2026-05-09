@@ -29,8 +29,6 @@ import { useSpace } from "./SpaceContext";
 export interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
-	zenModeActive: boolean;
-	setZenModeActive: (active: boolean) => void;
 	sidebarWidth: number;
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
@@ -70,7 +68,6 @@ const AISidebarContext = createContext<AISidebarContextValue | null>(null);
 
 type UIState = {
 	sidebarCollapsed: boolean;
-	zenModeActive: boolean;
 	sidebarWidth: number;
 	paletteOpen: boolean;
 	activePreviewPath: string | null;
@@ -87,15 +84,10 @@ type UIState = {
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiAssistantMode: AiAssistantMode;
-	zenStateSnapshot: {
-		sidebarCollapsed: boolean;
-		aiPanelOpen: boolean;
-	} | null;
 };
 
 type UIAction =
 	| { type: "setSidebarCollapsed"; value: boolean }
-	| { type: "setZenModeActive"; value: boolean }
 	| { type: "setSidebarWidth"; value: number }
 	| { type: "setPaletteOpen"; value: boolean }
 	| { type: "setActivePreviewPath"; value: string | null }
@@ -127,7 +119,6 @@ type UIAction =
 
 const initialUIState: UIState = {
 	sidebarCollapsed: true,
-	zenModeActive: false,
 	sidebarWidth: 260,
 	paletteOpen: false,
 	activePreviewPath: null,
@@ -144,37 +135,12 @@ const initialUIState: UIState = {
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiAssistantMode: "create",
-	zenStateSnapshot: null,
 };
 
 function uiReducer(state: UIState, action: UIAction): UIState {
 	switch (action.type) {
 		case "setSidebarCollapsed":
 			return { ...state, sidebarCollapsed: action.value };
-		case "setZenModeActive":
-			if (action.value) {
-				if (state.zenModeActive) return state;
-				return {
-					...state,
-					zenModeActive: true,
-					sidebarCollapsed: true,
-					aiPanelOpen: false,
-					zenStateSnapshot: {
-						sidebarCollapsed: state.sidebarCollapsed,
-						aiPanelOpen: state.aiPanelOpen,
-					},
-				};
-			}
-			return {
-				...state,
-				zenModeActive: false,
-				sidebarCollapsed:
-					state.zenStateSnapshot?.sidebarCollapsed ?? state.sidebarCollapsed,
-				aiPanelOpen: state.aiEnabled
-					? (state.zenStateSnapshot?.aiPanelOpen ?? state.aiPanelOpen)
-					: false,
-				zenStateSnapshot: null,
-			};
 		case "setSidebarWidth":
 			return { ...state, sidebarWidth: action.value };
 		case "setPaletteOpen":
@@ -212,25 +178,9 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				...state,
 				aiEnabled: action.value,
 				aiPanelOpen: action.value ? state.aiPanelOpen : false,
-				zenStateSnapshot:
-					action.value || !state.zenStateSnapshot
-						? state.zenStateSnapshot
-						: { ...state.zenStateSnapshot, aiPanelOpen: false },
 			};
 		case "setAiPanelOpen":
 			if (!state.aiEnabled) return { ...state, aiPanelOpen: false };
-			if (state.zenModeActive) {
-				// During zen mode the AI panel is always suppressed; also clear
-				// the snapshot so it won't re-open when zen exits if the caller
-				// tried to open it while zen mode was active.
-				return {
-					...state,
-					aiPanelOpen: false,
-					zenStateSnapshot: state.zenStateSnapshot
-						? { ...state.zenStateSnapshot, aiPanelOpen: false }
-						: state.zenStateSnapshot,
-				};
-			}
 			return {
 				...state,
 				aiPanelOpen:
@@ -256,15 +206,11 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				? {
 						...state,
 						sidebarCollapsed: false,
-						zenModeActive: false,
-						zenStateSnapshot: null,
 					}
 				: {
 						...state,
 						openMarkdownTabs: [],
 						activeMarkdownTabPath: null,
-						zenModeActive: false,
-						zenStateSnapshot: null,
 					};
 		case "hydrateSettings":
 			return {
@@ -288,7 +234,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const {
 		sidebarCollapsed,
-		zenModeActive,
 		sidebarWidth,
 		paletteOpen,
 		activePreviewPath,
@@ -445,10 +390,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dispatch({ type: "setSidebarCollapsed", value: collapsed }),
 		[],
 	);
-	const setZenModeActive = useCallback(
-		(active: boolean) => dispatch({ type: "setZenModeActive", value: active }),
-		[],
-	);
 	const setSidebarWidth = useCallback(
 		(width: number) => dispatch({ type: "setSidebarWidth", value: width }),
 		[],
@@ -504,8 +445,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		() => ({
 			sidebarCollapsed,
 			setSidebarCollapsed,
-			zenModeActive,
-			setZenModeActive,
 			sidebarWidth,
 			setSidebarWidth,
 			paletteOpen,
@@ -534,8 +473,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[
 			sidebarCollapsed,
 			setSidebarCollapsed,
-			zenModeActive,
-			setZenModeActive,
 			sidebarWidth,
 			setSidebarWidth,
 			paletteOpen,

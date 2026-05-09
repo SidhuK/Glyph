@@ -8,14 +8,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -31,8 +24,6 @@ import {
 	type OpenLocalGraphDetail,
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 	type ToggleNoteInfoSidebarDetail,
-	ZEN_MODE_WILL_TOGGLE_EVENT,
-	type ZenModeWillToggleDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
@@ -214,10 +205,6 @@ export function MarkdownEditorPane({
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
-	const pendingZenViewportAnchorRef = useRef<{
-		topWithinViewport: number;
-		scrollTop: number;
-	} | null>(null);
 	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
 	const {
 		headings: tocHeadings,
@@ -226,7 +213,7 @@ export function MarkdownEditorPane({
 	} = useTableOfContents(tocEditor);
 	const [previewContext, setPreviewContext] =
 		useState<WorkspaceDatabasePreviewContext | null>(null);
-	const { zenModeActive, openSettings, showToc } = useUILayoutContext();
+	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
@@ -647,83 +634,6 @@ export function MarkdownEditorPane({
 		if (aiPanelOpen) setInfoPanelOpen(false);
 	}, [aiPanelOpen]);
 
-	const captureZenViewportAnchor = useCallback(() => {
-		const scrollEl = contentScrollRef.current;
-		const pane = paneRef.current;
-		if (!scrollEl || !pane) return;
-
-		const selection = window.getSelection();
-		if (!selection || selection.rangeCount === 0) return;
-		const range = selection.getRangeAt(0);
-		if (!pane.contains(range.commonAncestorContainer)) return;
-
-		const rect =
-			range.getClientRects()[0] ??
-			(range.startContainer instanceof Element
-				? range.startContainer.getBoundingClientRect()
-				: (range.startContainer.parentElement?.getBoundingClientRect() ??
-					null));
-		if (!rect) return;
-
-		const viewportTop = rect.top - scrollEl.getBoundingClientRect().top;
-		pendingZenViewportAnchorRef.current = {
-			topWithinViewport: viewportTop,
-			scrollTop: scrollEl.scrollTop,
-		};
-	}, []);
-
-	useEffect(() => {
-		const handleZenWillToggle = (event: Event) => {
-			const detail = (event as CustomEvent<ZenModeWillToggleDetail>).detail;
-			if (!detail?.path || detail.path !== relPath) return;
-			captureZenViewportAnchor();
-		};
-		window.addEventListener(ZEN_MODE_WILL_TOGGLE_EVENT, handleZenWillToggle);
-		return () => {
-			window.removeEventListener(
-				ZEN_MODE_WILL_TOGGLE_EVENT,
-				handleZenWillToggle,
-			);
-		};
-	}, [captureZenViewportAnchor, relPath]);
-
-	useLayoutEffect(() => {
-		const anchor = pendingZenViewportAnchorRef.current;
-		const scrollEl = contentScrollRef.current;
-		const pane = paneRef.current;
-		if (!anchor || !scrollEl || !pane) return;
-
-		const selection = window.getSelection();
-		if (!selection || selection.rangeCount === 0) {
-			pendingZenViewportAnchorRef.current = null;
-			return;
-		}
-		const range = selection.getRangeAt(0);
-		if (!pane.contains(range.commonAncestorContainer)) {
-			pendingZenViewportAnchorRef.current = null;
-			return;
-		}
-
-		const rect =
-			range.getClientRects()[0] ??
-			(range.startContainer instanceof Element
-				? range.startContainer.getBoundingClientRect()
-				: (range.startContainer.parentElement?.getBoundingClientRect() ??
-					null));
-		if (!rect) {
-			pendingZenViewportAnchorRef.current = null;
-			return;
-		}
-
-		const nextTopWithinViewport =
-			rect.top - scrollEl.getBoundingClientRect().top;
-		const delta = nextTopWithinViewport - anchor.topWithinViewport;
-		if (Math.abs(delta) > 0.5) {
-			scrollEl.scrollTop = anchor.scrollTop + delta;
-		}
-		pendingZenViewportAnchorRef.current = null;
-	});
-
 	useEffect(() => {
 		if (!pendingExternalReloadRef.current) return;
 		if (isDirty || saving) return;
@@ -846,25 +756,8 @@ export function MarkdownEditorPane({
 	);
 
 	return (
-		<section
-			className={[
-				"filePreviewPane",
-				"markdownEditorPane",
-				zenModeActive ? "markdownEditorPaneZen" : "",
-			]
-				.filter(Boolean)
-				.join(" ")}
-			ref={paneRef}
-		>
-			<div
-				className={[
-					"markdownEditorFloatActions",
-					zenModeActive ? "is-zen-hidden" : "",
-				]
-					.filter(Boolean)
-					.join(" ")}
-				aria-hidden={zenModeActive}
-			>
+		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
+			<div className="markdownEditorFloatActions">
 				<div className="markdownEditorTopActions">
 					<button
 						type="button"
@@ -1078,7 +971,6 @@ export function MarkdownEditorPane({
 							markdown={text}
 							relPath={relPath}
 							mode={mode}
-							zenModeActive={zenModeActive}
 							pasteMarkdownBehavior="smart-markdown"
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
@@ -1103,7 +995,6 @@ export function MarkdownEditorPane({
 			<NotesInfoSidebar
 				open={infoPanelOpen}
 				mode={mode}
-				zenModeActive={zenModeActive}
 				hasError={Boolean(error)}
 				relPath={relPath}
 				frontmatter={currentFrontmatter}

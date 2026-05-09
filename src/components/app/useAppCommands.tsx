@@ -20,8 +20,6 @@ import {
 	PencilEdit02Icon,
 	PinIcon,
 	PinOffIcon,
-	Plant01Icon,
-	PrinterIcon,
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
@@ -37,10 +35,8 @@ import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import {
 	dispatchEditorMenuAction,
-	dispatchForceNoteEditMode,
 	dispatchOpenLocalGraph,
 	dispatchToggleNoteInfoSidebar,
-	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import { getLicenseStatus } from "../../lib/license";
@@ -51,7 +47,7 @@ import {
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
 import { isMarkdownPath, parentDir } from "../../utils/path";
-import { ChevronDown, ChevronUp, FileHtml } from "../Icons";
+import { ChevronDown, ChevronUp } from "../Icons";
 import { EDITOR_ACTIONS } from "../editor/editorActions";
 import type { SettingsTab } from "../settings/settingsConfig";
 import type { Command } from "./CommandPalette";
@@ -86,11 +82,9 @@ interface UseAppCommandsDeps {
 	handleCopyOpenNoteAsMarkdown: () => Promise<void>;
 	handleCreateFromTemplateFromMenu: () => void;
 	handleDuplicateActiveMarkdown: () => Promise<void>;
-	handleExportHtml: () => void;
 	handleGitSyncFailure: (cause: unknown) => void;
 	handleOpenAiSettings: () => void;
 	handleOpenSpaceSettings: () => void;
-	handlePrintEditorPane: () => void;
 	handleRevealSpaceFromMenu: () => void;
 	movePickerSourcePath: string | null;
 	moveTargetDirs: string[];
@@ -118,16 +112,12 @@ interface UseAppCommandsDeps {
 	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
-	setWebClipDialogOpen: Dispatch<SetStateAction<boolean>>;
-	setWebClipUrl: (url: string) => void;
-	setZenModeActive: (active: boolean) => void;
 	showCollapsibleHeadings: boolean;
 	sidebarCollapsed: boolean;
 	spacePath: string | null;
 	tabsLength: number;
 	togglePinnedFile: (path: string) => Promise<void>;
 	refreshMoveTargetDirs: (sourcePath: string) => Promise<void>;
-	zenModeActive: boolean;
 }
 
 function buildMovePickerCommands({
@@ -303,11 +293,9 @@ export function useAppCommands({
 	handleCopyOpenNoteAsMarkdown,
 	handleCreateFromTemplateFromMenu,
 	handleDuplicateActiveMarkdown,
-	handleExportHtml,
 	handleGitSyncFailure,
 	handleOpenAiSettings,
 	handleOpenSpaceSettings,
-	handlePrintEditorPane,
 	handleRevealSpaceFromMenu,
 	movePickerSourcePath,
 	moveTargetDirs,
@@ -335,16 +323,12 @@ export function useAppCommands({
 	setError,
 	setMovePickerSourcePath,
 	setSidebarCollapsed,
-	setWebClipDialogOpen,
-	setWebClipUrl,
-	setZenModeActive,
 	showCollapsibleHeadings,
 	sidebarCollapsed,
 	spacePath,
 	tabsLength,
 	togglePinnedFile,
 	refreshMoveTargetDirs,
-	zenModeActive,
 }: UseAppCommandsDeps): Command[] {
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
@@ -378,17 +362,6 @@ export function useAppCommands({
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
 				action: () => void createNoteInSelectedFolder(),
-			},
-			{
-				id: "save-web-page",
-				label: "Save web page",
-				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath),
-				action: () => {
-					setWebClipUrl("");
-					setWebClipDialogOpen(true);
-				},
 			},
 			{
 				id: "open-quick-note",
@@ -608,24 +581,6 @@ export function useAppCommands({
 				action: () => void handleCopyOpenNoteAsMarkdown(),
 			},
 			{
-				id: "export-note-html",
-				label: "Export note as HTML",
-				icon: <FileHtml size={16} />,
-				category: "File Operations",
-				enabled: Boolean(activeMarkdownTabPath),
-				action: handleExportHtml,
-			},
-			{
-				id: "print-editor-pane",
-				label: "Print Note",
-				icon: <HugeiconsIcon icon={PrinterIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled:
-					activeMarkdownTabPath !== null &&
-					isMarkdownPath(activeMarkdownTabPath),
-				action: handlePrintEditorPane,
-			},
-			{
 				id: "move-active-file",
 				label: "Move to…",
 				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
@@ -790,33 +745,6 @@ export function useAppCommands({
 				action: () => setSidebarCollapsed(!sidebarCollapsed),
 			},
 			{
-				id: "toggle-zen-mode",
-				label: zenModeActive ? "Exit zen mode" : "Toggle zen mode",
-				icon: <HugeiconsIcon icon={Plant01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => {
-					if (zenModeActive) {
-						if (activeMarkdownTabPath) {
-							dispatchZenModeWillToggle({
-								path: activeMarkdownTabPath,
-								nextActive: false,
-							});
-						}
-						setZenModeActive(false);
-						return;
-					}
-					if (!activeMarkdownTabPath) return;
-					dispatchZenModeWillToggle({
-						path: activeMarkdownTabPath,
-						nextActive: true,
-					});
-					dispatchForceNoteEditMode({ path: activeMarkdownTabPath });
-					setZenModeActive(true);
-				},
-			},
-			{
 				id: "buy-glyph-license",
 				label: "Buy Glyph license",
 				icon: (
@@ -931,8 +859,6 @@ export function useAppCommands({
 		handleCloseAiPaneFromMenu,
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,
-		handleExportHtml,
-		handlePrintEditorPane,
 		handleRevealSpaceFromMenu,
 		fileTree,
 		closeSpace,
@@ -948,11 +874,9 @@ export function useAppCommands({
 		togglePinnedFile,
 		setActivePreviewPath,
 		setSidebarCollapsed,
-		setZenModeActive,
 		sidebarCollapsed,
 		showCollapsibleHeadings,
 		spacePath,
-		zenModeActive,
 		openAllDocsTab,
 		openTemplatesTab,
 		openSearchPalette,
@@ -973,8 +897,6 @@ export function useAppCommands({
 		refreshMoveTargetDirs,
 		openPalette,
 		setMovePickerSourcePath,
-		setWebClipDialogOpen,
-		setWebClipUrl,
 		tabsLength,
 		canGoBack,
 		canGoForward,

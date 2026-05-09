@@ -9,10 +9,8 @@ mod glyph_paths;
 mod index;
 mod io_atomic;
 mod license;
-mod links;
 mod menu_manifest;
 mod net;
-mod note_export;
 mod notes;
 mod paths;
 mod pinned_files;
@@ -20,7 +18,6 @@ mod space;
 mod space_fs;
 mod system_fonts;
 pub(crate) mod utils;
-mod web_clip;
 
 use serde::Serialize;
 use std::collections::HashMap;
@@ -445,14 +442,6 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+S"),
     )?;
-    let export_html = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.export_html",
-        "Export as HTML…",
-        true,
-        None,
-    )?;
     let close_tab = menu_item_with_shortcut(
         app,
         menu_shortcuts,
@@ -763,7 +752,6 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &open_daily_note,
             &PredefinedMenuItem::separator(app)?,
             &save_note,
-            &export_html,
             &close_tab,
         ],
     )?;
@@ -961,11 +949,6 @@ fn system_fonts_list() -> Result<Vec<String>, String> {
 #[tauri::command]
 fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
     system_fonts::list_monospace_font_families()
-}
-
-#[tauri::command]
-fn print_current_window(window: tauri::WebviewWindow) -> Result<(), String> {
-    window.print().map_err(|error| error.to_string())
 }
 
 fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
@@ -1387,7 +1370,6 @@ pub fn run() {
             app_info,
             system_fonts_list,
             system_monospace_fonts_list,
-            print_current_window,
             show_quick_note_window,
             hide_quick_note_window,
             show_main_window,
@@ -1481,7 +1463,6 @@ pub fn run() {
             space_fs::read_write::paths::space_delete_path,
             space_fs::read_write::paths::space_resolve_abs_path,
             space_fs::read_write::paths::space_relativize_path,
-            note_export::commands::export_write_text,
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
             git_sync::commands::git_sync_status_read,
@@ -1493,8 +1474,7 @@ pub fn run() {
             space::commands::space_open,
             space::commands::space_get_current,
             space::commands::space_show_onboarding_note,
-            space::commands::space_close,
-            web_clip::web_clip_save
+            space::commands::space_close
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

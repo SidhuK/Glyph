@@ -38,8 +38,6 @@ export function useTabManager(spacePath: string | null) {
 		setActivePreviewPath,
 		setOpenMarkdownTabs,
 		setActiveMarkdownTabPath,
-		zenModeActive,
-		setZenModeActive,
 	} = useUILayoutContext();
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
@@ -108,10 +106,6 @@ export function useTabManager(spacePath: string | null) {
 
 			const targetChanged = previousActiveTarget !== nextActiveTab?.target;
 
-			if (zenModeActive && !nextActiveMarkdownPath && targetChanged) {
-				setZenModeActive(false);
-			}
-
 			if (
 				nextActiveTab?.kind === "file" &&
 				nextActiveTab.target &&
@@ -127,9 +121,7 @@ export function useTabManager(spacePath: string | null) {
 			setActiveMarkdownTabPath,
 			setActivePreviewPath,
 			setOpenMarkdownTabs,
-			setZenModeActive,
 			spacePath,
-			zenModeActive,
 		],
 	);
 

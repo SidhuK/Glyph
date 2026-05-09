@@ -242,7 +242,6 @@ function shouldHandleSmartMarkdownPaste(
 interface UseNoteEditorOptions {
 	markdown: string;
 	mode: NoteInlineEditorMode;
-	zenModeActive?: boolean;
 	relPath?: string;
 	interactive?: boolean;
 	enableHydrateInlineImages?: boolean;
@@ -390,7 +389,6 @@ function handleEditorClick(
 export function useNoteEditor({
 	markdown,
 	mode,
-	zenModeActive = false,
 	relPath = "",
 	interactive = true,
 	enableHydrateInlineImages = true,
@@ -408,7 +406,6 @@ export function useNoteEditor({
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
-	const zenModeActiveRef = useRef(zenModeActive);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -425,7 +422,6 @@ export function useNoteEditor({
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
-				getZenModeEnabled: () => zenModeActiveRef.current,
 				placeholder: "Start writing or press / for commands",
 			}),
 		[
@@ -681,12 +677,6 @@ export function useNoteEditor({
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
 	}, [editor, mode]);
-
-	useEffect(() => {
-		if (!editor) return;
-		zenModeActiveRef.current = zenModeActive && mode === "rich";
-		editor.commands.refreshZenFocus();
-	}, [editor, mode, zenModeActive]);
 
 	useEffect(() => {
 		if (!editor) return;

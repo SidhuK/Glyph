@@ -1,14 +1,5 @@
-.appearanceThemeStage {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 8px;
-	padding: 0 12px 8px;
-}
-
-.appearanceThemeShowcase,
 .appearanceThemeDropdownTrigger,
-.appearanceThemeDropdownOption,
-.appearanceThemeMiniPreview {
+.appearanceThemeDropdownOption {
 	--theme-preview-accent: var(--interactive-accent);
 	--theme-preview-surface: var(--bg-secondary);
 	--theme-preview-surface-alt: var(--bg-tertiary);
@@ -17,109 +8,6 @@
 	--theme-preview-badge-border: var(--border-default);
 	--theme-preview-badge-text: var(--interactive-accent);
 	--theme-preview-border: var(--border-default);
-}
-
-.appearanceThemeShowcase {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 7px;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-}
-
-.appearanceThemeShowcase.is-active {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 34%,
-		var(--border-default)
-	);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-}
-
-.appearanceThemeShowcaseHeader {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 4px;
-}
-
-.appearanceThemeShowcaseLabel {
-	font-size: 9px;
-	color: var(--text-secondary);
-}
-
-.appearanceThemeShowcaseTitle {
-	margin-top: 1px;
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.appearanceThemeShowcaseCanvas {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.appearanceThemeShowcaseWindow {
-	display: grid;
-	grid-template-columns: 20px minmax(0, 1fr);
-	min-height: 34px;
-	overflow: hidden;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--theme-preview-border);
-	background: var(--theme-preview-surface);
-}
-
-.appearanceThemeShowcaseSidebar {
-	background: var(--theme-preview-surface-alt);
-	border-right: 1px solid
-		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
-}
-
-.appearanceThemeShowcaseEditor {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 4px;
-	padding: 6px 7px;
-}
-
-.appearanceThemeShowcaseLine {
-	height: 3px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--theme-preview-text) 18%, transparent);
-}
-
-.appearanceThemeShowcaseLine.is-accent {
-	width: 72%;
-	background: color-mix(
-		in srgb,
-		var(--theme-preview-accent) 72%,
-		var(--theme-preview-surface)
-	);
-}
-
-.appearanceThemeShowcaseLine.is-short {
-	width: 54%;
-}
-
-.appearanceThemeShowcaseMeta {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 6px;
-}
-
-.appearanceThemeShowcaseDescription {
-	margin: 0;
-	font-size: 9px;
-	line-height: 1.35;
-	color: var(--text-secondary);
 }
 
 .appearanceThemeDropdownTrigger {
@@ -309,47 +197,10 @@
 	padding: 1px 1px 3px;
 }
 
-.appearanceThemeSwatches {
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-}
-
-.appearanceThemeSwatches span {
-	width: 5px;
-	height: 5px;
-	border-radius: var(--radius-full);
-	border: 1px solid
-		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
-}
-
-.appearanceThemeSwatches span:nth-child(1) {
-	background: var(--theme-preview-accent);
-}
-
-.appearanceThemeSwatches span:nth-child(2) {
-	background: var(--theme-preview-surface);
-}
-
-.appearanceThemeSwatches span:nth-child(3) {
-	background: var(--theme-preview-surface-alt);
-}
-
-@media (max-width: 920px) {
-	.appearanceThemeStage {
-		grid-template-columns: 1fr;
-	}
-}
-
 @media (max-width: 680px) {
 	.appearanceThemeDropdownTrigger,
 	.appearanceThemeDropdownOption {
 		align-items: flex-start;
-	}
-
-	.appearanceThemeDropdownMeta,
-	.appearanceThemeDropdownOptionMeta {
-		align-items: center;
 	}
 
 	.appearanceThemeDropdownDescription,

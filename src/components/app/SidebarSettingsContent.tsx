@@ -62,7 +62,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 				</div>
 			</div>
 
-			<div className="sidebarFooter settingsSidebarFooter">
+			<div className="settingsSidebarFooter">
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
 						<div className="settingsFeedbackEyebrow">Community Build</div>

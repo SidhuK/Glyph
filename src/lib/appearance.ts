@@ -279,11 +279,6 @@ export function applyUiSurfacePreferences(options: {
 	root.dataset.translucentAiPanel = String(options.translucentApp);
 }
 
-export function applyUiDelightfulGlyph(enabled: boolean): void {
-	const root = document.documentElement;
-	root.dataset.delightfulGlyph = String(enabled);
-}
-
 export function applyEditorWidthMode(mode: EditorWidthMode): void {
 	const root = document.documentElement;
 

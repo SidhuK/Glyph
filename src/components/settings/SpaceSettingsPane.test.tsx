@@ -8,17 +8,14 @@ import { SpaceSettingsPane } from "./SpaceSettingsPane";
 
 const {
 	getDailyNotesFolderMock,
-	getWebClippingsFolderMock,
 	invokeMock,
 	loadSettingsMock,
 	setDailyNotesFolderMock,
 	setEditorAttachmentFolderMock,
 	setEditorAttachmentStorageModeMock,
 	setQuickNotesFolderMock,
-	setWebClippingsFolderMock,
 } = vi.hoisted(() => ({
 	getDailyNotesFolderMock: vi.fn(() => Promise.resolve(null)),
-	getWebClippingsFolderMock: vi.fn(() => Promise.resolve(null)),
 	invokeMock: vi.fn(),
 	loadSettingsMock: vi.fn(() =>
 		Promise.resolve({
@@ -36,7 +33,6 @@ const {
 	setEditorAttachmentFolderMock: vi.fn(() => Promise.resolve()),
 	setEditorAttachmentStorageModeMock: vi.fn(() => Promise.resolve()),
 	setQuickNotesFolderMock: vi.fn(() => Promise.resolve()),
-	setWebClippingsFolderMock: vi.fn(() => Promise.resolve()),
 }));
 
 (
@@ -48,13 +44,11 @@ const {
 vi.mock("../../lib/settings", () => ({
 	DEFAULT_QUICK_NOTES_FOLDER: "Quick Notes",
 	getDailyNotesFolder: getDailyNotesFolderMock,
-	getWebClippingsFolder: getWebClippingsFolderMock,
 	loadSettings: loadSettingsMock,
 	setDailyNotesFolder: setDailyNotesFolderMock,
 	setEditorAttachmentFolder: setEditorAttachmentFolderMock,
 	setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
 	setQuickNotesFolder: setQuickNotesFolderMock,
-	setWebClippingsFolder: setWebClippingsFolderMock,
 }));
 
 vi.mock("../../lib/tauri", () => ({
