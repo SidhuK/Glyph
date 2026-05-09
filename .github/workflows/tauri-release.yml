@@ -84,10 +84,33 @@ jobs:
 
           latest_tag="$(git tag -l 'v*' --sort=-v:refname | head -n1 || true)"
           file_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
+          release_notes_version="$(node -p "JSON.parse(require('fs').readFileSync('src/data/release-notes.json','utf8')).versions?.[0]?.version ?? ''")"
           tag_version="${latest_tag#v}"
           if [ -z "${latest_tag}" ]; then
             tag_version="0.0.0"
           fi
+
+          candidate_version="$(node -e '
+            const [fileVersion, releaseNotesVersion] = process.argv.slice(1);
+            const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
+            const valid = (v) => /^\d+\.\d+\.\d+$/.test(v);
+            const compare = (a, b) => {
+              const av = parse(a);
+              const bv = parse(b);
+              return Math.sign(av[0] - bv[0] || av[1] - bv[1] || av[2] - bv[2]);
+            };
+            if (!valid(fileVersion)) {
+              throw new Error(`Invalid app version: ${fileVersion}`);
+            }
+            if (releaseNotesVersion && !valid(releaseNotesVersion)) {
+              throw new Error(`Invalid release notes version: ${releaseNotesVersion}`);
+            }
+            const candidate =
+              releaseNotesVersion && compare(releaseNotesVersion, fileVersion) === 1
+                ? releaseNotesVersion
+                : fileVersion;
+            process.stdout.write(candidate);
+          ' "${file_version}" "${release_notes_version}")"
 
           version_order="$(node -e '
             const [a, b] = process.argv.slice(1);
@@ -99,7 +122,7 @@ jobs:
               av[1] - bv[1] ||
               av[2] - bv[2];
             process.stdout.write(String(Math.sign(cmp)));
-          ' "${file_version}" "${tag_version}")"
+          ' "${candidate_version}" "${tag_version}")"
 
           if ! [[ "${version_order}" =~ ^(-1|0|1)$ ]]; then
             echo "Invalid version ordering result: ${version_order}"
@@ -107,7 +130,7 @@ jobs:
           fi
 
           if [ "${version_order}" = "1" ]; then
-            next_version="${file_version}"
+            next_version="${candidate_version}"
           else
             IFS='.' read -r major minor patch <<< "${tag_version}"
             if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then

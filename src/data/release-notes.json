@@ -1,282 +1,34 @@
 {
 	"versions": [
 		{
-			"version": "0.2.24",
+			"version": "0.3.0",
 			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"New spaces now include an editable onboarding note to help you get started with Glyph"
-					]
-				},
 				{
 					"category": "Improved",
 					"items": [
-						"Folio mode now shows images, file icons, and file colors more clearly",
-						"Non-Markdown files can now open in the preview pane, with a simple file icon and name when a full preview is not available"
+						"The editor feels cleaner and faster, with quicker slash commands and AI responses",
+						"Tags now use your theme accent color for a more consistent workspace",
+						"The sidebar has a cleaner layout with less visual noise",
+						"Glyph now opens file previews in the default macOS app"
 					]
 				},
 				{
 					"category": "Fixed",
 					"items": [
-						"The right sidebar now centers and cleans up both sides correctly when opening the Info or AI panel"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.23",
-			"sections": [
-				{
-					"category": "Improved",
-					"items": [
-						"Preview pane UI is cleaner",
-						"Codex rate-limit UI is simpler, with extra styling removed",
-						"Database filters are easier to read because filter details now live inside each filter option",
-						"Today view is cleaner, with extra details removed",
-						"Task date selection is simpler and faster with the native macOS calendar picker",
-						"All Notes is cleaner after removing extra daily note and template details"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"Ambiguous attachment links no longer guess. If both assets/logo.png and archive/logo.png exist, [[logo.png]] stays unresolved until you use a full path like [[assets/logo.png]]",
-						"Attachment wikilinks now index as file links for PDFs and images, including [[spec.pdf]], [[assets/logo.png]], and ![[hero.webp]]",
-						"Renaming or moving supported attachments now rewrites links such as [[assets/logo.png]], ![[assets/logo.png|Logo]], and markdown links to logo.png",
-						"When a basename-only attachment link resolves to one file, rename now rewrites it to the full path. Ambiguous links stay unchanged",
-						"Table database rows no longer slide behind column headings",
-						"Folio mode now shows its own inline rename field instead of using the hidden sidebar file tree",
-						"Deletes and typing feel faster in long formatted notes because editor plugins now check only the changed area",
-						"Task rings in the sidebar no longer blink while you type in a note"
+						"Table tag and value suggestions now stay above neighboring cells while you edit them",
+						"Right sidebar resizing now tracks the pointer more cleanly"
 					]
 				},
 				{
 					"category": "Removed",
 					"items": [
-						"Removed the preview pane Refresh button",
-						"Removed database list view. Databases now use table and board views"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.21",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"OpenCode support is here: any model and provider added in the OpenCode CLI can be used automatically",
-						"Amp Code support is here, with Amp Code models available from the Amp CLI",
-						"Find inside notes with Command + F"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Tags are now closed by default in the sidebar",
-						"Breadcrumb navigation through notes has been improved",
-						"The AI panel and Info Panel UI have been refreshed",
-						"Rust formatting has been cleaned up with cargo format"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"Home page dates now reflect the notes that were actually created on that day by tightening the TanStack Query calendar data handling"
-					]
-				},
-				{
-					"category": "Removed",
-					"items": [
-						"Removed the Duplicate Collections button and duplicate collection functionality from collections and databases"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.20",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"Folio mode is here: browse notes in a focused list beside the editor without opening the full file tree",
-						"Folio mode can show all notes, a folder, a tag, a person, daily notes, templates, or search results",
-						"The local graph now shows shared tag nodes, helping related notes appear as one wider cluster",
-						"Property links like project: [[Launch]] now count as real note relationships in backlinks, the graph, and the note info sidebar",
-						"Added a Discord link so you can join the community and help shape Glyph"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Notes, calendars, databases, AI history, AI profiles, and settings now load and update more consistently",
-						"Moving around Glyph should feel faster, with fewer repeated loads and better refreshes after changes",
-						"The local graph is smoother and more reliable, with built-in pan and zoom",
-						"The graph now has a cleaner full-surface layout with softer nodes, clearer lines, and simpler controls",
-						"Graph links now show direction more clearly with arrowheads and better spacing for two-way links",
-						"The graph opens with better spacing, clearer node sizes, a dotted background, and a compact legend",
-						"Commands, shortcuts, and menu labels now stay in sync across the command palette, settings, and native menus",
-						"Renaming or moving a note or folder now updates exact links pointing to it",
-						"Link repair now keeps aliases and headings when possible and tells you how many links were updated"
-					]
-				},
-				{
-					"category": "Removed",
-					"items": [
-						"Removed extra hover effects that did not add useful feedback",
-						"The changelog in About settings is now simpler and more minimal",
-						"Removed refresh tab and refresh database buttons because Glyph now refreshes affected views automatically"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.19",
-			"sections": [
-				{
-					"category": "Improved",
-					"items": [
-						"Extract Selection to Note is now smoother for wikilink-heavy workflows: select text, turn it into a new note, and leave a clean wikilink behind in one focused motion",
-						"The editor ribbon now includes Extract to Note next to the link action, making it faster to turn important ideas into connected notes"
-					]
-				},
-				{
-					"category": "Removed",
-					"items": [
-						"Several flashier icons across the app have been replaced with minimal, sleeker alternatives for a calmer Glyph workspace"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.18",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"Linked note hover previews are here: hover over a wikilink to quickly see what the note is about"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Database search now works inside each view and stays saved with that view",
-						"Table and list views can now group notes into clear sections",
-						"Database property and value suggestions are cleaner when editing columns and cells",
-						"Saved column widths and view settings are now more reliable",
-						"Database grouping uses the existing saved view settings, so each view remembers how it is grouped",
-						"Backlinks, wikilinks, and linked notes in the sidebar now share the same clean, consistent style"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"Tag picking and suggestions in table databases are now much more dependable"
-					]
-				},
-				{
-					"category": "Removed",
-					"items": [
-						"Board cards have been simplified by removing markdown previews and extra detail text",
-						"Property suggestions are simpler now that count-based ranking has been removed",
-						"Board cards now use flatter styling, with gradients, lift effects, heavy drag shadows, and extra drop styling removed",
-						"Board lane titles and color swatches have cleaner, simpler hover states"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.17",
-			"sections": [
-				{
-					"category": "Improved",
-					"items": [
-						"Tabs can now be dragged and rearranged, making it easier to organize active notes and views",
-						"All Notes in the sidebar now shows the number of notes, so larger spaces are easier to scan at a glance",
-						"Number fields from frontmatter can now be sorted in increasing or decreasing order in table databases",
-						"Text fields in databases are now more flexible and easier to work with",
-						"Task notes are now possible in the editor: Shift+Enter adds quieter detail text under a task, and Cmd+Enter creates the next checkbox task when you are inside those details or a numbered sub-list",
-						"Preview toolbar actions for PNG, JPEG, PDF, and other files now use icons and compact accent buttons that match the sidebar New Note button"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"The sidebar edge has been cleaned up so the old right-side sliver no longer appears"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.16",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"Quick Notes are here: press Hyperkey + Q anywhere on your Mac to capture thoughts the moment they arrive, with a focused flow built for Quick Notes and Scratchpad notes"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.15",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"Smarter editor empty state with a gentler prompt to start writing or press slash to discover commands",
-						"Focused folder navigation in the file tree, so you can step into individual folders and keep busy workspaces easier to scan"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Hover states across the app have been refined for clearer feedback and a more polished feel",
-						"Kanban boards now feel cleaner and more dependable, with UI refinements and columns that stay where you left them",
-						"Notes Info Sidebar now uses a transparent treatment to better match the left sidebar and keep the editor feeling calm"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"Database views now rename correctly, keeping view management smooth and predictable"
-					]
-				}
-			]
-		},
-		{
-			"version": "0.2.14",
-			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"New status property type for project planning, giving databases a clearer way to track project stages",
-						"List view is now available for databases, alongside refreshed view tabs that make switching layouts faster"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Kanban cards are now draggable with a much smoother and more reliable board experience",
-						"Task progress now uses a vibrant segmented pie chart with a thin status ring, making completion easier to read across the file tree, editor, and database views",
-						"Files and folders can now be dragged directly in the file tree for faster organization",
-						"Major sidebar UI overhaul with cleaner navigation, sharper spacing, and a calmer workspace feel",
-						"Sidebar rendering has been redesigned and tuned for a cleaner feel, with average performance improvements of around 50 to 60 percent",
-						"Space names in the sidebar are now better aligned for a cleaner navigation layout",
-						"New Note button styling now uses the app accent more clearly",
-						"Tags UI has been refined with clearer spacing, contrast, and interaction states",
-						"Editing ribbon colors have been inverted for better readability",
-						"AI panel input box UI has been cleaned up for a more polished writing flow",
-						"YAML handling has been cleaned up for a smoother note editing experience",
-						"Removed a large amount of dead code and refactored close to 5000 lines so Glyph stays lighter and easier to maintain"
-					]
-				},
-				{
-					"category": "Fixed",
-					"items": [
-						"Sidebar note info now refreshes correctly when frontmatter and properties change",
-						"Sidebar no longer closes immediately when it should stay open"
+						"Removed automatic updates and the related General settings text",
+						"Removed the task progress setting. Task progress indicators stay on",
+						"Removed the database note count setting and the note total from database headers",
+						"Removed HTML export, note printing, Zen Mode, and markdown saving from the web view",
+						"Removed Git sync status from the sidebar footer",
+						"Removed the delightful Glyph setting and related code",
+						"Trimmed the built-in theme list"
 					]
 				}
 			]
