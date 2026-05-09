@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
-import type { AllDocsItem, FsEntry } from "../../lib/tauri";
+import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename } from "../../utils/path";
@@ -118,10 +118,14 @@ async function listNonMarkdownFiles(folderPrefix: string | null) {
 		dir: folderPrefix,
 		limit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	});
-	const files = Array.isArray(result.files) ? result.files : [];
+	const list =
+		result !== null && typeof result === "object"
+			? (result as Partial<FsEntryList>)
+			: {};
+	const files = Array.isArray(list.files) ? list.files : [];
 	return {
 		files: files.map(fileEntryToFolioItem),
-		truncated: result.truncated === true,
+		truncated: list.truncated === true,
 	};
 }
 

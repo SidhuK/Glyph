@@ -818,7 +818,6 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const showFolioWorkspace = folioMode;
 	const editorCanvas = (
 		<div className="canvasPaneHost">
 			<DailyNotesSetupToast
@@ -894,7 +893,6 @@ export const MainContent = memo(function MainContent({
 				onPointerMove={infoSidebarResize.handlePointerMove}
 				onPointerUp={infoSidebarResize.handlePointerUp}
 				data-window-drag-ignore
-				style={{ cursor: "col-resize" }}
 			/>
 			<div
 				id="notes-info-sidebar-root"
@@ -966,7 +964,7 @@ export const MainContent = memo(function MainContent({
 				data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}
 			>
 				<div className="canvasWrapper">
-					{showFolioWorkspace ? (
+					{folioMode ? (
 						<FolioWorkspace
 							activeTabPath={activeTabPath}
 							onOpenFile={onOpenFolioFile}

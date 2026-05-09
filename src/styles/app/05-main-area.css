@@ -16,8 +16,7 @@
 	border-width: 0 0 0 1px;
 	box-sizing: border-box;
 	box-shadow: none;
-	transition: margin 220ms ease, border-radius 220ms ease, border-color 220ms
-		ease, box-shadow 220ms ease;
+	transition: border-color 220ms ease;
 }
 
 .mainArea:has(.canvasWrapper) {
@@ -33,14 +32,6 @@
 	border-bottom-left-radius: 0;
 	border-color: transparent;
 	box-shadow: none;
-}
-
-:root[data-translucent-app-frame="false"]
-	.appShell.appShellSidebarCollapsed
-	.mainArea {
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-	border-left-color: transparent;
 }
 
 .mainTabBarTransition {

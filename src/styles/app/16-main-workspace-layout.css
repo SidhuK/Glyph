@@ -83,6 +83,7 @@
 	width: 0;
 	margin-left: 0;
 	margin-right: 0;
+	cursor: default;
 	pointer-events: none;
 }
 

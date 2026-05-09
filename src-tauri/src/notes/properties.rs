@@ -225,10 +225,7 @@ tags:
             .find(|property| property.key == "title")
             .unwrap();
         assert_eq!(title.kind, "text");
-		assert_eq!(
-			title.value_text.as_deref(),
-			Some("Project Research Note")
-		);
+        assert_eq!(title.value_text.as_deref(), Some("Project Research Note"));
 
         let source = properties
             .iter()
@@ -240,8 +237,8 @@ tags:
             .iter()
             .find(|property| property.key == "author")
             .unwrap();
-		assert_eq!(author.kind, "text");
-		assert_eq!(author.value_text.as_deref(), Some("[[Research Team]]"));
+        assert_eq!(author.kind, "text");
+        assert_eq!(author.value_text.as_deref(), Some("[[Research Team]]"));
 
         let published = properties
             .iter()
@@ -259,9 +256,9 @@ tags:
             .iter()
             .find(|property| property.key == "tags")
             .unwrap();
-		assert_eq!(tags.kind, "tags");
-		assert_eq!(tags.value_list, vec!["research".to_string()]);
-	}
+        assert_eq!(tags.kind, "tags");
+        assert_eq!(tags.value_list, vec!["research".to_string()]);
+    }
 
     #[test]
     fn infers_status_properties_from_status_like_keys() {

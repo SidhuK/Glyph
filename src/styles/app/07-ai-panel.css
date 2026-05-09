@@ -34,7 +34,7 @@
 }
 
 :root[data-translucent-ai-panel="false"] .aiFloatingWindow {
-	background: transparent;
+	background: var(--right-sidebar-island-bg, var(--bg-primary));
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 }

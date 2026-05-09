@@ -833,8 +833,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			lastFocusedNoteEditorHost = host;
 		};
 		const handleFocusOut = () => {
+			const currentHost = host;
 			window.setTimeout(() => {
-				if (!host.contains(document.activeElement)) {
+				if (
+					lastFocusedNoteEditorHost === currentHost &&
+					!currentHost.contains(document.activeElement)
+				) {
 					lastFocusedNoteEditorHost = null;
 				}
 			}, 0);

@@ -1151,7 +1151,7 @@ export function AppShell() {
 		>
 			<div
 				aria-hidden="true"
-				className="windowDragStrip drag"
+				className="windowDragStrip"
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
