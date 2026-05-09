@@ -1,5 +1,5 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useReducer } from "react";
 
 const importAIPanel = () => import("./AIPanel");
 
@@ -17,7 +17,10 @@ interface AIFloatingHostProps {
 
 export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const [shouldRenderHost, setShouldRenderHost] = useState(isOpen);
+	const [shouldRenderHost, setShouldRenderHost] = useReducer(
+		(_current: boolean, next: boolean) => next,
+		false,
+	);
 
 	useEffect(() => {
 		if (!isOpen) return;

@@ -5,8 +5,9 @@ import {
 	SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { valueReducer } from "../../lib/reactState";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -39,20 +40,36 @@ export async function prefetchAIPanelData(): Promise<void> {
 	]);
 }
 
-export function AIPanel({ isOpen, onClose }: AIPanelProps) {
+export function AIPanel(props: AIPanelProps) {
+	return useAIPanel(props);
+}
+
+function useAIPanel({ isOpen, onClose }: AIPanelProps) {
 	const { aiAssistantMode } = useAISidebarContext();
 	const { openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
 
-	const [input, setInput] = useState("");
-	const [addPanelOpen, setAddPanelOpen] = useState(false);
-	const [addPanelQuery, setAddPanelQuery] = useState("");
-	const [historyExpanded, setHistoryExpanded] = useState(false);
-	const [showScrollFab, setShowScrollFab] = useState(false);
+	const [input, setInput] = useReducer(valueReducer<string>, "");
+	const [addPanelOpen, setAddPanelOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [addPanelQuery, setAddPanelQuery] = useReducer(
+		valueReducer<string>,
+		"",
+	);
+	const [historyExpanded, setHistoryExpanded] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [showScrollFab, setShowScrollFab] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 
-	const history = useAiHistory(14, { enabled: historyExpanded });
+	const aiHistory = useAiHistory(14, { enabled: historyExpanded });
 	const chat = useRigChat({
-		onComplete: () => void history.refresh(),
+		onComplete: () => void aiHistory.refresh(),
 	});
 	const profiles = useAiProfiles();
 	const trigger = parseAddTrigger(input);
@@ -67,10 +84,12 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
 			if (!el) return;
-			el.style.height = "0px";
+			Object.assign(el.style, { height: "0px" });
 			const next = Math.max(40, Math.min(el.scrollHeight, 180));
-			el.style.height = `${next.toString()}px`;
-			el.style.overflowY = el.scrollHeight > 180 ? "auto" : "hidden";
+			Object.assign(el.style, {
+				height: `${next.toString()}px`,
+				overflowY: el.scrollHeight > 180 ? "auto" : "hidden",
+			});
 		});
 	}, []);
 
@@ -101,25 +120,29 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("submitted");
 			toolEvents.resetToolState();
-			const built = await context.ensurePayload();
 			if (context.payloadError) {
 				toolEvents.setResponsePhase("idle");
 				return false;
 			}
-			void chat.sendMessage(
-				{ text: trimmed },
-				{
-					body: {
-						profile_id: profiles.activeProfileId ?? undefined,
-						provider: activeProvider,
-						mode: aiAssistantMode,
-						context: built.payload || undefined,
-						context_manifest: built.manifest ?? undefined,
-						audit: true,
+			const built = await context.ensurePayload();
+			if (context.payloadError) {
+				toolEvents.setResponsePhase("idle");
+			} else {
+				void chat.sendMessage(
+					{ text: trimmed },
+					{
+						body: {
+							profile_id: profiles.activeProfileId ?? undefined,
+							provider: activeProvider,
+							mode: aiAssistantMode,
+							context: built.payload || undefined,
+							context_manifest: built.manifest ?? undefined,
+							audit: true,
+						},
 					},
-				},
-			);
-			return true;
+				);
+			}
+			return !context.payloadError;
 		},
 		[
 			activeProvider,
@@ -143,26 +166,32 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		toolEvents.resetToolState();
 		setInput("");
 		scheduleResize();
-		const built = await context.ensurePayload();
 		if (context.payloadError) {
 			toolEvents.setResponsePhase("idle");
 			setInput(text);
 			scheduleResize();
 			return;
 		}
-		void chat.sendMessage(
-			{ text },
-			{
-				body: {
-					profile_id: profiles.activeProfileId ?? undefined,
-					provider: activeProvider,
-					mode: aiAssistantMode,
-					context: built.payload || undefined,
-					context_manifest: built.manifest ?? undefined,
-					audit: true,
+		const built = await context.ensurePayload();
+		if (context.payloadError) {
+			toolEvents.setResponsePhase("idle");
+			setInput(text);
+			scheduleResize();
+		} else {
+			void chat.sendMessage(
+				{ text },
+				{
+					body: {
+						profile_id: profiles.activeProfileId ?? undefined,
+						provider: activeProvider,
+						mode: aiAssistantMode,
+						context: built.payload || undefined,
+						context_manifest: built.manifest ?? undefined,
+						audit: true,
+					},
 				},
-			},
-		);
+			);
+		}
 	}, [
 		aiAssistantMode,
 		canSend,
@@ -207,7 +236,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			if (chat.status === "submitted" || chat.status === "streaming") {
 				chat.stop();
 			}
-			const loaded = await history.loadChatMessages(jobId);
+			const loaded = await aiHistory.loadChatMessages(jobId);
 			if (!loaded) return;
 			toolEvents.clearSlowStartTimer();
 			toolEvents.clearFinalizingTimer();
@@ -237,7 +266,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		},
 		[
 			chat,
-			history.loadChatMessages,
+			aiHistory.loadChatMessages,
 			toolEvents.clearFinalizingTimer,
 			toolEvents.clearSlowStartTimer,
 			toolEvents.resetToolState,
@@ -296,6 +325,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			<div
 				className="aiPanelHeader drag"
 				data-tauri-drag-region
+				role="presentation"
 				onMouseDown={onWindowDragMouseDown}
 			>
 				<div className="aiPanelHeaderLeft">
@@ -358,7 +388,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			<div className="aiPanelBody">
 				{historyExpanded ? (
 					<AIHistoryPanel
-						history={history}
+						history={aiHistory}
 						onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
 					/>
 				) : null}
@@ -431,8 +461,8 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				{profiles.error ? (
 					<div className="aiPanelError">{profiles.error}</div>
 				) : null}
-				{history.error ? (
-					<div className="aiPanelError">{history.error}</div>
+				{aiHistory.error ? (
+					<div className="aiPanelError">{aiHistory.error}</div>
 				) : null}
 				<AIComposer
 					input={input}

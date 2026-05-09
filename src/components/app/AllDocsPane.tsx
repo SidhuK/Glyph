@@ -196,11 +196,12 @@ export const AllDocsPane = memo(function AllDocsPane({
 			if (existing) existing.push(note);
 			else buckets.set(id, [note]);
 		}
-		return SECTION_ORDER.map((section) => ({
-			id: section.id,
-			label: section.label,
-			notes: buckets.get(section.id) ?? [],
-		})).filter((section) => section.notes.length > 0);
+		return SECTION_ORDER.flatMap((section) => {
+			const sectionNotes = buckets.get(section.id) ?? [];
+			return sectionNotes.length > 0
+				? [{ id: section.id, label: section.label, notes: sectionNotes }]
+				: [];
+		});
 	}, [notes]);
 	const emptyStateMessage = useMemo(() => {
 		if (notes.length === 0) {

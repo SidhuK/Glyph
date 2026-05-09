@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, useEffect } from "react";
+import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,10 +38,7 @@ function Harness({
 	onReady: (ready: boolean) => void;
 }) {
 	const { updateReady } = useAutoUpdater(enabled);
-
-	useEffect(() => {
-		onReady(updateReady);
-	}, [onReady, updateReady]);
+	onReady(updateReady);
 
 	return null;
 }

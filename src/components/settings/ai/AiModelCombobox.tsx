@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect } from "react";
+import { useCallback, useRef } from "react";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
 
 interface AiModelComboboxProps {
@@ -38,6 +38,11 @@ export function AiModelCombobox({
 		enabled: canFetchModels,
 	});
 	const models = canFetchModels ? (modelsQuery.data ?? null) : null;
+	const lastNotifiedModelsRef = useRef<AiModel[] | null | undefined>(undefined);
+	if (onModelsChange && lastNotifiedModelsRef.current !== models) {
+		lastNotifiedModelsRef.current = models;
+		queueMicrotask(() => onModelsChange(models));
+	}
 	const loading = canFetchModels && modelsQuery.isFetching;
 	const error =
 		canFetchModels && modelsQuery.error
@@ -45,10 +50,6 @@ export function AiModelCombobox({
 				? modelsQuery.error.message
 				: String(modelsQuery.error)
 			: "";
-
-	useEffect(() => {
-		onModelsChange?.(models);
-	}, [models, onModelsChange]);
 
 	const handleRetry = useCallback(() => {
 		if (!canFetchModels) return;
@@ -71,7 +72,7 @@ export function AiModelCombobox({
 					onChange={(e) => onChange(e.target.value)}
 					disabled={loading || !models || !canFetchModels}
 				>
-					<option value="">Select a model...</option>
+					<option value="">Select a model…</option>
 					{models?.map((m) => (
 						<option key={m.id} value={m.id}>
 							{m.name}

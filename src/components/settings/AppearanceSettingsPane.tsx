@@ -1,11 +1,12 @@
 import { useTheme } from "next-themes";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import {
 	applyUiAccent,
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "../../lib/appearance";
+import { valueReducer } from "../../lib/reactState";
 import {
 	type ThemeMode,
 	type UiAccent,
@@ -47,30 +48,91 @@ import {
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
 
+type LoadedSettings = Awaited<ReturnType<typeof loadSettings>>;
+
 export function AppearanceSettingsPane() {
 	const { setTheme } = useTheme();
-	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
-	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
+	const [themeMode, setThemeModeState] = useReducer(
+		valueReducer<ThemeMode>,
+		"system",
+	);
+	const [lightThemeId, setLightThemeIdState] = useReducer(
+		valueReducer<UiLightThemeId>,
 		GLYPH_DEFAULT_LIGHT_THEME_ID,
 	);
-	const [darkThemeId, setDarkThemeIdState] = useState<UiDarkThemeId>(
+	const [darkThemeId, setDarkThemeIdState] = useReducer(
+		valueReducer<UiDarkThemeId>,
 		GLYPH_DEFAULT_DARK_THEME_ID,
 	);
-	const [accent, setAccentState] = useState<UiAccent>("cerulean");
-	const [fontFamily, setFontFamilyState] =
-		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
-	const [monoFontFamily, setMonoFontFamilyState] =
-		useState<UiFontFamily>("JetBrains Mono");
-	const [uiFontSize, setUiFontSizeState] = useState<UiFontSize>(14);
-	const [editorFontSize, setEditorFontSizeState] = useState<UiFontSize>(16);
-	const [translucentApp, setTranslucentAppState] = useState(true);
-	const [availableFonts, setAvailableFonts] = useState<string[]>([
+	const [accent, setAccentState] = useReducer(
+		valueReducer<UiAccent>,
+		"cerulean",
+	);
+	const [fontFamily, setFontFamilyState] = useReducer(
+		valueReducer<UiFontFamily>,
 		DEFAULT_FONT_FAMILY,
-	]);
-	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useState<
-		string[]
-	>(["JetBrains Mono"]);
-	const [error, setError] = useState("");
+	);
+	const [monoFontFamily, setMonoFontFamilyState] = useReducer(
+		valueReducer<UiFontFamily>,
+		"JetBrains Mono",
+	);
+	const [uiFontSize, setUiFontSizeState] = useReducer(
+		valueReducer<UiFontSize>,
+		14,
+	);
+	const [editorFontSize, setEditorFontSizeState] = useReducer(
+		valueReducer<UiFontSize>,
+		16,
+	);
+	const [translucentApp, setTranslucentAppState] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
+	const [availableFonts, setAvailableFonts] = useReducer(
+		valueReducer<string[]>,
+		[DEFAULT_FONT_FAMILY],
+	);
+	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useReducer(
+		valueReducer<string[]>,
+		["JetBrains Mono"],
+	);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const applyLoadedSettings = useCallback(
+		(settings: LoadedSettings, fonts: string[], monoFonts: string[]) => {
+			setThemeModeState(settings.ui.theme);
+			setLightThemeIdState(settings.ui.lightThemeId);
+			setDarkThemeIdState(settings.ui.darkThemeId);
+			setAccentState(settings.ui.accent);
+			setFontFamilyState(settings.ui.fontFamily);
+			setMonoFontFamilyState(settings.ui.monoFontFamily);
+			setUiFontSizeState(settings.ui.fontSize);
+			setEditorFontSizeState(settings.ui.editorFontSize);
+			setTranslucentAppState(settings.ui.translucentApp);
+			setAvailableFonts(
+				fonts.includes(settings.ui.fontFamily)
+					? fonts
+					: [settings.ui.fontFamily, ...fonts],
+			);
+			setAvailableMonospaceFonts(
+				monoFonts.includes(settings.ui.monoFontFamily)
+					? monoFonts
+					: [settings.ui.monoFontFamily, ...monoFonts],
+			);
+			setTheme(settings.ui.theme);
+			applyUiThemeSelection(settings.ui.lightThemeId, settings.ui.darkThemeId);
+			applyUiAccent(settings.ui.accent);
+			applyUiSurfacePreferences({
+				translucentApp: settings.ui.translucentApp,
+			});
+			applyUiTypography(
+				settings.ui.fontFamily,
+				settings.ui.monoFontFamily,
+				settings.ui.fontSize,
+				settings.ui.editorFontSize,
+			);
+		},
+		[setTheme],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -82,40 +144,7 @@ export function AppearanceSettingsPane() {
 					loadAvailableMonospaceFonts(),
 				]);
 				if (cancelled) return;
-				setThemeModeState(settings.ui.theme);
-				setLightThemeIdState(settings.ui.lightThemeId);
-				setDarkThemeIdState(settings.ui.darkThemeId);
-				setAccentState(settings.ui.accent);
-				setFontFamilyState(settings.ui.fontFamily);
-				setMonoFontFamilyState(settings.ui.monoFontFamily);
-				setUiFontSizeState(settings.ui.fontSize);
-				setEditorFontSizeState(settings.ui.editorFontSize);
-				setTranslucentAppState(settings.ui.translucentApp);
-				setAvailableFonts(
-					fonts.includes(settings.ui.fontFamily)
-						? fonts
-						: [settings.ui.fontFamily, ...fonts],
-				);
-				setAvailableMonospaceFonts(
-					monoFonts.includes(settings.ui.monoFontFamily)
-						? monoFonts
-						: [settings.ui.monoFontFamily, ...monoFonts],
-				);
-				setTheme(settings.ui.theme);
-				applyUiThemeSelection(
-					settings.ui.lightThemeId,
-					settings.ui.darkThemeId,
-				);
-				applyUiAccent(settings.ui.accent);
-				applyUiSurfacePreferences({
-					translucentApp: settings.ui.translucentApp,
-				});
-				applyUiTypography(
-					settings.ui.fontFamily,
-					settings.ui.monoFontFamily,
-					settings.ui.fontSize,
-					settings.ui.editorFontSize,
-				);
+				applyLoadedSettings(settings, fonts, monoFonts);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -125,7 +154,7 @@ export function AppearanceSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, [setTheme]);
+	}, [applyLoadedSettings]);
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {

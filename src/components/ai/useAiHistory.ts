@@ -85,6 +85,9 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 		},
 		onSuccess: (_data, jobId) => {
 			setSelectedJobId(jobId);
+			void localQueryClient.invalidateQueries({
+				queryKey: aiHistoryQueryKeys.summaries(limit),
+			});
 		},
 		onError: (error) => {
 			setLoadError(extractErrorMessage(error));

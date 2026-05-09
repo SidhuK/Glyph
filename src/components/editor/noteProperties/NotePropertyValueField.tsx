@@ -1,5 +1,4 @@
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
 import {
 	statusColorKey,
 	statusOptionsWithCustomValues,
@@ -53,16 +52,6 @@ export function NotePropertyValueField({
 	tagInputRef,
 }: NotePropertyValueFieldProps) {
 	const textValue = property.value_text ?? "";
-	const [textDraft, setTextDraft] = useState(textValue);
-
-	useEffect(() => {
-		setTextDraft(textValue);
-	}, [textValue]);
-
-	const commitTextDraft = () => {
-		if (textDraft === textValue) return;
-		onUpdate(index, { value_text: textDraft });
-	};
 
 	if (readOnly) {
 		if (property.kind === "status") {
@@ -281,11 +270,10 @@ export function NotePropertyValueField({
 						? "url"
 						: "text"
 			}
-			value={textDraft}
+			value={textValue}
 			placeholder="Value"
 			aria-label={`${property.key || "Property"} value`}
-			onChange={(event) => setTextDraft(event.target.value)}
-			onBlur={commitTextDraft}
+			onChange={(event) => onUpdate(index, { value_text: event.target.value })}
 			onKeyDown={(event) => {
 				if (event.key !== "Enter") return;
 				event.preventDefault();

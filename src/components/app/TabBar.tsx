@@ -66,7 +66,7 @@ interface BreadcrumbPart {
 }
 
 function sortBreadcrumbEntries(entries: FsEntry[]) {
-	return [...entries].sort((a, b) => {
+	return entries.toSorted((a, b) => {
 		if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
 		return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 	});
@@ -147,17 +147,17 @@ export function TabBar({
 		activeTabPath && !isPathSpecial(activeTabPath)
 			? [
 					{ label: "Space", path: "", kind: "folder" },
-					...activeTabPath
-						.split("/")
-						.filter(Boolean)
-						.map((segment, index, segments): BreadcrumbPart => {
-							const isFile = index === segments.length - 1;
-							return {
+					...activeTabPath.split("/").flatMap((segment, index, segments) => {
+						if (!segment) return [];
+						const isFile = index === segments.length - 1;
+						return [
+							{
 								label: isFile ? stripFileExtension(segment) : segment,
 								path: segments.slice(0, index + 1).join("/"),
 								kind: isFile ? "file" : "folder",
-							};
-						}),
+							} satisfies BreadcrumbPart,
+						];
+					}),
 				]
 			: [];
 	const handleDragEnd = useCallback(
@@ -368,7 +368,7 @@ function BreadcrumbEntryMenu({
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator className="mainTabsBreadcrumbMenuSeparator" />
 				{loading ? (
-					<div className="mainTabsBreadcrumbMenuState">Loading...</div>
+					<div className="mainTabsBreadcrumbMenuState">Loading…</div>
 				) : displayEntries.length ? (
 					<>
 						{displayEntries.map((entry) => (

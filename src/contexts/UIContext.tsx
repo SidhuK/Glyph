@@ -4,8 +4,8 @@ import {
 	type ReactNode,
 	type SetStateAction,
 	createContext,
+	use,
 	useCallback,
-	useContext,
 	useEffect,
 	useMemo,
 	useReducer,
@@ -26,7 +26,7 @@ import {
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
-export interface UILayoutContextValue {
+interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	sidebarWidth: number;
@@ -53,7 +53,7 @@ export interface UILayoutContextValue {
 	setSettingsTab: (tab: SettingsTab) => void;
 }
 
-export interface AISidebarContextValue {
+interface AISidebarContextValue {
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
@@ -507,14 +507,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 }
 
 export function useUILayoutContext(): UILayoutContextValue {
-	const ctx = useContext(UILayoutContext);
+	const ctx = use(UILayoutContext);
 	if (!ctx)
 		throw new Error("useUILayoutContext must be used within UIProvider");
 	return ctx;
 }
 
 export function useAISidebarContext(): AISidebarContextValue {
-	const ctx = useContext(AISidebarContext);
+	const ctx = use(AISidebarContext);
 	if (!ctx)
 		throw new Error("useAISidebarContext must be used within UIProvider");
 	return ctx;

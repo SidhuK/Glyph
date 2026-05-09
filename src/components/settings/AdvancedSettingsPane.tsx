@@ -1,8 +1,9 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { valueReducer } from "../../lib/reactState";
 import {
 	type AiAssistantMode,
 	type EditorWidthMode,
@@ -104,43 +105,86 @@ function VimKeybindingsHelp() {
 }
 
 export function AdvancedSettingsPane() {
-	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
-	const [colorfulHeadings, setColorfulHeadings] = useState(false);
-	const [editorWidthMode, setEditorWidthModeState] =
-		useState<EditorWidthMode>("compact");
+	return useAdvancedSettingsPane();
+}
+
+function useAdvancedSettingsPane() {
+	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [colorfulHeadings, setColorfulHeadings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [editorWidthMode, setEditorWidthModeState] = useReducer(
+		valueReducer<EditorWidthMode>,
+		"compact",
+	);
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
-		useState(false);
-	const [vimKeybindings, setVimKeybindings] = useState(false);
-	const [showToc, setShowTocState] = useState(true);
-	const [aiAssistantMode, setAiAssistantModeState] =
-		useState<AiAssistantMode>("create");
-	const [folioMode, setFolioModeState] = useState(false);
+		useReducer(valueReducer<boolean>, false);
+	const [vimKeybindings, setVimKeybindings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [showToc, setShowTocState] = useReducer(valueReducer<boolean>, true);
+	const [aiAssistantMode, setAiAssistantModeState] = useReducer(
+		valueReducer<AiAssistantMode>,
+		"create",
+	);
+	const [folioMode, setFolioModeState] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
-		useState(false);
-	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
-	const [error, setError] = useState("");
-	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
+		useReducer(valueReducer<boolean>, false);
+	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const [isSavingShowToc, setIsSavingShowToc] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
-		useState(false);
+		useReducer(valueReducer<boolean>, false);
 	const [isSavingShowFrontmatterInEditor, setIsSavingShowFrontmatterInEditor] =
-		useState(false);
-	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
-		useState(false);
-	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
+		useReducer(valueReducer<boolean>, false);
+	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const [
 		isSavingEnablePeopleMentionsAsTags,
 		setIsSavingEnablePeopleMentionsAsTags,
-	] = useState(false);
-	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
-	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
-	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
+	] = useReducer(valueReducer<boolean>, false);
+	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [isSavingFolioMode, setIsSavingFolioMode] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
-	] = useState(false);
+	] = useReducer(valueReducer<boolean>, false);
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
-		useState(false);
+		useReducer(valueReducer<boolean>, false);
 	const { spacePath, startIndexRebuild } = useSpace();
 
 	const refresh = useCallback(async () => {

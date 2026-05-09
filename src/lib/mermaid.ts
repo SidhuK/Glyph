@@ -1,6 +1,6 @@
 export const MERMAID_CODE_BLOCK_LANGUAGE = "mermaid" as const;
 
-export type MermaidThemeName = "default" | "dark";
+type MermaidThemeName = "default" | "dark";
 
 type MermaidModule = typeof import("mermaid").default;
 
@@ -73,12 +73,14 @@ export async function renderMermaidDiagram(source: string): Promise<string> {
 	await mermaid.parse(trimmed);
 
 	const renderHost = document.createElement("div");
-	renderHost.style.position = "absolute";
-	renderHost.style.left = "-10000px";
-	renderHost.style.top = "0";
-	renderHost.style.width = "800px";
-	renderHost.style.visibility = "hidden";
-	renderHost.style.pointerEvents = "none";
+	Object.assign(renderHost.style, {
+		left: "-10000px",
+		pointerEvents: "none",
+		position: "absolute",
+		top: "0",
+		visibility: "hidden",
+		width: "800px",
+	});
 	renderHost.setAttribute("aria-hidden", "true");
 	document.body.append(renderHost);
 

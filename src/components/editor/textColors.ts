@@ -8,7 +8,7 @@ export type EditorTextColor =
 	| "purple"
 	| "red";
 
-export interface EditorTextColorOption {
+interface EditorTextColorOption {
 	id: EditorTextColor;
 	label: string;
 	cssVar: string;

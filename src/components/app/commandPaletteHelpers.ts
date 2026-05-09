@@ -15,7 +15,7 @@ export interface Command {
 
 export type Tab = "commands" | "search";
 
-export interface ParsedSearchQuery {
+interface ParsedSearchQuery {
 	request: SearchAdvancedRequest;
 	text: string;
 }

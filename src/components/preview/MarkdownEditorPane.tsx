@@ -8,7 +8,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -31,6 +31,7 @@ import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../lib/notePreview";
+import { valueReducer } from "../../lib/reactState";
 import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
@@ -163,7 +164,11 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	return Array.from(out.values());
 }
 
-export function MarkdownEditorPane({
+export function MarkdownEditorPane(props: MarkdownEditorPaneProps) {
+	return useMarkdownEditorPane(props);
+}
+
+function useMarkdownEditorPane({
 	relPath,
 	onDirtyChange,
 	onInfoSidebarOpenChange,
@@ -172,21 +177,52 @@ export function MarkdownEditorPane({
 	extractToNoteActions,
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
-	const [text, setText] = useState(() => initialText);
-	const [savedText, setSavedText] = useState(() => initialText);
-	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
-	const [saving, setSaving] = useState(false);
-	const [autosaveBusy, setAutosaveBusy] = useState(false);
-	const [error, setError] = useState(() => initialError || "");
-	const [actionsOpen, setActionsOpen] = useState(false);
-	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
-	const [localGraphOpen, setLocalGraphOpen] = useState(false);
-	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
+	const [text, updateText] = useReducer(valueReducer<string>, initialText);
+	const [savedText, updateSavedText] = useReducer(
+		valueReducer<string>,
+		initialText,
+	);
+	const [mode, updateMode] = useReducer(
+		valueReducer<NoteInlineEditorMode>,
+		"rich",
+	);
+	const [saving, updateSaving] = useReducer(valueReducer<boolean>, false);
+	const [autosaveBusy, updateAutosaveBusy] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [error, updateError] = useReducer(
+		valueReducer<string>,
+		initialError || "",
+	);
+	const [actionsOpen, updateActionsOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [infoPanelOpen, updateInfoPanelOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [localGraphOpen, updateLocalGraphOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [lastSavedMtimeMs, updateLastSavedMtimeMs] = useReducer(
+		valueReducer<number | null>,
 		initialDoc?.mtime_ms ?? null,
 	);
-	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
-	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
-	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
+	const [syncPulse, updateSyncPulse] = useReducer(
+		valueReducer<SyncPulse>,
+		null,
+	);
+	const [linkedMentions, updateLinkedMentions] = useReducer(
+		valueReducer<BacklinkItem[]>,
+		[],
+	);
+	const [relationships, updateRelationships] = useReducer(
+		valueReducer<NoteRelationship[]>,
+		[],
+	);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -205,19 +241,41 @@ export function MarkdownEditorPane({
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
-	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
+	const [tocEditor, updateTocEditor] = useReducer(
+		valueReducer<Editor | null>,
+		null,
+	);
 	const {
 		headings: tocHeadings,
 		activeId: tocActiveId,
 		scrollToHeading,
 	} = useTableOfContents(tocEditor);
-	const [previewContext, setPreviewContext] =
-		useState<WorkspaceDatabasePreviewContext | null>(null);
+	const [previewContext, updatePreviewContext] = useReducer(
+		valueReducer<WorkspaceDatabasePreviewContext | null>,
+		null,
+	);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
 	const isDirty = text !== savedText;
+	const visibleInfoPanelOpen = infoPanelOpen && !aiPanelOpen;
+	const onDirtyChangeRef = useRef(onDirtyChange);
+	const onInfoSidebarOpenChangeRef = useRef(onInfoSidebarOpenChange);
+	onDirtyChangeRef.current = onDirtyChange;
+	onInfoSidebarOpenChangeRef.current = onInfoSidebarOpenChange;
+	const lastNotifiedDirtyRef = useRef(isDirty);
+	const lastNotifiedInfoOpenRef = useRef(visibleInfoPanelOpen);
+	if (lastNotifiedDirtyRef.current !== isDirty) {
+		lastNotifiedDirtyRef.current = isDirty;
+		queueMicrotask(() => onDirtyChangeRef.current?.(isDirty));
+	}
+	if (lastNotifiedInfoOpenRef.current !== visibleInfoPanelOpen) {
+		lastNotifiedInfoOpenRef.current = visibleInfoPanelOpen;
+		queueMicrotask(() =>
+			onInfoSidebarOpenChangeRef.current?.(visibleInfoPanelOpen),
+		);
+	}
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
 		() => splitYamlFrontmatter(text),
 		[text],
@@ -236,13 +294,13 @@ export function MarkdownEditorPane({
 		showTaskProgressIndicator === true,
 	);
 	const utf8SizeBytes = useMemo(() => {
-		if (!infoPanelOpen) return 0;
+		if (!visibleInfoPanelOpen) return 0;
 		return UTF8_ENCODER.encode(text).length;
-	}, [infoPanelOpen, text]);
+	}, [text, visibleInfoPanelOpen]);
 	const lineCount = useMemo(() => {
-		if (!infoPanelOpen) return 0;
+		if (!visibleInfoPanelOpen) return 0;
 		return countLines(text);
-	}, [infoPanelOpen, text]);
+	}, [text, visibleInfoPanelOpen]);
 	const linkedNotes = useMemo(() => {
 		const current = normalizeRelPath(relPath);
 		return extractLinkedNotes(text).filter((item) => {
@@ -283,10 +341,10 @@ export function MarkdownEditorPane({
 		if (syncPulseTimerRef.current !== null) {
 			window.clearTimeout(syncPulseTimerRef.current);
 		}
-		setSyncPulse(next);
+		updateSyncPulse(next);
 		syncPulseTimerRef.current = window.setTimeout(() => {
 			syncPulseTimerRef.current = null;
-			setSyncPulse(null);
+			updateSyncPulse(null);
 		}, 1400);
 	}, []);
 
@@ -333,22 +391,22 @@ export function MarkdownEditorPane({
 			externalSyncTimerRef.current = null;
 		}
 		pendingExternalReloadRef.current = false;
-		setText(cached);
-		setSavedText(cached);
-		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
-		setSaving(false);
-		setAutosaveBusy(false);
-		setSyncPulse(null);
+		updateText(cached);
+		updateSavedText(cached);
+		updateLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
+		updateSaving(false);
+		updateAutosaveBusy(false);
+		updateSyncPulse(null);
 		hasUserEditsRef.current = false;
-		setError(initialError);
-		setActionsOpen(false);
+		updateError(initialError);
+		updateActionsOpen(false);
 		if (activeRelPathRef.current !== relPath) {
-			setInfoPanelOpen(false);
+			updateInfoPanelOpen(false);
 		}
 		activeRelPathRef.current = relPath;
-		setLocalGraphOpen(false);
-		setPreviewContext(null);
-		setLinkedMentions([]);
+		updateLocalGraphOpen(false);
+		updatePreviewContext(null);
+		updateLinkedMentions([]);
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
@@ -370,12 +428,12 @@ export function MarkdownEditorPane({
 		autosaveInFlightRef.current = false;
 		autosaveQueuedRef.current = false;
 		hasUserEditsRef.current = false;
-		setText("");
-		setSavedText("");
-		setLastSavedMtimeMs(null);
-		setSaving(false);
-		setAutosaveBusy(false);
-		setSyncPulse(null);
+		updateText("");
+		updateSavedText("");
+		updateLastSavedMtimeMs(null);
+		updateSaving(false);
+		updateAutosaveBusy(false);
+		updateSyncPulse(null);
 		clearMarkdownDocCache();
 		if (spacePath === null) {
 			return;
@@ -385,7 +443,7 @@ export function MarkdownEditorPane({
 	const loadDoc = useCallback(
 		async (showRefreshFeedback = false) => {
 			const sessionId = documentSessionRef.current;
-			setError("");
+			updateError("");
 			try {
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
@@ -393,12 +451,12 @@ export function MarkdownEditorPane({
 				setPrefetchedNote(relPath, doc);
 				if (shouldReplaceText) {
 					textRef.current = doc.text;
-					setText(doc.text);
+					updateText(doc.text);
 				}
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
-				setSavedText(doc.text);
-				setLastSavedMtimeMs(doc.mtime_ms);
+				updateSavedText(doc.text);
+				updateLastSavedMtimeMs(doc.mtime_ms);
 				hasUserEditsRef.current = false;
 				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
@@ -406,7 +464,7 @@ export function MarkdownEditorPane({
 				}
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return;
-				setError(extractErrorMessage(e));
+				updateError(extractErrorMessage(e));
 			}
 		},
 		[flashSyncPulse, isCurrentSession, relPath],
@@ -414,7 +472,7 @@ export function MarkdownEditorPane({
 
 	const loadDocFromExternalChange = useCallback(async () => {
 		const sessionId = documentSessionRef.current;
-		setError("");
+		updateError("");
 		try {
 			const doc = await invoke("space_read_text", { path: relPath });
 			if (!isCurrentSession(sessionId)) return;
@@ -427,13 +485,13 @@ export function MarkdownEditorPane({
 			textRef.current = doc.text;
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
-			setText(doc.text);
-			setSavedText(doc.text);
-			setLastSavedMtimeMs(doc.mtime_ms);
+			updateText(doc.text);
+			updateSavedText(doc.text);
+			updateLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
 		} catch (e) {
 			if (!isCurrentSession(sessionId)) return;
-			setError(extractErrorMessage(e));
+			updateError(extractErrorMessage(e));
 		}
 	}, [isCurrentSession, relPath]);
 
@@ -458,13 +516,13 @@ export function MarkdownEditorPane({
 				});
 				savedTextRef.current = saved;
 				mtimeRef.current = mtimeMs;
-				setSavedText(saved);
-				setLastSavedMtimeMs(mtimeMs);
+				updateSavedText(saved);
+				updateLastSavedMtimeMs(mtimeMs);
 				hasUserEditsRef.current = false;
 				flashSyncPulse("saved");
 			};
 
-			setError("");
+			updateError("");
 			try {
 				const result = await invoke("space_write_text", {
 					path,
@@ -480,7 +538,7 @@ export function MarkdownEditorPane({
 					"conflict: on-disk file changed since it was opened",
 				);
 				if (!isConflict) {
-					setError(message);
+					updateError(message);
 					return false;
 				}
 
@@ -503,7 +561,7 @@ export function MarkdownEditorPane({
 					return true;
 				} catch (retryError) {
 					if (!isCurrentSession(sessionId)) return false;
-					setError(extractErrorMessage(retryError));
+					updateError(extractErrorMessage(retryError));
 					return false;
 				}
 			}
@@ -515,7 +573,7 @@ export function MarkdownEditorPane({
 		const sessionId = documentSessionRef.current;
 		const saveToken = saveRequestTokenRef.current + 1;
 		saveRequestTokenRef.current = saveToken;
-		setSaving(true);
+		updateSaving(true);
 		try {
 			await persistDoc(relPath, textRef.current, sessionId);
 		} finally {
@@ -523,7 +581,7 @@ export function MarkdownEditorPane({
 				saveRequestTokenRef.current === saveToken &&
 				isCurrentSession(sessionId)
 			) {
-				setSaving(false);
+				updateSaving(false);
 			}
 		}
 	}, [isCurrentSession, persistDoc, relPath]);
@@ -540,11 +598,11 @@ export function MarkdownEditorPane({
 		if (snapshot === savedTextRef.current) return false;
 
 		autosaveInFlightRef.current = true;
-		setAutosaveBusy(true);
+		updateAutosaveBusy(true);
 		const ok = await persistDoc(path, snapshot, sessionId);
 		if (!isCurrentSession(sessionId)) return ok;
 		autosaveInFlightRef.current = false;
-		setAutosaveBusy(false);
+		updateAutosaveBusy(false);
 		if (autosaveQueuedRef.current) {
 			autosaveQueuedRef.current = false;
 			return runAutosave();
@@ -595,17 +653,17 @@ export function MarkdownEditorPane({
 		const handleForceEditMode = (event: Event) => {
 			const detail = (event as CustomEvent<ForceNoteEditModeDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setMode("rich");
+			updateMode("rich");
 		};
 		const handleOpenLocalGraph = (event: Event) => {
 			const detail = (event as CustomEvent<OpenLocalGraphDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setLocalGraphOpen(true);
+			updateLocalGraphOpen(true);
 		};
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setInfoPanelOpen((open) => {
+			updateInfoPanelOpen((open) => {
 				const nextOpen = !open;
 				if (nextOpen) setAiPanelOpen(false);
 				return nextOpen;
@@ -629,10 +687,6 @@ export function MarkdownEditorPane({
 			);
 		};
 	}, [relPath, setAiPanelOpen]);
-
-	useEffect(() => {
-		if (aiPanelOpen) setInfoPanelOpen(false);
-	}, [aiPanelOpen]);
 
 	useEffect(() => {
 		if (!pendingExternalReloadRef.current) return;
@@ -665,23 +719,15 @@ export function MarkdownEditorPane({
 	);
 	useEditorRegistration(editorState);
 
-	useEffect(() => {
-		onDirtyChange?.(isDirty);
-	}, [onDirtyChange, isDirty]);
-
-	useEffect(() => {
-		onInfoSidebarOpenChange?.(infoPanelOpen);
-	}, [infoPanelOpen, onInfoSidebarOpenChange]);
-
 	useEffect(
 		() => () => {
-			onInfoSidebarOpenChange?.(false);
+			onInfoSidebarOpenChangeRef.current?.(false);
 		},
-		[onInfoSidebarOpenChange],
+		[],
 	);
 
 	useEffect(() => {
-		if (!infoPanelOpen) return;
+		if (!visibleInfoPanelOpen) return;
 		let cancelled = false;
 		void (async () => {
 			try {
@@ -690,50 +736,50 @@ export function MarkdownEditorPane({
 					space_path: spacePath,
 				});
 				if (cancelled) return;
-				setPreviewContext(context);
+				updatePreviewContext(context);
 			} catch {
 				if (cancelled) return;
-				setPreviewContext(null);
+				updatePreviewContext(null);
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, [infoPanelOpen, relPath, spacePath]);
+	}, [relPath, spacePath, visibleInfoPanelOpen]);
 
 	useEffect(() => {
-		if (!infoPanelOpen) return;
+		if (!visibleInfoPanelOpen) return;
 		let cancelled = false;
 		void invoke("backlinks", { note_id: relPath, space_path: spacePath })
 			.then((items) => {
 				if (cancelled) return;
-				setLinkedMentions(items);
+				updateLinkedMentions(items);
 			})
 			.catch(() => {
 				if (cancelled) return;
-				setLinkedMentions([]);
+				updateLinkedMentions([]);
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [infoPanelOpen, relPath, spacePath]);
+	}, [relPath, spacePath, visibleInfoPanelOpen]);
 
 	useEffect(() => {
-		if (!infoPanelOpen) return;
+		if (!visibleInfoPanelOpen) return;
 		let cancelled = false;
 		void invoke("note_relationships", { note_id: relPath })
 			.then((items) => {
 				if (cancelled) return;
-				setRelationships(items);
+				updateRelationships(items);
 			})
 			.catch(() => {
 				if (cancelled) return;
-				setRelationships([]);
+				updateRelationships([]);
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [infoPanelOpen, relPath]);
+	}, [relPath, visibleInfoPanelOpen]);
 
 	const handleInfoFrontmatterChange = useCallback(
 		(nextFrontmatter: string | null) => {
@@ -747,7 +793,7 @@ export function MarkdownEditorPane({
 			if (nextMarkdown === textRef.current) return;
 			hasUserEditsRef.current = true;
 			textRef.current = nextMarkdown;
-			setText(nextMarkdown);
+			updateText(nextMarkdown);
 			// Property edits are discrete commits — save immediately so the
 			// indexer picks up the change and databases/backlinks update.
 			void runAutosave();
@@ -769,7 +815,7 @@ export function MarkdownEditorPane({
 							}
 							setAiPanelOpen((open) => {
 								const nextOpen = !open;
-								if (nextOpen) setInfoPanelOpen(false);
+								if (nextOpen) updateInfoPanelOpen(false);
 								return nextOpen;
 							});
 						}}
@@ -796,7 +842,7 @@ export function MarkdownEditorPane({
 							type="button"
 							className="markdownEditorMenuTrigger"
 							data-open={actionsOpen ? "true" : "false"}
-							onClick={() => setActionsOpen((prev) => !prev)}
+							onClick={() => updateActionsOpen((prev) => !prev)}
 							aria-label={
 								actionsOpen ? "Close editor actions" : "Open editor actions"
 							}
@@ -841,14 +887,14 @@ export function MarkdownEditorPane({
 										variant="ghost"
 										size="xs"
 										className="markdownEditorActionItem"
-										data-active={infoPanelOpen}
+										data-active={visibleInfoPanelOpen}
 										onClick={() => {
-											setInfoPanelOpen((open) => {
+											updateInfoPanelOpen((open) => {
 												const nextOpen = !open;
 												if (nextOpen) setAiPanelOpen(false);
 												return nextOpen;
 											});
-											setActionsOpen(false);
+											updateActionsOpen(false);
 										}}
 									>
 										<HugeiconsIcon
@@ -864,8 +910,8 @@ export function MarkdownEditorPane({
 										size="xs"
 										className="markdownEditorActionItem"
 										onClick={() => {
-											setLocalGraphOpen(true);
-											setActionsOpen(false);
+											updateLocalGraphOpen(true);
+											updateActionsOpen(false);
 										}}
 									>
 										<HugeiconsIcon
@@ -882,8 +928,8 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										data-active={mode === "rich"}
 										onClick={() => {
-											setMode("rich");
-											setActionsOpen(false);
+											updateMode("rich");
+											updateActionsOpen(false);
 										}}
 									>
 										<Edit size={12} />
@@ -896,8 +942,8 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										data-active={mode === "preview"}
 										onClick={() => {
-											setMode("preview");
-											setActionsOpen(false);
+											updateMode("preview");
+											updateActionsOpen(false);
 										}}
 									>
 										<Eye size={12} />
@@ -910,8 +956,8 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										data-active={mode === "plain"}
 										onClick={() => {
-											setMode("plain");
-											setActionsOpen(false);
+											updateMode("plain");
+											updateActionsOpen(false);
 										}}
 									>
 										<HugeiconsIcon
@@ -928,7 +974,7 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										onClick={() => {
 											void loadDoc(true);
-											setActionsOpen(false);
+											updateActionsOpen(false);
 										}}
 										disabled={saving}
 									>
@@ -942,7 +988,7 @@ export function MarkdownEditorPane({
 										className="markdownEditorActionItem"
 										onClick={() => {
 											void onSave();
-											setActionsOpen(false);
+											updateActionsOpen(false);
 										}}
 										disabled={saving}
 									>
@@ -975,16 +1021,16 @@ export function MarkdownEditorPane({
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
 								textRef.current = nextText;
-								setText(nextText);
+								updateText(nextText);
 							}}
 							onFrontmatterCommit={runAutosave}
-							onEditorReady={setTocEditor}
+							onEditorReady={updateTocEditor}
 							extractToNoteActions={extractToNoteActions}
 						/>
 					</div>
 				</div>
 			) : null}
-			{showToc && !infoPanelOpen && !error && mode !== "plain" ? (
+			{showToc && !visibleInfoPanelOpen && !error && mode !== "plain" ? (
 				<FloatingTOC
 					headings={tocHeadings}
 					activeId={tocActiveId}
@@ -993,7 +1039,7 @@ export function MarkdownEditorPane({
 			) : null}
 
 			<NotesInfoSidebar
-				open={infoPanelOpen}
+				open={visibleInfoPanelOpen}
 				mode={mode}
 				hasError={Boolean(error)}
 				relPath={relPath}
@@ -1012,13 +1058,13 @@ export function MarkdownEditorPane({
 				lineCount={lineCount}
 				utf8SizeBytes={utf8SizeBytes}
 				saveLabel={saveLabel}
-				onClose={() => setInfoPanelOpen(false)}
+				onClose={() => updateInfoPanelOpen(false)}
 			/>
 			<LinkedNotePreviewSheet />
 
 			<LocalNoteGraphDialog
 				open={localGraphOpen}
-				onOpenChange={setLocalGraphOpen}
+				onOpenChange={updateLocalGraphOpen}
 				noteId={relPath}
 				graphRefreshKey={lastSavedMtimeMs ?? 0}
 			/>

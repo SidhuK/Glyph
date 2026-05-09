@@ -253,9 +253,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					dirPath ? { dir: dirPath } : {},
 				);
 				const siblingNames = new Set(
-					siblings
-						.filter((e) => e.kind === "dir")
-						.map((e) => e.name.toLowerCase()),
+					siblings.flatMap((entry) =>
+						entry.kind === "dir" ? [entry.name.toLowerCase()] : [],
+					),
 				);
 				let name = "New Folder";
 				if (siblingNames.has(name.toLowerCase())) {
@@ -567,13 +567,16 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						const next: Record<string, FsEntry[] | undefined> = {};
 						for (const [k, v] of Object.entries(prev)) {
 							const key = rewritePrefix(k, from, nextPath);
-							const entries = v
-								?.map((e) => ({
+							const entries = v?.flatMap((e) => {
+								const entry = {
 									...e,
 									name: e.rel_path === from ? nextName : e.name,
 									rel_path: rewritePrefix(e.rel_path, from, nextPath),
-								}))
-								.filter((e) => !(k === fromParent && e.rel_path === nextPath));
+								};
+								return k === fromParent && entry.rel_path === nextPath
+									? []
+									: [entry];
+							});
 							next[key] = entries;
 						}
 						if (toParent && next[toParent]) {

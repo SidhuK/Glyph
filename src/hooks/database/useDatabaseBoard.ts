@@ -53,9 +53,9 @@ function laneOrderRecordsEqual(
 }
 
 function displayLaneOrder(lanes: DatabaseBoardLane[]): string[] {
-	return lanes
-		.map((lane) => lane.id)
-		.filter((laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID);
+	return lanes.flatMap((lane) =>
+		lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? [lane.id] : [],
+	);
 }
 
 function mergeLaneOrder(

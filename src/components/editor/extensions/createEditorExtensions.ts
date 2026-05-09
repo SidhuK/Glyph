@@ -1,0 +1,1 @@
+export { createEditorExtensions } from "./index";

@@ -41,6 +41,8 @@ const STATUS_ICONS: Record<
 	expired: ClockAlertIcon,
 };
 
+const EMPTY_STATUS_COLORS: Record<string, EditorTextColor> = {};
+
 interface StatusPropertyPillProps {
 	value: string | null | undefined;
 	colors?: Record<string, EditorTextColor>;
@@ -49,7 +51,7 @@ interface StatusPropertyPillProps {
 
 export function StatusPropertyPill({
 	value,
-	colors = {},
+	colors = EMPTY_STATUS_COLORS,
 	className,
 }: StatusPropertyPillProps) {
 	const option = statusOptionFromValue(value);

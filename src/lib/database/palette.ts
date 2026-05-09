@@ -53,10 +53,6 @@ function databaseToneStyleForColor(
 	return databaseToneStyle(seed);
 }
 
-export function databaseValueToneStyle(value: string): CSSProperties {
-	return databaseToneStyle(value);
-}
-
 export function databaseValueToneStyleForColor(
 	value: string,
 	color: EditorTextColor | null | undefined,

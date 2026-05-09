@@ -1,6 +1,6 @@
 import type { GitSyncStatus } from "./tauri";
 
-export type GitSyncTone =
+type GitSyncTone =
 	| "idle"
 	| "healthy"
 	| "syncing"
@@ -8,7 +8,7 @@ export type GitSyncTone =
 	| "warning"
 	| "error";
 
-export interface GitSyncPresentation {
+interface GitSyncPresentation {
 	tone: GitSyncTone;
 	triggerLabel: string;
 	headline: string;

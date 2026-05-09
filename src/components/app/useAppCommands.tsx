@@ -156,20 +156,22 @@ function buildMovePickerCommands({
 function buildEditorCommands({
 	activeMarkdownTabPath,
 }: Pick<UseAppCommandsDeps, "activeMarkdownTabPath">): Command[] {
-	return EDITOR_ACTIONS.filter(
-		(action) =>
-			action.id !== "collapse_all_headings" &&
-			action.id !== "expand_all_headings",
-	).map((action) => ({
-		id: action.id,
-		label: action.label,
-		category: "Editor",
-		enabled: Boolean(activeMarkdownTabPath),
-		allowInEditable: true,
-		action: () => {
-			dispatchEditorMenuAction({ action: action.id });
-		},
-	}));
+	return EDITOR_ACTIONS.flatMap((action) =>
+		action.id !== "collapse_all_headings" && action.id !== "expand_all_headings"
+			? [
+					{
+						id: action.id,
+						label: action.label,
+						category: "Editor",
+						enabled: Boolean(activeMarkdownTabPath),
+						allowInEditable: true,
+						action: () => {
+							dispatchEditorMenuAction({ action: action.id });
+						},
+					},
+				]
+			: [],
+	);
 }
 
 function buildAiCommands({

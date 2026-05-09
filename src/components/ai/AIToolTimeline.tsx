@@ -250,7 +250,7 @@ function GroupedStepCard({
 export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 	if (events.length === 0) return null;
-	const orderedEvents = [...events].sort((a, b) => a.at - b.at);
+	const orderedEvents = events.toSorted((a, b) => a.at - b.at);
 	const timelineItems = buildGroupedTimeline(orderedEvents);
 
 	return (
@@ -358,7 +358,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 			{streaming ? (
 				<div className="aiToolInlineLive" aria-label="Tool call in progress">
 					<span className="aiToolLiveDot" />
-					Working with tools...
+					Working with tools…
 				</div>
 			) : null}
 		</m.div>

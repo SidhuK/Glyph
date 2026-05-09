@@ -38,14 +38,14 @@ export function NotePropertiesPanel({
 	onChange,
 	onErrorChange,
 }: NotePropertiesPanelProps) {
-	const [mode, setMode] = useState<"properties" | "raw">("properties");
-	const [editorState, setEditorState] = useState<NotePropertiesEditorState>({
+	const [mode, updateMode] = useState<"properties" | "raw">("properties");
+	const [editorState, updateEditorState] = useState<NotePropertiesEditorState>({
 		properties: [],
 		propertyRowIds: [],
 		rawDraft: frontmatter ?? "",
 	});
-	const [availableTags, setAvailableTags] = useState<TagCount[]>([]);
-	const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
+	const [availableTags, updateAvailableTags] = useState<TagCount[]>([]);
+	const [tagDrafts, updateTagDrafts] = useState<Record<string, string>>({});
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 	const lastCommittedFrontmatterRef = useRef<string | null>(null);
 	const propertyRowIdCounterRef = useRef(0);
@@ -55,7 +55,7 @@ export function NotePropertiesPanel({
 	const { properties, propertyRowIds, rawDraft } = editorState;
 
 	const pruneRowScopedState = (nextRowIds: string[]) => {
-		setTagDrafts((current) =>
+		updateTagDrafts((current) =>
 			Object.fromEntries(
 				nextRowIds.flatMap((rowId) =>
 					rowId in current ? [[rowId, current[rowId] ?? ""]] : [],
@@ -75,7 +75,7 @@ export function NotePropertiesPanel({
 		const nextRawDraft = frontmatter ?? "";
 		if (mode === "raw") {
 			parseRequestIdRef.current += 1;
-			setEditorState((current) =>
+			updateEditorState((current) =>
 				current.rawDraft === nextRawDraft
 					? current
 					: { ...current, rawDraft: nextRawDraft },
@@ -87,7 +87,7 @@ export function NotePropertiesPanel({
 			normalizeFrontmatter(lastCommittedFrontmatterRef.current)
 		) {
 			parseRequestIdRef.current += 1;
-			setEditorState((current) =>
+			updateEditorState((current) =>
 				current.rawDraft === nextRawDraft
 					? current
 					: { ...current, rawDraft: nextRawDraft },
@@ -95,7 +95,7 @@ export function NotePropertiesPanel({
 			return;
 		}
 		const requestId = ++parseRequestIdRef.current;
-		setEditorState((current) =>
+		updateEditorState((current) =>
 			current.rawDraft === nextRawDraft
 				? current
 				: { ...current, rawDraft: nextRawDraft },
@@ -106,12 +106,12 @@ export function NotePropertiesPanel({
 				const nextRowIds = parsed.map(
 					() => `property-row-${propertyRowIdCounterRef.current++}`,
 				);
-				setEditorState({
+				updateEditorState({
 					properties: parsed,
 					propertyRowIds: nextRowIds,
 					rawDraft: nextRawDraft,
 				});
-				setTagDrafts({});
+				updateTagDrafts({});
 				tagInputRefs.current = {};
 				lastCommittedFrontmatterRef.current = normalizeFrontmatter(frontmatter);
 				onErrorChange?.("");
@@ -119,15 +119,15 @@ export function NotePropertiesPanel({
 			.catch((error) => {
 				if (requestId !== parseRequestIdRef.current) return;
 				onErrorChange?.(error instanceof Error ? error.message : String(error));
-				setMode("raw");
+				updateMode("raw");
 			});
 	}, [frontmatter, mode, onErrorChange]);
 
 	useEffect(() => {
 		if (readOnly) return;
 		void invoke("tags_list", { limit: 40 })
-			.then((tags) => setAvailableTags(tags))
-			.catch(() => setAvailableTags([]));
+			.then((tags) => updateAvailableTags(tags))
+			.catch(() => updateAvailableTags([]));
 	}, [readOnly]);
 
 	const canShowProperties = useMemo(
@@ -140,7 +140,7 @@ export function NotePropertiesPanel({
 		nextRowIds: string[] = propertyRowIds,
 	) => {
 		const requestId = ++renderRequestIdRef.current;
-		setEditorState((current) => ({
+		updateEditorState((current) => ({
 			...current,
 			properties: nextProperties,
 			propertyRowIds: nextRowIds,
@@ -151,7 +151,7 @@ export function NotePropertiesPanel({
 		})
 			.then((nextFrontmatter) => {
 				if (requestId !== renderRequestIdRef.current) return;
-				setEditorState((current) => ({
+				updateEditorState((current) => ({
 					...current,
 					rawDraft: nextFrontmatter ?? "",
 				}));
@@ -181,14 +181,14 @@ export function NotePropertiesPanel({
 			<NotePropertiesToolbar
 				mode={mode}
 				canShowProperties={canShowProperties}
-				onModeChange={setMode}
+				onModeChange={updateMode}
 			/>
 			{mode === "raw" ? (
 				<RawFrontmatterEditor
 					value={rawDraft}
 					readOnly={readOnly}
 					onChange={(nextValue, nextRawDraft) => {
-						setEditorState((current) => ({
+						updateEditorState((current) => ({
 							...current,
 							rawDraft: nextRawDraft,
 						}));
@@ -211,7 +211,7 @@ export function NotePropertiesPanel({
 								tagDraft={tagDrafts[rowId] ?? ""}
 								statusColors={statusColors}
 								onSetTagDraft={(nextRowId, value) =>
-									setTagDrafts((current) => ({
+									updateTagDrafts((current) => ({
 										...current,
 										[nextRowId]: value,
 									}))
@@ -222,7 +222,7 @@ export function NotePropertiesPanel({
 									const currentTags =
 										properties[propertyIndex]?.value_list ?? [];
 									if (currentTags.includes(nextTag)) {
-										setTagDrafts((current) => ({
+										updateTagDrafts((current) => ({
 											...current,
 											[nextRowId]: "",
 										}));
@@ -231,7 +231,7 @@ export function NotePropertiesPanel({
 									updateProperty(propertyIndex, {
 										value_list: [...currentTags, nextTag],
 									});
-									setTagDrafts((current) => ({
+									updateTagDrafts((current) => ({
 										...current,
 										[nextRowId]: "",
 									}));
@@ -248,7 +248,7 @@ export function NotePropertiesPanel({
 								onRemove={(propertyIndex) => {
 									const removedRowId = propertyRowIds[propertyIndex];
 									if (removedRowId) {
-										setTagDrafts((current) => {
+										updateTagDrafts((current) => {
 											const next = { ...current };
 											delete next[removedRowId];
 											return next;

@@ -1,8 +1,8 @@
 import {
 	type ReactNode,
 	createContext,
+	use,
 	useCallback,
-	useContext,
 	useEffect,
 	useRef,
 } from "react";
@@ -90,7 +90,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
  * Hook to access the editor context
  */
 export function useEditorContext(): EditorContextValue {
-	const ctx = useContext(EditorContext);
+	const ctx = use(EditorContext);
 	if (!ctx) {
 		throw new Error("useEditorContext must be used within EditorProvider");
 	}

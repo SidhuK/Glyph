@@ -42,7 +42,7 @@ export function normalizeEntries(entries: FsEntry[]): FsEntry[] {
 		if (!normalized) continue;
 		byPath.set(normalized.rel_path, normalized);
 	}
-	return [...byPath.values()].sort(compareEntries);
+	return Array.from(byPath.values()).toSorted(compareEntries);
 }
 
 export function areEntriesEqual(

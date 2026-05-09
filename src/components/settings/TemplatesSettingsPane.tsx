@@ -63,10 +63,14 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 }
 
 export function TemplateSettingsSections() {
-	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
+	return useTemplateSettingsSections();
+}
+
+function useTemplateSettingsSections() {
+	const [settingsState, updateSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
-	const [templateLibraryState, setTemplateLibraryState] =
+	const [templateLibraryState, updateTemplateLibraryState] =
 		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
 	const latestDailyTemplateWriteIdRef = useRef(0);
 	const { templatesFolder, dailyNoteTemplatePath, loading, error } =
@@ -91,7 +95,7 @@ export function TemplateSettingsSections() {
 					getDailyNoteTemplate(),
 				]);
 				if (cancelled) return;
-				setSettingsState({
+				updateSettingsState({
 					templatesFolder: folder,
 					dailyNoteTemplatePath: dailyTemplate,
 					loading: false,
@@ -99,7 +103,7 @@ export function TemplateSettingsSections() {
 				});
 			} catch (cause) {
 				if (cancelled) return;
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					loading: false,
 					error:
@@ -116,16 +120,16 @@ export function TemplateSettingsSections() {
 
 	useEffect(() => {
 		if (templatesFolder === null) {
-			setTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
+			updateTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
 			if (dailyNoteTemplatePath !== null) {
 				const writeId = beginDailyTemplateWrite();
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					dailyNoteTemplatePath: null,
 				}));
 				void setDailyNoteTemplate(null).catch((cause) => {
 					if (writeId !== latestDailyTemplateWriteIdRef.current) return;
-					setSettingsState((current) => ({
+					updateSettingsState((current) => ({
 						...current,
 						error:
 							cause instanceof Error
@@ -137,7 +141,7 @@ export function TemplateSettingsSections() {
 			return;
 		}
 		let cancelled = false;
-		setTemplateLibraryState((current) => ({
+		updateTemplateLibraryState((current) => ({
 			...current,
 			loading: true,
 			error: null,
@@ -155,7 +159,7 @@ export function TemplateSettingsSections() {
 					value: entry.relPath,
 					label: toDisplayPath(entry.relPath, templatesFolder),
 				}));
-				setTemplateLibraryState({
+				updateTemplateLibraryState({
 					templates: nextTemplates,
 					loading: false,
 					error: null,
@@ -175,7 +179,7 @@ export function TemplateSettingsSections() {
 							) {
 								return;
 							}
-							setSettingsState((current) => ({
+							updateSettingsState((current) => ({
 								...current,
 								dailyNoteTemplatePath: null,
 							}));
@@ -187,7 +191,7 @@ export function TemplateSettingsSections() {
 							) {
 								return;
 							}
-							setSettingsState((current) => ({
+							updateSettingsState((current) => ({
 								...current,
 								error:
 									cause instanceof Error
@@ -199,7 +203,7 @@ export function TemplateSettingsSections() {
 			})
 			.catch((cause) => {
 				if (cancelled) return;
-				setTemplateLibraryState({
+				updateTemplateLibraryState({
 					templates: [],
 					loading: false,
 					error:
@@ -213,7 +217,7 @@ export function TemplateSettingsSections() {
 
 	const handleBrowseFolder = useCallback(async () => {
 		let writeId: number | null = null;
-		setSettingsState((current) => ({ ...current, error: null }));
+		updateSettingsState((current) => ({ ...current, error: null }));
 		try {
 			const { open } = await import("@tauri-apps/plugin-dialog");
 			const selected = await open({
@@ -223,7 +227,7 @@ export function TemplateSettingsSections() {
 			if (!selected || typeof selected !== "string") return;
 			const currentSpacePath = await ensureCurrentSpaceOpen();
 			if (!currentSpacePath) {
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					error: "No space is currently open.",
 				}));
@@ -233,7 +237,7 @@ export function TemplateSettingsSections() {
 			const normSpace = currentSpacePath.replace(/\\/g, "/");
 			const spacePrefix = normSpace.endsWith("/") ? normSpace : `${normSpace}/`;
 			if (normSelected !== normSpace && !normSelected.startsWith(spacePrefix)) {
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					error: "Selected folder must be inside the current space.",
 				}));
@@ -246,7 +250,7 @@ export function TemplateSettingsSections() {
 			writeId = beginDailyTemplateWrite();
 			await setDailyNoteTemplate(null);
 			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
-			setSettingsState((current) => ({
+			updateSettingsState((current) => ({
 				...current,
 				templatesFolder: relativePath,
 				dailyNoteTemplatePath: null,
@@ -258,7 +262,7 @@ export function TemplateSettingsSections() {
 			) {
 				return;
 			}
-			setSettingsState((current) => ({
+			updateSettingsState((current) => ({
 				...current,
 				error:
 					cause instanceof Error
@@ -269,16 +273,16 @@ export function TemplateSettingsSections() {
 	}, [beginDailyTemplateWrite]);
 
 	const handleClearFolder = useCallback(async () => {
-		setSettingsState((current) => ({ ...current, error: null }));
+		updateSettingsState((current) => ({ ...current, error: null }));
 		try {
 			await setTemplatesFolder(null);
-			setSettingsState((current) => ({
+			updateSettingsState((current) => ({
 				...current,
 				templatesFolder: null,
 				dailyNoteTemplatePath: null,
 			}));
 		} catch (cause) {
-			setSettingsState((current) => ({
+			updateSettingsState((current) => ({
 				...current,
 				error:
 					cause instanceof Error
@@ -292,17 +296,17 @@ export function TemplateSettingsSections() {
 		async (value: string) => {
 			const next = value.trim() ? value : null;
 			const writeId = beginDailyTemplateWrite();
-			setSettingsState((current) => ({ ...current, error: null }));
+			updateSettingsState((current) => ({ ...current, error: null }));
 			try {
 				await setDailyNoteTemplate(next);
 				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					dailyNoteTemplatePath: next,
 				}));
 			} catch (cause) {
 				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
-				setSettingsState((current) => ({
+				updateSettingsState((current) => ({
 					...current,
 					error:
 						cause instanceof Error

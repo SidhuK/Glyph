@@ -63,9 +63,9 @@ export function ColumnsPanel({
 						const existing = new Map(
 							columns.map((column) => [column.id, column]),
 						);
-						const missing = columnMenuEntries
-							.map((entry) => entry.column)
-							.filter((column) => !existing.has(column.id));
+						const missing = columnMenuEntries.flatMap((entry) =>
+							existing.has(entry.column.id) ? [] : [entry.column],
+						);
 						return [
 							...columns.map((column) => ({ ...column, visible: true })),
 							...missing.map((column) => ({ ...column, visible: true })),

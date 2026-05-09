@@ -6,13 +6,14 @@ import {
 	Link01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	getGitSyncConnectionHelp,
 	getGitSyncPresentation,
 	getGitSyncRepoStateLabel,
 } from "../../lib/gitSyncUi";
+import { valueReducer } from "../../lib/reactState";
 import { type AttachmentStorageMode, loadSettings } from "../../lib/settings";
 import type {
 	GitSyncConfig,
@@ -38,13 +39,25 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 };
 
 export function GitSettingsPane() {
-	const [status, setStatus] = useState<GitSyncStatus | null>(null);
-	const [config, setConfig] = useState<GitSyncConfig | null>(null);
-	const [attachmentStorageMode, setAttachmentStorageMode] =
-		useState<AttachmentStorageMode>("note-folder");
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState("");
-	const [busy, setBusy] = useState(false);
+	return useGitSettingsPane();
+}
+
+function useGitSettingsPane() {
+	const [status, setStatus] = useReducer(
+		valueReducer<GitSyncStatus | null>,
+		null,
+	);
+	const [config, setConfig] = useReducer(
+		valueReducer<GitSyncConfig | null>,
+		null,
+	);
+	const [attachmentStorageMode, setAttachmentStorageMode] = useReducer(
+		valueReducer<AttachmentStorageMode>,
+		"note-folder",
+	);
+	const [loading, setLoading] = useReducer(valueReducer<boolean>, true);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const [busy, setBusy] = useReducer(valueReducer<boolean>, false);
 
 	const load = useCallback(async () => {
 		setLoading(true);

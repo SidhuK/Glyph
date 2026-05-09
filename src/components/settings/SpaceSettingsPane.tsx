@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { valueReducer } from "../../lib/reactState";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
@@ -59,27 +60,60 @@ async function selectFolderRelativeToSpace(): Promise<string | null> {
 }
 
 export function SpaceSettingsPane() {
-	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
-	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
+	return useSpaceSettingsPane();
+}
+
+function useSpaceSettingsPane() {
+	const [currentSpacePath, setCurrentSpacePath] = useReducer(
+		valueReducer<string | null>,
 		null,
 	);
-	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
-	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
-	const [attachmentStorageMode, setAttachmentStorageModeState] =
-		useState<AttachmentStorageMode>("note-folder");
-	const [attachmentFolder, setAttachmentFolderState] = useState(
+	const [dailyNotesFolder, setDailyNotesFolderState] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [dailyNotesLoading, setDailyNotesLoading] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
+	const [dailyNotesError, setDailyNotesError] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [attachmentStorageMode, setAttachmentStorageModeState] = useReducer(
+		valueReducer<AttachmentStorageMode>,
+		"note-folder",
+	);
+	const [attachmentFolder, setAttachmentFolderState] = useReducer(
+		valueReducer<string>,
 		DEFAULT_ATTACHMENT_FOLDER,
 	);
-	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
-	const [attachmentError, setAttachmentError] = useState<string | null>(null);
-	const [quickNotesFolder, setQuickNotesFolderState] = useState(
+	const [attachmentsLoading, setAttachmentsLoading] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
+	const [attachmentError, setAttachmentError] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [quickNotesFolder, setQuickNotesFolderState] = useReducer(
+		valueReducer<string>,
 		DEFAULT_QUICK_NOTES_FOLDER,
 	);
-	const [quickNotesLoading, setQuickNotesLoading] = useState(true);
-	const [quickNotesError, setQuickNotesError] = useState<string | null>(null);
-	const [error, setError] = useState("");
-	const [reindexStatus, setReindexStatus] = useState("");
-	const [isIndexing, setIsIndexing] = useState(false);
+	const [quickNotesLoading, setQuickNotesLoading] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
+	const [quickNotesError, setQuickNotesError] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const [reindexStatus, setReindexStatus] = useReducer(
+		valueReducer<string>,
+		"",
+	);
+	const [isIndexing, setIsIndexing] = useReducer(valueReducer<boolean>, false);
 
 	const onRebuildIndex = useCallback(async () => {
 		if (!currentSpacePath) {

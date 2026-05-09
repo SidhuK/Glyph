@@ -651,16 +651,17 @@ const TableEnterNavigation = Extension.create({
 
 				for (let depth = $from.depth; depth > 0; depth -= 1) {
 					const node = $from.node(depth);
+					const nodeTypeName = node.type.name;
 					if (
 						cellDepth === -1 &&
-						(node.type.name === "tableCell" || node.type.name === "tableHeader")
+						(nodeTypeName === "tableCell" || nodeTypeName === "tableHeader")
 					) {
 						cellDepth = depth;
 					}
-					if (rowDepth === -1 && node.type.name === "tableRow") {
+					if (rowDepth === -1 && nodeTypeName === "tableRow") {
 						rowDepth = depth;
 					}
-					if (node.type.name === "table") {
+					if (nodeTypeName === "table") {
 						tableDepth = depth;
 						break;
 					}

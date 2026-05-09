@@ -111,8 +111,10 @@ export const MarkdownLinkAutocomplete = Extension.create({
 						}
 						const rect = props.clientRect?.();
 						if (rect) {
-							menu.style.left = `${rect.left}px`;
-							menu.style.top = `${rect.bottom + 6}px`;
+							Object.assign(menu.style, {
+								left: `${rect.left}px`,
+								top: `${rect.bottom + 6}px`,
+							});
 						}
 					};
 

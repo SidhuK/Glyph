@@ -39,9 +39,9 @@ export function useExtractSelectionToNote({
 			});
 			return uniqueExtractedNoteTitle(
 				title,
-				siblings
-					.filter((entry) => entry.kind === "file")
-					.map((entry) => entry.name),
+				siblings.flatMap((entry) =>
+					entry.kind === "file" ? [entry.name] : [],
+				),
 			);
 		},
 		[],

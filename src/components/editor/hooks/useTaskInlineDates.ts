@@ -36,13 +36,15 @@ export function useTaskInlineDates({
 	mode,
 	onChange,
 }: UseTaskInlineDatesArgs) {
-	const [taskAnchors, setTaskAnchors] = useState<TaskAnchor[]>([]);
-	const [selectedTaskOrdinal, setSelectedTaskOrdinal] = useState<number | null>(
+	const [taskAnchors, updateTaskAnchors] = useState<TaskAnchor[]>([]);
+	const [selectedTaskOrdinal, updateSelectedTaskOrdinal] = useState<
+		number | null
+	>(null);
+	const [scheduleAnchor, updateScheduleAnchor] = useState<TaskAnchor | null>(
 		null,
 	);
-	const [scheduleAnchor, setScheduleAnchor] = useState<TaskAnchor | null>(null);
-	const [scheduledDate, setScheduledDate] = useState("");
-	const [dueDate, setDueDate] = useState("");
+	const [scheduledDate, updateScheduledDate] = useState("");
+	const [dueDate, updateDueDate] = useState("");
 	const markdownRef = useRef(markdown);
 	const scheduleAnchorRef = useRef<TaskAnchor | null>(null);
 
@@ -56,22 +58,22 @@ export function useTaskInlineDates({
 
 	const setScheduleAnchorAndSelection = useCallback(
 		(anchor: TaskAnchor | null) => {
-			setScheduleAnchor(anchor);
+			updateScheduleAnchor(anchor);
 			if (!anchor) {
-				setSelectedTaskOrdinal(null);
-				setScheduledDate("");
-				setDueDate("");
+				updateSelectedTaskOrdinal(null);
+				updateScheduledDate("");
+				updateDueDate("");
 				return;
 			}
-			setSelectedTaskOrdinal(anchor.ordinal);
+			updateSelectedTaskOrdinal(anchor.ordinal);
 		},
 		[],
 	);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || deferHeavyFeatures) {
-			setTaskAnchors([]);
-			setSelectedTaskOrdinal(null);
+			updateTaskAnchors([]);
+			updateSelectedTaskOrdinal(null);
 			setScheduleAnchorAndSelection(null);
 			return;
 		}
@@ -95,7 +97,7 @@ export function useTaskInlineDates({
 					top: nextTop,
 				};
 			});
-			setTaskAnchors((current) => {
+			updateTaskAnchors((current) => {
 				if (
 					current.length === nextAnchors.length &&
 					current.every(
@@ -115,7 +117,7 @@ export function useTaskInlineDates({
 			const keepScheduledTaskSelected = () => {
 				const anchor = scheduleAnchorRef.current;
 				if (!anchor) return false;
-				setSelectedTaskOrdinal((current) =>
+				updateSelectedTaskOrdinal((current) =>
 					current === anchor.ordinal ? current : anchor.ordinal,
 				);
 				return true;
@@ -123,7 +125,7 @@ export function useTaskInlineDates({
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				updateSelectedTaskOrdinal(null);
 				return;
 			}
 			const anchorElement =
@@ -132,7 +134,7 @@ export function useTaskInlineDates({
 					: selection.anchorNode.parentElement;
 			if (!anchorElement || !contentRoot.contains(anchorElement)) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				updateSelectedTaskOrdinal(null);
 				return;
 			}
 			const taskEl = anchorElement.closest(
@@ -140,7 +142,7 @@ export function useTaskInlineDates({
 			) as HTMLElement | null;
 			if (!taskEl) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				updateSelectedTaskOrdinal(null);
 				return;
 			}
 			const items = Array.from(
@@ -149,7 +151,7 @@ export function useTaskInlineDates({
 				),
 			) as HTMLElement[];
 			const ordinal = items.indexOf(taskEl);
-			setSelectedTaskOrdinal((current) => {
+			updateSelectedTaskOrdinal((current) => {
 				const nextOrdinal = ordinal >= 0 ? ordinal : null;
 				return current === nextOrdinal ? current : nextOrdinal;
 			});
@@ -203,12 +205,12 @@ export function useTaskInlineDates({
 					ordinal: expectedOrdinal,
 				});
 				if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
-				setScheduledDate(existing?.scheduled_date ?? "");
-				setDueDate(existing?.due_date ?? "");
+				updateScheduledDate(existing?.scheduled_date ?? "");
+				updateDueDate(existing?.due_date ?? "");
 			} catch {
 				if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
-				setScheduledDate("");
-				setDueDate("");
+				updateScheduledDate("");
+				updateDueDate("");
 			}
 		},
 		[setScheduleAnchorAndSelection],
@@ -216,8 +218,8 @@ export function useTaskInlineDates({
 
 	const resetDraftDates = useCallback(async () => {
 		if (!scheduleAnchor) {
-			setScheduledDate("");
-			setDueDate("");
+			updateScheduledDate("");
+			updateDueDate("");
 			return;
 		}
 		const expectedOrdinal = scheduleAnchor.ordinal;
@@ -227,20 +229,20 @@ export function useTaskInlineDates({
 				ordinal: expectedOrdinal,
 			});
 			if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
-			setScheduledDate(existing?.scheduled_date ?? "");
-			setDueDate(existing?.due_date ?? "");
+			updateScheduledDate(existing?.scheduled_date ?? "");
+			updateDueDate(existing?.due_date ?? "");
 		} catch {
 			if (scheduleAnchorRef.current?.ordinal !== expectedOrdinal) return;
-			setScheduledDate("");
-			setDueDate("");
+			updateScheduledDate("");
+			updateDueDate("");
 		}
 	}, [scheduleAnchor]);
 
 	const updateTaskDates = useCallback(
 		async (scheduled: string, due: string) => {
 			if (!scheduleAnchor) return false;
-			setScheduledDate(scheduled);
-			setDueDate(due);
+			updateScheduledDate(scheduled);
+			updateDueDate(due);
 			try {
 				const next = await invoke("task_update_by_ordinal", {
 					markdown: markdownRef.current,
@@ -271,9 +273,9 @@ export function useTaskInlineDates({
 		scheduleAnchor,
 		scheduledDate,
 		selectedTaskAnchor,
-		setDueDate,
+		setDueDate: updateDueDate,
 		setScheduleAnchor: setScheduleAnchorAndSelection,
-		setScheduledDate,
+		setScheduledDate: updateScheduledDate,
 		updateTaskDates,
 	};
 }

@@ -11,10 +11,10 @@ export function emptyProperty(): NoteProperty {
 }
 
 function fromDelimitedText(value: string): string[] {
-	return value
-		.split(",")
-		.map((item) => item.trim())
-		.filter(Boolean);
+	return value.split(",").flatMap((item) => {
+		const trimmed = item.trim();
+		return trimmed ? [trimmed] : [];
+	});
 }
 
 function sanitizeTagText(value: string): string {
@@ -104,9 +104,10 @@ export function buildTagSuggestions(
 		return [];
 	}
 	const selectedTagSet = new Set(
-		selectedTags
-			.map((tag) => normalizeTagToken(tag))
-			.filter((tag): tag is string => Boolean(tag)),
+		selectedTags.flatMap((tag) => {
+			const normalized = normalizeTagToken(tag);
+			return normalized ? [normalized] : [];
+		}),
 	);
 	const descendantPrefix = normalizedDraft.endsWith("/")
 		? normalizedDraft

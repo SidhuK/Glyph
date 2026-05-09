@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, useEffect } from "react";
+import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -31,10 +31,7 @@ interface CapturedEditorContext {
 function RegistrationHarness({ state, onContext }: HarnessProps) {
 	const context = useEditorContext();
 	useEditorRegistration(state);
-
-	useEffect(() => {
-		onContext(context);
-	}, [context, onContext]);
+	onContext(context);
 
 	return null;
 }

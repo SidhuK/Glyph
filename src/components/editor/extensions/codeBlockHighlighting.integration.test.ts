@@ -1,6 +1,6 @@
 import { MarkdownManager } from "@tiptap/markdown";
 import { describe, expect, it } from "vitest";
-import { createEditorExtensions } from "./index";
+import { createEditorExtensions } from "./createEditorExtensions";
 
 describe("Code block highlighting markdown integration", () => {
 	it("preserves explicit fenced languages through parse and serialize", () => {

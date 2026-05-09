@@ -10,7 +10,7 @@ import {
 
 export const CALENDAR_TAB_ID = "__glyph_calendar__";
 
-export interface CalendarRange {
+interface CalendarRange {
 	start: string;
 	end: string;
 	dates: string[];

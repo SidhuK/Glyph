@@ -81,6 +81,8 @@ export function ModelSelector({
 		setDetailModelId(null);
 		setModelQuery("");
 	}, []);
+	const handleCloseRef = useRef(handleClose);
+	handleCloseRef.current = handleClose;
 	const handleRetry = useCallback(() => {
 		void modelsQuery.refetch();
 	}, [modelsQuery]);
@@ -100,11 +102,11 @@ export function ModelSelector({
 			const t = e.target as Node;
 			if (triggerRef.current?.contains(t) || dropdownRef.current?.contains(t))
 				return;
-			handleClose();
+			handleCloseRef.current();
 		};
 		document.addEventListener("mousedown", handleClick);
 		return () => document.removeEventListener("mousedown", handleClick);
-	}, [open, handleClose]);
+	}, [open]);
 
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";

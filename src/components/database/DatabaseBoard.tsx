@@ -95,6 +95,8 @@ interface DatabaseBoardProps {
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
+const EMPTY_LANE_ORDER_BY_GROUP: Record<string, string[]> = {};
+const EMPTY_STATUS_COLORS: Record<string, EditorTextColor> = {};
 const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	total_count: 0,
 	completed_count: 0,
@@ -394,7 +396,11 @@ function DatabaseBoardCardView({
 	);
 }
 
-export function DatabaseBoard({
+export function DatabaseBoard(props: DatabaseBoardProps) {
+	return useDatabaseBoardView(props);
+}
+
+function useDatabaseBoardView({
 	rows,
 	columns,
 	groupColumnId: persistedGroupColumnId,
@@ -404,10 +410,10 @@ export function DatabaseBoard({
 	onOpenRow,
 	onOpenColumns,
 	onGroupColumnIdChange,
-	laneOrderByGroup = {},
+	laneOrderByGroup = EMPTY_LANE_ORDER_BY_GROUP,
 	onLaneOrderChange,
 	laneColors = EMPTY_LANE_COLORS,
-	statusColors = {},
+	statusColors = EMPTY_STATUS_COLORS,
 	onLaneColorChange,
 	onStatusColorChange,
 	onSaveCell,
@@ -426,7 +432,10 @@ export function DatabaseBoard({
 	const suppressClickRef = useRef(false);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
-		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
+		() =>
+			Array.from(
+				new Set(rows.flatMap((row) => (row.note_path ? [row.note_path] : []))),
+			),
 		[rows],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(

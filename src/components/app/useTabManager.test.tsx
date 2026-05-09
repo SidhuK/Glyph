@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, useEffect } from "react";
+import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -43,10 +43,7 @@ function Harness({
 	onReady: (value: HookValue) => void;
 }) {
 	const hookValue = useTabManager("/tmp/test-space");
-
-	useEffect(() => {
-		onReady(hookValue);
-	}, [hookValue, onReady]);
+	onReady(hookValue);
 
 	return null;
 }

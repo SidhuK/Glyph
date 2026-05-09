@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
@@ -42,7 +42,10 @@ export function NotePropertyRow({
 	onSetTagInputRef,
 	tagInputRef,
 }: NotePropertyRowProps) {
-	const [keyDraft, setKeyDraft] = useState(property.key);
+	const [keyDraft, setKeyDraft] = useReducer(
+		(_current: string, next: string) => next,
+		property.key,
+	);
 
 	useEffect(() => {
 		setKeyDraft(property.key);

@@ -134,9 +134,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
 		() =>
-			visibleNotes
-				.filter((note) => note.is_markdown)
-				.map((note) => note.note_path),
+			visibleNotes.flatMap((note) =>
+				note.is_markdown ? [note.note_path] : [],
+			),
 		[visibleNotes],
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(

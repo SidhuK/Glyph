@@ -108,6 +108,8 @@ export function NotesInfoSidebar({
 	onClose,
 }: NotesInfoSidebarProps) {
 	const [host, setHost] = useState<HTMLElement | null>(null);
+	const lastSavedIso =
+		host && lastSavedMtimeMs ? new Date(lastSavedMtimeMs).toISOString() : null;
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;
@@ -121,6 +123,7 @@ export function NotesInfoSidebar({
 			<div
 				className="markdownEditorInfoHeader drag"
 				data-tauri-drag-region
+				role="presentation"
 				onMouseDown={onWindowDragMouseDown}
 			>
 				<button
@@ -319,9 +322,7 @@ export function NotesInfoSidebar({
 							<span>Modified</span>
 							<strong>
 								{formatMetadataDate(
-									lastSavedMtimeMs
-										? new Date(lastSavedMtimeMs).toISOString()
-										: (previewContext?.updated ?? null),
+									lastSavedIso ?? previewContext?.updated ?? null,
 								)}
 							</strong>
 						</div>

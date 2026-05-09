@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { loadSettings } from "../../lib/settings";
+import { containsText } from "../../lib/stringMatch";
 import { invoke } from "../../lib/tauri";
 import type { SearchResult } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -12,9 +13,9 @@ export function useCommandSearch(
 	query: string,
 	spacePath: string | null,
 ) {
-	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-	const [isSearching, setIsSearching] = useState(false);
-	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
+	const [searchResults, updateSearchResults] = useState<SearchResult[]>([]);
+	const [isSearching, updateIsSearching] = useState(false);
+	const [peopleMentionsEnabled, updatePeopleMentionsEnabled] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const requestIdRef = useRef(0);
 	const { recentFiles } = useRecentFiles(spacePath, 8);
@@ -22,17 +23,22 @@ export function useCommandSearch(
 		() => recentFiles.filter((file) => isMarkdownPath(file.path)),
 		[recentFiles],
 	);
+	const reset = useCallback(() => {
+		requestIdRef.current += 1;
+		updateSearchResults([]);
+		updateIsSearching(false);
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
-				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
+				updatePeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
 			})
 			.catch(() => {
 				if (cancelled) return;
-				setPeopleMentionsEnabled(false);
+				updatePeopleMentionsEnabled(false);
 			});
 		return () => {
 			cancelled = true;
@@ -41,29 +47,25 @@ export function useCommandSearch(
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
-			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
+			updatePeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
 	});
 
 	useEffect(() => {
 		if (activeTab !== "search") return;
 		if (!spacePath) {
-			requestIdRef.current += 1;
-			setSearchResults([]);
-			setIsSearching(false);
+			reset();
 			return;
 		}
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 		const trimmed = query.trim();
 		if (!trimmed) {
-			requestIdRef.current += 1;
-			setSearchResults([]);
-			setIsSearching(false);
+			reset();
 			return;
 		}
 		const requestId = requestIdRef.current + 1;
 		requestIdRef.current = requestId;
-		setIsSearching(true);
+		updateIsSearching(true);
 		debounceRef.current = setTimeout(() => {
 			void (async () => {
 				try {
@@ -90,14 +92,14 @@ export function useCommandSearch(
 						});
 					}
 					if (requestIdRef.current !== requestId) return;
-					setSearchResults(results);
+					updateSearchResults(results);
 				} catch (error) {
 					if (requestIdRef.current !== requestId) return;
 					console.error("Command palette search failed", error);
-					setSearchResults([]);
+					updateSearchResults([]);
 				} finally {
 					if (requestIdRef.current === requestId) {
-						setIsSearching(false);
+						updateIsSearching(false);
 					}
 				}
 			})();
@@ -105,7 +107,7 @@ export function useCommandSearch(
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [query, activeTab, spacePath, peopleMentionsEnabled]);
+	}, [query, activeTab, spacePath, peopleMentionsEnabled, reset]);
 
 	const { titleMatches, contentMatches } = useMemo(() => {
 		if (activeTab !== "search" || !query.trim())
@@ -121,7 +123,7 @@ export function useCommandSearch(
 		const title: SearchResult[] = [];
 		const content: SearchResult[] = [];
 		for (const r of searchResults) {
-			if (!q || r.title.toLowerCase().includes(q)) {
+			if (!q || containsText(r.title.toLowerCase(), q)) {
 				title.push(r);
 			} else {
 				content.push(r);
@@ -129,12 +131,6 @@ export function useCommandSearch(
 		}
 		return { titleMatches: title, contentMatches: content };
 	}, [searchResults, query, activeTab, peopleMentionsEnabled]);
-
-	const reset = useCallback(() => {
-		requestIdRef.current += 1;
-		setSearchResults([]);
-		setIsSearching(false);
-	}, []);
 
 	return {
 		searchResults,

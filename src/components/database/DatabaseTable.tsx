@@ -4,7 +4,7 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useReducer } from "react";
 import { createDatabaseRowGroups } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
 import type {
@@ -66,8 +66,8 @@ function uniqueOptionValues(values: string[]): string[] {
 		}
 		counts.set(key, { value: trimmed, count: 1 });
 	}
-	return [...counts.values()]
-		.sort(
+	return Array.from(counts.values())
+		.toSorted(
 			(left, right) =>
 				right.count - left.count ||
 				left.value.localeCompare(right.value, undefined, {
@@ -109,7 +109,10 @@ export function DatabaseTable({
 	onRenameTitle,
 	onResizeColumn,
 }: DatabaseTableProps) {
-	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
+	const [resizingColumnId, setResizingColumnId] = useReducer(
+		(_current: string | null, next: string | null) => next,
+		null,
+	);
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
 		const next: Record<string, EditorTextColor> = {};
 		for (const [laneId, color] of Object.entries(laneColors)) {
@@ -287,6 +290,7 @@ export function DatabaseTable({
 											)}
 									<div
 										className={`databaseColumnResizeHandle${header.column.getIsResizing() ? " is-resizing" : ""}`}
+										role="presentation"
 										onMouseDown={(event) => {
 											event.preventDefault();
 											event.stopPropagation();
@@ -318,12 +322,12 @@ export function DatabaseTable({
 											<span className="databaseGroupLabel">{group.label}</span>
 										</td>
 									</tr>
-									{group.rows
-										.map((row) => rowsByPath.get(row.note_path))
-										.filter(
-											(row): row is (typeof displayRows)[number] => row != null,
-										)
-										.map((row) => renderRow(row, `${group.id}:`))}
+									{group.rows.flatMap((row) => {
+										const displayRow = rowsByPath.get(row.note_path);
+										return displayRow
+											? [renderRow(displayRow, `${group.id}:`)]
+											: [];
+									})}
 								</Fragment>
 							))
 						) : (

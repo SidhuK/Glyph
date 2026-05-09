@@ -79,6 +79,11 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 	const focusUnlistenRef = useRef<(() => void) | null>(null);
 	const statusRef = useRef<LicenseStatus | null>(status);
 	statusRef.current = status;
+	const applyUpdatedStatus = useCallback((next: LicenseStatus) => {
+		setStatus(next);
+		setError("");
+		setLoading(false);
+	}, []);
 
 	const reload = useCallback(async () => {
 		setError("");
@@ -105,13 +110,11 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 		const onUpdated = (event: Event) => {
 			const detail = (event as CustomEvent<LicenseStatus>).detail;
 			if (!detail) return;
-			setStatus(detail);
-			setError("");
-			setLoading(false);
+			applyUpdatedStatus(detail);
 		};
 		window.addEventListener(LICENSE_UPDATED_EVENT, onUpdated);
 		return () => window.removeEventListener(LICENSE_UPDATED_EVENT, onUpdated);
-	}, []);
+	}, [applyUpdatedStatus]);
 
 	useEffect(() => {
 		if (!reloadOnWindowFocus) return;

@@ -15,7 +15,7 @@ interface TagsPaneProps {
 
 const springTransition = springPresets.bouncy;
 
-export interface TagTreeRow {
+interface TagTreeRow {
 	tag: string;
 	label: string;
 	totalCount: number;
@@ -23,7 +23,7 @@ export interface TagTreeRow {
 	isExplicit: boolean;
 }
 
-export interface PeopleRow {
+interface PeopleRow {
 	handle: string;
 	count: number;
 }
@@ -32,8 +32,8 @@ export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
 	const isAncestorTag = (ancestor: string, descendant: string): boolean =>
 		descendant.startsWith(`${ancestor}/`);
 
-	return [...tags]
-		.sort((left, right) => {
+	return tags
+		.toSorted((left, right) => {
 			if (isAncestorTag(left.tag, right.tag)) {
 				return -1;
 			}
@@ -57,7 +57,7 @@ export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
 }
 
 export function buildPeopleRows(people: PersonCount[]): PeopleRow[] {
-	return [...people].sort((left, right) =>
+	return people.toSorted((left, right) =>
 		left.handle.localeCompare(right.handle),
 	);
 }

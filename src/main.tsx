@@ -13,7 +13,6 @@ import {
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
-import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
 import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
@@ -22,24 +21,7 @@ import { MAIN_WINDOW_LABEL, QUICK_NOTE_WINDOW_LABEL } from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
-	const [accent, setAccent] = React.useState<UiAccent | null>(null);
-	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
-		null,
-	);
-	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(
-		null,
-	);
-	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
-	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
-		null,
-	);
-	const [uiFontSize, setUiFontSize] = React.useState<number | null>(null);
-	const [editorFontSize, setEditorFontSize] = React.useState<number | null>(
-		null,
-	);
-	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
-		null,
-	);
+	const translucentAppRef = React.useRef<boolean | null>(null);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -52,14 +34,21 @@ function ThemeAndTypographyBridge() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setTheme(settings.ui.theme);
-				setLightThemeId(settings.ui.lightThemeId);
-				setDarkThemeId(settings.ui.darkThemeId);
-				setAccent(settings.ui.accent);
-				setFontFamily(settings.ui.fontFamily);
-				setMonoFontFamily(settings.ui.monoFontFamily);
-				setUiFontSize(settings.ui.fontSize);
-				setEditorFontSize(settings.ui.editorFontSize);
-				setTranslucentApp(settings.ui.translucentApp);
+				applyUiThemeSelection(
+					settings.ui.lightThemeId,
+					settings.ui.darkThemeId,
+				);
+				applyUiAccent(settings.ui.accent);
+				applyUiTypography(
+					settings.ui.fontFamily,
+					settings.ui.monoFontFamily,
+					settings.ui.fontSize,
+					settings.ui.editorFontSize,
+				);
+				translucentAppRef.current = settings.ui.translucentApp;
+				applyUiSurfacePreferences({
+					translucentApp: settings.ui.translucentApp,
+				});
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -102,34 +91,44 @@ function ThemeAndTypographyBridge() {
 			setTheme(nextTheme);
 		}
 		if (isUiLightThemeId(payload.ui?.lightThemeId)) {
-			setLightThemeId(payload.ui.lightThemeId);
+			applyUiThemeSelection(
+				payload.ui.lightThemeId,
+				isUiDarkThemeId(payload.ui?.darkThemeId)
+					? payload.ui.darkThemeId
+					: "graphite",
+			);
 		}
 		if (isUiDarkThemeId(payload.ui?.darkThemeId)) {
-			setDarkThemeId(payload.ui.darkThemeId);
+			applyUiThemeSelection(
+				isUiLightThemeId(payload.ui?.lightThemeId)
+					? payload.ui.lightThemeId
+					: "paper",
+				payload.ui.darkThemeId,
+			);
 		}
 		if (isUiAccent(payload.ui?.accent)) {
-			setAccent(payload.ui.accent);
-		}
-		if (typeof payload.ui?.fontFamily === "string") {
-			setFontFamily(payload.ui.fontFamily);
-		}
-		if (typeof payload.ui?.monoFontFamily === "string") {
-			setMonoFontFamily(payload.ui.monoFontFamily);
+			applyUiAccent(payload.ui.accent);
 		}
 		if (
+			typeof payload.ui?.fontFamily === "string" &&
+			typeof payload.ui?.monoFontFamily === "string" &&
 			typeof payload.ui?.fontSize === "number" &&
-			Number.isFinite(payload.ui.fontSize)
-		) {
-			setUiFontSize(payload.ui.fontSize);
-		}
-		if (
+			Number.isFinite(payload.ui.fontSize) &&
 			typeof payload.ui?.editorFontSize === "number" &&
 			Number.isFinite(payload.ui.editorFontSize)
 		) {
-			setEditorFontSize(payload.ui.editorFontSize);
+			applyUiTypography(
+				payload.ui.fontFamily,
+				payload.ui.monoFontFamily,
+				payload.ui.fontSize,
+				payload.ui.editorFontSize,
+			);
 		}
 		if (typeof payload.ui?.translucentApp === "boolean") {
-			setTranslucentApp(payload.ui.translucentApp);
+			translucentAppRef.current = payload.ui.translucentApp;
+			applyUiSurfacePreferences({
+				translucentApp: payload.ui.translucentApp,
+			});
 		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
@@ -146,40 +145,7 @@ function ThemeAndTypographyBridge() {
 	});
 
 	React.useEffect(() => {
-		if (
-			!fontFamily ||
-			!monoFontFamily ||
-			typeof uiFontSize !== "number" ||
-			typeof editorFontSize !== "number"
-		) {
-			return;
-		}
-		const applyTypography = () => {
-			applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
-		};
-		applyTypography();
-		window.addEventListener("resize", applyTypography);
-		return () => {
-			window.removeEventListener("resize", applyTypography);
-		};
-	}, [editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
-
-	React.useEffect(() => {
-		if (!accent) return;
-		applyUiAccent(accent);
-	}, [accent]);
-
-	React.useEffect(() => {
-		if (!lightThemeId || !darkThemeId) return;
-		applyUiThemeSelection(lightThemeId, darkThemeId);
-	}, [darkThemeId, lightThemeId]);
-
-	React.useEffect(() => {
-		if (typeof translucentApp !== "boolean") return;
-		applyUiSurfacePreferences({ translucentApp });
-	}, [translucentApp]);
-
-	React.useEffect(() => {
+		const translucentApp = translucentAppRef.current;
 		if (typeof translucentApp !== "boolean") return;
 		if (!translucentApp) {
 			void invoke("set_window_vibrancy_theme", { theme: "none" }).catch(
@@ -197,7 +163,7 @@ function ThemeAndTypographyBridge() {
 		void invoke("set_window_vibrancy_theme", { theme: vibrancyTheme }).catch(
 			() => {},
 		);
-	}, [resolvedTheme, theme, translucentApp]);
+	}, [resolvedTheme, theme]);
 
 	return null;
 }

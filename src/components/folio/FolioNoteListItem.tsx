@@ -3,6 +3,7 @@ import {
 	memo,
 	useEffect,
 	useMemo,
+	useReducer,
 	useRef,
 	useState,
 } from "react";
@@ -71,13 +72,15 @@ function titleFromPath(notePath: string): string {
 	return basename(notePath).replace(/\.md$/i, "") || "Untitled";
 }
 
+const FOLIO_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+	month: "short",
+	day: "numeric",
+});
+
 function dateLabel(iso: string | null): string {
 	if (!iso) return "No date";
 	try {
-		return new Intl.DateTimeFormat(undefined, {
-			month: "short",
-			day: "numeric",
-		}).format(new Date(iso));
+		return FOLIO_DATE_FORMATTER.format(new Date(iso));
 	} catch {
 		return "No date";
 	}
@@ -202,11 +205,11 @@ function useFolioThumbnail(note: FolioItem): string {
 		() => (note.is_markdown ? extractFirstImageRef(note.preview) : null),
 		[note.is_markdown, note.preview],
 	);
-	const [src, setSrc] = useState("");
+	const [src, updateSrc] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
-		setSrc("");
+		updateSrc("");
 		if (!note.is_markdown) return;
 		void (async () => {
 			try {
@@ -221,7 +224,7 @@ function useFolioThumbnail(note: FolioItem): string {
 				}
 				if (!imageRef) return;
 				if (imageRef.kind === "direct") {
-					setSrc(imageRef.src);
+					updateSrc(imageRef.src);
 					return;
 				}
 				const relPath =
@@ -239,10 +242,10 @@ function useFolioThumbnail(note: FolioItem): string {
 					max_bytes: FOLIO_THUMBNAIL_MAX_BYTES,
 				});
 				if (!cancelled && !preview.truncated) {
-					setSrc(preview.data_url);
+					updateSrc(preview.data_url);
 				}
 			} catch {
-				if (!cancelled) setSrc("");
+				if (!cancelled) updateSrc("");
 			}
 		})();
 		return () => {
@@ -271,7 +274,10 @@ function FolioRenameInput({
 	) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
 }) {
-	const [draftName, setDraftName] = useState(initialName);
+	const [draftName, updateDraftName] = useReducer(
+		(_current: string, next: string) => next,
+		initialName,
+	);
 	const submittedRef = useRef(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -296,7 +302,7 @@ function FolioRenameInput({
 			className="folioNoteRenameInput"
 			value={draftName}
 			placeholder="Untitled"
-			onChange={(event) => setDraftName(event.target.value)}
+			onChange={(event) => updateDraftName(event.target.value)}
 			onBlur={() => void commitRename()}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") {

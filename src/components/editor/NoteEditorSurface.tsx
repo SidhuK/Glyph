@@ -10,7 +10,7 @@ import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import DOMPurify from "dompurify";
 import { AnimatePresence } from "motion/react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
 	extractMermaidErrorMessage,
 	renderMermaidDiagram,
@@ -39,10 +39,19 @@ function MermaidPreviewPanel({
 	style: React.CSSProperties;
 	onHeightChange: (height: number) => void;
 }) {
-	const [svg, setSvg] = useState("");
-	const [error, setError] = useState("");
+	const [svg, updateSvg] = useState("");
+	const [error, updateError] = useState("");
 	const panelRef = useRef<HTMLDivElement | null>(null);
 	const svgHostRef = useRef<HTMLDivElement | null>(null);
+	const clearRenderError = useCallback(() => updateError(""), []);
+	const applyRenderedSvg = useCallback(
+		(nextSvg: string) => updateSvg(nextSvg),
+		[],
+	);
+	const applyRenderError = useCallback((nextError: unknown) => {
+		updateSvg("");
+		updateError(extractMermaidErrorMessage(nextError));
+	}, []);
 
 	useEffect(() => {
 		const panel = panelRef.current;
@@ -71,17 +80,16 @@ function MermaidPreviewPanel({
 
 	useEffect(() => {
 		let cancelled = false;
-		setError("");
+		clearRenderError();
 		const timeout = window.setTimeout(() => {
 			void (async () => {
 				try {
 					const nextSvg = await renderMermaidDiagram(source);
 					if (cancelled) return;
-					setSvg(nextSvg);
+					applyRenderedSvg(nextSvg);
 				} catch (nextError) {
 					if (cancelled) return;
-					setSvg("");
-					setError(extractMermaidErrorMessage(nextError));
+					applyRenderError(nextError);
 				}
 			})();
 		}, 320);
@@ -89,7 +97,7 @@ function MermaidPreviewPanel({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [source]);
+	}, [applyRenderError, applyRenderedSvg, clearRenderError, source]);
 
 	useEffect(() => {
 		const host = svgHostRef.current;
@@ -102,15 +110,15 @@ function MermaidPreviewPanel({
 			FORBID_TAGS: ["foreignObject", "script"],
 		});
 		if (typeof sanitizedSvg !== "string" || !sanitizedSvg.trim()) {
-			setError("Unable to render Mermaid diagram.");
-			setSvg("");
+			updateError("Unable to render Mermaid diagram.");
+			updateSvg("");
 			return;
 		}
 		const doc = new DOMParser().parseFromString(sanitizedSvg, "image/svg+xml");
 		const svgElement = doc.documentElement;
 		if (svgElement.tagName.toLowerCase() !== "svg") {
-			setError("Unable to render Mermaid diagram.");
-			setSvg("");
+			updateError("Unable to render Mermaid diagram.");
+			updateSvg("");
 			return;
 		}
 		host.append(document.importNode(svgElement, true));
@@ -131,7 +139,7 @@ function MermaidPreviewPanel({
 	);
 }
 
-export interface NoteEditorSurfaceProps {
+interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
 	colorfulHeadings: boolean;

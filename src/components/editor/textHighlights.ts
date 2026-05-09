@@ -1,6 +1,6 @@
 export type EditorTextHighlight = "yellow" | "blue" | "green" | "red";
 
-export interface EditorTextHighlightOption {
+interface EditorTextHighlightOption {
 	id: EditorTextHighlight;
 	label: string;
 	backgroundCssVar: string;

@@ -206,7 +206,13 @@ function OptionMenuRow({
 	);
 }
 
-export function DatabaseViewOptionsPopover({
+export function DatabaseViewOptionsPopover(
+	props: DatabaseViewOptionsPopoverProps,
+) {
+	return useDatabaseViewOptionsPopover(props);
+}
+
+function useDatabaseViewOptionsPopover({
 	config,
 	availableProperties,
 	onChangeConfig,
@@ -283,7 +289,7 @@ export function DatabaseViewOptionsPopover({
 		const orderById = new Map(
 			config.columns.map((column, index) => [column.id, index]),
 		);
-		return [...entries.values()].sort((left, right) => {
+		return Array.from(entries.values()).toSorted((left, right) => {
 			const leftOrder = orderById.get(left.column.id);
 			const rightOrder = orderById.get(right.column.id);
 			if (left.enabled !== right.enabled) return left.enabled ? -1 : 1;

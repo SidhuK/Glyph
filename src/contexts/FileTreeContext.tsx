@@ -1,14 +1,15 @@
 import {
 	type ReactNode,
 	createContext,
+	use,
 	useCallback,
-	useContext,
 	useEffect,
 	useMemo,
+	useReducer,
 	useRef,
-	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { valueReducer } from "../lib/reactState";
 import { loadSettings } from "../lib/settings";
 import type {
 	FileTreeAppearance,
@@ -20,7 +21,7 @@ import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
-export interface FileTreeContextValue {
+interface FileTreeContextValue {
 	rootEntries: FsEntry[];
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
@@ -67,48 +68,62 @@ const FileTreeContext = createContext<FileTreeContextValue | null>(null);
 const TAG_METADATA_PAGE_SIZE = 500;
 
 async function fetchAllTags(): Promise<TagCount[]> {
-	const tags: TagCount[] = [];
-	for (let offset = 0; ; offset += TAG_METADATA_PAGE_SIZE) {
+	const fetchPage = async (offset: number): Promise<TagCount[]> => {
 		const page = await invoke("tags_list", {
 			limit: TAG_METADATA_PAGE_SIZE,
 			offset,
 		});
-		tags.push(...page);
-		if (page.length < TAG_METADATA_PAGE_SIZE) return tags;
-	}
+		if (page.length < TAG_METADATA_PAGE_SIZE) return page;
+		return [...page, ...(await fetchPage(offset + TAG_METADATA_PAGE_SIZE))];
+	};
+	return fetchPage(0);
 }
 
 async function fetchAllPeople(): Promise<PersonCount[]> {
-	const people: PersonCount[] = [];
-	for (let offset = 0; ; offset += TAG_METADATA_PAGE_SIZE) {
+	const fetchPage = async (offset: number): Promise<PersonCount[]> => {
 		const page = await invoke("people_list", {
 			limit: TAG_METADATA_PAGE_SIZE,
 			offset,
 		});
-		people.push(...page);
-		if (page.length < TAG_METADATA_PAGE_SIZE) return people;
-	}
+		if (page.length < TAG_METADATA_PAGE_SIZE) return page;
+		return [...page, ...(await fetchPage(offset + TAG_METADATA_PAGE_SIZE))];
+	};
+	return fetchPage(0);
 }
 
-export function FileTreeProvider({ children }: { children: ReactNode }) {
+export function FileTreeProvider(props: { children: ReactNode }) {
+	return useFileTreeProvider(props);
+}
+
+function useFileTreeProvider({ children }: { children: ReactNode }) {
 	const { spacePath, isIndexing, startIndexRebuild } = useSpace();
 
-	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
-	const [childrenByDir, setChildrenByDir] = useState<
-		Record<string, FsEntry[] | undefined>
-	>({});
-	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
-		() => new Set(),
+	const [rootEntries, setRootEntries] = useReducer(valueReducer<FsEntry[]>, []);
+	const [childrenByDir, setChildrenByDir] = useReducer(
+		valueReducer<Record<string, FsEntry[] | undefined>>,
+		{},
 	);
-	const [activeDirPath, setActiveDirPath] = useState<string | null>(null);
-	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
-	const [pinnedFiles, setPinnedFiles] = useState<string[]>([]);
-	const [itemAppearance, setItemAppearanceState] = useState<
-		Record<string, FileTreeAppearance>
-	>({});
-	const [tags, setTags] = useState<TagCount[]>([]);
-	const [people, setPeople] = useState<PersonCount[]>([]);
-	const [tagsError, setTagsError] = useState("");
+	const [expandedDirs, setExpandedDirs] = useReducer(
+		valueReducer<Set<string>>,
+		undefined,
+		() => new Set<string>(),
+	);
+	const [activeDirPath, setActiveDirPath] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [activeFilePath, setActiveFilePath] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [pinnedFiles, setPinnedFiles] = useReducer(valueReducer<string[]>, []);
+	const [itemAppearance, setItemAppearanceState] = useReducer(
+		valueReducer<Record<string, FileTreeAppearance>>,
+		{},
+	);
+	const [tags, setTags] = useReducer(valueReducer<TagCount[]>, []);
+	const [people, setPeople] = useReducer(valueReducer<PersonCount[]>, []);
+	const [tagsError, setTagsError] = useReducer(valueReducer<string>, "");
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
@@ -188,8 +203,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			}
 		}
 	});
-
-	useEffect(() => {
+	const resetTreeState = useCallback(() => {
 		setRootEntries([]);
 		setChildrenByDir({});
 		setExpandedDirs(new Set());
@@ -200,6 +214,22 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setTags([]);
 		setPeople([]);
 		setTagsError("");
+	}, []);
+	const applyRootEntries = useCallback((entries: FsEntry[]) => {
+		setRootEntries(entries);
+	}, []);
+	const applyItemAppearance = useCallback(
+		(appearance: Record<string, FileTreeAppearance>) => {
+			setItemAppearanceState(appearance);
+		},
+		[],
+	);
+	const applyPinnedFiles = useCallback((files: string[]) => {
+		setPinnedFiles(files);
+	}, []);
+
+	useEffect(() => {
+		resetTreeState();
 		if (!spacePath) return;
 
 		let cancelled = false;
@@ -207,7 +237,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			try {
 				const entries = await invoke("space_list_dir", {});
 				if (!cancelled) {
-					setRootEntries(entries);
+					applyRootEntries(entries);
 					void startIndexRebuild();
 					void refreshTags();
 				}
@@ -217,7 +247,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			try {
 				const appearance = await invoke("file_tree_appearance_list");
 				if (!cancelled) {
-					setItemAppearanceState(appearance);
+					applyItemAppearance(appearance);
 				}
 			} catch {
 				/* ignore appearance load errors */
@@ -225,7 +255,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			try {
 				const files = await invoke("pinned_files_list");
 				if (!cancelled) {
-					setPinnedFiles(files);
+					applyPinnedFiles(files);
 				}
 			} catch {
 				/* ignore pinned file load errors */
@@ -234,7 +264,15 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [spacePath, startIndexRebuild, refreshTags]);
+	}, [
+		spacePath,
+		startIndexRebuild,
+		refreshTags,
+		resetTreeState,
+		applyRootEntries,
+		applyItemAppearance,
+		applyPinnedFiles,
+	]);
 
 	useEffect(() => {
 		if (!isIndexing && spacePath) void refreshTags();
@@ -281,9 +319,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>(
 		async (path) => {
 			const currentSpacePath = spacePath;
-			const next = await invoke("pinned_files_toggle", { path });
 			if (currentSpacePathRef.current !== currentSpacePath) return;
-			setPinnedFiles(next);
+			const next = await invoke("pinned_files_toggle", { path });
+			if (currentSpacePathRef.current === currentSpacePath) {
+				setPinnedFiles(next);
+			}
 		},
 		[spacePath],
 	);
@@ -293,12 +333,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>(
 		async (fromPath, toPath) => {
 			const currentSpacePath = spacePath;
+			if (currentSpacePathRef.current !== currentSpacePath) return;
 			const next = await invoke("pinned_files_rename_path", {
 				from_path: fromPath,
 				to_path: toPath,
 			});
-			if (currentSpacePathRef.current !== currentSpacePath) return;
-			setPinnedFiles(next);
+			if (currentSpacePathRef.current === currentSpacePath) {
+				setPinnedFiles(next);
+			}
 		},
 		[spacePath],
 	);
@@ -308,9 +350,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>(
 		async (path) => {
 			const currentSpacePath = spacePath;
-			const next = await invoke("pinned_files_delete_path", { path });
 			if (currentSpacePathRef.current !== currentSpacePath) return;
-			setPinnedFiles(next);
+			const next = await invoke("pinned_files_delete_path", { path });
+			if (currentSpacePathRef.current === currentSpacePath) {
+				setPinnedFiles(next);
+			}
 		},
 		[spacePath],
 	);
@@ -320,19 +364,21 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>(
 		async (path, appearance) => {
 			const currentSpacePath = spacePath;
+			if (currentSpacePathRef.current !== currentSpacePath) return;
 			const next = await invoke("file_tree_appearance_set", {
 				path,
 				color: appearance.color ?? null,
 				icon: appearance.icon ?? null,
 			});
-			if (currentSpacePathRef.current !== currentSpacePath) return;
-			setItemAppearanceState((prev) => {
-				if (next) return { ...prev, [path]: next };
-				if (!(path in prev)) return prev;
-				const nextMap = { ...prev };
-				delete nextMap[path];
-				return nextMap;
-			});
+			if (currentSpacePathRef.current === currentSpacePath) {
+				setItemAppearanceState((prev) => {
+					if (next) return { ...prev, [path]: next };
+					if (!(path in prev)) return prev;
+					const nextMap = { ...prev };
+					delete nextMap[path];
+					return nextMap;
+				});
+			}
 		},
 		[spacePath],
 	);
@@ -483,7 +529,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 }
 
 export function useFileTreeContext(): FileTreeContextValue {
-	const ctx = useContext(FileTreeContext);
+	const ctx = use(FileTreeContext);
 	if (!ctx)
 		throw new Error("useFileTreeContext must be used within FileTreeProvider");
 	return ctx;

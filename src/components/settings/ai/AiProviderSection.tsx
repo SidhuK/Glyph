@@ -46,12 +46,19 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 	},
 ];
 
+const aiProviderOptionsByValue = new Map(
+	aiProviderGroups.flatMap((group) =>
+		group.options.map((option) => [option.value, option] as const),
+	),
+);
+
 function findProviderOption(provider: AiProviderKind): AiProviderOption {
-	for (const group of aiProviderGroups) {
-		const option = group.options.find((entry) => entry.value === provider);
-		if (option) return option;
-	}
-	return { value: provider, label: provider };
+	return (
+		aiProviderOptionsByValue.get(provider) ?? {
+			value: provider,
+			label: provider,
+		}
+	);
 }
 
 interface AiProviderSectionProps {

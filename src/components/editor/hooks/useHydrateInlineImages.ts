@@ -153,22 +153,22 @@ async function resolveSpaceImagePath(
 	kind: InlineImageResolverKind,
 ): Promise<string | null> {
 	if (kind === "wiki-image-link") {
-		for (const candidate of dedupeCandidates(href)) {
-			const resolved = await invoke("space_resolve_image_wikilink", {
-				target: candidate,
-			});
-			if (resolved) return resolved;
-		}
-		return null;
+		const resolved = await Promise.all(
+			dedupeCandidates(href).map((candidate) =>
+				invoke("space_resolve_image_wikilink", { target: candidate }),
+			),
+		);
+		return resolved.find(Boolean) ?? null;
 	}
-	for (const candidate of dedupeCandidates(href)) {
-		const resolved = await invoke("space_resolve_markdown_link", {
-			href: candidate,
-			sourcePath,
-		});
-		if (resolved) return resolved;
-	}
-	return null;
+	const resolved = await Promise.all(
+		dedupeCandidates(href).map((candidate) =>
+			invoke("space_resolve_markdown_link", {
+				href: candidate,
+				sourcePath,
+			}),
+		),
+	);
+	return resolved.find(Boolean) ?? null;
 }
 
 async function resolveInlineImageDataUrl(

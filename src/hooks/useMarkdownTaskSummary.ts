@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type NoteTaskSummary, invoke } from "../lib/tauri";
 
-export const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
+const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	total_count: 0,
 	completed_count: 0,
 	open_count: 0,
 };
 
-export function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
+function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
 	let total_count = 0;
 	let completed_count = 0;
 
@@ -28,7 +28,7 @@ export function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
 }
 
 export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
-	const [taskSummary, setTaskSummary] =
+	const [taskSummary, updateTaskSummary] =
 		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
 	const timerRef = useRef<number | null>(null);
 	const requestTokenRef = useRef(0);
@@ -61,7 +61,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 			timerRef.current = null;
 		}
 		requestTokenRef.current += 1;
-		setTaskSummary(EMPTY_TASK_SUMMARY);
+		updateTaskSummary(EMPTY_TASK_SUMMARY);
 		if (!enabled) return;
 
 		const requestToken = requestTokenRef.current;
@@ -74,7 +74,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 						return;
 					}
 					const fallback = summarizeTasksFromMarkdown(markdown);
-					setTaskSummary(
+					updateTaskSummary(
 						summary.total_count > 0 || fallback.total_count === 0
 							? summary
 							: fallback,
@@ -84,7 +84,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 					if (!mountedRef.current || requestTokenRef.current !== requestToken) {
 						return;
 					}
-					setTaskSummary(summarizeTasksFromMarkdown(markdown));
+					updateTaskSummary(summarizeTasksFromMarkdown(markdown));
 				});
 		}, 90);
 

@@ -9,7 +9,7 @@ export interface VersionReleaseNotes {
 	}[];
 }
 
-export interface ChangelogData {
+interface ChangelogData {
 	versions: VersionReleaseNotes[];
 }
 

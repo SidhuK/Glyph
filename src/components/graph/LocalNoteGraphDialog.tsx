@@ -435,9 +435,9 @@ export function LocalNoteGraphDialog({
 	noteId,
 	graphRefreshKey = 0,
 }: LocalNoteGraphDialogProps) {
-	const [graph, setGraph] = useState<LocalNoteGraph | null>(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	const graphRef = useRef<LocalNoteGraph | null>(null);
+	const [loading, updateLoading] = useState(false);
+	const [error, updateError] = useState("");
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
 
@@ -455,27 +455,29 @@ export function LocalNoteGraphDialog({
 		},
 		[onOpenChange],
 	);
+	const openNodeRef = useRef(openNode);
+	openNodeRef.current = openNode;
 
 	useEffect(() => {
 		if (!open || !noteId) return;
 		void graphRefreshKey;
 		let cancelled = false;
-		setLoading(true);
-		setError("");
+		updateLoading(true);
+		updateError("");
 
 		void invoke("note_local_graph", { note_id: noteId })
 			.then((nextGraph) => {
 				if (cancelled) return;
-				setGraph(nextGraph);
+				graphRef.current = nextGraph;
 			})
 			.catch((cause) => {
 				if (cancelled) return;
-				setGraph(null);
-				setError(cause instanceof Error ? cause.message : String(cause));
+				graphRef.current = null;
+				updateError(cause instanceof Error ? cause.message : String(cause));
 			})
 			.finally(() => {
 				if (!cancelled) {
-					setLoading(false);
+					updateLoading(false);
 				}
 			});
 
@@ -485,6 +487,7 @@ export function LocalNoteGraphDialog({
 	}, [graphRefreshKey, noteId, open]);
 
 	useEffect(() => {
+		const graph = graphRef.current;
 		if (!open || !graph || loading || error) return;
 		const container = containerRef.current;
 		if (!container) return;
@@ -504,24 +507,28 @@ export function LocalNoteGraphDialog({
 		cyRef.current = cy;
 		runGraphLayout(cy);
 
-		cy.on("mouseover", "node", (event) => {
+		const handleNodeMouseover = (event: cytoscape.EventObject) => {
 			highlightNeighborhood(cy, event.target.id());
-		});
-		cy.on("mouseout", "node", () => {
+		};
+		const handleNodeMouseout = () => {
 			highlightNeighborhood(cy, null);
-		});
-		cy.on("tap", "node", (event) => {
+		};
+		const handleNodeTap = (event: cytoscape.EventObject) => {
 			if (event.target.hasClass("tag")) {
 				highlightNeighborhood(cy, event.target.id());
 				return;
 			}
-			openNode(event.target.id());
-		});
-		cy.on("tap", (event) => {
+			openNodeRef.current(event.target.id());
+		};
+		const handleCanvasTap = (event: cytoscape.EventObject) => {
 			if (event.target === cy) {
 				highlightNeighborhood(cy, null);
 			}
-		});
+		};
+		cy.on("mouseover", "node", handleNodeMouseover);
+		cy.on("mouseout", "node", handleNodeMouseout);
+		cy.on("tap", "node", handleNodeTap);
+		cy.on("tap", handleCanvasTap);
 
 		const observer = new ResizeObserver(() => {
 			cy.resize();
@@ -530,11 +537,15 @@ export function LocalNoteGraphDialog({
 		observer.observe(container);
 
 		return () => {
+			cy.off("mouseover", "node", handleNodeMouseover);
+			cy.off("mouseout", "node", handleNodeMouseout);
+			cy.off("tap", "node", handleNodeTap);
+			cy.off("tap", handleCanvasTap);
 			observer.disconnect();
 			cy.destroy();
 			cyRef.current = null;
 		};
-	}, [error, graph, loading, open, openNode]);
+	}, [error, loading, open]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -552,9 +563,7 @@ export function LocalNoteGraphDialog({
 						</button>
 					</DialogClose>
 					{loading ? (
-						<div className="localNoteGraphState">
-							Loading note connections...
-						</div>
+						<div className="localNoteGraphState">Loading note connections…</div>
 					) : null}
 					{!loading && error ? (
 						<div className="localNoteGraphState">

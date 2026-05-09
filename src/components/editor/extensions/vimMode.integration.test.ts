@@ -2,7 +2,7 @@
 
 import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
-import { createEditorExtensions } from "./index";
+import { createEditorExtensions } from "./createEditorExtensions";
 
 function createEditor(enableVimKeybindings = true, content = "hello world") {
 	const element = document.createElement("div");

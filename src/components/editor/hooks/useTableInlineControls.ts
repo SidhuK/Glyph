@@ -24,13 +24,12 @@ export function useTableInlineControls({
 	mode,
 }: UseTableInlineControlsArgs): SelectedTableState | null {
 	const syncRafRef = useRef<number | null>(null);
-	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
-		null,
-	);
+	const [selectedTable, updateSelectedTable] =
+		useState<SelectedTableState | null>(null);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || !canEdit) {
-			setSelectedTable(null);
+			updateSelectedTable(null);
 			return;
 		}
 		const host = hostRef.current;
@@ -45,20 +44,20 @@ export function useTableInlineControls({
 					: selection?.anchorNode?.parentElement;
 
 			if (!anchorElement || !contentRoot.contains(anchorElement)) {
-				setSelectedTable(null);
+				updateSelectedTable(null);
 				return;
 			}
 
 			const activeCell = anchorElement.closest("td, th") as HTMLElement | null;
 			if (!activeCell || !contentRoot.contains(activeCell)) {
-				setSelectedTable(null);
+				updateSelectedTable(null);
 				return;
 			}
 
 			const activeRow = activeCell.closest("tr") as HTMLElement | null;
 			const activeTable = activeCell.closest("table") as HTMLElement | null;
 			if (!activeRow || !activeTable || !contentRoot.contains(activeTable)) {
-				setSelectedTable(null);
+				updateSelectedTable(null);
 				return;
 			}
 
@@ -78,7 +77,7 @@ export function useTableInlineControls({
 				),
 			};
 
-			setSelectedTable((current) => {
+			updateSelectedTable((current) => {
 				if (
 					current &&
 					current.rowControlLeft === nextState.rowControlLeft &&

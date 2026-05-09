@@ -1,3 +1,5 @@
+import { containsText } from "../../../lib/stringMatch";
+
 const HEADING_RE = /^\s{0,3}#{1,6}\s+\S/m;
 const BULLET_LIST_RE = /^\s{0,3}[-+*]\s+\S/m;
 const ORDERED_LIST_RE = /^\s{0,3}\d+[.)]\s+\S/m;
@@ -16,7 +18,7 @@ function hasMarkdownTable(input: string): boolean {
 	for (let index = 0; index < lines.length - 1; index += 1) {
 		const header = lines[index]?.trim() ?? "";
 		const divider = lines[index + 1]?.trim() ?? "";
-		if (!header.includes("|")) continue;
+		if (!containsText(header, "|")) continue;
 		if (/^\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?$/.test(divider)) {
 			return true;
 		}

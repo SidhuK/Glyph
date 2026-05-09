@@ -124,12 +124,14 @@ const notes = [
 ];
 
 async function waitFor(check: () => boolean) {
-	for (let attempt = 0; attempt < 20; attempt += 1) {
-		if (check()) return;
+	const waitForAttempt = async (attempt: number): Promise<void> => {
+		if (check() || attempt >= 20) return;
 		await act(async () => {
 			await new Promise((resolve) => window.setTimeout(resolve, 0));
 		});
-	}
+		await waitForAttempt(attempt + 1);
+	};
+	await waitForAttempt(0);
 }
 
 function renderedNotePaths(container: Element): string[] {

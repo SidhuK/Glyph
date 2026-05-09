@@ -21,7 +21,7 @@ const CODE_BLOCK_PROCESSED_ATTR = "data-ai-code-block-enhanced";
 const UNPROCESSED_CODE_BLOCK_SELECTOR = `pre:not([${CODE_BLOCK_PROCESSED_ATTR}])`;
 const COPY_RESET_MS = 1500;
 
-function setCopyButtonFeedback(
+function updateCopyButtonFeedback(
 	button: CopyButtonElement,
 	label: "Copy" | "Copied!" | "Failed",
 ) {
@@ -137,26 +137,26 @@ export function AIMessageMarkdown({ markdown }: AIMessageMarkdownProps) {
 				copyBtn.type = "button";
 				copyBtn.className = "aiCodeBlockCopy";
 				copyBtn.textContent = "Copy";
-				copyBtn.addEventListener("click", () => {
+				copyBtn.onclick = () => {
 					const text = codeEl?.textContent ?? "";
 					const clipboard = navigator.clipboard;
 					if (!clipboard?.writeText) {
 						console.error(
 							"Clipboard API is unavailable for AI code block copy.",
 						);
-						setCopyButtonFeedback(copyBtn, "Failed");
+						updateCopyButtonFeedback(copyBtn, "Failed");
 						return;
 					}
 					void clipboard.writeText(text).then(
 						() => {
-							setCopyButtonFeedback(copyBtn, "Copied!");
+							updateCopyButtonFeedback(copyBtn, "Copied!");
 						},
 						(error: unknown) => {
 							console.error("Failed to copy AI code block contents.", error);
-							setCopyButtonFeedback(copyBtn, "Failed");
+							updateCopyButtonFeedback(copyBtn, "Failed");
 						},
 					);
-				});
+				};
 				header.appendChild(copyBtn);
 
 				pre.style.position = "relative";

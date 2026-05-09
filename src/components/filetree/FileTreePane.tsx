@@ -91,13 +91,16 @@ function spaceLabelFromPath(path: string | null): string {
 function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 	const parts = [
 		{ label: spaceLabelFromPath(spacePath), path: "" },
-		...dirPath
-			.split("/")
-			.filter(Boolean)
-			.map((label, index, segments) => ({
-				label,
-				path: segments.slice(0, index + 1).join("/"),
-			})),
+		...dirPath.split("/").flatMap((label, index, segments) =>
+			label
+				? [
+						{
+							label,
+							path: segments.slice(0, index + 1).join("/"),
+						},
+					]
+				: [],
+		),
 	];
 	return parts;
 }
@@ -195,7 +198,7 @@ function FolderBreadcrumb({
 		>
 			{parts.map((part, index) => {
 				const isLast = index === parts.length - 1;
-				const handleClick = () => {
+				const openBreadcrumbPart = () => {
 					if (isLast) return;
 					if (!part.path) {
 						onExit();
@@ -214,7 +217,7 @@ function FolderBreadcrumb({
 							className="fileTreeBreadcrumbButton"
 							aria-current={isLast ? "page" : undefined}
 							disabled={isLast}
-							onClick={handleClick}
+							onClick={openBreadcrumbPart}
 						>
 							{part.label}
 						</button>
@@ -276,6 +279,9 @@ interface TreeEntriesProps {
 	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
 
+const EMPTY_FILE_PREVIEWS_BY_PATH: Record<string, string | null | undefined> =
+	{};
+
 function TreeEntries({
 	entries,
 	parentDepth,
@@ -310,7 +316,7 @@ function TreeEntries({
 	showTaskProgressIndicator,
 	taskSummariesByPath,
 	showFilePreviews = false,
-	filePreviewsByPath = {},
+	filePreviewsByPath = EMPTY_FILE_PREVIEWS_BY_PATH,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -471,17 +477,17 @@ export const FileTreePane = memo(function FileTreePane({
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
-	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
+	const [showFolderFileCounts, updateShowFolderFileCounts] = useState(false);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
-	const [folderFileCounts, setFolderFileCounts] = useState<
+	const [folderFileCounts, updateFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
-	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
-	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(null);
-	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
+	const [taskSummaryRefreshKey, updateTaskSummaryRefreshKey] = useState(0);
+	const [focusedDirPath, updateFocusedDirPath] = useState<string | null>(null);
+	const [filePreviewsByPath, updateFilePreviewsByPath] = useState<
 		Record<string, string | null | undefined>
 	>({});
-	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
+	const [filePreviewRefreshKey, updateFilePreviewRefreshKey] = useState(0);
 	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 	const previousSpacePathRef = useRef(spacePath);
@@ -489,15 +495,15 @@ export const FileTreePane = memo(function FileTreePane({
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
-		setFocusedDirPath(null);
-		setFilePreviewsByPath({});
+		updateFocusedDirPath(null);
+		updateFilePreviewsByPath({});
 	}, [spacePath]);
 
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings().then((settings) => {
 			if (!cancelled) {
-				setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
+				updateShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
 			}
 		});
 		return () => {
@@ -507,7 +513,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
-			setShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
+			updateShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
 		}
 	});
 
@@ -519,7 +525,7 @@ export const FileTreePane = memo(function FileTreePane({
 		if (focusedDirPath) {
 			parents.add(focusedDirPath);
 		}
-		return [...parents].sort();
+		return Array.from(parents).toSorted();
 	}, [expandedDirs, focusedDirPath]);
 
 	const folderCountTreeRevision = useMemo(() => {
@@ -539,13 +545,13 @@ export const FileTreePane = memo(function FileTreePane({
 
 	useEffect(() => {
 		if (!spacePath || !showFolderFileCounts) {
-			setFolderFileCounts({});
+			updateFolderFileCounts({});
 			return;
 		}
 
 		const requestRevision = folderCountTreeRevision;
 		if (!requestRevision) {
-			setFolderFileCounts({});
+			updateFolderFileCounts({});
 			return;
 		}
 
@@ -575,7 +581,7 @@ export const FileTreePane = memo(function FileTreePane({
 			}
 
 			if (!hasSuccessfulResult) return;
-			setFolderFileCounts((prev) => ({
+			updateFolderFileCounts((prev) => ({
 				...prev,
 				...nextCounts,
 			}));
@@ -614,7 +620,7 @@ export const FileTreePane = memo(function FileTreePane({
 			}
 		}
 
-		return [...paths].sort();
+		return Array.from(paths).toSorted();
 	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
@@ -627,20 +633,20 @@ export const FileTreePane = memo(function FileTreePane({
 		if (!relPath || !isMarkdownPath(relPath)) return;
 		if (!taskSummaryPaths.includes(relPath)) return;
 		if (filePreviewPaths.includes(relPath)) {
-			setFilePreviewsByPath((current) => {
+			updateFilePreviewsByPath((current) => {
 				const next = { ...current };
 				delete next[relPath];
 				return next;
 			});
 			if (!payload.removed) {
-				setFilePreviewRefreshKey((key) => key + 1);
+				updateFilePreviewRefreshKey((key) => key + 1);
 			}
 		}
 		if (payload.removed) {
-			setTaskSummaryRefreshKey((key) => key + 1);
+			updateTaskSummaryRefreshKey((key) => key + 1);
 			return;
 		}
-		setTaskSummaryRefreshKey((key) => key + 1);
+		updateTaskSummaryRefreshKey((key) => key + 1);
 	});
 
 	const handleCreateFolder = useCallback(
@@ -697,7 +703,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 	const handleEnterDir = useCallback(
 		(dirPath: string) => {
-			setFocusedDirPath(dirPath);
+			updateFocusedDirPath(dirPath);
 			onSelectDir(dirPath);
 			if (!onLoadDir && !childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
 				onToggleDir(dirPath);
@@ -707,7 +713,7 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const handleExitFocusedDir = useCallback(() => {
-		setFocusedDirPath(null);
+		updateFocusedDirPath(null);
 		onSelectDir("");
 	}, [onSelectDir]);
 
@@ -721,17 +727,13 @@ export const FileTreePane = memo(function FileTreePane({
 		void onLoadDir(focusedDirPath);
 	}, [focusedDirPath, focusedEntries, onLoadDir]);
 
-	const filePreviewPaths = useMemo(() => {
-		if (!focusedEntries) return [];
-		return focusedEntries
-			.filter((entry) => entry.kind === "file" && entry.is_markdown)
-			.map((entry) => entry.rel_path)
-			.sort();
-	}, [focusedEntries]);
-	const filePreviewRequestKey = useMemo(
-		() => `${filePreviewRefreshKey}:${filePreviewPaths.join("\0")}`,
-		[filePreviewPaths, filePreviewRefreshKey],
-	);
+	const filePreviewPaths =
+		focusedEntries
+			?.flatMap((entry) =>
+				entry.kind === "file" && entry.is_markdown ? [entry.rel_path] : [],
+			)
+			.sort() ?? [];
+	const filePreviewRequestKey = `${filePreviewRefreshKey}:${filePreviewPaths.join("\0")}`;
 
 	useEffect(() => {
 		filePreviewRequestRef.current = filePreviewRequestKey;
@@ -765,7 +767,7 @@ export const FileTreePane = memo(function FileTreePane({
 			) {
 				return;
 			}
-			setFilePreviewsByPath((prev) => {
+			updateFilePreviewsByPath((prev) => {
 				let changed = false;
 				const next = { ...prev };
 				for (const [index, result] of results.entries()) {
@@ -881,7 +883,7 @@ export const FileTreePane = memo(function FileTreePane({
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 							>
-								Loading folder...
+								Loading folder…
 							</m.div>
 						) : focusedEntries?.length ? (
 							<TreeEntries

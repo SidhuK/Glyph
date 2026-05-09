@@ -47,20 +47,20 @@ export function buildDatabaseTagPickerOptions(
 
 	const normalizedQuery = normalizeTagDraftPrefix(trimmed);
 	return tags
-		.filter(
-			({ tag, is_explicit }) =>
-				is_explicit &&
-				(normalizedQuery.length === 0 ||
-					tag.toLowerCase().includes(normalizedQuery)),
+		.flatMap(({ tag, is_explicit }) =>
+			is_explicit &&
+			(normalizedQuery.length === 0 ||
+				tag.toLowerCase().includes(normalizedQuery))
+				? [{ tag }]
+				: [],
 		)
-		.map(({ tag }) => ({ tag }))
 		.slice(0, limit);
 }
 
 export function buildDatabaseTagPickerExplicitTags(
 	tags: ReturnType<typeof useFileTreeContext>["tags"],
 ): string[] {
-	return tags.filter(({ is_explicit }) => is_explicit).map(({ tag }) => tag);
+	return tags.flatMap(({ tag, is_explicit }) => (is_explicit ? [tag] : []));
 }
 
 export function DatabaseTagPicker({

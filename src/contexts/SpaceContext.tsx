@@ -1,17 +1,18 @@
 import {
 	type ReactNode,
 	createContext,
+	use,
 	useCallback,
-	useContext,
 	useEffect,
 	useMemo,
+	useReducer,
 	useRef,
-	useState,
 } from "react";
 import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
+import { valueReducer } from "../lib/reactState";
 import {
 	clearCurrentSpacePath,
 	loadSettings,
@@ -20,7 +21,7 @@ import {
 } from "../lib/settings";
 import { type AppInfo, invoke } from "../lib/tauri";
 
-export interface SpaceContextValue {
+interface SpaceContextValue {
 	info: AppInfo | null;
 	error: string;
 	setError: (error: string) => void;
@@ -65,25 +66,41 @@ function recentSpacesForMenu(
 	currentSpacePath: string | null,
 ): string[] {
 	return recentSpaces
-		.map((path) => path.trim())
-		.filter((path) => path && path !== currentSpacePath)
+		.flatMap((path) => {
+			const trimmed = path.trim();
+			return trimmed && trimmed !== currentSpacePath ? [trimmed] : [];
+		})
 		.slice(0, 20);
 }
 
 export function SpaceProvider({ children }: { children: ReactNode }) {
-	const [info, setInfo] = useState<AppInfo | null>(null);
-	const [error, setError] = useState("");
-	const [spacePath, setSpacePath] = useState<string | null>(null);
-	const [lastSpacePath, setLastSpacePath] = useState<string | null>(null);
-	const [spaceSchemaVersion, setSpaceSchemaVersion] = useState<number | null>(
+	const [info, setInfo] = useReducer(valueReducer<AppInfo | null>, null);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const [spacePath, setSpacePath] = useReducer(
+		valueReducer<string | null>,
 		null,
 	);
-	const [onboardingNotePath, setOnboardingNotePath] = useState<string | null>(
+	const [lastSpacePath, setLastSpacePath] = useReducer(
+		valueReducer<string | null>,
 		null,
 	);
-	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
-	const [isIndexing, setIsIndexing] = useState(false);
-	const [settingsLoaded, setSettingsLoaded] = useState(false);
+	const [spaceSchemaVersion, setSpaceSchemaVersion] = useReducer(
+		valueReducer<number | null>,
+		null,
+	);
+	const [onboardingNotePath, setOnboardingNotePath] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [recentSpaces, setRecentSpaces] = useReducer(
+		valueReducer<string[]>,
+		[],
+	);
+	const [isIndexing, setIsIndexing] = useReducer(valueReducer<boolean>, false);
+	const [settingsLoaded, setSettingsLoaded] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const isOpeningSpaceRef = useRef(false);
 
 	const syncRecentSpacesMenu = useCallback((spaces: string[]) => {
@@ -93,6 +110,32 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			console.warn("Failed to sync native recent spaces menu", error);
 		});
 	}, []);
+	const applyLoadedSpaceSettings = useCallback(
+		(settings: Awaited<ReturnType<typeof loadSettings>>) => {
+			setRecentSpaces(
+				normalizeRecentSpaces(
+					settings.recentSpaces,
+					settings.currentSpacePath ?? null,
+				),
+			);
+			setLastSpacePath(
+				settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
+			);
+		},
+		[],
+	);
+	const applyOpenedSpace = useCallback(
+		(spaceInfo: {
+			root: string;
+			schema_version: number;
+			onboarding_note_path?: string | null;
+		}) => {
+			setSpacePath(spaceInfo.root);
+			setSpaceSchemaVersion(spaceInfo.schema_version);
+			setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -119,15 +162,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			try {
 				const settings = await loadSettings();
 				if (cancelled) return;
-				setRecentSpaces(
-					normalizeRecentSpaces(
-						settings.recentSpaces,
-						settings.currentSpacePath ?? null,
-					),
-				);
-				setLastSpacePath(
-					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
-				);
+				applyLoadedSpaceSettings(settings);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
 						enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -145,9 +180,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 							path: settings.currentSpacePath,
 						});
 						if (!cancelled) {
-							setSpacePath(spaceInfo.root);
-							setSpaceSchemaVersion(spaceInfo.schema_version);
-							setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+							applyOpenedSpace(spaceInfo);
 						}
 					} catch {}
 				}
@@ -162,7 +195,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [applyLoadedSpaceSettings, applyOpenedSpace]);
 
 	const startIndexRebuild = useCallback(async (): Promise<void> => {
 		setIsIndexing(true);
@@ -315,7 +348,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSpace(): SpaceContextValue {
-	const ctx = useContext(SpaceContext);
+	const ctx = use(SpaceContext);
 	if (!ctx) throw new Error("useSpace must be used within SpaceProvider");
 	return ctx;
 }

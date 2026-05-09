@@ -41,8 +41,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 	const out: AiMessage[] = [];
 	for (const message of messages) {
 		const content = message.parts
-			.filter((part) => part.type === "text")
-			.map((part) => part.text)
+			.flatMap((part) => (part.type === "text" ? [part.text] : []))
 			.join("")
 			.trim();
 		if (!content) continue;
@@ -176,46 +175,44 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 
 				activeJobIdRef.current = jobId;
 
-				const onChunk = await listenTauriEvent("ai:chunk", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
-					clearDoneTimer();
-					setStatus("streaming");
-					updateMessages((prev) =>
-						prev.map((m) => {
-							if (m.id !== assistantId) return m;
-							const first = m.parts[0];
-							return {
-								...m,
-								parts: [
-									{
-										type: "text",
-										text: `${first?.text ?? ""}${payload.delta}`,
-									},
-								],
-							};
-						}),
-					);
-				});
-
-				const onDone = await listenTauriEvent("ai:done", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
-					clearDoneTimer();
-					doneTimerRef.current = window.setTimeout(() => {
+				stopListenersRef.current = await Promise.all([
+					listenTauriEvent("ai:chunk", (payload) => {
 						if (payload.job_id !== activeJobIdRef.current) return;
-						completeActiveJob();
-					}, DONE_SETTLE_MS);
-				});
-
-				const onError = await listenTauriEvent("ai:error", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
-					clearDoneTimer();
-					activeJobIdRef.current = null;
-					cleanupListeners();
-					setError(new Error(payload.message));
-					setStatus("error");
-				});
-
-				stopListenersRef.current = [onChunk, onDone, onError];
+						clearDoneTimer();
+						setStatus("streaming");
+						updateMessages((prev) =>
+							prev.map((m) => {
+								if (m.id !== assistantId) return m;
+								const first = m.parts[0];
+								return {
+									...m,
+									parts: [
+										{
+											type: "text",
+											text: `${first?.text ?? ""}${payload.delta}`,
+										},
+									],
+								};
+							}),
+						);
+					}),
+					listenTauriEvent("ai:done", (payload) => {
+						if (payload.job_id !== activeJobIdRef.current) return;
+						clearDoneTimer();
+						doneTimerRef.current = window.setTimeout(() => {
+							if (payload.job_id !== activeJobIdRef.current) return;
+							completeActiveJob();
+						}, DONE_SETTLE_MS);
+					}),
+					listenTauriEvent("ai:error", (payload) => {
+						if (payload.job_id !== activeJobIdRef.current) return;
+						clearDoneTimer();
+						activeJobIdRef.current = null;
+						cleanupListeners();
+						setError(new Error(payload.message));
+						setStatus("error");
+					}),
+				]);
 			} catch (err) {
 				clearDoneTimer();
 				activeJobIdRef.current = null;

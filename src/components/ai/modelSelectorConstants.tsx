@@ -1,4 +1,5 @@
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
+import { containsText } from "../../lib/stringMatch";
 import type { AiProviderKind } from "../../lib/tauri";
 import { getProviderLogoSrc, providerLogoMeta } from "./providerLogos";
 
@@ -23,7 +24,9 @@ export function guessOpenRouterProvider(
 ): AiProviderKind | null {
 	const normalized = modelName.toLowerCase();
 	for (const hint of openRouterProviderHints) {
-		if (hint.keywords.some((kw) => normalized.includes(kw))) return hint.kind;
+		if (hint.keywords.some((keyword) => containsText(normalized, keyword))) {
+			return hint.kind;
+		}
 	}
 	return null;
 }

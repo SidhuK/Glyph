@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import type { EditorTextColor } from "../components/editor/textColors";
 import { databaseValueToneStyleForColor } from "./database/palette";
 
-export interface StatusOption {
+interface StatusOption {
 	id: string;
 	label: string;
 	color: EditorTextColor;
@@ -23,13 +23,13 @@ export interface StatusOption {
 	aliases: readonly string[];
 }
 
-export interface StatusSelectOption {
+interface StatusSelectOption {
 	id: string;
 	label: string;
 	custom?: boolean;
 }
 
-export const STATUS_OPTIONS = [
+const STATUS_OPTIONS = [
 	{
 		id: "not_started",
 		label: "Not started",
@@ -166,13 +166,11 @@ const STATUS_ALIAS_TO_ID = new Map<string, string>(
 	]),
 );
 
-export function normalizeStatusText(value: string): string {
+function normalizeStatusText(value: string): string {
 	return value.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 }
 
-export function statusIdFromValue(
-	value: string | null | undefined,
-): string | null {
+function statusIdFromValue(value: string | null | undefined): string | null {
 	const normalized = normalizeStatusText(value ?? "");
 	return normalized ? (STATUS_ALIAS_TO_ID.get(normalized) ?? null) : null;
 }

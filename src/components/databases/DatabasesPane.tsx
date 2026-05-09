@@ -10,8 +10,8 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useReducer,
 	useRef,
-	useState,
 } from "react";
 import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
@@ -34,6 +34,7 @@ import {
 	setPrefetchedDatabaseDocument,
 	setPrefetchedDatabaseRows,
 } from "../../lib/navigationPrefetch";
+import { valueReducer } from "../../lib/reactState";
 import { loadSettings } from "../../lib/settings";
 import {
 	type DatabaseColumn,
@@ -165,61 +166,103 @@ function ViewLayoutIcon({ layout }: { layout: string }) {
 	return <Table size={13} />;
 }
 
-function DatabasesPaneContent({
+function DatabasesPaneContent(props: DatabasesPaneProps) {
+	return useDatabasesPaneContent(props);
+}
+
+function useDatabasesPaneContent({
 	onOpenFile,
 	onRenameNotePath,
 	initialDatabaseId = null,
 	initialDocument = null,
 	initialRows = null,
 }: DatabasesPaneProps) {
-	const [summaries, setSummaries] = useState<WorkspaceDatabaseSummary[]>(
+	const [summaries, updateSummaries] = useReducer(
+		valueReducer<WorkspaceDatabaseSummary[]>,
+		undefined,
 		() => getPrefetchedDatabaseSummaries() ?? [],
 	);
-	const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(
+	const [selectedDatabaseId, updateSelectedDatabaseId] = useReducer(
+		valueReducer<string | null>,
+		undefined,
 		() => initialDatabaseId ?? readStoredSelectedDatabaseId(),
 	);
-	const [selectedViewId, setSelectedViewId] = useState<string | null>(() => {
-		const databaseId =
-			initialDocument?.database.id ?? initialDatabaseId ?? null;
-		if (!databaseId || !initialDocument) return null;
-		const storedViewId = readStoredSelectedViewId(databaseId);
-		if (
-			storedViewId &&
-			initialDocument.database.views.some((view) => view.id === storedViewId)
-		) {
-			return storedViewId;
-		}
-		return initialDocument.database.views[0]?.id ?? null;
-	});
-	const [document, setDocument] = useState<WorkspaceDatabaseDocument | null>(
+	const [selectedViewId, updateSelectedViewId] = useReducer(
+		valueReducer<string | null>,
+		undefined,
+		() => {
+			const databaseId =
+				initialDocument?.database.id ?? initialDatabaseId ?? null;
+			if (!databaseId || !initialDocument) return null;
+			const storedViewId = readStoredSelectedViewId(databaseId);
+			if (
+				storedViewId &&
+				initialDocument.database.views.some((view) => view.id === storedViewId)
+			) {
+				return storedViewId;
+			}
+			return initialDocument.database.views[0]?.id ?? null;
+		},
+	);
+	const [document, updateDocument] = useReducer(
+		(
+			_current: WorkspaceDatabaseDocument | null,
+			next: WorkspaceDatabaseDocument | null,
+		) => next,
 		initialDocument,
 	);
-	const [rows, setRows] = useState<DatabaseRow[]>(
+	const [rows, updateRows] = useReducer(
+		valueReducer<DatabaseRow[]>,
+		undefined,
 		() => initialRows?.rows ?? [],
 	);
-	const [rowsTruncated, setRowsTruncated] = useState(
+	const [rowsTruncated, updateRowsTruncated] = useReducer(
+		valueReducer<boolean>,
+		undefined,
 		() => initialRows?.truncated ?? false,
 	);
-	const [loading, setLoading] = useState(() => !initialDocument);
-	const [rowsLoading, setRowsLoading] = useState(() => !initialRows);
-	const [error, setError] = useState("");
-	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-	const [nameDraft, setNameDraft] = useState("");
-	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
-	const [viewNameDraft, setViewNameDraft] = useState("");
+	const [loading, updateLoading] = useReducer(
+		(_current: boolean, next: boolean) => next,
+		!initialDocument,
+	);
+	const [rowsLoading, updateRowsLoading] = useReducer(
+		valueReducer<boolean>,
+		undefined,
+		() => !initialRows,
+	);
+	const [error, updateError] = useReducer(valueReducer<string>, "");
+	const [selectedRowPath, updateSelectedRowPath] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [nameDraft, updateNameDraft] = useReducer(valueReducer<string>, "");
+	const [renamingViewId, updateRenamingViewId] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [viewNameDraft, updateViewNameDraft] = useReducer(
+		valueReducer<string>,
+		"",
+	);
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
 	const skipNextViewMenuAutoFocusRef = useRef(false);
-	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
+	const [viewOptionsOpen, updateViewOptionsOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
-	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
+	const [showDatabaseColumnColor, updateShowDatabaseColumnColor] = useReducer(
+		valueReducer<boolean>,
+		true,
+	);
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
 		const storedDatabaseId = readStoredSelectedDatabaseId();
-		setSummaries(next);
-		setSelectedDatabaseId((current) =>
+		updateSummaries(next);
+		updateSelectedDatabaseId((current) =>
 			current && next.some((entry) => entry.id === current)
 				? current
 				: initialDatabaseId &&
@@ -233,7 +276,9 @@ function DatabasesPaneContent({
 	}, [initialDatabaseId]);
 
 	useEffect(() => {
-		void loadSummaries().catch((cause) => setError(extractErrorMessage(cause)));
+		void loadSummaries().catch((cause) =>
+			updateError(extractErrorMessage(cause)),
+		);
 	}, [loadSummaries]);
 
 	useEffect(() => {
@@ -241,7 +286,7 @@ function DatabasesPaneContent({
 		void loadSettings()
 			.then((settings) => {
 				if (!cancelled) {
-					setShowDatabaseColumnColor(settings.database.showColumnColor);
+					updateShowDatabaseColumnColor(settings.database.showColumnColor);
 				}
 			})
 			.catch(() => {
@@ -254,7 +299,7 @@ function DatabasesPaneContent({
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.database?.showColumnColor === "boolean") {
-			setShowDatabaseColumnColor(payload.database.showColumnColor);
+			updateShowDatabaseColumnColor(payload.database.showColumnColor);
 		}
 	});
 
@@ -264,29 +309,29 @@ function DatabasesPaneContent({
 
 	useEffect(() => {
 		if (!selectedDatabaseId) {
-			setDocument(null);
-			setSelectedViewId(null);
-			setRows([]);
-			setLoading(false);
+			updateDocument(null);
+			updateSelectedViewId(null);
+			updateRows([]);
+			updateLoading(false);
 			return;
 		}
 		let cancelled = false;
 		const cachedDocument = prefetchDatabaseDocument(selectedDatabaseId);
-		setLoading(document?.database.id !== selectedDatabaseId);
-		setError("");
+		updateLoading(document?.database.id !== selectedDatabaseId);
+		updateError("");
 		if (document?.database.id !== selectedDatabaseId) {
-			setRows([]);
+			updateRows([]);
 		}
 		void cachedDocument
 			.then((next) => {
 				if (cancelled) return;
-				setDocument(next);
-				setNameDraft(next.database.name);
+				updateDocument(next);
+				updateNameDraft(next.database.name);
 				if (next.database.views.length === 0) {
 					return;
 				}
 				const storedViewId = readStoredSelectedViewId(next.database.id);
-				setSelectedViewId((current) => {
+				updateSelectedViewId((current) => {
 					if (
 						current &&
 						next.database.views.some((view) => view.id === current)
@@ -304,11 +349,11 @@ function DatabasesPaneContent({
 			})
 			.catch((cause) => {
 				if (cancelled) return;
-				setError(extractErrorMessage(cause));
-				setDocument(null);
+				updateError(extractErrorMessage(cause));
+				updateDocument(null);
 			})
 			.finally(() => {
-				if (!cancelled) setLoading(false);
+				if (!cancelled) updateLoading(false);
 			});
 		return () => {
 			cancelled = true;
@@ -377,14 +422,14 @@ function DatabasesPaneContent({
 				!document.database.views.some((view) => view.id === selectedViewId)
 			) {
 				if (rowRequestTokenRef.current === requestToken) {
-					setRows([]);
-					setRowsTruncated(false);
+					updateRows([]);
+					updateRowsTruncated(false);
 				}
 				return;
 			}
 			const shouldShowLoading = !options?.background;
 			if (shouldShowLoading) {
-				setRowsLoading(true);
+				updateRowsLoading(true);
 			}
 			try {
 				const next = await prefetchDatabaseRows(
@@ -394,17 +439,17 @@ function DatabasesPaneContent({
 				if (rowRequestTokenRef.current !== requestToken) {
 					return;
 				}
-				setRows(next.rows);
-				setRowsTruncated(next.truncated);
+				updateRows(next.rows);
+				updateRowsTruncated(next.truncated);
 				setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
 			} catch (cause) {
 				if (rowRequestTokenRef.current !== requestToken) {
 					return;
 				}
-				setError(extractErrorMessage(cause));
+				updateError(extractErrorMessage(cause));
 			} finally {
 				if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
-					setRowsLoading(false);
+					updateRowsLoading(false);
 				}
 			}
 		},
@@ -418,9 +463,9 @@ function DatabasesPaneContent({
 			selectedViewId,
 		);
 		if (cachedRows) {
-			setRows(cachedRows.rows);
-			setRowsTruncated(cachedRows.truncated);
-			setRowsLoading(false);
+			updateRows(cachedRows.rows);
+			updateRowsTruncated(cachedRows.truncated);
+			updateRowsLoading(false);
 			void loadRows({ background: true });
 			return;
 		}
@@ -465,9 +510,9 @@ function DatabasesPaneContent({
 				const saved = await invoke("databases_update", {
 					database: nextDatabase,
 				});
-				setError("");
-				setDocument(saved);
-				setNameDraft(saved.database.name);
+				updateError("");
+				updateDocument(saved);
+				updateNameDraft(saved.database.name);
 				invalidateDatabasePrefetch(saved.database.id);
 				setPrefetchedDatabaseDocument(saved.database.id, saved);
 				invalidateDatabaseSummariesPrefetch();
@@ -475,7 +520,7 @@ function DatabasesPaneContent({
 				return saved;
 			} catch (cause) {
 				const message = extractErrorMessage(cause);
-				setError(message);
+				updateError(message);
 				throw cause instanceof Error ? cause : new Error(message);
 			}
 		},
@@ -519,16 +564,16 @@ function DatabasesPaneContent({
 			const created = await invoke("databases_create", {
 				name: nextDatabaseName(summaries),
 			});
-			setError("");
+			updateError("");
 			invalidateDatabaseSummariesPrefetch();
 			setPrefetchedDatabaseDocument(created.database.id, created);
-			setSelectedDatabaseId(created.database.id);
-			setDocument(created);
-			setSelectedViewId(created.database.views[0]?.id ?? null);
-			setNameDraft(created.database.name);
+			updateSelectedDatabaseId(created.database.id);
+			updateDocument(created);
+			updateSelectedViewId(created.database.views[0]?.id ?? null);
+			updateNameDraft(created.database.name);
 			await loadSummaries();
 		} catch (cause) {
-			setError(extractErrorMessage(cause));
+			updateError(extractErrorMessage(cause));
 		}
 	}, [loadSummaries, summaries]);
 
@@ -536,15 +581,15 @@ function DatabasesPaneContent({
 		if (!document || document.database.is_system) return;
 		try {
 			await invoke("databases_delete", { database_id: document.database.id });
-			setError("");
+			updateError("");
 			invalidateDatabasePrefetch(document.database.id);
 			invalidateDatabaseSummariesPrefetch();
-			setDocument(null);
-			setRows([]);
-			setRowsTruncated(false);
+			updateDocument(null);
+			updateRows([]);
+			updateRowsTruncated(false);
 			await loadSummaries();
 		} catch (cause) {
-			setError(extractErrorMessage(cause));
+			updateError(extractErrorMessage(cause));
 		}
 	}, [document, loadSummaries]);
 
@@ -565,8 +610,8 @@ function DatabasesPaneContent({
 					column,
 					value,
 				});
-				setError("");
-				setRows((current) => {
+				updateError("");
+				updateRows((current) => {
 					const existingIndex = current.findIndex(
 						(row) => row.note_path === notePath,
 					);
@@ -587,7 +632,7 @@ function DatabasesPaneContent({
 					removed: false,
 				});
 			} catch (cause) {
-				setError(extractErrorMessage(cause));
+				updateError(extractErrorMessage(cause));
 				throw cause;
 			}
 		},
@@ -618,10 +663,10 @@ function DatabasesPaneContent({
 					value_list: [],
 				});
 				if (renamedPath && renamedPath !== notePath) {
-					setRows((current) =>
+					updateRows((current) =>
 						current.filter((row) => row.note_path !== notePath),
 					);
-					setSelectedRowPath((current) =>
+					updateSelectedRowPath((current) =>
 						current === notePath ? renamedPath : current,
 					);
 				}
@@ -634,7 +679,7 @@ function DatabasesPaneContent({
 						// Keep the original error path; rollback is best effort.
 					}
 				}
-				setError(extractErrorMessage(cause));
+				updateError(extractErrorMessage(cause));
 				return false;
 			}
 		},
@@ -647,13 +692,13 @@ function DatabasesPaneContent({
 			const created = await invoke("databases_create_row", {
 				database_id: document.database.id,
 			});
-			setError("");
+			updateError("");
 			invalidateDatabasePrefetch(document.database.id);
 			setPrefetchedDatabaseDocument(document.database.id, document);
-			setSelectedRowPath(created.note_path);
+			updateSelectedRowPath(created.note_path);
 			await loadRows();
 		} catch (cause) {
-			setError(extractErrorMessage(cause));
+			updateError(extractErrorMessage(cause));
 		}
 	}, [document, loadRows]);
 
@@ -699,8 +744,8 @@ function DatabasesPaneContent({
 		if (!saved) {
 			return;
 		}
-		setError("");
-		setSelectedViewId(nextViewId);
+		updateError("");
+		updateSelectedViewId(nextViewId);
 	}, [document, saveDatabase]);
 
 	const commitDatabaseRename = useCallback(() => {
@@ -723,8 +768,8 @@ function DatabasesPaneContent({
 			const view = document?.database.views.find((v) => v.id === viewId);
 			if (!view) return;
 			skipNextViewMenuAutoFocusRef.current = true;
-			setViewNameDraft(view.name);
-			setRenamingViewId(viewId);
+			updateViewNameDraft(view.name);
+			updateRenamingViewId(viewId);
 		},
 		[document],
 	);
@@ -732,14 +777,14 @@ function DatabasesPaneContent({
 	const commitViewRename = useCallback(() => {
 		skipNextViewMenuAutoFocusRef.current = false;
 		if (!document || !renamingViewId || !viewNameDraft.trim()) {
-			setRenamingViewId(null);
+			updateRenamingViewId(null);
 			return;
 		}
 		const current = document.database.views.find(
 			(v) => v.id === renamingViewId,
 		);
 		if (!current || viewNameDraft.trim() === current.name) {
-			setRenamingViewId(null);
+			updateRenamingViewId(null);
 			return;
 		}
 		void saveDatabase({
@@ -748,7 +793,7 @@ function DatabasesPaneContent({
 				v.id === renamingViewId ? { ...v, name: viewNameDraft.trim() } : v,
 			),
 		});
-		setRenamingViewId(null);
+		updateRenamingViewId(null);
 	}, [document, renamingViewId, saveDatabase, viewNameDraft]);
 
 	const handleDeleteView = useCallback(
@@ -765,7 +810,7 @@ function DatabasesPaneContent({
 				const remaining = document.database.views.filter(
 					(v) => v.id !== viewId,
 				);
-				setSelectedViewId(remaining[0]?.id ?? null);
+				updateSelectedViewId(remaining[0]?.id ?? null);
 			}
 		},
 		[document, saveDatabase, selectedViewId],
@@ -797,7 +842,7 @@ function DatabasesPaneContent({
 								<DropdownMenuItem
 									key={summary.id}
 									className={`databasesDropdownItem databasesCollectionMenuItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
-									onSelect={() => setSelectedDatabaseId(summary.id)}
+									onSelect={() => updateSelectedDatabaseId(summary.id)}
 								>
 									<HugeiconsIcon
 										icon={LibraryIcon}
@@ -827,7 +872,7 @@ function DatabasesPaneContent({
 								style={{
 									width: `${Math.min(Math.max(nameDraft.trim().length + 2, 10), 24)}ch`,
 								}}
-								onChange={(event) => setNameDraft(event.target.value)}
+								onChange={(event) => updateNameDraft(event.target.value)}
 								onBlur={commitDatabaseRename}
 								onKeyDown={(event) => {
 									if (event.key === "Enter") {
@@ -899,7 +944,7 @@ function DatabasesPaneContent({
 												value={viewNameDraft}
 												aria-label="View name"
 												onChange={(event) =>
-													setViewNameDraft(event.target.value)
+													updateViewNameDraft(event.target.value)
 												}
 												onBlur={commitViewRename}
 												onKeyDown={(event) => {
@@ -910,7 +955,7 @@ function DatabasesPaneContent({
 													if (event.key === "Escape") {
 														event.preventDefault();
 														skipNextViewMenuAutoFocusRef.current = false;
-														setRenamingViewId(null);
+														updateRenamingViewId(null);
 													}
 												}}
 											/>
@@ -919,7 +964,7 @@ function DatabasesPaneContent({
 												type="button"
 												className={isActive ? "active" : ""}
 												aria-pressed={isActive}
-												onClick={() => setSelectedViewId(view.id)}
+												onClick={() => updateSelectedViewId(view.id)}
 											>
 												<span
 													className="settingsSegmentedIcon"
@@ -1044,7 +1089,7 @@ function DatabasesPaneContent({
 							}}
 							onChangeConfig={handleSaveConfig}
 							viewOptionsOpen={viewOptionsOpen}
-							onViewOptionsOpenChange={setViewOptionsOpen}
+							onViewOptionsOpenChange={updateViewOptionsOpen}
 						/>
 					</div>
 					{error ? (
@@ -1069,9 +1114,9 @@ function DatabasesPaneContent({
 							statusColors={statusColors}
 							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}
-							onSelectRow={setSelectedRowPath}
+							onSelectRow={updateSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
-							onOpenColumns={() => setViewOptionsOpen(true)}
+							onOpenColumns={() => updateViewOptionsOpen(true)}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,
@@ -1126,7 +1171,7 @@ function DatabasesPaneContent({
 								(activeConfig.sorts[0] as DatabaseSort | null) ?? null
 							}
 							groupColumn={activeGroupColumn}
-							onSelectRow={setSelectedRowPath}
+							onSelectRow={updateSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onToggleSort={(column) =>
 								void handleSaveConfig({

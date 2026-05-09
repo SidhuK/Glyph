@@ -22,15 +22,15 @@ export type SettingsTab =
 	| "advanced"
 	| "about";
 
-export interface SettingsTabMeta {
+interface SettingsTabMeta {
 	id: SettingsTab;
 	label: string;
-	renderIcon: () => ReactElement;
+	icon: ReactElement;
 	badgeText?: string;
-	badgeIcon?: () => ReactElement;
+	badgeIcon?: ReactElement;
 }
 
-export interface SettingsTabGroup {
+interface SettingsTabGroup {
 	id: string;
 	label: string;
 	tabs: SettingsTabMeta[];
@@ -40,60 +40,46 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
-		renderIcon: () => (
-			<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />,
 	},
 	{
 		id: "appearance",
 		label: "Appearance",
-		renderIcon: () => (
-			<HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />,
 	},
 	{
 		id: "shortcuts",
 		label: "Shortcuts",
-		renderIcon: () => (
-			<HugeiconsIcon icon={CommandIcon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={CommandIcon} size={14} strokeWidth={0.9} />,
 	},
 	{
 		id: "ai",
 		label: "Glyph AI",
-		renderIcon: () => (
-			<HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={0.9} />,
 	},
 	{
 		id: "space",
 		label: "Space",
-		renderIcon: () => <FolderOpen size={14} />,
+		icon: <FolderOpen size={14} />,
 	},
 	{
 		id: "git",
 		label: "Git",
-		renderIcon: () => (
-			<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />,
 		badgeText: "Beta",
-		badgeIcon: () => (
+		badgeIcon: (
 			<HugeiconsIcon icon={ConstructionIcon} size={11} strokeWidth={0.9} />
 		),
 	},
 	{
 		id: "advanced",
 		label: "Advanced",
-		renderIcon: () => (
-			<HugeiconsIcon icon={ToolsIcon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={ToolsIcon} size={14} strokeWidth={0.9} />,
 	},
 	{
 		id: "about",
 		label: "About",
-		renderIcon: () => (
-			<HugeiconsIcon icon={Archive02Icon} size={14} strokeWidth={0.9} />
-		),
+		icon: <HugeiconsIcon icon={Archive02Icon} size={14} strokeWidth={0.9} />,
 	},
 ];
 

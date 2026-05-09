@@ -55,21 +55,21 @@ export function stripTaskScheduleTokens(rawText: string): string {
 	return kept.join(" ");
 }
 
-export type TaskDateTone =
+type TaskDateTone =
 	| "default"
 	| "today"
 	| "upcoming"
 	| "overdue"
 	| "pastScheduled";
 
-export interface TaskDateBadge {
+interface TaskDateBadge {
 	kind: "due" | "scheduled";
 	label: string;
 	tone: TaskDateTone;
 	date: string;
 }
 
-export interface TaskTimingSummary {
+interface TaskTimingSummary {
 	badges: TaskDateBadge[];
 	isOverdue: boolean;
 	isPastScheduled: boolean;
@@ -182,11 +182,14 @@ export function getTaskTimingSummary(
 		),
 		hasDueDate: dueDiff !== null,
 		hasScheduledDate: scheduledDiff !== null,
-		nextDate:
-			[dueDate, scheduledDate]
-				.filter((value): value is string =>
-					Boolean(value && parseTaskDate(value)),
-				)
-				.sort()[0] ?? null,
+		nextDate: [dueDate, scheduledDate]
+			.filter((value): value is string =>
+				Boolean(value && parseTaskDate(value)),
+			)
+			.reduce<string | null>(
+				(earliest, value) =>
+					earliest === null || value < earliest ? value : earliest,
+				null,
+			),
 	};
 }

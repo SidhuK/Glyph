@@ -74,7 +74,7 @@ export function useSelectionRibbon({
 	hostRef,
 	mode,
 }: UseSelectionRibbonArgs): SelectionRibbonPosition | null {
-	const [selectionRibbon, setSelectionRibbon] =
+	const [selectionRibbon, updateSelectionRibbon] =
 		useState<SelectionRibbonPosition | null>(null);
 	const hideTimerRef = useRef<number | null>(null);
 
@@ -84,7 +84,7 @@ export function useSelectionRibbon({
 				window.clearTimeout(hideTimerRef.current);
 				hideTimerRef.current = null;
 			}
-			setSelectionRibbon(null);
+			updateSelectionRibbon(null);
 			return;
 		}
 		const host = hostRef.current;
@@ -97,7 +97,7 @@ export function useSelectionRibbon({
 			}
 			hideTimerRef.current = window.setTimeout(() => {
 				hideTimerRef.current = null;
-				setSelectionRibbon(null);
+				updateSelectionRibbon(null);
 			}, SELECTION_RIBBON_HIDE_DELAY_MS);
 		};
 
@@ -119,7 +119,7 @@ export function useSelectionRibbon({
 					window.clearTimeout(hideTimerRef.current);
 					hideTimerRef.current = null;
 				}
-				setSelectionRibbon((current) => {
+				updateSelectionRibbon((current) => {
 					if (
 						current &&
 						current.top === next.top &&

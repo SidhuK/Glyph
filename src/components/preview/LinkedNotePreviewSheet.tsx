@@ -243,6 +243,12 @@ export function LinkedNotePreviewSheet() {
 		},
 		[clearCloseTimer, clearOpenTimer],
 	);
+	const closePreviewRef = useRef(closePreview);
+	const scheduleCloseRef = useRef(scheduleClose);
+	const showPreviewRef = useRef(showPreview);
+	closePreviewRef.current = closePreview;
+	scheduleCloseRef.current = scheduleClose;
+	showPreviewRef.current = showPreview;
 
 	useLayoutEffect(() => {
 		if (!preview || !sheetRef.current) return;
@@ -273,7 +279,7 @@ export function LinkedNotePreviewSheet() {
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
 			const noteTarget = targetFromLink(link);
-			if (noteTarget) showPreview(link, noteTarget);
+			if (noteTarget) showPreviewRef.current(link, noteTarget);
 		};
 
 		const onPointerOut = (event: PointerEvent) => {
@@ -285,36 +291,31 @@ export function LinkedNotePreviewSheet() {
 			if (!link) return;
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
-			scheduleClose();
+			scheduleCloseRef.current();
 		};
 
 		const onScroll = (event: Event) => {
 			const target = event.target;
 			if (target instanceof Node && sheetRef.current?.contains(target)) return;
-			closePreview();
+			closePreviewRef.current();
 		};
 
 		document.addEventListener("pointermove", onPointerMove);
 		document.addEventListener("pointerover", onPointerOver);
 		document.addEventListener("pointerout", onPointerOut);
 		window.addEventListener("scroll", onScroll, true);
-		window.addEventListener("resize", closePreview);
+		const closeCurrentPreview = () => closePreviewRef.current();
+		window.addEventListener("resize", closeCurrentPreview);
 		return () => {
 			document.removeEventListener("pointermove", onPointerMove);
 			document.removeEventListener("pointerover", onPointerOver);
 			document.removeEventListener("pointerout", onPointerOut);
 			window.removeEventListener("scroll", onScroll, true);
-			window.removeEventListener("resize", closePreview);
+			window.removeEventListener("resize", closeCurrentPreview);
 			clearOpenTimer();
 			clearCloseTimer();
 		};
-	}, [
-		clearCloseTimer,
-		clearOpenTimer,
-		closePreview,
-		scheduleClose,
-		showPreview,
-	]);
+	}, [clearCloseTimer, clearOpenTimer]);
 
 	if (!preview) return null;
 

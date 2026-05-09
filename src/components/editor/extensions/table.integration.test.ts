@@ -3,7 +3,7 @@
 import { Editor } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { describe, expect, it } from "vitest";
-import { createEditorExtensions } from "./index";
+import { createEditorExtensions } from "./createEditorExtensions";
 
 function createMarkdownManager() {
 	return new MarkdownManager({

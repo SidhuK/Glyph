@@ -92,7 +92,61 @@ function getTaskGroupMeta(label: string): {
 	return { displayLabel: label, tone: "neutral" };
 }
 
-export function CalendarPane({
+interface CalendarTaskGroupProps {
+	label: string;
+	tasks: TaskItem[];
+	selectedDate: string;
+	onToggle: (task: TaskItem, checked: boolean) => Promise<void>;
+	onSchedule: (
+		task: TaskItem,
+		scheduled: string | null,
+		due: string | null,
+	) => Promise<boolean>;
+	onOpenFile: (relPath: string) => Promise<void>;
+}
+
+function CalendarTaskGroup({
+	label,
+	tasks,
+	selectedDate,
+	onToggle,
+	onSchedule,
+	onOpenFile,
+}: CalendarTaskGroupProps) {
+	if (tasks.length === 0) return null;
+	const { displayLabel, tone } = getTaskGroupMeta(label);
+	return (
+		<div className="calendarTaskGroup">
+			<div className="calendarSectionHeader">
+				<h4 className="calendarSectionTitle">
+					<span className={cn("calendarSectionLabelPill", `is-${tone}`)}>
+						{displayLabel}
+					</span>
+				</h4>
+				<span className="calendarSectionCount">{tasks.length}</span>
+			</div>
+			<div className="calendarTaskList">
+				{tasks.map((task) => (
+					<TaskRow
+						key={task.task_id}
+						task={task}
+						today={selectedDate}
+						showNoteContext
+						onToggle={onToggle}
+						onSchedule={onSchedule}
+						onOpenNote={(notePath) => void onOpenFile(notePath)}
+					/>
+				))}
+			</div>
+		</div>
+	);
+}
+
+export function CalendarPane(props: CalendarPaneProps) {
+	return useCalendarPane(props);
+}
+
+function useCalendarPane({
 	initialData = null,
 	onOpenFile,
 	onOpenDailyNotesSettings,
@@ -144,15 +198,17 @@ export function CalendarPane({
 	const loading = calendarQuery.isFetching;
 
 	const invalidateCalendar = useCallback(async () => {
-		await queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.calendar(),
-		});
-		await queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.taskSummaries(),
-		});
-		await queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocs(),
-		});
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.calendar(),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.taskSummaries(),
+			}),
+			queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.allDocs(),
+			}),
+		]);
 	}, [queryClient]);
 
 	const setAnchorDateAndPersist = useCallback((nextDate: string) => {
@@ -262,6 +318,9 @@ export function CalendarPane({
 			});
 		},
 		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.calendar(),
+			});
 			await invalidateCalendar();
 		},
 		onError: (cause) => {
@@ -285,6 +344,9 @@ export function CalendarPane({
 			}),
 		onMutate: () => setError(""),
 		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.calendar(),
+			});
 			await invalidateCalendar();
 		},
 		onError: (cause) => {
@@ -320,6 +382,9 @@ export function CalendarPane({
 			}),
 		onMutate: () => setError(""),
 		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.calendar(),
+			});
 			await invalidateCalendar();
 		},
 		onError: (cause) => {
@@ -363,39 +428,6 @@ export function CalendarPane({
 	const openSelectedDailyNote = useCallback(async () => {
 		await openDailyNoteForDate(selectedDate);
 	}, [openDailyNoteForDate, selectedDate]);
-
-	const renderTaskGroup = useCallback(
-		(label: string, tasks: TaskItem[]) => {
-			if (tasks.length === 0) return null;
-			const { displayLabel, tone } = getTaskGroupMeta(label);
-			return (
-				<div className="calendarTaskGroup">
-					<div className="calendarSectionHeader">
-						<h4 className="calendarSectionTitle">
-							<span className={cn("calendarSectionLabelPill", `is-${tone}`)}>
-								{displayLabel}
-							</span>
-						</h4>
-						<span className="calendarSectionCount">{tasks.length}</span>
-					</div>
-					<div className="calendarTaskList">
-						{tasks.map((task) => (
-							<TaskRow
-								key={task.task_id}
-								task={task}
-								today={selectedDate}
-								showNoteContext
-								onToggle={toggleTask}
-								onSchedule={scheduleTask}
-								onOpenNote={(notePath) => void onOpenFile(notePath)}
-							/>
-						))}
-					</div>
-				</div>
-			);
-		},
-		[onOpenFile, scheduleTask, selectedDate, toggleTask],
-	);
 
 	/* shadcn Calendar integration */
 	const selectedDateObj = useMemo(
@@ -570,9 +602,30 @@ export function CalendarPane({
 									</h4>
 								</div>
 								<div className="calendarTasksScrollArea">
-									{renderTaskGroup("For this day", agendaTasks)}
-									{renderTaskGroup("Overdue", overdueTasks)}
-									{renderTaskGroup("Ongoing", ongoingTasks)}
+									<CalendarTaskGroup
+										label="For this day"
+										tasks={agendaTasks}
+										selectedDate={selectedDate}
+										onToggle={toggleTask}
+										onSchedule={scheduleTask}
+										onOpenFile={onOpenFile}
+									/>
+									<CalendarTaskGroup
+										label="Overdue"
+										tasks={overdueTasks}
+										selectedDate={selectedDate}
+										onToggle={toggleTask}
+										onSchedule={scheduleTask}
+										onOpenFile={onOpenFile}
+									/>
+									<CalendarTaskGroup
+										label="Ongoing"
+										tasks={ongoingTasks}
+										selectedDate={selectedDate}
+										onToggle={toggleTask}
+										onSchedule={scheduleTask}
+										onOpenFile={onOpenFile}
+									/>
 								</div>
 							</div>
 							<div className="calendarMiniDb">

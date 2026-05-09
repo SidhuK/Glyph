@@ -42,15 +42,19 @@ vi.mock("motion/react", async () => {
 	const motion = new Proxy(
 		{},
 		{
-			get: (_, tag: string) =>
-				React.forwardRef<
-					HTMLElement,
-					React.HTMLAttributes<HTMLElement> &
-						Record<string, unknown> & { children?: React.ReactNode }
-				>((props, ref) => {
+			get:
+				(_, tag: string) =>
+				({
+					ref,
+					...props
+				}: React.HTMLAttributes<HTMLElement> &
+					Record<string, unknown> & {
+						children?: React.ReactNode;
+						ref?: React.Ref<HTMLElement>;
+					}) => {
 					const { children, rest } = stripMotionProps(props);
 					return React.createElement(tag, { ...rest, ref }, children);
-				}),
+				},
 		},
 	);
 	return {

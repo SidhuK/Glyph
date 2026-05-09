@@ -9,13 +9,13 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { flushSync } from "react-dom";
 import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../lib/appEvents";
 import { MERMAID_CODE_BLOCK_LANGUAGE } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
+import { containsText } from "../../lib/stringMatch";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -117,7 +117,7 @@ function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
 		const raw = match[0];
 		const start = match.index;
 		const end = start + raw.length;
-		if (raw.includes("[[")) {
+		if (containsText(raw, "[[")) {
 			if (parseWikiLink(raw)) tokens.push({ kind: "wiki", raw, start, end });
 			continue;
 		}
@@ -176,6 +176,73 @@ async function openFrontmatterHref(
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
+interface FrontmatterWithLinksProps {
+	text: string;
+	interactive: boolean;
+	relPath: string | null;
+}
+
+function FrontmatterWithLinks({
+	text,
+	interactive,
+	relPath,
+}: FrontmatterWithLinksProps) {
+	const tokens = extractFrontmatterLinkTokens(text);
+	if (!tokens.length) return text;
+	const nodes: ReactNode[] = [];
+	let cursor = 0;
+	for (const token of tokens) {
+		if (cursor < token.start) nodes.push(text.slice(cursor, token.start));
+		if (token.kind === "wiki") {
+			const parsed = parseWikiLink(token.raw);
+			nodes.push(
+				interactive && parsed ? (
+					<button
+						key={`fm-${token.start}-${token.end}`}
+						type="button"
+						className="frontmatterInlineLink"
+						onClick={() => {
+							dispatchWikiLinkClick({
+								raw: parsed.raw,
+								target: parsed.target,
+								alias: parsed.alias,
+								anchorKind: parsed.anchorKind,
+								anchor: parsed.anchor,
+								unresolved: parsed.unresolved,
+								embed: parsed.embed,
+							});
+						}}
+					>
+						{token.raw}
+					</button>
+				) : (
+					token.raw
+				),
+			);
+		} else {
+			nodes.push(
+				interactive ? (
+					<button
+						key={`fm-${token.start}-${token.end}`}
+						type="button"
+						className="frontmatterInlineLink"
+						onClick={() => {
+							void openFrontmatterHref(token.href, relPath ?? "");
+						}}
+					>
+						{token.raw}
+					</button>
+				) : (
+					token.raw
+				),
+			);
+		}
+		cursor = token.end;
+	}
+	if (cursor < text.length) nodes.push(text.slice(cursor));
+	return nodes;
+}
+
 export const NoteInlineEditor = memo(function NoteInlineEditor({
 	markdown,
 	relPath,
@@ -209,25 +276,26 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		onChange,
 	});
 
-	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
-	const lastFrontmatterRef = useRef(frontmatter);
-	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
-	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
-	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
-		null,
+	const [frontmatterDraft, updateFrontmatterDraft] = useState(
+		frontmatter ?? "",
 	);
-	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
-	const [selectedCodeBlock, setSelectedCodeBlock] =
+	const lastFrontmatterRef = useRef(frontmatter);
+	const [backlinks, updateBacklinks] = useState<BacklinkItem[]>([]);
+	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const [tiptapHostNode, updateTiptapHostNode] =
+		useState<HTMLDivElement | null>(null);
+	const [codeBlockPickerOpen, updateCodeBlockPickerOpen] = useState(false);
+	const [selectedCodeBlock, updateSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
 	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
-	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
-	const [activeMermaidPreviewPos, setActiveMermaidPreviewPos] = useState<
+	const [codeBlockCopied, updateCodeBlockCopied] = useState(false);
+	const [activeMermaidPreviewPos, updateActiveMermaidPreviewPos] = useState<
 		number | null
 	>(null);
-	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
+	const [activeMermaidPreviewHeight, updateActiveMermaidPreviewHeight] =
 		useState(0);
-	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
+	const [linkDialog, updateLinkDialog] = useState<LinkDialogState | null>(null);
 	const rawTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
@@ -264,7 +332,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
 		lastFrontmatterRef.current = frontmatter;
-		setFrontmatterDraft(frontmatter ?? "");
+		updateFrontmatterDraft(frontmatter ?? "");
 	}, [frontmatter]);
 
 	// Reset when the editor context changes, but not on every content update.
@@ -276,16 +344,16 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	useEffect(() => {
 		if (!relPath || !showBacklinks || deferHeavyFeatures) {
-			setBacklinks([]);
+			updateBacklinks([]);
 			return;
 		}
 		let cancelled = false;
 		void (async () => {
 			try {
 				const items = await invoke("backlinks", { note_id: relPath });
-				if (!cancelled) setBacklinks(items);
+				if (!cancelled) updateBacklinks(items);
 			} catch {
-				if (!cancelled) setBacklinks([]);
+				if (!cancelled) updateBacklinks([]);
 			}
 		})();
 		return () => {
@@ -424,7 +492,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 							href?: string;
 							target?: string;
 						};
-						setLinkDialog({
+						updateLinkDialog({
 							href: linkAttrs.href ?? "",
 							target: linkAttrs.target === "_blank" ? "_blank" : "_self",
 						});
@@ -505,7 +573,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const handleFrontmatterChange = (next: string | null) => {
 		const normalizedFrontmatter = next?.trim().length ? next : null;
-		setFrontmatterDraft(normalizedFrontmatter ?? "");
+		updateFrontmatterDraft(normalizedFrontmatter ?? "");
 		frontmatterRef.current = normalizedFrontmatter;
 		const currentBody = normalizeBody(
 			editor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
@@ -520,63 +588,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		onFrontmatterCommit?.();
 	};
 
-	const renderFrontmatterWithLinks = (text: string) => {
-		const tokens = extractFrontmatterLinkTokens(text);
-		if (!tokens.length) return text;
-		const nodes: ReactNode[] = [];
-		let cursor = 0;
-		for (const token of tokens) {
-			if (cursor < token.start) nodes.push(text.slice(cursor, token.start));
-			if (token.kind === "wiki") {
-				const parsed = parseWikiLink(token.raw);
-				nodes.push(
-					interactive && parsed ? (
-						<button
-							key={`fm-${token.start}-${token.end}`}
-							type="button"
-							className="frontmatterInlineLink"
-							onClick={() => {
-								dispatchWikiLinkClick({
-									raw: parsed.raw,
-									target: parsed.target,
-									alias: parsed.alias,
-									anchorKind: parsed.anchorKind,
-									anchor: parsed.anchor,
-									unresolved: parsed.unresolved,
-									embed: parsed.embed,
-								});
-							}}
-						>
-							{token.raw}
-						</button>
-					) : (
-						token.raw
-					),
-				);
-			} else {
-				nodes.push(
-					interactive ? (
-						<button
-							key={`fm-${token.start}-${token.end}`}
-							type="button"
-							className="frontmatterInlineLink"
-							onClick={() => {
-								void openFrontmatterHref(token.href, relPath ?? "");
-							}}
-						>
-							{token.raw}
-						</button>
-					) : (
-						token.raw
-					),
-				);
-			}
-			cursor = token.end;
-		}
-		if (cursor < text.length) nodes.push(text.slice(cursor));
-		return nodes;
-	};
-
 	useEffect(() => {
 		if (!editor || mode !== "rich") {
 			selectedCodeBlockRef.current = null;
@@ -584,9 +595,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
 				codeBlockCopyResetTimerRef.current = null;
 			}
-			setSelectedCodeBlock(null);
-			setCodeBlockPickerOpen(false);
-			setCodeBlockCopied(false);
+			updateSelectedCodeBlock(null);
+			updateCodeBlockPickerOpen(false);
+			updateCodeBlockCopied(false);
 			return;
 		}
 		const host = tiptapHostRef.current;
@@ -599,9 +610,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
 				codeBlockCopyResetTimerRef.current = null;
 			}
-			setSelectedCodeBlock(null);
-			setCodeBlockPickerOpen(false);
-			setCodeBlockCopied(false);
+			updateSelectedCodeBlock(null);
+			updateCodeBlockPickerOpen(false);
+			updateCodeBlockCopied(false);
 		};
 
 		const syncSelectedCodeBlock = () => {
@@ -667,9 +678,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					window.clearTimeout(codeBlockCopyResetTimerRef.current);
 					codeBlockCopyResetTimerRef.current = null;
 				}
-				setCodeBlockCopied(false);
+				updateCodeBlockCopied(false);
 			}
-			setSelectedCodeBlock((prev) => {
+			updateSelectedCodeBlock((prev) => {
 				if (areSelectedCodeBlocksEqual(prev, nextCodeBlock)) return prev;
 				return nextCodeBlock;
 			});
@@ -733,9 +744,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				})
 				.run();
 			if (language !== MERMAID_CODE_BLOCK_LANGUAGE) {
-				setActiveMermaidPreviewPos(null);
+				updateActiveMermaidPreviewPos(null);
 			}
-			setCodeBlockPickerOpen(false);
+			updateCodeBlockPickerOpen(false);
 		},
 		[editor],
 	);
@@ -775,16 +786,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			) {
 				return;
 			}
-			flushSync(() => {
-				setActiveMermaidPreviewPos(null);
-				setActiveMermaidPreviewHeight(0);
-			});
+			updateActiveMermaidPreviewPos(null);
+			updateActiveMermaidPreviewHeight(0);
 		},
 		[activeMermaidPreviewPos, canEdit],
 	);
 	const toggleSelectedMermaidPreview = useCallback(() => {
 		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) return;
-		setActiveMermaidPreviewPos((prev) =>
+		updateActiveMermaidPreviewPos((prev) =>
 			prev === selectedCodeBlock.pos ? null : selectedCodeBlock.pos,
 		);
 	}, [isSelectedMermaidCodeBlock, selectedCodeBlock]);
@@ -857,11 +866,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const handleTiptapHostRef = useCallback((node: HTMLDivElement | null) => {
 		tiptapHostRef.current = node;
-		setTiptapHostNode(node);
+		updateTiptapHostNode(node);
 	}, []);
 
 	const closeLinkDialog = useCallback(() => {
-		setLinkDialog(null);
+		updateLinkDialog(null);
 	}, []);
 
 	const applyLinkDialog = useCallback(() => {
@@ -873,7 +882,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			.extendMarkRange("link");
 		if (!href) {
 			chain.unsetLink().run();
-			setLinkDialog(null);
+			updateLinkDialog(null);
 			return;
 		}
 		chain
@@ -883,7 +892,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				rel: linkDialog.target === "_blank" ? "noopener noreferrer" : undefined,
 			})
 			.run();
-		setLinkDialog(null);
+		updateLinkDialog(null);
 	}, [canEdit, editor, linkDialog]);
 
 	const removeLinkFromDialog = useCallback(() => {
@@ -894,7 +903,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			.extendMarkRange("link")
 			.unsetLink()
 			.run();
-		setLinkDialog(null);
+		updateLinkDialog(null);
 	}, [canEdit, editor]);
 
 	const copySelectedCodeBlock = useCallback(() => {
@@ -902,7 +911,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		const clipboard = navigator.clipboard;
 		if (!clipboard?.writeText) {
 			console.error("Clipboard API unavailable");
-			setCodeBlockCopied(false);
+			updateCodeBlockCopied(false);
 			return;
 		}
 		void clipboard
@@ -911,15 +920,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				if (codeBlockCopyResetTimerRef.current !== null) {
 					window.clearTimeout(codeBlockCopyResetTimerRef.current);
 				}
-				setCodeBlockCopied(true);
+				updateCodeBlockCopied(true);
 				codeBlockCopyResetTimerRef.current = window.setTimeout(() => {
 					codeBlockCopyResetTimerRef.current = null;
-					setCodeBlockCopied(false);
+					updateCodeBlockCopied(false);
 				}, 1500);
 			})
 			.catch((error: unknown) => {
 				console.error("Failed to copy code block contents.", error);
-				setCodeBlockCopied(false);
+				updateCodeBlockCopied(false);
 			});
 	}, [selectedCodeBlock]);
 
@@ -942,7 +951,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		() => ({
 			selected: selectedCodeBlock,
 			pickerOpen: codeBlockPickerOpen,
-			onPickerOpenChange: setCodeBlockPickerOpen,
+			onPickerOpenChange: updateCodeBlockPickerOpen,
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			isMermaid: isSelectedMermaidCodeBlock,
@@ -953,7 +962,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			onToggleMermaidPreview: toggleSelectedMermaidPreview,
 			onCopy: copySelectedCodeBlock,
 			mermaidPreviewHeight: activeMermaidPreviewHeight,
-			onMermaidHeightChange: setActiveMermaidPreviewHeight,
+			onMermaidHeightChange: updateActiveMermaidPreviewHeight,
 		}),
 		[
 			activeMermaidPreviewHeight,
@@ -1060,7 +1069,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					</div>
 				) : mode === "rich" && showFrontmatterInEditor && frontmatter ? (
 					<div className="frontmatterPreview mono">
-						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
+						<pre>
+							<FrontmatterWithLinks
+								text={frontmatter.trimEnd()}
+								interactive={interactive}
+								relPath={relPath ?? null}
+							/>
+						</pre>
 					</div>
 				) : null}
 				{mode !== "plain" ? (
@@ -1115,18 +1130,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 							Paste a URL, or leave it blank to remove the link.
 						</DialogDescription>
 					</DialogHeader>
-					<form
-						className="editorLinkDialogForm"
-						onSubmit={(event) => {
-							event.preventDefault();
-							applyLinkDialog();
-						}}
-					>
+					<div className="editorLinkDialogForm">
 						<Input
 							className="editorLinkDialogInput"
 							value={linkDialog?.href ?? ""}
 							onChange={(event) =>
-								setLinkDialog((current) =>
+								updateLinkDialog((current) =>
 									current ? { ...current, href: event.target.value } : current,
 								)
 							}
@@ -1138,7 +1147,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 								type="checkbox"
 								checked={linkDialog?.target === "_blank"}
 								onChange={(event) =>
-									setLinkDialog((current) =>
+									updateLinkDialog((current) =>
 										current
 											? {
 													...current,
@@ -1159,9 +1168,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 								<X size={14} />
 								Remove
 							</Button>
-							<Button type="submit">Apply</Button>
+							<Button type="button" onClick={applyLinkDialog}>
+								Apply
+							</Button>
 						</DialogFooter>
-					</form>
+					</div>
 				</DialogContent>
 			</Dialog>
 		</div>

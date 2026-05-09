@@ -183,6 +183,9 @@ export function useAiContext(contextSearch = "") {
 			};
 			return { payload: built.payload, manifest };
 		},
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: aiContextIndexQueryKey });
+		},
 	});
 
 	const resolveAttachedPathsMutation = useMutation({
@@ -190,6 +193,9 @@ export function useAiContext(contextSearch = "") {
 			invoke("ai_context_resolve_paths", {
 				attachments: attachedFolders,
 			}),
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: aiContextIndexQueryKey });
+		},
 	});
 
 	const buildPayload = useCallback(async () => {

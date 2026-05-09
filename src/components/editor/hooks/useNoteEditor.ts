@@ -409,11 +409,13 @@ export function useNoteEditor({
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
-	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
-	const [colorfulHeadings, setColorfulHeadings] = useState(false);
-	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
-	const [vimKeybindingsEnabled, setVimKeybindingsEnabled] = useState(false);
+	const [showCollapsibleHeadings, updateShowCollapsibleHeadings] =
+		useState(false);
+	const [showFrontmatterInEditor, updateShowFrontmatterInEditor] =
+		useState(false);
+	const [colorfulHeadings, updateColorfulHeadings] = useState(false);
+	const [peopleMentionsEnabled, updatePeopleMentionsEnabled] = useState(false);
+	const [vimKeybindingsEnabled, updateVimKeybindingsEnabled] = useState(false);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -449,24 +451,24 @@ export function useNoteEditor({
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
-				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
-				setShowFrontmatterInEditor(
+				updateShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				updateShowFrontmatterInEditor(
 					settings.editor.showFrontmatterInEditor === true,
 				);
-				setColorfulHeadings(settings.editor.colorfulHeadings);
-				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-				setVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
+				updateColorfulHeadings(settings.editor.colorfulHeadings);
+				updatePeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
+				updateVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
 				attachmentFolderRef.current = settings.editor.attachmentFolder;
 			})
 			.catch(() => {
 				if (cancelled) return;
-				setShowCollapsibleHeadings(false);
-				setShowFrontmatterInEditor(false);
-				setColorfulHeadings(false);
-				setPeopleMentionsEnabled(false);
-				setVimKeybindingsEnabled(false);
+				updateShowCollapsibleHeadings(false);
+				updateShowFrontmatterInEditor(false);
+				updateColorfulHeadings(false);
+				updatePeopleMentionsEnabled(false);
+				updateVimKeybindingsEnabled(false);
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
@@ -477,19 +479,19 @@ export function useNoteEditor({
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
-			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+			updateShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
 		}
 		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
-			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
+			updateShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
-			setColorfulHeadings(payload.editor.colorfulHeadings);
+			updateColorfulHeadings(payload.editor.colorfulHeadings);
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
-			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
+			updatePeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
 		if (typeof payload.editor?.vimKeybindings === "boolean") {
-			setVimKeybindingsEnabled(payload.editor.vimKeybindings);
+			updateVimKeybindingsEnabled(payload.editor.vimKeybindings);
 		}
 		if (payload.editor?.attachmentStorageMode) {
 			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
@@ -581,19 +583,20 @@ export function useNoteEditor({
 								return false;
 							}
 							event.preventDefault();
-							void (async () => {
-								for (const item of placeholders) {
+							void Promise.all(
+								placeholders.map(async (item) => {
 									try {
 										const dataUrl = await readFileAsDataUrl(item.file);
+										const fileName = item.file.name;
 										const saved = await invoke("space_save_pasted_image", {
 											source_path: sourcePath,
 											target_dir: targetDir,
 											data_url: dataUrl,
-											alt: item.file.name || null,
+											alt: fileName || null,
 										});
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,
-											alt: item.file.name || "",
+											alt: fileName || "",
 											title: "",
 											originSrc: saved.href,
 										});
@@ -606,8 +609,8 @@ export function useNoteEditor({
 									} finally {
 										URL.revokeObjectURL(item.objectUrl);
 									}
-								}
-							})();
+								}),
+							);
 							return true;
 						}
 						if (pasteMarkdownBehavior !== "smart-markdown") return false;

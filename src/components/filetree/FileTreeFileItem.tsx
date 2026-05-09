@@ -11,7 +11,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MutableRefObject } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useReducer, useRef } from "react";
 import type {
 	FileTreeAppearance,
 	FsEntry,
@@ -62,7 +62,10 @@ function FileRenameInput({
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 }) {
-	const [draftName, setDraftName] = useState(initialName);
+	const [draftName, setDraftName] = useReducer(
+		(_current: string, next: string) => next,
+		initialName,
+	);
 	const renameSubmittedRef = useRef(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 

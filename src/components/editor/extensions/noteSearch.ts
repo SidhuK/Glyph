@@ -3,7 +3,7 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
-export interface NoteSearchRange {
+interface NoteSearchRange {
 	from: number;
 	to: number;
 }
@@ -19,6 +19,14 @@ interface NoteSearchPluginState extends NoteSearchState {
 
 const noteSearchPluginKey = new PluginKey<NoteSearchPluginState>("note-search");
 
+function nextSearchIndex(
+	haystack: string,
+	needle: string,
+	startIndex: number,
+): number {
+	return haystack.indexOf(needle, startIndex);
+}
+
 export function findPlainTextSearchRanges(
 	text: string,
 	query: string,
@@ -32,7 +40,7 @@ export function findPlainTextSearchRanges(
 	let startIndex = 0;
 
 	while (startIndex <= haystack.length - needle.length) {
-		const index = haystack.indexOf(needle, startIndex);
+		const index = nextSearchIndex(haystack, needle, startIndex);
 		if (index === -1) break;
 		ranges.push({
 			from: offset + index,

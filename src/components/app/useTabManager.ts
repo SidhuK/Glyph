@@ -36,10 +36,12 @@ export function useTabManager(spacePath: string | null) {
 	const { setOpenMarkdownTabs, setActiveMarkdownTabPath } =
 		useUILayoutContext();
 
-	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
-	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
-	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
-	const [historyByTabId, setHistoryByTabId] = useState<TabHistoryById>({});
+	const [tabs, updateTabs] = useState<WorkspaceTab[]>([]);
+	const [activeTabId, updateActiveTabIdState] = useState<string | null>(null);
+	const [dirtyByPath, updateDirtyByPath] = useState<Record<string, boolean>>(
+		{},
+	);
+	const [historyByTabId, updateHistoryByTabId] = useState<TabHistoryById>({});
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
@@ -77,12 +79,11 @@ export function useTabManager(spacePath: string | null) {
 				nextActiveTab?.kind === "file" && nextActiveTab.target
 					? nextActiveTab.target
 					: null;
-			const nextMarkdownTabs = nextTabs
-				.filter(
-					(tab) =>
-						tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
-				)
-				.map((tab) => tab.target as string);
+			const nextMarkdownTabs = nextTabs.flatMap((tab) =>
+				tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md")
+					? [tab.target]
+					: [],
+			);
 			const nextActiveMarkdownPath =
 				nextActiveTab?.kind === "file" &&
 				nextActiveTab.target?.toLowerCase().endsWith(".md")
@@ -122,8 +123,8 @@ export function useTabManager(spacePath: string | null) {
 			const previousActiveTarget = previousActiveTab?.target ?? null;
 			tabsRef.current = nextTabs;
 			activeTabIdRef.current = nextActiveTabId;
-			setTabs(nextTabs);
-			setActiveTabIdState(nextActiveTabId);
+			updateTabs(nextTabs);
+			updateActiveTabIdState(nextActiveTabId);
 			syncWorkspaceState(nextTabs, nextActiveTabId, previousActiveTarget);
 		},
 		[syncWorkspaceState],
@@ -141,10 +142,10 @@ export function useTabManager(spacePath: string | null) {
 		tabsRef.current = [];
 		activeTabIdRef.current = null;
 		historyByTabIdRef.current = {};
-		setTabs([]);
-		setActiveTabIdState(null);
-		setDirtyByPath({});
-		setHistoryByTabId({});
+		updateTabs([]);
+		updateActiveTabIdState(null);
+		updateDirtyByPath({});
+		updateHistoryByTabId({});
 	}, [spacePath]);
 
 	const focusExistingTab = useCallback(
@@ -159,7 +160,7 @@ export function useTabManager(spacePath: string | null) {
 
 	const clearDirtyForTarget = useCallback((target: string | null) => {
 		if (!target) return;
-		setDirtyByPath((prev) => {
+		updateDirtyByPath((prev) => {
 			if (!(target in prev)) return prev;
 			const next = { ...prev };
 			delete next[target];
@@ -173,7 +174,7 @@ export function useTabManager(spacePath: string | null) {
 			const next = updater(prev);
 			if (next === prev) return prev;
 			historyByTabIdRef.current = next;
-			setHistoryByTabId(next);
+			updateHistoryByTabId(next);
 			return next;
 		},
 		[],
@@ -388,7 +389,7 @@ export function useTabManager(spacePath: string | null) {
 					? activeTabIdRef.current
 					: (nextTabs[index]?.id ?? nextTabs[index - 1]?.id ?? null);
 			if (removedTarget) {
-				setDirtyByPath((prev) => {
+				updateDirtyByPath((prev) => {
 					if (!(removedTarget in prev)) return prev;
 					const next = { ...prev };
 					delete next[removedTarget];
@@ -402,7 +403,7 @@ export function useTabManager(spacePath: string | null) {
 				return next;
 			});
 			commitTabsChange(nextTabs, nextActiveTabId);
-			setDirtyByPath((prev) => {
+			updateDirtyByPath((prev) => {
 				let changed = false;
 				const next: Record<string, boolean> = {};
 				for (const [tabPath, dirty] of Object.entries(prev)) {
@@ -424,9 +425,9 @@ export function useTabManager(spacePath: string | null) {
 
 	const closeAllTabs = useCallback(() => {
 		commitTabsChange([], null);
-		setDirtyByPath({});
+		updateDirtyByPath({});
 		historyByTabIdRef.current = {};
-		setHistoryByTabId({});
+		updateHistoryByTabId({});
 	}, [commitTabsChange]);
 
 	const closeActiveTab = useCallback(() => {
@@ -442,9 +443,9 @@ export function useTabManager(spacePath: string | null) {
 			);
 			const tabsRemoved = nextTabs.length < currentTabs.length;
 			const removedTabIds = new Set(
-				currentTabs
-					.filter((tab) => matchesRemovedPath(tab, path, recursive))
-					.map((tab) => tab.id),
+				currentTabs.flatMap((tab) =>
+					matchesRemovedPath(tab, path, recursive) ? [tab.id] : [],
+				),
 			);
 
 			const currentActiveTabId = activeTabIdRef.current;
@@ -516,7 +517,7 @@ export function useTabManager(spacePath: string | null) {
 			if (tabsRemoved) {
 				commitTabsChange(nextTabs, nextActiveTabId);
 			}
-			setDirtyByPath((prev) => {
+			updateDirtyByPath((prev) => {
 				let changed = false;
 				const next: Record<string, boolean> = {};
 				for (const [tabPath, dirty] of Object.entries(prev)) {
@@ -578,7 +579,7 @@ export function useTabManager(spacePath: string | null) {
 			if (changed) {
 				commitTabsChange(next, activeTabIdRef.current);
 			}
-			setDirtyByPath((prev) => {
+			updateDirtyByPath((prev) => {
 				let dirtyChanged = false;
 				const nextDirty: Record<string, boolean> = {};
 				for (const [tabPath, dirty] of Object.entries(prev)) {
@@ -651,7 +652,7 @@ export function useTabManager(spacePath: string | null) {
 		activeTabPath,
 		setActiveTabId,
 		dirtyByPath,
-		setDirtyByPath,
+		setDirtyByPath: updateDirtyByPath,
 		closeTab,
 		closeAllTabs,
 		closeActiveTab,

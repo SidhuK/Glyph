@@ -913,9 +913,7 @@ export const MainContent = memo(function MainContent({
 								<span
 									className={`settingsPanelBadge earlyAccessBadge ${activeSettingsTabMeta.id === "git" ? "settingsBetaBadge" : ""}`}
 								>
-									{activeSettingsTabMeta.badgeIcon
-										? activeSettingsTabMeta.badgeIcon()
-										: null}
+									{activeSettingsTabMeta.badgeIcon}
 									<span>{activeSettingsTabMeta.badgeText}</span>
 								</span>
 							) : null}

@@ -2,7 +2,7 @@ import { normalizeShortcutKey } from "./shortcuts/normalize";
 import { isMacOS } from "./shortcuts/platform";
 import type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
 
-export type { Shortcut, ShortcutValidationResult } from "./shortcuts/types";
+export type { Shortcut } from "./shortcuts/types";
 export { normalizeShortcutKey } from "./shortcuts/normalize";
 
 const MODIFIER_KEYS = new Set([
@@ -24,7 +24,7 @@ export function normalizeShortcut(shortcut: Shortcut): Shortcut {
 	};
 }
 
-export function hasShortcutModifiers(shortcut: Shortcut): boolean {
+function hasShortcutModifiers(shortcut: Shortcut): boolean {
 	return Boolean(shortcut.meta || shortcut.ctrl || shortcut.alt);
 }
 

@@ -11,7 +11,7 @@ export interface PathRemovedDetail {
 	recursive: boolean;
 }
 
-export interface FileTreeStartRenameDetail {
+interface FileTreeStartRenameDetail {
 	path: string;
 }
 
@@ -54,14 +54,6 @@ export function dispatchFileTreeStartRename(detail: FileTreeStartRenameDetail) {
 export function dispatchPathRenamed(detail: PathRenamedDetail) {
 	window.dispatchEvent(
 		new CustomEvent<PathRenamedDetail>(PATH_RENAMED_EVENT, { detail }),
-	);
-}
-
-export function dispatchForceNoteEditMode(detail: ForceNoteEditModeDetail) {
-	window.dispatchEvent(
-		new CustomEvent<ForceNoteEditModeDetail>(FORCE_NOTE_EDIT_MODE_EVENT, {
-			detail,
-		}),
 	);
 }
 

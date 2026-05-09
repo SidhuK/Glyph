@@ -24,12 +24,14 @@ export function useShortcutBindings() {
 	const mountedRef = useRef(false);
 
 	const refresh = useCallback(async (withReload = false) => {
+		if (!mountedRef.current) return;
 		if (withReload) {
 			await reloadFromDisk();
 		}
 		const shortcutSettings = await loadShortcutSettings();
-		if (!mountedRef.current) return;
-		setBindings(getEffectiveShortcutBindings(shortcutSettings.bindings));
+		if (mountedRef.current) {
+			setBindings(getEffectiveShortcutBindings(shortcutSettings.bindings));
+		}
 	}, []);
 
 	useEffect(() => {

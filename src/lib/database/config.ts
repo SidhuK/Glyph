@@ -156,7 +156,10 @@ function cellTextValues(cell: DatabaseCellValue): string[] {
 		cell.value_list.length > 0 ? cell.value_list.join(", ") : null,
 		typeof cell.value_bool === "boolean" ? String(cell.value_bool) : null,
 	];
-	return values.map(normalizeText).filter(Boolean);
+	return values.flatMap((value) => {
+		const normalized = normalizeText(value);
+		return normalized ? [normalized] : [];
+	});
 }
 
 export function rowMatchesFilters(
@@ -171,7 +174,10 @@ export function rowMatchesFilters(
 		const filterText = normalizeText(
 			filter.value_text ?? filter.value_list[0] ?? "",
 		);
-		const listValues = cell.value_list.map(normalizeText).filter(Boolean);
+		const listValues = cell.value_list.flatMap((value) => {
+			const normalized = normalizeText(value);
+			return normalized ? [normalized] : [];
+		});
 		const textValues = cellTextValues(cell);
 		switch (filter.operator) {
 			case "contains":

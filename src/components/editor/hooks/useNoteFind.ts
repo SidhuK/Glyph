@@ -97,9 +97,9 @@ export function useNoteFind({
 	rawTextareaRef,
 	tiptapHostRef,
 }: UseNoteFindOptions) {
-	const [findOpen, setFindOpen] = useState(false);
-	const [findQuery, setFindQuery] = useState("");
-	const [findActiveIndex, setFindActiveIndex] = useState(0);
+	const [findOpen, updateFindOpen] = useState(false);
+	const [findQuery, updateFindQueryState] = useState("");
+	const [findActiveIndex, updateFindActiveIndex] = useState(0);
 	const findInputRef = useRef<HTMLInputElement | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
@@ -177,7 +177,7 @@ export function useNoteFind({
 			const nextIndex =
 				(effectiveFindActiveIndex + direction + findMatches.length) %
 				findMatches.length;
-			setFindActiveIndex(nextIndex);
+			updateFindActiveIndex(nextIndex);
 			selectFindMatch(nextIndex);
 		},
 		[effectiveFindActiveIndex, findMatches.length, selectFindMatch],
@@ -205,14 +205,14 @@ export function useNoteFind({
 	const openFind = useCallback(() => {
 		const selected = getSelectedSearchText();
 		if (selected) {
-			setFindQuery(selected);
-			setFindActiveIndex(0);
+			updateFindQueryState(selected);
+			updateFindActiveIndex(0);
 		}
-		setFindOpen(true);
+		updateFindOpen(true);
 	}, [getSelectedSearchText]);
 
 	const closeFind = useCallback(() => {
-		setFindOpen(false);
+		updateFindOpen(false);
 		if (mode === "plain") {
 			requestAnimationFrame(() => rawTextareaRef.current?.focus());
 			return;
@@ -254,17 +254,17 @@ export function useNoteFind({
 	);
 
 	const updateFindQuery = useCallback((nextQuery: string) => {
-		setFindQuery(nextQuery);
-		setFindActiveIndex(0);
+		updateFindQueryState(nextQuery);
+		updateFindActiveIndex(0);
 	}, []);
 
 	useEffect(() => {
 		if (previousRelPathRef.current === relPath) return;
 		previousRelPathRef.current = relPath;
-		setFindOpen(false);
-		setFindQuery("");
-		setFindActiveIndex(0);
-	}, [relPath]);
+		updateFindOpen(false);
+		updateFindQuery("");
+		updateFindActiveIndex(0);
+	}, [relPath, updateFindQuery]);
 
 	useEffect(() => {
 		if (!findOpen) return;
@@ -307,7 +307,7 @@ export function useNoteFind({
 	useEffect(() => {
 		if (!findMatches.length && findActiveIndex === 0) return;
 		if (findActiveIndex <= effectiveFindActiveIndex) return;
-		setFindActiveIndex(effectiveFindActiveIndex);
+		updateFindActiveIndex(effectiveFindActiveIndex);
 	}, [effectiveFindActiveIndex, findActiveIndex, findMatches.length]);
 
 	return {

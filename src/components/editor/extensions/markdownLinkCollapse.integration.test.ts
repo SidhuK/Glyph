@@ -3,7 +3,7 @@
 import { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import { describe, expect, it } from "vitest";
-import { createEditorExtensions } from "./index";
+import { createEditorExtensions } from "./createEditorExtensions";
 
 function createHarness() {
 	const element = document.createElement("div");

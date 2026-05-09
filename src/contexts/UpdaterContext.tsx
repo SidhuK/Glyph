@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useContext } from "react";
+import { type ReactNode, createContext, use } from "react";
 import type { AutoUpdaterState } from "../hooks/useAutoUpdater";
 
 const DEFAULT_UPDATER_STATE: AutoUpdaterState = {
@@ -24,5 +24,5 @@ export function UpdaterProvider({
 }
 
 export function useUpdaterContext(): AutoUpdaterState {
-	return useContext(UpdaterContext);
+	return use(UpdaterContext);
 }

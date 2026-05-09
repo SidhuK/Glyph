@@ -117,6 +117,7 @@ export function useAiProfiles() {
 					profile.id === saved.id ? saved : profile,
 				),
 			}));
+			void localQueryClient.invalidateQueries({ queryKey: aiProfilesQueryKey });
 		},
 	});
 

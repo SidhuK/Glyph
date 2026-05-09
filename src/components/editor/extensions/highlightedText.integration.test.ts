@@ -7,7 +7,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
-import { createEditorExtensions } from "./index";
+import { createEditorExtensions } from "./createEditorExtensions";
 
 function createMarkdownManager() {
 	return new MarkdownManager({

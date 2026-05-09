@@ -1,6 +1,6 @@
 import { Folder03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { cn } from "../../lib/utils";
@@ -51,30 +51,33 @@ export function DatabaseFolderPicker({
 	placeholder = "Choose a folder",
 	triggerClassName,
 }: DatabaseFolderPickerProps) {
-	const [open, setOpen] = useState(false);
-	const [query, setQuery] = useState("");
-	const [browserPath, setBrowserPath] = useState(value);
-	const [rootLoadFailed, setRootLoadFailed] = useState(false);
-	const [browserState, setBrowserState] =
+	const [open, updateOpen] = useState(false);
+	const [query, updateQuery] = useState("");
+	const [browserPath, updateBrowserPath] = useReducer(
+		(_current: string, next: string) => next,
+		value,
+	);
+	const rootLoadFailedRef = useRef(false);
+	const [browserState, updateBrowserState] =
 		useState<FolderBrowserState>(EMPTY_BROWSER_STATE);
 	const { entries, loading, error } = browserState;
 
 	const handleOpenChange = (nextOpen: boolean) => {
 		if (nextOpen) {
-			setBrowserPath(value);
-			setQuery("");
-			setRootLoadFailed(false);
-			setBrowserState(EMPTY_BROWSER_STATE);
+			updateBrowserPath(value);
+			updateQuery("");
+			rootLoadFailedRef.current = false;
+			updateBrowserState(EMPTY_BROWSER_STATE);
 		}
-		setOpen(nextOpen);
+		updateOpen(nextOpen);
 	};
 
 	useEffect(() => {
 		if (!open) return;
-		if (!browserPath && rootLoadFailed) return;
+		if (!browserPath && rootLoadFailedRef.current) return;
 		let cancelled = false;
 		const loadEntries = async () => {
-			setBrowserState((current) =>
+			updateBrowserState((current) =>
 				current.loading && !current.error
 					? current
 					: { ...current, loading: true, error: "" },
@@ -84,20 +87,20 @@ export function DatabaseFolderPicker({
 					dir: browserPath || null,
 				});
 				if (cancelled) return;
-				setBrowserState({
+				updateBrowserState({
 					entries: nextEntries.filter((entry) => entry.kind === "dir"),
 					loading: false,
 					error: "",
 				});
 				if (!browserPath) {
-					setRootLoadFailed(false);
+					rootLoadFailedRef.current = false;
 				}
 			} catch (error) {
 				if (cancelled) return;
 				if (!browserPath) {
-					setRootLoadFailed(true);
+					rootLoadFailedRef.current = true;
 				}
-				setBrowserState({
+				updateBrowserState({
 					entries: [],
 					loading: false,
 					error: extractErrorMessage(error),
@@ -108,7 +111,7 @@ export function DatabaseFolderPicker({
 		return () => {
 			cancelled = true;
 		};
-	}, [browserPath, open, rootLoadFailed]);
+	}, [browserPath, open]);
 
 	const filteredEntries = useMemo(() => {
 		const normalized = query.trim().toLowerCase();
@@ -145,7 +148,7 @@ export function DatabaseFolderPicker({
 						type="button"
 						className="folderPickerCrumb"
 						data-active={browserPath === "" ? "true" : undefined}
-						onClick={() => setBrowserPath("")}
+						onClick={() => updateBrowserPath("")}
 					>
 						Root
 					</button>
@@ -158,7 +161,7 @@ export function DatabaseFolderPicker({
 									type="button"
 									className="folderPickerCrumb"
 									data-active={browserPath === nextPath ? "true" : undefined}
-									onClick={() => setBrowserPath(nextPath)}
+									onClick={() => updateBrowserPath(nextPath)}
 								>
 									{part}
 								</button>
@@ -171,7 +174,7 @@ export function DatabaseFolderPicker({
 					<Input
 						value={query}
 						placeholder="Filter…"
-						onChange={(event) => setQuery(event.target.value)}
+						onChange={(event) => updateQuery(event.target.value)}
 					/>
 				</div>
 				<ScrollArea className="folderPickerResults">
@@ -181,7 +184,7 @@ export function DatabaseFolderPicker({
 							className="folderPickerSelect"
 							onClick={() => {
 								onChange(browserPath);
-								setOpen(false);
+								updateOpen(false);
 							}}
 						>
 							<HugeiconsIcon icon={Folder03Icon} size={13} strokeWidth={0.9} />
@@ -197,7 +200,7 @@ export function DatabaseFolderPicker({
 									key={entry.rel_path}
 									type="button"
 									className="folderPickerRow"
-									onClick={() => setBrowserPath(entry.rel_path)}
+									onClick={() => updateBrowserPath(entry.rel_path)}
 								>
 									<span className="folderPickerRowName">{entry.name}</span>
 									<ChevronRight size={12} />

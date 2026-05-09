@@ -44,7 +44,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							aria-current={settingsTab === tab.id ? "page" : undefined}
 						>
 							<span className="settingsTabIcon" aria-hidden="true">
-								{tab.renderIcon()}
+								{tab.icon}
 							</span>
 							<span className="sidebarQuickActionLabel settingsTabLabel">
 								{tab.label}
@@ -53,7 +53,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								<span
 									className={`settingsTabBadge earlyAccessBadge ${tab.id === "git" ? "settingsBetaBadge" : ""}`}
 								>
-									{tab.badgeIcon ? tab.badgeIcon() : null}
+									{tab.badgeIcon}
 									<span>{tab.badgeText}</span>
 								</span>
 							) : null}

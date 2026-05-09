@@ -10,7 +10,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import type { MutableRefObject, ReactNode } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useReducer, useRef } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
@@ -45,7 +45,10 @@ function DirectoryRenameInput({
 	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 }) {
-	const [draftName, setDraftName] = useState(initialName);
+	const [draftName, setDraftName] = useReducer(
+		(_current: string, next: string) => next,
+		initialName,
+	);
 	const renameSubmittedRef = useRef(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 

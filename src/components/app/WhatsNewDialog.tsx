@@ -87,8 +87,8 @@ export function WhatsNewDialog({
 								<span>{section.category}</span>
 							</div>
 							<ul className="whatsNewList">
-								{section.items.map((item, index) => (
-									<li key={`${section.category}-${index}`}>
+								{section.items.map((item) => (
+									<li key={`${section.category}-${item}`}>
 										<span className="whatsNewItemMarker" aria-hidden="true" />
 										<span>{item}</span>
 									</li>

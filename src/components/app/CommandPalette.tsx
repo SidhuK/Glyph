@@ -26,7 +26,11 @@ interface CommandPaletteProps {
 	onSelectSearchResult: (id: string) => void;
 }
 
-export function CommandPalette({
+export function CommandPalette(props: CommandPaletteProps) {
+	return useCommandPalette(props);
+}
+
+function useCommandPalette({
 	open,
 	initialTab = "commands",
 	initialQuery = "",

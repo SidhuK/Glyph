@@ -11,7 +11,7 @@ export interface DatabaseBoardLane {
 	rows: DatabaseRow[];
 }
 
-export interface DatabaseRowGroup {
+interface DatabaseRowGroup {
 	id: string;
 	label: string;
 	rowCount: number;
@@ -60,11 +60,18 @@ function compareBoardRows(left: DatabaseRow, right: DatabaseRow): number {
 }
 
 function sortLaneRows(rows: DatabaseRow[]): DatabaseRow[] {
-	return [...rows].sort(compareBoardRows);
+	return rows.toSorted(compareBoardRows);
 }
 
 function uniqueLaneValues(values: string[]): string[] {
-	return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+	return [
+		...new Set(
+			values.flatMap((value) => {
+				const trimmed = value.trim();
+				return trimmed ? [trimmed] : [];
+			}),
+		),
+	];
 }
 
 function normalizeBoardTagValue(value: string): string | null {
@@ -258,20 +265,20 @@ export function orderBoardLanes(
 			(laneId) =>
 				laneId !== DATABASE_BOARD_EMPTY_LANE_ID && laneMap.has(laneId),
 		),
-		...lanes
-			.map((lane) => lane.id)
-			.filter(
-				(laneId) =>
-					laneId !== DATABASE_BOARD_EMPTY_LANE_ID &&
-					!previousLaneIds.includes(laneId),
-			),
+		...lanes.flatMap((lane) =>
+			lane.id !== DATABASE_BOARD_EMPTY_LANE_ID &&
+			!previousLaneIds.includes(lane.id)
+				? [lane.id]
+				: [],
+		),
 	];
 	if (laneMap.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
 		nextLaneIds.push(DATABASE_BOARD_EMPTY_LANE_ID);
 	}
-	return nextLaneIds
-		.map((laneId) => laneMap.get(laneId))
-		.filter((lane): lane is DatabaseBoardLane => lane != null);
+	return nextLaneIds.flatMap((laneId) => {
+		const lane = laneMap.get(laneId);
+		return lane ? [lane] : [];
+	});
 }
 
 export function moveBoardLaneToIndex(

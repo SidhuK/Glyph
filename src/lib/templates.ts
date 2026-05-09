@@ -1,12 +1,12 @@
 import { basename, parentDir } from "../utils/path";
 import { invoke } from "./tauri";
 
-export interface TemplateEntry {
+interface TemplateEntry {
 	relPath: string;
 	name: string;
 }
 
-export interface TemplateRenderContext {
+interface TemplateRenderContext {
 	destinationPath: string;
 	spaceRootPath?: string | null;
 	date?: Date;

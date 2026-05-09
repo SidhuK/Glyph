@@ -392,8 +392,10 @@ export const SlashCommand = Extension.create({
 								placeBelowTop <= maxTop
 									? placeBelowTop
 									: Math.max(pad, Math.min(placeAboveTop, maxTop));
-							menu.style.left = `${nextLeft}px`;
-							menu.style.top = `${nextTop}px`;
+							Object.assign(menu.style, {
+								left: `${nextLeft}px`,
+								top: `${nextTop}px`,
+							});
 						}
 					};
 

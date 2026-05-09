@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { valueReducer } from "../../lib/reactState";
 import {
 	type ShortcutBindings,
 	findShortcutConflict,
@@ -59,14 +60,24 @@ interface ShortcutCaptureEvent {
 
 export function ShortcutsSettingsPane() {
 	const { actionsWithBindings, bindings } = useShortcutBindings();
-	const [filter, setFilter] = useState("");
-	const [recordingActionId, setRecordingActionId] = useState<string | null>(
+	const [filter, setFilter] = useReducer(valueReducer<string>, "");
+	const [recordingActionId, setRecordingActionId] = useReducer(
+		valueReducer<string | null>,
 		null,
 	);
-	const [recordingDraft, setRecordingDraft] = useState<Shortcut | null>(null);
-	const [busyActionId, setBusyActionId] = useState<string | null>(null);
-	const [error, setError] = useState("");
-	const [resettingAll, setResettingAll] = useState(false);
+	const [recordingDraft, setRecordingDraft] = useReducer(
+		valueReducer<Shortcut | null>,
+		null,
+	);
+	const [busyActionId, setBusyActionId] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [error, setError] = useReducer(valueReducer<string>, "");
+	const [resettingAll, setResettingAll] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
 
 	const filteredActions = useMemo(() => {
 		const query = filter.trim().toLowerCase();
@@ -210,17 +221,21 @@ export function ShortcutsSettingsPane() {
 		},
 		[recordingActionId],
 	);
+	const handleRecordKeyDownRef = useRef(handleRecordKeyDown);
+	const handleRecordKeyUpRef = useRef(handleRecordKeyUp);
+	handleRecordKeyDownRef.current = handleRecordKeyDown;
+	handleRecordKeyUpRef.current = handleRecordKeyUp;
 
 	useEffect(() => {
 		if (!recordingActionId) return;
 
 		const handleKeyDown = (event: KeyboardEvent) => {
 			event.stopImmediatePropagation();
-			void handleRecordKeyDown(recordingActionId, event);
+			void handleRecordKeyDownRef.current(recordingActionId, event);
 		};
 		const handleKeyUp = (event: KeyboardEvent) => {
 			event.stopImmediatePropagation();
-			handleRecordKeyUp(event);
+			handleRecordKeyUpRef.current(event);
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
@@ -229,7 +244,7 @@ export function ShortcutsSettingsPane() {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 			window.removeEventListener("keyup", handleKeyUp, { capture: true });
 		};
-	}, [recordingActionId, handleRecordKeyDown, handleRecordKeyUp]);
+	}, [recordingActionId]);
 
 	return (
 		<div className="settingsPane shortcutsPane">

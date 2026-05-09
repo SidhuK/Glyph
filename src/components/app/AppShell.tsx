@@ -8,8 +8,8 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useReducer,
 	useRef,
-	useState,
 } from "react";
 import { toast } from "sonner";
 import {
@@ -49,6 +49,7 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import { valueReducer } from "../../lib/reactState";
 import {
 	getLastSeenReleaseNotesVersion,
 	loadSettings,
@@ -93,6 +94,10 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 export function AppShell() {
+	return useAppShell();
+}
+
+function useAppShell() {
 	const space = useSpace();
 	const {
 		spacePath,
@@ -143,29 +148,64 @@ export function AppShell() {
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
 
-	const [paletteInitialTab, setPaletteInitialTab] = useState<
-		"commands" | "search"
-	>("commands");
-	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
-	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
+	const [paletteInitialTab, setPaletteInitialTab] = useReducer(
+		valueReducer<"commands" | "search">,
+		"commands",
+	);
+	const [paletteInitialQuery, setPaletteInitialQuery] = useReducer(
+		valueReducer<string>,
+		"",
+	);
+	const [openDatabasesId, setOpenDatabasesId] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [showGettingStartedRequest, setShowGettingStartedRequest] = useReducer(
+		valueReducer<number>,
+		0,
+	);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
-		useState(0);
-	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
-		string | null
-	>(null);
-	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
-	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
-	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
-	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
-	const [templatePickerItems, setTemplatePickerItems] = useState<
-		TemplatePickerItem[]
-	>([]);
-	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
-	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-	const [whatsNewVersion, setWhatsNewVersion] =
-		useState<VersionReleaseNotes | null>(null);
+		useReducer(valueReducer<number>, 0);
+	const [movePickerSourcePath, setMovePickerSourcePath] = useReducer(
+		valueReducer<string | null>,
+		null,
+	);
+	const [moveTargetDirs, setMoveTargetDirs] = useReducer(
+		valueReducer<string[]>,
+		[],
+	);
+	const [commandPaletteMounted, setCommandPaletteMounted] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [templatePickerOpen, setTemplatePickerOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [templatePickerDirPath, setTemplatePickerDirPath] = useReducer(
+		valueReducer<string>,
+		"",
+	);
+	const [templatePickerItems, setTemplatePickerItems] = useReducer(
+		valueReducer<TemplatePickerItem[]>,
+		[],
+	);
+	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [commandPaletteSessionId, setCommandPaletteSessionId] = useReducer(
+		valueReducer<number>,
+		0,
+	);
+	const [rightSidebarOpen, setRightSidebarOpen] = useReducer(
+		valueReducer<boolean>,
+		false,
+	);
+	const [whatsNewVersion, setWhatsNewVersion] = useReducer(
+		valueReducer<VersionReleaseNotes | null>,
+		null,
+	);
 	const autoUpdater = useUpdaterContext();
 	const gitSync = useGitSync({
 		spacePath,
@@ -358,8 +398,10 @@ export function AppShell() {
 		if (!spacePath) return;
 		try {
 			const notePath = await invoke("space_show_onboarding_note");
-			await fileTree.loadDir("", true);
-			await openWorkspaceFile(notePath);
+			await Promise.all([
+				fileTree.loadDir("", true),
+				openWorkspaceFile(notePath),
+			]);
 		} catch (cause) {
 			const message = cause instanceof Error ? cause.message : String(cause);
 			setError(message);
@@ -583,17 +625,23 @@ export function AppShell() {
 		try {
 			const out: string[] = [];
 			const seen = new Set<string>([""]);
-			const queue: string[] = [""];
-			while (queue.length > 0 && out.length < 5000) {
-				const dir = queue.shift() ?? "";
-				const entries = await invoke("space_list_dir", dir ? { dir } : {});
-				for (const entry of entries) {
-					if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
-					seen.add(entry.rel_path);
-					out.push(entry.rel_path);
-					queue.push(entry.rel_path);
+			const collectDirs = async (queue: string[]): Promise<void> => {
+				if (queue.length === 0 || out.length >= 5000) return;
+				const entryGroups = await Promise.all(
+					queue.map((dir) => invoke("space_list_dir", dir ? { dir } : {})),
+				);
+				const nextQueue: string[] = [];
+				for (const entries of entryGroups) {
+					for (const entry of entries) {
+						if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
+						seen.add(entry.rel_path);
+						out.push(entry.rel_path);
+						nextQueue.push(entry.rel_path);
+					}
 				}
-			}
+				await collectDirs(nextQueue);
+			};
+			await collectDirs([""]);
 			if (moveTargetDirsRequestIdRef.current !== requestId) return;
 			const fromDir = parentDir(sourcePath);
 			setMoveTargetDirs(
@@ -628,9 +676,10 @@ export function AppShell() {
 			if (!aiEnabled) return;
 			const unique = Array.from(
 				new Set(
-					paths
-						.map((p) => p.trim())
-						.filter((p) => p.toLowerCase().endsWith(".md")),
+					paths.flatMap((path) => {
+						const trimmed = path.trim();
+						return trimmed.toLowerCase().endsWith(".md") ? [trimmed] : [];
+					}),
 				),
 			);
 			if (!unique.length) return;
@@ -1124,12 +1173,11 @@ export function AppShell() {
 
 	useEffect(() => {
 		const accelerators = Object.fromEntries(
-			actionsWithBindings
-				.filter((action) => action.menuId)
-				.map((action) => [
-					action.menuId as string,
-					toTauriAccelerator(action.binding),
-				]),
+			actionsWithBindings.flatMap((action) =>
+				action.menuId
+					? [[action.menuId, toTauriAccelerator(action.binding)]]
+					: [],
+			),
 		);
 		void invoke("set_menu_shortcuts", { accelerators }).catch(() => {});
 	}, [actionsWithBindings]);

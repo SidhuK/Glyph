@@ -223,15 +223,14 @@ async function loadAllDatabaseRows(
 	viewId: string,
 ): Promise<WorkspaceDatabaseQueryResult> {
 	const maxIterations = 100;
-	let offset = 0;
-	let totalCount = 0;
-	let truncated = false;
-	let iterations = 0;
 	const rows: DatabaseRow[] = [];
 	let availableProperties =
 		[] as WorkspaceDatabaseQueryResult["available_properties"];
 
-	while (true) {
+	const loadPage = async (
+		offset: number,
+		iterations: number,
+	): Promise<WorkspaceDatabaseQueryResult> => {
 		const next = await invoke("databases_query_rows", {
 			database_id: databaseId,
 			view_id: viewId,
@@ -239,32 +238,30 @@ async function loadAllDatabaseRows(
 			limit: 200,
 		});
 		rows.push(...next.rows);
-		totalCount = next.total_count;
-		truncated = next.truncated;
 		if (next.available_properties.length > 0) {
 			availableProperties = next.available_properties;
 		}
-		iterations += 1;
 		if (next.next_offset == null) {
 			return {
 				rows,
 				available_properties: availableProperties,
-				total_count: totalCount,
-				truncated,
+				total_count: next.total_count,
+				truncated: next.truncated,
 				next_offset: null,
 			};
 		}
-		if (iterations >= maxIterations) {
+		if (iterations + 1 >= maxIterations) {
 			return {
 				rows,
 				available_properties: availableProperties,
-				total_count: totalCount,
+				total_count: next.total_count,
 				truncated: true,
 				next_offset: next.next_offset,
 			};
 		}
-		offset = next.next_offset;
-	}
+		return loadPage(next.next_offset, iterations + 1);
+	};
+	return loadPage(0, 0);
 }
 
 export function prefetchDatabaseRows(databaseId: string, viewId: string) {
@@ -389,15 +386,14 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
 		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
-		const item = current?.find(
-			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,
-		);
-		if (item) return item;
+		for (const note of current ?? []) {
+			if (normalizeAllDocsPath(note.note_path) === normalizedPath) return note;
+		}
 	}
 	return null;
 }
 
-export function upsertAllDocsPrefetchItem(item: AllDocsItem) {
+function upsertAllDocsPrefetchItem(item: AllDocsItem) {
 	const normalizedPath = normalizeAllDocsPath(item.note_path);
 	if (!normalizedPath) return;
 	updateAllDocsListCaches((current, folderKey) => {

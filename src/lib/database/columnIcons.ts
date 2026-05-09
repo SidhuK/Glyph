@@ -1,6 +1,6 @@
 import type { DatabaseColumn } from "./types";
 
-export interface DatabaseColumnIconOption {
+interface DatabaseColumnIconOption {
 	id: string;
 	label: string;
 	iconKey: string;

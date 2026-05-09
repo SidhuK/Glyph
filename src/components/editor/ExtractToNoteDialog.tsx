@@ -48,13 +48,7 @@ export function ExtractToNoteDialog({
 				<DialogHeader className="extractToNoteHeader">
 					<DialogTitle>Extract to Note</DialogTitle>
 				</DialogHeader>
-				<form
-					className="extractToNoteForm"
-					onSubmit={(event) => {
-						event.preventDefault();
-						void onSubmit();
-					}}
-				>
+				<div className="extractToNoteForm">
 					<div className="extractToNoteField">
 						<label
 							className="extractToNoteLabel"
@@ -93,13 +87,14 @@ export function ExtractToNoteDialog({
 							Cancel
 						</Button>
 						<Button
-							type="submit"
+							type="button"
+							onClick={() => void onSubmit()}
 							disabled={state?.loading || !state?.title.trim()}
 						>
 							{state?.loading ? "Creating" : "Create"}
 						</Button>
 					</DialogFooter>
-				</form>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

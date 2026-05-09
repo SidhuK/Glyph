@@ -56,7 +56,7 @@ export function useWorkspaceLinkEvents({
 	fileTree,
 	openPalette,
 	openWorkspaceFile,
-	setError,
+	setError: reportError,
 }: UseWorkspaceLinkEventsArgs) {
 	const openOrCreateWikiLinkTarget = useCallback(
 		async (rawTarget: string) => {
@@ -71,11 +71,13 @@ export function useWorkspaceLinkEvents({
 					await openWorkspaceFile(resolved);
 					return;
 				}
-				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
+				reportError(`Could not resolve PDF wikilink: ${rawTarget}`);
 				return;
 			}
 			if (!isMarkdownWikiTarget(normalizedTarget)) {
-				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
+				reportError(
+					`Only markdown notes are creatable via [[...]]: ${rawTarget}`,
+				);
 				return;
 			}
 
@@ -108,7 +110,7 @@ export function useWorkspaceLinkEvents({
 				return;
 			}
 
-			setError("");
+			reportError("");
 			const fallbackResolved = await invoke("space_resolve_wikilink", {
 				target: normalizedTarget,
 			});
@@ -117,9 +119,9 @@ export function useWorkspaceLinkEvents({
 				return;
 			}
 
-			setError(`Could not resolve wikilink: ${rawTarget}`);
+			reportError(`Could not resolve wikilink: ${rawTarget}`);
 		},
-		[activeMarkdownTabPath, fileTree, openWorkspaceFile, setError],
+		[activeMarkdownTabPath, fileTree, openWorkspaceFile, reportError],
 	);
 
 	useEffect(() => {
@@ -141,7 +143,7 @@ export function useWorkspaceLinkEvents({
 							await openWorkspaceFile(resolvedImage);
 							return;
 						}
-						setError(`Could not resolve image wikilink: ${detail.target}`);
+						reportError(`Could not resolve image wikilink: ${detail.target}`);
 						return;
 					}
 
@@ -151,14 +153,14 @@ export function useWorkspaceLinkEvents({
 					}
 
 					if (!isMarkdownWikiTarget(normalizedTarget)) {
-						setError(
+						reportError(
 							`Unsupported non-markdown wikilink target: ${detail.target}`,
 						);
 						return;
 					}
 					await openOrCreateWikiLinkTarget(detail.target);
 				} catch (e) {
-					setError(
+					reportError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
 					);
 				}
@@ -184,9 +186,9 @@ export function useWorkspaceLinkEvents({
 						await openWorkspaceFile(wikiFallback);
 						return;
 					}
-					setError(`Could not resolve markdown link: ${detail.href}`);
+					reportError(`Could not resolve markdown link: ${detail.href}`);
 				} catch (e) {
-					setError(
+					reportError(
 						`Failed to open markdown link: ${e instanceof Error ? e.message : String(e)}`,
 					);
 				}
@@ -221,5 +223,5 @@ export function useWorkspaceLinkEvents({
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};
-	}, [openOrCreateWikiLinkTarget, openPalette, openWorkspaceFile, setError]);
+	}, [openOrCreateWikiLinkTarget, openPalette, openWorkspaceFile, reportError]);
 }

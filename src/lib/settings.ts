@@ -38,6 +38,18 @@ async function getStore(): Promise<LazyStore> {
 	return storeInstance;
 }
 
+async function setStoreValue(key: string, value: unknown): Promise<void> {
+	return getStore().then((store) =>
+		Promise.resolve(store.set(key, value)).then(() => store.save()),
+	);
+}
+
+async function deleteStoreValues(keys: string[]): Promise<void> {
+	return getStore().then((store) =>
+		Promise.all(keys.map((key) => store.delete(key))).then(() => store.save()),
+	);
+}
+
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
 export type AutoUpdateCheckInterval = "3h";
@@ -94,7 +106,7 @@ const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
 	"comfortable",
 	"wide",
 ]);
-export type TaskSourceMode = "space" | "folders";
+type TaskSourceMode = "space" | "folders";
 export interface OnboardingSettings {
 	launcherSeen: boolean;
 	starterDismissed: boolean;
@@ -111,20 +123,20 @@ export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 	openedDailyNote: false,
 };
 
-export interface TaskSourceSetting {
+interface TaskSourceSetting {
 	mode: TaskSourceMode;
 	folders: string[];
 }
 
-export interface DatabaseSettings {
+interface DatabaseSettings {
 	showColumnColor: boolean;
 }
 
-export interface QuickNotesSettings {
+interface QuickNotesSettings {
 	folder: string;
 }
 
-export interface EditorSettings {
+interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
@@ -135,11 +147,11 @@ export interface EditorSettings {
 	vimKeybindings: boolean;
 }
 
-export interface FileTreeSettings {
+interface FileTreeSettings {
 	showFolderFileCounts: boolean;
 }
 
-export interface ShortcutSettings {
+interface ShortcutSettings {
 	version: 1;
 	bindings: Partial<Record<ShortcutActionId, Shortcut | null>>;
 }
@@ -533,10 +545,11 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	const folders = Array.isArray(rawFolders)
 		? Array.from(
 				new Set(
-					rawFolders
-						.filter((entry): entry is string => typeof entry === "string")
-						.map((entry) => normalizeRelPath(entry))
-						.filter(Boolean),
+					rawFolders.flatMap((entry) => {
+						if (typeof entry !== "string") return [];
+						const normalized = normalizeRelPath(entry);
+						return normalized ? [normalized] : [];
+					}),
 				),
 			).slice(0, 50)
 		: [];
@@ -546,7 +559,7 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	};
 }
 
-export function normalizeQuickNotesFolder(value: unknown): string {
+function normalizeQuickNotesFolder(value: unknown): string {
 	if (typeof value !== "string") return DEFAULT_QUICK_NOTES_FOLDER;
 	const normalized = normalizeRelPath(value);
 	return normalized || DEFAULT_QUICK_NOTES_FOLDER;
@@ -808,9 +821,7 @@ export async function setCurrentSpacePath(path: string): Promise<void> {
 }
 
 export async function clearCurrentSpacePath(): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.currentSpacePath, null);
-	await store.save();
+	await setStoreValue(KEYS.currentSpacePath, null);
 }
 
 export async function updateOnboardingSettings(
@@ -821,11 +832,11 @@ export async function updateOnboardingSettings(
 			typeof entry[1] === "boolean",
 	);
 	if (!entries.length) return;
-	const store = await getStore();
-	for (const [key, value] of entries) {
-		await store.set(ONBOARDING_KEYS[key], value);
-	}
-	await store.save();
+	await getStore().then((store) =>
+		Promise.all(
+			entries.map(([key, value]) => store.set(ONBOARDING_KEYS[key], value)),
+		).then(() => store.save()),
+	);
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
 	});
@@ -834,8 +845,10 @@ export async function updateOnboardingSettings(
 async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
 	const store = await getStore();
 	const sanitized = sanitizeShortcutBindings(bindings);
-	await store.set(KEYS.shortcutsVersion, DEFAULT_SHORTCUT_SETTINGS.version);
-	await store.set(KEYS.shortcutsBindings, sanitized);
+	await Promise.all([
+		store.set(KEYS.shortcutsVersion, DEFAULT_SHORTCUT_SETTINGS.version),
+		store.set(KEYS.shortcutsBindings, sanitized),
+	]);
 	await store.save();
 	void emitSettingsUpdated({ shortcuts: { bindings: sanitized } });
 	return sanitized;
@@ -909,10 +922,7 @@ export async function resetShortcutBinding(
 
 export async function resetAllShortcutBindings(): Promise<void> {
 	return withShortcutBindingsWriteLock(async () => {
-		const store = await getStore();
-		await store.delete(KEYS.shortcutsVersion);
-		await store.delete(KEYS.shortcutsBindings);
-		await store.save();
+		await deleteStoreValues([KEYS.shortcutsVersion, KEYS.shortcutsBindings]);
 		void emitSettingsUpdated({ shortcuts: { bindings: {} } });
 	});
 }
@@ -929,29 +939,21 @@ export async function setLastSeenReleaseNotesVersion(
 ): Promise<void> {
 	const normalized = version.trim();
 	if (!normalized) return;
-	const store = await getStore();
-	await store.set(KEYS.releaseNotesLastSeenVersion, normalized);
-	await store.save();
+	await setStoreValue(KEYS.releaseNotesLastSeenVersion, normalized);
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.aiAssistantMode, mode);
-	await store.save();
+	await setStoreValue(KEYS.aiAssistantMode, mode);
 	void emitSettingsUpdated({ ui: { aiAssistantMode: mode } });
 }
 
 export async function setAiEnabled(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.aiEnabled, enabled);
-	await store.save();
+	await setStoreValue(KEYS.aiEnabled, enabled);
 	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.theme, theme);
-	await store.save();
+	await setStoreValue(KEYS.theme, theme);
 	void emitSettingsUpdated({ ui: { theme } });
 }
 
@@ -1018,41 +1020,31 @@ export async function setUiEditorFontSize(fontSize: UiFontSize): Promise<void> {
 }
 
 export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.translucentApp, enabled);
-	await store.save();
+	await setStoreValue(KEYS.translucentApp, enabled);
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
 }
 
 export async function setShowToc(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.showToc, enabled);
-	await store.save();
+	await setStoreValue(KEYS.showToc, enabled);
 	void emitSettingsUpdated({ ui: { showToc: enabled } });
 }
 
 export async function setShowFileTreeFolderCounts(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.showFileTreeFolderCounts, enabled);
-	await store.save();
+	await setStoreValue(KEYS.showFileTreeFolderCounts, enabled);
 	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
 }
 
 export async function setFolioMode(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.folioMode, enabled);
-	await store.save();
+	await setStoreValue(KEYS.folioMode, enabled);
 	void emitSettingsUpdated({ ui: { folioMode: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.editorShowCollapsibleHeadings, enabled);
-	await store.save();
+	await setStoreValue(KEYS.editorShowCollapsibleHeadings, enabled);
 	void emitSettingsUpdated({
 		editor: { showCollapsibleHeadings: enabled },
 	});
@@ -1061,9 +1053,7 @@ export async function setEditorShowCollapsibleHeadings(
 export async function setEditorColorfulHeadings(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.editorColorfulHeadings, enabled);
-	await store.save();
+	await setStoreValue(KEYS.editorColorfulHeadings, enabled);
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
 	});
@@ -1072,9 +1062,7 @@ export async function setEditorColorfulHeadings(
 export async function setEditorShowFrontmatterInEditor(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.editorShowFrontmatterInEditor, enabled);
-	await store.save();
+	await setStoreValue(KEYS.editorShowFrontmatterInEditor, enabled);
 	void emitSettingsUpdated({
 		editor: { showFrontmatterInEditor: enabled },
 	});
@@ -1120,18 +1108,14 @@ export async function setEditorAttachmentFolder(
 export async function setEditorEnablePeopleMentionsAsTags(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.editorEnablePeopleMentionsAsTags, enabled);
-	await store.save();
+	await setStoreValue(KEYS.editorEnablePeopleMentionsAsTags, enabled);
 	void emitSettingsUpdated({
 		editor: { enablePeopleMentionsAsTags: enabled },
 	});
 }
 
 export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.editorVimKeybindings, enabled);
-	await store.save();
+	await setStoreValue(KEYS.editorVimKeybindings, enabled);
 	void emitSettingsUpdated({
 		editor: { vimKeybindings: enabled },
 	});
@@ -1155,11 +1139,6 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
-}
-
-export async function getQuickNotesFolder(): Promise<string> {
-	const settings = await loadSettings();
-	return settings.quickNotes.folder;
 }
 
 export async function setQuickNotesFolder(folder: string): Promise<void> {
@@ -1223,9 +1202,7 @@ export async function setDailyNoteTemplate(
 export async function setDatabaseShowColumnColor(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.databaseShowColumnColor, enabled);
-	await store.save();
+	await setStoreValue(KEYS.databaseShowColumnColor, enabled);
 	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
 }
 

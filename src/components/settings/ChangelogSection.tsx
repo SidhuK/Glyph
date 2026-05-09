@@ -57,31 +57,33 @@ function VersionAccordion({
 
 			{isOpen && hasContent && (
 				<div className="settingsChangelogVersionContent">
-					{version.sections
-						.filter(
-							(section) =>
-								Array.isArray(section.items) && section.items.length > 0,
-						)
-						.map((section) => (
-							<div key={section.category} className="settingsChangelogCategory">
-								<div
-									className="settingsChangelogCategoryLabel"
-									data-category={section.category}
-								>
-									{section.category}
-								</div>
-								<ul className="settingsChangelogItemList">
-									{section.items.map((item, index) => (
-										<li
-											key={`${section.category}-${index}`}
-											className="settingsChangelogItem"
+					{version.sections.flatMap((section) =>
+						Array.isArray(section.items) && section.items.length > 0
+							? [
+									<div
+										key={section.category}
+										className="settingsChangelogCategory"
+									>
+										<div
+											className="settingsChangelogCategoryLabel"
+											data-category={section.category}
 										>
-											{item}
-										</li>
-									))}
-								</ul>
-							</div>
-						))}
+											{section.category}
+										</div>
+										<ul className="settingsChangelogItemList">
+											{section.items.map((item) => (
+												<li
+													key={`${section.category}-${item}`}
+													className="settingsChangelogItem"
+												>
+													{item}
+												</li>
+											))}
+										</ul>
+									</div>,
+								]
+							: [],
+					)}
 				</div>
 			)}
 		</div>

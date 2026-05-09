@@ -26,13 +26,13 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 }
 
 export function useTableOfContents(editor: Editor | null) {
-	const [headings, setHeadings] = useState<TOCHeading[]>([]);
-	const [activeId, setActiveId] = useState<string | null>(null);
+	const [headings, updateHeadings] = useState<TOCHeading[]>([]);
+	const [activeId, updateActiveId] = useState<string | null>(null);
 	const observerRef = useRef<IntersectionObserver | null>(null);
 
 	const extractHeadings = useCallback(() => {
 		if (!editor) {
-			setHeadings([]);
+			updateHeadings([]);
 			return;
 		}
 		const next: TOCHeading[] = [];
@@ -50,7 +50,7 @@ export function useTableOfContents(editor: Editor | null) {
 				}
 			}
 		});
-		setHeadings((prev) => {
+		updateHeadings((prev) => {
 			const same =
 				prev.length === next.length &&
 				prev.every(
@@ -62,19 +62,22 @@ export function useTableOfContents(editor: Editor | null) {
 			return same ? prev : next;
 		});
 	}, [editor]);
+	const extractHeadingsRef = useRef(extractHeadings);
+	extractHeadingsRef.current = extractHeadings;
 
 	useEffect(() => {
 		if (!editor) return;
-		extractHeadings();
-		editor.on("update", extractHeadings);
+		const updateHeadings = () => extractHeadingsRef.current();
+		updateHeadings();
+		editor.on("update", updateHeadings);
 		return () => {
-			editor.off("update", extractHeadings);
+			editor.off("update", updateHeadings);
 		};
-	}, [editor, extractHeadings]);
+	}, [editor]);
 
 	useEffect(() => {
 		if (!editor || headings.length === 0) {
-			setActiveId(null);
+			updateActiveId(null);
 			return;
 		}
 
@@ -99,9 +102,9 @@ export function useTableOfContents(editor: Editor | null) {
 
 				if (visibleIds.size > 0) {
 					const first = headings.find((h) => visibleIds.has(h.id));
-					if (first) setActiveId(first.id);
+					if (first) updateActiveId(first.id);
 				} else {
-					setActiveId(null);
+					updateActiveId(null);
 				}
 			},
 			{
@@ -155,7 +158,7 @@ export function useTableOfContents(editor: Editor | null) {
 				} else {
 					el.scrollIntoView({ behavior: "smooth", block: "start" });
 				}
-				setActiveId(heading.id);
+				updateActiveId(heading.id);
 			});
 		},
 		[editor],

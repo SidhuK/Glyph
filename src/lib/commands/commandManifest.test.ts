@@ -34,9 +34,9 @@ describe("app command manifest", () => {
 	});
 
 	it("maps each menu id to exactly one command", () => {
-		const menuIds = listCommandDefinitions()
-			.map((command) => command.menuId)
-			.filter((menuId): menuId is string => Boolean(menuId));
+		const menuIds = listCommandDefinitions().flatMap((command) =>
+			command.menuId ? [command.menuId] : [],
+		);
 
 		expect(new Set(menuIds).size).toBe(menuIds.length);
 		for (const menuId of menuIds) {

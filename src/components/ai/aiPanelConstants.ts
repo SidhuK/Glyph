@@ -17,8 +17,7 @@ export interface ToolStatusEvent {
 
 export function messageText(message: UIMessage): string {
 	return message.parts
-		.filter((p) => p.type === "text")
-		.map((p) => p.text)
+		.flatMap((p) => (p.type === "text" ? [p.text] : []))
 		.join("");
 }
 
@@ -39,8 +38,7 @@ export function parseAddTrigger(input: string): AddTrigger | null {
 export function formatToolName(tool: string): string {
 	return tool
 		.split("_")
-		.filter(Boolean)
-		.map((part) => part[0]?.toUpperCase() + part.slice(1))
+		.flatMap((part) => (part ? [part[0]?.toUpperCase() + part.slice(1)] : []))
 		.join(" ");
 }
 

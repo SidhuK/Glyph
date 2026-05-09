@@ -2,8 +2,8 @@
 
 import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
+import { createEditorExtensions } from "./createEditorExtensions";
 import { headingCollapsePluginKey } from "./headingCollapse";
-import { createEditorExtensions } from "./index";
 
 function createEditor(markdown: string) {
 	const element = document.createElement("div");
