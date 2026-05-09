@@ -513,7 +513,6 @@ function DatabaseCellEditor({
 							key={`${column.id}:${valueIndex}:${value}`}
 							type="button"
 							className="notePropertyToken"
-							style={toneStyleForValue(value)}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => {
 								void removeTag(value).catch(handleTagSaveError);
@@ -927,10 +926,9 @@ export function DatabaseCell({
 			key: `${column.id}:${value}`,
 			kind: "tag",
 			label: formatDatabaseTagLabel(value),
-			style: databaseValueToneStyleForColor(value, laneColors[value] ?? null),
 			title: formatDatabaseTagLabel(value),
 		}));
-	}, [cellValue.kind, cellValue.value_list, column.id, laneColors]);
+	}, [cellValue.kind, cellValue.value_list, column.id]);
 	const listPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "relation" && cellValue.kind !== "multi_select") {
 			return [];

@@ -41,7 +41,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 - **`hooks/`** — Core app hooks such as `useFileTree`, `useFileTreeCRUD`, `useViewLoader`, `useSearch`, `useCommandShortcuts`, `useMenuListeners`, `useDailyNote`, `useRecentFiles`, plus `hooks/database/`
 - **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/`, `views/`, `database/`, and utilities like `settings.ts`, `dailyNotes.ts`, `tasks.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
 - **`utils/`** — `filePreview.ts`, `path.ts`, `window.ts`
-- **`styles/`** — `shadcn-theme.css`, `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
+- **`styles/`** — `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
 
 ## Backend Overview (`src-tauri/src/`)
 

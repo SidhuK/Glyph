@@ -1,84 +1,13 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   FILE PREVIEW
+   MARKDOWN EDITOR PANE
    ───────────────────────────────────────────────────────────────────────────── */
-.filePreviewCentered {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: var(--space-6);
-}
-
-.filePreviewImage {
-	max-width: min(900px, 100%);
-	max-height: 100%;
-	border-radius: var(--radius-xl);
-	box-shadow: var(--shadow-lg);
-}
-
-.filePreviewFrame {
-	width: 100%;
-	flex: 1;
-	min-height: 0;
-	border: none;
-	background: var(--bg-primary);
-}
-
-.filePreviewVideo {
-	max-width: min(900px, 100%);
-	max-height: 100%;
-	border-radius: var(--radius-xl);
-	background: color-mix(in srgb, var(--bg-canvas) 92%, var(--text-primary));
-}
-
 .filePreviewMeta {
 	padding: var(--space-6);
 	color: var(--text-secondary);
 }
 
-.filePreviewLabel {
-	margin-bottom: var(--space-2);
-	color: var(--text-tertiary);
-}
-
 .filePreviewHint {
 	font-size: var(--text-sm);
-}
-
-.filePreviewFallback {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	align-items: flex-start;
-	padding: 18px var(--space-6);
-}
-
-.filePreviewFileLine {
-	width: min(520px, 100%);
-	min-height: 36px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 0 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: 6px;
-	background: var(--bg-primary);
-	color: var(--text-primary);
-}
-
-.filePreviewFileIcon {
-	flex: 0 0 auto;
-}
-
-.filePreviewFileName {
-	min-width: 0;
-	flex: 1;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
 }
 
 .filePreviewPane {
@@ -86,54 +15,6 @@
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
-}
-
-.filePreviewHeader {
-	height: 56px;
-	padding: 0 var(--space-4);
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: var(--space-3);
-}
-
-.filePreviewActions {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	flex: 0 0 auto;
-}
-
-.filePreviewActionButton {
-	height: 28px;
-	padding: 0 10px;
-	gap: 6px;
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
-	border-radius: var(--radius-md);
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-size: 13px;
-	font-weight: var(--font-medium);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
-	transition: background var(--transition-fast), color var(--transition-fast),
-		box-shadow var(--transition-fast);
-}
-
-.filePreviewActionButton:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-.filePreviewActionButton:focus-visible {
-	outline: none;
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-primary) 88%, transparent),
-		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-}
-
-.filePreviewActionButton > svg,
-.filePreviewActionButton > span {
-	color: inherit;
 }
 
 .filePreviewTextWrap {
@@ -828,18 +709,4 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-}
-
-.filePreviewText {
-	flex: 1;
-	width: var(--readable-content-outer-width);
-	margin: 0 auto;
-	box-sizing: border-box;
-	min-height: 0;
-	padding: var(--space-6) var(--editor-readable-content-gutter);
-	overflow: auto;
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--text-primary);
-	background: var(--bg-primary);
 }

@@ -32,10 +32,7 @@ import {
 	boardRowHasLane,
 } from "../../lib/database/board";
 import { formatDatabaseDateTime } from "../../lib/database/config";
-import {
-	databaseValueToneStyle,
-	databaseValueToneStyleForColor,
-} from "../../lib/database/palette";
+import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { statusToneStyle } from "../../lib/statusProperties";
@@ -632,16 +629,6 @@ export function DatabaseBoard({
 																	<span
 																		key={`${row.note_path}:${tag}`}
 																		className="databaseBoardTag"
-																		style={
-																			groupColumn?.id === "tags"
-																				? databaseValueToneStyleForColor(
-																						tag,
-																						(laneColors[tag] as
-																							| EditorTextColor
-																							| undefined) ?? null,
-																					)
-																				: databaseValueToneStyle(tag)
-																		}
 																		title={formatDatabaseTagLabel(tag)}
 																	>
 																		<HugeiconsIcon

@@ -20,32 +20,12 @@
 	overflow: hidden;
 }
 
-/* Native macOS vibrancy is applied via window-vibrancy crate in Rust.
-   This pseudo-element is kept as a fallback for non-macOS platforms. */
-.appShell::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background: var(--chrome-bg);
-	backdrop-filter: blur(var(--chrome-blur));
-	-webkit-backdrop-filter: blur(var(--chrome-blur));
-	z-index: 0;
-	pointer-events: none;
-}
-
 :root[data-translucent-app-frame="false"] .appShell {
 	background: var(--bg-primary);
 }
 
-:root[data-translucent-app-frame="false"] .appShell::before {
-	background: var(--bg-primary);
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
-}
-
 .appShell > * {
 	position: relative;
-	z-index: 1;
 }
 
 .drag,

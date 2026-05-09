@@ -3,7 +3,6 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
-import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
@@ -57,9 +56,7 @@ interface UseFileTreeDeps {
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
 	setActiveDirPath: (path: string | null) => void;
-	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
-	activePreviewPath: string | null;
 	setError: (error: string) => void;
 }
 
@@ -76,10 +73,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		deleteItemAppearance,
 		setActiveFilePath,
 		setActiveDirPath,
-		setActivePreviewPath,
 		setError,
 		activeFilePath,
-		activePreviewPath,
 	} = deps;
 
 	const loadedDirsRef = useRef(new Set<string>());
@@ -201,11 +196,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const openMarkdownFile = useCallback(
 		async (relPath: string) => {
 			setError("");
-			setActivePreviewPath(null);
 			setActiveFilePath(relPath);
 			setActiveDirPath(parentDir(relPath));
 		},
-		[setActiveDirPath, setActiveFilePath, setActivePreviewPath, setError],
+		[setActiveDirPath, setActiveFilePath, setError],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -232,11 +226,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			}
 			setActiveFilePath(relPath);
 			setActiveDirPath(parentDir(relPath));
-			if (isInAppPreviewable(relPath)) {
-				setActivePreviewPath(relPath);
-				return;
-			}
-			setActivePreviewPath(null);
 			await openNonMarkdownExternally(relPath);
 		},
 		[
@@ -244,7 +233,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			openNonMarkdownExternally,
 			setActiveFilePath,
 			setActiveDirPath,
-			setActivePreviewPath,
 		],
 	);
 
@@ -258,9 +246,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
-		setActivePreviewPath,
 		activeFilePath,
-		activePreviewPath,
 		setError,
 		loadDir,
 		loadedDirsRef,

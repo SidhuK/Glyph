@@ -62,7 +62,6 @@ import type {
 	ExtractToNoteActions,
 } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
-import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AdvancedSettingsPane } from "../settings/AdvancedSettingsPane";
@@ -735,18 +734,8 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
-		return (
-			<FilePreviewPane
-				relPath={viewerPath}
-				onClose={() => {
-					if (activeTabId) closeTab(activeTabId);
-				}}
-				onOpenExternally={(path) => fileTree.openNonMarkdownExternally(path)}
-			/>
-		);
+		return null;
 	}, [
-		activeTabId,
-		closeTab,
 		fileTree,
 		onOpenFile,
 		onOpenFileInNewTab,
