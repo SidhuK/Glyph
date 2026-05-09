@@ -1,5 +1,4 @@
 @import "./styles/shadcn-base.css";
-@import "./styles/shadcn-theme.css";
 @import "./design-tokens.css";
 @import "./styles/app/00-header-base.css";
 @import "./styles/app/01-controls.css";
@@ -15,7 +14,6 @@
 @import "./styles/app/07-ai-panel.css";
 @import "./styles/app/21-ai-composer-context.css";
 @import "./styles/app/22-ai-code-agent.css";
-@import "./styles/app/08-ai-sidebar-context.css";
 @import "./styles/app/09-settings-shell.css";
 @import "./styles/app/10-settings-controls.css";
 @import "./styles/app/27-settings-appearance.css";
@@ -30,7 +28,7 @@
 @import "./styles/app/24-node-note-properties.css";
 @import "./styles/app/25-node-note-content.css";
 @import "./styles/app/26-node-note-overlays.css";
-@import "./styles/app/30-file-preview.css";
+@import "./styles/app/30-markdown-editor-pane.css";
 @import "./styles/app/31-responsive.css";
 @import "./styles/app/32-command-palette.css";
 @import "./styles/app/33-model-combobox.css";

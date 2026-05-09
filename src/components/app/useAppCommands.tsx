@@ -107,7 +107,6 @@ interface UseAppCommandsDeps {
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
 	saveCurrentEditor: () => Promise<unknown>;
-	setActivePreviewPath: (path: string | null) => void;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
@@ -318,7 +317,6 @@ export function useAppCommands({
 	pinnedFiles,
 	requestOpenDailyNote,
 	saveCurrentEditor,
-	setActivePreviewPath,
 	setAiPanelOpen,
 	setError,
 	setMovePickerSourcePath,
@@ -594,21 +592,6 @@ export function useAppCommands({
 				},
 			},
 			{
-				id: "close-preview",
-				label: "Close preview",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				shortcut: { meta: true, key: "w" },
-				enabled: Boolean(spacePath),
-				action: () => setActivePreviewPath(null),
-			},
-			{
 				id: "go-back-note",
 				label: "Go back",
 				icon: <HugeiconsIcon icon={ArrowLeft} size={16} strokeWidth={0.9} />,
@@ -872,7 +855,6 @@ export function useAppCommands({
 		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		togglePinnedFile,
-		setActivePreviewPath,
 		setSidebarCollapsed,
 		sidebarCollapsed,
 		showCollapsibleHeadings,

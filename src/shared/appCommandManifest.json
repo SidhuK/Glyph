@@ -283,16 +283,6 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
-		"close-preview": {
-			"id": "close-preview",
-			"label": "Close Preview",
-			"description": "Close the active preview pane.",
-			"category": "file",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"close-space": {
 			"id": "close-space",
 			"label": "Close Current Space",

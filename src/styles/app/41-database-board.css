@@ -293,7 +293,7 @@
 }
 
 .databaseBoardTag {
-	--database-tone: var(--color-blue-500);
+	--database-tone: var(--interactive-accent);
 
 	display: inline-flex;
 	align-items: center;

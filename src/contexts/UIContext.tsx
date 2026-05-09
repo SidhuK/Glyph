@@ -33,8 +33,6 @@ export interface UILayoutContextValue {
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
 	setPaletteOpen: (open: boolean) => void;
-	activePreviewPath: string | null;
-	setActivePreviewPath: (path: string | null) => void;
 	openMarkdownTabs: string[];
 	setOpenMarkdownTabs: Dispatch<SetStateAction<string[]>>;
 	activeMarkdownTabPath: string | null;
@@ -70,7 +68,6 @@ type UIState = {
 	sidebarCollapsed: boolean;
 	sidebarWidth: number;
 	paletteOpen: boolean;
-	activePreviewPath: string | null;
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
@@ -90,7 +87,6 @@ type UIAction =
 	| { type: "setSidebarCollapsed"; value: boolean }
 	| { type: "setSidebarWidth"; value: number }
 	| { type: "setPaletteOpen"; value: boolean }
-	| { type: "setActivePreviewPath"; value: string | null }
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
@@ -121,7 +117,6 @@ const initialUIState: UIState = {
 	sidebarCollapsed: true,
 	sidebarWidth: 260,
 	paletteOpen: false,
-	activePreviewPath: null,
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
@@ -145,8 +140,6 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, sidebarWidth: action.value };
 		case "setPaletteOpen":
 			return { ...state, paletteOpen: action.value };
-		case "setActivePreviewPath":
-			return { ...state, activePreviewPath: action.value };
 		case "setOpenMarkdownTabs":
 			return {
 				...state,
@@ -236,7 +229,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		sidebarCollapsed,
 		sidebarWidth,
 		paletteOpen,
-		activePreviewPath,
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
@@ -433,14 +425,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 
-	const setActivePreviewPath = useCallback(
-		(path: string | null) => {
-			if (!spacePath && path) return;
-			dispatch({ type: "setActivePreviewPath", value: path });
-		},
-		[spacePath],
-	);
-
 	const layoutValue = useMemo<UILayoutContextValue>(
 		() => ({
 			sidebarCollapsed,
@@ -449,8 +433,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarWidth,
 			paletteOpen,
 			setPaletteOpen,
-			activePreviewPath,
-			setActivePreviewPath,
 			openMarkdownTabs,
 			setOpenMarkdownTabs,
 			activeMarkdownTabPath,
@@ -477,8 +459,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarWidth,
 			paletteOpen,
 			setPaletteOpen,
-			activePreviewPath,
-			setActivePreviewPath,
 			openMarkdownTabs,
 			setOpenMarkdownTabs,
 			activeMarkdownTabPath,

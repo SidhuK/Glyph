@@ -249,15 +249,14 @@
 }
 
 .databaseTagField .notePropertyToken {
-	--database-tone: var(--color-blue-500);
-	--pill-tone: var(--database-tone);
+	--pill-tone: var(--interactive-accent);
 
 	border-color: transparent;
 }
 
 .databaseTagField .notePropertyToken:hover,
 .databaseTagField .notePropertyToken:focus-visible {
-	background: color-mix(in srgb, var(--database-tone) 16%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--pill-tone) 16%, var(--bg-secondary));
 }
 
 .databaseTagField .notePropertyToken svg {
@@ -310,7 +309,7 @@
 }
 
 .databaseCellPill {
-	--database-tone: var(--color-blue-500);
+	--database-tone: var(--interactive-accent);
 
 	display: inline-flex;
 	align-items: center;

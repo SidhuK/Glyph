@@ -6,7 +6,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { databaseValueToneStyle } from "../../lib/database/palette";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -394,7 +393,6 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							<span
 								key={tag}
 								className="databaseCellPill folioNoteTag"
-								style={databaseValueToneStyle(tag)}
 								title={formatDatabaseTagLabel(tag)}
 							>
 								{formatDatabaseTagLabel(tag)}

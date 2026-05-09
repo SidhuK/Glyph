@@ -33,15 +33,15 @@ Repo extras: internal product and engineering docs live in `docs/`.
 - **`components/filetree/`** — File browser: `FileTreePane`, `FileTreeDirItem`, `FileTreeFileItem`, `fileTypeUtils`
 - **`components/database/`** — Database-note UI: table/board views, source picker, column dialogs, toolbar, cells
 - **`components/licensing/`** — Trial, license gate, lock screen, and settings surfaces
-- **`components/preview/`** — `FilePreviewPane` (in-app file preview), `MarkdownEditorPane`
+- **`components/preview/`** — `MarkdownEditorPane`
 - **`components/tasks/`** — `TasksPane`, `TaskRow`, `TaskCheckbox`
 - **`components/settings/`** — Settings panes: AI, Appearance (accent, typography), Space, DailyNotes, General, About
 - **`components/ui/`** — shadcn/ui primitives under `shadcn/` plus shared motion helpers in `animations.ts`
 - **`components/Icons/`** — Shared icon wrappers for editor, file, navigation, and action icons
 - **`hooks/`** — Core app hooks such as `useFileTree`, `useFileTreeCRUD`, `useViewLoader`, `useSearch`, `useCommandShortcuts`, `useMenuListeners`, `useDailyNote`, `useRecentFiles`, plus `hooks/database/`
 - **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/`, `views/`, `database/`, and utilities like `settings.ts`, `dailyNotes.ts`, `tasks.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
-- **`utils/`** — `filePreview.ts`, `path.ts`, `window.ts`
-- **`styles/`** — `shadcn-theme.css`, `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
+- **`utils/`** — `path.ts`, `window.ts`
+- **`styles/`** — `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
 
 ## Backend Overview (`src-tauri/src/`)
 

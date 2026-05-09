@@ -45,9 +45,7 @@ interface UseFileTreeCRUDDeps {
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
-	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
-	activePreviewPath: string | null;
 	setError: (error: string) => void;
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	loadedDirsRef: React.RefObject<Set<string>>;
@@ -82,17 +80,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
-		setActivePreviewPath,
 		activeFilePath,
-		activePreviewPath,
 		setError,
 		loadDir,
 		loadedDirsRef,
 	} = deps;
 	const activeFilePathRef = useRef(activeFilePath);
-	const activePreviewPathRef = useRef(activePreviewPath);
 	activeFilePathRef.current = activeFilePath;
-	activePreviewPathRef.current = activePreviewPath;
 
 	const refreshAfterCreate = useCallback(
 		async (targetDir: string) => {
@@ -403,8 +397,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					});
 				}
 				if (activeFilePathRef.current === dirPath) setActiveFilePath(nextPath);
-				if (activePreviewPathRef.current === dirPath)
-					setActivePreviewPath(nextPath);
 				dispatchPathRenamed({
 					fromPath: dirPath,
 					toPath: nextPath,
@@ -437,7 +429,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			renamePinnedPath,
 			renameItemAppearance,
 			setActiveFilePath,
-			setActivePreviewPath,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -491,17 +482,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					),
 				);
 				const activeFile = activeFilePathRef.current;
-				const activePreview = activePreviewPathRef.current;
 				if (
 					activeFile === target ||
 					(kind === "dir" && Boolean(activeFile?.startsWith(`${target}/`)))
 				)
 					setActiveFilePath(null);
-				if (
-					activePreview === target ||
-					(kind === "dir" && Boolean(activePreview?.startsWith(`${target}/`)))
-				)
-					setActivePreviewPath(null);
 				dispatchPathRemoved({
 					path: target,
 					recursive: kind === "dir",
@@ -526,7 +511,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadedDirsRef,
 			runPinnedSync,
 			setActiveFilePath,
-			setActivePreviewPath,
 			updateChildrenByDir,
 			deletePinnedPath,
 			deleteItemAppearance,
@@ -627,14 +611,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				) {
 					setActiveFilePath(rewritePrefix(activeFile, from, nextPath));
 				}
-				const activePreview = activePreviewPathRef.current;
-				if (
-					activePreview &&
-					(activePreview === from ||
-						(kind === "dir" && activePreview.startsWith(`${from}/`)))
-				) {
-					setActivePreviewPath(rewritePrefix(activePreview, from, nextPath));
-				}
 				dispatchPathRenamed({
 					fromPath: from,
 					toPath: nextPath,
@@ -666,7 +642,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			renameItemAppearance,
 			runPinnedSync,
 			setActiveFilePath,
-			setActivePreviewPath,
 			updateExpandedDirs,
 			updateChildrenByDir,
 			setError,

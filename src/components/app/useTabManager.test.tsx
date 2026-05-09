@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const addRecentFileMock = vi.fn();
 const setActiveFilePathMock = vi.fn();
-const setActivePreviewPathMock = vi.fn();
 const setOpenMarkdownTabsMock = vi.fn();
 const setActiveMarkdownTabPathMock = vi.fn();
 
@@ -15,7 +14,6 @@ vi.mock("../../contexts", () => ({
 		setActiveFilePath: setActiveFilePathMock,
 	}),
 	useUILayoutContext: () => ({
-		setActivePreviewPath: setActivePreviewPathMock,
 		setOpenMarkdownTabs: setOpenMarkdownTabsMock,
 		setActiveMarkdownTabPath: setActiveMarkdownTabPathMock,
 	}),
@@ -315,7 +313,7 @@ describe("useTabManager", () => {
 		expect(latestValue.canGoBack).toBe(false);
 	});
 
-	it("ignores preview/special-tab opens for history creation", () => {
+	it("ignores special-tab opens for history creation", () => {
 		act(() => {
 			latestValue.openFileTab("notes/a.md");
 		});

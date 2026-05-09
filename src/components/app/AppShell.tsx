@@ -61,7 +61,6 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
-import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
@@ -132,8 +131,6 @@ export function AppShell() {
 		folioMode,
 		paletteOpen,
 		setPaletteOpen,
-		activePreviewPath,
-		setActivePreviewPath,
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
@@ -294,9 +291,7 @@ export function AppShell() {
 		deleteItemAppearance,
 		setActiveFilePath,
 		setActiveDirPath,
-		setActivePreviewPath,
 		activeFilePath,
-		activePreviewPath,
 		setError,
 	});
 
@@ -335,7 +330,7 @@ export function AppShell() {
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (isMarkdownPath(path) || isInAppPreviewable(path)) {
+			if (isMarkdownPath(path)) {
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
 				return;
@@ -375,16 +370,20 @@ export function AppShell() {
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
+			if (!isMarkdownPath(path)) {
+				await fileTree.openFile(path);
+				return;
+			}
 			setActiveDirPath(parentDir(path));
 			openFileTab(path);
 		},
-		[openFileTab, setActiveDirPath],
+		[fileTree, openFileTab, setActiveDirPath],
 	);
 
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path) && !isInAppPreviewable(path)) {
+			if (!isMarkdownPath(path)) {
 				await openWorkspaceFile(path);
 				return;
 			}
@@ -401,6 +400,10 @@ export function AppShell() {
 	const openFolioWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
+			if (!isMarkdownPath(path)) {
+				await openFolioWorkspaceFile(path);
+				return;
+			}
 			if (tabs.some((tab) => tab.target === path)) {
 				await openFolioWorkspaceFile(path);
 				return;
@@ -1060,7 +1063,6 @@ export function AppShell() {
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,
-		setActivePreviewPath,
 		setAiPanelOpen,
 		setError,
 		setMovePickerSourcePath,

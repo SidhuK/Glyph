@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath } from "../../utils/path";
 
 export interface WorkspaceTab {
@@ -34,11 +33,8 @@ function matchesRemovedPath(
 export function useTabManager(spacePath: string | null) {
 	const { setActiveFilePath } = useFileTreeContext();
 	const { addRecentFile } = useRecentFiles(spacePath, 7);
-	const {
-		setActivePreviewPath,
-		setOpenMarkdownTabs,
-		setActiveMarkdownTabPath,
-	} = useUILayoutContext();
+	const { setOpenMarkdownTabs, setActiveMarkdownTabPath } =
+		useUILayoutContext();
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
 	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
@@ -81,12 +77,6 @@ export function useTabManager(spacePath: string | null) {
 				nextActiveTab?.kind === "file" && nextActiveTab.target
 					? nextActiveTab.target
 					: null;
-			const nextPreviewPath =
-				nextFilePath &&
-				!nextFilePath.toLowerCase().endsWith(".md") &&
-				isInAppPreviewable(nextFilePath)
-					? nextFilePath
-					: null;
 			const nextMarkdownTabs = nextTabs
 				.filter(
 					(tab) =>
@@ -100,7 +90,6 @@ export function useTabManager(spacePath: string | null) {
 					: null;
 
 			setActiveFilePath(nextFilePath);
-			setActivePreviewPath(nextPreviewPath);
 			setOpenMarkdownTabs(nextMarkdownTabs);
 			setActiveMarkdownTabPath(nextActiveMarkdownPath);
 
@@ -119,7 +108,6 @@ export function useTabManager(spacePath: string | null) {
 			addRecentFile,
 			setActiveFilePath,
 			setActiveMarkdownTabPath,
-			setActivePreviewPath,
 			setOpenMarkdownTabs,
 			spacePath,
 		],
@@ -314,7 +302,7 @@ export function useTabManager(spacePath: string | null) {
 		(activeHistory?.index ?? -1) < (activeHistory?.entries.length ?? 0) - 1;
 
 	const canOpenInMainPane = useCallback(
-		(path: string) => Boolean(path.trim()),
+		(path: string) => isMarkdownPath(path),
 		[],
 	);
 
