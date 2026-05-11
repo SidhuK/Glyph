@@ -1,6 +1,44 @@
 {
 	"versions": [
 		{
+			"version": "0.3.5",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"You can now rename files by clicking the title in the editor"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Database relation and multi-select pills now use the app accent color instead of per-value colors",
+						"Sidebar, Folio, database, and view rename fields now edit like plain text instead of boxed inputs",
+						"YAML and frontmatter editing now feels like part of the editor",
+						"About settings now has cleaner copy and less unused code"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Restored and simplified the global app scrollbar styles",
+						"Fixed Folio note renaming",
+						"Folio search and sort controls now respect the collapsed-sidebar space",
+						"Editor tab bar controls now start to the right of the floating sidebar button"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Removed the animation when switching between the command palette and search",
+						"Removed the folder name and note count from the top of Folio mode",
+						"Removed the note count from the sidebar All Notes item, including fetching, storage, announcements, rendering, and styling",
+						"Removed the duplicate Support and Diagnostics section from About settings"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.3.0",
 			"sections": [
 				{
