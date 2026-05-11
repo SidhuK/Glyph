@@ -208,28 +208,12 @@
 }
 
 .databasesInlineNameInput {
+	box-sizing: border-box;
 	max-width: 280px;
 	height: 28px;
 	font-size: 0.9rem;
 	font-weight: var(--font-semibold);
-	background: transparent;
-	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
-	padding: 0 6px;
-	box-shadow: none;
-	transition: border-color 120ms ease, background-color 120ms ease;
-}
-
-.databasesInlineNameInput:hover {
-	border-color: var(--border-light);
-}
-
-.databasesInlineNameInput:focus,
-.databasesInlineNameInput:focus-visible {
-	border-color: var(--border-default);
-	background: var(--bg-secondary);
-	box-shadow: none;
-	outline: none;
+	padding: 0;
 }
 
 .databasesHeaderSource {
@@ -256,18 +240,13 @@
 }
 
 .databasesViewTabRenameInput {
+	box-sizing: border-box;
 	width: 100px;
 	min-height: 30px;
 	margin: 0;
-	padding: 0 10px;
+	padding: 0;
 	font-size: 11px;
 	font-weight: var(--font-medium);
-	border: 0;
-	border-radius: 0;
-	background: var(--settings-surface);
-	color: var(--text-primary);
-	outline: none;
-	box-shadow: none;
 }
 
 .databasesViewTabMenuContent {

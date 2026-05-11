@@ -50,20 +50,6 @@
 	color: var(--text-primary);
 }
 
-.allDocsSectionCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 24px;
-	height: 24px;
-	padding: 0 8px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
-	color: var(--text-secondary);
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-}
-
 .allDocsCard {
 	appearance: none;
 	display: flex;

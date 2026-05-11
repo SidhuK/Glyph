@@ -17,21 +17,6 @@ export const rowVariants = {
 	tap: { scale: 0.98 },
 };
 
-export function splitEditableFileName(name: string): {
-	stem: string;
-	ext: string;
-} {
-	const trimmed = name.trim();
-	const dotIndex = trimmed.lastIndexOf(".");
-	if (dotIndex <= 0 || dotIndex === trimmed.length - 1) {
-		return { stem: trimmed, ext: "" };
-	}
-	return {
-		stem: trimmed.slice(0, dotIndex),
-		ext: trimmed.slice(dotIndex),
-	};
-}
-
 export function buildRowStyle(
 	depth: number,
 	toneSeed?: string,

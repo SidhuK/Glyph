@@ -9,7 +9,7 @@ import {
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { basename, parentDir } from "../../utils/path";
+import { basename, parentDir, splitEditableFileName } from "../../utils/path";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import {
@@ -17,7 +17,6 @@ import {
 	isEditorTextColor,
 } from "../editor/textColors";
 import { FileTreeAppearanceMenu } from "../filetree/FileTreeAppearanceMenu";
-import { splitEditableFileName } from "../filetree/fileTreeItemHelpers";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
@@ -293,7 +292,7 @@ function FolioRenameInput({
 	return (
 		<input
 			ref={inputRef}
-			className="folioNoteRenameInput"
+			className="plainTextInput folioNoteRenameInput"
 			value={draftName}
 			placeholder="Untitled"
 			onChange={(event) => setDraftName(event.target.value)}

@@ -107,7 +107,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		filesTruncated,
 		isLoading,
 		error,
-		title,
 		nonMarkdownFileLimit,
 		missingFolder,
 	} = useFolioNotes(folioScope);
@@ -328,8 +327,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			}}
 		>
 			<FolioScopeHeader
-				title={title}
-				count={visibleNotes.length}
 				searchQuery={searchQuery}
 				sortMode={sortMode}
 				onSearchQueryChange={setSearchQuery}

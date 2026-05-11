@@ -29,7 +29,7 @@ export function RawFrontmatterEditor({
 
 	return (
 		<textarea
-			className="frontmatterEditor"
+			className="plainTextInput frontmatterEditor"
 			value={draft}
 			rows={Math.max(6, draft.split("\n").length + 1)}
 			onChange={(event) => {

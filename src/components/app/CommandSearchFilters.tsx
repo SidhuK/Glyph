@@ -24,7 +24,6 @@ export function CommandSearchFilters({
 			<button
 				type="button"
 				className="commandSearchFilterBtn"
-				data-kind="title-only"
 				data-active={request.title_only ? "true" : "false"}
 				aria-pressed={request.title_only}
 				onClick={() =>
@@ -39,7 +38,6 @@ export function CommandSearchFilters({
 			<button
 				type="button"
 				className="commandSearchFilterBtn"
-				data-kind="tag-only"
 				data-active={request.tag_only ? "true" : "false"}
 				aria-pressed={request.tag_only}
 				onClick={() =>

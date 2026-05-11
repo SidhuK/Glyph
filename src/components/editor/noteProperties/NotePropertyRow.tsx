@@ -90,7 +90,7 @@ export function NotePropertyRow({
 						/>
 						<Input
 							value={keyDraft}
-							className="notePropertyKeyInput"
+							className="plainTextInput notePropertyKeyInput"
 							placeholder="Property"
 							aria-label="Property name"
 							onChange={(event) => setKeyDraft(event.target.value)}

@@ -15,6 +15,7 @@ import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
+import { isMarkdownPath } from "../../utils/path";
 import { ChevronRight, File, FileText, FolderOpen } from "../Icons";
 import {
 	DropdownMenu,
@@ -24,6 +25,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
+import { ActiveFileTitle } from "./ActiveFileTitle";
 import type { WorkspaceTab } from "./useTabManager";
 
 interface TabBarProps {
@@ -42,6 +44,7 @@ interface TabBarProps {
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
 	onOpenBreadcrumbFile: (relPath: string) => Promise<void>;
+	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
@@ -104,6 +107,7 @@ export function TabBar({
 	onNavigateBreadcrumbPath,
 	onLoadBreadcrumbDir,
 	onOpenBreadcrumbFile,
+	onRenameFile,
 	onSelectTab,
 	onCloseTab,
 	onStartRenamePath,
@@ -160,6 +164,12 @@ export function TabBar({
 						}),
 				]
 			: [];
+	const activeMarkdownPath =
+		activeTabPath &&
+		!isPathSpecial(activeTabPath) &&
+		isMarkdownPath(activeTabPath)
+			? activeTabPath
+			: null;
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			suppressClickRef.current = true;
@@ -208,6 +218,10 @@ export function TabBar({
 						→
 					</button>
 				</div>
+				<ActiveFileTitle
+					path={activeMarkdownPath}
+					onRenameFile={onRenameFile}
+				/>
 				{showTabs ? (
 					<>
 						<DragDropProvider onDragEnd={handleDragEnd}>

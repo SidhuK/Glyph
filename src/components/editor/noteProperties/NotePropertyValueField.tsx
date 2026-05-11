@@ -222,7 +222,7 @@ export function NotePropertyValueField({
 					<input
 						ref={(node) => onSetTagInputRef(rowId, node)}
 						type="text"
-						className="notePropertyTagInput"
+						className="plainTextInput notePropertyTagInput"
 						value={tagDraft}
 						placeholder={property.value_list.length > 0 ? "" : "Add a tag"}
 						aria-label={`${property.key || "Tags"} value`}
@@ -272,7 +272,7 @@ export function NotePropertyValueField({
 
 	return (
 		<Input
-			className="notePropertyFieldInput"
+			className="plainTextInput notePropertyFieldInput"
 			style={{ color: "var(--text-primary)" }}
 			type={
 				property.kind === "date"

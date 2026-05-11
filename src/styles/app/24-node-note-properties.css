@@ -1,12 +1,12 @@
 .frontmatterEditor {
 	width: 100%;
 	border: none;
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	background: transparent;
 	color: var(--text-primary);
 	font-size: 11.5px;
 	line-height: 1.42;
-	padding: 7px 9px;
-	border-radius: 8px;
+	padding: 3px 0;
+	border-radius: 0;
 	resize: none;
 	overflow: visible;
 	font-family: var(--font-mono);
@@ -17,7 +17,7 @@
 .frontmatterEditor:focus {
 	outline: none;
 	box-shadow: none;
-	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+	background: transparent;
 }
 
 .frontmatterEditor::placeholder {
@@ -199,18 +199,16 @@ input.notePropertyValue {
 .notePropertyKeyInput:hover,
 .notePropertyFieldInput:hover,
 .notePropertyValue input:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 30%, transparent);
+	background: transparent;
 }
 
 .notePropertyKeyInput:focus-visible,
 .notePropertyFieldInput:focus-visible,
 .notePropertyValue input:focus-visible {
-	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+	background: transparent;
 	border-color: transparent;
 	box-shadow: none;
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	outline-offset: 1px;
+	outline: none;
 }
 
 .notePropertyKeyStatic {
@@ -552,9 +550,7 @@ input.notePropertyValue {
 
 .notePropertyTagField:focus-within {
 	border-color: transparent;
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	outline-offset: 1px;
+	outline: none;
 }
 
 .notePropertyTagInput {
@@ -562,15 +558,10 @@ input.notePropertyValue {
 	min-width: 72px;
 	height: 20px;
 	padding: 0;
-	border: 0;
-	background: transparent;
-	color: var(--text-primary);
 	font-family: var(--font-sans);
 	font-size: 12px;
 	font-weight: var(--font-normal);
 	line-height: 1.35;
-	outline: none;
-	box-shadow: none;
 }
 
 .notePropertyTagInput::placeholder {

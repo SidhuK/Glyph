@@ -237,9 +237,6 @@ export const AllDocsPane = memo(function AllDocsPane({
 					<section key={section.id} className="allDocsSection">
 						<div className="allDocsSectionHeader">
 							<h2 className="allDocsSectionTitle">{section.label}</h2>
-							<span className="allDocsSectionCount">
-								{section.notes.length}
-							</span>
 						</div>
 						<div className="allDocsGrid">
 							{section.notes.map((note, index) => {

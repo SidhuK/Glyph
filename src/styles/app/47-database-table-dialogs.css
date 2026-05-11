@@ -319,7 +319,7 @@
 	border: 0;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: 0.76rem;
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
 	box-shadow: var(--pill-shadow);
 	white-space: nowrap;

@@ -1,22 +1,24 @@
 import {
-	BubbleChatQuestionIcon,
-	CodesandboxIcon,
 	DiscordIcon,
-	NewTwitterIcon,
+	File01Icon,
+	GlobeIcon,
+	ListViewIcon,
+	Shield01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { CHANGELOG_DATA } from "../../data/releaseNotes";
 import { useLicenseStatus } from "../../lib/license";
+import { PUBLIC_CHANGELOG_URL } from "../../lib/releaseNotes";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { ChangelogSection } from "./ChangelogSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
-const LATEST_CHANGELOG_VERSIONS = CHANGELOG_DATA.versions.slice(0, 1);
+const LATEST_CHANGELOG_VERSION = CHANGELOG_DATA.versions[0] ?? null;
 
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
@@ -24,10 +26,6 @@ export function AboutSettingsPane() {
 	const autoUpdater = useUpdaterContext();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
-	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
-	const copyResetTimerRef = useRef<
-		ReturnType<typeof window.setTimeout> | undefined
-	>(undefined);
 	const [updateStatus, setUpdateStatus] = useState("");
 	useEffect(() => {
 		let cancelled = false;
@@ -51,28 +49,6 @@ export function AboutSettingsPane() {
 		if (!appInfo?.version) return "";
 		return `v${appInfo.version}`;
 	}, [appInfo?.version]);
-
-	const scheduleCopyLabelReset = () => {
-		if (copyResetTimerRef.current !== undefined) {
-			window.clearTimeout(copyResetTimerRef.current);
-		}
-		copyResetTimerRef.current = window.setTimeout(() => {
-			setCopyLabel("Copy Diagnostics");
-			copyResetTimerRef.current = undefined;
-		}, 1800);
-	};
-
-	const handleCopyDebugInfo = async () => {
-		const info = `Name: ${appInfo?.name ?? "Glyph"}\nVersion: ${appInfo?.version ?? "-"}\nIdentifier: ${appInfo?.identifier ?? "-"}`;
-		try {
-			await navigator.clipboard.writeText(info);
-			setCopyLabel("Copied to Clipboard");
-			scheduleCopyLabelReset();
-		} catch {
-			setCopyLabel("Copy Failed");
-			scheduleCopyLabelReset();
-		}
-	};
 
 	const handleCheckForUpdates = async () => {
 		if (!licenseStatus?.can_auto_update) return;
@@ -98,41 +74,26 @@ export function AboutSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<section className="settingsCard aboutHeroCard">
-					<div className="aboutIdentity">
-						<div className="aboutLogoWrap">
-							<img
-								src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
-								alt=""
-								className="aboutLogo"
-								aria-hidden="true"
-							/>
-						</div>
-						<div className="aboutIdentityCopy">
-							<div className="aboutTitleRow">
-								<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
-								<span className="aboutVersion">{versionLabel}</span>
-							</div>
-							<div className="aboutStatusRow">
-								<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
-									Early Access
-								</span>
-								<span
-									className="aboutOpenSourceMark"
-									title="Open Source project"
-								>
-									<HugeiconsIcon
-										icon={CodesandboxIcon}
-										size={12}
-										strokeWidth={0.9}
-									/>
-									<span>Open Source</span>
-								</span>
-							</div>
-						</div>
-					</div>
+				<section className="aboutHero" aria-labelledby="about-title">
+					<img
+						src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
+						alt=""
+						className="aboutLogo"
+						aria-hidden="true"
+					/>
+					<h2 id="about-title" className="aboutAppName">
+						{appInfo?.name ?? "Glyph"}
+						{versionLabel ? (
+							<span className="aboutVersion">{versionLabel}</span>
+						) : null}
+					</h2>
+					<p className="aboutTagline">
+						Your thoughts deserve a home,
+						<br />
+						not a server.
+					</p>
 					<p className="aboutAttribution">
-						Glyph is an independent app made by{" "}
+						Made by{" "}
 						<button
 							type="button"
 							className="settingsInlineLink"
@@ -140,9 +101,59 @@ export function AboutSettingsPane() {
 						>
 							Karat Sidhu
 						</button>
-						. Feel free to get in touch with questions, issues, or any feedback
-						you might have.
 					</p>
+					<div className="aboutQuickLinks" aria-label="About links">
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="aboutLinkButton"
+							onClick={() => void openUrl("https://glyphformac.com")}
+						>
+							<HugeiconsIcon icon={GlobeIcon} size={16} strokeWidth={1.6} />
+							Website
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="aboutLinkButton"
+							onClick={() => void openUrl(PUBLIC_CHANGELOG_URL)}
+						>
+							<HugeiconsIcon icon={ListViewIcon} size={16} strokeWidth={1.6} />
+							Release Notes
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="aboutLinkButton"
+							onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
+						>
+							<HugeiconsIcon icon={DiscordIcon} size={16} strokeWidth={1.6} />
+							Discord
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="aboutLinkButton"
+							onClick={() => void openUrl("https://glyphformac.com/terms")}
+						>
+							<HugeiconsIcon icon={File01Icon} size={16} strokeWidth={1.6} />
+							Terms
+						</Button>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="aboutLinkButton"
+							onClick={() => void openUrl("https://glyphformac.com/privacy")}
+						>
+							<HugeiconsIcon icon={Shield01Icon} size={16} strokeWidth={1.6} />
+							Privacy
+						</Button>
+					</div>
 				</section>
 
 				<SettingsSection
@@ -225,76 +236,7 @@ export function AboutSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection title="Changelog">
-					<ChangelogSection versions={LATEST_CHANGELOG_VERSIONS} />
-				</SettingsSection>
-
-				<SettingsSection
-					title="Support"
-					description="Project links and diagnostics that help with support requests."
-				>
-					<SettingsRow
-						label="Links"
-						description="Open the author and project pages in your browser."
-					>
-						<div className="settingsActions aboutActions">
-							<Button
-								type="button"
-								size="icon-sm"
-								variant="outline"
-								onClick={() => void openUrl("https://x.com/karat_sidhu")}
-								aria-label="X (Twitter)"
-								title="X (Twitter)"
-							>
-								<HugeiconsIcon
-									icon={NewTwitterIcon}
-									size={16}
-									strokeWidth={0.9}
-								/>
-							</Button>
-							<Button
-								type="button"
-								size="icon-sm"
-								variant="outline"
-								onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
-								aria-label="Discord"
-								title="Discord"
-							>
-								<HugeiconsIcon icon={DiscordIcon} size={16} strokeWidth={0.9} />
-							</Button>
-							<Button
-								type="button"
-								size="icon-sm"
-								variant="outline"
-								onClick={() =>
-									void openUrl(
-										"https://glyph.userjot.com/?cursor=1&order=top&limit=10",
-									)
-								}
-								aria-label="Feedback"
-								title="Feedback"
-							>
-								<HugeiconsIcon
-									icon={BubbleChatQuestionIcon}
-									size={16}
-									strokeWidth={0.9}
-								/>
-							</Button>
-						</div>
-					</SettingsRow>
-					<SettingsRow
-						label="Diagnostics"
-						description="Copy app metadata so you can paste it into bug reports or support threads."
-					>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="min-w-36 rounded-md border-border bg-background justify-center shadow-none"
-							onClick={() => void handleCopyDebugInfo()}
-						>
-							{copyLabel}
-						</Button>
-					</SettingsRow>
+					<ChangelogSection version={LATEST_CHANGELOG_VERSION} />
 				</SettingsSection>
 			</div>
 		</div>
