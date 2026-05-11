@@ -617,6 +617,8 @@ pub async fn ai_models_list(
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
         AiProviderKind::CodexChatgpt => list_codex_models(codex_state.inner()),
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
+        AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&profile),
+        AiProviderKind::GeminiCli => crate::ai_gemini_cli::list_models(&profile).await,
         AiProviderKind::Opencode => {
             let root = space_root
                 .as_deref()

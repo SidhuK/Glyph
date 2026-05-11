@@ -42,6 +42,8 @@ export const providerLogoMeta: Record<
 		darkSrc: opencodeDarkThemeLogoUrl,
 		label: "OpenCode",
 	},
+	claude_code: { src: anthropicLogoUrl, label: "Claude Code" },
+	gemini_cli: { src: geminiLogoUrl, label: "Gemini CLI" },
 };
 
 export function getProviderLogoSrc(

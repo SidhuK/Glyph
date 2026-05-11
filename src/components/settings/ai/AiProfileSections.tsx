@@ -69,7 +69,9 @@ function AiProfileSectionsBody({
 		() =>
 			profileDraft?.provider !== "codex_chatgpt" &&
 			profileDraft?.provider !== "amp" &&
-			profileDraft?.provider !== "opencode",
+			profileDraft?.provider !== "opencode" &&
+			profileDraft?.provider !== "claude_code" &&
+			profileDraft?.provider !== "gemini_cli",
 		[profileDraft?.provider],
 	);
 

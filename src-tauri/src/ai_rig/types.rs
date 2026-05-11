@@ -13,6 +13,8 @@ pub enum AiProviderKind {
     CodexChatgpt,
     Amp,
     Opencode,
+    ClaudeCode,
+    GeminiCli,
 }
 
 impl AiProviderKind {
@@ -28,6 +30,8 @@ impl AiProviderKind {
             Self::CodexChatgpt => "codex_chatgpt",
             Self::Amp => "amp",
             Self::Opencode => "opencode",
+            Self::ClaudeCode => "claude_code",
+            Self::GeminiCli => "gemini_cli",
         }
     }
 
@@ -43,6 +47,8 @@ impl AiProviderKind {
             Self::CodexChatgpt => "Codex (ChatGPT)",
             Self::Amp => "Amp",
             Self::Opencode => "OpenCode",
+            Self::ClaudeCode => "Claude Code",
+            Self::GeminiCli => "Gemini CLI",
         }
     }
 }

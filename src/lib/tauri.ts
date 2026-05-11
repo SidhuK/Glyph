@@ -616,7 +616,9 @@ export type AiProviderKind =
 	| "llama_cpp"
 	| "codex_chatgpt"
 	| "amp"
-	| "opencode";
+	| "opencode"
+	| "claude_code"
+	| "gemini_cli";
 
 export type AiAssistantMode = "chat" | "create";
 

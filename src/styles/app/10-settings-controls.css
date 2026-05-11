@@ -298,6 +298,8 @@
 	.settingsProviderNativeLogoImage,
 .settingsProviderNativeLogo[data-provider="gemini"]
 	.settingsProviderNativeLogoImage,
+.settingsProviderNativeLogo[data-provider="gemini_cli"]
+	.settingsProviderNativeLogoImage,
 .settingsProviderNativeLogo[data-provider="openrouter"]
 	.settingsProviderNativeLogoImage {
 	width: 19px;
@@ -324,6 +326,55 @@
 
 .settingsFieldControl .settingsInline > select.settingsProviderNativeSelect {
 	flex-basis: 178px;
+}
+
+.settingsProviderWarningButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	flex: 0 0 auto;
+	border: 1px solid
+		color-mix(in srgb, var(--status-danger-border) 86%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--status-danger-bg) 88%, transparent);
+	color: var(--status-danger-fg);
+	line-height: 0;
+	cursor: pointer;
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--status-danger-fg) 9%, transparent);
+	transition: all var(--transition-base);
+}
+
+.settingsProviderWarningButton:hover {
+	border-color: color-mix(in srgb, var(--status-danger-fg) 48%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 96%, var(--bg-primary));
+	color: color-mix(in srgb, var(--status-danger-fg) 86%, var(--text-primary));
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--status-danger-fg) 18%, transparent), 0 0 0 3px
+		color-mix(in srgb, var(--status-danger-fg) 10%, transparent);
+}
+
+.settingsProviderWarningButton svg {
+	display: block;
+	width: 16px;
+	height: 16px;
+	color: currentcolor;
+	flex-shrink: 0;
+}
+
+.settingsProviderWarningPopover {
+	width: min(340px, calc(100vw - 32px));
+	padding: 12px;
+	border-color: var(--status-danger-border);
+	border-radius: var(--radius-md);
+}
+
+.settingsProviderWarningText {
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary);
 }
 
 .settingsActions {

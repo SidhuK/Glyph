@@ -16,7 +16,9 @@ const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
 	provider !== "llama_cpp" &&
 	provider !== "codex_chatgpt" &&
 	provider !== "amp" &&
-	provider !== "opencode";
+	provider !== "opencode" &&
+	provider !== "claude_code" &&
+	provider !== "gemini_cli";
 
 export function AiModelCombobox({
 	profileId,

@@ -61,6 +61,8 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
         (AiProviderKind::CodexChatgpt, "codex", None, false),
         (AiProviderKind::Amp, "smart", None, false),
         (AiProviderKind::Opencode, "", None, true),
+        (AiProviderKind::ClaudeCode, "default", None, false),
+        (AiProviderKind::GeminiCli, "default", None, false),
     ];
 
     store.profiles = defaults

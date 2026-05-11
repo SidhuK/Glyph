@@ -1,5 +1,7 @@
 mod ai_amp;
+mod ai_claude_code;
 mod ai_codex;
+mod ai_gemini_cli;
 mod ai_opencode;
 mod ai_rig;
 mod databases;

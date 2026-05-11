@@ -1,6 +1,13 @@
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { ProviderLogo } from "../../ai/modelSelectorConstants";
 import { Input } from "../../ui/shadcn/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "../../ui/shadcn/popover";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -25,6 +32,8 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 			{ value: "codex_chatgpt", label: "Codex" },
 			{ value: "opencode", label: "OpenCode" },
 			{ value: "amp", label: "Amp" },
+			{ value: "claude_code", label: "Claude Code" },
+			{ value: "gemini_cli", label: "Gemini CLI" },
 		],
 	},
 	{
@@ -32,7 +41,7 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 		options: [
 			{ value: "openai", label: "OpenAI" },
 			{ value: "anthropic", label: "Anthropic" },
-			{ value: "gemini", label: "Google" },
+			{ value: "gemini", label: "Google Gemini API" },
 			{ value: "openrouter", label: "OpenRouter" },
 			{ value: "openai_compat", label: "OpenAI compatible" },
 		],
@@ -52,6 +61,16 @@ function findProviderOption(provider: AiProviderKind): AiProviderOption {
 		if (option) return option;
 	}
 	return { value: provider, label: provider };
+}
+
+function cliProviderWarning(provider: AiProviderKind): string | null {
+	if (provider === "claude_code") {
+		return "Use at your own risk. Anthropic’s docs say third-party products should use API key or supported cloud-provider auth and must not route Free, Pro, or Max plan credentials on behalf of users.";
+	}
+	if (provider === "gemini_cli") {
+		return "Use at your own risk. Gemini CLI docs say third-party tools must not piggyback on Gemini CLI OAuth; for third-party coding agents, Google recommends Vertex AI or Google AI Studio API keys.";
+	}
+	return null;
 }
 
 interface AiProviderSectionProps {
@@ -82,6 +101,7 @@ export function AiProviderSection({
 			? "http://localhost:8080/v1"
 			: "https://api.example.com/v1";
 	const selectedProvider = findProviderOption(profileDraft.provider);
+	const providerWarning = cliProviderWarning(profileDraft.provider);
 
 	return (
 		<SettingsSection
@@ -122,6 +142,33 @@ export function AiProviderSection({
 							</optgroup>
 						))}
 					</select>
+					{providerWarning ? (
+						<Popover>
+							<PopoverTrigger asChild>
+								<button
+									type="button"
+									className="settingsProviderWarningButton"
+									aria-label={`${selectedProvider.label} warning`}
+								>
+									<HugeiconsIcon
+										icon={InformationCircleIcon}
+										size={16}
+										strokeWidth={1.8}
+									/>
+								</button>
+							</PopoverTrigger>
+							<PopoverContent
+								align="end"
+								side="bottom"
+								sideOffset={8}
+								className="settingsProviderWarningPopover"
+							>
+								<div className="settingsProviderWarningText">
+									{providerWarning}
+								</div>
+							</PopoverContent>
+						</Popover>
+					) : null}
 				</div>
 			</SettingsRow>
 
