@@ -13,8 +13,7 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { type FsEntry, invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
+import type { FsEntry } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -147,14 +146,11 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
-	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
 	const [spaceMenuOpen, setSpaceMenuOpen] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
-	const allNotesCountRequestRef = useRef(0);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
-	const showAllNotesCount = allNotesCount !== null;
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
@@ -284,32 +280,6 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
-
-	const refreshAllNotesCount = useCallback(() => {
-		const requestId = allNotesCountRequestRef.current + 1;
-		allNotesCountRequestRef.current = requestId;
-		if (!spacePath) {
-			setAllNotesCount(null);
-			return;
-		}
-		void invoke("all_docs_count", {})
-			.then((count) => {
-				if (allNotesCountRequestRef.current !== requestId) return;
-				setAllNotesCount(count);
-			})
-			.catch(() => {
-				if (allNotesCountRequestRef.current !== requestId) return;
-				setAllNotesCount(null);
-			});
-	}, [spacePath]);
-
-	useEffect(() => {
-		refreshAllNotesCount();
-	}, [refreshAllNotesCount]);
-
-	useTauriEvent("notes:external_changed", () => {
-		refreshAllNotesCount();
-	});
 
 	useEffect(() => {
 		if (!spaceMenuOpen) return;
@@ -544,9 +514,7 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="all-notes"
 							data-active={activeTopSection === "all-notes" ? "true" : "false"}
-							aria-label={
-								showAllNotesCount ? `All Notes (${allNotesCount})` : "All Notes"
-							}
+							aria-label="All Notes"
 							aria-pressed={activeTopSection === "all-notes"}
 							aria-current={
 								activeTopSection === "all-notes" ? "page" : undefined
@@ -562,9 +530,6 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
-							{showAllNotesCount ? (
-								<span className="sidebarQuickActionCount">{allNotesCount}</span>
-							) : null}
 						</button>
 						<button
 							type="button"

@@ -835,6 +835,9 @@ export const MainContent = memo(function MainContent({
 						onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 						onLoadBreadcrumbDir={onLoadBreadcrumbDir}
 						onOpenBreadcrumbFile={onOpenFile}
+						onRenameFile={(path, nextName) =>
+							fileTree.onRenameDir(path, nextName, "file")
+						}
 						onSelectTab={setActiveTabId}
 						onCloseTab={closeTab}
 						onStartRenamePath={onStartRenamePath}

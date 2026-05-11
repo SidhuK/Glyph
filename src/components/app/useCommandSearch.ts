@@ -137,7 +137,6 @@ export function useCommandSearch(
 	}, []);
 
 	return {
-		searchResults,
 		recentFiles: recentMarkdownFiles,
 		isSearching,
 		titleMatches,

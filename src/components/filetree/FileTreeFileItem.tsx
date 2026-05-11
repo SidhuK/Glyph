@@ -17,7 +17,7 @@ import type {
 	FsEntry,
 	NoteTaskSummary,
 } from "../../lib/tauri";
-import { basename } from "../../utils/path";
+import { basename, splitEditableFileName } from "../../utils/path";
 import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
@@ -38,7 +38,6 @@ import {
 import {
 	buildRowStyle,
 	rowVariants,
-	splitEditableFileName,
 	springTransition,
 } from "./fileTreeItemHelpers";
 import { getFileTypeInfo } from "./fileTypeUtils";
@@ -82,7 +81,7 @@ function FileRenameInput({
 	return (
 		<input
 			ref={inputRef}
-			className="fileTreeRenameInput"
+			className="plainTextInput fileTreeRenameInput"
 			value={draftName}
 			placeholder="Untitled"
 			onChange={(event) => setDraftName(event.target.value)}

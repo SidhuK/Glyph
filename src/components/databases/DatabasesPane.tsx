@@ -822,7 +822,7 @@ function DatabasesPaneContent({
 						<>
 							<Input
 								value={nameDraft}
-								className="databasesInlineNameInput"
+								className="plainTextInput databasesInlineNameInput"
 								aria-label="Collection name"
 								style={{
 									width: `${Math.min(Math.max(nameDraft.trim().length + 2, 10), 24)}ch`,
@@ -895,7 +895,7 @@ function DatabasesPaneContent({
 											<input
 												ref={viewNameInputRef}
 												type="text"
-												className="databasesViewTabRenameInput"
+												className="plainTextInput databasesViewTabRenameInput"
 												value={viewNameDraft}
 												aria-label="View name"
 												onChange={(event) =>

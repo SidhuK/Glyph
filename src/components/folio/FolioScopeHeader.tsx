@@ -9,8 +9,6 @@ import { memo } from "react";
 import type { FolioNotesSortMode } from "./folioScopes";
 
 interface FolioScopeHeaderProps {
-	title: string;
-	count: number;
 	searchQuery: string;
 	sortMode: FolioNotesSortMode;
 	onSearchQueryChange: (query: string) => void;
@@ -18,8 +16,6 @@ interface FolioScopeHeaderProps {
 }
 
 export const FolioScopeHeader = memo(function FolioScopeHeader({
-	title,
-	count,
 	searchQuery,
 	sortMode,
 	onSearchQueryChange,
@@ -34,12 +30,6 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 
 	return (
 		<header className="folioNotesHeader">
-			<div className="folioNotesTitleRow">
-				<h2 className="folioNotesTitle">{title}</h2>
-				<span className="folioNotesCount">
-					{count} {count === 1 ? "note" : "notes"}
-				</span>
-			</div>
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">
 					<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />

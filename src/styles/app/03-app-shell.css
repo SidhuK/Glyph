@@ -6,6 +6,10 @@
 	--app-frame-block: 0px;
 	--app-radius: 0px;
 	--window-control-toggle-offset: 90px;
+	--collapsed-sidebar-top-reserve: calc(
+		var(--window-control-toggle-offset) +
+		38px
+	);
 
 	isolation: isolate;
 	display: flex;

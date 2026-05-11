@@ -5,6 +5,7 @@
 
 .mainTabsBar {
 	--main-tabs-right-reserve: 78px;
+	--main-tabs-left-reserve: var(--space-3);
 
 	height: 40px;
 	display: flex;
@@ -12,9 +13,16 @@
 	justify-content: flex-start;
 	gap: 8px;
 	padding: 0 calc(var(--space-3) + var(--main-tabs-right-reserve)) 0
-		var(--space-3);
+		var(--main-tabs-left-reserve);
 	border-bottom: 0;
 	background: var(--bg-primary);
+}
+
+.appShell.appShellSidebarCollapsed .mainTabsBar {
+	--main-tabs-left-reserve: max(
+		var(--space-3),
+		var(--collapsed-sidebar-top-reserve)
+	);
 }
 
 .mainTabsBar[data-empty-state="true"] {
@@ -26,6 +34,55 @@
 	align-items: center;
 	gap: 2px;
 	flex-shrink: 0;
+}
+
+.mainTabActiveTitle,
+.mainTabActiveTitleInput {
+	height: 28px;
+	min-width: 0;
+	max-width: min(30vw, 280px);
+	flex: 0 1 auto;
+	border-radius: var(--radius-md);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+}
+
+.mainTabActiveTitle {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 8px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: text;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.mainTabActiveTitle:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	color: var(--text-primary);
+}
+
+.mainTabActiveTitleText {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mainTabActiveTitleInput {
+	box-sizing: border-box;
+	display: block;
+	height: 28px;
+	width: min(30vw, 280px);
+	min-width: 0;
+	max-width: min(30vw, 280px);
+	flex: 0 1 auto;
+	padding: 0 8px;
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
 }
 
 .mainTabNavBtn {
@@ -434,6 +491,7 @@
 .mainTab:focus-visible,
 .mainTabClose:focus-visible,
 .mainTabAdd:focus-visible,
+.mainTabActiveTitle:focus-visible,
 .mainTabNavBtn:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
@@ -445,6 +503,7 @@
 	.mainTab::before,
 	.mainTabClose,
 	.mainTabAdd,
+	.mainTabActiveTitle,
 	.mainTabsBreadcrumbSep,
 	.mainTabsBreadcrumbSepButton,
 	.mainTabsBreadcrumbButton {

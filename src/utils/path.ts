@@ -8,6 +8,21 @@ export function basename(relPath: string): string {
 	return parts[parts.length - 1] ?? relPath;
 }
 
+export function splitEditableFileName(name: string): {
+	stem: string;
+	ext: string;
+} {
+	const trimmed = name.trim();
+	const dotIndex = trimmed.lastIndexOf(".");
+	if (dotIndex <= 0 || dotIndex === trimmed.length - 1) {
+		return { stem: trimmed, ext: "" };
+	}
+	return {
+		stem: trimmed.slice(0, dotIndex),
+		ext: trimmed.slice(dotIndex),
+	};
+}
+
 export function isMarkdownPath(relPath: string): boolean {
 	return relPath.toLowerCase().endsWith(".md");
 }

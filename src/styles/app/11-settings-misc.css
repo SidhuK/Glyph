@@ -48,107 +48,73 @@
 	padding: 0;
 }
 
-.aboutHeroCard {
-	display: flex;
-	justify-content: flex-start;
-	position: relative;
-	padding: 20px 24px;
-	min-height: 152px;
-}
-
-.aboutIdentity {
-	display: flex;
-	align-items: center;
-	gap: 18px;
-	padding: 2px 0 6px;
-	min-width: 0;
-	max-width: 760px;
-}
-
-.aboutIdentityCopy {
+.aboutHero {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-	gap: 10px;
-	min-width: 0;
-	text-align: left;
-}
-
-.aboutLogoWrap {
-	width: 56px;
-	height: 56px;
-	flex-shrink: 0;
-	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 18px;
+	padding: 8px 0 26px;
 }
 
 .aboutLogo {
-	width: 100%;
-	height: 100%;
+	width: 64px;
+	height: 64px;
+	margin-bottom: 20px;
 	object-fit: contain;
 }
 
-.aboutTitleRow {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 10px;
-	flex-wrap: wrap;
-}
-
 .aboutAppName {
-	font-size: 28px;
-	font-weight: 750;
-	letter-spacing: -0.03em;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
 	color: var(--text-primary);
-	line-height: 1;
+	font-size: 30px;
+	font-weight: 760;
+	letter-spacing: 0;
+	line-height: 1.05;
 }
 
 .aboutVersion {
+	color: var(--text-secondary);
+	font-size: 14px;
+	font-weight: var(--font-medium);
+}
+
+.aboutTagline {
+	margin: -2px 0 0;
+	color: var(--text-secondary);
 	font-size: 16px;
 	font-weight: var(--font-medium);
-	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
-}
-
-.aboutEarlyAccessBadge {
-	margin-top: 0;
-}
-
-.aboutStatusRow {
-	display: inline-flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 8px;
-}
-
-.aboutOpenSourceMark {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	padding: 3px 8px;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--border-light);
-	background: var(--settings-surface);
-	font-size: 10px;
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
-}
-
-.aboutActions {
-	justify-content: flex-end;
+	line-height: 1.35;
+	text-align: center;
 }
 
 .aboutAttribution {
-	position: absolute;
-	top: 50%;
-	right: 24px;
-	width: min(620px, 46%);
 	margin: 0;
 	color: var(--text-secondary);
-	font-size: 12px;
-	line-height: 1.5;
-	text-align: right;
-	transform: translateY(-50%);
+	font-size: 13px;
+	font-weight: var(--font-semibold);
+	line-height: 1.4;
+	text-align: center;
+}
+
+.aboutQuickLinks {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 28px;
+}
+
+.aboutLinkButton {
+	height: 32px;
+	border-color: var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: none;
+	color: var(--text-secondary);
+	font-size: 13px;
+	font-weight: var(--font-semibold);
 }
 
 .settingsInlineLink {
@@ -335,25 +301,22 @@
 }
 
 @media (max-width: 760px) {
-	.aboutHeroCard {
-		align-items: flex-start;
-		min-height: 0;
+	.aboutHero {
+		padding-top: 4px;
 	}
 
-	.aboutIdentity {
-		align-items: flex-start;
-		flex-direction: column;
+	.aboutQuickLinks {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		width: 100%;
 	}
 
-	.aboutAttribution {
-		position: static;
-		width: auto;
-		text-align: left;
-		transform: none;
+	.aboutLinkButton {
+		width: 100%;
 	}
 
-	.aboutTitleRow {
-		flex-wrap: wrap;
+	.aboutLinkButton:nth-child(2) {
+		grid-column: span 2;
 	}
 }
 

@@ -63,7 +63,7 @@ function DirectoryRenameInput({
 	return (
 		<input
 			ref={inputRef}
-			className="fileTreeRenameInput"
+			className="plainTextInput fileTreeRenameInput"
 			value={draftName}
 			placeholder="New Folder"
 			onChange={(event) => setDraftName(event.target.value)}

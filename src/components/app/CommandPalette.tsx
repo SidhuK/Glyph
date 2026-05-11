@@ -1,7 +1,5 @@
-import { AnimatePresence, m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
-import { directionVariants } from "../ui/animations";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
 import { CommandPaletteFooter } from "./CommandPaletteFooter";
@@ -51,9 +49,6 @@ export function CommandPalette({
 			selectedId: null,
 		};
 	});
-	const [transitionDirection, setTransitionDirection] = useState<
-		"left" | "right"
-	>("left");
 	const { activeTab, query, selectedIndex } = state;
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
@@ -89,11 +84,9 @@ export function CommandPalette({
 			query.trim()
 				? [...titleMatches, ...contentMatches].map((result) => ({
 						id: result.id,
-						title: result.title,
 					}))
 				: recentFiles.map((file) => ({
 						id: file.path,
-						title: null,
 					})),
 		[contentMatches, query, recentFiles, titleMatches],
 	);
@@ -101,7 +94,6 @@ export function CommandPalette({
 	const switchTab = useCallback(
 		(tab: Tab) => {
 			if (tab === "search" && !canSearch) return;
-			setTransitionDirection(tab === "search" ? "right" : "left");
 			setState({
 				activeTab: tab,
 				query: tab === "search" ? initialQuery : "",
@@ -243,20 +235,11 @@ export function CommandPalette({
 
 				<div className="commandPaletteHeader">
 					<div className="commandPaletteInputWrapper">
-						<AnimatePresence mode="wait">
-							{activeTab === "search" && (
-								<m.span
-									key="search-icon"
-									className="commandPaletteSearchIcon"
-									initial={{ opacity: 0, scale: 0.8 }}
-									animate={{ opacity: 1, scale: 1 }}
-									exit={{ opacity: 0, scale: 0.8 }}
-									transition={{ duration: 0.12 }}
-								>
-									<Search size={15} />
-								</m.span>
-							)}
-						</AnimatePresence>
+						{activeTab === "search" && (
+							<span className="commandPaletteSearchIcon">
+								<Search size={15} />
+							</span>
+						)}
 						<input
 							ref={inputRef}
 							className="commandPaletteInput"
@@ -293,71 +276,53 @@ export function CommandPalette({
 					) : null}
 				</div>
 
-				<AnimatePresence mode="wait">
-					<m.div
-						key={activeTab}
-						className="commandPaletteBody commandPaletteScene"
-						initial={{
-							...directionVariants[transitionDirection].initial,
-							opacity: 0,
-						}}
-						animate={{
-							...directionVariants[transitionDirection].animate,
-							opacity: 1,
-						}}
-						exit={{
-							...directionVariants[transitionDirection].exit,
-							opacity: 0,
-						}}
-						transition={{ duration: 0.2 }}
-					>
-						<div className="commandPaletteList" ref={listRef}>
-							{activeTab === "commands" ? (
-								<CommandList
-									filtered={filtered}
+				<div className="commandPaletteBody">
+					<div className="commandPaletteList" ref={listRef}>
+						{activeTab === "commands" ? (
+							<CommandList
+								filtered={filtered}
+								selectedIndex={resolvedSelectedIndex}
+								onSetSelectedIndex={(index) =>
+									setState((curr) => ({
+										...curr,
+										selectedIndex: index,
+										selectedId: null,
+									}))
+								}
+								onRunCommand={runCommand}
+							/>
+						) : (
+							<>
+								{query.trim() ? (
+									<div
+										className="commandPaletteResultCountPill"
+										aria-live="polite"
+									>
+										{isSearching
+											? "Searching..."
+											: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
+									</div>
+								) : null}
+								<SearchResultsList
+									query={query}
+									isSearching={isSearching}
+									titleMatches={titleMatches}
+									contentMatches={contentMatches}
+									recentFiles={recentFiles}
 									selectedIndex={resolvedSelectedIndex}
 									onSetSelectedIndex={(index) =>
 										setState((curr) => ({
 											...curr,
 											selectedIndex: index,
-											selectedId: null,
+											selectedId: searchEntries[index]?.id ?? null,
 										}))
 									}
-									onRunCommand={runCommand}
+									onSelectResult={selectSearchResult}
 								/>
-							) : (
-								<>
-									{query.trim() ? (
-										<div
-											className="commandPaletteResultCountPill"
-											aria-live="polite"
-										>
-											{isSearching
-												? "Searching..."
-												: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
-										</div>
-									) : null}
-									<SearchResultsList
-										query={query}
-										isSearching={isSearching}
-										titleMatches={titleMatches}
-										contentMatches={contentMatches}
-										recentFiles={recentFiles}
-										selectedIndex={resolvedSelectedIndex}
-										onSetSelectedIndex={(index) =>
-											setState((curr) => ({
-												...curr,
-												selectedIndex: index,
-												selectedId: searchEntries[index]?.id ?? null,
-											}))
-										}
-										onSelectResult={selectSearchResult}
-									/>
-								</>
-							)}
-						</div>
-					</m.div>
-				</AnimatePresence>
+							</>
+						)}
+					</div>
+				</div>
 				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
 			</DialogContent>
 		</Dialog>

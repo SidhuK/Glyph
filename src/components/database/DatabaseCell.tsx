@@ -1,13 +1,7 @@
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-	type CSSProperties,
-	useCallback,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import type { CSSProperties } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
@@ -65,7 +59,6 @@ interface DatabaseDisplayPill {
 	key: string;
 	label: string;
 	kind?: "tag";
-	style?: CSSProperties;
 	title?: string;
 }
 
@@ -76,12 +69,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	const [visibleCount, setVisibleCount] = useState(() => items.length);
 
 	const renderPill = (item: DatabaseDisplayPill) => (
-		<span
-			key={item.key}
-			className="databaseCellPill"
-			style={item.style}
-			title={item.title}
-		>
+		<span key={item.key} className="databaseCellPill" title={item.title}>
 			{item.kind === "tag" ? (
 				<HugeiconsIcon
 					icon={Tag01Icon}
@@ -189,7 +177,6 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 							itemMeasureRefs.current[index] = element;
 						}}
 						className="databaseCellPill"
-						style={item.style}
 					>
 						{item.kind === "tag" ? (
 							<HugeiconsIcon
@@ -936,10 +923,9 @@ export function DatabaseCell({
 		return cellValue.value_list.map((value) => ({
 			key: `${column.id}:${value}`,
 			label: value,
-			style: databaseValueToneStyleForColor(value, laneColors[value] ?? null),
 			title: value,
 		}));
-	}, [cellValue.kind, cellValue.value_list, column.id, laneColors]);
+	}, [cellValue.kind, cellValue.value_list, column.id]);
 	const editorKey = `${row.note_path}:${column.id}:${cellValue.kind}:${cellValue.value_text ?? ""}:${cellValue.value_bool ?? ""}:${cellValue.value_list.join("\u0001")}`;
 
 	const handleSelectRow = () => {

@@ -56,6 +56,7 @@
 	display: flex;
 	flex-direction: column;
 	border: 1px solid var(--border-light);
+	border-top: 0;
 	overflow: hidden;
 	background: transparent;
 }
@@ -69,80 +70,8 @@
 	border-top: 1px solid var(--border-light);
 }
 
-.settingsChangelogVersionHeader {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 12px;
-	min-height: 42px;
-	width: 100%;
-	padding: 10px 12px;
-	background: transparent;
-	border: none;
-	color: var(--text-primary);
-	font: inherit;
-	text-align: inherit;
-	cursor: pointer;
-}
-
-.settingsChangelogVersionHeader:hover {
-	background: transparent;
-}
-
-.settingsChangelogVersionHeader:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: -2px;
-}
-
-.settingsChangelogVersionMeta {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.settingsChangelogVersionNumber {
-	font-size: 12px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.settingsChangelogVersionBadge {
-	padding: 3px 6px;
-	background: var(--settings-surface-muted);
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-	line-height: 1;
-}
-
-.settingsChangelogToggle {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	color: var(--text-tertiary);
-}
-
-.settingsChangelogToggleIcon {
-	transition: transform var(--transition-fast), color var(--transition-fast);
-}
-
-.settingsChangelogVersionHeader[aria-expanded="true"]
-	.settingsChangelogToggleIcon {
-	color: var(--text-secondary);
-	transform: rotate(90deg);
-}
-
-.settingsChangelogVersionHeader[aria-expanded="false"]
-	.settingsChangelogToggleIcon {
-	transform: rotate(0deg);
-}
-
 .settingsChangelogVersionContent {
-	padding: 2px 12px 14px;
+	padding: 14px 12px;
 	background: transparent;
 }
 
@@ -355,13 +284,8 @@
 		grid-column: 2 / 3;
 	}
 
-	.settingsChangelogVersionHeader {
-		padding: 10px 12px;
-		gap: 8px;
-	}
-
 	.settingsChangelogVersionContent {
-		padding: 0 12px 10px;
+		padding: 14px 12px;
 	}
 
 	.settingsChangelogCategory {
@@ -390,11 +314,5 @@
 
 	.whatsNewFooter {
 		padding-top: 2px;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.settingsChangelogToggleIcon {
-		transition: none;
 	}
 }
