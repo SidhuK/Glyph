@@ -1,6 +1,17 @@
 {
 	"versions": [
 		{
+			"version": "0.3.6",
+			"sections": [
+				{
+					"category": "Fixed",
+					"items": [
+						"Fixed OpenCode event streams closing before completion"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.3.5",
 			"sections": [
 				{
