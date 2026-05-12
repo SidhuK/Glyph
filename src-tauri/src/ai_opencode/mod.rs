@@ -1,13 +1,11 @@
+use reqwest::Client;
+use serde_json::{json, Value};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     net::TcpListener,
     path::{Path, PathBuf},
     time::{Duration, Instant},
 };
-
-use futures_util::StreamExt;
-use reqwest::Client;
-use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter};
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
@@ -444,7 +442,7 @@ async fn create_session(
         .ok_or_else(|| "OpenCode session create returned no id".to_string())
 }
 
-async fn send_prompt_async(
+async fn send_prompt(
     client: &Client,
     base_url: &str,
     root: &Path,
@@ -452,7 +450,7 @@ async fn send_prompt_async(
     profile: &AiProfile,
     system: &str,
     prompt: &str,
-) -> Result<(), String> {
+) -> Result<Value, String> {
     let root_str = root.to_string_lossy().to_string();
     let mut body = json!({
         "parts": [{ "type": "text", "text": prompt }]
@@ -464,19 +462,19 @@ async fn send_prompt_async(
         body["model"] = model;
     }
     let response = client
-        .post(format!("{base_url}/session/{session_id}/prompt_async"))
+        .post(format!("{base_url}/session/{session_id}/message"))
         .query(&[("directory", root_str.as_str())])
         .json(&body)
         .send()
         .await
         .map_err(|e| format!("failed to send OpenCode prompt: {e}"))?;
-    if response.status().is_success() {
-        return Ok(());
+    if !response.status().is_success() {
+        return Err(format!(
+            "OpenCode prompt failed: {}",
+            response.text().await.unwrap_or_default()
+        ));
     }
-    Err(format!(
-        "OpenCode prompt failed: {}",
-        response.text().await.unwrap_or_default()
-    ))
+    response.json::<Value>().await.map_err(|e| e.to_string())
 }
 
 async fn abort_session(client: &Client, base_url: &str, session_id: &str) {
@@ -484,22 +482,6 @@ async fn abort_session(client: &Client, base_url: &str, session_id: &str) {
         .post(format!("{base_url}/session/{session_id}/abort"))
         .send()
         .await;
-}
-
-fn error_message(value: &Value, fallback: &str) -> String {
-    value
-        .pointer("/properties/error/message")
-        .or_else(|| value.pointer("/properties/error/data/message"))
-        .or_else(|| value.pointer("/properties/error/type"))
-        .and_then(|v| v.as_str())
-        .unwrap_or(fallback)
-        .to_string()
-}
-
-fn event_session_id(value: &Value) -> Option<&str> {
-    value
-        .pointer("/properties/sessionID")
-        .and_then(|v| v.as_str())
 }
 
 fn tool_phase_for_status(status: &str) -> &'static str {
@@ -511,230 +493,105 @@ fn tool_phase_for_status(status: &str) -> &'static str {
     }
 }
 
-enum EventOutcome {
-    Continue,
-    Done,
-    Failed(String),
+fn part_text(part: &Value) -> Option<&str> {
+    (part.get("type").and_then(|v| v.as_str()) == Some("text"))
+        .then(|| part.get("text").and_then(|v| v.as_str()))
+        .flatten()
 }
 
-fn handle_event(
+fn emit_response_part(
     app: &AppHandle,
     job_id: &str,
-    session_id: &str,
-    value: &Value,
+    part: &Value,
     full: &mut String,
     tool_events: &mut Vec<AiStoredToolEvent>,
-    tool_state: &mut HashMap<String, String>,
-) -> EventOutcome {
-    if matches!(event_session_id(value), Some(id) if id != session_id) {
-        return EventOutcome::Continue;
+) {
+    if let Some(text) = part_text(part) {
+        if !text.is_empty() {
+            full.push_str(text);
+            let _ = app.emit(
+                "ai:chunk",
+                AiChunkEvent {
+                    job_id: job_id.to_string(),
+                    delta: text.to_string(),
+                },
+            );
+        }
+        return;
     }
 
-    let event_type = value.get("type").and_then(|v| v.as_str()).unwrap_or("");
-    match event_type {
-        "message.part.delta" => {
-            if value
-                .pointer("/properties/field")
-                .and_then(|v| v.as_str())
-                .is_some_and(|field| field != "text")
-            {
-                return EventOutcome::Continue;
-            }
-            if let Some(delta) = value.pointer("/properties/delta").and_then(|v| v.as_str()) {
-                if !delta.is_empty() {
-                    full.push_str(delta);
-                    let _ = app.emit(
-                        "ai:chunk",
-                        AiChunkEvent {
-                            job_id: job_id.to_string(),
-                            delta: delta.to_string(),
-                        },
-                    );
-                }
-            }
-        }
-        "session.next.text.delta" => {
-            if let Some(delta) = value.pointer("/properties/delta").and_then(|v| v.as_str()) {
-                if !delta.is_empty() {
-                    full.push_str(delta);
-                    let _ = app.emit(
-                        "ai:chunk",
-                        AiChunkEvent {
-                            job_id: job_id.to_string(),
-                            delta: delta.to_string(),
-                        },
-                    );
-                }
-            }
-        }
-        "message.part.updated" => {
-            let part = value.pointer("/properties/part").unwrap_or(&Value::Null);
-            if part.get("type").and_then(|v| v.as_str()) == Some("tool") {
-                let call_id = part
-                    .get("callID")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.to_string());
-                let state = part.get("state").unwrap_or(&Value::Null);
-                let status = state
-                    .get("status")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("pending");
-                let state_key = call_id.clone().unwrap_or_else(|| {
-                    part.get("id")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("tool")
-                        .to_string()
-                });
-                if tool_state.get(&state_key).map(String::as_str) != Some(status) {
-                    tool_state.insert(state_key, status.to_string());
-                    let tool = part.get("tool").and_then(|v| v.as_str()).unwrap_or("tool");
-                    let error = if status == "error" {
-                        state
-                            .get("error")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_string())
-                    } else {
-                        None
-                    };
-                    emit_tool(
-                        app,
-                        job_id,
-                        tool_events,
-                        tool,
-                        tool_phase_for_status(status),
-                        call_id,
-                        Some(part.clone()),
-                        error,
-                    );
-                }
-            }
-        }
-        "session.next.tool.called" => {
-            let props = value.pointer("/properties").cloned();
-            let call_id = value
-                .pointer("/properties/callID")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let tool = value
-                .pointer("/properties/tool")
-                .and_then(|v| v.as_str())
-                .unwrap_or("tool");
-            emit_tool(app, job_id, tool_events, tool, "call", call_id, props, None);
-        }
-        "session.next.tool.success" => {
-            let props = value.pointer("/properties").cloned();
-            let call_id = value
-                .pointer("/properties/callID")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            emit_tool(
-                app,
-                job_id,
-                tool_events,
-                "tool",
-                "result",
-                call_id,
-                props,
-                None,
-            );
-        }
-        "session.next.tool.failed" => {
-            let props = value.pointer("/properties").cloned();
-            let call_id = value
-                .pointer("/properties/callID")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            let error = value
-                .pointer("/properties/error/message")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-            emit_tool(
-                app,
-                job_id,
-                tool_events,
-                "tool",
-                "error",
-                call_id,
-                props,
-                error,
-            );
-        }
-        "file.edited" => {
-            emit_tool(
-                app,
-                job_id,
-                tool_events,
-                "file",
-                "result",
-                None,
-                value.pointer("/properties").cloned(),
-                None,
-            );
-        }
-        "command.executed" => {
-            let tool = value
-                .pointer("/properties/name")
-                .and_then(|v| v.as_str())
-                .unwrap_or("command");
-            emit_tool(
-                app,
-                job_id,
-                tool_events,
-                tool,
-                "result",
-                None,
-                value.pointer("/properties").cloned(),
-                None,
-            );
-        }
-        "session.error" => {
-            return EventOutcome::Failed(error_message(value, "OpenCode session failed"));
-        }
-        "session.next.step.failed" => {
-            return EventOutcome::Failed(error_message(value, "OpenCode step failed"));
-        }
-        "session.idle" => return EventOutcome::Done,
-        "session.status" => {
-            if value
-                .pointer("/properties/status/type")
-                .and_then(|v| v.as_str())
-                == Some("idle")
-            {
-                return EventOutcome::Done;
-            }
-        }
-        _ => {}
+    if part.get("type").and_then(|v| v.as_str()) != Some("tool") {
+        return;
     }
-    EventOutcome::Continue
+
+    let state = part.get("state").unwrap_or(&Value::Null);
+    let status = state
+        .get("status")
+        .and_then(|v| v.as_str())
+        .unwrap_or("completed");
+    let tool = part
+        .get("tool")
+        .or_else(|| part.get("name"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("tool");
+    let call_id = part
+        .get("callID")
+        .or_else(|| part.get("id"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let error = if status == "error" {
+        state
+            .pointer("/error/message")
+            .or_else(|| state.pointer("/error/data/message"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+    } else {
+        None
+    };
+
+    emit_tool(
+        app,
+        job_id,
+        tool_events,
+        tool,
+        tool_phase_for_status(status),
+        call_id,
+        Some(part.clone()),
+        error,
+    );
 }
 
-fn parse_sse_events(buffer: &mut String, chunk: &[u8]) -> Vec<Value> {
-    buffer.push_str(&String::from_utf8_lossy(chunk));
-    let mut events = Vec::new();
-    while let Some((index, delimiter_len)) = buffer
-        .find("\r\n\r\n")
-        .map(|index| (index, 4))
-        .or_else(|| buffer.find("\n\n").map(|index| (index, 2)))
+fn handle_prompt_response(
+    app: &AppHandle,
+    job_id: &str,
+    value: &Value,
+) -> Result<(String, Vec<AiStoredToolEvent>), String> {
+    if let Some(message) = value
+        .pointer("/info/error/message")
+        .or_else(|| value.pointer("/info/error/data/message"))
+        .and_then(|v| v.as_str())
     {
-        let raw = buffer[..index].to_string();
-        buffer.drain(..index + delimiter_len);
-        let mut data = String::new();
-        for line in raw.lines() {
-            if let Some(rest) = line.strip_prefix("data:") {
-                if !data.is_empty() {
-                    data.push('\n');
-                }
-                data.push_str(rest.trim_start());
-            }
-        }
-        if data.trim().is_empty() {
-            continue;
-        }
-        if let Ok(value) = serde_json::from_str::<Value>(&data) {
-            events.push(value);
+        return Err(message.to_string());
+    }
+
+    let mut full = String::new();
+    let mut tool_events = Vec::new();
+
+    if let Some(parts) = value.get("parts").and_then(|v| v.as_array()) {
+        for part in parts {
+            emit_response_part(app, job_id, part, &mut full, &mut tool_events);
         }
     }
-    events
+
+    if full.is_empty() {
+        if let Some(content) = value.pointer("/info/content").and_then(|v| v.as_array()) {
+            for part in content {
+                emit_response_part(app, job_id, part, &mut full, &mut tool_events);
+            }
+        }
+    }
+
+    Ok((full, tool_events))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -769,41 +626,6 @@ pub async fn run_with_opencode(
             }
         };
 
-    let root_str = root.to_string_lossy().to_string();
-    let response = match server
-        .client
-        .get(format!("{}/event", server.base_url))
-        .query(&[("directory", root_str.as_str())])
-        .send()
-        .await
-    {
-        Ok(response) => response,
-        Err(err) => {
-            server.stop().await;
-            return Err(format!("failed to subscribe to OpenCode events: {err}"));
-        }
-    };
-    if !response.status().is_success() {
-        let message = response.text().await.unwrap_or_default();
-        server.stop().await;
-        return Err(format!("OpenCode event stream failed: {message}"));
-    }
-
-    if let Err(err) = send_prompt_async(
-        &server.client,
-        &server.base_url,
-        root,
-        &session_id,
-        profile,
-        system,
-        &prompt,
-    )
-    .await
-    {
-        server.stop().await;
-        return Err(err);
-    }
-
     let _ = app.emit(
         "ai:status",
         AiStatusEvent {
@@ -813,61 +635,32 @@ pub async fn run_with_opencode(
         },
     );
 
-    let mut stream = response.bytes_stream();
-    let mut full = String::new();
-    let mut buffer = String::new();
-    let mut tool_events = Vec::new();
-    let mut tool_state = HashMap::new();
-    let deadline = tokio::time::sleep(RUN_TIMEOUT);
-    tokio::pin!(deadline);
-
-    loop {
-        tokio::select! {
-            _ = cancel.cancelled() => {
-                abort_session(&server.client, &server.base_url, &session_id).await;
-                server.stop().await;
-                return Ok((full, true, tool_events));
-            }
-            _ = &mut deadline => {
-                abort_session(&server.client, &server.base_url, &session_id).await;
-                server.stop().await;
-                return Err("OpenCode session timed out".to_string());
-            }
-            maybe_chunk = stream.next() => {
-                let Some(chunk) = maybe_chunk else {
-                    server.stop().await;
-                    return Err("OpenCode event stream closed before completion".to_string());
-                };
-                let chunk = match chunk {
-                    Ok(chunk) => chunk,
-                    Err(err) => {
-                        server.stop().await;
-                        return Err(format!("OpenCode event stream failed: {err}"));
-                    }
-                };
-                for event in parse_sse_events(&mut buffer, &chunk) {
-                    match handle_event(
-                        app,
-                        job_id,
-                        &session_id,
-                        &event,
-                        &mut full,
-                        &mut tool_events,
-                        &mut tool_state,
-                    ) {
-                        EventOutcome::Continue => {}
-                        EventOutcome::Done => {
-                            server.stop().await;
-                            return Ok((full, false, tool_events));
-                        }
-                        EventOutcome::Failed(message) => {
-                            abort_session(&server.client, &server.base_url, &session_id).await;
-                            server.stop().await;
-                            return Err(message);
-                        }
-                    }
-                }
-            }
+    let response = tokio::select! {
+        _ = cancel.cancelled() => {
+            abort_session(&server.client, &server.base_url, &session_id).await;
+            server.stop().await;
+            return Ok((String::new(), true, Vec::new()));
         }
-    }
+        _ = tokio::time::sleep(RUN_TIMEOUT) => {
+            abort_session(&server.client, &server.base_url, &session_id).await;
+            server.stop().await;
+            return Err("OpenCode session timed out".to_string());
+        }
+        response = send_prompt(
+            &server.client,
+            &server.base_url,
+            root,
+            &session_id,
+            profile,
+            system,
+            &prompt,
+        ) => response
+    };
+
+    let result = response.and_then(|value| {
+        handle_prompt_response(app, job_id, &value)
+            .map(|(full, tool_events)| (full, false, tool_events))
+    });
+    server.stop().await;
+    result
 }
