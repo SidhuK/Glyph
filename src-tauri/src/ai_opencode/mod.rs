@@ -23,6 +23,10 @@ use crate::ai_rig::{
 };
 
 const DEFAULT_MODEL_ID: &str = "opencode/default";
+const CONTROL_REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
+const HEALTH_REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
+const ABORT_REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
+const PROMPT_REQUEST_TIMEOUT_GRACE: Duration = Duration::from_secs(30);
 const SERVER_START_TIMEOUT: Duration = Duration::from_secs(20);
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 
@@ -64,6 +68,7 @@ where
 async fn health_ready(client: &Client, base_url: &str) -> bool {
     client
         .get(format!("{base_url}/global/health"))
+        .timeout(HEALTH_REQUEST_TIMEOUT)
         .send()
         .await
         .map(|response| response.status().is_success())
@@ -96,7 +101,7 @@ async fn start_server_on_port(root: &Path, binary: &Path) -> Result<OpenCodeServ
     let port = free_local_port()?;
     let base_url = format!("http://127.0.0.1:{port}");
     let client = Client::builder()
-        .timeout(Duration::from_secs(120))
+        .timeout(CONTROL_REQUEST_TIMEOUT)
         .user_agent("Glyph/0.1 (opencode)")
         .build()
         .map_err(|e| e.to_string())?;
@@ -464,6 +469,7 @@ async fn send_prompt(
     let response = client
         .post(format!("{base_url}/session/{session_id}/message"))
         .query(&[("directory", root_str.as_str())])
+        .timeout(RUN_TIMEOUT + PROMPT_REQUEST_TIMEOUT_GRACE)
         .json(&body)
         .send()
         .await
@@ -480,6 +486,7 @@ async fn send_prompt(
 async fn abort_session(client: &Client, base_url: &str, session_id: &str) {
     let _ = client
         .post(format!("{base_url}/session/{session_id}/abort"))
+        .timeout(ABORT_REQUEST_TIMEOUT)
         .send()
         .await;
 }
@@ -591,6 +598,10 @@ fn handle_prompt_response(
         }
     }
 
+    if full.trim().is_empty() && tool_events.is_empty() {
+        return Err("OpenCode returned an empty response".to_string());
+    }
+
     Ok((full, tool_events))
 }
 
@@ -657,10 +668,14 @@ pub async fn run_with_opencode(
         ) => response
     };
 
-    let result = response.and_then(|value| {
-        handle_prompt_response(app, job_id, &value)
-            .map(|(full, tool_events)| (full, false, tool_events))
-    });
+    let result = match response {
+        Ok(value) => handle_prompt_response(app, job_id, &value)
+            .map(|(full, tool_events)| (full, false, tool_events)),
+        Err(error) => {
+            abort_session(&server.client, &server.base_url, &session_id).await;
+            Err(error)
+        }
+    };
     server.stop().await;
     result
 }
