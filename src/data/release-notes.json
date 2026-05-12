@@ -5,9 +5,7 @@
 			"sections": [
 				{
 					"category": "Fixed",
-					"items": [
-						"Fixed OpenCode event streams closing before completion"
-					]
+					"items": ["Fixed OpenCode event streams closing before completion"]
 				}
 			]
 		},
