@@ -75,33 +75,6 @@
 	white-space: nowrap;
 }
 
-.codeBlockPreviewBtn {
-	height: 18px;
-	padding: 0 7px;
-	border: none;
-	border-radius: var(--radius-sm);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 18%,
-		var(--bg-primary)
-	);
-	color: var(--text-primary);
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	font-size: 10px;
-	font-weight: var(--font-medium);
-	backdrop-filter: blur(4px);
-}
-
-.codeBlockPreviewBtn:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 26%, var(--bg-hover));
-}
-
-.codeBlockPreviewBtnLabel {
-	white-space: nowrap;
-}
-
 .codeBlockCopyBtn {
 	position: absolute;
 	z-index: 15;
@@ -161,63 +134,123 @@
 	display: none;
 }
 
-.mermaidPreviewWidget {
+.mermaidCanvasWidget {
 	margin: 8px 0 14px;
 }
 
-.mermaidPreviewSpacer {
-	pointer-events: none;
-}
-
-.mermaidPreviewPanel {
-	position: absolute;
-	z-index: 14;
-	pointer-events: none;
-}
-
-.mermaidPreviewPanel * {
-	pointer-events: none;
-}
-
-.mermaidPreviewCanvas {
+.mermaidCanvasFrame {
+	position: relative;
+	width: 100%;
+	height: 480px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
-	padding: 14px;
-	overflow-x: auto;
+	overflow: hidden;
 	color: var(--text-secondary);
 }
 
-.mermaidPreviewWidget[data-state="ready"] .mermaidPreviewCanvas {
+.mermaidCanvasWidget[data-state="ready"] .mermaidCanvasFrame {
 	color: var(--text-primary);
 }
 
-.mermaidPreviewCanvas svg {
-	display: block;
-	max-width: 100%;
-	height: auto;
-	margin: 0 auto;
+.mermaidCanvasViewport {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	cursor: grab;
+	outline: none;
 }
 
-.mermaidPreviewLoading {
+.mermaidCanvasViewport:focus-visible {
+	box-shadow: inset 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 52%, transparent);
+}
+
+.mermaidCanvasViewport[data-dragging="true"] {
+	cursor: grabbing;
+}
+
+.mermaidCanvasStage {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform-origin: 0 0;
+	will-change: transform;
+}
+
+.mermaidCanvasStage svg {
+	display: block;
+	max-width: none;
+	height: auto;
+}
+
+.mermaidCanvasControls {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--transition-fast);
+}
+
+.mermaidCanvasWidget:hover .mermaidCanvasControls,
+.mermaidCanvasWidget:focus-within .mermaidCanvasControls {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.mermaidCanvasEditBtn {
+	appearance: none;
+	-webkit-appearance: none;
+	height: 28px;
+	border: none;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
+	padding: 0 10px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 76%, transparent);
+	backdrop-filter: blur(8px);
+	white-space: nowrap;
+}
+
+.mermaidCanvasEditBtn:hover,
+.mermaidCanvasEditBtn:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+	color: var(--text-primary);
+	outline: none;
+}
+
+.mermaidCanvasLoading {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	font-size: 12px;
 	color: var(--text-secondary);
 }
 
-.mermaidPreviewError {
+.mermaidCanvasError {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	text-align: center;
 	font-size: 12px;
 	font-weight: var(--font-medium);
 	color: var(--status-danger-fg, var(--text-primary));
-}
-
-.mermaidPreviewSource {
-	margin: 12px 0 0;
-	padding: 10px 12px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
-	color: var(--text-secondary);
-	white-space: pre-wrap;
 }
 .editorColorDropdown {
 	min-width: auto;

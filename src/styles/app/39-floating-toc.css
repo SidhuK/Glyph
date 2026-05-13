@@ -23,12 +23,7 @@
 	flex-direction: column;
 	align-items: flex-end;
 	gap: 4px;
-	padding: 6px 4px;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	padding: 6px 0;
 	transition: opacity 140ms ease;
 }
 
@@ -40,11 +35,16 @@
 	height: 2px;
 	border-radius: 1px;
 	background: color-mix(in srgb, var(--text-tertiary) 50%, transparent);
-	transition: background-color 180ms ease;
+	transition: background-color 180ms ease, opacity 180ms ease;
 }
 
 .floatingTocDash[data-active="true"] {
-	background: var(--interactive-accent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 68%,
+		var(--text-tertiary)
+	);
+	opacity: 0.95;
 }
 
 /* ── Expanded: full heading list ─────────────────────────────────────────── */
@@ -95,13 +95,8 @@
 }
 
 .floatingTocItem[data-active="true"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-secondary)
-	);
-	color: var(--text-primary);
-	font-weight: var(--font-medium);
+	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */

@@ -10,9 +10,6 @@ export interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;
 	controlsRight: number;
-	previewLeft: number;
-	width: number;
-	previewTop: number;
 	pos: number;
 	language: string | null;
 	source: string;

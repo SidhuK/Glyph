@@ -8,6 +8,18 @@ export interface TOCHeading {
 	pos: number;
 }
 
+function getHeadingElement(
+	editor: Editor,
+	heading: TOCHeading,
+): HTMLElement | null {
+	try {
+		const dom = editor.view.nodeDOM(heading.pos);
+		return dom instanceof HTMLElement ? dom : null;
+	} catch {
+		return null;
+	}
+}
+
 function findScrollParent(el: HTMLElement): HTMLElement | null {
 	let current = el.parentElement;
 	while (current) {
@@ -28,7 +40,7 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 export function useTableOfContents(editor: Editor | null) {
 	const [headings, setHeadings] = useState<TOCHeading[]>([]);
 	const [activeId, setActiveId] = useState<string | null>(null);
-	const observerRef = useRef<IntersectionObserver | null>(null);
+	const activeFrameRef = useRef<number | null>(null);
 
 	const extractHeadings = useCallback(() => {
 		if (!editor) {
@@ -79,55 +91,51 @@ export function useTableOfContents(editor: Editor | null) {
 		}
 
 		const scrollContainer = findScrollParent(editor.view.dom as HTMLElement);
-		if (!scrollContainer) return;
-
-		observerRef.current?.disconnect();
-
-		const visibleIds = new Set<string>();
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					const id = entry.target.getAttribute("data-toc-id");
-					if (!id) continue;
-					if (entry.isIntersecting) {
-						visibleIds.add(id);
-					} else {
-						visibleIds.delete(id);
-					}
-				}
-
-				if (visibleIds.size > 0) {
-					const first = headings.find((h) => visibleIds.has(h.id));
-					if (first) setActiveId(first.id);
-				} else {
-					setActiveId(null);
-				}
-			},
-			{
-				root: scrollContainer,
-				rootMargin: "0px 0px -70% 0px",
-				threshold: 0,
-			},
-		);
-
-		observerRef.current = observer;
-
-		for (const heading of headings) {
-			try {
-				const dom = editor.view.nodeDOM(heading.pos);
-				const el = dom instanceof HTMLElement ? dom : null;
-				if (el) {
-					el.setAttribute("data-toc-id", heading.id);
-					observer.observe(el);
-				}
-			} catch {
-				// pos may be stale after rapid edits
-			}
+		if (!scrollContainer) {
+			setActiveId(headings[0]?.id ?? null);
+			return;
 		}
 
+		const updateActiveHeading = () => {
+			activeFrameRef.current = null;
+			const containerRect = scrollContainer.getBoundingClientRect();
+			const activationY =
+				containerRect.top + Math.min(120, containerRect.height * 0.28);
+			let nextActiveId: string | null = null;
+
+			for (const heading of headings) {
+				const el = getHeadingElement(editor, heading);
+				if (!el) continue;
+				const rect = el.getBoundingClientRect();
+				if (el.offsetParent === null || rect.width === 0 || rect.height === 0) {
+					continue;
+				}
+				if (rect.top > activationY) break;
+				nextActiveId = heading.id;
+			}
+
+			setActiveId((prev) => (prev === nextActiveId ? prev : nextActiveId));
+		};
+
+		const requestActiveUpdate = () => {
+			if (activeFrameRef.current !== null) return;
+			activeFrameRef.current =
+				window.requestAnimationFrame(updateActiveHeading);
+		};
+
+		requestActiveUpdate();
+		scrollContainer.addEventListener("scroll", requestActiveUpdate, {
+			passive: true,
+		});
+		window.addEventListener("resize", requestActiveUpdate);
+
 		return () => {
-			observer.disconnect();
+			scrollContainer.removeEventListener("scroll", requestActiveUpdate);
+			window.removeEventListener("resize", requestActiveUpdate);
+			if (activeFrameRef.current !== null) {
+				window.cancelAnimationFrame(activeFrameRef.current);
+				activeFrameRef.current = null;
+			}
 		};
 	}, [editor, headings]);
 
@@ -136,14 +144,7 @@ export function useTableOfContents(editor: Editor | null) {
 			if (!editor) return;
 			editor.commands.expandHeadingAncestors(heading.pos);
 			window.requestAnimationFrame(() => {
-				let el: HTMLElement | null = null;
-				try {
-					const dom = editor.view.nodeDOM(heading.pos);
-					el = dom instanceof HTMLElement ? dom : null;
-				} catch {
-					// pos may be stale
-				}
-
+				const el = getHeadingElement(editor, heading);
 				if (!el) return;
 				const scrollContainer = findScrollParent(el);
 				if (scrollContainer) {

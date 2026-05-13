@@ -9,12 +9,10 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { flushSync } from "react-dom";
 import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../lib/appEvents";
-import { MERMAID_CODE_BLOCK_LANGUAGE } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { X } from "../Icons";
@@ -87,9 +85,6 @@ function areSelectedCodeBlocksEqual(
 		a.top === b.top &&
 		a.controlsLeft === b.controlsLeft &&
 		a.controlsRight === b.controlsRight &&
-		a.previewLeft === b.previewLeft &&
-		a.width === b.width &&
-		a.previewTop === b.previewTop &&
 		a.pos === b.pos &&
 		a.language === b.language &&
 		a.source === b.source
@@ -222,11 +217,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
 	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
 	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
-	const [activeMermaidPreviewPos, setActiveMermaidPreviewPos] = useState<
-		number | null
-	>(null);
-	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
-		useState(0);
 	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
 	const rawTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 	const previousRelPathRef = useRef(relPath);
@@ -635,9 +625,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			const nextTop = codeOffset.top + 8;
 			const nextControlsLeft = codeOffset.left + 10;
 			const nextControlsRight = codeOffset.left + codeElement.offsetWidth - 10;
-			const nextPreviewLeft = codeOffset.left;
-			const nextWidth = Math.max(220, codeElement.offsetWidth);
-			const nextPreviewTop = codeOffset.top + codeElement.offsetHeight + 12;
 			const nextLanguage =
 				typeof parentNode.attrs.language === "string"
 					? parentNode.attrs.language
@@ -649,9 +636,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				top: nextTop,
 				controlsLeft: nextControlsLeft,
 				controlsRight: nextControlsRight,
-				previewLeft: nextPreviewLeft,
-				width: nextWidth,
-				previewTop: nextPreviewTop,
 				pos: nextPos,
 				language: nextLanguage,
 				source: nextSource,
@@ -716,11 +700,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const selectedCodeBlockLanguageLabel = getCodeBlockLanguageLabel(
 		selectedCodeBlock?.language,
 	);
-	const isSelectedMermaidCodeBlock =
-		selectedCodeBlockLanguage === MERMAID_CODE_BLOCK_LANGUAGE;
-	const isSelectedMermaidPreviewActive =
-		isSelectedMermaidCodeBlock &&
-		selectedCodeBlock?.pos === activeMermaidPreviewPos;
 
 	const applyCodeBlockLanguage = useCallback(
 		(language: SupportedCodeBlockLanguage) => {
@@ -732,9 +711,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					language: language === "plaintext" ? null : language,
 				})
 				.run();
-			if (language !== MERMAID_CODE_BLOCK_LANGUAGE) {
-				setActiveMermaidPreviewPos(null);
-			}
 			setCodeBlockPickerOpen(false);
 		},
 		[editor],
@@ -763,49 +739,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			.addColumnAfter()
 			.run();
 	}, [editor]);
-	const handleEditorPointerDownCapture = useCallback(
-		(event: React.PointerEvent<HTMLDivElement>) => {
-			if (!canEdit || activeMermaidPreviewPos === null) return;
-			const target = event.target instanceof HTMLElement ? event.target : null;
-			if (
-				target?.closest(".codeBlockPreviewBtn") ||
-				target?.closest(".codeBlockCopyBtn") ||
-				target?.closest(".codeBlockLanguageBtn") ||
-				target?.closest(".codeBlockLanguagePopover")
-			) {
-				return;
-			}
-			flushSync(() => {
-				setActiveMermaidPreviewPos(null);
-				setActiveMermaidPreviewHeight(0);
-			});
-		},
-		[activeMermaidPreviewPos, canEdit],
-	);
-	const toggleSelectedMermaidPreview = useCallback(() => {
-		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) return;
-		setActiveMermaidPreviewPos((prev) =>
-			prev === selectedCodeBlock.pos ? null : selectedCodeBlock.pos,
-		);
-	}, [isSelectedMermaidCodeBlock, selectedCodeBlock]);
-
 	useEffect(() => {
 		if (!editor) return;
-		editor.commands.setActiveMermaidPreview(
-			isSelectedMermaidPreviewActive ? activeMermaidPreviewPos : null,
-		);
-	}, [activeMermaidPreviewPos, editor, isSelectedMermaidPreviewActive]);
-
-	useEffect(() => {
-		if (!editor) return;
-		editor.commands.setRichMermaidPreviewHeight(
-			isSelectedMermaidPreviewActive ? activeMermaidPreviewHeight : 0,
-		);
-	}, [activeMermaidPreviewHeight, editor, isSelectedMermaidPreviewActive]);
-
-	useEffect(() => {
-		if (!editor) return;
-		if (mode === "preview") {
+		if (mode === "rich" || mode === "preview") {
 			editor.commands.refreshMermaidPreviews();
 		}
 	}, [editor, mode]);
@@ -945,29 +881,20 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			onPickerOpenChange: setCodeBlockPickerOpen,
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
-			isMermaid: isSelectedMermaidCodeBlock,
-			isMermaidPreviewActive: isSelectedMermaidPreviewActive,
 			copied: codeBlockCopied,
 			onPickerMouseDown: preventCodeBlockPickerMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
-			onToggleMermaidPreview: toggleSelectedMermaidPreview,
 			onCopy: copySelectedCodeBlock,
-			mermaidPreviewHeight: activeMermaidPreviewHeight,
-			onMermaidHeightChange: setActiveMermaidPreviewHeight,
 		}),
 		[
-			activeMermaidPreviewHeight,
 			applyCodeBlockLanguage,
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
-			isSelectedMermaidCodeBlock,
-			isSelectedMermaidPreviewActive,
 			preventCodeBlockPickerMouseDown,
 			selectedCodeBlock,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
-			toggleSelectedMermaidPreview,
 		],
 	);
 
@@ -1070,7 +997,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						onPointerDownCapture={handleEditorPointerDownCapture}
 						selectionRibbon={selectionRibbon}
 						onExtractSelectionToNote={
 							extractToNote.canExtractToNote
