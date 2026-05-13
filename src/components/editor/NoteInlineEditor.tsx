@@ -741,7 +741,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [editor]);
 	useEffect(() => {
 		if (!editor) return;
-		if (mode === "preview") {
+		if (mode === "rich" || mode === "preview") {
 			editor.commands.refreshMermaidPreviews();
 		}
 	}, [editor, mode]);

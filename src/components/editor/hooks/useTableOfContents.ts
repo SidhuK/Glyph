@@ -101,16 +101,17 @@ export function useTableOfContents(editor: Editor | null) {
 			const containerRect = scrollContainer.getBoundingClientRect();
 			const activationY =
 				containerRect.top + Math.min(120, containerRect.height * 0.28);
-			let nextActiveId = headings[0]?.id ?? null;
+			let nextActiveId: string | null = null;
 
 			for (const heading of headings) {
 				const el = getHeadingElement(editor, heading);
 				if (!el) continue;
-				if (el.getBoundingClientRect().top <= activationY) {
-					nextActiveId = heading.id;
-				} else {
-					break;
+				const rect = el.getBoundingClientRect();
+				if (el.offsetParent === null || rect.width === 0 || rect.height === 0) {
+					continue;
 				}
+				if (rect.top > activationY) break;
+				nextActiveId = heading.id;
 			}
 
 			setActiveId((prev) => (prev === nextActiveId ? prev : nextActiveId));

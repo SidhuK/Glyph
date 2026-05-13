@@ -86,6 +86,6 @@ export function renderMermaidCanvasSvg(source: string): MermaidRenderResult {
 	}
 }
 
-export function clearMermaidRenderCacheForTests(): void {
+export function clearMermaidRenderCache(): void {
 	renderCache.clear();
 }

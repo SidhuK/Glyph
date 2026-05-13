@@ -9,10 +9,14 @@ import {
 	createMermaidCanvas,
 	createMermaidErrorCanvas,
 } from "./mermaid/canvas";
-import { renderMermaidCanvasSvg } from "./mermaid/renderer";
+import {
+	clearMermaidRenderCache,
+	renderMermaidCanvasSvg,
+} from "./mermaid/renderer";
 
 interface MermaidPreviewPluginState {
 	decorations: DecorationSet;
+	editable: boolean;
 	refreshKey: number;
 }
 
@@ -23,14 +27,6 @@ const mermaidPreviewPluginKey = new PluginKey<MermaidPreviewPluginState>(
 type MermaidPreviewMeta = { type: "refresh" };
 
 const canvasDestroyCallbacks = new WeakMap<HTMLElement, () => void>();
-
-function hashMermaidSource(source: string): string {
-	let hash = 5381;
-	for (const char of source) {
-		hash = (hash * 33) ^ char.charCodeAt(0);
-	}
-	return (hash >>> 0).toString(36);
-}
 
 function selectionTouchesNode(
 	selection: Selection,
@@ -139,7 +135,6 @@ function buildMermaidPreviewDecorations(
 		if (shouldShowSource) return;
 
 		const source = node.textContent ?? "";
-		const sourceHash = hashMermaidSource(source);
 
 		decorations.push(
 			Decoration.node(pos, to, {
@@ -161,7 +156,7 @@ function buildMermaidPreviewDecorations(
 				{
 					side: 1,
 					ignoreSelection: true,
-					key: `mermaid-canvas-${pos}-${sourceHash}-${refreshKey}-${editable ? "edit" : "read"}`,
+					key: `mermaid-canvas-${pos}-${source}-${refreshKey}-${editable ? "edit" : "read"}`,
 					destroy: (node) => {
 						if (node instanceof HTMLElement) {
 							canvasDestroyCallbacks.get(node)?.();
@@ -193,6 +188,7 @@ export const MermaidPreview = Extension.create({
 			refreshMermaidPreviews:
 				() =>
 				({ state, dispatch }) => {
+					clearMermaidRenderCache();
 					dispatch?.(
 						state.tr.setMeta(mermaidPreviewPluginKey, {
 							type: "refresh",
@@ -210,37 +206,47 @@ export const MermaidPreview = Extension.create({
 				key: mermaidPreviewPluginKey,
 				state: {
 					init: (_config, state) => {
+						const editable = getEditable();
 						const refreshKey = 0;
 						return {
+							editable,
 							refreshKey,
 							decorations: buildMermaidPreviewDecorations(
 								state.doc,
 								state.selection,
 								refreshKey,
-								getEditable(),
+								editable,
 							),
 						};
 					},
 					apply(transaction, value) {
+						const editable = getEditable();
+						const editableChanged = editable !== value.editable;
 						const meta = transaction.getMeta(mermaidPreviewPluginKey) as
 							| MermaidPreviewMeta
 							| undefined;
 						const refreshKey =
-							meta?.type === "refresh"
+							meta?.type === "refresh" || editableChanged
 								? value.refreshKey + 1
 								: value.refreshKey;
 
-						if (!transaction.docChanged && !transaction.selectionSet && !meta) {
+						if (
+							!transaction.docChanged &&
+							!transaction.selectionSet &&
+							!meta &&
+							!editableChanged
+						) {
 							return value;
 						}
 
 						return {
+							editable,
 							refreshKey,
 							decorations: buildMermaidPreviewDecorations(
 								transaction.doc,
 								transaction.selection,
 								refreshKey,
-								getEditable(),
+								editable,
 							),
 						};
 					},
