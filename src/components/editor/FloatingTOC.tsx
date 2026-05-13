@@ -83,6 +83,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 								type="button"
 								className="floatingTocItem"
 								data-active={h.id === activeId ? "true" : undefined}
+								aria-current={h.id === activeId ? "location" : undefined}
 								data-level={h.level}
 								style={{ paddingLeft: INDENT[h.level] ?? 0 }}
 								onClick={() => onSelectHeading(h)}

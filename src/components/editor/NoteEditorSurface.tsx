@@ -8,13 +8,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
-import DOMPurify from "dompurify";
 import { AnimatePresence } from "motion/react";
-import { memo, useEffect, useRef, useState } from "react";
-import {
-	extractMermaidErrorMessage,
-	renderMermaidDiagram,
-} from "../../lib/mermaid";
+import { memo } from "react";
 import type { BacklinkItem } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -30,114 +25,12 @@ import type {
 	SelectionRibbonPosition,
 } from "./noteEditorOverlayTypes";
 
-function MermaidPreviewPanel({
-	source,
-	style,
-	onHeightChange,
-}: {
-	source: string;
-	style: React.CSSProperties;
-	onHeightChange: (height: number) => void;
-}) {
-	const [svg, setSvg] = useState("");
-	const [error, setError] = useState("");
-	const panelRef = useRef<HTMLDivElement | null>(null);
-	const svgHostRef = useRef<HTMLDivElement | null>(null);
-
-	useEffect(() => {
-		const panel = panelRef.current;
-		if (!panel) return;
-
-		let raf = 0;
-		const reportHeight = () => {
-			raf = 0;
-			const nextHeight = Math.ceil(
-				Math.max(panel.offsetHeight, panel.scrollHeight),
-			);
-			onHeightChange(nextHeight);
-		};
-
-		reportHeight();
-		const observer = new ResizeObserver(() => {
-			if (raf) window.cancelAnimationFrame(raf);
-			raf = window.requestAnimationFrame(reportHeight);
-		});
-		observer.observe(panel);
-		return () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			observer.disconnect();
-		};
-	}, [onHeightChange]);
-
-	useEffect(() => {
-		let cancelled = false;
-		setError("");
-		const timeout = window.setTimeout(() => {
-			void (async () => {
-				try {
-					const nextSvg = await renderMermaidDiagram(source);
-					if (cancelled) return;
-					setSvg(nextSvg);
-				} catch (nextError) {
-					if (cancelled) return;
-					setSvg("");
-					setError(extractMermaidErrorMessage(nextError));
-				}
-			})();
-		}, 320);
-		return () => {
-			cancelled = true;
-			window.clearTimeout(timeout);
-		};
-	}, [source]);
-
-	useEffect(() => {
-		const host = svgHostRef.current;
-		if (!host) return;
-		host.replaceChildren();
-		if (!svg) return;
-
-		const sanitizedSvg = DOMPurify.sanitize(svg, {
-			USE_PROFILES: { svg: true, svgFilters: true },
-			FORBID_TAGS: ["foreignObject", "script"],
-		});
-		if (typeof sanitizedSvg !== "string" || !sanitizedSvg.trim()) {
-			setError("Unable to render Mermaid diagram.");
-			setSvg("");
-			return;
-		}
-		const doc = new DOMParser().parseFromString(sanitizedSvg, "image/svg+xml");
-		const svgElement = doc.documentElement;
-		if (svgElement.tagName.toLowerCase() !== "svg") {
-			setError("Unable to render Mermaid diagram.");
-			setSvg("");
-			return;
-		}
-		host.append(document.importNode(svgElement, true));
-	}, [svg]);
-
-	return (
-		<div className="mermaidPreviewPanel" style={style} ref={panelRef}>
-			<div className="mermaidPreviewCanvas">
-				{error ? <div className="mermaidPreviewError">{error}</div> : null}
-				{svg ? <div className="mermaidPreviewSvg" ref={svgHostRef} /> : null}
-				{svg || error ? null : (
-					<div className="mermaidPreviewLoading">
-						Rendering Mermaid preview…
-					</div>
-				)}
-			</div>
-		</div>
-	);
-}
-
 export interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
 	colorfulHeadings: boolean;
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
-	onPointerDownCapture: (event: React.PointerEvent<HTMLDivElement>) => void;
 
 	selectionRibbon: SelectionRibbonPosition | null;
 	onExtractSelectionToNote?: () => void;
@@ -155,15 +48,10 @@ export interface NoteEditorSurfaceProps {
 		onPickerOpenChange: (open: boolean) => void;
 		language: SupportedCodeBlockLanguage | null;
 		languageLabel: string;
-		isMermaid: boolean;
-		isMermaidPreviewActive: boolean;
 		copied: boolean;
 		onPickerMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
-		onToggleMermaidPreview: () => void;
 		onCopy: () => void;
-		mermaidPreviewHeight: number;
-		onMermaidHeightChange: (height: number) => void;
 	};
 
 	task: {
@@ -198,7 +86,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	colorfulHeadings,
 	canEdit,
 	hostRef,
-	onPointerDownCapture,
 	selectionRibbon,
 	onExtractSelectionToNote,
 	table,
@@ -221,7 +108,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			data-colorful-headings={
 				mode === "rich" && colorfulHeadings ? "true" : undefined
 			}
-			onPointerDownCapture={onPointerDownCapture}
 		>
 			<EditorContent editor={editor} />
 			<AnimatePresence initial={false}>
@@ -340,28 +226,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 							</div>
 						</PopoverContent>
 					</Popover>
-					{codeBlock.isMermaid ? (
-						<button
-							type="button"
-							className="codeBlockPreviewBtn"
-							onMouseDown={codeBlock.onPickerMouseDown}
-							onClick={codeBlock.onToggleMermaidPreview}
-							title={
-								codeBlock.isMermaidPreviewActive
-									? "Stop Mermaid preview"
-									: "Play Mermaid preview"
-							}
-							aria-label={
-								codeBlock.isMermaidPreviewActive
-									? "Stop Mermaid preview"
-									: "Play Mermaid preview"
-							}
-						>
-							<span className="codeBlockPreviewBtnLabel mono">
-								{codeBlock.isMermaidPreviewActive ? "Stop" : "Play"}
-							</span>
-						</button>
-					) : null}
 				</div>
 			) : null}
 			{canEdit && codeBlock.selected ? (
@@ -384,17 +248,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						strokeWidth={0.9}
 					/>
 				</button>
-			) : null}
-			{canEdit && codeBlock.selected && codeBlock.isMermaidPreviewActive ? (
-				<MermaidPreviewPanel
-					source={codeBlock.selected.source}
-					style={{
-						top: `${codeBlock.selected.previewTop}px`,
-						left: `${codeBlock.selected.previewLeft}px`,
-						width: `${codeBlock.selected.width}px`,
-					}}
-					onHeightChange={codeBlock.onMermaidHeightChange}
-				/>
 			) : null}
 			{canEdit && task.selectedAnchor ? (
 				<Popover
