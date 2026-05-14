@@ -7,6 +7,7 @@ import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import {
+	type KeyboardEvent,
 	type MutableRefObject,
 	type ReactNode,
 	memo,
@@ -160,6 +161,24 @@ function FileTreeRootDrop({
 		>
 			{children}
 		</div>
+	);
+}
+
+function isDeleteKey(event: KeyboardEvent<HTMLElement>): boolean {
+	return (
+		(event.key === "Delete" || event.key === "Backspace") &&
+		!event.altKey &&
+		!event.ctrlKey &&
+		!event.metaKey
+	);
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+	return (
+		target instanceof HTMLInputElement ||
+		target instanceof HTMLTextAreaElement ||
+		target instanceof HTMLSelectElement ||
+		(target instanceof HTMLElement && target.isContentEditable)
 	);
 }
 
@@ -332,7 +351,7 @@ function TreeEntries({
 							entry={e}
 							depth={depth}
 							isExpanded={isExpanded}
-							isActive={e.rel_path === activeDirPath}
+							isActive={!activeFilePath && e.rel_path === activeDirPath}
 							isRenaming={renamingPath === e.rel_path}
 							onToggleDir={onToggleDir}
 							onEnterDir={onEnterDir}
@@ -669,6 +688,24 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDeletePath],
 	);
 
+	const handleTreeKeyDown = useCallback(
+		(event: KeyboardEvent<HTMLElement>) => {
+			if (!isDeleteKey(event) || isEditableTarget(event.target)) return;
+			if (!(event.target instanceof HTMLElement)) return;
+			const row = event.target.closest<HTMLElement>(
+				"[data-file-tree-path][data-file-tree-kind]",
+			);
+			if (!row || !event.currentTarget.contains(row)) return;
+			const path = row.dataset.fileTreePath;
+			const kind = row.dataset.fileTreeKind;
+			if (!path || (kind !== "dir" && kind !== "file")) return;
+			event.preventDefault();
+			event.stopPropagation();
+			void handleDeletePath(path, kind);
+		},
+		[handleDeletePath],
+	);
+
 	const handleDuplicateFile = useCallback(
 		async (path: string) => {
 			const duplicatedPath = await onDuplicateFile(path);
@@ -866,6 +903,7 @@ export const FileTreePane = memo(function FileTreePane({
 				initial={{ y: 10 }}
 				animate={{ y: 0 }}
 				transition={springTransition}
+				onKeyDown={handleTreeKeyDown}
 			>
 				{focusedDirPath ? (
 					<FileTreeRootDrop targetDirPath={focusedDirPath}>
@@ -994,6 +1032,7 @@ export const FileTreePane = memo(function FileTreePane({
 															}}
 															title={file.path}
 															data-file-tree-file="true"
+															data-file-tree-kind="file"
 															data-file-tree-path={file.path}
 														>
 															<span className="fileTreeName">

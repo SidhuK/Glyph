@@ -1,4 +1,12 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -90,6 +98,15 @@ function isFolioHeaderControl(target: EventTarget | null): boolean {
 		target instanceof HTMLSelectElement ||
 		target instanceof HTMLTextAreaElement ||
 		(target instanceof HTMLElement && target.isContentEditable)
+	);
+}
+
+function isDeleteKey(event: KeyboardEvent<HTMLElement>): boolean {
+	return (
+		(event.key === "Delete" || event.key === "Backspace") &&
+		!event.altKey &&
+		!event.ctrlKey &&
+		!event.metaKey
 	);
 }
 
@@ -323,6 +340,22 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					event.preventDefault();
 					const note = selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
 					if (note) openNote(note.note_path);
+					return;
+				}
+				if (isDeleteKey(event)) {
+					const row =
+						event.target instanceof HTMLElement
+							? event.target.closest<HTMLElement>("[data-folio-note-path]")
+							: null;
+					const pathFromFocusedRow = event.currentTarget.contains(row)
+						? row?.dataset.folioNotePath
+						: null;
+					const selectedNote =
+						selectedIndex >= 0 ? visibleNotes[selectedIndex] : null;
+					const path = pathFromFocusedRow ?? selectedNote?.note_path;
+					if (!path) return;
+					event.preventDefault();
+					void deleteNote(path);
 				}
 			}}
 		>

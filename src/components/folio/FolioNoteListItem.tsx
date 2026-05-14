@@ -1,6 +1,7 @@
 import {
 	type CSSProperties,
 	memo,
+	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
@@ -361,6 +362,13 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 				className="folioNoteTaskProgress"
 			/>
 		) : null;
+	const handleRevealInFinder = useCallback(async () => {
+		try {
+			await invoke("space_reveal_path", { path: note.note_path });
+		} catch (error) {
+			console.error("Failed to show file in Finder", error);
+		}
+	}, [note.note_path]);
 	const leadingIcon = appearance?.icon ? (
 		<DatabaseColumnIcon
 			iconName={appearance.icon}
@@ -502,6 +510,12 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							onSelect={() => onOpenInNewTab(note.note_path)}
 						>
 							Open in New Tab
+						</ContextMenuItem>
+						<ContextMenuItem
+							className="fileTreeCreateMenuItem"
+							onSelect={() => void handleRevealInFinder()}
+						>
+							Show in Finder
 						</ContextMenuItem>
 						<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
 						{onRename ? (

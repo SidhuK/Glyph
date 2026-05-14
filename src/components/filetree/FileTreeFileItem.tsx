@@ -3,6 +3,7 @@ import {
 	Copy01Icon,
 	DocumentCodeIcon,
 	FileViewIcon,
+	FolderOpenIcon,
 	PencilEdit02Icon,
 	PinIcon,
 	PinOffIcon,
@@ -12,6 +13,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { invoke } from "../../lib/tauri";
 import type {
 	FileTreeAppearance,
 	FsEntry,
@@ -218,6 +220,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			event.currentTarget,
 		);
 	};
+	const handleRevealInFinder = useCallback(async () => {
+		try {
+			await invoke("space_reveal_path", { path: entry.rel_path });
+		} catch (error) {
+			console.error("Failed to show file in Finder", error);
+		}
+	}, [entry.rel_path]);
 
 	return (
 		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
@@ -266,6 +275,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								data-dragging={isDragging ? "true" : undefined}
 								data-has-custom-color={customColor ? "true" : "false"}
 								data-file-tree-file="true"
+								data-file-tree-kind="file"
 								data-file-tree-path={entry.rel_path}
 							>
 								{appearance?.icon ? (
@@ -313,6 +323,17 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 									strokeWidth={0.9}
 								/>
 								Open
+							</ContextMenuItem>
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void handleRevealInFinder()}
+							>
+								<HugeiconsIcon
+									icon={FolderOpenIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+								Show in Finder
 							</ContextMenuItem>
 							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
 							<ContextMenuItem

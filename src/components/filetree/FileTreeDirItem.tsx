@@ -208,6 +208,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								data-dragging={isDragging ? "true" : undefined}
 								data-drop-target={isDropTarget ? "true" : undefined}
 								data-has-custom-color={customColor ? "true" : "false"}
+								data-file-tree-kind="dir"
+								data-file-tree-path={entry.rel_path}
 							>
 								{appearance?.icon ? (
 									<DatabaseColumnIcon
