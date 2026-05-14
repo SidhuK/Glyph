@@ -1,12 +1,4 @@
-import {
-	type KeyboardEvent,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -14,6 +6,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type { FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { isDeleteKey } from "../../utils/keyboard";
 import { basename } from "../../utils/path";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
@@ -98,15 +91,6 @@ function isFolioHeaderControl(target: EventTarget | null): boolean {
 		target instanceof HTMLSelectElement ||
 		target instanceof HTMLTextAreaElement ||
 		(target instanceof HTMLElement && target.isContentEditable)
-	);
-}
-
-function isDeleteKey(event: KeyboardEvent<HTMLElement>): boolean {
-	return (
-		(event.key === "Delete" || event.key === "Backspace") &&
-		!event.altKey &&
-		!event.ctrlKey &&
-		!event.metaKey
 	);
 }
 

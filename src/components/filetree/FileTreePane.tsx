@@ -32,6 +32,7 @@ import type {
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { isDeleteKey } from "../../utils/keyboard";
 import {
 	isMarkdownPath,
 	normalizeRelPath,
@@ -161,15 +162,6 @@ function FileTreeRootDrop({
 		>
 			{children}
 		</div>
-	);
-}
-
-function isDeleteKey(event: KeyboardEvent<HTMLElement>): boolean {
-	return (
-		(event.key === "Delete" || event.key === "Backspace") &&
-		!event.altKey &&
-		!event.ctrlKey &&
-		!event.metaKey
 	);
 }
 
