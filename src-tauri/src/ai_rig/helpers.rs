@@ -27,6 +27,7 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
         AiProviderKind::Amp => "https://ampcode.com/",
         AiProviderKind::Opencode => "http://127.0.0.1:4096",
+        AiProviderKind::Pi => "https://pi.dev/",
     }
 }
 

@@ -310,6 +310,12 @@
 	height: 21px;
 }
 
+.settingsProviderNativeLogo[data-provider="pi"]
+	.settingsProviderNativeLogoImage {
+	width: 20px;
+	height: 20px;
+}
+
 .settingsProviderNativeLogo[data-provider="ollama"]
 	.settingsProviderNativeLogoImage {
 	width: 15px;

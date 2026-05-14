@@ -197,6 +197,7 @@ pub async fn ai_profile_delete(
                 | super::types::AiProviderKind::LlamaCpp
                 | super::types::AiProviderKind::Amp
                 | super::types::AiProviderKind::Opencode
+                | super::types::AiProviderKind::Pi
         );
     }
     ensure_default_profiles(&mut store);
@@ -317,6 +318,7 @@ pub async fn ai_chat_start(
             super::types::AiProviderKind::CodexChatgpt
                 | super::types::AiProviderKind::Amp
                 | super::types::AiProviderKind::Opencode
+                | super::types::AiProviderKind::Pi
         )
     {
         return Err("Model not set for this profile".to_string());
@@ -491,6 +493,12 @@ pub async fn run_request(
     }
     if matches!(profile.provider, super::types::AiProviderKind::Amp) {
         return crate::ai_amp::run_with_amp(
+            cancel, app, job_id, profile, system, messages, mode, space_root,
+        )
+        .await;
+    }
+    if matches!(profile.provider, super::types::AiProviderKind::Pi) {
+        return crate::ai_pi::run_with_pi(
             cancel, app, job_id, profile, system, messages, mode, space_root,
         )
         .await;

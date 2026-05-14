@@ -623,5 +623,11 @@ pub async fn ai_models_list(
                 .ok_or_else(|| "Open a space to load OpenCode models".to_string())?;
             crate::ai_opencode::list_models(root).await
         }
+        AiProviderKind::Pi => {
+            let root = space_root
+                .as_deref()
+                .ok_or_else(|| "Open a space to load PI models".to_string())?;
+            crate::ai_pi::list_models(root).await
+        }
     }
 }

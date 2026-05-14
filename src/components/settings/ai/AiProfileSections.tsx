@@ -14,6 +14,13 @@ interface AiProfileSectionsProps {
 	onSaveProfile: (draft: AiProfile) => Promise<void>;
 }
 
+const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
+	"codex_chatgpt",
+	"amp",
+	"opencode",
+	"pi",
+]);
+
 export function AiProfileSections({
 	profiles,
 	activeProfileId,
@@ -67,9 +74,8 @@ function AiProfileSectionsBody({
 
 	const providerUsesApiKey = useMemo(
 		() =>
-			profileDraft?.provider !== "codex_chatgpt" &&
-			profileDraft?.provider !== "amp" &&
-			profileDraft?.provider !== "opencode",
+			!profileDraft?.provider ||
+			!PROVIDERS_NO_API_KEY.has(profileDraft.provider),
 		[profileDraft?.provider],
 	);
 

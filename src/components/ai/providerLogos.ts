@@ -10,6 +10,8 @@ import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
 import openaiDarkThemeLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import opencodeDarkThemeLogoUrl from "../../assets/provider-logos/opencode-dark.svg?url";
 import opencodeLightThemeLogoUrl from "../../assets/provider-logos/opencode-light.svg?url";
+import piDarkThemeLogoUrl from "../../assets/provider-logos/pi-dark.svg?url";
+import piLightThemeLogoUrl from "../../assets/provider-logos/pi-light.svg?url";
 import type { AiProviderKind } from "../../lib/tauri";
 
 export const providerLogoMeta: Record<
@@ -41,6 +43,11 @@ export const providerLogoMeta: Record<
 		src: opencodeLightThemeLogoUrl,
 		darkSrc: opencodeDarkThemeLogoUrl,
 		label: "OpenCode",
+	},
+	pi: {
+		src: piLightThemeLogoUrl,
+		darkSrc: piDarkThemeLogoUrl,
+		label: "PI",
 	},
 };
 
