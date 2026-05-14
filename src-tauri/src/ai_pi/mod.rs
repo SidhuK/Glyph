@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use serde_json::{json, Value};
@@ -11,6 +11,7 @@ use tokio::{
     sync::mpsc,
 };
 use tokio_util::sync::CancellationToken;
+use tracing::{debug, error, info, warn};
 
 use crate::ai_rig::{
     events::AiStatusEvent,
@@ -71,18 +72,28 @@ async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
 }
 
 async fn stop_child(child: &mut Child) {
-    let _ = child.kill().await;
-    let _ = child.wait().await;
+    let pid = child.id();
+    debug!(?pid, "stopping PI subprocess");
+    if let Err(e) = child.kill().await {
+        debug!(?pid, error = %e, "PI subprocess kill returned an error");
+    }
+    match child.wait().await {
+        Ok(status) => debug!(?pid, %status, "PI subprocess exited"),
+        Err(e) => warn!(?pid, error = %e, "failed waiting for PI subprocess"),
+    }
 }
 
 async fn abort_and_stop(child: &mut Child, stdin: &mut Option<ChildStdin>) {
+    let pid = child.id();
     if let Some(mut child_stdin) = stdin.take() {
+        debug!(?pid, "sending PI abort request");
         let _ = write_rpc(&mut child_stdin, json!({ "type": "abort" })).await;
     }
     if tokio::time::timeout(STOP_TIMEOUT, child.wait())
         .await
         .is_err()
     {
+        warn!(?pid, "PI did not stop after abort request");
         stop_child(child).await;
     }
 }
@@ -197,6 +208,14 @@ async fn spawn_rpc(
     profile: Option<&AiProfile>,
 ) -> Result<Child, String> {
     let binary = find_pi_binary()?;
+    let model = profile.map(|profile| profile.model.trim()).unwrap_or("");
+    debug!(
+        binary = %binary.display(),
+        root = %root.display(),
+        offline,
+        model,
+        "spawning PI RPC subprocess"
+    );
     let mut command = Command::new(binary);
     command
         .arg("--mode")
@@ -211,23 +230,34 @@ async fn spawn_rpc(
         command.arg("--offline");
     }
     if let Some(profile) = profile {
-        let model = profile.model.trim();
         if !model.is_empty() {
             command.arg("--model").arg(model);
         }
         if let Some(effort) = profile.reasoning_effort.as_deref().map(str::trim) {
             if !effort.is_empty() {
+                let effort = effort.to_ascii_lowercase();
+                if !matches!(
+                    effort.as_str(),
+                    "off" | "minimal" | "low" | "medium" | "high" | "xhigh"
+                ) {
+                    return Err(format!("Unsupported PI reasoning effort: {effort}"));
+                }
                 command.arg("--thinking").arg(effort);
             }
         }
     }
 
-    command
-        .spawn()
-        .map_err(|e| format!("failed to start PI: {e}"))
+    command.kill_on_drop(true);
+    let child = command.spawn().map_err(|e| {
+        error!(error = %e, "failed to start PI subprocess");
+        format!("failed to start PI: {e}")
+    })?;
+    info!(pid = ?child.id(), offline, model, "started PI RPC subprocess");
+    Ok(child)
 }
 
 pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
+    let started = Instant::now();
     let mut child = spawn_rpc(root, true, None).await?;
     let mut stdin = child
         .stdin
@@ -252,6 +282,10 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
     loop {
         tokio::select! {
             _ = &mut deadline => {
+                warn!(
+                    duration_ms = started.elapsed().as_millis(),
+                    "timed out waiting for PI models"
+                );
                 stop_child(&mut child).await;
                 return Err(if last_stderr.trim().is_empty() {
                     "Timed out waiting for PI models".to_string()
@@ -267,7 +301,14 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
                 }
             }
             line = stdout_lines.next_line() => {
-                let line = line.map_err(|e| format!("failed reading PI output: {e}"))?;
+                let line = match line {
+                    Ok(line) => line,
+                    Err(e) => {
+                        error!(error = %e, "failed reading PI model output");
+                        stop_child(&mut child).await;
+                        return Err(format!("failed reading PI output: {e}"));
+                    }
+                };
                 let Some(line) = line else {
                     let status = child.wait().await.map_err(|e| e.to_string())?;
                     return Err(if last_stderr.trim().is_empty() {
@@ -279,14 +320,21 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
                 if line.trim().is_empty() {
                     continue;
                 }
-                let value = serde_json::from_str::<Value>(&line)
-                    .map_err(|e| format!("failed to parse PI JSON output: {e}"))?;
+                let value = match serde_json::from_str::<Value>(&line) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        error!(error = %e, "failed to parse PI model JSON output");
+                        stop_child(&mut child).await;
+                        return Err(format!("failed to parse PI JSON output: {e}"));
+                    }
+                };
                 if value.get("type").and_then(|v| v.as_str()) != Some("response")
                     || value.get("id").and_then(|v| v.as_str()) != Some("glyph-models")
                 {
                     continue;
                 }
                 if value.get("success").and_then(|v| v.as_bool()) != Some(true) {
+                    error!("PI model list failed");
                     stop_child(&mut child).await;
                     return Err(value.get("error").and_then(|v| v.as_str()).unwrap_or("PI model list failed").to_string());
                 }
@@ -299,6 +347,11 @@ pub async fn list_models(root: &Path) -> Result<Vec<AiModel>, String> {
                     .filter_map(parse_pi_model)
                     .collect::<Vec<_>>();
                 models.sort_by(|a, b| a.name.cmp(&b.name).then_with(|| a.id.cmp(&b.id)));
+                info!(
+                    model_count = models.len(),
+                    duration_ms = started.elapsed().as_millis(),
+                    "loaded PI models"
+                );
                 stop_child(&mut child).await;
                 if models.is_empty() {
                     return Err("PI returned no available models".to_string());
@@ -379,6 +432,9 @@ fn push_thinking_block(out: &mut String, thinking: &str) {
 fn thinking_delta(delta: &str, line_start: &mut bool) -> String {
     let mut out = String::new();
     for segment in delta.split_inclusive('\n') {
+        if out.is_empty() && *line_start && segment.chars().all(|c| matches!(c, '\n' | '\r')) {
+            continue;
+        }
         if *line_start {
             out.push_str("> ");
             *line_start = false;
@@ -398,6 +454,7 @@ fn handle_message_update(
     full: &mut String,
     in_thinking: &mut bool,
     thinking_line_start: &mut bool,
+    thinking_has_content: &mut bool,
 ) {
     let event = value.get("assistantMessageEvent").unwrap_or(&Value::Null);
     match event.get("type").and_then(|v| v.as_str()) {
@@ -407,36 +464,40 @@ fn handle_message_update(
             }
         }
         Some("thinking_start") => {
-            if !full.ends_with("\n\n") && !full.is_empty() {
-                emit_chunk(app, job_id, full, "\n\n".to_string());
-            }
-            emit_chunk(app, job_id, full, "> Thinking\n> ".to_string());
             *in_thinking = true;
-            *thinking_line_start = false;
+            *thinking_line_start = true;
+            *thinking_has_content = false;
         }
         Some("thinking_delta") => {
             if !*in_thinking {
-                if !full.ends_with("\n\n") && !full.is_empty() {
-                    emit_chunk(app, job_id, full, "\n\n".to_string());
-                }
-                emit_chunk(app, job_id, full, "> Thinking\n> ".to_string());
                 *in_thinking = true;
-                *thinking_line_start = false;
+                *thinking_line_start = true;
+                *thinking_has_content = false;
             }
             if let Some(delta) = event.get("delta").and_then(|v| v.as_str()) {
-                emit_chunk(
-                    app,
-                    job_id,
-                    full,
-                    thinking_delta(delta, thinking_line_start),
-                );
+                let delta = thinking_delta(delta, thinking_line_start);
+                if delta.trim().is_empty() {
+                    *thinking_line_start = true;
+                } else {
+                    if !*thinking_has_content {
+                        if !full.ends_with("\n\n") && !full.is_empty() {
+                            emit_chunk(app, job_id, full, "\n\n".to_string());
+                        }
+                        emit_chunk(app, job_id, full, "> Thinking\n".to_string());
+                    }
+                    emit_chunk(app, job_id, full, delta);
+                    *thinking_has_content = true;
+                }
             }
         }
         Some("thinking_end") => {
             if *in_thinking {
-                emit_chunk(app, job_id, full, "\n\n".to_string());
+                if *thinking_has_content {
+                    emit_chunk(app, job_id, full, "\n\n".to_string());
+                }
                 *in_thinking = false;
                 *thinking_line_start = false;
+                *thinking_has_content = false;
             }
         }
         _ => {}
@@ -465,6 +526,7 @@ fn handle_tool_event(
         .get("toolName")
         .and_then(|v| v.as_str())
         .unwrap_or("tool");
+    debug!(job_id, tool, phase, "PI tool event");
     let call_id = value
         .get("toolCallId")
         .and_then(|v| v.as_str())
@@ -501,8 +563,15 @@ pub async fn run_with_pi(
     _mode: &AiAssistantMode,
     space_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
+    let started = Instant::now();
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
     let prompt = prompt_text(system, messages);
+    debug!(
+        job_id,
+        model = profile.model.as_str(),
+        prompt_len = prompt.len(),
+        "starting PI prompt"
+    );
 
     let _ = app.emit(
         "ai:status",
@@ -529,7 +598,11 @@ pub async fn run_with_pi(
             child_stdin,
             json!({ "id": "glyph-prompt", "type": "prompt", "message": prompt }),
         )
-        .await?;
+        .await
+        .map_err(|e| {
+            error!(job_id, error = %e, "failed writing PI prompt");
+            e
+        })?;
     } else {
         return Err("failed to capture PI stdin".to_string());
     }
@@ -548,14 +621,25 @@ pub async fn run_with_pi(
     let mut last_stderr = String::new();
     let mut in_thinking = false;
     let mut thinking_line_start = false;
+    let mut thinking_has_content = false;
 
     loop {
         tokio::select! {
             _ = cancel.cancelled() => {
+                info!(
+                    job_id,
+                    duration_ms = started.elapsed().as_millis(),
+                    "PI request cancelled"
+                );
                 abort_and_stop(&mut child, &mut stdin).await;
                 return Ok((full, true, tool_events));
             }
             _ = &mut deadline => {
+                warn!(
+                    job_id,
+                    duration_ms = started.elapsed().as_millis(),
+                    "PI request timed out"
+                );
                 abort_and_stop(&mut child, &mut stdin).await;
                 return Err("PI request timed out".to_string());
             }
@@ -567,10 +651,23 @@ pub async fn run_with_pi(
                 }
             }
             line = stdout_lines.next_line() => {
-                let line = line.map_err(|e| format!("failed reading PI output: {e}"))?;
+                let line = match line {
+                    Ok(line) => line,
+                    Err(e) => {
+                        error!(job_id, error = %e, "failed reading PI output");
+                        abort_and_stop(&mut child, &mut stdin).await;
+                        return Err(format!("failed reading PI output: {e}"));
+                    }
+                };
                 let Some(line) = line else {
                     let status = child.wait().await.map_err(|e| e.to_string())?;
-                    if status.success() && !full.trim().is_empty() {
+                    if status.success() && (!full.trim().is_empty() || !tool_events.is_empty()) {
+                        info!(
+                            job_id,
+                            duration_ms = started.elapsed().as_millis(),
+                            tool_events = tool_events.len(),
+                            "PI request completed"
+                        );
                         return Ok((full, false, tool_events));
                     }
                     return Err(if last_stderr.trim().is_empty() {
@@ -582,8 +679,14 @@ pub async fn run_with_pi(
                 if line.trim().is_empty() {
                     continue;
                 }
-                let value = serde_json::from_str::<Value>(&line)
-                    .map_err(|e| format!("failed to parse PI JSON output: {e}"))?;
+                let value = match serde_json::from_str::<Value>(&line) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        error!(job_id, error = %e, "failed to parse PI JSON output");
+                        abort_and_stop(&mut child, &mut stdin).await;
+                        return Err(format!("failed to parse PI JSON output: {e}"));
+                    }
+                };
                 match value.get("type").and_then(|v| v.as_str()) {
                     Some("response") if value.get("id").and_then(|v| v.as_str()) == Some("glyph-prompt") => {
                         if value.get("success").and_then(|v| v.as_bool()) != Some(true) {
@@ -599,6 +702,7 @@ pub async fn run_with_pi(
                             &mut full,
                             &mut in_thinking,
                             &mut thinking_line_start,
+                            &mut thinking_has_content,
                         );
                     }
                     Some("tool_execution_start") | Some("tool_execution_update") | Some("tool_execution_end") => {
@@ -621,6 +725,12 @@ pub async fn run_with_pi(
                         if full.trim().is_empty() && tool_events.is_empty() {
                             return Err("PI returned an empty response".to_string());
                         }
+                        info!(
+                            job_id,
+                            duration_ms = started.elapsed().as_millis(),
+                            tool_events = tool_events.len(),
+                            "PI agent ended"
+                        );
                         return Ok((full, false, tool_events));
                     }
                     _ => {}

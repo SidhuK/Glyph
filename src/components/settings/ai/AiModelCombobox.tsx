@@ -11,13 +11,17 @@ interface AiModelComboboxProps {
 	onModelsChange?: (models: AiModel[] | null) => void;
 }
 
+const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
+	"ollama",
+	"llama_cpp",
+	"codex_chatgpt",
+	"amp",
+	"opencode",
+	"pi",
+]);
+
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
-	provider !== "ollama" &&
-	provider !== "llama_cpp" &&
-	provider !== "codex_chatgpt" &&
-	provider !== "amp" &&
-	provider !== "opencode" &&
-	provider !== "pi";
+	!PROVIDERS_NO_API_KEY.has(provider);
 
 export function AiModelCombobox({
 	profileId,
