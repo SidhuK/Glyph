@@ -1,6 +1,7 @@
 mod ai_amp;
 mod ai_codex;
 mod ai_opencode;
+mod ai_pi;
 mod ai_rig;
 mod databases;
 mod file_tree_appearance;

@@ -25,6 +25,7 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 			{ value: "codex_chatgpt", label: "Codex" },
 			{ value: "opencode", label: "OpenCode" },
 			{ value: "amp", label: "Amp" },
+			{ value: "pi", label: "PI" },
 		],
 	},
 	{
@@ -76,7 +77,8 @@ export function AiProviderSection({
 	const selectedModel =
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
-	const shouldShowReasoningSelect = profileDraft.provider === "codex_chatgpt";
+	const shouldShowReasoningSelect =
+		profileDraft.provider === "codex_chatgpt" || profileDraft.provider === "pi";
 	const baseUrlPlaceholder =
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
@@ -148,7 +150,8 @@ export function AiProviderSection({
 							...profileDraft,
 							model: nextModelId,
 							reasoning_effort:
-								profileDraft.provider === "codex_chatgpt"
+								profileDraft.provider === "codex_chatgpt" ||
+								profileDraft.provider === "pi"
 									? stillValid
 										? currentEffort
 										: (nextModel?.default_reasoning_effort ?? currentEffort)
@@ -163,7 +166,7 @@ export function AiProviderSection({
 				<SettingsRow
 					label="Reasoning level"
 					htmlFor="aiReasoningEffort"
-					description="Available for Codex when the current model exposes effort levels."
+					description="Available when the current model exposes effort levels."
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<select

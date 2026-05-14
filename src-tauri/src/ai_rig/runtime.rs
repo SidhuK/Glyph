@@ -360,7 +360,10 @@ pub async fn run_with_rig(
                 Err(e) => return Err(e),
             }
         }
-        AiProviderKind::CodexChatgpt | AiProviderKind::Amp | AiProviderKind::Opencode => {
+        AiProviderKind::CodexChatgpt
+        | AiProviderKind::Amp
+        | AiProviderKind::Opencode
+        | AiProviderKind::Pi => {
             return Err(
                 "This provider uses a dedicated native runtime; not available in Rig runtime"
                     .to_string(),
@@ -630,6 +633,9 @@ pub async fn generate_chat_title_with_rig(
         }
         AiProviderKind::Opencode => {
             return Ok("OpenCode Chat".to_string());
+        }
+        AiProviderKind::Pi => {
+            return Ok("PI Chat".to_string());
         }
     };
 
