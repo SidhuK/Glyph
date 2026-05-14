@@ -275,6 +275,44 @@ pub async fn space_resolve_abs_path(
     .map_err(|e| e.to_string())?
 }
 
+#[cfg(target_os = "macos")]
+fn reveal_file_manager_path(abs: &Path) -> Result<(), String> {
+    let status = std::process::Command::new("open")
+        .arg("-R")
+        .arg(abs)
+        .status()
+        .map_err(|e| e.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("failed to reveal path in Finder".to_string())
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn reveal_file_manager_path(_abs: &Path) -> Result<(), String> {
+    Err("revealing paths in Finder is only available on macOS".to_string())
+}
+
+#[tauri::command]
+pub async fn space_reveal_path(state: State<'_, SpaceState>, path: String) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let rel = PathBuf::from(&path);
+        deny_hidden_rel_path(&rel)?;
+        let abs = paths::join_under(&root, &rel)?;
+        if !abs.exists() {
+            return Err("path does not exist".to_string());
+        }
+        if !abs.is_file() {
+            return Err("path is not a file".to_string());
+        }
+        reveal_file_manager_path(&abs)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_rename_path(
     state: State<'_, SpaceState>,

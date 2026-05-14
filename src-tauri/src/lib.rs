@@ -1462,6 +1462,7 @@ pub fn run() {
             space_fs::read_write::paths::space_rename_path,
             space_fs::read_write::paths::space_delete_path,
             space_fs::read_write::paths::space_resolve_abs_path,
+            space_fs::read_write::paths::space_reveal_path,
             space_fs::read_write::paths::space_relativize_path,
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
