@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
+    process::Command as StdCommand,
     time::Duration,
 };
 
@@ -113,6 +114,57 @@ fn collect_model_from_value(models: &mut Vec<String>, seen: &mut HashSet<String>
     }
 }
 
+fn is_runtime_model_id(id: &str) -> bool {
+    let id = id.strip_suffix("[1m]").unwrap_or(id);
+    let Some(rest) = id.strip_prefix("claude-") else {
+        return false;
+    };
+    if let Some(version) = rest
+        .strip_prefix("opus-")
+        .or_else(|| rest.strip_prefix("sonnet-"))
+        .or_else(|| rest.strip_prefix("haiku-"))
+    {
+        let mut parts = version.split('-');
+        return parts.next().is_some_and(|part| {
+            !part.is_empty() && part.len() <= 2 && part.chars().all(|c| c.is_ascii_digit())
+        }) && parts.all(|part| {
+            !part.is_empty() && part.len() <= 2 && part.chars().all(|c| c.is_ascii_digit())
+        });
+    }
+    matches!(
+        rest,
+        "3-opus" | "3-sonnet" | "3-haiku" | "3-5-sonnet" | "3-5-haiku" | "3-7-sonnet"
+    )
+}
+
+fn collect_models_from_runtime_text(
+    text: &str,
+    models: &mut Vec<String>,
+    seen: &mut HashSet<String>,
+) {
+    for token in
+        text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '-' || c == '[' || c == ']'))
+    {
+        if is_runtime_model_id(token) {
+            push_model_id(models, seen, token);
+        }
+    }
+}
+
+fn collect_models_from_runtime(
+    binary: &Path,
+    models: &mut Vec<String>,
+    seen: &mut HashSet<String>,
+) {
+    if let Ok(output) = StdCommand::new(binary).arg("--help").output() {
+        collect_models_from_runtime_text(&String::from_utf8_lossy(&output.stdout), models, seen);
+        collect_models_from_runtime_text(&String::from_utf8_lossy(&output.stderr), models, seen);
+    }
+    if let Ok(bytes) = std::fs::read(binary) {
+        collect_models_from_runtime_text(&String::from_utf8_lossy(&bytes), models, seen);
+    }
+}
+
 fn claude_settings_paths(root: &Path) -> Vec<PathBuf> {
     let mut paths = Vec::new();
     if let Some(home) = std::env::var_os("HOME").map(PathBuf::from) {
@@ -162,13 +214,14 @@ fn model_entry_for_id(id: &str) -> AiModel {
 }
 
 pub fn list_models(root: &Path, profile: &AiProfile) -> Result<Vec<AiModel>, String> {
-    find_claude_binary()?;
+    let binary = find_claude_binary()?;
     let mut seen = HashSet::new();
     let mut ids = Vec::new();
 
     for (id, _, _) in CLAUDE_CODE_ALIAS_MODELS {
         push_model_id(&mut ids, &mut seen, id);
     }
+    collect_models_from_runtime(&binary, &mut ids, &mut seen);
     for path in claude_settings_paths(root) {
         if let Some(value) = read_json_file(&path) {
             collect_models_from_settings(&value, &mut ids, &mut seen);
@@ -211,6 +264,36 @@ async fn pipe_stderr(child: &mut Child) -> mpsc::Receiver<String> {
 async fn stop_child(child: &mut Child) {
     let _ = child.kill().await;
     let _ = child.wait().await;
+}
+
+struct KillChildOnDrop {
+    child: Child,
+}
+
+impl KillChildOnDrop {
+    fn new(child: Child) -> Self {
+        Self { child }
+    }
+}
+
+impl Drop for KillChildOnDrop {
+    fn drop(&mut self) {
+        let _ = self.child.start_kill();
+    }
+}
+
+impl std::ops::Deref for KillChildOnDrop {
+    type Target = Child;
+
+    fn deref(&self) -> &Self::Target {
+        &self.child
+    }
+}
+
+impl std::ops::DerefMut for KillChildOnDrop {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.child
+    }
 }
 
 async fn close_stdin(mut stdin: ChildStdin, prompt: String) -> Result<(), String> {
@@ -593,9 +676,11 @@ pub async fn run_with_claude_code(
         command.arg("--model").arg(model);
     }
 
-    let mut child = command
-        .spawn()
-        .map_err(|e| format!("failed to start Claude Code: {e}"))?;
+    let mut child = KillChildOnDrop::new(
+        command
+            .spawn()
+            .map_err(|e| format!("failed to start Claude Code: {e}"))?,
+    );
     let stdin = child
         .stdin
         .take()
