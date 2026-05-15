@@ -1,7 +1,6 @@
 import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import ampLogoUrl from "../../assets/provider-logos/amp.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
-import claudeCodeLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
 import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
@@ -40,7 +39,7 @@ export const providerLogoMeta: Record<
 		label: "Codex (ChatGPT)",
 	},
 	amp: { src: ampLogoUrl, label: "Amp" },
-	claude_code: { src: claudeCodeLogoUrl, label: "Claude Code" },
+	claude_code: { src: anthropicLogoUrl, label: "Claude Code" },
 	opencode: {
 		src: opencodeLightThemeLogoUrl,
 		darkSrc: opencodeDarkThemeLogoUrl,

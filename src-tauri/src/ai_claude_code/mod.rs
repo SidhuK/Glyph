@@ -4,7 +4,6 @@ use std::{
     time::Duration,
 };
 
-use regex::Regex;
 use serde_json::Value;
 use tauri::{AppHandle, Emitter};
 use tokio::{
@@ -22,7 +21,6 @@ use crate::ai_rig::{
 };
 
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
-const STARTUP_LISTENER_GRACE: Duration = Duration::from_millis(250);
 const EXIT_AFTER_RESULT_GRACE: Duration = Duration::from_secs(2);
 const STARTUP_OUTPUT_TIMEOUT: Duration = Duration::from_secs(30);
 const DEFAULT_MODEL_ID: &str = "default";
@@ -125,32 +123,6 @@ fn claude_settings_paths(root: &Path) -> Vec<PathBuf> {
     paths
 }
 
-fn discover_models_from_binary(
-    binary: &Path,
-    models: &mut Vec<String>,
-    seen: &mut HashSet<String>,
-) {
-    let Ok(bytes) = std::fs::read(binary) else {
-        return;
-    };
-    let haystack = String::from_utf8_lossy(&bytes);
-    let Ok(model_re) = Regex::new(
-        r"claude-(?:(?:opus|sonnet|haiku)-\d{1,2}(?:-\d{1,2}){0,2}|\d{1,2}(?:-\d{1,2}){0,2}-(?:opus|sonnet|haiku))",
-    ) else {
-        return;
-    };
-    for matched in model_re.find_iter(&haystack) {
-        if haystack
-            .get(matched.end()..)
-            .and_then(|tail| tail.chars().next())
-            .is_some_and(|next| next.is_ascii_alphanumeric())
-        {
-            continue;
-        }
-        push_model_id(models, seen, matched.as_str());
-    }
-}
-
 fn claude_model_name(id: &str) -> String {
     let Some(rest) = id.strip_prefix("claude-") else {
         return id.to_string();
@@ -190,14 +162,13 @@ fn model_entry_for_id(id: &str) -> AiModel {
 }
 
 pub fn list_models(root: &Path, profile: &AiProfile) -> Result<Vec<AiModel>, String> {
-    let binary = find_claude_binary()?;
+    find_claude_binary()?;
     let mut seen = HashSet::new();
     let mut ids = Vec::new();
 
     for (id, _, _) in CLAUDE_CODE_ALIAS_MODELS {
         push_model_id(&mut ids, &mut seen, id);
     }
-    discover_models_from_binary(&binary, &mut ids, &mut seen);
     for path in claude_settings_paths(root) {
         if let Some(value) = read_json_file(&path) {
             collect_models_from_settings(&value, &mut ids, &mut seen);
@@ -573,8 +544,6 @@ pub async fn run_with_claude_code(
     let binary = find_claude_binary()?;
     let prompt = prompt_text(messages);
 
-    tokio::time::sleep(STARTUP_LISTENER_GRACE).await;
-
     emit_status(
         app,
         job_id,
@@ -694,7 +663,7 @@ pub async fn run_with_claude_code(
                 let value = serde_json::from_str::<Value>(&line)
                     .map_err(|e| format!("failed to parse Claude Code JSON output: {e}"))?;
                 if let Some(done) = handle_event(app, job_id, &value, &mut full, &mut tool_events)? {
-                    wait_after_result(&mut child, &last_stderr).await?;
+                    let _ = wait_after_result(&mut child, &last_stderr).await;
                     return Ok((full, done, tool_events));
                 }
             }
