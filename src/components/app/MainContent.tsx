@@ -55,6 +55,7 @@ import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { cn } from "../../lib/utils";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { Calendar, FileText, Settings } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type {
@@ -844,7 +845,14 @@ export const MainContent = memo(function MainContent({
 						onReorder={reorderTabs}
 					/>
 				</div>
-			) : null}
+			) : (
+				<div
+					aria-hidden="true"
+					className="mainTabsEmptyDragRegion"
+					data-tauri-drag-region
+					onMouseDown={onWindowDragMouseDown}
+				/>
+			)}
 			{content ?? (
 				<div className="mainEmptyState">
 					{showStarterPane ? (

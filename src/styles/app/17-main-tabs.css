@@ -3,6 +3,12 @@
 	background: var(--bg-primary);
 }
 
+.mainTabsEmptyDragRegion {
+	height: 40px;
+	flex-shrink: 0;
+	background: var(--bg-primary);
+}
+
 .mainTabsBar {
 	--main-tabs-right-reserve: 78px;
 	--main-tabs-left-reserve: var(--space-3);
