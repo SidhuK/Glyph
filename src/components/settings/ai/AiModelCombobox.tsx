@@ -16,6 +16,7 @@ const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
 	"llama_cpp",
 	"codex_chatgpt",
 	"amp",
+	"claude_code",
 	"opencode",
 	"pi",
 ]);

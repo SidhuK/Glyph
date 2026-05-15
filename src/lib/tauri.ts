@@ -616,6 +616,7 @@ export type AiProviderKind =
 	| "llama_cpp"
 	| "codex_chatgpt"
 	| "amp"
+	| "claude_code"
 	| "opencode"
 	| "pi";
 

@@ -16,6 +16,9 @@ export interface UIMessage {
 }
 
 type SendMessageArgs = { text: string };
+type ChunkPayload = { job_id: string; delta: string };
+type DonePayload = { job_id: string; cancelled: boolean };
+type ErrorPayload = { job_id: string; message: string };
 
 type SendMessageOptions = {
 	body?: {
@@ -59,6 +62,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const messagesRef = useRef<UIMessage[]>([]);
 	const activeJobIdRef = useRef<string | null>(null);
 	const activeThreadIdRef = useRef<string | null>(null);
+	const awaitingStartRef = useRef(false);
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
 	const onComplete = options.onComplete;
@@ -90,6 +94,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const completeActiveJob = useCallback(() => {
 		clearDoneTimer();
 		activeJobIdRef.current = null;
+		awaitingStartRef.current = false;
 		cleanupListeners();
 		setStatus("ready");
 		onComplete?.();
@@ -107,6 +112,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		}
 		clearDoneTimer();
 		activeJobIdRef.current = null;
+		awaitingStartRef.current = false;
 		cleanupListeners();
 		setStatus("ready");
 	}, [cleanupListeners, clearDoneTimer]);
@@ -125,6 +131,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			setError(null);
 			stop();
 
+			const previousMessages = messagesRef.current;
 			const userId = crypto.randomUUID();
 			const assistantId = crypto.randomUUID();
 			const userMessage: UIMessage = {
@@ -137,13 +144,10 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				role: "assistant",
 				parts: [{ type: "text", text: "" }],
 			};
-			const nextMessages = [
-				...messagesRef.current,
-				userMessage,
-				assistantMessage,
-			];
+			const nextMessages = [...previousMessages, userMessage, assistantMessage];
 			updateMessages(nextMessages);
 			setStatus("submitted");
+			awaitingStartRef.current = true;
 
 			try {
 				clearDoneTimer();
@@ -153,7 +157,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				activeThreadIdRef.current = threadId;
 				const systemPrompt = options?.body?.system_prompt?.trim() ?? "";
 				const requestMessages = asAiMessages([
-					...messagesRef.current,
+					...previousMessages,
 					userMessage,
 				]);
 				if (systemPrompt) {
@@ -162,22 +166,14 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 						content: systemPrompt,
 					});
 				}
-				const { job_id: jobId } = await invoke("ai_chat_start", {
-					request: {
-						profile_id: profileId,
-						messages: requestMessages,
-						thread_id: threadId,
-						mode: options?.body?.mode ?? "create",
-						context: options?.body?.context || undefined,
-						context_manifest: options?.body?.context_manifest,
-						audit: options?.body?.audit ?? true,
-					},
-				});
-
-				activeJobIdRef.current = jobId;
-
-				const onChunk = await listenTauriEvent("ai:chunk", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
+				const pendingChunks: ChunkPayload[] = [];
+				let pendingDone: DonePayload | null = null;
+				let pendingError: ErrorPayload | null = null;
+				const shouldBufferEvent = (jobId: string) =>
+					awaitingStartRef.current && !activeJobIdRef.current && !!jobId;
+				const isActiveJob = (jobId: string) => jobId === activeJobIdRef.current;
+				const handleChunk = (payload: ChunkPayload) => {
+					if (!isActiveJob(payload.job_id)) return;
 					clearDoneTimer();
 					setStatus("streaming");
 					updateMessages((prev) =>
@@ -195,30 +191,78 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 							};
 						}),
 					);
-				});
-
-				const onDone = await listenTauriEvent("ai:done", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
+				};
+				const handleDone = (payload: DonePayload) => {
+					if (!isActiveJob(payload.job_id)) return;
+					awaitingStartRef.current = false;
 					clearDoneTimer();
 					doneTimerRef.current = window.setTimeout(() => {
 						if (payload.job_id !== activeJobIdRef.current) return;
 						completeActiveJob();
 					}, DONE_SETTLE_MS);
-				});
-
-				const onError = await listenTauriEvent("ai:error", (payload) => {
-					if (payload.job_id !== activeJobIdRef.current) return;
+				};
+				const handleError = (payload: ErrorPayload) => {
+					if (!isActiveJob(payload.job_id)) return;
 					clearDoneTimer();
 					activeJobIdRef.current = null;
+					awaitingStartRef.current = false;
 					cleanupListeners();
 					setError(new Error(payload.message));
 					setStatus("error");
+				};
+
+				const onChunk = await listenTauriEvent("ai:chunk", (payload) => {
+					if (shouldBufferEvent(payload.job_id)) {
+						pendingChunks.push(payload);
+						return;
+					}
+					handleChunk(payload);
+				});
+
+				const onDone = await listenTauriEvent("ai:done", (payload) => {
+					if (shouldBufferEvent(payload.job_id)) {
+						pendingDone = payload;
+						return;
+					}
+					handleDone(payload);
+				});
+
+				const onError = await listenTauriEvent("ai:error", (payload) => {
+					if (shouldBufferEvent(payload.job_id)) {
+						pendingError = payload;
+						return;
+					}
+					handleError(payload);
 				});
 
 				stopListenersRef.current = [onChunk, onDone, onError];
+
+				const { job_id: jobId } = await invoke("ai_chat_start", {
+					request: {
+						profile_id: profileId,
+						messages: requestMessages,
+						thread_id: threadId,
+						mode: options?.body?.mode ?? "create",
+						context: options?.body?.context || undefined,
+						context_manifest: options?.body?.context_manifest,
+						audit: options?.body?.audit ?? true,
+					},
+				});
+
+				activeJobIdRef.current = jobId;
+				awaitingStartRef.current = false;
+				for (const payload of pendingChunks) {
+					handleChunk(payload);
+				}
+				if (pendingError) {
+					handleError(pendingError);
+				} else if (pendingDone) {
+					handleDone(pendingDone);
+				}
 			} catch (err) {
 				clearDoneTimer();
 				activeJobIdRef.current = null;
+				awaitingStartRef.current = false;
 				cleanupListeners();
 				setError(err instanceof Error ? err : new Error(String(err)));
 				setStatus("error");

@@ -39,6 +39,7 @@ export const providerLogoMeta: Record<
 		label: "Codex (ChatGPT)",
 	},
 	amp: { src: ampLogoUrl, label: "Amp" },
+	claude_code: { src: anthropicLogoUrl, label: "Claude Code" },
 	opencode: {
 		src: opencodeLightThemeLogoUrl,
 		darkSrc: opencodeDarkThemeLogoUrl,

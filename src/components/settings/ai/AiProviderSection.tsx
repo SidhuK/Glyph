@@ -25,6 +25,7 @@ const aiProviderGroups: AiProviderOptionGroup[] = [
 			{ value: "codex_chatgpt", label: "Codex" },
 			{ value: "opencode", label: "OpenCode" },
 			{ value: "amp", label: "Amp" },
+			{ value: "claude_code", label: "Claude Code" },
 			{ value: "pi", label: "PI" },
 		],
 	},
