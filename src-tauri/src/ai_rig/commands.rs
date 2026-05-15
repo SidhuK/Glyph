@@ -196,6 +196,7 @@ pub async fn ai_profile_delete(
             super::types::AiProviderKind::Ollama
                 | super::types::AiProviderKind::LlamaCpp
                 | super::types::AiProviderKind::Amp
+                | super::types::AiProviderKind::ClaudeCode
                 | super::types::AiProviderKind::Opencode
                 | super::types::AiProviderKind::Pi
         );
@@ -317,6 +318,7 @@ pub async fn ai_chat_start(
             profile.provider,
             super::types::AiProviderKind::CodexChatgpt
                 | super::types::AiProviderKind::Amp
+                | super::types::AiProviderKind::ClaudeCode
                 | super::types::AiProviderKind::Opencode
                 | super::types::AiProviderKind::Pi
         )
@@ -493,6 +495,12 @@ pub async fn run_request(
     }
     if matches!(profile.provider, super::types::AiProviderKind::Amp) {
         return crate::ai_amp::run_with_amp(
+            cancel, app, job_id, profile, system, messages, mode, space_root,
+        )
+        .await;
+    }
+    if matches!(profile.provider, super::types::AiProviderKind::ClaudeCode) {
+        return crate::ai_claude_code::run_with_claude_code(
             cancel, app, job_id, profile, system, messages, mode, space_root,
         )
         .await;

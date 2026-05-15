@@ -17,6 +17,7 @@ interface AiProfileSectionsProps {
 const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
 	"codex_chatgpt",
 	"amp",
+	"claude_code",
 	"opencode",
 	"pi",
 ]);

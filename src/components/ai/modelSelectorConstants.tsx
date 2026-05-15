@@ -46,6 +46,7 @@ export const providerSupportKeyMap: Record<AiProviderKind, string> = {
 	llama_cpp: "llama_cpp",
 	codex_chatgpt: "openai",
 	amp: "amp",
+	claude_code: "anthropic",
 	opencode: "opencode",
 	pi: "pi",
 };

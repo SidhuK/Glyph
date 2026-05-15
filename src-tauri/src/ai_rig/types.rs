@@ -12,6 +12,7 @@ pub enum AiProviderKind {
     LlamaCpp,
     CodexChatgpt,
     Amp,
+    ClaudeCode,
     Opencode,
     Pi,
 }
@@ -28,6 +29,7 @@ impl AiProviderKind {
             Self::LlamaCpp => "llama_cpp",
             Self::CodexChatgpt => "codex_chatgpt",
             Self::Amp => "amp",
+            Self::ClaudeCode => "claude_code",
             Self::Opencode => "opencode",
             Self::Pi => "pi",
         }
@@ -44,6 +46,7 @@ impl AiProviderKind {
             Self::LlamaCpp => "llama.cpp",
             Self::CodexChatgpt => "Codex (ChatGPT)",
             Self::Amp => "Amp",
+            Self::ClaudeCode => "Claude Code",
             Self::Opencode => "OpenCode",
             Self::Pi => "PI",
         }

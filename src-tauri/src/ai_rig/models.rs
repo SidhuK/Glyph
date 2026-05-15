@@ -617,6 +617,12 @@ pub async fn ai_models_list(
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
         AiProviderKind::CodexChatgpt => list_codex_models(codex_state.inner()),
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
+        AiProviderKind::ClaudeCode => {
+            let root = space_root
+                .as_deref()
+                .ok_or_else(|| "Open a space to load Claude Code models".to_string())?;
+            crate::ai_claude_code::list_models(root, &profile)
+        }
         AiProviderKind::Opencode => {
             let root = space_root
                 .as_deref()
