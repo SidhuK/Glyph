@@ -1,6 +1,41 @@
 {
 	"versions": [
 		{
+			"version": "0.4.0",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Pi joins as a first-class agent provider",
+						"Claude joins as a first-class agent provider, running through `claude -p` per Anthropic's terms of service",
+						"Right-click a note in the file tree or Folio to get Show in Finder, which opens Finder with the file selected",
+						"The Mermaid editor embeds a fixed-height canvas in the note, with pan, fit, and Cmd-wheel zoom"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Active TOC dashes shift to the accent color, and the collapsed container drops its extra styling so only the dashes show",
+						"Mermaid renders through beautiful-mermaid with sanitized SVG, and clicking into the source switches between editable text and the rendered diagram"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"The floating TOC tracks the active heading as you scroll through a note",
+						"Delete and Backspace trigger the confirmation flow for focused files and folders in the sidebar tree, folders in the Folio sidebar, and selected notes in Folio mode, while leaving text inputs and rename fields alone",
+						"The file tree highlights the open file without lighting up its parent folder"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"The Mermaid Play/Stop overlay and the bundled mermaid package"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.3.6",
 			"sections": [
 				{
