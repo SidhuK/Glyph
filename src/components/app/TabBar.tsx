@@ -16,6 +16,7 @@ import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isMarkdownPath } from "../../utils/path";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronRight, File, FileText, FolderOpen } from "../Icons";
 import {
 	DropdownMenu,
@@ -191,7 +192,11 @@ export function TabBar({
 	);
 
 	return (
-		<div className="mainTabsBarWrap">
+		<div
+			className="mainTabsBarWrap"
+			data-tauri-drag-region
+			onMouseDown={onWindowDragMouseDown}
+		>
 			<div
 				className="mainTabsBar"
 				data-empty-state={useWindowBackground ? "true" : "false"}
