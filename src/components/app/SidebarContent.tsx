@@ -1,5 +1,7 @@
 import {
+	ArrowShrinkIcon,
 	CollectionsBookmarkIcon,
+	ExpandParagraphIcon,
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
@@ -21,6 +23,8 @@ import { FileTreePane } from "../filetree";
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
 	onLoadDir: (dirPath: string, force?: boolean) => Promise<void>;
+	onExpandAllDirs: () => Promise<void>;
+	onCollapseAllDirs: () => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
@@ -101,6 +105,8 @@ function folioTreeRootEntries(
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
+	onExpandAllDirs,
+	onCollapseAllDirs,
 	onSelectDir,
 	onOpenFile,
 	onNewNote,
@@ -557,26 +563,58 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarStackItem sidebarStackItemGrow"
 							data-section="files"
 						>
-							<button
-								type="button"
-								className="sidebarStackHeader sidebarStackHeaderToggle"
-								onClick={handleNotesHeaderClick}
-								aria-expanded={notesExpanded}
-								aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
-							>
-								<span>Notes</span>
-								{notesExpanded ? (
-									<ChevronDown
-										size={10}
-										className="sidebarStackHeaderChevron"
-									/>
-								) : (
-									<ChevronRight
-										size={10}
-										className="sidebarStackHeaderChevron"
-									/>
-								)}
-							</button>
+							<div className="sidebarStackHeader">
+								<button
+									type="button"
+									className="sidebarStackHeaderToggle"
+									onClick={handleNotesHeaderClick}
+									aria-expanded={notesExpanded}
+									aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
+								>
+									<span>Notes</span>
+									{notesExpanded ? (
+										<ChevronDown
+											size={10}
+											className="sidebarStackHeaderChevron"
+										/>
+									) : (
+										<ChevronRight
+											size={10}
+											className="sidebarStackHeaderChevron"
+										/>
+									)}
+								</button>
+								<div className="sidebarStackHeaderActions">
+									<button
+										type="button"
+										className="sidebarStackHeaderAction"
+										title="Expand all folders"
+										aria-label="Expand all folders"
+										onClick={() => {
+											void onExpandAllDirs();
+										}}
+									>
+										<HugeiconsIcon
+											icon={ExpandParagraphIcon}
+											size={13}
+											strokeWidth={0.9}
+										/>
+									</button>
+									<button
+										type="button"
+										className="sidebarStackHeaderAction"
+										title="Collapse all folders"
+										aria-label="Collapse all folders"
+										onClick={onCollapseAllDirs}
+									>
+										<HugeiconsIcon
+											icon={ArrowShrinkIcon}
+											size={13}
+											strokeWidth={0.9}
+										/>
+									</button>
+								</div>
+							</div>
 							{notesExpanded ? (
 								<FileTreePane
 									rootEntries={folioMode ? folioRootEntries : rootEntries}

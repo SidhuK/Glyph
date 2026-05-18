@@ -43,6 +43,7 @@ use tauri::{
 };
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
+static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 
 fn init_tracing() {
@@ -954,6 +955,10 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
 }
 
 fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
+    let _guard = QUICK_NOTE_WINDOW_LOCK
+        .lock()
+        .map_err(|_| "failed to lock quick note window state".to_string())?;
+
     if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
         return Ok(window);
     }

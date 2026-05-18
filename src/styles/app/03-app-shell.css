@@ -87,3 +87,27 @@
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 }
+
+@media (max-width: 760px) {
+	.appShell .sidebar {
+		width: 0 !important;
+		min-width: 0;
+		border: 0;
+		overflow: hidden;
+	}
+
+	.appShell .sidebarContentRoot {
+		display: none;
+	}
+
+	.appShell .sidebarResizeHandle {
+		width: 0;
+		margin-left: 0;
+		margin-right: 0;
+		pointer-events: none;
+	}
+
+	.appShell .mainArea {
+		border-left-width: 0;
+	}
+}
