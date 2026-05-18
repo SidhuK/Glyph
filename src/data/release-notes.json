@@ -9,14 +9,18 @@
 						"Pi joins as a first-class agent provider",
 						"Claude joins as a first-class agent provider, running through `claude -p` per Anthropic's terms of service",
 						"Right-click a note in the file tree or Folio to get Show in Finder, which opens Finder with the file selected",
-						"The Mermaid editor embeds a fixed-height canvas in the note, with pan, fit, and Cmd-wheel zoom"
+						"The Mermaid editor embeds a fixed-height canvas in the note, with pan, fit, and Cmd-wheel zoom",
+						"Quick Note can now append to any note in the current space with an in-window folder-grouped picker"
 					]
 				},
 				{
 					"category": "Improved",
 					"items": [
 						"Active TOC dashes shift to the accent color, and the collapsed container drops its extra styling so only the dashes show",
-						"Mermaid renders through beautiful-mermaid with sanitized SVG, and clicking into the source switches between editable text and the rendered diagram"
+						"The file tree Notes header now has expand-all and collapse-all controls for quickly opening or closing every folder",
+						"Mermaid renders through beautiful-mermaid with sanitized SVG, and clicking into the source switches between editable text and the rendered diagram",
+						"The sidebar collapses once the window drops to 760px and stays closed until you make it wider, with the main area expanding to fill the gap",
+						"The expand sidebar button greys out while the window is too narrow to reopen the sidebar"
 					]
 				},
 				{

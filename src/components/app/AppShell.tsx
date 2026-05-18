@@ -92,6 +92,7 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
+const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760;
 export function AppShell() {
 	const space = useSpace();
 	const {
@@ -126,8 +127,8 @@ export function AppShell() {
 		setActiveFilePath,
 	} = fileTreeCtx;
 	const {
-		sidebarCollapsed,
-		setSidebarCollapsed,
+		sidebarCollapsed: sidebarCollapsedState,
+		setSidebarCollapsed: setSidebarCollapsedState,
 		folioMode,
 		paletteOpen,
 		setPaletteOpen,
@@ -167,6 +168,19 @@ export function AppShell() {
 	const [whatsNewVersion, setWhatsNewVersion] =
 		useState<VersionReleaseNotes | null>(null);
 	const autoUpdater = useUpdaterContext();
+	const [sidebarAutoCollapsed, setSidebarAutoCollapsed] = useState(() =>
+		typeof window === "undefined"
+			? false
+			: window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_WIDTH,
+	);
+	const sidebarCollapsed = sidebarCollapsedState || sidebarAutoCollapsed;
+	const setSidebarCollapsed = useCallback(
+		(collapsed: boolean) => {
+			if (!collapsed && sidebarAutoCollapsed) return;
+			setSidebarCollapsedState(collapsed);
+		},
+		[setSidebarCollapsedState, sidebarAutoCollapsed],
+	);
 	const gitSync = useGitSync({
 		spacePath,
 		saveCurrentEditor,
@@ -186,6 +200,25 @@ export function AppShell() {
 		onResize: setSidebarWidth,
 		currentWidth: sidebarWidth,
 	});
+
+	useEffect(() => {
+		const query = window.matchMedia(
+			`(max-width: ${SIDEBAR_AUTO_COLLAPSE_WIDTH}px)`,
+		);
+		const syncSidebarBreakpoint = () => {
+			setSidebarAutoCollapsed(query.matches);
+			if (query.matches) {
+				setSidebarCollapsedState(true);
+			}
+		};
+
+		syncSidebarBreakpoint();
+		query.addEventListener("change", syncSidebarBreakpoint);
+		return () => {
+			query.removeEventListener("change", syncSidebarBreakpoint);
+		};
+	}, [setSidebarCollapsedState]);
+
 	useEffect(() => {
 		let cancelled = false;
 		const idle = window.setTimeout(() => {
@@ -1097,13 +1130,15 @@ export function AppShell() {
 					activateTabByIndex(index);
 				},
 			})),
-			...commands.map((command) => ({
-				id: command.id,
-				shortcut: command.shortcut,
-				enabled: command.enabled,
-				allowInEditable: command.allowInEditable,
-				action: command.action,
-			})),
+			...commands
+				.filter((command) => command.id !== "open-quick-note")
+				.map((command) => ({
+					id: command.id,
+					shortcut: command.shortcut,
+					enabled: command.enabled,
+					allowInEditable: command.allowInEditable,
+					action: command.action,
+				})),
 		],
 		[
 			activateTabByIndex,
@@ -1160,14 +1195,23 @@ export function AppShell() {
 			{sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeIconButton
-						ariaLabel="Expand sidebar"
+						ariaLabel={
+							sidebarAutoCollapsed
+								? "Sidebar hidden while window is narrow"
+								: "Expand sidebar"
+						}
 						ariaPressed={false}
+						disabled={sidebarAutoCollapsed}
 						onClick={() => setSidebarCollapsed(false)}
-						title={`Expand sidebar${
-							toggleSidebarShortcut
-								? ` (${getShortcutTooltip(toggleSidebarShortcut)})`
-								: ""
-						}`}
+						title={
+							sidebarAutoCollapsed
+								? "Widen the window to show the sidebar"
+								: `Expand sidebar${
+										toggleSidebarShortcut
+											? ` (${getShortcutTooltip(toggleSidebarShortcut)})`
+											: ""
+									}`
+						}
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>
@@ -1194,6 +1238,8 @@ export function AppShell() {
 				}
 				onToggleDir={fileTree.toggleDir}
 				onLoadDir={fileTree.loadDir}
+				onExpandAllDirs={fileTree.expandAllDirs}
+				onCollapseAllDirs={fileTree.collapseAllDirs}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}

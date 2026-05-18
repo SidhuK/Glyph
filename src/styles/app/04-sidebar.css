@@ -104,6 +104,16 @@
 	color: var(--text-primary);
 }
 
+.windowChromeSidebarToggle:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+.windowChromeSidebarToggle:disabled:hover {
+	background: transparent;
+	color: var(--text-secondary);
+}
+
 .windowChromeSidebarToggle svg {
 	width: 16px;
 	height: 16px;
@@ -205,6 +215,7 @@
 	gap: 6px;
 	min-height: 22px;
 	padding: 6px 16px 1px;
+	justify-content: space-between;
 	color: var(--text-primary);
 	font-size: var(--text-sm);
 	font-weight: var(--font-normal);
@@ -217,12 +228,14 @@
 	flex-shrink: 0;
 }
 
-button.sidebarStackHeader {
+.sidebarStackHeaderToggle {
 	appearance: none;
 	background: transparent;
 	border: 0;
 	margin: 0;
-	width: 100%;
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0;
 	cursor: pointer;
 	text-align: left;
 	font: inherit;
@@ -230,7 +243,49 @@ button.sidebarStackHeader {
 	font-weight: var(--font-normal);
 	font-size: var(--text-sm);
 	display: flex;
+	align-items: center;
+	gap: 6px;
 	justify-content: flex-start;
+}
+
+.sidebarStackHeaderToggle:hover,
+.sidebarStackHeaderToggle:focus-visible,
+.sidebarStackHeaderToggle:active {
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-primary);
+	outline: none;
+}
+
+.sidebarStackHeaderActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+.sidebarStackHeaderAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition: color var(--transition-fast);
+}
+
+.sidebarStackHeaderAction:hover,
+.sidebarStackHeaderAction:focus-visible,
+.sidebarStackHeaderAction:active {
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-primary);
+	outline: none;
 }
 
 .sidebarStackHeaderChevron {

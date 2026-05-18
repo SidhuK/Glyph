@@ -1,6 +1,7 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
+import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
@@ -11,6 +12,8 @@ import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
+	expandAllDirs: () => Promise<void>;
+	collapseAllDirs: () => void;
 	openFile: (relPath: string) => Promise<void>;
 	openMarkdownFile: (relPath: string) => Promise<void>;
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
@@ -193,6 +196,59 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[evictCollapsedDirState, loadDir, updateExpandedDirsAndRef],
 	);
 
+	const expandAllDirs = useCallback(async () => {
+		if (!spacePath) return;
+		try {
+			setError("");
+			const nextChildrenByDir: Record<string, FsEntry[] | undefined> = {};
+			const nextExpandedDirs = new Set<string>();
+			const loadedDirs = new Set<string>();
+			const pendingDirs = [""];
+
+			for (let index = 0; index < pendingDirs.length; index += 1) {
+				const dirPath = pendingDirs[index];
+				if (dirPath === undefined || loadedDirs.has(dirPath)) continue;
+				const entries = normalizeEntries(
+					await invoke("space_list_dir", dirPath ? { dir: dirPath } : {}),
+				);
+				loadedDirs.add(dirPath);
+				if (dirPath) {
+					nextChildrenByDir[dirPath] = entries;
+				} else {
+					updateRootEntries((prev) =>
+						areEntriesEqual(prev, entries) ? prev : entries,
+					);
+				}
+
+				for (const entry of entries) {
+					if (entry.kind !== "dir") continue;
+					nextExpandedDirs.add(entry.rel_path);
+					pendingDirs.push(entry.rel_path);
+				}
+			}
+
+			updateChildrenByDir(nextChildrenByDir);
+			updateExpandedDirsAndRef(nextExpandedDirs);
+			loadedDirsRef.current = loadedDirs;
+			loadRequestVersionRef.current.clear();
+		} catch (error) {
+			setError(extractErrorMessage(error));
+		}
+	}, [
+		spacePath,
+		setError,
+		updateChildrenByDir,
+		updateExpandedDirsAndRef,
+		updateRootEntries,
+	]);
+
+	const collapseAllDirs = useCallback(() => {
+		updateExpandedDirsAndRef(new Set());
+		updateChildrenByDir({});
+		loadedDirsRef.current = new Set(loadedDirsRef.current.has("") ? [""] : []);
+		loadRequestVersionRef.current.clear();
+	}, [updateChildrenByDir, updateExpandedDirsAndRef]);
+
 	const openMarkdownFile = useCallback(
 		async (relPath: string) => {
 			setError("");
@@ -255,6 +311,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	return {
 		loadDir,
 		toggleDir,
+		expandAllDirs,
+		collapseAllDirs,
 		openFile,
 		openMarkdownFile,
 		openNonMarkdownExternally,

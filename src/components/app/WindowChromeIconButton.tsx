@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 interface WindowChromeIconButtonProps {
 	ariaLabel: string;
 	ariaPressed?: boolean;
+	disabled?: boolean;
 	onClick: () => void;
 	title: string;
 	children: ReactNode;
@@ -11,6 +12,7 @@ interface WindowChromeIconButtonProps {
 export function WindowChromeIconButton({
 	ariaLabel,
 	ariaPressed,
+	disabled = false,
 	onClick,
 	title,
 	children,
@@ -22,6 +24,7 @@ export function WindowChromeIconButton({
 			className="windowChromeSidebarToggle"
 			aria-label={ariaLabel}
 			aria-pressed={ariaPressed}
+			disabled={disabled}
 			data-window-drag-ignore
 			onClick={onClick}
 			title={title}
