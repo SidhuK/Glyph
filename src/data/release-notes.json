@@ -6,35 +6,35 @@
 				{
 					"category": "Added",
 					"items": [
-						"Pi joins as a first-class agent provider",
-						"Claude joins as a first-class agent provider, running through `claude -p` per Anthropic's terms of service",
-						"Right-click a note in the file tree or Folio to get Show in Finder, which opens Finder with the file selected",
-						"The Mermaid editor embeds a fixed-height canvas in the note, with pan, fit, and Cmd-wheel zoom",
-						"Quick Note can now append to any note in the current space with an in-window folder-grouped picker"
+						"Added Pi as an agent provider",
+						"Added Claude as an agent provider through `claude -p`, following Anthropic's terms of service",
+						"Added Show in Finder to note context menus in the file tree and Folio",
+						"Added an embedded Mermaid canvas with pan, fit, and Cmd-wheel zoom",
+						"Quick Note can append to any note in the current space from a folder-grouped picker"
 					]
 				},
 				{
 					"category": "Improved",
 					"items": [
-						"Active TOC dashes shift to the accent color, and the collapsed container drops its extra styling so only the dashes show",
-						"The file tree Notes header now has expand-all and collapse-all controls for quickly opening or closing every folder",
-						"Mermaid renders through beautiful-mermaid with sanitized SVG, and clicking into the source switches between editable text and the rendered diagram",
-						"The sidebar collapses once the window drops to 760px and stays closed until you make it wider, with the main area expanding to fill the gap",
-						"The expand sidebar button greys out while the window is too narrow to reopen the sidebar"
+						"Active TOC dashes now use the accent color, and the collapsed TOC shows only the dashes",
+						"The file tree Notes header now includes expand-all and collapse-all controls",
+						"Mermaid now renders sanitized SVG through beautiful-mermaid and switches between source and preview when you click the block",
+						"The sidebar now collapses below 760px and gives the main area the freed space",
+						"The expand-sidebar button now disables while the window is too narrow to reopen the sidebar"
 					]
 				},
 				{
 					"category": "Fixed",
 					"items": [
-						"The floating TOC tracks the active heading as you scroll through a note",
-						"Delete and Backspace trigger the confirmation flow for focused files and folders in the sidebar tree, folders in the Folio sidebar, and selected notes in Folio mode, while leaving text inputs and rename fields alone",
-						"The file tree highlights the open file without lighting up its parent folder"
+						"The floating TOC now follows the active heading while you scroll",
+						"Delete and Backspace now open the confirmation flow for focused files, folders, and selected Folio notes without affecting text inputs or rename fields",
+						"The file tree now highlights the open file without also highlighting its parent folder"
 					]
 				},
 				{
 					"category": "Removed",
 					"items": [
-						"The Mermaid Play/Stop overlay and the bundled mermaid package"
+						"Removed the Mermaid Play/Stop overlay and bundled mermaid package"
 					]
 				}
 			]
