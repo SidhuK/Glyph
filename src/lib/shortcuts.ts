@@ -24,7 +24,7 @@ export function normalizeShortcut(shortcut: Shortcut): Shortcut {
 	};
 }
 
-export function hasShortcutModifiers(shortcut: Shortcut): boolean {
+function hasShortcutModifiers(shortcut: Shortcut): boolean {
 	return Boolean(shortcut.meta || shortcut.ctrl || shortcut.alt);
 }
 

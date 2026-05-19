@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type NoteTaskSummary, invoke } from "../lib/tauri";
 
-export const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
+const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	total_count: 0,
 	completed_count: 0,
 	open_count: 0,
 };
 
-export function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
+function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
 	let total_count = 0;
 	let completed_count = 0;
 

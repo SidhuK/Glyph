@@ -1,4 +1,4 @@
-export const RELEASE_NOTE_CATEGORIES = [
+const RELEASE_NOTE_CATEGORIES = [
 	"Added",
 	"Improved",
 	"Fixed",

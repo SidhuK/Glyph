@@ -1,18 +1,8 @@
 import { useDraggable } from "@dnd-kit/react";
-import {
-	Copy01Icon,
-	DocumentCodeIcon,
-	FileViewIcon,
-	FolderOpenIcon,
-	PencilEdit02Icon,
-	PinIcon,
-	PinOffIcon,
-	TableIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import type { KeyboardEvent, MutableRefObject } from "react";
+import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { invoke } from "../../lib/tauri";
 import type {
 	FileTreeAppearance,
@@ -20,18 +10,9 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
-import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "../ui/shadcn/context-menu";
-import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
@@ -42,6 +23,7 @@ import {
 	rowVariants,
 	springTransition,
 } from "./fileTreeItemHelpers";
+import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "./fileTypeUtils";
 
 const DEFAULT_MOVE_CLICK_SUPPRESS_REF: MutableRefObject<boolean> = {
@@ -227,6 +209,75 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			console.error("Failed to show file in Finder", error);
 		}
 	}, [entry.rel_path]);
+	const handleContextMenu = useCallback(
+		(event: MouseEvent) => {
+			void showNativeContextMenu(event, [
+				{
+					label: "Open",
+					action: () => void onOpenFile(entry.rel_path),
+				},
+				{
+					label: "Show in Finder",
+					action: () => void handleRevealInFinder(),
+				},
+				{ type: "separator" },
+				{
+					label: "Rename",
+					action: onStartRename,
+				},
+				{
+					label: "Duplicate file",
+					action: () => void onDuplicateFile(entry.rel_path),
+				},
+				{
+					label: isPinned ? "Unpin file" : "Pin file",
+					action: () => void onTogglePinned(entry.rel_path),
+				},
+				fileTreeAppearanceNativeMenu("file", appearance, onChangeAppearance),
+				{ type: "separator" },
+				{
+					label: "Add file",
+					action: () => void onNewFileInDir(parentDirPath),
+				},
+				{
+					label: "Create from template",
+					action: () => void onCreateFromTemplateInDir(parentDirPath),
+				},
+				{
+					label: "Add database",
+					action: () => void onNewDatabaseInDir(parentDirPath),
+				},
+				{
+					label: "Add folder",
+					action: () => void onNewFolderInDir(parentDirPath),
+				},
+				{ type: "separator" },
+				{
+					label: "Delete file",
+					action: () => onDeletePath(entry.rel_path, "file"),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show file context menu", error);
+			});
+		},
+		[
+			appearance,
+			entry.rel_path,
+			handleRevealInFinder,
+			isPinned,
+			onChangeAppearance,
+			onCreateFromTemplateInDir,
+			onDeletePath,
+			onDuplicateFile,
+			onNewDatabaseInDir,
+			onNewFileInDir,
+			onNewFolderInDir,
+			onOpenFile,
+			onStartRename,
+			onTogglePinned,
+			parentDirPath,
+		],
+	);
 
 	return (
 		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
@@ -249,175 +300,62 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						/>
 					</div>
 				) : (
-					<ContextMenu>
-						<ContextMenuTrigger asChild>
-							<m.button
-								ref={setRowRef}
-								type="button"
-								className={
-									previewText ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"
-								}
-								onClick={() => {
-									if (onMoveClickSuppressRef.current) return;
-									onOpenFile(entry.rel_path);
-								}}
-								onMouseEnter={() => onPrefetchFile?.(entry.rel_path)}
-								onFocus={() => onPrefetchFile?.(entry.rel_path)}
-								onKeyDown={handleKeyDown}
-								style={rowStyle}
-								title={`${entry.rel_path} (${label})`}
-								variants={rowVariants}
-								whileHover="hover"
-								whileTap="tap"
-								animate={isActive ? "active" : "idle"}
-								transition={springTransition}
-								data-draggable="true"
-								data-dragging={isDragging ? "true" : undefined}
-								data-has-custom-color={customColor ? "true" : "false"}
-								data-file-tree-file="true"
-								data-file-tree-kind="file"
-								data-file-tree-path={entry.rel_path}
-							>
-								{appearance?.icon ? (
-									<DatabaseColumnIcon
-										iconName={appearance.icon}
-										size={14}
-										className="fileTreeIcon"
-									/>
-								) : (
-									<Icon
-										size={14}
-										className="fileTreeIcon"
-										style={{ color: iconColor }}
-										aria-hidden="true"
-									/>
-								)}
-								<span className="fileTreeFileText">
-									<span className="fileTreeName">{displayStem}</span>
-									{previewText ? (
-										<span className="fileTreeFilePreview">{previewText}</span>
-									) : null}
-								</span>
-								{taskSummary && taskSummary.total_count > 0 ? (
-									<TaskProgressIndicator
-										summary={taskSummary}
-										className="fileTreeTaskProgress"
-									/>
-								) : null}
-								{extBadge && (
-									<span className="fileTreeExtBadge">{extBadge}</span>
-								)}
-							</m.button>
-						</ContextMenuTrigger>
-						<ContextMenuContent
-							className="fileTreeCreateMenu"
-							onCloseAutoFocus={(event) => event.preventDefault()}
-						>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onOpenFile(entry.rel_path)}
-							>
-								<HugeiconsIcon
-									icon={FileViewIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Open
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void handleRevealInFinder()}
-							>
-								<HugeiconsIcon
-									icon={FolderOpenIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Show in Finder
-							</ContextMenuItem>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={onStartRename}
-							>
-								<HugeiconsIcon
-									icon={PencilEdit02Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Rename
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onDuplicateFile(entry.rel_path)}
-							>
-								<HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={0.9} />
-								Duplicate file
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onTogglePinned(entry.rel_path)}
-							>
-								<HugeiconsIcon
-									icon={isPinned ? PinOffIcon : PinIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								{isPinned ? "Unpin file" : "Pin file"}
-							</ContextMenuItem>
-							<FileTreeAppearanceMenu
-								itemKind="file"
-								appearance={appearance}
-								onChangeAppearance={onChangeAppearance}
+					<m.button
+						ref={setRowRef}
+						type="button"
+						className={
+							previewText ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"
+						}
+						onClick={() => {
+							if (onMoveClickSuppressRef.current) return;
+							onOpenFile(entry.rel_path);
+						}}
+						onContextMenu={handleContextMenu}
+						onMouseEnter={() => onPrefetchFile?.(entry.rel_path)}
+						onFocus={() => onPrefetchFile?.(entry.rel_path)}
+						onKeyDown={handleKeyDown}
+						style={rowStyle}
+						title={`${entry.rel_path} (${label})`}
+						variants={rowVariants}
+						whileHover="hover"
+						whileTap="tap"
+						animate={isActive ? "active" : "idle"}
+						transition={springTransition}
+						data-draggable="true"
+						data-dragging={isDragging ? "true" : undefined}
+						data-has-custom-color={customColor ? "true" : "false"}
+						data-file-tree-file="true"
+						data-file-tree-kind="file"
+						data-file-tree-path={entry.rel_path}
+					>
+						{appearance?.icon ? (
+							<DatabaseColumnIcon
+								iconName={appearance.icon}
+								size={14}
+								className="fileTreeIcon"
 							/>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFileInDir(parentDirPath)}
-							>
-								<HugeiconsIcon
-									icon={PencilEdit02Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Add file
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onCreateFromTemplateInDir(parentDirPath)}
-							>
-								<HugeiconsIcon
-									icon={DocumentCodeIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Create from template
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewDatabaseInDir(parentDirPath)}
-							>
-								<HugeiconsIcon icon={TableIcon} size={14} strokeWidth={0.9} />
-								Add database
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFolderInDir(parentDirPath)}
-							>
-								<FolderPlus size={14} />
-								Add folder
-							</ContextMenuItem>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								variant="destructive"
-								className="fileTreeCreateMenuItem"
-								onSelect={() => onDeletePath(entry.rel_path, "file")}
-							>
-								<Trash2 size={14} />
-								Delete file
-							</ContextMenuItem>
-						</ContextMenuContent>
-					</ContextMenu>
+						) : (
+							<Icon
+								size={14}
+								className="fileTreeIcon"
+								style={{ color: iconColor }}
+								aria-hidden="true"
+							/>
+						)}
+						<span className="fileTreeFileText">
+							<span className="fileTreeName">{displayStem}</span>
+							{previewText ? (
+								<span className="fileTreeFilePreview">{previewText}</span>
+							) : null}
+						</span>
+						{taskSummary && taskSummary.total_count > 0 ? (
+							<TaskProgressIndicator
+								summary={taskSummary}
+								className="fileTreeTaskProgress"
+							/>
+						) : null}
+						{extBadge && <span className="fileTreeExtBadge">{extBadge}</span>}
+					</m.button>
 				)}
 			</div>
 		</li>

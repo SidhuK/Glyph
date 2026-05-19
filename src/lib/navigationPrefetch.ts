@@ -397,7 +397,7 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 	return null;
 }
 
-export function upsertAllDocsPrefetchItem(item: AllDocsItem) {
+function upsertAllDocsPrefetchItem(item: AllDocsItem) {
 	const normalizedPath = normalizeAllDocsPath(item.note_path);
 	if (!normalizedPath) return;
 	updateAllDocsListCaches((current, folderKey) => {

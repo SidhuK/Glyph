@@ -80,14 +80,3 @@ export function formatResetDuration(
 	if (resetEpochMs <= nowMs) return "Reset reached";
 	return formatCountdown(resetEpochMs, nowMs);
 }
-
-export function formatResetMessage(
-	timestamp: number | null,
-	nowMs: number,
-): string {
-	const resetDuration = formatResetDuration(timestamp, nowMs);
-	return resetDuration === "Reset time unavailable" ||
-		resetDuration === "Reset reached"
-		? resetDuration
-		: `Resets in ${resetDuration}`;
-}

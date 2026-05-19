@@ -531,44 +531,6 @@
 	}
 }
 
-.databaseBoardContextMenu {
-	min-width: 172px;
-	width: max-content;
-	max-width: min(220px, calc(100vw - 24px));
-	max-height: min(320px, calc(100vh - 24px));
-	padding: var(--database-dropdown-padding);
-	border-radius: var(--database-dropdown-radius);
-	border: 1px solid var(--database-dropdown-border);
-	background: var(--database-dropdown-background);
-	box-shadow: var(--database-dropdown-shadow);
-}
-
-.databaseBoardContextMenuItem {
-	display: flex;
-	align-items: center;
-	max-width: 100%;
-	min-height: 32px;
-	gap: 8px;
-	padding: 0 10px;
-	overflow: hidden;
-	border-radius: var(--database-control-radius);
-	font-size: 0.82rem;
-	color: var(--text-secondary);
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.databaseBoardContextMenuItem[data-highlighted],
-.databaseBoardContextMenuItem:focus-visible {
-	background: var(--database-dropdown-hover);
-	color: var(--text-primary);
-	outline: none;
-}
-
-.databaseBoardContextMenuItem svg {
-	opacity: 0.6;
-}
-
 .databaseBoardContextMenuSeparator {
 	margin: 6px 4px;
 	background: color-mix(in srgb, var(--border-light) 72%, transparent);

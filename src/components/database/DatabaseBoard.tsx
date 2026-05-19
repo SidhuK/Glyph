@@ -15,6 +15,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import {
+	type MouseEvent,
 	type MutableRefObject,
 	type ReactNode,
 	useCallback,
@@ -35,6 +36,7 @@ import { formatDatabaseDateTime } from "../../lib/database/config";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { statusToneStyle } from "../../lib/statusProperties";
 import type { NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
@@ -47,13 +49,6 @@ import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "../ui/shadcn/context-menu";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -190,6 +185,23 @@ function DatabaseBoardLaneView({
 		data: { laneId: lane.id },
 		accept: "database-board-card",
 	});
+	const handleLaneContextMenu = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
+
+			void showNativeContextMenu(
+				event,
+				reorderableLanes.map((targetLane, index) => ({
+					label: `Position ${index + 1}: ${targetLane.label}`,
+					enabled: targetLane.id !== lane.id,
+					action: () => moveLaneToIndex(lane.id, index),
+				})),
+			).catch((error: unknown) => {
+				console.error("Failed to show board lane context menu", error);
+			});
+		},
+		[lane.id, moveLaneToIndex, reorderableLanes],
+	);
 
 	return (
 		<m.div
@@ -285,41 +297,20 @@ function DatabaseBoardLaneView({
 					</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
-					<ContextMenu>
-						<ContextMenuTrigger asChild>
-							<button
-								type="button"
-								className="databaseBoardLaneHandle"
-								disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-								aria-label={`Reorder ${lane.label} column`}
-								title={
-									lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-										? "No value stays last"
-										: `Right-click to move ${lane.label}`
-								}
-							>
-								<span className="databaseBoardLaneHandleDots" />
-							</button>
-						</ContextMenuTrigger>
-						{lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? (
-							<ContextMenuContent className="databaseBoardContextMenu">
-								<div className="databaseBoardMoveLabel">Move column to</div>
-								{reorderableLanes.map((targetLane, index) => {
-									const isCurrentLane = targetLane.id === lane.id;
-									return (
-										<ContextMenuItem
-											key={`${lane.id}:position:${targetLane.id}`}
-											className="databaseBoardContextMenuItem"
-											disabled={isCurrentLane}
-											onSelect={() => moveLaneToIndex(lane.id, index)}
-										>
-											Position {index + 1}: {targetLane.label}
-										</ContextMenuItem>
-									);
-								})}
-							</ContextMenuContent>
-						) : null}
-					</ContextMenu>
+					<button
+						type="button"
+						className="databaseBoardLaneHandle"
+						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
+						aria-label={`Reorder ${lane.label} column`}
+						title={
+							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+								? "No value stays last"
+								: `Right-click to move ${lane.label}`
+						}
+						onContextMenu={handleLaneContextMenu}
+					>
+						<span className="databaseBoardLaneHandleDots" />
+					</button>
 				</div>
 			</div>
 			<div className="databaseBoardLaneBody">{children}</div>
@@ -334,6 +325,7 @@ interface DatabaseBoardCardViewProps {
 	suppressClickRef: MutableRefObject<boolean>;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
+	onContextMenu: (event: MouseEvent<HTMLButtonElement>) => void;
 	children: ReactNode;
 }
 
@@ -344,6 +336,7 @@ function DatabaseBoardCardView({
 	suppressClickRef,
 	onSelectRow,
 	onOpenRow,
+	onContextMenu,
 	children,
 }: DatabaseBoardCardViewProps) {
 	const dragId = boardCardDragId(row.note_path, laneId);
@@ -365,32 +358,31 @@ function DatabaseBoardCardView({
 	);
 
 	return (
-		<ContextMenuTrigger asChild>
-			<button
-				ref={setCardRef}
-				type="button"
-				className="databaseBoardCard"
-				data-state={selected ? "selected" : undefined}
-				data-dragging={isDragging ? "true" : undefined}
-				onClick={() => {
-					if (suppressClickRef.current) return;
+		<button
+			ref={setCardRef}
+			type="button"
+			className="databaseBoardCard"
+			data-state={selected ? "selected" : undefined}
+			data-dragging={isDragging ? "true" : undefined}
+			onClick={() => {
+				if (suppressClickRef.current) return;
+				onSelectRow(row.note_path);
+			}}
+			onContextMenu={onContextMenu}
+			onDoubleClick={() => onOpenRow(row.note_path)}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					onOpenRow(row.note_path);
+				} else if (event.key === " ") {
+					event.preventDefault();
 					onSelectRow(row.note_path);
-				}}
-				onDoubleClick={() => onOpenRow(row.note_path)}
-				onKeyDown={(event) => {
-					if (event.key === "Enter") {
-						event.preventDefault();
-						onOpenRow(row.note_path);
-					} else if (event.key === " ") {
-						event.preventDefault();
-						onSelectRow(row.note_path);
-					}
-				}}
-				title="Double-click to open note"
-			>
-				{children}
-			</button>
-		</ContextMenuTrigger>
+				}
+			}}
+			title="Double-click to open note"
+		>
+			{children}
+		</button>
 	);
 }
 
@@ -586,114 +578,109 @@ export function DatabaseBoard({
 											);
 
 											return (
-												<ContextMenu key={row.note_path}>
-													<DatabaseBoardCardView
-														row={row}
-														laneId={lane.id}
-														selected={row.note_path === selectedRowPath}
-														suppressClickRef={suppressClickRef}
-														onSelectRow={onSelectRow}
-														onOpenRow={onOpenRow}
-													>
-														<div className="databaseBoardCardHead">
-															<div className="databaseBoardCardHeaderRow">
-																<span className="databaseBoardCardTitle">
-																	{title}
-																</span>
-																<div className="databaseBoardCardTitleMeta">
-																	<span
-																		className="databaseBoardCardTimestamp"
-																		title={`Updated ${updatedLabel}`}
-																	>
-																		<HugeiconsIcon
-																			icon={Calendar03Icon}
-																			size={10}
-																			strokeWidth={1}
-																			aria-hidden="true"
-																		/>
-																		{compactUpdatedLabel}
-																	</span>
-																</div>
-																{showTaskProgressIndicator &&
-																taskSummary.total_count > 0 ? (
-																	<TaskProgressIndicator
-																		summary={taskSummary}
-																		className="databaseBoardCardTaskProgress"
-																	/>
-																) : null}
-															</div>
-														</div>
-														{visibleTags.length > 0 ? (
-															<div className="databaseBoardCardTags">
-																{visibleTags.map((tag) => (
-																	<span
-																		key={`${row.note_path}:${tag}`}
-																		className="databaseBoardTag"
-																		title={formatDatabaseTagLabel(tag)}
-																	>
-																		<HugeiconsIcon
-																			icon={Tag01Icon}
-																			className="databaseTagPillIcon"
-																			size={11}
-																			strokeWidth={1.2}
-																		/>
-																		{formatDatabaseTagLabel(tag)}
-																	</span>
-																))}
-																{extraTagCount > 0 ? (
-																	<span className="databaseBoardTag is-muted">
-																		+{extraTagCount}
-																	</span>
-																) : null}
-															</div>
-														) : null}
-														<div className="databaseBoardCardFooter">
-															<span
-																className="databaseBoardCardPath"
-																title={folderLabel}
-															>
-																<HugeiconsIcon
-																	icon={Folder03Icon}
-																	size={10}
-																	strokeWidth={1}
-																	aria-hidden="true"
-																/>
-																{folderLabel}
+												<DatabaseBoardCardView
+													key={row.note_path}
+													row={row}
+													laneId={lane.id}
+													selected={row.note_path === selectedRowPath}
+													suppressClickRef={suppressClickRef}
+													onSelectRow={onSelectRow}
+													onOpenRow={onOpenRow}
+													onContextMenu={(event) => {
+														void showNativeContextMenu(event, [
+															{
+																label: "Open note",
+																action: () => onOpenRow(row.note_path),
+															},
+															...(otherLanes.length > 0
+																? [
+																		{ type: "separator" as const },
+																		...otherLanes.map((targetLane) => ({
+																			label: `Move to ${targetLane.label}`,
+																			action: () =>
+																				void handleLaneDrop(
+																					row.note_path,
+																					targetLane.id,
+																					lane.id,
+																				),
+																		})),
+																	]
+																: []),
+														]).catch((error: unknown) => {
+															console.error(
+																"Failed to show board card context menu",
+																error,
+															);
+														});
+													}}
+												>
+													<div className="databaseBoardCardHead">
+														<div className="databaseBoardCardHeaderRow">
+															<span className="databaseBoardCardTitle">
+																{title}
 															</span>
+															<div className="databaseBoardCardTitleMeta">
+																<span
+																	className="databaseBoardCardTimestamp"
+																	title={`Updated ${updatedLabel}`}
+																>
+																	<HugeiconsIcon
+																		icon={Calendar03Icon}
+																		size={10}
+																		strokeWidth={1}
+																		aria-hidden="true"
+																	/>
+																	{compactUpdatedLabel}
+																</span>
+															</div>
+															{showTaskProgressIndicator &&
+															taskSummary.total_count > 0 ? (
+																<TaskProgressIndicator
+																	summary={taskSummary}
+																	className="databaseBoardCardTaskProgress"
+																/>
+															) : null}
 														</div>
-													</DatabaseBoardCardView>
-													<ContextMenuContent className="databaseBoardContextMenu">
-														<ContextMenuItem
-															className="databaseBoardContextMenuItem"
-															onSelect={() => onOpenRow(row.note_path)}
+													</div>
+													{visibleTags.length > 0 ? (
+														<div className="databaseBoardCardTags">
+															{visibleTags.map((tag) => (
+																<span
+																	key={`${row.note_path}:${tag}`}
+																	className="databaseBoardTag"
+																	title={formatDatabaseTagLabel(tag)}
+																>
+																	<HugeiconsIcon
+																		icon={Tag01Icon}
+																		className="databaseTagPillIcon"
+																		size={11}
+																		strokeWidth={1.2}
+																	/>
+																	{formatDatabaseTagLabel(tag)}
+																</span>
+															))}
+															{extraTagCount > 0 ? (
+																<span className="databaseBoardTag is-muted">
+																	+{extraTagCount}
+																</span>
+															) : null}
+														</div>
+													) : null}
+													<div className="databaseBoardCardFooter">
+														<span
+															className="databaseBoardCardPath"
+															title={folderLabel}
 														>
-															Open note
-														</ContextMenuItem>
-														{otherLanes.length > 0 ? (
-															<>
-																<ContextMenuSeparator className="databaseBoardContextMenuSeparator" />
-																<div className="databaseBoardMoveLabel">
-																	Move to
-																</div>
-																{otherLanes.map((targetLane) => (
-																	<ContextMenuItem
-																		className="databaseBoardContextMenuItem"
-																		key={targetLane.id}
-																		onSelect={() =>
-																			void handleLaneDrop(
-																				row.note_path,
-																				targetLane.id,
-																				lane.id,
-																			)
-																		}
-																	>
-																		{targetLane.label}
-																	</ContextMenuItem>
-																))}
-															</>
-														) : null}
-													</ContextMenuContent>
-												</ContextMenu>
+															<HugeiconsIcon
+																icon={Folder03Icon}
+																size={10}
+																strokeWidth={1}
+																aria-hidden="true"
+															/>
+															{folderLabel}
+														</span>
+													</div>
+												</DatabaseBoardCardView>
 											);
 										})
 									) : (

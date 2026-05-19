@@ -1,6 +1,6 @@
 import type { GitSyncStatus } from "./tauri";
 
-export type GitSyncTone =
+type GitSyncTone =
 	| "idle"
 	| "healthy"
 	| "syncing"

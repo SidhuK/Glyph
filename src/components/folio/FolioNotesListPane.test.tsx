@@ -70,32 +70,6 @@ vi.mock("../../hooks/useTaskSummariesForPaths", () => ({
 	useTaskSummariesForPaths: () => taskSummariesRef.current,
 }));
 
-vi.mock("../ui/shadcn/context-menu", () => ({
-	ContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	ContextMenuTrigger: ({ children }: { children: React.ReactNode }) => (
-		<>{children}</>
-	),
-	ContextMenuContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuItem: ({
-		children,
-		onSelect,
-	}: {
-		children: React.ReactNode;
-		onSelect?: () => void;
-	}) => (
-		<button type="button" onClick={onSelect}>
-			{children}
-		</button>
-	),
-	ContextMenuSeparator: () => <hr />,
-}));
-
-vi.mock("../filetree/FileTreeAppearanceMenu", () => ({
-	FileTreeAppearanceMenu: () => null,
-}));
-
 (
 	globalThis as typeof globalThis & {
 		IS_REACT_ACT_ENVIRONMENT?: boolean;

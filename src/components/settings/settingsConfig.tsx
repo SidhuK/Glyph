@@ -30,7 +30,7 @@ export interface SettingsTabMeta {
 	badgeIcon?: () => ReactElement;
 }
 
-export interface SettingsTabGroup {
+interface SettingsTabGroup {
 	id: string;
 	label: string;
 	tabs: SettingsTabMeta[];

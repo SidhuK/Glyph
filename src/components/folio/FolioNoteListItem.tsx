@@ -1,5 +1,6 @@
 import {
 	type CSSProperties,
+	type MouseEvent,
 	memo,
 	useCallback,
 	useEffect,
@@ -8,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, parentDir, splitEditableFileName } from "../../utils/path";
@@ -17,16 +19,9 @@ import {
 	getEditorTextColorOption,
 	isEditorTextColor,
 } from "../editor/textColors";
-import { FileTreeAppearanceMenu } from "../filetree/FileTreeAppearanceMenu";
+import { fileTreeAppearanceNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "../ui/shadcn/context-menu";
 import type { FolioItem } from "./useFolioNotes";
 
 interface FolioNoteListItemProps {
@@ -369,6 +364,53 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 			console.error("Failed to show file in Finder", error);
 		}
 	}, [note.note_path]);
+	const handleContextMenu = useCallback(
+		(event: MouseEvent) => {
+			void showNativeContextMenu(event, [
+				{
+					label: "Open",
+					action: () => onOpen(note.note_path),
+				},
+				{
+					label: "Open in New Tab",
+					action: () => onOpenInNewTab(note.note_path),
+				},
+				{
+					label: "Show in Finder",
+					action: () => void handleRevealInFinder(),
+				},
+				{ type: "separator" },
+				...(onRename
+					? [
+							{
+								label: "Rename",
+								action: () => onRename(note.note_path),
+							},
+						]
+					: []),
+				fileTreeAppearanceNativeMenu("file", appearance, (nextAppearance) =>
+					onChangeAppearance(note.note_path, nextAppearance),
+				),
+				{ type: "separator" },
+				{
+					label: "Delete",
+					action: () => onDelete(note.note_path),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show folio context menu", error);
+			});
+		},
+		[
+			appearance,
+			handleRevealInFinder,
+			note.note_path,
+			onChangeAppearance,
+			onDelete,
+			onOpen,
+			onOpenInNewTab,
+			onRename,
+		],
+	);
 	const leadingIcon = appearance?.icon ? (
 		<DatabaseColumnIcon
 			iconName={appearance.icon}
@@ -452,96 +494,47 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 					{isMarkdown ? rowDetails : fileDetails}
 				</div>
 			) : (
-				<ContextMenu>
-					<ContextMenuTrigger asChild>
-						<button
-							type="button"
-							className="folioNoteRow"
-							data-state={selected ? "selected" : "idle"}
-							data-kind={isMarkdown ? "markdown" : "file"}
-							data-folio-note-path={note.note_path}
-							aria-current={selected ? "page" : undefined}
-							onClick={(event) => {
-								if (event.metaKey || event.ctrlKey) {
-									onOpenInNewTab(note.note_path);
-									return;
-								}
-								onOpen(note.note_path);
-							}}
-							onDoubleClick={() => onOpenInNewTab(note.note_path)}
-							onAuxClick={(event) => {
-								if (event.button === 1) onOpenInNewTab(note.note_path);
-							}}
-							onMouseEnter={() => {
-								if (isMarkdown) onPrefetch(note.note_path);
-							}}
-							onFocus={() => {
-								onFocus();
-								if (isMarkdown) onPrefetch(note.note_path);
-							}}
-							title={note.note_path}
-							style={rowStyle}
-						>
-							{isMarkdown ? (
-								<>
-									<span className="folioNoteRowTop">
-										<span className="folioNoteTitle">{title}</span>
-										{taskProgress}
-									</span>
-									{rowDetails}
-								</>
-							) : (
-								fileDetails
-							)}
-						</button>
-					</ContextMenuTrigger>
-					<ContextMenuContent
-						className="fileTreeCreateMenu"
-						onCloseAutoFocus={(event) => event.preventDefault()}
-					>
-						<ContextMenuItem
-							className="fileTreeCreateMenuItem"
-							onSelect={() => onOpen(note.note_path)}
-						>
-							Open
-						</ContextMenuItem>
-						<ContextMenuItem
-							className="fileTreeCreateMenuItem"
-							onSelect={() => onOpenInNewTab(note.note_path)}
-						>
-							Open in New Tab
-						</ContextMenuItem>
-						<ContextMenuItem
-							className="fileTreeCreateMenuItem"
-							onSelect={() => void handleRevealInFinder()}
-						>
-							Show in Finder
-						</ContextMenuItem>
-						<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-						{onRename ? (
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => onRename(note.note_path)}
-							>
-								Rename
-							</ContextMenuItem>
-						) : null}
-						<FileTreeAppearanceMenu
-							itemKind="file"
-							appearance={appearance}
-							onChangeAppearance={(nextAppearance) =>
-								onChangeAppearance(note.note_path, nextAppearance)
-							}
-						/>
-						<ContextMenuItem
-							variant="destructive"
-							className="fileTreeCreateMenuItem"
-							onSelect={() => onDelete(note.note_path)}
-						>
-							Delete
-						</ContextMenuItem>
-					</ContextMenuContent>
-				</ContextMenu>
+				<button
+					type="button"
+					className="folioNoteRow"
+					data-state={selected ? "selected" : "idle"}
+					data-kind={isMarkdown ? "markdown" : "file"}
+					data-folio-note-path={note.note_path}
+					aria-current={selected ? "page" : undefined}
+					onClick={(event) => {
+						if (event.metaKey || event.ctrlKey) {
+							onOpenInNewTab(note.note_path);
+							return;
+						}
+						onOpen(note.note_path);
+					}}
+					onContextMenu={handleContextMenu}
+					onDoubleClick={() => onOpenInNewTab(note.note_path)}
+					onAuxClick={(event) => {
+						if (event.button === 1) onOpenInNewTab(note.note_path);
+					}}
+					onMouseEnter={() => {
+						if (isMarkdown) onPrefetch(note.note_path);
+					}}
+					onFocus={() => {
+						onFocus();
+						if (isMarkdown) onPrefetch(note.note_path);
+					}}
+					title={note.note_path}
+					style={rowStyle}
+				>
+					{isMarkdown ? (
+						<>
+							<span className="folioNoteRowTop">
+								<span className="folioNoteTitle">{title}</span>
+								{taskProgress}
+							</span>
+							{rowDetails}
+						</>
+					) : (
+						fileDetails
+					)}
+				</button>
 			)}
 		</li>
 	);

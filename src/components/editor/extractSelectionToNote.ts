@@ -84,10 +84,7 @@ function truncateTitle(value: string): string {
 	return normalized.slice(0, MAX_TITLE_LENGTH).trim();
 }
 
-export function suggestExtractedNoteTitle(
-	markdown: string,
-	text: string,
-): string {
+function suggestExtractedNoteTitle(markdown: string, text: string): string {
 	const heading = markdown.match(/^#{1,6}\s+(.+)$/m)?.[1];
 	if (heading) {
 		const title = truncateTitle(stripInlineMarkdown(heading));

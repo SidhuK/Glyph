@@ -1,8 +1,3 @@
-export const loadAIAgentPane = () =>
-	import("../ai/AIAgentPane").then((module) => ({
-		default: module.AIAgentPane,
-	}));
-
 export const loadDatabasesPane = () =>
 	import("../databases/DatabasesPane").then((module) => ({
 		default: module.DatabasesPane,

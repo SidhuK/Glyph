@@ -94,7 +94,7 @@ const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
 	"comfortable",
 	"wide",
 ]);
-export type TaskSourceMode = "space" | "folders";
+type TaskSourceMode = "space" | "folders";
 export interface OnboardingSettings {
 	launcherSeen: boolean;
 	starterDismissed: boolean;
@@ -111,20 +111,20 @@ export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 	openedDailyNote: false,
 };
 
-export interface TaskSourceSetting {
+interface TaskSourceSetting {
 	mode: TaskSourceMode;
 	folders: string[];
 }
 
-export interface DatabaseSettings {
+interface DatabaseSettings {
 	showColumnColor: boolean;
 }
 
-export interface QuickNotesSettings {
+interface QuickNotesSettings {
 	folder: string;
 }
 
-export interface EditorSettings {
+interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
@@ -135,7 +135,7 @@ export interface EditorSettings {
 	vimKeybindings: boolean;
 }
 
-export interface FileTreeSettings {
+interface FileTreeSettings {
 	showFolderFileCounts: boolean;
 }
 
@@ -546,7 +546,7 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	};
 }
 
-export function normalizeQuickNotesFolder(value: unknown): string {
+function normalizeQuickNotesFolder(value: unknown): string {
 	if (typeof value !== "string") return DEFAULT_QUICK_NOTES_FOLDER;
 	const normalized = normalizeRelPath(value);
 	return normalized || DEFAULT_QUICK_NOTES_FOLDER;
@@ -1155,11 +1155,6 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
-}
-
-export async function getQuickNotesFolder(): Promise<string> {
-	const settings = await loadSettings();
-	return settings.quickNotes.folder;
 }
 
 export async function setQuickNotesFolder(folder: string): Promise<void> {

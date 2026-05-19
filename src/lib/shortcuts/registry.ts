@@ -1,13 +1,11 @@
 import {
 	type AppCommandDefinition,
 	type CommandCategory,
-	type CommandContext,
 	listCommandDefinitions,
 } from "../commands/commandManifest";
 
 export type ShortcutActionId = string;
 export type ShortcutCategory = CommandCategory;
-export type ShortcutContext = CommandContext;
 
 export interface ShortcutActionDefinition extends AppCommandDefinition {
 	id: ShortcutActionId;
@@ -46,8 +44,4 @@ export function isShortcutActionId(value: string): value is ShortcutActionId {
 
 export function getShortcutActionDefinition(actionId: ShortcutActionId) {
 	return SHORTCUT_ACTION_RECORD[actionId];
-}
-
-export function getShortcutActionsForCommandPalette() {
-	return SHORTCUT_ACTIONS.filter((action) => action.commandPalette);
 }

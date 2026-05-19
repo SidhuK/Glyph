@@ -2,6 +2,7 @@
 use std::os::unix::fs::PermissionsExt;
 use std::{
     env,
+    ffi::OsString,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -160,6 +161,53 @@ pub fn executable_exists(path: &Path) -> bool {
     {
         true
     }
+}
+
+fn push_path_once(paths: &mut Vec<PathBuf>, path: PathBuf) {
+    if path.as_os_str().is_empty() || paths.iter().any(|item| item == &path) {
+        return;
+    }
+    paths.push(path);
+}
+
+pub fn cli_runtime_path(binary: &Path) -> Option<OsString> {
+    let mut paths = Vec::new();
+
+    if let Some(path) = env::var_os("PATH") {
+        for dir in env::split_paths(&path) {
+            push_path_once(&mut paths, dir);
+        }
+    }
+    if let Some(parent) = binary.parent() {
+        push_path_once(&mut paths, parent.to_path_buf());
+    }
+    if let Ok(resolved) = std::fs::canonicalize(binary) {
+        if let Some(parent) = resolved.parent() {
+            push_path_once(&mut paths, parent.to_path_buf());
+        }
+    }
+    for path in [
+        "/opt/homebrew/bin",
+        "/usr/local/bin",
+        "/usr/bin",
+        "/bin",
+        "/usr/sbin",
+        "/sbin",
+    ] {
+        push_path_once(&mut paths, PathBuf::from(path));
+    }
+    if let Some(home) = env::var_os("HOME").map(PathBuf::from) {
+        for path in [
+            home.join(".local/bin"),
+            home.join(".bun/bin"),
+            home.join(".npm-global/bin"),
+            home.join(".volta/bin"),
+        ] {
+            push_path_once(&mut paths, path);
+        }
+    }
+
+    env::join_paths(paths).ok()
 }
 
 pub fn candidate_cli_paths(env_var_name: &str, binary_name: &str) -> Vec<PathBuf> {

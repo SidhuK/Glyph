@@ -1089,7 +1089,6 @@ export function AppShell() {
 		openQuickNoteWindow,
 		openSearchPalette,
 		openSettings,
-		openSpecialTab,
 		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,

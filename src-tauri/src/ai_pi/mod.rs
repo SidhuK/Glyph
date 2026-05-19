@@ -15,7 +15,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::ai_rig::{
     events::AiStatusEvent,
-    helpers::{emit_tool, find_cli_binary},
+    helpers::{cli_runtime_path, emit_tool, find_cli_binary},
     providers::build_transcript,
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiModel, AiProfile, AiReasoningEffortOption,
@@ -208,6 +208,7 @@ async fn spawn_rpc(
     profile: Option<&AiProfile>,
 ) -> Result<Child, String> {
     let binary = find_pi_binary()?;
+    let runtime_path = cli_runtime_path(&binary);
     let model = profile.map(|profile| profile.model.trim()).unwrap_or("");
     debug!(
         binary = %binary.display(),
@@ -216,7 +217,7 @@ async fn spawn_rpc(
         model,
         "spawning PI RPC subprocess"
     );
-    let mut command = Command::new(binary);
+    let mut command = Command::new(&binary);
     command
         .arg("--mode")
         .arg("rpc")
@@ -225,6 +226,9 @@ async fn spawn_rpc(
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
+    if let Some(path) = runtime_path {
+        command.env("PATH", path);
+    }
 
     if offline {
         command.arg("--offline");

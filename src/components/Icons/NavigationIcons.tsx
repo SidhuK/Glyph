@@ -5,7 +5,6 @@ import {
 	ArrowUp,
 	Calendar03Icon,
 	CommandIcon,
-	FolderPlus as FolderPlusIcon,
 	LayoutAlignLeftIcon,
 	Moon02Icon,
 	Search as SearchIcon,
@@ -34,9 +33,6 @@ export const ChevronDown = (props: IconProps) => (
 );
 export const FolderOpen = (props: IconProps) => (
 	<HugeiconsIcon icon={Archive04Icon} strokeWidth={0.9} {...props} />
-);
-export const FolderPlus = (props: IconProps) => (
-	<HugeiconsIcon icon={FolderPlusIcon} strokeWidth={0.9} {...props} />
 );
 export const LayoutAlignLeft = (props: IconProps) => (
 	<HugeiconsIcon icon={LayoutAlignLeftIcon} strokeWidth={0.9} {...props} />

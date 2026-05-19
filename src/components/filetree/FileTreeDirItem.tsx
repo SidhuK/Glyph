@@ -1,28 +1,18 @@
 import { useDraggable, useDroppable } from "@dnd-kit/react";
 import {
 	ArrowRight02Icon,
-	DocumentCodeIcon,
 	Folder01Icon,
 	Folder03Icon,
-	PencilEdit02Icon,
-	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import type { MutableRefObject, ReactNode } from "react";
+import type { MouseEvent, MutableRefObject, ReactNode } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
-import { FolderPlus, Plus, Trash2 } from "../Icons";
+import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "../ui/shadcn/context-menu";
-import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
@@ -33,6 +23,7 @@ import {
 	rowVariants,
 	springTransition,
 } from "./fileTreeItemHelpers";
+import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
 
 function DirectoryRenameInput({
 	initialName,
@@ -171,6 +162,52 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		},
 		[draggableRef, droppableRef, handleRef],
 	);
+	const handleContextMenu = useCallback(
+		(event: MouseEvent) => {
+			void showNativeContextMenu(event, [
+				{
+					label: "Add file",
+					action: () => void onNewFileInDir(entry.rel_path),
+				},
+				{
+					label: "Create from template",
+					action: () => void onCreateFromTemplateInDir(entry.rel_path),
+				},
+				{
+					label: "Add database",
+					action: () => void onNewDatabaseInDir(entry.rel_path),
+				},
+				{
+					label: "Add folder",
+					action: () => void onNewFolderInDir(entry.rel_path),
+				},
+				{ type: "separator" },
+				{
+					label: "Rename",
+					action: onStartRename,
+				},
+				fileTreeAppearanceNativeMenu("dir", appearance, onChangeAppearance),
+				{ type: "separator" },
+				{
+					label: "Delete folder",
+					action: () => onDeletePath(entry.rel_path, "dir"),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show folder context menu", error);
+			});
+		},
+		[
+			appearance,
+			entry.rel_path,
+			onChangeAppearance,
+			onCreateFromTemplateInDir,
+			onDeletePath,
+			onNewDatabaseInDir,
+			onNewFileInDir,
+			onNewFolderInDir,
+			onStartRename,
+		],
+	);
 
 	return (
 		<li className="fileTreeItem">
@@ -186,51 +223,50 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						/>
 					</div>
 				) : (
-					<ContextMenu>
-						<ContextMenuTrigger asChild>
-							<m.button
-								ref={setRowRef}
-								type="button"
-								className="fileTreeRow"
-								onClick={() => {
-									if (onMoveClickSuppressRef.current) return;
-									onSelectDir(entry.rel_path);
-									onToggleDir(entry.rel_path);
-								}}
-								style={rowStyle}
-								variants={rowVariants}
-								whileHover="hover"
-								whileTap="tap"
-								animate={isActive ? "active" : "idle"}
-								transition={springTransition}
-								title={entry.rel_path || entry.name || "Folder"}
-								data-draggable="true"
-								data-dragging={isDragging ? "true" : undefined}
-								data-drop-target={isDropTarget ? "true" : undefined}
-								data-has-custom-color={customColor ? "true" : "false"}
-								data-file-tree-kind="dir"
-								data-file-tree-path={entry.rel_path}
-							>
-								{appearance?.icon ? (
-									<DatabaseColumnIcon
-										iconName={appearance.icon}
-										size={14}
-										className="fileTreeChevron fileTreeFolderIcon"
-									/>
-								) : (
-									<HugeiconsIcon
-										icon={isExpanded ? Folder03Icon : Folder01Icon}
-										size={12}
-										strokeWidth={0.9}
-										className="fileTreeChevron fileTreeFolderIcon"
-									/>
-								)}
-								<span className="fileTreeName">{displayDirName}</span>
-								{typeof fileCount === "number" ? (
-									<span className="fileTreeCounts">{fileCount}</span>
-								) : null}
-							</m.button>
-						</ContextMenuTrigger>
+					<>
+						<m.button
+							ref={setRowRef}
+							type="button"
+							className="fileTreeRow"
+							onClick={() => {
+								if (onMoveClickSuppressRef.current) return;
+								onSelectDir(entry.rel_path);
+								onToggleDir(entry.rel_path);
+							}}
+							onContextMenu={handleContextMenu}
+							style={rowStyle}
+							variants={rowVariants}
+							whileHover="hover"
+							whileTap="tap"
+							animate={isActive ? "active" : "idle"}
+							transition={springTransition}
+							title={entry.rel_path || entry.name || "Folder"}
+							data-draggable="true"
+							data-dragging={isDragging ? "true" : undefined}
+							data-drop-target={isDropTarget ? "true" : undefined}
+							data-has-custom-color={customColor ? "true" : "false"}
+							data-file-tree-kind="dir"
+							data-file-tree-path={entry.rel_path}
+						>
+							{appearance?.icon ? (
+								<DatabaseColumnIcon
+									iconName={appearance.icon}
+									size={14}
+									className="fileTreeChevron fileTreeFolderIcon"
+								/>
+							) : (
+								<HugeiconsIcon
+									icon={isExpanded ? Folder03Icon : Folder01Icon}
+									size={12}
+									strokeWidth={0.9}
+									className="fileTreeChevron fileTreeFolderIcon"
+								/>
+							)}
+							<span className="fileTreeName">{displayDirName}</span>
+							{typeof fileCount === "number" ? (
+								<span className="fileTreeCounts">{fileCount}</span>
+							) : null}
+						</m.button>
 						{onEnterDir ? (
 							<div className="fileTreeRowActions">
 								<button
@@ -265,74 +301,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								</button>
 							</div>
 						) : null}
-						<ContextMenuContent
-							className="fileTreeCreateMenu"
-							onCloseAutoFocus={(event) => event.preventDefault()}
-						>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFileInDir(entry.rel_path)}
-							>
-								<HugeiconsIcon
-									icon={PencilEdit02Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Add file
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onCreateFromTemplateInDir(entry.rel_path)}
-							>
-								<HugeiconsIcon
-									icon={DocumentCodeIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Create from template
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewDatabaseInDir(entry.rel_path)}
-							>
-								<HugeiconsIcon icon={TableIcon} size={14} strokeWidth={0.9} />
-								Add database
-							</ContextMenuItem>
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFolderInDir(entry.rel_path)}
-							>
-								<FolderPlus size={14} />
-								Add folder
-							</ContextMenuItem>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={onStartRename}
-							>
-								<HugeiconsIcon
-									icon={PencilEdit02Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Rename
-							</ContextMenuItem>
-							<FileTreeAppearanceMenu
-								itemKind="dir"
-								appearance={appearance}
-								onChangeAppearance={onChangeAppearance}
-							/>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								variant="destructive"
-								className="fileTreeCreateMenuItem"
-								onSelect={() => onDeletePath(entry.rel_path, "dir")}
-							>
-								<Trash2 size={14} />
-								Delete folder
-							</ContextMenuItem>
-						</ContextMenuContent>
-					</ContextMenu>
+					</>
 				)}
 			</div>
 			<AnimatePresence>

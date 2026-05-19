@@ -32,7 +32,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
 import { toast } from "sonner";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
-import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import {
 	dispatchEditorMenuAction,
 	dispatchOpenLocalGraph,
@@ -99,7 +98,6 @@ interface UseAppCommandsDeps {
 	openQuickNoteWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
-	openSpecialTab: (id: string) => void;
 	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
@@ -179,7 +177,6 @@ function buildAiCommands({
 	attachCurrentNoteToAi,
 	handleCloseAiPaneFromMenu,
 	openMarkdownTabsLength,
-	openSpecialTab,
 	setAiPanelOpen,
 	spacePath,
 }: Pick<
@@ -190,7 +187,6 @@ function buildAiCommands({
 	| "attachCurrentNoteToAi"
 	| "handleCloseAiPaneFromMenu"
 	| "openMarkdownTabsLength"
-	| "openSpecialTab"
 	| "setAiPanelOpen"
 	| "spacePath"
 >): Command[] {
@@ -230,14 +226,6 @@ function buildAiCommands({
 			shortcut: { meta: true, alt: true, shift: true, key: "a" },
 			enabled: openMarkdownTabsLength > 0,
 			action: () => void attachAllOpenNotesToAi(),
-		},
-		{
-			id: "open-ai-agent",
-			label: "Open AI Agent",
-			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
-			category: "AI",
-			enabled: Boolean(spacePath),
-			action: () => openSpecialTab(AI_AGENT_TAB_ID),
 		},
 	];
 }
@@ -309,7 +297,6 @@ export function useAppCommands({
 	openQuickNoteWindow,
 	openSearchPalette,
 	openSettings,
-	openSpecialTab,
 	openTemplatesTab,
 	openWorkspaceFile,
 	showWelcomeNote,
@@ -343,7 +330,6 @@ export function useAppCommands({
 			attachCurrentNoteToAi,
 			handleCloseAiPaneFromMenu,
 			openMarkdownTabsLength,
-			openSpecialTab,
 			setAiPanelOpen,
 			spacePath,
 		});
@@ -873,7 +859,6 @@ export function useAppCommands({
 		getBinding,
 		moveTargetDirs,
 		movePickerSourcePath,
-		openSpecialTab,
 		setError,
 		openSettings,
 		refreshMoveTargetDirs,
