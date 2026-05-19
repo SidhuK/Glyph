@@ -728,6 +728,7 @@ interface TauriCommands {
 		void
 	>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
+	show_space_menu: CommandDef<{ x: number; y: number }, void>;
 	set_menu_shortcuts: CommandDef<
 		{
 			accelerators: Record<string, string | null>;

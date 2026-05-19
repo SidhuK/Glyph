@@ -103,7 +103,6 @@ export function AppShell() {
 		onOpenSpaceAtPath,
 		onCreateSpace,
 		closeSpace,
-		recentSpaces,
 		onboardingNotePath,
 		consumeOnboardingNotePath,
 	} = space;
@@ -1243,10 +1242,7 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
-				recentSpaces={recentSpaces}
 				onOpenSpace={onOpenSpace}
-				onOpenRecentSpaceAtPath={onOpenSpaceAtPath}
-				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}

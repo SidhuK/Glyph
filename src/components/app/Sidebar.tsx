@@ -34,10 +34,7 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
-	recentSpaces: string[];
 	onOpenSpace: () => Promise<void>;
-	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
-	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
@@ -69,10 +66,7 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
-	recentSpaces,
 	onOpenSpace,
-	onOpenRecentSpaceAtPath,
-	onOpenSettings,
 	onOpenAllDocs,
 	onOpenCalendar,
 	onOpenDatabases,
@@ -154,13 +148,10 @@ export const Sidebar = memo(function Sidebar({
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}
-									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenSearchPalette={onOpenSearchPalette}
 									spacePath={spacePath}
-									recentSpaces={recentSpaces}
 									onOpenSpace={onOpenSpace}
-									onOpenRecentSpaceAtPath={onOpenRecentSpaceAtPath}
 									activeTopSection={activeTopSection}
 								/>
 							</>
