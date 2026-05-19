@@ -55,14 +55,14 @@ export function stripTaskScheduleTokens(rawText: string): string {
 	return kept.join(" ");
 }
 
-export type TaskDateTone =
+type TaskDateTone =
 	| "default"
 	| "today"
 	| "upcoming"
 	| "overdue"
 	| "pastScheduled";
 
-export interface TaskDateBadge {
+interface TaskDateBadge {
 	kind: "due" | "scheduled";
 	label: string;
 	tone: TaskDateTone;

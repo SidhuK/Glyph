@@ -193,36 +193,6 @@ vi.mock("../ui/shadcn/dialog", () => ({
 	),
 }));
 
-vi.mock("../ui/shadcn/context-menu", () => ({
-	ContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-	ContextMenuTrigger: ({ children }: { children: React.ReactNode }) => (
-		<>{children}</>
-	),
-	ContextMenuContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuItem: ({
-		children,
-		onSelect,
-	}: {
-		children: React.ReactNode;
-		onSelect?: () => void;
-	}) => (
-		<button type="button" onClick={onSelect}>
-			{children}
-		</button>
-	),
-	ContextMenuSub: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuSubContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuSubTrigger: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-}));
-
 vi.mock("../ui/shadcn/input", () => ({
 	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
 		<input {...props} />

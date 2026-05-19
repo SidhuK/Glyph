@@ -44,8 +44,7 @@
 .databasesDropdownContent,
 .databasePickerMenu,
 .databaseBoardColorMenu,
-.databasePickerPopover,
-.folderPickerPopover {
+.databasePickerPopover {
 	border-radius: var(--database-dropdown-radius);
 	border: 1px solid var(--database-dropdown-border);
 	background: var(--database-dropdown-background);
@@ -78,8 +77,7 @@
 }
 
 .databasesDropdownContent [data-slot="dropdown-menu-label"],
-.databasePickerMenu [data-slot="dropdown-menu-label"],
-.databaseBoardMoveLabel {
+.databasePickerMenu [data-slot="dropdown-menu-label"] {
 	padding: 4px 10px 6px;
 	font-size: 0.68rem;
 	font-weight: 600;

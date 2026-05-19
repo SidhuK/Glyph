@@ -763,16 +763,6 @@
 			"commandPalette": false,
 			"menuId": "app.about"
 		},
-		"open-ai-agent": {
-			"id": "open-ai-agent",
-			"label": "Open AI Agent",
-			"description": "Open the AI agent workspace.",
-			"category": "ai",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"open-ai-settings": {
 			"id": "open-ai-settings",
 			"label": "Open AI Settings",

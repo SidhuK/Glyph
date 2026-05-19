@@ -79,6 +79,25 @@
 	color: var(--text-tertiary);
 }
 
+.databasePickerTriggerError {
+	border-color: var(--status-danger-border);
+	background: color-mix(in srgb, var(--status-danger-bg) 42%, var(--bg-primary));
+}
+
+.databasePickerTriggerError:hover {
+	border-color: var(--status-danger-border);
+	background: color-mix(in srgb, var(--status-danger-bg) 58%, var(--bg-primary));
+}
+
+.databasePickerTriggerError .databasePickerTriggerIcon {
+	background: color-mix(in srgb, var(--status-danger-bg) 70%, transparent);
+	color: var(--status-danger-fg);
+}
+
+.databasePickerTriggerError .databasePickerTriggerMeta {
+	color: var(--status-danger-fg);
+}
+
 .databaseDialogCompact .databasePickerTriggerMeta {
 	display: none;
 }
@@ -123,6 +142,12 @@
 	display: none;
 }
 
+.databaseDialogCompact .databasePickerTriggerError .databasePickerTriggerMeta,
+.databaseSourceInlinePicker.databasePickerTriggerError
+	.databasePickerTriggerMeta {
+	display: block;
+}
+
 .databasePickerPopover {
 	width: min(420px, calc(100vw - 2rem));
 	border-radius: var(--database-dropdown-radius);
@@ -133,29 +158,9 @@
 	pointer-events: auto;
 }
 
-.databaseDialogCompact .databasePickerPopover,
-.databaseDialogCompact .folderPickerPopover {
-	border-color: color-mix(
-		in srgb,
-		var(--database-dropdown-border) 84%,
-		transparent
-	);
-	box-shadow: 0 14px 30px color-mix(in srgb, black 14%, transparent), 0 4px 12px
-		color-mix(in srgb, black 8%, transparent);
-}
-
 .databasePickerHeader {
 	gap: 4px;
 	padding: 2px 2px 6px;
-}
-
-.databaseDialogCompact .databasePickerEyebrow,
-.databaseDialogCompact .databasePickerHeader [data-slot="popover-description"] {
-	display: none;
-}
-
-.databaseDialogCompact .databasePickerHeader {
-	padding-bottom: 4px;
 }
 
 .databasePickerEyebrow {
@@ -293,162 +298,6 @@
 
 .databasePickerEmpty {
 	padding: 8px 4px 2px;
-}
-
-/* ── Lean folder picker ── */
-
-.folderPickerPopover {
-	width: min(300px, calc(100vw - 2rem));
-	border-radius: var(--database-dropdown-radius);
-	border-color: var(--database-dropdown-border);
-	padding: 8px;
-	background: var(--database-dropdown-background);
-	box-shadow: var(--shadow-md);
-	pointer-events: auto;
-}
-
-.folderPickerBreadcrumbs {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 2px;
-	padding: 2px 4px 8px;
-	margin-bottom: 6px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 56%, transparent);
-}
-
-.folderPickerCrumbSegment {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
-	color: var(--text-quaternary);
-}
-
-.folderPickerCrumb {
-	padding: 4px 7px;
-	border: 1px solid transparent;
-	border-radius: calc(var(--radius-sm) + 1px);
-	font-size: 0.72rem;
-	color: var(--text-tertiary);
-}
-
-.folderPickerCrumb:hover {
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 52%, transparent);
-}
-
-.folderPickerCrumb[data-active="true"] {
-	color: var(--text-primary);
-	font-weight: var(--font-medium);
-	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 44%, transparent);
-}
-
-.folderPickerSearch {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-bottom: 8px;
-	padding: 6px 9px;
-	border-radius: calc(var(--radius-sm) + 2px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 66%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-secondary));
-}
-
-.folderPickerSearch svg {
-	color: var(--text-quaternary);
-	flex: 0 0 auto;
-}
-
-.folderPickerSearch input {
-	border: 0;
-	box-shadow: none;
-	padding: 0;
-	height: 22px;
-	font-size: 0.78rem;
-	background: transparent;
-}
-
-.folderPickerSearch input:focus-visible {
-	outline: none;
-	box-shadow: none;
-}
-
-.folderPickerResults {
-	height: min(200px, 34vh);
-}
-
-.folderPickerList {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 2px;
-}
-
-.folderPickerSelect {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	width: 100%;
-	padding: 7px 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
-	border-radius: calc(var(--radius-sm) + 2px);
-	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-secondary));
-	font-size: 0.78rem;
-	font-weight: var(--font-medium);
-	color: var(--interactive-accent);
-	text-align: left;
-}
-
-.folderPickerSelect:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 24%,
-		var(--border-default)
-	);
-}
-
-.folderPickerSelect svg {
-	flex: 0 0 auto;
-	opacity: 0.7;
-}
-
-.folderPickerRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	padding: 6px 10px;
-	border: 1px solid transparent;
-	border-radius: calc(var(--radius-sm) + 1px);
-	text-align: left;
-}
-
-.folderPickerRow:hover {
-	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 48%, transparent);
-}
-
-.folderPickerRowName {
-	font-size: 0.78rem;
-	color: var(--text-primary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.folderPickerRow svg {
-	color: var(--text-quaternary);
-	flex: 0 0 auto;
-}
-
-.folderPickerEmpty {
-	padding: 6px 8px;
-	font-size: 0.76rem;
-	color: var(--text-tertiary);
 }
 
 /* Compact picker overrides inside database dropdown menus */

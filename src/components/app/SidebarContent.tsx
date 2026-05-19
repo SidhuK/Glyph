@@ -6,16 +6,21 @@ import {
 	LibraryIcon,
 	NoteIcon,
 	SearchIcon,
-	Settings01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, m } from "motion/react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type MouseEvent,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import type { FsEntry } from "../../lib/tauri";
+import { type FsEntry, invoke } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -30,7 +35,6 @@ interface SidebarContentProps {
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
@@ -51,13 +55,10 @@ interface SidebarContentProps {
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
-	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenSearchPalette: () => void;
 	spacePath: string | null;
-	recentSpaces: string[];
 	onOpenSpace: () => Promise<void>;
-	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
 	activeTopSection: "home" | "all-notes" | "databases" | null;
 }
 
@@ -112,7 +113,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
 	onRenameDir,
@@ -125,13 +125,10 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
-	onOpenSettings,
 	onOpenAllDocs,
 	onOpenSearchPalette,
 	spacePath,
-	recentSpaces,
 	onOpenSpace,
-	onOpenRecentSpaceAtPath,
 	activeTopSection,
 }: SidebarContentProps) {
 	// Contexts
@@ -152,9 +149,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
-	const [spaceMenuOpen, setSpaceMenuOpen] = useState(false);
 	const [notesExpanded, setNotesExpanded] = useState(true);
-	const spaceMenuRef = useRef<HTMLDivElement | null>(null);
 	const newNoteShortcut = getBinding("new-note");
 	const quickOpenShortcut = getBinding("quick-open");
 	const activeFolioFolder =
@@ -178,12 +173,6 @@ export const SidebarContent = memo(function SidebarContent({
 		}
 		return next;
 	}, [childrenByDir]);
-	const displayRecentSpaces = useMemo(
-		() =>
-			recentSpaces.filter((path) => path && path !== spacePath).slice(0, 10),
-		[recentSpaces, spacePath],
-	);
-
 	useEffect(() => {
 		if (!folioMode || !folioSpaceContainerPath) return;
 		if (childrenByDir[folioSpaceContainerPath] !== undefined) return;
@@ -287,42 +276,17 @@ export const SidebarContent = memo(function SidebarContent({
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
 
-	useEffect(() => {
-		if (!spaceMenuOpen) return;
-		const handlePointerDown = (event: PointerEvent) => {
-			if (!(event.target instanceof Node)) return;
-			if (spaceMenuRef.current?.contains(event.target)) return;
-			setSpaceMenuOpen(false);
-		};
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				setSpaceMenuOpen(false);
-			}
-		};
-		window.addEventListener("pointerdown", handlePointerDown);
-		window.addEventListener("keydown", handleKeyDown);
-		return () => {
-			window.removeEventListener("pointerdown", handlePointerDown);
-			window.removeEventListener("keydown", handleKeyDown);
-		};
-	}, [spaceMenuOpen]);
-
-	const handleOpenPicker = useCallback(() => {
-		setSpaceMenuOpen(false);
-		void onOpenSpace();
-	}, [onOpenSpace]);
-
-	const handleOpenAppSettings = useCallback(() => {
-		setSpaceMenuOpen(false);
-		onOpenSettings();
-	}, [onOpenSettings]);
-
-	const handleSwitchToRecent = useCallback(
-		(path: string) => {
-			setSpaceMenuOpen(false);
-			void onOpenRecentSpaceAtPath(path);
+	const handleShowSpaceMenu = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			const rect = event.currentTarget.getBoundingClientRect();
+			void invoke("show_space_menu", { x: rect.left, y: rect.bottom }).catch(
+				(error: unknown) => {
+					console.warn("Failed to show native space menu", error);
+					void onOpenSpace();
+				},
+			);
 		},
-		[onOpenRecentSpaceAtPath],
+		[onOpenSpace],
 	);
 	const handleOpenAllNotes = useCallback(() => {
 		onOpenAllDocs();
@@ -386,88 +350,21 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarQuickActions">
-					<div
-						className="sidebarTopRow"
-						data-open={spaceMenuOpen ? "true" : "false"}
-					>
-						<div ref={spaceMenuRef} className="sidebarSpaceMenuAnchor">
+					<div className="sidebarTopRow">
+						<div className="sidebarSpaceMenuAnchor">
 							<button
 								type="button"
 								className="sidebarSpaceSwitcher"
-								aria-expanded={spaceMenuOpen}
-								onClick={() => setSpaceMenuOpen((value) => !value)}
+								aria-haspopup="menu"
+								onClick={handleShowSpaceMenu}
 								title={spacePath ?? "Open space"}
 							>
 								<span className="sidebarSpaceBadge">
 									{spaceInitial(spaceLabel)}
 								</span>
 								<span className="sidebarSpaceName">{spaceLabel}</span>
-								<ChevronDown
-									size={12}
-									className={
-										spaceMenuOpen
-											? "sidebarSpaceChevron is-open"
-											: "sidebarSpaceChevron"
-									}
-								/>
+								<ChevronDown size={12} className="sidebarSpaceChevron" />
 							</button>
-							<AnimatePresence>
-								{spaceMenuOpen ? (
-									<m.div
-										className="sidebarSpaceMenuPanel"
-										initial={{ opacity: 0, y: -6, scale: 0.98 }}
-										animate={{ opacity: 1, y: 0, scale: 1 }}
-										exit={{ opacity: 0, y: -4, scale: 0.985 }}
-										transition={{ duration: 0.14, ease: "easeOut" }}
-									>
-										<div className="sidebarSpaceMenuTitle">Recent Spaces</div>
-										{displayRecentSpaces.length > 0 ? (
-											displayRecentSpaces.map((path) => (
-												<button
-													key={path}
-													type="button"
-													className="sidebarSpaceMenuItem"
-													onClick={() => handleSwitchToRecent(path)}
-													title={path}
-												>
-													<span className="sidebarSpaceMenuItemName">
-														{formatSpaceLabel(path)}
-													</span>
-													<span className="sidebarSpaceMenuItemPath">
-														{path}
-													</span>
-												</button>
-											))
-										) : (
-											<div className="sidebarSpaceMenuEmpty">
-												No recent spaces yet.
-											</div>
-										)}
-										<div className="sidebarSpaceMenuActions">
-											<button
-												type="button"
-												className="sidebarSpaceMenuAction"
-												onClick={handleOpenPicker}
-											>
-												Open Spaces
-											</button>
-											<button
-												type="button"
-												className="sidebarSpaceMenuIconAction"
-												onClick={handleOpenAppSettings}
-												aria-label="Open app settings"
-												title="Open app settings"
-											>
-												<HugeiconsIcon
-													icon={Settings01Icon}
-													size={15}
-													strokeWidth={0.9}
-												/>
-											</button>
-										</div>
-									</m.div>
-								) : null}
-							</AnimatePresence>
 						</div>
 						<button
 							type="button"
@@ -631,7 +528,6 @@ export const SidebarContent = memo(function SidebarContent({
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}

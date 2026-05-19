@@ -1,7 +1,7 @@
 import manifestJson from "../../shared/appCommandManifest.json";
 import type { Shortcut } from "../shortcuts/types";
 
-export type CommandContext = "global" | "space" | "editor";
+type CommandContext = "global" | "space" | "editor";
 export type CommandCategory =
 	| "workspace"
 	| "navigation"

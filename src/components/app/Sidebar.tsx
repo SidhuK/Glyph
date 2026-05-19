@@ -16,7 +16,6 @@ interface SidebarProps {
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
@@ -34,10 +33,7 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
-	recentSpaces: string[];
 	onOpenSpace: () => Promise<void>;
-	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
-	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
@@ -59,7 +55,6 @@ export const Sidebar = memo(function Sidebar({
 	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
 	onRenameDir,
@@ -69,10 +64,7 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
-	recentSpaces,
 	onOpenSpace,
-	onOpenRecentSpaceAtPath,
-	onOpenSettings,
 	onOpenAllDocs,
 	onOpenCalendar,
 	onOpenDatabases,
@@ -141,7 +133,6 @@ export const Sidebar = memo(function Sidebar({
 									onNewNote={onNewNote}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}
 									onRenameDir={onRenameDir}
@@ -154,13 +145,10 @@ export const Sidebar = memo(function Sidebar({
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}
-									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenSearchPalette={onOpenSearchPalette}
 									spacePath={spacePath}
-									recentSpaces={recentSpaces}
 									onOpenSpace={onOpenSpace}
-									onOpenRecentSpaceAtPath={onOpenRecentSpaceAtPath}
 									activeTopSection={activeTopSection}
 								/>
 							</>

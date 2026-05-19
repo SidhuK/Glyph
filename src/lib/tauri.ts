@@ -7,7 +7,7 @@ export interface AppInfo {
 	identifier: string;
 }
 
-export interface SpaceInfo {
+interface SpaceInfo {
 	root: string;
 	schema_version: number;
 	onboarding_note_path?: string | null;
@@ -37,7 +37,7 @@ export interface FileTreeAppearance {
 	icon?: string | null;
 }
 
-export type PinnedFiles = string[];
+type PinnedFiles = string[];
 
 export interface TextFileDoc {
 	rel_path: string;
@@ -46,17 +46,17 @@ export interface TextFileDoc {
 	mtime_ms: number;
 }
 
-export interface TextFileWriteResult {
+interface TextFileWriteResult {
 	etag: string;
 	mtime_ms: number;
 }
 
-export interface OpenOrCreateTextResult {
+interface OpenOrCreateTextResult {
 	created: boolean;
 	mtime_ms: number;
 }
 
-export interface TextFileDocBatch {
+interface TextFileDocBatch {
 	rel_path: string;
 	text: string | null;
 	etag: string | null;
@@ -64,7 +64,7 @@ export interface TextFileDocBatch {
 	error: string | null;
 }
 
-export interface TextFilePreviewDoc {
+interface TextFilePreviewDoc {
 	rel_path: string;
 	text: string;
 	mtime_ms: number;
@@ -73,7 +73,7 @@ export interface TextFilePreviewDoc {
 	total_bytes: number;
 }
 
-export interface BinaryFilePreviewDoc {
+interface BinaryFilePreviewDoc {
 	rel_path: string;
 	mime: string;
 	data_url: string;
@@ -83,7 +83,7 @@ export interface BinaryFilePreviewDoc {
 	mtime_ms: number;
 }
 
-export interface SavedPastedImage {
+interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
 	markdown: string;
@@ -97,17 +97,17 @@ export interface NoteProperty {
 	value_list: string[];
 }
 
-export interface DatabaseSource {
+interface DatabaseSource {
 	kind: "all_notes" | "folder" | "tag" | "search";
 	value: string;
 	recursive: boolean;
 }
 
-export interface DatabaseNewNoteConfig {
+interface DatabaseNewNoteConfig {
 	folder: string;
 }
 
-export interface DatabaseViewState {
+interface DatabaseViewState {
 	layout: "table" | "board";
 	search?: string;
 	board_group_by?: string | null;
@@ -191,12 +191,12 @@ export interface DatabaseRow {
 	properties: Record<string, DatabaseCellValue>;
 }
 
-export interface WorkspaceDatabaseGrouping {
+interface WorkspaceDatabaseGrouping {
 	column_id: string;
 	ascending: boolean;
 }
 
-export interface WorkspaceDatabaseView {
+interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
 	layout: "table" | "board";
@@ -213,7 +213,7 @@ export interface WorkspaceDatabaseView {
 	updated_at: string;
 }
 
-export interface WorkspaceDatabaseSchemaField {
+interface WorkspaceDatabaseSchemaField {
 	id: string;
 	label: string;
 	kind: string;
@@ -280,15 +280,7 @@ export interface DatabasePropertyOption {
 	count: number;
 }
 
-export interface DatabaseLoadResult {
-	config: DatabaseConfig;
-	rows: DatabaseRow[];
-	available_properties: DatabasePropertyOption[];
-	truncated: boolean;
-	total_loaded: number;
-}
-
-export interface DatabaseCreateRowResult {
+interface DatabaseCreateRowResult {
 	note_path: string;
 	row: DatabaseRow;
 }
@@ -334,25 +326,25 @@ export interface NoteRelationship {
 	ordinal: number;
 }
 
-export interface LocalGraphNode {
+interface LocalGraphNode {
 	id: string;
 	title: string;
 	is_center: boolean;
 }
 
-export interface LocalGraphEdge {
+interface LocalGraphEdge {
 	source: string;
 	target: string;
 }
 
-export interface LocalGraphTagNode {
+interface LocalGraphTagNode {
 	id: string;
 	tag: string;
 	title: string;
 	note_count: number;
 }
 
-export interface LocalGraphTagEdge {
+interface LocalGraphTagEdge {
 	tag_id: string;
 	note_id: string;
 }
@@ -386,11 +378,11 @@ export interface DirChildSummary {
 	truncated: boolean;
 }
 
-export interface IndexRebuildResult {
+interface IndexRebuildResult {
 	indexed: number;
 }
 
-export interface TaskDateInfo {
+interface TaskDateInfo {
 	scheduled_date: string;
 	due_date: string;
 }
@@ -401,27 +393,27 @@ export interface NoteTaskSummary {
 	open_count: number;
 }
 
-export interface NoteTaskSummaryItem extends NoteTaskSummary {
+interface NoteTaskSummaryItem extends NoteTaskSummary {
 	note_path: string;
 }
 
-export interface AiContextAttachment {
+interface AiContextAttachment {
 	kind: "folder" | "file";
 	path: string;
 	label?: string | null;
 }
 
-export interface AiContextIndexItem {
+interface AiContextIndexItem {
 	path: string;
 	label: string;
 }
 
-export interface AiContextIndexResponse {
+interface AiContextIndexResponse {
 	folders: AiContextIndexItem[];
 	files: AiContextIndexItem[];
 }
 
-export interface AiContextManifestItem {
+interface AiContextManifestItem {
 	kind: string;
 	label: string;
 	chars: number;
@@ -429,13 +421,13 @@ export interface AiContextManifestItem {
 	truncated: boolean;
 }
 
-export interface AiContextManifestResponse {
+interface AiContextManifestResponse {
 	items: AiContextManifestItem[];
 	total_chars: number;
 	est_tokens: number;
 }
 
-export interface AiContextBuildResponse {
+interface AiContextBuildResponse {
 	payload: string;
 	manifest: AiContextManifestResponse;
 	resolved_paths: string[];
@@ -457,7 +449,7 @@ export interface TaskItem {
 	note_updated: string;
 }
 
-export interface CalendarDaySummary {
+interface CalendarDaySummary {
 	date: string;
 	task_count: number;
 	note_activity_count: number;
@@ -477,7 +469,7 @@ export interface CalendarNoteActivityItem {
 	edited_on_day: boolean;
 }
 
-export interface CalendarDayDetail {
+interface CalendarDayDetail {
 	selected_date: string;
 	note_activity: CalendarNoteActivityItem[];
 	daily_note_path: string | null;
@@ -485,7 +477,7 @@ export interface CalendarDayDetail {
 	daily_note_configured: boolean;
 }
 
-export interface CalendarTaskGroups {
+interface CalendarTaskGroups {
 	overdue: TaskItem[];
 	for_day: TaskItem[];
 	ongoing: TaskItem[];
@@ -497,9 +489,9 @@ export interface CalendarRangeResponse {
 	tasks: CalendarTaskGroups;
 }
 
-export type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
+type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
 export type GitSyncConflictPolicy = "local_wins" | "remote_wins";
-export type GitSyncPhase =
+type GitSyncPhase =
 	| "idle"
 	| "detecting"
 	| "setting_up"
@@ -562,18 +554,18 @@ export interface GitSyncStatus {
 	message: string | null;
 }
 
-export interface GitSyncContext {
+interface GitSyncContext {
 	templates_folder?: string | null;
 	attachment_storage_mode?: AttachmentStorageMode | null;
 	attachment_folder?: string | null;
 }
 
-export interface GitSyncRunRequest {
+interface GitSyncRunRequest {
 	mode: GitSyncRunMode;
 	context: GitSyncContext;
 }
 
-export interface GitSyncConfigPatch {
+interface GitSyncConfigPatch {
 	enabled?: boolean;
 	conflict_policy?: GitSyncConflictPolicy;
 	interval_minutes?: number;
@@ -581,7 +573,7 @@ export interface GitSyncConfigPatch {
 	paused?: boolean;
 }
 
-export type LicenseMode =
+type LicenseMode =
 	| "community_build"
 	| "licensed"
 	| "trial_active"
@@ -622,7 +614,7 @@ export type AiProviderKind =
 
 export type AiAssistantMode = "chat" | "create";
 
-export interface AiHeader {
+interface AiHeader {
 	key: string;
 	value: string;
 }
@@ -643,7 +635,7 @@ export interface AiMessage {
 	content: string;
 }
 
-export interface AiChatStartResult {
+interface AiChatStartResult {
 	job_id: string;
 }
 
@@ -663,7 +655,7 @@ export interface AiModel {
 	default_reasoning_effort?: string | null;
 }
 
-export interface AiReasoningEffortOption {
+interface AiReasoningEffortOption {
 	effort: string;
 	description?: string | null;
 }
@@ -674,7 +666,7 @@ export interface ProviderSupportEntry {
 	endpoints: Record<string, boolean>;
 }
 
-export interface ProviderSupportDocument {
+interface ProviderSupportDocument {
 	providers: Record<string, ProviderSupportEntry>;
 }
 
@@ -704,20 +696,20 @@ export interface AiChatHistoryDetail {
 	tool_events: AiStoredToolEvent[];
 }
 
-export interface CodexRateLimitWindow {
+interface CodexRateLimitWindow {
 	used_percent: number;
 	window_duration_mins?: number | null;
 	resets_at?: number | null;
 }
 
-export interface CodexRateLimitBucket {
+interface CodexRateLimitBucket {
 	limit_id?: string | null;
 	limit_name?: string | null;
 	primary?: CodexRateLimitWindow | null;
 	secondary?: CodexRateLimitWindow | null;
 }
 
-export interface CodexRateLimits {
+interface CodexRateLimits {
 	buckets: CodexRateLimitBucket[];
 }
 
@@ -736,6 +728,7 @@ interface TauriCommands {
 		void
 	>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
+	show_space_menu: CommandDef<{ x: number; y: number }, void>;
 	set_menu_shortcuts: CommandDef<
 		{
 			accelerators: Record<string, string | null>;

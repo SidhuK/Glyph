@@ -2,7 +2,7 @@ import { renderMermaidSVG } from "beautiful-mermaid";
 import DOMPurify from "dompurify";
 import { extractMermaidErrorMessage } from "../../../../lib/mermaid";
 
-export const MERMAID_RENDER_CACHE_LIMIT = 50;
+const MERMAID_RENDER_CACHE_LIMIT = 50;
 
 export type MermaidRenderResult =
 	| { ok: true; svgHtml: string }

@@ -6,6 +6,12 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 
+const showNativeContextMenuMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../../lib/nativeContextMenu", () => ({
+	showNativeContextMenu: showNativeContextMenuMock,
+}));
+
 vi.mock("motion/react", async () => {
 	const React = await vi.importActual<typeof import("react")>("react");
 	const stripMotionProps = (
@@ -41,39 +47,12 @@ vi.mock("motion/react", async () => {
 	return { m: motion };
 });
 
-vi.mock("../ui/shadcn/context-menu", () => ({
-	ContextMenu: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuTrigger: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuContent: ({ children }: { children: React.ReactNode }) => (
-		<div>{children}</div>
-	),
-	ContextMenuItem: ({
-		children,
-		onSelect,
-	}: {
-		children: React.ReactNode;
-		onSelect?: () => void;
-	}) => (
-		<button type="button" onClick={onSelect}>
-			{children}
-		</button>
-	),
-	ContextMenuSeparator: () => <hr />,
-}));
-
-vi.mock("./FileTreeAppearanceMenu", () => ({
-	FileTreeAppearanceMenu: () => null,
-}));
-
 vi.mock("../database/DatabaseColumnIcon", () => ({
 	DatabaseColumnIcon: () => <span>icon</span>,
 }));
 
 vi.mock("../editor/textColors", () => ({
+	EDITOR_TEXT_COLORS: [],
 	isEditorTextColor: () => false,
 }));
 
@@ -88,6 +67,7 @@ describe("FileTreeFileItem", () => {
 	let root: Root;
 
 	beforeEach(() => {
+		showNativeContextMenuMock.mockResolvedValue(false);
 		container = document.createElement("div");
 		document.body.appendChild(container);
 		root = createRoot(container);
@@ -98,6 +78,7 @@ describe("FileTreeFileItem", () => {
 			root.unmount();
 		});
 		container.remove();
+		showNativeContextMenuMock.mockReset();
 	});
 
 	const renderFileTreeFileItem = async (
@@ -118,7 +99,6 @@ describe("FileTreeFileItem", () => {
 					onOpenFile={vi.fn()}
 					onNewFileInDir={vi.fn()}
 					onCreateFromTemplateInDir={vi.fn()}
-					onNewDatabaseInDir={vi.fn()}
 					onNewFolderInDir={vi.fn()}
 					onDuplicateFile={vi.fn()}
 					onStartRename={vi.fn()}
@@ -139,15 +119,43 @@ describe("FileTreeFileItem", () => {
 	it("shows the pin action when a file is not pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: false });
 
-		expect(container.textContent).toContain("Pin file");
-		expect(container.textContent).not.toContain("Unpin file");
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+			);
+		});
+
+		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
+			| Array<{ label?: string }>
+			| undefined;
+		expect(menuItems?.map((item) => item.label)).toContain("Pin file");
+		expect(menuItems?.map((item) => item.label)).not.toContain("Unpin file");
 	});
 
 	it("shows the unpin action when a file is pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: true });
 
-		expect(container.textContent).toContain("Unpin file");
-		expect(container.textContent).not.toContain("Pin file");
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+			);
+		});
+
+		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
+			| Array<{ label?: string }>
+			| undefined;
+		expect(menuItems?.map((item) => item.label)).toContain("Unpin file");
+		expect(menuItems?.map((item) => item.label)).not.toContain("Pin file");
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {

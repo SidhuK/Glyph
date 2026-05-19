@@ -8,26 +8,3 @@ export const springPresets = {
 	snappy: { type: "spring", stiffness: 500, damping: 30 } as const,
 	slow: { type: "spring", stiffness: 200, damping: 20 } as const,
 };
-
-export const directionVariants = {
-	left: {
-		initial: { x: -20 },
-		animate: { x: 0 },
-		exit: { x: -20 },
-	},
-	right: {
-		initial: { x: 20 },
-		animate: { x: 0 },
-		exit: { x: 20 },
-	},
-	up: {
-		initial: { y: -20 },
-		animate: { y: 0 },
-		exit: { y: -20 },
-	},
-	down: {
-		initial: { y: 20 },
-		animate: { y: 0 },
-		exit: { y: 20 },
-	},
-};

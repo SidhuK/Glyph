@@ -39,12 +39,15 @@ use tracing::{error, warn};
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl, WebviewWindowBuilder,
+    LogicalPosition, PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
+    WebviewWindowBuilder,
 };
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
+const SPACE_MENU_ID: &str = "space.menu";
+const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -223,7 +226,7 @@ fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
     recent_spaces: &[String],
 ) -> tauri::Result<Submenu<R>> {
     let revision = next_recent_spaces_menu_revision();
-    let mut builder = SubmenuBuilder::with_id(app, "space.recent.menu", "Recent Spaces");
+    let mut builder = SubmenuBuilder::with_id(app, RECENT_SPACES_MENU_ID, "Recent Spaces");
     if recent_spaces.is_empty() {
         let none = MenuItem::with_id(
             app,
@@ -269,7 +272,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
 
     let mut target: Option<Submenu<R>> = None;
     for item in menu.items().map_err(|error| error.to_string())? {
-        if let Some(found) = find_submenu_by_id(&item, "space.recent.menu") {
+        if let Some(found) = find_submenu_by_id(&item, RECENT_SPACES_MENU_ID) {
             target = Some(found);
             break;
         }
@@ -843,8 +846,9 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let space_menu = Submenu::with_items(
+    let space_menu = Submenu::with_id_and_items(
         app,
+        SPACE_MENU_ID,
         "Space",
         true,
         &[
@@ -1157,6 +1161,25 @@ fn set_recent_spaces_menu(
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn show_space_menu(window: tauri::WebviewWindow, x: f64, y: f64) -> Result<(), String> {
+    let app = window.app_handle();
+    let menu = app
+        .menu()
+        .ok_or_else(|| "app menu is not available".to_string())?;
+    let mut target: Option<Submenu<_>> = None;
+    for item in menu.items().map_err(|error| error.to_string())? {
+        if let Some(found) = find_submenu_by_id(&item, SPACE_MENU_ID) {
+            target = Some(found);
+            break;
+        }
+    }
+    let submenu = target.ok_or_else(|| "space menu is not available".to_string())?;
+    window
+        .popup_menu_at(&submenu, Position::Logical(LogicalPosition::new(x, y)))
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command(rename_all = "snake_case")]
 fn set_menu_shortcuts(
     app: tauri::AppHandle,
     menu_state: State<'_, MenuState>,
@@ -1383,6 +1406,7 @@ pub fn run() {
             set_quick_note_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
+            show_space_menu,
             set_menu_shortcuts,
             set_window_vibrancy_theme,
             license::commands::license_bootstrap_status,

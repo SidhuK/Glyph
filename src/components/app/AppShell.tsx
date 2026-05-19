@@ -103,7 +103,6 @@ export function AppShell() {
 		onOpenSpaceAtPath,
 		onCreateSpace,
 		closeSpace,
-		recentSpaces,
 		onboardingNotePath,
 		consumeOnboardingNotePath,
 	} = space;
@@ -1089,7 +1088,6 @@ export function AppShell() {
 		openQuickNoteWindow,
 		openSearchPalette,
 		openSettings,
-		openSpecialTab,
 		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,
@@ -1228,7 +1226,6 @@ export function AppShell() {
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
@@ -1244,10 +1241,7 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
-				recentSpaces={recentSpaces}
 				onOpenSpace={onOpenSpace}
-				onOpenRecentSpaceAtPath={onOpenSpaceAtPath}
-				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}

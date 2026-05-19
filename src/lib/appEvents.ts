@@ -57,14 +57,6 @@ export function dispatchPathRenamed(detail: PathRenamedDetail) {
 	);
 }
 
-export function dispatchForceNoteEditMode(detail: ForceNoteEditModeDetail) {
-	window.dispatchEvent(
-		new CustomEvent<ForceNoteEditModeDetail>(FORCE_NOTE_EDIT_MODE_EVENT, {
-			detail,
-		}),
-	);
-}
-
 export function dispatchOpenLocalGraph(detail: OpenLocalGraphDetail) {
 	window.dispatchEvent(
 		new CustomEvent<OpenLocalGraphDetail>(OPEN_LOCAL_GRAPH_EVENT, { detail }),

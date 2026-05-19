@@ -60,7 +60,6 @@ interface FileTreePaneProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
@@ -258,7 +257,6 @@ interface TreeEntriesProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
@@ -302,7 +300,6 @@ function TreeEntries({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
 	onDeletePath,
@@ -350,7 +347,6 @@ function TreeEntries({
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[e.rel_path] ?? null}
@@ -383,7 +379,6 @@ function TreeEntries({
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}
@@ -419,7 +414,6 @@ function TreeEntries({
 						onPrefetchFile={onPrefetchFile}
 						onNewFileInDir={onNewFileInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={onNewFolderInDir}
 						onDuplicateFile={onDuplicateFile}
 						isRenaming={renamingPath === e.rel_path}
@@ -466,7 +460,6 @@ export const FileTreePane = memo(function FileTreePane({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
 	onDeletePath,
@@ -929,7 +922,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewDatabaseInDir={onNewDatabaseInDir}
 								onNewFolderInDir={handleCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
@@ -1068,7 +1060,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewDatabaseInDir={onNewDatabaseInDir}
 								onNewFolderInDir={handleCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}

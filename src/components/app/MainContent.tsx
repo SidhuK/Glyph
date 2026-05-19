@@ -20,7 +20,6 @@ import {
 } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
@@ -78,14 +77,12 @@ import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import {
-	loadAIAgentPane,
 	loadAllDocsPane,
 	loadCalendarPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
-const AIAgentPane = lazy(loadAIAgentPane);
 const DatabasesPane = lazy(loadDatabasesPane);
 const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
@@ -609,17 +606,6 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
-		if (viewerPath === AI_AGENT_TAB_ID) {
-			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading AI Agent…</div>
-					}
-				>
-					<AIAgentPane />
-				</Suspense>
-			);
-		}
 		if (viewerPath === ALL_DOCS_TAB_ID) {
 			const initialNotes = getPrefetchedAllDocs(null);
 			return (

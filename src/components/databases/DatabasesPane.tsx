@@ -7,6 +7,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { emit } from "@tauri-apps/api/event";
 import {
 	Fragment,
+	type MouseEvent,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -22,6 +23,11 @@ import {
 	writeStoredSelectedViewId,
 } from "../../lib/database/selectedViewStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import {
+	type NativeContextMenuItem,
+	isNativeContextMenuAvailable,
+	showNativePopupMenu,
+} from "../../lib/nativeContextMenu";
 import {
 	getPrefetchedDatabaseRows,
 	getPrefetchedDatabaseSummaries,
@@ -771,6 +777,107 @@ function DatabasesPaneContent({
 		[document, saveDatabase, selectedViewId],
 	);
 
+	const handleSelectViewLayout = useCallback(
+		(layout: DatabaseConfig["view"]["layout"]) => {
+			if (!activeConfig || activeView?.layout === layout) return;
+			void handleSaveConfig({
+				...activeConfig,
+				view: {
+					...activeConfig.view,
+					layout,
+				},
+			});
+		},
+		[activeConfig, activeView?.layout, handleSaveConfig],
+	);
+
+	const handleRenameActiveView = useCallback(() => {
+		if (!activeView) return;
+		startViewRename(activeView.id);
+	}, [activeView, startViewRename]);
+
+	const handleDeleteActiveView = useCallback(() => {
+		if (!activeView) return;
+		void handleDeleteView(activeView.id);
+	}, [activeView, handleDeleteView]);
+
+	const collectionMenuItems = useMemo<NativeContextMenuItem[]>(() => {
+		const items: NativeContextMenuItem[] = summaries.map((summary) => ({
+			label: summary.name,
+			checked: summary.id === selectedDatabaseId,
+			action: () => setSelectedDatabaseId(summary.id),
+		}));
+
+		if (summaries.length > 0) {
+			items.push({ type: "separator" });
+		}
+
+		items.push({
+			label: "New collection",
+			action: () => void handleCreateDatabase(),
+		});
+
+		return items;
+	}, [handleCreateDatabase, selectedDatabaseId, summaries]);
+
+	const viewActionMenuItems = useMemo<NativeContextMenuItem[]>(() => {
+		if (!activeView) return [];
+
+		return [
+			{
+				label: "Table",
+				checked: activeView.layout === "table",
+				action: () => handleSelectViewLayout("table"),
+			},
+			{
+				label: "Board",
+				checked: activeView.layout === "board",
+				action: () => handleSelectViewLayout("board"),
+			},
+			{ type: "separator" },
+			{
+				label: "Rename",
+				action: handleRenameActiveView,
+			},
+			{ type: "separator" },
+			{
+				label: "Delete view",
+				enabled: (document?.database.views.length ?? 0) > 1,
+				action: handleDeleteActiveView,
+			},
+		];
+	}, [
+		activeView,
+		document?.database.views.length,
+		handleDeleteActiveView,
+		handleRenameActiveView,
+		handleSelectViewLayout,
+	]);
+
+	const handleCollectionNativeMenu = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			void showNativePopupMenu(event, collectionMenuItems).catch(
+				(error: unknown) => {
+					console.error("Failed to show collection menu", error);
+				},
+			);
+		},
+		[collectionMenuItems],
+	);
+
+	const handleViewNativeMenu = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			void showNativePopupMenu(event, viewActionMenuItems).catch(
+				(error: unknown) => {
+					console.error("Failed to show view options menu", error);
+				},
+			);
+		},
+		[viewActionMenuItems],
+	);
+
+	const nativeActionMenusEnabled = isNativeContextMenuAvailable();
+
 	if (loading) {
 		return <div className="databaseLoadingState">Loading collections…</div>;
 	}
@@ -779,44 +886,62 @@ function DatabasesPaneContent({
 		<div className="databaseHostPane">
 			<div className="databasesTopBar">
 				<div className="databasesTopBarLeft">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button type="button" className="databasesDropdownTrigger">
-								<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
-								<span className="databasesDropdownTriggerLabel">
-									{document?.database.name ?? "Select collection"}
-								</span>
-								<ChevronDown size={12} />
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="start"
-							className="databasesDropdownContent databasesCollectionMenu"
+					{nativeActionMenusEnabled ? (
+						<button
+							type="button"
+							className="databasesDropdownTrigger"
+							onClick={handleCollectionNativeMenu}
 						>
-							{summaries.map((summary) => (
-								<DropdownMenuItem
-									key={summary.id}
-									className={`databasesDropdownItem databasesCollectionMenuItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
-									onSelect={() => setSelectedDatabaseId(summary.id)}
-								>
+							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
+							<span className="databasesDropdownTriggerLabel">
+								{document?.database.name ?? "Select collection"}
+							</span>
+							<ChevronDown size={12} />
+						</button>
+					) : (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<button type="button" className="databasesDropdownTrigger">
 									<HugeiconsIcon
 										icon={LibraryIcon}
-										size={13}
+										size={14}
 										strokeWidth={0.9}
 									/>
-									<span>{summary.name}</span>
-								</DropdownMenuItem>
-							))}
-							{summaries.length > 0 ? <DropdownMenuSeparator /> : null}
-							<DropdownMenuItem
-								onSelect={() => void handleCreateDatabase()}
-								className="databasesDropdownItem databasesCollectionMenuItem"
+									<span className="databasesDropdownTriggerLabel">
+										{document?.database.name ?? "Select collection"}
+									</span>
+									<ChevronDown size={12} />
+								</button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="databasesDropdownContent databasesCollectionMenu"
 							>
-								<Plus size={13} />
-								<span>New collection</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								{summaries.map((summary) => (
+									<DropdownMenuItem
+										key={summary.id}
+										className={`databasesDropdownItem databasesCollectionMenuItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
+										onSelect={() => setSelectedDatabaseId(summary.id)}
+									>
+										<HugeiconsIcon
+											icon={LibraryIcon}
+											size={13}
+											strokeWidth={0.9}
+										/>
+										<span>{summary.name}</span>
+									</DropdownMenuItem>
+								))}
+								{summaries.length > 0 ? <DropdownMenuSeparator /> : null}
+								<DropdownMenuItem
+									onSelect={() => void handleCreateDatabase()}
+									className="databasesDropdownItem databasesCollectionMenuItem"
+								>
+									<Plus size={13} />
+									<span>New collection</span>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
 
 					{document && activeConfig ? (
 						<>
@@ -934,88 +1059,89 @@ function DatabasesPaneContent({
 								);
 							})}
 						</fieldset>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<button
-									type="button"
-									className="databasesViewTabMenu databaseToolbarChip"
-									title="View options"
-									aria-label={`View options for ${activeView.name}`}
-								>
-									<HugeiconsIcon
-										icon={MoreVerticalIcon}
-										className="databasesViewTabMenuIcon"
-										size={14}
-										strokeWidth={0.9}
-										color="currentColor"
-										aria-hidden
-									/>
-								</button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								align="start"
-								className="databasesDropdownContent databasesViewTabMenuContent"
-								onCloseAutoFocus={(event) => {
-									if (skipNextViewMenuAutoFocusRef.current) {
-										event.preventDefault();
-										skipNextViewMenuAutoFocusRef.current = false;
-									}
-								}}
+						{nativeActionMenusEnabled ? (
+							<button
+								type="button"
+								className="databasesViewTabMenu databaseToolbarChip"
+								title="View options"
+								aria-label={`View options for ${activeView.name}`}
+								onClick={handleViewNativeMenu}
 							>
-								<DropdownMenuLabel className="databasesViewTabMenuLabel">
-									View type
-								</DropdownMenuLabel>
-								<DropdownMenuItem
-									onSelect={() => {
-										if (!activeConfig || activeView.layout === "table") return;
-										void handleSaveConfig({
-											...activeConfig,
-											view: {
-												...activeConfig.view,
-												layout: "table",
-											},
-										});
+								<HugeiconsIcon
+									icon={MoreVerticalIcon}
+									className="databasesViewTabMenuIcon"
+									size={14}
+									strokeWidth={0.9}
+									color="currentColor"
+									aria-hidden
+								/>
+							</button>
+						) : (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<button
+										type="button"
+										className="databasesViewTabMenu databaseToolbarChip"
+										title="View options"
+										aria-label={`View options for ${activeView.name}`}
+									>
+										<HugeiconsIcon
+											icon={MoreVerticalIcon}
+											className="databasesViewTabMenuIcon"
+											size={14}
+											strokeWidth={0.9}
+											color="currentColor"
+											aria-hidden
+										/>
+									</button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align="start"
+									className="databasesDropdownContent databasesViewTabMenuContent"
+									onCloseAutoFocus={(event) => {
+										if (skipNextViewMenuAutoFocusRef.current) {
+											event.preventDefault();
+											skipNextViewMenuAutoFocusRef.current = false;
+										}
 									}}
-									className="databasesDropdownItem databasesViewTabMenuItem"
 								>
-									<Table size={13} />
-									<span>Table</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onSelect={() => {
-										if (!activeConfig || activeView.layout === "board") return;
-										void handleSaveConfig({
-											...activeConfig,
-											view: {
-												...activeConfig.view,
-												layout: "board",
-											},
-										});
-									}}
-									className="databasesDropdownItem databasesViewTabMenuItem"
-								>
-									<Kanban size={13} />
-									<span>Board</span>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
-								<DropdownMenuItem
-									onSelect={() => startViewRename(activeView.id)}
-									className="databasesDropdownItem databasesViewTabMenuItem"
-								>
-									<Edit size={13} />
-									<span>Rename</span>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
-								<DropdownMenuItem
-									disabled={document.database.views.length <= 1}
-									onSelect={() => void handleDeleteView(activeView.id)}
-									className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
-								>
-									<Trash2 size={13} />
-									<span>Delete view</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+									<DropdownMenuLabel className="databasesViewTabMenuLabel">
+										View type
+									</DropdownMenuLabel>
+									<DropdownMenuItem
+										onSelect={() => handleSelectViewLayout("table")}
+										className="databasesDropdownItem databasesViewTabMenuItem"
+									>
+										<Table size={13} />
+										<span>Table</span>
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onSelect={() => handleSelectViewLayout("board")}
+										className="databasesDropdownItem databasesViewTabMenuItem"
+									>
+										<Kanban size={13} />
+										<span>Board</span>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
+									<DropdownMenuItem
+										onSelect={handleRenameActiveView}
+										className="databasesDropdownItem databasesViewTabMenuItem"
+									>
+										<Edit size={13} />
+										<span>Rename</span>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
+									<DropdownMenuItem
+										disabled={document.database.views.length <= 1}
+										onSelect={handleDeleteActiveView}
+										className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
+									>
+										<Trash2 size={13} />
+										<span>Delete view</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
 						<button
 							type="button"
 							className="databasesViewTabCreate databaseToolbarChip"
