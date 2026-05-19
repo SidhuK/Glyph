@@ -1,8 +1,10 @@
+import { useUpdaterContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
+import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
 interface SidebarHeaderProps {
 	sidebarCollapsed: boolean;
@@ -14,6 +16,7 @@ export function SidebarHeader({
 	onToggleSidebar,
 }: SidebarHeaderProps) {
 	const { getBinding } = useShortcutBindings();
+	const autoUpdater = useUpdaterContext();
 	const toggleSidebarShortcut = getBinding("toggle-sidebar");
 
 	return (
@@ -38,6 +41,11 @@ export function SidebarHeader({
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>
+					<WindowChromeUpdateButton
+						updateReady={autoUpdater.updateReady}
+						updateVersion={autoUpdater.updateVersion}
+						onInstallUpdate={autoUpdater.installAndRelaunch}
+					/>
 				</div>
 			</div>
 		</>
