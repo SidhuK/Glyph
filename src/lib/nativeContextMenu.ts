@@ -45,6 +45,10 @@ interface NativeMenuResult {
 	didSelectItem: boolean;
 }
 
+function nativeMenuText(label: string): string {
+	return label.replace(/&/g, "&&");
+}
+
 function buildTauriMenuItems(
 	items: NativeContextMenuItem[],
 	onAction: () => void,
@@ -56,7 +60,7 @@ function buildTauriMenuItems(
 
 		if (item.type === "submenu") {
 			return {
-				text: item.label,
+				text: nativeMenuText(item.label),
 				enabled: item.enabled ?? item.items.length > 0,
 				items: buildTauriMenuItems(item.items, onAction),
 			};
@@ -69,7 +73,7 @@ function buildTauriMenuItems(
 
 		if (item.checked !== undefined) {
 			return {
-				text: item.label,
+				text: nativeMenuText(item.label),
 				enabled: item.enabled ?? true,
 				checked: item.checked,
 				action,
@@ -77,7 +81,7 @@ function buildTauriMenuItems(
 		}
 
 		return {
-			text: item.label,
+			text: nativeMenuText(item.label),
 			enabled: item.enabled ?? true,
 			action,
 		};
@@ -136,5 +140,5 @@ export async function showNativePopupMenu(
 		},
 		items,
 	);
-	return result.shown;
+	return result.didSelectItem;
 }

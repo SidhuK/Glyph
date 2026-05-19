@@ -103,7 +103,6 @@ interface FileTreeFileItemProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
 	onStartRename: () => void;
@@ -134,7 +133,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
 	onStartRename,
@@ -244,10 +242,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					action: () => void onCreateFromTemplateInDir(parentDirPath),
 				},
 				{
-					label: "Add database",
-					action: () => void onNewDatabaseInDir(parentDirPath),
-				},
-				{
 					label: "Add folder",
 					action: () => void onNewFolderInDir(parentDirPath),
 				},
@@ -269,7 +263,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onDuplicateFile,
-			onNewDatabaseInDir,
 			onNewFileInDir,
 			onNewFolderInDir,
 			onOpenFile,

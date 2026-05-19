@@ -99,7 +99,6 @@ describe("FileTreeFileItem", () => {
 					onOpenFile={vi.fn()}
 					onNewFileInDir={vi.fn()}
 					onCreateFromTemplateInDir={vi.fn()}
-					onNewDatabaseInDir={vi.fn()}
 					onNewFolderInDir={vi.fn()}
 					onDuplicateFile={vi.fn()}
 					onStartRename={vi.fn()}

@@ -42,8 +42,9 @@ export function DatabaseFolderPicker({
 }: DatabaseFolderPickerProps) {
 	const [isPicking, setIsPicking] = useState(false);
 	const [error, setError] = useState("");
-	const selectedLabel = error || (value ? folderName(value) : placeholder);
-	const selectedMeta = folderBreadcrumb(value);
+	const hasError = Boolean(error);
+	const selectedLabel = value ? folderName(value) : placeholder;
+	const selectedMeta = error || folderBreadcrumb(value);
 
 	const handlePickFolder = async () => {
 		setError("");
@@ -80,8 +81,13 @@ export function DatabaseFolderPicker({
 		<Button
 			type="button"
 			variant="outline"
-			className={cn("databasePickerTrigger", triggerClassName)}
+			className={cn(
+				"databasePickerTrigger",
+				hasError && "databasePickerTriggerError",
+				triggerClassName,
+			)}
 			disabled={isPicking}
+			aria-invalid={hasError || undefined}
 			title={error || value || placeholder}
 			onClick={() => {
 				void handlePickFolder();

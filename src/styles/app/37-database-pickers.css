@@ -79,6 +79,25 @@
 	color: var(--text-tertiary);
 }
 
+.databasePickerTriggerError {
+	border-color: var(--status-danger-border);
+	background: color-mix(in srgb, var(--status-danger-bg) 42%, var(--bg-primary));
+}
+
+.databasePickerTriggerError:hover {
+	border-color: var(--status-danger-border);
+	background: color-mix(in srgb, var(--status-danger-bg) 58%, var(--bg-primary));
+}
+
+.databasePickerTriggerError .databasePickerTriggerIcon {
+	background: color-mix(in srgb, var(--status-danger-bg) 70%, transparent);
+	color: var(--status-danger-fg);
+}
+
+.databasePickerTriggerError .databasePickerTriggerMeta {
+	color: var(--status-danger-fg);
+}
+
 .databaseDialogCompact .databasePickerTriggerMeta {
 	display: none;
 }
@@ -121,6 +140,12 @@
 
 .databaseSourceInlinePicker .databasePickerTriggerMeta {
 	display: none;
+}
+
+.databaseDialogCompact .databasePickerTriggerError .databasePickerTriggerMeta,
+.databaseSourceInlinePicker.databasePickerTriggerError
+	.databasePickerTriggerMeta {
+	display: block;
 }
 
 .databasePickerPopover {

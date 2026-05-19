@@ -1226,7 +1226,6 @@ export function AppShell() {
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}

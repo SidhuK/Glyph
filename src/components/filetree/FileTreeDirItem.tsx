@@ -97,7 +97,6 @@ interface FileTreeDirItemProps {
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	onEnterDir?: (dirPath: string) => void;
@@ -121,7 +120,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCancelRename,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
 	onEnterDir,
@@ -174,10 +172,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					action: () => void onCreateFromTemplateInDir(entry.rel_path),
 				},
 				{
-					label: "Add database",
-					action: () => void onNewDatabaseInDir(entry.rel_path),
-				},
-				{
 					label: "Add folder",
 					action: () => void onNewFolderInDir(entry.rel_path),
 				},
@@ -202,7 +196,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onChangeAppearance,
 			onCreateFromTemplateInDir,
 			onDeletePath,
-			onNewDatabaseInDir,
 			onNewFileInDir,
 			onNewFolderInDir,
 			onStartRename,
