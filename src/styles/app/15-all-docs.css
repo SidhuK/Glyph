@@ -167,7 +167,7 @@
 
 .allDocsCardPathIcon {
 	flex: 0 0 auto;
-	color: currentColor;
+	color: currentcolor;
 }
 
 .allDocsCardPathLabel {
@@ -195,7 +195,7 @@
 	width: 3px;
 	height: 3px;
 	border-radius: 50%;
-	background: currentColor;
+	background: currentcolor;
 	opacity: 0.72;
 }
 
