@@ -26,7 +26,6 @@ import { Button } from "../ui/shadcn/button";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 	SettingsToggle,
 	SettingsValueCard,
 } from "./SettingsScaffold";
@@ -36,6 +35,21 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_attachments: false,
 	include_non_markdown_files: false,
 };
+
+const GIT_SYNC_INTERVAL_OPTIONS = [
+	{ label: "5 min", value: "5" },
+	{ label: "10 min", value: "10" },
+	{ label: "30 min", value: "30" },
+	{ label: "60 min", value: "60" },
+] as const;
+
+const CONFLICT_POLICY_OPTIONS = [
+	{ label: "Local wins", value: "local_wins" },
+	{ label: "Remote wins", value: "remote_wins" },
+] as const satisfies readonly {
+	label: string;
+	value: GitSyncConflictPolicy;
+}[];
 
 export function GitSettingsPane() {
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
@@ -274,23 +288,23 @@ export function GitSettingsPane() {
 					<SettingsRow
 						label="Interval"
 						description="How often Glyph should run scheduled syncs."
-						stacked
 					>
-						<SettingsSegmented
+						<select
+							aria-label="Git sync interval"
 							value={String(config?.interval_minutes ?? 10)}
-							ariaLabel="Git sync interval"
-							className="appearanceThemeModeSegmented gitSettingsIntervalSegmented"
 							disabled={!gitEnabledForSpace || busy}
-							options={[
-								{ label: "5 min", value: "5" },
-								{ label: "10 min", value: "10" },
-								{ label: "30 min", value: "30" },
-								{ label: "60 min", value: "60" },
-							]}
-							onChange={(value) => {
-								void updatePatch({ interval_minutes: Number(value) });
+							onChange={(event) => {
+								void updatePatch({
+									interval_minutes: Number(event.currentTarget.value),
+								});
 							}}
-						/>
+						>
+							{GIT_SYNC_INTERVAL_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
 					</SettingsRow>
 					<SettingsRow
 						label="Actions"
@@ -340,22 +354,24 @@ export function GitSettingsPane() {
 					<SettingsRow
 						label="Policy"
 						description="Glyph resolves conflicts automatically."
-						stacked
 					>
-						<SettingsSegmented
+						<select
+							aria-label="Conflict policy"
 							value={config?.conflict_policy ?? "local_wins"}
-							ariaLabel="Conflict policy"
 							disabled={!gitEnabledForSpace || busy}
-							options={[
-								{ label: "Local wins", value: "local_wins" },
-								{ label: "Remote wins", value: "remote_wins" },
-							]}
-							onChange={(value) => {
+							onChange={(event) => {
 								void updatePatch({
-									conflict_policy: value as GitSyncConflictPolicy,
+									conflict_policy: event.currentTarget
+										.value as GitSyncConflictPolicy,
 								});
 							}}
-						/>
+						>
+							{CONFLICT_POLICY_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
 					</SettingsRow>
 				</SettingsSection>
 

@@ -1,4 +1,4 @@
-import { Tag01Icon } from "@hugeicons/core-free-icons";
+import { Folder01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -47,7 +47,8 @@ function titleFromPath(notePath: string): string {
 function folderLabel(notePath: string): string {
 	const parts = notePath.split("/").filter(Boolean);
 	if (parts.length <= 1) return "Workspace root";
-	return parts.slice(0, -1).join(" / ");
+	const parentFolders = parts.slice(0, -1);
+	return parentFolders[parentFolders.length - 1] ?? "Workspace root";
 }
 
 type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
@@ -121,10 +122,10 @@ function previewLines(preview: string, title: string): PreviewLine[] {
 
 function updatedTimeframe(iso: string): string {
 	try {
-		return formatDistanceToNow(new Date(iso), { addSuffix: true })
-			.replace(/^about\s+/i, "")
-			.replace(/\s+ago$/i, "")
-			.replace(/^in\s+/i, "");
+		return formatDistanceToNow(new Date(iso), { addSuffix: true }).replace(
+			/^about\s+/i,
+			"",
+		);
 	} catch {
 		return "recently";
 	}
@@ -290,6 +291,29 @@ export const AllDocsPane = memo(function AllDocsPane({
 										title="Double-click to open note"
 									>
 										<div className="allDocsCardSurface">
+											<span className="allDocsCardTitle" title={noteTitle}>
+												{noteTitle}
+											</span>
+											<div className="allDocsCardMetaRow">
+												<span
+													className="allDocsCardPath"
+													title={note.note_path}
+												>
+													<HugeiconsIcon
+														icon={Folder01Icon}
+														className="allDocsCardPathIcon"
+														size={12}
+														strokeWidth={1.2}
+													/>
+													<span className="allDocsCardPathLabel">
+														{notePath}
+													</span>
+												</span>
+												<span className="allDocsCardTime">
+													{updatedTimeframe(note.updated)}
+												</span>
+											</div>
+											<span className="allDocsCardDivider" aria-hidden="true" />
 											{preview.length > 0 ? (
 												<div className="allDocsCardPreview">
 													{preview.map((line, lineIndex) => (
@@ -329,22 +353,6 @@ export const AllDocsPane = memo(function AllDocsPane({
 													) : null}
 												</div>
 											) : null}
-										</div>
-										<div className="allDocsCardCaption">
-											<span className="allDocsCardTitle" title={noteTitle}>
-												{noteTitle}
-											</span>
-											<div className="allDocsCardMetaRow">
-												<span
-													className="allDocsCardPath"
-													title={note.note_path}
-												>
-													{notePath}
-												</span>
-												<span className="allDocsCardTime">
-													{updatedTimeframe(note.updated)}
-												</span>
-											</div>
 										</div>
 									</m.button>
 								);

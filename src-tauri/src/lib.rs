@@ -720,8 +720,6 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         None,
     )?;
-    let close_ai =
-        menu_item_with_shortcut(app, menu_shortcuts, "ai.close", "Close AI Pane", true, None)?;
     let attach_current_note = menu_item_with_shortcut(
         app,
         menu_shortcuts,
@@ -768,7 +766,6 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         &[
             &toggle_ai,
-            &close_ai,
             &PredefinedMenuItem::separator(app)?,
             &attach_current_note,
             &attach_all_open_notes,

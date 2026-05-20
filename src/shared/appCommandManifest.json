@@ -258,17 +258,6 @@
 			"commandPalette": true,
 			"menuId": "file.close_tab"
 		},
-		"close-ai-pane": {
-			"id": "close-ai-pane",
-			"label": "Close AI Panel",
-			"description": "Close the AI assistant panel.",
-			"category": "ai",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true,
-			"menuId": "ai.close"
-		},
 		"close-all-tabs": {
 			"id": "close-all-tabs",
 			"label": "Close All Tabs",
@@ -778,16 +767,6 @@
 			"id": "open-all-docs",
 			"label": "Open All Notes",
 			"description": "Open the all notes view.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
-		"open-calendar": {
-			"id": "open-calendar",
-			"label": "Open Calendar",
-			"description": "Open the home calendar view.",
 			"category": "navigation",
 			"context": "space",
 			"defaultBinding": null,

@@ -91,6 +91,10 @@
 	line-height: 1.2;
 }
 
+.plainTextInput.mainTabActiveTitleInput:focus-visible {
+	box-shadow: none;
+}
+
 .mainTabNavBtn {
 	height: 28px;
 	width: 28px;

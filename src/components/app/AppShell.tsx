@@ -138,7 +138,9 @@ export function AppShell() {
 		dailyNoteTemplatePath,
 		sidebarWidth,
 		setSidebarWidth,
+		settingsMode,
 		openSettings,
+		closeSettings,
 	} = useUILayoutContext();
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
@@ -735,10 +737,6 @@ export function AppShell() {
 		setAiPanelOpen((v) => !v);
 	}, [aiEnabled, setAiPanelOpen, spacePath]);
 
-	const handleCloseAiPaneFromMenu = useCallback(() => {
-		setAiPanelOpen(false);
-	}, [setAiPanelOpen]);
-
 	const handleAttachCurrentNoteFromMenu = useCallback(() => {
 		void attachCurrentNoteToAi();
 	}, [attachCurrentNoteToAi]);
@@ -1036,7 +1034,6 @@ export function AppShell() {
 		},
 		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,
-		onCloseAiPane: handleCloseAiPaneFromMenu,
 		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
 		onAttachAllOpenNotesToAi: handleAttachAllOpenNotesFromMenu,
 		onOpenAiSettings: handleOpenAiSettings,
@@ -1066,7 +1063,6 @@ export function AppShell() {
 		gitSync,
 		goBack,
 		goForward,
-		handleCloseAiPaneFromMenu,
 		handleCopyOpenNoteAsMarkdown,
 		handleCreateFromTemplateFromMenu,
 		handleDuplicateActiveMarkdown,
@@ -1109,6 +1105,20 @@ export function AppShell() {
 	const shortcutHandlers = useMemo(
 		() => [
 			{
+				id: "close-settings",
+				shortcut: { key: "Escape" },
+				enabled: settingsMode,
+				action: closeSettings,
+				allowInEditable: true,
+			},
+			{
+				id: "back-from-settings",
+				shortcut: { meta: true, key: "[" },
+				enabled: settingsMode,
+				action: closeSettings,
+				allowInEditable: true,
+			},
+			{
 				id: "open-command-palette",
 				shortcut: getBinding("open-command-palette"),
 				action: openCommandPalette,
@@ -1140,10 +1150,12 @@ export function AppShell() {
 		],
 		[
 			activateTabByIndex,
+			closeSettings,
 			commands,
 			getBinding,
 			openCommandPalette,
 			openSearchPalette,
+			settingsMode,
 			tabs,
 		],
 	);

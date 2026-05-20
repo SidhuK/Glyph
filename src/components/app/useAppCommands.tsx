@@ -1,7 +1,6 @@
 import {
 	ArrowLeft,
 	ArrowRight,
-	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
@@ -77,7 +76,6 @@ interface UseAppCommandsDeps {
 	gitSync: GitSyncCommandActions;
 	goBack: () => void;
 	goForward: () => void;
-	handleCloseAiPaneFromMenu: () => void;
 	handleCopyOpenNoteAsMarkdown: () => Promise<void>;
 	handleCreateFromTemplateFromMenu: () => void;
 	handleDuplicateActiveMarkdown: () => Promise<void>;
@@ -175,7 +173,6 @@ function buildAiCommands({
 	aiEnabled,
 	attachAllOpenNotesToAi,
 	attachCurrentNoteToAi,
-	handleCloseAiPaneFromMenu,
 	openMarkdownTabsLength,
 	setAiPanelOpen,
 	spacePath,
@@ -185,7 +182,6 @@ function buildAiCommands({
 	| "aiEnabled"
 	| "attachAllOpenNotesToAi"
 	| "attachCurrentNoteToAi"
-	| "handleCloseAiPaneFromMenu"
 	| "openMarkdownTabsLength"
 	| "setAiPanelOpen"
 	| "spacePath"
@@ -200,14 +196,6 @@ function buildAiCommands({
 			shortcut: { meta: true, shift: true, key: "a" },
 			enabled: Boolean(spacePath),
 			action: () => setAiPanelOpen((v) => !v),
-		},
-		{
-			id: "close-ai-pane",
-			label: "Close AI",
-			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
-			category: "AI",
-			enabled: Boolean(spacePath),
-			action: handleCloseAiPaneFromMenu,
 		},
 		{
 			id: "ai-attach-current-note",
@@ -276,7 +264,6 @@ export function useAppCommands({
 	gitSync,
 	goBack,
 	goForward,
-	handleCloseAiPaneFromMenu,
 	handleCopyOpenNoteAsMarkdown,
 	handleCreateFromTemplateFromMenu,
 	handleDuplicateActiveMarkdown,
@@ -328,7 +315,6 @@ export function useAppCommands({
 			aiEnabled,
 			attachAllOpenNotesToAi,
 			attachCurrentNoteToAi,
-			handleCloseAiPaneFromMenu,
 			openMarkdownTabsLength,
 			setAiPanelOpen,
 			spacePath,
@@ -626,16 +612,6 @@ export function useAppCommands({
 				action: openTemplatesTab,
 			},
 			{
-				id: "open-calendar",
-				label: "Open calendar",
-				icon: (
-					<HugeiconsIcon icon={Calendar03Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openCalendarTab,
-			},
-			{
 				id: "open-dashboard",
 				label: "Open home",
 				icon: <HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={0.9} />,
@@ -825,7 +801,6 @@ export function useAppCommands({
 		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
 		handleDuplicateActiveMarkdown,
-		handleCloseAiPaneFromMenu,
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,
 		handleRevealSpaceFromMenu,

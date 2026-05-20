@@ -42,7 +42,7 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
-import { Edit, Eye, RefreshCw, Save } from "../Icons";
+import { Edit, Eye } from "../Icons";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
@@ -829,11 +829,7 @@ export function MarkdownEditorPane({
 									transition={
 										shouldReduceMotion
 											? { duration: 0 }
-											: {
-													type: "spring",
-													stiffness: 420,
-													damping: 34,
-												}
+											: { duration: 0.1, ease: "easeOut" }
 									}
 								>
 									<Button
@@ -920,34 +916,6 @@ export function MarkdownEditorPane({
 											strokeWidth={0.9}
 										/>
 										Raw
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										onClick={() => {
-											void loadDoc(true);
-											setActionsOpen(false);
-										}}
-										disabled={saving}
-									>
-										<RefreshCw size={12} />
-										Reload
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										onClick={() => {
-											void onSave();
-											setActionsOpen(false);
-										}}
-										disabled={saving}
-									>
-										<Save size={12} />
-										{saving ? "Saving" : "Save"}
 									</Button>
 								</m.div>
 							) : null}

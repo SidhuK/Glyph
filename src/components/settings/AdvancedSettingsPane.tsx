@@ -25,7 +25,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 
@@ -51,11 +50,11 @@ const VIM_KEYBINDING_HELP = [
 	{ key: "Control-r", action: "Redo." },
 ] as const;
 
-const EDITOR_WIDTH_OPTIONS: Array<{ label: string; value: EditorWidthMode }> = [
+const EDITOR_WIDTH_OPTIONS = [
 	{ label: "Compact", value: "compact" },
 	{ label: "Comfortable", value: "comfortable" },
 	{ label: "Wide", value: "wide" },
-];
+] as const satisfies readonly { label: string; value: EditorWidthMode }[];
 
 function VimKeybindingsHelp() {
 	return (
@@ -330,14 +329,13 @@ export function AdvancedSettingsPane() {
 						label="Editor width"
 						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
 						interactive={false}
-						className="appearanceThemeModeRow"
 					>
-						<SettingsSegmented<EditorWidthMode>
-							ariaLabel="Editor width"
+						<select
+							aria-label="Editor width"
 							value={editorWidthMode}
 							disabled={isSavingEditorWidthMode}
-							className="appearanceThemeModeSegmented"
-							onChange={(nextMode) => {
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value as EditorWidthMode;
 								const previous = editorWidthMode;
 								setError("");
 								setEditorWidthModeState(nextMode);
@@ -351,8 +349,13 @@ export function AdvancedSettingsPane() {
 										setIsSavingEditorWidthMode(false);
 									});
 							}}
-							options={EDITOR_WIDTH_OPTIONS}
-						/>
+						>
+							{EDITOR_WIDTH_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
 					</SettingsRow>
 					<SettingsRow
 						label="Collapsible headings"

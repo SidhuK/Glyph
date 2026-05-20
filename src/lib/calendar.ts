@@ -1,12 +1,4 @@
-import {
-	addDays,
-	endOfMonth,
-	endOfWeek,
-	format,
-	parseISO,
-	startOfMonth,
-	startOfWeek,
-} from "date-fns";
+import { addDays, endOfWeek, format, parseISO, startOfWeek } from "date-fns";
 
 export const CALENDAR_TAB_ID = "__glyph_calendar__";
 
@@ -24,11 +16,12 @@ export function formatCalendarDate(date: Date): string {
 	return format(date, "yyyy-MM-dd");
 }
 
-export function buildMonthRange(anchorDate: string): CalendarRange {
+export function buildWeekRange(anchorDate: string): CalendarRange {
 	const anchor = parseCalendarDate(anchorDate);
-	const rangeStart = startOfWeek(startOfMonth(anchor), { weekStartsOn: 0 });
-	const rangeEnd = endOfWeek(endOfMonth(anchor), { weekStartsOn: 0 });
-	return buildRange(rangeStart, rangeEnd);
+	return buildRange(
+		startOfWeek(anchor, { weekStartsOn: 0 }),
+		endOfWeek(anchor, { weekStartsOn: 0 }),
+	);
 }
 
 function buildRange(start: Date, end: Date): CalendarRange {
@@ -43,26 +36,8 @@ function buildRange(start: Date, end: Date): CalendarRange {
 	};
 }
 
-export function shiftMonth(anchorDate: string, delta: number): string {
-	const anchor = parseCalendarDate(anchorDate);
-	const next = new Date(anchor.getFullYear(), anchor.getMonth() + delta, 1);
-	return formatCalendarDate(next);
-}
-
-function formatDayTitle(date: string): string {
-	return format(parseCalendarDate(date), "MMM d");
-}
-
-export function formatMonthDay(date: string): string {
-	return formatDayTitle(date);
-}
-
-export function formatMonthName(date: Date): string {
-	return format(date, "MMMM");
-}
-
-export function formatYear(date: Date): string {
-	return format(date, "yyyy");
+export function shiftWeek(anchorDate: string, delta: number): string {
+	return formatCalendarDate(addDays(parseCalendarDate(anchorDate), delta * 7));
 }
 
 export function insertTaskIntoDailyNote(

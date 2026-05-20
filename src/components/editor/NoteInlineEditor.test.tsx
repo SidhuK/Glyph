@@ -170,10 +170,6 @@ vi.mock("../ui/shadcn/button", () => ({
 	),
 }));
 
-vi.mock("../ui/shadcn/calendar", () => ({
-	Calendar: () => null,
-}));
-
 vi.mock("../ui/shadcn/dialog", () => ({
 	Dialog: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	DialogContent: ({ children }: { children: React.ReactNode }) => (
