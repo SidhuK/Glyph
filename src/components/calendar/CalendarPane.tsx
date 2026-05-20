@@ -1,9 +1,9 @@
 import {
 	ArrowLeftBigIcon,
 	ArrowRightBigIcon,
-	CalendarAdd01Icon,
-	Clock02Icon,
-	Note03Icon,
+	Calendar03Icon,
+	MoreHorizontalIcon,
+	NoteIcon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -13,14 +13,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
-	buildMonthRange,
-	formatCalendarDate,
-	formatMonthDay,
-	formatMonthName,
-	formatYear,
+	buildWeekRange,
 	insertTaskIntoDailyNote,
 	parseCalendarDate,
-	shiftMonth,
+	shiftWeek,
 } from "../../lib/calendar";
 import {
 	getDailyNoteContent,
@@ -28,6 +24,7 @@ import {
 	parseIsoDate,
 } from "../../lib/dailyNotes";
 import { isMissingFileError } from "../../lib/fsErrors";
+import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import {
 	loadCalendarData,
 	navigationQueryKeys,
@@ -35,19 +32,17 @@ import {
 } from "../../lib/navigationPrefetch";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import {
+	type CalendarNoteActivityItem,
 	type CalendarRangeResponse,
 	type TaskItem,
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate } from "../../lib/templates";
-import { cn } from "../../lib/utils";
 import { Settings } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { Button } from "../ui/shadcn/button";
-import { Calendar as ShadcnCalendar } from "../ui/shadcn/calendar";
 import { Input } from "../ui/shadcn/input";
-import { RecentNotesBoardStrip } from "./RecentNotesBoardStrip";
 
 const ANCHOR_STORAGE_KEY = "glyph.calendar.anchorDate";
 const SELECTED_STORAGE_KEY = "glyph.calendar.selectedDate";
@@ -76,20 +71,54 @@ function writeStorage(key: string, value: string) {
 	}
 }
 
+function isDateInsideWeek(date: string, anchorDate: string): boolean {
+	return buildWeekRange(anchorDate).dates.includes(date);
+}
+
+function fileTitleFromPath(notePath: string): string {
+	const base = notePath.split("/").pop() ?? notePath;
+	return base.replace(/\.md$/i, "");
+}
+
+function noteTitle(note: CalendarNoteActivityItem): string {
+	const title = note.title.trim();
+	return title || fileTitleFromPath(note.note_path);
+}
+
+function noteTimeLabel(note: CalendarNoteActivityItem): string {
+	const source = note.edited_on_day ? note.updated : note.created;
+	const date = new Date(source);
+	if (Number.isNaN(date.getTime())) {
+		return note.edited_on_day ? "edited" : "created";
+	}
+	return format(date, "h:mm a");
+}
+
+function weekTitle(dates: string[]): string {
+	const first = parseCalendarDate(dates[0] ?? todayIsoDateLocal());
+	const last = parseCalendarDate(dates[dates.length - 1] ?? dates[0]);
+	if (first.getFullYear() !== last.getFullYear()) {
+		return `${format(first, "MMM d, yyyy")} - ${format(last, "MMM d, yyyy")}`;
+	}
+	if (first.getMonth() !== last.getMonth()) {
+		return `${format(first, "MMM d")} - ${format(last, "MMM d, yyyy")}`;
+	}
+	return `${format(first, "MMM d")} - ${format(last, "d, yyyy")}`;
+}
+
+function selectedMonthLabel(date: string): { month: string; year: string } {
+	const parsed = parseCalendarDate(date);
+	return {
+		month: format(parsed, "MMM"),
+		year: format(parsed, "yyyy"),
+	};
+}
+
 function getTaskGroupMeta(label: string): {
 	displayLabel: string;
-	tone: "danger" | "info" | "warning" | "neutral";
 } {
-	if (label === "Overdue") {
-		return { displayLabel: "Overdue", tone: "danger" };
-	}
-	if (label === "For this day") {
-		return { displayLabel: "Agenda", tone: "info" };
-	}
-	if (label === "Ongoing") {
-		return { displayLabel: "Ongoing", tone: "warning" };
-	}
-	return { displayLabel: label, tone: "neutral" };
+	if (label === "For this day") return { displayLabel: "Tasks" };
+	return { displayLabel: label };
 }
 
 export function CalendarPane({
@@ -98,11 +127,20 @@ export function CalendarPane({
 	onOpenDailyNotesSettings,
 }: CalendarPaneProps) {
 	const today = useMemo(() => todayIsoDateLocal(), []);
-	const [anchorDate, setAnchorDate] = useState(
-		() => readStorage(ANCHOR_STORAGE_KEY) ?? todayIsoDateLocal(),
-	);
-	const [selectedDate, setSelectedDate] = useState(
+	const initialSelectedDate = useMemo(
 		() => readStorage(SELECTED_STORAGE_KEY) ?? todayIsoDateLocal(),
+		[],
+	);
+	const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
+	const [anchorDate, setAnchorDate] = useState(
+		() => readStorage(ANCHOR_STORAGE_KEY) ?? initialSelectedDate,
+	);
+	const normalizedAnchorDate = isDateInsideWeek(selectedDate, anchorDate)
+		? anchorDate
+		: selectedDate;
+	const weekRange = useMemo(
+		() => buildWeekRange(normalizedAnchorDate),
+		[normalizedAnchorDate],
 	);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
@@ -117,24 +155,27 @@ export function CalendarPane({
 	});
 
 	const calendarArgs = useMemo(
-		() => ({ anchorDate, selectedDate, dailyNotesFolder }),
-		[anchorDate, dailyNotesFolder, selectedDate],
+		() => ({
+			anchorDate: normalizedAnchorDate,
+			selectedDate,
+			dailyNotesFolder,
+		}),
+		[dailyNotesFolder, normalizedAnchorDate, selectedDate],
 	);
 	const matchingInitialData = useMemo(() => {
 		if (!initialData || initialData.detail.selected_date !== selectedDate) {
 			return undefined;
 		}
-		const range = buildMonthRange(anchorDate);
 		const lastDay = initialData.days[initialData.days.length - 1];
 		if (
-			initialData.days.length !== range.dates.length ||
-			initialData.days[0]?.date !== range.start ||
-			lastDay?.date !== range.end
+			initialData.days.length !== weekRange.dates.length ||
+			initialData.days[0]?.date !== weekRange.start ||
+			lastDay?.date !== weekRange.end
 		) {
 			return undefined;
 		}
 		return initialData;
-	}, [anchorDate, initialData, selectedDate]);
+	}, [initialData, selectedDate, weekRange]);
 	const calendarQuery = useQuery({
 		queryKey: navigationQueryKeys.calendarRange(calendarArgs),
 		queryFn: () => loadCalendarData(calendarArgs),
@@ -169,28 +210,28 @@ export function CalendarPane({
 		void invalidateCalendar();
 	});
 
-	const selectedTasks = data?.tasks;
-
 	const goToToday = useCallback(() => {
 		setAnchorDateAndPersist(today);
 		setSelectedDateAndPersist(today);
 	}, [setAnchorDateAndPersist, setSelectedDateAndPersist, today]);
 
-	const stepRange = useCallback(
-		(direction: -1 | 1) => {
-			const nextAnchor = shiftMonth(anchorDate, direction);
-			setAnchorDateAndPersist(nextAnchor);
-			const nextRange = buildMonthRange(nextAnchor);
-			if (!nextRange.dates.includes(selectedDate)) {
-				setSelectedDateAndPersist(nextAnchor);
+	const selectDay = useCallback(
+		(date: string) => {
+			setSelectedDateAndPersist(date);
+			if (!isDateInsideWeek(date, normalizedAnchorDate)) {
+				setAnchorDateAndPersist(date);
 			}
 		},
-		[
-			anchorDate,
-			selectedDate,
-			setAnchorDateAndPersist,
-			setSelectedDateAndPersist,
-		],
+		[normalizedAnchorDate, setAnchorDateAndPersist, setSelectedDateAndPersist],
+	);
+
+	const stepWeek = useCallback(
+		(direction: -1 | 1) => {
+			const nextSelected = shiftWeek(selectedDate, direction);
+			setAnchorDateAndPersist(nextSelected);
+			setSelectedDateAndPersist(nextSelected);
+		},
+		[selectedDate, setAnchorDateAndPersist, setSelectedDateAndPersist],
 	);
 
 	const ensureDailyNoteExistsForTask = useCallback(
@@ -203,9 +244,7 @@ export function CalendarPane({
 				const existing = await invoke("space_read_text", { path: notePath });
 				return existing;
 			} catch (cause) {
-				if (!isMissingFileError(cause)) {
-					throw cause;
-				}
+				if (!isMissingFileError(cause)) throw cause;
 			}
 
 			let content = getDailyNoteContent(date);
@@ -220,9 +259,7 @@ export function CalendarPane({
 						date: parseIsoDate(date) ?? new Date(),
 					});
 				} catch (cause) {
-					if (!isMissingFileError(cause)) {
-						throw cause;
-					}
+					if (!isMissingFileError(cause)) throw cause;
 				}
 			}
 
@@ -364,17 +401,49 @@ export function CalendarPane({
 		await openDailyNoteForDate(selectedDate);
 	}, [openDailyNoteForDate, selectedDate]);
 
+	const openNativeMenu = useCallback(
+		async (event: React.MouseEvent<HTMLButtonElement>) => {
+			await showNativePopupMenu(event, [
+				{
+					label: "Open daily note",
+					action: () => void openSelectedDailyNote(),
+				},
+				{ label: "Today", action: goToToday },
+				{ type: "separator" },
+				{ label: "Previous week", action: () => stepWeek(-1) },
+				{ label: "Next week", action: () => stepWeek(1) },
+				{ type: "separator" },
+				{
+					label: "Daily notes settings",
+					action: onOpenDailyNotesSettings,
+				},
+			]);
+		},
+		[goToToday, onOpenDailyNotesSettings, openSelectedDailyNote, stepWeek],
+	);
+
+	const agendaTasks = data?.tasks.for_day ?? [];
+	const overdueTasks = data?.tasks.overdue ?? [];
+	const ongoingTasks = data?.tasks.ongoing ?? [];
+	const noteActivity = data?.detail.note_activity ?? [];
+	const selectedDateObj = useMemo(
+		() => parseCalendarDate(selectedDate),
+		[selectedDate],
+	);
+	const selectedHeading = useMemo(
+		() => format(selectedDateObj, "EEEE, MMMM d"),
+		[selectedDateObj],
+	);
+	const selectedMonth = selectedMonthLabel(selectedDate);
 	const renderTaskGroup = useCallback(
 		(label: string, tasks: TaskItem[]) => {
 			if (tasks.length === 0) return null;
-			const { displayLabel, tone } = getTaskGroupMeta(label);
+			const { displayLabel } = getTaskGroupMeta(label);
 			return (
-				<div className="calendarTaskGroup">
+				<div>
 					<div className="calendarSectionHeader">
 						<h4 className="calendarSectionTitle">
-							<span className={cn("calendarSectionLabelPill", `is-${tone}`)}>
-								{displayLabel}
-							</span>
+							<span>{displayLabel}</span>
 						</h4>
 						<span className="calendarSectionCount">{tasks.length}</span>
 					</div>
@@ -397,279 +466,226 @@ export function CalendarPane({
 		[onOpenFile, scheduleTask, selectedDate, toggleTask],
 	);
 
-	/* shadcn Calendar integration */
-	const selectedDateObj = useMemo(
-		() => parseCalendarDate(selectedDate),
-		[selectedDate],
-	);
-	const selectedDateHeading = useMemo(
-		() => ({
-			dateLabel: format(selectedDateObj, "MMMM d,"),
-			weekdayLabel: format(selectedDateObj, "EEEE"),
-			yearLabel: format(selectedDateObj, "yyyy"),
-		}),
-		[selectedDateObj],
-	);
-	const anchorDateObj = useMemo(
-		() => parseCalendarDate(anchorDate),
-		[anchorDate],
-	);
-	const todayDateObj = useMemo(() => parseCalendarDate(today), [today]);
-
-	const handleDaySelect = useCallback(
-		(date: Date | undefined) => {
-			if (date) {
-				setSelectedDateAndPersist(formatCalendarDate(date));
-			}
-		},
-		[setSelectedDateAndPersist],
-	);
-
-	const handleMonthChange = useCallback(
-		(month: Date) => {
-			setAnchorDateAndPersist(formatCalendarDate(month));
-		},
-		[setAnchorDateAndPersist],
-	);
-
-	/* Dates that have activity (tasks or notes) for dot indicators */
-	const datesWithActivity = useMemo(() => {
-		const set = new Set<string>();
-		for (const day of data?.days ?? []) {
-			if (
-				day.task_count > 0 ||
-				day.note_activity_count > 0 ||
-				day.has_daily_note
-			) {
-				set.add(day.date);
-			}
-		}
-		return set;
-	}, [data?.days]);
-
-	const agendaTasks = selectedTasks?.for_day ?? [];
-	const overdueTasks = selectedTasks?.overdue ?? [];
-	const ongoingTasks = selectedTasks?.ongoing ?? [];
-	const noteActivity = data?.detail.note_activity ?? [];
-
-	const handleOpenRecentNote = useCallback(
-		(notePath: string) => {
-			void onOpenFile(notePath);
-		},
-		[onOpenFile],
-	);
-
 	return (
 		<div className="calendarPaneOuter">
 			<section className="calendarPane">
-				{error || calendarQuery.error ? (
-					<div className="calendarError">
-						{error ||
-							(calendarQuery.error instanceof Error
-								? calendarQuery.error.message
-								: String(calendarQuery.error))}
-					</div>
-				) : null}
-
-				{/* ── Centered content area ── */}
-				<div className="calendarCenterWrap">
-					<div
-						className="calendarDateBanner"
-						aria-label={`Selected date ${selectedDateHeading.dateLabel}, ${selectedDateHeading.weekdayLabel}`}
-					>
-						<div className="calendarDateBannerText">
-							<h3 className="calendarDateBannerTitle">
-								<span>{selectedDateHeading.dateLabel}</span>{" "}
-								<span className="calendarDateBannerYear">
-									{selectedDateHeading.yearLabel}
-								</span>
-							</h3>
+				<div className="calendarNativePanel">
+					<header className="calendarNativeTitlebar">
+						<div className="calendarNativeTitleBlock">
+							<h2 className="calendarNativeTitle">
+								{weekTitle(weekRange.dates)}
+							</h2>
 						</div>
-						<span className="calendarDateBannerDay">
-							{selectedDateHeading.weekdayLabel}
-						</span>
-					</div>
-
-					{/* ── Task composer ── */}
-					{dailyNotesFolder ? (
-						<div className="calendarTaskComposer">
-							<Input
-								value={taskDraft}
-								onChange={(event) => setTaskDraft(event.target.value)}
-								placeholder={`Add a task for ${formatMonthDay(selectedDate)}`}
-								onKeyDown={(event) => {
-									if (event.key === "Enter" && !event.shiftKey) {
-										event.preventDefault();
-										void submitTask();
-									}
-								}}
-							/>
+						<div className="calendarNativeActions">
 							<Button
 								type="button"
-								size="sm"
-								variant="outline"
-								className="calendarTaskBtn"
-								onClick={() => void submitTask()}
-								disabled={submitTaskMutation.isPending || !taskDraft.trim()}
-								aria-label="Add task"
+								variant="ghost"
+								size="icon-xs"
+								className="sidebarTopIconButton"
+								onClick={() => stepWeek(-1)}
+								aria-label="Previous week"
 							>
 								<HugeiconsIcon
-									icon={TaskAdd02Icon}
+									icon={ArrowLeftBigIcon}
+									size={13}
+									strokeWidth={0.9}
+								/>
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-xs"
+								className="sidebarTopIconButton"
+								onClick={goToToday}
+								aria-label="Today"
+							>
+								<HugeiconsIcon
+									icon={Calendar03Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-xs"
+								className="sidebarTopIconButton"
+								onClick={() => stepWeek(1)}
+								aria-label="Next week"
+							>
+								<HugeiconsIcon
+									icon={ArrowRightBigIcon}
+									size={13}
+									strokeWidth={0.9}
+								/>
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-xs"
+								className="sidebarTopIconButton"
+								onClick={(event) => void openNativeMenu(event)}
+								aria-label="Home menu"
+							>
+								<HugeiconsIcon
+									icon={MoreHorizontalIcon}
 									size={16}
 									strokeWidth={0.9}
 								/>
 							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								className="calendarTaskBtn"
-								data-size="sm"
-								onClick={openSelectedDailyNote}
-							>
-								<HugeiconsIcon
-									icon={CalendarAdd01Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-								Daily Note
-							</Button>
 						</div>
-					) : (
-						<div className="calendarInlineSetup">
-							<div>
-								Set a daily notes folder to create tasks directly from the
-								calendar.
-							</div>
-							<div className="calendarInlineSetupActions">
+					</header>
+
+					<div className="calendarWeekHeader">
+						<div className="calendarWeekMonth">
+							<span>{selectedMonth.month}</span>
+							<small>{selectedMonth.year}</small>
+						</div>
+						<div
+							className="calendarWeekStrip"
+							aria-label={weekTitle(weekRange.dates)}
+						>
+							{weekRange.dates.map((date) => {
+								const parsed = parseCalendarDate(date);
+								const isSelected = date === selectedDate;
+								return (
+									<button
+										key={date}
+										type="button"
+										className="calendarWeekDay"
+										data-selected={isSelected ? "true" : undefined}
+										onClick={() => selectDay(date)}
+									>
+										<span>{format(parsed, "EEEEE")}</span>
+										<strong>{format(parsed, "d")}</strong>
+									</button>
+								);
+							})}
+						</div>
+					</div>
+
+					{error || calendarQuery.error ? (
+						<div className="calendarError">
+							{error ||
+								(calendarQuery.error instanceof Error
+									? calendarQuery.error.message
+									: String(calendarQuery.error))}
+						</div>
+					) : null}
+
+					<section className="calendarPanelSection">
+						<div className="calendarPanelSectionHeader">
+							<h3>Notes</h3>
+							<div className="calendarPanelHeaderActions">
+								<span>{selectedHeading}</span>
 								<Button
 									type="button"
-									variant="outline"
-									size="sm"
-									onClick={onOpenDailyNotesSettings}
+									variant="ghost"
+									size="icon-xs"
+									className="sidebarTopIconButton"
+									onClick={() => void openSelectedDailyNote()}
+									aria-label={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
+									title={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
 								>
-									<Settings size={14} />
-									Set daily notes folder
+									<HugeiconsIcon icon={NoteIcon} size={13} strokeWidth={0.9} />
 								</Button>
 							</div>
 						</div>
-					)}
-
-					{/* ── Two-column: tasks + calendar ── */}
-					<div className="calendarLayout">
-						<div className="calendarDetailCol">
-							<div className="calendarCardSection calendarTasksCard">
-								<div className="calendarCardSectionHeader">
-									<h4 className="calendarCardSectionTitle">
-										<HugeiconsIcon
-											icon={Note03Icon}
-											size={16}
-											strokeWidth={0.9}
-										/>
-										Tasks
-									</h4>
-								</div>
-								<div className="calendarTasksScrollArea">
-									{renderTaskGroup("For this day", agendaTasks)}
-									{renderTaskGroup("Overdue", overdueTasks)}
-									{renderTaskGroup("Ongoing", ongoingTasks)}
-								</div>
-							</div>
-							<div className="calendarMiniDb">
-								<div className="calendarCardSectionHeader calendarMiniDbHeader">
-									<div className="calendarMiniDbHeaderInfo">
-										<h4 className="calendarCardSectionTitle">
+						<ul className="calendarNotesList">
+							{noteActivity.length === 0 ? (
+								<li className="calendarEmptyRow">No notes for this day</li>
+							) : null}
+							{noteActivity.map((note) => (
+								<li key={note.note_id}>
+									<button
+										type="button"
+										className="calendarNoteRow"
+										onClick={() => void onOpenFile(note.note_path)}
+										onMouseEnter={() => prefetchNote(note.note_path)}
+										onFocus={() => prefetchNote(note.note_path)}
+									>
+										<span>
 											<HugeiconsIcon
-												icon={Clock02Icon}
+												icon={NoteIcon}
 												size={14}
 												strokeWidth={0.9}
 											/>
-											<span>Activity</span>
-										</h4>
-									</div>
-								</div>
-								<RecentNotesBoardStrip
-									notes={noteActivity}
-									onOpenNote={handleOpenRecentNote}
-									onPrefetchNote={prefetchNote}
-								/>
-							</div>
+										</span>
+										<span className="calendarNoteTitle">{noteTitle(note)}</span>
+										<span className="calendarNoteTime">
+											{noteTimeLabel(note)}
+										</span>
+									</button>
+								</li>
+							))}
+						</ul>
+					</section>
+
+					<section className="calendarPanelSection calendarTasksSection">
+						<div className="calendarPanelSectionHeader">
+							<h3>Tasks</h3>
+						</div>
+						<div className="calendarTasksScrollArea">
+							{renderTaskGroup("For this day", agendaTasks)}
+							{renderTaskGroup("Overdue", overdueTasks)}
+							{renderTaskGroup("Ongoing", ongoingTasks)}
+							{agendaTasks.length === 0 &&
+							overdueTasks.length === 0 &&
+							ongoingTasks.length === 0 ? (
+								<div className="calendarEmptyRow">No tasks for this day</div>
+							) : null}
 						</div>
 
-						<div className="calendarLeftCol">
-							<div className="calendarToolbarNav">
-								<span className="calendarMonthYearLabel">
-									<strong>{formatMonthName(anchorDateObj)}</strong>{" "}
-									{formatYear(anchorDateObj)}
-								</span>
-								<span className="calendarToolbarButtons">
-									<Button
-										type="button"
-										size="sm"
-										variant="outline"
-										className="calendarTaskBtn"
-										data-size="icon"
-										onClick={() => stepRange(-1)}
-										aria-label="Previous month"
-									>
-										<HugeiconsIcon
-											icon={ArrowLeftBigIcon}
-											size={14}
-											strokeWidth={0.9}
-											aria-hidden="true"
-										/>
-									</Button>
-									<Button
-										type="button"
-										size="sm"
-										variant="outline"
-										className="calendarTaskBtn"
-										data-size="sm"
-										onClick={goToToday}
-									>
-										Today
-									</Button>
-									<Button
-										type="button"
-										size="sm"
-										variant="outline"
-										className="calendarTaskBtn"
-										data-size="icon"
-										onClick={() => stepRange(1)}
-										aria-label="Next month"
-									>
-										<HugeiconsIcon
-											icon={ArrowRightBigIcon}
-											size={14}
-											strokeWidth={0.9}
-											aria-hidden="true"
-										/>
-									</Button>
-								</span>
-							</div>
-							<div className="calendarShadcnWrap">
-								<ShadcnCalendar
-									mode="single"
-									selected={selectedDateObj}
-									onSelect={handleDaySelect}
-									month={anchorDateObj}
-									onMonthChange={handleMonthChange}
-									today={todayDateObj}
-									className="calendarDashboardPicker"
-									modifiers={{
-										hasActivity: (date: Date) =>
-											datesWithActivity.has(formatCalendarDate(date)),
-									}}
-									modifiersClassNames={{
-										hasActivity: "calendarDayHasActivity",
+						{dailyNotesFolder ? (
+							<div className="calendarTaskComposer">
+								<span>+</span>
+								<Input
+									value={taskDraft}
+									onChange={(event) => setTaskDraft(event.target.value)}
+									placeholder="New task..."
+									onKeyDown={(event) => {
+										if (event.key === "Enter" && !event.shiftKey) {
+											event.preventDefault();
+											void submitTask();
+										}
 									}}
 								/>
+								<Button
+									type="button"
+									size="icon-xs"
+									variant="ghost"
+									className="sidebarTopIconButton"
+									onClick={() => void submitTask()}
+									disabled={submitTaskMutation.isPending || !taskDraft.trim()}
+									aria-label="Add task"
+								>
+									<HugeiconsIcon
+										icon={TaskAdd02Icon}
+										size={14}
+										strokeWidth={0.9}
+									/>
+								</Button>
 							</div>
-						</div>
-					</div>
+						) : (
+							<div className="calendarInlineSetup">
+								<span>Set a daily notes folder to add tasks here.</span>
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									onClick={onOpenDailyNotesSettings}
+								>
+									<Settings size={13} />
+									Settings
+								</Button>
+							</div>
+						)}
+					</section>
+
+					{loading ? (
+						<div className="calendarLoading">Refreshing...</div>
+					) : null}
 				</div>
-
-				{loading ? <div className="calendarLoading">Refreshing…</div> : null}
 			</section>
 		</div>
 	);

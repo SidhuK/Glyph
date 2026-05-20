@@ -26,7 +26,6 @@ type TauriEventMap = {
 	"menu:open_about": undefined;
 	"menu:open_settings": undefined;
 	"menu:toggle_ai": undefined;
-	"menu:close_ai": undefined;
 	"menu:ai_attach_current_note": undefined;
 	"menu:ai_attach_all_open_notes": undefined;
 	"menu:open_ai_settings": undefined;

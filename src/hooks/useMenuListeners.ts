@@ -18,7 +18,6 @@ interface UseMenuListenersProps {
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
 	onToggleAiPane: () => void;
-	onCloseAiPane: () => void;
 	onAttachCurrentNoteToAi: () => void;
 	onAttachAllOpenNotesToAi: () => void;
 	onOpenAiSettings: () => void;
@@ -40,7 +39,6 @@ export function useMenuListeners({
 	onGitSyncNow,
 	onOpenGitSettings,
 	onToggleAiPane,
-	onCloseAiPane,
 	onAttachCurrentNoteToAi,
 	onAttachAllOpenNotesToAi,
 	onOpenAiSettings,
@@ -98,9 +96,6 @@ export function useMenuListeners({
 	const handleToggleAi = useCallback(() => {
 		onToggleAiPane();
 	}, [onToggleAiPane]);
-	const handleCloseAi = useCallback(() => {
-		onCloseAiPane();
-	}, [onCloseAiPane]);
 	const handleAttachCurrentNote = useCallback(() => {
 		onAttachCurrentNoteToAi();
 	}, [onAttachCurrentNoteToAi]);
@@ -134,7 +129,6 @@ export function useMenuListeners({
 				"open-about": () => openSettings("about"),
 				"open-settings": () => openSettings(),
 				"toggle-ai": onToggleAiPane,
-				"close-ai-pane": onCloseAiPane,
 				"ai-attach-current-note": onAttachCurrentNoteToAi,
 				"ai-attach-all-open-notes": onAttachAllOpenNotesToAi,
 				"open-ai-settings": onOpenAiSettings,
@@ -195,7 +189,6 @@ export function useMenuListeners({
 			closeSpace,
 			onAttachAllOpenNotesToAi,
 			onAttachCurrentNoteToAi,
-			onCloseAiPane,
 			onCloseTab,
 			onCreateFromTemplate,
 			onCreateSpace,
@@ -231,7 +224,6 @@ export function useMenuListeners({
 	useTauriEvent("menu:open_about", handleOpenAbout);
 	useTauriEvent("menu:open_settings", handleOpenSettings);
 	useTauriEvent("menu:toggle_ai", handleToggleAi);
-	useTauriEvent("menu:close_ai", handleCloseAi);
 	useTauriEvent("menu:ai_attach_current_note", handleAttachCurrentNote);
 	useTauriEvent("menu:ai_attach_all_open_notes", handleAttachAllOpenNotes);
 	useTauriEvent("menu:open_ai_settings", handleOpenAiSettings);

@@ -111,32 +111,6 @@ vi.mock("./SettingsScaffold", () => ({
 			onChange={(event) => onCheckedChange(event.currentTarget.checked)}
 		/>
 	),
-	SettingsSegmented: ({
-		value,
-		options,
-		onChange,
-		ariaLabel,
-		disabled,
-	}: {
-		ariaLabel: string;
-		disabled?: boolean;
-		onChange: (value: string) => void;
-		options: Array<{ label: string; value: string }>;
-		value: string;
-	}) => (
-		<select
-			aria-label={ariaLabel}
-			value={value}
-			disabled={disabled}
-			onChange={(event) => onChange(event.currentTarget.value)}
-		>
-			{options.map((option) => (
-				<option key={option.value} value={option.value}>
-					{option.label}
-				</option>
-			))}
-		</select>
-	),
 }));
 
 (

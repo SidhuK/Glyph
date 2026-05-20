@@ -228,6 +228,11 @@
 	padding: 0 18px;
 }
 
+.databasesViewSelect {
+	max-width: min(280px, 60vw);
+	font: inherit;
+}
+
 .databasesViewTabMenuIcon {
 	display: block;
 	width: 14px;

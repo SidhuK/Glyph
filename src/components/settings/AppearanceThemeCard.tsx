@@ -1,6 +1,4 @@
 import { cn } from "@/lib/utils";
-import { SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import type {
@@ -10,12 +8,11 @@ import type {
 	UiLightThemeId,
 } from "../../lib/settings";
 import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
-import { ChevronDown, Moon, Sun } from "../Icons";
+import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { getAccentPreviewColor } from "./accentOptions";
@@ -33,6 +30,12 @@ interface AppearanceThemeCardProps {
 	onDarkThemeChange: (themeId: UiDarkThemeId) => Promise<void>;
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
+
+const THEME_MODE_OPTIONS = [
+	{ label: "System", value: "system" },
+	{ label: "Light", value: "light" },
+	{ label: "Dark", value: "dark" },
+] as const satisfies readonly { label: string; value: ThemeMode }[];
 
 function resolvePreview<T extends string>(
 	option: UiThemeOption<T>,
@@ -212,40 +215,20 @@ export function AppearanceThemeCard({
 			title="Theme"
 			description="Mix and match light and dark theme families."
 		>
-			<SettingsRow
-				label="Select Theme"
-				className="appearanceThemeModeRow"
-				interactive={false}
-			>
-				<SettingsSegmented<ThemeMode>
-					ariaLabel="Theme mode"
+			<SettingsRow label="Select Theme" interactive={false}>
+				<select
+					aria-label="Theme mode"
 					value={themeMode}
-					onChange={(value) => void onThemeModeChange(value)}
-					className="appearanceThemeModeSegmented"
-					options={[
-						{
-							label: "Light",
-							value: "light",
-							icon: <Sun size={16} />,
-						},
-						{
-							label: "Dark",
-							value: "dark",
-							icon: <Moon size={16} />,
-						},
-						{
-							label: "System",
-							value: "system",
-							icon: (
-								<HugeiconsIcon
-									icon={SlidersHorizontalIcon}
-									size={16}
-									strokeWidth={0.9}
-								/>
-							),
-						},
-					]}
-				/>
+					onChange={(event) =>
+						void onThemeModeChange(event.currentTarget.value as ThemeMode)
+					}
+				>
+					{THEME_MODE_OPTIONS.map((option) => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</select>
 			</SettingsRow>
 
 			<ThemeSelector

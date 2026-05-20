@@ -555,12 +555,7 @@
 	background: var(--database-tone);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, white 24%, transparent);
 	cursor: pointer;
-	transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-
-.databaseBoardColorRibbonSwatch:hover,
-.databaseBoardColorRibbonClear:hover {
-	border-color: var(--border-default);
+	transition: none;
 }
 
 .databaseBoardColorRibbonClear {

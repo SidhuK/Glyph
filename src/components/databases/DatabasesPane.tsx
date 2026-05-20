@@ -6,7 +6,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { emit } from "@tauri-apps/api/event";
 import {
-	Fragment,
 	type MouseEvent,
 	useCallback,
 	useEffect,
@@ -164,11 +163,6 @@ function nextDatabaseName(summaries: WorkspaceDatabaseSummary[]): string {
 		suffix += 1;
 	}
 	return `New Database ${suffix}`;
-}
-
-function ViewLayoutIcon({ layout }: { layout: string }) {
-	if (layout === "board") return <Kanban size={13} />;
-	return <Table size={13} />;
 }
 
 function DatabasesPaneContent({
@@ -1010,55 +1004,43 @@ function DatabasesPaneContent({
 			{document && activeConfig && activeView ? (
 				<>
 					<div className="databasesViewBar">
-						<fieldset className="settingsSegmented appearanceThemeModeSegmented">
-							<legend className="sr-only">Database views</legend>
-							{document.database.views.map((view) => {
-								const isActive = view.id === selectedViewId;
-								return (
-									<Fragment key={view.id}>
-										{renamingViewId === view.id ? (
-											<input
-												ref={viewNameInputRef}
-												type="text"
-												className="plainTextInput databasesViewTabRenameInput"
-												value={viewNameDraft}
-												aria-label="View name"
-												onChange={(event) =>
-													setViewNameDraft(event.target.value)
-												}
-												onBlur={commitViewRename}
-												onKeyDown={(event) => {
-													if (event.key === "Enter") {
-														event.preventDefault();
-														commitViewRename();
-													}
-													if (event.key === "Escape") {
-														event.preventDefault();
-														skipNextViewMenuAutoFocusRef.current = false;
-														setRenamingViewId(null);
-													}
-												}}
-											/>
-										) : (
-											<button
-												type="button"
-												className={isActive ? "active" : ""}
-												aria-pressed={isActive}
-												onClick={() => setSelectedViewId(view.id)}
-											>
-												<span
-													className="settingsSegmentedIcon"
-													aria-hidden="true"
-												>
-													<ViewLayoutIcon layout={view.layout} />
-												</span>
-												{view.name}
-											</button>
-										)}
-									</Fragment>
-								);
-							})}
-						</fieldset>
+						{renamingViewId === activeView.id ? (
+							<input
+								ref={viewNameInputRef}
+								type="text"
+								className="plainTextInput databasesViewTabRenameInput"
+								value={viewNameDraft}
+								aria-label="View name"
+								onChange={(event) => setViewNameDraft(event.target.value)}
+								onBlur={commitViewRename}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") {
+										event.preventDefault();
+										commitViewRename();
+									}
+									if (event.key === "Escape") {
+										event.preventDefault();
+										skipNextViewMenuAutoFocusRef.current = false;
+										setRenamingViewId(null);
+									}
+								}}
+							/>
+						) : (
+							<select
+								aria-label="Database view"
+								className="databasesViewSelect"
+								value={activeView.id}
+								onChange={(event) =>
+									setSelectedViewId(event.currentTarget.value)
+								}
+							>
+								{document.database.views.map((view) => (
+									<option key={view.id} value={view.id}>
+										{view.name}
+									</option>
+								))}
+							</select>
+						)}
 						{nativeActionMenusEnabled ? (
 							<button
 								type="button"

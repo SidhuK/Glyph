@@ -2,7 +2,7 @@ import {
 	clearMarkdownDocCache,
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
-import { buildMonthRange } from "./calendar";
+import { buildWeekRange } from "./calendar";
 import { readStoredSelectedViewId } from "./database/selectedViewStorage";
 import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
@@ -59,7 +59,7 @@ export const navigationQueryKeys = {
 		selectedDate: string;
 		dailyNotesFolder: string | null;
 	}) => {
-		const range = buildMonthRange(args.anchorDate);
+		const range = buildWeekRange(args.anchorDate);
 		return [
 			...navigationQueryKeys.calendar(),
 			range.start,
@@ -130,7 +130,7 @@ export function loadCalendarData(args: {
 	selectedDate: string;
 	dailyNotesFolder: string | null;
 }) {
-	const range = buildMonthRange(args.anchorDate);
+	const range = buildWeekRange(args.anchorDate);
 	return invoke("calendar_query_range", {
 		start_date: range.start,
 		end_date: range.end,

@@ -70,7 +70,6 @@
 	border: none;
 	background: color-mix(in srgb, var(--database-tone) 6%, var(--bg-secondary));
 	box-shadow: none;
-	transition: background-color 140ms ease, outline-color 140ms ease;
 }
 
 .databaseBoardLane[data-show-column-color="false"] {
@@ -103,6 +102,12 @@
 	gap: 8px;
 }
 
+.databaseBoardLaneTitleButton,
+.databaseBoardLaneHandle,
+.databaseBoardCard {
+	transition: none;
+}
+
 .databaseBoardLaneHandle {
 	display: inline-flex;
 	align-items: center;
@@ -115,13 +120,6 @@
 	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
 	color: var(--text-tertiary);
 	cursor: context-menu;
-	transition: border-color 140ms ease, color 140ms ease, background-color 140ms
-		ease;
-}
-
-.databaseBoardLaneHandle:hover:not(:disabled) {
-	border-color: color-mix(in srgb, var(--border-default) 85%, transparent);
-	color: var(--text-secondary);
 }
 
 .databaseBoardLaneHandle:disabled {
@@ -166,11 +164,6 @@
 	color: inherit;
 	white-space: nowrap;
 	background: color-mix(in srgb, var(--database-tone) 88%, var(--bg-primary));
-	transition: background-color 140ms ease;
-}
-
-.databaseBoardLaneTitleButton:hover {
-	background: color-mix(in srgb, var(--database-tone) 82%, var(--bg-primary));
 }
 
 .databaseBoardLaneBody {
@@ -204,8 +197,6 @@
 	white-space: normal;
 	line-height: normal;
 	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
-	transition: background-color 120ms ease, outline-color 120ms ease, opacity
-		120ms ease;
 	overflow: hidden;
 	user-select: none;
 	-webkit-user-select: none;
@@ -215,11 +206,6 @@
 .databaseBoardCard[data-dragging="true"] {
 	opacity: 0.7;
 	outline-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
-}
-
-.databaseBoardCard:hover {
-	background: var(--bg-hover);
-	outline-color: color-mix(in srgb, var(--text-primary) 16%, transparent);
 }
 
 .databaseBoardCard[data-state="selected"] {
@@ -275,10 +261,8 @@
 	width: 24px;
 	height: 12px;
 	opacity: 0.9;
-	transition: opacity 120ms ease;
 }
 
-.databaseBoardCard:hover .databaseBoardCardTaskProgress,
 .databaseBoardCard[data-state="selected"] .databaseBoardCardTaskProgress {
 	opacity: 1;
 }

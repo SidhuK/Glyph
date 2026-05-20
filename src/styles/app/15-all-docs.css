@@ -56,7 +56,7 @@
 	flex-direction: column;
 	align-items: stretch;
 	justify-content: flex-start;
-	gap: 8px;
+	gap: 0;
 	width: 100%;
 	min-width: 0;
 	height: auto;
@@ -84,17 +84,21 @@
 .allDocsCardSurface {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 9px;
 	width: 100%;
-	aspect-ratio: 1 / 1;
+	aspect-ratio: 0.82 / 1;
+	min-height: 214px;
 	min-width: 0;
-	padding: 10px;
-	border-radius: 5px;
+	padding: 14px;
+	border-radius: 8px;
 	background: var(--bg-primary);
 	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+	box-shadow: 0 12px 24px -20px
+		color-mix(in srgb, var(--text-primary) 42%, transparent), 0 3px 10px -8px
+		color-mix(in srgb, var(--text-primary) 28%, transparent);
 	overflow: hidden;
 	transition: background-color 120ms ease, outline-color 120ms ease, transform
-		120ms ease;
+		120ms ease, box-shadow 120ms ease;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
@@ -104,6 +108,9 @@
 		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
 	);
 	outline-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: 0 16px 30px -22px
+		color-mix(in srgb, var(--text-primary) 48%, transparent), 0 5px 14px -10px
+		color-mix(in srgb, var(--text-primary) 32%, transparent);
 	transform: translateY(-1px);
 }
 
@@ -115,11 +122,88 @@
 		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
 		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
 	);
+	box-shadow: 0 14px 28px -22px
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent), 0 4px 12px
+		-10px color-mix(in srgb, var(--text-primary) 28%, transparent);
 }
 
 .allDocsCard:focus-visible .allDocsCardSurface {
 	box-shadow: 0 0 0 3px
 		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.allDocsCardTitle {
+	min-width: 0;
+	display: block;
+	flex: 0 0 auto;
+	font-size: 0.92rem;
+	font-weight: var(--font-semibold);
+	line-height: 1.32;
+	color: var(--text-primary);
+	overflow: visible;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.allDocsCardMetaRow {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 5px;
+	min-width: 0;
+	font-size: 0.68rem;
+	line-height: 1.2;
+	color: var(--text-tertiary);
+}
+
+.allDocsCardPath {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.allDocsCardPathIcon {
+	flex: 0 0 auto;
+	color: currentColor;
+}
+
+.allDocsCardPathLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.allDocsCardTime {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	justify-self: end;
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.allDocsCardTime::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: currentColor;
+	opacity: 0.72;
+}
+
+.allDocsCardDivider {
+	flex: 0 0 auto;
+	height: 1px;
+	margin: 1px 0 4px;
+	background: color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .allDocsCardPreview {
@@ -175,54 +259,6 @@
 	min-width: 0;
 	margin-top: auto;
 	overflow: hidden;
-}
-
-.allDocsCardCaption {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	min-width: 0;
-	padding: 0 2px;
-}
-
-.allDocsCardTitle {
-	min-width: 0;
-	display: block;
-	font-size: 0.8rem;
-	font-weight: var(--font-semibold);
-	line-height: 1.2;
-	color: var(--text-primary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardPath {
-	min-width: 0;
-	flex: 1 1 auto;
-	font-size: 0.66rem;
-	line-height: 1.2;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardMetaRow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.allDocsCardTime {
-	flex: 0 0 auto;
-	margin-left: auto;
-	font-size: 0.66rem;
-	line-height: 1.2;
-	color: var(--text-tertiary);
-	text-align: right;
-	white-space: nowrap;
 }
 
 @media (max-width: 900px) {

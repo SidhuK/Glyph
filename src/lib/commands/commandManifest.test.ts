@@ -20,7 +20,6 @@ const FRONTEND_MENU_COMMAND_IDS = [
 	"open-git-sync-settings",
 	"open-settings",
 	"toggle-ai",
-	"close-ai-pane",
 	"ai-attach-current-note",
 	"ai-attach-all-open-notes",
 	"open-ai-settings",

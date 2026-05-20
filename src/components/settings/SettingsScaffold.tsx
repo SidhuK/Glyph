@@ -21,21 +21,6 @@ interface SettingsRowProps {
 	interactive?: boolean;
 }
 
-interface SettingsSegmentedOption<T extends string> {
-	label: string;
-	value: T;
-	icon?: ReactNode;
-}
-
-interface SettingsSegmentedProps<T extends string> {
-	value: T;
-	options: SettingsSegmentedOption<T>[];
-	onChange: (value: T) => void;
-	ariaLabel: string;
-	disabled?: boolean;
-	className?: string;
-}
-
 interface SettingsToggleProps {
 	checked: boolean;
 	onCheckedChange: (checked: boolean) => void;
@@ -96,38 +81,6 @@ export function SettingsRow({
 				{children}
 			</div>
 		</div>
-	);
-}
-
-export function SettingsSegmented<T extends string>({
-	value,
-	options,
-	onChange,
-	ariaLabel,
-	disabled,
-	className,
-}: SettingsSegmentedProps<T>) {
-	return (
-		<fieldset className={cn("settingsSegmented", className)}>
-			<legend className="sr-only">{ariaLabel}</legend>
-			{options.map((option) => (
-				<button
-					key={option.value}
-					type="button"
-					className={value === option.value ? "active" : ""}
-					aria-pressed={value === option.value}
-					disabled={disabled}
-					onClick={() => onChange(option.value)}
-				>
-					{option.icon ? (
-						<span className="settingsSegmentedIcon" aria-hidden="true">
-							{option.icon}
-						</span>
-					) : null}
-					{option.label}
-				</button>
-			))}
-		</fieldset>
 	);
 }
 

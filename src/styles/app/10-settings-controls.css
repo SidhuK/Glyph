@@ -190,7 +190,6 @@
 .settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
-.settingsSegmented button:focus-visible,
 .settingsSwatch:focus-visible,
 .settingsAccentDot:focus-visible {
 	outline: 2px solid

@@ -22,7 +22,15 @@ button {
 	user-select: none;
 }
 
-button:hover {
+button:hover:not(
+		:where(
+				.databaseBoardCard,
+				.databaseBoardLaneTitleButton,
+				.databaseBoardLaneHandle,
+				.databaseBoardColorRibbonSwatch,
+				.databaseBoardColorRibbonClear
+			)
+	) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
@@ -38,7 +46,15 @@ button:disabled {
 	transform: none;
 }
 
-button:disabled:hover {
+button:disabled:hover:not(
+		:where(
+				.databaseBoardCard,
+				.databaseBoardLaneTitleButton,
+				.databaseBoardLaneHandle,
+				.databaseBoardColorRibbonSwatch,
+				.databaseBoardColorRibbonClear
+			)
+	) {
 	background: transparent;
 	transform: none;
 }
