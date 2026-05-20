@@ -1,6 +1,52 @@
 {
 	"versions": [
 		{
+			"version": "0.4.5",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Added a reusable native menu helper for Tauri popup menus",
+						"Added a Tauri command that opens the native Space menu from the sidebar space button"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"File tree, Folio, and database board right-click menus now use native macOS/Tauri popup menus",
+						"Icon and color appearance actions now live in native submenus",
+						"Database folder selection now uses the native macOS folder picker",
+						"Settings and database pickers now use native select controls",
+						"Home now opens as a centered weekly panel with notes, tasks, stable sizing, and native-style controls",
+						"Database board cards, lane buttons, handles, and color swatches now use calmer hover states",
+						"The main app window now has a 680 x 460 minimum size",
+						"Escape and Command + [ now close Settings and return to the main app view",
+						"The editor actions dropdown now opens and closes faster",
+						"The active editor title rename input no longer shows the shared focus underline"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Fixed Pi provider launches when Tauri starts the CLI without the Node install directory in the child environment",
+						"Open Calendar now lives under Open Home, and Close AI Panel now lives under Toggle AI Panel"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Removed the main-window AI Agent tab, command path, component, helper, manifest entry, and tab-only CSS while keeping the right-side AI panel intact",
+						"Removed old Radix context-menu wrappers, stale context-menu CSS, unused test mocks, and the FileTreeAppearanceMenu component",
+						"Removed unused shadcn primitive exports from dialog, dropdown-menu, popover, scroll-area, and table",
+						"Removed unused source exports, internal-only public types, dead declarations, unused icon wrappers, and the stale release-notes type stub",
+						"Removed unused dependencies: @hookform/resolvers, @tiptap/extension-underline, cmdk, react-day-picker, react-hook-form, react-resizable-panels, and zod",
+						"Removed the old month-picker code, unused calendar components, stale calendar CSS, and SettingsSegmented styles",
+						"Removed Reload and Save from the Markdown editor actions menu"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.4.0",
 			"sections": [
 				{
