@@ -117,7 +117,7 @@ describe("database board helpers", () => {
 	it("creates lanes from the current property values", () => {
 		const lanes = createBoardLanes(rows, statusColumn);
 		expect(lanes.map((lane) => lane.label)).toEqual([
-			"Not started",
+			"Backlog",
 			"In progress",
 			"No value",
 		]);
@@ -166,11 +166,11 @@ describe("database board helpers", () => {
 		);
 
 		expect(groups.map((group) => group.label)).toEqual([
+			"Backlog",
 			"In progress",
-			"Not started",
 			"No value",
 		]);
-		expect(groups[1]?.rows.map((row) => row.title)).toEqual(["One"]);
+		expect(groups[0]?.rows.map((row) => row.title)).toEqual(["One"]);
 		expect(groups[2]?.rows.map((row) => row.title)).toEqual(["Three"]);
 	});
 

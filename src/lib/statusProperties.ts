@@ -7,19 +7,17 @@ export interface StatusOption {
 	label: string;
 	color: EditorTextColor;
 	iconKey:
-		| "circle"
-		| "play"
-		| "blocked"
-		| "pause"
-		| "draft"
+		| "activity"
 		| "archive"
-		| "check"
-		| "hourglass"
-		| "loading"
-		| "sent"
-		| "review"
-		| "failed"
-		| "expired";
+		| "cancel"
+		| "check_square"
+		| "clock"
+		| "file_block"
+		| "file_search"
+		| "progress"
+		| "queue"
+		| "task"
+		| "waiting";
 	aliases: readonly string[];
 }
 
@@ -31,102 +29,112 @@ export interface StatusSelectOption {
 
 const STATUS_OPTIONS = [
 	{
-		id: "not_started",
-		label: "Not started",
+		id: "backlog",
+		label: "Backlog",
 		color: "gray",
-		iconKey: "circle",
-		aliases: ["not started", "not-started", "todo", "to do", "backlog"],
+		iconKey: "queue",
+		aliases: ["backlog", "icebox", "later", "someday"],
 	},
 	{
-		id: "active",
-		label: "Active",
-		color: "blue",
-		iconKey: "play",
-		aliases: ["active", "started"],
-	},
-	{
-		id: "draft",
-		label: "Draft",
-		color: "purple",
-		iconKey: "draft",
-		aliases: ["draft", "drafting"],
+		id: "todo",
+		label: "Todo",
+		color: "gray",
+		iconKey: "task",
+		aliases: [
+			"todo",
+			"to do",
+			"not started",
+			"not-started",
+			"open",
+			"new",
+			"unstarted",
+		],
 	},
 	{
 		id: "in_progress",
 		label: "In progress",
 		color: "blue",
-		iconKey: "loading",
+		iconKey: "progress",
 		aliases: ["in progress", "in-progress", "progress", "doing", "wip"],
 	},
 	{
 		id: "in_review",
 		label: "In review",
 		color: "yellow",
-		iconKey: "review",
+		iconKey: "file_search",
 		aliases: ["in review", "in-review", "review", "reviewing"],
 	},
 	{
 		id: "blocked",
 		label: "Blocked",
 		color: "red",
-		iconKey: "blocked",
+		iconKey: "file_block",
 		aliases: ["blocked", "stuck"],
 	},
 	{
-		id: "paused",
-		label: "Paused",
-		color: "yellow",
-		iconKey: "pause",
-		aliases: ["paused", "pause", "on hold", "on-hold", "hold"],
-	},
-	{
-		id: "pending",
-		label: "Pending",
+		id: "waiting",
+		label: "Waiting",
 		color: "orange",
-		iconKey: "hourglass",
-		aliases: ["pending", "waiting"],
-	},
-	{
-		id: "submitted",
-		label: "Submitted",
-		color: "purple",
-		iconKey: "sent",
-		aliases: ["submitted", "sent"],
-	},
-	{
-		id: "failed",
-		label: "Failed",
-		color: "red",
-		iconKey: "failed",
-		aliases: ["failed", "failure", "error"],
-	},
-	{
-		id: "expired",
-		label: "Expired",
-		color: "gray",
-		iconKey: "expired",
-		aliases: ["expired"],
-	},
-	{
-		id: "success",
-		label: "Success",
-		color: "green",
-		iconKey: "check",
-		aliases: ["success", "successful"],
-	},
-	{
-		id: "completed",
-		label: "Completed",
-		color: "green",
-		iconKey: "check",
-		aliases: ["completed", "complete"],
+		iconKey: "waiting",
+		aliases: [
+			"waiting",
+			"pending",
+			"submitted",
+			"sent",
+			"requested",
+			"paused",
+			"pause",
+			"on hold",
+			"on-hold",
+			"hold",
+			"deferred",
+			"awaiting",
+			"awaiting approval",
+			"waiting for approval",
+			"waiting for customer",
+			"waiting for support",
+		],
 	},
 	{
 		id: "done",
 		label: "Done",
 		color: "green",
-		iconKey: "check",
-		aliases: ["done", "finished"],
+		iconKey: "check_square",
+		aliases: [
+			"done",
+			"finished",
+			"complete",
+			"completed",
+			"resolved",
+			"closed",
+			"success",
+			"successful",
+			"approved",
+			"published",
+			"won",
+		],
+	},
+	{
+		id: "canceled",
+		label: "Canceled",
+		color: "red",
+		iconKey: "cancel",
+		aliases: [
+			"canceled",
+			"cancelled",
+			"rejected",
+			"failed",
+			"failure",
+			"error",
+			"expired",
+			"wont do",
+			"won't do",
+			"wont fix",
+			"won't fix",
+			"duplicate",
+			"could not reproduce",
+			"lost",
+		],
 	},
 	{
 		id: "archived",
@@ -141,20 +149,14 @@ const STATUS_BY_ID: Map<string, StatusOption> = new Map(
 	STATUS_OPTIONS.map((option) => [option.id, option]),
 );
 const STATUS_PICKER_ORDER = [
-	"not_started",
-	"draft",
-	"pending",
-	"submitted",
-	"in_review",
-	"active",
+	"backlog",
+	"todo",
 	"in_progress",
+	"in_review",
 	"blocked",
-	"paused",
-	"failed",
-	"expired",
-	"success",
-	"completed",
+	"waiting",
 	"done",
+	"canceled",
 	"archived",
 ] as const satisfies readonly StatusOption["id"][];
 const STATUS_ALIAS_TO_ID = new Map<string, string>(
@@ -200,6 +202,16 @@ export function statusToneStyle(
 		toneSeed,
 		(colorKey ? colors[colorKey] : null) ?? option?.color ?? null,
 	);
+}
+
+export function statusTextStyle(
+	value: string | null | undefined,
+	colors: Record<string, EditorTextColor> = {},
+): CSSProperties {
+	return {
+		...statusToneStyle(value, colors),
+		color: "color-mix(in srgb, var(--database-tone) 78%, var(--text-primary))",
+	};
 }
 
 export function statusColorKey(

@@ -180,6 +180,11 @@ export interface DatabaseCellValue {
 	value_list: string[];
 }
 
+export interface DatabaseCreateRowInitialValue {
+	column: DatabaseColumn;
+	value: DatabaseCellValue;
+}
+
 export interface DatabaseRow {
 	note_path: string;
 	title: string;
@@ -875,7 +880,11 @@ interface TauriCommands {
 		DatabaseRow
 	>;
 	databases_create_row: CommandDef<
-		{ database_id: string; title?: string | null },
+		{
+			database_id: string;
+			title?: string | null;
+			initial_values?: DatabaseCreateRowInitialValue[] | null;
+		},
 		DatabaseCreateRowResult
 	>;
 	databases_preview_context: CommandDef<

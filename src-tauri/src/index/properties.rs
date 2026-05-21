@@ -22,9 +22,19 @@ fn property_summary(value: &Value) -> String {
     }
 }
 
+fn priority_summary(value: &Value) -> String {
+    match value {
+        Value::Bool(false) => "no".to_string(),
+        _ => property_summary(value),
+    }
+}
+
 fn property_kind(key: &str, value: &Value) -> &'static str {
     if is_status_key(key) {
         return "status";
+    }
+    if is_priority_key(key) {
+        return "priority";
     }
 
     match value {
@@ -64,6 +74,11 @@ fn is_status_key(key: &str) -> bool {
     normalized == "status" || normalized.ends_with(" status")
 }
 
+fn is_priority_key(key: &str) -> bool {
+    let normalized = normalized_status_text(key);
+    normalized == "priority" || normalized.ends_with(" priority")
+}
+
 pub fn reindex_note_properties(
     tx: &rusqlite::Transaction<'_>,
     note_id: &str,
@@ -86,14 +101,20 @@ pub fn reindex_note_properties(
         let Some(key) = key.as_str() else {
             continue;
         };
+        let value_type = property_kind(key, value);
+        let value_text = if value_type == "priority" {
+            priority_summary(value)
+        } else {
+            property_summary(value)
+        };
         let value_json = serde_json::to_string(value).map_err(|e| e.to_string())?;
         tx.execute(
             "INSERT OR REPLACE INTO note_properties(note_id, key, value_type, value_text, value_json, ordinal) VALUES(?, ?, ?, ?, ?, ?)",
             rusqlite::params![
                 note_id,
                 key,
-                property_kind(key, value),
-                property_summary(value),
+                value_type,
+                value_text,
                 value_json,
                 ordinal as i64
             ],
@@ -144,6 +165,18 @@ mod tests {
         assert_eq!(
             property_kind("review status", &Value::String("idea".to_string())),
             "status"
+        );
+        assert_eq!(
+            property_kind("priority", &Value::String("High".to_string())),
+            "priority"
+        );
+        assert_eq!(
+            property_kind("Review Priority", &Value::String("High".to_string())),
+            "priority"
+        );
+        assert_eq!(
+            property_kind("prioritization", &Value::String("High".to_string())),
+            "text"
         );
         assert_eq!(property_kind("count", &Value::Number(3.into())), "text");
     }

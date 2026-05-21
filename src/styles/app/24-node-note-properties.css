@@ -369,30 +369,30 @@ input.notePropertyValue {
 	box-shadow: none;
 }
 
-.statusPropertyPill {
+.propertyValueText {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 	max-width: 100%;
 	min-width: 0;
 	height: 22px;
-	padding: 0 7px;
-	border: 0;
-	border-radius: 4px;
-	background: color-mix(in srgb, var(--database-tone) 11%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--database-tone) 72%, var(--text-primary));
 	font-family: var(--font-sans);
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	line-height: 1;
-	box-shadow: none;
 }
 
-.statusPropertyPillIcon {
+.propertyValueTextIcon {
 	width: 12px;
 	height: 12px;
 	flex: 0 0 12px;
 	color: currentcolor;
+}
+
+.propertyValueText > span {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .notePropertyStatusStatic {
@@ -415,10 +415,9 @@ input.notePropertyValue {
 	width: 100%;
 }
 
-.notePropertyStatusTrigger:hover .statusPropertyPill,
-.notePropertyStatusTrigger:focus-visible .statusPropertyPill {
-	background: color-mix(in srgb, var(--database-tone) 16%, var(--bg-secondary));
-	color: color-mix(in srgb, var(--database-tone) 82%, var(--text-primary));
+.notePropertyStatusTrigger:hover .propertyValueText,
+.notePropertyStatusTrigger:focus-visible .propertyValueText {
+	color: color-mix(in srgb, var(--database-tone) 88%, var(--text-primary));
 }
 
 .notePropertyStatusTrigger:focus-visible {
@@ -453,9 +452,8 @@ input.notePropertyValue {
 	color: var(--text-secondary);
 }
 
-.notePropertyStatusOption .statusPropertyPill {
+.notePropertyStatusOption .propertyValueText {
 	height: 24px;
-	padding-inline: 7px;
 }
 
 .notePropertyStatusOption[data-highlighted],
@@ -520,7 +518,6 @@ input.notePropertyValue {
 	color: color-mix(in srgb, var(--pill-tone) 78%, var(--text-primary));
 }
 
-.statusPropertyPill > span,
 .notePropertyToken > span {
 	min-width: 0;
 	overflow: hidden;

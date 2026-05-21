@@ -12,6 +12,10 @@ import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
+	priorityColorKey,
+	priorityOptionsWithCustomValues,
+} from "../../lib/priorityProperties";
+import {
 	statusColorKey,
 	statusOptionsWithCustomValues,
 } from "../../lib/statusProperties";
@@ -22,6 +26,7 @@ import {
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
+import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
 import { StatusPropertyPill } from "../status/StatusPropertyPill";
 import {
 	DropdownMenu,
@@ -287,6 +292,8 @@ function DatabaseCellEditor({
 		column.type === "tags" || column.property_kind === "tags";
 	const isStatusColumn =
 		column.type === "property" && column.property_kind === "status";
+	const isPriorityColumn =
+		column.type === "property" && column.property_kind === "priority";
 	const isListLike = isListLikeColumn(column);
 	const toneStyleForValue = (value: string) =>
 		databaseValueToneStyleForColor(value, laneColors[value] ?? null);
@@ -437,9 +444,9 @@ function DatabaseCellEditor({
 				if (!renamed) return;
 				return;
 			}
-			if (isStatusColumn) {
+			if (isStatusColumn || isPriorityColumn) {
 				await onSave(row.note_path, column, {
-					kind: "status",
+					kind: isPriorityColumn ? "priority" : "status",
 					value_text: draft,
 					value_bool: null,
 					value_list: [],
@@ -704,6 +711,69 @@ function DatabaseCellEditor({
 								</div>
 							</>
 						) : null}
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+		);
+	}
+
+	if (isPriorityColumn) {
+		const currentValue = cellValue.value_text ?? "";
+		const currentPriorityId = priorityColorKey(currentValue);
+		const priorityOptions = priorityOptionsWithCustomValues([
+			currentValue,
+			...valueOptions,
+		]);
+		return (
+			<div className="databaseTagEditor">
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							className="notePropertyStatusTrigger databaseStatusTrigger"
+							onFocus={handleSelectRow}
+							onClick={(event) => {
+								handleSelectRow();
+								event.stopPropagation();
+							}}
+						>
+							<PriorityPropertyPill value={currentValue || "no"} />
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent
+						align="start"
+						sideOffset={6}
+						className="databasePickerMenu notePropertyStatusMenu"
+					>
+						<div className="notePropertyStatusOptions">
+							{priorityOptions.map((option) => (
+								<DropdownMenuItem
+									key={option.id}
+									className="notePropertyStatusOption"
+									data-selected={
+										priorityColorKey(option.label) === currentPriorityId
+											? "true"
+											: "false"
+									}
+									onClick={async () => {
+										try {
+											await onSave(row.note_path, column, {
+												kind: "priority",
+												value_text: option.label,
+												value_bool: null,
+												value_list: [],
+											});
+										} catch (error) {
+											setSaveError(extractErrorMessage(error));
+											return;
+										}
+										onClose();
+									}}
+								>
+									<PriorityPropertyPill value={option.label} />
+								</DropdownMenuItem>
+							))}
+						</div>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
@@ -1112,6 +1182,82 @@ export function DatabaseCell({
 						value={currentValue || "not_started"}
 						colors={statusColors}
 					/>
+				</button>
+			);
+		}
+		if (cellValue.kind === "priority") {
+			const currentValue = cellValue.value_text ?? "";
+			const currentPriorityId = priorityColorKey(currentValue);
+			const priorityOptions = priorityOptionsWithCustomValues([
+				currentValue,
+				...valueOptions,
+			]);
+			if (editable) {
+				return (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								className="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
+								onClick={(event) => {
+									handleSelectRow();
+									event.stopPropagation();
+								}}
+								title={displayText || "Change priority"}
+							>
+								<PriorityPropertyPill value={currentValue || "no"} />
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							align="start"
+							sideOffset={6}
+							className="databasePickerMenu notePropertyStatusMenu"
+						>
+							<div className="notePropertyStatusOptions">
+								{priorityOptions.map((option) => (
+									<DropdownMenuItem
+										key={option.id}
+										className="notePropertyStatusOption"
+										data-selected={
+											priorityColorKey(option.label) === currentPriorityId
+												? "true"
+												: "false"
+										}
+										onClick={async () => {
+											try {
+												await onSave(row.note_path, column, {
+													kind: "priority",
+													value_text: option.label,
+													value_bool: null,
+													value_list: [],
+												});
+											} catch (error) {
+												console.error(
+													"Failed to save database priority",
+													error,
+												);
+											}
+										}}
+									>
+										<PriorityPropertyPill value={option.label} />
+									</DropdownMenuItem>
+								))}
+							</div>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				);
+			}
+			return (
+				<button
+					type="button"
+					className="databaseCellButton is-pill-list"
+					onClick={(event) => {
+						handleSelectRow();
+						event.stopPropagation();
+					}}
+					title={displayText || "Priority"}
+				>
+					<PriorityPropertyPill value={currentValue || "no"} />
 				</button>
 			);
 		}

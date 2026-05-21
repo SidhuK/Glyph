@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use serde::Deserialize;
 use serde_yaml::{Mapping, Value};
 use tauri::State;
 use uuid::Uuid;
@@ -256,6 +257,13 @@ struct NewRowFieldDefault {
     value: DatabaseCellValue,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct DatabaseCreateRowInitialValue {
+    pub column: DatabaseColumn,
+    pub value: DatabaseCellValue,
+}
+
 fn normalize_field_key(key: &str) -> String {
     key.trim().to_lowercase()
 }
@@ -357,6 +365,7 @@ fn create_new_row_markdown(
     database: &DatabaseDefinition,
     note_path: &str,
     title: &str,
+    initial_values: &[DatabaseCreateRowInitialValue],
 ) -> Result<String, String> {
     let mut mapping = Mapping::new();
     mapping.insert(key("title"), Value::String(title.to_string()));
@@ -364,6 +373,43 @@ fn create_new_row_markdown(
         mapping.insert(key(&default.key), yaml_value_from_field_default(&default));
     }
     mapping.insert(key("tags"), Value::Sequence(Vec::new()));
+    for initial in initial_values {
+        match initial.column.column_type.as_str() {
+            "title" => {
+                mapping.insert(
+                    key("title"),
+                    yaml_value_from_cell(&initial.column, &initial.value)?,
+                );
+            }
+            "tags" => {
+                mapping.insert(
+                    key("tags"),
+                    yaml_value_from_cell(&initial.column, &initial.value)?,
+                );
+            }
+            "property" => {
+                let property_key = initial
+                    .column
+                    .property_key
+                    .as_deref()
+                    .ok_or_else(|| "property column is missing property_key".to_string())?;
+                if property_key.trim().is_empty() || is_reserved_frontmatter_key(property_key) {
+                    return Err("property column cannot be used for new note defaults".to_string());
+                }
+                mapping.insert(
+                    key(property_key),
+                    yaml_value_from_cell(&initial.column, &initial.value)?,
+                );
+            }
+            "path" | "folder" | "created" | "updated" | "linked_notes" => {
+                return Err(format!(
+                    "{} columns are read-only",
+                    initial.column.column_type
+                ));
+            }
+            other => return Err(format!("unsupported column type '{other}'")),
+        }
+    }
     render_note_markdown(note_path, "", mapping)
 }
 
@@ -612,6 +658,7 @@ pub async fn databases_create_row(
     state: State<'_, SpaceState>,
     database_id: String,
     title: Option<String>,
+    initial_values: Option<Vec<DatabaseCreateRowInitialValue>>,
 ) -> Result<DatabaseCreateRowResult, String> {
     let root = state.current_root()?;
     let db_store_mutex = state.db_store_mutex();
@@ -633,6 +680,7 @@ pub async fn databases_create_row(
             .filter(|value| !value.is_empty())
             .unwrap_or_else(|| "Untitled".to_string());
         let slug = slugify_title(&title);
+        let initial_values = initial_values.unwrap_or_default();
         let mut candidate = if folder.is_empty() {
             format!("{slug}.md")
         } else {
@@ -640,7 +688,7 @@ pub async fn databases_create_row(
         };
         let mut index = 2;
         loop {
-            let next = create_new_row_markdown(&database, &candidate, &title)?;
+            let next = create_new_row_markdown(&database, &candidate, &title, &initial_values)?;
             if write_new_markdown_note(&root, &recent_local_changes, &candidate, &next)? {
                 break;
             }

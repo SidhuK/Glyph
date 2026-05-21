@@ -79,6 +79,16 @@ export function normalizeForKind(property: NoteProperty): NoteProperty {
 				value_bool: null,
 				value_list: [],
 			};
+		case "priority":
+			return {
+				...property,
+				value_text:
+					property.value_text?.trim() ||
+					(property.value_list.length > 0 ? property.value_list[0] : "") ||
+					"No",
+				value_bool: null,
+				value_list: [],
+			};
 		default:
 			return {
 				...property,

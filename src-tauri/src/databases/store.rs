@@ -148,7 +148,15 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
 fn normalize_frontmatter_property_kind(kind: &mut String) {
     if matches!(
         kind.as_str(),
-        "text" | "url" | "date" | "checkbox" | "tags" | "status" | "relation" | "multi_select"
+        "text"
+            | "url"
+            | "date"
+            | "checkbox"
+            | "tags"
+            | "status"
+            | "priority"
+            | "relation"
+            | "multi_select"
     ) {
         return;
     }
@@ -191,8 +199,8 @@ pub(crate) fn default_field_value(
         || normalized_label.ends_with(" status");
     let default_text = if is_status {
         Some("Not Started".to_string())
-    } else if matches_field_name(label, property_key, &["priority", "prio"]) {
-        Some("Medium".to_string())
+    } else if kind == "priority" || matches_field_name(label, property_key, &["priority", "prio"]) {
+        Some("No".to_string())
     } else {
         None
     };

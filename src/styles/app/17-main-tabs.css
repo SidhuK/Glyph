@@ -156,7 +156,8 @@
 
 .mainTabsBreadcrumb:hover,
 .mainTabsBreadcrumb:focus-within,
-.mainTabsBreadcrumb:has(.mainTabsBreadcrumbSepButton[data-state="open"]) {
+.mainTabsBreadcrumb:has(.mainTabsBreadcrumbSepButton[data-state="open"]),
+.mainTabsBreadcrumb:has(.mainTabsBreadcrumbOverflowButton[data-state="open"]) {
 	min-height: 32px;
 	max-height: 32px;
 	padding: 0 8px 6px;
@@ -222,6 +223,31 @@
 	transform: translateX(1px);
 }
 
+.mainTabsBreadcrumbOverflowButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 7px 2px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 13px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	cursor: pointer;
+	transition: color var(--transition-fast);
+}
+
+.mainTabsBreadcrumbOverflowButton:hover,
+.mainTabsBreadcrumbOverflowButton:focus-visible,
+.mainTabsBreadcrumbOverflowButton[data-state="open"] {
+	color: var(--text-primary);
+	outline: none;
+}
+
 .mainTabsBreadcrumbButton {
 	position: relative;
 	display: inline-flex;
@@ -272,6 +298,17 @@
 	flex-shrink: 0;
 	color: currentcolor;
 	opacity: 0.82;
+}
+
+.mainTabsBreadcrumbButton[data-has-custom-color="true"]
+	.mainTabsBreadcrumbIcon {
+	color: var(--file-tree-row-icon-color);
+	opacity: 1;
+}
+
+.mainTabsBreadcrumbButton[data-has-custom-color="true"]
+	.mainTabsBreadcrumbLabel {
+	color: var(--file-tree-row-name-color);
 }
 
 .mainTabsBreadcrumbLabel {
@@ -327,6 +364,15 @@
 	width: 13px;
 	height: 13px;
 	color: var(--text-tertiary);
+}
+
+.mainTabsBreadcrumbMenuItem[data-has-custom-color="true"] svg {
+	color: var(--file-tree-row-icon-color);
+}
+
+.mainTabsBreadcrumbMenuItem[data-has-custom-color="true"]
+	.mainTabsBreadcrumbMenuItemLabel {
+	color: var(--file-tree-row-name-color);
 }
 
 .mainTabsBreadcrumbMenuItemLabel {

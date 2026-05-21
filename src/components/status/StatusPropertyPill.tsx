@@ -1,24 +1,21 @@
 import {
-	Archive01Icon,
-	BlockedIcon,
+	ActivityCircleIcon,
+	Archive02Icon,
 	CancelCircleIcon,
-	CheckmarkCircle02Icon,
-	CircleIcon,
-	ClockAlertIcon,
-	HourglassIcon,
-	Loading03Icon,
-	NoteEditIcon,
-	PauseCircleIcon,
-	PlayCircleIcon,
-	Search01Icon,
-	SentIcon,
+	CheckmarkSquare02Icon,
+	Clock03Icon,
+	FileBlockIcon,
+	FileSearchIcon,
+	Progress03Icon,
+	Queue02Icon,
+	Task01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
 import {
 	statusLabel,
 	statusOptionFromValue,
-	statusToneStyle,
+	statusTextStyle,
 } from "../../lib/statusProperties";
 import type { EditorTextColor } from "../editor/textColors";
 
@@ -26,20 +23,25 @@ const STATUS_ICONS: Record<
 	NonNullable<ReturnType<typeof statusOptionFromValue>>["iconKey"],
 	ComponentProps<typeof HugeiconsIcon>["icon"]
 > = {
-	circle: CircleIcon,
-	play: PlayCircleIcon,
-	blocked: BlockedIcon,
-	pause: PauseCircleIcon,
-	draft: NoteEditIcon,
-	archive: Archive01Icon,
-	check: CheckmarkCircle02Icon,
-	hourglass: HourglassIcon,
-	loading: Loading03Icon,
-	sent: SentIcon,
-	review: Search01Icon,
-	failed: CancelCircleIcon,
-	expired: ClockAlertIcon,
+	activity: ActivityCircleIcon,
+	archive: Archive02Icon,
+	cancel: CancelCircleIcon,
+	check_square: CheckmarkSquare02Icon,
+	clock: Clock03Icon,
+	file_block: FileBlockIcon,
+	file_search: FileSearchIcon,
+	progress: Progress03Icon,
+	queue: Queue02Icon,
+	task: Task01Icon,
+	waiting: Clock03Icon,
 };
+
+export function statusPropertyIconForValue(
+	value: string | null | undefined,
+): ComponentProps<typeof HugeiconsIcon>["icon"] {
+	const option = statusOptionFromValue(value);
+	return option ? STATUS_ICONS[option.iconKey] : Task01Icon;
+}
 
 interface StatusPropertyPillProps {
 	value: string | null | undefined;
@@ -52,18 +54,17 @@ export function StatusPropertyPill({
 	colors = {},
 	className,
 }: StatusPropertyPillProps) {
-	const option = statusOptionFromValue(value);
 	const label = statusLabel(value);
 	if (!label) return null;
 	return (
 		<span
-			className={["statusPropertyPill", className].filter(Boolean).join(" ")}
-			style={statusToneStyle(value, colors)}
+			className={["propertyValueText", className].filter(Boolean).join(" ")}
+			style={statusTextStyle(value, colors)}
 			title={label}
 		>
 			<HugeiconsIcon
-				icon={option ? STATUS_ICONS[option.iconKey] : CircleIcon}
-				className="statusPropertyPillIcon"
+				icon={statusPropertyIconForValue(value)}
+				className="propertyValueTextIcon"
 				size={12}
 				strokeWidth={1.3}
 			/>

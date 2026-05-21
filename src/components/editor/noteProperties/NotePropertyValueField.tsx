@@ -1,12 +1,17 @@
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import {
+	priorityColorKey,
+	priorityOptionsWithCustomValues,
+} from "../../../lib/priorityProperties";
+import {
 	statusColorKey,
 	statusOptionsWithCustomValues,
 } from "../../../lib/statusProperties";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Toggle } from "../../base/toggle/toggle";
+import { PriorityPropertyPill } from "../../status/PriorityPropertyPill";
 import { StatusPropertyPill } from "../../status/StatusPropertyPill";
 import {
 	DropdownMenu,
@@ -70,6 +75,14 @@ export function NotePropertyValueField({
 				<StatusPropertyPill
 					value={property.value_text}
 					colors={statusColors}
+					className="notePropertyStatusStatic"
+				/>
+			);
+		}
+		if (property.kind === "priority") {
+			return (
+				<PriorityPropertyPill
+					value={property.value_text}
 					className="notePropertyStatusStatic"
 				/>
 			);
@@ -171,6 +184,47 @@ export function NotePropertyValueField({
 							</div>
 						</>
 					) : null}
+				</DropdownMenuContent>
+			</DropdownMenu>
+		);
+	}
+
+	if (property.kind === "priority") {
+		const currentValue = property.value_text ?? "";
+		const currentPriorityId = priorityColorKey(currentValue);
+		const priorityOptions = priorityOptionsWithCustomValues([currentValue]);
+		return (
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<button
+						type="button"
+						className="notePropertyStatusTrigger"
+						aria-label={property.key || "Priority property"}
+					>
+						<PriorityPropertyPill value={currentValue || "no"} />
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent
+					align="start"
+					sideOffset={6}
+					className="databasePickerMenu notePropertyStatusMenu"
+				>
+					<div className="notePropertyStatusOptions">
+						{priorityOptions.map((option) => (
+							<DropdownMenuItem
+								key={option.id}
+								className="notePropertyStatusOption"
+								data-selected={
+									priorityColorKey(option.label) === currentPriorityId
+										? "true"
+										: "false"
+								}
+								onClick={() => onUpdate(index, { value_text: option.label })}
+							>
+								<PriorityPropertyPill value={option.label} />
+							</DropdownMenuItem>
+						))}
+					</div>
 				</DropdownMenuContent>
 			</DropdownMenu>
 		);

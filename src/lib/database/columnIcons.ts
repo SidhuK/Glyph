@@ -64,6 +64,7 @@ export const DATABASE_COLUMN_ICON_OPTIONS = [
 	{ id: "activity", label: "Activity", iconKey: "Activity01Icon" },
 	{ id: "workflow", label: "Workflow", iconKey: "WorkflowCircle01Icon" },
 	{ id: "status", label: "Status", iconKey: "CheckmarkCircle02Icon" },
+	{ id: "priority", label: "Priority", iconKey: "MediumSignalIcon" },
 ] as const satisfies readonly DatabaseColumnIconOption[];
 
 const DATABASE_COLUMN_ICON_BY_ID = new Map<string, DatabaseColumnIconOption>(
@@ -90,6 +91,7 @@ const PROPERTY_KIND_DATABASE_COLUMN_ICONS: Record<string, string> = {
 	checkbox: "check-circle",
 	tags: "tag",
 	status: "status",
+	priority: "priority",
 };
 
 export function getDatabaseColumnIconOption(
