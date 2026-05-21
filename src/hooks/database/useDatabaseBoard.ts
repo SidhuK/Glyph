@@ -430,6 +430,7 @@ export function useDatabaseBoard({
 			notePath: string,
 			targetLaneId: string,
 			targetNotePath?: string | null,
+			sourceLaneId?: string | null,
 		) => {
 			if (!groupColumn) return;
 			const displayedCardOrder = laneRowsById(lanes);
@@ -443,6 +444,7 @@ export function useDatabaseBoard({
 				notePath,
 				targetLaneId,
 				targetNotePath,
+				sourceLaneId,
 			);
 			if (cardOrdersEqual(currentCardOrder, nextCardOrder)) return;
 			displayedCardIdsRef.current = {

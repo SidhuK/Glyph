@@ -369,12 +369,17 @@ function DatabaseBoardLaneView({
 						type="button"
 						className="databaseBoardLaneHandle"
 						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-						aria-label={`Reorder ${lane.label} column`}
+						aria-label={
+							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+								? "No value stays last"
+								: `Open ${lane.label} lane options`
+						}
 						title={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
 								? "No value stays last"
 								: `Open ${lane.label} lane options`
 						}
+						aria-haspopup="menu"
 						onClick={handleLaneMenuClick}
 						onContextMenu={handleLaneContextMenu}
 					>
@@ -615,18 +620,18 @@ export function DatabaseBoard({
 			if (!row) return;
 			if (targetLaneId === sourceLaneId) {
 				if (targetNotePath && targetNotePath !== notePath) {
-					moveCardToLane(notePath, targetLaneId, targetNotePath);
+					moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
 				} else if (!targetNotePath) {
 					const targetLane = lanes.find((lane) => lane.id === targetLaneId);
 					const lastRow = targetLane?.rows[targetLane.rows.length - 1];
 					if (lastRow?.note_path !== notePath) {
-						moveCardToLane(notePath, targetLaneId, null);
+						moveCardToLane(notePath, targetLaneId, null, sourceLaneId);
 					}
 				}
 				return;
 			}
 			if (boardRowHasLane(row, groupColumn, targetLaneId)) {
-				moveCardToLane(notePath, targetLaneId, targetNotePath);
+				moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
 				return;
 			}
 			try {
@@ -636,7 +641,7 @@ export function DatabaseBoard({
 					groupColumn,
 					boardDropValue(row, groupColumn, targetLaneId, sourceLaneId),
 				);
-				moveCardToLane(notePath, targetLaneId, targetNotePath);
+				moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
 			} catch (error) {
 				setMoveError(extractErrorMessage(error));
 			}

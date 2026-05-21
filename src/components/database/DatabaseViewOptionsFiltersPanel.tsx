@@ -190,7 +190,20 @@ function isFilterPresetApplied(
 			filter.column_id === preset.filter?.column_id &&
 			filter.operator === preset.filter.operator &&
 			(filter.value_text ?? "") === (preset.filter.value_text ?? "") &&
-			(filter.value_bool ?? null) === (preset.filter.value_bool ?? null),
+			(filter.value_bool ?? null) === (preset.filter.value_bool ?? null) &&
+			filterValueListsEqual(filter.value_list, preset.filter.value_list),
+	);
+}
+
+function filterValueListsEqual(
+	currentValueList: string[] | null | undefined,
+	presetValueList: string[] | null | undefined,
+): boolean {
+	const currentValues = currentValueList ?? [];
+	const presetValues = presetValueList ?? [];
+	return (
+		currentValues.length === presetValues.length &&
+		currentValues.every((value, index) => value === presetValues[index])
 	);
 }
 

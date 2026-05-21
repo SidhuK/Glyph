@@ -10,6 +10,7 @@ import {
 	createDatabaseRowGroups,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	moveBoardCardToLane,
 	moveBoardLaneToIndex,
 	orderBoardLanes,
 } from "./board";
@@ -243,6 +244,31 @@ describe("database board helpers", () => {
 				2,
 			),
 		).toEqual(["doing", "review", "backlog"]);
+	});
+
+	it("moves multi-membership cards without removing unrelated lanes", () => {
+		expect(
+			moveBoardCardToLane(
+				{
+					swift: ["Projects/One.md", "Projects/Two.md"],
+					ios: ["Projects/Two.md", "Projects/Three.md"],
+					project: ["Projects/Three.md", "Projects/Two.md"],
+				},
+				{
+					swift: ["Projects/One.md", "Projects/Two.md"],
+					ios: ["Projects/Two.md", "Projects/Three.md"],
+					project: ["Projects/Three.md", "Projects/Two.md"],
+				},
+				"Projects/Two.md",
+				"project",
+				"Projects/Three.md",
+				"swift",
+			),
+		).toEqual({
+			swift: ["Projects/One.md"],
+			ios: ["Projects/Two.md", "Projects/Three.md"],
+			project: ["Projects/Two.md", "Projects/Three.md"],
+		});
 	});
 
 	it("creates update payloads for the target lane", () => {

@@ -394,6 +394,7 @@ export function moveBoardCardToLane(
 	notePath: string,
 	targetLaneId: string,
 	targetNotePath?: string | null,
+	sourceLaneId?: string | string[] | null,
 ): Record<string, string[]> {
 	const nextOrder: Record<string, string[]> = {};
 	const laneIds = new Set([
@@ -401,22 +402,36 @@ export function moveBoardCardToLane(
 		...Object.keys(cardOrderByLane),
 		targetLaneId,
 	]);
+	const sourceLaneIds = new Set(
+		Array.isArray(sourceLaneId)
+			? sourceLaneId
+			: sourceLaneId
+				? [sourceLaneId]
+				: Object.entries(laneRowsById)
+						.filter(([, rows]) => rows.includes(notePath))
+						.map(([laneId]) => laneId),
+	);
 
 	for (const laneId of laneIds) {
 		const knownRows = laneRowsById[laneId] ?? [];
 		const knownRowSet = new Set(knownRows);
+		const shouldRemoveFromLane = sourceLaneIds.has(laneId);
 		nextOrder[laneId] = [
 			...(cardOrderByLane[laneId] ?? []).filter(
-				(path) => path !== notePath && knownRowSet.has(path),
+				(path) =>
+					(!shouldRemoveFromLane || path !== notePath) && knownRowSet.has(path),
 			),
 			...knownRows.filter(
 				(path) =>
-					path !== notePath && !(cardOrderByLane[laneId] ?? []).includes(path),
+					(!shouldRemoveFromLane || path !== notePath) &&
+					!(cardOrderByLane[laneId] ?? []).includes(path),
 			),
 		];
 	}
 
-	const targetRows = nextOrder[targetLaneId] ?? [];
+	const targetRows = (nextOrder[targetLaneId] ?? []).filter(
+		(path) => path !== notePath,
+	);
 	const targetIndex =
 		targetNotePath && targetNotePath !== notePath
 			? targetRows.indexOf(targetNotePath)
