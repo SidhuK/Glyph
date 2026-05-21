@@ -375,6 +375,7 @@ export function MainTabsBreadcrumbs({
 							type="button"
 							className="mainTabsBreadcrumbButton"
 							aria-current={isCurrent ? "page" : undefined}
+							disabled={isCurrent}
 							data-has-custom-color={hasCustomColor(part.path, appearance)}
 							style={appearanceStyle}
 							title={breadcrumbTooltip(part)}
@@ -510,7 +511,7 @@ function BreadcrumbEntryMenu({
 		<DropdownMenu
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (nextOpen) void onLoadDir(dirPath);
+				if (nextOpen && loading) void onLoadDir(dirPath);
 				onOpenChange(nextOpen);
 			}}
 		>

@@ -154,45 +154,16 @@ function getLaneColor(
 	return color && isEditorTextColor(color) ? color : null;
 }
 
-function normalizedBoardColumnName(value: string | null | undefined): string {
-	return (value ?? "")
-		.trim()
-		.toLowerCase()
-		.replace(/[_-]+/g, " ")
-		.replace(/\s+/g, " ");
-}
-
-function boardColumnNames(column: DatabaseColumn | null): string[] {
-	if (!column) return [];
-	return [column.property_key, column.label, column.id].map(
-		normalizedBoardColumnName,
-	);
-}
-
 function isStatusBoardColumn(column: DatabaseColumn | null): boolean {
-	if (column?.property_kind === "status") return true;
-	return boardColumnNames(column).some(
-		(name) =>
-			name === "status" ||
-			name === "state" ||
-			name === "stage" ||
-			name.endsWith(" status"),
-	);
+	return column?.property_kind === "status";
 }
 
 function isPriorityBoardColumn(column: DatabaseColumn | null): boolean {
-	if (column?.property_kind === "priority") return true;
-	return boardColumnNames(column).some(
-		(name) =>
-			name === "priority" || name === "prio" || name.endsWith(" priority"),
-	);
+	return column?.property_kind === "priority";
 }
 
 function isTagBoardColumn(column: DatabaseColumn | null): boolean {
-	if (column?.type === "tags" || column?.property_kind === "tags") return true;
-	return boardColumnNames(column).some(
-		(name) => name === "tags" || name === "tag" || name.endsWith(" tags"),
-	);
+	return column?.type === "tags" || column?.property_kind === "tags";
 }
 
 function fileTitleFromPath(notePath: string): string {

@@ -153,6 +153,18 @@ mod tests {
             property_kind("review status", &Value::String("idea".to_string())),
             "status"
         );
+        assert_eq!(
+            property_kind("priority", &Value::String("High".to_string())),
+            "priority"
+        );
+        assert_eq!(
+            property_kind("Review Priority", &Value::String("High".to_string())),
+            "priority"
+        );
+        assert_eq!(
+            property_kind("prioritization", &Value::String("High".to_string())),
+            "text"
+        );
         assert_eq!(property_kind("count", &Value::Number(3.into())), "text");
     }
 }

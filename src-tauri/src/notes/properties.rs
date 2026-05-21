@@ -288,6 +288,9 @@ tags:
 status: In Progress
 stage: blocked
 Review Status: someday
+priority: false
+Priority: true
+Review Priority: High
 ---
 "#
             .to_string(),
@@ -316,5 +319,26 @@ Review Status: someday
             .unwrap();
         assert_eq!(custom_status.kind, "status");
         assert_eq!(custom_status.value_text.as_deref(), Some("someday"));
+
+        let priority_false = properties
+            .iter()
+            .find(|property| property.key == "priority")
+            .unwrap();
+        assert_eq!(priority_false.kind, "priority");
+        assert_eq!(priority_false.value_text.as_deref(), Some("no"));
+
+        let priority_true = properties
+            .iter()
+            .find(|property| property.key == "Priority")
+            .unwrap();
+        assert_eq!(priority_true.kind, "priority");
+        assert_eq!(priority_true.value_text.as_deref(), Some("true"));
+
+        let custom_priority = properties
+            .iter()
+            .find(|property| property.key == "Review Priority")
+            .unwrap();
+        assert_eq!(custom_priority.kind, "priority");
+        assert_eq!(custom_priority.value_text.as_deref(), Some("High"));
     }
 }
