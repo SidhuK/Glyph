@@ -375,7 +375,7 @@ export function MainTabsBreadcrumbs({
 							type="button"
 							className="mainTabsBreadcrumbButton"
 							aria-current={isCurrent ? "page" : undefined}
-							disabled={isCurrent}
+							aria-disabled={isCurrent}
 							data-has-custom-color={hasCustomColor(part.path, appearance)}
 							style={appearanceStyle}
 							title={breadcrumbTooltip(part)}
