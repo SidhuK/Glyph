@@ -30,16 +30,27 @@ import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
 	boardDropValue,
+	boardLaneIdFromLabel,
+	boardLaneValue,
 	boardRowHasLane,
+	canManageBoardLanes,
 } from "../../lib/database/board";
-import { formatDatabaseDateTime } from "../../lib/database/config";
+import {
+	databaseCellValueFromRow,
+	formatDatabaseDateTime,
+} from "../../lib/database/config";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import {
+	type NativeContextMenuItem,
+	showNativeContextMenu,
+	showNativePopupMenu,
+} from "../../lib/nativeContextMenu";
 import { statusToneStyle } from "../../lib/statusProperties";
 import type { NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
+import { Plus } from "../Icons";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
@@ -50,10 +61,19 @@ import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/shadcn/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
+import { Input } from "../ui/shadcn/input";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
@@ -67,9 +87,14 @@ interface DatabaseBoardProps {
 	onOpenColumns: () => void;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
+	cardOrderByGroup?: Record<string, Record<string, string[]>>;
 	onLaneOrderChange?: (
 		groupColumnId: string,
 		laneOrder: string[],
+	) => void | Promise<void>;
+	onCardOrderChange?: (
+		groupColumnId: string,
+		cardOrder: Record<string, string[]>,
 	) => void | Promise<void>;
 	laneColors?: Record<string, string>;
 	statusColors?: Record<string, EditorTextColor>;
@@ -87,6 +112,12 @@ interface DatabaseBoardProps {
 			value_list: string[];
 		},
 	) => Promise<void>;
+}
+
+interface LaneEditState {
+	mode: "add" | "rename";
+	lane: DatabaseBoardLane | null;
+	value: string;
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
@@ -162,6 +193,8 @@ interface DatabaseBoardLaneViewProps {
 	onLaneColorChange?:
 		| ((laneId: string, color: EditorTextColor | null) => void)
 		| null;
+	onAddLane?: () => void;
+	onRenameLane?: (lane: DatabaseBoardLane) => void;
 	reorderableLanes: DatabaseBoardLane[];
 	moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => void;
 	children: ReactNode;
@@ -176,6 +209,8 @@ function DatabaseBoardLaneView({
 	isStatusGroup,
 	shouldReduceMotion,
 	onLaneColorChange,
+	onAddLane,
+	onRenameLane,
 	reorderableLanes,
 	moveLaneToIndex,
 	children,
@@ -185,22 +220,54 @@ function DatabaseBoardLaneView({
 		data: { laneId: lane.id },
 		accept: "database-board-card",
 	});
+	const laneMenuItems = useMemo<NativeContextMenuItem[]>(
+		() => [
+			...(onRenameLane
+				? [
+						{
+							label: `Rename ${lane.label}`,
+							action: () => onRenameLane(lane),
+						},
+					]
+				: []),
+			...(onAddLane
+				? [
+						{
+							label: "Add lane",
+							action: onAddLane,
+						},
+					]
+				: []),
+			...(onRenameLane || onAddLane ? [{ type: "separator" as const }] : []),
+			...reorderableLanes.map((targetLane, index) => ({
+				label: `Position ${index + 1}: ${targetLane.label}`,
+				enabled: targetLane.id !== lane.id,
+				action: () => moveLaneToIndex(lane.id, index),
+			})),
+		],
+		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes],
+	);
 	const handleLaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
 			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
 
-			void showNativeContextMenu(
-				event,
-				reorderableLanes.map((targetLane, index) => ({
-					label: `Position ${index + 1}: ${targetLane.label}`,
-					enabled: targetLane.id !== lane.id,
-					action: () => moveLaneToIndex(lane.id, index),
-				})),
-			).catch((error: unknown) => {
+			void showNativeContextMenu(event, laneMenuItems).catch(
+				(error: unknown) => {
+					console.error("Failed to show board lane context menu", error);
+				},
+			);
+		},
+		[lane.id, laneMenuItems],
+	);
+	const handleLaneMenuClick = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			if (lane.id === DATABASE_BOARD_EMPTY_LANE_ID) return;
+
+			void showNativePopupMenu(event, laneMenuItems).catch((error: unknown) => {
 				console.error("Failed to show board lane context menu", error);
 			});
 		},
-		[lane.id, moveLaneToIndex, reorderableLanes],
+		[lane.id, laneMenuItems],
 	);
 
 	return (
@@ -208,6 +275,7 @@ function DatabaseBoardLaneView({
 			ref={ref}
 			className="databaseBoardLane"
 			data-show-column-color={showColumnColor ? "true" : "false"}
+			data-workflow-state={lane.workflowState}
 			style={
 				isStatusGroup
 					? statusToneStyle(lane.label, statusColors)
@@ -301,12 +369,18 @@ function DatabaseBoardLaneView({
 						type="button"
 						className="databaseBoardLaneHandle"
 						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
-						aria-label={`Reorder ${lane.label} column`}
+						aria-label={
+							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+								? "No value stays last"
+								: `Open ${lane.label} lane options`
+						}
 						title={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
 								? "No value stays last"
-								: `Right-click to move ${lane.label}`
+								: `Open ${lane.label} lane options`
 						}
+						aria-haspopup="menu"
+						onClick={handleLaneMenuClick}
 						onContextMenu={handleLaneContextMenu}
 					>
 						<span className="databaseBoardLaneHandleDots" />
@@ -340,6 +414,14 @@ function DatabaseBoardCardView({
 	children,
 }: DatabaseBoardCardViewProps) {
 	const dragId = boardCardDragId(row.note_path, laneId);
+	const { ref: droppableRef, isDropTarget } = useDroppable({
+		id: `card:${dragId}`,
+		data: {
+			laneId,
+			notePath: row.note_path,
+		},
+		accept: "database-board-card",
+	});
 	const { ref, handleRef, isDragging } = useDraggable({
 		id: dragId,
 		type: "database-board-card",
@@ -351,10 +433,11 @@ function DatabaseBoardCardView({
 	});
 	const setCardRef = useCallback(
 		(element: HTMLButtonElement | null) => {
+			droppableRef(element);
 			ref(element);
 			handleRef(element);
 		},
-		[handleRef, ref],
+		[droppableRef, handleRef, ref],
 	);
 
 	return (
@@ -364,6 +447,7 @@ function DatabaseBoardCardView({
 			className="databaseBoardCard"
 			data-state={selected ? "selected" : undefined}
 			data-dragging={isDragging ? "true" : undefined}
+			data-drop-target={isDropTarget ? "true" : undefined}
 			onClick={() => {
 				if (suppressClickRef.current) return;
 				onSelectRow(row.note_path);
@@ -397,7 +481,9 @@ export function DatabaseBoard({
 	onOpenColumns,
 	onGroupColumnIdChange,
 	laneOrderByGroup = {},
+	cardOrderByGroup = {},
 	onLaneOrderChange,
+	onCardOrderChange,
 	laneColors = EMPTY_LANE_COLORS,
 	statusColors = {},
 	onLaneColorChange,
@@ -405,16 +491,26 @@ export function DatabaseBoard({
 	onSaveCell,
 }: DatabaseBoardProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const { groupColumn, groupColumns, lanes, moveLaneToIndex } =
-		useDatabaseBoard({
-			rows,
-			columns,
-			initialGroupColumnId: persistedGroupColumnId,
-			initialLaneOrderByGroup: laneOrderByGroup,
-			onGroupColumnIdChange,
-			onLaneOrderChange,
-		});
+	const {
+		groupColumn,
+		groupColumns,
+		lanes,
+		addLane,
+		moveLaneToIndex,
+		renameLane,
+		moveCardToLane,
+	} = useDatabaseBoard({
+		rows,
+		columns,
+		initialGroupColumnId: persistedGroupColumnId,
+		initialLaneOrderByGroup: laneOrderByGroup,
+		initialCardOrderByGroup: cardOrderByGroup,
+		onGroupColumnIdChange,
+		onLaneOrderChange,
+		onCardOrderChange,
+	});
 	const [moveError, setMoveError] = useState("");
+	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
 	const suppressClickRef = useRef(false);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
@@ -430,6 +526,7 @@ export function DatabaseBoard({
 		[lanes],
 	);
 	const isStatusGroup = groupColumn?.property_kind === "status";
+	const canManageLanes = canManageBoardLanes(groupColumn);
 	const handleLaneColorChange = useCallback(
 		(laneId: string, color: EditorTextColor | null) => {
 			if (isStatusGroup) {
@@ -441,19 +538,100 @@ export function DatabaseBoard({
 		[isStatusGroup, onLaneColorChange, onStatusColorChange],
 	);
 
+	const handleAddLane = useCallback(() => {
+		if (!groupColumn || !canManageLanes) return;
+		setMoveError("");
+		setLaneEdit({ mode: "add", lane: null, value: "" });
+	}, [canManageLanes, groupColumn]);
+
+	const handleRenameLane = useCallback(
+		(lane: DatabaseBoardLane) => {
+			if (!groupColumn || !canManageLanes) return;
+			setMoveError("");
+			setLaneEdit({ mode: "rename", lane, value: lane.label });
+		},
+		[canManageLanes, groupColumn],
+	);
+
+	const commitLaneEdit = useCallback(async () => {
+		if (!laneEdit || !groupColumn || !canManageLanes) return;
+		const laneId = boardLaneIdFromLabel(groupColumn, laneEdit.value);
+		if (!laneId) return;
+		if (
+			lanes.some((lane) => lane.id === laneId && lane.id !== laneEdit.lane?.id)
+		) {
+			setMoveError(`"${laneId}" already exists.`);
+			return;
+		}
+		setMoveError("");
+		if (laneEdit.mode === "add") {
+			addLane(laneId);
+			setLaneEdit(null);
+			return;
+		}
+		const lane = laneEdit.lane;
+		if (!lane || laneId === lane.id) {
+			setLaneEdit(null);
+			return;
+		}
+		try {
+			await Promise.all(
+				lane.rows.map((row) => {
+					const cell = databaseCellValueFromRow(row, groupColumn);
+					const value =
+						groupColumn.property_kind === "multi_select"
+							? {
+									kind: cell.kind,
+									value_list: Array.from(
+										new Set([
+											...cell.value_list.filter((value) => value !== lane.id),
+											laneId,
+										]),
+									),
+								}
+							: boardLaneValue(groupColumn, laneId);
+					return onSaveCell(row.note_path, groupColumn, value);
+				}),
+			);
+			renameLane(lane.id, laneId);
+			setLaneEdit(null);
+		} catch (error) {
+			setMoveError(extractErrorMessage(error));
+		}
+	}, [
+		addLane,
+		canManageLanes,
+		groupColumn,
+		laneEdit,
+		lanes,
+		onSaveCell,
+		renameLane,
+	]);
+
 	const handleLaneDrop = useCallback(
 		async (
 			notePath: string | null,
 			targetLaneId: string,
 			sourceLaneId?: string | null,
+			targetNotePath?: string | null,
 		) => {
 			if (!notePath || !groupColumn) return;
 			const row = rows.find((entry) => entry.note_path === notePath);
 			if (!row) return;
 			if (targetLaneId === sourceLaneId) {
+				if (targetNotePath && targetNotePath !== notePath) {
+					moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
+				} else if (!targetNotePath) {
+					const targetLane = lanes.find((lane) => lane.id === targetLaneId);
+					const lastRow = targetLane?.rows[targetLane.rows.length - 1];
+					if (lastRow?.note_path !== notePath) {
+						moveCardToLane(notePath, targetLaneId, null, sourceLaneId);
+					}
+				}
 				return;
 			}
 			if (boardRowHasLane(row, groupColumn, targetLaneId)) {
+				moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
 				return;
 			}
 			try {
@@ -463,11 +641,12 @@ export function DatabaseBoard({
 					groupColumn,
 					boardDropValue(row, groupColumn, targetLaneId, sourceLaneId),
 				);
+				moveCardToLane(notePath, targetLaneId, targetNotePath, sourceLaneId);
 			} catch (error) {
 				setMoveError(extractErrorMessage(error));
 			}
 		},
-		[groupColumn, onSaveCell, rows],
+		[groupColumn, lanes, moveCardToLane, onSaveCell, rows],
 	);
 
 	const handleDragEnd = useCallback(
@@ -481,20 +660,76 @@ export function DatabaseBoard({
 			const { source, target } = event.operation;
 			const notePath =
 				typeof source?.data.notePath === "string" ? source.data.notePath : null;
-			const targetLaneId = typeof target?.id === "string" ? target.id : null;
+			const targetLaneId =
+				typeof target?.data.laneId === "string"
+					? target.data.laneId
+					: typeof target?.id === "string"
+						? target.id
+						: null;
+			const targetNotePath =
+				typeof target?.data.notePath === "string" ? target.data.notePath : null;
 			const sourceLaneId =
 				typeof source?.data.sourceLaneId === "string"
 					? source.data.sourceLaneId
 					: null;
 			if (!targetLaneId) return;
 
-			void handleLaneDrop(notePath, targetLaneId, sourceLaneId);
+			void handleLaneDrop(notePath, targetLaneId, sourceLaneId, targetNotePath);
 		},
 		[handleLaneDrop],
 	);
 
 	return (
 		<div className="databaseBoardShell">
+			<Dialog
+				open={laneEdit != null}
+				onOpenChange={(open) => {
+					if (!open) setLaneEdit(null);
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}
+						</DialogTitle>
+						<DialogDescription>
+							{groupColumn
+								? `Set the ${groupColumn.label} value for this board lane.`
+								: "Set the board lane value."}
+						</DialogDescription>
+					</DialogHeader>
+					<form
+						className="grid gap-4"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void commitLaneEdit();
+						}}
+					>
+						<Input
+							autoFocus
+							value={laneEdit?.value ?? ""}
+							aria-label="Lane name"
+							onChange={(event) =>
+								setLaneEdit((current) =>
+									current ? { ...current, value: event.target.value } : current,
+								)
+							}
+						/>
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => setLaneEdit(null)}
+							>
+								Cancel
+							</Button>
+							<Button type="submit">
+								{laneEdit?.mode === "rename" ? "Rename" : "Add"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 			{moveError ? (
 				<m.div
 					className="databaseBoardError"
@@ -549,6 +784,8 @@ export function DatabaseBoard({
 									isStatusGroup={isStatusGroup}
 									shouldReduceMotion={shouldReduceMotion}
 									onLaneColorChange={handleLaneColorChange}
+									onAddLane={canManageLanes ? handleAddLane : undefined}
+									onRenameLane={canManageLanes ? handleRenameLane : undefined}
 									reorderableLanes={reorderableLanes}
 									moveLaneToIndex={moveLaneToIndex}
 								>
@@ -685,11 +922,26 @@ export function DatabaseBoard({
 										})
 									) : (
 										<div className="databaseBoardLaneEmptyCard">
-											Drop notes here
+											{lane.workflowState === "archived"
+												? "Archive notes here"
+												: lane.workflowState === "done"
+													? "Completed notes land here"
+													: "Drop notes here"}
 										</div>
 									)}
 								</DatabaseBoardLaneView>
 							))}
+							{canManageLanes ? (
+								<button
+									type="button"
+									className="databaseBoardAddLaneButton"
+									onClick={handleAddLane}
+									title="Add lane"
+									aria-label="Add board lane"
+								>
+									<Plus size={14} aria-hidden="true" />
+								</button>
+							) : null}
 						</div>
 					</div>
 				</DragDropProvider>

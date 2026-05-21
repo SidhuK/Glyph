@@ -335,11 +335,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 													{visibleTags.map((tag) => (
 														<span
 															key={`${note.note_path}:${tag}`}
-															className="databaseBoardTag"
+															className="allDocsCardTag"
 														>
 															<HugeiconsIcon
 																icon={Tag01Icon}
-																className="databaseTagPillIcon"
+																className="allDocsCardTagIcon"
 																size={11}
 																strokeWidth={1.2}
 															/>
@@ -347,7 +347,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 														</span>
 													))}
 													{extraTagCount > 0 ? (
-														<span className="databaseBoardTag is-muted">
+														<span className="allDocsCardTag is-muted">
 															+{extraTagCount}
 														</span>
 													) : null}

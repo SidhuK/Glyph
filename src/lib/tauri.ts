@@ -113,6 +113,7 @@ interface DatabaseViewState {
 	board_group_by?: string | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
+	board_card_order?: Record<string, Record<string, string[]>>;
 }
 
 export interface DatabaseColumn {
@@ -209,6 +210,7 @@ interface WorkspaceDatabaseView {
 	grouping?: WorkspaceDatabaseGrouping | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
+	board_card_order?: Record<string, Record<string, string[]>>;
 	created_at: string;
 	updated_at: string;
 }
@@ -218,6 +220,7 @@ interface WorkspaceDatabaseSchemaField {
 	label: string;
 	kind: string;
 	property_key?: string | null;
+	default_value?: DatabaseCellValue | null;
 	relation_database_id?: string | null;
 }
 

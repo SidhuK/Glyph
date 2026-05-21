@@ -81,6 +81,7 @@ interface DatabasesPaneProps {
 
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
+const EMPTY_BOARD_CARD_ORDER: Record<string, Record<string, string[]>> = {};
 const MIN_DATABASE_COLUMN_WIDTH = 120;
 const MAX_DATABASE_COLUMN_WIDTH = 900;
 
@@ -112,6 +113,7 @@ function currentConfig(
 			board_group_by: view.grouping?.column_id ?? null,
 			board_lane_colors: view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
 			board_lane_order: view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
+			board_card_order: view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
 		},
 		columns: view.columns,
 		sorts: view.sorts,
@@ -144,6 +146,8 @@ function replaceCurrentView(
 							config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
 						board_lane_order:
 							config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
+						board_card_order:
+							config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
 						columns: config.columns,
 						sorts: config.sorts,
 						filters: config.filters,
@@ -691,6 +695,7 @@ function DatabasesPaneContent({
 					grouping: null,
 					board_lane_colors: {},
 					board_lane_order: {},
+					board_card_order: {},
 					created_at: now,
 					updated_at: now,
 				},
@@ -1173,6 +1178,9 @@ function DatabasesPaneContent({
 							laneOrderByGroup={
 								activeConfig.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER
 							}
+							cardOrderByGroup={
+								activeConfig.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER
+							}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							statusColors={statusColors}
 							showColumnColor={showDatabaseColumnColor}
@@ -1197,6 +1205,18 @@ function DatabasesPaneContent({
 										board_lane_order: {
 											...(activeConfig.view.board_lane_order ?? {}),
 											[groupColumnId]: laneOrder,
+										},
+									},
+								})
+							}
+							onCardOrderChange={(groupColumnId, cardOrder) =>
+								void handleSaveConfig({
+									...activeConfig,
+									view: {
+										...activeConfig.view,
+										board_card_order: {
+											...(activeConfig.view.board_card_order ?? {}),
+											[groupColumnId]: cardOrder,
 										},
 									},
 								})

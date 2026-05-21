@@ -261,6 +261,37 @@
 	overflow: hidden;
 }
 
+.allDocsCardTag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	flex: 0 0 auto;
+	padding: 2px 7px;
+	border: 0;
+	border-radius: 4px;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 9%,
+		var(--bg-primary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
+	font-size: 0.68rem;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+.allDocsCardTag.is-muted {
+	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+	color: var(--text-tertiary);
+}
+
+.allDocsCardTagIcon {
+	flex: 0 0 auto;
+	color: currentcolor;
+}
+
 @media (max-width: 900px) {
 	.allDocsGrid {
 		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

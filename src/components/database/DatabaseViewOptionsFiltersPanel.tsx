@@ -3,23 +3,38 @@ import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabaseFilter,
+	DatabasePropertyOption,
 } from "../../lib/database/types";
 import { ChevronDown, Plus, Trash2 } from "../Icons";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
+import {
+	type DatabaseFilterPreset,
+	databaseFilterPresets,
+} from "./databaseViewPresets";
 
 interface FiltersPanelProps {
 	config: DatabaseConfig;
+	availableProperties: DatabasePropertyOption[];
 	filterError: string;
 	filterUiKeys: string[];
 	filterKeyCounterRef: MutableRefObject<number>;
 	defaultFilterColumn: DatabaseColumn | null;
+	onApplyFilterPreset: (preset: DatabaseFilterPreset) => void;
 	updateFilters: (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
 		keyUpdater?: (keys: string[]) => string[],
 	) => Promise<void>;
 }
+
+const DATE_SHORTCUT_OPTIONS = [
+	"Overdue",
+	"Today",
+	"This Week",
+	"Last 7 Days",
+	"Last 30 Days",
+];
 
 function isTagFilterColumn(column?: DatabaseColumn | null): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
@@ -102,7 +117,7 @@ function operatorLabel(operator: DatabaseFilter["operator"]): string {
 		case "none_of":
 			return "is none of";
 		case "within_last_7_days":
-			return "within last 7 days";
+			return "is";
 	}
 }
 
@@ -165,14 +180,44 @@ function FilterJoiner({ index }: { index: number }) {
 	);
 }
 
+function isFilterPresetApplied(
+	filters: DatabaseFilter[],
+	preset: DatabaseFilterPreset,
+): boolean {
+	if (!preset.filter) return false;
+	return filters.some(
+		(filter) =>
+			filter.column_id === preset.filter?.column_id &&
+			filter.operator === preset.filter.operator &&
+			(filter.value_text ?? "") === (preset.filter.value_text ?? "") &&
+			(filter.value_bool ?? null) === (preset.filter.value_bool ?? null) &&
+			filterValueListsEqual(filter.value_list, preset.filter.value_list),
+	);
+}
+
+function filterValueListsEqual(
+	currentValueList: string[] | null | undefined,
+	presetValueList: string[] | null | undefined,
+): boolean {
+	const currentValues = currentValueList ?? [];
+	const presetValues = presetValueList ?? [];
+	return (
+		currentValues.length === presetValues.length &&
+		currentValues.every((value, index) => value === presetValues[index])
+	);
+}
+
 export function FiltersPanel({
 	config,
+	availableProperties,
 	filterError,
 	filterUiKeys,
 	filterKeyCounterRef,
 	defaultFilterColumn,
+	onApplyFilterPreset,
 	updateFilters,
 }: FiltersPanelProps) {
+	const presets = databaseFilterPresets(config, availableProperties);
 	return (
 		<section
 			className="databaseViewOptionsPanel is-wide"
@@ -199,6 +244,27 @@ export function FiltersPanel({
 				Filters use database columns, tags, and note properties. To find words
 				in note text, use Search or this view's search box.
 			</p>
+			<div className="databaseViewPresetGroup" aria-label="Filter presets">
+				<span className="databaseViewPresetLabel">Presets</span>
+				<div className="databaseViewPresetChips">
+					{presets.map((preset) => {
+						const applied = isFilterPresetApplied(config.filters, preset);
+						return (
+							<button
+								key={preset.id}
+								type="button"
+								className="databaseViewPresetChip"
+								disabled={!preset.filter || applied}
+								data-active={applied ? "true" : "false"}
+								title={preset.disabledReason ?? preset.label}
+								onClick={() => onApplyFilterPreset(preset)}
+							>
+								{preset.label}
+							</button>
+						);
+					})}
+				</div>
+			</div>
 			{filterError ? (
 				<div className="databaseViewPanelError">{filterError}</div>
 			) : null}
@@ -294,7 +360,32 @@ export function FiltersPanel({
 										</option>
 									))}
 								</select>
-								{showsValue ? (
+								{filter.operator === "within_last_7_days" ? (
+									<select
+										className="databaseViewInlineSelect"
+										value={filter.value_text ?? "Last 7 Days"}
+										aria-label={`Filter ${index + 1} date range`}
+										onChange={(event) =>
+											void updateFilters((filters) =>
+												filters.map((entry, i) =>
+													i === index
+														? {
+																...entry,
+																value_text: event.target.value,
+																value_list: [],
+															}
+														: entry,
+												),
+											)
+										}
+									>
+										{DATE_SHORTCUT_OPTIONS.map((option) => (
+											<option key={option} value={option}>
+												{option}
+											</option>
+										))}
+									</select>
+								) : showsValue ? (
 									usesTagPicker ? (
 										<DatabaseTagPicker
 											value={filter.value_text ?? ""}
