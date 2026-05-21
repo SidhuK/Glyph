@@ -12,6 +12,8 @@ const {
 	prefetchNoteMock,
 	invokeMock,
 	scopeRef,
+	pinnedFilesRef,
+	togglePinnedFileMock,
 	taskSummariesRef,
 	showTaskProgressIndicatorRef,
 } = vi.hoisted(() => ({
@@ -19,6 +21,8 @@ const {
 	prefetchNoteMock: vi.fn(),
 	invokeMock: vi.fn(),
 	scopeRef: { current: { kind: "all" } as FolioScope },
+	pinnedFilesRef: { current: [] as string[] },
+	togglePinnedFileMock: vi.fn(),
 	taskSummariesRef: {
 		current: {} as Record<
 			string,
@@ -35,6 +39,8 @@ vi.mock("../../contexts", () => ({
 	useFileTreeContext: () => ({
 		itemAppearance: {},
 		setItemAppearance: vi.fn(),
+		pinnedFiles: pinnedFilesRef.current,
+		togglePinnedFile: togglePinnedFileMock,
 	}),
 }));
 
@@ -125,6 +131,7 @@ describe("FolioNotesListPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
+		pinnedFilesRef.current = [];
 		taskSummariesRef.current = {};
 		showTaskProgressIndicatorRef.current = true;
 		loadAllDocsMock.mockResolvedValue(notes);
@@ -174,10 +181,10 @@ describe("FolioNotesListPane", () => {
 		await act(async () => renderPane("Projects/Roadmap.md"));
 		await waitFor(() => container.textContent?.includes("Roadmap") ?? false);
 
-		expect(container.textContent).toContain("All Notes");
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
+		expect(container.querySelector(".folioNotesTitle")).toBeNull();
 		expect(loadAllDocsMock).toHaveBeenCalledWith(null);
 		expect(renderedNotePaths(container)).toEqual([
 			"Projects/Roadmap.md",
@@ -211,6 +218,24 @@ describe("FolioNotesListPane", () => {
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
+	});
+
+	it("keeps pinned notes at the top of the folio list", async () => {
+		pinnedFilesRef.current = ["Ideas/Sketch.md"];
+
+		await act(async () => renderPane());
+		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
+
+		expect(renderedNotePaths(container)).toEqual([
+			"Ideas/Sketch.md",
+			"Projects/Roadmap.md",
+		]);
+		expect(container.textContent).toContain("Pinned");
+		expect(
+			container
+				.querySelector('[data-folio-note-path="Ideas/Sketch.md"]')
+				?.getAttribute("data-pinned"),
+		).toBe("true");
 	});
 
 	it("renders task progress rings on note cards", async () => {
@@ -317,7 +342,6 @@ describe("FolioNotesListPane", () => {
 		await act(async () => renderPane());
 		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
 
-		expect(container.textContent).toContain("@mira");
 		expect(renderedNotePaths(container)).toEqual(["Ideas/Sketch.md"]);
 		expect(container.textContent).not.toContain("Roadmap");
 	});

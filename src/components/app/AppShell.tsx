@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { join } from "@tauri-apps/api/path";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
 import {
@@ -1015,14 +1016,22 @@ export function AppShell() {
 		[setError],
 	);
 
+	const handleCloseTabOrWindow = useCallback(async () => {
+		if (tabs.length > 0) {
+			closeActiveTab();
+			return;
+		}
+		await getCurrentWindow()
+			.close()
+			.catch(() => {});
+	}, [closeActiveTab, tabs.length]);
+
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
-		onCloseTab: () => {
-			window.dispatchEvent(new Event("glyph:close-active-tab"));
-		},
+		onCloseTab: () => void handleCloseTabOrWindow(),
 		onOpenSpace,
 		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,
 		onCreateSpace,
@@ -1130,6 +1139,12 @@ export function AppShell() {
 				action: openSearchPalette,
 				allowInEditable: true,
 			},
+			{
+				id: "close-window-when-no-tabs",
+				shortcut: getBinding("close-active-tab"),
+				enabled: tabs.length === 0,
+				action: handleCloseTabOrWindow,
+			},
 			...Array.from({ length: 9 }, (_, index) => ({
 				id: `activate-tab-${index + 1}`,
 				shortcut: getBinding(`activate-tab-${index + 1}`),
@@ -1153,6 +1168,7 @@ export function AppShell() {
 			closeSettings,
 			commands,
 			getBinding,
+			handleCloseTabOrWindow,
 			openCommandPalette,
 			openSearchPalette,
 			settingsMode,
@@ -1295,7 +1311,6 @@ export function AppShell() {
 				setActiveTabId={setActiveTabId}
 				setDirtyByPath={setDirtyByPath}
 				closeTab={closeTab}
-				closeActiveTab={closeActiveTab}
 				closeTabsForPathRemoval={closeTabsForPathRemoval}
 				renameTabsForPath={renameTabsForPath}
 				reorderTabs={reorderTabs}

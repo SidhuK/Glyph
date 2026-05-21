@@ -446,12 +446,7 @@ export function AdvancedSettingsPane() {
 					description="Global app-level controls for the sidebar and workspace UI."
 				>
 					<SettingsRow
-						label={
-							<span className="settingsLabelWithHelp">
-								Folio Mode
-								<span className="settingsPill settingsTinyBetaBadge">Beta</span>
-							</span>
-						}
+						label="Folio Mode"
 						description="Show navigation, notes, and editor in a three-column workspace."
 					>
 						<SettingsToggle

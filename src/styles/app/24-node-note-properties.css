@@ -352,7 +352,7 @@ input.notePropertyValue {
 	max-width: 100%;
 	padding: 0 7px;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 8%,
@@ -366,7 +366,7 @@ input.notePropertyValue {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 }
 
 .statusPropertyPill {
@@ -378,14 +378,14 @@ input.notePropertyValue {
 	height: 22px;
 	padding: 0 7px;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 11%, var(--bg-secondary));
 	color: color-mix(in srgb, var(--database-tone) 72%, var(--text-primary));
 	font-family: var(--font-sans);
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	line-height: 1;
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 }
 
 .statusPropertyPillIcon {
@@ -425,7 +425,7 @@ input.notePropertyValue {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 	outline-offset: 2px;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 }
 
 .notePropertyStatusMenu {
@@ -448,7 +448,7 @@ input.notePropertyValue {
 	width: 100%;
 	gap: 6px;
 	padding: 3px 24px 3px 5px;
-	border-radius: var(--database-control-radius, var(--radius-md));
+	border-radius: 4px;
 	text-align: left;
 	color: var(--text-secondary);
 }
@@ -456,7 +456,6 @@ input.notePropertyValue {
 .notePropertyStatusOption .statusPropertyPill {
 	height: 24px;
 	padding-inline: 7px;
-	box-shadow: none;
 }
 
 .notePropertyStatusOption[data-highlighted],
@@ -503,7 +502,7 @@ input.notePropertyValue {
 	height: 22px;
 	padding: 0 7px;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	background: color-mix(in srgb, var(--pill-tone) 10%, var(--bg-secondary));
 	color: color-mix(in srgb, var(--pill-tone) 68%, var(--text-primary));
 	font-family: var(--font-sans);
@@ -511,7 +510,7 @@ input.notePropertyValue {
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	cursor: pointer;
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 	transition: background 120ms ease, color 120ms ease;
 }
 

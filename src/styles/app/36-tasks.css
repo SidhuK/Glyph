@@ -121,8 +121,8 @@
 	align-items: center;
 	height: 22px;
 	padding: 0 8px;
-	border-radius: var(--pill-radius);
 	border: 0;
+	border-radius: 4px;
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 7%,
@@ -135,7 +135,7 @@
 		var(--interactive-accent) 58%,
 		var(--text-secondary)
 	);
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 }
 
 .tasksMetaTagInline {

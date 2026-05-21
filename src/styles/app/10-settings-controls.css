@@ -33,34 +33,6 @@
 	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
 }
 
-.settingsTinyBetaBadge {
-	padding: 2px 5px;
-	font-size: 9px;
-	letter-spacing: 0;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--color-yellow-600) 78%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
-	background: color-mix(in srgb, var(--color-yellow-500) 8%, transparent);
-}
-
-.earlyAccessBadge {
-	--early-access-color: var(--interactive-accent);
-
-	padding: 4px 8px;
-	border-radius: var(--pill-radius);
-	border: 0;
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	line-height: 1;
-	color: color-mix(in srgb, var(--early-access-color) 66%, var(--text-primary));
-	background: color-mix(
-		in srgb,
-		var(--early-access-color) 11%,
-		var(--bg-primary)
-	);
-	box-shadow: var(--pill-shadow);
-}
-
 .settingsSection {
 	display: flex;
 	flex-direction: column;

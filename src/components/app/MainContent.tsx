@@ -281,7 +281,6 @@ interface MainContentProps {
 	setActiveTabId: (tabId: string | null) => void;
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	closeTab: (tabId: string) => void;
-	closeActiveTab: () => void;
 	closeTabsForPathRemoval: (path: string, recursive?: boolean) => void;
 	renameTabsForPath: (
 		fromPath: string,
@@ -389,7 +388,6 @@ export const MainContent = memo(function MainContent({
 	setActiveTabId,
 	setDirtyByPath,
 	closeTab,
-	closeActiveTab,
 	closeTabsForPathRemoval,
 	renameTabsForPath,
 	reorderTabs,
@@ -452,9 +450,6 @@ export const MainContent = memo(function MainContent({
 	}, [replaceActiveTabWithBlank, showGettingStartedRequest, spacePath]);
 
 	useEffect(() => {
-		const handleCloseActiveTab = () => {
-			closeActiveTab();
-		};
 		const handlePathRemoved = (event: Event) => {
 			const detail = (event as CustomEvent<PathRemovedDetail>).detail;
 			if (!detail?.path) return;
@@ -465,18 +460,13 @@ export const MainContent = memo(function MainContent({
 			if (!detail?.fromPath || !detail?.toPath) return;
 			renameTabsForPath(detail.fromPath, detail.toPath, detail.recursive);
 		};
-		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
 		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
 		window.addEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		return () => {
-			window.removeEventListener(
-				"glyph:close-active-tab",
-				handleCloseActiveTab,
-			);
 			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
 			window.removeEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		};
-	}, [closeActiveTab, closeTabsForPathRemoval, renameTabsForPath]);
+	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
 	const openCommandPaletteShortcut = getBinding("open-command-palette");
@@ -906,16 +896,6 @@ export const MainContent = memo(function MainContent({
 							<h2 className="settingsPanelTitle">
 								{activeSettingsTabMeta.label}
 							</h2>
-							{activeSettingsTabMeta.badgeText ? (
-								<span
-									className={`settingsPanelBadge earlyAccessBadge ${activeSettingsTabMeta.id === "git" ? "settingsBetaBadge" : ""}`}
-								>
-									{activeSettingsTabMeta.badgeIcon
-										? activeSettingsTabMeta.badgeIcon()
-										: null}
-									<span>{activeSettingsTabMeta.badgeText}</span>
-								</span>
-							) : null}
 						</div>
 					</header>
 					{settingsTabContentByTab[settingsTab]}

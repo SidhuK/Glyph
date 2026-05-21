@@ -49,14 +49,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							<span className="sidebarQuickActionLabel settingsTabLabel">
 								{tab.label}
 							</span>
-							{tab.badgeText ? (
-								<span
-									className={`settingsTabBadge earlyAccessBadge ${tab.id === "git" ? "settingsBetaBadge" : ""}`}
-								>
-									{tab.badgeIcon ? tab.badgeIcon() : null}
-									<span>{tab.badgeText}</span>
-								</span>
-							) : null}
 						</button>
 					))}
 				</div>

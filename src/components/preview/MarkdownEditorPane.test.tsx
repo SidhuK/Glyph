@@ -1,17 +1,22 @@
 // @vitest-environment jsdom
 
-import { type ButtonHTMLAttributes, act } from "react";
+import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const { noteInlineEditorMock, localNoteGraphDialogMock, invokeMock } =
-	vi.hoisted(() => ({
-		noteInlineEditorMock: vi.fn(),
-		localNoteGraphDialogMock: vi.fn(),
-		invokeMock: vi.fn(),
-	}));
+const {
+	noteInlineEditorMock,
+	localNoteGraphDialogMock,
+	invokeMock,
+	showNativePopupMenuMock,
+} = vi.hoisted(() => ({
+	noteInlineEditorMock: vi.fn(),
+	localNoteGraphDialogMock: vi.fn(),
+	invokeMock: vi.fn(),
+	showNativePopupMenuMock: vi.fn(),
+}));
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -37,27 +42,12 @@ vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
 }));
 
-vi.mock("../../lib/tauriEvents", () => ({
-	useTauriEvent: () => {},
+vi.mock("../../lib/nativeContextMenu", () => ({
+	showNativePopupMenu: showNativePopupMenuMock,
 }));
 
-vi.mock("motion/react", () => ({
-	AnimatePresence: ({ children }: { children: unknown }) => children,
-	m: {
-		div: ({
-			initial: _initial,
-			animate: _animate,
-			exit: _exit,
-			transition: _transition,
-			...props
-		}: React.HTMLAttributes<HTMLDivElement> & {
-			initial?: unknown;
-			animate?: unknown;
-			exit?: unknown;
-			transition?: unknown;
-		}) => <div {...props} />,
-	},
-	useReducedMotion: () => true,
+vi.mock("../../lib/tauriEvents", () => ({
+	useTauriEvent: () => {},
 }));
 
 vi.mock("../editor/NoteInlineEditor", () => ({
@@ -120,25 +110,35 @@ vi.mock("./NotesInfoSidebar", () => ({
 		) : null,
 }));
 
-vi.mock("../ui/shadcn/button", () => ({
-	Button: ({
-		children,
-		type,
-		...props
-	}: ButtonHTMLAttributes<HTMLButtonElement> & {
-		variant?: string;
-		size?: string;
-		asChild?: boolean;
-	}) => (
-		<button type={type ?? "button"} {...props}>
-			{children}
-		</button>
-	),
-}));
-
 vi.mock("@hugeicons/react", () => ({
 	HugeiconsIcon: () => null,
 }));
+
+type TestNativeMenuItem =
+	| {
+			label: string;
+			action: () => void;
+			checked?: boolean;
+			enabled?: boolean;
+	  }
+	| { type: "separator" };
+
+function getLastNativeMenuItems(): TestNativeMenuItem[] {
+	const lastCall =
+		showNativePopupMenuMock.mock.calls[
+			showNativePopupMenuMock.mock.calls.length - 1
+		];
+	return lastCall?.[1] ?? [];
+}
+
+function runNativeMenuAction(label: string) {
+	const item = getLastNativeMenuItems().find(
+		(item): item is Extract<TestNativeMenuItem, { label: string }> =>
+			"label" in item && item.label === label,
+	);
+	expect(item).toBeDefined();
+	item?.action();
+}
 
 describe("MarkdownEditorPane", () => {
 	let container: HTMLDivElement;
@@ -225,6 +225,8 @@ describe("MarkdownEditorPane", () => {
 		invokeMock.mockImplementation(mockInvoke);
 		noteInlineEditorMock.mockReset();
 		localNoteGraphDialogMock.mockReset();
+		showNativePopupMenuMock.mockReset();
+		showNativePopupMenuMock.mockResolvedValue(false);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -353,13 +355,10 @@ describe("MarkdownEditorPane", () => {
 		await act(async () => {
 			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		});
+		expect(showNativePopupMenuMock).toHaveBeenCalled();
 
-		const infoButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.trim() === "Info",
-		);
-		expect(infoButton).not.toBeNull();
 		await act(async () => {
-			infoButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			runNativeMenuAction("Info");
 		});
 
 		expect(container.textContent).toContain("Save status");
@@ -408,14 +407,10 @@ describe("MarkdownEditorPane", () => {
 		await act(async () => {
 			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		});
-
-		const rawModeButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Raw"),
-		);
-		expect(rawModeButton).not.toBeNull();
+		expect(showNativePopupMenuMock).toHaveBeenCalled();
 
 		await act(async () => {
-			rawModeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			runNativeMenuAction("Raw");
 		});
 
 		const editorButton = Array.from(container.querySelectorAll("button")).find(
@@ -452,14 +447,10 @@ describe("MarkdownEditorPane", () => {
 		await act(async () => {
 			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		});
-
-		const graphButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Local graph"),
-		);
-		expect(graphButton).not.toBeNull();
+		expect(showNativePopupMenuMock).toHaveBeenCalled();
 
 		await act(async () => {
-			graphButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+			runNativeMenuAction("Local graph");
 		});
 
 		expect(
