@@ -14,6 +14,7 @@ import {
 	useState,
 } from "react";
 import { useStatusPropertyColors } from "../../hooks/useStatusPropertyColors";
+import { boardCreateValue } from "../../lib/database/board";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import {
 	readStoredSelectedDatabaseId,
@@ -43,6 +44,7 @@ import { loadSettings } from "../../lib/settings";
 import {
 	type DatabaseColumn,
 	type DatabaseConfig,
+	type DatabaseCreateRowInitialValue,
 	type DatabaseRow,
 	type DatabaseSort,
 	type WorkspaceDatabaseDefinition,
@@ -645,21 +647,42 @@ function DatabasesPaneContent({
 		[activeConfig?.columns, handleUpdateCell, onRenameNotePath],
 	);
 
-	const handleCreateRow = useCallback(async () => {
-		if (!document) return;
-		try {
-			const created = await invoke("databases_create_row", {
-				database_id: document.database.id,
-			});
-			setError("");
-			invalidateDatabasePrefetch(document.database.id);
-			setPrefetchedDatabaseDocument(document.database.id, document);
-			setSelectedRowPath(created.note_path);
-			await loadRows();
-		} catch (cause) {
-			setError(extractErrorMessage(cause));
-		}
-	}, [document, loadRows]);
+	const handleCreateRow = useCallback(
+		async (
+			initialValue?: { column: DatabaseColumn; laneId: string } | null,
+		) => {
+			if (!document) return;
+			const createdValue =
+				initialValue != null
+					? boardCreateValue(initialValue.column, initialValue.laneId)
+					: null;
+			const initialValues: DatabaseCreateRowInitialValue[] =
+				initialValue != null && createdValue != null
+					? [{ column: initialValue.column, value: createdValue }]
+					: [];
+			try {
+				const created = await invoke("databases_create_row", {
+					database_id: document.database.id,
+					initial_values: initialValues,
+				});
+				setError("");
+				invalidateDatabasePrefetch(document.database.id);
+				setPrefetchedDatabaseDocument(document.database.id, document);
+				setSelectedRowPath(created.note_path);
+				setRows((current) =>
+					current.some((row) => row.note_path === created.note_path)
+						? current.map((row) =>
+								row.note_path === created.note_path ? created.row : row,
+							)
+						: [created.row, ...current],
+				);
+				void loadRows({ background: true });
+			} catch (cause) {
+				setError(extractErrorMessage(cause));
+			}
+		},
+		[document, loadRows],
+	);
 
 	const handleCreateView = useCallback(async () => {
 		if (!document) return;
@@ -1187,6 +1210,7 @@ function DatabasesPaneContent({
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							onCreateRow={handleCreateRow}
 							onOpenColumns={() => setViewOptionsOpen(true)}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
@@ -1256,6 +1280,7 @@ function DatabasesPaneContent({
 							groupColumn={activeGroupColumn}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							onCreateRow={handleCreateRow}
 							onToggleSort={(column) =>
 								void handleSaveConfig({
 									...activeConfig,

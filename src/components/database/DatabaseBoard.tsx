@@ -47,6 +47,7 @@ import {
 	showNativeContextMenu,
 	showNativePopupMenu,
 } from "../../lib/nativeContextMenu";
+import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
 import type { NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
@@ -56,7 +57,14 @@ import {
 	type EditorTextColor,
 	isEditorTextColor,
 } from "../editor/textColors";
-import { StatusPropertyPill } from "../status/StatusPropertyPill";
+import {
+	PriorityPropertyPill,
+	priorityPropertyIconForValue,
+} from "../status/PriorityPropertyPill";
+import {
+	StatusPropertyPill,
+	statusPropertyIconForValue,
+} from "../status/StatusPropertyPill";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -84,6 +92,9 @@ interface DatabaseBoardProps {
 	selectedRowPath: string | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
+	onCreateRow?: (
+		initialValue?: { column: DatabaseColumn; laneId: string } | null,
+	) => void | Promise<void>;
 	onOpenColumns: () => void;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
@@ -143,6 +154,47 @@ function getLaneColor(
 	return color && isEditorTextColor(color) ? color : null;
 }
 
+function normalizedBoardColumnName(value: string | null | undefined): string {
+	return (value ?? "")
+		.trim()
+		.toLowerCase()
+		.replace(/[_-]+/g, " ")
+		.replace(/\s+/g, " ");
+}
+
+function boardColumnNames(column: DatabaseColumn | null): string[] {
+	if (!column) return [];
+	return [column.property_key, column.label, column.id].map(
+		normalizedBoardColumnName,
+	);
+}
+
+function isStatusBoardColumn(column: DatabaseColumn | null): boolean {
+	if (column?.property_kind === "status") return true;
+	return boardColumnNames(column).some(
+		(name) =>
+			name === "status" ||
+			name === "state" ||
+			name === "stage" ||
+			name.endsWith(" status"),
+	);
+}
+
+function isPriorityBoardColumn(column: DatabaseColumn | null): boolean {
+	if (column?.property_kind === "priority") return true;
+	return boardColumnNames(column).some(
+		(name) =>
+			name === "priority" || name === "prio" || name.endsWith(" priority"),
+	);
+}
+
+function isTagBoardColumn(column: DatabaseColumn | null): boolean {
+	if (column?.type === "tags" || column?.property_kind === "tags") return true;
+	return boardColumnNames(column).some(
+		(name) => name === "tags" || name === "tag" || name.endsWith(" tags"),
+	);
+}
+
 function fileTitleFromPath(notePath: string): string {
 	const base = notePath.split("/").pop() ?? notePath;
 	return base.replace(/\.md$/i, "");
@@ -160,6 +212,19 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 		return fallbackTitle;
 	}
 	return indexedTitle;
+}
+
+function boardCardTextPropertyValues(
+	row: DatabaseRow,
+	kind: "status" | "priority",
+): string[] {
+	const values: string[] = [];
+	for (const property of Object.values(row.properties)) {
+		if (property.kind !== kind) continue;
+		const value = property.value_text?.trim();
+		if (value) values.push(value);
+	}
+	return values;
 }
 
 function formatCompactBoardDateTime(value: string): string {
@@ -189,6 +254,8 @@ interface DatabaseBoardLaneViewProps {
 	laneColors: Record<string, string>;
 	statusColors: Record<string, EditorTextColor>;
 	isStatusGroup: boolean;
+	isPriorityGroup: boolean;
+	isTagGroup: boolean;
 	shouldReduceMotion: boolean | null;
 	onLaneColorChange?:
 		| ((laneId: string, color: EditorTextColor | null) => void)
@@ -207,6 +274,8 @@ function DatabaseBoardLaneView({
 	laneColors,
 	statusColors,
 	isStatusGroup,
+	isPriorityGroup,
+	isTagGroup,
 	shouldReduceMotion,
 	onLaneColorChange,
 	onAddLane,
@@ -269,6 +338,28 @@ function DatabaseBoardLaneView({
 		},
 		[lane.id, laneMenuItems],
 	);
+	const laneTitleContent = (
+		<>
+			{isStatusGroup || isPriorityGroup || isTagGroup ? (
+				<HugeiconsIcon
+					icon={
+						isStatusGroup
+							? statusPropertyIconForValue(lane.label)
+							: isPriorityGroup
+								? priorityPropertyIconForValue(lane.label)
+								: Tag01Icon
+					}
+					className="databaseBoardLaneTitleIcon"
+					size={12}
+					strokeWidth={1.2}
+					aria-hidden="true"
+				/>
+			) : (
+				<span className="databaseBoardLaneDot" />
+			)}
+			<div className="databaseBoardLaneTitle">{lane.label}</div>
+		</>
+	);
 
 	return (
 		<m.div
@@ -279,10 +370,12 @@ function DatabaseBoardLaneView({
 			style={
 				isStatusGroup
 					? statusToneStyle(lane.label, statusColors)
-					: databaseValueToneStyleForColor(
-							lane.id,
-							getLaneColor(laneColors, lane.id),
-						)
+					: isPriorityGroup
+						? priorityToneStyle(lane.label)
+						: databaseValueToneStyleForColor(
+								lane.id,
+								getLaneColor(laneColors, lane.id),
+							)
 			}
 			data-active={isDropTarget ? "true" : "false"}
 			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
@@ -306,18 +399,7 @@ function DatabaseBoardLaneView({
 								aria-label={`Set color for ${lane.label}`}
 								title={`Set color for ${lane.label}`}
 							>
-								{isStatusGroup ? (
-									<StatusPropertyPill
-										value={lane.label}
-										colors={statusColors}
-										className="databaseBoardLaneStatus"
-									/>
-								) : (
-									<>
-										<span className="databaseBoardLaneDot" />
-										<div className="databaseBoardLaneTitle">{lane.label}</div>
-									</>
-								)}
+								{laneTitleContent}
 							</button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
@@ -349,20 +431,7 @@ function DatabaseBoardLaneView({
 						</DropdownMenuContent>
 					</DropdownMenu>
 				) : (
-					<div className="databaseBoardLaneTitleGroup">
-						{isStatusGroup ? (
-							<StatusPropertyPill
-								value={lane.label}
-								colors={statusColors}
-								className="databaseBoardLaneStatus"
-							/>
-						) : (
-							<>
-								<span className="databaseBoardLaneDot" />
-								<div className="databaseBoardLaneTitle">{lane.label}</div>
-							</>
-						)}
-					</div>
+					<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
 					<button
@@ -478,6 +547,7 @@ export function DatabaseBoard({
 	selectedRowPath,
 	onSelectRow,
 	onOpenRow,
+	onCreateRow,
 	onOpenColumns,
 	onGroupColumnIdChange,
 	laneOrderByGroup = {},
@@ -525,7 +595,9 @@ export function DatabaseBoard({
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
 	);
-	const isStatusGroup = groupColumn?.property_kind === "status";
+	const isStatusGroup = isStatusBoardColumn(groupColumn);
+	const isPriorityGroup = isPriorityBoardColumn(groupColumn);
+	const isTagGroup = isTagBoardColumn(groupColumn);
 	const canManageLanes = canManageBoardLanes(groupColumn);
 	const handleLaneColorChange = useCallback(
 		(laneId: string, color: EditorTextColor | null) => {
@@ -536,6 +608,13 @@ export function DatabaseBoard({
 			onLaneColorChange?.(laneId, color);
 		},
 		[isStatusGroup, onLaneColorChange, onStatusColorChange],
+	);
+	const handleCreateRowInLane = useCallback(
+		(laneId: string) => {
+			if (!groupColumn) return;
+			void onCreateRow?.({ column: groupColumn, laneId });
+		},
+		[groupColumn, onCreateRow],
 	);
 
 	const handleAddLane = useCallback(() => {
@@ -782,8 +861,12 @@ export function DatabaseBoard({
 									laneColors={laneColors}
 									statusColors={statusColors}
 									isStatusGroup={isStatusGroup}
+									isPriorityGroup={isPriorityGroup}
+									isTagGroup={isTagGroup}
 									shouldReduceMotion={shouldReduceMotion}
-									onLaneColorChange={handleLaneColorChange}
+									onLaneColorChange={
+										isPriorityGroup ? null : handleLaneColorChange
+									}
 									onAddLane={canManageLanes ? handleAddLane : undefined}
 									onRenameLane={canManageLanes ? handleRenameLane : undefined}
 									reorderableLanes={reorderableLanes}
@@ -796,6 +879,32 @@ export function DatabaseBoard({
 											const visibleTags = row.tags.slice(0, maxVisibleTags);
 											const extraTagCount = Math.max(
 												row.tags.length - maxVisibleTags,
+												0,
+											);
+											const statusValues = boardCardTextPropertyValues(
+												row,
+												"status",
+											);
+											const maxVisibleStatuses = 2;
+											const visibleStatuses = statusValues.slice(
+												0,
+												maxVisibleStatuses,
+											);
+											const extraStatusCount = Math.max(
+												statusValues.length - maxVisibleStatuses,
+												0,
+											);
+											const priorityValues = boardCardTextPropertyValues(
+												row,
+												"priority",
+											);
+											const maxVisiblePriorities = 2;
+											const visiblePriorities = priorityValues.slice(
+												0,
+												maxVisiblePriorities,
+											);
+											const extraPriorityCount = Math.max(
+												priorityValues.length - maxVisiblePriorities,
 												0,
 											);
 											const folderLabel =
@@ -879,6 +988,42 @@ export function DatabaseBoard({
 															) : null}
 														</div>
 													</div>
+													{visibleStatuses.length > 0 ||
+													visiblePriorities.length > 0 ? (
+														<div className="databaseBoardCardMetaRow">
+															<div className="databaseBoardCardMetaGroup">
+																{visibleStatuses.map((status, statusIndex) => (
+																	<StatusPropertyPill
+																		key={`${row.note_path}:status:${statusIndex}:${status}`}
+																		value={status}
+																		colors={statusColors}
+																		className="databaseBoardCardStatus"
+																	/>
+																))}
+																{extraStatusCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraStatusCount}
+																	</span>
+																) : null}
+															</div>
+															<div className="databaseBoardCardMetaGroup is-priority">
+																{visiblePriorities.map(
+																	(priority, priorityIndex) => (
+																		<PriorityPropertyPill
+																			key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
+																			value={priority}
+																			className="databaseBoardCardStatus"
+																		/>
+																	),
+																)}
+																{extraPriorityCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraPriorityCount}
+																	</span>
+																) : null}
+															</div>
+														</div>
+													) : null}
 													{visibleTags.length > 0 ? (
 														<div className="databaseBoardCardTags">
 															{visibleTags.map((tag) => (
@@ -929,6 +1074,18 @@ export function DatabaseBoard({
 													: "Drop notes here"}
 										</div>
 									)}
+									{onCreateRow ? (
+										<button
+											type="button"
+											className="databaseBoardAddCardButton"
+											onClick={() => handleCreateRowInLane(lane.id)}
+											title={`Add note to ${lane.label}`}
+											aria-label={`Add note to ${lane.label}`}
+										>
+											<Plus size={13} aria-hidden="true" />
+											<span>New</span>
+										</button>
+									) : null}
 								</DatabaseBoardLaneView>
 							))}
 							{canManageLanes ? (

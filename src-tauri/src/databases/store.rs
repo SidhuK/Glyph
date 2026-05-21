@@ -191,8 +191,8 @@ pub(crate) fn default_field_value(
         || normalized_label.ends_with(" status");
     let default_text = if is_status {
         Some("Not Started".to_string())
-    } else if matches_field_name(label, property_key, &["priority", "prio"]) {
-        Some("Medium".to_string())
+    } else if kind == "priority" || matches_field_name(label, property_key, &["priority", "prio"]) {
+        Some("No".to_string())
     } else {
         None
     };

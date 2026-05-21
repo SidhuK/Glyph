@@ -12,7 +12,7 @@ import type {
 	DatabaseRow,
 	DatabaseSort,
 } from "../../lib/database/types";
-import { ChevronDown, ChevronUp } from "../Icons";
+import { ChevronDown, ChevronUp, Plus } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import {
 	Table,
@@ -33,6 +33,9 @@ interface DatabaseTableProps {
 	groupColumn?: DatabaseColumn | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
+	onCreateRow?: (
+		initialValue?: { column: DatabaseColumn; laneId: string } | null,
+	) => void | Promise<void>;
 	onToggleSort: (column: DatabaseColumn) => void;
 	laneColors?: Record<string, string>;
 	statusColors?: Record<string, EditorTextColor>;
@@ -101,6 +104,7 @@ export function DatabaseTable({
 	groupColumn = null,
 	onSelectRow,
 	onOpenRow,
+	onCreateRow,
 	onToggleSort,
 	laneColors = EMPTY_LANE_COLORS,
 	statusColors,
@@ -224,6 +228,7 @@ export function DatabaseTable({
 		[displayRows],
 	);
 	const hasGroups = groupColumn != null && rowGroups.length > 0;
+	const canCreateInGroup = groupColumn != null && onCreateRow != null;
 	const renderRow = (row: (typeof displayRows)[number], keyPrefix = "") => (
 		<TableRow
 			key={`${keyPrefix}${row.id}`}
@@ -316,6 +321,26 @@ export function DatabaseTable({
 											className="databaseGroupCell"
 										>
 											<span className="databaseGroupLabel">{group.label}</span>
+											{canCreateInGroup && groupColumn ? (
+												<button
+													type="button"
+													className="databaseGroupAddButton"
+													onClick={() => {
+														void onCreateRow?.({
+															column: groupColumn,
+															laneId: group.id,
+														});
+													}}
+													title={`Add note to ${group.label}`}
+													aria-label={`Add note to ${group.label}`}
+												>
+													<Plus
+														size={13}
+														strokeWidth={1.6}
+														aria-hidden="true"
+													/>
+												</button>
+											) : null}
 										</td>
 									</tr>
 									{group.rows

@@ -6,7 +6,7 @@ use std::sync::{Mutex, OnceLock};
 
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 5;
+const INDEX_DB_VERSION: i32 = 6;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -33,6 +33,10 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
 
     if current_version < 5 {
         migrate_status_property_kinds(conn)?;
+    }
+
+    if current_version < 6 {
+        migrate_priority_property_kinds(conn)?;
     }
 
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
@@ -81,7 +85,7 @@ fn migrate_frontmatter_property_kinds(conn: &rusqlite::Connection) -> Result<(),
     conn.execute(
         "UPDATE note_properties
          SET value_type = 'text'
-         WHERE value_type NOT IN ('text', 'url', 'date', 'checkbox', 'tags', 'status')",
+         WHERE value_type NOT IN ('text', 'url', 'date', 'checkbox', 'tags', 'status', 'priority')",
         [],
     )
     .map_err(|e| e.to_string())?;
@@ -97,6 +101,22 @@ fn migrate_status_property_kinds(conn: &rusqlite::Connection) -> Result<(), Stri
              lower(replace(replace(trim(key), '_', ' '), '-', ' ')) IN
                ('status')
              OR lower(replace(replace(trim(key), '_', ' '), '-', ' ')) LIKE '% status'
+           )",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn migrate_priority_property_kinds(conn: &rusqlite::Connection) -> Result<(), String> {
+    conn.execute(
+        "UPDATE note_properties
+         SET value_type = 'priority'
+         WHERE value_type != 'priority'
+           AND (
+             lower(replace(replace(trim(key), '_', ' '), '-', ' ')) IN
+               ('priority')
+             OR lower(replace(replace(trim(key), '_', ' '), '-', ' ')) LIKE '% priority'
            )",
         [],
     )

@@ -85,12 +85,33 @@ fn is_status_key(key: &str) -> bool {
     normalized == "status" || normalized.ends_with(" status")
 }
 
+fn is_priority_key(key: &str) -> bool {
+    let normalized = normalized_status_text(key);
+    normalized == "priority" || normalized.ends_with(" priority")
+}
+
+fn priority_text(value: &Value) -> String {
+    match value {
+        Value::Bool(false) => "no".to_string(),
+        _ => property_text(value),
+    }
+}
+
 fn yaml_value_to_property(key: &str, value: &Value) -> Result<NoteProperty, String> {
     if is_status_key(key) {
         return Ok(NoteProperty {
             key: key.to_string(),
             kind: "status".to_string(),
             value_text: Some(property_text(value)),
+            value_bool: None,
+            value_list: Vec::new(),
+        });
+    }
+    if is_priority_key(key) {
+        return Ok(NoteProperty {
+            key: key.to_string(),
+            kind: "priority".to_string(),
+            value_text: Some(priority_text(value)),
             value_bool: None,
             value_list: Vec::new(),
         });

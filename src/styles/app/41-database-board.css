@@ -154,6 +154,11 @@
 	line-height: 1;
 }
 
+.databaseBoardLaneTitleIcon {
+	flex: 0 0 auto;
+	color: color-mix(in srgb, white 88%, var(--text-primary));
+}
+
 .databaseBoardLaneTitleButton {
 	display: inline-flex;
 	align-items: center;
@@ -183,6 +188,29 @@
 	padding: 8px 12px 12px;
 	min-height: auto;
 	overflow: visible;
+}
+
+.databaseBoardAddCardButton {
+	appearance: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 32px;
+	width: 100%;
+	border: 1px dashed color-mix(in srgb, var(--database-tone) 24%, transparent);
+	border-radius: var(--database-radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 52%, transparent);
+	color: var(--text-tertiary);
+	font-size: 0.78rem;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.databaseBoardAddCardButton:hover {
+	border-color: color-mix(in srgb, var(--database-tone) 38%, transparent);
+	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-primary));
+	color: var(--text-primary);
 }
 
 .databaseBoardCard {
@@ -282,13 +310,50 @@
 	opacity: 1;
 }
 
+.databaseBoardCardMetaRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.databaseBoardCardMetaGroup {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.databaseBoardCardMetaGroup.is-priority {
+	justify-content: flex-end;
+}
+
 .databaseBoardCardTags {
 	display: flex;
 	flex-wrap: nowrap;
+	align-items: center;
 	gap: 6px;
 	min-width: 0;
 	overflow: hidden;
 	flex: 0 0 auto;
+}
+
+.databaseBoardCardStatus.propertyValueText {
+	flex: 0 0 auto;
+	height: auto;
+	font-size: 0.66rem;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+.databaseBoardCardStatus .propertyValueTextIcon {
+	width: 11px;
+	height: 11px;
+	flex-basis: 11px;
 }
 
 .databaseBoardTag {

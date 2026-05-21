@@ -26,6 +26,9 @@ fn property_kind(key: &str, value: &Value) -> &'static str {
     if is_status_key(key) {
         return "status";
     }
+    if is_priority_key(key) {
+        return "priority";
+    }
 
     match value {
         Value::Bool(_) => "checkbox",
@@ -62,6 +65,11 @@ fn normalized_status_text(value: &str) -> String {
 fn is_status_key(key: &str) -> bool {
     let normalized = normalized_status_text(key);
     normalized == "status" || normalized.ends_with(" status")
+}
+
+fn is_priority_key(key: &str) -> bool {
+    let normalized = normalized_status_text(key);
+    normalized == "priority" || normalized.ends_with(" priority")
 }
 
 pub fn reindex_note_properties(

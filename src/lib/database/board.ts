@@ -1,3 +1,4 @@
+import { priorityLabel, priorityOptionFromValue } from "../priorityProperties";
 import {
 	statusColorKey,
 	statusLabel,
@@ -69,8 +70,8 @@ function laneWorkflowState(
 	if (column.property_kind === "checkbox" && laneId === "true") return "done";
 	if (column.property_kind !== "status") return "open";
 	const key = statusColorKey(label);
-	if (key === "archived") return "archived";
-	if (key === "done" || key === "completed" || key === "success") {
+	if (key === "archived" || key === "canceled") return "archived";
+	if (key === "done") {
 		return "done";
 	}
 	return "open";
@@ -82,6 +83,7 @@ function boardLaneLabel(column: DatabaseColumn, laneId: string): string {
 		return checkboxLaneLabel(laneId === "true");
 	}
 	if (column.property_kind === "status") return statusLabel(laneId);
+	if (column.property_kind === "priority") return priorityLabel(laneId);
 	return laneId;
 }
 
@@ -148,6 +150,7 @@ export function boardLaneIdFromLabel(
 	const trimmed = label.trim();
 	if (!trimmed) return null;
 	if (column.property_kind === "status") return statusLabel(trimmed);
+	if (column.property_kind === "priority") return priorityLabel(trimmed);
 	return trimmed;
 }
 
@@ -170,6 +173,10 @@ function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	const value = cell.value_text?.trim() ?? "";
 	if (column.property_kind === "status") {
 		const option = statusOptionFromValue(value);
+		return option ? [option.label] : value ? [value] : [];
+	}
+	if (column.property_kind === "priority") {
+		const option = priorityOptionFromValue(value);
 		return option ? [option.label] : value ? [value] : [];
 	}
 	return value ? [value] : [];
@@ -487,10 +494,32 @@ export function boardLaneValue(
 				? ""
 				: column.property_kind === "status"
 					? statusLabel(laneId)
-					: laneId,
+					: column.property_kind === "priority"
+						? priorityLabel(laneId)
+						: laneId,
 		value_bool: null,
 		value_list: [],
 	};
+}
+
+export function boardCreateValue(
+	column: DatabaseColumn,
+	laneId: string,
+): DatabaseCellValue | null {
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) return null;
+	if (column.type === "tags" || column.property_kind === "tags") {
+		return {
+			kind: column.property_kind ?? "tags",
+			value_list: [normalizeBoardTagValue(laneId) ?? laneId],
+		};
+	}
+	if (column.property_kind === "multi_select") {
+		return {
+			kind: "multi_select",
+			value_list: [laneId],
+		};
+	}
+	return boardLaneValue(column, laneId);
 }
 
 export function boardDropValue(

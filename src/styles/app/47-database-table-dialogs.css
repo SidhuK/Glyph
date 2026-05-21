@@ -448,6 +448,32 @@
 	color: var(--text-primary);
 }
 
+.databaseGroupAddButton {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 24px;
+	height: 24px;
+	border: none;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	color: var(--interactive-accent);
+	cursor: pointer;
+}
+
+.databaseGroupAddButton svg {
+	display: block;
+	flex: 0 0 auto;
+	opacity: 1;
+}
+
+.databaseGroupAddButton:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	color: var(--interactive-accent-hover);
+}
+
 .databaseTable .databaseGroupCell {
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	border-bottom: 1px solid

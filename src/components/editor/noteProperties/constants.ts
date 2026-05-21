@@ -2,6 +2,7 @@ import {
 	Calendar03Icon,
 	CheckmarkBadge01Icon,
 	Link01Icon,
+	MediumSignalIcon,
 	StatusIcon,
 	Tag01Icon,
 	TextIcon,
@@ -16,6 +17,7 @@ export const PROPERTY_KINDS = [
 	"checkbox",
 	"tags",
 	"status",
+	"priority",
 ] as const;
 
 export type PropertyKind = (typeof PROPERTY_KINDS)[number];
@@ -30,6 +32,7 @@ export const PROPERTY_KIND_ICONS: Record<
 	checkbox: CheckmarkBadge01Icon,
 	tags: Tag01Icon,
 	status: StatusIcon,
+	priority: MediumSignalIcon,
 };
 
 export const PROPERTY_KIND_LABELS: Record<PropertyKind, string> = {
@@ -39,6 +42,7 @@ export const PROPERTY_KIND_LABELS: Record<PropertyKind, string> = {
 	checkbox: "Checkbox",
 	tags: "Tags",
 	status: "Status",
+	priority: "Priority",
 };
 
 export function isPropertyKind(kind: string): kind is PropertyKind {
