@@ -6,53 +6,53 @@
 				{
 					"category": "Added",
 					"items": [
-						"You can pin Folio notes and files from the right-click menu, and pinned items stay at the top under a small Pinned heading",
-						"Folio note cards show your saved custom icon, with the default note icon used when you have not chosen one",
-						"Database boards and grouped tables can create notes directly inside a lane or group, with the new note inheriting that status, tag, priority, checkbox, or select value",
-						"Database view options now include quick filter and sort preset chips for common project views like overdue, high priority, owner is me, and active project",
-						"Priority is now a first-class YAML property with No, Low, Medium, and High values across note properties, database cells, and boards",
-						"Database rows can use field defaults, including status, priority, checkbox, and schema-backed property defaults",
-						"Board workflows now support adding, renaming, reordering, and coloring lanes for status and multi-select fields",
-						"Breadcrumbs now include right-click actions for copying paths, revealing items in the file tree, opening folders, and showing files in Finder"
+						"Pin Folio notes and files from the right-click menu. Pinned items stay at the top under a compact Pinned heading",
+						"Folio note cards show your custom icon, or the default note icon when you have not picked one",
+						"Create database notes inside a board lane or grouped table. Glyph applies the lane or group value to the new note, including status, tag, priority, checkbox, or select",
+						"Database view options include quick filter and sort preset chips for overdue, high priority, owner is me, active project, and other common views",
+						"Priority works as a YAML property with No, Low, Medium, and High values across note properties, database cells, and boards",
+						"Database rows support field defaults, including status, priority, checkbox, and schema-backed property defaults",
+						"Board workflows let you add, rename, reorder, and color lanes for status and multi-select fields",
+						"Breadcrumb right-click menus can copy paths, reveal items in the file tree, open folders, and show files in Finder"
 					]
 				},
 				{
 					"category": "Improved",
 					"items": [
-						"Home has a wider dashboard layout with a date header, week overview, Notes panel, Tasks panel, and quick actions for today's daily note and new tasks",
-						"Home buttons now match the sidebar accent style, and note tags sit inline with note titles as clean pills",
-						"Folio note rows scan better with tighter spacing, right-aligned icons, fixed thumbnail and tag overflow, and task rings aligned with the action area",
+						"Home uses a wider dashboard layout with a date header, week overview, Notes panel, Tasks panel, and quick actions for today's daily note and new tasks",
+						"Home buttons match the sidebar accent style, and note tags sit inline with note titles as clean pills",
+						"Folio note rows use tighter spacing, right-aligned icons, fixed thumbnail and tag overflow, and task rings aligned with the action area",
 						"The selected Folio note uses a 2px accent rail and a lighter selected tint for a cleaner reading list",
 						"Folio remembers your sort choice between sessions",
-						"Custom appearance colors now tint Folio note titles and non-markdown file names",
+						"Custom appearance colors tint Folio note titles and non-markdown file names",
 						"Markdown notes use the new default Note icon anywhere the shared file icon wrapper appears",
-						"Tag pills across database boards, database tables, note properties, inline editor tags, tasks, and model details now use flatter 4px corners",
-						"Status values now use a focused set of nine canonical choices: Backlog, Todo, In progress, In review, Blocked, Waiting, Done, Canceled, and Archived",
+						"Tag pills use flatter 4px corners across database boards, database tables, note properties, inline editor tags, tasks, and model details",
+						"Status fields use nine choices: Backlog, Todo, In progress, In review, Blocked, Waiting, Done, Canceled, and Archived",
 						"Existing status values map into the new status set, so older YAML still lands in the closest current status",
 						"Kanban cards show status, priority, and tags together in the metadata row with the same colored text treatment",
-						"Kanban column headings now use matching icons for status, priority, tags, and custom grouped fields",
+						"Kanban column headings use matching icons for status, priority, tags, and custom grouped fields",
 						"Configured empty board lanes stay visible, so your workflow structure does not disappear when a column has no cards",
-						"Moving a card to a workflow lane now replaces the old status or select value, and manual card order persists inside each lane",
-						"Done and Archived lanes carry workflow state and receive distinct board styling",
+						"Moving a card to a workflow lane replaces the old status or select value. Glyph keeps your manual card order inside each lane",
+						"Done and Archived lanes carry workflow state and use distinct board styling",
 						"Breadcrumbs use the same folder and file icons, colors, and custom appearance choices that you set in the file tree",
 						"Long breadcrumb paths collapse middle items behind an ellipsis, and breadcrumb menu items expose full paths on hover",
-						"The editor actions button now opens the shared native popup menu for Info, Local graph, Edit, Preview, and Raw",
+						"The editor actions button opens the shared native popup menu for Info, Local graph, Edit, Preview, and Raw",
 						"Close Tab closes the active tab when one exists, and closes the app window when no tabs remain"
 					]
 				},
 				{
 					"category": "Fixed",
 					"items": [
-						"Daily Notes settings now opens Space settings instead of General settings",
-						"Quick create in databases inserts the new row at once and refreshes in the background, avoiding the blocking Loading rows message"
+						"Daily Notes settings opens Space settings instead of General settings",
+						"Quick create in databases inserts the new row at once and refreshes in the background, so you do not hit a blocking Loading rows message"
 					]
 				},
 				{
 					"category": "Removed",
 					"items": [
-						"Removed beta labels from Folio Mode and Git settings now that both areas have moved into the main settings experience",
-						"Removed old beta badge plumbing and unused badge styles from settings",
-						"Removed the custom animated editor actions panel in favor of the shared native popup menu"
+						"Glyph removes beta labels from Folio Mode and Git settings after moving both areas into the main settings experience",
+						"Glyph removes old beta badge plumbing and unused badge styles from settings",
+						"Glyph replaces the custom animated editor actions panel with the shared native popup menu"
 					]
 				}
 			]
