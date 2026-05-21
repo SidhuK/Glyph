@@ -99,6 +99,8 @@ pub struct DatabaseViewDefinition {
     pub board_lane_colors: BTreeMap<String, String>,
     #[serde(default)]
     pub board_lane_order: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
+    pub board_card_order: BTreeMap<String, BTreeMap<String, Vec<String>>>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -111,6 +113,8 @@ pub struct DatabaseSchemaField {
     pub kind: String,
     #[serde(default)]
     pub property_key: Option<String>,
+    #[serde(default)]
+    pub default_value: Option<DatabaseCellValue>,
     #[serde(default)]
     pub relation_database_id: Option<String>,
 }

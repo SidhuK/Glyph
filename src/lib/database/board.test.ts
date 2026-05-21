@@ -192,15 +192,34 @@ describe("database board helpers", () => {
 
 	it("preserves existing lane order when rows refresh", () => {
 		const unordered = [
-			{ id: "done", label: "Done", cardCount: 1, rows: [firstRow] },
-			{ id: "backlog", label: "Backlog", cardCount: 2, rows: [secondRow] },
+			{
+				id: "done",
+				label: "Done",
+				cardCount: 1,
+				rows: [firstRow],
+				workflowState: "done" as const,
+			},
+			{
+				id: "backlog",
+				label: "Backlog",
+				cardCount: 2,
+				rows: [secondRow],
+				workflowState: "open" as const,
+			},
 			{
 				id: DATABASE_BOARD_EMPTY_LANE_ID,
 				label: "No value",
 				cardCount: 0,
 				rows: [],
+				workflowState: "open" as const,
 			},
-			{ id: "review", label: "Review", cardCount: 1, rows: [thirdRow] },
+			{
+				id: "review",
+				label: "Review",
+				cardCount: 1,
+				rows: [thirdRow],
+				workflowState: "open" as const,
+			},
 		];
 
 		expect(

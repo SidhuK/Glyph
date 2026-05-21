@@ -610,6 +610,61 @@
 	line-height: 1.35;
 }
 
+.databaseViewPresetGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: -2px 4px 10px;
+	padding: 8px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
+}
+
+.databaseViewPresetLabel {
+	color: var(--text-tertiary);
+	font-size: 0.72rem;
+	font-weight: var(--font-medium);
+}
+
+.databaseViewPresetChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.databaseViewPresetChip {
+	min-height: 28px;
+	max-width: 100%;
+	padding: 0 9px;
+	border: 1px solid var(--database-control-border);
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-primary) 76%, var(--bg-secondary));
+	color: var(--text-secondary);
+	font-size: 0.78rem;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.databaseViewPresetChip:hover:not(:disabled),
+.databaseViewPresetChip[data-active="true"] {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--database-control-border)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+	color: var(--interactive-accent);
+}
+
+.databaseViewPresetChip:disabled {
+	cursor: default;
+	opacity: 0.55;
+}
+
 .databaseViewPanelError {
 	margin: 0 8px 8px;
 	color: var(--text-error);

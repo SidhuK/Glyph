@@ -19,10 +19,12 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
-use super::store::{bootstrap_defaults, default_view, list_summaries, load_store, save_store};
+use super::store::{
+    bootstrap_defaults, default_field_value, default_view, list_summaries, load_store, save_store,
+};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
-    DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSummary,
+    DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSchemaField, DatabaseSummary,
 };
 
 fn key(name: &str) -> Value {
@@ -248,9 +250,119 @@ fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Resul
     }
 }
 
-fn create_new_row_markdown(note_path: &str, title: &str) -> Result<String, String> {
+struct NewRowFieldDefault {
+    key: String,
+    kind: String,
+    value: DatabaseCellValue,
+}
+
+fn normalize_field_key(key: &str) -> String {
+    key.trim().to_lowercase()
+}
+
+fn is_reserved_frontmatter_key(key: &str) -> bool {
+    matches!(
+        normalize_field_key(key).as_str(),
+        "created"
+            | "folder"
+            | "glyph"
+            | "id"
+            | "linked_notes"
+            | "path"
+            | "tags"
+            | "title"
+            | "updated"
+    )
+}
+
+fn schema_field_default(field: &DatabaseSchemaField) -> Option<NewRowFieldDefault> {
+    let key = field.property_key.as_deref()?.trim();
+    if key.is_empty() || is_reserved_frontmatter_key(key) {
+        return None;
+    }
+    Some(NewRowFieldDefault {
+        key: key.to_string(),
+        kind: field.kind.clone(),
+        value: field
+            .default_value
+            .clone()
+            .or_else(|| default_field_value(&field.label, &field.kind, Some(key)))?,
+    })
+}
+
+fn column_field_default(column: &DatabaseColumn) -> Option<NewRowFieldDefault> {
+    if column.column_type != "property" {
+        return None;
+    }
+    let key = column.property_key.as_deref()?.trim();
+    if key.is_empty() || is_reserved_frontmatter_key(key) {
+        return None;
+    }
+    let kind = column
+        .property_kind
+        .clone()
+        .unwrap_or_else(|| "text".to_string());
+    Some(NewRowFieldDefault {
+        key: key.to_string(),
+        value: default_field_value(&column.label, &kind, Some(key))?,
+        kind,
+    })
+}
+
+fn database_new_row_field_defaults(database: &DatabaseDefinition) -> Vec<NewRowFieldDefault> {
+    let mut defaults = Vec::new();
+    let mut seen = BTreeMap::<String, ()>::new();
+    for field in &database.schema {
+        let Some(default) = schema_field_default(field) else {
+            continue;
+        };
+        if seen.insert(normalize_field_key(&default.key), ()).is_none() {
+            defaults.push(default);
+        }
+    }
+    for column in database.views.iter().flat_map(|view| view.columns.iter()) {
+        let Some(default) = column_field_default(column) else {
+            continue;
+        };
+        if seen.insert(normalize_field_key(&default.key), ()).is_none() {
+            defaults.push(default);
+        }
+    }
+    defaults
+}
+
+fn yaml_value_from_field_default(default: &NewRowFieldDefault) -> Value {
+    match default.kind.as_str() {
+        "checkbox" => Value::Bool(default.value.value_bool.unwrap_or(false)),
+        "tags" | "relation" | "multi_select" => Value::Sequence(
+            if default.value.value_list.is_empty() {
+                default.value.value_text.iter().cloned().collect::<Vec<_>>()
+            } else {
+                default.value.value_list.clone()
+            }
+            .into_iter()
+            .map(Value::String)
+            .collect(),
+        ),
+        _ => default
+            .value
+            .value_text
+            .clone()
+            .map(Value::String)
+            .unwrap_or(Value::Null),
+    }
+}
+
+fn create_new_row_markdown(
+    database: &DatabaseDefinition,
+    note_path: &str,
+    title: &str,
+) -> Result<String, String> {
     let mut mapping = Mapping::new();
     mapping.insert(key("title"), Value::String(title.to_string()));
+    for default in database_new_row_field_defaults(database) {
+        mapping.insert(key(&default.key), yaml_value_from_field_default(&default));
+    }
     mapping.insert(key("tags"), Value::Sequence(Vec::new()));
     render_note_markdown(note_path, "", mapping)
 }
@@ -528,7 +640,7 @@ pub async fn databases_create_row(
         };
         let mut index = 2;
         loop {
-            let next = create_new_row_markdown(&candidate, &title)?;
+            let next = create_new_row_markdown(&database, &candidate, &title)?;
             if write_new_markdown_note(&root, &recent_local_changes, &candidate, &next)? {
                 break;
             }

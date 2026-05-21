@@ -36,8 +36,10 @@ interface NativeContextMenuEvent {
 	stopPropagation: () => void;
 }
 
-interface NativePopupMenuEvent extends NativeContextMenuEvent {
+interface NativePopupMenuEvent {
 	currentTarget: Element;
+	preventDefault: () => void;
+	stopPropagation: () => void;
 }
 
 interface NativeMenuResult {

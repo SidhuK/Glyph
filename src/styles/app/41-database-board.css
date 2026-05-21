@@ -76,6 +76,15 @@
 	background: transparent;
 }
 
+.databaseBoardLane[data-workflow-state="done"] {
+	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
+}
+
+.databaseBoardLane[data-workflow-state="archived"] {
+	opacity: 0.82;
+	background: color-mix(in srgb, var(--text-tertiary) 7%, var(--bg-secondary));
+}
+
 .databaseBoardLane[data-active="true"] {
 	background: color-mix(in srgb, var(--database-tone) 9%, var(--bg-secondary));
 	outline: 1px solid color-mix(in srgb, var(--database-tone) 24%, transparent);
@@ -206,6 +215,12 @@
 .databaseBoardCard[data-dragging="true"] {
 	opacity: 0.7;
 	outline-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+}
+
+.databaseBoardCard[data-drop-target="true"] {
+	outline-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	box-shadow: inset 0 2px 0
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 
 .databaseBoardCard[data-state="selected"] {
@@ -376,6 +391,26 @@
 	font-size: 0.94rem;
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
+}
+
+.databaseBoardAddLaneButton {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	margin-top: 10px;
+	border: 1px dashed color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.databaseBoardAddLaneButton:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
 }
 
 .databaseTable {

@@ -141,6 +141,16 @@ function normalizeTagText(value: string | null | undefined): string {
 	return normalizeText(value).replace(/^#+/, "");
 }
 
+function isTagColumn(column: DatabaseColumn): boolean {
+	return column.type === "tags" || column.property_kind === "tags";
+}
+
+function tagMatchesHierarchy(filterValue: string, cellValue: string): boolean {
+	const filterTag = normalizeTagText(filterValue);
+	const cellTag = normalizeTagText(cellValue);
+	return cellTag === filterTag || cellTag.startsWith(`${filterTag}/`);
+}
+
 function parseFilterNumber(value: string): number | null {
 	const normalized = value.trim().replace(/[$,%]/g, "");
 	if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(normalized)) {
@@ -148,6 +158,70 @@ function parseFilterNumber(value: string): number | null {
 	}
 	const parsed = Number(normalized);
 	return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseFilterDate(value: string | null | undefined): Date | null {
+	if (!value) return null;
+	const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+	if (dateOnly) {
+		const [, year, month, day] = dateOnly;
+		return new Date(Number(year), Number(month) - 1, Number(day));
+	}
+	const parsed = new Date(value);
+	return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function startOfToday(): Date {
+	const today = new Date();
+	return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+function weekEndFromToday(today: Date): Date {
+	const day = today.getDay();
+	const daysUntilSunday = (7 - day) % 7;
+	const end = new Date(today);
+	end.setDate(today.getDate() + daysUntilSunday);
+	return end;
+}
+
+function dateMatchesShortcut(
+	value: string | null | undefined,
+	shortcut: string,
+): boolean {
+	const parsed = parseFilterDate(value);
+	if (!parsed) return false;
+	const date = new Date(
+		parsed.getFullYear(),
+		parsed.getMonth(),
+		parsed.getDate(),
+	);
+	const today = startOfToday();
+	const normalized = normalizeText(shortcut);
+	switch (normalized) {
+		case "today":
+			return date.getTime() === today.getTime();
+		case "yesterday": {
+			const yesterday = new Date(today);
+			yesterday.setDate(today.getDate() - 1);
+			return date.getTime() === yesterday.getTime();
+		}
+		case "overdue":
+			return date < today;
+		case "this week":
+			return date >= today && date <= weekEndFromToday(today);
+		case "last 7 days": {
+			const start = new Date(today);
+			start.setDate(today.getDate() - 6);
+			return date >= start && date <= today;
+		}
+		case "last 30 days": {
+			const start = new Date(today);
+			start.setDate(today.getDate() - 29);
+			return date >= start && date <= today;
+		}
+		default:
+			return false;
+	}
 }
 
 function cellTextValues(cell: DatabaseCellValue): string[] {
@@ -173,17 +247,26 @@ export function rowMatchesFilters(
 		);
 		const listValues = cell.value_list.map(normalizeText).filter(Boolean);
 		const textValues = cellTextValues(cell);
+		const values = [...textValues, ...listValues];
 		switch (filter.operator) {
 			case "contains":
 				if (!filterText) return true;
-				return [...textValues, ...listValues].some((value) =>
-					value.includes(filterText),
-				);
+				return values.some((value) => value.includes(filterText));
 			case "equals":
 				if (!filterText) return true;
-				return [...textValues, ...listValues].some(
-					(value) => value === filterText,
-				);
+				return values.some((value) => value === filterText);
+			case "not_equals":
+				if (!filterText) return true;
+				return values.every((value) => value !== filterText);
+			case "not_contains":
+				if (!filterText) return true;
+				return values.every((value) => !value.includes(filterText));
+			case "starts_with":
+				if (!filterText) return true;
+				return values.some((value) => value.startsWith(filterText));
+			case "ends_with":
+				if (!filterText) return true;
+				return values.some((value) => value.endsWith(filterText));
 			case "is_empty":
 				return (
 					textValues.length === 0 &&
@@ -202,14 +285,52 @@ export function rowMatchesFilters(
 				return cell.value_bool === false;
 			case "tags_contains":
 				if (!filterText) return true;
-				return cell.value_list.some(
-					(value) => normalizeTagText(value) === normalizeTagText(filterText),
+				return cell.value_list.some((value) =>
+					tagMatchesHierarchy(filterText, value),
+				);
+			case "any_of": {
+				const filterValues =
+					filter.value_list.length > 0
+						? filter.value_list
+						: filter.value_text
+							? [filter.value_text]
+							: [];
+				if (filterValues.length === 0) return true;
+				const normalizedFilters = filterValues.map(normalizeText);
+				return values.some((value) =>
+					normalizedFilters.some((filterValue) =>
+						isTagColumn(column)
+							? tagMatchesHierarchy(filterValue, value)
+							: value === filterValue,
+					),
+				);
+			}
+			case "none_of": {
+				const filterValues =
+					filter.value_list.length > 0
+						? filter.value_list
+						: filter.value_text
+							? [filter.value_text]
+							: [];
+				const normalizedFilters = filterValues.map(normalizeText);
+				return values.every((value) =>
+					normalizedFilters.every((filterValue) =>
+						isTagColumn(column)
+							? !tagMatchesHierarchy(filterValue, value)
+							: value !== filterValue,
+					),
+				);
+			}
+			case "within_last_7_days":
+				return dateMatchesShortcut(
+					cell.value_text,
+					filter.value_text ?? "Last 7 Days",
 				);
 			case "greater_than":
 			case "less_than": {
 				const filterNumber = parseFilterNumber(filterText);
 				if (filterNumber == null) return true;
-				return [...textValues, ...listValues].some((value) => {
+				return values.some((value) => {
 					const cellNumber = parseFilterNumber(value);
 					if (cellNumber == null) return false;
 					return filter.operator === "greater_than"

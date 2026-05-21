@@ -1326,7 +1326,7 @@ export function AppShell() {
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
-				onOpenDailyNotesSettings={() => openSettings("general")}
+				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
 			<AnimatePresence>

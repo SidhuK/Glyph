@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
+use chrono::Datelike;
 use rusqlite::{params, Connection};
 
 use crate::index::commands::parse_raw_search_query;
@@ -225,14 +226,23 @@ fn cell_text_values(cell: &DatabaseCellValue) -> Vec<String> {
 }
 
 fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
-    let Ok(parsed) = chrono::DateTime::parse_from_rfc3339(value) else {
-        return false;
+    let date = match chrono::DateTime::parse_from_rfc3339(value) {
+        Ok(parsed) => parsed.with_timezone(&chrono::Local).date_naive(),
+        Err(_) => match chrono::NaiveDate::parse_from_str(value.trim(), "%Y-%m-%d") {
+            Ok(parsed) => parsed,
+            Err(_) => return false,
+        },
     };
-    let date = parsed.with_timezone(&chrono::Local).date_naive();
     let today = chrono::Local::now().date_naive();
     match normalize_text(shortcut).as_str() {
         "today" => date == today,
         "yesterday" => date == today - chrono::Days::new(1),
+        "overdue" => date < today,
+        "this week" => {
+            let days_until_sunday = 6 - today.weekday().num_days_from_monday();
+            let week_end = today + chrono::Days::new(days_until_sunday as u64);
+            date >= today && date <= week_end
+        }
         "last 7 days" => date >= today - chrono::Days::new(6) && date <= today,
         "last 30 days" => date >= today - chrono::Days::new(29) && date <= today,
         _ => false,

@@ -9,7 +9,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -121,6 +121,10 @@ function getTaskGroupMeta(label: string): {
 	return { displayLabel: label };
 }
 
+function countLabel(count: number, singular: string, plural = `${singular}s`) {
+	return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export function CalendarPane({
 	initialData = null,
 	onOpenFile,
@@ -135,6 +139,7 @@ export function CalendarPane({
 	const [anchorDate, setAnchorDate] = useState(
 		() => readStorage(ANCHOR_STORAGE_KEY) ?? initialSelectedDate,
 	);
+	const taskInputRef = useRef<HTMLInputElement>(null);
 	const normalizedAnchorDate = isDateInsideWeek(selectedDate, anchorDate)
 		? anchorDate
 		: selectedDate;
@@ -401,6 +406,20 @@ export function CalendarPane({
 		await openDailyNoteForDate(selectedDate);
 	}, [openDailyNoteForDate, selectedDate]);
 
+	const openTodayDailyNote = useCallback(async () => {
+		goToToday();
+		await openDailyNoteForDate(today);
+	}, [goToToday, openDailyNoteForDate, today]);
+
+	const focusTodayTaskComposer = useCallback(() => {
+		if (!dailyNotesFolder) {
+			onOpenDailyNotesSettings();
+			return;
+		}
+		goToToday();
+		window.requestAnimationFrame(() => taskInputRef.current?.focus());
+	}, [dailyNotesFolder, goToToday, onOpenDailyNotesSettings]);
+
 	const openNativeMenu = useCallback(
 		async (event: React.MouseEvent<HTMLButtonElement>) => {
 			await showNativePopupMenu(event, [
@@ -426,6 +445,22 @@ export function CalendarPane({
 	const overdueTasks = data?.tasks.overdue ?? [];
 	const ongoingTasks = data?.tasks.ongoing ?? [];
 	const noteActivity = data?.detail.note_activity ?? [];
+	const weekTaskCount = useMemo(
+		() => (data?.days ?? []).reduce((total, day) => total + day.task_count, 0),
+		[data?.days],
+	);
+	const weekNoteCount = useMemo(
+		() =>
+			(data?.days ?? []).reduce(
+				(total, day) => total + day.note_activity_count,
+				0,
+			),
+		[data?.days],
+	);
+	const weekDailyNoteCount = useMemo(
+		() => (data?.days ?? []).filter((day) => day.has_daily_note).length,
+		[data?.days],
+	);
 	const selectedDateObj = useMemo(
 		() => parseCalendarDate(selectedDate),
 		[selectedDate],
@@ -469,14 +504,13 @@ export function CalendarPane({
 	return (
 		<div className="calendarPaneOuter">
 			<section className="calendarPane">
-				<div className="calendarNativePanel">
-					<header className="calendarNativeTitlebar">
-						<div className="calendarNativeTitleBlock">
-							<h2 className="calendarNativeTitle">
-								{weekTitle(weekRange.dates)}
-							</h2>
+				<div className="calendarDashboard">
+					<header className="calendarDashboardHeader">
+						<div className="calendarDashboardTitleBlock">
+							<h2>{selectedHeading}</h2>
+							<p>{weekTitle(weekRange.dates)}</p>
 						</div>
-						<div className="calendarNativeActions">
+						<div className="calendarDashboardActions">
 							<Button
 								type="button"
 								variant="ghost"
@@ -495,7 +529,7 @@ export function CalendarPane({
 								type="button"
 								variant="ghost"
 								size="icon-xs"
-								className="sidebarTopIconButton"
+								className="sidebarTopIconButton calendarAccentIconButton"
 								onClick={goToToday}
 								aria-label="Today"
 							>
@@ -536,10 +570,70 @@ export function CalendarPane({
 						</div>
 					</header>
 
-					<div className="calendarWeekHeader">
-						<div className="calendarWeekMonth">
-							<span>{selectedMonth.month}</span>
-							<small>{selectedMonth.year}</small>
+					{error || calendarQuery.error ? (
+						<div className="calendarError">
+							{error ||
+								(calendarQuery.error instanceof Error
+									? calendarQuery.error.message
+									: String(calendarQuery.error))}
+						</div>
+					) : null}
+
+					<section
+						className="calendarCommandBar"
+						aria-label="Home quick actions"
+					>
+						<div className="calendarCommandTitle">
+							<h3>Home / Today</h3>
+						</div>
+						<div className="calendarCommandActions">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="calendarAccentButton"
+								onClick={() => void openTodayDailyNote()}
+							>
+								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
+								Open daily note
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="calendarAccentButton"
+								onClick={focusTodayTaskComposer}
+							>
+								<HugeiconsIcon
+									icon={TaskAdd02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+								New task
+							</Button>
+						</div>
+					</section>
+
+					<section className="calendarWeekPanel">
+						<div className="calendarWeekHeader">
+							<div className="calendarWeekMonth">
+								<span>{selectedMonth.month}</span>
+								<small>{selectedMonth.year}</small>
+							</div>
+							<div className="calendarWeekStats" aria-label="Week summary">
+								<span>
+									<strong>{weekNoteCount}</strong>
+									notes
+								</span>
+								<span>
+									<strong>{weekTaskCount}</strong>
+									tasks
+								</span>
+								<span>
+									<strong>{weekDailyNoteCount}</strong>
+									daily notes
+								</span>
+							</div>
 						</div>
 						<div
 							className="calendarWeekStrip"
@@ -562,27 +656,22 @@ export function CalendarPane({
 								);
 							})}
 						</div>
-					</div>
+					</section>
 
-					{error || calendarQuery.error ? (
-						<div className="calendarError">
-							{error ||
-								(calendarQuery.error instanceof Error
-									? calendarQuery.error.message
-									: String(calendarQuery.error))}
-						</div>
-					) : null}
-
-					<section className="calendarPanelSection">
-						<div className="calendarPanelSectionHeader">
-							<h3>Notes</h3>
-							<div className="calendarPanelHeaderActions">
-								<span>{selectedHeading}</span>
+					<div className="calendarDashboardContent">
+						<section className="calendarPanelSection calendarNotesSection">
+							<div className="calendarPanelSectionHeader">
+								<div>
+									<h3>Notes</h3>
+									<span>
+										{countLabel(noteActivity.length, "note")} for this day
+									</span>
+								</div>
 								<Button
 									type="button"
 									variant="ghost"
 									size="icon-xs"
-									className="sidebarTopIconButton"
+									className="sidebarTopIconButton calendarAccentIconButton"
 									onClick={() => void openSelectedDailyNote()}
 									aria-label={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
 									title={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
@@ -590,97 +679,141 @@ export function CalendarPane({
 									<HugeiconsIcon icon={NoteIcon} size={13} strokeWidth={0.9} />
 								</Button>
 							</div>
-						</div>
-						<ul className="calendarNotesList">
-							{noteActivity.length === 0 ? (
-								<li className="calendarEmptyRow">No notes for this day</li>
-							) : null}
-							{noteActivity.map((note) => (
-								<li key={note.note_id}>
-									<button
-										type="button"
-										className="calendarNoteRow"
-										onClick={() => void onOpenFile(note.note_path)}
-										onMouseEnter={() => prefetchNote(note.note_path)}
-										onFocus={() => prefetchNote(note.note_path)}
-									>
-										<span>
-											<HugeiconsIcon
-												icon={NoteIcon}
-												size={14}
-												strokeWidth={0.9}
-											/>
-										</span>
-										<span className="calendarNoteTitle">{noteTitle(note)}</span>
-										<span className="calendarNoteTime">
-											{noteTimeLabel(note)}
-										</span>
-									</button>
-								</li>
-							))}
-						</ul>
-					</section>
+							<ul className="calendarNotesList">
+								{noteActivity.length === 0 ? (
+									<li className="calendarEmptyRow">No notes for this day</li>
+								) : null}
+								{noteActivity.map((note) => {
+									const visibleTags = note.tags.slice(0, 2);
+									const hiddenTagCount = Math.max(
+										0,
+										note.tags.length - visibleTags.length,
+									);
+									return (
+										<li key={note.note_id}>
+											<button
+												type="button"
+												className="calendarNoteRow"
+												onClick={() => void onOpenFile(note.note_path)}
+												onMouseEnter={() => prefetchNote(note.note_path)}
+												onFocus={() => prefetchNote(note.note_path)}
+											>
+												<span className="calendarNoteIcon">
+													<HugeiconsIcon
+														icon={NoteIcon}
+														size={14}
+														strokeWidth={0.9}
+													/>
+												</span>
+												<span className="calendarNoteBody">
+													<span className="calendarNoteTitleRow">
+														<span className="calendarNoteTitle">
+															{noteTitle(note)}
+														</span>
+														{visibleTags.length > 0 ? (
+															<span className="calendarNoteTags">
+																{visibleTags.map((tag) => (
+																	<span key={tag} className="calendarNoteTag">
+																		#{tag}
+																	</span>
+																))}
+																{hiddenTagCount > 0 ? (
+																	<span className="calendarNoteTag is-muted">
+																		+{hiddenTagCount}
+																	</span>
+																) : null}
+															</span>
+														) : null}
+													</span>
+													{note.preview ? (
+														<span className="calendarNotePreview">
+															{note.preview}
+														</span>
+													) : null}
+												</span>
+												<span className="calendarNoteTime">
+													{noteTimeLabel(note)}
+												</span>
+											</button>
+										</li>
+									);
+								})}
+							</ul>
+						</section>
 
-					<section className="calendarPanelSection calendarTasksSection">
-						<div className="calendarPanelSectionHeader">
-							<h3>Tasks</h3>
-						</div>
-						<div className="calendarTasksScrollArea">
-							{renderTaskGroup("For this day", agendaTasks)}
-							{renderTaskGroup("Overdue", overdueTasks)}
-							{renderTaskGroup("Ongoing", ongoingTasks)}
-							{agendaTasks.length === 0 &&
-							overdueTasks.length === 0 &&
-							ongoingTasks.length === 0 ? (
-								<div className="calendarEmptyRow">No tasks for this day</div>
-							) : null}
-						</div>
+						<section className="calendarPanelSection calendarTasksSection">
+							<div className="calendarPanelSectionHeader">
+								<div>
+									<h3>Tasks</h3>
+									<span>
+										{countLabel(
+											agendaTasks.length +
+												overdueTasks.length +
+												ongoingTasks.length,
+											"task",
+										)}{" "}
+										in view
+									</span>
+								</div>
+							</div>
+							<div className="calendarTasksScrollArea">
+								{renderTaskGroup("For this day", agendaTasks)}
+								{renderTaskGroup("Overdue", overdueTasks)}
+								{renderTaskGroup("Ongoing", ongoingTasks)}
+								{agendaTasks.length === 0 &&
+								overdueTasks.length === 0 &&
+								ongoingTasks.length === 0 ? (
+									<div className="calendarEmptyRow">No tasks for this day</div>
+								) : null}
+							</div>
 
-						{dailyNotesFolder ? (
-							<div className="calendarTaskComposer">
-								<span>+</span>
-								<Input
-									value={taskDraft}
-									onChange={(event) => setTaskDraft(event.target.value)}
-									placeholder="New task..."
-									onKeyDown={(event) => {
-										if (event.key === "Enter" && !event.shiftKey) {
-											event.preventDefault();
-											void submitTask();
-										}
-									}}
-								/>
-								<Button
-									type="button"
-									size="icon-xs"
-									variant="ghost"
-									className="sidebarTopIconButton"
-									onClick={() => void submitTask()}
-									disabled={submitTaskMutation.isPending || !taskDraft.trim()}
-									aria-label="Add task"
-								>
-									<HugeiconsIcon
-										icon={TaskAdd02Icon}
-										size={14}
-										strokeWidth={0.9}
+							{dailyNotesFolder ? (
+								<div className="calendarTaskComposer">
+									<span>+</span>
+									<Input
+										ref={taskInputRef}
+										value={taskDraft}
+										onChange={(event) => setTaskDraft(event.target.value)}
+										placeholder="New task..."
+										onKeyDown={(event) => {
+											if (event.key === "Enter" && !event.shiftKey) {
+												event.preventDefault();
+												void submitTask();
+											}
+										}}
 									/>
-								</Button>
-							</div>
-						) : (
-							<div className="calendarInlineSetup">
-								<span>Set a daily notes folder to add tasks here.</span>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									onClick={onOpenDailyNotesSettings}
-								>
-									<Settings size={13} />
-									Settings
-								</Button>
-							</div>
-						)}
-					</section>
+									<Button
+										type="button"
+										size="icon-xs"
+										variant="ghost"
+										className="sidebarTopIconButton calendarAccentIconButton"
+										onClick={() => void submitTask()}
+										disabled={submitTaskMutation.isPending || !taskDraft.trim()}
+										aria-label="Add task"
+									>
+										<HugeiconsIcon
+											icon={TaskAdd02Icon}
+											size={14}
+											strokeWidth={0.9}
+										/>
+									</Button>
+								</div>
+							) : (
+								<div className="calendarInlineSetup">
+									<span>Set a daily notes folder to add tasks here.</span>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										onClick={onOpenDailyNotesSettings}
+									>
+										<Settings size={13} />
+										Settings
+									</Button>
+								</div>
+							)}
+						</section>
+					</div>
 
 					{loading ? (
 						<div className="calendarLoading">Refreshing...</div>

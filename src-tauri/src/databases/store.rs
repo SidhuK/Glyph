@@ -7,8 +7,8 @@ use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
 use super::types::{
-    DatabaseColumn, DatabaseDefinition, DatabaseFilter, DatabaseNewNoteConfig, DatabaseSchemaField,
-    DatabaseSource, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
+    DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseFilter, DatabaseNewNoteConfig,
+    DatabaseSchemaField, DatabaseSource, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
 };
 
 const DATABASES_STORE_FILE: &str = "databases.json";
@@ -72,6 +72,7 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         grouping: None,
         board_lane_colors: Default::default(),
         board_lane_order: Default::default(),
+        board_card_order: Default::default(),
         created_at: now.clone(),
         updated_at: now,
     }
@@ -118,6 +119,7 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
                 label: "Title".to_string(),
                 kind: "title".to_string(),
                 property_key: None,
+                default_value: None,
                 relation_database_id: None,
             },
             DatabaseSchemaField {
@@ -125,6 +127,7 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
                 label: "Tags".to_string(),
                 kind: "tags".to_string(),
                 property_key: None,
+                default_value: None,
                 relation_database_id: None,
             },
             DatabaseSchemaField {
@@ -132,6 +135,7 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
                 label: "Updated".to_string(),
                 kind: "datetime".to_string(),
                 property_key: None,
+                default_value: None,
                 relation_database_id: None,
             },
         ],
@@ -149,6 +153,78 @@ fn normalize_frontmatter_property_kind(kind: &mut String) {
         return;
     }
     *kind = "text".to_string();
+}
+
+fn normalized_field_name(value: &str) -> String {
+    value
+        .trim()
+        .to_lowercase()
+        .replace(['_', '-'], " ")
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn matches_field_name(label: &str, property_key: Option<&str>, names: &[&str]) -> bool {
+    let normalized_names = names
+        .iter()
+        .map(|name| normalized_field_name(name))
+        .collect::<Vec<_>>();
+    [Some(label), property_key]
+        .into_iter()
+        .flatten()
+        .map(normalized_field_name)
+        .any(|value| normalized_names.iter().any(|name| name == &value))
+}
+
+pub(crate) fn default_field_value(
+    label: &str,
+    kind: &str,
+    property_key: Option<&str>,
+) -> Option<DatabaseCellValue> {
+    let normalized_key = property_key.map(normalized_field_name).unwrap_or_default();
+    let normalized_label = normalized_field_name(label);
+    let is_status = kind == "status"
+        || normalized_key == "status"
+        || normalized_key.ends_with(" status")
+        || normalized_label == "status"
+        || normalized_label.ends_with(" status");
+    let default_text = if is_status {
+        Some("Not Started".to_string())
+    } else if matches_field_name(label, property_key, &["priority", "prio"]) {
+        Some("Medium".to_string())
+    } else {
+        None
+    };
+    if default_text.is_none() && kind != "checkbox" {
+        return None;
+    }
+    let is_list = matches!(kind, "tags" | "relation" | "multi_select");
+
+    Some(DatabaseCellValue {
+        kind: kind.to_string(),
+        value_text: if is_list { None } else { default_text.clone() },
+        value_bool: (kind == "checkbox").then_some(false),
+        value_list: if is_list {
+            default_text.into_iter().collect()
+        } else {
+            Vec::new()
+        },
+    })
+}
+
+fn normalize_schema_field_defaults(store: &mut DatabaseStore) {
+    for database in &mut store.databases {
+        for field in &mut database.schema {
+            if field.property_key.is_none() {
+                continue;
+            }
+            if field.default_value.is_none() {
+                field.default_value =
+                    default_field_value(&field.label, &field.kind, field.property_key.as_deref());
+            }
+        }
+    }
 }
 
 fn normalize_store_property_kinds(store: &mut DatabaseStore) {
@@ -221,6 +297,7 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
             normalize_store_property_kinds(&mut store);
             prune_unsupported_view_layouts(&mut store);
             normalize_status_colors(&mut store);
+            normalize_schema_field_defaults(&mut store);
             Ok(bootstrap_defaults(store))
         }
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(default_store()),
@@ -245,6 +322,7 @@ pub fn bootstrap_defaults(mut store: DatabaseStore) -> DatabaseStore {
     store.version = DATABASES_STORE_VERSION;
     prune_unsupported_view_layouts(&mut store);
     normalize_status_colors(&mut store);
+    normalize_schema_field_defaults(&mut store);
     store
 }
 

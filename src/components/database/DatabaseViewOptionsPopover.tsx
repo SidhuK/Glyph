@@ -34,6 +34,11 @@ import {
 import { FiltersPanel } from "./DatabaseViewOptionsFiltersPanel";
 import { SortPanel } from "./DatabaseViewOptionsSortPanel";
 import { SourcePanel } from "./DatabaseViewOptionsSourcePanel";
+import {
+	type DatabaseFilterPreset,
+	type DatabaseSortPreset,
+	ensurePresetColumn,
+} from "./databaseViewPresets";
 
 type OptionsPanel = "source" | "columns" | "filters" | "sort";
 
@@ -391,6 +396,19 @@ export function DatabaseViewOptionsPopover({
 		}
 	};
 
+	const applyFilterPreset = async (preset: DatabaseFilterPreset) => {
+		if (!preset.filter || !preset.column) return;
+		const nextColumns = ensurePresetColumn(config.columns, preset.column);
+		const nextFilters = [...config.filters, preset.filter];
+		const saved = await updateConfig({
+			...config,
+			columns: nextColumns,
+			filters: nextFilters,
+		});
+		if (!saved) return;
+		setFilterUiKeys(deriveFilterUiKeys(nextFilters));
+	};
+
 	const defaultFilterColumn =
 		config.columns.find((column) => column.visible) ??
 		config.columns[0] ??
@@ -417,6 +435,15 @@ export function DatabaseViewOptionsPopover({
 					direction: patch.direction ?? activeSort?.direction ?? "asc",
 				},
 			],
+		});
+	};
+
+	const applySortPreset = (preset: DatabaseSortPreset) => {
+		if (!preset.sort || !preset.column) return;
+		void updateConfig({
+			...config,
+			columns: ensurePresetColumn(config.columns, preset.column),
+			sorts: [preset.sort],
 		});
 	};
 
@@ -485,20 +512,24 @@ export function DatabaseViewOptionsPopover({
 				{activePanel === "filters" ? (
 					<FiltersPanel
 						config={config}
+						availableProperties={availableProperties}
 						filterError={filterError}
 						filterUiKeys={filterUiKeys}
 						filterKeyCounterRef={filterKeyCounterRef}
 						defaultFilterColumn={defaultFilterColumn}
+						onApplyFilterPreset={applyFilterPreset}
 						updateFilters={updateFilters}
 					/>
 				) : null}
 				{activePanel === "sort" ? (
 					<SortPanel
 						config={config}
+						availableProperties={availableProperties}
 						activeSort={activeSort}
 						sortColumn={sortColumn}
 						sortDirection={sortDirection}
 						setSort={setSort}
+						onApplySortPreset={applySortPreset}
 						updateConfig={updateConfig}
 					/>
 				) : null}
