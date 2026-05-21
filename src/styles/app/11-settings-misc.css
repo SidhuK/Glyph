@@ -201,61 +201,6 @@
 	opacity: 0.56;
 }
 
-.gitBetaNotice {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	padding: 14px 16px;
-	border-color: color-mix(in srgb, #eab308 34%, var(--border-default));
-	background: color-mix(in srgb, #eab308 10%, var(--settings-surface-muted));
-}
-
-.gitBetaNoticeIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 32px;
-	height: 32px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, #eab308 16%, transparent);
-	color: color-mix(in srgb, #ca8a04 88%, var(--text-primary));
-	flex: 0 0 auto;
-}
-
-.gitBetaNoticeBody {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	min-width: 0;
-}
-
-.gitBetaNoticeTitleRow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.gitBetaNoticeTitle {
-	font-size: 14px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.gitBetaNoticeText {
-	font-size: 12px;
-	line-height: 1.5;
-	color: var(--text-secondary);
-}
-
-.gitBetaBadge {
-	--early-access-color: #d97706;
-}
-
-.settingsBetaBadge {
-	--early-access-color: #d97706;
-}
-
 .settingsValueCard {
 	width: 100%;
 	display: flex;

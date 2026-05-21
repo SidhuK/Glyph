@@ -1,14 +1,17 @@
 import {
-	FlowConnectionIcon,
-	InformationCircleIcon,
 	SlidersHorizontalIcon,
-	SourceCodeIcon,
 	SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type MouseEvent as ReactMouseEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -26,6 +29,7 @@ import {
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
 	joinYamlFrontmatter,
@@ -42,7 +46,6 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
-import { Edit, Eye } from "../Icons";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
@@ -52,7 +55,6 @@ import type {
 	NoteInlineEditorMode,
 } from "../editor/types";
 import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
-import { Button } from "../ui/shadcn/button";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
@@ -178,7 +180,6 @@ export function MarkdownEditorPane({
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
-	const [actionsOpen, setActionsOpen] = useState(false);
 	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 	const [localGraphOpen, setLocalGraphOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
@@ -215,7 +216,6 @@ export function MarkdownEditorPane({
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
-	const shouldReduceMotion = useReducedMotion();
 
 	const isDirty = text !== savedText;
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
@@ -341,7 +341,6 @@ export function MarkdownEditorPane({
 		setSyncPulse(null);
 		hasUserEditsRef.current = false;
 		setError(initialError);
-		setActionsOpen(false);
 		if (activeRelPathRef.current !== relPath) {
 			setInfoPanelOpen(false);
 		}
@@ -755,6 +754,49 @@ export function MarkdownEditorPane({
 		[currentBody, runAutosave],
 	);
 
+	const toggleInfoPanel = useCallback(() => {
+		setInfoPanelOpen((open) => {
+			const nextOpen = !open;
+			if (nextOpen) setAiPanelOpen(false);
+			return nextOpen;
+		});
+	}, [setAiPanelOpen]);
+
+	const handleEditorActionsMenu = useCallback(
+		(event: ReactMouseEvent<HTMLButtonElement>) => {
+			void showNativePopupMenu(event, [
+				{
+					label: "Info",
+					checked: infoPanelOpen,
+					action: toggleInfoPanel,
+				},
+				{
+					label: "Local graph",
+					action: () => setLocalGraphOpen(true),
+				},
+				{ type: "separator" },
+				{
+					label: "Edit",
+					checked: mode === "rich",
+					action: () => setMode("rich"),
+				},
+				{
+					label: "Preview",
+					checked: mode === "preview",
+					action: () => setMode("preview"),
+				},
+				{
+					label: "Raw",
+					checked: mode === "plain",
+					action: () => setMode("plain"),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show editor actions menu", error);
+			});
+		},
+		[infoPanelOpen, mode, toggleInfoPanel],
+	);
+
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
@@ -791,136 +833,20 @@ export function MarkdownEditorPane({
 					>
 						<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={0.9} />
 					</button>
-					<div className="markdownEditorActionsMenu">
-						<button
-							type="button"
-							className="markdownEditorMenuTrigger"
-							data-open={actionsOpen ? "true" : "false"}
-							onClick={() => setActionsOpen((prev) => !prev)}
-							aria-label={
-								actionsOpen ? "Close editor actions" : "Open editor actions"
-							}
-							title={
-								actionsOpen ? "Close editor actions" : "Open editor actions"
-							}
-							aria-expanded={actionsOpen}
-						>
-							<HugeiconsIcon
-								icon={SlidersHorizontalIcon}
-								size={15}
-								strokeWidth={0.9}
-							/>
-						</button>
-						<AnimatePresence initial={false}>
-							{actionsOpen ? (
-								<m.div
-									className="markdownEditorActionsPanel"
-									initial={
-										shouldReduceMotion
-											? false
-											: { opacity: 0, y: -6, scale: 0.98 }
-									}
-									animate={{ opacity: 1, y: 0, scale: 1 }}
-									exit={
-										shouldReduceMotion
-											? { opacity: 0 }
-											: { opacity: 0, y: -4, scale: 0.985 }
-									}
-									transition={
-										shouldReduceMotion
-											? { duration: 0 }
-											: { duration: 0.1, ease: "easeOut" }
-									}
-								>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										data-active={infoPanelOpen}
-										onClick={() => {
-											setInfoPanelOpen((open) => {
-												const nextOpen = !open;
-												if (nextOpen) setAiPanelOpen(false);
-												return nextOpen;
-											});
-											setActionsOpen(false);
-										}}
-									>
-										<HugeiconsIcon
-											icon={InformationCircleIcon}
-											size={12}
-											strokeWidth={0.9}
-										/>
-										Info
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										onClick={() => {
-											setLocalGraphOpen(true);
-											setActionsOpen(false);
-										}}
-									>
-										<HugeiconsIcon
-											icon={FlowConnectionIcon}
-											size={12}
-											strokeWidth={0.9}
-										/>
-										Local graph
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										data-active={mode === "rich"}
-										onClick={() => {
-											setMode("rich");
-											setActionsOpen(false);
-										}}
-									>
-										<Edit size={12} />
-										Edit
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										data-active={mode === "preview"}
-										onClick={() => {
-											setMode("preview");
-											setActionsOpen(false);
-										}}
-									>
-										<Eye size={12} />
-										Preview
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="xs"
-										className="markdownEditorActionItem"
-										data-active={mode === "plain"}
-										onClick={() => {
-											setMode("plain");
-											setActionsOpen(false);
-										}}
-									>
-										<HugeiconsIcon
-											icon={SourceCodeIcon}
-											size={12}
-											strokeWidth={0.9}
-										/>
-										Raw
-									</Button>
-								</m.div>
-							) : null}
-						</AnimatePresence>
-					</div>
+					<button
+						type="button"
+						className="markdownEditorMenuTrigger"
+						onClick={handleEditorActionsMenu}
+						aria-label="Open editor actions"
+						title="Open editor actions"
+						aria-haspopup="menu"
+					>
+						<HugeiconsIcon
+							icon={SlidersHorizontalIcon}
+							size={15}
+							strokeWidth={0.9}
+						/>
+					</button>
 				</div>
 			</div>
 			{error ? (

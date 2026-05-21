@@ -248,12 +248,6 @@
 	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-secondary));
 }
 
-.databaseTagField .notePropertyToken {
-	--pill-tone: var(--interactive-accent);
-
-	border-color: transparent;
-}
-
 .databaseTagField .notePropertyToken:hover,
 .databaseTagField .notePropertyToken:focus-visible {
 	background: color-mix(in srgb, var(--pill-tone) 16%, var(--bg-secondary));
@@ -315,13 +309,13 @@
 	align-items: center;
 	gap: 5px;
 	padding: 2px 8px;
-	border-radius: var(--pill-radius);
 	border: 0;
+	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: 0.76rem;
 	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 	white-space: nowrap;
 	flex: 0 0 auto;
 }

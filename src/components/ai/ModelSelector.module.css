@@ -361,10 +361,10 @@
 .detailTag {
 	display: inline-block;
 	padding: 1px 6px;
-	border-radius: var(--radius-full);
+	border-radius: 4px;
 	font-size: 10px;
 	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	border: 0;
 	color: var(--text-secondary);
 }
 

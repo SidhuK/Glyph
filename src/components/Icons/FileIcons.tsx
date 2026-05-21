@@ -15,6 +15,7 @@ import {
 	HtmlFile01Icon,
 	KanbanIcon,
 	Music as MusicIcon,
+	NoteIcon,
 	Palette as PaletteIcon,
 	Pdf01Icon,
 	Ppt01Icon,
@@ -27,7 +28,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconProps } from "./NavigationIcons";
 
 export const FileText = (props: IconProps) => (
-	<HugeiconsIcon icon={Document} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon icon={NoteIcon} strokeWidth={0.9} {...props} />
 );
 export const File = (props: IconProps) => (
 	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />

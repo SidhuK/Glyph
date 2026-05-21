@@ -107,11 +107,11 @@
 		var(--bg-secondary)
 	);
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	padding: 1px 7px;
 	font-weight: var(--font-semibold);
 	line-height: 1.35;
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 	cursor: pointer;
 	transition: background 120ms ease, color 120ms ease;
 }

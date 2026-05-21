@@ -1,13 +1,20 @@
+import { PinIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { prefetchNote } from "../../lib/navigationPrefetch";
-import type { FileTreeAppearance } from "../../lib/tauri";
+import {
+	loadAllDocs,
+	navigationQueryKeys,
+	prefetchNote,
+} from "../../lib/navigationPrefetch";
+import type { AllDocsItem, FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import { basename } from "../../utils/path";
+import { basename, isMarkdownPath } from "../../utils/path";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import type { FolioNotesSortMode } from "./folioScopes";
@@ -21,12 +28,72 @@ interface FolioNotesListPaneProps {
 	onDeleteFile: (relPath: string) => Promise<boolean>;
 }
 
+const FOLIO_SORT_MODE_STORAGE_KEY = "glyph.folio.sortMode";
+
+function isFolioNotesSortMode(value: unknown): value is FolioNotesSortMode {
+	return value === "alphabetical" || value === "edited" || value === "created";
+}
+
+function readStoredFolioSortMode(): FolioNotesSortMode {
+	if (typeof window === "undefined") return "alphabetical";
+	try {
+		const value = window.localStorage.getItem(FOLIO_SORT_MODE_STORAGE_KEY);
+		return isFolioNotesSortMode(value) ? value : "alphabetical";
+	} catch {
+		return "alphabetical";
+	}
+}
+
+function writeStoredFolioSortMode(sortMode: FolioNotesSortMode) {
+	if (typeof window === "undefined") return;
+	try {
+		window.localStorage.setItem(FOLIO_SORT_MODE_STORAGE_KEY, sortMode);
+	} catch {
+		// Best-effort UI persistence.
+	}
+}
+
 function noteTitle(note: FolioItem): string {
 	const fallback = basename(note.note_path);
 	return (
 		note.title.trim() ||
 		(note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback)
 	);
+}
+
+function normalizePinnedPath(path: string): string {
+	return path
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
+function titleFromPinnedPath(path: string): string {
+	const name = basename(path);
+	return isMarkdownPath(path) ? name.replace(/\.md$/i, "") : name;
+}
+
+function allDocsItemToFolioItem(item: AllDocsItem): FolioItem {
+	return {
+		...item,
+		note_path: normalizePinnedPath(item.note_path),
+		created: item.created || null,
+		updated: item.updated || null,
+		is_markdown: true,
+	};
+}
+
+function fallbackPinnedItem(path: string): FolioItem {
+	return {
+		note_path: path,
+		title: titleFromPinnedPath(path),
+		preview: "",
+		created: null,
+		updated: null,
+		tags: [],
+		people: [],
+		is_markdown: isMarkdownPath(path),
+	};
 }
 
 function noteMatchesFilter(note: FolioItem, query: string): boolean {
@@ -102,7 +169,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const { itemAppearance, setItemAppearance } = useFileTreeContext();
+	const { itemAppearance, setItemAppearance, pinnedFiles, togglePinnedFile } =
+		useFileTreeContext();
+	const queryClient = useQueryClient();
 	const {
 		notes,
 		filesTruncated,
@@ -111,18 +180,81 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		nonMarkdownFileLimit,
 		missingFolder,
 	} = useFolioNotes(folioScope);
+	const normalizedPinnedFiles = useMemo(
+		() =>
+			pinnedFiles
+				.map(normalizePinnedPath)
+				.filter((path, index, paths) => path && paths.indexOf(path) === index),
+		[pinnedFiles],
+	);
+	const hasPinnedMarkdownFiles = useMemo(
+		() => normalizedPinnedFiles.some(isMarkdownPath),
+		[normalizedPinnedFiles],
+	);
+	const pinnedMarkdownQuery = useQuery({
+		queryKey: navigationQueryKeys.allDocsList(null),
+		queryFn: () => loadAllDocs(null),
+		enabled: hasPinnedMarkdownFiles,
+	});
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortMode, setSortMode] = useState<FolioNotesSortMode>("alphabetical");
+	const [sortMode, setSortMode] = useState<FolioNotesSortMode>(
+		readStoredFolioSortMode,
+	);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
-	const visibleNotes = useMemo(
+	const pinnedPathSet = useMemo(
+		() => new Set(normalizedPinnedFiles),
+		[normalizedPinnedFiles],
+	);
+	const notesByPath = useMemo(
+		() =>
+			new Map(
+				notes.map(
+					(note) => [normalizePinnedPath(note.note_path), note] as const,
+				),
+			),
+		[notes],
+	);
+	const allDocsByPath = useMemo(
+		() =>
+			new Map(
+				(pinnedMarkdownQuery.data ?? []).map(
+					(note) =>
+						[
+							normalizePinnedPath(note.note_path),
+							allDocsItemToFolioItem(note),
+						] as const,
+				),
+			),
+		[pinnedMarkdownQuery.data],
+	);
+	const visiblePinnedNotes = useMemo(
+		() =>
+			normalizedPinnedFiles
+				.map(
+					(path) =>
+						notesByPath.get(path) ??
+						allDocsByPath.get(path) ??
+						fallbackPinnedItem(path),
+				)
+				.filter((note) => noteMatchesFilter(note, searchQuery)),
+		[allDocsByPath, normalizedPinnedFiles, notesByPath, searchQuery],
+	);
+	const visibleRegularNotes = useMemo(
 		() =>
 			notes
+				.filter(
+					(note) => !pinnedPathSet.has(normalizePinnedPath(note.note_path)),
+				)
 				.filter((note) => noteMatchesFilter(note, searchQuery))
 				.slice()
 				.sort((left, right) => compareNotes(left, right, sortMode)),
-		[notes, searchQuery, sortMode],
+		[notes, pinnedPathSet, searchQuery, sortMode],
+	);
+	const visibleNotes = useMemo(
+		() => [...visiblePinnedNotes, ...visibleRegularNotes],
+		[visiblePinnedNotes, visibleRegularNotes],
 	);
 	const selectedIndex = useMemo(
 		() =>
@@ -146,14 +278,29 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 
 	useTauriEvent("notes:external_changed", (payload) => {
+		if (hasPinnedMarkdownFiles) {
+			void queryClient.invalidateQueries({
+				queryKey: navigationQueryKeys.allDocsList(null),
+			});
+		}
 		if (!payload.rel_path || !taskSummaryPaths.includes(payload.rel_path))
 			return;
 		setTaskSummaryRefreshKey((key) => key + 1);
+	});
+	useTauriEvent("space:fs_changed", () => {
+		if (!hasPinnedMarkdownFiles) return;
+		void queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocsList(null),
+		});
 	});
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() =>
 			paneRef.current?.focus({ preventScroll: true }),
 		);
+	}, []);
+	const changeSortMode = useCallback((nextSortMode: FolioNotesSortMode) => {
+		setSortMode(nextSortMode);
+		writeStoredFolioSortMode(nextSortMode);
 	}, []);
 	const scrollNoteIntoView = useCallback((path: string) => {
 		requestAnimationFrame(() => {
@@ -211,6 +358,16 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			await onDeleteFile(path);
 		},
 		[onDeleteFile],
+	);
+	const togglePinnedNote = useCallback(
+		async (path: string) => {
+			try {
+				await togglePinnedFile(path);
+			} catch (error) {
+				console.error("Failed to toggle pinned folio file", error);
+			}
+		},
+		[togglePinnedFile],
 	);
 	const changeAppearance = useCallback(
 		async (path: string, appearance: FileTreeAppearance) => {
@@ -277,16 +434,54 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 					</div>
 				) : null}
 				<ul className="folioNotesList">
-					{visibleNotes.map((note) => (
+					{visiblePinnedNotes.length > 0 ? (
+						<li className="folioNotesPinnedHeading">
+							<HugeiconsIcon icon={PinIcon} size={12} strokeWidth={1} />
+							<span>Pinned</span>
+						</li>
+					) : null}
+					{visiblePinnedNotes.map((note) => (
 						<FolioNoteListItem
 							key={note.note_path}
 							note={note}
 							selected={activeTabPath === note.note_path}
+							isPinned
 							onOpen={openNote}
 							onOpenInNewTab={openNoteInNewTab}
 							onPrefetch={prefetchNote}
 							onRename={onRenameFile ? renameNote : undefined}
 							onDelete={deleteNote}
+							onTogglePinned={togglePinnedNote}
+							onFocus={focusPane}
+							isRenaming={
+								Boolean(onRenameFile) && renamingPath === note.note_path
+							}
+							onCommitRename={commitRename}
+							onCancelRename={cancelRename}
+							appearance={itemAppearance[note.note_path] ?? null}
+							onChangeAppearance={changeAppearance}
+							taskSummary={
+								showTaskProgressIndicator && note.is_markdown
+									? (taskSummariesByPath[note.note_path] ?? null)
+									: null
+							}
+						/>
+					))}
+					{visiblePinnedNotes.length > 0 && visibleRegularNotes.length > 0 ? (
+						<li className="folioNotesPinnedDivider" aria-hidden="true" />
+					) : null}
+					{visibleRegularNotes.map((note) => (
+						<FolioNoteListItem
+							key={note.note_path}
+							note={note}
+							selected={activeTabPath === note.note_path}
+							isPinned={false}
+							onOpen={openNote}
+							onOpenInNewTab={openNoteInNewTab}
+							onPrefetch={prefetchNote}
+							onRename={onRenameFile ? renameNote : undefined}
+							onDelete={deleteNote}
+							onTogglePinned={togglePinnedNote}
 							onFocus={focusPane}
 							isRenaming={
 								Boolean(onRenameFile) && renamingPath === note.note_path
@@ -347,7 +542,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				searchQuery={searchQuery}
 				sortMode={sortMode}
 				onSearchQueryChange={setSearchQuery}
-				onSortModeChange={setSortMode}
+				onSortModeChange={changeSortMode}
 			/>
 			{body}
 		</aside>

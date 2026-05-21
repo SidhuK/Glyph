@@ -286,7 +286,7 @@
 	flex: 0 0 auto;
 	padding: 2px 6px;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
 	font-size: 0.66rem;
 	font-weight: var(--font-medium);

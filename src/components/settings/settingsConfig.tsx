@@ -1,7 +1,6 @@
 import {
 	Archive02Icon,
 	CommandIcon,
-	ConstructionIcon,
 	GitBranchIcon,
 	Settings01Icon,
 	SparklesIcon,
@@ -26,8 +25,6 @@ export interface SettingsTabMeta {
 	id: SettingsTab;
 	label: string;
 	renderIcon: () => ReactElement;
-	badgeText?: string;
-	badgeIcon?: () => ReactElement;
 }
 
 interface SettingsTabGroup {
@@ -75,10 +72,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		label: "Git",
 		renderIcon: () => (
 			<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
-		),
-		badgeText: "Beta",
-		badgeIcon: () => (
-			<HugeiconsIcon icon={ConstructionIcon} size={11} strokeWidth={0.9} />
 		),
 	},
 	{

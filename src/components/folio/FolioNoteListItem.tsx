@@ -30,8 +30,10 @@ interface FolioNoteListItemProps {
 	onOpen: (path: string) => void;
 	onOpenInNewTab: (path: string) => void;
 	onPrefetch: (path: string) => void;
+	isPinned?: boolean;
 	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
+	onTogglePinned?: (path: string) => Promise<void> | void;
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
@@ -315,8 +317,10 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	onOpen,
 	onOpenInNewTab,
 	onPrefetch,
+	isPinned = false,
 	onRename,
 	onDelete,
+	onTogglePinned,
 	onFocus,
 	taskSummary = null,
 	isRenaming = false,
@@ -388,6 +392,14 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							},
 						]
 					: []),
+				...(onTogglePinned
+					? [
+							{
+								label: isPinned ? "Unpin file" : "Pin file",
+								action: () => void onTogglePinned(note.note_path),
+							},
+						]
+					: []),
 				fileTreeAppearanceNativeMenu("file", appearance, (nextAppearance) =>
 					onChangeAppearance(note.note_path, nextAppearance),
 				),
@@ -403,15 +415,17 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 		[
 			appearance,
 			handleRevealInFinder,
+			isPinned,
 			note.note_path,
 			onChangeAppearance,
 			onDelete,
 			onOpen,
 			onOpenInNewTab,
 			onRename,
+			onTogglePinned,
 		],
 	);
-	const leadingIcon = appearance?.icon ? (
+	const fileIcon = appearance?.icon ? (
 		<DatabaseColumnIcon
 			iconName={appearance.icon}
 			size={15}
@@ -424,6 +438,11 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 			style={{ color: iconColor }}
 			aria-hidden="true"
 		/>
+	);
+	const noteTitleIcon = (
+		<span className="folioNoteTitleIcon" aria-hidden="true">
+			{fileIcon}
+		</span>
 	);
 	const rowDetails = (
 		<div className="folioNoteBody">
@@ -462,7 +481,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	);
 	const fileDetails = (
 		<span className="folioFileLine">
-			{leadingIcon}
+			{fileIcon}
 			<span className="folioFileName">{fileStem || title}</span>
 			{extBadge ? <span className="fileTreeExtBadge">{extBadge}</span> : null}
 		</span>
@@ -475,6 +494,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 					className="folioNoteRow"
 					data-state={selected ? "selected" : "idle"}
 					data-kind={isMarkdown ? "markdown" : "file"}
+					data-pinned={isPinned ? "true" : undefined}
 					data-folio-note-path={note.note_path}
 					title={note.note_path}
 					style={rowStyle}
@@ -499,6 +519,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 					className="folioNoteRow"
 					data-state={selected ? "selected" : "idle"}
 					data-kind={isMarkdown ? "markdown" : "file"}
+					data-pinned={isPinned ? "true" : undefined}
 					data-folio-note-path={note.note_path}
 					aria-current={selected ? "page" : undefined}
 					onClick={(event) => {
@@ -528,6 +549,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							<span className="folioNoteRowTop">
 								<span className="folioNoteTitle">{title}</span>
 								{taskProgress}
+								{noteTitleIcon}
 							</span>
 							{rowDetails}
 						</>
