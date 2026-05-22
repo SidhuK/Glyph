@@ -385,6 +385,7 @@
 .calendarNoteTag {
 	display: flex;
 	align-items: center;
+	gap: 4px;
 	max-width: 120px;
 	min-height: 20px;
 	overflow: hidden;
@@ -401,6 +402,11 @@
 	line-height: 1.2;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.calendarNoteTagIcon {
+	flex: 0 0 auto;
+	color: currentcolor;
 }
 
 .calendarNoteTag.is-muted {

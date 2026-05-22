@@ -1,5 +1,3 @@
-import { Tag01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { CSSProperties } from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
@@ -19,6 +17,11 @@ import {
 	statusColorKey,
 	statusOptionsWithCustomValues,
 } from "../../lib/statusProperties";
+import {
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
@@ -36,6 +39,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
@@ -64,6 +68,7 @@ interface DatabaseDisplayPill {
 	key: string;
 	label: string;
 	kind?: "tag";
+	iconName?: string;
 	title?: string;
 }
 
@@ -76,8 +81,8 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 	const renderPill = (item: DatabaseDisplayPill) => (
 		<span key={item.key} className="databaseCellPill" title={item.title}>
 			{item.kind === "tag" ? (
-				<HugeiconsIcon
-					icon={Tag01Icon}
+				<DatabaseColumnIcon
+					iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 					className="databaseTagPillIcon"
 					size={11}
 					strokeWidth={1.2}
@@ -184,8 +189,8 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 						className="databaseCellPill"
 					>
 						{item.kind === "tag" ? (
-							<HugeiconsIcon
-								icon={Tag01Icon}
+							<DatabaseColumnIcon
+								iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 								className="databaseTagPillIcon"
 								size={11}
 								strokeWidth={1.2}
@@ -255,7 +260,11 @@ function DatabaseCellEditor({
 	onSave,
 	onClose,
 }: DatabaseCellEditorProps) {
-	const { tags: availableTags } = useFileTreeContext();
+	const {
+		tags: availableTags,
+		beautifulTags,
+		tagAppearance,
+	} = useFileTreeContext();
 	const cellValue = useMemo(
 		() => databaseCellValueFromRow(row, column),
 		[column, row],
@@ -337,6 +346,17 @@ function DatabaseCellEditor({
 		}
 		return suggestions.slice(0, DATABASE_CELL_TAG_SUGGESTION_LIMIT);
 	}, [availableTags, cellValue.value_list, tagDraft, valueOptions]);
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
 	const valueSuggestions = useMemo(() => {
 		if (!isListLike) return [];
 		const query = valueDraft.trim().toLowerCase();
@@ -513,8 +533,8 @@ function DatabaseCellEditor({
 							}}
 							title={`Remove ${formatDatabaseTagLabel(value)}`}
 						>
-							<HugeiconsIcon
-								icon={Tag01Icon}
+							<DatabaseColumnIcon
+								iconName={iconNameForTag(value)}
 								className="databaseTagPillIcon"
 								size={11}
 								strokeWidth={1.2}
@@ -967,6 +987,7 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
+	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
 		() => databaseCellValueFromRow(row, column),
@@ -977,15 +998,27 @@ export function DatabaseCell({
 		cellValue.kind === "datetime"
 			? formatDatabaseDateTime(cellValue.value_text)
 			: (cellValue.value_text ?? "");
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
 	const tagPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "tags") return [];
 		return cellValue.value_list.map((value) => ({
 			key: `${column.id}:${value}`,
 			kind: "tag",
+			iconName: iconNameForTag(value),
 			label: formatDatabaseTagLabel(value),
 			title: formatDatabaseTagLabel(value),
 		}));
-	}, [cellValue.kind, cellValue.value_list, column.id]);
+	}, [cellValue.kind, cellValue.value_list, column.id, iconNameForTag]);
 	const listPillItems = useMemo<DatabaseDisplayPill[]>(() => {
 		if (cellValue.kind !== "relation" && cellValue.kind !== "multi_select") {
 			return [];

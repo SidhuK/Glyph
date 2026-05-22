@@ -1,4 +1,4 @@
-import { Folder01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
+import { Folder01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,15 +10,22 @@ import {
 	subDays,
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
+import { useFileTreeContext } from "../../contexts";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
 	loadAllDocs,
 	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import {
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
 import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { springPresets } from "../ui/animations";
 
@@ -169,6 +176,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	emptyMessage = "No notes yet. Create one to get started.",
 	initialNotes = null,
 }: AllDocsPaneProps) {
+	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const queryClient = useQueryClient();
@@ -182,6 +190,17 @@ export const AllDocsPane = memo(function AllDocsPane({
 		initialData: initialNotes ?? undefined,
 	});
 	const notes = notesQuery.data ?? [];
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
 
 	useTauriEvent("notes:external_changed", () => {
 		void queryClient.invalidateQueries({
@@ -337,8 +356,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 															key={`${note.note_path}:${tag}`}
 															className="allDocsCardTag"
 														>
-															<HugeiconsIcon
-																icon={Tag01Icon}
+															<DatabaseColumnIcon
+																iconName={iconNameForTag(tag)}
 																className="allDocsCardTagIcon"
 																size={11}
 																strokeWidth={1.2}

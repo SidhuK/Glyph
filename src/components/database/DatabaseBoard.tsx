@@ -23,6 +23,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -49,6 +50,11 @@ import {
 } from "../../lib/nativeContextMenu";
 import { priorityToneStyle } from "../../lib/priorityProperties";
 import { statusToneStyle } from "../../lib/statusProperties";
+import {
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { Plus } from "../Icons";
@@ -82,6 +88,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
@@ -531,6 +538,7 @@ export function DatabaseBoard({
 	onStatusColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
 	const {
 		groupColumn,
@@ -554,6 +562,17 @@ export function DatabaseBoard({
 	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
 	const suppressClickRef = useRef(false);
 	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
 	const taskSummaryPaths = useMemo(
 		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
 		[rows],
@@ -1001,10 +1020,13 @@ export function DatabaseBoard({
 																<span
 																	key={`${row.note_path}:${tag}`}
 																	className="databaseBoardTag"
+																	data-beautiful-tags={
+																		beautifulTags ? "true" : undefined
+																	}
 																	title={formatDatabaseTagLabel(tag)}
 																>
-																	<HugeiconsIcon
-																		icon={Tag01Icon}
+																	<DatabaseColumnIcon
+																		iconName={iconNameForTag(tag)}
 																		className="databaseTagPillIcon"
 																		size={11}
 																		strokeWidth={1.2}

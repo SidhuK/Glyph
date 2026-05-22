@@ -99,6 +99,7 @@ type TauriEventMap = {
 			showCollapsibleHeadings?: boolean;
 			showFrontmatterInEditor?: boolean;
 			colorfulHeadings?: boolean;
+			beautifulTags?: boolean;
 			editorWidthMode?: EditorWidthMode;
 			attachmentStorageMode?: AttachmentStorageMode;
 			attachmentFolder?: string | null;

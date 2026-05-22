@@ -101,7 +101,7 @@ interface FileTreeDirItemProps {
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	onOpenAppearancePicker: () => void;
 	fileCount?: number | null;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
 }
@@ -124,7 +124,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onDeletePath,
 	onEnterDir,
 	appearance,
-	onChangeAppearance,
+	onOpenAppearancePicker,
 	fileCount,
 	onMoveClickSuppressRef,
 }: FileTreeDirItemProps) {
@@ -180,7 +180,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					label: "Rename",
 					action: onStartRename,
 				},
-				fileTreeAppearanceNativeMenu("dir", appearance, onChangeAppearance),
+				fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
 				{ type: "separator" },
 				{
 					label: "Delete folder",
@@ -191,9 +191,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			});
 		},
 		[
-			appearance,
 			entry.rel_path,
-			onChangeAppearance,
+			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onNewFileInDir,

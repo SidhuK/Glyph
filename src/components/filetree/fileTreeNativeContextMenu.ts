@@ -16,10 +16,25 @@ function currentColor(
 }
 
 export function fileTreeAppearanceNativeMenu(
+	onOpenAppearancePicker: () => void,
+): NativeContextMenuItem;
+export function fileTreeAppearanceNativeMenu(
 	itemKind: "dir" | "file",
 	appearance: FileTreeAppearance | null | undefined,
 	onChangeAppearance: (appearance: FileTreeAppearance) => void,
+): NativeContextMenuItem;
+export function fileTreeAppearanceNativeMenu(
+	first: (() => void) | "dir" | "file",
+	appearance?: FileTreeAppearance | null,
+	onChangeAppearance?: (appearance: FileTreeAppearance) => void,
 ): NativeContextMenuItem {
+	if (typeof first === "function") {
+		return {
+			label: "Icon & Color...",
+			action: first,
+		};
+	}
+
 	const selectedColor = currentColor(appearance);
 	const selectedIcon = appearance?.icon ?? null;
 
@@ -35,7 +50,7 @@ export function fileTreeAppearanceNativeMenu(
 						label: color.label,
 						checked: selectedColor === color.id,
 						action: () =>
-							onChangeAppearance({
+							onChangeAppearance?.({
 								color: color.id,
 								icon: selectedIcon,
 							}),
@@ -45,7 +60,7 @@ export function fileTreeAppearanceNativeMenu(
 						label: "Default Color",
 						checked: selectedColor === null,
 						action: () =>
-							onChangeAppearance({
+							onChangeAppearance?.({
 								color: null,
 								icon: selectedIcon,
 							}),
@@ -57,10 +72,10 @@ export function fileTreeAppearanceNativeMenu(
 				label: "Icon",
 				items: [
 					{
-						label: itemKind === "dir" ? "Default Folder" : "Default File",
+						label: first === "dir" ? "Default Folder" : "Default File",
 						checked: selectedIcon === null,
 						action: () =>
-							onChangeAppearance({
+							onChangeAppearance?.({
 								color: selectedColor,
 								icon: null,
 							}),
@@ -69,7 +84,7 @@ export function fileTreeAppearanceNativeMenu(
 						label: option.label,
 						checked: selectedIcon === option.id,
 						action: () =>
-							onChangeAppearance({
+							onChangeAppearance?.({
 								color: selectedColor,
 								icon: option.id,
 							}),

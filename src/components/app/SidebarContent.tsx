@@ -16,9 +16,11 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { toast } from "sonner";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
@@ -143,6 +145,9 @@ export const SidebarContent = memo(function SidebarContent({
 		togglePinnedFile,
 		tags,
 		people,
+		beautifulTags,
+		tagAppearance,
+		setTagAppearance,
 	} = useFileTreeContext();
 	const { folioMode, folioScope, setFolioScope } = useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
@@ -252,6 +257,20 @@ export const SidebarContent = memo(function SidebarContent({
 		setRenamingPath(null);
 		setPendingNewNotePath(null);
 	}, []);
+
+	const handleChangeTagIcon = useCallback(
+		async (tag: string, iconName: string) => {
+			try {
+				await setTagAppearance(tag, iconName);
+			} catch (error) {
+				toast.error("Could not update tag icon", {
+					description: extractErrorMessage(error),
+				});
+				throw error;
+			}
+		},
+		[setTagAppearance],
+	);
 
 	const handleCommitDirRename = useCallback(
 		async (dirPath: string, nextName: string) => {
@@ -548,6 +567,9 @@ export const SidebarContent = memo(function SidebarContent({
 								people={people}
 								onSelectTag={handleSelectTag}
 								onSelectPerson={handleSelectPerson}
+								beautifulTags={beautifulTags}
+								tagAppearance={tagAppearance}
+								onChangeTagIcon={handleChangeTagIcon}
 							/>
 						</section>
 					</div>

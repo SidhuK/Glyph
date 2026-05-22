@@ -19,6 +19,7 @@ mod pinned_files;
 mod space;
 mod space_fs;
 mod system_fonts;
+mod tag_appearance;
 pub(crate) mod utils;
 
 use serde::Serialize;
@@ -1447,6 +1448,8 @@ pub fn run() {
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,
             file_tree_appearance::commands::file_tree_appearance_delete_path,
+            tag_appearance::commands::tag_appearance_list,
+            tag_appearance::commands::tag_appearance_set,
             pinned_files::commands::pinned_files_list,
             pinned_files::commands::pinned_files_toggle,
             pinned_files::commands::pinned_files_rename_path,

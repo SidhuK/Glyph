@@ -390,6 +390,10 @@
 	display: none;
 }
 
+.databaseBoardTag[data-beautiful-tags="true"] .databaseTagPillIcon {
+	display: block;
+}
+
 .databaseBoardCardFooter {
 	display: flex;
 	align-items: center;

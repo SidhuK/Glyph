@@ -39,7 +39,9 @@ import {
 	parentDir,
 	basename as relBasename,
 } from "../../utils/path";
+import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
+import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -81,6 +83,10 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
 const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
+
+interface AppearancePickerTarget {
+	entry: FsEntry;
+}
 
 function spaceLabelFromPath(path: string | null): string {
 	if (!path) return "Glyph";
@@ -271,6 +277,7 @@ interface TreeEntriesProps {
 		entry: FsEntry,
 		appearance: FileTreeAppearance,
 	) => Promise<void> | void;
+	onOpenAppearancePicker: (entry: FsEntry) => void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
@@ -311,6 +318,7 @@ function TreeEntries({
 	folderFileCounts,
 	showFolderFileCounts,
 	onChangeAppearance,
+	onOpenAppearancePicker,
 	pinnedFiles,
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
@@ -355,9 +363,7 @@ function TreeEntries({
 									? (folderFileCounts[e.rel_path] ?? null)
 									: null
 							}
-							onChangeAppearance={(appearance) =>
-								onChangeAppearance(e, appearance)
-							}
+							onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
@@ -390,6 +396,7 @@ function TreeEntries({
 									folderFileCounts={folderFileCounts}
 									showFolderFileCounts={showFolderFileCounts}
 									onChangeAppearance={onChangeAppearance}
+									onOpenAppearancePicker={onOpenAppearancePicker}
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
 									onMoveClickSuppressRef={onMoveClickSuppressRef}
@@ -423,9 +430,7 @@ function TreeEntries({
 						parentDirPath={parentDir(e.rel_path)}
 						onDeletePath={onDeletePath}
 						appearance={itemAppearance[e.rel_path] ?? null}
-						onChangeAppearance={(appearance) =>
-							onChangeAppearance(e, appearance)
-						}
+						onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
 						isPinned={pinnedFiles.includes(e.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
@@ -486,6 +491,8 @@ export const FileTreePane = memo(function FileTreePane({
 		Record<string, string | null | undefined>
 	>({});
 	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
+	const [appearancePickerTarget, setAppearancePickerTarget] =
+		useState<AppearancePickerTarget | null>(null);
 	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 	const previousSpacePathRef = useRef(spacePath);
@@ -717,6 +724,31 @@ export const FileTreePane = memo(function FileTreePane({
 		[setError, setItemAppearance],
 	);
 
+	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
+		setAppearancePickerTarget({ entry });
+	}, []);
+
+	const appearancePickerEntry = appearancePickerTarget?.entry ?? null;
+	const appearancePickerAppearance = appearancePickerEntry
+		? (itemAppearance[appearancePickerEntry.rel_path] ?? null)
+		: null;
+	const appearancePickerColor =
+		appearancePickerAppearance?.color &&
+		isEditorTextColor(appearancePickerAppearance.color)
+			? appearancePickerAppearance.color
+			: null;
+	const appearancePickerIcon = appearancePickerAppearance?.icon ?? null;
+	const appearancePickerDefaultIcon =
+		appearancePickerEntry?.kind === "dir" ? "folder" : "document";
+
+	const updatePickerAppearance = useCallback(
+		(nextAppearance: FileTreeAppearance) => {
+			if (!appearancePickerEntry) return;
+			void handleChangeAppearance(appearancePickerEntry, nextAppearance);
+		},
+		[appearancePickerEntry, handleChangeAppearance],
+	);
+
 	const handleEnterDir = useCallback(
 		(dirPath: string) => {
 			setFocusedDirPath(dirPath);
@@ -890,6 +922,31 @@ export const FileTreePane = memo(function FileTreePane({
 				transition={springTransition}
 				onKeyDown={handleTreeKeyDown}
 			>
+				<AppearancePicker
+					title="Choose file tree appearance"
+					open={appearancePickerTarget !== null}
+					onOpenChange={(open) => {
+						if (!open) setAppearancePickerTarget(null);
+					}}
+					iconValue={appearancePickerIcon}
+					defaultIconName={appearancePickerDefaultIcon}
+					showDefaultIcon
+					onIconChange={(icon) => {
+						updatePickerAppearance({
+							color: appearancePickerColor,
+							icon,
+						});
+					}}
+					showColors
+					colorValue={appearancePickerColor}
+					colorOptions={EDITOR_TEXT_COLORS}
+					onColorChange={(color) => {
+						updatePickerAppearance({
+							color,
+							icon: appearancePickerIcon,
+						});
+					}}
+				/>
 				{focusedDirPath ? (
 					<FileTreeRootDrop targetDirPath={focusedDirPath}>
 						<FolderBreadcrumb
@@ -933,6 +990,7 @@ export const FileTreePane = memo(function FileTreePane({
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
 								onChangeAppearance={handleChangeAppearance}
+								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
@@ -1071,6 +1129,7 @@ export const FileTreePane = memo(function FileTreePane({
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
 								onChangeAppearance={handleChangeAppearance}
+								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}

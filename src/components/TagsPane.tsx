@@ -1,9 +1,20 @@
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import { type CSSProperties, memo, useCallback, useState } from "react";
-import type { PersonCount, TagCount } from "../lib/tauri";
+import {
+	type CSSProperties,
+	memo,
+	useCallback,
+	useMemo,
+	useState,
+} from "react";
+import {
+	type TagIconOverrides,
+	tagIconOverridesFromAppearance,
+} from "../lib/tagIcons";
+import type { PersonCount, TagAppearance, TagCount } from "../lib/tauri";
 import { ChevronDown, ChevronRight } from "./Icons";
+import { TagIconPicker } from "./TagIconPicker";
 import { springPresets } from "./ui/animations";
 
 interface TagsPaneProps {
@@ -11,6 +22,9 @@ interface TagsPaneProps {
 	people: PersonCount[];
 	onSelectTag: (tag: string) => void;
 	onSelectPerson: (handle: string) => void;
+	beautifulTags?: boolean;
+	tagAppearance?: Record<string, TagAppearance>;
+	onChangeTagIcon?: (tag: string, iconName: string) => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -67,6 +81,9 @@ export const TagsPane = memo(function TagsPane({
 	people,
 	onSelectTag,
 	onSelectPerson,
+	beautifulTags = false,
+	tagAppearance = {},
+	onChangeTagIcon,
 }: TagsPaneProps) {
 	const onClick = useCallback(
 		(tag: string) => onSelectTag(tag.startsWith("#") ? tag : `#${tag}`),
@@ -81,6 +98,10 @@ export const TagsPane = memo(function TagsPane({
 	const [sectionExpanded, setSectionExpanded] = useState(false);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
 
 	const TAG_LIMIT = 5;
 	const hasMoreTags = rows.length > TAG_LIMIT;
@@ -124,11 +145,9 @@ export const TagsPane = memo(function TagsPane({
 						{visibleRows.map((tag) => {
 							return (
 								<m.li key={tag.tag} className="tagsItem">
-									<m.button
-										type="button"
+									<m.div
 										className="tagsButton"
 										data-explicit={tag.isExplicit ? "true" : "false"}
-										onClick={() => onClick(tag.tag)}
 										style={
 											{
 												paddingInlineStart: `${8 + tag.depth * 16}px`,
@@ -137,22 +156,23 @@ export const TagsPane = memo(function TagsPane({
 										title={`#${tag.tag} · ${tag.totalCount} note${
 											tag.totalCount === 1 ? "" : "s"
 										}`}
-										whileHover={{
-											backgroundColor: "var(--bg-hover)",
-										}}
 										transition={springTransition}
 									>
-										<span className="tagsNameWrap">
-											<HugeiconsIcon
-												icon={Tag01Icon}
-												className="tagsIcon"
-												size={12}
-												strokeWidth={0.9}
-											/>
+										<TagRowIcon
+											tag={tag.tag}
+											beautifulTags={beautifulTags}
+											overrides={tagIconOverrides}
+											onChangeTagIcon={onChangeTagIcon}
+										/>
+										<button
+											type="button"
+											className="tagsMainButton"
+											onClick={() => onClick(tag.tag)}
+										>
 											<span className="tagsName">{tag.label}</span>
-										</span>
-										<span className="tagsCount">{tag.totalCount}</span>
-									</m.button>
+											<span className="tagsCount">{tag.totalCount}</span>
+										</button>
+									</m.div>
 								</m.li>
 							);
 						})}
@@ -228,3 +248,40 @@ export const TagsPane = memo(function TagsPane({
 		</m.section>
 	);
 });
+
+function TagRowIcon({
+	tag,
+	beautifulTags,
+	overrides,
+	onChangeTagIcon,
+}: {
+	tag: string;
+	beautifulTags: boolean;
+	overrides: TagIconOverrides;
+	onChangeTagIcon?: (tag: string, iconName: string) => Promise<void>;
+}) {
+	if (beautifulTags) {
+		return (
+			<TagIconPicker
+				tag={tag}
+				overrides={overrides}
+				beautifulTagsEnabled={beautifulTags}
+				className="tagsIconPicker"
+				onChange={(iconName) => {
+					void onChangeTagIcon?.(tag, iconName).catch((error: unknown) => {
+						console.error("Failed to change tag icon", error);
+					});
+				}}
+			/>
+		);
+	}
+
+	return (
+		<HugeiconsIcon
+			icon={Tag01Icon}
+			className="tagsIcon"
+			size={12}
+			strokeWidth={0.9}
+		/>
+	);
+}

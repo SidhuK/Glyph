@@ -10,6 +10,7 @@ const {
 	loadSettingsMock,
 	setAiAssistantModeMock,
 	setDatabaseShowColumnColorMock,
+	setEditorBeautifulTagsMock,
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowFrontmatterInEditorMock,
@@ -23,6 +24,7 @@ const {
 	loadSettingsMock: vi.fn(),
 	setAiAssistantModeMock: vi.fn(() => Promise.resolve()),
 	setDatabaseShowColumnColorMock: vi.fn(() => Promise.resolve()),
+	setEditorBeautifulTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorShowFrontmatterInEditorMock: vi.fn(() => Promise.resolve()),
@@ -45,6 +47,7 @@ vi.mock("../../lib/settings", () => ({
 	loadSettings: loadSettingsMock,
 	setAiAssistantMode: setAiAssistantModeMock,
 	setDatabaseShowColumnColor: setDatabaseShowColumnColorMock,
+	setEditorBeautifulTags: setEditorBeautifulTagsMock,
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowFrontmatterInEditor: setEditorShowFrontmatterInEditorMock,
@@ -122,6 +125,7 @@ vi.mock("./SettingsScaffold", () => ({
 function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 	return {
 		editor: {
+			beautifulTags: false,
 			colorfulHeadings,
 			editorWidthMode: "compact" as const,
 			enablePeopleMentionsAsTags: false,
