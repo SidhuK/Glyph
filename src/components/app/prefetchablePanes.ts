@@ -12,3 +12,8 @@ export const loadAllDocsPane = () =>
 	import("./AllDocsPane").then((module) => ({
 		default: module.AllDocsPane,
 	}));
+
+export const loadFlowPane = () =>
+	import("../flow/FlowPane").then((module) => ({
+		default: module.FlowPane,
+	}));

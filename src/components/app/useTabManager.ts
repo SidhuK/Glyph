@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import { isMarkdownPath } from "../../utils/path";
+import { canOpenInWorkspace, isMarkdownPath } from "../../utils/path";
 
 export interface WorkspaceTab {
 	id: string;
@@ -302,7 +302,7 @@ export function useTabManager(spacePath: string | null) {
 		(activeHistory?.index ?? -1) < (activeHistory?.entries.length ?? 0) - 1;
 
 	const canOpenInMainPane = useCallback(
-		(path: string) => isMarkdownPath(path),
+		(path: string) => canOpenInWorkspace(path),
 		[],
 	);
 

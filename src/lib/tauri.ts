@@ -64,7 +64,7 @@ interface TextFileDocBatch {
 	error: string | null;
 }
 
-interface TextFilePreviewDoc {
+export interface TextFilePreviewDoc {
 	rel_path: string;
 	text: string;
 	mtime_ms: number;

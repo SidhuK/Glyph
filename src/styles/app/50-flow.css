@@ -1,0 +1,303 @@
+.flowEditorPane {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	height: 100%;
+	flex-direction: column;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+.flowToolbar {
+	display: flex;
+	min-height: 42px;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 6px 10px;
+	background: var(--bg-primary);
+}
+
+.flowToolbarGroup {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.flowToolbarStatus {
+	margin-left: auto;
+	max-width: 320px;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.flowEdgeInspector {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 6px 10px;
+	background: var(--bg-secondary);
+}
+
+.flowEdgeLabelInput {
+	width: min(360px, 100%);
+	height: 28px;
+}
+
+.flowHost {
+	position: relative;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.flowHost .react-flow {
+	background: var(--bg-primary);
+}
+
+.flowHost .react-flow__background {
+	opacity: 0.45;
+}
+
+.flowHost .react-flow__controls,
+.flowHost .react-flow__minimap {
+	border: 1px solid var(--border-subtle);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-md);
+}
+
+.flowHintPanel {
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	padding: 5px 8px;
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
+	font-size: 12px;
+	box-shadow: var(--shadow-sm);
+}
+
+.flowNode {
+	position: relative;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	min-width: 0;
+	min-height: 0;
+	flex-direction: column;
+	overflow: visible;
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--flow-node-accent, var(--border-default)) 42%,
+			var(--border-default)
+		);
+	border-radius: var(--radius-md);
+	background: color-mix(
+		in srgb,
+		var(--flow-node-accent, var(--bg-primary)) 20%,
+		var(--bg-primary)
+	);
+	box-shadow: var(--shadow-sm);
+	transform: rotate(var(--flow-node-rotation, 0deg));
+	transform-origin: center;
+}
+
+.flowNodeHeader {
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 9px 10px 7px;
+	background: transparent;
+}
+
+.flowNodeResizeHandle.react-flow__resize-control.handle {
+	width: 10px;
+	height: 10px;
+	border: 1px solid var(--bg-primary);
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	box-shadow: 0 2px 8px
+		color-mix(in srgb, var(--shadow-color, #000) 20%, transparent);
+}
+
+.flowNodeResizeLine.react-flow__resize-control.line {
+	border-color: color-mix(in srgb, var(--interactive-accent) 78%, transparent);
+}
+
+.flowRotateHandle {
+	position: absolute;
+	top: -34px;
+	left: 50%;
+	z-index: 5;
+	width: 22px;
+	height: 22px;
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 80%, var(--bg-primary));
+	border-radius: 999px;
+	background: var(--bg-primary);
+	box-shadow: 0 4px 12px
+		color-mix(in srgb, var(--shadow-color, #000) 18%, transparent);
+	color: var(--interactive-accent);
+	cursor: grab;
+	display: grid;
+	place-items: center;
+	transform: translateX(-50%);
+}
+
+.flowRotateHandle::before {
+	position: absolute;
+	top: 21px;
+	left: 50%;
+	width: 1px;
+	height: 12px;
+	background: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+	content: "";
+	transform: translateX(-50%);
+}
+
+.flowRotateHandle:active {
+	cursor: grabbing;
+}
+
+.flowNodeHeader strong {
+	overflow: hidden;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.25;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.flowNodeBody {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: auto;
+	padding: 9px 10px;
+}
+
+.flowMarkdownPreview {
+	margin: 0;
+	white-space: pre-wrap;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.flowNodeMuted {
+	margin: 0;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	line-height: 1.4;
+	word-break: break-word;
+}
+
+.flowFileName {
+	flex: 0 0 auto;
+	border-top: 1px solid
+		color-mix(in srgb, var(--border-subtle) 78%, transparent);
+	padding: 6px 10px;
+	overflow: hidden;
+	color: color-mix(in srgb, var(--text-secondary) 84%, var(--text-tertiary));
+	font-size: 11px;
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.flowTextNode {
+	background: color-mix(
+		in srgb,
+		var(--flow-node-accent, var(--color-yellow-500)) 24%,
+		var(--bg-primary)
+	);
+}
+
+.flowTextDragHandle {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 26px;
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 5px 9px;
+	background: color-mix(in srgb, var(--bg-primary) 22%, transparent);
+	color: var(--text-tertiary);
+	cursor: grab;
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+.flowTextDragHandle:active {
+	cursor: grabbing;
+}
+
+.flowTextInput {
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	resize: none;
+	border: 0;
+	padding: 12px;
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	font-size: 13px;
+	line-height: 1.45;
+	outline: none;
+}
+
+.flowGroupNode {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--flow-node-accent, var(--border-default)) 50%,
+			var(--border-default)
+		);
+	border-radius: var(--radius-md);
+	background: color-mix(
+		in srgb,
+		var(--flow-node-accent, var(--bg-secondary)) 8%,
+		transparent
+	);
+	overflow: visible;
+	transform: rotate(var(--flow-node-rotation, 0deg));
+	transform-origin: center;
+}
+
+.flowGroupLabel {
+	position: absolute;
+	top: 8px;
+	left: 10px;
+	max-width: calc(100% - 20px);
+	overflow: hidden;
+	border-radius: var(--radius-sm);
+	padding: 2px 6px;
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.flowHost .react-flow__handle {
+	width: 9px;
+	height: 9px;
+	border: 1px solid var(--bg-primary);
+	background: var(--text-accent);
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.flowHost .react-flow__node:hover .react-flow__handle,
+.flowHost .react-flow__node.selected .react-flow__handle {
+	opacity: 1;
+}

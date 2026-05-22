@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   MAIN CANVAS AREA - Floating center panel
+   MAIN FLOW AREA - Floating center panel
    ───────────────────────────────────────────────────────────────────────────── */
 .mainArea {
 	flex: 1;
@@ -19,7 +19,7 @@
 	transition: border-color 220ms ease;
 }
 
-.mainArea:has(.canvasWrapper) {
+.mainArea:has(.flowWrapper) {
 	background: transparent;
 }
 

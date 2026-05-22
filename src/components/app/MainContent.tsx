@@ -80,12 +80,14 @@ import {
 	loadAllDocsPane,
 	loadCalendarPane,
 	loadDatabasesPane,
+	loadFlowPane,
 } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
 const DatabasesPane = lazy(loadDatabasesPane);
 const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
+const FlowPane = lazy(loadFlowPane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
@@ -711,6 +713,25 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
+		if (viewerPath.toLowerCase().endsWith(".flow")) {
+			return (
+				<Suspense
+					fallback={<div className="databaseLoadingState">Loading flow…</div>}
+				>
+					<FlowPane
+						relPath={viewerPath}
+						openFile={onOpenFile}
+						onDirtyChange={(dirty) =>
+							setDirtyByPath((prev) =>
+								prev[viewerPath] === dirty
+									? prev
+									: { ...prev, [viewerPath]: dirty },
+							)
+						}
+					/>
+				</Suspense>
+			);
+		}
 		return null;
 	}, [
 		fileTree,
@@ -729,6 +750,10 @@ export const MainContent = memo(function MainContent({
 			if (!target) return;
 			if (target.toLowerCase().endsWith(".md")) {
 				prefetchNote(target);
+				return;
+			}
+			if (target.toLowerCase().endsWith(".flow")) {
+				void loadFlowPane();
 				return;
 			}
 			if (target === ALL_DOCS_TAB_ID) {
@@ -784,8 +809,8 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const editorCanvas = (
-		<div className="canvasPaneHost">
+	const editorFlow = (
+		<div className="flowPaneHost">
 			<DailyNotesSetupToast
 				visible={dailyNoteSetupToastVisible}
 				onDismiss={() => setDailyNoteSetupToastVisible(false)}
@@ -929,7 +954,7 @@ export const MainContent = memo(function MainContent({
 				className="mainArea"
 				data-right-sidebar-open={rightSidebarOpen ? "true" : undefined}
 			>
-				<div className="canvasWrapper">
+				<div className="flowWrapper">
 					{folioMode ? (
 						<FolioWorkspace
 							activeTabPath={activeTabPath}
@@ -940,10 +965,10 @@ export const MainContent = memo(function MainContent({
 							}
 							onDeleteFile={(path) => fileTree.onDeletePath(path, "file")}
 						>
-							{editorCanvas}
+							{editorFlow}
 						</FolioWorkspace>
 					) : (
-						editorCanvas
+						editorFlow
 					)}
 				</div>
 			</main>

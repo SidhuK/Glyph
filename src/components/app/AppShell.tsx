@@ -62,7 +62,12 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import {
+	canOpenInWorkspace,
+	isMarkdownPath,
+	normalizeRelPath,
+	parentDir,
+} from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
@@ -365,7 +370,7 @@ export function AppShell() {
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (isMarkdownPath(path)) {
+			if (canOpenInWorkspace(path)) {
 				setActiveDirPath(parentDir(path));
 				openFileTab(path);
 				return;
@@ -405,7 +410,7 @@ export function AppShell() {
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path)) {
+			if (!canOpenInWorkspace(path)) {
 				await fileTree.openFile(path);
 				return;
 			}
@@ -418,7 +423,7 @@ export function AppShell() {
 	const openWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path)) {
+			if (!canOpenInWorkspace(path)) {
 				await openWorkspaceFile(path);
 				return;
 			}
@@ -435,7 +440,7 @@ export function AppShell() {
 	const openFolioWorkspaceFileInNewTab = useCallback(
 		async (path: string) => {
 			if (!path) return;
-			if (!isMarkdownPath(path)) {
+			if (!canOpenInWorkspace(path)) {
 				await openFolioWorkspaceFile(path);
 				return;
 			}
@@ -702,6 +707,13 @@ export function AppShell() {
 				: (activeDirPath ?? "");
 		return fileTree.onNewFileInDir(nextDir);
 	}, [activeDirPath, dailyNotesFolder, fileTree, spacePath]);
+
+	const createFlowInSelectedFolder = useCallback(async () => {
+		if (!spacePath) return null;
+		const nextDir =
+			activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+		return fileTree.onNewFlowInDir(nextDir);
+	}, [activeDirPath, activeFilePath, fileTree, spacePath]);
 
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -1065,6 +1077,7 @@ export function AppShell() {
 		closeActiveTab,
 		closeAllTabs,
 		closeSpace,
+		createFlowInSelectedFolder,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
 		fileTree,
@@ -1253,6 +1266,7 @@ export function AppShell() {
 				onOpenFile={(p) => void openWorkspaceFile(p)}
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
+				onNewFlowInDir={(p) => void fileTree.onNewFlowInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}

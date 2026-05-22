@@ -4,6 +4,7 @@ use std::{
 };
 
 use serde::Serialize;
+use serde_json::Value;
 
 use crate::{index, paths, utils};
 
@@ -37,7 +38,11 @@ pub fn rewrite_links_after_rename(
     for rel_path in markdown_files {
         let abs = paths::join_under(space_root, Path::new(&rel_path))?;
         let original = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
-        let rewrite = rewrite_markdown_links_for_path(&original, plan, &rel_path);
+        let rewrite = if is_flow_rel_path(&rel_path) {
+            rewrite_flow_links_for_path(&original, plan)
+        } else {
+            rewrite_markdown_links_for_path(&original, plan, &rel_path)
+        };
 
         if rewrite.markdown != original {
             rewrites.push((rel_path, abs, rewrite.markdown, rewrite.changed_links));
@@ -111,6 +116,51 @@ pub fn rewrite_markdown_links_for_path(
 
     RewriteMarkdownResult {
         markdown: out,
+        changed_links,
+    }
+}
+
+pub fn rewrite_flow_links_for_path(
+    flow_json: &str,
+    plan: &LinkRewritePlan,
+) -> RewriteMarkdownResult {
+    let Ok(mut value) = serde_json::from_str::<Value>(flow_json) else {
+        return RewriteMarkdownResult {
+            markdown: flow_json.to_string(),
+            changed_links: 0,
+        };
+    };
+    let Some(nodes) = value.get_mut("nodes").and_then(Value::as_array_mut) else {
+        return RewriteMarkdownResult {
+            markdown: flow_json.to_string(),
+            changed_links: 0,
+        };
+    };
+
+    let mut changed_links = 0;
+    for node in nodes {
+        let Some(file_value) = node.get_mut("file") else {
+            continue;
+        };
+        let Some(file) = file_value.as_str() else {
+            continue;
+        };
+        if let Some(replacement) = rewrite_flow_file_target(file, plan) {
+            *file_value = Value::String(replacement);
+            changed_links += 1;
+        }
+    }
+
+    if changed_links == 0 {
+        return RewriteMarkdownResult {
+            markdown: flow_json.to_string(),
+            changed_links,
+        };
+    }
+
+    let markdown = serde_json::to_string_pretty(&value).unwrap_or_else(|_| flow_json.to_string());
+    RewriteMarkdownResult {
+        markdown,
         changed_links,
     }
 }
@@ -291,6 +341,41 @@ fn rewrite_markdown_target_path(
     }
 
     None
+}
+
+fn rewrite_flow_file_target(target: &str, plan: &LinkRewritePlan) -> Option<String> {
+    let trimmed = target.trim();
+    if is_external_target(trimmed) {
+        return None;
+    }
+
+    let (without_fragment, fragment) = split_once_preserve(trimmed, '#');
+    let (without_query, query) = split_once_preserve(without_fragment, '?');
+    let replacement = rewrite_target(without_query.trim().trim_matches('/'), plan, true)
+        .or_else(|| rewrite_unique_attachment_basename(without_query.trim(), plan))?;
+    Some(format!("{replacement}{query}{fragment}"))
+}
+
+fn rewrite_unique_attachment_basename(target: &str, plan: &LinkRewritePlan) -> Option<String> {
+    if plan.is_dir || is_markdown_rel_path(&plan.from_rel_path) || !plan.from_basename_is_unique {
+        return None;
+    }
+    let normalized = normalize_rel_path(target);
+    if normalized.eq_ignore_ascii_case(&basename(&plan.from_rel_path)) {
+        return Some(plan.to_rel_path.clone());
+    }
+    None
+}
+
+fn is_flow_rel_path(path: &str) -> bool {
+    matches!(
+        Path::new(path)
+            .extension()
+            .and_then(|value| value.to_str())
+            .map(|value| value.to_ascii_lowercase())
+            .as_deref(),
+        Some("flow")
+    )
 }
 
 fn join_rel_path(base: &str, target: &str) -> String {
@@ -520,7 +605,7 @@ fn collect_markdown_files_and_basename_counts(
             }
             let name = entry_name.to_string_lossy().to_ascii_lowercase();
             *basename_counts.entry(name).or_insert(0) += 1;
-            if utils::is_markdown_path(&path) {
+            if utils::is_markdown_path(&path) || is_flow_rel_path(&to_slash(&path)) {
                 let rel = path
                     .strip_prefix(space_root)
                     .map_err(|error| error.to_string())?;
@@ -571,7 +656,7 @@ fn to_slash(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{rewrite_markdown_links_for_path, LinkRewritePlan};
+    use super::{rewrite_flow_links_for_path, rewrite_markdown_links_for_path, LinkRewritePlan};
 
     fn plan() -> LinkRewritePlan {
         LinkRewritePlan {
@@ -616,6 +701,18 @@ mod tests {
 
         assert_eq!(output.markdown, "[[new-dir/a]] [a](new-dir/a.md)");
         assert_eq!(output.changed_links, 2);
+    }
+
+    #[test]
+    fn rewrites_flow_file_node_paths() {
+        let input = r#"{"nodes":[{"id":"a","type":"file","file":"folder/old-title.md"},{"id":"b","type":"file","file":"untouched.md"}],"edges":[]}"#;
+        let output = rewrite_flow_links_for_path(input, &plan());
+
+        assert!(output
+            .markdown
+            .contains("\"file\": \"folder/new-title.md\""));
+        assert!(output.markdown.contains("\"file\": \"untouched.md\""));
+        assert_eq!(output.changed_links, 1);
     }
 
     #[test]

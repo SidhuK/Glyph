@@ -27,6 +27,23 @@ export function isMarkdownPath(relPath: string): boolean {
 	return relPath.toLowerCase().endsWith(".md");
 }
 
+export function isFlowPath(relPath: string): boolean {
+	return relPath.toLowerCase().endsWith(".flow");
+}
+
+export type WorkspaceFileKind = "markdown" | "flow" | "other";
+
+export function workspaceFileKind(relPath: string): WorkspaceFileKind {
+	if (isMarkdownPath(relPath)) return "markdown";
+	if (isFlowPath(relPath)) return "flow";
+	return "other";
+}
+
+export function canOpenInWorkspace(relPath: string): boolean {
+	const kind = workspaceFileKind(relPath);
+	return kind === "markdown" || kind === "flow";
+}
+
 export function normalizeRelPath(path: string): string {
 	return path
 		.trim()

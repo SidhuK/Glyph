@@ -19,6 +19,15 @@ struct NoteChangeEvent {
     removed: bool,
 }
 
+fn is_indexable_document_path(path: &Path) -> bool {
+    utils::is_markdown_path(path)
+        || path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.eq_ignore_ascii_case("flow"))
+            .unwrap_or(false)
+}
+
 fn split_duplicate_name(file_name: &str) -> (&str, &str) {
     match file_name.rfind('.') {
         Some(index) if index > 0 => (&file_name[..index], &file_name[index..]),
@@ -151,18 +160,19 @@ fn duplicate_file_under_root(
         }
 
         let is_markdown = utils::is_markdown_path(&duplicate_rel);
+        let should_index = is_indexable_document_path(&duplicate_rel);
         crate::io_atomic::copy_atomic(&source_abs, &duplicate_abs).map_err(|e| e.to_string())?;
 
         let duplicate_rel_string = utils::to_slash(&duplicate_rel);
-        if is_markdown {
+        if should_index {
             mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
             match std::fs::read_to_string(&duplicate_abs) {
-                Ok(markdown) => {
-                    if let Err(error) = index::index_note(root, &duplicate_rel_string, &markdown) {
+                Ok(text) => {
+                    if let Err(error) = index::index_note(root, &duplicate_rel_string, &text) {
                         tracing::warn!(
                             note_id = %duplicate_rel_string,
                             error = %error,
-                            "failed to index duplicated markdown note"
+                            "failed to index duplicated document"
                         );
                     }
                 }
@@ -170,7 +180,7 @@ fn duplicate_file_under_root(
                     tracing::warn!(
                         note_id = %duplicate_rel_string,
                         error = %error,
-                        "failed to read duplicated markdown note for indexing"
+                        "failed to read duplicated document for indexing"
                     );
                 }
             }
@@ -180,7 +190,7 @@ fn duplicate_file_under_root(
     }
 }
 
-fn remove_markdown_notes_from_index(
+fn remove_indexed_documents_from_index(
     root: &Path,
     rel_path: &str,
     abs_path: &Path,
@@ -209,7 +219,7 @@ fn remove_markdown_notes_from_index(
         return;
     }
 
-    if utils::is_markdown_path(abs_path) {
+    if is_indexable_document_path(abs_path) {
         mark_recent_local_change(recent_local_changes, rel_path);
         let _ = index::remove_note(root, rel_path);
     }
@@ -241,7 +251,7 @@ pub async fn space_duplicate_path(
     })
     .await
     .map_err(|e| e.to_string())??;
-    if entry.is_markdown {
+    if is_indexable_document_path(Path::new(&entry.rel_path)) {
         let _ = app.emit(
             "notes:external_changed",
             NoteChangeEvent {
@@ -339,7 +349,7 @@ pub async fn space_rename_path(
         }
         let is_dir = from_abs.is_dir();
         let rewrite_plan = if is_dir
-            || utils::is_markdown_path(&from_abs)
+            || is_indexable_document_path(&from_abs)
             || link_rewrite::is_supported_attachment_path(&from_abs)
         {
             Some(link_rewrite::plan_for_rename(
@@ -363,8 +373,8 @@ pub async fn space_rename_path(
                     for changed in &result.changed_files {
                         mark_recent_local_change(&recent_local_changes, changed);
                         match std::fs::read_to_string(root.join(changed)) {
-                            Ok(markdown) => {
-                                if let Err(error) = index::index_note(&root, changed, &markdown) {
+                            Ok(text) => {
+                                if let Err(error) = index::index_note(&root, changed, &text) {
                                     tracing::warn!(
                                         note_id = %changed,
                                         error = %error,
@@ -432,19 +442,19 @@ fn reindex_after_rename(
                         mark_recent_local_change(recent_local_changes, &new_id);
                         let _ = index::remove_note(root, &old_id);
                         let abs = root.join(&new_id);
-                        if let Ok(markdown) = std::fs::read_to_string(&abs) {
-                            let _ = index::index_note(root, &new_id, &markdown);
+                        if let Ok(text) = std::fs::read_to_string(&abs) {
+                            let _ = index::index_note(root, &new_id, &text);
                         }
                     }
                 }
             }
         }
-    } else if utils::is_markdown_path(to_abs) {
+    } else if is_indexable_document_path(to_abs) {
         mark_recent_local_change(recent_local_changes, from_path);
         mark_recent_local_change(recent_local_changes, to_path);
         let _ = index::remove_note(root, from_path);
-        if let Ok(markdown) = std::fs::read_to_string(to_abs) {
-            let _ = index::index_note(root, to_path, &markdown);
+        if let Ok(text) = std::fs::read_to_string(to_abs) {
+            let _ = index::index_note(root, to_path, &text);
         }
     }
 }
@@ -465,7 +475,13 @@ pub async fn space_delete_path(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
-        remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
+        remove_indexed_documents_from_index(
+            &root,
+            &path,
+            &abs,
+            &recent_local_changes,
+            meta.is_dir(),
+        );
         if meta.is_dir() {
             if recursive.unwrap_or(false) {
                 move_path_to_trash(&abs)

@@ -4,7 +4,7 @@ import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { basename } from "../../utils/path";
+import { basename, isMarkdownPath } from "../../utils/path";
 import {
 	type FolioScope,
 	folioScopeTitle,
@@ -134,7 +134,11 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 	for (const note of notes) {
 		const path = normalizeRelPath(note.note_path);
 		if (!path) continue;
-		out.set(path, { ...note, note_path: path, is_markdown: true });
+		out.set(path, {
+			...note,
+			note_path: path,
+			is_markdown: isMarkdownPath(path),
+		});
 	}
 	for (const file of files) {
 		if (!file.note_path || out.has(file.note_path)) continue;

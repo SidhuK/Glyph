@@ -4,7 +4,7 @@
 	--right-sidebar-island-radius: 0px;
 }
 
-.canvasWrapper {
+.flowWrapper {
 	flex: 1;
 	position: relative;
 	min-height: 0;
@@ -13,7 +13,7 @@
 	display: flex;
 }
 
-.canvasPaneHost {
+.flowPaneHost {
 	flex: 1;
 	min-width: 0;
 	min-height: 0;
@@ -27,7 +27,7 @@
 	transition: border-radius 180ms ease;
 }
 
-.mainArea[data-right-sidebar-open="true"] .canvasPaneHost {
+.mainArea[data-right-sidebar-open="true"] .flowPaneHost {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }

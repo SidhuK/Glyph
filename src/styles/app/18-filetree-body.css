@@ -383,6 +383,13 @@
 	box-shadow: var(--pill-shadow);
 }
 
+.fileTreeExtBadge[data-ext="flow"] {
+	padding: 1px 6px;
+	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
+	color: color-mix(in srgb, var(--text-secondary) 76%, var(--text-tertiary));
+	box-shadow: none;
+}
+
 .fileTreeTaskProgress {
 	flex-shrink: 0;
 	width: 12px;
@@ -403,6 +410,11 @@
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
 	color: color-mix(in srgb, var(--database-tone) 66%, var(--text-primary));
+}
+
+.fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge[data-ext="flow"] {
+	background: color-mix(in srgb, var(--database-tone) 8%, transparent);
+	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-secondary));
 }
 
 .fileTreeRenameInput {

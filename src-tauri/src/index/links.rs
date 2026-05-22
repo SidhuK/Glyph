@@ -150,6 +150,7 @@ fn is_linkable_file_target(target: &str) -> bool {
             | "avif"
             | "tif"
             | "tiff"
+            | "flow"
     )
 }
 

@@ -6,6 +6,7 @@ import {
 	dispatchPathRenamed,
 } from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { createEmptyFlowDocument, serializeFlowDocument } from "../lib/flow";
 import { isMissingFileError } from "../lib/fsErrors";
 import {
 	invalidateAllDocsPrefetch,
@@ -16,7 +17,7 @@ import {
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
-import { isMarkdownPath, parentDir } from "../utils/path";
+import { isFlowPath, isMarkdownPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
 	normalizeEntry,
@@ -57,6 +58,11 @@ export interface CreateMarkdownFileOptions {
 	openParentDir?: string | null;
 }
 
+export interface CreateFlowFileOptions {
+	path: string;
+	openParentDir?: string | null;
+}
+
 function showLinkRewriteToast(result: LinkRewriteResult) {
 	if (result.changed_files.length === 0) return;
 	const linkLabel = result.changed_links === 1 ? "link" : "links";
@@ -67,6 +73,19 @@ function showLinkRewriteToast(result: LinkRewriteResult) {
 			description: `Repaired references in ${result.changed_files.length.toLocaleString()} ${fileLabel}.`,
 		},
 	);
+}
+
+function uniqueUntitledFlowFileName(siblings: FsEntry[]): string {
+	const siblingNames = new Set(
+		siblings.map((entry) => entry.name.toLowerCase()),
+	);
+	const fileName = "Untitled.flow";
+	if (!siblingNames.has(fileName.toLowerCase())) return fileName;
+	let suffix = 2;
+	while (siblingNames.has(`untitled ${suffix}.flow`)) {
+		suffix += 1;
+	}
+	return `Untitled ${suffix}.flow`;
 }
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
@@ -202,6 +221,53 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs],
 	);
 
+	const createFlowFileAtPath = useCallback(
+		async ({ path, openParentDir }: CreateFlowFileOptions) => {
+			setError("");
+			try {
+				const flowRel = isFlowPath(path) ? path : `${path}.flow`;
+				const fileName = flowRel.split("/").pop()?.trim() || "Untitled.flow";
+				try {
+					await invoke("space_read_text", { path: flowRel });
+					throw new Error(`File already exists: ${flowRel}`);
+				} catch (error) {
+					if (!isMissingFileError(error)) {
+						throw error;
+					}
+				}
+				await invoke("space_write_text", {
+					path: flowRel,
+					text: serializeFlowDocument(createEmptyFlowDocument()),
+					base_mtime_ms: null,
+				});
+				insertEntryOptimistic(parentDir(flowRel), {
+					name: fileName,
+					rel_path: flowRel,
+					kind: "file",
+					is_markdown: false,
+				});
+				const nextOpenParentDir =
+					typeof openParentDir === "string"
+						? openParentDir
+						: parentDir(flowRel);
+				if (nextOpenParentDir) {
+					updateExpandedDirs((prev) => {
+						if (prev.has(nextOpenParentDir)) return prev;
+						const next = new Set(prev);
+						next.add(nextOpenParentDir);
+						return next;
+					});
+				}
+				await refreshAfterCreate(parentDir(flowRel));
+				return flowRel;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return null;
+			}
+		},
+		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs],
+	);
+
 	const onNewFileInDir = useCallback(
 		async (dirPath: string) => {
 			if (!spacePath) return null;
@@ -238,6 +304,33 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			}
 		},
 		[createMarkdownFileAtPath, setError, spacePath],
+	);
+
+	const onNewFlowInDir = useCallback(
+		async (dirPath: string) => {
+			if (!spacePath) return null;
+			setError("");
+			try {
+				const siblings = await invoke(
+					"space_list_dir",
+					dirPath ? { dir: dirPath } : {},
+				);
+				const fileName = uniqueUntitledFlowFileName(siblings);
+				const flowRel = dirPath ? `${dirPath}/${fileName}` : fileName;
+				const createdPath = await createFlowFileAtPath({
+					path: flowRel,
+					openParentDir: dirPath,
+				});
+				if (createdPath) {
+					dispatchFileTreeStartRename({ path: createdPath });
+				}
+				return createdPath;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return null;
+			}
+		},
+		[createFlowFileAtPath, setError, spacePath],
 	);
 
 	const onNewFile = useCallback(async () => {
@@ -651,8 +744,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 
 	return {
 		createMarkdownFileAtPath,
+		createFlowFileAtPath,
 		onNewFile,
 		onNewFileInDir,
+		onNewFlowInDir,
 		onNewFolderInDir,
 		onDuplicateFile,
 		onRenameDir,

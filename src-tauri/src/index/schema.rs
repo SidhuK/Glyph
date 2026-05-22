@@ -40,6 +40,19 @@ CREATE INDEX IF NOT EXISTS note_relationships_from_idx ON note_relationships(fro
 CREATE INDEX IF NOT EXISTS note_relationships_to_id_idx ON note_relationships(to_id);
 CREATE INDEX IF NOT EXISTS note_relationships_to_title_idx ON note_relationships(to_title);
 
+CREATE TABLE IF NOT EXISTS flow_edges (
+  flow_id TEXT NOT NULL,
+  from_id TEXT NOT NULL,
+  to_id TEXT NOT NULL,
+  label TEXT,
+  ordinal INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (flow_id, from_id, to_id, ordinal)
+);
+
+CREATE INDEX IF NOT EXISTS flow_edges_flow_idx ON flow_edges(flow_id);
+CREATE INDEX IF NOT EXISTS flow_edges_from_idx ON flow_edges(from_id);
+CREATE INDEX IF NOT EXISTS flow_edges_to_idx ON flow_edges(to_id);
+
 CREATE TABLE IF NOT EXISTS tags (
   note_id TEXT NOT NULL,
   tag TEXT NOT NULL,

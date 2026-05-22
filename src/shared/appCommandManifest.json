@@ -689,6 +689,16 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
+		"new-flow": {
+			"id": "new-flow",
+			"label": "New Flow",
+			"description": "Create a new flow in the current folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"new-note": {
 			"id": "new-note",
 			"label": "New Note",

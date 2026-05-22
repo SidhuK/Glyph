@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { isFlowPath } from "../../utils/path";
 import type { IconProps } from "../Icons";
 import {
 	Archive,
@@ -19,6 +20,7 @@ import {
 	FileTxt,
 	FileXml,
 	Film,
+	Flow,
 	Hash,
 	Music,
 	Palette,
@@ -38,6 +40,9 @@ export function getFileTypeInfo(
 
 	if (isMarkdown) {
 		return { Icon: FileText, color: "var(--text-accent)", label: "markdown" };
+	}
+	if (isFlowPath(relPath)) {
+		return { Icon: Flow, color: "var(--text-accent)", label: "flow" };
 	}
 	if (
 		[

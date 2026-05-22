@@ -1,5 +1,6 @@
 pub mod commands;
 pub(crate) mod db;
+mod flow;
 mod frontmatter;
 mod helpers;
 mod indexer;

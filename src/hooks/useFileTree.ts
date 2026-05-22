@@ -4,10 +4,13 @@ import { useCallback, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
-import { isMarkdownPath, parentDir } from "../utils/path";
+import { canOpenInWorkspace, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
-import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
+import type {
+	CreateFlowFileOptions,
+	CreateMarkdownFileOptions,
+} from "./useFileTreeCRUD";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
@@ -20,8 +23,12 @@ export interface UseFileTreeResult {
 	createMarkdownFileAtPath: (
 		options: CreateMarkdownFileOptions,
 	) => Promise<string | null>;
+	createFlowFileAtPath: (
+		options: CreateFlowFileOptions,
+	) => Promise<string | null>;
 	onNewFile: () => Promise<string | null>;
 	onNewFileInDir: (dirPath: string) => Promise<string | null>;
+	onNewFlowInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
@@ -249,13 +256,20 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		loadRequestVersionRef.current.clear();
 	}, [updateChildrenByDir, updateExpandedDirsAndRef]);
 
-	const openMarkdownFile = useCallback(
+	const selectWorkspaceFile = useCallback(
 		async (relPath: string) => {
 			setError("");
 			setActiveFilePath(relPath);
 			setActiveDirPath(parentDir(relPath));
 		},
 		[setActiveDirPath, setActiveFilePath, setError],
+	);
+
+	const openMarkdownFile = useCallback(
+		async (relPath: string) => {
+			await selectWorkspaceFile(relPath);
+		},
+		[selectWorkspaceFile],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -276,8 +290,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const openFile = useCallback(
 		async (relPath: string) => {
 			if (!relPath) return;
-			if (isMarkdownPath(relPath)) {
-				await openMarkdownFile(relPath);
+			if (canOpenInWorkspace(relPath)) {
+				await selectWorkspaceFile(relPath);
 				return;
 			}
 			setActiveFilePath(relPath);
@@ -285,7 +299,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			await openNonMarkdownExternally(relPath);
 		},
 		[
-			openMarkdownFile,
+			selectWorkspaceFile,
 			openNonMarkdownExternally,
 			setActiveFilePath,
 			setActiveDirPath,

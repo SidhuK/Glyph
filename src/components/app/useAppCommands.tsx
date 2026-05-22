@@ -16,6 +16,7 @@ import {
 	Link01Icon,
 	MoveIcon,
 	NoteIcon,
+	PaintBoardIcon,
 	PencilEdit02Icon,
 	PinIcon,
 	PinOffIcon,
@@ -69,6 +70,7 @@ interface UseAppCommandsDeps {
 	closeActiveTab: () => void;
 	closeAllTabs: () => void;
 	closeSpace: () => void;
+	createFlowInSelectedFolder: () => Promise<string | null>;
 	createDatabaseAndOpen: () => Promise<string | null>;
 	createNoteInSelectedFolder: () => Promise<string | null>;
 	fileTree: UseFileTreeResult;
@@ -257,6 +259,7 @@ export function useAppCommands({
 	closeActiveTab,
 	closeAllTabs,
 	closeSpace,
+	createFlowInSelectedFolder,
 	createDatabaseAndOpen,
 	createNoteInSelectedFolder,
 	fileTree,
@@ -332,6 +335,16 @@ export function useAppCommands({
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
 				action: () => void createNoteInSelectedFolder(),
+			},
+			{
+				id: "new-flow",
+				label: "New flow",
+				icon: (
+					<HugeiconsIcon icon={PaintBoardIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "File Operations",
+				enabled: Boolean(spacePath),
+				action: () => void createFlowInSelectedFolder(),
 			},
 			{
 				id: "open-quick-note",
@@ -809,6 +822,7 @@ export function useAppCommands({
 		onCreateSpace,
 		onOpenSpace,
 		openMarkdownTabsLength,
+		createFlowInSelectedFolder,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
 		requestOpenDailyNote,

@@ -1,5 +1,5 @@
 use serde::Serialize;
-use std::{ffi::OsStr, io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf};
 use tauri::{Emitter, State};
 
 use crate::space::state::mark_recent_local_change;
@@ -14,6 +14,17 @@ use super::super::types::{
 struct NoteChangeEvent {
     rel_path: String,
     removed: bool,
+}
+
+fn is_indexable_document_path(path: &std::path::Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| {
+            ext.eq_ignore_ascii_case("md")
+                || ext.eq_ignore_ascii_case("markdown")
+                || ext.eq_ignore_ascii_case("flow")
+        })
+        .unwrap_or(false)
 }
 
 #[tauri::command]
@@ -92,7 +103,7 @@ pub async fn space_write_text(
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
     let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
-    let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
+    let should_emit_note_change = is_indexable_document_path(&PathBuf::from(&path));
     let result =
         tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
             let rel = PathBuf::from(&path);
@@ -109,7 +120,7 @@ pub async fn space_write_text(
             }
 
             let rel_path = rel.to_string_lossy().to_string();
-            let should_index = rel.extension() == Some(OsStr::new("md"));
+            let should_index = is_indexable_document_path(&rel);
             let bytes = text.into_bytes();
             if should_index {
                 mark_recent_local_change(&recent_local_changes, &rel_path);

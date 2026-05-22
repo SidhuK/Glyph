@@ -16,6 +16,7 @@ import {
 	KanbanIcon,
 	Music as MusicIcon,
 	NoteIcon,
+	PaintBoardIcon,
 	Palette as PaletteIcon,
 	Pdf01Icon,
 	Ppt01Icon,
@@ -86,6 +87,9 @@ export const Table = (props: IconProps) => (
 );
 export const Kanban = (props: IconProps) => (
 	<HugeiconsIcon icon={KanbanIcon} strokeWidth={0.9} {...props} />
+);
+export const Flow = (props: IconProps) => (
+	<HugeiconsIcon icon={PaintBoardIcon} strokeWidth={0.9} {...props} />
 );
 export const Cpu = (props: IconProps) => (
 	<HugeiconsIcon icon={CpuIcon} strokeWidth={0.9} {...props} />

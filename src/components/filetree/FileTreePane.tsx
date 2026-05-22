@@ -59,6 +59,7 @@ interface FileTreePaneProps {
 	onOpenFile: (filePath: string) => void;
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onNewFlowInDir?: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
@@ -81,6 +82,7 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
 const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
+const noopCreateFlowInDir = () => undefined;
 
 function spaceLabelFromPath(path: string | null): string {
 	if (!path) return "Glyph";
@@ -256,6 +258,7 @@ interface TreeEntriesProps {
 	onOpenFile: (filePath: string) => void;
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onNewFlowInDir?: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
@@ -299,6 +302,7 @@ function TreeEntries({
 	onOpenFile,
 	onPrefetchFile,
 	onNewFileInDir,
+	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
@@ -346,6 +350,7 @@ function TreeEntries({
 							onEnterDir={onEnterDir}
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
+							onNewFlowInDir={onNewFlowInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
@@ -378,6 +383,7 @@ function TreeEntries({
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
+									onNewFlowInDir={onNewFlowInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}
@@ -413,6 +419,7 @@ function TreeEntries({
 						onOpenFile={onOpenFile}
 						onPrefetchFile={onPrefetchFile}
 						onNewFileInDir={onNewFileInDir}
+						onNewFlowInDir={onNewFlowInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewFolderInDir={onNewFolderInDir}
 						onDuplicateFile={onDuplicateFile}
@@ -459,6 +466,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onOpenFile,
 	onPrefetchFile,
 	onNewFileInDir,
+	onNewFlowInDir,
 	onCreateFromTemplateInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
@@ -921,6 +929,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onOpenFile={onOpenFile}
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
+								onNewFlowInDir={onNewFlowInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 								onNewFolderInDir={handleCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
@@ -1059,6 +1068,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onOpenFile={onOpenFile}
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
+								onNewFlowInDir={onNewFlowInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 								onNewFolderInDir={handleCreateFolder}
 								onDuplicateFile={handleDuplicateFile}

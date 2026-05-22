@@ -29,6 +29,7 @@ import { getFileTypeInfo } from "./fileTypeUtils";
 const DEFAULT_MOVE_CLICK_SUPPRESS_REF: MutableRefObject<boolean> = {
 	current: false,
 };
+const noopCreateFlowInDir = () => undefined;
 
 function FileRenameInput({
 	initialName,
@@ -102,6 +103,7 @@ interface FileTreeFileItemProps {
 	onOpenFile: (filePath: string) => void;
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => unknown;
+	onNewFlowInDir?: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
@@ -132,6 +134,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onOpenFile,
 	onPrefetchFile,
 	onNewFileInDir,
+	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
@@ -238,6 +241,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					action: () => void onNewFileInDir(parentDirPath),
 				},
 				{
+					label: "Create flow",
+					action: () => void onNewFlowInDir(parentDirPath),
+				},
+				{
 					label: "Create from template",
 					action: () => void onCreateFromTemplateInDir(parentDirPath),
 				},
@@ -263,6 +270,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onDuplicateFile,
+			onNewFlowInDir,
 			onNewFileInDir,
 			onNewFolderInDir,
 			onOpenFile,
@@ -347,7 +355,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeTaskProgress"
 							/>
 						) : null}
-						{extBadge && <span className="fileTreeExtBadge">{extBadge}</span>}
+						{extBadge ? (
+							<span
+								className="fileTreeExtBadge"
+								data-ext={extBadge.toLowerCase()}
+							>
+								{extBadge}
+							</span>
+						) : null}
 					</m.button>
 				)}
 			</div>

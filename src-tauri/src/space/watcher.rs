@@ -17,6 +17,15 @@ struct ExternalChangeEvent {
 
 const DEBOUNCE_MS: u64 = 100;
 
+fn is_indexable_document_path(path: &std::path::Path) -> bool {
+    utils::is_markdown_path(path)
+        || path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.eq_ignore_ascii_case("flow"))
+            .unwrap_or(false)
+}
+
 pub fn set_notes_watcher(
     state: &SpaceState,
     app: tauri::AppHandle,
@@ -99,7 +108,7 @@ pub fn set_notes_watcher(
                 continue;
             }
 
-            if utils::is_markdown_path(&path)
+            if is_indexable_document_path(&path)
                 && !has_recent_local_change(&recent_local_changes, &rel_s)
             {
                 let _ = idx_tx.send((rel_s.clone(), is_remove));

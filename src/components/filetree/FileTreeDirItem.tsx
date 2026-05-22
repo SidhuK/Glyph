@@ -25,6 +25,8 @@ import {
 } from "./fileTreeItemHelpers";
 import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
 
+const noopCreateFlowInDir = () => undefined;
+
 function DirectoryRenameInput({
 	initialName,
 	relPath,
@@ -96,6 +98,7 @@ interface FileTreeDirItemProps {
 	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
+	onNewFlowInDir?: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
@@ -119,6 +122,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCommitRename,
 	onCancelRename,
 	onNewFileInDir,
+	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
 	onNewFolderInDir,
 	onDeletePath,
@@ -168,6 +172,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					action: () => void onNewFileInDir(entry.rel_path),
 				},
 				{
+					label: "Create flow",
+					action: () => void onNewFlowInDir(entry.rel_path),
+				},
+				{
 					label: "Create from template",
 					action: () => void onCreateFromTemplateInDir(entry.rel_path),
 				},
@@ -196,6 +204,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onChangeAppearance,
 			onCreateFromTemplateInDir,
 			onDeletePath,
+			onNewFlowInDir,
 			onNewFileInDir,
 			onNewFolderInDir,
 			onStartRename,

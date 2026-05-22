@@ -6,7 +6,7 @@ use std::sync::{Mutex, OnceLock};
 
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 6;
+const INDEX_DB_VERSION: i32 = 7;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {

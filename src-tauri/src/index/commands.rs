@@ -1164,13 +1164,23 @@ pub async fn backlinks(
                     SELECT r.from_id
                     FROM note_relationships r
                     WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
+                    UNION
+                    SELECT e.flow_id
+                    FROM flow_edges e
+                    WHERE e.from_id = ? OR e.to_id = ?
+                    UNION
+                    SELECT e.from_id
+                    FROM flow_edges e
+                    WHERE e.to_id = ?
                  ) refs ON refs.from_id = n.id
                  ORDER BY n.updated DESC
                  LIMIT 100",
             )
             .map_err(|e| e.to_string())?;
         let mut rows = stmt
-            .query(rusqlite::params![note_id, stem, note_id, stem, stem])
+            .query(rusqlite::params![
+                note_id, stem, note_id, stem, stem, note_id, note_id, note_id
+            ])
             .map_err(|e| e.to_string())?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -1245,13 +1255,25 @@ fn local_note_graph_for_conn(
                 SELECT r.from_id AS note_id
                 FROM note_relationships r
                 WHERE r.to_id = ?
+                UNION
+                SELECT e.to_id AS note_id
+                FROM flow_edges e
+                WHERE e.from_id = ?
+                UNION
+                SELECT e.from_id AS note_id
+                FROM flow_edges e
+                WHERE e.to_id = ?
+                UNION
+                SELECT e.flow_id AS note_id
+                FROM flow_edges e
+                WHERE e.from_id = ? OR e.to_id = ?
              ) related ON related.note_id = n.id
              WHERE n.id <> ?",
         )
         .map_err(|e| e.to_string())?;
     let mut neighbor_rows = neighbor_stmt
         .query(rusqlite::params![
-            note_id, note_id, note_id, note_id, note_id
+            note_id, note_id, note_id, note_id, note_id, note_id, note_id, note_id, note_id
         ])
         .map_err(|e| e.to_string())?;
     while let Some(row) = neighbor_rows.next().map_err(|e| e.to_string())? {
@@ -1293,6 +1315,15 @@ fn local_note_graph_for_conn(
             SELECT from_id, to_id
             FROM note_relationships
             WHERE to_id IS NOT NULL
+            UNION
+            SELECT from_id, to_id
+            FROM flow_edges
+            UNION
+            SELECT flow_id AS from_id, from_id AS to_id
+            FROM flow_edges
+            UNION
+            SELECT flow_id AS from_id, to_id
+            FROM flow_edges
          )
          WHERE from_id IN ({placeholders})
            AND to_id IN ({placeholders})

@@ -34,6 +34,7 @@ interface SidebarContentProps {
 	onOpenFile: (relPath: string) => void;
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onNewFlowInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
@@ -112,6 +113,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenFile,
 	onNewNote,
 	onNewFileInDir,
+	onNewFlowInDir,
 	onCreateFromTemplateInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
@@ -146,7 +148,7 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useFileTreeContext();
 	const { folioMode, folioScope, setFolioScope } = useUILayoutContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
+	const [pendingNewFilePath, setPendingNewFilePath] = useState<string | null>(
 		null,
 	);
 	const [notesExpanded, setNotesExpanded] = useState(true);
@@ -183,7 +185,7 @@ export const SidebarContent = memo(function SidebarContent({
 		const nextPath = path.trim();
 		if (!nextPath) return;
 		setRenamingPath(nextPath);
-		setPendingNewNotePath(nextPath);
+		setPendingNewFilePath(nextPath);
 	}, []);
 
 	useEffect(() => {
@@ -250,7 +252,7 @@ export const SidebarContent = memo(function SidebarContent({
 
 	const handleCancelRename = useCallback(() => {
 		setRenamingPath(null);
-		setPendingNewNotePath(null);
+		setPendingNewFilePath(null);
 	}, []);
 
 	const handleCommitDirRename = useCallback(
@@ -268,12 +270,12 @@ export const SidebarContent = memo(function SidebarContent({
 			const renamed = await onRenameDir(path, nextName, "file");
 			if (!renamed) return;
 			setRenamingPath(null);
-			if (pendingNewNotePath === path) {
+			if (pendingNewFilePath === path) {
 				onOpenFile(renamed);
-				setPendingNewNotePath(null);
+				setPendingNewFilePath(null);
 			}
 		},
-		[onOpenFile, onRenameDir, pendingNewNotePath],
+		[onOpenFile, onRenameDir, pendingNewFilePath],
 	);
 
 	const handleShowSpaceMenu = useCallback(
@@ -527,6 +529,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onOpenFile={onOpenFile}
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
+									onNewFlowInDir={onNewFlowInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}

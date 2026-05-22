@@ -7,6 +7,7 @@ use std::{
 use crate::utils::{self, file_timestamp_strings_if_exists};
 
 use super::db::{open_db, resolve_title_to_id};
+use super::flow::{is_flow_path, parse_flow_index_data, FlowIndexData};
 use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
 };
@@ -44,7 +45,11 @@ fn fts_body_with_frontmatter(markdown: &str) -> String {
     }
 }
 
-fn collect_markdown_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
+fn is_indexable_document_path(path: &Path) -> bool {
+    utils::is_markdown_path(path) || is_flow_path(path)
+}
+
+fn collect_indexable_document_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
     let mut out: Vec<(String, PathBuf)> = Vec::new();
     let mut stack: Vec<PathBuf> = vec![space_root.to_path_buf()];
 
@@ -74,7 +79,7 @@ fn collect_markdown_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, S
             if !meta.is_file() {
                 continue;
             }
-            if !utils::is_markdown_path(&path) {
+            if !is_indexable_document_path(&path) {
                 continue;
             }
             let rel = match path.strip_prefix(space_root) {
@@ -104,7 +109,21 @@ fn link_kind_for_id(to_id: &str) -> &'static str {
 pub fn index_note(space_root: &Path, note_id: &str, markdown: &str) -> Result<(), String> {
     let conn = open_db(space_root)?;
     let file_path = space_root.join(note_id);
-    index_note_with_conn(&conn, note_id, markdown, &file_path)
+    if is_flow_path(Path::new(note_id)) || is_flow_path(&file_path) {
+        index_flow_with_conn(&conn, note_id, markdown, &file_path)
+    } else {
+        index_note_with_conn(&conn, note_id, markdown, &file_path)
+    }
+}
+
+fn title_from_rel_path(path: &str) -> String {
+    Path::new(path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .unwrap_or("Untitled")
+        .to_string()
 }
 
 fn index_note_with_conn(
@@ -132,14 +151,7 @@ fn index_note_with_conn(
     let (mut title, created, updated) =
         parse_frontmatter_title_created_updated(markdown, file_path);
     if title == "Untitled" {
-        if let Some(stem) = Path::new(note_id)
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
-        {
-            title = stem.to_string();
-        }
+        title = title_from_rel_path(note_id);
     }
     let title_for_fts = title.clone();
     let preview = preview_from_markdown(note_id, markdown);
@@ -220,6 +232,104 @@ fn index_note_with_conn(
     Ok(())
 }
 
+fn index_flow_with_conn(
+    conn: &rusqlite::Connection,
+    flow_id: &str,
+    flow_json: &str,
+    file_path: &Path,
+) -> Result<(), String> {
+    let etag = sha256_hex(flow_json.as_bytes());
+    let existing_etag: Option<String> = conn
+        .query_row(
+            "SELECT etag FROM notes WHERE id = ? LIMIT 1",
+            [flow_id],
+            |row| row.get(0),
+        )
+        .ok();
+    if existing_etag.as_deref() == Some(etag.as_str()) {
+        refresh_indexed_timestamps_if_needed(conn, flow_id, file_path)?;
+        return Ok(());
+    }
+
+    let data = parse_flow_index_data(flow_json).unwrap_or_else(|error| {
+        tracing::warn!(
+            flow_id = flow_id,
+            error = %error,
+            "Indexing flow text fallback after JSON parse error"
+        );
+        let preview = flow_json
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .chars()
+            .take(240)
+            .collect::<String>();
+        FlowIndexData {
+            body: flow_json.to_string(),
+            preview,
+            file_links: HashSet::new(),
+            url_links: HashSet::new(),
+            file_edges: Vec::new(),
+        }
+    });
+
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    let (created, updated) = utils::file_timestamp_strings(file_path);
+    let title = title_from_rel_path(flow_id);
+
+    tx.execute(
+        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
+        rusqlite::params![flow_id, title, created, updated, flow_id, etag, data.preview],
+    )
+    .map_err(|e| e.to_string())?;
+
+    tx.execute("DELETE FROM notes_fts WHERE id = ?", [flow_id])
+        .map_err(|e| e.to_string())?;
+    tx.execute(
+        "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
+        rusqlite::params![flow_id, title, data.body],
+    )
+    .map_err(|e| e.to_string())?;
+
+    tx.execute("DELETE FROM links WHERE from_id = ?", [flow_id])
+        .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM tags WHERE note_id = ?", [flow_id])
+        .map_err(|e| e.to_string())?;
+    delete_note_properties(&tx, flow_id)?;
+    delete_note_relationships(&tx, flow_id)?;
+    delete_note_tasks(&tx, flow_id)?;
+    tx.execute("DELETE FROM flow_edges WHERE flow_id = ?", [flow_id])
+        .map_err(|e| e.to_string())?;
+
+    for to_id in data.file_links {
+        tx.execute(
+            "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'flow_file')",
+            rusqlite::params![flow_id, to_id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    for url in data.url_links {
+        tx.execute(
+            "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, NULL, ?, 'flow_url')",
+            rusqlite::params![flow_id, url],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    for edge in data.file_edges {
+        tx.execute(
+            "INSERT OR REPLACE INTO flow_edges(flow_id, from_id, to_id, label, ordinal)
+             VALUES(?, ?, ?, ?, ?)",
+            rusqlite::params![flow_id, edge.from_id, edge.to_id, edge.label, edge.ordinal],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    tx.commit().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn refresh_indexed_timestamps_if_needed(
     conn: &rusqlite::Connection,
     note_id: &str,
@@ -283,6 +393,11 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
         [note_id],
     )
     .map_err(|e| e.to_string())?;
+    tx.execute(
+        "DELETE FROM flow_edges WHERE flow_id = ? OR from_id = ? OR to_id = ?",
+        rusqlite::params![note_id, note_id, note_id],
+    )
+    .map_err(|e| e.to_string())?;
     delete_note_tasks(&tx, note_id)?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
@@ -305,34 +420,94 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM note_relationships", [])
         .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM flow_edges", [])
+        .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM tasks", [])
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM tasks_fts", [])
         .map_err(|e| e.to_string())?;
 
-    let note_paths = collect_markdown_files(space_root)?;
+    let note_paths = collect_indexable_document_files(space_root)?;
     let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =
         Vec::with_capacity(note_paths.len());
     let mut relationship_data = Vec::with_capacity(note_paths.len());
     let count = note_paths.len();
 
     for (rel, path) in &note_paths {
-        let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+        let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
 
-        let (mut title, created, updated) =
-            parse_frontmatter_title_created_updated(&markdown, path);
-        if title == "Untitled" {
-            if let Some(stem) = Path::new(rel)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .map(|s| s.trim())
-                .filter(|s| !s.is_empty())
-            {
-                title = stem.to_string();
+        if is_flow_path(path) {
+            let data = parse_flow_index_data(&text).unwrap_or_else(|error| {
+                tracing::warn!(
+                    flow_id = rel,
+                    error = %error,
+                    "Indexing flow text fallback during rebuild after JSON parse error"
+                );
+                let preview = text
+                    .split_whitespace()
+                    .collect::<Vec<_>>()
+                    .join(" ")
+                    .chars()
+                    .take(240)
+                    .collect::<String>();
+                FlowIndexData {
+                    body: text.clone(),
+                    preview,
+                    file_links: HashSet::new(),
+                    url_links: HashSet::new(),
+                    file_edges: Vec::new(),
+                }
+            });
+            let (created, updated) = utils::file_timestamp_strings(path);
+            let title = title_from_rel_path(rel);
+            let etag = sha256_hex(text.as_bytes());
+
+            tx.execute(
+                "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
+                rusqlite::params![rel, title, created, updated, rel, etag, data.preview],
+            )
+            .map_err(|e| e.to_string())?;
+
+            tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
+                .map_err(|e| e.to_string())?;
+            tx.execute(
+                "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
+                rusqlite::params![rel, title, data.body],
+            )
+            .map_err(|e| e.to_string())?;
+
+            for to_id in data.file_links {
+                tx.execute(
+                    "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'flow_file')",
+                    rusqlite::params![rel, to_id],
+                )
+                .map_err(|e| e.to_string())?;
             }
+            for url in data.url_links {
+                tx.execute(
+                    "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, NULL, ?, 'flow_url')",
+                    rusqlite::params![rel, url],
+                )
+                .map_err(|e| e.to_string())?;
+            }
+            for edge in data.file_edges {
+                tx.execute(
+                    "INSERT OR REPLACE INTO flow_edges(flow_id, from_id, to_id, label, ordinal)
+                     VALUES(?, ?, ?, ?, ?)",
+                    rusqlite::params![rel, edge.from_id, edge.to_id, edge.label, edge.ordinal],
+                )
+                .map_err(|e| e.to_string())?;
+            }
+
+            continue;
         }
-        let etag = sha256_hex(markdown.as_bytes());
-        let preview = preview_from_markdown(rel, &markdown);
+
+        let (mut title, created, updated) = parse_frontmatter_title_created_updated(&text, path);
+        if title == "Untitled" {
+            title = title_from_rel_path(rel);
+        }
+        let etag = sha256_hex(text.as_bytes());
+        let preview = preview_from_markdown(rel, &text);
 
         tx.execute(
             "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
@@ -342,7 +517,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
 
         tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
             .map_err(|e| e.to_string())?;
-        let body = fts_body_with_frontmatter(&markdown);
+        let body = fts_body_with_frontmatter(&text);
         tx.execute(
             "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
             rusqlite::params![rel, title, body],
@@ -350,11 +525,11 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
 
         let people_tags = if people_tags_enabled {
-            expand_indexed_people(&parse_inline_people(&markdown))
+            expand_indexed_people(&parse_inline_people(&text))
         } else {
             Vec::new()
         };
-        for tag in expand_indexed_tags(&parse_all_tags(&markdown))
+        for tag in expand_indexed_tags(&parse_all_tags(&text))
             .into_iter()
             .chain(people_tags.into_iter())
         {
@@ -364,7 +539,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
             )
             .map_err(|e| e.to_string())?;
         }
-        if let Err(error) = reindex_note_properties(&tx, rel, &markdown) {
+        if let Err(error) = reindex_note_properties(&tx, rel, &text) {
             tracing::warn!(
                 note_id = rel,
                 rel_path = rel,
@@ -372,11 +547,11 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
                 "Skipping note property indexing during rebuild after frontmatter parse error"
             );
         }
-        reindex_note_tasks(&tx, rel, rel, &updated, &etag, &markdown)?;
+        reindex_note_tasks(&tx, rel, rel, &updated, &etag, &text)?;
 
-        let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
+        let (to_ids, to_titles) = parse_outgoing_links(rel, &text);
         link_data.push((rel.clone(), to_ids, to_titles));
-        relationship_data.push((rel.clone(), parse_frontmatter_relationships(&markdown)));
+        relationship_data.push((rel.clone(), parse_frontmatter_relationships(&text)));
     }
 
     for (rel, to_ids, to_titles) in &link_data {

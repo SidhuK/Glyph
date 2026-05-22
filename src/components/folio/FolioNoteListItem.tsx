@@ -483,7 +483,11 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 		<span className="folioFileLine">
 			{fileIcon}
 			<span className="folioFileName">{fileStem || title}</span>
-			{extBadge ? <span className="fileTreeExtBadge">{extBadge}</span> : null}
+			{extBadge ? (
+				<span className="fileTreeExtBadge" data-ext={extBadge.toLowerCase()}>
+					{extBadge}
+				</span>
+			) : null}
 		</span>
 	);
 
