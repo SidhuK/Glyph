@@ -496,6 +496,11 @@ export const FileTreePane = memo(function FileTreePane({
 	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 	const previousSpacePathRef = useRef(spacePath);
+	const itemAppearanceRef = useRef(itemAppearance);
+
+	useEffect(() => {
+		itemAppearanceRef.current = itemAppearance;
+	}, [itemAppearance]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -744,12 +749,20 @@ export const FileTreePane = memo(function FileTreePane({
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
 			if (!appearancePickerEntry) return;
-			void handleChangeAppearance(appearancePickerEntry, {
-				...(itemAppearance[appearancePickerEntry.rel_path] ?? {}),
+			const path = appearancePickerEntry.rel_path;
+			const mergedAppearance = {
+				...(itemAppearanceRef.current[path] ?? {}),
 				...nextAppearance,
+			};
+			itemAppearanceRef.current = {
+				...itemAppearanceRef.current,
+				[path]: mergedAppearance,
+			};
+			void handleChangeAppearance(appearancePickerEntry, {
+				...mergedAppearance,
 			});
 		},
-		[appearancePickerEntry, handleChangeAppearance, itemAppearance],
+		[appearancePickerEntry, handleChangeAppearance],
 	);
 
 	const handleEnterDir = useCallback(
