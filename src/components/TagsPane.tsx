@@ -24,7 +24,7 @@ interface TagsPaneProps {
 	onSelectPerson: (handle: string) => void;
 	beautifulTags?: boolean;
 	tagAppearance?: Record<string, TagAppearance>;
-	onChangeTagIcon?: (tag: string, iconName: string) => Promise<void>;
+	onChangeTagIcon?: (tag: string, iconName: string | null) => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -258,7 +258,7 @@ function TagRowIcon({
 	tag: string;
 	beautifulTags: boolean;
 	overrides: TagIconOverrides;
-	onChangeTagIcon?: (tag: string, iconName: string) => Promise<void>;
+	onChangeTagIcon?: (tag: string, iconName: string | null) => Promise<void>;
 }) {
 	if (beautifulTags) {
 		return (
@@ -268,7 +268,8 @@ function TagRowIcon({
 				beautifulTagsEnabled={beautifulTags}
 				className="tagsIconPicker"
 				onChange={(iconName) => {
-					void onChangeTagIcon?.(tag, iconName).catch((error: unknown) => {
+					if (!onChangeTagIcon) return;
+					void onChangeTagIcon(tag, iconName).catch((error: unknown) => {
 						console.error("Failed to change tag icon", error);
 					});
 				}}

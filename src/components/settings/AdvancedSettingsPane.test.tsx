@@ -122,10 +122,14 @@ vi.mock("./SettingsScaffold", () => ({
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
+function makeSettings(
+	colorfulHeadings: boolean,
+	vimKeybindings = false,
+	beautifulTags = false,
+) {
 	return {
 		editor: {
-			beautifulTags: false,
+			beautifulTags,
 			colorfulHeadings,
 			editorWidthMode: "compact" as const,
 			enablePeopleMentionsAsTags: false,
@@ -206,6 +210,50 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorColorfulHeadingsMock).toHaveBeenCalledWith(true);
+	});
+
+	it("shows Beautiful Tags off by default", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Beautiful Tags"]',
+		) as HTMLInputElement | null;
+
+		expect(container.textContent).toContain("Beautiful Tags");
+		expect(toggle?.checked).toBe(false);
+	});
+
+	it("reflects stored Beautiful Tags state", async () => {
+		loadSettingsMock.mockResolvedValue(makeSettings(false, false, true));
+
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Beautiful Tags"]',
+		) as HTMLInputElement | null;
+
+		expect(toggle?.checked).toBe(true);
+	});
+
+	it("saves Beautiful Tags changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Beautiful Tags"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setEditorBeautifulTagsMock).toHaveBeenCalledWith(true);
 	});
 
 	it("saves show frontmatter in editor changes", async () => {

@@ -15,6 +15,8 @@ import type { AllDocsItem, FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
 import { basename, isMarkdownPath } from "../../utils/path";
+import { AppearancePicker } from "../AppearancePicker";
+import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { FolioNoteListItem } from "./FolioNoteListItem";
 import { FolioScopeHeader } from "./FolioScopeHeader";
 import type { FolioNotesSortMode } from "./folioScopes";
@@ -201,6 +203,9 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		readStoredFolioSortMode,
 	);
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
+	const [appearancePickerPath, setAppearancePickerPath] = useState<
+		string | null
+	>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const pinnedPathSet = useMemo(
@@ -382,6 +387,21 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		[setItemAppearance],
 	);
+	const pickerAppearance = appearancePickerPath
+		? (itemAppearance[appearancePickerPath] ?? null)
+		: null;
+	const pickerColor =
+		pickerAppearance?.color && isEditorTextColor(pickerAppearance.color)
+			? pickerAppearance.color
+			: null;
+	const pickerIcon = pickerAppearance?.icon ?? null;
+	const updatePickerAppearance = useCallback(
+		(nextAppearance: FileTreeAppearance) => {
+			if (!appearancePickerPath) return;
+			void changeAppearance(appearancePickerPath, nextAppearance);
+		},
+		[appearancePickerPath, changeAppearance],
+	);
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
 			if (!visibleNotes.length || selectedIndex < 0) return;
@@ -459,7 +479,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onCommitRename={commitRename}
 							onCancelRename={cancelRename}
 							appearance={itemAppearance[note.note_path] ?? null}
-							onChangeAppearance={changeAppearance}
+							onOpenAppearancePicker={setAppearancePickerPath}
 							taskSummary={
 								showTaskProgressIndicator && note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
@@ -489,7 +509,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onCommitRename={commitRename}
 							onCancelRename={cancelRename}
 							appearance={itemAppearance[note.note_path] ?? null}
-							onChangeAppearance={changeAppearance}
+							onOpenAppearancePicker={setAppearancePickerPath}
 							taskSummary={
 								showTaskProgressIndicator && note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
@@ -538,6 +558,31 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				}
 			}}
 		>
+			<AppearancePicker
+				title="Choose file appearance"
+				open={appearancePickerPath !== null}
+				onOpenChange={(open) => {
+					if (!open) setAppearancePickerPath(null);
+				}}
+				iconValue={pickerIcon}
+				defaultIconName="document"
+				showDefaultIcon
+				onIconChange={(icon) => {
+					updatePickerAppearance({
+						color: pickerColor,
+						icon,
+					});
+				}}
+				showColors
+				colorValue={pickerColor}
+				colorOptions={EDITOR_TEXT_COLORS}
+				onColorChange={(color) => {
+					updatePickerAppearance({
+						color,
+						icon: pickerIcon,
+					});
+				}}
+			/>
 			<FolioScopeHeader
 				searchQuery={searchQuery}
 				sortMode={sortMode}

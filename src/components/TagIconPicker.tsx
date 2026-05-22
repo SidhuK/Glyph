@@ -4,6 +4,7 @@ import {
 	type TagIconOption,
 	type TagIconOverrides,
 	isTagIconName,
+	normalizeTagIconKey,
 	resolveTagIconName,
 } from "../lib/tagIcons";
 import {
@@ -21,7 +22,7 @@ export interface TagIconPickerProps {
 	className?: string;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
-	onChange: (iconName: string, option: TagIconOption) => void;
+	onChange: (iconName: string | null, option: TagIconOption | null) => void;
 }
 
 export function TagIconPicker({
@@ -41,16 +42,27 @@ export function TagIconPicker({
 	const displayIconName = isTagIconName(selectedIconName)
 		? selectedIconName
 		: DEFAULT_TAG_ICON_NAME;
+	const defaultIconName = resolveTagIconName(tag, null, beautifulTagsEnabled);
+	const defaultDisplayIconName = isTagIconName(defaultIconName)
+		? defaultIconName
+		: DEFAULT_TAG_ICON_NAME;
+	const overrideIconName =
+		value === undefined ? resolveOverrideIconName(tag, overrides) : value;
 
 	return (
 		<AppearancePicker
 			title="Choose tag icon"
 			open={open}
 			onOpenChange={onOpenChange}
-			iconValue={displayIconName}
-			defaultIconName={DEFAULT_TAG_ICON_NAME}
+			iconValue={overrideIconName}
+			defaultIconName={defaultDisplayIconName}
 			iconOptions={options}
+			showDefaultIcon
 			onIconChange={(iconName, option) => {
+				if (iconName === null && option === null) {
+					onChange(null, null);
+					return;
+				}
 				if (!iconName || !option) return;
 				onChange(iconName, option);
 			}}
@@ -65,4 +77,23 @@ export function TagIconPicker({
 			)}
 		/>
 	);
+}
+
+function resolveOverrideIconName(
+	tag: string,
+	overrides: TagIconOverrides | null | undefined,
+): string | null {
+	if (!overrides) return null;
+
+	const normalizedTag = normalizeTagIconKey(tag);
+	const keys = [tag, tag.trim()];
+	if (normalizedTag) keys.push(normalizedTag, `#${normalizedTag}`);
+
+	for (const key of new Set(keys.filter(Boolean))) {
+		if (!Object.prototype.hasOwnProperty.call(overrides, key)) continue;
+		const iconName = overrides[key];
+		return typeof iconName === "string" ? iconName.trim() || null : null;
+	}
+
+	return null;
 }

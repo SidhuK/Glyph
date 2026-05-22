@@ -167,16 +167,27 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const refreshTagAppearance = useCallback(async () => {
 		const requestId = tagAppearanceRequestIdRef.current + 1;
 		tagAppearanceRequestIdRef.current = requestId;
-		if (!currentSpacePathRef.current) {
+		const originSpace = currentSpacePathRef.current;
+		if (!originSpace) {
 			setTagAppearanceState({});
 			return;
 		}
 		try {
 			const nextAppearance = await invoke("tag_appearance_list");
-			if (requestId !== tagAppearanceRequestIdRef.current) return;
+			if (
+				requestId !== tagAppearanceRequestIdRef.current ||
+				originSpace !== currentSpacePathRef.current
+			) {
+				return;
+			}
 			setTagAppearanceState(nextAppearance);
 		} catch {
-			if (requestId !== tagAppearanceRequestIdRef.current) return;
+			if (
+				requestId !== tagAppearanceRequestIdRef.current ||
+				originSpace !== currentSpacePathRef.current
+			) {
+				return;
+			}
 			setTagAppearanceState({});
 		}
 	}, []);
@@ -238,6 +249,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setTagsError("");
 		if (!spacePath) return;
 
+		const originSpace = spacePath;
 		let cancelled = false;
 		(async () => {
 			try {
@@ -259,8 +271,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				/* ignore appearance load errors */
 			}
 			try {
+				const requestId = tagAppearanceRequestIdRef.current + 1;
+				tagAppearanceRequestIdRef.current = requestId;
 				const appearance = await invoke("tag_appearance_list");
-				if (!cancelled) {
+				if (
+					!cancelled &&
+					requestId === tagAppearanceRequestIdRef.current &&
+					originSpace === currentSpacePathRef.current
+				) {
 					setTagAppearanceState(appearance);
 				}
 			} catch {

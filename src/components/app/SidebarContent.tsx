@@ -259,7 +259,7 @@ export const SidebarContent = memo(function SidebarContent({
 	}, []);
 
 	const handleChangeTagIcon = useCallback(
-		async (tag: string, iconName: string) => {
+		async (tag: string, iconName: string | null) => {
 			try {
 				await setTagAppearance(tag, iconName);
 			} catch (error) {
