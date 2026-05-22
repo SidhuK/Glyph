@@ -398,9 +398,12 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
 			if (!appearancePickerPath) return;
-			void changeAppearance(appearancePickerPath, nextAppearance);
+			void changeAppearance(appearancePickerPath, {
+				...(itemAppearance[appearancePickerPath] ?? {}),
+				...nextAppearance,
+			});
 		},
-		[appearancePickerPath, changeAppearance],
+		[appearancePickerPath, changeAppearance, itemAppearance],
 	);
 	const openAdjacentNote = useCallback(
 		(direction: 1 | -1) => {
@@ -569,7 +572,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				showDefaultIcon
 				onIconChange={(icon) => {
 					updatePickerAppearance({
-						color: pickerColor,
 						icon,
 					});
 				}}
@@ -579,7 +581,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				onColorChange={(color) => {
 					updatePickerAppearance({
 						color,
-						icon: pickerIcon,
 					});
 				}}
 			/>

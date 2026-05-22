@@ -744,9 +744,12 @@ export const FileTreePane = memo(function FileTreePane({
 	const updatePickerAppearance = useCallback(
 		(nextAppearance: FileTreeAppearance) => {
 			if (!appearancePickerEntry) return;
-			void handleChangeAppearance(appearancePickerEntry, nextAppearance);
+			void handleChangeAppearance(appearancePickerEntry, {
+				...(itemAppearance[appearancePickerEntry.rel_path] ?? {}),
+				...nextAppearance,
+			});
 		},
-		[appearancePickerEntry, handleChangeAppearance],
+		[appearancePickerEntry, handleChangeAppearance, itemAppearance],
 	);
 
 	const handleEnterDir = useCallback(
@@ -933,7 +936,6 @@ export const FileTreePane = memo(function FileTreePane({
 					showDefaultIcon
 					onIconChange={(icon) => {
 						updatePickerAppearance({
-							color: appearancePickerColor,
 							icon,
 						});
 					}}
@@ -943,7 +945,6 @@ export const FileTreePane = memo(function FileTreePane({
 					onColorChange={(color) => {
 						updatePickerAppearance({
 							color,
-							icon: appearancePickerIcon,
 						});
 					}}
 				/>
