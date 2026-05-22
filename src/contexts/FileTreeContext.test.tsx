@@ -27,6 +27,7 @@ vi.mock("../lib/settings", () => ({
 	loadSettings: () =>
 		Promise.resolve({
 			editor: {
+				beautifulTags: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		}),
@@ -76,6 +77,7 @@ describe("FileTreeProvider pinned files", () => {
 		invokeMock.mockImplementation((command: string) => {
 			if (command === "space_list_dir") return Promise.resolve([]);
 			if (command === "file_tree_appearance_list") return Promise.resolve({});
+			if (command === "tag_appearance_list") return Promise.resolve({});
 			if (command === "tags_list") return Promise.resolve([]);
 			if (command === "people_list") return Promise.resolve([]);
 			if (command === "pinned_files_toggle") {

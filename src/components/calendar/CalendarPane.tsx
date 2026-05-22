@@ -10,7 +10,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useSpace, useUILayoutContext } from "../../contexts";
+import {
+	useFileTreeContext,
+	useSpace,
+	useUILayoutContext,
+} from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
 	buildWeekRange,
@@ -30,6 +34,11 @@ import {
 	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import {
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import {
 	type CalendarNoteActivityItem,
@@ -40,6 +49,7 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate } from "../../lib/templates";
 import { Settings } from "../Icons";
+import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { TaskRow } from "../tasks/TaskRow";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
@@ -130,6 +140,7 @@ export function CalendarPane({
 	onOpenFile,
 	onOpenDailyNotesSettings,
 }: CalendarPaneProps) {
+	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const today = useMemo(() => todayIsoDateLocal(), []);
 	const initialSelectedDate = useMemo(
 		() => readStorage(SELECTED_STORAGE_KEY) ?? todayIsoDateLocal(),
@@ -140,6 +151,17 @@ export function CalendarPane({
 		() => readStorage(ANCHOR_STORAGE_KEY) ?? initialSelectedDate,
 	);
 	const taskInputRef = useRef<HTMLInputElement>(null);
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
 	const normalizedAnchorDate = isDateInsideWeek(selectedDate, anchorDate)
 		? anchorDate
 		: selectedDate;
@@ -714,6 +736,14 @@ export function CalendarPane({
 															<span className="calendarNoteTags">
 																{visibleTags.map((tag) => (
 																	<span key={tag} className="calendarNoteTag">
+																		{beautifulTags ? (
+																			<DatabaseColumnIcon
+																				iconName={iconNameForTag(tag)}
+																				className="calendarNoteTagIcon"
+																				size={10}
+																				strokeWidth={1.2}
+																			/>
+																		) : null}
 																		#{tag}
 																	</span>
 																))}

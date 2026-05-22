@@ -111,7 +111,8 @@ interface FileTreeFileItemProps {
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	onChangeAppearance?: (appearance: FileTreeAppearance) => void;
+	onOpenAppearancePicker?: () => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
 	onMoveClickSuppressRef?: MutableRefObject<boolean>;
@@ -141,7 +142,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	parentDirPath,
 	onDeletePath,
 	appearance,
-	onChangeAppearance,
+	onOpenAppearancePicker,
 	isPinned,
 	onTogglePinned,
 	onMoveClickSuppressRef = DEFAULT_MOVE_CLICK_SUPPRESS_REF,
@@ -231,7 +232,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: isPinned ? "Unpin file" : "Pin file",
 					action: () => void onTogglePinned(entry.rel_path),
 				},
-				fileTreeAppearanceNativeMenu("file", appearance, onChangeAppearance),
+				fileTreeAppearanceNativeMenu(
+					onOpenAppearancePicker ?? (() => undefined),
+				),
 				{ type: "separator" },
 				{
 					label: "Add file",
@@ -255,11 +258,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			});
 		},
 		[
-			appearance,
 			entry.rel_path,
 			handleRevealInFinder,
 			isPinned,
-			onChangeAppearance,
+			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onDuplicateFile,

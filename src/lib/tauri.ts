@@ -37,6 +37,10 @@ export interface FileTreeAppearance {
 	icon?: string | null;
 }
 
+export interface TagAppearance {
+	icon?: string | null;
+}
+
 type PinnedFiles = string[];
 
 export interface TextFileDoc {
@@ -766,6 +770,11 @@ interface TauriCommands {
 		void
 	>;
 	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
+	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
+	tag_appearance_set: CommandDef<
+		{ tag: string; icon?: string | null },
+		TagAppearance | null
+	>;
 	pinned_files_list: CommandDef<void, PinnedFiles>;
 	pinned_files_toggle: CommandDef<{ path: string }, PinnedFiles>;
 	pinned_files_rename_path: CommandDef<

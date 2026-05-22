@@ -84,13 +84,37 @@ button.tagsHeaderTitle {
 	width: 100%;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: var(--space-3);
 	padding: 1px 8px;
 	min-height: 28px;
 	border-radius: 8px;
 	color: var(--text-primary);
 	font-size: var(--text-sm);
+}
+
+.tagsMainButton {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+	min-width: 0;
+	flex: 1 1 0%;
+	overflow: hidden;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.tagsMainButton:hover,
+.tagsMainButton:active {
+	background: transparent;
+	color: inherit;
 }
 
 .tagsButton[data-explicit="false"] {
@@ -116,6 +140,98 @@ button.tagsHeaderTitle {
 	height: 12px;
 }
 
+.tagsIconPicker {
+	width: 18px;
+	height: 18px;
+	margin-left: -3px;
+	color: currentcolor;
+}
+
+.tagsIconPicker:hover,
+.tagsIconPicker:active,
+.tagsIconPicker:focus-visible {
+	background: transparent;
+	color: currentcolor;
+	box-shadow: none;
+}
+
+.appearancePickerDialog {
+	width: min(420px, calc(100vw - 48px));
+	max-height: min(70vh, 560px);
+}
+
+.appearancePickerScroll {
+	height: min(46vh, 320px);
+	padding: 14px;
+}
+
+.appearancePickerGrid {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.appearancePickerOption {
+	width: 100%;
+	aspect-ratio: 1;
+}
+
+.appearancePickerEmpty {
+	grid-column: 1 / -1;
+	padding: 24px 8px;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	text-align: center;
+}
+
+.appearancePickerColors {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 8px 0 2px;
+}
+
+.appearancePickerColor {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 26px;
+	padding: 0 9px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+}
+
+.appearancePickerColor[data-active="true"] {
+	border-color: var(--border-focus);
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
+.appearancePickerSwatch,
+.appearancePickerDefaultColor {
+	width: 10px;
+	height: 10px;
+	border-radius: 999px;
+	flex: 0 0 auto;
+}
+
+.appearancePickerSwatch {
+	background: currentcolor;
+}
+
+.appearancePickerDefaultColor {
+	border: 1px solid var(--border-default);
+	background: linear-gradient(
+		135deg,
+		transparent 0 45%,
+		var(--text-tertiary) 45% 55%,
+		transparent 55% 100%
+	);
+}
+
 .tagsName {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -124,6 +240,7 @@ button.tagsHeaderTitle {
 }
 
 .tagsCount {
+	margin-left: auto;
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	flex-shrink: 0;
@@ -136,12 +253,6 @@ button.tagsHeaderTitle {
 	color: var(--text-tertiary);
 	cursor: pointer;
 	background: transparent;
-}
-
-.tagsToggle:hover,
-.tagsToggle:active {
-	background: transparent;
-	color: var(--text-tertiary);
 }
 
 .tagsEmpty {

@@ -9,6 +9,7 @@ import {
 	loadSettings,
 	setAiAssistantMode,
 	setDatabaseShowColumnColor,
+	setEditorBeautifulTags,
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
@@ -106,6 +107,7 @@ export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
+	const [beautifulTags, setBeautifulTags] = useState(false);
 	const [editorWidthMode, setEditorWidthModeState] =
 		useState<EditorWidthMode>("compact");
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
@@ -126,6 +128,7 @@ export function AdvancedSettingsPane() {
 		useState(false);
 	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
 		useState(false);
+	const [isSavingBeautifulTags, setIsSavingBeautifulTags] = useState(false);
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [
 		isSavingEnablePeopleMentionsAsTags,
@@ -149,6 +152,7 @@ export function AdvancedSettingsPane() {
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setShowFrontmatterInEditor(settings.editor.showFrontmatterInEditor);
 			setColorfulHeadings(settings.editor.colorfulHeadings);
+			setBeautifulTags(settings.editor.beautifulTags);
 			setEditorWidthModeState(settings.editor.editorWidthMode);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setVimKeybindings(settings.editor.vimKeybindings === true);
@@ -175,6 +179,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
+		}
+		if (typeof payload.editor?.beautifulTags === "boolean") {
+			setBeautifulTags(payload.editor.beautifulTags);
 		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
@@ -321,6 +328,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingColorfulHeadings(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Beautiful Tags"
+						description="Enable the experimental Beautiful Tags presentation for tags."
+					>
+						<SettingsToggle
+							checked={beautifulTags}
+							disabled={isSavingBeautifulTags}
+							ariaLabel="Beautiful Tags"
+							onCheckedChange={(checked) => {
+								const previous = beautifulTags;
+								setError("");
+								setBeautifulTags(checked);
+								setIsSavingBeautifulTags(true);
+								void setEditorBeautifulTags(checked)
+									.catch((cause) => {
+										setBeautifulTags(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingBeautifulTags(false);
 									});
 							}}
 						/>

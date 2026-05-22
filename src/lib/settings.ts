@@ -128,6 +128,7 @@ interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
+	beautifulTags: boolean;
 	editorWidthMode: EditorWidthMode;
 	attachmentStorageMode: AttachmentStorageMode;
 	attachmentFolder: string | null;
@@ -163,6 +164,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
 	showFrontmatterInEditor: false,
 	colorfulHeadings: false,
+	beautifulTags: false,
 	editorWidthMode: "compact",
 	attachmentStorageMode: "note-folder",
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
@@ -291,6 +293,7 @@ async function emitSettingsUpdated(payload: {
 		showCollapsibleHeadings?: boolean;
 		showFrontmatterInEditor?: boolean;
 		colorfulHeadings?: boolean;
+		beautifulTags?: boolean;
 		editorWidthMode?: EditorWidthMode;
 		attachmentStorageMode?: AttachmentStorageMode;
 		attachmentFolder?: string | null;
@@ -375,6 +378,7 @@ const KEYS = {
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
+	editorBeautifulTags: "editor.beautifulTags",
 	editorEditorWidthMode: "editor.editorWidthMode",
 	editorAttachmentStorageMode: "editor.attachmentStorageMode",
 	editorAttachmentFolder: "editor.attachmentFolder",
@@ -608,6 +612,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawEditorShowCollapsibleHeadings,
 		rawEditorShowFrontmatterInEditor,
 		rawEditorColorfulHeadings,
+		rawEditorBeautifulTags,
 		rawEditorWidthMode,
 		rawEditorAttachmentStorageMode,
 		rawEditorAttachmentFolder,
@@ -648,6 +653,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
 		store.get<boolean | null>(KEYS.editorShowFrontmatterInEditor),
 		store.get<boolean | null>(KEYS.editorColorfulHeadings),
+		store.get<boolean | null>(KEYS.editorBeautifulTags),
 		store.get<unknown>(KEYS.editorEditorWidthMode),
 		store.get<unknown>(KEYS.editorAttachmentStorageMode),
 		store.get<string | null>(KEYS.editorAttachmentFolder),
@@ -739,6 +745,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorColorfulHeadings === "boolean"
 				? rawEditorColorfulHeadings
 				: DEFAULT_EDITOR_SETTINGS.colorfulHeadings,
+		beautifulTags:
+			typeof rawEditorBeautifulTags === "boolean"
+				? rawEditorBeautifulTags
+				: DEFAULT_EDITOR_SETTINGS.beautifulTags,
 		editorWidthMode: asEditorWidthMode(rawEditorWidthMode),
 		attachmentStorageMode,
 		attachmentFolder,
@@ -1066,6 +1076,15 @@ export async function setEditorColorfulHeadings(
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
+	});
+}
+
+export async function setEditorBeautifulTags(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorBeautifulTags, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { beautifulTags: enabled },
 	});
 }
 

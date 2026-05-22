@@ -43,10 +43,7 @@ interface FolioNoteListItemProps {
 	) => Promise<boolean> | boolean;
 	onCancelRename: () => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance: (
-		path: string,
-		appearance: FileTreeAppearance,
-	) => Promise<void> | void;
+	onOpenAppearancePicker: (path: string) => void;
 }
 
 type FolioImageRef =
@@ -327,7 +324,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	onCommitRename,
 	onCancelRename,
 	appearance = null,
-	onChangeAppearance,
+	onOpenAppearancePicker,
 }: FolioNoteListItemProps) {
 	const title = note.title.trim() || titleFromPath(note.note_path);
 	const isMarkdown = note.is_markdown;
@@ -400,8 +397,8 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 							},
 						]
 					: []),
-				fileTreeAppearanceNativeMenu("file", appearance, (nextAppearance) =>
-					onChangeAppearance(note.note_path, nextAppearance),
+				fileTreeAppearanceNativeMenu(() =>
+					onOpenAppearancePicker(note.note_path),
 				),
 				{ type: "separator" },
 				{
@@ -413,13 +410,12 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 			});
 		},
 		[
-			appearance,
 			handleRevealInFinder,
 			isPinned,
 			note.note_path,
-			onChangeAppearance,
 			onDelete,
 			onOpen,
+			onOpenAppearancePicker,
 			onOpenInNewTab,
 			onRename,
 			onTogglePinned,
