@@ -7,10 +7,12 @@ export interface Command {
 	label: string;
 	icon?: ReactNode;
 	category?: string;
+	searchTerms?: readonly string[];
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;
 	enabled?: boolean;
 	allowInEditable?: boolean;
+	hideWhenQueryEmpty?: boolean;
 }
 
 export type Tab = "commands" | "search";

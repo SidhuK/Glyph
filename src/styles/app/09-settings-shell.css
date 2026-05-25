@@ -41,6 +41,167 @@
 	color: var(--text-primary);
 }
 
+.settingsSidebarSearch {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin: 0 8px 6px;
+	height: 30px;
+	color: var(--text-tertiary);
+	-webkit-app-region: no-drag;
+}
+
+.settingsSidebarSearchIcon {
+	position: absolute;
+	left: 9px;
+	pointer-events: none;
+	color: var(--text-tertiary);
+}
+
+.settingsSidebarSearchInput {
+	width: 100%;
+	height: 30px;
+	min-width: 0;
+	border: 1px solid var(--border-default);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
+	color: var(--text-primary);
+	font-size: 12px;
+	line-height: 1;
+	outline: none;
+	padding: 0 30px 0 30px;
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast);
+}
+
+.settingsSidebarSearchInput::placeholder {
+	color: var(--text-tertiary);
+}
+
+.settingsSidebarSearchInput:focus {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 38%,
+		var(--border-default)
+	);
+	background: var(--bg-primary);
+}
+
+.settingsSidebarSearchClear {
+	position: absolute;
+	right: 5px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.settingsSidebarSearchClear:hover,
+.settingsSidebarSearchClear:focus-visible {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.settingsSidebarSearchResults {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	flex-direction: column;
+	gap: 3px;
+	overflow-y: auto;
+	padding: 2px 8px 12px;
+	-webkit-app-region: no-drag;
+}
+
+.settingsSearchResultButton {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	min-height: 48px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	padding: 8px 9px;
+	text-align: left;
+	line-height: normal;
+}
+
+.settingsSearchResultButton:hover,
+.settingsSearchResultButton:focus-visible {
+	background: var(--bg-hover);
+	outline: none;
+}
+
+.settingsSearchResultButtonActive {
+	background: var(--bg-active);
+}
+
+.settingsSearchResultTitle {
+	display: block;
+	width: 100%;
+	min-height: 17px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 12px;
+	font-weight: var(--font-semibold);
+	line-height: 17px;
+}
+
+.settingsSearchResultMeta {
+	display: block;
+	width: 100%;
+	min-height: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	line-height: 14px;
+	color: var(--interactive-accent);
+}
+
+.settingsSearchResultDescription {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: 11px;
+	line-height: 1.35;
+}
+
+.settingsSearchEmpty {
+	padding: 10px 8px;
+	color: var(--text-tertiary);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.settingsField.settingsSearchTarget,
+.settingsSection.settingsSearchTarget .settingsCard {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 34%,
+		var(--border-default)
+	);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	transition: background var(--transition-base), border-color
+		var(--transition-base);
+}
+
 .settingsSidebarTabs {
 	gap: 2px;
 	padding: 4px 8px 12px;
@@ -251,6 +412,12 @@
 	display: flex;
 	flex-direction: column;
 	gap: 34px;
+}
+
+.settingsSearchTarget {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

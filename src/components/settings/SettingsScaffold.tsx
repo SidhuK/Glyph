@@ -36,7 +36,11 @@ export function SettingsSection({
 	aside,
 }: SettingsSectionProps) {
 	return (
-		<section id={id} className={cn("settingsSection", className)}>
+		<section
+			id={id}
+			className={cn("settingsSection", className)}
+			data-settings-section-title={title}
+		>
 			<div className="settingsSectionHeader">
 				<div className="settingsCardTitle">{title}</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}
@@ -58,6 +62,7 @@ export function SettingsRow({
 	interactive = true,
 }: SettingsRowProps) {
 	const CopyTag = htmlFor ? "label" : "div";
+	const rowTitle = typeof label === "string" ? label : undefined;
 
 	return (
 		<div
@@ -67,6 +72,7 @@ export function SettingsRow({
 				stacked && "settingsFieldStacked",
 				className,
 			)}
+			data-settings-row-title={rowTitle}
 		>
 			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
 				<div className="settingsLabel">{label}</div>
