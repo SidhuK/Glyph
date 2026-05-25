@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { loadSettings, setResumeLastSession } from "../../lib/settings";
+import { useTranslation } from "react-i18next";
+import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
+import {
+	loadSettings,
+	setLanguage,
+	setResumeLastSession,
+} from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import {
@@ -7,9 +13,12 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
 
 export function GeneralSettingsPane() {
+	const { t } = useTranslation(["settings", "common"]);
+	const [language, setLanguageState] = useState<AppLanguage>("system");
 	const [resumeLastSession, setResumeLastSessionState] = useState(false);
 	const [error, setError] = useState("");
 	const resumeLastSessionToggle = useOptimisticSettingsToggle(
@@ -25,6 +34,7 @@ export function GeneralSettingsPane() {
 		void loadSettings()
 			.then((settings) => {
 				if (!cancelled) {
+					setLanguageState(settings.ui.language);
 					setResumeLastSessionState(settings.ui.resumeLastSession);
 				}
 			})
@@ -47,10 +57,47 @@ export function GeneralSettingsPane() {
 		}, []),
 	);
 
+	const handleLanguageChange = async (nextLanguage: AppLanguage) => {
+		setLanguageState(nextLanguage);
+		setError("");
+		try {
+			await setLanguage(nextLanguage);
+		} catch (cause) {
+			setError(cause instanceof Error ? cause.message : String(cause));
+		}
+	};
+
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
+				<SettingsSection title={t("settings:general.language.title")}>
+					<SettingsRow
+						label={t("settings:general.language.label")}
+						description={
+							language === "system"
+								? t("settings:general.language.systemDescription")
+								: t("settings:general.language.description")
+						}
+						htmlFor="settings-language-select"
+					>
+						<SettingsSelect
+							id="settings-language-select"
+							value={language}
+							onChange={(event) =>
+								void handleLanguageChange(event.target.value as AppLanguage)
+							}
+						>
+							{LANGUAGE_OPTIONS.map((option) => (
+								<option key={option.id} value={option.id}>
+									{option.id === "system"
+										? t("common:language.system")
+										: option.nativeLabel}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+				</SettingsSection>
 				<SettingsSection
 					title="Startup"
 					description="Choose what opens when you start Glyph."

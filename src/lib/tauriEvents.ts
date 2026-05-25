@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 import type {
+	AppLanguage,
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
@@ -81,6 +82,7 @@ type TauriEventMap = {
 			classicAllNotesByDefault?: boolean;
 			resumeLastSession?: boolean;
 			aiEnabled?: boolean;
+			language?: AppLanguage;
 			aiAssistantMode?: "chat" | "create";
 		};
 		dailyNotes?: {

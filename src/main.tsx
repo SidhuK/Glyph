@@ -7,6 +7,9 @@ import App from "./App";
 import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/notifications";
+import { i18n, initI18n } from "./i18n";
+import { resolveSupportedLanguage } from "./i18n/locales";
+import { syncNativeMenuLabels } from "./i18n/nativeMenu";
 import {
 	applyEditorWidthMode,
 	applyUiAccent,
@@ -273,6 +276,40 @@ function ThemeAndTypographyBridge() {
 	return null;
 }
 
+function I18nBridge() {
+	const applyLanguage = React.useCallback(async (withReload: boolean) => {
+		try {
+			if (withReload) await reloadFromDisk();
+			const settings = await loadSettings();
+			const systemLanguages = Array.from(
+				navigator.languages?.length
+					? navigator.languages
+					: [navigator.language],
+			).filter(Boolean);
+			const nextLanguage = resolveSupportedLanguage(
+				settings.ui.language,
+				systemLanguages,
+			);
+			if (i18n.language !== nextLanguage) {
+				await i18n.changeLanguage(nextLanguage);
+			}
+			await syncNativeMenuLabels();
+		} catch {
+			// Language hydration is best effort in non-Tauri contexts.
+		}
+	}, []);
+
+	React.useEffect(() => {
+		void applyLanguage(false);
+	}, [applyLanguage]);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (payload.ui?.language) void applyLanguage(true);
+	});
+
+	return null;
+}
+
 if (import.meta.env.PROD) {
 	document.addEventListener("contextmenu", (e) => {
 		const target = e.target;
@@ -311,18 +348,21 @@ const isExternalMarkdownWindow = windowLabel.startsWith(
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 );
 
-ReactDOM.createRoot(rootEl).render(
-	<React.StrictMode>
-		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-			<ThemeAndTypographyBridge />
-			{isQuickNoteWindow ? (
-				<QuickNoteWindow />
-			) : isExternalMarkdownWindow ? (
-				<ExternalMarkdownWindow />
-			) : (
-				<App />
-			)}
-			<Toaster />
-		</ThemeProvider>
-	</React.StrictMode>,
-);
+void initI18n().finally(() => {
+	ReactDOM.createRoot(rootEl).render(
+		<React.StrictMode>
+			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+				<I18nBridge />
+				<ThemeAndTypographyBridge />
+				{isQuickNoteWindow ? (
+					<QuickNoteWindow />
+				) : isExternalMarkdownWindow ? (
+					<ExternalMarkdownWindow />
+				) : (
+					<App />
+				)}
+				<Toaster />
+			</ThemeProvider>
+		</React.StrictMode>,
+	);
+});

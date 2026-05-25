@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "General",
+		"appearance": "Appearance",
+		"shortcuts": "Shortcuts",
+		"ai": "Glyph AI",
+		"space": "Space",
+		"git": "Git",
+		"advanced": "Advanced",
+		"about": "About"
+	},
+	"groups": {
+		"workspace": "Workspace",
+		"features": "Features",
+		"system": "System"
+	},
+	"search": {
+		"placeholder": "Search settings",
+		"clear": "Clear settings search",
+		"empty": "No matching settings"
+	},
+	"general": {
+		"language": {
+			"title": "Language",
+			"label": "App language",
+			"description": "Choose the language used by Glyph's interface.",
+			"systemDescription": "Uses your operating system language when Glyph supports it, otherwise English."
+		}
+	},
+	"shortcuts": {
+		"title": "Customize Shortcuts",
+		"searchPlaceholder": "Search actions, categories, or shortcuts",
+		"help": "Click a shortcut, then press the keys you want to use. Shortcuts save automatically and need Cmd, Ctrl, or Option plus another key.",
+		"tipsLabel": "Shortcut tips",
+		"escapeCancels": "Esc cancels",
+		"resetRestoresDefault": "Reset restores default",
+		"pressShortcut": "Press shortcut...",
+		"errors": {
+			"disable": "Failed to disable shortcut.",
+			"reset": "Failed to reset shortcut.",
+			"resetAll": "Failed to reset shortcuts.",
+			"save": "Failed to save shortcut.",
+			"invalid": "Invalid shortcut.",
+			"conflict": "{{shortcut}} is already used by {{action}}."
+		}
+	},
+	"categories": {
+		"workspace": "Workspace",
+		"navigation": "Navigation",
+		"search": "Search",
+		"file": "File Operations",
+		"tabs": "Tabs",
+		"ai": "AI",
+		"editor": "Editor",
+		"settings": "Settings"
+	}
+}

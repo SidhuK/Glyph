@@ -1,0 +1,23 @@
+{
+	"actions": {
+		"close": "閉じる",
+		"disable": "無効化",
+		"reset": "リセット",
+		"resetAll": "すべてリセット"
+	},
+	"language": {
+		"system": "システム",
+		"en": "英語",
+		"es": "スペイン語",
+		"de": "ドイツ語",
+		"fr": "フランス語",
+		"pt-BR": "ポルトガル語（ブラジル）",
+		"ja": "日本語",
+		"ko": "韓国語"
+	},
+	"status": {
+		"disabled": "無効",
+		"loading": "読み込み中..."
+	},
+	"untitled": "無題"
+}

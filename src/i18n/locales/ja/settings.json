@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "一般",
+		"appearance": "外観",
+		"shortcuts": "ショートカット",
+		"ai": "Glyph AI",
+		"space": "スペース",
+		"git": "Git",
+		"advanced": "詳細",
+		"about": "情報"
+	},
+	"groups": {
+		"workspace": "ワークスペース",
+		"features": "機能",
+		"system": "システム"
+	},
+	"search": {
+		"placeholder": "設定を検索",
+		"clear": "設定検索をクリア",
+		"empty": "一致する設定がありません"
+	},
+	"general": {
+		"language": {
+			"title": "言語",
+			"label": "アプリの言語",
+			"description": "Glyph の画面で使う言語を選択します。",
+			"systemDescription": "Glyph が対応している場合は OS の言語を使用し、それ以外は英語を使用します。"
+		}
+	},
+	"shortcuts": {
+		"title": "ショートカットをカスタマイズ",
+		"searchPlaceholder": "操作、カテゴリ、ショートカットを検索",
+		"help": "ショートカットをクリックして、使いたいキーを押します。ショートカットは自動保存され、Cmd、Ctrl、Option のいずれかと別のキーが必要です。",
+		"tipsLabel": "ショートカットのヒント",
+		"escapeCancels": "Esc でキャンセル",
+		"resetRestoresDefault": "リセットで既定に戻す",
+		"pressShortcut": "ショートカットを入力...",
+		"errors": {
+			"disable": "ショートカットを無効化できませんでした。",
+			"reset": "ショートカットをリセットできませんでした。",
+			"resetAll": "ショートカットをリセットできませんでした。",
+			"save": "ショートカットを保存できませんでした。",
+			"invalid": "無効なショートカットです。",
+			"conflict": "{{shortcut}} はすでに {{action}} で使用されています。"
+		}
+	},
+	"categories": {
+		"workspace": "ワークスペース",
+		"navigation": "ナビゲーション",
+		"search": "検索",
+		"file": "ファイル操作",
+		"tabs": "タブ",
+		"ai": "AI",
+		"editor": "エディタ",
+		"settings": "設定"
+	}
+}

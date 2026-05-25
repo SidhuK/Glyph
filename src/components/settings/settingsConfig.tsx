@@ -24,12 +24,14 @@ export type SettingsTab =
 export interface SettingsTabMeta {
 	id: SettingsTab;
 	label: string;
+	labelKey: string;
 	renderIcon: () => ReactElement;
 }
 
 export interface SettingsTabGroup {
 	id: string;
 	label: string;
+	labelKey: string;
 	tabs: SettingsTabMeta[];
 }
 
@@ -37,6 +39,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
+		labelKey: "tabs.general",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Settings01Icon}
@@ -48,6 +51,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "appearance",
 		label: "Appearance",
+		labelKey: "tabs.appearance",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
@@ -55,6 +59,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "shortcuts",
 		label: "Shortcuts",
+		labelKey: "tabs.shortcuts",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={CommandIcon}
@@ -66,6 +71,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "ai",
 		label: "Glyph AI",
+		labelKey: "tabs.ai",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={AiBrain04Icon}
@@ -77,11 +83,13 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "space",
 		label: "Space",
+		labelKey: "tabs.space",
 		renderIcon: () => <FolderOpen size="var(--icon-md)" />,
 	},
 	{
 		id: "git",
 		label: "Git",
+		labelKey: "tabs.git",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={GitBranchIcon}
@@ -93,6 +101,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "advanced",
 		label: "Advanced",
+		labelKey: "tabs.advanced",
 		renderIcon: () => (
 			<HugeiconsIcon icon={ToolsIcon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
@@ -100,6 +109,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "about",
 		label: "About",
+		labelKey: "tabs.about",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Archive02Icon}
@@ -118,6 +128,7 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 	{
 		id: "application",
 		label: "Application",
+		labelKey: "groups.application",
 		tabs: SETTINGS_TABS.filter(
 			(tab) =>
 				tab.id === "general" ||
@@ -130,6 +141,7 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 	{
 		id: "workspace",
 		label: "Workspace",
+		labelKey: "groups.workspace",
 		tabs: SETTINGS_TABS.filter(
 			(tab) => tab.id === "space" || tab.id === "git" || tab.id === "ai",
 		),

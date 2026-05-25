@@ -27,7 +27,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { TFunction } from "i18next";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
 	dispatchOpenLocalConnections,
@@ -187,14 +189,19 @@ function buildAiCommands({
 function resolveCommandShortcuts(
 	commands: Command[],
 	getBinding: UseAppCommandsDeps["getBinding"],
+	t: TFunction,
 ): Command[] {
 	return commands.map((command) => {
 		const definition = getCommandDefinition(command.id);
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: command.label ?? definition.label ?? command.id,
-					category: SHORTCUT_CATEGORY_LABELS[definition.category],
+					label: t(`commands:commands.${definition.id}.label`, {
+						defaultValue: definition.label,
+					}),
+					category: t(`commands:categories.${definition.category}`, {
+						defaultValue: SHORTCUT_CATEGORY_LABELS[definition.category],
+					}),
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
 				}
@@ -268,6 +275,7 @@ export function useAppCommands({
 	togglePinnedFile,
 	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
+	const { t } = useTranslation(["commands", "app", "settings"]);
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -449,8 +457,8 @@ export function useAppCommands({
 				id: "toggle-pin-active-file",
 				label:
 					activeFilePath && pinnedFiles.includes(activeFilePath)
-						? "Unpin current file"
-						: "Pin current file",
+						? t("app:commands.unpinCurrentFile")
+						: t("app:commands.pinCurrentFile"),
 				icon: (
 					<HugeiconsIcon
 						icon={
@@ -717,7 +725,9 @@ export function useAppCommands({
 			},
 			{
 				id: "open-space",
-				label: spacePath ? "Open another space" : "Open space",
+				label: spacePath
+					? t("app:commands.openAnotherSpace")
+					: t("app:commands.openSpace"),
 				icon: (
 					<HugeiconsIcon
 						icon={FolderOpenIcon}
@@ -808,11 +818,11 @@ export function useAppCommands({
 						await openUrl(status.purchase_url);
 					} catch (error) {
 						console.error("Failed to open Gumroad purchase page", error);
-						toast.error("Could not open the license page", {
+						toast.error(t("app:commands.licensePageErrorTitle"), {
 							description:
 								error instanceof Error
 									? error.message
-									: "Try again in a moment.",
+									: t("app:commands.tryAgain"),
 						});
 					}
 				},
@@ -918,6 +928,7 @@ export function useAppCommands({
 				...editorCommands,
 			],
 			getBinding,
+			t,
 		);
 	}, [
 		activeMarkdownTabPath,
@@ -977,5 +988,6 @@ export function useAppCommands({
 		canGoForward,
 		goBack,
 		goForward,
+		t,
 	]);
 }

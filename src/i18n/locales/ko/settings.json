@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "일반",
+		"appearance": "모양",
+		"shortcuts": "단축키",
+		"ai": "Glyph AI",
+		"space": "스페이스",
+		"git": "Git",
+		"advanced": "고급",
+		"about": "정보"
+	},
+	"groups": {
+		"workspace": "작업 공간",
+		"features": "기능",
+		"system": "시스템"
+	},
+	"search": {
+		"placeholder": "설정 검색",
+		"clear": "설정 검색 지우기",
+		"empty": "일치하는 설정 없음"
+	},
+	"general": {
+		"language": {
+			"title": "언어",
+			"label": "앱 언어",
+			"description": "Glyph 인터페이스에 사용할 언어를 선택합니다.",
+			"systemDescription": "Glyph가 지원하면 운영체제 언어를 사용하고, 아니면 영어를 사용합니다."
+		}
+	},
+	"shortcuts": {
+		"title": "단축키 사용자화",
+		"searchPlaceholder": "동작, 카테고리 또는 단축키 검색",
+		"help": "단축키를 클릭한 뒤 사용할 키를 누르세요. 단축키는 자동 저장되며 Cmd, Ctrl 또는 Option과 다른 키가 필요합니다.",
+		"tipsLabel": "단축키 팁",
+		"escapeCancels": "Esc로 취소",
+		"resetRestoresDefault": "재설정하면 기본값 복원",
+		"pressShortcut": "단축키 입력...",
+		"errors": {
+			"disable": "단축키를 비활성화하지 못했습니다.",
+			"reset": "단축키를 재설정하지 못했습니다.",
+			"resetAll": "단축키를 재설정하지 못했습니다.",
+			"save": "단축키를 저장하지 못했습니다.",
+			"invalid": "잘못된 단축키입니다.",
+			"conflict": "{{shortcut}}은(는) 이미 {{action}}에서 사용 중입니다."
+		}
+	},
+	"categories": {
+		"workspace": "작업 공간",
+		"navigation": "탐색",
+		"search": "검색",
+		"file": "파일 작업",
+		"tabs": "탭",
+		"ai": "AI",
+		"editor": "편집기",
+		"settings": "설정"
+	}
+}

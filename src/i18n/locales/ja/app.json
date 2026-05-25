@@ -1,0 +1,42 @@
+{
+	"commandPalette": {
+		"title": "コマンドパレット",
+		"searchCommands": "コマンドを検索",
+		"searchNotes": "ノートを検索...",
+		"noCommands": "コマンドがありません",
+		"general": "一般",
+		"results": "{{count}} 件の結果",
+		"searching": "検索中...",
+		"recentlyOpened": "最近開いた項目",
+		"typeToSearch": "入力してノートを検索...",
+		"taggedNotes": "タグ付きノート",
+		"notes": "ノート",
+		"content": "内容",
+		"noResults": "結果がありません",
+		"footer": {
+			"navigate": "移動",
+			"openNote": "ノートを開く",
+			"runCommand": "コマンドを実行",
+			"commands": "コマンド",
+			"search": "検索",
+			"close": "閉じる"
+		},
+		"filters": {
+			"title": "タイトル",
+			"tag": "タグ"
+		},
+		"results_other": "{{count}} 件の結果"
+	},
+	"commands": {
+		"moveDestination": "移動先",
+		"settingsCategory": "設定 > {{tab}}",
+		"openAnotherSpace": "別のスペースを開く",
+		"openSpace": "スペースを開く",
+		"pinCurrentFile": "現在のファイルをピン留め",
+		"unpinCurrentFile": "現在のファイルのピン留めを解除",
+		"goBack": "戻る",
+		"createFolderErrorTitle": "フォルダを作成できませんでした",
+		"licensePageErrorTitle": "ライセンスページを開けませんでした",
+		"tryAgain": "少ししてから再試行してください。"
+	}
+}

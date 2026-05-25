@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -352,6 +353,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
+	const { t } = useTranslation("settings");
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
 	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
@@ -716,6 +718,7 @@ export const MainContent = memo(function MainContent({
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
 	const isActivityTab = viewerPath === ACTIVITY_TIMELINE_TAB_ID;
 	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
+	const activeSettingsTabLabel = t(activeSettingsTabMeta.labelKey);
 	const editorCanvas = (
 		<div
 			className="canvasPaneHost"
@@ -822,9 +825,7 @@ export const MainContent = memo(function MainContent({
 				<div className="settingsTabPanel">
 					<header className="settingsPanelHeader">
 						<div className="settingsPanelTitleRow">
-							<h2 className="settingsPanelTitle">
-								{activeSettingsTabMeta.label}
-							</h2>
+							<h2 className="settingsPanelTitle">{activeSettingsTabLabel}</h2>
 						</div>
 					</header>
 					{settingsTabContentByTab[settingsTab]}

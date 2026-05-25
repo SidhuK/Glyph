@@ -1,0 +1,43 @@
+{
+	"commandPalette": {
+		"title": "Command Palette",
+		"searchCommands": "Search Commands",
+		"searchNotes": "Search notes...",
+		"noCommands": "No commands",
+		"general": "General",
+		"results": "{{count}} results",
+		"searching": "Searching...",
+		"recentlyOpened": "Recently opened",
+		"typeToSearch": "Type to search your notes...",
+		"taggedNotes": "Tagged Notes",
+		"notes": "Notes",
+		"content": "Content",
+		"noResults": "No results",
+		"footer": {
+			"navigate": "Navigate",
+			"openNote": "Open note",
+			"runCommand": "Run command",
+			"commands": "Commands",
+			"search": "Search",
+			"close": "Close"
+		},
+		"filters": {
+			"title": "Title",
+			"tag": "Tag"
+		},
+		"results_one": "{{count}} result",
+		"results_other": "{{count}} results"
+	},
+	"commands": {
+		"moveDestination": "Move Destination",
+		"settingsCategory": "Settings > {{tab}}",
+		"openAnotherSpace": "Open another space",
+		"openSpace": "Open space",
+		"pinCurrentFile": "Pin current file",
+		"unpinCurrentFile": "Unpin current file",
+		"goBack": "Back",
+		"createFolderErrorTitle": "Could not create folder",
+		"licensePageErrorTitle": "Could not open the license page",
+		"tryAgain": "Try again in a moment."
+	}
+}
