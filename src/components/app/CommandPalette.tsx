@@ -14,6 +14,24 @@ import { useCommandSearch } from "./useCommandSearch";
 
 export type { Command } from "./commandPaletteHelpers";
 
+function commandMatchesQuery(command: Command, normalizedQuery: string) {
+	if (!normalizedQuery) return !command.hideWhenQueryEmpty;
+	const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+	const queryTokens = command.hideWhenQueryEmpty
+		? tokens.filter((token) => token !== "setting" && token !== "settings")
+		: tokens;
+	if (command.hideWhenQueryEmpty && queryTokens.length === 0) return false;
+	const haystack = [
+		command.label,
+		command.category ?? "",
+		command.id,
+		...(command.searchTerms ?? []),
+	]
+		.join(" ")
+		.toLowerCase();
+	return queryTokens.every((token) => haystack.includes(token));
+}
+
 interface CommandPaletteProps {
 	open: boolean;
 	initialTab?: Tab;
@@ -59,16 +77,7 @@ export function CommandPalette({
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
 		const q = query.trim().toLowerCase();
-		const matches = q
-			? commands.filter((cmd) => {
-					const category = cmd.category?.toLowerCase() ?? "";
-					return (
-						cmd.label.toLowerCase().includes(q) ||
-						category.includes(q) ||
-						cmd.id.toLowerCase().includes(q)
-					);
-				})
-			: commands;
+		const matches = commands.filter((cmd) => commandMatchesQuery(cmd, q));
 		return matches.filter((cmd) => cmd.enabled !== false);
 	}, [commands, query, activeTab]);
 

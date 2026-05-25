@@ -17,6 +17,8 @@ cd src-tauri && cargo clippy   # Lint Rust
 
 **Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check`
 
+**Never run a dev server (Vite, `pnpm dev`, `pnpm tauri dev`, or otherwise) — the user handles dev.**
+
 ## Architecture
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.

@@ -48,6 +48,11 @@ import { isMarkdownPath, parentDir } from "../../utils/path";
 import { ChevronDown, ChevronUp } from "../Icons";
 import { EDITOR_ACTIONS } from "../editor/editorActions";
 import type { SettingsTab } from "../settings/settingsConfig";
+import {
+	SETTINGS_SEARCH_ENTRIES,
+	type SettingsSearchEntry,
+	scrollToSettingsSearchEntry,
+} from "../settings/settingsSearch";
 import type { Command } from "./CommandPalette";
 
 interface GitSyncCommandActions {
@@ -166,6 +171,50 @@ function buildEditorCommands({
 			dispatchEditorMenuAction({ action: action.id });
 		},
 	}));
+}
+
+const SETTINGS_TAB_LABELS = {
+	general: "General",
+	appearance: "Appearance",
+	shortcuts: "Shortcuts",
+	ai: "Glyph AI",
+	space: "Space",
+	git: "Git",
+	advanced: "Advanced",
+	about: "About",
+} as const satisfies Record<SettingsTab, string>;
+
+function settingsSearchCommandLabel({
+	section,
+	title,
+}: Pick<SettingsSearchEntry, "section" | "title">) {
+	return section && section !== title ? `${section}: ${title}` : title;
+}
+
+function buildSettingsSearchCommands(
+	openSettings: UseAppCommandsDeps["openSettings"],
+): Command[] {
+	return SETTINGS_SEARCH_ENTRIES.map((entry: SettingsSearchEntry) => {
+		const tabLabel = SETTINGS_TAB_LABELS[entry.tab];
+		return {
+			id: `settings-search:${entry.id}`,
+			label: settingsSearchCommandLabel(entry),
+			icon: <HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />,
+			category: `Settings > ${tabLabel}`,
+			searchTerms: [
+				"settings",
+				tabLabel,
+				entry.section ?? "",
+				entry.description ?? "",
+				...(entry.keywords ?? []),
+			],
+			hideWhenQueryEmpty: true,
+			action: () => {
+				openSettings(entry.tab);
+				scrollToSettingsSearchEntry(entry);
+			},
+		};
+	});
 }
 
 function buildAiCommands({
@@ -320,6 +369,7 @@ export function useAppCommands({
 			spacePath,
 		});
 		const editorCommands = buildEditorCommands({ activeMarkdownTabPath });
+		const settingsSearchCommands = buildSettingsSearchCommands(openSettings);
 
 		const baseCommands: Command[] = [
 			{
@@ -783,7 +833,12 @@ export function useAppCommands({
 			},
 		];
 		return resolveCommandShortcuts(
-			[...baseCommands, ...aiCommands, ...editorCommands],
+			[
+				...baseCommands,
+				...settingsSearchCommands,
+				...aiCommands,
+				...editorCommands,
+			],
 			getBinding,
 		);
 	}, [

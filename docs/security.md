@@ -7,15 +7,16 @@
 
 ## Network Hardening
 
-- Web clipping blocks `localhost` and private IP ranges by default and uses strict timeouts and size limits.
-- AI providers validate `base_url` hosts similarly; non-HTTPS base URLs are blocked unless the profile explicitly enables `allow_private_hosts` (intended for local providers like Ollama).
+- `src-tauri/src/net.rs` rejects `localhost`, private IPs, loopback, link-local, documentation ranges, multicast, unspecified hosts, and non-HTTP(S) schemes.
+- AI provider `base_url` values pass through that host validation. Plain HTTP is blocked unless the profile enables `allow_private_hosts`, which is intended for local providers such as Ollama and llama.cpp.
 
 ## Secrets Handling
 
-- AI API keys are stored in the OS keychain via the Rust `keyring` crate.
-- Secrets are not written to the space or to `ai.json` (legacy secrets are migrated on load when possible).
+- AI API keys are stored per space in `.glyph/Glyph/ai_secrets.json` by `src-tauri/src/ai_rig/local_secrets.rs`.
+- Normal workspace file APIs block hidden `.glyph/` paths, so the file tree, previews, and AI tools cannot read that file through standard space-relative access.
+- Secrets are not written to `ai.json`, SQLite index rows, or AI history logs.
 
 ## Audit Logs
 
-- AI requests/responses are optionally logged under `space/cache/ai/` without secrets.
-- Logs include the user-approved context manifest and an `outcome` field (applied/rejected/created_*).
+- Completed and cancelled AI requests write per-run audit JSON under `.glyph/cache/ai/` and chat history under `.glyph/Glyph/ai_history/`.
+- Audit JSON includes request messages, context manifest, truncated context, truncated response, tool events, and an `outcome` field currently initialized as `null`.
