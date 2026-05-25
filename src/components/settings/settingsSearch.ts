@@ -647,6 +647,12 @@ export function searchSettingsEntries(
 		}));
 }
 
+const SETTINGS_SEARCH_HIGHLIGHT_DURATION_MS = 1600;
+const SETTINGS_SEARCH_WAIT_TIMEOUT_MS = 5000;
+
+let settingsSearchRequestId = 0;
+let clearActiveSettingsSearchTarget: (() => void) | null = null;
+
 function findSettingsTarget(
 	root: ParentNode,
 	entry: SettingsSearchEntry,
@@ -674,21 +680,99 @@ function findSettingsTarget(
 	);
 }
 
+function clearSettingsSearchTargets(root: ParentNode) {
+	for (const active of root.querySelectorAll(
+		`.${SETTINGS_SEARCH_TARGET_CLASS}`,
+	)) {
+		active.classList.remove(SETTINGS_SEARCH_TARGET_CLASS);
+	}
+}
+
+function findSettingsTabPanel(entry: SettingsSearchEntry): HTMLElement | null {
+	const root = document.querySelector<HTMLElement>(".settingsTabPanel");
+	const tabLabel = TAB_LABEL_BY_ID.get(entry.tab);
+	const activeTitle = root
+		?.querySelector<HTMLElement>(".settingsPanelTitle")
+		?.textContent?.trim();
+	if (!root || (tabLabel && activeTitle !== tabLabel)) return null;
+	return root;
+}
+
 export function scrollToSettingsSearchEntry(entry: SettingsSearchEntry) {
-	window.setTimeout(() => {
-		const root = document.querySelector<HTMLElement>(".settingsTabPanel");
-		if (!root) return;
-		for (const active of root.querySelectorAll(
-			`.${SETTINGS_SEARCH_TARGET_CLASS}`,
-		)) {
-			active.classList.remove(SETTINGS_SEARCH_TARGET_CLASS);
+	settingsSearchRequestId += 1;
+	const requestId = settingsSearchRequestId;
+	clearActiveSettingsSearchTarget?.();
+	clearActiveSettingsSearchTarget = null;
+
+	let frameId: number | null = null;
+	let observer: MutationObserver | null = null;
+	let waitTimeoutId: number | null = null;
+
+	const cancelPendingScroll = () => {
+		if (frameId !== null) {
+			window.cancelAnimationFrame(frameId);
+			frameId = null;
 		}
+		observer?.disconnect();
+		observer = null;
+		if (waitTimeoutId !== null) {
+			window.clearTimeout(waitTimeoutId);
+			waitTimeoutId = null;
+		}
+	};
+
+	const revealTarget = () => {
+		if (requestId !== settingsSearchRequestId) {
+			cancelPendingScroll();
+			return true;
+		}
+
+		const root = findSettingsTabPanel(entry);
+		if (!root) return false;
 		const target = findSettingsTarget(root, entry);
-		if (!target) return;
+		if (!target) return false;
+
+		cancelPendingScroll();
+		clearSettingsSearchTargets(root);
 		target.classList.add(SETTINGS_SEARCH_TARGET_CLASS);
 		target.scrollIntoView({ block: "center", behavior: "smooth" });
-		window.setTimeout(() => {
+
+		let highlightTimeoutId: number | null = null;
+		const clearHighlight = () => {
+			if (highlightTimeoutId !== null) {
+				window.clearTimeout(highlightTimeoutId);
+				highlightTimeoutId = null;
+			}
 			target.classList.remove(SETTINGS_SEARCH_TARGET_CLASS);
-		}, 1600);
-	}, 80);
+		};
+		highlightTimeoutId = window.setTimeout(() => {
+			clearHighlight();
+			if (clearActiveSettingsSearchTarget === clearHighlight) {
+				clearActiveSettingsSearchTarget = null;
+			}
+		}, SETTINGS_SEARCH_HIGHLIGHT_DURATION_MS);
+		clearActiveSettingsSearchTarget = clearHighlight;
+		return true;
+	};
+
+	const scheduleReveal = () => {
+		if (frameId !== null) return;
+		frameId = window.requestAnimationFrame(() => {
+			frameId = null;
+			revealTarget();
+		});
+	};
+
+	if (revealTarget()) return;
+
+	const observerRoot = document.body ?? document.documentElement;
+	if (!observerRoot) return;
+
+	observer = new MutationObserver(scheduleReveal);
+	observer.observe(observerRoot, { childList: true, subtree: true });
+	scheduleReveal();
+	waitTimeoutId = window.setTimeout(
+		cancelPendingScroll,
+		SETTINGS_SEARCH_WAIT_TIMEOUT_MS,
+	);
 }

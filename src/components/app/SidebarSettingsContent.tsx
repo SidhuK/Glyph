@@ -10,7 +10,7 @@ import { useUILayoutContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
-import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
+import { SETTINGS_TABS } from "../settings/settingsConfig";
 import {
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
@@ -28,10 +28,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	);
 	const hasSearchQuery =
 		settingsSearchActive && settingsSearchQuery.trim().length > 0;
-
-	const selectSettingsTab = (tab: SettingsTab) => {
-		setSettingsTab(tab);
-	};
 
 	const selectSearchResult = (
 		result: (typeof settingsSearchResults)[number],
@@ -142,7 +138,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 									"sidebarQuickActionBtn settingsTabButton",
 									settingsTab === tab.id && "settingsTabButtonActive",
 								)}
-								onClick={() => selectSettingsTab(tab.id)}
+								onClick={() => setSettingsTab(tab.id)}
 								aria-pressed={settingsTab === tab.id}
 								aria-current={settingsTab === tab.id ? "page" : undefined}
 							>

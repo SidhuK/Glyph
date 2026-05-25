@@ -20,7 +20,7 @@ function commandMatchesQuery(command: Command, normalizedQuery: string) {
 	const queryTokens = command.hideWhenQueryEmpty
 		? tokens.filter((token) => token !== "setting" && token !== "settings")
 		: tokens;
-	if (command.hideWhenQueryEmpty && queryTokens.length === 0) return false;
+	if (command.hideWhenQueryEmpty && queryTokens.length === 0) return true;
 	const haystack = [
 		command.label,
 		command.category ?? "",
