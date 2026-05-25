@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "Général",
+		"appearance": "Apparence",
+		"shortcuts": "Raccourcis",
+		"ai": "Glyph IA",
+		"space": "Espace",
+		"git": "Git",
+		"advanced": "Avancé",
+		"about": "À propos"
+	},
+	"groups": {
+		"workspace": "Espace de travail",
+		"features": "Fonctions",
+		"system": "Système"
+	},
+	"search": {
+		"placeholder": "Rechercher dans les réglages",
+		"clear": "Effacer la recherche des réglages",
+		"empty": "Aucun réglage trouvé"
+	},
+	"general": {
+		"language": {
+			"title": "Langue",
+			"label": "Langue de l'app",
+			"description": "Choisissez la langue de l'interface de Glyph.",
+			"systemDescription": "Utilise la langue de votre système si Glyph la prend en charge, sinon l'anglais."
+		}
+	},
+	"shortcuts": {
+		"title": "Personnaliser les raccourcis",
+		"searchPlaceholder": "Rechercher actions, catégories ou raccourcis",
+		"help": "Cliquez sur un raccourci, puis appuyez sur les touches à utiliser. Les raccourcis sont enregistrés automatiquement et nécessitent Cmd, Ctrl ou Option plus une autre touche.",
+		"tipsLabel": "Astuces de raccourcis",
+		"escapeCancels": "Échap annule",
+		"resetRestoresDefault": "Réinitialiser restaure la valeur par défaut",
+		"pressShortcut": "Appuyez sur le raccourci...",
+		"errors": {
+			"disable": "Impossible de désactiver le raccourci.",
+			"reset": "Impossible de réinitialiser le raccourci.",
+			"resetAll": "Impossible de réinitialiser les raccourcis.",
+			"save": "Impossible d'enregistrer le raccourci.",
+			"invalid": "Raccourci invalide.",
+			"conflict": "{{shortcut}} est déjà utilisé par {{action}}."
+		}
+	},
+	"categories": {
+		"workspace": "Espace de travail",
+		"navigation": "Navigation",
+		"search": "Recherche",
+		"file": "Opérations sur les fichiers",
+		"tabs": "Onglets",
+		"ai": "IA",
+		"editor": "Éditeur",
+		"settings": "Réglages"
+	}
+}

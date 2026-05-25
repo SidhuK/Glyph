@@ -1,5 +1,6 @@
 import { Document, Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useTranslation } from "react-i18next";
 import type { SearchAdvancedRequest } from "../../lib/tauri";
 import { buildSearchQuery } from "./commandPaletteHelpers";
 
@@ -19,6 +20,7 @@ export function CommandSearchFilters({
 	request,
 	onChangeQuery,
 }: CommandSearchFiltersProps) {
+	const { t } = useTranslation("app");
 	return (
 		<div className="commandSearchFilters">
 			<button
@@ -33,7 +35,7 @@ export function CommandSearchFilters({
 				}
 			>
 				<HugeiconsIcon icon={Document} size={14} strokeWidth={0.9} />
-				Title
+				{t("commandPalette.filters.title")}
 			</button>
 			<button
 				type="button"
@@ -45,7 +47,7 @@ export function CommandSearchFilters({
 				}
 			>
 				<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
-				Tag
+				{t("commandPalette.filters.tag")}
 			</button>
 		</div>
 	);

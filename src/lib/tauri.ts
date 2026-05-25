@@ -747,6 +747,7 @@ interface TauriCommands {
 		},
 		void
 	>;
+	set_menu_labels: CommandDef<{ labels: Record<string, string> }, void>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;

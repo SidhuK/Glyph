@@ -1,0 +1,44 @@
+{
+	"commandPalette": {
+		"title": "Palette de commandes",
+		"searchCommands": "Rechercher des commandes",
+		"searchNotes": "Rechercher des notes...",
+		"noCommands": "Aucune commande",
+		"general": "Général",
+		"results": "{{count}} résultats",
+		"searching": "Recherche...",
+		"recentlyOpened": "Ouvert récemment",
+		"typeToSearch": "Tapez pour rechercher dans vos notes...",
+		"taggedNotes": "Notes étiquetées",
+		"notes": "Notes",
+		"content": "Contenu",
+		"noResults": "Aucun résultat",
+		"footer": {
+			"navigate": "Naviguer",
+			"openNote": "Ouvrir la note",
+			"runCommand": "Exécuter la commande",
+			"commands": "Commandes",
+			"search": "Recherche",
+			"close": "Fermer"
+		},
+		"filters": {
+			"title": "Titre",
+			"tag": "Étiquette"
+		},
+		"results_one": "{{count}} résultat",
+		"results_other": "{{count}} résultats",
+		"results_many": "{{count}} résultats"
+	},
+	"commands": {
+		"moveDestination": "Destination du déplacement",
+		"settingsCategory": "Réglages > {{tab}}",
+		"openAnotherSpace": "Ouvrir un autre espace",
+		"openSpace": "Ouvrir un espace",
+		"pinCurrentFile": "Épingler le fichier actuel",
+		"unpinCurrentFile": "Désépingler le fichier actuel",
+		"goBack": "Retour",
+		"createFolderErrorTitle": "Impossible de créer le dossier",
+		"licensePageErrorTitle": "Impossible d'ouvrir la page de licence",
+		"tryAgain": "Réessayez dans un instant."
+	}
+}

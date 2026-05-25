@@ -1,0 +1,44 @@
+{
+	"commandPalette": {
+		"title": "Paleta de comandos",
+		"searchCommands": "Buscar comandos",
+		"searchNotes": "Buscar notas...",
+		"noCommands": "No hay comandos",
+		"general": "General",
+		"results": "{{count}} resultados",
+		"searching": "Buscando...",
+		"recentlyOpened": "Abierto recientemente",
+		"typeToSearch": "Escribe para buscar en tus notas...",
+		"taggedNotes": "Notas etiquetadas",
+		"notes": "Notas",
+		"content": "Contenido",
+		"noResults": "Sin resultados",
+		"footer": {
+			"navigate": "Navegar",
+			"openNote": "Abrir nota",
+			"runCommand": "Ejecutar comando",
+			"commands": "Comandos",
+			"search": "Buscar",
+			"close": "Cerrar"
+		},
+		"filters": {
+			"title": "Título",
+			"tag": "Etiqueta"
+		},
+		"results_one": "{{count}} resultado",
+		"results_other": "{{count}} resultados",
+		"results_many": "{{count}} resultados"
+	},
+	"commands": {
+		"moveDestination": "Destino",
+		"settingsCategory": "Ajustes > {{tab}}",
+		"openAnotherSpace": "Abrir otro espacio",
+		"openSpace": "Abrir espacio",
+		"pinCurrentFile": "Fijar archivo actual",
+		"unpinCurrentFile": "Desfijar archivo actual",
+		"goBack": "Atrás",
+		"createFolderErrorTitle": "No se pudo crear la carpeta",
+		"licensePageErrorTitle": "No se pudo abrir la página de licencia",
+		"tryAgain": "Inténtalo de nuevo en un momento."
+	}
+}

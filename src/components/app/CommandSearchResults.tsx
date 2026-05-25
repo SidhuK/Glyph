@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { RecentFile } from "../../lib/settings";
 import type { SearchResult } from "../../lib/tauri";
 import { FileText } from "../Icons";
@@ -47,6 +48,7 @@ function SearchResultItem({
 	onMouseEnter,
 	onSelect,
 }: SearchResultItemProps) {
+	const { t } = useTranslation("common");
 	const resultFolder = resultDisplayFolder(result.id);
 
 	return (
@@ -64,7 +66,7 @@ function SearchResultItem({
 			<div className="commandPaletteResultContent">
 				<div className="commandPaletteResultHeader">
 					<div className="commandPaletteResultTitle">
-						{result.title || "Untitled"}
+						{result.title || t("untitled")}
 					</div>
 					{resultFolder ? (
 						<div className="commandPaletteResultPath mono" title={resultFolder}>
@@ -114,13 +116,16 @@ export function SearchResultsList({
 	onSetSelectedIndex,
 	onSelectResult,
 }: SearchResultsListProps) {
+	const { t } = useTranslation(["app", "common"]);
 	const trimmed = query.trim();
 
 	if (!trimmed) {
 		if (recentFiles.length > 0) {
 			return (
 				<>
-					<div className="commandPaletteGroupLabel">Recently opened</div>
+					<div className="commandPaletteGroupLabel">
+						{t("app:commandPalette.recentlyOpened")}
+					</div>
 					{recentFiles.map((file, index) => (
 						<button
 							key={`${file.spacePath}:${file.path}`}
@@ -153,7 +158,9 @@ export function SearchResultsList({
 			);
 		}
 		return (
-			<div className="commandPaletteEmpty">Type to search your notes…</div>
+			<div className="commandPaletteEmpty">
+				{t("app:commandPalette.typeToSearch")}
+			</div>
 		);
 	}
 
@@ -162,7 +169,9 @@ export function SearchResultsList({
 			{titleMatches.length > 0 && (
 				<>
 					<div className="commandPaletteGroupLabel">
-						{trimmed.startsWith("#") ? "Tagged Notes" : "Notes"}
+						{trimmed.startsWith("#")
+							? t("app:commandPalette.taggedNotes")
+							: t("app:commandPalette.notes")}
 					</div>
 					{titleMatches.map((r, index) => (
 						<SearchResultItem
@@ -178,7 +187,9 @@ export function SearchResultsList({
 			)}
 			{contentMatches.length > 0 && (
 				<>
-					<div className="commandPaletteGroupLabel">Content</div>
+					<div className="commandPaletteGroupLabel">
+						{t("app:commandPalette.content")}
+					</div>
 					{contentMatches.map((r, index) => {
 						const globalIndex = titleMatches.length + index;
 						return (
@@ -196,11 +207,17 @@ export function SearchResultsList({
 			)}
 			{titleMatches.length === 0 &&
 				contentMatches.length === 0 &&
-				!isSearching && <div className="commandPaletteEmpty">No results</div>}
+				!isSearching && (
+					<div className="commandPaletteEmpty">
+						{t("app:commandPalette.noResults")}
+					</div>
+				)}
 			{isSearching &&
 				titleMatches.length === 0 &&
 				contentMatches.length === 0 && (
-					<div className="commandPaletteEmpty">Searching…</div>
+					<div className="commandPaletteEmpty">
+						{t("app:commandPalette.searching")}
+					</div>
 				)}
 		</>
 	);

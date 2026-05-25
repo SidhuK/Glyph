@@ -1,0 +1,23 @@
+{
+	"actions": {
+		"close": "Schließen",
+		"disable": "Deaktivieren",
+		"reset": "Zurücksetzen",
+		"resetAll": "Alle zurücksetzen"
+	},
+	"language": {
+		"system": "System",
+		"en": "Englisch",
+		"es": "Spanisch",
+		"de": "Deutsch",
+		"fr": "Französisch",
+		"pt-BR": "Portugiesisch (Brasilien)",
+		"ja": "Japanisch",
+		"ko": "Koreanisch"
+	},
+	"status": {
+		"disabled": "Deaktiviert",
+		"loading": "Lädt..."
+	},
+	"untitled": "Unbenannt"
+}

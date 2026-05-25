@@ -6,6 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
@@ -18,6 +19,7 @@ import {
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
+	const { t } = useTranslation(["settings", "app"]);
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
@@ -57,7 +59,9 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						onClick={closeSettings}
 					>
 						<HugeiconsIcon icon={ArrowLeft02Icon} size={14} strokeWidth={0.9} />
-						<span className="sidebarQuickActionLabel">Back</span>
+						<span className="sidebarQuickActionLabel">
+							{t("app:commands.goBack", { defaultValue: "Back" })}
+						</span>
 					</button>
 				</div>
 
@@ -82,15 +86,21 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								clearSettingsSearch();
 							}
 						}}
-						placeholder="Search settings"
-						aria-label="Search settings"
+						placeholder={t("settings:search.placeholder", {
+							defaultValue: "Search settings",
+						})}
+						aria-label={t("settings:search.placeholder", {
+							defaultValue: "Search settings",
+						})}
 					/>
 					{hasSearchQuery ? (
 						<button
 							type="button"
 							className="settingsSidebarSearchClear"
 							onClick={clearSettingsSearch}
-							aria-label="Clear settings search"
+							aria-label={t("settings:search.clear", {
+								defaultValue: "Clear settings search",
+							})}
 						>
 							<X size={13} />
 						</button>
@@ -128,7 +138,11 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								</button>
 							))
 						) : (
-							<div className="settingsSearchEmpty">No matching settings</div>
+							<div className="settingsSearchEmpty">
+								{t("settings:search.empty", {
+									defaultValue: "No matching settings",
+								})}
+							</div>
 						)}
 					</div>
 				) : (
@@ -150,7 +164,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 									{tab.renderIcon()}
 								</span>
 								<span className="sidebarQuickActionLabel settingsTabLabel">
-									{tab.label}
+									{t(`settings:${tab.labelKey}`)}
 								</span>
 							</button>
 						))}

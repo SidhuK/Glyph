@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "Geral",
+		"appearance": "Aparência",
+		"shortcuts": "Atalhos",
+		"ai": "Glyph IA",
+		"space": "Espaço",
+		"git": "Git",
+		"advanced": "Avançado",
+		"about": "Sobre"
+	},
+	"groups": {
+		"workspace": "Área de trabalho",
+		"features": "Recursos",
+		"system": "Sistema"
+	},
+	"search": {
+		"placeholder": "Buscar configurações",
+		"clear": "Limpar busca de configurações",
+		"empty": "Nenhuma configuração encontrada"
+	},
+	"general": {
+		"language": {
+			"title": "Idioma",
+			"label": "Idioma do aplicativo",
+			"description": "Escolha o idioma usado na interface do Glyph.",
+			"systemDescription": "Usa o idioma do sistema operacional quando o Glyph oferece suporte; caso contrário, usa inglês."
+		}
+	},
+	"shortcuts": {
+		"title": "Personalizar atalhos",
+		"searchPlaceholder": "Buscar ações, categorias ou atalhos",
+		"help": "Clique em um atalho e pressione as teclas que deseja usar. Os atalhos são salvos automaticamente e precisam de Cmd, Ctrl ou Option mais outra tecla.",
+		"tipsLabel": "Dicas de atalhos",
+		"escapeCancels": "Esc cancela",
+		"resetRestoresDefault": "Redefinir restaura o padrão",
+		"pressShortcut": "Pressione o atalho...",
+		"errors": {
+			"disable": "Falha ao desativar o atalho.",
+			"reset": "Falha ao redefinir o atalho.",
+			"resetAll": "Falha ao redefinir os atalhos.",
+			"save": "Falha ao salvar o atalho.",
+			"invalid": "Atalho inválido.",
+			"conflict": "{{shortcut}} já é usado por {{action}}."
+		}
+	},
+	"categories": {
+		"workspace": "Área de trabalho",
+		"navigation": "Navegação",
+		"search": "Busca",
+		"file": "Operações de arquivo",
+		"tabs": "Abas",
+		"ai": "IA",
+		"editor": "Editor",
+		"settings": "Configurações"
+	}
+}

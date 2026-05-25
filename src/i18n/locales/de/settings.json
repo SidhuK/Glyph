@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "Allgemein",
+		"appearance": "Darstellung",
+		"shortcuts": "Tastenkürzel",
+		"ai": "Glyph AI",
+		"space": "Space",
+		"git": "Git",
+		"advanced": "Erweitert",
+		"about": "Info"
+	},
+	"groups": {
+		"workspace": "Arbeitsbereich",
+		"features": "Funktionen",
+		"system": "System"
+	},
+	"search": {
+		"placeholder": "Einstellungen suchen",
+		"clear": "Einstellungssuche löschen",
+		"empty": "Keine passenden Einstellungen"
+	},
+	"general": {
+		"language": {
+			"title": "Sprache",
+			"label": "App-Sprache",
+			"description": "Wählen Sie die Sprache für die Oberfläche von Glyph.",
+			"systemDescription": "Verwendet die Sprache Ihres Betriebssystems, wenn Glyph sie unterstützt, sonst Englisch."
+		}
+	},
+	"shortcuts": {
+		"title": "Tastenkürzel anpassen",
+		"searchPlaceholder": "Aktionen, Kategorien oder Tastenkürzel suchen",
+		"help": "Klicken Sie auf ein Tastenkürzel und drücken Sie dann die gewünschten Tasten. Tastenkürzel werden automatisch gespeichert und benötigen Cmd, Strg oder Option plus eine weitere Taste.",
+		"tipsLabel": "Tipps zu Tastenkürzeln",
+		"escapeCancels": "Esc bricht ab",
+		"resetRestoresDefault": "Zurücksetzen stellt Standard wieder her",
+		"pressShortcut": "Tastenkürzel drücken...",
+		"errors": {
+			"disable": "Tastenkürzel konnte nicht deaktiviert werden.",
+			"reset": "Tastenkürzel konnte nicht zurückgesetzt werden.",
+			"resetAll": "Tastenkürzel konnten nicht zurückgesetzt werden.",
+			"save": "Tastenkürzel konnte nicht gespeichert werden.",
+			"invalid": "Ungültiges Tastenkürzel.",
+			"conflict": "{{shortcut}} wird bereits von {{action}} verwendet."
+		}
+	},
+	"categories": {
+		"workspace": "Arbeitsbereich",
+		"navigation": "Navigation",
+		"search": "Suche",
+		"file": "Dateivorgänge",
+		"tabs": "Tabs",
+		"ai": "KI",
+		"editor": "Editor",
+		"settings": "Einstellungen"
+	}
+}

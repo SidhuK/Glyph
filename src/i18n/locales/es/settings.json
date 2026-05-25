@@ -1,0 +1,57 @@
+{
+	"tabs": {
+		"general": "General",
+		"appearance": "Apariencia",
+		"shortcuts": "Atajos",
+		"ai": "Glyph AI",
+		"space": "Espacio",
+		"git": "Git",
+		"advanced": "Avanzado",
+		"about": "Acerca de"
+	},
+	"groups": {
+		"workspace": "Espacio de trabajo",
+		"features": "Funciones",
+		"system": "Sistema"
+	},
+	"search": {
+		"placeholder": "Buscar ajustes",
+		"clear": "Borrar búsqueda de ajustes",
+		"empty": "No hay ajustes coincidentes"
+	},
+	"general": {
+		"language": {
+			"title": "Idioma",
+			"label": "Idioma de la app",
+			"description": "Elige el idioma de la interfaz de Glyph.",
+			"systemDescription": "Usa el idioma del sistema operativo si Glyph lo admite; si no, inglés."
+		}
+	},
+	"shortcuts": {
+		"title": "Personalizar atajos",
+		"searchPlaceholder": "Buscar acciones, categorías o atajos",
+		"help": "Haz clic en un atajo y pulsa las teclas que quieras usar. Se guardan automáticamente y requieren Cmd, Ctrl u Option más otra tecla.",
+		"tipsLabel": "Consejos de atajos",
+		"escapeCancels": "Esc cancela",
+		"resetRestoresDefault": "Restablecer restaura el valor predeterminado",
+		"pressShortcut": "Pulsa un atajo...",
+		"errors": {
+			"disable": "No se pudo desactivar el atajo.",
+			"reset": "No se pudo restablecer el atajo.",
+			"resetAll": "No se pudieron restablecer los atajos.",
+			"save": "No se pudo guardar el atajo.",
+			"invalid": "Atajo no válido.",
+			"conflict": "{{shortcut}} ya lo usa {{action}}."
+		}
+	},
+	"categories": {
+		"workspace": "Espacio de trabajo",
+		"navigation": "Navegación",
+		"search": "Buscar",
+		"file": "Operaciones de archivos",
+		"tabs": "Pestañas",
+		"ai": "IA",
+		"editor": "Editor",
+		"settings": "Ajustes"
+	}
+}

@@ -1,0 +1,44 @@
+{
+	"commandPalette": {
+		"title": "Paleta de comandos",
+		"searchCommands": "Buscar comandos",
+		"searchNotes": "Buscar notas...",
+		"noCommands": "Nenhum comando",
+		"general": "Geral",
+		"results": "{{count}} resultados",
+		"searching": "Buscando...",
+		"recentlyOpened": "Abertos recentemente",
+		"typeToSearch": "Digite para buscar suas notas...",
+		"taggedNotes": "Notas com etiquetas",
+		"notes": "Notas",
+		"content": "Conteúdo",
+		"noResults": "Nenhum resultado",
+		"footer": {
+			"navigate": "Navegar",
+			"openNote": "Abrir nota",
+			"runCommand": "Executar comando",
+			"commands": "Comandos",
+			"search": "Buscar",
+			"close": "Fechar"
+		},
+		"filters": {
+			"title": "Título",
+			"tag": "Etiqueta"
+		},
+		"results_one": "{{count}} resultado",
+		"results_other": "{{count}} resultados",
+		"results_many": "{{count}} resultados"
+	},
+	"commands": {
+		"moveDestination": "Destino da movimentação",
+		"settingsCategory": "Configurações > {{tab}}",
+		"openAnotherSpace": "Abrir outro espaço",
+		"openSpace": "Abrir espaço",
+		"pinCurrentFile": "Fixar arquivo atual",
+		"unpinCurrentFile": "Desafixar arquivo atual",
+		"goBack": "Voltar",
+		"createFolderErrorTitle": "Não foi possível criar a pasta",
+		"licensePageErrorTitle": "Não foi possível abrir a página de licença",
+		"tryAgain": "Tente novamente em instantes."
+	}
+}

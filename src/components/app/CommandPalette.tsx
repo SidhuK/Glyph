@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search } from "../Icons";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
@@ -51,6 +52,7 @@ export function CommandPalette({
 	spacePath,
 	onSelectSearchResult,
 }: CommandPaletteProps) {
+	const { t } = useTranslation("app");
 	const canSearch = spacePath !== null;
 	const [state, setState] = useState<{
 		activeTab: Tab;
@@ -240,7 +242,9 @@ export function CommandPalette({
 				].join(" ")}
 				showCloseButton={false}
 			>
-				<DialogTitle className="sr-only">Command Palette</DialogTitle>
+				<DialogTitle className="sr-only">
+					{t("commandPalette.title")}
+				</DialogTitle>
 
 				<div className="commandPaletteHeader">
 					<div className="commandPaletteInputWrapper">
@@ -253,7 +257,9 @@ export function CommandPalette({
 							ref={inputRef}
 							className="commandPaletteInput"
 							placeholder={
-								activeTab === "commands" ? "Search Commands" : "Search notes…"
+								activeTab === "commands"
+									? t("commandPalette.searchCommands")
+									: t("commandPalette.searchNotes")
 							}
 							value={query}
 							onChange={(e) =>
@@ -308,8 +314,10 @@ export function CommandPalette({
 										aria-live="polite"
 									>
 										{isSearching
-											? "Searching..."
-											: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
+											? t("commandPalette.searching")
+											: t("commandPalette.results", {
+													count: titleMatches.length + contentMatches.length,
+												})}
 									</div>
 								) : null}
 								<SearchResultsList

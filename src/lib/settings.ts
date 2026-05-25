@@ -1,5 +1,6 @@
 import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import { normalizeRelPath } from "../utils/path";
 import {
 	type Shortcut,
@@ -22,6 +23,7 @@ import {
 } from "./uiThemes";
 
 export type { AiAssistantMode } from "./tauri";
+export type { AppLanguage } from "../i18n/locales";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 let storeInstance: LazyStore | null = null;
@@ -272,6 +274,7 @@ async function emitSettingsUpdated(payload: {
 		folioMode?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
+		language?: AppLanguage;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -325,6 +328,7 @@ interface AppSettings {
 	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
+		language: AppLanguage;
 		theme: ThemeMode;
 		autoUpdateCheckInterval: AutoUpdateCheckInterval;
 		lightThemeId: UiLightThemeId;
@@ -361,6 +365,7 @@ const KEYS = {
 	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
+	language: "ui.language",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
@@ -590,6 +595,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawOnboardingUsedCommandPalette,
 		rawOnboardingOpenedDailyNote,
 		rawAiEnabled,
+		rawLanguage,
 		rawAiAssistantMode,
 		rawTheme,
 		rawAutoUpdateCheckInterval,
@@ -631,6 +637,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.onboardingUsedCommandPalette),
 		store.get<boolean | null>(KEYS.onboardingOpenedDailyNote),
 		store.get<boolean | null>(KEYS.aiEnabled),
+		store.get<unknown>(KEYS.language),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
 		store.get<unknown>(KEYS.autoUpdateCheckInterval),
@@ -675,6 +682,7 @@ export async function loadSettings(): Promise<AppSettings> {
 	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
+	const language = normalizeAppLanguage(rawLanguage);
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
 	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
@@ -774,6 +782,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		onboarding,
 		ui: {
 			aiEnabled,
+			language,
 			theme,
 			autoUpdateCheckInterval,
 			lightThemeId,
@@ -956,6 +965,14 @@ export async function setAiEnabled(enabled: boolean): Promise<void> {
 	await store.set(KEYS.aiEnabled, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
+}
+
+export async function setLanguage(language: AppLanguage): Promise<void> {
+	const store = await getStore();
+	const normalized = normalizeAppLanguage(language);
+	await store.set(KEYS.language, normalized);
+	await store.save();
+	void emitSettingsUpdated({ ui: { language: normalized } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {

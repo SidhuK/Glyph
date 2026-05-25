@@ -128,6 +128,7 @@ struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
+    menu_labels: Mutex<HashMap<String, String>>,
 }
 
 #[derive(Default)]
@@ -138,6 +139,7 @@ struct QuickNoteShortcutState {
 fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     menu_shortcuts: &HashMap<String, Option<String>>,
+    menu_labels: &HashMap<String, String>,
     id: &str,
     label: &str,
     enabled: bool,
@@ -152,11 +154,21 @@ fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
         Some(override_val) => override_val.clone(),
         None => manifest_accelerator.or_else(|| default_accelerator.map(str::to_string)),
     };
-    let label = manifest_command
-        .as_ref()
-        .map(|command| command.label.as_str())
+    let label = menu_labels
+        .get(id)
+        .filter(|value| !value.trim().is_empty())
+        .map(String::as_str)
+        .or_else(|| manifest_command.as_ref().map(|command| command.label.as_str()))
         .unwrap_or(label);
     MenuItem::with_id(app, id, label, enabled, accelerator.as_deref())
+}
+
+fn menu_label(menu_labels: &HashMap<String, String>, id: &str, fallback: &str) -> String {
+    menu_labels
+        .get(id)
+        .filter(|value| !value.trim().is_empty())
+        .cloned()
+        .unwrap_or_else(|| fallback.to_string())
 }
 
 #[derive(Clone, Serialize)]
@@ -225,14 +237,19 @@ mod tests {
 fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     recent_spaces: &[String],
+    menu_labels: &HashMap<String, String>,
 ) -> tauri::Result<Submenu<R>> {
     let revision = next_recent_spaces_menu_revision();
-    let mut builder = SubmenuBuilder::with_id(app, RECENT_SPACES_MENU_ID, "Recent Spaces");
+    let mut builder = SubmenuBuilder::with_id(
+        app,
+        RECENT_SPACES_MENU_ID,
+        menu_label(menu_labels, RECENT_SPACES_MENU_ID, "Recent Spaces"),
+    );
     if recent_spaces.is_empty() {
         let none = MenuItem::with_id(
             app,
             recent_space_none_item_id(revision),
-            "No Recent Spaces",
+            menu_label(menu_labels, "space.recent.empty", "No Recent Spaces"),
             false,
             None::<&str>,
         )?;
@@ -266,6 +283,7 @@ fn find_submenu_by_id<R: tauri::Runtime>(item: &MenuItemKind<R>, id: &str) -> Op
 fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     recent_spaces: &[String],
+    menu_labels: &HashMap<String, String>,
 ) -> Result<bool, String> {
     let Some(menu) = app.menu() else {
         return Ok(false);
@@ -294,7 +312,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
         let none = MenuItem::with_id(
             app,
             recent_space_none_item_id(revision),
-            "No Recent Spaces",
+            menu_label(menu_labels, "space.recent.empty", "No Recent Spaces"),
             false,
             None::<&str>,
         )
@@ -324,12 +342,17 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     space_open: bool,
     recent_spaces: &[String],
     menu_shortcuts: &HashMap<String, Option<String>>,
+    menu_labels: &HashMap<String, String>,
 ) -> tauri::Result<Menu<R>> {
     #[cfg(target_os = "macos")]
     let app_about = MenuItem::with_id(
         app,
         "app.about",
-        format!("About {}", app.package_info().name),
+        menu_label(
+            menu_labels,
+            "app.about",
+            &format!("About {}", app.package_info().name),
+        ),
         true,
         None::<&str>,
     )?;
@@ -337,6 +360,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let app_settings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "app.settings",
         "Settings…",
         true,
@@ -364,6 +388,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let open_space = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.open",
         "Open Space…",
         true,
@@ -372,6 +397,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let create_space = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.create",
         "New Space…",
         true,
@@ -380,6 +406,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let close_space = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.close",
         "Close Space",
         space_open,
@@ -388,6 +415,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let reveal_space = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.reveal",
         "Show Space in Finder",
         true,
@@ -396,6 +424,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let open_space_settings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.settings",
         "Space Settings…",
         true,
@@ -404,6 +433,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let sync_now = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.git_sync_now",
         "Sync Now",
         true,
@@ -412,6 +442,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let open_git_settings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "space.git_settings",
         "Git Sync Settings…",
         true,
@@ -420,6 +451,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let new_note = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "file.new_note",
         "New Note",
         true,
@@ -428,6 +460,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let create_from_template = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "file.create_from_template",
         "Create From Template",
         true,
@@ -436,6 +469,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let open_daily_note = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "file.open_daily_note",
         "Open Daily Note",
         true,
@@ -444,6 +478,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let save_note = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "file.save_note",
         "Save",
         true,
@@ -452,6 +487,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let close_tab = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "file.close_tab",
         "Close Tab",
         true,
@@ -460,18 +496,20 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let toggle_ai = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "ai.toggle",
         "Toggle AI Pane",
         true,
         Some("CmdOrCtrl+Shift+A"),
     )?;
     let editor_bold =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.bold", "Bold", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.bold", "Bold", true, None)?;
     let editor_italic =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.italic", "Italic", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.italic", "Italic", true, None)?;
     let editor_underline = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.underline",
         "Underline",
         true,
@@ -480,6 +518,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_strikethrough = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.strikethrough",
         "Strikethrough",
         true,
@@ -488,6 +527,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_link_set = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.link_set",
         "Insert/Edit Link…",
         true,
@@ -496,6 +536,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_link_clear = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.link_clear",
         "Remove Link",
         true,
@@ -504,6 +545,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_heading_1 = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.heading_1",
         "Heading 1",
         true,
@@ -512,6 +554,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_heading_2 = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.heading_2",
         "Heading 2",
         true,
@@ -520,6 +563,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_heading_3 = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.heading_3",
         "Heading 3",
         true,
@@ -528,6 +572,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_collapse_all_headings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.collapse_all_headings",
         "Collapse All Headings",
         true,
@@ -536,6 +581,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_expand_all_headings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.expand_all_headings",
         "Expand All Headings",
         true,
@@ -544,6 +590,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_bullet_list = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.bullet_list",
         "Bullet List",
         true,
@@ -552,6 +599,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_numbered_list = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.numbered_list",
         "Numbered List",
         true,
@@ -560,16 +608,18 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_todo_list = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.todo_list",
         "To-do List",
         true,
         None,
     )?;
     let editor_quote =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.quote", "Quote", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.quote", "Quote", true, None)?;
     let editor_code_block = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.code_block",
         "Code Block",
         true,
@@ -578,18 +628,20 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_mermaid_chart = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.mermaid_chart",
         "Mermaid Chart",
         true,
         None,
     )?;
     let editor_table =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.table", "Table", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.table", "Table", true, None)?;
     let editor_divider =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.divider", "Divider", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.divider", "Divider", true, None)?;
     let editor_callout_info = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.callout_info",
         "Info Callout",
         true,
@@ -598,6 +650,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_callout_warning = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.callout_warning",
         "Warning Callout",
         true,
@@ -606,6 +659,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_callout_error = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.callout_error",
         "Error Callout",
         true,
@@ -614,6 +668,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_callout_success = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.callout_success",
         "Success Callout",
         true,
@@ -622,16 +677,18 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_callout_tip = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.callout_tip",
         "Tip Callout",
         true,
         None,
     )?;
     let editor_color_gray =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_gray", "Gray", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.color_gray", "Gray", true, None)?;
     let editor_color_brown = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_brown",
         "Brown",
         true,
@@ -640,6 +697,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_color_orange = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_orange",
         "Orange",
         true,
@@ -648,6 +706,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_color_yellow = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_yellow",
         "Yellow",
         true,
@@ -656,26 +715,29 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_color_green = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_green",
         "Green",
         true,
         None,
     )?;
     let editor_color_blue =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_blue", "Blue", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.color_blue", "Blue", true, None)?;
     let editor_color_purple = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_purple",
         "Purple",
         true,
         None,
     )?;
     let editor_color_red =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_red", "Red", true, None)?;
+        menu_item_with_shortcut(app, menu_shortcuts, menu_labels, "editor.color_red", "Red", true, None)?;
     let editor_color_clear = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.color_clear",
         "Clear Color",
         true,
@@ -684,6 +746,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_highlight_yellow = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.highlight_yellow",
         "Yellow",
         true,
@@ -692,6 +755,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_highlight_blue = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.highlight_blue",
         "Blue",
         true,
@@ -700,6 +764,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_highlight_green = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.highlight_green",
         "Green",
         true,
@@ -708,6 +773,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_highlight_red = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.highlight_red",
         "Red",
         true,
@@ -716,6 +782,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let editor_highlight_clear = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "editor.highlight_clear",
         "Clear Highlight",
         true,
@@ -724,6 +791,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let attach_current_note = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "ai.attach_current_note",
         "Send Current Note to AI",
         true,
@@ -732,6 +800,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let attach_all_open_notes = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "ai.attach_all_open_notes",
         "Send All Open Notes to AI",
         true,
@@ -740,16 +809,17 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let open_ai_settings = menu_item_with_shortcut(
         app,
         menu_shortcuts,
+        menu_labels,
         "ai.settings",
         "AI Settings…",
         true,
         None,
     )?;
-    let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces)?;
+    let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces, menu_labels)?;
 
     let file_menu = Submenu::with_items(
         app,
-        "File",
+        menu_label(menu_labels, "menu.file", "File"),
         true,
         &[
             &new_note,
@@ -763,7 +833,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
 
     let ai_menu = Submenu::with_items(
         app,
-        "AI",
+        menu_label(menu_labels, "menu.ai", "AI"),
         true,
         &[
             &toggle_ai,
@@ -776,7 +846,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_text_color_menu = Submenu::with_items(
         app,
-        "Text Color",
+        menu_label(menu_labels, "editor.text_color.menu", "Text Color"),
         true,
         &[
             &editor_color_gray,
@@ -793,7 +863,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_text_highlight_menu = Submenu::with_items(
         app,
-        "Text Highlight",
+        menu_label(menu_labels, "editor.text_highlight.menu", "Text Highlight"),
         true,
         &[
             &editor_highlight_yellow,
@@ -806,7 +876,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_menu = Submenu::with_items(
         app,
-        "Markdown",
+        menu_label(menu_labels, "menu.markdown", "Markdown"),
         true,
         &[
             &editor_bold,
@@ -847,7 +917,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let space_menu = Submenu::with_id_and_items(
         app,
         SPACE_MENU_ID,
-        "Space",
+        menu_label(menu_labels, "menu.space", "Space"),
         true,
         &[
             &create_space,
@@ -865,7 +935,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
 
     let edit_menu = Submenu::with_items(
         app,
-        "Edit",
+        menu_label(menu_labels, "menu.edit", "Edit"),
         true,
         &[
             &PredefinedMenuItem::undo(app, None)?,
@@ -881,7 +951,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let window_menu = Submenu::with_id_and_items(
         app,
         WINDOW_SUBMENU_ID,
-        "Window",
+        menu_label(menu_labels, "menu.window", "Window"),
         true,
         &[
             &PredefinedMenuItem::minimize(app, None)?,
@@ -895,7 +965,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let help_menu = Submenu::with_id_and_items(
         app,
         HELP_SUBMENU_ID,
-        "Help",
+        menu_label(menu_labels, "menu.help", "Help"),
         true,
         &[
             #[cfg(not(target_os = "macos"))]
@@ -1089,12 +1159,24 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
         .lock()
         .map_err(|_| "failed to lock menu shortcuts state".to_string())?
         .clone();
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
         .unwrap_or(false);
-    let menu = build_main_menu(&app, visible, space_open, &recent_spaces, &menu_shortcuts)
-        .map_err(|error| error.to_string())?;
+    let menu = build_main_menu(
+        &app,
+        visible,
+        space_open,
+        &recent_spaces,
+        &menu_shortcuts,
+        &menu_labels,
+    )
+    .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
 }
@@ -1125,7 +1207,13 @@ fn set_recent_spaces_menu(
         .lock()
         .map_err(|_| "failed to lock recent spaces state".to_string())? = filtered.clone();
 
-    match try_update_recent_spaces_submenu(&app, &filtered) {
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
+
+    match try_update_recent_spaces_submenu(&app, &filtered, &menu_labels) {
         Ok(true) => return Ok(()),
         Ok(false) => {}
         Err(error) => {
@@ -1152,6 +1240,7 @@ fn set_recent_spaces_menu(
         space_open,
         &filtered,
         &menu_shortcuts,
+        &menu_labels,
     )
     .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
@@ -1192,6 +1281,11 @@ fn set_menu_shortcuts(
         .show_markdown_menu
         .lock()
         .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
@@ -1202,6 +1296,7 @@ fn set_menu_shortcuts(
         space_open,
         &recent_spaces,
         &accelerators,
+        &menu_labels,
     )
     .map_err(|error| {
         error!("failed to build menu with shortcut accelerators: {error}");
@@ -1215,6 +1310,61 @@ fn set_menu_shortcuts(
         .menu_shortcuts
         .lock()
         .map_err(|_| "failed to lock menu shortcuts state".to_string())? = accelerators;
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_menu_labels(
+    app: tauri::AppHandle,
+    menu_state: State<'_, MenuState>,
+    labels: HashMap<String, String>,
+) -> Result<(), String> {
+    let sanitized = labels
+        .into_iter()
+        .filter_map(|(key, value)| {
+            let key = key.trim().to_string();
+            let value = value.trim().to_string();
+            if key.is_empty() || value.is_empty() {
+                None
+            } else {
+                Some((key, value.chars().take(160).collect::<String>()))
+            }
+        })
+        .collect::<HashMap<_, _>>();
+
+    *menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())? = sanitized.clone();
+
+    let recent_spaces = menu_state
+        .recent_spaces
+        .lock()
+        .map_err(|_| "failed to lock recent spaces state".to_string())?
+        .clone();
+    let show_markdown_menu = *menu_state
+        .show_markdown_menu
+        .lock()
+        .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let menu_shortcuts = menu_state
+        .menu_shortcuts
+        .lock()
+        .map_err(|_| "failed to lock menu shortcuts state".to_string())?
+        .clone();
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let menu = build_main_menu(
+        &app,
+        show_markdown_menu,
+        space_open,
+        &recent_spaces,
+        &menu_shortcuts,
+        &sanitized,
+    )
+    .map_err(|error| error.to_string())?;
+    app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
 }
 
@@ -1288,7 +1438,7 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
-        .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new()))
+        .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new(), &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
             id if id.starts_with("space.recent.") => {
                 let Some(index) = parse_recent_space_index(id) else {
@@ -1406,6 +1556,7 @@ pub fn run() {
             set_recent_spaces_menu,
             show_space_menu,
             set_menu_shortcuts,
+            set_menu_labels,
             set_window_vibrancy_theme,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,

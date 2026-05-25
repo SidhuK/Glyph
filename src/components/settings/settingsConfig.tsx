@@ -24,6 +24,7 @@ export type SettingsTab =
 export interface SettingsTabMeta {
 	id: SettingsTab;
 	label: string;
+	labelKey: string;
 	renderIcon: () => ReactElement;
 }
 
@@ -37,6 +38,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
+		labelKey: "tabs.general",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
 		),
@@ -44,6 +46,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "appearance",
 		label: "Appearance",
+		labelKey: "tabs.appearance",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />
 		),
@@ -51,6 +54,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "shortcuts",
 		label: "Shortcuts",
+		labelKey: "tabs.shortcuts",
 		renderIcon: () => (
 			<HugeiconsIcon icon={CommandIcon} size={14} strokeWidth={0.9} />
 		),
@@ -58,6 +62,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "ai",
 		label: "Glyph AI",
+		labelKey: "tabs.ai",
 		renderIcon: () => (
 			<HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={0.9} />
 		),
@@ -65,11 +70,13 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "space",
 		label: "Space",
+		labelKey: "tabs.space",
 		renderIcon: () => <FolderOpen size={14} />,
 	},
 	{
 		id: "git",
 		label: "Git",
+		labelKey: "tabs.git",
 		renderIcon: () => (
 			<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
 		),
@@ -77,6 +84,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "advanced",
 		label: "Advanced",
+		labelKey: "tabs.advanced",
 		renderIcon: () => (
 			<HugeiconsIcon icon={ToolsIcon} size={14} strokeWidth={0.9} />
 		),
@@ -84,6 +92,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "about",
 		label: "About",
+		labelKey: "tabs.about",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Archive02Icon} size={14} strokeWidth={0.9} />
 		),

@@ -1,0 +1,42 @@
+{
+	"commandPalette": {
+		"title": "명령 팔레트",
+		"searchCommands": "명령 검색",
+		"searchNotes": "노트 검색...",
+		"noCommands": "명령 없음",
+		"general": "일반",
+		"results": "결과 {{count}}개",
+		"searching": "검색 중...",
+		"recentlyOpened": "최근 열림",
+		"typeToSearch": "노트를 검색하려면 입력하세요...",
+		"taggedNotes": "태그된 노트",
+		"notes": "노트",
+		"content": "내용",
+		"noResults": "결과 없음",
+		"footer": {
+			"navigate": "탐색",
+			"openNote": "노트 열기",
+			"runCommand": "명령 실행",
+			"commands": "명령",
+			"search": "검색",
+			"close": "닫기"
+		},
+		"filters": {
+			"title": "제목",
+			"tag": "태그"
+		},
+		"results_other": "결과 {{count}}개"
+	},
+	"commands": {
+		"moveDestination": "이동 대상",
+		"settingsCategory": "설정 > {{tab}}",
+		"openAnotherSpace": "다른 스페이스 열기",
+		"openSpace": "스페이스 열기",
+		"pinCurrentFile": "현재 파일 고정",
+		"unpinCurrentFile": "현재 파일 고정 해제",
+		"goBack": "뒤로",
+		"createFolderErrorTitle": "폴더를 만들 수 없음",
+		"licensePageErrorTitle": "라이선스 페이지를 열 수 없음",
+		"tryAgain": "잠시 후 다시 시도하세요."
+	}
+}
