@@ -1092,7 +1092,15 @@ pub async fn tasks_query_global(
                         ?1 = 'all'
                         OR (?1 = 'today' AND (t.scheduled_date = ?2 OR t.due_date = ?2))
                         OR (?1 = 'overdue' AND t.due_date IS NOT NULL AND t.due_date < ?2)
-                        OR (?1 = 'inbox' AND instr(lower(t.raw_text), '#inbox') > 0)
+                        OR (
+                            ?1 = 'inbox'
+                            AND (
+                                lower(t.raw_text) = '#inbox'
+                                OR lower(t.raw_text) GLOB '#inbox[^abcdefghijklmnopqrstuvwxyz0123456789_/-]*'
+                                OR lower(t.raw_text) GLOB ('*[ ' || char(9) || char(10) || char(11) || char(12) || char(13) || ']#inbox')
+                                OR lower(t.raw_text) GLOB ('*[ ' || char(9) || char(10) || char(11) || char(12) || char(13) || ']#inbox[^abcdefghijklmnopqrstuvwxyz0123456789_/-]*')
+                            )
+                        )
                         OR (?1 = 'no_date' AND t.scheduled_date IS NULL AND t.due_date IS NULL)
                    )
                  ORDER BY

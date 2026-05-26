@@ -62,8 +62,10 @@ export function TaskCaptureComposer({
 					onKeyDown={(event) => {
 						if (event.defaultPrevented) return;
 						if (event.key === "Enter" && !event.shiftKey) {
-							event.preventDefault();
-							submit();
+							if (!pending && value.trim()) {
+								event.preventDefault();
+								submit();
+							}
 							return;
 						}
 						onKeyDown?.(event);

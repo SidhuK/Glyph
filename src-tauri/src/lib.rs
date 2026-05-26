@@ -1048,6 +1048,7 @@ fn show_quick_task_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
     let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
     window.unminimize().map_err(|error| error.to_string())?;
+    let _ = window.emit("quick-task:shown", ());
     window.set_focus().map_err(|error| error.to_string())
 }
 

@@ -236,6 +236,7 @@
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
+	--task-progress-width: 14px;
 	--task-progress-height: 14px;
 }
 

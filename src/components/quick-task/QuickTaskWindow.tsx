@@ -1,5 +1,5 @@
 import { emit } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { queryClient } from "../../lib/queryClient";
 import { loadSettings, reloadFromDisk } from "../../lib/settings";
@@ -27,7 +27,7 @@ function dateLabel(date: string) {
 }
 
 export function QuickTaskWindow() {
-	const today = useMemo(() => todayIsoDateLocal(), []);
+	const [today, setToday] = useState(() => todayIsoDateLocal());
 	const [settings, setSettings] = useState<QuickTaskSettings>(EMPTY_SETTINGS);
 	const [draft, setDraft] = useState("");
 	const [scheduledDate, setScheduledDate] = useState(today);
@@ -38,6 +38,12 @@ export function QuickTaskWindow() {
 
 	const focusInput = useCallback(() => {
 		window.requestAnimationFrame(() => inputRef.current?.focus());
+	}, []);
+
+	const resetScheduledDateToToday = useCallback(() => {
+		const nextToday = todayIsoDateLocal();
+		setToday(nextToday);
+		setScheduledDate(nextToday);
 	}, []);
 
 	const refreshSettings = useCallback(async (withReload = false) => {
@@ -58,6 +64,11 @@ export function QuickTaskWindow() {
 
 	useTauriEvent("settings:updated", () => {
 		void refreshSettings(true).catch(() => {});
+	});
+
+	useTauriEvent("quick-task:shown", () => {
+		resetScheduledDateToToday();
+		focusInput();
 	});
 
 	const appendTaskDraftToken = useCallback(

@@ -1023,7 +1023,7 @@ export function CalendarPane({
 											size="xs"
 											variant="ghost"
 											className="calendarTaskComposerChip"
-											onClick={focusTaskInput}
+											onClick={() => appendTaskDraftToken(`📅 ${selectedDate}`)}
 										>
 											Due {format(selectedDateObj, "MMM d")}
 										</Button>
