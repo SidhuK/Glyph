@@ -1,12 +1,35 @@
 .allDocsPane {
+	--all-docs-card-min-width: 184px;
+	--all-docs-card-min-height: 184px;
+	--all-docs-card-aspect: 1 / 1;
+	--all-docs-card-padding: 12px;
+	--all-docs-card-gap: 10px;
+	--all-docs-card-title-size: 0.9rem;
+	--all-docs-card-preview-size: 0.78rem;
+	--all-docs-card-meta-size: 0.68rem;
+
 	display: flex;
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
 	overflow-y: auto;
 	padding: clamp(20px, 2.8vw, 32px);
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	gap: 18px;
+}
+
+.allDocsHeader {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.allDocsHeadingGroup {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 5px;
 }
 
 .allDocsTitle {
@@ -19,8 +42,11 @@
 
 .allDocsGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
-	gap: 18px 16px;
+	grid-template-columns: repeat(
+			auto-fill,
+			minmax(var(--all-docs-card-min-width), 1fr)
+		);
+	gap: var(--all-docs-card-gap);
 	align-content: start;
 }
 
@@ -44,10 +70,10 @@
 }
 
 .allDocsSectionTitle {
-	font-size: 0.92rem;
+	font-size: 0.82rem;
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.01em;
-	color: var(--text-primary);
+	letter-spacing: 0;
+	color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
 }
 
 .allDocsCard {
@@ -82,49 +108,43 @@
 }
 
 .allDocsCardSurface {
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 9px;
+	gap: 10px;
 	width: 100%;
-	aspect-ratio: 0.82 / 1;
-	min-height: 214px;
+	aspect-ratio: var(--all-docs-card-aspect);
+	min-height: var(--all-docs-card-min-height);
 	min-width: 0;
-	padding: 14px;
+	padding: var(--all-docs-card-padding);
 	border-radius: 8px;
-	background: var(--bg-primary);
-	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
-	box-shadow: 0 12px 24px -20px
-		color-mix(in srgb, var(--text-primary) 42%, transparent), 0 3px 10px -8px
-		color-mix(in srgb, var(--text-primary) 28%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.26);
 	overflow: hidden;
-	transition: background-color 120ms ease, outline-color 120ms ease, transform
+	transition: background-color 120ms ease, border-color 120ms ease, transform
 		120ms ease, box-shadow 120ms ease;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-hover) 94%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
-	);
-	outline-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-	box-shadow: 0 16px 30px -22px
-		color-mix(in srgb, var(--text-primary) 48%, transparent), 0 5px 14px -10px
-		color-mix(in srgb, var(--text-primary) 32%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: 0 12px 24px -18px rgb(30 41 59 / 0.3);
 	transform: translateY(-1px);
 }
 
 .allDocsCard[data-state="selected"] .allDocsCardSurface {
-	outline: 1.5px solid
-		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 48%,
+		var(--text-primary)
 	);
-	box-shadow: 0 14px 28px -22px
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent), 0 4px 12px
-		-10px color-mix(in srgb, var(--text-primary) 28%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--bg-primary) 92%,
+		var(--interactive-accent)
+	);
+	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.28);
 }
 
 .allDocsCard:focus-visible .allDocsCardSurface {
@@ -132,28 +152,116 @@
 		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
+.dark .allDocsCardSurface {
+	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.86);
+}
+
+.dark .allDocsCard:hover .allDocsCardSurface {
+	box-shadow: 0 12px 22px -18px rgb(2 6 23 / 0.92);
+}
+
+.dark .allDocsCard[data-state="selected"] .allDocsCardSurface {
+	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.9);
+}
+
+.dark .allDocsCard:focus-visible .allDocsCardSurface {
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+}
+
+.allDocsCardTop {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	gap: 10px;
+	min-width: 0;
+}
+
 .allDocsCardTitle {
 	min-width: 0;
-	display: block;
-	flex: 0 0 auto;
-	font-size: 0.92rem;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	font-size: var(--all-docs-card-title-size);
 	font-weight: var(--font-semibold);
-	line-height: 1.32;
+	line-height: 1.3;
 	color: var(--text-primary);
-	overflow: visible;
+	overflow: hidden;
 	overflow-wrap: anywhere;
 	white-space: normal;
+}
+
+.allDocsCardPreview {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	flex-direction: column;
+	gap: 3px;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: var(--all-docs-card-preview-size);
+	line-height: 1.45;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.allDocsCardPreviewLine {
+	display: block;
+	line-height: inherit;
+}
+
+.allDocsCardPreviewLine.is-heading {
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--text-primary) 92%, var(--text-secondary));
+}
+
+.allDocsCardPreviewLine.is-quote {
+	padding-left: 8px;
+	border-left: 2px solid
+		color-mix(in srgb, var(--border-light) 88%, transparent);
+	color: color-mix(in srgb, var(--text-secondary) 70%, var(--text-tertiary));
+}
+
+.allDocsCardPreviewLine.is-task::before {
+	content: "□";
+	margin-right: 5px;
+	color: var(--text-tertiary);
+}
+
+.allDocsCardPreviewLine.is-list {
+	color: var(--text-secondary);
+}
+
+.allDocsCardPreviewLine.is-code {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+}
+
+.allDocsCardPreview.is-placeholder {
+	color: var(--text-tertiary);
+	font-style: italic;
+}
+
+.allDocsCardFooter {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+	margin-top: auto;
+	padding-top: 9px;
+	border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
 }
 
 .allDocsCardMetaRow {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
-	gap: 5px;
+	gap: 6px;
 	min-width: 0;
-	font-size: 0.68rem;
-	line-height: 1.2;
 	color: var(--text-tertiary);
+	font-size: var(--all-docs-card-meta-size);
+	line-height: 1.25;
 }
 
 .allDocsCardPath {
@@ -199,65 +307,57 @@
 	opacity: 0.72;
 }
 
-.allDocsCardDivider {
-	flex: 0 0 auto;
-	height: 1px;
-	margin: 1px 0 4px;
-	background: color-mix(in srgb, var(--text-primary) 12%, transparent);
-}
-
-.allDocsCardPreview {
+.allDocsCardSignals {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	flex: 1 1 auto;
-	min-height: 0;
-	font-size: 0.76rem;
-	line-height: 1.4;
-	color: var(--text-secondary);
-	overflow: hidden;
-	overflow-wrap: anywhere;
-	white-space: normal;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	min-width: 0;
 }
 
-.allDocsCardPreviewLine {
-	display: block;
-	line-height: inherit;
+.allDocsCardTaskSummary {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 4px;
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
+	font-size: var(--all-docs-card-meta-size);
+	font-weight: var(--font-medium);
+	line-height: 1.25;
 }
 
-.allDocsCardPreviewLine.is-heading {
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+.allDocsCardTaskSummary.is-top {
+	justify-self: end;
+	padding-top: 1px;
 }
 
-.allDocsCardPreviewLine.is-quote {
-	padding-left: 6px;
-	border-left: 2px solid
-		color-mix(in srgb, var(--border-light) 88%, transparent);
-	color: var(--text-tertiary);
+.allDocsCardTaskProgress {
+	width: 14px;
+	height: 14px;
 }
 
-.allDocsCardPreviewLine.is-list {
-	color: var(--text-secondary);
+.allDocsCardTaskProgress .markdownEditorTaskProgressRing {
+	width: 13px;
+	height: 13px;
+	border-width: 2px;
 }
 
-.allDocsCardPreviewLine.is-code {
-	font-family: var(--font-mono, ui-monospace, monospace);
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+.allDocsCardTaskProgress .markdownEditorTaskProgressPie {
+	width: 6px;
+	height: 6px;
 }
 
-.allDocsCardPreview.is-placeholder {
-	color: var(--text-tertiary);
-	font-style: italic;
+.allDocsCardTaskText {
+	white-space: nowrap;
 }
 
 .allDocsCardTags {
 	display: flex;
-	flex: 0 0 auto;
+	flex: 1 1 auto;
 	flex-wrap: nowrap;
+	justify-content: flex-end;
 	gap: 5px;
 	min-width: 0;
-	margin-top: auto;
 	overflow: hidden;
 }
 
@@ -266,23 +366,26 @@
 	align-items: center;
 	gap: 4px;
 	max-width: 100%;
-	flex: 0 0 auto;
+	flex: 0 1 auto;
+	min-width: 0;
 	padding: 2px 7px;
 	border: 0;
-	border-radius: 4px;
+	border-radius: var(--pill-radius);
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 9%,
 		var(--bg-primary)
 	);
 	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
-	font-size: 0.68rem;
+	font-size: var(--all-docs-card-meta-size);
 	font-weight: var(--font-medium);
-	line-height: 1.2;
+	line-height: 1.25;
 	white-space: nowrap;
+	box-shadow: var(--pill-shadow);
 }
 
 .allDocsCardTag.is-muted {
+	flex: 0 0 auto;
 	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
 	color: var(--text-tertiary);
 }
@@ -293,17 +396,20 @@
 }
 
 @media (max-width: 900px) {
-	.allDocsGrid {
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	.allDocsPane {
+		--all-docs-card-min-width: 160px;
 	}
 }
 
 @media (max-width: 640px) {
 	.allDocsPane {
+		--all-docs-card-min-width: 144px;
+		--all-docs-card-min-height: 176px;
+
 		padding: 18px;
 	}
 
-	.allDocsGrid {
-		grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+	.allDocsHeader {
+		align-items: flex-start;
 	}
 }

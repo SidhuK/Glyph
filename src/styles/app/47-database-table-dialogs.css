@@ -151,7 +151,8 @@
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
-.databaseBodyCell:has(.databaseTagSuggestions) {
+.databaseBodyCell:has(.databaseTagSuggestions),
+.databaseBodyCell:has(.databaseWikiLinkSuggestions) {
 	z-index: 4;
 }
 
@@ -302,6 +303,16 @@
 	border-color: transparent;
 }
 
+.databaseTagEditor .databaseWikiLinkSuggestions {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: auto;
+	right: 0;
+	width: 280px;
+	max-width: min(280px, calc(100vw - 40px));
+	z-index: 30;
+}
+
 .databaseCellPill {
 	--database-tone: var(--interactive-accent);
 
@@ -412,7 +423,8 @@
 	transition: background-color 120ms ease;
 }
 
-.databaseRow:has(.databaseTagSuggestions) {
+.databaseRow:has(.databaseTagSuggestions),
+.databaseRow:has(.databaseWikiLinkSuggestions) {
 	z-index: 4;
 }
 

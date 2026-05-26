@@ -10,8 +10,16 @@ import {
 	subDays,
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
-import { memo, useCallback, useMemo, useState } from "react";
+import {
+	type KeyboardEvent,
+	memo,
+	useCallback,
+	useMemo,
+	useState,
+} from "react";
 import { useFileTreeContext } from "../../contexts";
+import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
 	loadAllDocs,
@@ -23,10 +31,11 @@ import {
 	resolveTagIconName,
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
-import type { AllDocsItem } from "../../lib/tauri";
+import type { AllDocsItem, NoteTaskSummary } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 
 interface AllDocsPaneProps {
@@ -58,12 +67,21 @@ function folderLabel(notePath: string): string {
 	return parentFolders[parentFolders.length - 1] ?? "Workspace root";
 }
 
-type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
+type PreviewLineKind = "heading" | "quote" | "task" | "list" | "code" | "body";
 
 type PreviewLine = {
+	key: string;
 	kind: PreviewLineKind;
 	text: string;
 };
+
+function pushPreviewLine(
+	parsed: PreviewLine[],
+	kind: PreviewLineKind,
+	text: string,
+) {
+	parsed.push({ key: `${kind}:${parsed.length}:${text}`, kind, text });
+}
 
 function previewLines(preview: string, title: string): PreviewLine[] {
 	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
@@ -80,21 +98,21 @@ function previewLines(preview: string, title: string): PreviewLine[] {
 
 		if (inFence) {
 			const text = normalizeInlineMarkdown(line);
-			if (text) parsed.push({ kind: "code", text });
+			if (text) pushPreviewLine(parsed, "code", text);
 			continue;
 		}
 
 		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
 		if (headingMatch?.[1]) {
 			const text = normalizeInlineMarkdown(headingMatch[1]);
-			if (text) parsed.push({ kind: "heading", text });
+			if (text) pushPreviewLine(parsed, "heading", text);
 			continue;
 		}
 
 		const quoteMatch = line.match(/^>\s?(.*)$/);
 		if (quoteMatch?.[1]) {
 			const text = normalizeInlineMarkdown(quoteMatch[1]);
-			if (text) parsed.push({ kind: "quote", text });
+			if (text) pushPreviewLine(parsed, "quote", text);
 			continue;
 		}
 
@@ -103,19 +121,19 @@ function previewLines(preview: string, title: string): PreviewLine[] {
 		);
 		if (taskMatch?.[1]) {
 			const text = normalizeInlineMarkdown(taskMatch[1]);
-			if (text) parsed.push({ kind: "list", text });
+			if (text) pushPreviewLine(parsed, "task", text);
 			continue;
 		}
 
 		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
 		if (listMatch?.[1]) {
 			const text = normalizeInlineMarkdown(listMatch[1]);
-			if (text) parsed.push({ kind: "list", text });
+			if (text) pushPreviewLine(parsed, "list", text);
 			continue;
 		}
 
 		const text = normalizeInlineMarkdown(line);
-		if (text) parsed.push({ kind: "body", text });
+		if (text) pushPreviewLine(parsed, "body", text);
 	}
 
 	const filtered = parsed.filter((line) => {
@@ -169,6 +187,216 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 	{ id: "earlier", label: "Earlier" },
 ];
 
+interface AllDocsCardProps {
+	notePath: string;
+	title: string;
+	preview: PreviewLine[];
+	tags: string[];
+	extraTagCount: number;
+	pathLabel: string;
+	updatedAt: string;
+	taskSummary: NoteTaskSummary | undefined;
+	taskCount: number;
+	selected: boolean;
+	animationIndex: number;
+	shouldReduceMotion: boolean;
+	springPreset: typeof springPresets.snappy;
+	iconNameForTag: (tag: string) => string;
+	updatedTimeframe: (iso: string) => string;
+	formatTagLabel: (tag: string) => string;
+	TaskProgressComponent: typeof TaskProgressIndicator;
+	onSelect: () => void;
+	onPrefetch: () => void;
+	onOpen: () => void;
+}
+
+type PreparedAllDocsCardProps = Omit<
+	AllDocsCardProps,
+	| "shouldReduceMotion"
+	| "springPreset"
+	| "iconNameForTag"
+	| "updatedTimeframe"
+	| "formatTagLabel"
+	| "TaskProgressComponent"
+>;
+
+interface PrepareAllDocsCardPropsArgs {
+	note: AllDocsItem;
+	index: number;
+	sectionIndex: number;
+	selectedNotePath: string | null;
+	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	showTaskProgressIndicator: boolean;
+	selectNote: (notePath: string) => void;
+	onOpenFile: AllDocsPaneProps["onOpenFile"];
+}
+
+function prepareAllDocsCardProps({
+	note,
+	index,
+	sectionIndex,
+	selectedNotePath,
+	taskSummariesByPath,
+	showTaskProgressIndicator,
+	selectNote,
+	onOpenFile,
+}: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
+	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
+	const taskSummary = showTaskProgressIndicator
+		? taskSummariesByPath[note.note_path]
+		: undefined;
+
+	return {
+		notePath: note.note_path,
+		title: noteTitle,
+		preview: previewLines(note.preview, noteTitle),
+		tags: note.tags.slice(0, 1),
+		extraTagCount: Math.max(note.tags.length - 1, 0),
+		pathLabel: folderLabel(note.note_path),
+		updatedAt: note.updated,
+		taskSummary,
+		taskCount: taskSummary?.total_count ?? 0,
+		selected: selectedNotePath === note.note_path,
+		animationIndex: sectionIndex * 12 + index,
+		onSelect: () => selectNote(note.note_path),
+		onPrefetch: () => prefetchNote(note.note_path),
+		onOpen: () => void onOpenFile(note.note_path),
+	};
+}
+
+function AllDocsCard({
+	notePath,
+	title,
+	preview,
+	tags,
+	extraTagCount,
+	pathLabel,
+	updatedAt,
+	taskSummary,
+	taskCount,
+	selected,
+	animationIndex,
+	shouldReduceMotion,
+	springPreset,
+	iconNameForTag,
+	updatedTimeframe,
+	formatTagLabel,
+	TaskProgressComponent,
+	onSelect,
+	onPrefetch,
+	onOpen,
+}: AllDocsCardProps) {
+	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			onOpen();
+			return;
+		}
+		if (event.key === " ") {
+			event.preventDefault();
+			onSelect();
+		}
+	};
+
+	return (
+		<m.button
+			type="button"
+			className="allDocsCard"
+			data-state={selected ? "selected" : undefined}
+			aria-label={`Open ${title}`}
+			onClick={onSelect}
+			onMouseEnter={onPrefetch}
+			onFocus={onPrefetch}
+			onDoubleClick={onOpen}
+			onKeyDown={handleKeyDown}
+			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={
+				shouldReduceMotion
+					? { duration: 0 }
+					: {
+							...springPreset,
+							delay: Math.min(animationIndex * 0.02, 0.18),
+						}
+			}
+			title="Double-click to open note"
+		>
+			<div className="allDocsCardSurface">
+				<div className="allDocsCardTop">
+					<span className="allDocsCardTitle" title={title}>
+						{title}
+					</span>
+					{taskSummary && taskCount > 0 ? (
+						<span className="allDocsCardTaskSummary is-top">
+							<TaskProgressComponent
+								summary={taskSummary}
+								className="allDocsCardTaskProgress"
+							/>
+							<span className="allDocsCardTaskText">
+								{taskSummary.completed_count}/{taskCount}
+							</span>
+						</span>
+					) : null}
+				</div>
+				{preview.length > 0 ? (
+					<div className="allDocsCardPreview">
+						{preview.map((line) => (
+							<div
+								key={`${notePath}:preview:${line.key}`}
+								className={`allDocsCardPreviewLine is-${line.kind}`}
+							>
+								{line.text}
+							</div>
+						))}
+					</div>
+				) : (
+					<div className="allDocsCardPreview is-placeholder">
+						No preview yet
+					</div>
+				)}
+				<div className="allDocsCardFooter">
+					<div className="allDocsCardMetaRow">
+						<span className="allDocsCardPath" title={notePath}>
+							<HugeiconsIcon
+								icon={Folder01Icon}
+								className="allDocsCardPathIcon"
+								size={12}
+								strokeWidth={1.2}
+							/>
+							<span className="allDocsCardPathLabel">{pathLabel}</span>
+						</span>
+						<span className="allDocsCardTime">
+							{updatedTimeframe(updatedAt)}
+						</span>
+					</div>
+					{tags.length > 0 ? (
+						<div className="allDocsCardSignals">
+							<div className="allDocsCardTags">
+								{tags.map((tag) => (
+									<span key={`${notePath}:${tag}`} className="allDocsCardTag">
+										<DatabaseColumnIcon
+											iconName={iconNameForTag(tag)}
+											className="allDocsCardTagIcon"
+											size={11}
+											strokeWidth={1.2}
+										/>
+										{formatTagLabel(tag)}
+									</span>
+								))}
+								{extraTagCount > 0 ? (
+									<span className="allDocsCardTag is-muted">
+										+{extraTagCount}
+									</span>
+								) : null}
+							</div>
+						</div>
+					) : null}
+				</div>
+			</div>
+		</m.button>
+	);
+}
+
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
 	title = "All Notes",
@@ -179,6 +407,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const queryClient = useQueryClient();
 	const normalizedFolderPrefix = useMemo(
 		() => normalizeFolderPrefix(folderPrefix),
@@ -190,6 +419,13 @@ export const AllDocsPane = memo(function AllDocsPane({
 		initialData: initialNotes ?? undefined,
 	});
 	const notes = notesQuery.data ?? [];
+	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		notePaths,
+		showTaskProgressIndicator,
+		taskSummaryRefreshKey,
+	);
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],
@@ -206,6 +442,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		void queryClient.invalidateQueries({
 			queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
 		});
+		setTaskSummaryRefreshKey((key) => key + 1);
 	});
 
 	const sections = useMemo<AllDocsSection[]>(() => {
@@ -248,7 +485,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	return (
 		<section className="allDocsPane">
-			<h1 className="allDocsTitle">{title}</h1>
+			<header className="allDocsHeader">
+				<div className="allDocsHeadingGroup">
+					<h1 className="allDocsTitle">{title}</h1>
+				</div>
+			</header>
 			<div className="allDocsSections">
 				{notes.length === 0 ? (
 					<div className="databaseLoadingState">{emptyStateMessage}</div>
@@ -260,120 +501,28 @@ export const AllDocsPane = memo(function AllDocsPane({
 						</div>
 						<div className="allDocsGrid">
 							{section.notes.map((note, index) => {
-								const noteTitle =
-									note.title.trim() || titleFromPath(note.note_path);
-								const preview = previewLines(note.preview, noteTitle);
-								const visibleTags = note.tags.slice(0, 1);
-								const extraTagCount = Math.max(
-									note.tags.length - visibleTags.length,
-									0,
-								);
-								const notePath = folderLabel(note.note_path);
-								const animationIndex = sectionIndex * 12 + index;
+								const cardProps = prepareAllDocsCardProps({
+									note,
+									index,
+									sectionIndex,
+									selectedNotePath,
+									taskSummariesByPath,
+									showTaskProgressIndicator,
+									selectNote: setSelectedNotePath,
+									onOpenFile,
+								});
 
 								return (
-									<m.button
+									<AllDocsCard
 										key={note.note_path}
-										type="button"
-										className="allDocsCard"
-										data-state={
-											selectedNotePath === note.note_path
-												? "selected"
-												: undefined
-										}
-										aria-label={`Open ${noteTitle}`}
-										onClick={() => setSelectedNotePath(note.note_path)}
-										onMouseEnter={() => prefetchNote(note.note_path)}
-										onFocus={() => prefetchNote(note.note_path)}
-										onDoubleClick={() => void onOpenFile(note.note_path)}
-										onKeyDown={(event) => {
-											if (event.key === "Enter") {
-												event.preventDefault();
-												void onOpenFile(note.note_path);
-												return;
-											}
-											if (event.key === " ") {
-												event.preventDefault();
-												setSelectedNotePath(note.note_path);
-											}
-										}}
-										initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={
-											shouldReduceMotion
-												? { duration: 0 }
-												: {
-														...springPresets.snappy,
-														delay: Math.min(animationIndex * 0.02, 0.18),
-													}
-										}
-										title="Double-click to open note"
-									>
-										<div className="allDocsCardSurface">
-											<span className="allDocsCardTitle" title={noteTitle}>
-												{noteTitle}
-											</span>
-											<div className="allDocsCardMetaRow">
-												<span
-													className="allDocsCardPath"
-													title={note.note_path}
-												>
-													<HugeiconsIcon
-														icon={Folder01Icon}
-														className="allDocsCardPathIcon"
-														size={12}
-														strokeWidth={1.2}
-													/>
-													<span className="allDocsCardPathLabel">
-														{notePath}
-													</span>
-												</span>
-												<span className="allDocsCardTime">
-													{updatedTimeframe(note.updated)}
-												</span>
-											</div>
-											<span className="allDocsCardDivider" aria-hidden="true" />
-											{preview.length > 0 ? (
-												<div className="allDocsCardPreview">
-													{preview.map((line, lineIndex) => (
-														<div
-															key={`${note.note_path}:preview:${lineIndex}`}
-															className={`allDocsCardPreviewLine is-${line.kind}`}
-														>
-															{line.text}
-														</div>
-													))}
-												</div>
-											) : (
-												<div className="allDocsCardPreview is-placeholder">
-													No preview yet
-												</div>
-											)}
-											{visibleTags.length > 0 ? (
-												<div className="allDocsCardTags">
-													{visibleTags.map((tag) => (
-														<span
-															key={`${note.note_path}:${tag}`}
-															className="allDocsCardTag"
-														>
-															<DatabaseColumnIcon
-																iconName={iconNameForTag(tag)}
-																className="allDocsCardTagIcon"
-																size={11}
-																strokeWidth={1.2}
-															/>
-															{formatDatabaseTagLabel(tag)}
-														</span>
-													))}
-													{extraTagCount > 0 ? (
-														<span className="allDocsCardTag is-muted">
-															+{extraTagCount}
-														</span>
-													) : null}
-												</div>
-											) : null}
-										</div>
-									</m.button>
+										{...cardProps}
+										shouldReduceMotion={shouldReduceMotion}
+										springPreset={springPresets.snappy}
+										iconNameForTag={iconNameForTag}
+										updatedTimeframe={updatedTimeframe}
+										formatTagLabel={formatDatabaseTagLabel}
+										TaskProgressComponent={TaskProgressIndicator}
+									/>
 								);
 							})}
 						</div>

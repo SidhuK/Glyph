@@ -604,11 +604,8 @@ export function MarkdownEditorPane({
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setInfoPanelOpen((open) => {
-				const nextOpen = !open;
-				if (nextOpen) setAiPanelOpen(false);
-				return nextOpen;
-			});
+			setAiPanelOpen(() => false);
+			setInfoPanelOpen((open) => !open);
 		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
@@ -755,11 +752,8 @@ export function MarkdownEditorPane({
 	);
 
 	const toggleInfoPanel = useCallback(() => {
-		setInfoPanelOpen((open) => {
-			const nextOpen = !open;
-			if (nextOpen) setAiPanelOpen(false);
-			return nextOpen;
-		});
+		setAiPanelOpen(() => false);
+		setInfoPanelOpen((open) => !open);
 	}, [setAiPanelOpen]);
 
 	const handleEditorActionsMenu = useCallback(
@@ -809,11 +803,8 @@ export function MarkdownEditorPane({
 								openSettings("ai");
 								return;
 							}
-							setAiPanelOpen((open) => {
-								const nextOpen = !open;
-								if (nextOpen) setInfoPanelOpen(false);
-								return nextOpen;
-							});
+							setInfoPanelOpen(() => false);
+							setAiPanelOpen((open) => !open);
 						}}
 						aria-label={
 							aiEnabled

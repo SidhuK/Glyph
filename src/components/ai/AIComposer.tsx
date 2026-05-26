@@ -7,6 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { APP_TAGLINE } from "../../lib/copy";
+import { normalizeRelPath } from "../../utils/path";
 import { File, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
@@ -25,6 +26,7 @@ interface AIComposerProps {
 	scheduleComposerInputResize: () => void;
 	profiles: ReturnType<typeof useAiProfiles>;
 	context: ReturnType<typeof useAiContext>;
+	activeFilePath: string | null;
 	showAddPanel: boolean;
 	panelQuery: string;
 	addPanelOpen: boolean;
@@ -50,6 +52,7 @@ export function AIComposer({
 	scheduleComposerInputResize,
 	profiles,
 	context,
+	activeFilePath,
 	showAddPanel,
 	panelQuery,
 	addPanelOpen,
@@ -69,6 +72,15 @@ export function AIComposer({
 		scheduleComposerInputResize();
 		window.requestAnimationFrame(() => composerInputRef.current?.focus());
 	};
+	const suggestedFilePath = activeFilePath
+		? normalizeRelPath(activeFilePath)
+		: "";
+	const showActiveFileSuggestion =
+		Boolean(suggestedFilePath) &&
+		!context.hasContext("file", suggestedFilePath);
+	const suggestedFileLabel = suggestedFilePath
+		? fileNameFromPath(suggestedFilePath)
+		: "";
 
 	return (
 		<>
@@ -118,11 +130,28 @@ export function AIComposer({
 			) : null}
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
-					{context.attachedFolders.length > 0 && (
+					{(context.attachedFolders.length > 0 || showActiveFileSuggestion) && (
 						<div
 							className="aiComposerContextStrip"
 							aria-label="Attached context"
 						>
+							{showActiveFileSuggestion ? (
+								<button
+									type="button"
+									className="aiContextChip aiContextChipSuggestion"
+									onClick={() => onAddContext("file", suggestedFilePath)}
+									aria-label={`Add ${suggestedFileLabel} to context`}
+									title={`Add ${suggestedFilePath} to context`}
+									disabled={isAwaitingResponse}
+								>
+									<span className="aiContextChipIcon">
+										<File size={12} />
+									</span>
+									<span className="aiContextChipLabel">
+										{truncateLabel(suggestedFileLabel, 28)}
+									</span>
+								</button>
+							) : null}
 							{context.attachedFolders.map((item) => {
 								const chipLabel =
 									item.kind === "file"

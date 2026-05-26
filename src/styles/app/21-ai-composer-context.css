@@ -46,6 +46,24 @@
 	color: var(--text-primary);
 }
 
+.aiPanel .aiContextChipSuggestion {
+	color: var(--text-tertiary);
+	background: transparent;
+	box-shadow: none;
+	opacity: 0.68;
+}
+
+.aiPanel .aiContextChipSuggestion:hover:not(:disabled) {
+	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	opacity: 1;
+}
+
+.aiPanel .aiContextChipSuggestion:disabled {
+	cursor: default;
+	opacity: 0.35;
+}
+
 .aiPanel .aiContextChip:hover .aiContextChipClose {
 	color: var(--text-primary);
 }

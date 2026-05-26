@@ -31,8 +31,7 @@ export function isColumnEditable(column: DatabaseColumn): boolean {
 		column.type === "path" ||
 		column.type === "folder" ||
 		column.type === "created" ||
-		column.type === "updated" ||
-		column.type === "linked_notes"
+		column.type === "updated"
 	) {
 		return false;
 	}

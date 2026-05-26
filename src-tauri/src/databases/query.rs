@@ -806,7 +806,8 @@ fn hydrate_rows_by_paths(
 
         let mut link_stmt = conn
             .prepare(&format!(
-                "SELECT from_id, to_id FROM links WHERE from_id IN ({placeholders}) AND to_id IS NOT NULL"
+                "SELECT from_id, to_id, to_title FROM links
+                 WHERE from_id IN ({placeholders}) AND (to_id IS NOT NULL OR to_title IS NOT NULL)"
             ))
             .map_err(|e| e.to_string())?;
         let mut link_rows = link_stmt
@@ -814,7 +815,19 @@ fn hydrate_rows_by_paths(
             .map_err(|e| e.to_string())?;
         while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
             let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-            let target = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            let to_id = row
+                .get::<_, Option<String>>(1)
+                .map_err(|e| e.to_string())?
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty());
+            let to_title = row
+                .get::<_, Option<String>>(2)
+                .map_err(|e| e.to_string())?
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty());
+            let Some(target) = to_id.or(to_title) else {
+                continue;
+            };
             if let Some(entry) = row_map.get_mut(&note_id) {
                 entry.linked_notes.push(target);
             }

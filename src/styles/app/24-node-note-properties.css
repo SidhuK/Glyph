@@ -229,12 +229,41 @@ input.notePropertyValue {
 	min-width: 0;
 }
 
+.notePropertyTextEditor {
+	position: relative;
+	min-width: 0;
+	width: 100%;
+}
+
+.notePropertyTextEditor .notePropertyWikiLinkSuggestions {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	width: 280px;
+	max-width: min(280px, calc(100vw - 40px));
+	z-index: 40;
+}
+
 .notePropertyValueStatic {
 	color: var(--text-primary);
 	min-width: 0;
 	overflow-wrap: break-word;
 	font-size: 12.5px;
 	line-height: 1.35;
+}
+
+.notePropertyWikiText {
+	display: inline;
+	white-space: normal;
+}
+
+.notePropertyWikiLink {
+	margin: 0 2px;
+	vertical-align: baseline;
+}
+
+.notePropertyRow:has(.notePropertyWikiLinkSuggestions) {
+	z-index: 5;
 }
 
 .notePropertyKindBadge {

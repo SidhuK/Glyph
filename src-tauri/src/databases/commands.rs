@@ -130,6 +130,14 @@ fn yaml_value_from_cell(
                 .map(|item| Value::String(item.clone()))
                 .collect(),
         )),
+        "linked_notes" => Ok(Value::Sequence(
+            value
+                .value_list
+                .iter()
+                .filter_map(|item| linked_note_wikilink_value(item))
+                .map(Value::String)
+                .collect(),
+        )),
         "property" => match column.property_kind.as_deref().unwrap_or("text") {
             "checkbox" => Ok(Value::Bool(value.value_bool.unwrap_or(false))),
             "tags" | "relation" | "multi_select" => Ok(Value::Sequence(
@@ -141,11 +149,40 @@ fn yaml_value_from_cell(
             )),
             _ => Ok(Value::String(value.value_text.clone().unwrap_or_default())),
         },
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             Err(format!("{} columns are read-only", column.column_type))
         }
         other => Err(format!("unsupported column type '{other}'")),
     }
+}
+
+fn linked_note_wikilink_value(raw: &str) -> Option<String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let starts_wrapped = trimmed.starts_with("[[");
+    let ends_wrapped = trimmed.ends_with("]]");
+    if starts_wrapped != ends_wrapped {
+        return None;
+    }
+
+    let value = if starts_wrapped && ends_wrapped {
+        trimmed
+            .strip_prefix("[[")
+            .and_then(|value| value.strip_suffix("]]"))
+            .unwrap_or(trimmed)
+    } else {
+        trimmed
+    };
+
+    let inner = value.split('|').next().unwrap_or(value).trim();
+    let target = inner.split('#').next().unwrap_or(inner).trim();
+    if target.is_empty() {
+        return None;
+    }
+    Some(format!("[[{target}]]"))
 }
 
 fn apply_cell_update_to_markdown(
@@ -163,6 +200,9 @@ fn apply_cell_update_to_markdown(
         "tags" => {
             mapping.insert(key("tags"), yaml_value_from_cell(column, value)?);
         }
+        "linked_notes" => {
+            mapping.insert(key("linked_notes"), yaml_value_from_cell(column, value)?);
+        }
         "property" => {
             let property_key = column
                 .property_key
@@ -170,7 +210,7 @@ fn apply_cell_update_to_markdown(
                 .ok_or_else(|| "property column is missing property_key".to_string())?;
             mapping.insert(key(&property_key), yaml_value_from_cell(column, value)?);
         }
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             return Err(format!("{} columns are read-only", column.column_type))
         }
         other => return Err(format!("unsupported column type '{other}'")),
@@ -232,7 +272,7 @@ fn write_new_markdown_note(
 
 fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Result<(), String> {
     match column.column_type.as_str() {
-        "title" | "tags" => Ok(()),
+        "title" | "tags" | "linked_notes" => Ok(()),
         "property" => {
             let property_key = column
                 .property_key
@@ -244,7 +284,7 @@ fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Resul
                 Err("unknown property column".to_string())
             }
         }
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             Err(format!("{} columns are read-only", column.column_type))
         }
         other => Err(format!("unsupported column type '{other}'")),

@@ -121,6 +121,16 @@ export function useAiContext(contextSearch = "") {
 		[],
 	);
 
+	const hasContext = useCallback(
+		(kind: ContextEntryKind, rawPath: string) => {
+			const path = normalizeRelPath(rawPath);
+			return attachedFolders.some(
+				(item) => item.kind === kind && item.path === path,
+			);
+		},
+		[attachedFolders],
+	);
+
 	const visibleSuggestions = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
 		if (!q) return [];
@@ -213,6 +223,7 @@ export function useAiContext(contextSearch = "") {
 		attachedFolders,
 		addContext,
 		removeContext,
+		hasContext,
 		resolveMentionsFromInput,
 		folderIndexError:
 			indexQuery.error != null ? extractErrorMessage(indexQuery.error) : "",

@@ -41,7 +41,7 @@ export async function prefetchAIPanelData(): Promise<void> {
 
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const { aiAssistantMode } = useAISidebarContext();
-	const { openSettings } = useUILayoutContext();
+	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
 
 	const [input, setInput] = useState("");
@@ -445,6 +445,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					scheduleComposerInputResize={scheduleResize}
 					profiles={profiles}
 					context={context}
+					activeFilePath={activeMarkdownTabPath}
 					showAddPanel={showAddPanel}
 					panelQuery={panelQuery}
 					addPanelOpen={addPanelOpen}
