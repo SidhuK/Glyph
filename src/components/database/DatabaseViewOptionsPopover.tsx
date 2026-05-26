@@ -127,6 +127,7 @@ const builtInColumns: DatabaseColumn[] = [
 		}),
 		width: 220,
 		visible: false,
+		property_kind: "relation",
 	},
 	{
 		id: "created",

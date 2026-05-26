@@ -12,6 +12,8 @@ import {
 import { m, useReducedMotion } from "motion/react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
+import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
 	loadAllDocs,
@@ -27,6 +29,7 @@ import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 
 interface AllDocsPaneProps {
@@ -58,7 +61,7 @@ function folderLabel(notePath: string): string {
 	return parentFolders[parentFolders.length - 1] ?? "Workspace root";
 }
 
-type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
+type PreviewLineKind = "heading" | "quote" | "task" | "list" | "code" | "body";
 
 type PreviewLine = {
 	kind: PreviewLineKind;
@@ -103,7 +106,7 @@ function previewLines(preview: string, title: string): PreviewLine[] {
 		);
 		if (taskMatch?.[1]) {
 			const text = normalizeInlineMarkdown(taskMatch[1]);
-			if (text) parsed.push({ kind: "list", text });
+			if (text) parsed.push({ kind: "task", text });
 			continue;
 		}
 
@@ -179,6 +182,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	const { beautifulTags, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const queryClient = useQueryClient();
 	const normalizedFolderPrefix = useMemo(
 		() => normalizeFolderPrefix(folderPrefix),
@@ -190,6 +194,13 @@ export const AllDocsPane = memo(function AllDocsPane({
 		initialData: initialNotes ?? undefined,
 	});
 	const notes = notesQuery.data ?? [];
+	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
+	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		notePaths,
+		showTaskProgressIndicator,
+		taskSummaryRefreshKey,
+	);
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],
@@ -206,6 +217,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		void queryClient.invalidateQueries({
 			queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
 		});
+		setTaskSummaryRefreshKey((key) => key + 1);
 	});
 
 	const sections = useMemo<AllDocsSection[]>(() => {
@@ -248,7 +260,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	return (
 		<section className="allDocsPane">
-			<h1 className="allDocsTitle">{title}</h1>
+			<header className="allDocsHeader">
+				<div className="allDocsHeadingGroup">
+					<h1 className="allDocsTitle">{title}</h1>
+				</div>
+			</header>
 			<div className="allDocsSections">
 				{notes.length === 0 ? (
 					<div className="databaseLoadingState">{emptyStateMessage}</div>
@@ -270,6 +286,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 								);
 								const notePath = folderLabel(note.note_path);
 								const animationIndex = sectionIndex * 12 + index;
+								const taskSummary = taskSummariesByPath[note.note_path];
+								const taskCount = taskSummary?.total_count ?? 0;
 
 								return (
 									<m.button
@@ -310,29 +328,22 @@ export const AllDocsPane = memo(function AllDocsPane({
 										title="Double-click to open note"
 									>
 										<div className="allDocsCardSurface">
-											<span className="allDocsCardTitle" title={noteTitle}>
-												{noteTitle}
-											</span>
-											<div className="allDocsCardMetaRow">
-												<span
-													className="allDocsCardPath"
-													title={note.note_path}
-												>
-													<HugeiconsIcon
-														icon={Folder01Icon}
-														className="allDocsCardPathIcon"
-														size={12}
-														strokeWidth={1.2}
-													/>
-													<span className="allDocsCardPathLabel">
-														{notePath}
+											<div className="allDocsCardTop">
+												<span className="allDocsCardTitle" title={noteTitle}>
+													{noteTitle}
+												</span>
+												{taskSummary && taskCount > 0 ? (
+													<span className="allDocsCardTaskSummary is-top">
+														<TaskProgressIndicator
+															summary={taskSummary}
+															className="allDocsCardTaskProgress"
+														/>
+														<span className="allDocsCardTaskText">
+															{taskSummary.completed_count}/{taskCount}
+														</span>
 													</span>
-												</span>
-												<span className="allDocsCardTime">
-													{updatedTimeframe(note.updated)}
-												</span>
+												) : null}
 											</div>
-											<span className="allDocsCardDivider" aria-hidden="true" />
 											{preview.length > 0 ? (
 												<div className="allDocsCardPreview">
 													{preview.map((line, lineIndex) => (
@@ -349,29 +360,52 @@ export const AllDocsPane = memo(function AllDocsPane({
 													No preview yet
 												</div>
 											)}
-											{visibleTags.length > 0 ? (
-												<div className="allDocsCardTags">
-													{visibleTags.map((tag) => (
-														<span
-															key={`${note.note_path}:${tag}`}
-															className="allDocsCardTag"
-														>
-															<DatabaseColumnIcon
-																iconName={iconNameForTag(tag)}
-																className="allDocsCardTagIcon"
-																size={11}
-																strokeWidth={1.2}
-															/>
-															{formatDatabaseTagLabel(tag)}
+											<div className="allDocsCardFooter">
+												<div className="allDocsCardMetaRow">
+													<span
+														className="allDocsCardPath"
+														title={note.note_path}
+													>
+														<HugeiconsIcon
+															icon={Folder01Icon}
+															className="allDocsCardPathIcon"
+															size={12}
+															strokeWidth={1.2}
+														/>
+														<span className="allDocsCardPathLabel">
+															{notePath}
 														</span>
-													))}
-													{extraTagCount > 0 ? (
-														<span className="allDocsCardTag is-muted">
-															+{extraTagCount}
-														</span>
-													) : null}
+													</span>
+													<span className="allDocsCardTime">
+														{updatedTimeframe(note.updated)}
+													</span>
 												</div>
-											) : null}
+												{visibleTags.length > 0 ? (
+													<div className="allDocsCardSignals">
+														<div className="allDocsCardTags">
+															{visibleTags.map((tag) => (
+																<span
+																	key={`${note.note_path}:${tag}`}
+																	className="allDocsCardTag"
+																>
+																	<DatabaseColumnIcon
+																		iconName={iconNameForTag(tag)}
+																		className="allDocsCardTagIcon"
+																		size={11}
+																		strokeWidth={1.2}
+																	/>
+																	{formatDatabaseTagLabel(tag)}
+																</span>
+															))}
+															{extraTagCount > 0 ? (
+																<span className="allDocsCardTag is-muted">
+																	+{extraTagCount}
+																</span>
+															) : null}
+														</div>
+													</div>
+												) : null}
+											</div>
 										</div>
 									</m.button>
 								);
