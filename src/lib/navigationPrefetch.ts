@@ -84,6 +84,9 @@ export const navigationQueryKeys = {
 			databaseId.trim(),
 			viewId.trim(),
 		] as const,
+	tasks: () => [...navigationQueryKeys.all, "tasks"] as const,
+	tasksList: (filter: string) =>
+		[...navigationQueryKeys.tasks(), filter.trim() || "all"] as const,
 	allDocs: () => [...navigationQueryKeys.all, "all-docs"] as const,
 	allDocsList: (folderPrefix?: string | null) =>
 		[
@@ -499,6 +502,12 @@ export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
 			typeof folderPrefix === "string" || folderPrefix === null
 				? navigationQueryKeys.allDocsList(folderPrefix)
 				: navigationQueryKeys.allDocs(),
+	});
+}
+
+export function invalidateTasksPrefetch() {
+	void queryClient.invalidateQueries({
+		queryKey: navigationQueryKeys.tasks(),
 	});
 }
 

@@ -1,10 +1,6 @@
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
-import {
-	formatTaskCalendarDate,
-	getTaskTimingSummary,
-	stripTaskScheduleTokens,
-} from "../../lib/tasks";
+import { getTaskTimingSummary, stripTaskScheduleTokens } from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar } from "../Icons";
 import { springPresets } from "../ui/animations";
@@ -17,6 +13,7 @@ interface TaskRowProps {
 	task: TaskItem;
 	today: string;
 	showNoteContext?: boolean;
+	showOpenNoteButton?: boolean;
 	showSectionTag?: boolean;
 	onToggle: (task: TaskItem, checked: boolean) => void;
 	onSchedule: (
@@ -31,6 +28,7 @@ export function TaskRow({
 	task,
 	today,
 	showNoteContext = false,
+	showOpenNoteButton = false,
 	showSectionTag = true,
 	onToggle,
 	onSchedule,
@@ -76,14 +74,6 @@ export function TaskRow({
 		[onSchedule, resetDraftDates, scheduledDate, task],
 	);
 
-	const scheduleButtonLabel = useMemo(() => {
-		const scheduledLabel = formatTaskCalendarDate(task.scheduled_date);
-		if (scheduledLabel) return `Starts ${scheduledLabel}`;
-		const dueLabel = formatTaskCalendarDate(task.due_date);
-		if (dueLabel) return `Due ${dueLabel}`;
-		return "Schedule";
-	}, [task.due_date, task.scheduled_date]);
-
 	const scheduleButtonTitle = useMemo(() => {
 		if (task.scheduled_date && task.due_date) {
 			return `Scheduled ${task.scheduled_date}, due ${task.due_date}`;
@@ -126,6 +116,16 @@ export function TaskRow({
 					<div className="tasksRowText" title={displayText}>
 						{displayText}
 					</div>
+					{showOpenNoteButton ? (
+						<button
+							type="button"
+							className="tasksRowOpenButton"
+							title="Open note"
+							onClick={() => void onOpenNote?.(task.note_path)}
+						>
+							Open
+						</button>
+					) : null}
 					{showNoteContext ? (
 						<button
 							type="button"
@@ -172,9 +172,9 @@ export function TaskRow({
 								size="xs"
 								className="tasksScheduleBtn"
 								title={scheduleButtonTitle}
+								aria-label={scheduleButtonTitle}
 							>
 								<Calendar size={12} />
-								{scheduleButtonLabel}
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent className="tasksDatePopover" align="start">

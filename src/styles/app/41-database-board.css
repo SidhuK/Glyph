@@ -300,9 +300,11 @@
 }
 
 .databaseBoardCardTaskProgress {
+	--task-progress-width: 14px;
+	--task-progress-height: 14px;
+	--task-progress-ring-size: 14px;
+	--task-progress-pie-size: 6px;
 	flex: 0 0 auto;
-	width: 24px;
-	height: 12px;
 	opacity: 0.9;
 }
 

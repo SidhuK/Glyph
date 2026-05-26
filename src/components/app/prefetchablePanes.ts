@@ -12,3 +12,8 @@ export const loadAllDocsPane = () =>
 	import("./AllDocsPane").then((module) => ({
 		default: module.AllDocsPane,
 	}));
+
+export const loadTasksPane = () =>
+	import("../tasks/TasksPane").then((module) => ({
+		default: module.TasksPane,
+	}));

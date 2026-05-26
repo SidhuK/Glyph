@@ -86,3 +86,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 ## Migration Policy
 
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
+
+## Version Control
+
+- Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
