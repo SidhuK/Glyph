@@ -815,8 +815,16 @@ fn hydrate_rows_by_paths(
             .map_err(|e| e.to_string())?;
         while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
             let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-            let to_id = row.get::<_, Option<String>>(1).map_err(|e| e.to_string())?;
-            let to_title = row.get::<_, Option<String>>(2).map_err(|e| e.to_string())?;
+            let to_id = row
+                .get::<_, Option<String>>(1)
+                .map_err(|e| e.to_string())?
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty());
+            let to_title = row
+                .get::<_, Option<String>>(2)
+                .map_err(|e| e.to_string())?
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty());
             let Some(target) = to_id.or(to_title) else {
                 continue;
             };

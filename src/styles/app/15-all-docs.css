@@ -7,6 +7,7 @@
 	--all-docs-card-title-size: 0.9rem;
 	--all-docs-card-preview-size: 0.78rem;
 	--all-docs-card-meta-size: 0.68rem;
+
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -404,6 +405,7 @@
 	.allDocsPane {
 		--all-docs-card-min-width: 144px;
 		--all-docs-card-min-height: 176px;
+
 		padding: 18px;
 	}
 

@@ -123,7 +123,7 @@ const builtInColumns: DatabaseColumn[] = [
 		label: "Linked Notes",
 		icon: defaultDatabaseColumnIconName({
 			type: "linked_notes",
-			property_kind: null,
+			property_kind: "relation",
 		}),
 		width: 220,
 		visible: false,

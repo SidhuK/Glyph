@@ -604,9 +604,8 @@ export function MarkdownEditorPane({
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			const nextOpen = !infoPanelOpen;
-			if (nextOpen) setAiPanelOpen(false);
-			setInfoPanelOpen(nextOpen);
+			setAiPanelOpen(() => false);
+			setInfoPanelOpen((open) => !open);
 		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
@@ -625,7 +624,7 @@ export function MarkdownEditorPane({
 				handleToggleInfoSidebar,
 			);
 		};
-	}, [infoPanelOpen, relPath, setAiPanelOpen]);
+	}, [relPath, setAiPanelOpen]);
 
 	useEffect(() => {
 		if (aiPanelOpen) setInfoPanelOpen(false);
@@ -753,10 +752,9 @@ export function MarkdownEditorPane({
 	);
 
 	const toggleInfoPanel = useCallback(() => {
-		const nextOpen = !infoPanelOpen;
-		if (nextOpen) setAiPanelOpen(false);
-		setInfoPanelOpen(nextOpen);
-	}, [infoPanelOpen, setAiPanelOpen]);
+		setAiPanelOpen(() => false);
+		setInfoPanelOpen((open) => !open);
+	}, [setAiPanelOpen]);
 
 	const handleEditorActionsMenu = useCallback(
 		(event: ReactMouseEvent<HTMLButtonElement>) => {
@@ -805,9 +803,8 @@ export function MarkdownEditorPane({
 								openSettings("ai");
 								return;
 							}
-							const nextOpen = !aiPanelOpen;
-							if (nextOpen) setInfoPanelOpen(false);
-							setAiPanelOpen(nextOpen);
+							setInfoPanelOpen(() => false);
+							setAiPanelOpen((open) => !open);
 						}}
 						aria-label={
 							aiEnabled

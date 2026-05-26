@@ -1,5 +1,5 @@
 import type { KeyboardEvent, RefObject } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "../../../lib/tauri";
 
 const WIKI_LINK_SUGGESTION_LIMIT = 8;
@@ -111,6 +111,12 @@ export function useWikiLinkAutocomplete({
 		},
 		[close, enabled],
 	);
+
+	useEffect(() => {
+		const input = inputRef.current;
+		if (!input || document.activeElement !== input) return;
+		refresh(value, input.selectionStart);
+	}, [inputRef, refresh, value]);
 
 	const select = useCallback(
 		(item: WikiLinkSuggestion) => {

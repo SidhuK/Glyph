@@ -161,14 +161,23 @@ fn linked_note_wikilink_value(raw: &str) -> Option<String> {
     if trimmed.is_empty() {
         return None;
     }
-    let inner = trimmed
-        .strip_prefix("[[")
-        .and_then(|value| value.strip_suffix("]]"))
-        .unwrap_or(trimmed)
-        .split('|')
-        .next()
-        .unwrap_or(trimmed)
-        .trim();
+
+    let starts_wrapped = trimmed.starts_with("[[");
+    let ends_wrapped = trimmed.ends_with("]]");
+    if starts_wrapped != ends_wrapped {
+        return None;
+    }
+
+    let value = if starts_wrapped && ends_wrapped {
+        trimmed
+            .strip_prefix("[[")
+            .and_then(|value| value.strip_suffix("]]"))
+            .unwrap_or(trimmed)
+    } else {
+        trimmed
+    };
+
+    let inner = value.split('|').next().unwrap_or(value).trim();
     let target = inner.split('#').next().unwrap_or(inner).trim();
     if target.is_empty() {
         return None;
