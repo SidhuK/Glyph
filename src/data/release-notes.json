@@ -1,6 +1,46 @@
 {
 	"versions": [
 		{
+			"version": "0.5.0",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Beautiful Tags is available as an advanced setting. It stays off by default and gives tags predefined smart icons when you enable it",
+						"Settings search helps you find preferences from the sidebar or command palette, then highlights the matching control",
+						"The AI composer suggests the active markdown file as context when the AI panel is open. Click the muted file chip to attach it",
+						"Database text cells, linked-notes cells, and frontmatter text properties now support [[ note autocomplete"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Tag icons can use automatic defaults, and a centered picker lets you change each tag icon",
+						"Folders, files, and tags now share the same icon and color picker flow for appearance customization",
+						"Tag names and counts open the tagged notes, while the tag icon opens customization",
+						"All Notes cards are smaller and cleaner, with neutral surfaces, footer metadata, stronger title and preview hierarchy, task progress, and calmer dark-mode shadows",
+						"The built-in Linked Notes database column is editable, and manual entries or autocomplete selections save through the normal cell update flow",
+						"Linked-note edits persist to linked_notes frontmatter as wikilinks, and refreshed rows include unresolved wikilink titles",
+						"Displayed frontmatter and property wikilinks are clickable in the editor and info sidebar",
+						"Table and frontmatter autocomplete menus now match the editor wikilink selector"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Opening the note info sidebar still closes the AI sidebar without triggering React's nested state update warning",
+						"Database and frontmatter wikilink autocomplete menus no longer clip inside table cells"
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"All Notes removes content-type badges, random card colors, the card density switcher, and the note count in the header"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.4.6",
 			"sections": [
 				{
