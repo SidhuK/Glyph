@@ -271,6 +271,19 @@ export function CalendarPane({
 		[focusTaskInput],
 	);
 
+	const replaceTaskDraftDateToken = useCallback(
+		(date: string) => {
+			const token = `📅 ${date}`;
+			setTaskDraft((draft) => {
+				const withoutDate = draft.replace(/\s*📅 \d{4}-\d{2}-\d{2}\b/g, "");
+				const trimmedDraft = withoutDate.trimEnd();
+				return trimmedDraft ? `${trimmedDraft} ${token}` : token;
+			});
+			focusTaskInput();
+		},
+		[focusTaskInput],
+	);
+
 	const selectDay = useCallback(
 		(date: string) => {
 			setSelectedDateAndPersist(date);
@@ -1023,7 +1036,7 @@ export function CalendarPane({
 											size="xs"
 											variant="ghost"
 											className="calendarTaskComposerChip"
-											onClick={() => appendTaskDraftToken(`📅 ${selectedDate}`)}
+											onClick={() => replaceTaskDraftDateToken(selectedDate)}
 										>
 											Due {format(selectedDateObj, "MMM d")}
 										</Button>
