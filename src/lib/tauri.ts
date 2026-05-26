@@ -461,6 +461,13 @@ export interface TaskItem {
 	note_updated: string;
 }
 
+export type GlobalTaskFilter =
+	| "today"
+	| "overdue"
+	| "inbox"
+	| "no_date"
+	| "all";
+
 interface CalendarDaySummary {
 	date: string;
 	task_count: number;
@@ -734,8 +741,14 @@ interface TauriCommands {
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
 	show_quick_note_window: CommandDef<void, void>;
 	hide_quick_note_window: CommandDef<void, void>;
+	show_quick_task_window: CommandDef<void, void>;
+	hide_quick_task_window: CommandDef<void, void>;
 	show_main_window: CommandDef<void, void>;
 	set_quick_note_global_shortcut: CommandDef<
+		{ accelerator?: string | null },
+		void
+	>;
+	set_quick_task_global_shortcut: CommandDef<
 		{ accelerator?: string | null },
 		void
 	>;
@@ -940,6 +953,14 @@ interface TauriCommands {
 	people_list: CommandDef<
 		{ limit?: number | null; offset?: number | null },
 		PersonCount[]
+	>;
+	tasks_query_global: CommandDef<
+		{
+			filter?: GlobalTaskFilter | null;
+			today_date?: string | null;
+			limit?: number | null;
+		},
+		TaskItem[]
 	>;
 	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
 	task_set_dates: CommandDef<

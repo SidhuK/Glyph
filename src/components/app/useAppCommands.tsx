@@ -2,6 +2,7 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	CalendarAdd01Icon,
+	CheckListIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
 	DocumentCodeIcon,
@@ -99,8 +100,10 @@ interface UseAppCommandsDeps {
 	openGettingStarted: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
+	openQuickTaskWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
+	openTasksTab: () => void;
 	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
@@ -331,8 +334,10 @@ export function useAppCommands({
 	openGettingStarted,
 	openPalette,
 	openQuickNoteWindow,
+	openQuickTaskWindow,
 	openSearchPalette,
 	openSettings,
+	openTasksTab,
 	openTemplatesTab,
 	openWorkspaceFile,
 	showWelcomeNote,
@@ -391,6 +396,17 @@ export function useAppCommands({
 				enabled: true,
 				allowInEditable: true,
 				action: openQuickNoteWindow,
+			},
+			{
+				id: "open-quick-task",
+				label: "Open quick task",
+				icon: (
+					<HugeiconsIcon icon={CheckListIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "File Operations",
+				enabled: true,
+				allowInEditable: true,
+				action: openQuickTaskWindow,
 			},
 			{
 				id: "create-from-template",
@@ -652,6 +668,16 @@ export function useAppCommands({
 				action: openAllDocsTab,
 			},
 			{
+				id: "open-tasks",
+				label: "Open tasks",
+				icon: (
+					<HugeiconsIcon icon={CheckListIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openTasksTab,
+			},
+			{
 				id: "open-templates",
 				label: "Open templates",
 				icon: (
@@ -876,6 +902,7 @@ export function useAppCommands({
 		showCollapsibleHeadings,
 		spacePath,
 		openAllDocsTab,
+		openTasksTab,
 		openTemplatesTab,
 		openSearchPalette,
 		openCalendarTab,
@@ -883,6 +910,7 @@ export function useAppCommands({
 		openGettingStarted,
 		openBlankTab,
 		openQuickNoteWindow,
+		openQuickTaskWindow,
 		openWorkspaceFile,
 		showWelcomeNote,
 		gitSync,

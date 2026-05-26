@@ -1,5 +1,6 @@
 import {
 	ArrowShrinkIcon,
+	CheckListIcon,
 	CollectionsBookmarkIcon,
 	ExpandParagraphIcon,
 	Home01Icon,
@@ -52,8 +53,10 @@ interface SidebarContentProps {
 	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
+	onOpenTasks: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	onPrefetchCalendar: () => void;
+	onPrefetchTasks: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
@@ -61,7 +64,7 @@ interface SidebarContentProps {
 	onOpenSearchPalette: () => void;
 	spacePath: string | null;
 	onOpenSpace: () => Promise<void>;
-	activeTopSection: "home" | "all-notes" | "databases" | null;
+	activeTopSection: "home" | "all-notes" | "tasks" | "databases" | null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -122,8 +125,10 @@ export const SidebarContent = memo(function SidebarContent({
 	onMovePath,
 	onSelectTag,
 	onOpenCalendar,
+	onOpenTasks,
 	onOpenDatabases,
 	onPrefetchCalendar,
+	onPrefetchTasks,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
@@ -434,6 +439,26 @@ export const SidebarContent = memo(function SidebarContent({
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="databases"
+							data-active={activeTopSection === "databases" ? "true" : "false"}
+							aria-label="Collections"
+							aria-pressed={activeTopSection === "databases"}
+							aria-current={
+								activeTopSection === "databases" ? "page" : undefined
+							}
+							onClick={() => {
+								onOpenDatabases();
+							}}
+							onMouseEnter={() => onPrefetchDatabases()}
+							onFocus={() => onPrefetchDatabases()}
+							title="Open Collections"
+						>
+							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
+							<span className="sidebarQuickActionLabel">Collections</span>
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="all-notes"
 							data-active={activeTopSection === "all-notes" ? "true" : "false"}
 							aria-label="All Notes"
@@ -456,22 +481,18 @@ export const SidebarContent = memo(function SidebarContent({
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="databases"
-							data-active={activeTopSection === "databases" ? "true" : "false"}
-							aria-label="Collections"
-							aria-pressed={activeTopSection === "databases"}
-							aria-current={
-								activeTopSection === "databases" ? "page" : undefined
-							}
-							onClick={() => {
-								onOpenDatabases();
-							}}
-							onMouseEnter={() => onPrefetchDatabases()}
-							onFocus={() => onPrefetchDatabases()}
-							title="Open Collections"
+							data-kind="tasks"
+							data-active={activeTopSection === "tasks" ? "true" : "false"}
+							aria-label="Tasks"
+							aria-pressed={activeTopSection === "tasks"}
+							aria-current={activeTopSection === "tasks" ? "page" : undefined}
+							onClick={onOpenTasks}
+							onMouseEnter={onPrefetchTasks}
+							onFocus={onPrefetchTasks}
+							title="Open Tasks"
 						>
-							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
-							<span className="sidebarQuickActionLabel">Collections</span>
+							<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={0.9} />
+							<span className="sidebarQuickActionLabel">Tasks</span>
 						</button>
 					</div>
 					<div className="sidebarStack">

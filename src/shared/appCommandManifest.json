@@ -872,6 +872,22 @@
 			"allowInEditable": true,
 			"commandPalette": true
 		},
+		"open-quick-task": {
+			"id": "open-quick-task",
+			"label": "Open Quick Task",
+			"description": "Open the floating quick task capture window.",
+			"category": "file",
+			"context": "global",
+			"defaultBinding": {
+				"meta": true,
+				"ctrl": true,
+				"alt": true,
+				"shift": true,
+				"key": "t"
+			},
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"open-search-palette": {
 			"id": "open-search-palette",
 			"label": "Open Search Palette",

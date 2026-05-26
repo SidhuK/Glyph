@@ -163,13 +163,16 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	flex: 0 0 auto;
+	width: var(--task-progress-width, 16px);
+	height: var(--task-progress-height, 16px);
+	line-height: 0;
 }
 
 .markdownEditorTaskProgressRing {
-	width: 14px;
-	height: 14px;
+	width: var(--task-progress-ring-size, 14px);
+	height: var(--task-progress-ring-size, 14px);
+	flex: 0 0 var(--task-progress-ring-size, 14px);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -179,8 +182,10 @@
 }
 
 .markdownEditorTaskProgressPie {
-	width: 7px;
-	height: 7px;
+	display: block;
+	width: var(--task-progress-pie-size, 7px);
+	height: var(--task-progress-pie-size, 7px);
+	flex: 0 0 var(--task-progress-pie-size, 7px);
 	border-radius: 50%;
 	transition: background 180ms ease;
 }
@@ -231,8 +236,7 @@
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
-	width: 16px;
-	height: 12px;
+	--task-progress-height: 14px;
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {

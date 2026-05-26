@@ -332,19 +332,14 @@
 }
 
 .allDocsCardTaskProgress {
-	width: 14px;
-	height: 14px;
+	--task-progress-width: 14px;
+	--task-progress-height: 14px;
+	--task-progress-ring-size: 14px;
+	--task-progress-pie-size: 6px;
 }
 
 .allDocsCardTaskProgress .markdownEditorTaskProgressRing {
-	width: 13px;
-	height: 13px;
 	border-width: 2px;
-}
-
-.allDocsCardTaskProgress .markdownEditorTaskProgressPie {
-	width: 6px;
-	height: 6px;
 }
 
 .allDocsCardTaskText {

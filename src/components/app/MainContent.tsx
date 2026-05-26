@@ -50,6 +50,7 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { todayIsoDateLocal } from "../../lib/tasks";
+import { TASKS_TAB_ID } from "../../lib/tasksView";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
@@ -80,12 +81,14 @@ import {
 	loadAllDocsPane,
 	loadCalendarPane,
 	loadDatabasesPane,
+	loadTasksPane,
 } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
 const DatabasesPane = lazy(loadDatabasesPane);
 const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
+const TasksPane = lazy(loadTasksPane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
@@ -559,6 +562,7 @@ export const MainContent = memo(function MainContent({
 			void loadCalendarPane();
 			void loadDatabasesPane();
 			void loadAllDocsPane();
+			void loadTasksPane();
 			void prefetchAllDocs(null);
 			if (templateFolder) {
 				void prefetchAllDocs(templateFolder);
@@ -646,6 +650,18 @@ export const MainContent = memo(function MainContent({
 				>
 					<CalendarPane
 						initialData={initialCalendarData}
+						onOpenFile={onOpenFile}
+						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+					/>
+				</Suspense>
+			);
+		}
+		if (viewerPath === TASKS_TAB_ID) {
+			return (
+				<Suspense
+					fallback={<div className="databaseLoadingState">Loading tasks…</div>}
+				>
+					<TasksPane
 						onOpenFile={onOpenFile}
 						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
 					/>
@@ -750,6 +766,10 @@ export const MainContent = memo(function MainContent({
 						readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
 					dailyNotesFolder,
 				});
+				return;
+			}
+			if (target === TASKS_TAB_ID) {
+				void loadTasksPane();
 				return;
 			}
 			if (target === DATABASES_TAB_ID) {

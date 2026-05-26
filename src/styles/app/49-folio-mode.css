@@ -287,22 +287,17 @@
 }
 
 .folioNoteTaskProgress {
+	--task-progress-width: 16px;
+	--task-progress-height: 16px;
+	--task-progress-ring-size: 14px;
+	--task-progress-pie-size: 6px;
 	flex: 0 0 auto;
-	width: 16px;
-	height: 16px;
 	margin-left: auto;
 	opacity: 0.9;
 }
 
 .folioNoteTaskProgress .markdownEditorTaskProgressRing {
-	width: 14px;
-	height: 14px;
 	border-width: 2px;
-}
-
-.folioNoteTaskProgress .markdownEditorTaskProgressPie {
-	width: 7px;
-	height: 7px;
 }
 
 .folioNoteRow:hover .folioNoteTaskProgress,

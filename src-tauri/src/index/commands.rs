@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use chrono::{DateTime, Duration, Local, NaiveDate};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_notification::NotificationExt;
 
@@ -86,6 +86,28 @@ pub struct CalendarRangeResponse {
     pub days: Vec<CalendarDaySummary>,
     pub detail: CalendarDayDetail,
     pub tasks: CalendarTaskGroups,
+}
+
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GlobalTaskFilter {
+    Today,
+    Overdue,
+    Inbox,
+    NoDate,
+    All,
+}
+
+impl GlobalTaskFilter {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Today => "today",
+            Self::Overdue => "overdue",
+            Self::Inbox => "inbox",
+            Self::NoDate => "no_date",
+            Self::All => "all",
+        }
+    }
 }
 
 fn tokenize_search_query(raw: &str) -> Vec<String> {
@@ -257,6 +279,35 @@ fn sort_calendar_tasks(tasks: &mut [IndexedTask]) {
             .then_with(|| left.note_title.cmp(&right.note_title))
             .then_with(|| left.line_start.cmp(&right.line_start))
     });
+}
+
+fn indexed_task_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<IndexedTask> {
+    Ok(IndexedTask {
+        task_id: row.get(0)?,
+        note_id: row.get(1)?,
+        note_title: row.get(2)?,
+        note_path: row.get(3)?,
+        line_start: row.get(4)?,
+        raw_text: row.get(5)?,
+        checked: row.get::<_, i64>(6)? == 1,
+        status: row.get(7)?,
+        priority: row.get(8)?,
+        due_date: row.get(9)?,
+        scheduled_date: row.get(10)?,
+        section: row.get(11)?,
+        note_updated: row.get(12)?,
+    })
+}
+
+fn normalized_task_query_date(today_date: Option<String>) -> Result<String, String> {
+    let Some(today_date) = today_date
+        .map(|date| date.trim().to_string())
+        .filter(|date| !date.is_empty())
+    else {
+        return Ok(format_calendar_date(Local::now().date_naive()));
+    };
+
+    parse_calendar_date(&today_date).map(format_calendar_date)
 }
 
 fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> String {
@@ -1014,6 +1065,57 @@ pub async fn task_set_checked(
         },
     );
     Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn tasks_query_global(
+    state: State<'_, SpaceState>,
+    filter: Option<GlobalTaskFilter>,
+    today_date: Option<String>,
+    limit: Option<u32>,
+) -> Result<Vec<IndexedTask>, String> {
+    let root = state.current_root()?;
+    let filter = filter.unwrap_or(GlobalTaskFilter::All).as_str().to_string();
+    let today_date = normalized_task_query_date(today_date)?;
+    let limit = limit.unwrap_or(500).clamp(1, 2_000) as i64;
+
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexedTask>, String> {
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT t.task_id, t.note_id, n.title, t.note_path, t.line_start, t.raw_text, t.checked,
+                        t.status, t.priority, t.due_date, t.scheduled_date, t.section, t.note_updated
+                 FROM tasks t
+                 JOIN notes n ON n.id = t.note_id
+                 WHERE t.checked = 0
+                   AND (
+                        ?1 = 'all'
+                        OR (?1 = 'today' AND (t.scheduled_date = ?2 OR t.due_date = ?2))
+                        OR (?1 = 'overdue' AND t.due_date IS NOT NULL AND t.due_date < ?2)
+                        OR (?1 = 'inbox' AND instr(lower(t.raw_text), '#inbox') > 0)
+                        OR (?1 = 'no_date' AND t.scheduled_date IS NULL AND t.due_date IS NULL)
+                   )
+                 ORDER BY
+                    CASE WHEN ?1 IN ('inbox', 'no_date') THEN t.note_updated ELSE '' END DESC,
+                    COALESCE(t.scheduled_date, t.due_date, '9999-12-31') ASC,
+                    COALESCE(t.due_date, t.scheduled_date, '9999-12-31') ASC,
+                    t.priority ASC,
+                    n.title COLLATE NOCASE ASC,
+                    t.line_start ASC
+                 LIMIT ?3",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params![filter, today_date, limit])
+            .map_err(|e| e.to_string())?;
+        let mut tasks = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            tasks.push(indexed_task_from_row(row).map_err(|e| e.to_string())?);
+        }
+        Ok(tasks)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command(rename_all = "snake_case")]
