@@ -6,10 +6,10 @@
 				{
 					"category": "Added",
 					"items": [
-						"Home Tasks are now organized into a collapsible focus stack: Overdue, Today, Ongoing, and Later",
+						"TasksPane now powers the dedicated Tasks tab with filters for Today, Overdue, Inbox, By note, By tag, and All",
 						"Week strip shows your workload at a glance with task counts, note activity, and daily note markers",
 						"Task composer redesigned as a quick-add bar with chips for Today, Due, Source note, Priority, and Inbox",
-						"Dedicated Tasks tab with filters: Today, Overdue, Inbox, No date, By note, By tag, and All",
+						"By note and All views group mixed scheduled and unscheduled results for broader task review",
 						"Tasks now search across your whole space, not just the current calendar range",
 						"Quick Task floating window for capturing tasks without leaving your current view",
 						"Shortcut Ctrl+Cmd+Alt+Shift+T to open Quick Task from anywhere",

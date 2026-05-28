@@ -651,27 +651,21 @@ export const MainContent = memo(function MainContent({
 			return (
 				<div className="homePaneHost">
 					<div className="homePaneSwitchWrap">
-						<div
-							className="homePaneSwitch"
-							role="tablist"
-							aria-label="Home views"
-						>
+						<div className="homePaneSwitch">
 							<button
 								type="button"
-								role="tab"
 								className="homePaneSwitchTab"
 								data-active={!isTasksView ? "true" : "false"}
-								aria-selected={!isTasksView}
+								aria-pressed={!isTasksView}
 								onClick={() => onHomeViewChange("home")}
 							>
 								Home
 							</button>
 							<button
 								type="button"
-								role="tab"
 								className="homePaneSwitchTab"
 								data-active={isTasksView ? "true" : "false"}
-								aria-selected={isTasksView}
+								aria-pressed={isTasksView}
 								onClick={() => {
 									void loadTasksPane();
 									onHomeViewChange("tasks");

@@ -200,7 +200,7 @@ function noteCountLabel(count: number) {
 }
 
 function dateLabel(date: string) {
-	return date || "No date";
+	return date;
 }
 
 export function TasksPane({
