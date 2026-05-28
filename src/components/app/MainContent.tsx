@@ -50,7 +50,6 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { todayIsoDateLocal } from "../../lib/tasks";
-import { TASKS_TAB_ID } from "../../lib/tasksView";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
@@ -94,6 +93,8 @@ const ShortcutsSettingsPane = lazy(() =>
 		default: module.ShortcutsSettingsPane,
 	})),
 );
+
+type HomeView = "home" | "tasks";
 
 function readStorage(key: string): string | null {
 	if (typeof window === "undefined") return null;
@@ -303,6 +304,8 @@ interface MainContentProps {
 	showGettingStartedRequest: number;
 	openDatabasesId: string | null;
 	dailyNoteSetupNoticeRequest: number;
+	homeView: HomeView;
+	onHomeViewChange: (view: HomeView) => void;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
 }
@@ -406,6 +409,8 @@ export const MainContent = memo(function MainContent({
 	showGettingStartedRequest,
 	openDatabasesId,
 	dailyNoteSetupNoticeRequest,
+	homeView,
+	onHomeViewChange,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
@@ -642,30 +647,59 @@ export const MainContent = memo(function MainContent({
 					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
 				dailyNotesFolder,
 			});
+			const isTasksView = homeView === "tasks";
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading calendar…</div>
-					}
-				>
-					<CalendarPane
-						initialData={initialCalendarData}
-						onOpenFile={onOpenFile}
-						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-					/>
-				</Suspense>
-			);
-		}
-		if (viewerPath === TASKS_TAB_ID) {
-			return (
-				<Suspense
-					fallback={<div className="databaseLoadingState">Loading tasks…</div>}
-				>
-					<TasksPane
-						onOpenFile={onOpenFile}
-						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-					/>
-				</Suspense>
+				<div className="homePaneHost">
+					<div className="homePaneSwitchWrap">
+						<div className="homePaneSwitch">
+							<button
+								type="button"
+								className="homePaneSwitchTab"
+								data-active={!isTasksView ? "true" : "false"}
+								aria-pressed={!isTasksView}
+								onClick={() => onHomeViewChange("home")}
+							>
+								Home
+							</button>
+							<button
+								type="button"
+								className="homePaneSwitchTab"
+								data-active={isTasksView ? "true" : "false"}
+								aria-pressed={isTasksView}
+								onClick={() => {
+									void loadTasksPane();
+									onHomeViewChange("tasks");
+								}}
+							>
+								Tasks
+							</button>
+						</div>
+					</div>
+					{isTasksView ? (
+						<Suspense
+							fallback={
+								<div className="databaseLoadingState">Loading tasks…</div>
+							}
+						>
+							<TasksPane
+								onOpenFile={onOpenFile}
+								onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+							/>
+						</Suspense>
+					) : (
+						<Suspense
+							fallback={
+								<div className="databaseLoadingState">Loading calendar…</div>
+							}
+						>
+							<CalendarPane
+								initialData={initialCalendarData}
+								onOpenFile={onOpenFile}
+								onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+							/>
+						</Suspense>
+					)}
+				</div>
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
@@ -733,8 +767,10 @@ export const MainContent = memo(function MainContent({
 		onOpenFile,
 		onOpenFileInNewTab,
 		onOpenDailyNotesSettings,
+		onHomeViewChange,
 		openDatabasesId,
 		dailyNotesFolder,
+		homeView,
 		templateFolder,
 		viewerPath,
 		setDirtyByPath,
@@ -766,10 +802,6 @@ export const MainContent = memo(function MainContent({
 						readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
 					dailyNotesFolder,
 				});
-				return;
-			}
-			if (target === TASKS_TAB_ID) {
-				void loadTasksPane();
 				return;
 			}
 			if (target === DATABASES_TAB_ID) {

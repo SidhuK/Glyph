@@ -234,6 +234,21 @@
 	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-hover));
 }
 
+.folioNoteRow[data-state="selected"] .folioNoteTitle,
+.folioNoteRow[data-state="selected"] .folioFileName {
+	font-weight: var(--font-semibold);
+}
+
+.folioNoteRow[data-state="selected"] .folioNoteTitleIcon,
+.folioNoteRow[data-state="selected"] .folioNoteFileIcon {
+	opacity: 1;
+}
+
+.folioNoteRow[data-state="selected"] svg,
+.folioNoteRow[data-state="selected"] svg * {
+	stroke-width: 1.2;
+}
+
 .folioNoteRow[data-kind="file"] {
 	min-height: 42px;
 	justify-content: center;
@@ -262,7 +277,7 @@
 	white-space: nowrap;
 	color: var(--folio-file-color, var(--text-primary));
 	font-size: 13px;
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	line-height: 1.32;
 }
 

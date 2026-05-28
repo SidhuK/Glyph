@@ -157,7 +157,73 @@
 	flex-direction: column;
 	gap: 2px;
 	width: 100%;
-	padding: 13px 8px 0;
+	padding: 4px 8px 0;
+}
+
+.sidebarCommandSearch {
+	width: 100%;
+	padding: 8px 8px 4px;
+}
+
+.sidebarCommandSearchButton {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-width: 0;
+	height: 32px;
+	padding: 0 9px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	cursor: pointer;
+	text-align: left;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarCommandSearchButton:hover {
+	border-color: var(--border-strong);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+.sidebarCommandSearchButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.sidebarCommandSearchButton svg {
+	flex: 0 0 auto;
+	color: currentcolor;
+}
+
+.sidebarCommandSearchPlaceholder {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--text-sm);
+	line-height: 1;
+}
+
+.sidebarCommandSearchShortcut {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	min-width: 0;
+	height: 18px;
+	margin-left: auto;
+	padding: 0 5px;
+	border: 1px solid var(--border-light);
+	border-radius: 4px;
+	background: var(--bg-tertiary);
+	color: var(--text-tertiary);
+	font-size: 10px;
+	line-height: 1;
 }
 
 .sidebarNavBtn {
@@ -180,10 +246,20 @@
 	color: var(--text-primary);
 }
 
+.sidebarNavBtn[data-active="true"] > svg,
+.sidebarNavBtn[data-active="true"] > svg * {
+	stroke-width: 1.2;
+}
+
 .sidebarNavBtn .sidebarQuickActionLabel {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	font-weight: var(--font-normal);
 	line-height: 1;
+}
+
+.sidebarNavBtn[data-active="true"] .sidebarQuickActionLabel {
+	font-weight: var(--font-semibold);
 }

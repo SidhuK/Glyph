@@ -396,28 +396,6 @@
 	display: block;
 }
 
-.databaseBoardCardFooter {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-top: auto;
-	min-width: 0;
-	padding-top: 2px;
-}
-
-.databaseBoardCardPath {
-	min-width: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	font-size: 0.62rem;
-	line-height: 1.2;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
 .databaseBoardCardTimestamp {
 	min-width: 0;
 	flex: 0 1 auto;

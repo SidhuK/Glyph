@@ -93,6 +93,98 @@
 	justify-content: center;
 }
 
+.calendarTaskComposer,
+.calendarInlineSetup {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+}
+
+.calendarTaskComposer {
+	align-items: stretch;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+}
+
+.calendarTaskComposerMain {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.calendarTaskComposerIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 22px;
+	height: 22px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+}
+
+.calendarTaskComposer input {
+	height: 28px;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	font-size: var(--text-sm);
+}
+
+.calendarTaskComposerChips {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 5px;
+	min-width: 0;
+	padding-left: 30px;
+}
+
+.calendarTaskComposerChip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 22px;
+	padding: 2px 7px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-tertiary);
+	font-size: 0.68rem;
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+button.calendarTaskComposerChip {
+	cursor: pointer;
+}
+
+button.calendarTaskComposerChip:hover,
+button.calendarTaskComposerChip:focus-visible,
+.calendarTaskComposerChip[data-active="true"] {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--border-light)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+}
+
 .tasksPaneToolbar {
 	display: flex;
 	align-items: center;
@@ -720,6 +812,10 @@
 }
 
 @container (max-width: 720px) {
+	.calendarTaskComposerChips {
+		padding-left: 0;
+	}
+
 	.tasksPaneToolbar {
 		flex-direction: column;
 		align-items: stretch;

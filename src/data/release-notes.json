@@ -1,6 +1,42 @@
 {
 	"versions": [
 		{
+			"version": "0.5.5",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"TasksPane now powers the dedicated Tasks tab with filters for Today, Overdue, Inbox, By note, By tag, and All",
+						"Week strip shows your workload at a glance with task counts, note activity, and daily note markers",
+						"Task composer redesigned as a quick-add bar with chips for Today, Due, Source note, Priority, and Inbox",
+						"By note and All views group mixed scheduled and unscheduled results for broader task review",
+						"Tasks now search across your whole space, not just the current calendar range",
+						"Quick Task floating window for capturing tasks without leaving your current view",
+						"Shortcut Ctrl+Cmd+Alt+Shift+T to open Quick Task from anywhere",
+						"Scheduled date and Due date fields in the task composer"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"By note view groups tasks by folder and shows note names with clean counts",
+						"All view combines scheduled and unscheduled tasks into one organized list",
+						"Dated relabeled to Scheduled throughout",
+						"Cleaner empty states and simplified counts",
+						"All Notes moved under Collections in the sidebar"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": ["Task rings now render centered at all sizes"]
+				},
+				{
+					"category": "Removed",
+					"items": ["Unscheduled tab for a simpler Tasks pane"]
+				}
+			]
+		},
+		{
 			"version": "0.5.0",
 			"sections": [
 				{

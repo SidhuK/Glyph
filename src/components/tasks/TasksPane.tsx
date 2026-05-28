@@ -17,7 +17,7 @@ import { addTaskToDailyNote } from "../../lib/taskCapture";
 import { stripTaskScheduleTokens, todayIsoDateLocal } from "../../lib/tasks";
 import { type TaskItem, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { Hash, Search, Settings } from "../Icons";
+import { Calendar, Hash, Search, Settings } from "../Icons";
 import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
@@ -199,6 +199,10 @@ function noteCountLabel(count: number) {
 	return `${count} ${count === 1 ? "note" : "notes"}`;
 }
 
+function dateLabel(date: string) {
+	return date;
+}
+
 export function TasksPane({
 	onOpenFile,
 	onOpenDailyNotesSettings,
@@ -208,6 +212,8 @@ export function TasksPane({
 	const [query, setQuery] = useState("");
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
+	const [taskScheduledDate, setTaskScheduledDate] = useState(today);
+	const [taskDueDate, setTaskDueDate] = useState("");
 	const taskInputRef = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
 	const { spacePath } = useSpace();
@@ -273,10 +279,15 @@ export function TasksPane({
 				onOpenDailyNotesSettings?.();
 				return;
 			}
+			if (!taskScheduledDate) {
+				setError("Choose a scheduled date before adding tasks.");
+				return;
+			}
 			setError("");
 			const result = await addTaskToDailyNote({
 				taskText: normalized,
-				scheduledDate: today,
+				scheduledDate: taskScheduledDate,
+				dueDate: taskDueDate || null,
 				dailyNotesFolder,
 				dailyNoteTemplatePath,
 				spacePath,
@@ -569,9 +580,51 @@ export function TasksPane({
 							pending={submitTaskMutation.isPending}
 							onValueChange={setTaskDraft}
 							onSubmit={() => void submitTask()}
+							dateControls={
+								<div className="quickTaskDateFields">
+									<label>
+										<span>
+											<Calendar size={12} aria-hidden="true" />
+											Scheduled
+										</span>
+										<input
+											type="date"
+											value={taskScheduledDate}
+											onChange={(event) =>
+												setTaskScheduledDate(event.currentTarget.value)
+											}
+											aria-label="Scheduled date"
+										/>
+									</label>
+									<label>
+										<span>Due</span>
+										<input
+											type="date"
+											value={taskDueDate}
+											onChange={(event) =>
+												setTaskDueDate(event.currentTarget.value)
+											}
+											aria-label="Due date"
+										/>
+									</label>
+								</div>
+							}
 							chips={[
-								{ label: "Today", active: true, onClick: focusTaskInput },
-								{ label: "Scheduled today", onClick: focusTaskInput },
+								{
+									label: "Today",
+									active: taskScheduledDate === today,
+									onClick: () => {
+										setTaskScheduledDate(today);
+										focusTaskInput();
+									},
+								},
+								{
+									label: taskDueDate
+										? `Due ${dateLabel(taskDueDate)}`
+										: "Due date",
+									active: Boolean(taskDueDate),
+									onClick: focusTaskInput,
+								},
 								{
 									label: "Priority",
 									onClick: () => appendTaskDraftToken("#priority"),

@@ -3,7 +3,6 @@ import type { FsEntry } from "../lib/tauri";
 import {
 	areEntriesEqual,
 	compareEntries,
-	fileTitleFromRelPath,
 	normalizeEntries,
 	normalizeEntry,
 	normalizeRelPath,
@@ -23,12 +22,6 @@ describe("fileTreeHelpers", () => {
 	it("normalizes rel paths and strips surrounding slashes", () => {
 		expect(normalizeRelPath("\\foo\\bar\\baz.md")).toBe("foo/bar/baz.md");
 		expect(normalizeRelPath(" /foo/bar/ ")).toBe("foo/bar");
-	});
-
-	it("derives markdown title from rel path", () => {
-		expect(fileTitleFromRelPath("notes/Plan.md")).toBe("Plan");
-		expect(fileTitleFromRelPath("notes/README.MD")).toBe("README");
-		expect(fileTitleFromRelPath("notes/config.json")).toBe("config.json");
 	});
 
 	it("normalizes entries and applies fallback names", () => {

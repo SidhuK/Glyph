@@ -359,29 +359,30 @@
 .allDocsCardTag {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: 5px;
 	max-width: 100%;
 	flex: 0 1 auto;
 	min-width: 0;
-	padding: 2px 7px;
+	padding: 2px 8px;
 	border: 0;
-	border-radius: var(--pill-radius);
+	border-radius: 4px;
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 9%,
-		var(--bg-primary)
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
 	);
-	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
-	font-size: var(--all-docs-card-meta-size);
+	color: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
+	font-size: 0.76rem;
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 	white-space: nowrap;
-	box-shadow: var(--pill-shadow);
+	box-shadow: none;
 }
 
 .allDocsCardTag.is-muted {
+	--database-tone: var(--text-tertiary);
 	flex: 0 0 auto;
-	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 	color: var(--text-tertiary);
 }
 

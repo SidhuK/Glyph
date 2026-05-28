@@ -27,16 +27,6 @@
 		padding: var(--space-3);
 	}
 
-	.mainEmptyActions {
-		max-width: 420px;
-		gap: var(--space-2);
-	}
-
-	.mainEmptyAction {
-		min-width: 152px;
-		min-height: 108px;
-	}
-
 	.dailyNotesSetupToast {
 		width: min(340px, calc(100% - 16px));
 		padding: 14px;
