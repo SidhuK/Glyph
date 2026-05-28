@@ -6,33 +6,44 @@
 				{
 					"category": "Added",
 					"items": [
-						"TasksPane now powers the dedicated Tasks tab with filters for Today, Overdue, Inbox, By note, By tag, and All",
-						"Week strip shows your workload at a glance with task counts, note activity, and daily note markers",
-						"Task composer redesigned as a quick-add bar with chips for Today, Due, Source note, Priority, and Inbox",
-						"By note and All views group mixed scheduled and unscheduled results for broader task review",
-						"Tasks now search across your whole space, not just the current calendar range",
-						"Quick Task floating window for capturing tasks without leaving your current view",
-						"Shortcut Ctrl+Cmd+Alt+Shift+T to open Quick Task from anywhere",
-						"Scheduled date and Due date fields in the task composer"
+						"Week strip shows compact workload signals for task count, note activity, daily notes, and selected-day overdue tasks",
+						"Tasks now has a dedicated Home subview with Today, Overdue, Inbox, No date, By note, By tag, All, search, refresh, grouping, checkbox toggles, scheduling, and note opening",
+						"Global Tasks command opens Home with the Tasks subview selected",
+						"Quick Task floating window captures tasks from anywhere with text, scheduled date, due date, Priority, and Inbox controls",
+						"Default Quick Task shortcut is Cmd/Ctrl+Alt+Shift+T",
+						"Task composer now supports Scheduled date, Due date, Today, Priority, Inbox, and source note controls"
 					]
 				},
 				{
 					"category": "Improved",
 					"items": [
-						"By note view groups tasks by folder and shows note names with clean counts",
-						"All view combines scheduled and unscheduled tasks into one organized list",
-						"Dated relabeled to Scheduled throughout",
-						"Cleaner empty states and simplified counts",
-						"All Notes moved under Collections in the sidebar"
+						"Tasks now loads unchecked tasks across the whole space instead of the current calendar range",
+						"By note shows unchecked unscheduled note rows grouped by folder, with file names and plain task counts",
+						"All shows scheduled tasks inline and unscheduled tasks as folder-grouped note rows",
+						"Task composer in Home and Tasks shares the same capture flow, so due dates are written consistently",
+						"Home now shows a centered Home and Tasks switch below the main tab bar when tabs are open",
+						"Sidebar search placeholder changed to Quick Actions, with the old space-name search icon removed",
+						"Active navigation rows now use clearer text weight and icon stroke across the sidebar, file tree, and Folio",
+						"Task rings use consistent sizing variables so progress indicators stay centered",
+						"Tags in table view and All Notes now use consistent styling",
+						"Database board cards no longer show folder paths in the footer"
 					]
 				},
 				{
 					"category": "Fixed",
-					"items": ["Task rings now render centered at all sizes"]
+					"items": [
+						"Task progress rings in the file tree, database, and Folio now match the centered geometry used by All Notes",
+						"Folder icons no longer get a separate hover background inside file tree rows"
+					]
 				},
 				{
 					"category": "Removed",
-					"items": ["Unscheduled tab for a simpler Tasks pane"]
+					"items": [
+						"Separate Unscheduled tab in Tasks",
+						"Sidebar Tasks button",
+						"Folder footer from database board cards",
+						"More than 300 lines of dead CSS and TSX"
+					]
 				}
 			]
 		},
