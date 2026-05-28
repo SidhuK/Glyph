@@ -12,7 +12,6 @@ import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { TASKS_TAB_ID } from "../../lib/tasksView";
 import type { FsEntry } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isMarkdownPath } from "../../utils/path";
@@ -59,7 +58,6 @@ function isPathSpecial(path: string): boolean {
 		path === ALL_DOCS_TAB_ID ||
 		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === TASKS_TAB_ID ||
 		path === TEMPLATES_TAB_ID
 	);
 }
@@ -106,7 +104,6 @@ export function TabBar({
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
 			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";
-			if (tab.target === TASKS_TAB_ID) return "Tasks";
 			if (tab.target === TEMPLATES_TAB_ID) return "Templates";
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";

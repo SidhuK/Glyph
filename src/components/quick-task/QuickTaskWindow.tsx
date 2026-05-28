@@ -207,10 +207,6 @@ export function QuickTaskWindow() {
 							},
 						},
 						{
-							label: `Scheduled ${dateLabel(scheduledDate)}`,
-							onClick: focusInput,
-						},
-						{
 							label: dueDate ? `Due ${dateLabel(dueDate)}` : "Due date",
 							active: Boolean(dueDate),
 							onClick: focusInput,

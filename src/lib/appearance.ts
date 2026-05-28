@@ -18,10 +18,6 @@ const BASE_TEXT_SIZES = {
 	sm: 12,
 	base: 14,
 	md: 16,
-	lg: 18,
-	xl: 20,
-	"2xl": 24,
-	"3xl": 30,
 } as const;
 
 const BASE_SPACE_SIZES = {
@@ -146,22 +142,6 @@ export function applyUiTypography(
 	root.style.setProperty(
 		"--text-md",
 		scaledPx(BASE_TEXT_SIZES.md, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-lg",
-		scaledPx(BASE_TEXT_SIZES.lg, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-xl",
-		scaledPx(BASE_TEXT_SIZES.xl, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-2xl",
-		scaledPx(BASE_TEXT_SIZES["2xl"], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-3xl",
-		scaledPx(BASE_TEXT_SIZES["3xl"], effectiveUiScale),
 	);
 	root.style.setProperty(
 		"--space-1",

@@ -1,6 +1,5 @@
 import {
 	ArrowShrinkIcon,
-	CheckListIcon,
 	CollectionsBookmarkIcon,
 	ExpandParagraphIcon,
 	Home01Icon,
@@ -53,18 +52,16 @@ interface SidebarContentProps {
 	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
-	onOpenTasks: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	onPrefetchCalendar: () => void;
-	onPrefetchTasks: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
-	onOpenSearchPalette: () => void;
+	onOpenCommandPalette: () => void;
 	spacePath: string | null;
 	onOpenSpace: () => Promise<void>;
-	activeTopSection: "home" | "all-notes" | "tasks" | "databases" | null;
+	activeTopSection: "home" | "all-notes" | "databases" | null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -125,15 +122,13 @@ export const SidebarContent = memo(function SidebarContent({
 	onMovePath,
 	onSelectTag,
 	onOpenCalendar,
-	onOpenTasks,
 	onOpenDatabases,
 	onPrefetchCalendar,
-	onPrefetchTasks,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
-	onOpenSearchPalette,
+	onOpenCommandPalette,
 	spacePath,
 	onOpenSpace,
 	activeTopSection,
@@ -161,7 +156,7 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const newNoteShortcut = getBinding("new-note");
-	const quickOpenShortcut = getBinding("quick-open");
+	const commandPaletteShortcut = getBinding("open-command-palette");
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
@@ -373,52 +368,30 @@ export const SidebarContent = memo(function SidebarContent({
 	return (
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
-				<div className="sidebarQuickActions">
-					<div className="sidebarTopRow">
-						<div className="sidebarSpaceMenuAnchor">
-							<button
-								type="button"
-								className="sidebarSpaceSwitcher"
-								aria-haspopup="menu"
-								onClick={handleShowSpaceMenu}
-								title={spacePath ?? "Open space"}
-							>
-								<span className="sidebarSpaceBadge">
-									{spaceInitial(spaceLabel)}
+				<div className="sidebarSectionContent">
+					<div className="sidebarCommandSearch">
+						<button
+							type="button"
+							className="sidebarCommandSearchButton"
+							onClick={onOpenCommandPalette}
+							aria-label="Open command palette"
+							title={`Open command palette${
+								commandPaletteShortcut
+									? ` (${formatShortcutForPlatform(commandPaletteShortcut)})`
+									: ""
+							}`}
+						>
+							<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
+							<span className="sidebarCommandSearchPlaceholder">
+								Quick Actions
+							</span>
+							{commandPaletteShortcut ? (
+								<span className="sidebarCommandSearchShortcut">
+									{formatShortcutForPlatform(commandPaletteShortcut)}
 								</span>
-								<span className="sidebarSpaceName">{spaceLabel}</span>
-								<ChevronDown size={12} className="sidebarSpaceChevron" />
-							</button>
-						</div>
-						<button
-							type="button"
-							className="sidebarTopIconButton"
-							onClick={onOpenSearchPalette}
-							aria-label="Search notes"
-							title={`Search notes${
-								quickOpenShortcut
-									? ` (${formatShortcutForPlatform(quickOpenShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon icon={SearchIcon} size={16} strokeWidth={0.9} />
-						</button>
-						<button
-							type="button"
-							className="sidebarTopIconButton sidebarTopNewNoteButton"
-							onClick={onNewNote}
-							aria-label="Create a new note"
-							title={`Create a new note${
-								newNoteShortcut
-									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />
+							) : null}
 						</button>
 					</div>
-				</div>
-				<div className="sidebarSectionContent">
 					<div className="sidebarNavRow">
 						<button
 							type="button"
@@ -477,22 +450,6 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="tasks"
-							data-active={activeTopSection === "tasks" ? "true" : "false"}
-							aria-label="Tasks"
-							aria-pressed={activeTopSection === "tasks"}
-							aria-current={activeTopSection === "tasks" ? "page" : undefined}
-							onClick={onOpenTasks}
-							onMouseEnter={onPrefetchTasks}
-							onFocus={onPrefetchTasks}
-							title="Open Tasks"
-						>
-							<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={0.9} />
-							<span className="sidebarQuickActionLabel">Tasks</span>
 						</button>
 					</div>
 					<div className="sidebarStack">
@@ -593,6 +550,38 @@ export const SidebarContent = memo(function SidebarContent({
 								onChangeTagIcon={handleChangeTagIcon}
 							/>
 						</section>
+					</div>
+				</div>
+				<div className="sidebarQuickActions sidebarFooter">
+					<div className="sidebarTopRow">
+						<div className="sidebarSpaceMenuAnchor">
+							<button
+								type="button"
+								className="sidebarSpaceSwitcher"
+								aria-haspopup="menu"
+								onClick={handleShowSpaceMenu}
+								title={spacePath ?? "Open space"}
+							>
+								<span className="sidebarSpaceBadge">
+									{spaceInitial(spaceLabel)}
+								</span>
+								<span className="sidebarSpaceName">{spaceLabel}</span>
+								<ChevronDown size={12} className="sidebarSpaceChevron" />
+							</button>
+						</div>
+						<button
+							type="button"
+							className="sidebarTopIconButton sidebarTopNewNoteButton"
+							onClick={onNewNote}
+							aria-label="Create a new note"
+							title={`Create a new note${
+								newNoteShortcut
+									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+									: ""
+							}`}
+						>
+							<HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />
+						</button>
 					</div>
 				</div>
 			</div>

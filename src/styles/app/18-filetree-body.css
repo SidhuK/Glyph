@@ -165,12 +165,17 @@
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
-	font-weight: var(--font-medium);
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
 	color: var(--text-primary);
+}
+
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow svg,
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow svg * {
+	stroke-width: 1.2;
 }
 
 .fileTreeRowShell {
@@ -294,7 +299,7 @@
 	flex-shrink: 0;
 }
 
-.fileTreeChevron:hover {
+.fileTreeChevron:hover:not(.fileTreeFolderIcon) {
 	background: var(--bg-active);
 }
 
@@ -336,7 +341,7 @@
 .fileTreeFileText .fileTreeName {
 	flex: none;
 	display: block;
-	font-weight: var(--font-medium);
+	font-weight: var(--font-normal);
 	line-height: 1.25;
 }
 
@@ -415,9 +420,8 @@
 	outline-offset: 2px;
 }
 
-/* Directory names slightly bolder */
 .fileTreeItem .fileTreeChevron + .fileTreeName {
-	font-weight: var(--font-medium);
+	font-weight: var(--font-normal);
 }
 
 .fileTreeEmpty {

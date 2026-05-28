@@ -144,65 +144,6 @@
 	line-height: 1;
 }
 
-.settingsTextarea {
-	max-width: 100%;
-	min-width: 0;
-	width: 100%;
-}
-
-.settingsSwatches {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-	gap: 8px;
-}
-
-.settingsSwatch {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-height: 36px;
-	padding: 5px 9px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
-	background: color-mix(in srgb, var(--bg-tertiary) 70%, transparent);
-	font-size: 9px;
-	text-transform: capitalize;
-}
-
-.settingsSwatch span {
-	height: 14px;
-	width: 14px;
-	border-radius: var(--radius-sm);
-	background: var(--bg-primary);
-	border: 1px solid var(--border-light);
-}
-
-.settingsSwatch.active {
-	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 15%, transparent);
-}
-
-.settingsSwatch[data-swatch="graphite"] span {
-	background: #2b2b2b;
-}
-
-.settingsSwatch[data-swatch="blue"] span {
-	background: #2b6cb0;
-}
-
-.settingsSwatch[data-swatch="green"] span {
-	background: #2f855a;
-}
-
-.settingsSwatch[data-swatch="amber"] span {
-	background: #b7791f;
-}
-
-.settingsSwatch[data-swatch="rose"] span {
-	background: #b83280;
-}
-
 .settingsAccentPicker {
 	display: flex;
 	align-items: center;

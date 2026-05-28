@@ -103,7 +103,7 @@ interface UseAppCommandsDeps {
 	openQuickTaskWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
-	openTasksTab: () => void;
+	openTasksView: () => void;
 	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
@@ -337,7 +337,7 @@ export function useAppCommands({
 	openQuickTaskWindow,
 	openSearchPalette,
 	openSettings,
-	openTasksTab,
+	openTasksView,
 	openTemplatesTab,
 	openWorkspaceFile,
 	showWelcomeNote,
@@ -675,7 +675,7 @@ export function useAppCommands({
 				),
 				category: "Navigation",
 				enabled: Boolean(spacePath),
-				action: openTasksTab,
+				action: openTasksView,
 			},
 			{
 				id: "open-templates",
@@ -902,7 +902,7 @@ export function useAppCommands({
 		showCollapsibleHeadings,
 		spacePath,
 		openAllDocsTab,
-		openTasksTab,
+		openTasksView,
 		openTemplatesTab,
 		openSearchPalette,
 		openCalendarTab,

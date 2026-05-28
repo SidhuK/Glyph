@@ -34,8 +34,7 @@
 
 .calendarDashboardTitleBlock,
 .calendarDashboardActions,
-.calendarPanelSectionHeader,
-.calendarSectionHeader {
+.calendarPanelSectionHeader {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -49,8 +48,7 @@
 }
 
 .calendarDashboardActions,
-.calendarPanelSectionHeader,
-.calendarSectionHeader {
+.calendarPanelSectionHeader {
 	justify-content: space-between;
 }
 
@@ -65,15 +63,13 @@
 .calendarWeekMonth small,
 .calendarNoteTime,
 .calendarEmptyRow,
-.calendarLoading,
-.calendarSectionCount {
+.calendarLoading {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 }
 
 .calendarDashboardTitleBlock h2,
-.calendarPanelSectionHeader h3,
-.calendarSectionTitle {
+.calendarPanelSectionHeader h3 {
 	margin: 0;
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
@@ -90,47 +86,12 @@
 }
 
 .calendarDashboardContent {
-	display: grid;
-	grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
-	align-items: stretch;
-	gap: 14px;
+	display: flex;
+	flex-direction: column;
 	flex: 1;
 	min-height: 0;
 }
 
-.calendarCommandBar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 10px 12px 10px 16px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	border-radius: var(--radius-8);
-	background: var(--bg-secondary);
-}
-
-.calendarCommandTitle {
-	display: flex;
-	align-items: center;
-	min-width: 0;
-}
-
-.calendarCommandTitle h3 {
-	margin: 0;
-	color: var(--text-primary);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0;
-}
-
-.calendarCommandActions {
-	display: flex;
-	flex: 0 0 auto;
-	align-items: center;
-	gap: 4px;
-}
-
-.calendarAccentButton,
 .calendarAccentIconButton {
 	border: 0;
 	background: var(--interactive-accent);
@@ -138,15 +99,12 @@
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
-.calendarAccentButton:hover,
-.calendarAccentButton:focus-visible,
 .calendarAccentIconButton:hover,
 .calendarAccentIconButton:focus-visible {
 	background: var(--interactive-accent-hover);
 	color: var(--text-inverse);
 }
 
-.calendarAccentButton svg,
 .calendarAccentIconButton svg {
 	color: currentcolor;
 }
@@ -217,7 +175,6 @@
 }
 
 .calendarWeekDay {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -230,11 +187,6 @@
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: color-mix(in srgb, var(--text-secondary) 58%, var(--text-tertiary));
-}
-
-.calendarWeekDay:has(.calendarWeekSignals:hover),
-.calendarWeekDay:has(.calendarWeekSignals:focus-visible) {
-	background: var(--bg-hover);
 }
 
 .calendarWeekDayButton {
@@ -295,12 +247,6 @@
 	min-height: 38px;
 	margin-top: 1px;
 	padding: 0;
-	list-style: none;
-	cursor: pointer;
-}
-
-.calendarWeekSignals::-webkit-details-marker {
-	display: none;
 }
 
 .calendarWeekSignal {
@@ -344,37 +290,6 @@
 	color: var(--status-danger-fg);
 }
 
-.calendarWeekDetails {
-	width: 100%;
-}
-
-.calendarWeekDetailsPanel {
-	position: absolute;
-	z-index: 5;
-	top: calc(100% - 2px);
-	left: 50%;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	min-width: 104px;
-	max-width: 140px;
-	padding: 7px 8px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	border-radius: var(--radius-md);
-	background: var(--bg-secondary);
-	box-shadow: 0 8px 20px
-		color-mix(in srgb, var(--text-primary) 12%, transparent);
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-	line-height: 1.2;
-	text-align: left;
-	transform: translateX(-50%);
-}
-
-.calendarWeekDetailsPanel span {
-	white-space: nowrap;
-}
-
 .calendarError {
 	margin: 0;
 	padding: 8px 10px;
@@ -399,8 +314,7 @@
 	overflow: hidden;
 }
 
-.calendarNotesSection,
-.calendarTasksSection {
+.calendarNotesSection {
 	min-width: 0;
 }
 
@@ -411,21 +325,17 @@
 	min-width: 0;
 }
 
-.calendarNotesList,
-.calendarTaskList {
+.calendarNotesList {
 	display: flex;
 	flex-direction: column;
+	flex: 1;
+	gap: 8px;
 	min-width: 0;
 	min-height: 0;
+	overflow-y: auto;
 	padding: 0;
 	margin: 0;
 	list-style: none;
-}
-
-.calendarNotesList {
-	flex: 1;
-	gap: 8px;
-	overflow-y: auto;
 }
 
 .calendarNoteRow {
@@ -531,169 +441,6 @@
 	color: var(--text-tertiary);
 }
 
-.calendarTasksScrollArea {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	gap: 10px;
-	min-height: 0;
-	overflow-y: auto;
-}
-
-.calendarTaskGroup {
-	display: flex;
-	flex-direction: column;
-	gap: 7px;
-	min-width: 0;
-}
-
-.calendarTaskGroupHeader {
-	width: 100%;
-	min-height: 28px;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: inherit;
-	text-align: left;
-}
-
-.calendarTaskGroupTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-	text-transform: none;
-}
-
-.calendarTaskGroup .calendarSectionCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 20px;
-	padding: 2px 7px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-	font-weight: var(--font-medium);
-	line-height: 1;
-	white-space: nowrap;
-}
-
-.calendarTaskGroup[data-kind="overdue"] .calendarSectionCount {
-	background: var(--status-danger-bg);
-	color: var(--status-danger-fg);
-}
-
-.calendarTaskGroup[data-kind="today"] .calendarSectionCount {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 11%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
-}
-
-.calendarTaskGroup[data-kind="later"] .calendarSectionCount {
-	background: color-mix(in srgb, var(--bg-hover) 62%, transparent);
-	color: var(--text-tertiary);
-}
-
-.calendarTaskGroupEmpty {
-	padding-block: 10px;
-}
-
-.calendarTaskComposer,
-.calendarInlineSetup {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 8px;
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-}
-
-.calendarTaskComposer {
-	align-items: stretch;
-	flex-direction: column;
-	gap: 8px;
-	padding: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: var(--radius-md);
-	background: var(--bg-primary);
-}
-
-.calendarTaskComposerMain {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.calendarTaskComposerIcon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 auto;
-	width: 22px;
-	height: 22px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
-	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
-}
-
-.calendarTaskComposer input {
-	height: 28px;
-	border: 0;
-	background: transparent;
-	box-shadow: none;
-	font-size: var(--text-sm);
-}
-
-.calendarTaskComposerChips {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 5px;
-	min-width: 0;
-	padding-left: 30px;
-}
-
-.calendarTaskComposerChip {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 22px;
-	padding: 2px 7px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: 4px;
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	color: var(--text-tertiary);
-	font-size: 0.68rem;
-	font-weight: var(--font-medium);
-	line-height: 1.2;
-	white-space: nowrap;
-}
-
-button.calendarTaskComposerChip {
-	cursor: pointer;
-}
-
-button.calendarTaskComposerChip:hover,
-button.calendarTaskComposerChip:focus-visible,
-.calendarTaskComposerChip[data-active="true"] {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 24%,
-		var(--border-light)
-	);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
-}
-
 .calendarLoading {
 	padding-inline: 2px;
 	padding-block: 0;
@@ -704,22 +451,12 @@ button.calendarTaskComposerChip:focus-visible,
 		min-height: 0;
 	}
 
-	.calendarWeekHeader,
-	.calendarDashboardContent {
+	.calendarWeekHeader {
 		grid-template-columns: 1fr;
 	}
 
 	.calendarDashboardHeader {
 		align-items: flex-start;
-	}
-
-	.calendarCommandBar {
-		align-items: stretch;
-		flex-direction: column;
-	}
-
-	.calendarCommandActions {
-		flex-wrap: wrap;
 	}
 
 	.calendarWeekStats {
@@ -729,14 +466,6 @@ button.calendarTaskComposerChip:focus-visible,
 	.calendarWeekStrip {
 		grid-template-columns: repeat(7, minmax(68px, 1fr));
 		overflow-x: auto;
-	}
-
-	.calendarTaskComposerChips {
-		padding-left: 0;
-	}
-
-	.calendarDashboardContent {
-		display: grid;
 	}
 
 	.calendarPanelSection {

@@ -7,11 +7,7 @@ import {
 	useDraggable,
 	useDroppable,
 } from "@dnd-kit/react";
-import {
-	Calendar03Icon,
-	Folder03Icon,
-	Tag01Icon,
-} from "@hugeicons/core-free-icons";
+import { Calendar03Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import {
@@ -56,7 +52,6 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
-import { parentDir } from "../../utils/path";
 import { Plus } from "../Icons";
 import {
 	EDITOR_TEXT_COLORS,
@@ -897,8 +892,6 @@ export function DatabaseBoard({
 												priorityValues.length - maxVisiblePriorities,
 												0,
 											);
-											const folderLabel =
-												row.folder?.trim() || parentDir(row.note_path) || "/";
 											const updatedLabel = formatDatabaseDateTime(row.updated);
 											const compactUpdatedLabel = formatCompactBoardDateTime(
 												row.updated,
@@ -1041,20 +1034,6 @@ export function DatabaseBoard({
 															) : null}
 														</div>
 													) : null}
-													<div className="databaseBoardCardFooter">
-														<span
-															className="databaseBoardCardPath"
-															title={folderLabel}
-														>
-															<HugeiconsIcon
-																icon={Folder03Icon}
-																size={10}
-																strokeWidth={1}
-																aria-hidden="true"
-															/>
-															{folderLabel}
-														</span>
-													</div>
 												</DatabaseBoardCardView>
 											);
 										})

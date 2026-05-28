@@ -14,12 +14,6 @@ function entryNameFromRelPath(relPath: string): string {
 	return parts[parts.length - 1] ?? "";
 }
 
-export function fileTitleFromRelPath(relPath: string): string {
-	const name = entryNameFromRelPath(relPath);
-	if (!name) return "Untitled";
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
-}
-
 export function normalizeEntry(entry: FsEntry): FsEntry | null {
 	const relPath = normalizeRelPath(entry.rel_path);
 	if (!relPath) return null;

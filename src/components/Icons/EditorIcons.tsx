@@ -1,7 +1,6 @@
 import {
 	Bold as BoldIcon,
 	Edit as EditIcon,
-	Eye as EyeIcon,
 	Heading1 as Heading1Icon,
 	Heading2 as Heading2Icon,
 	Heading3 as Heading3Icon,
@@ -60,9 +59,6 @@ export const Heading3 = (props: IconProps) => (
 );
 export const Link2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Link2Icon} strokeWidth={0.9} {...props} />
-);
-export const Eye = (props: IconProps) => (
-	<HugeiconsIcon icon={EyeIcon} strokeWidth={0.9} {...props} />
 );
 export const Edit = (props: IconProps) => (
 	<HugeiconsIcon icon={EditIcon} strokeWidth={0.9} {...props} />

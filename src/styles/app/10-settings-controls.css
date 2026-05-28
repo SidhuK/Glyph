@@ -162,7 +162,6 @@
 .settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
-.settingsSwatch:focus-visible,
 .settingsAccentDot:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 44%, transparent);

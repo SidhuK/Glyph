@@ -62,10 +62,6 @@
 	--scrollbar-thumb: rgba(55, 53, 47, 0.16);
 	--scrollbar-thumb-hover: rgba(55, 53, 47, 0.28);
 	--glass-bg: rgba(255, 255, 255, 0.82);
-	--glass-border: rgba(255, 255, 255, 0.52);
-	--chrome-bg: rgba(255, 255, 255, 0.28);
-	--chrome-bg-strong: rgba(255, 255, 255, 0.34);
-	--chrome-border: rgba(255, 255, 255, 0.16);
 }
 
 :root.light[data-light-theme="solarized-light"] {
@@ -122,10 +118,6 @@
 	--scrollbar-thumb: rgba(88, 110, 117, 0.18);
 	--scrollbar-thumb-hover: rgba(88, 110, 117, 0.3);
 	--glass-bg: rgba(253, 246, 227, 0.84);
-	--glass-border: rgba(255, 255, 255, 0.4);
-	--chrome-bg: rgba(248, 241, 220, 0.34);
-	--chrome-bg-strong: rgba(248, 241, 220, 0.44);
-	--chrome-border: rgba(101, 123, 131, 0.12);
 }
 
 :root.light[data-light-theme="github-light"] {
@@ -182,10 +174,6 @@
 	--scrollbar-thumb: rgba(175, 184, 193, 0.8);
 	--scrollbar-thumb-hover: rgba(140, 149, 159, 0.9);
 	--glass-bg: rgba(255, 255, 255, 0.86);
-	--glass-border: rgba(255, 255, 255, 0.54);
-	--chrome-bg: rgba(246, 248, 250, 0.38);
-	--chrome-bg-strong: rgba(246, 248, 250, 0.5);
-	--chrome-border: rgba(208, 215, 222, 0.2);
 }
 
 :root.light[data-light-theme="nord-light"] {
@@ -242,10 +230,6 @@
 	--scrollbar-thumb: rgba(76, 86, 106, 0.24);
 	--scrollbar-thumb-hover: rgba(76, 86, 106, 0.36);
 	--glass-bg: rgba(236, 239, 244, 0.82);
-	--glass-border: rgba(255, 255, 255, 0.44);
-	--chrome-bg: rgba(229, 233, 240, 0.4);
-	--chrome-bg-strong: rgba(229, 233, 240, 0.5);
-	--chrome-border: rgba(76, 86, 106, 0.16);
 }
 
 :root.light[data-light-theme="everforest-light"] {
@@ -279,9 +263,6 @@
 	--scrollbar-thumb: rgba(102, 119, 106, 0.24);
 	--scrollbar-thumb-hover: rgba(102, 119, 106, 0.34);
 	--glass-bg: rgba(246, 242, 232, 0.84);
-	--chrome-bg: rgba(239, 233, 218, 0.4);
-	--chrome-bg-strong: rgba(239, 233, 218, 0.52);
-	--chrome-border: rgba(102, 119, 106, 0.16);
 }
 
 :root.light[data-light-theme="linear-light"] {
@@ -315,9 +296,6 @@
 	--scrollbar-thumb: rgba(94, 106, 210, 0.18);
 	--scrollbar-thumb-hover: rgba(94, 106, 210, 0.28);
 	--glass-bg: rgba(247, 247, 248, 0.84);
-	--chrome-bg: rgba(236, 238, 245, 0.44);
-	--chrome-bg-strong: rgba(236, 238, 245, 0.58);
-	--chrome-border: rgba(94, 106, 210, 0.14);
 }
 
 :root.light[data-light-theme="one-light"] {
@@ -351,9 +329,6 @@
 	--scrollbar-thumb: rgba(86, 92, 103, 0.2);
 	--scrollbar-thumb-hover: rgba(86, 92, 103, 0.32);
 	--glass-bg: rgba(250, 250, 250, 0.86);
-	--chrome-bg: rgba(238, 241, 247, 0.42);
-	--chrome-bg-strong: rgba(238, 241, 247, 0.54);
-	--chrome-border: rgba(64, 120, 242, 0.14);
 }
 
 :root.light[data-light-theme="rose-pine-dawn"] {
@@ -387,9 +362,6 @@
 	--scrollbar-thumb: rgba(87, 82, 121, 0.2);
 	--scrollbar-thumb-hover: rgba(87, 82, 121, 0.32);
 	--glass-bg: rgba(250, 244, 237, 0.86);
-	--chrome-bg: rgba(242, 233, 225, 0.44);
-	--chrome-bg-strong: rgba(242, 233, 225, 0.58);
-	--chrome-border: rgba(180, 99, 122, 0.14);
 }
 
 :root.light[data-light-theme="catppuccin-latte"] {
@@ -446,10 +418,6 @@
 	--scrollbar-thumb: rgba(124, 127, 147, 0.24);
 	--scrollbar-thumb-hover: rgba(108, 111, 133, 0.34);
 	--glass-bg: rgba(239, 241, 245, 0.84);
-	--glass-border: rgba(255, 255, 255, 0.44);
-	--chrome-bg: rgba(230, 233, 239, 0.42);
-	--chrome-bg-strong: rgba(220, 224, 232, 0.54);
-	--chrome-border: rgba(124, 127, 147, 0.16);
 }
 
 :root.light[data-light-theme="everforest-light"],
@@ -515,7 +483,6 @@
 	--callout-tip: var(--status-success-fg);
 	--callout-warning: var(--status-warning-fg);
 	--callout-error: var(--status-danger-fg);
-	--glass-border: color-mix(in srgb, var(--color-white) 44%, transparent);
 }
 
 :root.light[data-light-theme="gruvbox-light"] {
@@ -572,10 +539,6 @@
 	--scrollbar-thumb: rgba(102, 92, 84, 0.24);
 	--scrollbar-thumb-hover: rgba(80, 73, 69, 0.34);
 	--glass-bg: rgba(251, 241, 199, 0.84);
-	--glass-border: rgba(255, 255, 255, 0.34);
-	--chrome-bg: rgba(235, 219, 178, 0.44);
-	--chrome-bg-strong: rgba(235, 219, 178, 0.58);
-	--chrome-border: rgba(102, 92, 84, 0.16);
 }
 
 :root.light[data-light-theme="ayu-light"] {
@@ -632,10 +595,6 @@
 	--scrollbar-thumb: rgba(92, 103, 115, 0.22);
 	--scrollbar-thumb-hover: rgba(92, 103, 115, 0.32);
 	--glass-bg: rgba(252, 252, 252, 0.86);
-	--glass-border: rgba(255, 255, 255, 0.44);
-	--chrome-bg: rgba(240, 238, 228, 0.4);
-	--chrome-bg-strong: rgba(240, 238, 228, 0.52);
-	--chrome-border: rgba(92, 103, 115, 0.14);
 }
 
 :root.light[data-light-theme="tokyo-night-day"] {
@@ -692,10 +651,6 @@
 	--scrollbar-thumb: rgba(97, 114, 176, 0.24);
 	--scrollbar-thumb-hover: rgba(55, 96, 191, 0.34);
 	--glass-bg: rgba(225, 226, 231, 0.84);
-	--glass-border: rgba(255, 255, 255, 0.38);
-	--chrome-bg: rgba(216, 219, 228, 0.42);
-	--chrome-bg-strong: rgba(207, 213, 227, 0.54);
-	--chrome-border: rgba(97, 114, 176, 0.16);
 }
 
 :root.light[data-light-theme="horizon-light"] {
@@ -752,10 +707,6 @@
 	--scrollbar-thumb: rgba(64, 60, 61, 0.2);
 	--scrollbar-thumb-hover: rgba(64, 60, 61, 0.3);
 	--glass-bg: rgba(253, 240, 237, 0.84);
-	--glass-border: rgba(255, 255, 255, 0.34);
-	--chrome-bg: rgba(251, 228, 223, 0.42);
-	--chrome-bg-strong: rgba(250, 218, 209, 0.54);
-	--chrome-border: rgba(64, 60, 61, 0.12);
 }
 
 :root.light[data-light-theme="flexoki-light"] {
@@ -812,8 +763,4 @@
 	--scrollbar-thumb: rgba(111, 110, 105, 0.24);
 	--scrollbar-thumb-hover: rgba(87, 86, 83, 0.34);
 	--glass-bg: rgba(255, 252, 240, 0.86);
-	--glass-border: rgba(255, 255, 255, 0.4);
-	--chrome-bg: rgba(242, 240, 229, 0.44);
-	--chrome-bg-strong: rgba(230, 228, 217, 0.58);
-	--chrome-border: rgba(111, 110, 105, 0.16);
 }

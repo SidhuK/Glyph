@@ -59,7 +59,6 @@ import {
 } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { todayIsoDateLocal } from "../../lib/tasks";
-import { TASKS_TAB_ID } from "../../lib/tasksView";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
@@ -81,7 +80,6 @@ import {
 	loadAllDocsPane,
 	loadCalendarPane,
 	loadDatabasesPane,
-	loadTasksPane,
 } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
 import { useTabManager } from "./useTabManager";
@@ -815,11 +813,10 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"home" | "all-notes" | "tasks" | "databases" | null
+		"home" | "all-notes" | "databases" | null
 	>(() => {
 		if (activeTabPath === CALENDAR_TAB_ID) return "home";
 		if (activeTabPath === ALL_DOCS_TAB_ID) return "all-notes";
-		if (activeTabPath === TASKS_TAB_ID) return "tasks";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
 		return null;
 	}, [activeTabPath]);
@@ -840,10 +837,13 @@ export function AppShell() {
 	const openTemplatesTab = useCallback(() => {
 		openSpecialTab(TEMPLATES_TAB_ID);
 	}, [openSpecialTab]);
-	const openTasksTab = useCallback(() => {
-		openSpecialTab(TASKS_TAB_ID);
+	const [homeView, setHomeView] = useState<"home" | "tasks">("home");
+	const openTasksView = useCallback(() => {
+		setHomeView("tasks");
+		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openSpecialTab]);
 	const openCalendarTab = useCallback(() => {
+		setHomeView("home");
 		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
@@ -905,9 +905,6 @@ export function AppShell() {
 	const prefetchAllDocsTab = useCallback(() => {
 		void loadAllDocsPane();
 		void prefetchAllDocs(null);
-	}, []);
-	const prefetchTasksTab = useCallback(() => {
-		void loadTasksPane();
 	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
@@ -1121,7 +1118,7 @@ export function AppShell() {
 		openQuickTaskWindow,
 		openSearchPalette,
 		openSettings,
-		openTasksTab,
+		openTasksView,
 		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,
@@ -1313,15 +1310,13 @@ export function AppShell() {
 				onOpenSpace={onOpenSpace}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
-				onOpenTasks={openTasksTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}
 				onPrefetchCalendar={prefetchCalendarTab}
-				onPrefetchTasks={prefetchTasksTab}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
-				onOpenSearchPalette={openSearchPalette}
+				onOpenCommandPalette={openCommandPalette}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}
@@ -1369,6 +1364,8 @@ export function AppShell() {
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
+				homeView={homeView}
+				onHomeViewChange={setHomeView}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>

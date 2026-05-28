@@ -112,11 +112,6 @@
 	--scrollbar-thumb: rgba(255, 255, 255, 0.16);
 	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 	--glass-bg: rgba(30, 30, 30, 0.55);
-	--glass-border: rgba(255, 255, 255, 0.08);
-	--chrome-bg: rgba(38, 38, 38, 0.35);
-	--chrome-bg-strong: rgba(38, 38, 38, 0.45);
-	--chrome-sidebar-bg: var(--chrome-bg);
-	--chrome-border: rgba(255, 255, 255, 0.1);
 }
 
 :root.dark[data-dark-theme="solarized-dark"] {
@@ -173,10 +168,6 @@
 	--scrollbar-thumb: rgba(147, 161, 161, 0.18);
 	--scrollbar-thumb-hover: rgba(147, 161, 161, 0.28);
 	--glass-bg: rgba(0, 43, 54, 0.66);
-	--glass-border: rgba(147, 161, 161, 0.12);
-	--chrome-bg: rgba(7, 54, 66, 0.44);
-	--chrome-bg-strong: rgba(7, 54, 66, 0.54);
-	--chrome-border: rgba(147, 161, 161, 0.12);
 }
 
 :root.dark[data-dark-theme="github-dark"] {
@@ -233,10 +224,6 @@
 	--scrollbar-thumb: rgba(240, 246, 252, 0.14);
 	--scrollbar-thumb-hover: rgba(240, 246, 252, 0.22);
 	--glass-bg: rgba(13, 17, 23, 0.68);
-	--glass-border: rgba(240, 246, 252, 0.08);
-	--chrome-bg: rgba(22, 27, 34, 0.44);
-	--chrome-bg-strong: rgba(22, 27, 34, 0.56);
-	--chrome-border: rgba(48, 54, 61, 0.5);
 }
 
 :root.dark[data-dark-theme="nord-dark"] {
@@ -293,10 +280,6 @@
 	--scrollbar-thumb: rgba(236, 239, 244, 0.16);
 	--scrollbar-thumb-hover: rgba(236, 239, 244, 0.24);
 	--glass-bg: rgba(46, 52, 64, 0.64);
-	--glass-border: rgba(236, 239, 244, 0.1);
-	--chrome-bg: rgba(52, 60, 74, 0.42);
-	--chrome-bg-strong: rgba(52, 60, 74, 0.52);
-	--chrome-border: rgba(216, 222, 233, 0.12);
 }
 
 :root.dark[data-dark-theme="tokyo-night"] {
@@ -353,10 +336,6 @@
 	--scrollbar-thumb: rgba(192, 202, 245, 0.16);
 	--scrollbar-thumb-hover: rgba(192, 202, 245, 0.24);
 	--glass-bg: rgba(26, 27, 38, 0.66);
-	--glass-border: rgba(192, 202, 245, 0.08);
-	--chrome-bg: rgba(31, 35, 53, 0.44);
-	--chrome-bg-strong: rgba(31, 35, 53, 0.56);
-	--chrome-border: rgba(122, 162, 247, 0.12);
 }
 
 :root.dark[data-dark-theme="dracula"] {
@@ -413,10 +392,6 @@
 	--scrollbar-thumb: rgba(248, 248, 242, 0.16);
 	--scrollbar-thumb-hover: rgba(248, 248, 242, 0.24);
 	--glass-bg: rgba(40, 42, 54, 0.68);
-	--glass-border: rgba(248, 248, 242, 0.08);
-	--chrome-bg: rgba(48, 51, 65, 0.46);
-	--chrome-bg-strong: rgba(48, 51, 65, 0.58);
-	--chrome-border: rgba(189, 147, 249, 0.12);
 }
 
 :root.dark[data-dark-theme="night-owl"] {
@@ -453,9 +428,6 @@
 	--scrollbar-thumb: rgba(130, 170, 255, 0.18);
 	--scrollbar-thumb-hover: rgba(130, 170, 255, 0.28);
 	--glass-bg: rgba(1, 22, 39, 0.68);
-	--chrome-bg: rgba(11, 29, 50, 0.46);
-	--chrome-bg-strong: rgba(11, 29, 50, 0.58);
-	--chrome-border: rgba(130, 170, 255, 0.14);
 }
 
 :root.dark[data-dark-theme="one-dark"] {
@@ -492,9 +464,6 @@
 	--scrollbar-thumb: rgba(171, 178, 191, 0.18);
 	--scrollbar-thumb-hover: rgba(171, 178, 191, 0.28);
 	--glass-bg: rgba(40, 44, 52, 0.68);
-	--chrome-bg: rgba(33, 37, 43, 0.46);
-	--chrome-bg-strong: rgba(33, 37, 43, 0.58);
-	--chrome-border: rgba(97, 175, 239, 0.14);
 }
 
 :root.dark[data-dark-theme="rose-pine-moon"] {
@@ -531,9 +500,6 @@
 	--scrollbar-thumb: rgba(196, 167, 231, 0.18);
 	--scrollbar-thumb-hover: rgba(196, 167, 231, 0.28);
 	--glass-bg: rgba(35, 33, 54, 0.7);
-	--chrome-bg: rgba(42, 39, 63, 0.48);
-	--chrome-bg-strong: rgba(42, 39, 63, 0.6);
-	--chrome-border: rgba(196, 167, 231, 0.14);
 }
 
 :root.dark[data-dark-theme="catppuccin-mocha"] {
@@ -590,10 +556,6 @@
 	--scrollbar-thumb: rgba(147, 153, 178, 0.2);
 	--scrollbar-thumb-hover: rgba(186, 194, 222, 0.3);
 	--glass-bg: rgba(30, 30, 46, 0.72);
-	--glass-border: rgba(205, 214, 244, 0.08);
-	--chrome-bg: rgba(24, 24, 37, 0.5);
-	--chrome-bg-strong: rgba(17, 17, 27, 0.62);
-	--chrome-border: rgba(127, 132, 156, 0.16);
 }
 
 :root.dark[data-dark-theme="night-owl"],
@@ -655,7 +617,6 @@
 	--callout-tip: var(--status-success-fg);
 	--callout-warning: var(--status-warning-fg);
 	--callout-error: var(--status-danger-fg);
-	--glass-border: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 :root.dark[data-dark-theme="gruvbox-dark"] {
@@ -712,10 +673,6 @@
 	--scrollbar-thumb: rgba(168, 153, 132, 0.22);
 	--scrollbar-thumb-hover: rgba(213, 196, 161, 0.32);
 	--glass-bg: rgba(40, 40, 40, 0.72);
-	--glass-border: rgba(235, 219, 178, 0.08);
-	--chrome-bg: rgba(29, 32, 33, 0.5);
-	--chrome-bg-strong: rgba(60, 56, 54, 0.62);
-	--chrome-border: rgba(168, 153, 132, 0.16);
 }
 
 :root.dark[data-dark-theme="monokai"] {
@@ -772,10 +729,6 @@
 	--scrollbar-thumb: rgba(117, 113, 94, 0.24);
 	--scrollbar-thumb-hover: rgba(153, 148, 124, 0.34);
 	--glass-bg: rgba(39, 40, 34, 0.72);
-	--glass-border: rgba(248, 248, 242, 0.08);
-	--chrome-bg: rgba(30, 31, 28, 0.5);
-	--chrome-bg-strong: rgba(65, 67, 57, 0.62);
-	--chrome-border: rgba(117, 113, 94, 0.16);
 }
 
 :root.dark[data-dark-theme="ayu-dark"] {
@@ -832,10 +785,6 @@
 	--scrollbar-thumb: rgba(90, 99, 120, 0.24);
 	--scrollbar-thumb-hover: rgba(90, 99, 120, 0.34);
 	--glass-bg: rgba(16, 20, 28, 0.74);
-	--glass-border: rgba(191, 189, 182, 0.08);
-	--chrome-bg: rgba(20, 24, 33, 0.5);
-	--chrome-bg-strong: rgba(13, 16, 23, 0.62);
-	--chrome-border: rgba(90, 99, 120, 0.16);
 }
 
 :root.dark[data-dark-theme="vesper"] {
@@ -892,10 +841,6 @@
 	--scrollbar-thumb: rgba(160, 160, 160, 0.28);
 	--scrollbar-thumb-hover: rgba(160, 160, 160, 0.4);
 	--glass-bg: rgba(16, 16, 16, 0.74);
-	--glass-border: rgba(255, 255, 255, 0.08);
-	--chrome-bg: rgba(16, 16, 16, 0.5);
-	--chrome-bg-strong: rgba(16, 16, 16, 0.62);
-	--chrome-border: rgba(160, 160, 160, 0.18);
 }
 
 :root.dark[data-dark-theme="flexoki-dark"] {
@@ -952,10 +897,6 @@
 	--scrollbar-thumb: rgba(111, 110, 105, 0.3);
 	--scrollbar-thumb-hover: rgba(159, 157, 150, 0.38);
 	--glass-bg: rgba(28, 27, 26, 0.74);
-	--glass-border: rgba(206, 205, 195, 0.08);
-	--chrome-bg: rgba(40, 39, 38, 0.5);
-	--chrome-bg-strong: rgba(52, 51, 49, 0.62);
-	--chrome-border: rgba(111, 110, 105, 0.18);
 }
 
 :root.dark[data-dark-theme="everforest-dark"] {
@@ -1012,8 +953,4 @@
 	--scrollbar-thumb: rgba(79, 88, 94, 0.3);
 	--scrollbar-thumb-hover: rgba(133, 146, 137, 0.38);
 	--glass-bg: rgba(45, 53, 59, 0.72);
-	--glass-border: rgba(211, 198, 170, 0.08);
-	--chrome-bg: rgba(52, 63, 68, 0.5);
-	--chrome-bg-strong: rgba(61, 72, 77, 0.62);
-	--chrome-border: rgba(79, 88, 94, 0.18);
 }

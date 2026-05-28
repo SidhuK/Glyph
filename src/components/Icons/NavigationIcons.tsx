@@ -6,10 +6,8 @@ import {
 	Calendar03Icon,
 	CommandIcon,
 	LayoutAlignLeftIcon,
-	Moon02Icon,
 	Search as SearchIcon,
 	Settings01Icon,
-	Sun01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
@@ -42,10 +40,4 @@ export const Settings = (props: IconProps) => (
 );
 export const Calendar = (props: IconProps) => (
 	<HugeiconsIcon icon={Calendar03Icon} strokeWidth={0.9} {...props} />
-);
-export const Sun = (props: IconProps) => (
-	<HugeiconsIcon icon={Sun01Icon} strokeWidth={0.9} {...props} />
-);
-export const Moon = (props: IconProps) => (
-	<HugeiconsIcon icon={Moon02Icon} strokeWidth={0.9} {...props} />
 );

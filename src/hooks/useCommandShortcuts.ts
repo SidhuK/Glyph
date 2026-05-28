@@ -37,9 +37,6 @@ export function useCommandShortcuts({
 			for (const handler of handlersRef.current) {
 				if (!handler.shortcut || handler.enabled === false) continue;
 				if (editableOnly && handler.allowInEditable !== true) continue;
-				if (!editableOnly && handler.allowInEditable === true) {
-					// still allow editor-safe shortcuts in non-editable contexts
-				}
 				if (!isShortcutMatch(event, handler.shortcut)) continue;
 				event.preventDefault();
 				void handler.action();

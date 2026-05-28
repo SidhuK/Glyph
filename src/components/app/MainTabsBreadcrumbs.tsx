@@ -9,7 +9,6 @@ import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import { TASKS_TAB_ID } from "../../lib/tasksView";
 import { type FileTreeAppearance, type FsEntry, invoke } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isMarkdownPath, parentDir } from "../../utils/path";
@@ -78,7 +77,6 @@ function isPathSpecial(path: string): boolean {
 		path === ALL_DOCS_TAB_ID ||
 		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === TASKS_TAB_ID ||
 		path === TEMPLATES_TAB_ID
 	);
 }

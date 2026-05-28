@@ -73,7 +73,7 @@
 	gap: 6px;
 	position: absolute;
 	top: 8px;
-	left: var(--window-control-toggle-offset, 90px);
+	right: 8px;
 	transform: none;
 	z-index: 30;
 }
@@ -173,6 +173,10 @@
 	gap: 2px;
 	padding: 5px 8px 3px;
 	flex-shrink: 0;
+}
+
+.sidebarFooter {
+	padding: 6px 8px 10px;
 }
 
 .sidebarSectionContent {
