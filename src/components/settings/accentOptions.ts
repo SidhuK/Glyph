@@ -49,6 +49,6 @@ export function getAccentPreviewColor(
 ): string {
 	return (
 		ACCENT_COLOR_MAP[accent as Exclude<UiAccent, "neutral">] ??
-		(mode === "dark" ? "rgba(255, 255, 255, 0.92)" : "#37352f")
+		(mode === "dark" ? "#ececee" : "#26231d")
 	);
 }

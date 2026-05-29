@@ -1,11 +1,53 @@
 :root.light:not([data-light-theme]),
 :root.light[data-light-theme="glyph-default"] {
-	--interactive-accent: var(--glyph-user-accent, var(--color-gray-800));
-	--interactive-accent-hover: var(
-		--glyph-user-accent-hover,
-		var(--color-gray-900)
-	);
-	--accent-color: var(--glyph-user-accent, var(--color-gray-800));
+	/* Glyph Paper — OKLCH-derived warm paper surfaces with tinted shadows. */
+	--bg-primary: oklch(1 0 0);
+	--bg-secondary: oklch(0.962 0.005 80);
+	--bg-tertiary: oklch(0.928 0.005 80);
+	--bg-hover: rgba(38, 35, 29, 0.06);
+	--bg-active: rgba(38, 35, 29, 0.12);
+	--bg-sidebar: oklch(0.962 0.005 80);
+	--bg-canvas: oklch(0.988 0.007 80);
+
+	--text-primary: oklch(0.252 0.013 70);
+	--text-secondary: rgba(38, 35, 29, 0.62);
+	--text-tertiary: rgba(38, 35, 29, 0.45);
+	--text-placeholder: rgba(38, 35, 29, 0.35);
+	--text-inverse: #ffffff;
+	--text-accent: oklch(0.252 0.013 70);
+	--text-error: var(--color-red-600);
+
+	--border-light: rgba(38, 35, 29, 0.07);
+	--border-default: rgba(38, 35, 29, 0.11);
+	--border-strong: rgba(38, 35, 29, 0.18);
+	--border-focus: rgba(38, 35, 29, 0.32);
+
+	--interactive-hover: rgba(38, 35, 29, 0.06);
+	--interactive-active: rgba(38, 35, 29, 0.12);
+	--interactive-accent: var(--glyph-user-accent, #26231d);
+	--interactive-accent-hover: var(--glyph-user-accent-hover, #14110d);
+	--accent-color: var(--glyph-user-accent, #26231d);
+
+	--selection-bg: rgba(38, 35, 29, 0.1);
+	--selection-bg-muted: rgba(38, 35, 29, 0.08);
+
+	--scrollbar-thumb: rgba(38, 35, 29, 0.14);
+	--scrollbar-thumb-hover: rgba(38, 35, 29, 0.26);
+
+	--glass-bg: rgba(255, 255, 255, 0.82);
+
+	/* Tinted shadows — warm brown instead of pure black, with inset top hairline. */
+	--shadow-color: rgba(60, 40, 20, 1);
+	--shadow-sm: 0 1px 2px rgba(60, 40, 20, 0.04), inset 0 1px 0
+		rgba(255, 255, 255, 0.6);
+	--shadow-md: 0 4px 12px rgba(60, 40, 20, 0.05), 0 1px 3px
+		rgba(60, 40, 20, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+	--shadow-lg: 0 12px 32px rgba(60, 40, 20, 0.07), 0 4px 12px
+		rgba(60, 40, 20, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+	--shadow-xl: 0 24px 64px rgba(60, 40, 20, 0.1), 0 8px 20px
+		rgba(60, 40, 20, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+	--shadow-float: 0 16px 48px rgba(60, 40, 20, 0.1), 0 4px 12px
+		rgba(60, 40, 20, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 :root.light[data-light-theme="notion"] {
