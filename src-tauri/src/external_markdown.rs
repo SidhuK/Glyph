@@ -68,12 +68,8 @@ fn file_name_for_title(path: &Path) -> String {
 }
 
 fn external_markdown_label(path: &Path) -> String {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-
-    let mut hasher = DefaultHasher::new();
-    path.to_string_lossy().hash(&mut hasher);
-    format!("{EXTERNAL_MARKDOWN_LABEL_PREFIX}{:x}", hasher.finish())
+    let path_hash = utils::sha256_hex(path.to_string_lossy().as_bytes());
+    format!("{EXTERNAL_MARKDOWN_LABEL_PREFIX}{}", &path_hash[..16])
 }
 
 pub fn is_external_markdown_window(label: &str) -> bool {
@@ -150,10 +146,32 @@ pub fn external_markdown_window_path(
         .ok_or_else(|| "external markdown file is not registered for this window".to_string())
 }
 
+fn registered_path_for_window(
+    window: &tauri::WebviewWindow,
+    state: &ExternalMarkdownState,
+    supplied_path: &str,
+) -> Result<PathBuf, String> {
+    let registered_path = state
+        .paths_by_window
+        .lock()
+        .map_err(|_| "failed to lock external markdown state".to_string())?
+        .get(window.label())
+        .cloned()
+        .ok_or_else(|| "external markdown file is not registered for this window".to_string())?;
+    if PathBuf::from(supplied_path) != PathBuf::from(&registered_path) {
+        return Err("external markdown path does not match this window".to_string());
+    }
+    Ok(PathBuf::from(registered_path))
+}
+
 #[tauri::command]
-pub async fn external_markdown_read(path: String) -> Result<ExternalMarkdownDoc, String> {
+pub async fn external_markdown_read(
+    window: tauri::WebviewWindow,
+    state: State<'_, ExternalMarkdownState>,
+    path: String,
+) -> Result<ExternalMarkdownDoc, String> {
+    let path = registered_path_for_window(&window, &state, &path)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<ExternalMarkdownDoc, String> {
-        let path = PathBuf::from(path);
         validate_markdown_file(&path)?;
         let bytes = std::fs::read(&path).map_err(|error| error.to_string())?;
         let text =
@@ -171,12 +189,14 @@ pub async fn external_markdown_read(path: String) -> Result<ExternalMarkdownDoc,
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn external_markdown_write(
+    window: tauri::WebviewWindow,
+    state: State<'_, ExternalMarkdownState>,
     path: String,
     text: String,
     base_mtime_ms: Option<u64>,
 ) -> Result<ExternalMarkdownWriteResult, String> {
+    let path = registered_path_for_window(&window, &state, &path)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<ExternalMarkdownWriteResult, String> {
-        let path = PathBuf::from(path);
         validate_markdown_file(&path)?;
         if let Some(expected) = base_mtime_ms {
             let actual = utils::file_mtime_ms(&path);
@@ -194,4 +214,12 @@ pub async fn external_markdown_write(
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+pub fn external_markdown_finish_close(window: tauri::WebviewWindow) -> Result<(), String> {
+    if !is_external_markdown_window(window.label()) {
+        return Err("window is not an external markdown window".to_string());
+    }
+    window.destroy().map_err(|error| error.to_string())
 }

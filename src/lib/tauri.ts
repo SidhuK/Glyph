@@ -779,6 +779,7 @@ interface TauriCommands {
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		ExternalMarkdownWriteResult
 	>;
+	external_markdown_finish_close: CommandDef<void, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;

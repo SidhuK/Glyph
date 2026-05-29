@@ -7,7 +7,7 @@ import { Save } from "../Icons";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NoteInlineEditorMode } from "../editor/types";
 
-type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+type SaveState = "loading" | "idle" | "dirty" | "saving" | "saved" | "error";
 
 const AUTOSAVE_DELAY_MS = 700;
 
@@ -21,6 +21,8 @@ function statusLabel(state: SaveState): string {
 	switch (state) {
 		case "dirty":
 			return "Unsaved";
+		case "loading":
+			return "Opening";
 		case "saving":
 			return "Saving";
 		case "saved":
@@ -38,7 +40,7 @@ export function ExternalMarkdownWindow() {
 	const [text, setText] = useState("");
 	const [savedText, setSavedText] = useState("");
 	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
-	const [saveState, setSaveState] = useState<SaveState>("idle");
+	const [saveState, setSaveState] = useState<SaveState>("loading");
 	const [error, setError] = useState("");
 	const textRef = useRef("");
 	const savedTextRef = useRef("");
@@ -46,11 +48,16 @@ export function ExternalMarkdownWindow() {
 	const mtimeRef = useRef<number | null>(null);
 	const saveTokenRef = useRef(0);
 	const autosaveTimerRef = useRef<number | null>(null);
+	const saveIdleTimerRef = useRef<number | null>(null);
 	const mountedRef = useRef(true);
 
 	const saveNow = useCallback(async (): Promise<boolean> => {
 		const currentPath = pathRef.current;
 		if (!currentPath) return true;
+		if (saveIdleTimerRef.current !== null) {
+			window.clearTimeout(saveIdleTimerRef.current);
+			saveIdleTimerRef.current = null;
+		}
 		if (textRef.current === savedTextRef.current) {
 			setSaveState("idle");
 			return true;
@@ -77,7 +84,8 @@ export function ExternalMarkdownWindow() {
 				return false;
 			}
 			setSaveState("saved");
-			window.setTimeout(() => {
+			saveIdleTimerRef.current = window.setTimeout(() => {
+				saveIdleTimerRef.current = null;
 				if (mountedRef.current && saveTokenRef.current === token) {
 					setSaveState("idle");
 				}
@@ -98,13 +106,14 @@ export function ExternalMarkdownWindow() {
 		}
 		const saved = await saveNow();
 		if (!saved && textRef.current !== savedTextRef.current) return;
-		await getCurrentWindow()
-			.close()
-			.catch(() => {});
+		await invoke("external_markdown_finish_close").catch(() => {});
 	}, [saveNow]);
 
 	useTauriEvent("menu:app_command", (payload) => {
 		if (payload.command_id !== "close-active-tab") return;
+		void closeWindow();
+	});
+	useTauriEvent("external-markdown:close_requested", () => {
 		void closeWindow();
 	});
 
@@ -156,11 +165,18 @@ export function ExternalMarkdownWindow() {
 			if (autosaveTimerRef.current !== null) {
 				window.clearTimeout(autosaveTimerRef.current);
 			}
+			if (saveIdleTimerRef.current !== null) {
+				window.clearTimeout(saveIdleTimerRef.current);
+			}
 		};
 	}, []);
 
 	const handleChange = useCallback(
 		(nextText: string) => {
+			if (saveIdleTimerRef.current !== null) {
+				window.clearTimeout(saveIdleTimerRef.current);
+				saveIdleTimerRef.current = null;
+			}
 			textRef.current = nextText;
 			setText(nextText);
 			setSaveState(nextText === savedTextRef.current ? "idle" : "dirty");
@@ -189,6 +205,7 @@ export function ExternalMarkdownWindow() {
 							type="button"
 							className="externalMarkdownModeBtn"
 							data-active={mode === "rich" || undefined}
+							aria-pressed={mode === "rich"}
 							onClick={() => setMode("rich")}
 						>
 							Edit
@@ -197,6 +214,7 @@ export function ExternalMarkdownWindow() {
 							type="button"
 							className="externalMarkdownModeBtn"
 							data-active={mode === "preview" || undefined}
+							aria-pressed={mode === "preview"}
 							onClick={() => setMode("preview")}
 						>
 							Preview
@@ -205,6 +223,7 @@ export function ExternalMarkdownWindow() {
 							type="button"
 							className="externalMarkdownModeBtn"
 							data-active={mode === "plain" || undefined}
+							aria-pressed={mode === "plain"}
 							onClick={() => setMode("plain")}
 						>
 							Raw

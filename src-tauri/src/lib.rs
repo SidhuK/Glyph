@@ -1527,13 +1527,21 @@ pub fn run() {
             }
 
             if external_markdown::is_external_markdown_window(window.label()) {
-                if let WindowEvent::Destroyed = event {
-                    let state = window.state::<external_markdown::ExternalMarkdownState>();
-                    if let Err(error) =
-                        external_markdown::forget_external_markdown_window(&state, window.label())
-                    {
-                        warn!("Failed to forget external markdown window: {error}");
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        let _ = window.emit("external-markdown:close_requested", ());
                     }
+                    WindowEvent::Destroyed => {
+                        let state = window.state::<external_markdown::ExternalMarkdownState>();
+                        if let Err(error) = external_markdown::forget_external_markdown_window(
+                            &state,
+                            window.label(),
+                        ) {
+                            warn!("Failed to forget external markdown window: {error}");
+                        }
+                    }
+                    _ => {}
                 }
             }
 
@@ -1581,6 +1589,7 @@ pub fn run() {
             external_markdown::external_markdown_window_path,
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
+            external_markdown::external_markdown_finish_close,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,

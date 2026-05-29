@@ -33,6 +33,7 @@ type TauriEventMap = {
 	"quick-note:open_note": { path: string };
 	"quick-task:shown": undefined;
 	"quick-task:open_note": { path: string };
+	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
