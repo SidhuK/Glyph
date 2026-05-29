@@ -5,6 +5,7 @@ import {
 	type UiAccent,
 	type UiFontFamily,
 	type UiFontSize,
+	isUiAccent,
 } from "./settings";
 import {
 	type UiDarkThemeId,
@@ -49,8 +50,7 @@ const BASE_EDITOR_TEXT_SIZES = {
 	h6: 13.6,
 } as const;
 
-const UI_ACCENT_COLORS: Record<UiAccent, string> = {
-	neutral: "#2f2f2f",
+const UI_ACCENT_COLORS: Record<Exclude<UiAccent, "neutral">, string> = {
 	"glyph-orange": "#de7356",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
@@ -225,15 +225,17 @@ export function applyUiTypography(
 	);
 }
 
-export function applyUiAccent(accent: UiAccent): void {
+export function applyUiAccent(
+	accent: UiAccent | string | null | undefined,
+): void {
 	const root = document.documentElement;
-	if (accent === "neutral") {
+	if (!isUiAccent(accent) || accent === "neutral") {
 		root.style.removeProperty("--accent-color");
 		root.style.removeProperty("--glyph-user-accent");
 		root.style.removeProperty("--glyph-user-accent-hover");
 		return;
 	}
-	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.neutral;
+	const accentColor = UI_ACCENT_COLORS[accent];
 	root.style.setProperty("--glyph-user-accent", accentColor);
 	root.style.setProperty(
 		"--glyph-user-accent-hover",

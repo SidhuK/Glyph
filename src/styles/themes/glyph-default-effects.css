@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    Glyph Default Themes — paper grain texture + subtle canvas gradient.
-   Applied via #root::after as a fixed, non-interactive overlay so it tints
-   the entire app shell without affecting interaction or layout.
+   Applied via #root::after as a fixed, non-interactive overlay beneath
+   floating surfaces so it does not tint dropdowns, popovers, or dialogs.
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root.light:not([data-light-theme]) #root::after,
@@ -10,7 +10,7 @@
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
-	z-index: 9999;
+	z-index: 9;
 	background-image: linear-gradient(
 			180deg,
 			rgba(255, 248, 235, 0.45) 0%,
@@ -29,7 +29,7 @@
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
-	z-index: 9999;
+	z-index: 9;
 	background-image: linear-gradient(
 			180deg,
 			rgba(255, 255, 255, 0.025) 0%,
