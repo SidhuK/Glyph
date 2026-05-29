@@ -5,6 +5,7 @@ mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
 mod databases;
+mod external_markdown;
 mod file_tree_appearance;
 mod git_sync;
 mod glyph_paths;
@@ -1088,6 +1089,25 @@ fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+fn open_external_markdown_path(app: &tauri::AppHandle, path: std::path::PathBuf) {
+    let state = app.state::<external_markdown::ExternalMarkdownState>();
+    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path) {
+        warn!("Failed to open external markdown file: {error}");
+    }
+}
+
+fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) {
+    for url in urls {
+        if url.scheme() != "file" {
+            continue;
+        }
+        match url.to_file_path() {
+            Ok(path) => open_external_markdown_path(app, path),
+            Err(()) => warn!("Failed to convert opened URL to file path: {url}"),
+        }
+    }
+}
+
 #[tauri::command(rename_all = "snake_case")]
 fn set_quick_note_global_shortcut(
     app: tauri::AppHandle,
@@ -1432,6 +1452,22 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
+                if command.id == "close-active-tab" {
+                    if let Some((label, _window)) = app
+                        .webview_windows()
+                        .into_iter()
+                        .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                    {
+                        let _ = app.emit_to(
+                            label,
+                            "menu:app_command",
+                            AppCommandPayload {
+                                command_id: command.id,
+                            },
+                        );
+                    }
+                    return;
+                }
                 let _ = app.emit(
                     "menu:app_command",
                     AppCommandPayload {
@@ -1490,6 +1526,25 @@ pub fn run() {
                 }
             }
 
+            if external_markdown::is_external_markdown_window(window.label()) {
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        let _ = window.emit("external-markdown:close_requested", ());
+                    }
+                    WindowEvent::Destroyed => {
+                        let state = window.state::<external_markdown::ExternalMarkdownState>();
+                        if let Err(error) = external_markdown::forget_external_markdown_window(
+                            &state,
+                            window.label(),
+                        ) {
+                            warn!("Failed to forget external markdown window: {error}");
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
             #[cfg(target_os = "macos")]
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
@@ -1504,6 +1559,7 @@ pub fn run() {
         .manage(ai_codex::state::CodexState::default())
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
+        .manage(external_markdown::ExternalMarkdownState::default())
         .manage(MenuState::default())
         .manage(QuickNoteShortcutState::default())
         .manage(QuickTaskShortcutState::default())
@@ -1530,6 +1586,10 @@ pub fn run() {
             show_space_menu,
             set_menu_shortcuts,
             set_window_vibrancy_theme,
+            external_markdown::external_markdown_window_path,
+            external_markdown::external_markdown_read,
+            external_markdown::external_markdown_write,
+            external_markdown::external_markdown_finish_close,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,
@@ -1635,6 +1695,11 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
+            if let RunEvent::Opened { urls } = event {
+                handle_opened_urls(app_handle, urls);
+                return;
+            }
+
             #[cfg(target_os = "macos")]
             if let RunEvent::Reopen { .. } = event {
                 if let Some(window) = app_handle.get_webview_window("main") {

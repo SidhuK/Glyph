@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { QuickTaskWindow } from "./components/quick-task/QuickTaskWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
@@ -20,6 +21,7 @@ import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 import {
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 	MAIN_WINDOW_LABEL,
 	QUICK_NOTE_WINDOW_LABEL,
 	QUICK_TASK_WINDOW_LABEL,
@@ -221,6 +223,9 @@ function currentWindowLabel(): string {
 const windowLabel = currentWindowLabel();
 const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
 const isQuickTaskWindow = windowLabel === QUICK_TASK_WINDOW_LABEL;
+const isExternalMarkdownWindow = windowLabel.startsWith(
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
+);
 
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
@@ -230,6 +235,8 @@ ReactDOM.createRoot(rootEl).render(
 				<QuickNoteWindow />
 			) : isQuickTaskWindow ? (
 				<QuickTaskWindow />
+			) : isExternalMarkdownWindow ? (
+				<ExternalMarkdownWindow />
 			) : (
 				<App />
 			)}
