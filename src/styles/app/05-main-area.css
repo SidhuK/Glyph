@@ -7,7 +7,7 @@
 	flex-direction: column;
 	min-width: 0;
 	min-height: 0;
-	background: var(--bg-primary);
+	background: var(--bg-canvas, var(--bg-primary));
 	overflow: hidden;
 	margin: 0;
 	border-radius: 0;

@@ -56,7 +56,7 @@ export function AppearanceSettingsPane() {
 	const [darkThemeId, setDarkThemeIdState] = useState<UiDarkThemeId>(
 		GLYPH_DEFAULT_DARK_THEME_ID,
 	);
-	const [accent, setAccentState] = useState<UiAccent>("cerulean");
+	const [accent, setAccentState] = useState<UiAccent>("neutral");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
 	const [monoFontFamily, setMonoFontFamilyState] =

@@ -1,0 +1,43 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Glyph Default Themes — paper grain texture + subtle canvas gradient.
+   Applied via #root::after as a fixed, non-interactive overlay so it tints
+   the entire app shell without affecting interaction or layout.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root.light:not([data-light-theme]) #root::after,
+:root.light[data-light-theme="glyph-default"] #root::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9999;
+	background-image: linear-gradient(
+			180deg,
+			rgba(255, 248, 235, 0.45) 0%,
+			rgba(0, 0, 0, 0) 38%,
+			rgba(40, 30, 15, 0.045) 100%
+		),
+		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+	background-size: auto, 180px 180px;
+	background-repeat: no-repeat, repeat;
+	opacity: 0.06;
+}
+
+:root.dark:not([data-dark-theme]) #root::after,
+:root.dark[data-dark-theme="glyph-default-dark"] #root::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9999;
+	background-image: linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.025) 0%,
+			rgba(0, 0, 0, 0) 42%,
+			rgba(0, 0, 0, 0.12) 100%
+		),
+		url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/></svg>");
+	background-size: auto, 180px 180px;
+	background-repeat: no-repeat, repeat;
+	opacity: 0.05;
+}

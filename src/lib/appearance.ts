@@ -233,7 +233,7 @@ export function applyUiAccent(accent: UiAccent): void {
 		root.style.removeProperty("--glyph-user-accent-hover");
 		return;
 	}
-	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.cerulean;
+	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.neutral;
 	root.style.setProperty("--glyph-user-accent", accentColor);
 	root.style.setProperty(
 		"--glyph-user-accent-hover",

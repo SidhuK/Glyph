@@ -28,32 +28,30 @@
 
 :root.dark:not([data-dark-theme]),
 :root.dark[data-dark-theme="glyph-default-dark"] {
-	--bg-primary: #1e1e1e;
-	--bg-secondary: #262626;
-	--bg-tertiary: #303030;
-	--bg-hover: rgba(255, 255, 255, 0.06);
-	--bg-active: rgba(255, 255, 255, 0.12);
-	--bg-sidebar: #262626;
-	--bg-canvas: #1e1e1e;
-	--text-primary: rgba(255, 255, 255, 0.92);
-	--text-secondary: rgba(255, 255, 255, 0.65);
-	--text-tertiary: rgba(255, 255, 255, 0.45);
-	--text-placeholder: rgba(255, 255, 255, 0.3);
-	--text-inverse: var(--color-gray-900);
-	--text-accent: rgba(255, 255, 255, 0.92);
+	/* Glyph Ink — OKLCH-derived cool charcoal with tinted floating shadows. */
+	--bg-primary: oklch(0.185 0.008 270);
+	--bg-secondary: oklch(0.22 0.009 270);
+	--bg-tertiary: oklch(0.272 0.01 270);
+	--bg-hover: rgba(255, 255, 255, 0.05);
+	--bg-active: rgba(255, 255, 255, 0.1);
+	--bg-sidebar: oklch(0.22 0.009 270);
+	--bg-canvas: oklch(0.155 0.008 270);
+	--text-primary: oklch(0.938 0.003 270);
+	--text-secondary: rgba(236, 236, 238, 0.66);
+	--text-tertiary: rgba(236, 236, 238, 0.45);
+	--text-placeholder: rgba(236, 236, 238, 0.3);
+	--text-inverse: oklch(0.185 0.008 270);
+	--text-accent: oklch(0.938 0.003 270);
 	--text-error: var(--color-red-500);
 	--border-light: rgba(255, 255, 255, 0.06);
-	--border-default: rgba(255, 255, 255, 0.1);
-	--border-strong: rgba(255, 255, 255, 0.18);
+	--border-default: rgba(255, 255, 255, 0.09);
+	--border-strong: rgba(255, 255, 255, 0.16);
 	--border-focus: rgba(255, 255, 255, 0.24);
-	--interactive-hover: rgba(255, 255, 255, 0.06);
-	--interactive-active: rgba(255, 255, 255, 0.12);
-	--interactive-accent: var(--glyph-user-accent, rgba(255, 255, 255, 0.92));
-	--interactive-accent-hover: var(
-		--glyph-user-accent-hover,
-		rgba(255, 255, 255, 1)
-	);
-	--accent-color: var(--glyph-user-accent, rgba(255, 255, 255, 0.92));
+	--interactive-hover: rgba(255, 255, 255, 0.05);
+	--interactive-active: rgba(255, 255, 255, 0.1);
+	--interactive-accent: var(--glyph-user-accent, #ececee);
+	--interactive-accent-hover: var(--glyph-user-accent-hover, #ffffff);
+	--accent-color: var(--glyph-user-accent, #ececee);
 	--link-color: var(--color-blue-300);
 	--link-color-hover: var(--color-blue-200);
 	--selection-bg: rgba(255, 255, 255, 0.12);
@@ -109,9 +107,22 @@
 	--callout-tip: var(--color-green-dark-400);
 	--callout-warning: var(--color-yellow-dark-400);
 	--callout-error: var(--color-red-dark-400);
-	--scrollbar-thumb: rgba(255, 255, 255, 0.16);
-	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
-	--glass-bg: rgba(30, 30, 30, 0.55);
+	--scrollbar-thumb: rgba(255, 255, 255, 0.14);
+	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+	--glass-bg: rgba(23, 23, 26, 0.62);
+
+	/* Tinted floating shadows with inset top hairline for depth. */
+	--shadow-color: rgba(0, 0, 0, 1);
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0
+		rgba(255, 255, 255, 0.04);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	--shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	--shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.35),
+		inset 0 1px 0 rgba(255, 255, 255, 0.07);
+	--shadow-float: 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 :root.dark[data-dark-theme="solarized-dark"] {
