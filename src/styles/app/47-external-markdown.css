@@ -6,7 +6,7 @@
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
-	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	background: var(--bg-primary);
 	color: var(--text-primary);
 }
 
@@ -14,12 +14,11 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: center;
-	gap: var(--space-3);
-	min-height: 58px;
-	padding: 10px 14px 8px 82px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 82%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	gap: 16px;
+	min-height: 56px;
+	padding: 9px 14px 8px 82px;
+	border-bottom: 1px solid var(--border-light);
+	background: var(--bg-secondary);
 	flex: 0 0 auto;
 }
 
@@ -28,7 +27,7 @@
 }
 
 .externalMarkdownTitle {
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: var(--font-bold);
 	line-height: 1.35;
 	color: var(--text-primary);
@@ -39,7 +38,7 @@
 
 .externalMarkdownPath {
 	margin-top: 2px;
-	font-size: 11px;
+	font-size: 10.5px;
 	line-height: 1.35;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -50,17 +49,51 @@
 .externalMarkdownActions {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	-webkit-app-region: no-drag;
 }
 
 .externalMarkdownStatus {
-	min-width: 52px;
+	min-width: 50px;
 	font-size: 11px;
 	line-height: 1;
 	color: var(--text-secondary);
 	text-align: right;
 	white-space: nowrap;
+}
+
+.externalMarkdownModeSwitch {
+	display: inline-grid;
+	grid-template-columns: repeat(3, minmax(54px, auto));
+	align-items: center;
+	height: 30px;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+}
+
+.externalMarkdownModeBtn {
+	height: 24px;
+	padding: 0 9px;
+	border: 0;
+	border-radius: calc(var(--radius-md) - 2px);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 11px;
+	line-height: 1;
+	white-space: nowrap;
+	transition: background-color var(--transition-base), color
+		var(--transition-base);
+}
+
+.externalMarkdownModeBtn:hover {
+	color: var(--text-primary);
+}
+
+.externalMarkdownModeBtn[data-active="true"] {
+	background: var(--bg-tertiary);
+	color: var(--text-primary);
 }
 
 .externalMarkdownIconBtn {
@@ -69,16 +102,15 @@
 	justify-content: center;
 	width: 30px;
 	height: 30px;
-	border: 1px solid transparent;
+	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
-	background: transparent;
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 	transition: background-color var(--transition-base), color
 		var(--transition-base), border-color var(--transition-base);
 }
 
 .externalMarkdownIconBtn:hover:not(:disabled) {
-	border-color: var(--border-light);
 	background: var(--bg-tertiary);
 	color: var(--text-primary);
 }
@@ -89,8 +121,8 @@
 }
 
 .externalMarkdownError {
-	margin: 10px auto 0;
-	width: min(760px, calc(100vw - 32px));
+	margin: 12px auto 0;
+	width: min(820px, calc(100vw - 32px));
 	padding: 8px 10px;
 	border: 1px solid var(--status-danger-border);
 	border-radius: var(--radius-md);
@@ -105,11 +137,12 @@
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
-	padding: 28px 18px 48px;
+	padding: 34px 18px 56px;
+	background: var(--bg-primary);
 }
 
 .externalMarkdownEditor .rfNodeNoteEditor {
-	width: min(760px, 100%);
+	width: min(820px, 100%);
 	min-height: 100%;
 	margin: 0 auto;
 	border: 0;
@@ -125,22 +158,39 @@
 	overflow: visible;
 }
 
+.externalMarkdownEditor .rfNodeNoteEditorRaw {
+	min-height: calc(100vh - 158px);
+	padding: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
 .externalMarkdownEditor .tiptapHostInline,
 .externalMarkdownEditor .tiptapContentInline {
-	min-height: calc(100vh - 150px);
+	min-height: calc(100vh - 158px);
 }
 
 @media (max-width: 640px) {
 	.externalMarkdownHeader {
 		padding-left: 74px;
-		gap: var(--space-2);
+		gap: 10px;
 	}
 
 	.externalMarkdownStatus {
 		display: none;
 	}
 
+	.externalMarkdownModeSwitch {
+		grid-template-columns: repeat(3, 1fr);
+		width: 156px;
+	}
+
+	.externalMarkdownModeBtn {
+		padding-inline: 0;
+	}
+
 	.externalMarkdownEditor {
-		padding-inline: 12px;
+		padding: 24px 12px 40px;
 	}
 }

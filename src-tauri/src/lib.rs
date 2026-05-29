@@ -1452,6 +1452,22 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
+                if command.id == "close-active-tab" {
+                    if let Some((label, _window)) = app
+                        .webview_windows()
+                        .into_iter()
+                        .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                    {
+                        let _ = app.emit_to(
+                            label,
+                            "menu:app_command",
+                            AppCommandPayload {
+                                command_id: command.id,
+                            },
+                        );
+                    }
+                    return;
+                }
                 let _ = app.emit(
                     "menu:app_command",
                     AppCommandPayload {

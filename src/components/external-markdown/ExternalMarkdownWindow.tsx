@@ -1,16 +1,8 @@
-import { SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import {
-	type MouseEvent as ReactMouseEvent,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import { invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { Save } from "../Icons";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NoteInlineEditorMode } from "../editor/types";
@@ -56,12 +48,12 @@ export function ExternalMarkdownWindow() {
 	const autosaveTimerRef = useRef<number | null>(null);
 	const mountedRef = useRef(true);
 
-	const saveNow = useCallback(async () => {
+	const saveNow = useCallback(async (): Promise<boolean> => {
 		const currentPath = pathRef.current;
-		if (!currentPath) return;
+		if (!currentPath) return true;
 		if (textRef.current === savedTextRef.current) {
 			setSaveState("idle");
-			return;
+			return true;
 		}
 
 		const token = saveTokenRef.current + 1;
@@ -76,13 +68,13 @@ export function ExternalMarkdownWindow() {
 				text: textToSave,
 				base_mtime_ms: mtimeRef.current,
 			});
-			if (!mountedRef.current || token !== saveTokenRef.current) return;
+			if (!mountedRef.current || token !== saveTokenRef.current) return false;
 			mtimeRef.current = result.mtime_ms;
 			savedTextRef.current = textToSave;
 			setSavedText(textToSave);
 			if (textRef.current !== textToSave) {
 				setSaveState("dirty");
-				return;
+				return false;
 			}
 			setSaveState("saved");
 			window.setTimeout(() => {
@@ -90,12 +82,31 @@ export function ExternalMarkdownWindow() {
 					setSaveState("idle");
 				}
 			}, 1200);
+			return true;
 		} catch (cause) {
-			if (!mountedRef.current || token !== saveTokenRef.current) return;
+			if (!mountedRef.current || token !== saveTokenRef.current) return false;
 			setSaveState("error");
 			setError(extractErrorMessage(cause));
+			return false;
 		}
 	}, []);
+
+	const closeWindow = useCallback(async () => {
+		if (autosaveTimerRef.current !== null) {
+			window.clearTimeout(autosaveTimerRef.current);
+			autosaveTimerRef.current = null;
+		}
+		const saved = await saveNow();
+		if (!saved && textRef.current !== savedTextRef.current) return;
+		await getCurrentWindow()
+			.close()
+			.catch(() => {});
+	}, [saveNow]);
+
+	useTauriEvent("menu:app_command", (payload) => {
+		if (payload.command_id !== "close-active-tab") return;
+		void closeWindow();
+	});
 
 	const queueAutosave = useCallback(() => {
 		if (autosaveTimerRef.current !== null) {
@@ -158,31 +169,6 @@ export function ExternalMarkdownWindow() {
 		[queueAutosave],
 	);
 
-	const handleActionsMenu = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			void showNativePopupMenu(event, [
-				{
-					label: "Edit",
-					checked: mode === "rich",
-					action: () => setMode("rich"),
-				},
-				{
-					label: "Preview",
-					checked: mode === "preview",
-					action: () => setMode("preview"),
-				},
-				{
-					label: "Raw",
-					checked: mode === "plain",
-					action: () => setMode("plain"),
-				},
-			]).catch((cause: unknown) => {
-				console.error("Failed to show external markdown actions", cause);
-			});
-		},
-		[mode],
-	);
-
 	const isDirty = text !== savedText;
 	const visibleStatus =
 		statusLabel(saveState) || (isDirty ? "Unsaved" : "Saved");
@@ -198,6 +184,32 @@ export function ExternalMarkdownWindow() {
 				</div>
 				<div className="externalMarkdownActions">
 					<span className="externalMarkdownStatus">{visibleStatus}</span>
+					<div className="externalMarkdownModeSwitch" aria-label="Editor mode">
+						<button
+							type="button"
+							className="externalMarkdownModeBtn"
+							data-active={mode === "rich" || undefined}
+							onClick={() => setMode("rich")}
+						>
+							Edit
+						</button>
+						<button
+							type="button"
+							className="externalMarkdownModeBtn"
+							data-active={mode === "preview" || undefined}
+							onClick={() => setMode("preview")}
+						>
+							Preview
+						</button>
+						<button
+							type="button"
+							className="externalMarkdownModeBtn"
+							data-active={mode === "plain" || undefined}
+							onClick={() => setMode("plain")}
+						>
+							Raw
+						</button>
+					</div>
 					<button
 						type="button"
 						className="externalMarkdownIconBtn"
@@ -207,20 +219,6 @@ export function ExternalMarkdownWindow() {
 						title="Save"
 					>
 						<Save size={15} />
-					</button>
-					<button
-						type="button"
-						className="externalMarkdownIconBtn"
-						onClick={handleActionsMenu}
-						aria-label="Open editor actions"
-						title="Open editor actions"
-						aria-haspopup="menu"
-					>
-						<HugeiconsIcon
-							icon={SlidersHorizontalIcon}
-							size={15}
-							strokeWidth={0.9}
-						/>
 					</button>
 				</div>
 			</header>
