@@ -55,6 +55,18 @@ interface TextFileWriteResult {
 	mtime_ms: number;
 }
 
+interface ExternalMarkdownDoc {
+	path: string;
+	text: string;
+	etag: string;
+	mtime_ms: number;
+}
+
+interface ExternalMarkdownWriteResult {
+	etag: string;
+	mtime_ms: number;
+}
+
 interface OpenOrCreateTextResult {
 	created: boolean;
 	mtime_ms: number;
@@ -761,6 +773,12 @@ interface TauriCommands {
 		void
 	>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
+	external_markdown_window_path: CommandDef<void, string>;
+	external_markdown_read: CommandDef<{ path: string }, ExternalMarkdownDoc>;
+	external_markdown_write: CommandDef<
+		{ path: string; text: string; base_mtime_ms?: number | null },
+		ExternalMarkdownWriteResult
+	>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;

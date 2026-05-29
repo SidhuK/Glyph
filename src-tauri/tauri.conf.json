@@ -38,6 +38,15 @@
 		"createUpdaterArtifacts": true,
 		"targets": "all",
 		"icon": ["icons/icon.icns"],
+		"fileAssociations": [
+			{
+				"ext": ["md", "markdown", "mdown"],
+				"name": "Markdown Document",
+				"description": "Markdown document",
+				"role": "Editor",
+				"mimeType": "text/markdown"
+			}
+		],
 		"macOS": {
 			"files": {
 				"Resources/Assets.car": "./icons/Assets.car"
