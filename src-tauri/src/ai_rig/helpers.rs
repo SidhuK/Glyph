@@ -75,6 +75,11 @@ pub fn parse_base_url(profile: &AiProfile) -> Result<Url, String> {
     Ok(url)
 }
 
+pub fn parse_rig_base_url(profile: &AiProfile) -> Result<String, String> {
+    let url = parse_base_url(profile)?;
+    Ok(url.as_str().trim_end_matches('/').to_string())
+}
+
 pub fn parse_ollama_base_url(profile: &AiProfile) -> Result<Url, String> {
     let mut url = parse_base_url(profile)?;
     let trimmed_path = url.path().trim_end_matches('/').to_string();
@@ -88,6 +93,11 @@ pub fn parse_ollama_base_url(profile: &AiProfile) -> Result<Url, String> {
         url.set_path(&normalized_path);
     }
     Ok(url)
+}
+
+pub fn parse_rig_ollama_base_url(profile: &AiProfile) -> Result<String, String> {
+    let url = parse_ollama_base_url(profile)?;
+    Ok(url.as_str().trim_end_matches('/').to_string())
 }
 
 pub fn ollama_api_url(profile: &AiProfile, path: &str) -> Result<Url, String> {
@@ -330,6 +340,7 @@ pub fn derive_chat_title(messages: &[AiMessage]) -> String {
 mod tests {
     use super::{
         alternate_openai_base_url, default_base_url, ollama_api_url, parse_ollama_base_url,
+        parse_rig_base_url, parse_rig_ollama_base_url,
     };
     use crate::ai_rig::types::{AiProfile, AiProviderKind};
 
@@ -339,6 +350,19 @@ mod tests {
             name: "Ollama".to_string(),
             provider: AiProviderKind::Ollama,
             model: "llama3.2".to_string(),
+            base_url: base_url.map(str::to_string),
+            headers: Vec::new(),
+            allow_private_hosts: true,
+            reasoning_effort: None,
+        }
+    }
+
+    fn openai_compat_profile(base_url: Option<&str>) -> AiProfile {
+        AiProfile {
+            id: "openai_compat".to_string(),
+            name: "OpenAI Compatible".to_string(),
+            provider: AiProviderKind::OpenaiCompat,
+            model: "local-model".to_string(),
             base_url: base_url.map(str::to_string),
             headers: Vec::new(),
             allow_private_hosts: true,
@@ -383,6 +407,27 @@ mod tests {
         let profile = ollama_profile(Some("http://localhost:11434/v1"));
         let url = parse_ollama_base_url(&profile).expect("ollama url should parse");
         assert_eq!(url.as_str(), "http://localhost:11434/");
+    }
+
+    #[test]
+    fn parse_rig_base_url_strips_trailing_slash() {
+        let profile = openai_compat_profile(Some("http://192.168.68.84:1263/v1"));
+        let url = parse_rig_base_url(&profile).expect("openai-compatible url should parse");
+        assert_eq!(url, "http://192.168.68.84:1263/v1");
+    }
+
+    #[test]
+    fn parse_rig_base_url_strips_explicit_trailing_slash() {
+        let profile = openai_compat_profile(Some("http://192.168.68.84:1263/v1/"));
+        let url = parse_rig_base_url(&profile).expect("openai-compatible url should parse");
+        assert_eq!(url, "http://192.168.68.84:1263/v1");
+    }
+
+    #[test]
+    fn parse_rig_ollama_base_url_strips_root_trailing_slash() {
+        let profile = ollama_profile(Some("http://localhost:11434"));
+        let url = parse_rig_ollama_base_url(&profile).expect("ollama url should parse");
+        assert_eq!(url, "http://localhost:11434");
     }
 
     #[test]

@@ -16,7 +16,9 @@ use rig::{
 };
 
 use crate::ai_rig::{
-    helpers::{alternate_openai_base_url, default_base_url, parse_base_url, parse_ollama_base_url},
+    helpers::{
+        alternate_openai_base_url, default_base_url, parse_rig_base_url, parse_rig_ollama_base_url,
+    },
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent,
     },
@@ -96,17 +98,15 @@ pub async fn run_with_rig(
     let custom_base_url = profile
         .base_url
         .as_deref()
-        .map(|_| parse_base_url(profile))
+        .map(|_| parse_rig_base_url(profile))
         .transpose()
-        .map_err(|e| e.to_string())?
-        .map(|u| u.to_string());
+        .map_err(|e| e.to_string())?;
     let custom_ollama_base_url = profile
         .base_url
         .as_deref()
-        .map(|_| parse_ollama_base_url(profile))
+        .map(|_| parse_rig_ollama_base_url(profile))
         .transpose()
-        .map_err(|e| e.to_string())?
-        .map(|u| u.to_string());
+        .map_err(|e| e.to_string())?;
 
     let _ = app.emit(
         "ai:status",
@@ -404,17 +404,15 @@ pub async fn generate_chat_title_with_rig(
     let custom_base_url = profile
         .base_url
         .as_deref()
-        .map(|_| parse_base_url(profile))
+        .map(|_| parse_rig_base_url(profile))
         .transpose()
-        .map_err(|e| e.to_string())?
-        .map(|u| u.to_string());
+        .map_err(|e| e.to_string())?;
     let custom_ollama_base_url = profile
         .base_url
         .as_deref()
-        .map(|_| parse_ollama_base_url(profile))
+        .map(|_| parse_rig_ollama_base_url(profile))
         .transpose()
-        .map_err(|e| e.to_string())?
-        .map(|u| u.to_string());
+        .map_err(|e| e.to_string())?;
 
     let user_text = messages
         .iter()
