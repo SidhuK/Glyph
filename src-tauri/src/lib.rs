@@ -1042,6 +1042,14 @@ fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::W
     })
 }
 
+fn target_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
+    focused_space_host_window(app).or_else(|| {
+        app.webview_windows()
+            .into_iter()
+            .find(|(label, _window)| is_space_host_window_label(label))
+    })
+}
+
 fn sync_fallback_space_to_focused_window(app: &tauri::AppHandle) {
     let Some(space_state) = app.try_state::<space::SpaceState>() else {
         return;
@@ -1473,21 +1481,19 @@ pub fn run() {
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }
-                if let Some((label, _window)) = focused_space_host_window(app) {
+                if let Some((label, _window)) = target_space_host_window(app) {
                     let _ = app.emit_to(
                         label,
                         "menu:open_recent_space",
                         OpenRecentSpacePayload { path },
                     );
-                } else {
-                    let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
                 }
             }
             id => {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                if let Some((label, _window)) = focused_space_host_window(app) {
+                if let Some((label, _window)) = target_space_host_window(app) {
                     let _ = app.emit_to(
                         label,
                         "menu:app_command",
@@ -1495,14 +1501,7 @@ pub fn run() {
                             command_id: command.id,
                         },
                     );
-                    return;
                 }
-                let _ = app.emit(
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: command.id,
-                    },
-                );
             }
         })
         .setup(|app| {

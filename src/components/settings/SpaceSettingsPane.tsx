@@ -3,7 +3,6 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
-	getDailyNotesFolder,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
@@ -121,12 +120,9 @@ export function SpaceSettingsPane() {
 		try {
 			const currentSpace = await invoke("space_get_current");
 			const settingsScope = { spacePath: currentSpace };
-			const [dailyFolder, settings] = await Promise.all([
-				getDailyNotesFolder(settingsScope),
-				loadSettings(settingsScope),
-			]);
+			const settings = await loadSettings(settingsScope);
 			setCurrentSpacePath(currentSpace);
-			setDailyNotesFolderState(dailyFolder);
+			setDailyNotesFolderState(settings.dailyNotes.folder);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
