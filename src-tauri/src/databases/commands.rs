@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
@@ -248,22 +247,8 @@ fn write_new_markdown_note(
     if let Some(parent) = abs.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    let mut file = match std::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&abs)
-    {
-        Ok(file) => file,
-        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => return Ok(false),
-        Err(error) => return Err(error.to_string()),
-    };
-    file.write_all(markdown.as_bytes())
-        .and_then(|_| file.sync_all())
-        .map_err(|e| e.to_string())?;
-    if let Some(parent) = abs.parent() {
-        std::fs::File::open(parent)
-            .and_then(|dir| dir.sync_all())
-            .map_err(|e| e.to_string())?;
+    if !io_atomic::write_atomic_create_new(&abs, markdown.as_bytes()).map_err(|e| e.to_string())? {
+        return Ok(false);
     }
     mark_recent_local_change(recent_local_changes, rel_path);
     index_note(root, rel_path, markdown)?;

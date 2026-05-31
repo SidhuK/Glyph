@@ -1,5 +1,5 @@
 use serde::Serialize;
-use std::{ffi::OsStr, io::Write, path::PathBuf};
+use std::{ffi::OsStr, path::PathBuf};
 use tauri::{Emitter, State, WebviewWindow};
 
 use crate::space::state::mark_recent_local_change;
@@ -175,21 +175,11 @@ pub async fn space_open_or_create_text(
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        match std::fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&abs)
-        {
-            Ok(mut file) => {
-                file.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
-                return Ok(OpenOrCreateTextResult {
-                    created: false,
-                    mtime_ms: file_mtime_ms(&abs),
-                });
-            }
-            Err(error) => return Err(error.to_string()),
+        if !io_atomic::write_atomic_create_new(&abs, text.as_bytes()).map_err(|e| e.to_string())? {
+            return Ok(OpenOrCreateTextResult {
+                created: false,
+                mtime_ms: file_mtime_ms(&abs),
+            });
         }
         Ok(OpenOrCreateTextResult {
             created: true,

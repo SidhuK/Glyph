@@ -790,6 +790,7 @@ interface TauriCommands {
 		SpaceInfo
 	>;
 	space_get_current: CommandDef<void, string | null>;
+	space_get_current_info: CommandDef<void, SpaceInfo | null>;
 	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;

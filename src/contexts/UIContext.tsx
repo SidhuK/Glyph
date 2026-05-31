@@ -9,6 +9,7 @@ import {
 	useEffect,
 	useMemo,
 	useReducer,
+	useRef,
 } from "react";
 import {
 	DEFAULT_FOLIO_SCOPE,
@@ -225,6 +226,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 export function UIProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
+	const spacePathRef = useRef(spacePath);
 	const {
 		sidebarCollapsed,
 		sidebarWidth,
@@ -245,6 +247,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	} = state;
 
 	useEffect(() => {
+		spacePathRef.current = spacePath;
 		dispatch({ type: "onSpacePathChanged", hasSpace: Boolean(spacePath) });
 	}, [spacePath]);
 
@@ -290,7 +293,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		let cancelled = false;
 		const loadAndApplySettings = async () => {
 			try {
-				const s = await loadSettings();
+				const s = await loadSettings({ spacePath: spacePathRef.current });
 				if (cancelled) return;
 				dispatch({
 					type: "hydrateSettings",
@@ -335,7 +338,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			try {
 				await reloadFromDisk();
 				if (cancelled) return;
-				const s = await loadSettings();
+				const s = await loadSettings({ spacePath });
 				if (cancelled) return;
 				dispatch({
 					type: "setDailyNotesFolder",

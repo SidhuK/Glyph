@@ -118,6 +118,10 @@ interface TaskSourceSetting {
 	folders: string[];
 }
 
+function defaultTaskSourceSetting(): TaskSourceSetting {
+	return { mode: "space", folders: [] };
+}
+
 interface DatabaseSettings {
 	showColumnColor: boolean;
 }
@@ -375,6 +379,27 @@ interface SpaceScopedSettings {
 
 type SpaceScopedSettingsMap = Record<string, SpaceScopedSettings>;
 
+export interface SettingsScope {
+	spacePath?: string | null;
+}
+
+let spaceScopedSettingsWriteQueue: Promise<unknown> = Promise.resolve();
+
+async function withSpaceScopedSettingsWriteLock<T>(
+	operation: () => Promise<T>,
+): Promise<T> {
+	const locks =
+		typeof navigator !== "undefined" && "locks" in navigator
+			? navigator.locks
+			: null;
+	if (locks) {
+		return locks.request("glyph-space-scoped-settings", operation);
+	}
+	const run = spaceScopedSettingsWriteQueue.then(operation, operation);
+	spaceScopedSettingsWriteQueue = run.catch(() => {});
+	return run;
+}
+
 const KEYS = {
 	currentSpacePath: "space.currentPath",
 	recentSpaces: "space.recent",
@@ -585,7 +610,11 @@ function normalizeSpaceScopedSettingsMap(
 	return out;
 }
 
-async function activeSpacePath(): Promise<string | null> {
+async function activeSpacePath(scope?: SettingsScope): Promise<string | null> {
+	if (scope && "spacePath" in scope) {
+		const path = scope.spacePath?.trim();
+		return path || null;
+	}
 	try {
 		return await invoke("space_get_current");
 	} catch {
@@ -595,16 +624,19 @@ async function activeSpacePath(): Promise<string | null> {
 
 async function updateActiveSpaceSettings(
 	patch: SpaceScopedSettings,
+	scope?: SettingsScope,
 ): Promise<string | null> {
-	const spacePath = await activeSpacePath();
+	const spacePath = await activeSpacePath(scope);
 	if (!spacePath) return null;
-	const store = await getStore();
-	const map = normalizeSpaceScopedSettingsMap(
-		await store.get<unknown>(KEYS.spaceScopedSettings),
-	);
-	map[spacePath] = { ...map[spacePath], ...patch };
-	await store.set(KEYS.spaceScopedSettings, map);
-	await store.save();
+	await withSpaceScopedSettingsWriteLock(async () => {
+		const store = await getStore();
+		const map = normalizeSpaceScopedSettingsMap(
+			await store.get<unknown>(KEYS.spaceScopedSettings),
+		);
+		map[spacePath] = { ...map[spacePath], ...patch };
+		await store.set(KEYS.spaceScopedSettings, map);
+		await store.save();
+	});
 	return spacePath;
 }
 
@@ -679,7 +711,9 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 	);
 }
 
-export async function loadSettings(): Promise<AppSettings> {
+export async function loadSettings(
+	scope?: SettingsScope,
+): Promise<AppSettings> {
 	const store = await getStore();
 	const [
 		currentSpacePathRaw,
@@ -766,13 +800,16 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.shortcutsBindings),
 		store.get<unknown>(KEYS.spaceScopedSettings),
 	]);
-	const currentSpacePath = currentSpacePathRaw ?? null;
 	const scopedSettings = normalizeSpaceScopedSettingsMap(
 		rawSpaceScopedSettings,
 	);
-	const activeScopedSettings = await activeSpacePath().then((spacePath) =>
-		spacePath ? scopedSettings[spacePath] : undefined,
-	);
+	const activeSettingsSpacePath = await activeSpacePath(scope);
+	const currentSpacePath =
+		activeSettingsSpacePath ?? currentSpacePathRaw ?? null;
+	const activeScopedSettings = activeSettingsSpacePath
+		? scopedSettings[activeSettingsSpacePath]
+		: undefined;
+	const hasActiveSpace = Boolean(activeSettingsSpacePath);
 	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const onboarding: OnboardingSettings = {
@@ -814,46 +851,43 @@ export async function loadSettings(): Promise<AppSettings> {
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
-	const dailyNotesFolder =
-		activeScopedSettings && "dailyNotesFolder" in activeScopedSettings
-			? (activeScopedSettings.dailyNotesFolder ?? null)
-			: typeof dailyNotesFolderRaw === "string"
-				? normalizeRelPath(dailyNotesFolderRaw) || null
-				: null;
-	const quickNotesFolder =
-		activeScopedSettings?.quickNotesFolder ??
-		normalizeQuickNotesFolder(rawQuickNotesFolder);
-	const templatesFolder =
-		activeScopedSettings && "templatesFolder" in activeScopedSettings
-			? (activeScopedSettings.templatesFolder ?? null)
-			: typeof templatesFolderRaw === "string"
-				? normalizeRelPath(templatesFolderRaw)
-				: null;
-	const templatesDailyNoteTemplate =
-		activeScopedSettings && "templatesDailyNoteTemplate" in activeScopedSettings
-			? (activeScopedSettings.templatesDailyNoteTemplate ?? null)
-			: typeof templatesDailyNoteTemplateRaw === "string"
-				? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
-				: null;
-	const taskSource =
-		activeScopedSettings?.taskSource ??
-		normalizeTaskSourceSetting(taskSourceRaw);
+	const dailyNotesFolder = hasActiveSpace
+		? (activeScopedSettings?.dailyNotesFolder ?? null)
+		: typeof dailyNotesFolderRaw === "string"
+			? normalizeRelPath(dailyNotesFolderRaw) || null
+			: null;
+	const quickNotesFolder = hasActiveSpace
+		? (activeScopedSettings?.quickNotesFolder ?? DEFAULT_QUICK_NOTES_FOLDER)
+		: normalizeQuickNotesFolder(rawQuickNotesFolder);
+	const templatesFolder = hasActiveSpace
+		? (activeScopedSettings?.templatesFolder ?? null)
+		: typeof templatesFolderRaw === "string"
+			? normalizeRelPath(templatesFolderRaw)
+			: null;
+	const templatesDailyNoteTemplate = hasActiveSpace
+		? (activeScopedSettings?.templatesDailyNoteTemplate ?? null)
+		: typeof templatesDailyNoteTemplateRaw === "string"
+			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
+			: null;
+	const taskSource = hasActiveSpace
+		? (activeScopedSettings?.taskSource ?? defaultTaskSourceSetting())
+		: normalizeTaskSourceSetting(taskSourceRaw);
 	const shortcutBindings = sanitizeShortcutBindings(rawShortcutBindings);
 	const shortcuts: ShortcutSettings = {
 		version:
 			rawShortcutSettingsVersion === 1 ? 1 : DEFAULT_SHORTCUT_SETTINGS.version,
 		bindings: shortcutBindings,
 	};
-	const attachmentStorageMode =
-		activeScopedSettings?.attachmentStorageMode ??
-		asAttachmentStorageMode(rawEditorAttachmentStorageMode);
-	const attachmentFolder =
-		activeScopedSettings && "attachmentFolder" in activeScopedSettings
-			? (activeScopedSettings.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER)
-			: typeof rawEditorAttachmentFolder === "string"
-				? normalizeRelPath(rawEditorAttachmentFolder) ||
-					DEFAULT_ATTACHMENT_FOLDER
-				: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
+	const attachmentStorageMode = hasActiveSpace
+		? (activeScopedSettings?.attachmentStorageMode ??
+			DEFAULT_EDITOR_SETTINGS.attachmentStorageMode)
+		: asAttachmentStorageMode(rawEditorAttachmentStorageMode);
+	const attachmentFolder = hasActiveSpace
+		? (activeScopedSettings?.attachmentFolder ??
+			DEFAULT_EDITOR_SETTINGS.attachmentFolder)
+		: typeof rawEditorAttachmentFolder === "string"
+			? normalizeRelPath(rawEditorAttachmentFolder) || DEFAULT_ATTACHMENT_FOLDER
+			: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
 	const editor: EditorSettings = {
 		showCollapsibleHeadings:
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
@@ -1233,11 +1267,15 @@ export async function setEditorWidthMode(mode: EditorWidthMode): Promise<void> {
 
 export async function setEditorAttachmentStorageMode(
 	mode: AttachmentStorageMode,
+	scope?: SettingsScope,
 ): Promise<void> {
 	const nextMode = asAttachmentStorageMode(mode);
-	const spacePath = await updateActiveSpaceSettings({
-		attachmentStorageMode: nextMode,
-	});
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			attachmentStorageMode: nextMode,
+		},
+		scope,
+	);
 	if (spacePath) {
 		void emitSettingsUpdated({
 			spacePath,
@@ -1255,14 +1293,18 @@ export async function setEditorAttachmentStorageMode(
 
 export async function setEditorAttachmentFolder(
 	folder: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
 	const nextFolder =
 		typeof folder === "string"
 			? normalizeRelPath(folder) || DEFAULT_ATTACHMENT_FOLDER
 			: DEFAULT_ATTACHMENT_FOLDER;
-	const spacePath = await updateActiveSpaceSettings({
-		attachmentFolder: nextFolder,
-	});
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			attachmentFolder: nextFolder,
+		},
+		scope,
+	);
 	if (spacePath) {
 		void emitSettingsUpdated({
 			spacePath,
@@ -1298,18 +1340,24 @@ export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
 	});
 }
 
-export async function getDailyNotesFolder(): Promise<string | null> {
-	return (await loadSettings()).dailyNotes.folder;
+export async function getDailyNotesFolder(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).dailyNotes.folder;
 }
 
 export async function setDailyNotesFolder(
 	folder: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
 	const nextFolder =
 		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
-	const spacePath = await updateActiveSpaceSettings({
-		dailyNotesFolder: nextFolder,
-	});
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			dailyNotesFolder: nextFolder,
+		},
+		scope,
+	);
 	if (spacePath) {
 		void emitSettingsUpdated({ spacePath, dailyNotes: { folder: nextFolder } });
 		return;
@@ -1324,11 +1372,17 @@ export async function setDailyNotesFolder(
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
 }
 
-export async function setQuickNotesFolder(folder: string): Promise<void> {
+export async function setQuickNotesFolder(
+	folder: string,
+	scope?: SettingsScope,
+): Promise<void> {
 	const nextFolder = normalizeQuickNotesFolder(folder);
-	const spacePath = await updateActiveSpaceSettings({
-		quickNotesFolder: nextFolder,
-	});
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			quickNotesFolder: nextFolder,
+		},
+		scope,
+	);
 	if (spacePath) {
 		void emitSettingsUpdated({ spacePath, quickNotes: { folder: nextFolder } });
 		return;
@@ -1339,17 +1393,23 @@ export async function setQuickNotesFolder(folder: string): Promise<void> {
 	void emitSettingsUpdated({ quickNotes: { folder: nextFolder } });
 }
 
-export async function getTemplatesFolder(): Promise<string | null> {
-	return (await loadSettings()).templates.folder;
+export async function getTemplatesFolder(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).templates.folder;
 }
 
-export async function setTemplatesFolder(folder: string | null): Promise<void> {
+export async function setTemplatesFolder(
+	folder: string | null,
+	scope?: SettingsScope,
+): Promise<void> {
 	const nextFolder =
 		typeof folder === "string" ? normalizeRelPath(folder) : null;
-	const spacePath = await updateActiveSpaceSettings({
-		templatesFolder: nextFolder,
-		templatesDailyNoteTemplate: nextFolder === null ? null : undefined,
-	});
+	const scopedPatch: SpaceScopedSettings = { templatesFolder: nextFolder };
+	if (nextFolder === null) {
+		scopedPatch.templatesDailyNoteTemplate = null;
+	}
+	const spacePath = await updateActiveSpaceSettings(scopedPatch, scope);
 	if (spacePath) {
 		void emitSettingsUpdated({
 			spacePath,
@@ -1376,20 +1436,26 @@ export async function setTemplatesFolder(folder: string | null): Promise<void> {
 	});
 }
 
-export async function getDailyNoteTemplate(): Promise<string | null> {
-	return (await loadSettings()).templates.dailyNoteTemplate;
+export async function getDailyNoteTemplate(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).templates.dailyNoteTemplate;
 }
 
 export async function setDailyNoteTemplate(
 	templatePath: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
 	const nextPath =
 		typeof templatePath === "string"
 			? normalizeRelPath(templatePath) || null
 			: null;
-	const spacePath = await updateActiveSpaceSettings({
-		templatesDailyNoteTemplate: nextPath,
-	});
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			templatesDailyNoteTemplate: nextPath,
+		},
+		scope,
+	);
 	if (spacePath) {
 		void emitSettingsUpdated({
 			spacePath,

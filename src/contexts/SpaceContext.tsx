@@ -148,16 +148,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					);
 				}
 
-				const currentWindowSpacePath = await invoke("space_get_current");
-				if (currentWindowSpacePath) {
-					const spaceInfo = await invoke("space_open", {
-						path: currentWindowSpacePath,
-					});
+				const currentWindowSpaceInfo = await invoke("space_get_current_info");
+				if (currentWindowSpaceInfo) {
 					if (!cancelled) {
-						setSpacePath(spaceInfo.root);
-						setLastSpacePath(spaceInfo.root);
-						setSpaceSchemaVersion(spaceInfo.schema_version);
-						setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+						setSpacePath(currentWindowSpaceInfo.root);
+						setLastSpacePath(currentWindowSpaceInfo.root);
+						setSpaceSchemaVersion(currentWindowSpaceInfo.schema_version);
+						setOnboardingNotePath(
+							currentWindowSpaceInfo.onboarding_note_path ?? null,
+						);
 					}
 				} else if (settings.currentSpacePath && !isSpaceWindow()) {
 					try {
@@ -201,7 +200,8 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			isOpeningSpaceRef.current = true;
 			setError("");
 			try {
-				const spaceInfo = spacePath
+				const sessionSpacePath = await invoke("space_get_current");
+				const spaceInfo = sessionSpacePath
 					? await invoke("space_open_window", {
 							path,
 							create: mode === "create",
@@ -218,7 +218,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				);
 				void updateOnboardingSettings({ launcherSeen: true });
 				setLastSpacePath(spaceInfo.root);
-				if (!spacePath) {
+				if (!sessionSpacePath) {
 					setSpacePath(spaceInfo.root);
 					setSpaceSchemaVersion(spaceInfo.schema_version);
 					setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
@@ -229,7 +229,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				isOpeningSpaceRef.current = false;
 			}
 		},
-		[spacePath],
+		[],
 	);
 
 	const closeSpace = useCallback(async () => {

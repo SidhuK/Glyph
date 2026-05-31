@@ -188,6 +188,7 @@ describe("SpaceSettingsPane", () => {
 
 		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
 			"specific-folder",
+			{ spacePath: "/spaces/test" },
 		);
 		expect(getAttachmentsSection().textContent).toContain("Browse");
 		expect(getAttachmentsSection().textContent).toContain("assets");
@@ -200,6 +201,7 @@ describe("SpaceSettingsPane", () => {
 
 		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
 			"space-root",
+			{ spacePath: "/spaces/test" },
 		);
 		expect(getAttachmentsSection().textContent).not.toContain("Browse");
 	});

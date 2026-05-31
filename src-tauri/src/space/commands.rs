@@ -53,6 +53,10 @@ fn focus_window(window: &tauri::WebviewWindow) -> Result<(), String> {
     window.set_focus().map_err(|error| error.to_string())
 }
 
+pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState) {
+    let _ = crate::set_space_close_menu_enabled(app, !state.session_roots().is_empty());
+}
+
 #[tauri::command]
 pub async fn space_create(
     app: tauri::AppHandle,
@@ -70,19 +74,16 @@ pub async fn space_create(
     .map_err(|e| e.to_string())??;
 
     reset_schema_cache();
-    let mut guard = state
-        .current
-        .lock()
-        .map_err(|_| "space state poisoned".to_string())?;
-    *guard = Some(PathBuf::from(&info.root));
-    drop(guard);
     install_window_session(
         app.clone(),
         &state,
         window.label().to_string(),
         PathBuf::from(&info.root),
     )?;
-    let _ = crate::set_space_close_menu_enabled(&app, true);
+    if window.label() == "main" {
+        state.set_current_root(PathBuf::from(&info.root))?;
+    }
+    update_close_space_menu(&app, &state);
     Ok(info)
 }
 
@@ -102,19 +103,16 @@ pub async fn space_open(
     .map_err(|e| e.to_string())??;
 
     reset_schema_cache();
-    let mut guard = state
-        .current
-        .lock()
-        .map_err(|_| "space state poisoned".to_string())?;
-    *guard = Some(PathBuf::from(&info.root));
-    drop(guard);
     install_window_session(
         app.clone(),
         &state,
         window.label().to_string(),
         PathBuf::from(&info.root),
     )?;
-    let _ = crate::set_space_close_menu_enabled(&app, true);
+    if window.label() == "main" {
+        state.set_current_root(PathBuf::from(&info.root))?;
+    }
+    update_close_space_menu(&app, &state);
     Ok(info)
 }
 
@@ -127,6 +125,19 @@ pub fn space_get_current(
         .root_for_window(&window)
         .ok()
         .map(|path| path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn space_get_current_info(
+    window: tauri::WebviewWindow,
+    state: State<'_, SpaceState>,
+) -> Result<Option<SpaceInfo>, String> {
+    let Ok(root) = state.root_for_window(&window) else {
+        return Ok(None);
+    };
+    tauri::async_runtime::spawn_blocking(move || create_or_open_impl(&root).map(Some))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -155,7 +166,7 @@ pub fn space_close(
 ) -> Result<(), String> {
     state.remove_window_session(window.label())?;
     reset_schema_cache();
-    let _ = crate::set_space_close_menu_enabled(&app, !state.session_roots().is_empty());
+    update_close_space_menu(&app, &state);
     Ok(())
 }
 
@@ -180,14 +191,15 @@ pub async fn space_open_window(
 
     let root = PathBuf::from(&info.root);
     let label = space_window_label(&root);
-    install_window_session(app.clone(), &state, label.clone(), root.clone())?;
 
     if let Some(window) = app.get_webview_window(&label) {
         focus_window(&window)?;
         return Ok(info);
     }
 
-    let window = WebviewWindowBuilder::new(
+    install_window_session(app.clone(), &state, label.clone(), root.clone())?;
+
+    let window = match WebviewWindowBuilder::new(
         &app,
         &label,
         WebviewUrl::App(format!("index.html?window={label}").into()),
@@ -202,9 +214,15 @@ pub async fn space_open_window(
     .shadow(true)
     .center()
     .build()
-    .map_err(|error| error.to_string())?;
+    {
+        Ok(window) => window,
+        Err(error) => {
+            let _ = state.remove_window_session(&label);
+            return Err(error.to_string());
+        }
+    };
 
     focus_window(&window)?;
-    let _ = crate::set_space_close_menu_enabled(&app, true);
+    update_close_space_menu(&app, &state);
     Ok(info)
 }

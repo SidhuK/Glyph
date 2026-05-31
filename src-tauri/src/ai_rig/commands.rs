@@ -110,14 +110,20 @@ fn emit_profiles_updated(app: &AppHandle) {
     let _ = app.emit("ai:profiles-updated", ());
 }
 
+fn ai_space_root(space_state: &SpaceState, window: &WebviewWindow) -> Result<PathBuf, String> {
+    space_state
+        .root_for_window(window)
+        .map_err(|_| "Open a space to manage AI settings".to_string())
+}
+
 #[tauri::command]
 pub async fn ai_profiles_list(
     app: AppHandle,
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Vec<AiProfile>, String> {
-    let store =
-        normalized_store_for_space(&app, space_state.root_for_window(&window).ok().as_deref())?;
+    let space_root = ai_space_root(&space_state, &window)?;
+    let store = normalized_store_for_space(&app, Some(&space_root))?;
     Ok(store.profiles)
 }
 
@@ -127,8 +133,8 @@ pub async fn ai_active_profile_get(
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Option<String>, String> {
-    let store =
-        normalized_store_for_space(&app, space_state.root_for_window(&window).ok().as_deref())?;
+    let space_root = ai_space_root(&space_state, &window)?;
+    let store = normalized_store_for_space(&app, Some(&space_root))?;
     Ok(store
         .active_profile_id
         .or_else(|| store.profiles.first().map(|p| p.id.clone())))
@@ -141,9 +147,9 @@ pub async fn ai_active_profile_set(
     space_state: State<'_, SpaceState>,
     id: Option<String>,
 ) -> Result<(), String> {
-    let space_root = space_state.root_for_window(&window).ok();
-    let path = store_path_for_space(&app, space_root.as_deref())?;
-    let mut store = normalized_store_for_space(&app, space_root.as_deref())?;
+    let space_root = ai_space_root(&space_state, &window)?;
+    let path = store_path_for_space(&app, Some(&space_root))?;
+    let mut store = normalized_store_for_space(&app, Some(&space_root))?;
     store.active_profile_id = id.filter(|candidate| {
         store
             .profiles
@@ -162,9 +168,9 @@ pub async fn ai_profile_upsert(
     space_state: State<'_, SpaceState>,
     profile: AiProfile,
 ) -> Result<AiProfile, String> {
-    let space_root = space_state.root_for_window(&window).ok();
-    let path = store_path_for_space(&app, space_root.as_deref())?;
-    let mut store = normalized_store_for_space(&app, space_root.as_deref())?;
+    let space_root = ai_space_root(&space_state, &window)?;
+    let path = store_path_for_space(&app, Some(&space_root))?;
+    let mut store = normalized_store_for_space(&app, Some(&space_root))?;
 
     let mut next = profile;
     next.id = next.provider.key().to_string();
@@ -198,12 +204,10 @@ pub async fn ai_profile_delete(
     space_state: State<'_, SpaceState>,
     id: String,
 ) -> Result<(), String> {
-    let space_root = space_state.root_for_window(&window).ok();
-    let path = store_path_for_space(&app, space_root.as_deref())?;
-    let mut store = normalized_store_for_space(&app, space_root.as_deref())?;
-    if let Some(root) = space_root {
-        let _ = local_secrets::secret_clear(&root, &id);
-    }
+    let space_root = ai_space_root(&space_state, &window)?;
+    let path = store_path_for_space(&app, Some(&space_root))?;
+    let mut store = normalized_store_for_space(&app, Some(&space_root))?;
+    let _ = local_secrets::secret_clear(&space_root, &id);
     if let Some(profile) = store.profiles.iter_mut().find(|profile| profile.id == id) {
         profile.model.clear();
         profile.base_url = None;
@@ -327,8 +331,8 @@ pub async fn ai_chat_start(
         request.audit = true;
     }
 
-    let space_root = space_state.root_for_window(&window).ok();
-    let store = normalized_store_for_space(&app, space_root.as_deref())?;
+    let space_root = ai_space_root(&space_state, &window)?;
+    let store = normalized_store_for_space(&app, Some(&space_root))?;
 
     let profile = store
         .profiles
@@ -356,9 +360,9 @@ pub async fn ai_chat_start(
         let ai_state_for_task = app_for_task.state::<AiState>();
         let codex_state = app_for_task.state::<crate::ai_codex::state::CodexState>();
 
-        let api_key = space_root
-            .as_deref()
-            .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten());
+        let api_key = local_secrets::secret_get(&space_root, &profile.id)
+            .ok()
+            .flatten();
         let (system, messages) =
             split_system_and_messages(request.messages.clone(), request.context.clone());
 
@@ -372,7 +376,7 @@ pub async fn ai_chat_start(
             &system,
             &messages,
             &request.mode,
-            space_root.as_deref(),
+            Some(space_root.as_path()),
             request.thread_id.as_deref(),
         )
         .await;
@@ -389,7 +393,7 @@ pub async fn ai_chat_start(
                     &system,
                     &messages,
                     &request.mode,
-                    space_root.as_deref(),
+                    Some(space_root.as_path()),
                     request.thread_id.as_deref(),
                 )
                 .await;
@@ -405,28 +409,26 @@ pub async fn ai_chat_start(
                         cancelled,
                     },
                 );
-                if let Some(root) = space_root {
-                    let title = runtime::generate_chat_title_with_rig(
-                        &profile,
-                        api_key.as_deref(),
-                        request.context.as_deref(),
-                        &request.messages,
-                        &full,
-                    )
-                    .await
-                    .ok();
-                    write_audit_log(&AuditLogParams {
-                        space_root: &root,
-                        job_id: &job_id_for_task,
-                        history_id: &history_id,
-                        profile: &profile,
-                        request: &request,
-                        response: &full,
-                        title: title.as_deref(),
-                        cancelled,
-                        tool_events: &tool_events,
-                    });
-                }
+                let title = runtime::generate_chat_title_with_rig(
+                    &profile,
+                    api_key.as_deref(),
+                    request.context.as_deref(),
+                    &request.messages,
+                    &full,
+                )
+                .await
+                .ok();
+                write_audit_log(&AuditLogParams {
+                    space_root: &space_root,
+                    job_id: &job_id_for_task,
+                    history_id: &history_id,
+                    profile: &profile,
+                    request: &request,
+                    response: &full,
+                    title: title.as_deref(),
+                    cancelled,
+                    tool_events: &tool_events,
+                });
                 if !cancelled {
                     let _ = app_for_task
                         .notification()

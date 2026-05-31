@@ -1032,7 +1032,30 @@ fn quick_task_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     Ok(window)
 }
 
+fn is_space_host_window_label(label: &str) -> bool {
+    label == "main" || space::commands::is_space_window(label)
+}
+
+fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
+    app.webview_windows().into_iter().find(|(label, window)| {
+        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
+    })
+}
+
+fn sync_fallback_space_to_focused_window(app: &tauri::AppHandle) {
+    let Some(space_state) = app.try_state::<space::SpaceState>() else {
+        return;
+    };
+    let focused_root = focused_space_host_window(app)
+        .and_then(|(_label, window)| space_state.root_for_window(&window).ok());
+    let Some(root) = focused_root else {
+        return;
+    };
+    let _ = space_state.set_current_root(root);
+}
+
 fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    sync_fallback_space_to_focused_window(app);
     let window = quick_note_window(app)?;
     let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
@@ -1041,6 +1064,7 @@ fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
 }
 
 fn show_quick_task_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    sync_fallback_space_to_focused_window(app);
     let window = quick_task_window(app)?;
     let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
@@ -1437,7 +1461,9 @@ pub fn run() {
                 let current_path = app
                     .webview_windows()
                     .into_iter()
-                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                    .find(|(label, window)| {
+                        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
+                    })
                     .and_then(|(label, _window)| {
                         space_state
                             .root_for_window_label(&label)
@@ -1447,11 +1473,7 @@ pub fn run() {
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }
-                if let Some((label, _window)) = app
-                    .webview_windows()
-                    .into_iter()
-                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
-                {
+                if let Some((label, _window)) = focused_space_host_window(app) {
                     let _ = app.emit_to(
                         label,
                         "menu:open_recent_space",
@@ -1465,11 +1487,7 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                if let Some((label, _window)) = app
-                    .webview_windows()
-                    .into_iter()
-                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
-                {
+                if let Some((label, _window)) = focused_space_host_window(app) {
                     let _ = app.emit_to(
                         label,
                         "menu:app_command",
@@ -1559,8 +1577,11 @@ pub fn run() {
             if space::commands::is_space_window(window.label()) {
                 if let WindowEvent::Destroyed = event {
                     let state = window.state::<space::SpaceState>();
-                    if let Err(error) = state.remove_window_session(window.label()) {
-                        warn!("Failed to forget space window session: {error}");
+                    match state.remove_window_session(window.label()) {
+                        Ok(()) => {
+                            space::commands::update_close_space_menu(window.app_handle(), &state)
+                        }
+                        Err(error) => warn!("Failed to forget space window session: {error}"),
                     }
                 }
             }
@@ -1710,6 +1731,7 @@ pub fn run() {
             space::commands::space_open,
             space::commands::space_open_window,
             space::commands::space_get_current,
+            space::commands::space_get_current_info,
             space::commands::space_show_onboarding_note,
             space::commands::space_close
         ])

@@ -18,6 +18,7 @@ interface TemplateOption {
 }
 
 interface TemplatesSettingsState {
+	currentSpacePath: string | null;
 	templatesFolder: string | null;
 	dailyNoteTemplatePath: string | null;
 	loading: boolean;
@@ -31,6 +32,7 @@ interface TemplateLibraryState {
 }
 
 const INITIAL_TEMPLATES_SETTINGS_STATE: TemplatesSettingsState = {
+	currentSpacePath: null,
 	templatesFolder: null,
 	dailyNoteTemplatePath: null,
 	loading: true,
@@ -56,6 +58,13 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 	return null;
 }
 
+function requireSpacePath(spacePath: string | null): string {
+	if (!spacePath) {
+		throw new Error("No space is currently open.");
+	}
+	return spacePath;
+}
+
 export function TemplateSettingsSections() {
 	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
@@ -63,8 +72,13 @@ export function TemplateSettingsSections() {
 	const [templateLibraryState, setTemplateLibraryState] =
 		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
 	const latestDailyTemplateWriteIdRef = useRef(0);
-	const { templatesFolder, dailyNoteTemplatePath, loading, error } =
-		settingsState;
+	const {
+		currentSpacePath,
+		templatesFolder,
+		dailyNoteTemplatePath,
+		loading,
+		error,
+	} = settingsState;
 	const {
 		templates,
 		loading: templatesLoading,
@@ -80,12 +94,15 @@ export function TemplateSettingsSections() {
 		let cancelled = false;
 		void (async () => {
 			try {
+				const currentSpace = await ensureCurrentSpaceOpen();
+				const settingsScope = { spacePath: currentSpace };
 				const [folder, dailyTemplate] = await Promise.all([
-					getTemplatesFolder(),
-					getDailyNoteTemplate(),
+					getTemplatesFolder(settingsScope),
+					getDailyNoteTemplate(settingsScope),
 				]);
 				if (cancelled) return;
 				setSettingsState({
+					currentSpacePath: currentSpace,
 					templatesFolder: folder,
 					dailyNoteTemplatePath: dailyTemplate,
 					loading: false,
@@ -117,7 +134,9 @@ export function TemplateSettingsSections() {
 					...current,
 					dailyNoteTemplatePath: null,
 				}));
-				void setDailyNoteTemplate(null).catch((cause) => {
+				void setDailyNoteTemplate(null, {
+					spacePath: currentSpacePath,
+				}).catch((cause) => {
 					if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 					setSettingsState((current) => ({
 						...current,
@@ -161,7 +180,9 @@ export function TemplateSettingsSections() {
 					)
 				) {
 					const writeId = beginDailyTemplateWrite();
-					void setDailyNoteTemplate(null)
+					void setDailyNoteTemplate(null, {
+						spacePath: currentSpacePath,
+					})
 						.then(() => {
 							if (
 								cancelled ||
@@ -203,7 +224,12 @@ export function TemplateSettingsSections() {
 		return () => {
 			cancelled = true;
 		};
-	}, [beginDailyTemplateWrite, dailyNoteTemplatePath, templatesFolder]);
+	}, [
+		beginDailyTemplateWrite,
+		currentSpacePath,
+		dailyNoteTemplatePath,
+		templatesFolder,
+	]);
 
 	const handleBrowseFolder = useCallback(async () => {
 		let writeId: number | null = null;
@@ -236,12 +262,13 @@ export function TemplateSettingsSections() {
 			const relativePath = normSelected
 				.slice(normSpace.length)
 				.replace(/^\/+/, "");
-			await setTemplatesFolder(relativePath);
+			await setTemplatesFolder(relativePath, { spacePath: currentSpacePath });
 			writeId = beginDailyTemplateWrite();
-			await setDailyNoteTemplate(null);
+			await setDailyNoteTemplate(null, { spacePath: currentSpacePath });
 			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
+				currentSpacePath,
 				templatesFolder: relativePath,
 				dailyNoteTemplatePath: null,
 			}));
@@ -265,7 +292,8 @@ export function TemplateSettingsSections() {
 	const handleClearFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
 		try {
-			await setTemplatesFolder(null);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setTemplatesFolder(null, { spacePath });
 			setSettingsState((current) => ({
 				...current,
 				templatesFolder: null,
@@ -280,7 +308,7 @@ export function TemplateSettingsSections() {
 						: "Failed to clear template folder",
 			}));
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	const handleDailyTemplateChange = useCallback(
 		async (value: string) => {
@@ -288,7 +316,8 @@ export function TemplateSettingsSections() {
 			const writeId = beginDailyTemplateWrite();
 			setSettingsState((current) => ({ ...current, error: null }));
 			try {
-				await setDailyNoteTemplate(next);
+				const spacePath = requireSpacePath(currentSpacePath);
+				await setDailyNoteTemplate(next, { spacePath });
 				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,
@@ -305,7 +334,7 @@ export function TemplateSettingsSections() {
 				}));
 			}
 		},
-		[beginDailyTemplateWrite],
+		[beginDailyTemplateWrite, currentSpacePath],
 	);
 
 	const summary = useMemo(() => {

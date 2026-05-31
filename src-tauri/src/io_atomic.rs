@@ -67,6 +67,37 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
     Ok(())
 }
 
+pub fn write_atomic_create_new(dest: &Path, bytes: &[u8]) -> io::Result<bool> {
+    let parent = dest
+        .parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "path has no parent"))?;
+    std::fs::create_dir_all(parent)?;
+
+    let tmp = unique_tmp_path(dest)?;
+
+    {
+        let mut f = File::create(&tmp)?;
+        f.write_all(bytes)?;
+        sync_all_best_effort(&f)?;
+    }
+
+    match std::fs::hard_link(&tmp, dest) {
+        Ok(()) => {
+            std::fs::remove_file(&tmp)?;
+            fsync_dir(parent)?;
+            Ok(true)
+        }
+        Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {
+            let _ = std::fs::remove_file(&tmp);
+            Ok(false)
+        }
+        Err(error) => {
+            let _ = std::fs::remove_file(&tmp);
+            Err(error)
+        }
+    }
+}
+
 pub fn copy_atomic(src: &Path, dest: &Path) -> io::Result<()> {
     let parent = dest
         .parent()

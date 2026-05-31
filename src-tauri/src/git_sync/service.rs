@@ -5,7 +5,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Emitter, State};
 
-use crate::space::state::SpaceState;
+use crate::space::state::{is_no_space_session_error, SpaceState};
 
 use super::git::{
     ahead_behind_counts, commit_all, fetch_remote, git_is_installed, has_head_commit,
@@ -319,7 +319,8 @@ pub fn read_status_internal(
 ) -> Result<GitSyncStatus, String> {
     let space_root = match space_state.root_for_window_label(window_label) {
         Ok(root) => root,
-        Err(_) => return Ok(GitSyncStatus::default()),
+        Err(error) if is_no_space_session_error(&error) => return Ok(GitSyncStatus::default()),
+        Err(error) => return Err(error),
     };
     read_status_for_root(git_state, Some(&space_root))
 }
@@ -575,7 +576,8 @@ pub fn read_config(
 ) -> Result<Option<GitSyncConfig>, String> {
     let space_root = match space_state.root_for_window_label(window_label) {
         Ok(root) => root,
-        Err(_) => return Ok(None),
+        Err(error) if is_no_space_session_error(&error) => return Ok(None),
+        Err(error) => return Err(error),
     };
     load_store(&space_root)
 }
