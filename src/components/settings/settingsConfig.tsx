@@ -27,7 +27,7 @@ export interface SettingsTabMeta {
 	renderIcon: () => ReactElement;
 }
 
-interface SettingsTabGroup {
+export interface SettingsTabGroup {
 	id: string;
 	label: string;
 	tabs: SettingsTabMeta[];
@@ -94,28 +94,24 @@ const SETTINGS_TAB_IDS = new Set<SettingsTab>(
 	SETTINGS_TABS.map((tab) => tab.id),
 );
 
-const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
+export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 	{
-		id: "workspace",
-		label: "Workspace",
+		id: "application",
+		label: "Application",
 		tabs: SETTINGS_TABS.filter(
 			(tab) =>
 				tab.id === "general" ||
 				tab.id === "appearance" ||
 				tab.id === "shortcuts" ||
-				tab.id === "space",
+				tab.id === "advanced" ||
+				tab.id === "about",
 		),
 	},
 	{
-		id: "services",
-		label: "Features",
-		tabs: SETTINGS_TABS.filter((tab) => tab.id === "ai" || tab.id === "git"),
-	},
-	{
-		id: "system",
-		label: "System",
+		id: "workspace",
+		label: "Workspace",
 		tabs: SETTINGS_TABS.filter(
-			(tab) => tab.id === "advanced" || tab.id === "about",
+			(tab) => tab.id === "space" || tab.id === "git" || tab.id === "ai",
 		),
 	},
 ];

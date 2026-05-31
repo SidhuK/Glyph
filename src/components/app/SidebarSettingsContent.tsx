@@ -10,7 +10,7 @@ import { useUILayoutContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
-import { SETTINGS_TABS } from "../settings/settingsConfig";
+import { SETTINGS_TAB_GROUPS } from "../settings/settingsConfig";
 import {
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
@@ -129,26 +129,40 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 					</div>
 				) : (
 					<div className="sidebarQuickActions settingsSidebarTabs">
-						{SETTINGS_TABS.map((tab) => (
-							<button
-								key={tab.id}
-								type="button"
-								data-tab={tab.id}
-								className={cn(
-									"sidebarQuickActionBtn settingsTabButton",
-									settingsTab === tab.id && "settingsTabButtonActive",
-								)}
-								onClick={() => setSettingsTab(tab.id)}
-								aria-pressed={settingsTab === tab.id}
-								aria-current={settingsTab === tab.id ? "page" : undefined}
+						{SETTINGS_TAB_GROUPS.map((group) => (
+							<section
+								key={group.id}
+								className="settingsSidebarTabGroup"
+								aria-labelledby={`settings-sidebar-group-${group.id}`}
 							>
-								<span className="settingsTabIcon" aria-hidden="true">
-									{tab.renderIcon()}
-								</span>
-								<span className="sidebarQuickActionLabel settingsTabLabel">
-									{tab.label}
-								</span>
-							</button>
+								<h3
+									id={`settings-sidebar-group-${group.id}`}
+									className="settingsSidebarTabGroupHeading"
+								>
+									{group.label}
+								</h3>
+								{group.tabs.map((tab) => (
+									<button
+										key={tab.id}
+										type="button"
+										data-tab={tab.id}
+										className={cn(
+											"sidebarQuickActionBtn settingsTabButton",
+											settingsTab === tab.id && "settingsTabButtonActive",
+										)}
+										onClick={() => setSettingsTab(tab.id)}
+										aria-pressed={settingsTab === tab.id}
+										aria-current={settingsTab === tab.id ? "page" : undefined}
+									>
+										<span className="settingsTabIcon" aria-hidden="true">
+											{tab.renderIcon()}
+										</span>
+										<span className="sidebarQuickActionLabel settingsTabLabel">
+											{tab.label}
+										</span>
+									</button>
+								))}
+							</section>
 						))}
 					</div>
 				)}

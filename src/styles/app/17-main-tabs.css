@@ -3,10 +3,14 @@
 	background: var(--bg-primary);
 }
 
+.mainTabsBarWrap:has(.mainTabsBar[data-empty-state="true"]) {
+	background: var(--bg-canvas, var(--bg-primary));
+}
+
 .mainTabsEmptyDragRegion {
 	height: 40px;
 	flex-shrink: 0;
-	background: var(--bg-primary);
+	background: var(--bg-canvas, var(--bg-primary));
 }
 
 .mainTabsBar {
@@ -32,7 +36,7 @@
 }
 
 .mainTabsBar[data-empty-state="true"] {
-	background: var(--bg-primary);
+	background: var(--bg-canvas, var(--bg-primary));
 }
 
 .mainTabNavControls {
