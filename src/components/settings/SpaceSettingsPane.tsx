@@ -104,11 +104,12 @@ export function SpaceSettingsPane() {
 		setAttachmentsLoading(true);
 		setQuickNotesLoading(true);
 		try {
-			const [dailyFolder, settings] = await Promise.all([
+			const [dailyFolder, settings, currentSpace] = await Promise.all([
 				getDailyNotesFolder(),
 				loadSettings(),
+				invoke("space_get_current"),
 			]);
-			setCurrentSpacePath(settings.currentSpacePath);
+			setCurrentSpacePath(currentSpace);
 			setDailyNotesFolderState(dailyFolder);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);

@@ -64,11 +64,7 @@ fn init_tracing() {
 }
 
 fn space_is_open(state: &space::SpaceState) -> bool {
-    state
-        .current
-        .lock()
-        .map(|guard| guard.is_some())
-        .unwrap_or(false)
+    !state.session_roots().is_empty()
 }
 
 fn set_menu_item_enabled<R: tauri::Runtime>(
@@ -1351,7 +1347,7 @@ fn set_menu_shortcuts(
 }
 
 #[cfg(target_os = "macos")]
-fn apply_main_window_vibrancy(
+pub(crate) fn apply_main_window_vibrancy(
     window: &tauri::WebviewWindow,
     theme: Option<&str>,
 ) -> Result<(), String> {
@@ -1364,7 +1360,7 @@ fn apply_main_window_vibrancy(
 }
 
 #[cfg(not(target_os = "macos"))]
-fn apply_main_window_vibrancy(
+pub(crate) fn apply_main_window_vibrancy(
     _window: &tauri::WebviewWindow,
     _theme: Option<&str>,
 ) -> Result<(), String> {
@@ -1438,34 +1434,49 @@ pub fn run() {
                 let Some(space_state) = app.try_state::<space::SpaceState>() else {
                     return;
                 };
-                let current_path = space_state.current.lock().ok().and_then(|guard| {
-                    guard
-                        .as_ref()
-                        .map(|path| path.to_string_lossy().to_string())
-                });
+                let current_path = app
+                    .webview_windows()
+                    .into_iter()
+                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                    .and_then(|(label, _window)| {
+                        space_state
+                            .root_for_window_label(&label)
+                            .ok()
+                            .map(|path| path.to_string_lossy().to_string())
+                    });
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }
-                let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
+                if let Some((label, _window)) = app
+                    .webview_windows()
+                    .into_iter()
+                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:open_recent_space",
+                        OpenRecentSpacePayload { path },
+                    );
+                } else {
+                    let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
+                }
             }
             id => {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                if command.id == "close-active-tab" {
-                    if let Some((label, _window)) = app
-                        .webview_windows()
-                        .into_iter()
-                        .find(|(_label, window)| window.is_focused().unwrap_or(false))
-                    {
-                        let _ = app.emit_to(
-                            label,
-                            "menu:app_command",
-                            AppCommandPayload {
-                                command_id: command.id,
-                            },
-                        );
-                    }
+                if let Some((label, _window)) = app
+                    .webview_windows()
+                    .into_iter()
+                    .find(|(_label, window)| window.is_focused().unwrap_or(false))
+                {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:app_command",
+                        AppCommandPayload {
+                            command_id: command.id,
+                        },
+                    );
                     return;
                 }
                 let _ = app.emit(
@@ -1542,6 +1553,15 @@ pub fn run() {
                         }
                     }
                     _ => {}
+                }
+            }
+
+            if space::commands::is_space_window(window.label()) {
+                if let WindowEvent::Destroyed = event {
+                    let state = window.state::<space::SpaceState>();
+                    if let Err(error) = state.remove_window_session(window.label()) {
+                        warn!("Failed to forget space window session: {error}");
+                    }
                 }
             }
 
@@ -1688,6 +1708,7 @@ pub fn run() {
             git_sync::commands::git_sync_disconnect,
             space::commands::space_create,
             space::commands::space_open,
+            space::commands::space_open_window,
             space::commands::space_get_current,
             space::commands::space_show_onboarding_note,
             space::commands::space_close

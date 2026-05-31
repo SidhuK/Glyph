@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
-	loadSettings,
 	setDailyNoteTemplate,
 	setTemplatesFolder,
 } from "../../lib/settings";
@@ -54,12 +53,7 @@ function toDisplayPath(value: string, folder: string | null): string {
 async function ensureCurrentSpaceOpen(): Promise<string | null> {
 	const currentSpacePath = await invoke("space_get_current");
 	if (currentSpacePath) return currentSpacePath;
-	const settings = await loadSettings();
-	if (!settings.currentSpacePath) return null;
-	const opened = await invoke("space_open", {
-		path: settings.currentSpacePath,
-	});
-	return opened.root;
+	return null;
 }
 
 export function TemplateSettingsSections() {

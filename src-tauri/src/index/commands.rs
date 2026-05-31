@@ -3,7 +3,7 @@ use std::path::Path;
 
 use chrono::{DateTime, Duration, Local, NaiveDate};
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, State, WebviewWindow};
 use tauri_plugin_notification::NotificationExt;
 
 use crate::space::state::mark_recent_local_change;
@@ -28,6 +28,7 @@ use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_
 
 #[derive(Serialize, Clone)]
 struct NoteChangeEvent {
+    space_path: String,
     rel_path: String,
     removed: bool,
 }
@@ -344,9 +345,10 @@ fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> Strin
 #[tauri::command]
 pub async fn index_rebuild(
     app: AppHandle,
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let res = tauri::async_runtime::spawn_blocking(move || rebuild(&root))
         .await
         .map_err(|e| e.to_string())??;
@@ -361,10 +363,11 @@ pub async fn index_rebuild(
 
 #[tauri::command]
 pub async fn search(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     query: String,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         hybrid_search(&conn, &query, &[], 50)
@@ -375,10 +378,11 @@ pub async fn search(
 
 #[tauri::command]
 pub async fn search_advanced(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     request: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         run_search_advanced(&conn, request)
@@ -389,11 +393,12 @@ pub async fn search_advanced(
 
 #[tauri::command]
 pub async fn search_parse_and_run(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     raw_query: String,
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
@@ -411,11 +416,12 @@ pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), St
 
 #[tauri::command]
 pub async fn all_docs_list(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     folder_prefix: Option<String>,
 ) -> Result<Vec<AllDocsItem>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
     let folder_prefix = folder_prefix
         .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
@@ -502,10 +508,11 @@ pub async fn all_docs_list(
 
 #[tauri::command]
 pub async fn all_docs_count(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     folder_prefix: Option<String>,
 ) -> Result<u32, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let folder_prefix = folder_prefix
         .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
         .filter(|value| !value.is_empty());
@@ -533,13 +540,14 @@ pub async fn all_docs_count(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn calendar_query_range(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     start_date: String,
     end_date: String,
     selected_date: String,
     daily_notes_folder: Option<String>,
 ) -> Result<CalendarRangeResponse, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let start = parse_calendar_date(&start_date)?;
     let end = parse_calendar_date(&end_date)?;
     let selected = parse_calendar_date(&selected_date)?;
@@ -825,11 +833,12 @@ pub async fn calendar_query_range(
 
 #[tauri::command]
 pub async fn tags_list(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> Result<Vec<TagCount>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
@@ -877,11 +886,12 @@ fn list_tags(
 
 #[tauri::command]
 pub async fn people_list(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> Result<Vec<PersonCount>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<PersonCount>, String> {
@@ -1031,12 +1041,15 @@ mod tests {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_checked(
     app: AppHandle,
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     task_id: String,
     checked: bool,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let note_path = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
@@ -1057,9 +1070,11 @@ pub async fn task_set_checked(
     })
     .await
     .map_err(|e| e.to_string())??;
-    let _ = app.emit(
+    let _ = app.emit_to(
+        window_label,
         "notes:external_changed",
         NoteChangeEvent {
+            space_path,
             rel_path: note_path,
             removed: false,
         },
@@ -1069,12 +1084,13 @@ pub async fn task_set_checked(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn tasks_query_global(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     filter: Option<GlobalTaskFilter>,
     today_date: Option<String>,
     limit: Option<u32>,
 ) -> Result<Vec<IndexedTask>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let filter = filter.unwrap_or(GlobalTaskFilter::All).as_str().to_string();
     let today_date = normalized_task_query_date(today_date)?;
     let limit = limit.unwrap_or(500).clamp(1, 2_000) as i64;
@@ -1129,13 +1145,16 @@ pub async fn tasks_query_global(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_dates(
     app: AppHandle,
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     task_id: String,
     scheduled_date: Option<String>,
     due_date: Option<String>,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let note_path = tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
@@ -1162,9 +1181,11 @@ pub async fn task_set_dates(
     })
     .await
     .map_err(|e| e.to_string())??;
-    let _ = app.emit(
+    let _ = app.emit_to(
+        window_label,
         "notes:external_changed",
         NoteChangeEvent {
+            space_path,
             rel_path: note_path,
             removed: false,
         },
@@ -1231,10 +1252,11 @@ pub fn task_summary(markdown: String) -> NoteTaskSummary {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_summaries_for_paths(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_paths: Vec<String>,
 ) -> Result<Vec<NoteTaskSummaryItem>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteTaskSummaryItem>, String> {
         let paths = note_paths
             .into_iter()
@@ -1250,11 +1272,12 @@ pub async fn task_summaries_for_paths(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn backlinks(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
     _space_path: Option<String>,
 ) -> Result<Vec<BacklinkItem>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<BacklinkItem>, String> {
         let conn = open_db(&root)?;
         let stem = Path::new(&note_id)
@@ -1298,10 +1321,11 @@ pub async fn backlinks(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_relationships(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
 ) -> Result<Vec<NoteRelationship>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteRelationship>, String> {
         let conn = open_db(&root)?;
         query_note_relationships(&conn, &note_id)
@@ -1567,10 +1591,11 @@ fn local_graph_tag_expansion_for_seed_nodes(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_local_graph(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
 ) -> Result<LocalNoteGraph, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteGraph, String> {
         let conn = open_db(&root)?;
         local_note_graph_for_conn(&conn, &note_id)

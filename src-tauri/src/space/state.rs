@@ -50,9 +50,29 @@ pub(crate) fn has_recent_local_change(changes: &RecentLocalChanges, rel_path: &s
     guard.contains_key(&normalized)
 }
 
+pub(crate) struct SpaceSession {
+    pub(crate) root: PathBuf,
+    pub(crate) _notes_watcher: Option<notify::RecommendedWatcher>,
+    pub(crate) recent_local_changes: RecentLocalChanges,
+}
+
+impl SpaceSession {
+    fn new(
+        root: PathBuf,
+        notes_watcher: notify::RecommendedWatcher,
+        recent_local_changes: RecentLocalChanges,
+    ) -> Self {
+        Self {
+            root,
+            _notes_watcher: Some(notes_watcher),
+            recent_local_changes,
+        }
+    }
+}
+
 pub struct SpaceState {
     pub(crate) current: Mutex<Option<PathBuf>>,
-    pub(crate) notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
+    pub(crate) sessions: Mutex<HashMap<String, SpaceSession>>,
     recent_local_changes: RecentLocalChanges,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
@@ -63,7 +83,7 @@ impl Default for SpaceState {
     fn default() -> Self {
         Self {
             current: Mutex::new(None),
-            notes_watcher: Mutex::new(None),
+            sessions: Mutex::new(HashMap::new()),
             recent_local_changes: Arc::new(Mutex::new(HashMap::new())),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
@@ -73,8 +93,88 @@ impl Default for SpaceState {
 }
 
 impl SpaceState {
-    pub(crate) fn recent_local_changes(&self) -> RecentLocalChanges {
-        Arc::clone(&self.recent_local_changes)
+    pub(crate) fn new_recent_local_changes(&self) -> RecentLocalChanges {
+        Arc::new(Mutex::new(HashMap::new()))
+    }
+
+    pub(crate) fn recent_local_changes_for_window(&self, window_label: &str) -> RecentLocalChanges {
+        self.sessions
+            .lock()
+            .ok()
+            .and_then(|sessions| {
+                sessions
+                    .get(window_label)
+                    .map(|session| Arc::clone(&session.recent_local_changes))
+            })
+            .unwrap_or_else(|| Arc::clone(&self.recent_local_changes))
+    }
+
+    pub(crate) fn set_window_session(
+        &self,
+        window_label: String,
+        root: PathBuf,
+        notes_watcher: notify::RecommendedWatcher,
+        recent_local_changes: RecentLocalChanges,
+    ) -> Result<(), String> {
+        self.sessions
+            .lock()
+            .map_err(|_| "space sessions state poisoned".to_string())?
+            .insert(
+                window_label,
+                SpaceSession::new(root.clone(), notes_watcher, recent_local_changes),
+            );
+        let mut current = self
+            .current
+            .lock()
+            .map_err(|_| "space state poisoned".to_string())?;
+        *current = Some(root);
+        Ok(())
+    }
+
+    pub(crate) fn remove_window_session(&self, window_label: &str) -> Result<(), String> {
+        let next_current = {
+            let mut sessions = self
+                .sessions
+                .lock()
+                .map_err(|_| "space sessions state poisoned".to_string())?;
+            sessions.remove(window_label);
+            sessions.values().next().map(|session| session.root.clone())
+        };
+        let mut current = self
+            .current
+            .lock()
+            .map_err(|_| "space state poisoned".to_string())?;
+        *current = next_current;
+        Ok(())
+    }
+
+    pub(crate) fn root_for_window_label(&self, window_label: &str) -> Result<PathBuf, String> {
+        if let Some(root) = self
+            .sessions
+            .lock()
+            .map_err(|_| "space sessions state poisoned".to_string())?
+            .get(window_label)
+            .map(|session| session.root.clone())
+        {
+            return Ok(root);
+        }
+        self.current_root()
+    }
+
+    pub fn root_for_window(&self, window: &tauri::WebviewWindow) -> Result<PathBuf, String> {
+        self.root_for_window_label(window.label())
+    }
+
+    pub(crate) fn session_roots(&self) -> Vec<PathBuf> {
+        self.sessions
+            .lock()
+            .map(|sessions| {
+                sessions
+                    .values()
+                    .map(|session| session.root.clone())
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default()
     }
 
     pub(crate) fn db_store_mutex(&self) -> Arc<Mutex<()>> {

@@ -1,10 +1,10 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, WebviewWindow};
 
 use super::helpers::{
     alternate_openai_base_url, apply_extra_headers, http_client, ollama_api_url, parse_base_url,
 };
 use super::local_secrets;
-use super::store::{ensure_default_profiles, read_store, store_path, write_store};
+use super::store::{ensure_default_profiles, read_store, store_path_for_space, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
 use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use crate::space::SpaceState;
@@ -571,14 +571,15 @@ fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
 pub async fn ai_models_list(
     app: AppHandle,
     codex_state: State<'_, CodexState>,
+    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
     provider: Option<AiProviderKind>,
 ) -> Result<Vec<AiModel>, String> {
-    let path = store_path(&app)?;
+    let space_root = space_state.root_for_window(&window).ok();
+    let path = store_path_for_space(&app, space_root.as_deref())?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
-    let space_root = space_state.current_root().ok();
     let _ = write_store(&path, &store);
 
     let profile = store

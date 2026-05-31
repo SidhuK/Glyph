@@ -7,27 +7,23 @@ use tauri::Emitter;
 
 use crate::{index, utils};
 
-use super::state::{has_recent_local_change, SpaceState};
+use super::state::{has_recent_local_change, RecentLocalChanges};
 
 #[derive(Serialize, Clone)]
 struct ExternalChangeEvent {
+    space_path: String,
     rel_path: String,
     removed: bool,
 }
 
 const DEBOUNCE_MS: u64 = 100;
 
-pub fn set_notes_watcher(
-    state: &SpaceState,
+pub fn create_notes_watcher(
     app: tauri::AppHandle,
     root: PathBuf,
-) -> Result<(), String> {
-    let mut guard = state
-        .notes_watcher
-        .lock()
-        .map_err(|_| "space watcher state poisoned".to_string())?;
-    *guard = None;
-
+    window_label: String,
+    recent_local_changes: RecentLocalChanges,
+) -> Result<notify::RecommendedWatcher, String> {
     let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool)>();
 
     let root_idx = root.clone();
@@ -67,7 +63,7 @@ pub fn set_notes_watcher(
 
     let app2 = app.clone();
     let root2 = root.clone();
-    let recent_local_changes = state.recent_local_changes();
+    let space_path = root.to_string_lossy().to_string();
 
     let watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
         let event = match res {
@@ -104,18 +100,22 @@ pub fn set_notes_watcher(
             {
                 let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-                let _ = app2.emit(
+                let _ = app2.emit_to(
+                    &window_label,
                     "notes:external_changed",
                     ExternalChangeEvent {
+                        space_path: space_path.clone(),
                         rel_path: rel_s.clone(),
                         removed: is_remove,
                     },
                 );
             }
 
-            let _ = app2.emit(
+            let _ = app2.emit_to(
+                &window_label,
                 "space:fs_changed",
                 ExternalChangeEvent {
+                    space_path: space_path.clone(),
                     rel_path: rel_s,
                     removed: is_remove,
                 },
@@ -129,6 +129,5 @@ pub fn set_notes_watcher(
         .watch(&root, notify::RecursiveMode::Recursive)
         .map_err(|e: notify::Error| e.to_string())?;
 
-    *guard = Some(watcher);
-    Ok(())
+    Ok(watcher)
 }

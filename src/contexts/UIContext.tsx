@@ -249,6 +249,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	}, [spacePath]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (payload.spacePath && payload.spacePath !== spacePath) return;
 		const nextEnabled = payload.ui?.aiEnabled;
 		if (typeof nextEnabled === "boolean") {
 			dispatch({ type: "setAiEnabled", value: nextEnabled });

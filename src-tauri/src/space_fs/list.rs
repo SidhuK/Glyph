@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState, utils};
 
@@ -20,12 +20,13 @@ fn metadata_timestamps(metadata: &std::fs::Metadata) -> (Option<String>, Option<
 
 #[tauri::command]
 pub async fn space_list_markdown_files(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     dir: Option<String>,
     recursive: Option<bool>,
     limit: Option<u32>,
 ) -> Result<Vec<FsEntry>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let dir = dir.unwrap_or_default();
     let recursive = recursive.unwrap_or(true);
     let limit = limit.unwrap_or(2_000).min(50_000) as usize;
@@ -135,11 +136,12 @@ pub async fn space_list_markdown_files(
 
 #[tauri::command]
 pub async fn space_list_non_markdown_files(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     dir: Option<String>,
     limit: Option<u32>,
 ) -> Result<FsEntryList, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let dir = dir.unwrap_or_default();
     let limit = limit.unwrap_or(5_000).min(50_000) as usize;
 
@@ -218,10 +220,11 @@ pub async fn space_list_non_markdown_files(
 
 #[tauri::command]
 pub async fn space_list_dir(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     dir: Option<String>,
 ) -> Result<Vec<FsEntry>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let dir = dir.unwrap_or_default();
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
         let rel = if dir.trim().is_empty() {

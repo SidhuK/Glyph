@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use serde_yaml::{Mapping, Value};
-use tauri::State;
+use tauri::{State, WebviewWindow};
 use uuid::Uuid;
 
 use crate::index::index_note;
@@ -494,8 +494,11 @@ fn backlink_note_paths(root: &Path, note_path: &str) -> Result<Vec<String>, Stri
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<DatabaseSummary>, String> {
-    let root = state.current_root()?;
+pub async fn databases_list(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+) -> Result<Vec<DatabaseSummary>, String> {
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -510,10 +513,11 @@ pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<Database
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_get(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let store = bootstrap_defaults(load_store(&root)?);
         let database = store
@@ -529,10 +533,11 @@ pub async fn databases_get(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_create(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     name: String,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -573,10 +578,11 @@ pub async fn databases_create(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_update(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database: DatabaseDefinition,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -609,10 +615,11 @@ pub async fn databases_update(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_delete(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -636,13 +643,14 @@ pub async fn databases_delete(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_query_rows(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
     view_id: String,
     offset: Option<u32>,
     limit: Option<u32>,
 ) -> Result<super::types::DatabaseQueryResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let store = bootstrap_defaults(load_store(&root)?);
         let database = store
@@ -671,13 +679,14 @@ pub async fn databases_query_rows(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_update_cell(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_path: String,
     column: DatabaseColumn,
     value: DatabaseCellValue,
 ) -> Result<DatabaseRow, String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || {
         let existing_row = row_by_path(&root, &note_path)?;
         validate_editable_column(&existing_row, &column)?;
@@ -695,14 +704,15 @@ pub async fn databases_update_cell(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_create_row(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
     title: Option<String>,
     initial_values: Option<Vec<DatabaseCreateRowInitialValue>>,
 ) -> Result<DatabaseCreateRowResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
-    let recent_local_changes = state.recent_local_changes();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
@@ -756,11 +766,12 @@ pub async fn databases_create_row(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_preview_context(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_path: String,
     _space_path: Option<String>,
 ) -> Result<DatabasePreviewContext, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let markdown = read_note_markdown(&root, &note_path)?;
         let row = row_by_path(&root, &note_path)?;
@@ -788,9 +799,10 @@ pub async fn databases_preview_context(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_status_colors_get(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<BTreeMap<String, String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -804,11 +816,12 @@ pub async fn databases_status_colors_get(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_status_color_set(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     status: String,
     color: Option<String>,
 ) -> Result<BTreeMap<String, String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex

@@ -1,4 +1,4 @@
-use crate::io_atomic;
+use crate::{glyph_paths, io_atomic};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::{path::Path, path::PathBuf};
@@ -17,6 +17,13 @@ pub struct AiStore {
 pub fn store_path(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
     Ok(dir.join("ai.json"))
+}
+
+pub fn store_path_for_space(app: &AppHandle, space_root: Option<&Path>) -> Result<PathBuf, String> {
+    match space_root {
+        Some(root) => Ok(glyph_paths::ensure_glyph_app_dir(root)?.join("ai.json")),
+        None => store_path(app),
+    }
 }
 
 pub fn read_store(path: &Path) -> AiStore {
