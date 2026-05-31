@@ -1044,9 +1044,15 @@ fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::W
 
 fn target_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
     focused_space_host_window(app).or_else(|| {
-        app.webview_windows()
-            .into_iter()
-            .find(|(label, _window)| is_space_host_window_label(label))
+        let space_state = app.try_state::<space::SpaceState>()?;
+        let current_root = space_state.current_root().ok()?;
+        app.webview_windows().into_iter().find(|(label, _window)| {
+            is_space_host_window_label(label)
+                && space_state
+                    .root_for_window_label(label)
+                    .map(|root| root == current_root)
+                    .unwrap_or(false)
+        })
     })
 }
 

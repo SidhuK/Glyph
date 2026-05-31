@@ -116,6 +116,7 @@ pub fn write_atomic_create_new(dest: &Path, bytes: &[u8]) -> io::Result<bool> {
                     if let Err(write_error) =
                         f.write_all(bytes).and_then(|()| sync_all_best_effort(&f))
                     {
+                        drop(f);
                         let _ = std::fs::remove_file(&tmp);
                         let _ = std::fs::remove_file(dest);
                         return Err(write_error);
