@@ -203,8 +203,25 @@
 }
 
 .settingsSidebarTabs {
+	gap: 14px;
+	padding: 8px 8px 12px;
+}
+
+.settingsSidebarTabGroup {
+	display: flex;
+	flex-direction: column;
 	gap: 2px;
-	padding: 4px 8px 12px;
+	min-width: 0;
+}
+
+.settingsSidebarTabGroupHeading {
+	margin: 0;
+	padding: 0 8px 5px;
+	color: var(--text-tertiary);
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	text-transform: uppercase;
 }
 
 .settingsFeedbackCard {

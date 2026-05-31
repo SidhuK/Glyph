@@ -209,6 +209,27 @@ function ThemeAndTypographyBridge() {
 	return null;
 }
 
+if (import.meta.env.PROD) {
+	document.addEventListener("contextmenu", (e) => {
+		const target = e.target;
+		if (
+			target instanceof Element &&
+			target.closest(
+				'input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]',
+			)
+		) {
+			return;
+		}
+		e.preventDefault();
+	});
+	document.addEventListener("keydown", (e) => {
+		const key = e.key.toLowerCase();
+		if (key === "f5" || ((e.ctrlKey || e.metaKey) && key === "r")) {
+			e.preventDefault();
+		}
+	});
+}
+
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Missing #root element");
 
