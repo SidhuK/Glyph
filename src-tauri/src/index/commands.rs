@@ -4,7 +4,6 @@ use std::path::Path;
 use chrono::{DateTime, Duration, Local, NaiveDate};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, State, WebviewWindow};
-use tauri_plugin_notification::NotificationExt;
 
 use crate::space::state::mark_recent_local_change;
 use crate::space::SpaceState;
@@ -344,7 +343,6 @@ fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> Strin
 
 #[tauri::command]
 pub async fn index_rebuild(
-    app: AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
@@ -352,12 +350,6 @@ pub async fn index_rebuild(
     let res = tauri::async_runtime::spawn_blocking(move || rebuild(&root))
         .await
         .map_err(|e| e.to_string())??;
-    let _ = app
-        .notification()
-        .builder()
-        .title("Glyph")
-        .body(format!("Index rebuilt ({})", res.indexed))
-        .show();
     Ok(res)
 }
 

@@ -1,7 +1,7 @@
 import {
 	LibraryIcon,
 	MoreVerticalIcon,
-	PencilEdit02Icon,
+	NoteIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { emit } from "@tauri-apps/api/event";
@@ -1010,21 +1010,15 @@ function DatabasesPaneContent({
 						>
 							<Trash2 size={14} />
 						</Button>
-						<Button
+						<button
 							type="button"
-							variant="ghost"
-							size="icon-sm"
 							className="databaseToolbarChip is-accent"
 							onClick={() => void handleCreateRow()}
 							title="New note"
-							aria-label="New note"
 						>
-							<HugeiconsIcon
-								icon={PencilEdit02Icon}
-								size={14}
-								strokeWidth={0.9}
-							/>
-						</Button>
+							<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
+							New Note
+						</button>
 					</div>
 				) : null}
 			</div>

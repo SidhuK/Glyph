@@ -92,6 +92,22 @@
 	background: transparent;
 }
 
+.settingsFieldInteractive {
+	transition: background-color 140ms ease;
+}
+
+.settingsFieldInteractive:has(input[type="checkbox"]) {
+	cursor: pointer;
+}
+
+.settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
+	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
+}
+
+.settingsFieldInteractive:has(input[type="checkbox"]:disabled) {
+	cursor: not-allowed;
+}
+
 .settingsField::after {
 	content: "";
 	position: absolute;
