@@ -1016,11 +1016,7 @@ function DatabasesPaneContent({
 							onClick={() => void handleCreateRow()}
 							title="New note"
 						>
-							<HugeiconsIcon
-								icon={NoteIcon}
-								size={14}
-								strokeWidth={0.9}
-							/>
+							<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
 							New Note
 						</button>
 					</div>

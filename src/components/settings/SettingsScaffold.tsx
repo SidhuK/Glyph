@@ -107,6 +107,8 @@ export function SettingsRow({
 			data-settings-row-title={rowTitle}
 			onClick={handleRowClick}
 			onKeyDown={handleRowKeyDown}
+			role={interactive ? "button" : undefined}
+			tabIndex={interactive ? 0 : undefined}
 		>
 			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
 				<div className="settingsLabel">{label}</div>

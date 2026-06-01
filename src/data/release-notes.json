@@ -19,7 +19,7 @@
 						"Sidebar and editor surfaces blend more smoothly into each other.",
 						"Window top and bottom edges carry a faint gradient that reads as light from above.",
 						"Floating panels in light mode cast soft warm shadows. In dark mode they cast deep cool shadows with a thin top highlight. Dark popovers and tooltips now float with an inner highlight and outer glow instead of reading flat.",
-						"Database toolbar New Note button uses a plus icon and a plain chip button, consistent with the rest of the toolbar.",
+						"Database toolbar New Note button uses a note-style icon and a plain chip button, consistent with the rest of the toolbar.",
 						"Settings toggle rows are fully clickable. You can click the label or the row itself to flip the switch. Hover shows a subtle highlight. Clicks still pass through to text fields, links, and the toggle's own label. Disabled toggles show a not-allowed cursor."
 					]
 				},
