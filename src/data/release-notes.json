@@ -1,6 +1,47 @@
 {
 	"versions": [
 		{
+			"version": "0.6.0",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Multi-space support: open and manage multiple spaces in separate windows. AI, file, database, and git operations stay scoped to the active window.",
+						"Open external Markdown files from Finder into standalone Glyph windows. Glyph registers .md, .markdown, and .mdown associations on macOS."
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Default accent switched from cerulean to neutral across the settings constant, appearance fallback, and appearance settings pane initializer.",
+						"The default light and dark themes give the editor its own surface, separate from the sidebar. Light mode text uses a deeper warm ink. Dark mode text uses solid off-white instead of translucent white. Dark backgrounds shifted from flat gray to a cooler indigo. Borders softened to match.",
+						"Paper grain texture shows across the empty editor and large background areas.",
+						"Sidebar and editor surfaces blend more smoothly into each other.",
+						"Window top and bottom edges carry a faint gradient that reads as light from above.",
+						"Floating panels in light mode cast soft warm shadows. In dark mode they cast deep cool shadows with a thin top highlight. Dark popovers and tooltips now float with an inner highlight and outer glow instead of reading flat.",
+						"Database toolbar New Note button uses a plus icon and a plain chip button, consistent with the rest of the toolbar.",
+						"Settings toggle rows are fully clickable. You can click the label or the row itself to flip the switch. Hover shows a subtle highlight. Clicks still pass through to text fields, links, and the toggle's own label. Disabled toggles show a not-allowed cursor."
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"External file and change events no longer leak across spaces. Each event targets the correct window and space.",
+						"Settings sidebar groups tabs under Application and Workspace headings.",
+						"Release builds block the right-click context menu and F5 / Cmd+R / Ctrl+R reload shortcuts. Dev mode is unaffected.",
+						"Safer atomic writes when creating new files to avoid collisions.",
+						"Tests for space-scoped settings."
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"OS notifications for index rebuilds and AI chat results. The Tauri notification plugin, dependency, and default capability are removed. In-app toasts remain for copy errors, failed file actions, and extraction failures."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.5.5",
 			"sections": [
 				{

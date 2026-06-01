@@ -19,7 +19,6 @@
 		"core:window:allow-show",
 		"core:menu:default",
 		"dialog:default",
-		"notification:default",
 		{
 			"identifier": "opener:allow-open-path",
 			"allow": [

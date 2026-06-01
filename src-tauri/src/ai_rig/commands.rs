@@ -1,5 +1,4 @@
 use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow};
-use tauri_plugin_notification::NotificationExt;
 use tracing::warn;
 
 use crate::space::SpaceState;
@@ -429,14 +428,6 @@ pub async fn ai_chat_start(
                     cancelled,
                     tool_events: &tool_events,
                 });
-                if !cancelled {
-                    let _ = app_for_task
-                        .notification()
-                        .builder()
-                        .title("Glyph")
-                        .body("AI response ready")
-                        .show();
-                }
                 ai_state_for_task.finish(&job_id_for_task);
             }
             Err(message) => {
@@ -447,12 +438,6 @@ pub async fn ai_chat_start(
                         message,
                     },
                 );
-                let _ = app_for_task
-                    .notification()
-                    .builder()
-                    .title("Glyph")
-                    .body("AI request failed")
-                    .show();
                 ai_state_for_task.finish(&job_id_for_task);
             }
         }
