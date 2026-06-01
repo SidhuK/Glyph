@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type ReactNode,
 	createContext,
@@ -13,12 +14,20 @@ import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHy
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
 import {
-	clearCurrentSpacePath,
 	loadSettings,
 	setCurrentSpacePath,
 	updateOnboardingSettings,
 } from "../lib/settings";
 import { type AppInfo, invoke } from "../lib/tauri";
+import { SPACE_WINDOW_PREFIX } from "../lib/windowLabels";
+
+function isSpaceWindow(): boolean {
+	try {
+		return getCurrentWindow().label.startsWith(SPACE_WINDOW_PREFIX);
+	} catch {
+		return false;
+	}
+}
 
 export interface SpaceContextValue {
 	info: AppInfo | null;
@@ -139,7 +148,17 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					);
 				}
 
-				if (settings.currentSpacePath) {
+				const currentWindowSpaceInfo = await invoke("space_get_current_info");
+				if (currentWindowSpaceInfo) {
+					if (!cancelled) {
+						setSpacePath(currentWindowSpaceInfo.root);
+						setLastSpacePath(currentWindowSpaceInfo.root);
+						setSpaceSchemaVersion(currentWindowSpaceInfo.schema_version);
+						setOnboardingNotePath(
+							currentWindowSpaceInfo.onboarding_note_path ?? null,
+						);
+					}
+				} else if (settings.currentSpacePath && !isSpaceWindow()) {
 					try {
 						const spaceInfo = await invoke("space_open", {
 							path: settings.currentSpacePath,
@@ -181,18 +200,13 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			isOpeningSpaceRef.current = true;
 			setError("");
 			try {
-				if (spacePath) {
-					await invoke("space_close");
-					await clearCurrentSpacePath();
-					clearAiPanelCaches();
-					clearInlineImageHydrationCache();
-					invalidateNavigationPrefetch();
-					setSpacePath(null);
-					setSpaceSchemaVersion(null);
-					setOnboardingNotePath(null);
-				}
-				const spaceInfo =
-					mode === "create"
+				const sessionSpacePath = await invoke("space_get_current");
+				const spaceInfo = sessionSpacePath
+					? await invoke("space_open_window", {
+							path,
+							create: mode === "create",
+						})
+					: mode === "create"
 						? await invoke("space_create", { path })
 						: await invoke("space_open", { path });
 				await setCurrentSpacePath(spaceInfo.root);
@@ -204,23 +218,24 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				);
 				void updateOnboardingSettings({ launcherSeen: true });
 				setLastSpacePath(spaceInfo.root);
-				setSpacePath(spaceInfo.root);
-				setSpaceSchemaVersion(spaceInfo.schema_version);
-				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+				if (!sessionSpacePath) {
+					setSpacePath(spaceInfo.root);
+					setSpaceSchemaVersion(spaceInfo.schema_version);
+					setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+				}
 			} catch (err) {
 				setError(extractErrorMessage(err));
 			} finally {
 				isOpeningSpaceRef.current = false;
 			}
 		},
-		[spacePath],
+		[],
 	);
 
 	const closeSpace = useCallback(async () => {
 		setError("");
 		try {
 			await invoke("space_close");
-			await clearCurrentSpacePath();
 			clearAiPanelCaches();
 			clearInlineImageHydrationCache();
 			invalidateNavigationPrefetch();

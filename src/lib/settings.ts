@@ -1,4 +1,5 @@
-import { emit } from "@tauri-apps/api/event";
+import { emit, emitTo } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
 import {
@@ -13,6 +14,7 @@ import {
 	type ShortcutActionId,
 	isShortcutActionId,
 } from "./shortcuts/registry";
+import { invoke } from "./tauri";
 import type { AiAssistantMode } from "./tauri";
 import {
 	type UiDarkThemeId,
@@ -114,6 +116,10 @@ export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 interface TaskSourceSetting {
 	mode: TaskSourceMode;
 	folders: string[];
+}
+
+function defaultTaskSourceSetting(): TaskSourceSetting {
+	return { mode: "space", folders: [] };
 }
 
 interface DatabaseSettings {
@@ -256,6 +262,7 @@ function asUiEditorFontSize(value: unknown): UiFontSize {
 }
 
 async function emitSettingsUpdated(payload: {
+	spacePath?: string;
 	ui?: {
 		theme?: ThemeMode;
 		autoUpdateCheckInterval?: AutoUpdateCheckInterval;
@@ -306,6 +313,10 @@ async function emitSettingsUpdated(payload: {
 	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
+		if (payload.spacePath) {
+			await emitTo(getCurrentWindow().label, "settings:updated", payload);
+			return;
+		}
 		await emit("settings:updated", payload);
 	} catch {
 		// best-effort cross-window sync
@@ -356,6 +367,39 @@ interface AppSettings {
 	database: DatabaseSettings;
 }
 
+interface SpaceScopedSettings {
+	dailyNotesFolder?: string | null;
+	quickNotesFolder?: string;
+	templatesFolder?: string | null;
+	templatesDailyNoteTemplate?: string | null;
+	taskSource?: TaskSourceSetting;
+	attachmentStorageMode?: AttachmentStorageMode;
+	attachmentFolder?: string | null;
+}
+
+type SpaceScopedSettingsMap = Record<string, SpaceScopedSettings>;
+
+export interface SettingsScope {
+	spacePath?: string | null;
+}
+
+let spaceScopedSettingsWriteQueue: Promise<unknown> = Promise.resolve();
+
+async function withSpaceScopedSettingsWriteLock<T>(
+	operation: () => Promise<T>,
+): Promise<T> {
+	const locks =
+		typeof navigator !== "undefined" && "locks" in navigator
+			? navigator.locks
+			: null;
+	if (locks) {
+		return locks.request("glyph-space-scoped-settings", operation);
+	}
+	const run = spaceScopedSettingsWriteQueue.then(operation, operation);
+	spaceScopedSettingsWriteQueue = run.catch(() => {});
+	return run;
+}
+
 const KEYS = {
 	currentSpacePath: "space.currentPath",
 	recentSpaces: "space.recent",
@@ -394,6 +438,7 @@ const KEYS = {
 	shortcutsVersion: "shortcuts.version",
 	shortcutsBindings: "shortcuts.bindings",
 	databaseShowColumnColor: "database.showColumnColor",
+	spaceScopedSettings: "space.scopedSettings",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
 	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
@@ -507,6 +552,94 @@ function sanitizeShortcutBindings(bindings: unknown): ShortcutBindings {
 	return next;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
+	if (!isRecord(value)) return {};
+	const out: SpaceScopedSettings = {};
+	if ("dailyNotesFolder" in value) {
+		out.dailyNotesFolder =
+			typeof value.dailyNotesFolder === "string"
+				? normalizeRelPath(value.dailyNotesFolder) || null
+				: null;
+	}
+	if (typeof value.quickNotesFolder === "string") {
+		out.quickNotesFolder = normalizeQuickNotesFolder(value.quickNotesFolder);
+	}
+	if ("templatesFolder" in value) {
+		out.templatesFolder =
+			typeof value.templatesFolder === "string"
+				? normalizeRelPath(value.templatesFolder)
+				: null;
+	}
+	if ("templatesDailyNoteTemplate" in value) {
+		out.templatesDailyNoteTemplate =
+			typeof value.templatesDailyNoteTemplate === "string"
+				? normalizeRelPath(value.templatesDailyNoteTemplate) || null
+				: null;
+	}
+	if ("taskSource" in value) {
+		out.taskSource = normalizeTaskSourceSetting(value.taskSource);
+	}
+	if ("attachmentStorageMode" in value) {
+		out.attachmentStorageMode = asAttachmentStorageMode(
+			value.attachmentStorageMode,
+		);
+	}
+	if ("attachmentFolder" in value) {
+		out.attachmentFolder =
+			typeof value.attachmentFolder === "string"
+				? normalizeRelPath(value.attachmentFolder) || DEFAULT_ATTACHMENT_FOLDER
+				: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
+	}
+	return out;
+}
+
+function normalizeSpaceScopedSettingsMap(
+	value: unknown,
+): SpaceScopedSettingsMap {
+	if (!isRecord(value)) return {};
+	const out: SpaceScopedSettingsMap = {};
+	for (const [spacePath, settings] of Object.entries(value)) {
+		const key = spacePath.trim();
+		if (!key) continue;
+		out[key] = normalizeSpaceScopedSettings(settings);
+	}
+	return out;
+}
+
+async function activeSpacePath(scope?: SettingsScope): Promise<string | null> {
+	if (scope && "spacePath" in scope) {
+		const path = scope.spacePath?.trim();
+		return path || null;
+	}
+	try {
+		return await invoke("space_get_current");
+	} catch {
+		return null;
+	}
+}
+
+async function updateActiveSpaceSettings(
+	patch: SpaceScopedSettings,
+	scope?: SettingsScope,
+): Promise<string | null> {
+	const spacePath = await activeSpacePath(scope);
+	if (!spacePath) return null;
+	await withSpaceScopedSettingsWriteLock(async () => {
+		const store = await getStore();
+		const map = normalizeSpaceScopedSettingsMap(
+			await store.get<unknown>(KEYS.spaceScopedSettings),
+		);
+		map[spacePath] = { ...map[spacePath], ...patch };
+		await store.set(KEYS.spaceScopedSettings, map);
+		await store.save();
+	});
+	return spacePath;
+}
+
 export function findShortcutConflict(
 	binding: Shortcut,
 	bindings: ShortcutBindings = {},
@@ -578,7 +711,9 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 	);
 }
 
-export async function loadSettings(): Promise<AppSettings> {
+export async function loadSettings(
+	scope?: SettingsScope,
+): Promise<AppSettings> {
 	const store = await getStore();
 	const [
 		currentSpacePathRaw,
@@ -621,6 +756,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawDatabaseShowColumnColor,
 		rawShortcutSettingsVersion,
 		rawShortcutBindings,
+		rawSpaceScopedSettings,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
@@ -662,8 +798,18 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<number | null>(KEYS.shortcutsVersion),
 		store.get<unknown>(KEYS.shortcutsBindings),
+		store.get<unknown>(KEYS.spaceScopedSettings),
 	]);
-	const currentSpacePath = currentSpacePathRaw ?? null;
+	const scopedSettings = normalizeSpaceScopedSettingsMap(
+		rawSpaceScopedSettings,
+	);
+	const activeSettingsSpacePath = await activeSpacePath(scope);
+	const currentSpacePath =
+		activeSettingsSpacePath ?? currentSpacePathRaw ?? null;
+	const activeScopedSettings = activeSettingsSpacePath
+		? scopedSettings[activeSettingsSpacePath]
+		: undefined;
+	const hasActiveSpace = Boolean(activeSettingsSpacePath);
 	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const onboarding: OnboardingSettings = {
@@ -705,31 +851,41 @@ export async function loadSettings(): Promise<AppSettings> {
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
-	const dailyNotesFolder =
-		typeof dailyNotesFolderRaw === "string"
+	const dailyNotesFolder = hasActiveSpace
+		? (activeScopedSettings?.dailyNotesFolder ?? null)
+		: typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
 			: null;
-	const quickNotesFolder = normalizeQuickNotesFolder(rawQuickNotesFolder);
-	const templatesFolder =
-		typeof templatesFolderRaw === "string"
+	const quickNotesFolder = hasActiveSpace
+		? (activeScopedSettings?.quickNotesFolder ?? DEFAULT_QUICK_NOTES_FOLDER)
+		: normalizeQuickNotesFolder(rawQuickNotesFolder);
+	const templatesFolder = hasActiveSpace
+		? (activeScopedSettings?.templatesFolder ?? null)
+		: typeof templatesFolderRaw === "string"
 			? normalizeRelPath(templatesFolderRaw)
 			: null;
-	const templatesDailyNoteTemplate =
-		typeof templatesDailyNoteTemplateRaw === "string"
+	const templatesDailyNoteTemplate = hasActiveSpace
+		? (activeScopedSettings?.templatesDailyNoteTemplate ?? null)
+		: typeof templatesDailyNoteTemplateRaw === "string"
 			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
 			: null;
-	const taskSource = normalizeTaskSourceSetting(taskSourceRaw);
+	const taskSource = hasActiveSpace
+		? (activeScopedSettings?.taskSource ?? defaultTaskSourceSetting())
+		: normalizeTaskSourceSetting(taskSourceRaw);
 	const shortcutBindings = sanitizeShortcutBindings(rawShortcutBindings);
 	const shortcuts: ShortcutSettings = {
 		version:
 			rawShortcutSettingsVersion === 1 ? 1 : DEFAULT_SHORTCUT_SETTINGS.version,
 		bindings: shortcutBindings,
 	};
-	const attachmentStorageMode = asAttachmentStorageMode(
-		rawEditorAttachmentStorageMode,
-	);
-	const attachmentFolder =
-		typeof rawEditorAttachmentFolder === "string"
+	const attachmentStorageMode = hasActiveSpace
+		? (activeScopedSettings?.attachmentStorageMode ??
+			DEFAULT_EDITOR_SETTINGS.attachmentStorageMode)
+		: asAttachmentStorageMode(rawEditorAttachmentStorageMode);
+	const attachmentFolder = hasActiveSpace
+		? (activeScopedSettings?.attachmentFolder ??
+			DEFAULT_EDITOR_SETTINGS.attachmentFolder)
+		: typeof rawEditorAttachmentFolder === "string"
 			? normalizeRelPath(rawEditorAttachmentFolder) || DEFAULT_ATTACHMENT_FOLDER
 			: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
 	const editor: EditorSettings = {
@@ -1111,9 +1267,23 @@ export async function setEditorWidthMode(mode: EditorWidthMode): Promise<void> {
 
 export async function setEditorAttachmentStorageMode(
 	mode: AttachmentStorageMode,
+	scope?: SettingsScope,
 ): Promise<void> {
-	const store = await getStore();
 	const nextMode = asAttachmentStorageMode(mode);
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			attachmentStorageMode: nextMode,
+		},
+		scope,
+	);
+	if (spacePath) {
+		void emitSettingsUpdated({
+			spacePath,
+			editor: { attachmentStorageMode: nextMode },
+		});
+		return;
+	}
+	const store = await getStore();
 	await store.set(KEYS.editorAttachmentStorageMode, nextMode);
 	await store.save();
 	void emitSettingsUpdated({
@@ -1123,12 +1293,26 @@ export async function setEditorAttachmentStorageMode(
 
 export async function setEditorAttachmentFolder(
 	folder: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
-	const store = await getStore();
 	const nextFolder =
 		typeof folder === "string"
 			? normalizeRelPath(folder) || DEFAULT_ATTACHMENT_FOLDER
 			: DEFAULT_ATTACHMENT_FOLDER;
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			attachmentFolder: nextFolder,
+		},
+		scope,
+	);
+	if (spacePath) {
+		void emitSettingsUpdated({
+			spacePath,
+			editor: { attachmentFolder: nextFolder },
+		});
+		return;
+	}
+	const store = await getStore();
 	await store.set(KEYS.editorAttachmentFolder, nextFolder);
 	await store.save();
 	void emitSettingsUpdated({
@@ -1156,17 +1340,29 @@ export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
 	});
 }
 
-export async function getDailyNotesFolder(): Promise<string | null> {
-	const store = await getStore();
-	return (await store.get<string | null>(KEYS.dailyNotesFolder)) ?? null;
+export async function getDailyNotesFolder(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).dailyNotes.folder;
 }
 
 export async function setDailyNotesFolder(
 	folder: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
-	const store = await getStore();
 	const nextFolder =
 		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			dailyNotesFolder: nextFolder,
+		},
+		scope,
+	);
+	if (spacePath) {
+		void emitSettingsUpdated({ spacePath, dailyNotes: { folder: nextFolder } });
+		return;
+	}
+	const store = await getStore();
 	if (nextFolder === null) {
 		await store.delete(KEYS.dailyNotesFolder);
 	} else {
@@ -1176,23 +1372,55 @@ export async function setDailyNotesFolder(
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
 }
 
-export async function setQuickNotesFolder(folder: string): Promise<void> {
-	const store = await getStore();
+export async function setQuickNotesFolder(
+	folder: string,
+	scope?: SettingsScope,
+): Promise<void> {
 	const nextFolder = normalizeQuickNotesFolder(folder);
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			quickNotesFolder: nextFolder,
+		},
+		scope,
+	);
+	if (spacePath) {
+		void emitSettingsUpdated({ spacePath, quickNotes: { folder: nextFolder } });
+		return;
+	}
+	const store = await getStore();
 	await store.set(KEYS.quickNotesFolder, nextFolder);
 	await store.save();
 	void emitSettingsUpdated({ quickNotes: { folder: nextFolder } });
 }
 
-export async function getTemplatesFolder(): Promise<string | null> {
-	const store = await getStore();
-	return (await store.get<string | null>(KEYS.templatesFolder)) ?? null;
+export async function getTemplatesFolder(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).templates.folder;
 }
 
-export async function setTemplatesFolder(folder: string | null): Promise<void> {
-	const store = await getStore();
+export async function setTemplatesFolder(
+	folder: string | null,
+	scope?: SettingsScope,
+): Promise<void> {
 	const nextFolder =
 		typeof folder === "string" ? normalizeRelPath(folder) : null;
+	const scopedPatch: SpaceScopedSettings = { templatesFolder: nextFolder };
+	if (nextFolder === null) {
+		scopedPatch.templatesDailyNoteTemplate = null;
+	}
+	const spacePath = await updateActiveSpaceSettings(scopedPatch, scope);
+	if (spacePath) {
+		void emitSettingsUpdated({
+			spacePath,
+			templates: {
+				folder: nextFolder,
+				dailyNoteTemplate: nextFolder === null ? null : undefined,
+			},
+		});
+		return;
+	}
+	const store = await getStore();
 	if (nextFolder === null) {
 		await store.delete(KEYS.templatesFolder);
 		await store.delete(KEYS.templatesDailyNoteTemplate);
@@ -1208,21 +1436,34 @@ export async function setTemplatesFolder(folder: string | null): Promise<void> {
 	});
 }
 
-export async function getDailyNoteTemplate(): Promise<string | null> {
-	const store = await getStore();
-	return (
-		(await store.get<string | null>(KEYS.templatesDailyNoteTemplate)) ?? null
-	);
+export async function getDailyNoteTemplate(
+	scope?: SettingsScope,
+): Promise<string | null> {
+	return (await loadSettings(scope)).templates.dailyNoteTemplate;
 }
 
 export async function setDailyNoteTemplate(
 	templatePath: string | null,
+	scope?: SettingsScope,
 ): Promise<void> {
-	const store = await getStore();
 	const nextPath =
 		typeof templatePath === "string"
 			? normalizeRelPath(templatePath) || null
 			: null;
+	const spacePath = await updateActiveSpaceSettings(
+		{
+			templatesDailyNoteTemplate: nextPath,
+		},
+		scope,
+	);
+	if (spacePath) {
+		void emitSettingsUpdated({
+			spacePath,
+			templates: { dailyNoteTemplate: nextPath },
+		});
+		return;
+	}
+	const store = await getStore();
 	if (nextPath === null) {
 		await store.delete(KEYS.templatesDailyNoteTemplate);
 	} else {

@@ -785,7 +785,12 @@ interface TauriCommands {
 	license_clear_local: CommandDef<void, LicenseActivateResult>;
 	space_create: CommandDef<{ path: string }, SpaceInfo>;
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
+	space_open_window: CommandDef<
+		{ path: string; create?: boolean | null },
+		SpaceInfo
+	>;
 	space_get_current: CommandDef<void, string | null>;
+	space_get_current_info: CommandDef<void, SpaceInfo | null>;
 	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;

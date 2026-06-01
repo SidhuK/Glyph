@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState, utils};
 
@@ -331,10 +331,11 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
 
 #[tauri::command]
 pub async fn space_resolve_wikilink(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     target: String,
 ) -> Result<Option<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
         Ok(resolve_standard_wikilink_target(&entries, &target))
@@ -345,10 +346,11 @@ pub async fn space_resolve_wikilink(
 
 #[tauri::command]
 pub async fn space_resolve_image_wikilink(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     target: String,
 ) -> Result<Option<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
         Ok(resolve_image_wikilink_target(&entries, &target))
@@ -359,11 +361,12 @@ pub async fn space_resolve_image_wikilink(
 
 #[tauri::command]
 pub async fn space_resolve_markdown_link(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     href: String,
     source_path: String,
 ) -> Result<Option<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
         let raw = href
@@ -520,10 +523,11 @@ mod tests {
 
 #[tauri::command]
 pub async fn space_suggest_links(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     request: LinkSuggestRequest,
 ) -> Result<Vec<LinkSuggestionItem>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let markdown_only = request.markdown_only.unwrap_or(false);
         let include_pdf = request.include_pdf.unwrap_or(false);

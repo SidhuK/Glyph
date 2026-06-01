@@ -2,7 +2,13 @@
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "default",
 	"description": "Capability for the main window",
-	"windows": ["main", "quick-note", "quick-task", "external-markdown-*"],
+	"windows": [
+		"main",
+		"space-*",
+		"quick-note",
+		"quick-task",
+		"external-markdown-*"
+	],
 	"permissions": [
 		"core:default",
 		"core:window:allow-close",

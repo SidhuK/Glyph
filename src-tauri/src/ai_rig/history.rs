@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
 use crate::{glyph_paths, space::SpaceState};
 
@@ -60,10 +60,11 @@ pub struct AiChatHistoryDetail {
 }
 
 pub async fn ai_chat_history_list(
+    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<AiChatHistorySummary>, String> {
-    let root = space_state.current_root()?;
+    let root = space_state.root_for_window(&window)?;
     let limit = limit
         .unwrap_or(DEFAULT_LIMIT as u32)
         .max(1)
@@ -75,11 +76,12 @@ pub async fn ai_chat_history_list(
 }
 
 pub async fn ai_chat_history_get(
+    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     job_id: String,
 ) -> Result<AiChatHistoryDetail, String> {
     let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
-    let root = space_state.current_root()?;
+    let root = space_state.root_for_window(&window)?;
 
     tauri::async_runtime::spawn_blocking(move || get_history_impl(&root, &job_id))
         .await

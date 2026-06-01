@@ -3,7 +3,6 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
-	getDailyNotesFolder,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
@@ -27,7 +26,12 @@ const ATTACHMENT_LOCATION_OPTIONS: Array<{
 	{ label: "Same folder as note", value: "note-folder" },
 ];
 
-async function selectFolderRelativeToSpace(): Promise<string | null> {
+interface SpaceFolderSelection {
+	relativePath: string;
+	spacePath: string;
+}
+
+async function selectFolderRelativeToSpace(): Promise<SpaceFolderSelection | null> {
 	const { open } = await import("@tauri-apps/plugin-dialog");
 	const selected = await open({
 		directory: true,
@@ -55,7 +59,17 @@ async function selectFolderRelativeToSpace(): Promise<string | null> {
 		throw new Error("Selected folder must be inside the current space.");
 	}
 
-	return normSelected.slice(normSpace.length).replace(/^\/+/, "");
+	return {
+		relativePath: normSelected.slice(normSpace.length).replace(/^\/+/, ""),
+		spacePath: currentSpace,
+	};
+}
+
+function requireSpacePath(spacePath: string | null): string {
+	if (!spacePath) {
+		throw new Error("No space is currently open.");
+	}
+	return spacePath;
 }
 
 export function SpaceSettingsPane() {
@@ -104,12 +118,11 @@ export function SpaceSettingsPane() {
 		setAttachmentsLoading(true);
 		setQuickNotesLoading(true);
 		try {
-			const [dailyFolder, settings] = await Promise.all([
-				getDailyNotesFolder(),
-				loadSettings(),
-			]);
-			setCurrentSpacePath(settings.currentSpacePath);
-			setDailyNotesFolderState(dailyFolder);
+			const currentSpace = await invoke("space_get_current");
+			const settingsScope = { spacePath: currentSpace };
+			const settings = await loadSettings(settingsScope);
+			setCurrentSpacePath(currentSpace);
+			setDailyNotesFolderState(settings.dailyNotes.folder);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
@@ -131,10 +144,13 @@ export function SpaceSettingsPane() {
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setDailyNotesFolder(relativePath || null);
-			setDailyNotesFolderState(relativePath || null);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setDailyNotesFolder(selection.relativePath || null, {
+				spacePath: selection.spacePath,
+			});
+			setCurrentSpacePath(selection.spacePath);
+			setDailyNotesFolderState(selection.relativePath || null);
 		} catch (cause) {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
@@ -145,23 +161,27 @@ export function SpaceSettingsPane() {
 	const handleClearFolder = useCallback(async () => {
 		setDailyNotesError(null);
 		try {
-			await setDailyNotesFolder(null);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setDailyNotesFolder(null, { spacePath });
 			setDailyNotesFolderState(null);
 		} catch (cause) {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to clear folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	const handleAttachmentModeChange = useCallback(
 		async (nextMode: AttachmentStorageMode) => {
 			setAttachmentError(null);
 			try {
-				await setEditorAttachmentStorageMode(nextMode);
+				const spacePath = requireSpacePath(currentSpacePath);
+				await setEditorAttachmentStorageMode(nextMode, { spacePath });
 				setAttachmentStorageModeState(nextMode);
 				if (nextMode === "specific-folder" && !attachmentFolder) {
-					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, {
+						spacePath,
+					});
 					setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 				}
 			} catch (cause) {
@@ -170,16 +190,21 @@ export function SpaceSettingsPane() {
 				);
 			}
 		},
-		[attachmentFolder],
+		[attachmentFolder, currentSpacePath],
 	);
 
 	const handleBrowseAttachmentFolder = useCallback(async () => {
 		setAttachmentError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setEditorAttachmentFolder(relativePath);
-			setAttachmentFolderState(relativePath || DEFAULT_ATTACHMENT_FOLDER);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setEditorAttachmentFolder(selection.relativePath, {
+				spacePath: selection.spacePath,
+			});
+			setCurrentSpacePath(selection.spacePath);
+			setAttachmentFolderState(
+				selection.relativePath || DEFAULT_ATTACHMENT_FOLDER,
+			);
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
@@ -190,22 +215,29 @@ export function SpaceSettingsPane() {
 	const handleResetAttachmentFolder = useCallback(async () => {
 		setAttachmentError(null);
 		try {
-			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, { spacePath });
 			setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to reset folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	const handleBrowseQuickNotesFolder = useCallback(async () => {
 		setQuickNotesError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setQuickNotesFolder(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
-			setQuickNotesFolderState(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setQuickNotesFolder(
+				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
+				{ spacePath: selection.spacePath },
+			);
+			setCurrentSpacePath(selection.spacePath);
+			setQuickNotesFolderState(
+				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
+			);
 		} catch (cause) {
 			setQuickNotesError(
 				cause instanceof Error
@@ -218,7 +250,8 @@ export function SpaceSettingsPane() {
 	const handleResetQuickNotesFolder = useCallback(async () => {
 		setQuickNotesError(null);
 		try {
-			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER, { spacePath });
 			setQuickNotesFolderState(DEFAULT_QUICK_NOTES_FOLDER);
 		} catch (cause) {
 			setQuickNotesError(
@@ -227,7 +260,7 @@ export function SpaceSettingsPane() {
 					: "Failed to reset quick notes folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	return (
 		<div className="settingsPane">

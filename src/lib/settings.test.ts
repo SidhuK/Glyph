@@ -254,6 +254,62 @@ describe("attachment storage settings", () => {
 	});
 });
 
+describe("space-scoped settings", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("does not inherit legacy global space settings for a fresh space", async () => {
+		storeState.set("dailyNotes.folder", "Old Daily");
+		storeState.set("quickNotes.folder", "Old Quick");
+		storeState.set("templates.folder", "Old Templates");
+		storeState.set("templates.dailyNoteTemplate", "Old Templates/Daily.md");
+		storeState.set("editor.attachmentStorageMode", "specific-folder");
+		storeState.set("editor.attachmentFolder", "old-assets");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings({ spacePath: "/spaces/fresh" });
+
+		expect(settings.dailyNotes.folder).toBeNull();
+		expect(settings.quickNotes.folder).toBe("Quick Notes");
+		expect(settings.templates.folder).toBeNull();
+		expect(settings.templates.dailyNoteTemplate).toBeNull();
+		expect(settings.editor.attachmentStorageMode).toBe("note-folder");
+		expect(settings.editor.attachmentFolder).toBe("assets");
+	});
+
+	it("persists folder settings under the explicit space path", async () => {
+		const {
+			setDailyNotesFolder,
+			setEditorAttachmentStorageMode,
+			setQuickNotesFolder,
+			setTemplatesFolder,
+		} = await import("./settings");
+
+		await setDailyNotesFolder("Daily", { spacePath: "/spaces/work" });
+		await setQuickNotesFolder("Inbox", { spacePath: "/spaces/work" });
+		await setTemplatesFolder("Templates", { spacePath: "/spaces/work" });
+		await setEditorAttachmentStorageMode("specific-folder", {
+			spacePath: "/spaces/work",
+		});
+
+		expect(storeState.get("space.scopedSettings")).toEqual({
+			"/spaces/work": {
+				dailyNotesFolder: "Daily",
+				quickNotesFolder: "Inbox",
+				templatesFolder: "Templates",
+				attachmentStorageMode: "specific-folder",
+			},
+		});
+		expect(storeState.has("dailyNotes.folder")).toBe(false);
+		expect(storeState.has("quickNotes.folder")).toBe(false);
+		expect(storeState.has("templates.folder")).toBe(false);
+		expect(storeState.has("editor.attachmentStorageMode")).toBe(false);
+	});
+});
+
 describe("shortcut settings", () => {
 	beforeEach(() => {
 		vi.resetModules();

@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Emitter, State};
 
-use crate::space::state::SpaceState;
+use crate::space::state::{is_no_space_session_error, SpaceState};
 
 use super::git::{
     ahead_behind_counts, commit_all, fetch_remote, git_is_installed, has_head_commit,
@@ -37,27 +38,34 @@ impl Default for RuntimeStatus {
 
 #[derive(Clone, Default)]
 pub struct GitSyncState {
-    runtime: Arc<Mutex<RuntimeStatus>>,
+    runtime: Arc<Mutex<HashMap<String, RuntimeStatus>>>,
 }
 
 struct SyncResetGuard {
-    runtime: Arc<Mutex<RuntimeStatus>>,
+    runtime: Arc<Mutex<HashMap<String, RuntimeStatus>>>,
+    key: String,
 }
 
 impl SyncResetGuard {
-    fn new(runtime: Arc<Mutex<RuntimeStatus>>) -> Self {
-        Self { runtime }
+    fn new(runtime: Arc<Mutex<HashMap<String, RuntimeStatus>>>, key: String) -> Self {
+        Self { runtime, key }
     }
 }
 
 impl Drop for SyncResetGuard {
     fn drop(&mut self) {
-        if let Ok(mut runtime) = self.runtime.lock() {
-            if runtime.is_syncing {
-                *runtime = RuntimeStatus::default();
+        if let Ok(mut runtimes) = self.runtime.lock() {
+            if let Some(runtime) = runtimes.get_mut(&self.key) {
+                if runtime.is_syncing {
+                    *runtime = RuntimeStatus::default();
+                }
             }
         }
     }
+}
+
+fn runtime_key(space_root: &Path) -> String {
+    space_root.to_string_lossy().to_string()
 }
 
 fn now_ms() -> i64 {
@@ -67,29 +75,32 @@ fn now_ms() -> i64 {
         .unwrap_or(0)
 }
 
-fn emit_status(app: &AppHandle, status: &GitSyncStatus) {
-    let _ = app.emit("git_sync:status", status.clone());
+fn emit_status(app: &AppHandle, window_label: &str, status: &GitSyncStatus) {
+    let _ = app.emit_to(window_label, "git_sync:status", status.clone());
 }
 
 fn set_runtime(
     app: &AppHandle,
     git_state: &GitSyncState,
     space_root: &Path,
+    window_label: &str,
     phase: GitSyncPhase,
     is_syncing: bool,
     message: Option<String>,
 ) -> Result<(), String> {
     {
-        let mut runtime = git_state
+        let key = runtime_key(space_root);
+        let mut runtimes = git_state
             .runtime
             .lock()
             .map_err(|_| "git sync state poisoned".to_string())?;
+        let runtime = runtimes.entry(key).or_default();
         runtime.phase = phase;
         runtime.is_syncing = is_syncing;
         runtime.message = message;
     }
     let status = read_status_for_root(git_state, Some(space_root))?;
-    emit_status(app, &status);
+    emit_status(app, window_label, &status);
     Ok(())
 }
 
@@ -286,7 +297,9 @@ fn read_status_for_root(
         .runtime
         .lock()
         .map_err(|_| "git sync state poisoned".to_string())?
-        .clone();
+        .get(&runtime_key(space_root))
+        .cloned()
+        .unwrap_or_default();
     let health = if git_installed {
         inspect_repo_health(space_root, &inspection, config.as_ref())?
     } else {
@@ -302,10 +315,12 @@ fn read_status_for_root(
 pub fn read_status_internal(
     git_state: &GitSyncState,
     space_state: &SpaceState,
+    window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = match space_state.current_root() {
+    let space_root = match space_state.root_for_window_label(window_label) {
         Ok(root) => root,
-        Err(_) => return Ok(GitSyncStatus::default()),
+        Err(error) if is_no_space_session_error(&error) => return Ok(GitSyncStatus::default()),
+        Err(error) => return Err(error),
     };
     read_status_for_root(git_state, Some(&space_root))
 }
@@ -318,9 +333,10 @@ pub fn update_git_sync_config(
     app: AppHandle,
     git_state: &GitSyncState,
     space_state: &SpaceState,
+    window_label: &str,
     patch: GitSyncConfigPatch,
 ) -> Result<GitSyncConfig, String> {
-    let space_root = space_state.current_root()?;
+    let space_root = space_state.root_for_window_label(window_label)?;
     let mut config = load_config(&space_root)?;
     if let Some(enabled) = patch.enabled {
         config.enabled = enabled;
@@ -338,8 +354,8 @@ pub fn update_git_sync_config(
         config.paused = paused;
     }
     save_store(&space_root, &config)?;
-    let status = read_status_internal(git_state, space_state)?;
-    emit_status(&app, &status);
+    let status = read_status_internal(git_state, space_state, window_label)?;
+    emit_status(&app, window_label, &status);
     Ok(config)
 }
 
@@ -347,18 +363,19 @@ pub fn disconnect_git_sync(
     app: AppHandle,
     git_state: &GitSyncState,
     space_state: &SpaceState,
+    window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.current_root()?;
+    let space_root = space_state.root_for_window_label(window_label)?;
     delete_store(&space_root)?;
     {
-        let mut runtime = git_state
+        let mut runtimes = git_state
             .runtime
             .lock()
             .map_err(|_| "git sync state poisoned".to_string())?;
-        *runtime = RuntimeStatus::default();
+        runtimes.insert(runtime_key(&space_root), RuntimeStatus::default());
     }
-    let status = read_status_internal(git_state, space_state)?;
-    emit_status(&app, &status);
+    let status = read_status_internal(git_state, space_state, window_label)?;
+    emit_status(&app, window_label, &status);
     Ok(status)
 }
 
@@ -366,22 +383,24 @@ pub fn run_git_sync(
     app: AppHandle,
     git_state: &GitSyncState,
     space_state: &SpaceState,
+    window_label: &str,
     request: GitSyncRunRequest,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.current_root()?;
+    let space_root = space_state.root_for_window_label(window_label)?;
     if !git_is_installed() {
         return Err("Git is not installed on this system.".to_string());
     }
     let config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
-        return read_status_internal(git_state, space_state);
+        return read_status_internal(git_state, space_state, window_label);
     }
 
     {
-        let mut runtime = git_state
+        let mut runtimes = git_state
             .runtime
             .lock()
             .map_err(|_| "git sync state poisoned".to_string())?;
+        let runtime = runtimes.entry(runtime_key(&space_root)).or_default();
         if runtime.is_syncing {
             return read_status_for_root(git_state, Some(&space_root));
         }
@@ -390,11 +409,14 @@ pub fn run_git_sync(
         runtime.message = Some("Fetching remote changes".to_string());
     }
     let initial = read_status_for_root(git_state, Some(&space_root))?;
-    emit_status(&app, &initial);
+    emit_status(&app, window_label, &initial);
 
     let git_state = git_state.clone();
+    let window_label = window_label.to_string();
     tauri::async_runtime::spawn_blocking(move || {
-        if let Err(error) = run_git_sync_background(app, git_state, space_root, request) {
+        if let Err(error) =
+            run_git_sync_background(app, git_state, space_root, window_label, request)
+        {
             tracing::error!("git sync background task failed: {error}");
         }
     });
@@ -406,9 +428,10 @@ fn run_git_sync_background(
     app: AppHandle,
     git_state: GitSyncState,
     space_root: PathBuf,
+    window_label: String,
     request: GitSyncRunRequest,
 ) -> Result<(), String> {
-    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
+    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime), runtime_key(&space_root));
     let mut config = load_config(&space_root)?;
     let is_auto = request.mode == GitSyncRunMode::Auto;
 
@@ -447,6 +470,7 @@ fn run_git_sync_background(
             &app,
             &git_state,
             &space_root,
+            &window_label,
             GitSyncPhase::Fetching,
             true,
             Some("Fetching remote changes".to_string()),
@@ -457,6 +481,7 @@ fn run_git_sync_background(
             &app,
             &git_state,
             &space_root,
+            &window_label,
             GitSyncPhase::Committing,
             true,
             Some("Preparing local snapshot".to_string()),
@@ -471,6 +496,7 @@ fn run_git_sync_background(
                 &app,
                 &git_state,
                 &space_root,
+                &window_label,
                 GitSyncPhase::Pulling,
                 true,
                 Some("Merging remote changes".to_string()),
@@ -490,6 +516,7 @@ fn run_git_sync_background(
             &app,
             &git_state,
             &space_root,
+            &window_label,
             GitSyncPhase::Pushing,
             true,
             Some("Pushing to remote".to_string()),
@@ -510,12 +537,13 @@ fn run_git_sync_background(
                 &app,
                 &git_state,
                 &space_root,
+                &window_label,
                 GitSyncPhase::Success,
                 false,
                 Some("Sync complete".to_string()),
             );
             let status = read_status_for_root(&git_state, Some(&space_root))?;
-            emit_status(&app, &status);
+            emit_status(&app, &window_label, &status);
             Ok(())
         }
         Err(error) => {
@@ -532,6 +560,7 @@ fn run_git_sync_background(
                 &app,
                 &git_state,
                 &space_root,
+                &window_label,
                 GitSyncPhase::Error,
                 false,
                 Some(error.clone()),
@@ -541,10 +570,14 @@ fn run_git_sync_background(
     }
 }
 
-pub fn read_config(space_state: &SpaceState) -> Result<Option<GitSyncConfig>, String> {
-    let space_root = match space_state.current_root() {
+pub fn read_config(
+    space_state: &SpaceState,
+    window_label: &str,
+) -> Result<Option<GitSyncConfig>, String> {
+    let space_root = match space_state.root_for_window_label(window_label) {
         Ok(root) => root,
-        Err(_) => return Ok(None),
+        Err(error) if is_no_space_session_error(&error) => return Ok(None),
+        Err(error) => return Err(error),
     };
     load_store(&space_root)
 }
@@ -552,6 +585,7 @@ pub fn read_config(space_state: &SpaceState) -> Result<Option<GitSyncConfig>, St
 pub fn read_status(
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,
+    window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    read_status_internal(&git_state, &space_state)
+    read_status_internal(&git_state, &space_state, window_label)
 }

@@ -1,10 +1,10 @@
 use base64::Engine;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use std::io::{ErrorKind, Write};
 use std::path::PathBuf;
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
+use crate::io_atomic;
 use crate::paths;
 use crate::space::SpaceState;
 
@@ -94,13 +94,14 @@ fn parse_data_url(data_url: &str) -> Result<(String, Vec<u8>), String> {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_save_pasted_image(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     source_path: String,
     target_dir: String,
     data_url: String,
     alt: Option<String>,
 ) -> Result<SavedPastedImage, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<SavedPastedImage, String> {
         let source_rel = PathBuf::from(normalize_rel_path(&source_path));
         let target_rel = PathBuf::from(normalize_rel_path(&target_dir));
@@ -124,17 +125,8 @@ pub async fn space_save_pasted_image(
         if let Some(parent) = asset_abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        match std::fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&asset_abs)
-        {
-            Ok(mut file) => {
-                file.write_all(&bytes).map_err(|e| e.to_string())?;
-            }
-            Err(error) if error.kind() == ErrorKind::AlreadyExists => {}
-            Err(error) => return Err(error.to_string()),
-        }
+        let _ =
+            io_atomic::write_atomic_create_new(&asset_abs, &bytes).map_err(|e| e.to_string())?;
 
         let asset_rel_string = asset_rel.to_string_lossy().replace('\\', "/");
         let source_dir = parent_dir(&source_rel.to_string_lossy());
