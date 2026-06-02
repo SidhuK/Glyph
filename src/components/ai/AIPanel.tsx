@@ -62,7 +62,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
-	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
+	const composerInputRef = useRef<HTMLDivElement | null>(null);
 	const scheduleResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
@@ -79,7 +79,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
 			const paths = detail?.paths ?? [];
 			if (!paths.length) return;
-			for (const path of paths) context.addContext("file", path);
+			for (const path of paths) {
+				context.addContext("file", path);
+				const marker = `\uE000file${path}\uE001`;
+				setInput((prev) =>
+					prev.includes(marker) ? prev : `${prev}${marker} `,
+				);
+			}
 			setAddPanelOpen(false);
 			setAddPanelQuery("");
 			window.requestAnimationFrame(() => composerInputRef.current?.focus());
@@ -184,11 +190,22 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleAddContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			context.addContext(kind, path);
-			if (trigger)
+			const marker = `\uE000${kind}${path}\uE001`;
+			if (trigger) {
 				setInput((prev) => {
 					const before = prev.slice(0, trigger.start).trimEnd();
-					return before ? `${before} ` : "";
+					const after = prev
+						.slice(trigger.start + 1 + trigger.query.length)
+						.replace(/^\s+/, "");
+					return `${before ? `${before} ` : ""}${marker}${after ? ` ${after}` : ""}`;
 				});
+			} else {
+				setInput((prev) =>
+					prev.includes(marker)
+						? prev
+						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
+				);
+			}
 			setAddPanelOpen(false);
 			setAddPanelQuery("");
 		},
@@ -198,6 +215,8 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleRemoveContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			context.removeContext(kind, path);
+			const marker = `\uE000${kind}${path}\uE001`;
+			setInput((prev) => prev.replace(marker, ""));
 		},
 		[context.removeContext],
 	);

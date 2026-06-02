@@ -61,7 +61,13 @@
 }
 
 .localNoteGraphViewport {
+	--local-graph-border: rgba(38, 35, 29, 0.14);
 	--local-graph-dot: color-mix(in srgb, var(--text-secondary) 18%, transparent);
+	--local-graph-edge: rgba(38, 35, 29, 0.58);
+	--local-graph-edge-incoming: #26231d;
+	--local-graph-note-bg: #ffffff;
+	--local-graph-text: #26231d;
+	--local-graph-text-inverse: #ffffff;
 	--local-graph-surface: color-mix(
 		in srgb,
 		var(--bg-secondary) 88%,
@@ -82,6 +88,15 @@
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--border-light) 38%, transparent), inset 0 24px 70px
 		color-mix(in srgb, var(--bg-primary) 20%, transparent);
+}
+
+:root.dark .localNoteGraphViewport {
+	--local-graph-border: rgba(255, 255, 255, 0.14);
+	--local-graph-edge: rgba(236, 236, 238, 0.58);
+	--local-graph-edge-incoming: #ececee;
+	--local-graph-note-bg: #1f2024;
+	--local-graph-text: #ececee;
+	--local-graph-text-inverse: #17171a;
 }
 
 .localNoteGraphViewport:active {

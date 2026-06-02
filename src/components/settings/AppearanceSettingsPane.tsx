@@ -63,7 +63,7 @@ export function AppearanceSettingsPane() {
 		useState<UiFontFamily>("JetBrains Mono");
 	const [uiFontSize, setUiFontSizeState] = useState<UiFontSize>(14);
 	const [editorFontSize, setEditorFontSizeState] = useState<UiFontSize>(16);
-	const [translucentApp, setTranslucentAppState] = useState(true);
+	const [translucentApp, setTranslucentAppState] = useState(false);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([
 		DEFAULT_FONT_FAMILY,
 	]);
