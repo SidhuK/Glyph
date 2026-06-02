@@ -1,6 +1,27 @@
 {
 	"versions": [
 		{
+			"version": "0.6.1",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"AI composer attachments now appear as inline chips inside the text you're writing. @ mentions, dropped files, and the active note all drop in as chips, and you can click any chip to remove it.",
+						"Translucency starts off for fresh setups. If you turned it on before, your setting stays.",
+						"The Quick Actions search bar in the sidebar has a recessed look with a stronger border, so it reads like a real input field. Hover keeps the same shape and just shifts the border and text color."
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Local graph colors stay visible in dark mode. Node labels and edges now use canvas-safe colors instead of falling back to defaults, and the graph reapplies its styles when you switch between light and dark themes.",
+						"Local graph gives regular notes their own background, separate from the open note accent, so both stand out in light and dark themes.",
+						"The AI send button uses the accent color and matches the new note button, with a calmer disabled state that stays fully opaque."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.6.0",
 			"sections": [
 				{
