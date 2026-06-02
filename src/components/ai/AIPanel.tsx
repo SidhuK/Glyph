@@ -26,6 +26,8 @@ import { preloadAiContextIndex, useAiContext } from "./useAiContext";
 import { preloadAiHistorySummaries, useAiHistory } from "./useAiHistory";
 import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 
+const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
+
 interface AIPanelProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -37,6 +39,10 @@ export async function prefetchAIPanelData(): Promise<void> {
 		preloadAiHistorySummaries(14),
 		preloadAiContextIndex(),
 	]);
+}
+
+function stripChipMarkers(text: string): string {
+	return text.replace(CHIP_MARKER_RE, "");
 }
 
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
@@ -83,7 +89,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				context.addContext("file", path);
 				const marker = `\uE000file${path}\uE001`;
 				setInput((prev) =>
-					prev.includes(marker) ? prev : `${prev}${marker} `,
+					prev.includes(marker)
+						? prev
+						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
 				);
 			}
 			setAddPanelOpen(false);
@@ -102,7 +110,8 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
-			if (!trimmed || !profiles.activeProfileId) return false;
+			const sanitized = stripChipMarkers(trimmed).trim();
+			if (!sanitized || !profiles.activeProfileId) return false;
 			toolEvents.clearFinalizingTimer();
 			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("submitted");
@@ -113,7 +122,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				return false;
 			}
 			void chat.sendMessage(
-				{ text: trimmed },
+				{ text: sanitized },
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
@@ -140,7 +149,8 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleSend = useCallback(async () => {
 		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
-		if (!text) {
+		const sanitized = stripChipMarkers(text).trim();
+		if (!sanitized) {
 			return;
 		}
 		toolEvents.clearFinalizingTimer();
@@ -157,7 +167,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			return;
 		}
 		void chat.sendMessage(
-			{ text },
+			{ text: sanitized },
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
@@ -194,9 +204,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			if (trigger) {
 				setInput((prev) => {
 					const before = prev.slice(0, trigger.start).trimEnd();
-					const after = prev
-						.slice(trigger.start + 1 + trigger.query.length)
-						.replace(/^\s+/, "");
+					const after = prev.slice(trigger.end).replace(/^\s+/, "");
 					return `${before ? `${before} ` : ""}${marker}${after ? ` ${after}` : ""}`;
 				});
 			} else {
@@ -216,7 +224,15 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		(kind: "folder" | "file", path: string) => {
 			context.removeContext(kind, path);
 			const marker = `\uE000${kind}${path}\uE001`;
-			setInput((prev) => prev.replace(marker, ""));
+			setInput((prev) => {
+				const markerIndex = prev.indexOf(marker);
+				if (markerIndex === -1) return prev;
+				const before = prev.slice(0, markerIndex);
+				const after = prev.slice(markerIndex + marker.length);
+				if (!before) return after.replace(/^[ \t]+/, "");
+				if (!after) return before.replace(/[ \t]+$/, "");
+				return `${before.replace(/[ \t]+$/, "")} ${after.replace(/^[ \t]+/, "")}`;
+			});
 		},
 		[context.removeContext],
 	);

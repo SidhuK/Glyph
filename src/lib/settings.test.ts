@@ -166,6 +166,24 @@ describe("settings app translucency", () => {
 
 		expect(settings.ui.translucentApp).toBe(true);
 	});
+
+	it("persists and emits app translucency changes", async () => {
+		const { setUiTranslucentApp } = await import("./settings");
+
+		await setUiTranslucentApp(true);
+
+		expect(storeState.get("ui.translucentApp")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: true },
+		});
+
+		await setUiTranslucentApp(false);
+
+		expect(storeState.get("ui.translucentApp")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: false },
+		});
+	});
 });
 
 describe("settings editor width mode", () => {

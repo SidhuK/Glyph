@@ -56,19 +56,21 @@ function normalizeCssColor(value: string) {
 	const context = document.createElement("canvas").getContext("2d");
 	if (!context) return value;
 
-	context.fillStyle = "#000000";
+	context.fillStyle = "#123456";
 	context.fillStyle = value;
 	const normalized = context.fillStyle;
+	context.fillStyle = "#abcdef";
+	context.fillStyle = value;
+	const normalizedFromSecondSentinel = context.fillStyle;
 
-	return normalized === "#000000" && value.trim() !== "#000000"
+	return normalized === "#123456" && normalizedFromSecondSentinel === "#abcdef"
 		? value
 		: normalized;
 }
 
 function cssColor(element: HTMLElement, name: string, fallback: string) {
 	const probe = document.createElement("span");
-	probe.style.color = fallback;
-	probe.style.color = `var(${name})`;
+	probe.style.cssText = `color: ${fallback}; color: var(${name});`;
 	element.appendChild(probe);
 	const color = getComputedStyle(probe).color.trim();
 	probe.remove();

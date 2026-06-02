@@ -2,6 +2,7 @@ import { ArrowUp02Icon, AtIcon, StopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type Dispatch,
+	type ClipboardEvent as ReactClipboardEvent,
 	type KeyboardEvent as ReactKeyboardEvent,
 	type RefObject,
 	type SetStateAction,
@@ -22,7 +23,7 @@ import type { useAiProfiles } from "./useAiProfiles";
 const CHIP_OPEN = "\uE000";
 const CHIP_CLOSE = "\uE001";
 const CHIP_RE = new RegExp(
-	`${CHIP_OPEN}(file|folder)([^${CHIP_CLOSE}]+)${CHIP_CLOSE}`,
+	`${CHIP_OPEN}(file|folder)([^${CHIP_CLOSE}]*)${CHIP_CLOSE}`,
 	"g",
 );
 
@@ -78,8 +79,23 @@ function setCaretOffset(el: HTMLElement, offset: number): void {
 	let remaining = offset;
 	let target: Text | null = null;
 	let targetOffset = 0;
+	const skippedChips = new Set<HTMLElement>();
 	let node: Node | null = walker.nextNode();
 	while (node) {
+		const chip = nonEditableChipFor(node, el);
+		if (chip) {
+			if (!skippedChips.has(chip)) {
+				skippedChips.add(chip);
+				const chipLength = chip.textContent?.length ?? 0;
+				if (remaining <= chipLength) {
+					setCaretAtElementBoundary(selection, chip, remaining > 0);
+					return;
+				}
+				remaining -= chipLength;
+			}
+			node = walker.nextNode();
+			continue;
+		}
 		const length = node.nodeValue?.length ?? 0;
 		if (remaining <= length) {
 			target = node as Text;
@@ -90,9 +106,12 @@ function setCaretOffset(el: HTMLElement, offset: number): void {
 		node = walker.nextNode();
 	}
 	if (!target) {
-		target = el.lastChild as Text | null;
-		targetOffset = target?.nodeValue?.length ?? 0;
-		if (!target) return;
+		const range = document.createRange();
+		range.setStart(el, el.childNodes.length);
+		range.collapse(true);
+		selection.removeAllRanges();
+		selection.addRange(range);
+		return;
 	}
 	const range = document.createRange();
 	range.setStart(target, Math.min(targetOffset, target.nodeValue?.length ?? 0));
@@ -101,24 +120,109 @@ function setCaretOffset(el: HTMLElement, offset: number): void {
 	selection.addRange(range);
 }
 
+function nonEditableChipFor(node: Node, root: HTMLElement): HTMLElement | null {
+	let element = node.parentElement;
+	let nonEditable: HTMLElement | null = null;
+	while (element && element !== root) {
+		if (
+			element.dataset.chipKind === "file" ||
+			element.dataset.chipKind === "folder"
+		) {
+			return element;
+		}
+		if (element.isContentEditable === false) nonEditable = element;
+		element = element.parentElement;
+	}
+	return nonEditable;
+}
+
+function setCaretAtElementBoundary(
+	selection: Selection,
+	element: HTMLElement,
+	after: boolean,
+): void {
+	const parent = element.parentNode;
+	if (!parent) return;
+	const index = Array.from(parent.childNodes).indexOf(element);
+	if (index === -1) return;
+	const range = document.createRange();
+	range.setStart(parent, index + (after ? 1 : 0));
+	range.collapse(true);
+	selection.removeAllRanges();
+	selection.addRange(range);
+}
+
+function lineBreakFor(result: string): string {
+	return result && !result.endsWith("\n") ? "\n" : "";
+}
+
+const BLOCK_TAGS = new Set([
+	"DIV",
+	"P",
+	"LI",
+	"PRE",
+	"H1",
+	"H2",
+	"H3",
+	"H4",
+	"H5",
+	"H6",
+	"UL",
+	"OL",
+]);
+
+function domNodeToInput(node: Node): string {
+	if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? "";
+	if (node.nodeType !== Node.ELEMENT_NODE) return "";
+
+	const element = node as HTMLElement;
+	const kind = element.dataset.chipKind;
+	const path = element.dataset.chipPath;
+	if (kind === "file" || kind === "folder") {
+		return typeof path === "string" ? makeChipMarker(kind, path) : "";
+	}
+	if (element.tagName === "BR") return "\n";
+
+	let result = "";
+	for (const child of Array.from(element.childNodes)) {
+		result += domNodeToInput(child);
+	}
+	if (BLOCK_TAGS.has(element.tagName)) {
+		result += lineBreakFor(result);
+	}
+	return result;
+}
+
 function domToInput(el: HTMLElement): string {
 	let result = "";
 	for (const child of Array.from(el.childNodes)) {
-		if (child.nodeType === Node.TEXT_NODE) {
-			result += child.textContent ?? "";
-			continue;
-		}
-		if (child.nodeType !== Node.ELEMENT_NODE) continue;
-		const node = child as HTMLElement;
-		const kind = node.dataset.chipKind;
-		const path = node.dataset.chipPath;
-		if (kind === "file" || kind === "folder") {
-			if (typeof path === "string") result += makeChipMarker(kind, path);
-		} else {
-			result += node.textContent ?? "";
-		}
+		result += domNodeToInput(child);
 	}
 	return result;
+}
+
+function insertPlainTextAtSelection(el: HTMLElement, text: string): void {
+	const selection = window.getSelection();
+	if (!selection || selection.rangeCount === 0) {
+		el.appendChild(document.createTextNode(text));
+		setCaretOffset(el, el.textContent?.length ?? 0);
+		return;
+	}
+
+	const range = selection.getRangeAt(0);
+	if (!el.contains(range.commonAncestorContainer)) {
+		el.appendChild(document.createTextNode(text));
+		setCaretOffset(el, el.textContent?.length ?? 0);
+		return;
+	}
+
+	range.deleteContents();
+	const textNode = document.createTextNode(text);
+	range.insertNode(textNode);
+	range.setStartAfter(textNode);
+	range.collapse(true);
+	selection.removeAllRanges();
+	selection.addRange(range);
 }
 
 export function AIComposer({
@@ -262,6 +366,22 @@ export function AIComposer({
 		scheduleComposerInputResize();
 	}, [composerInputRef, input, setInput, scheduleComposerInputResize]);
 
+	const handlePaste = useCallback(
+		(event: ReactClipboardEvent<HTMLDivElement>) => {
+			const el = composerInputRef.current;
+			if (!el) return;
+			const text = event.clipboardData.getData("text/plain");
+			if (!text) return;
+			event.preventDefault();
+			insertPlainTextAtSelection(el, text);
+			isUserInputRef.current = true;
+			const next = domToInput(el);
+			if (next !== input) setInput(next);
+			scheduleComposerInputResize();
+		},
+		[composerInputRef, input, setInput, scheduleComposerInputResize],
+	);
+
 	const handleClick = useCallback(
 		(event: React.MouseEvent<HTMLDivElement>) => {
 			const target = event.target as HTMLElement;
@@ -383,6 +503,7 @@ export function AIComposer({
 						data-placeholder={APP_TAGLINE}
 						spellCheck
 						onInput={handleInput}
+						onPaste={handlePaste}
 						onClick={handleClick}
 						onKeyDown={handleKeyDown}
 					/>

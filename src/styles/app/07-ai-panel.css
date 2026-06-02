@@ -354,7 +354,8 @@
 
 .aiChatContent {
 	white-space: pre-wrap;
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .aiAssistantActions {
@@ -467,7 +468,8 @@
 }
 
 .aiMessageMarkdown {
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .aiMessageMarkdown .aiMessageMarkdownContent {
@@ -629,7 +631,8 @@
 
 .aiToolInlineTextContent {
 	white-space: pre-wrap;
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .aiToolTimelineItem-error {
@@ -700,14 +703,16 @@
 	margin-top: 4px;
 	font-size: 11px;
 	color: var(--text-secondary);
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .aiToolError {
 	margin-top: 4px;
 	font-size: 11px;
 	color: var(--status-danger-fg);
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 }
 
 .aiToolDetails {
@@ -720,7 +725,8 @@
 	font-size: 10px;
 	line-height: 1.45;
 	white-space: pre-wrap;
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 	max-height: 180px;
 	overflow: auto;
 }
