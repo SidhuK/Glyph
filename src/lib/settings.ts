@@ -84,6 +84,7 @@ const DEFAULT_UI_FONT_SIZE = 14;
 export const MIN_EDITOR_FONT_SIZE = 10;
 export const MAX_EDITOR_FONT_SIZE = 40;
 const DEFAULT_EDITOR_FONT_SIZE = 16;
+export const DEFAULT_UI_TRANSLUCENT_APP = false;
 const DEFAULT_AI_ENABLED = true;
 export const DEFAULT_QUICK_NOTES_FOLDER = "Quick Notes";
 export type UiFontFamily = string;
@@ -844,7 +845,9 @@ export async function loadSettings(
 			? DEFAULT_EDITOR_FONT_SIZE
 			: asUiEditorFontSize(rawEditorFontSize);
 	const translucentApp =
-		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
+		typeof rawTranslucentApp === "boolean"
+			? rawTranslucentApp
+			: DEFAULT_UI_TRANSLUCENT_APP;
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
 	const showFileTreeFolderCounts =
 		typeof rawShowFileTreeFolderCounts === "boolean"

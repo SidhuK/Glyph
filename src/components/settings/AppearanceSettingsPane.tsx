@@ -7,6 +7,7 @@ import {
 	applyUiTypography,
 } from "../../lib/appearance";
 import {
+	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
 	type UiAccent,
 	type UiDarkThemeId,
@@ -63,7 +64,9 @@ export function AppearanceSettingsPane() {
 		useState<UiFontFamily>("JetBrains Mono");
 	const [uiFontSize, setUiFontSizeState] = useState<UiFontSize>(14);
 	const [editorFontSize, setEditorFontSizeState] = useState<UiFontSize>(16);
-	const [translucentApp, setTranslucentAppState] = useState(true);
+	const [translucentApp, setTranslucentAppState] = useState(
+		DEFAULT_UI_TRANSLUCENT_APP,
+	);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([
 		DEFAULT_FONT_FAMILY,
 	]);

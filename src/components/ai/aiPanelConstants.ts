@@ -1,6 +1,6 @@
 import type { UIMessage } from "./hooks/useRigChat";
 
-type AddTrigger = { start: number; query: string };
+type AddTrigger = { start: number; end: number; query: string };
 export type ToolPhase = "call" | "result" | "error";
 export type ResponsePhase =
 	| "idle"
@@ -25,13 +25,15 @@ export function messageText(message: UIMessage): string {
 export function parseAddTrigger(input: string): AddTrigger | null {
 	const addMatch = input.match(/(?:^|\s)\/add\s*([\w\-./ ]*)$/);
 	if (addMatch) {
-		const idx = input.lastIndexOf("/add");
-		return { start: idx, query: (addMatch[1] ?? "").trim() };
+		const matchedText = addMatch[0];
+		const tokenOffset = matchedText.indexOf("/add");
+		const start = (addMatch.index ?? 0) + tokenOffset;
+		return { start, end: input.length, query: (addMatch[1] ?? "").trim() };
 	}
 	const atMatch = input.match(/(?:^|\s)@([\w\-./ ]*)$/);
 	if (atMatch) {
 		const idx = input.lastIndexOf("@");
-		return { start: idx, query: (atMatch[1] ?? "").trim() };
+		return { start: idx, end: input.length, query: (atMatch[1] ?? "").trim() };
 	}
 	return null;
 }

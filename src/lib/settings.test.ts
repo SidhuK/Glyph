@@ -143,6 +143,49 @@ describe("settings Folio Mode", () => {
 	});
 });
 
+describe("settings app translucency", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults app translucency to false", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.translucentApp).toBe(false);
+	});
+
+	it("loads app translucency from the store", async () => {
+		storeState.set("ui.translucentApp", true);
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.translucentApp).toBe(true);
+	});
+
+	it("persists and emits app translucency changes", async () => {
+		const { setUiTranslucentApp } = await import("./settings");
+
+		await setUiTranslucentApp(true);
+
+		expect(storeState.get("ui.translucentApp")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: true },
+		});
+
+		await setUiTranslucentApp(false);
+
+		expect(storeState.get("ui.translucentApp")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: false },
+		});
+	});
+});
+
 describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();

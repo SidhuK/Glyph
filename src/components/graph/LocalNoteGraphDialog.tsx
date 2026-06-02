@@ -52,26 +52,56 @@ function registerFcose() {
 	fcoseRegistered = true;
 }
 
-function cssValue(styles: CSSStyleDeclaration, name: string, fallback: string) {
-	return styles.getPropertyValue(name).trim() || fallback;
+function normalizeCssColor(value: string) {
+	const context = document.createElement("canvas").getContext("2d");
+	if (!context) return value;
+
+	context.fillStyle = "#123456";
+	context.fillStyle = value;
+	const normalized = context.fillStyle;
+	context.fillStyle = "#abcdef";
+	context.fillStyle = value;
+	const normalizedFromSecondSentinel = context.fillStyle;
+
+	return normalized === "#123456" && normalizedFromSecondSentinel === "#abcdef"
+		? value
+		: normalized;
+}
+
+function cssColor(element: HTMLElement, name: string, fallback: string) {
+	const probe = document.createElement("span");
+	probe.style.cssText = `color: ${fallback}; color: var(${name});`;
+	element.appendChild(probe);
+	const color = getComputedStyle(probe).color.trim();
+	probe.remove();
+
+	return normalizeCssColor(color || fallback);
 }
 
 function graphThemeFor(element: HTMLElement): GraphTheme {
-	const styles = getComputedStyle(element);
-	const accent = cssValue(styles, "--interactive-accent", "#5b8def");
-	const background = cssValue(styles, "--bg-secondary", "#f6f6f4");
-	const node = cssValue(styles, "--bg-primary", "#ffffff");
-	const text = cssValue(styles, "--text-primary", "#1f2328");
-	const textInverse = cssValue(styles, "--text-inverse", "#ffffff");
-	const textMuted = cssValue(styles, "--text-secondary", "#667085");
-	const border = cssValue(styles, "--border-default", "#d7d7d2");
+	const accent = cssColor(element, "--interactive-accent", "#5b8def");
+	const background = cssColor(element, "--bg-secondary", "#f6f6f4");
+	const node = cssColor(element, "--local-graph-note-bg", "#ffffff");
+	const text = cssColor(element, "--local-graph-text", "#1f2328");
+	const textInverse = cssColor(
+		element,
+		"--local-graph-text-inverse",
+		"#ffffff",
+	);
+	const textMuted = cssColor(element, "--local-graph-edge", "#667085");
+	const border = cssColor(element, "--local-graph-border", "#d7d7d2");
+	const edgeIncoming = cssColor(
+		element,
+		"--local-graph-edge-incoming",
+		"#1f2328",
+	);
 
 	return {
 		accent,
 		background,
 		border,
 		edge: textMuted,
-		edgeIncoming: text,
+		edgeIncoming,
 		edgeInternal: border,
 		nodeActiveBorder: accent,
 		node,
@@ -429,6 +459,10 @@ function highlightNeighborhood(cy: Core, nodeId: string | null) {
 	node.neighborhood("node").addClass("is-neighbor");
 }
 
+function applyGraphTheme(cy: Core, container: HTMLElement) {
+	cy.style(graphStyles(graphThemeFor(container)));
+}
+
 export function LocalNoteGraphDialog({
 	open,
 	onOpenChange,
@@ -529,7 +563,21 @@ export function LocalNoteGraphDialog({
 		});
 		observer.observe(container);
 
+		const themeObserver = new MutationObserver(() => {
+			applyGraphTheme(cy, container);
+		});
+		themeObserver.observe(document.documentElement, {
+			attributeFilter: [
+				"class",
+				"data-light-theme",
+				"data-dark-theme",
+				"style",
+			],
+			attributes: true,
+		});
+
 		return () => {
+			themeObserver.disconnect();
 			observer.disconnect();
 			cy.destroy();
 			cyRef.current = null;

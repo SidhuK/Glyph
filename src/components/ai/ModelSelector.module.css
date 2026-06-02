@@ -307,7 +307,8 @@
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: anywhere;
 	line-height: 1.3;
 }
 
