@@ -104,7 +104,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 
 	const canSend =
 		!toolEvents.isAwaitingResponse &&
-		Boolean(input.trim()) &&
+		Boolean(stripChipMarkers(input).trim()) &&
 		Boolean(profiles.activeProfileId);
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
@@ -147,10 +147,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	);
 
 	const handleSend = useCallback(async () => {
-		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
 		const sanitized = stripChipMarkers(text).trim();
-		if (!sanitized) {
+		if (
+			!sanitized ||
+			toolEvents.isAwaitingResponse ||
+			!profiles.activeProfileId
+		) {
 			return;
 		}
 		toolEvents.clearFinalizingTimer();
@@ -181,7 +184,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		);
 	}, [
 		aiAssistantMode,
-		canSend,
 		chat,
 		context,
 		input,
@@ -205,7 +207,10 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				setInput((prev) => {
 					const before = prev.slice(0, trigger.start).trimEnd();
 					const after = prev.slice(trigger.end).replace(/^\s+/, "");
-					return `${before ? `${before} ` : ""}${marker}${after ? ` ${after}` : ""}`;
+					const parts = prev.includes(marker)
+						? [before, after]
+						: [before, marker, after];
+					return parts.filter(Boolean).join(" ");
 				});
 			} else {
 				setInput((prev) =>

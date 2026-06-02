@@ -25,8 +25,10 @@ export function messageText(message: UIMessage): string {
 export function parseAddTrigger(input: string): AddTrigger | null {
 	const addMatch = input.match(/(?:^|\s)\/add\s*([\w\-./ ]*)$/);
 	if (addMatch) {
-		const idx = input.lastIndexOf("/add");
-		return { start: idx, end: input.length, query: (addMatch[1] ?? "").trim() };
+		const matchedText = addMatch[0];
+		const tokenOffset = matchedText.indexOf("/add");
+		const start = (addMatch.index ?? 0) + tokenOffset;
+		return { start, end: input.length, query: (addMatch[1] ?? "").trim() };
 	}
 	const atMatch = input.match(/(?:^|\s)@([\w\-./ ]*)$/);
 	if (atMatch) {
