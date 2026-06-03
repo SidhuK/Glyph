@@ -428,25 +428,21 @@ export function CalendarPane({
 
 								const dayLabel = format(parsed, "EEEE, MMM d");
 								return (
-									<div
+									<button
+										type="button"
 										key={date}
 										className="calendarWeekDay"
 										data-selected={isSelected ? "true" : undefined}
+										onClick={() => selectDay(date)}
+										aria-label={dayLabel}
+										title={dayLabel}
 									>
-										<button
-											type="button"
-											className="calendarWeekDayButton"
-											onClick={() => selectDay(date)}
-											aria-label={dayLabel}
-											title={dayLabel}
-										>
-											<span className="calendarWeekDayName">
-												{format(parsed, "EEEEE")}
-											</span>
-											<strong className="calendarWeekDayNumber">
-												{format(parsed, "d")}
-											</strong>
-										</button>
+										<span className="calendarWeekDayName">
+											{format(parsed, "EEEEE")}
+										</span>
+										<strong className="calendarWeekDayNumber">
+											{format(parsed, "d")}
+										</strong>
 										<span
 											className="calendarWeekSignals"
 											aria-label={`${dayLabel} workload details`}
@@ -501,7 +497,7 @@ export function CalendarPane({
 												</span>
 											) : null}
 										</span>
-									</div>
+									</button>
 								);
 							})}
 						</div>
