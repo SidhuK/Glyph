@@ -1,6 +1,28 @@
 {
 	"versions": [
 		{
+			"version": "0.6.2",
+			"sections": [
+				{
+					"category": "Added",
+					"items": ["Glyph has a new app icon."]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Home and Calendar have cleaner styling across the week view, selected-day panel, and tab transitions.",
+						"Calendar day cells use a simpler button structure, tighter spacing, shorter mobile heights, and clearer hover feedback.",
+						"Selected calendar days now use an accent underline and accent-colored day number instead of a heavy border treatment.",
+						"Weekend labels are dimmed so weekdays read faster at a glance.",
+						"The selected-day empty state now shows a centered note icon with \"No notes yet\" when the day has no notes.",
+						"The selected-day create button now uses the calendar add icon, with pill-radius styling and a smoother hover transition.",
+						"Home and Tasks content now zooms in on view changes, and active main tabs get a subtle pop animation with tactile press feedback.",
+						"Dashboard titles, panel shadows, signal badges, tab padding, and calendar panel radii have been tuned for a softer, more consistent interface."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.6.1",
 			"sections": [
 				{

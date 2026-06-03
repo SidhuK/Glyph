@@ -108,6 +108,12 @@
 	color: currentcolor;
 }
 
+.calendarAccentIconButton:disabled {
+	opacity: 1;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+}
+
 .calendarWeekPanel,
 .calendarPanelSection {
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
