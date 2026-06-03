@@ -696,9 +696,17 @@ export function TasksPane({
 						</div>
 						{!hasVisibleResults ? (
 							<div className="tasksPaneEmpty">
-								{showingNoteList
-									? "No notes with unscheduled tasks."
-									: "No matching tasks."}
+								<span className="calendarEmptyRowInner">
+									<HugeiconsIcon
+										icon={CheckListIcon}
+										size={24}
+										strokeWidth={0.6}
+										aria-hidden
+									/>
+									{showingNoteList
+										? "No notes with unscheduled tasks."
+										: "No matching tasks."}
+								</span>
 							</div>
 						) : null}
 						{showingNoteList

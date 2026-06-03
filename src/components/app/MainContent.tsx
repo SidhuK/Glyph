@@ -651,7 +651,11 @@ export const MainContent = memo(function MainContent({
 			return (
 				<div className="homePaneHost">
 					<div className="homePaneSwitchWrap">
-						<div className="homePaneSwitch">
+						<div
+							className="homePaneSwitch"
+							data-active-tab={isTasksView ? "tasks" : "home"}
+						>
+							<div className="homePaneSwitchSlider" />
 							<button
 								type="button"
 								className="homePaneSwitchTab"
@@ -675,30 +679,32 @@ export const MainContent = memo(function MainContent({
 							</button>
 						</div>
 					</div>
-					{isTasksView ? (
-						<Suspense
-							fallback={
-								<div className="databaseLoadingState">Loading tasks…</div>
-							}
-						>
-							<TasksPane
-								onOpenFile={onOpenFile}
-								onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-							/>
-						</Suspense>
-					) : (
-						<Suspense
-							fallback={
-								<div className="databaseLoadingState">Loading calendar…</div>
-							}
-						>
-							<CalendarPane
-								initialData={initialCalendarData}
-								onOpenFile={onOpenFile}
-								onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-							/>
-						</Suspense>
-					)}
+					<div key={homeView} className="homePaneContent">
+						{isTasksView ? (
+							<Suspense
+								fallback={
+									<div className="databaseLoadingState">Loading tasks…</div>
+								}
+							>
+								<TasksPane
+									onOpenFile={onOpenFile}
+									onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+								/>
+							</Suspense>
+						) : (
+							<Suspense
+								fallback={
+									<div className="databaseLoadingState">Loading calendar…</div>
+								}
+							>
+								<CalendarPane
+									initialData={initialCalendarData}
+									onOpenFile={onOpenFile}
+									onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+								/>
+							</Suspense>
+						)}
+					</div>
 				</div>
 			);
 		}

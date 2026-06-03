@@ -1,86 +1,42 @@
 {
 	"fill": {
-		"linear-gradient": [
-			"display-p3:1.00000,1.00000,1.00000,1.00000",
-			"display-p3:0.89100,0.89100,0.89100,1.00000"
-		],
-		"orientation": {
-			"start": {
-				"x": 0.5,
-				"y": 1
-			},
-			"stop": {
-				"x": 0.5,
-				"y": 0.3
-			}
-		}
+		"solid": "extended-gray:1.00000,1.00000"
 	},
 	"groups": [
 		{
-			"blur-material": null,
 			"layers": [
 				{
 					"blend-mode": "normal",
 					"fill": {
-						"automatic-gradient": "extended-gray:0.75000,1.00000"
+						"solid": "srgb:0.99184,0.22918,0.21763,1.00000"
 					},
 					"glass": false,
 					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "inside_image.png",
+					"name": "g",
 					"position": {
-						"scale": 0.8,
-						"translation-in-points": [28, -9]
+						"scale": 2,
+						"translation-in-points": [-149.9372335831771, -14.98890254958394]
 					}
 				},
 				{
 					"blend-mode": "normal",
 					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.21961,0.23529,1.00000"
+						"solid": "extended-gray:0.00000,1.00000"
 					},
 					"glass": false,
 					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "inside_image.png",
+					"name": "g",
 					"position": {
-						"scale": 0.9,
-						"translation-in-points": [28, -9]
-					}
-				},
-				{
-					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.55294,0.15686,1.00000"
-					},
-					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
-					"position": {
-						"scale": 1,
-						"translation-in-points": [28, -9]
-					}
-				},
-				{
-					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.80000,0.00000,1.00000"
-					},
-					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
-					"position": {
-						"scale": 1.1,
-						"translation-in-points": [28, -9]
+						"scale": 1.97,
+						"translation-in-points": [-149.9372335831771, -14.98890254958394]
 					}
 				}
 			],
-			"position": {
-				"scale": 1,
-				"translation-in-points": [-27, 38]
-			},
 			"shadow": {
 				"kind": "neutral",
-				"opacity": 0.92
+				"opacity": 0.5
 			},
 			"translucency": {
 				"enabled": true,

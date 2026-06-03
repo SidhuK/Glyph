@@ -1,4 +1,4 @@
-import { TaskAdd02Icon } from "@hugeicons/core-free-icons";
+import { CheckListIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type KeyboardEvent,
@@ -51,9 +51,6 @@ export function TaskCaptureComposer({
 			}
 		>
 			<div className="calendarTaskComposerMain">
-				<span className="calendarTaskComposerIcon" aria-hidden="true">
-					<HugeiconsIcon icon={TaskAdd02Icon} size={14} strokeWidth={0.9} />
-				</span>
 				<Input
 					ref={inputRef}
 					value={value}
@@ -80,7 +77,7 @@ export function TaskCaptureComposer({
 					disabled={pending || !value.trim()}
 					aria-label="Add task"
 				>
-					<HugeiconsIcon icon={TaskAdd02Icon} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={0.9} />
 				</Button>
 			</div>
 			{dateControls ? (

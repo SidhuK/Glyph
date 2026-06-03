@@ -48,6 +48,25 @@
 	background: var(--bg-primary);
 }
 
+@keyframes home-content-zoom-in {
+	from {
+		transform: scale(0.96);
+		opacity: 0.4;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.homePaneContent {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	animation: home-content-zoom-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .homePaneSwitchWrap {
 	flex: 0 0 auto;
 	display: flex;
@@ -58,44 +77,82 @@
 }
 
 .homePaneSwitch {
+	--home-pane-switch-gap: 5px;
+	--home-pane-switch-padding-block: 2px;
+	--home-pane-switch-padding-inline: 6px;
+	position: relative;
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
-	padding: 2px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	border-radius: var(--radius-md);
+	gap: var(--home-pane-switch-gap);
+	padding: var(--home-pane-switch-padding-block)
+		var(--home-pane-switch-padding-inline);
+	border: 1px solid color-mix(in srgb, var(--border-light) 24%, transparent);
+	border-radius: 999px;
 	background: var(--bg-secondary);
 	-webkit-app-region: no-drag;
 }
 
+.homePaneSwitchSlider {
+	position: absolute;
+	top: var(--home-pane-switch-padding-block);
+	left: var(--home-pane-switch-padding-inline);
+	width: calc(
+		50% -
+		var(--home-pane-switch-padding-inline) -
+		(var(--home-pane-switch-gap) / 2)
+	);
+	height: calc(100% - (var(--home-pane-switch-padding-block) * 2));
+	border-radius: var(--radius-2xl);
+	background: var(--bg-primary);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+	pointer-events: none;
+	transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+	transform: translateX(0);
+}
+
+.homePaneSwitch[data-active-tab="tasks"] .homePaneSwitchSlider {
+	transform: translateX(calc(100% + var(--home-pane-switch-gap)));
+}
+
 .homePaneSwitchTab {
+	position: relative;
+	z-index: 1;
 	min-width: 76px;
-	height: 26px;
+	height: 28px;
 	padding: 0 12px;
-	border: 0;
-	border-radius: calc(var(--radius-md) - 2px);
+	border: 1px solid transparent;
+	border-radius: var(--radius-2xl);
 	background: transparent;
 	color: var(--text-tertiary);
 	font: inherit;
-	font-size: var(--text-xs);
+	font-size: 12px;
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	cursor: pointer;
-	transition: background-color var(--transition-fast), color
-		var(--transition-fast), box-shadow var(--transition-fast);
+	transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .homePaneSwitchTab:hover,
 .homePaneSwitchTab:focus-visible {
 	color: var(--text-primary);
-	background: var(--bg-hover);
 	outline: none;
 }
 
 .homePaneSwitchTab[data-active="true"] {
-	background: var(--bg-primary);
 	color: var(--text-primary);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.homePaneContent {
+		animation: none;
+	}
+
+	.homePaneSwitchSlider,
+	.homePaneSwitchTab {
+		transition-duration: 0s;
+	}
 }
 
 .appShell.appShellSidebarCollapsed .sidebarResizeHandle {

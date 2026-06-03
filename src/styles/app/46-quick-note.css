@@ -358,10 +358,10 @@
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
-	height: 34px;
+	height: 32px;
 	padding: 0 9px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	border-radius: var(--radius-md);
+	border: 0;
+	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);

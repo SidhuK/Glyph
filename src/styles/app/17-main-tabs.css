@@ -1,5 +1,6 @@
 .mainTabsBarWrap {
 	flex-shrink: 0;
+	padding-top: 6px;
 	background: var(--bg-primary);
 }
 
@@ -444,9 +445,12 @@
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), box-shadow
-		var(--transition-fast);
+	transition:
+		background 200ms cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+		color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+		transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mainTab:hover {
@@ -454,10 +458,20 @@
 }
 
 .mainTab:active {
-	opacity: 0.85;
+	transform: scale(0.96);
+}
+
+@keyframes main-tab-zoom-in {
+	from {
+		transform: scale(0.92);
+	}
+	to {
+		transform: scale(1);
+	}
 }
 
 .mainTab.is-active {
+	animation: main-tab-zoom-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
 	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
 	color: var(--text-primary);
@@ -569,6 +583,11 @@
 	.mainTabsBreadcrumbButton {
 		transition: none;
 		transform: none;
+	}
+
+	.mainTab,
+	.mainTab::before {
+		animation: none;
 	}
 
 	.mainTabClose:hover {

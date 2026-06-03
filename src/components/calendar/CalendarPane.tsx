@@ -4,9 +4,9 @@ import {
 	ArrowRightBigIcon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
+	CheckListIcon,
 	MoreHorizontalIcon,
 	NoteIcon,
-	Task01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -416,7 +416,7 @@ export function CalendarPane({
 									<strong>{weekTaskCount}</strong>
 									<span className="calendarWeekStatsLabel">
 										<HugeiconsIcon
-											icon={Task01Icon}
+											icon={CheckListIcon}
 											size={10}
 											strokeWidth={1.15}
 											aria-hidden
@@ -478,7 +478,7 @@ export function CalendarPane({
 											{taskCount > 0 ? (
 												<span className="calendarWeekSignal calendarWeekTaskSignal">
 													<HugeiconsIcon
-														icon={Task01Icon}
+														icon={CheckListIcon}
 														size={11}
 														strokeWidth={1.15}
 														aria-hidden
