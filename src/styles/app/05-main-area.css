@@ -48,7 +48,7 @@
 	background: var(--bg-primary);
 }
 
-@keyframes homeContentZoomIn {
+@keyframes home-content-zoom-in {
 	from {
 		transform: scale(0.96);
 		opacity: 0.4;
@@ -64,7 +64,7 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	animation: homeContentZoomIn 200ms cubic-bezier(0.22, 1, 0.36, 1);
+	animation: home-content-zoom-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .homePaneSwitchWrap {
@@ -77,11 +77,15 @@
 }
 
 .homePaneSwitch {
+	--home-pane-switch-gap: 5px;
+	--home-pane-switch-padding-block: 2px;
+	--home-pane-switch-padding-inline: 6px;
 	position: relative;
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
-	padding: 2px 6px;
+	gap: var(--home-pane-switch-gap);
+	padding: var(--home-pane-switch-padding-block)
+		var(--home-pane-switch-padding-inline);
 	border: 1px solid color-mix(in srgb, var(--border-light) 24%, transparent);
 	border-radius: 999px;
 	background: var(--bg-secondary);
@@ -90,10 +94,14 @@
 
 .homePaneSwitchSlider {
 	position: absolute;
-	top: 2px;
-	left: 6px;
-	width: calc(50% - 8.5px);
-	height: calc(100% - 4px);
+	top: var(--home-pane-switch-padding-block);
+	left: var(--home-pane-switch-padding-inline);
+	width: calc(
+		50% -
+		var(--home-pane-switch-padding-inline) -
+		(var(--home-pane-switch-gap) / 2)
+	);
+	height: calc(100% - (var(--home-pane-switch-padding-block) * 2));
 	border-radius: var(--radius-2xl);
 	background: var(--bg-primary);
 	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
@@ -105,7 +113,7 @@
 }
 
 .homePaneSwitch[data-active-tab="tasks"] .homePaneSwitchSlider {
-	transform: translateX(calc(100% + 5px));
+	transform: translateX(calc(100% + var(--home-pane-switch-gap)));
 }
 
 .homePaneSwitchTab {
@@ -134,6 +142,17 @@
 
 .homePaneSwitchTab[data-active="true"] {
 	color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.homePaneContent {
+		animation: none;
+	}
+
+	.homePaneSwitchSlider,
+	.homePaneSwitchTab {
+		transition-duration: 0s;
+	}
 }
 
 .appShell.appShellSidebarCollapsed .sidebarResizeHandle {

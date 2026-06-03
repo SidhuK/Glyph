@@ -385,7 +385,6 @@ button.calendarTaskComposerChip:focus-visible,
 	min-height: 100px;
 	color: var(--text-tertiary);
 	font-size: var(--text-base);
-	opacity: 0.55;
 }
 
 .tasksRow {
