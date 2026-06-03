@@ -3,6 +3,7 @@ import {
 	ArrowLeftBigIcon,
 	ArrowRightBigIcon,
 	Calendar03Icon,
+	CalendarAdd01Icon,
 	MoreHorizontalIcon,
 	NoteIcon,
 	Task01Icon,
@@ -401,15 +402,39 @@ export function CalendarPane({
 							<div className="calendarWeekStats" aria-label="Week summary">
 								<span>
 									<strong>{weekNoteCount}</strong>
-									notes
+									<span className="calendarWeekStatsLabel">
+										<HugeiconsIcon
+											icon={NoteIcon}
+											size={10}
+											strokeWidth={1.15}
+											aria-hidden
+										/>{" "}
+										notes
+									</span>
 								</span>
 								<span>
 									<strong>{weekTaskCount}</strong>
-									tasks
+									<span className="calendarWeekStatsLabel">
+										<HugeiconsIcon
+											icon={Task01Icon}
+											size={10}
+											strokeWidth={1.15}
+											aria-hidden
+										/>{" "}
+										tasks
+									</span>
 								</span>
 								<span>
 									<strong>{weekDailyNoteCount}</strong>
-									daily notes
+									<span className="calendarWeekStatsLabel">
+										<HugeiconsIcon
+											icon={Calendar03Icon}
+											size={10}
+											strokeWidth={1.15}
+											aria-hidden
+										/>{" "}
+										daily notes
+									</span>
 								</span>
 							</div>
 						</div>
@@ -420,6 +445,8 @@ export function CalendarPane({
 							{weekRange.dates.map((date) => {
 								const parsed = parseCalendarDate(date);
 								const isSelected = date === selectedDate;
+								const dayOfWeek = parsed.getDay();
+								const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 								const summary = daySummariesByDate.get(date);
 								const taskCount = summary?.task_count ?? 0;
 								const noteActivityCount = summary?.note_activity_count ?? 0;
@@ -433,6 +460,7 @@ export function CalendarPane({
 										key={date}
 										className="calendarWeekDay"
 										data-selected={isSelected ? "true" : undefined}
+										data-weekend={isWeekend ? "true" : undefined}
 										onClick={() => selectDay(date)}
 										aria-label={dayLabel}
 										title={dayLabel}
@@ -521,12 +549,26 @@ export function CalendarPane({
 									aria-label={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
 									title={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
 								>
-									<HugeiconsIcon icon={NoteIcon} size={13} strokeWidth={0.9} />
+									<HugeiconsIcon
+										icon={CalendarAdd01Icon}
+										size={13}
+										strokeWidth={0.9}
+									/>
 								</Button>
 							</div>
 							<ul className="calendarNotesList">
 								{noteActivity.length === 0 ? (
-									<li className="calendarEmptyRow">No notes for this day</li>
+									<li className="calendarEmptyRow">
+										<span className="calendarEmptyRowInner">
+											<HugeiconsIcon
+												icon={NoteIcon}
+												size={24}
+												strokeWidth={0.6}
+												aria-hidden
+											/>
+											No notes yet
+										</span>
+									</li>
 								) : null}
 								{noteActivity.map((note) => {
 									const visibleTags = note.tags.slice(0, 2);
@@ -567,7 +609,7 @@ export function CalendarPane({
 																				strokeWidth={1.2}
 																			/>
 																		) : null}
-																		#{tag}
+																		{tag}
 																	</span>
 																))}
 																{hiddenTagCount > 0 ? (

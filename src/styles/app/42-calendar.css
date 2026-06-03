@@ -44,7 +44,7 @@
 .calendarDashboardTitleBlock {
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 2px;
+	gap: 1px;
 }
 
 .calendarDashboardActions,
@@ -62,7 +62,6 @@
 .calendarPanelSectionHeader span,
 .calendarWeekMonth small,
 .calendarNoteTime,
-.calendarEmptyRow,
 .calendarLoading {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
@@ -77,7 +76,7 @@
 }
 
 .calendarDashboardTitleBlock h2 {
-	font-size: 1.45rem;
+	font-size: 1.55rem;
 	line-height: 1.1;
 }
 
@@ -114,7 +113,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	border-radius: var(--radius-lg);
 	background: var(--bg-secondary);
-	box-shadow: var(--pill-shadow);
+	box-shadow: var(--shadow-sm);
 }
 
 .calendarWeekHeader {
@@ -142,19 +141,21 @@
 }
 
 .calendarWeekStats {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 6px;
 	min-width: 0;
 }
 
-.calendarWeekStats span {
+.calendarWeekStats > span {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 8px;
+	flex: 1;
+	max-width: 130px;
 	min-width: 0;
-	padding: 8px 10px;
+	padding: 6px 8px;
 	border-radius: var(--pill-radius);
 	background: var(--bg-primary);
 	box-shadow: var(--pill-shadow);
@@ -167,6 +168,12 @@
 	font-size: var(--text-md);
 	font-weight: var(--font-semibold);
 	line-height: 1;
+}
+
+.calendarWeekStatsLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
 }
 
 .calendarWeekStrip {
@@ -241,6 +248,10 @@
 	font-weight: var(--font-semibold);
 }
 
+.calendarWeekDay[data-weekend="true"] .calendarWeekDayName {
+	opacity: 0.5;
+}
+
 .calendarWeekSignals {
 	display: flex;
 	align-items: center;
@@ -262,7 +273,7 @@
 	height: 19px;
 	padding: 0 5px;
 	overflow: hidden;
-	border-radius: 4px;
+	border-radius: var(--pill-radius);
 	font-size: 0.62rem;
 	font-weight: var(--font-semibold);
 	line-height: 1;
@@ -301,6 +312,24 @@
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
 	font-size: var(--text-xs);
+}
+
+.calendarEmptyRow {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	min-height: 100px;
+	color: var(--text-tertiary);
+	font-size: var(--text-base);
+}
+
+.calendarEmptyRowInner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	opacity: 0.55;
 }
 
 .calendarNoteRow:hover {
@@ -351,11 +380,12 @@
 	min-height: 52px;
 	padding: 10px 10px 12px;
 	border: 0;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 	background: transparent;
 	color: var(--text-primary);
 	line-height: 1.2;
 	text-align: left;
+	transition: background var(--transition-fast);
 }
 
 .calendarNoteIcon {
@@ -414,25 +444,26 @@
 }
 
 .calendarNoteTag {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: 3px;
 	max-width: 120px;
-	min-height: 20px;
-	overflow: hidden;
-	padding: 2px 7px;
+	flex: 0 0 auto;
+	padding: 2px 6px;
+	border: 0;
 	border-radius: 4px;
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 9%,
-		var(--bg-primary)
+		var(--interactive-accent) 8%,
+		var(--bg-secondary)
 	);
-	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
-	font-size: 0.68rem;
+	color: color-mix(in srgb, var(--interactive-accent) 58%, var(--text-primary));
+	font-size: 0.66rem;
 	font-weight: var(--font-medium);
 	line-height: 1.2;
-	text-overflow: ellipsis;
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .calendarNoteTagIcon {
@@ -464,7 +495,7 @@
 	}
 
 	.calendarWeekStats {
-		grid-template-columns: 1fr;
+		flex-wrap: wrap;
 	}
 
 	.calendarWeekStrip {
