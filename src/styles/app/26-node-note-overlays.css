@@ -288,6 +288,7 @@
 }
 .editorColorDropdown {
 	--editor-ribbon-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='48'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.65' numOctaves='1' stitchTiles='stitch' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 .58'/%3E%3C/filter%3E%3Crect width='192' height='48' fill='white' filter='url(%23g)'/%3E%3C/svg%3E");
+
 	min-width: auto;
 	padding: 7px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
@@ -534,6 +535,7 @@
 
 .editorLinkPopover {
 	--editor-ribbon-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='48'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.65' numOctaves='1' stitchTiles='stitch' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 .58'/%3E%3C/filter%3E%3Crect width='192' height='48' fill='white' filter='url(%23g)'/%3E%3C/svg%3E");
+
 	width: 320px;
 	padding: 10px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);

@@ -8,13 +8,11 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
-import { AnimatePresence } from "motion/react";
-import { memo, useCallback, useState } from "react";
+import { memo } from "react";
 import type { BacklinkItem } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { EditorRibbon } from "./EditorRibbon";
-import { SelectionHighlight } from "./SelectionHighlight";
+import { NoteSelectionOverlay } from "./NoteSelectionOverlay";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
@@ -81,14 +79,6 @@ export interface NoteEditorSurfaceProps {
 	};
 }
 
-function getRibbonTransform(selectionRibbon: SelectionRibbonPosition) {
-	const y =
-		selectionRibbon.placement === "above"
-			? "translateY(-100%)"
-			: "translateY(0)";
-	return `translateX(0) ${y}`;
-}
-
 export const NoteEditorSurface = memo(function NoteEditorSurface({
 	editor,
 	mode,
@@ -102,50 +92,28 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	task,
 	backlinks,
 }: NoteEditorSurfaceProps) {
-	const [hostNode, setHostNode] = useState<HTMLDivElement | null>(null);
-	const handleHostRef = useCallback(
-		(node: HTMLDivElement | null) => {
-			setHostNode(node);
-			hostRef(node);
-		},
-		[hostRef],
-	);
+	const hostClassName = [
+		"tiptapHostInline",
+		mode === "preview" ? "is-preview" : "",
+		"nodrag",
+		"nopan",
+		"nowheel",
+	]
+		.filter(Boolean)
+		.join(" ");
 
 	return (
-		<div
-			ref={handleHostRef}
-			className={[
-				"tiptapHostInline",
-				mode === "preview" ? "is-preview" : "",
-				"nodrag",
-				"nopan",
-				"nowheel",
-			]
-				.filter(Boolean)
-				.join(" ")}
-			data-colorful-headings={
-				mode === "rich" && colorfulHeadings ? "true" : undefined
-			}
+		<NoteSelectionOverlay
+			editor={editor}
+			canEdit={canEdit}
+			highlightEnabled={canEdit && mode === "rich"}
+			selectionRibbon={selectionRibbon}
+			onExtractSelectionToNote={onExtractSelectionToNote}
+			hostRef={hostRef}
+			className={hostClassName}
+			colorfulHeadings={mode === "rich" && colorfulHeadings}
 		>
 			<EditorContent editor={editor} />
-			<SelectionHighlight
-				host={hostNode}
-				enabled={canEdit && mode === "rich" && Boolean(editor)}
-			/>
-			<AnimatePresence initial={false}>
-				{canEdit && selectionRibbon && editor ? (
-					<EditorRibbon
-						editor={editor}
-						canEdit={canEdit}
-						onExtractSelectionToNote={onExtractSelectionToNote}
-						style={{
-							top: `${selectionRibbon.top}px`,
-							left: `${selectionRibbon.left}px`,
-							transform: getRibbonTransform(selectionRibbon),
-						}}
-					/>
-				) : null}
-			</AnimatePresence>
 			{canEdit && table.selected ? (
 				<>
 					<button
@@ -396,6 +364,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					</div>
 				</div>
 			) : null}
-		</div>
+		</NoteSelectionOverlay>
 	);
 });
