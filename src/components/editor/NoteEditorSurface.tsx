@@ -8,12 +8,11 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
-import { AnimatePresence } from "motion/react";
 import { memo } from "react";
 import type { BacklinkItem } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { EditorRibbon } from "./EditorRibbon";
+import { NoteSelectionOverlay } from "./NoteSelectionOverlay";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
@@ -93,40 +92,28 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	task,
 	backlinks,
 }: NoteEditorSurfaceProps) {
+	const hostClassName = [
+		"tiptapHostInline",
+		mode === "preview" ? "is-preview" : "",
+		"nodrag",
+		"nopan",
+		"nowheel",
+	]
+		.filter(Boolean)
+		.join(" ");
+
 	return (
-		<div
-			ref={hostRef}
-			className={[
-				"tiptapHostInline",
-				mode === "preview" ? "is-preview" : "",
-				"nodrag",
-				"nopan",
-				"nowheel",
-			]
-				.filter(Boolean)
-				.join(" ")}
-			data-colorful-headings={
-				mode === "rich" && colorfulHeadings ? "true" : undefined
-			}
+		<NoteSelectionOverlay
+			editor={editor}
+			canEdit={canEdit}
+			highlightEnabled={canEdit && mode === "rich"}
+			selectionRibbon={selectionRibbon}
+			onExtractSelectionToNote={onExtractSelectionToNote}
+			hostRef={hostRef}
+			className={hostClassName}
+			colorfulHeadings={mode === "rich" && colorfulHeadings}
 		>
 			<EditorContent editor={editor} />
-			<AnimatePresence initial={false}>
-				{canEdit && selectionRibbon && editor ? (
-					<EditorRibbon
-						editor={editor}
-						canEdit={canEdit}
-						onExtractSelectionToNote={onExtractSelectionToNote}
-						style={{
-							top: `${selectionRibbon.top}px`,
-							left: `${selectionRibbon.left}px`,
-							transform:
-								selectionRibbon.placement === "above"
-									? "translate(-50%, -100%)"
-									: "translate(-50%, 0)",
-						}}
-					/>
-				) : null}
-			</AnimatePresence>
 			{canEdit && table.selected ? (
 				<>
 					<button
@@ -377,6 +364,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					</div>
 				</div>
 			) : null}
-		</div>
+		</NoteSelectionOverlay>
 	);
 });

@@ -2,11 +2,9 @@ import type { UiAccent } from "../../lib/settings";
 
 const ACCENT_COLOR_MAP: Record<Exclude<UiAccent, "neutral">, string> = {
 	"glyph-orange": "#de7356",
+	"glyph-red": "#e84d42",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
-	"light-yellow": "#fdfcdc",
-	"soft-apricot": "#fed9b7",
-	"vibrant-coral": "#f07167",
 };
 
 export const ACCENT_OPTIONS: Array<{
@@ -20,26 +18,16 @@ export const ACCENT_OPTIONS: Array<{
 		label: "Orange",
 		color: ACCENT_COLOR_MAP["glyph-orange"],
 	},
+	{
+		id: "glyph-red",
+		label: "Glyph Red",
+		color: ACCENT_COLOR_MAP["glyph-red"],
+	},
 	{ id: "cerulean", label: "Cerulean", color: ACCENT_COLOR_MAP.cerulean },
 	{
 		id: "tropical-teal",
 		label: "Tropical Teal",
 		color: ACCENT_COLOR_MAP["tropical-teal"],
-	},
-	{
-		id: "light-yellow",
-		label: "Light Yellow",
-		color: ACCENT_COLOR_MAP["light-yellow"],
-	},
-	{
-		id: "soft-apricot",
-		label: "Soft Apricot",
-		color: ACCENT_COLOR_MAP["soft-apricot"],
-	},
-	{
-		id: "vibrant-coral",
-		label: "Vibrant Coral",
-		color: ACCENT_COLOR_MAP["vibrant-coral"],
 	},
 ];
 

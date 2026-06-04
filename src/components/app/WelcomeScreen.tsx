@@ -1,6 +1,5 @@
-import { Folder03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, useCallback, useRef, useState } from "react";
+import glyphIconUrl from "../../../src-tauri/icons/icon.png";
 
 interface WelcomeScreenProps {
 	onOpenSpace: () => Promise<void> | void;
@@ -8,215 +7,127 @@ interface WelcomeScreenProps {
 
 export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 	const [isOpening, setIsOpening] = useState(false);
-	const timeoutRef = useRef<number | null>(null);
 	const isOpeningRef = useRef(false);
-	const isMountedRef = useRef(true);
 
-	useEffect(
-		() => () => {
-			isMountedRef.current = false;
+	const handleOpen = useCallback(async () => {
+		if (isOpeningRef.current) return;
+		isOpeningRef.current = true;
+		setIsOpening(true);
+		try {
+			await onOpenSpace();
+		} catch (error) {
+			console.error("Failed to open space", error);
+		} finally {
 			isOpeningRef.current = false;
-			if (timeoutRef.current === null) return;
-			window.clearTimeout(timeoutRef.current);
-			timeoutRef.current = null;
+			setIsOpening(false);
+		}
+	}, [onOpenSpace]);
+
+	const handleBrandContentKeyDown = useCallback(
+		(event: KeyboardEvent<HTMLElement>) => {
+			const scrollAmounts: Partial<Record<string, number>> = {
+				ArrowUp: -40,
+				ArrowDown: 40,
+				PageUp: -event.currentTarget.clientHeight,
+				PageDown: event.currentTarget.clientHeight,
+			};
+			const amount = scrollAmounts[event.key];
+
+			if (amount !== undefined) {
+				event.preventDefault();
+				event.currentTarget.scrollBy({ top: amount, behavior: "smooth" });
+				return;
+			}
+
+			if (event.key === "Home") {
+				event.preventDefault();
+				event.currentTarget.scrollTo({ top: 0, behavior: "smooth" });
+				return;
+			}
+
+			if (event.key === "End") {
+				event.preventDefault();
+				event.currentTarget.scrollTo({
+					top: event.currentTarget.scrollHeight,
+					behavior: "smooth",
+				});
+			}
 		},
 		[],
 	);
 
-	const handleOpen = useCallback(() => {
-		if (isOpeningRef.current) return;
-		isOpeningRef.current = true;
-		setIsOpening(true);
-		if (timeoutRef.current !== null) {
-			window.clearTimeout(timeoutRef.current);
-		}
-		timeoutRef.current = window.setTimeout(() => {
-			timeoutRef.current = null;
-			void Promise.resolve(onOpenSpace()).finally(() => {
-				isOpeningRef.current = false;
-				if (isMountedRef.current) {
-					setIsOpening(false);
-				}
-			});
-		}, 400);
-	}, [onOpenSpace]);
-
 	return (
 		<div className={`welcomeEmptyState${isOpening ? " is-opening" : ""}`}>
-			<div className="welcomeFolderScene">
-				{/* Folder Back */}
-				<svg
-					className="welcomeFolderBack"
-					viewBox="0 0 140 95"
-					fill="none"
-					xmlns="http://www.w3.org/2000/svg"
+			<section className="welcomeBrandPane" aria-labelledby="welcome-title">
+				<section
+					className="welcomeBrandContent"
+					aria-label="Welcome information"
+					/* biome-ignore lint/a11y/noNoninteractiveTabindex: This scroll region must be focusable for keyboard scrolling. */
+					tabIndex={0}
+					onKeyDown={handleBrandContentKeyDown}
 				>
-					<title>Folder</title>
-					<path
-						d="M5 0 H 45 C 50 0 53 3 55 6 L 60 16 C 62 19 65 21 68 21 H 135 C 137.7 21 140 23.2 140 26 V 90 C 140 92.7 137.7 95 135 95 H 5 C 2.2 95 0 92.7 0 90 V 5 C 0 2.2 2.2 0 5 0 Z"
-						fill="currentColor"
+					<img
+						className="welcomeCornerGlyph"
+						src={glyphIconUrl}
+						alt=""
+						aria-hidden="true"
 					/>
-					<path
-						d="M5 1 H 45 C 49.5 1 52.2 3.7 54.1 6.5 L 59.1 16.5 C 61.3 19.8 64.5 22 68 22 H 135 C 137.2 22 139 23.8 139 26"
-						stroke="rgba(255,255,255,0.2)"
-						strokeWidth="1.5"
-						strokeLinecap="round"
-					/>
-				</svg>
-
-				{/* File 1: Graph/Data Bars */}
-				<div className="welcomeFile welcomeFile1">
-					<svg viewBox="0 0 60 80">
-						<title>Data chart</title>
-						<rect
-							x="5"
-							y="10"
-							width="15"
-							height="4"
-							rx="2"
-							fill="rgba(255,255,255,0.9)"
-						/>
-						<rect
-							x="5"
-							y="25"
-							width="8"
-							height="35"
-							rx="3"
-							fill="rgba(255,255,255,0.7)"
-						/>
-						<rect
-							x="18"
-							y="40"
-							width="8"
-							height="20"
-							rx="3"
-							fill="rgba(255,255,255,0.5)"
-						/>
-						<rect
-							x="31"
-							y="15"
-							width="8"
-							height="45"
-							rx="3"
-							fill="rgba(255,255,255,0.8)"
-						/>
-						<rect
-							x="44"
-							y="30"
-							width="8"
-							height="30"
-							rx="3"
-							fill="rgba(255,255,255,0.6)"
-						/>
-					</svg>
-				</div>
-
-				{/* File 2: Checklist */}
-				<div className="welcomeFile welcomeFile2">
-					<svg viewBox="0 0 60 80">
-						<title>Checklist</title>
-						<rect
-							x="5"
-							y="10"
-							width="30"
-							height="5"
-							rx="2.5"
-							fill="rgba(0,0,0,0.3)"
-						/>
-						<circle cx="8" cy="28" r="3" fill="rgba(0,0,0,0.4)" />
-						<rect
-							x="15"
-							y="26"
-							width="35"
-							height="4"
-							rx="2"
-							fill="rgba(0,0,0,0.2)"
-						/>
-						<circle cx="8" cy="40" r="3" fill="rgba(0,0,0,0.4)" />
-						<rect
-							x="15"
-							y="38"
-							width="25"
-							height="4"
-							rx="2"
-							fill="rgba(0,0,0,0.2)"
-						/>
-						<circle cx="8" cy="52" r="3" fill="rgba(0,0,0,0.4)" />
-						<rect
-							x="15"
-							y="50"
-							width="40"
-							height="4"
-							rx="2"
-							fill="rgba(0,0,0,0.2)"
-						/>
-						<circle cx="8" cy="64" r="3" fill="rgba(0,0,0,0.4)" />
-						<rect
-							x="15"
-							y="62"
-							width="20"
-							height="4"
-							rx="2"
-							fill="rgba(0,0,0,0.2)"
-						/>
-					</svg>
-				</div>
-
-				{/* File 3: Wavy Notes */}
-				<div className="welcomeFile welcomeFile3">
+					<p className="welcomeKicker">Plain Markdown. Local files.</p>
+					<h1 id="welcome-title" className="welcomeHeading">
+						Start using Glyph
+					</h1>
+					<div className="welcomeFeatureList">
+						<div className="welcomeFeature">
+							<span className="welcomeFeatureMark" aria-hidden="true" />
+							<div>
+								<h2>Pick a folder.</h2>
+								<p>Open existing Markdown notes or create a clean workspace.</p>
+							</div>
+						</div>
+						<div className="welcomeFeature">
+							<span className="welcomeFeatureMark" aria-hidden="true" />
+							<div>
+								<h2>Keep files local.</h2>
+								<p>Glyph stores notes on your machine.</p>
+							</div>
+						</div>
+						<div className="welcomeFeature">
+							<span className="welcomeFeatureMark" aria-hidden="true" />
+							<div>
+								<h2>Work in one place.</h2>
+								<p>Write notes, track tasks, and bring AI the right context.</p>
+							</div>
+						</div>
+					</div>
+					<div className="welcomeDivider" aria-hidden="true" />
+				</section>
+			</section>
+			<div className="welcomeActionPane">
+				<div className="welcomeActionHint" aria-hidden="true">
+					<span>click this to begin</span>
 					<svg
-						viewBox="0 0 60 80"
-						fill="none"
-						stroke="rgba(0,0,0,0.3)"
-						strokeWidth="2"
-						strokeLinecap="round"
+						className="welcomeActionScribble"
+						viewBox="0 0 640 1280"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+						focusable="false"
 					>
-						<title>Notes</title>
-						<rect
-							x="5"
-							y="10"
-							width="20"
-							height="5"
-							rx="2.5"
-							fill="rgba(0,0,0,0.3)"
-							stroke="none"
+						<path
+							d="M448.6 3c-3.4 8.2-11.2 48.7-18.5 96.5-16.1 105-57.1 388.1-74 511-1.7 12.1-7.6 54.6-13 94.5-23.9 173.4-40.1 302.4-44.6 354.4l-.7 7.9-6.2-.7c-10.9-1.1-32.3-5.5-57.1-11.8-13.2-3.4-26.5-6.2-29.6-6.4-4.2-.2-6.8-1-10.4-3.3-2.7-1.7-6-3.1-7.3-3.1-2.3 0-2.4.3-2 4.3.5 4.2 4.7 13.1 22 46.7 8.6 16.7 18.8 38.8 24.8 54 11.3 28.3 17.4 47.9 30 96.5 4.6 17.5 6.3 22.6 9.3 26.8 1 1.5 2.3 4.3 2.8 6.2 1.3 4.4 2.9 4.4 6.8-.1 4.1-4.6 6-7.7 21.1-33.9 32.7-56.5 53.2-84.6 96.9-132.4 26.3-28.9 30.4-34.2 28.5-37.2-1.1-1.8-9.4-.5-15.8 2.4l-5.8 2.7 1.6-2.5c.9-1.3 1.6-3.3 1.6-4.4 0-4.7-6.9-5.5-32-3.7-22.3 1.6-35 2-53.4 1.8-10.8-.2-11.8-.4-11.3-2 6.3-21.4 12.9-50.9 18.7-83.2 9.5-53.6 22.8-139.6 38-245.5 3.8-26.4 7.6-52.7 8.4-58.5.9-5.8 5.2-36.3 9.6-67.8 4.4-31.4 11.6-82.7 16-114 23.3-165.9 38.8-285.4 45.4-351.2 5.2-51.2 6-63.7 6-96.5.1-33.6-.7-46.1-2.9-49.2-1.3-1.7-1.5-1.6-2.9 1.7zM238.1 1088.4c15.5 8.2 34.4 14.7 53.2 18.3 14.4 2.8 46.9 2.5 60.3-.5 8.8-1.9 18.5-4.9 25.9-7.8 1.1-.4-1.6 2.1-6 5.7-21.7 17.5-45.6 45.3-62.7 72.9-9.6 15.5-22.9 43.6-27 57-.3.8-1-4.5-1.7-11.8-4.2-46.4-20.2-92-45.3-129.5-3.2-4.8-5.7-8.7-5.4-8.7.2 0 4.1 2 8.7 4.4z"
+							fill="currentColor"
 						/>
-						<path d="M 5 30 Q 10 26, 15 30 T 25 30 T 35 30 T 45 30 T 55 30" />
-						<path d="M 5 45 Q 10 41, 15 45 T 25 45 T 35 45 T 45 45 T 50 45" />
-						<path d="M 5 60 Q 10 56, 15 60 T 25 60 T 35 60 T 40 60" />
 					</svg>
 				</div>
-
-				{/* File 4: Standard Document */}
-				<div className="welcomeFile welcomeFile4">
-					<svg viewBox="0 0 60 80">
-						<title>Document</title>
-						<rect x="5" y="10" width="40" height="6" rx="3" fill="#cbd5e1" />
-						<rect x="5" y="25" width="50" height="3" rx="1.5" fill="#e2e8f0" />
-						<rect x="5" y="33" width="45" height="3" rx="1.5" fill="#e2e8f0" />
-						<rect x="5" y="41" width="50" height="3" rx="1.5" fill="#e2e8f0" />
-						<rect x="5" y="49" width="30" height="3" rx="1.5" fill="#e2e8f0" />
-						<rect x="5" y="62" width="20" height="8" rx="4" fill="#94a3b8" />
-					</svg>
-				</div>
-
-				{/* Folder Front */}
-				<div className="welcomeFolderFront" />
+				<button
+					type="button"
+					className="welcomeActionBtn"
+					onClick={handleOpen}
+					disabled={isOpening}
+					aria-busy={isOpening}
+				>
+					{isOpening ? "Opening..." : "Open Folder"}
+				</button>
 			</div>
-
-			<div className="welcomeTextContent">
-				<h1 className="welcomeHeading">Give your thoughts a home</h1>
-				<p className="welcomeSubtext">
-					Your notes, your files, your machine. Glyph works best with your
-					existing folders of Markdown notes, or a new folder if you want a
-					clean start.
-				</p>
-			</div>
-
-			<button type="button" className="welcomeActionBtn" onClick={handleOpen}>
-				<HugeiconsIcon icon={Folder03Icon} size={16} strokeWidth={0.9} />
-				Open Folder
-			</button>
 		</div>
 	);
 }

@@ -118,15 +118,20 @@
 }
 
 .rfNodeNoteEditorRibbon {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
-	padding: 4px 12px;
-	background: var(--text-primary);
-	border: 1px solid color-mix(in srgb, var(--text-primary) 88%, transparent);
-	border-radius: var(--radius-xl);
-	color: var(--bg-primary);
+	gap: 4px;
+	padding: 5px 9px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 86%, transparent);
+	border-radius: var(--radius-lg);
+	background-color: color-mix(
+		in srgb,
+		var(--bg-primary) 94%,
+		var(--bg-secondary)
+	);
+	color: var(--text-secondary);
 	flex-shrink: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -137,12 +142,14 @@
 	margin: 0;
 	will-change: transform, opacity;
 	pointer-events: auto;
+	isolation: isolate;
+	z-index: 1;
 }
 
 .rfNodeNoteEditorRibbonFloating {
 	transform-origin: center bottom;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06), 0
-		1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08),
+		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 84%, transparent);
 }
 
 .rfNodeNoteEditorHeaderBar {
@@ -162,46 +169,54 @@
 .rfNodeNoteEditorRibbon .ribbonGroup {
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
-	padding: 1px 2px;
+	gap: 1px;
+	padding: 1px;
 	border: 1px solid transparent;
-	border-radius: var(--radius-xl);
-	background: transparent;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 42%, transparent);
 	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonGroupUnified {
-	gap: 2px;
+	gap: 3px;
 	padding: 0;
+	background: transparent;
 }
 
 .rfNodeNoteEditorRibbon .ribbonDivider {
 	width: 1px;
-	height: 18px;
-	background: color-mix(in srgb, var(--bg-primary) 32%, transparent);
+	height: 20px;
+	margin: 0 1px;
+	background: color-mix(in srgb, var(--border-default) 74%, transparent);
 	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn {
-	width: 25px;
-	height: 25px;
+	position: relative;
+	width: 26px;
+	height: 26px;
 	padding: 0;
-	border-radius: var(--radius-md);
-	color: var(--bg-primary);
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
 	flex: 0 0 auto;
 	transition: background-color var(--transition-base), color
-		var(--transition-base), box-shadow var(--transition-base);
+		var(--transition-base), box-shadow var(--transition-base), transform
+		var(--transition-base);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:hover {
-	background: color-mix(in srgb, var(--bg-primary) 18%, transparent);
-	color: var(--bg-primary);
+	background: color-mix(in srgb, var(--text-primary) 6%, transparent);
+	color: var(--text-primary);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn.active {
-	background: color-mix(in srgb, var(--bg-primary) 18%, transparent);
-	color: var(--bg-primary);
-	box-shadow: none;
+	background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+	color: var(--text-primary);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 12%, transparent), inset 0 -1px 0
+		color-mix(in srgb, var(--bg-primary) 54%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:disabled {
@@ -212,6 +227,7 @@
 .rfNodeNoteEditorRibbon .ribbonText {
 	font-size: 11px;
 	font-weight: var(--font-bold);
+	color: inherit;
 }
 
 .rfNodeNoteEditorBody {
