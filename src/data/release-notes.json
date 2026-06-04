@@ -1,6 +1,43 @@
 {
 	"versions": [
 		{
+			"version": "0.6.3",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Glyph Red is available as an accent color alongside Glyph Orange."
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Selected file tree directories now highlight the same way files do.",
+						"Active items across the sidebar, file tree, and Folio picked up tighter borders, softer shadows, and calmer transitions.",
+						"The rich editor overlays selected text with textured highlight bands while you edit.",
+						"Persistent text highlights in the editor now share a marker-style texture across all colors.",
+						"The floating selection toolbar snaps to the left text edge and follows your scroll. It sits on a muted surface with inset shadows.",
+						"Color and link popovers layer a paper grain texture over a subtle gradient.",
+						"Color swatches skew slightly and sit in a looser grid with tighter corners.",
+						"The welcome screen now shows a clean brand pane. The animated folder scene and complex load logic are gone."
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Custom file and folder colors stay visible when you select them.",
+						"Folio mode scrolls vertically without showing a horizontal scrollbar."
+					]
+				},
+				{
+					"category": "Removed",
+					"items": [
+						"Light Yellow, Soft Apricot, and Vibrant Coral are no longer in the default accent options."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.6.2",
 			"sections": [
 				{
