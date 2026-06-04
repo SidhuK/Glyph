@@ -162,15 +162,12 @@
 	background: var(--bg-active);
 	color: var(--text-primary);
 	border-radius: 6px;
+	border-color: color-mix(in srgb, var(--border-strong) 42%, transparent);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
-	color: var(--text-primary);
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow svg,
@@ -197,7 +194,9 @@
 	text-align: left;
 	border-radius: 6px;
 	margin: 0;
-	border-left: none;
+	border: 1px solid transparent;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .fileTreeRowActions {

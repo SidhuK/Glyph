@@ -1,62 +1,68 @@
 import type { Editor } from "@tiptap/core";
 import { type RefObject, useEffect, useRef, useState } from "react";
-import type {
-	SelectionRibbonPlacement,
-	SelectionRibbonPosition,
-} from "../noteEditorOverlayTypes";
+import type { SelectionRibbonPosition } from "../noteEditorOverlayTypes";
 import type { NoteInlineEditorMode } from "../types";
 import { getMountedEditorContentRoot } from "./editorDomUtils";
 
 const SELECTION_RIBBON_MARGIN_PX = 12;
 const SELECTION_RIBBON_HEIGHT_PX = 40;
 const SELECTION_RIBBON_EDGE_PADDING_PX = 18;
-const SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX = 176;
 const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
+
+function getTextStartWithinHost(host: HTMLElement, hostRect: DOMRect) {
+	const contentRoot = getMountedEditorContentRoot(host);
+	if (!contentRoot) return SELECTION_RIBBON_EDGE_PADDING_PX;
+
+	const contentRect = contentRoot.getBoundingClientRect();
+	const styles = window.getComputedStyle(contentRoot);
+	const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0;
+	const textStart = contentRect.left - hostRect.left + paddingLeft;
+	const maxLeft = Math.max(
+		SELECTION_RIBBON_EDGE_PADDING_PX,
+		host.clientWidth - SELECTION_RIBBON_EDGE_PADDING_PX,
+	);
+	return Math.min(
+		Math.max(textStart, SELECTION_RIBBON_EDGE_PADDING_PX),
+		maxLeft,
+	);
+}
 
 function getSelectionRibbonPosition(
 	host: HTMLElement,
 	selection: Selection,
+	scrollHost: HTMLElement | null,
 ): SelectionRibbonPosition | null {
 	if (selection.rangeCount === 0 || selection.isCollapsed) return null;
 	const range = selection.getRangeAt(0);
 	if (range.collapsed) return null;
 	if (!host.contains(range.commonAncestorContainer)) return null;
 
-	const lineRects = Array.from(range.getClientRects()).filter(
-		(rect) => rect.width > 0 || rect.height > 0,
-	);
-	if (lineRects.length === 0) return null;
-
 	const hostRect = host.getBoundingClientRect();
-	const firstLineRect = lineRects[0];
-	const lastLineRect = lineRects[lineRects.length - 1];
-	const firstLineTopWithinHost = firstLineRect.top - hostRect.top;
-	const lastLineBottomWithinHost = lastLineRect.bottom - hostRect.top;
+	const viewportRect = scrollHost?.getBoundingClientRect() ?? hostRect;
+	const selectionRect = Array.from(range.getClientRects()).find((rect) => {
+		if (rect.width <= 0 || rect.height <= 0) return false;
+		if (rect.bottom < viewportRect.top || rect.top > viewportRect.bottom) {
+			return false;
+		}
+		return rect.right >= viewportRect.left && rect.left <= viewportRect.right;
+	});
+	if (!selectionRect) return null;
+
+	const selectionTopWithinHost = selectionRect.top - hostRect.top;
+	const selectionBottomWithinHost = selectionRect.bottom - hostRect.top;
+	const selectionTopWithinViewport = selectionRect.top - viewportRect.top;
 	const placeAbove =
-		firstLineTopWithinHost >=
+		selectionTopWithinViewport >=
 		SELECTION_RIBBON_HEIGHT_PX + SELECTION_RIBBON_MARGIN_PX;
-	const placement: SelectionRibbonPlacement = placeAbove ? "above" : "below";
-	const anchorRect = placement === "above" ? firstLineRect : lastLineRect;
+	const placement = placeAbove ? "above" : "below";
 	const top =
 		placement === "above"
-			? firstLineTopWithinHost - SELECTION_RIBBON_MARGIN_PX
-			: lastLineBottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
-	const left = anchorRect.left - hostRect.left + anchorRect.width / 2;
-	const centerFallback = host.clientWidth / 2;
-	const minLeft = Math.min(
-		centerFallback,
-		SELECTION_RIBBON_EDGE_PADDING_PX + SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
-	);
-	const maxLeft = Math.max(
-		centerFallback,
-		host.clientWidth -
-			SELECTION_RIBBON_EDGE_PADDING_PX -
-			SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
-	);
+			? selectionTopWithinHost - SELECTION_RIBBON_MARGIN_PX
+			: selectionBottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
 
 	return {
 		top: Math.max(0, top),
-		left: Math.min(Math.max(left, minLeft), maxLeft),
+		left: getTextStartWithinHost(host, hostRect),
 		placement,
 	};
 }
@@ -89,6 +95,9 @@ export function useSelectionRibbon({
 		}
 		const host = hostRef.current;
 		if (!host || !getMountedEditorContentRoot(host)) return;
+		const scrollHost = host.closest(
+			".rfNodeNoteEditorBody",
+		) as HTMLElement | null;
 		let raf = 0;
 
 		const clearSoon = () => {
@@ -110,7 +119,7 @@ export function useSelectionRibbon({
 					clearSoon();
 					return;
 				}
-				const next = getSelectionRibbonPosition(host, selection);
+				const next = getSelectionRibbonPosition(host, selection, scrollHost);
 				if (!next) {
 					clearSoon();
 					return;
@@ -136,6 +145,9 @@ export function useSelectionRibbon({
 		syncSelectionRibbon();
 		document.addEventListener("selectionchange", syncSelectionRibbon);
 		editor.on("selectionUpdate", syncSelectionRibbon);
+		scrollHost?.addEventListener("scroll", syncSelectionRibbon, {
+			passive: true,
+		});
 		window.addEventListener("resize", syncSelectionRibbon);
 		return () => {
 			if (raf) window.cancelAnimationFrame(raf);
@@ -145,6 +157,7 @@ export function useSelectionRibbon({
 			}
 			document.removeEventListener("selectionchange", syncSelectionRibbon);
 			editor.off("selectionUpdate", syncSelectionRibbon);
+			scrollHost?.removeEventListener("scroll", syncSelectionRibbon);
 			window.removeEventListener("resize", syncSelectionRibbon);
 		};
 	}, [canEdit, editor, hostRef, mode]);

@@ -145,7 +145,8 @@
 .folioNotesList {
 	flex: 1;
 	min-height: 0;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	list-style: none;
 	margin: 0;
 	padding: 3px 0 8px;
@@ -197,7 +198,7 @@
 	color: var(--text-primary);
 	text-align: left;
 	cursor: default;
-	transition: background-color 120ms ease;
+	transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
 .folioNoteRow[data-pinned="true"] {
@@ -212,6 +213,7 @@
 
 .folioNoteRow[data-state="selected"] {
 	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+	box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
 .folioNoteRow[data-state="selected"]::before {

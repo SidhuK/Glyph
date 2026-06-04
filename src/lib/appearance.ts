@@ -52,11 +52,9 @@ const BASE_EDITOR_TEXT_SIZES = {
 
 const UI_ACCENT_COLORS: Record<Exclude<UiAccent, "neutral">, string> = {
 	"glyph-orange": "#de7356",
+	"glyph-red": "#e84d42",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
-	"light-yellow": "#fdfcdc",
-	"soft-apricot": "#fed9b7",
-	"vibrant-coral": "#f07167",
 };
 
 function clampColorChannel(value: number): number {

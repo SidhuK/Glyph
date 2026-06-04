@@ -9,11 +9,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { AnimatePresence } from "motion/react";
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import type { BacklinkItem } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
+import { SelectionHighlight } from "./SelectionHighlight";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
@@ -80,6 +81,14 @@ export interface NoteEditorSurfaceProps {
 	};
 }
 
+function getRibbonTransform(selectionRibbon: SelectionRibbonPosition) {
+	const y =
+		selectionRibbon.placement === "above"
+			? "translateY(-100%)"
+			: "translateY(0)";
+	return `translateX(0) ${y}`;
+}
+
 export const NoteEditorSurface = memo(function NoteEditorSurface({
 	editor,
 	mode,
@@ -93,9 +102,18 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	task,
 	backlinks,
 }: NoteEditorSurfaceProps) {
+	const [hostNode, setHostNode] = useState<HTMLDivElement | null>(null);
+	const handleHostRef = useCallback(
+		(node: HTMLDivElement | null) => {
+			setHostNode(node);
+			hostRef(node);
+		},
+		[hostRef],
+	);
+
 	return (
 		<div
-			ref={hostRef}
+			ref={handleHostRef}
 			className={[
 				"tiptapHostInline",
 				mode === "preview" ? "is-preview" : "",
@@ -110,6 +128,10 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			}
 		>
 			<EditorContent editor={editor} />
+			<SelectionHighlight
+				host={hostNode}
+				enabled={canEdit && mode === "rich" && Boolean(editor)}
+			/>
 			<AnimatePresence initial={false}>
 				{canEdit && selectionRibbon && editor ? (
 					<EditorRibbon
@@ -119,10 +141,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						style={{
 							top: `${selectionRibbon.top}px`,
 							left: `${selectionRibbon.left}px`,
-							transform:
-								selectionRibbon.placement === "above"
-									? "translate(-50%, -100%)"
-									: "translate(-50%, 0)",
+							transform: getRibbonTransform(selectionRibbon),
 						}}
 					/>
 				) : null}

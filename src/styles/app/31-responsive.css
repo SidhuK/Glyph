@@ -19,10 +19,6 @@
 }
 
 @media (max-width: 900px) {
-	.welcomeEmptyState {
-		padding: var(--space-4);
-	}
-
 	.starterPane {
 		padding: var(--space-3);
 	}

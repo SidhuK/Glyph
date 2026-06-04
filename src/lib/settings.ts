@@ -56,19 +56,15 @@ const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>([
 export type UiAccent =
 	| "neutral"
 	| "glyph-orange"
+	| "glyph-red"
 	| "cerulean"
-	| "tropical-teal"
-	| "light-yellow"
-	| "soft-apricot"
-	| "vibrant-coral";
+	| "tropical-teal";
 const UI_ACCENTS = new Set<UiAccent>([
 	"neutral",
 	"glyph-orange",
+	"glyph-red",
 	"cerulean",
 	"tropical-teal",
-	"light-yellow",
-	"soft-apricot",
-	"vibrant-coral",
 ]);
 
 export function isUiAccent(value: unknown): value is UiAccent {

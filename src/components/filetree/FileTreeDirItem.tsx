@@ -202,7 +202,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	);
 
 	return (
-		<li className="fileTreeItem">
+		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow" style={rowStyle}>
