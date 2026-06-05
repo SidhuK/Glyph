@@ -41,6 +41,10 @@ import {
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import {
+	DatabaseNoteAppearanceIcon,
+	databaseNoteAppearanceStyle,
+} from "./DatabaseNoteAppearanceIcon";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
@@ -1104,11 +1108,16 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
-	const { beautifulTags, tagAppearance } = useFileTreeContext();
+	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
 		() => databaseCellValueFromRow(row, column),
 		[column, row],
+	);
+	const noteAppearance = itemAppearance[row.note_path] ?? null;
+	const noteAppearanceStyle = databaseNoteAppearanceStyle(
+		row.note_path,
+		noteAppearance,
 	);
 	const [editing, setEditing] = useState(false);
 	const displayText =
@@ -1417,6 +1426,7 @@ export function DatabaseCell({
 					<button
 						type="button"
 						className="databaseCellButton databaseTitleCellMain is-title"
+						style={noteAppearanceStyle}
 						onDoubleClick={() => {
 							if (editable) setEditing(true);
 						}}
@@ -1426,6 +1436,12 @@ export function DatabaseCell({
 						}}
 						title="Double-click to rename note"
 					>
+						<DatabaseNoteAppearanceIcon
+							notePath={row.note_path}
+							appearance={noteAppearance}
+							className="databaseTitleCellIcon"
+							size={14}
+						/>
 						{displayText.trim() ? (
 							<span className="databaseCellText">{displayText}</span>
 						) : null}

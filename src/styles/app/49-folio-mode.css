@@ -405,6 +405,28 @@
 	white-space: nowrap;
 }
 
+.folioNoteTagIcon {
+	flex: 0 0 auto;
+	color: currentcolor;
+}
+
+.folioNoteUrl {
+	cursor: pointer;
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.folioNoteUrl:hover,
+.folioNoteUrl:focus-visible {
+	color: var(--link-color-hover);
+}
+
+.folioNoteUrlIcon {
+	flex: 0 0 auto;
+	margin-right: 3px;
+	color: currentcolor;
+}
+
 .folioNoteFolder {
 	min-width: 0;
 	overflow: hidden;

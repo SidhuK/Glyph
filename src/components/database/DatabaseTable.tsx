@@ -23,7 +23,7 @@ import {
 	TableRow,
 } from "../ui/shadcn/table";
 import { DatabaseCell } from "./DatabaseCell";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -37,6 +37,7 @@ interface DatabaseTableProps {
 		initialValue?: { column: DatabaseColumn; laneId: string } | null,
 	) => void | Promise<void>;
 	onToggleSort: (column: DatabaseColumn) => void;
+	onChangeColumnIcon: (columnId: string, iconName: string | null) => void;
 	laneColors?: Record<string, string>;
 	statusColors?: Record<string, EditorTextColor>;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
@@ -106,6 +107,7 @@ export function DatabaseTable({
 	onOpenRow,
 	onCreateRow,
 	onToggleSort,
+	onChangeColumnIcon,
 	laneColors = EMPTY_LANE_COLORS,
 	statusColors,
 	onStatusColorChange,
@@ -145,21 +147,23 @@ export function DatabaseTable({
 			columns.map((column) => ({
 				id: column.id,
 				header: () => (
-					<button
-						type="button"
-						className="databaseHeaderButton"
-						onClick={() => onToggleSort(column)}
-					>
-						<span className="databaseHeaderLabel">
-							<DatabaseColumnIcon
-								column={column}
-								size={13}
-								className="databaseHeaderIcon"
-							/>
-							<span className="databaseHeaderText">{column.label}</span>
-							<SortIndicator activeSort={activeSort} columnId={column.id} />
-						</span>
-					</button>
+					<div className="databaseHeaderControls">
+						<DatabaseColumnIconPicker
+							column={column}
+							className="databaseHeaderIconPicker"
+							onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
+						/>
+						<button
+							type="button"
+							className="databaseHeaderButton"
+							onClick={() => onToggleSort(column)}
+						>
+							<span className="databaseHeaderLabel">
+								<span className="databaseHeaderText">{column.label}</span>
+								<SortIndicator activeSort={activeSort} columnId={column.id} />
+							</span>
+						</button>
+					</div>
 				),
 				cell: ({ row }) => (
 					<DatabaseCell
@@ -182,6 +186,7 @@ export function DatabaseTable({
 			activeSort,
 			columnValueOptions,
 			columns,
+			onChangeColumnIcon,
 			onOpenRow,
 			onRenameTitle,
 			onSaveCell,

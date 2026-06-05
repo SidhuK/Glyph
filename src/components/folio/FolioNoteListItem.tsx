@@ -1,3 +1,4 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
 import {
 	type CSSProperties,
 	type MouseEvent,
@@ -44,6 +45,7 @@ interface FolioNoteListItemProps {
 	onCancelRename: () => void;
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
+	iconNameForTag: (tag: string) => string;
 }
 
 type FolioImageRef =
@@ -53,8 +55,13 @@ type FolioImageRef =
 
 const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
+const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
+const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
+const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
+let activeFolioUrlReads = 0;
+const queuedFolioUrlReads: Array<() => void> = [];
 
 interface FolioImageCandidate {
 	index: number;
@@ -104,6 +111,45 @@ function previewText(preview: string, title: string): string {
 	}
 
 	return previewLines.join(" ") || "No preview";
+}
+
+function cleanUrl(rawUrl: string): string {
+	return rawUrl.replace(/[.,;:!?)]+$/g, "");
+}
+
+function extractFirstUrl(text: string): string {
+	const match = text.match(URL_RE);
+	return match?.[0] ? cleanUrl(match[0]) : "";
+}
+
+function runLimitedFolioUrlRead<T>(read: () => Promise<T>): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const run = () => {
+			activeFolioUrlReads += 1;
+			read()
+				.then(resolve, reject)
+				.finally(() => {
+					activeFolioUrlReads = Math.max(0, activeFolioUrlReads - 1);
+					queuedFolioUrlReads.shift()?.();
+				});
+		};
+
+		if (activeFolioUrlReads < FOLIO_NOTE_URL_READ_CONCURRENCY) {
+			run();
+			return;
+		}
+
+		queuedFolioUrlReads.push(run);
+	});
+}
+
+function urlLabel(url: string): string {
+	try {
+		const parsed = new URL(url);
+		return parsed.hostname.replace(/^www\./i, "") || url;
+	} catch {
+		return url.replace(/^https?:\/\//i, "");
+	}
 }
 
 function markdownImageHref(rawHref: string): string {
@@ -247,6 +293,40 @@ function useFolioThumbnail(note: FolioItem): string {
 	return src;
 }
 
+function useFolioFirstUrl(note: FolioItem): string {
+	const previewUrl = useMemo(
+		() => extractFirstUrl(note.preview),
+		[note.preview],
+	);
+	const [url, setUrl] = useState(previewUrl);
+
+	useEffect(() => {
+		let cancelled = false;
+		setUrl(previewUrl);
+		if (!note.is_markdown) return;
+		void (async () => {
+			try {
+				const doc = await runLimitedFolioUrlRead(async () => {
+					if (cancelled) return null;
+					return await invoke("space_read_text_preview", {
+						path: note.note_path,
+						max_bytes: FOLIO_NOTE_URL_SCAN_MAX_BYTES,
+					});
+				});
+				if (cancelled || !doc) return;
+				setUrl(extractFirstUrl(doc.text));
+			} catch {
+				if (!cancelled) setUrl(previewUrl);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [note.is_markdown, note.note_path, previewUrl]);
+
+	return url;
+}
+
 function FolioRenameInput({
 	initialName,
 	relPath,
@@ -325,6 +405,7 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	onCancelRename,
 	appearance = null,
 	onOpenAppearancePicker,
+	iconNameForTag,
 }: FolioNoteListItemProps) {
 	const title = note.title.trim() || titleFromPath(note.note_path);
 	const isMarkdown = note.is_markdown;
@@ -351,6 +432,8 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
 	const folder = parentDir(note.note_path);
 	const thumbnailSrc = useFolioThumbnail(note);
+	const firstUrl = useFolioFirstUrl(note);
+	const firstUrlLabel = firstUrl ? urlLabel(firstUrl) : "";
 	const taskProgress =
 		taskSummary && taskSummary.total_count > 0 ? (
 			<TaskProgressIndicator
@@ -452,6 +535,26 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 			) : null}
 			<span className="folioNoteFooter">
 				<span className="folioNoteTags">
+					{firstUrl ? (
+						<a
+							href={firstUrl}
+							className="databaseCellPill folioNoteTag folioNoteUrl"
+							title={firstUrl}
+							onClick={(event) => {
+								event.preventDefault();
+								event.stopPropagation();
+								void openUrl(firstUrl);
+							}}
+						>
+							<DatabaseColumnIcon
+								iconName="link"
+								className="folioNoteUrlIcon"
+								size={10}
+								strokeWidth={1.2}
+							/>
+							{firstUrlLabel}
+						</a>
+					) : null}
 					{visibleTags.length > 0 ? (
 						visibleTags.map((tag) => (
 							<span
@@ -459,10 +562,16 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 								className="databaseCellPill folioNoteTag"
 								title={formatDatabaseTagLabel(tag)}
 							>
+								<DatabaseColumnIcon
+									iconName={iconNameForTag(tag)}
+									className="folioNoteTagIcon"
+									size={10}
+									strokeWidth={1.2}
+								/>
 								{formatDatabaseTagLabel(tag)}
 							</span>
 						))
-					) : (
+					) : firstUrl ? null : (
 						<span className="folioNoteFolder">{folder || "No folder"}</span>
 					)}
 					{hiddenTagCount > 0 ? (
