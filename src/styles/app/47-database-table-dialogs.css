@@ -116,6 +116,19 @@
 	transition: color 140ms ease;
 }
 
+.databaseHeaderControls {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: 100%;
+	min-width: 0;
+}
+
+.databaseHeaderControls .databaseHeaderButton {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
 .databaseHeaderButton:hover {
 	color: var(--text-primary);
 }
@@ -131,6 +144,20 @@
 .databaseHeaderIcon {
 	color: var(--text-tertiary);
 	flex: 0 0 auto;
+}
+
+.databaseHeaderIconPicker {
+	width: 18px;
+	height: 18px;
+	color: var(--text-tertiary);
+}
+
+.databaseHeaderIconPicker:hover,
+.databaseHeaderIconPicker:active,
+.databaseHeaderIconPicker:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
+	box-shadow: none;
 }
 
 .databaseHeaderText {
@@ -368,6 +395,18 @@
 
 .databaseCellButton.is-title {
 	font-weight: var(--font-semibold);
+}
+
+.databaseTitleCellMain.is-title {
+	gap: 6px;
+	color: var(--database-note-appearance-color, inherit);
+}
+
+.databaseTitleCellIcon {
+	display: inline-flex;
+	width: 14px;
+	flex: 0 0 auto;
+	color: var(--database-note-appearance-color, var(--text-accent));
 }
 
 .databaseTitleCell {

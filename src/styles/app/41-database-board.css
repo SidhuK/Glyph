@@ -266,12 +266,20 @@
 	font-size: 0.93rem;
 	font-weight: var(--font-semibold);
 	line-height: 1.24;
-	color: var(--text-primary);
+	color: var(--database-note-appearance-color, var(--text-primary));
 	overflow: hidden;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	white-space: normal;
+}
+
+.databaseBoardCardTitleIcon {
+	display: inline-flex;
+	width: 14px;
+	margin-right: 6px;
+	color: var(--database-note-appearance-color, var(--text-accent));
+	vertical-align: -2px;
 }
 
 .databaseBoardCardHead {

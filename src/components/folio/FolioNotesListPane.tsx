@@ -11,6 +11,11 @@ import {
 	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import {
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
 import type { AllDocsItem, FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
@@ -171,8 +176,14 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const { itemAppearance, setItemAppearance, pinnedFiles, togglePinnedFile } =
-		useFileTreeContext();
+	const {
+		beautifulTags,
+		itemAppearance,
+		setItemAppearance,
+		pinnedFiles,
+		togglePinnedFile,
+		tagAppearance,
+	} = useFileTreeContext();
 	const queryClient = useQueryClient();
 	const {
 		notes,
@@ -280,6 +291,17 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		taskSummaryPaths,
 		showTaskProgressIndicator,
 		taskSummaryRefreshKey,
+	);
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
 	);
 
 	useTauriEvent("notes:external_changed", (payload) => {
@@ -483,6 +505,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onCancelRename={cancelRename}
 							appearance={itemAppearance[note.note_path] ?? null}
 							onOpenAppearancePicker={setAppearancePickerPath}
+							iconNameForTag={iconNameForTag}
 							taskSummary={
 								showTaskProgressIndicator && note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
@@ -513,6 +536,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onCancelRename={cancelRename}
 							appearance={itemAppearance[note.note_path] ?? null}
 							onOpenAppearancePicker={setAppearancePickerPath}
+							iconNameForTag={iconNameForTag}
 							taskSummary={
 								showTaskProgressIndicator && note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)

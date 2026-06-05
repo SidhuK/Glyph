@@ -84,6 +84,10 @@ import {
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import {
+	DatabaseNoteAppearanceIcon,
+	databaseNoteAppearanceStyle,
+} from "./DatabaseNoteAppearanceIcon";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
@@ -533,7 +537,7 @@ export function DatabaseBoard({
 	onStatusColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
-	const { beautifulTags, tagAppearance } = useFileTreeContext();
+	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
 	const {
 		groupColumn,
@@ -899,6 +903,12 @@ export function DatabaseBoard({
 											const taskSummary =
 												taskSummariesByPath[row.note_path] ??
 												EMPTY_TASK_SUMMARY;
+											const noteAppearance =
+												itemAppearance[row.note_path] ?? null;
+											const noteAppearanceStyle = databaseNoteAppearanceStyle(
+												row.note_path,
+												noteAppearance,
+											);
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&
@@ -945,7 +955,16 @@ export function DatabaseBoard({
 												>
 													<div className="databaseBoardCardHead">
 														<div className="databaseBoardCardHeaderRow">
-															<span className="databaseBoardCardTitle">
+															<span
+																className="databaseBoardCardTitle"
+																style={noteAppearanceStyle}
+															>
+																<DatabaseNoteAppearanceIcon
+																	notePath={row.note_path}
+																	appearance={noteAppearance}
+																	className="databaseBoardCardTitleIcon"
+																	size={14}
+																/>
 																{title}
 															</span>
 															<div className="databaseBoardCardTitleMeta">

@@ -520,6 +520,24 @@ function DatabasesPaneContent({
 		[activeConfig, handleSaveConfig],
 	);
 
+	const handleChangeColumnIcon = useCallback(
+		(columnId: string, iconName: string | null) => {
+			if (!activeConfig) return;
+			const nextIcon = iconName?.trim() || null;
+			const currentIcon =
+				activeConfig.columns.find((column) => column.id === columnId)?.icon ??
+				null;
+			if (currentIcon === nextIcon) return;
+			void handleSaveConfig({
+				...activeConfig,
+				columns: activeConfig.columns.map((column) =>
+					column.id === columnId ? { ...column, icon: nextIcon } : column,
+				),
+			});
+		},
+		[activeConfig, handleSaveConfig],
+	);
+
 	const handleCreateDatabase = useCallback(async () => {
 		try {
 			const created = await invoke("databases_create", {
@@ -1286,6 +1304,7 @@ function DatabasesPaneContent({
 											: [{ column_id: column.id, direction: "asc" }],
 								})
 							}
+							onChangeColumnIcon={handleChangeColumnIcon}
 							onSaveCell={handleUpdateCell}
 							onRenameTitle={handleRenameRowTitle}
 							onResizeColumn={handleResizeColumn}

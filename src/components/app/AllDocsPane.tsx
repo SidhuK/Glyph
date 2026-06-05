@@ -31,9 +31,17 @@ import {
 	resolveTagIconName,
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
-import type { AllDocsItem, NoteTaskSummary } from "../../lib/tauri";
+import type {
+	AllDocsItem,
+	FileTreeAppearance,
+	NoteTaskSummary,
+} from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import {
+	DatabaseNoteAppearanceIcon,
+	databaseNoteAppearanceStyle,
+} from "../database/DatabaseNoteAppearanceIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
@@ -189,6 +197,7 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 
 interface AllDocsCardProps {
 	notePath: string;
+	noteAppearance?: FileTreeAppearance | null;
 	title: string;
 	preview: PreviewLine[];
 	tags: string[];
@@ -266,6 +275,7 @@ function prepareAllDocsCardProps({
 
 function AllDocsCard({
 	notePath,
+	noteAppearance = null,
 	title,
 	preview,
 	tags,
@@ -297,6 +307,10 @@ function AllDocsCard({
 			onSelect();
 		}
 	};
+	const noteAppearanceStyle = databaseNoteAppearanceStyle(
+		notePath,
+		noteAppearance,
+	);
 
 	return (
 		<m.button
@@ -323,7 +337,17 @@ function AllDocsCard({
 		>
 			<div className="allDocsCardSurface">
 				<div className="allDocsCardTop">
-					<span className="allDocsCardTitle" title={title}>
+					<span
+						className="allDocsCardTitle"
+						title={title}
+						style={noteAppearanceStyle}
+					>
+						<DatabaseNoteAppearanceIcon
+							notePath={notePath}
+							appearance={noteAppearance}
+							className="allDocsCardTitleIcon"
+							size={14}
+						/>
 						{title}
 					</span>
 					{taskSummary && taskCount > 0 ? (
@@ -404,7 +428,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	emptyMessage = "No notes yet. Create one to get started.",
 	initialNotes = null,
 }: AllDocsPaneProps) {
-	const { beautifulTags, tagAppearance } = useFileTreeContext();
+	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
@@ -516,6 +540,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 									<AllDocsCard
 										key={note.note_path}
 										{...cardProps}
+										noteAppearance={itemAppearance[note.note_path] ?? null}
 										shouldReduceMotion={shouldReduceMotion}
 										springPreset={springPresets.snappy}
 										iconNameForTag={iconNameForTag}

@@ -185,10 +185,18 @@
 	font-size: var(--all-docs-card-title-size);
 	font-weight: var(--font-semibold);
 	line-height: 1.3;
-	color: var(--text-primary);
+	color: var(--database-note-appearance-color, var(--text-primary));
 	overflow: hidden;
 	overflow-wrap: anywhere;
 	white-space: normal;
+}
+
+.allDocsCardTitleIcon {
+	display: inline-flex;
+	width: 14px;
+	margin-right: 6px;
+	color: var(--database-note-appearance-color, var(--text-accent));
+	vertical-align: -2px;
 }
 
 .allDocsCardPreview {

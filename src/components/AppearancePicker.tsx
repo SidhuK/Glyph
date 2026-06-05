@@ -1,9 +1,10 @@
-import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import {
 	DATABASE_COLUMN_ICON_OPTIONS,
 	type DatabaseColumnIconOption,
+	ICON_CATEGORY_LABELS,
+	type IconCategory,
 	getDatabaseColumnIconOption,
 } from "../lib/database/columnIcons";
 import { Search } from "./Icons";
@@ -54,6 +55,7 @@ export function AppearancePicker({
 }: AppearancePickerProps) {
 	const [internalOpen, setInternalOpen] = useState(false);
 	const [query, setQuery] = useState("");
+	const hasQuery = query.trim().length > 0;
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const resolvedOpen = open ?? internalOpen;
 	const selectedIconName = getDatabaseColumnIconOption(iconValue)
@@ -69,6 +71,33 @@ export function AppearancePicker({
 				option.label.toLowerCase().includes(normalizedQuery),
 		);
 	}, [iconOptions, query]);
+
+	const groupedByCategory = useMemo(() => {
+		const categoryOrder: IconCategory[] = [
+			"write",
+			"media",
+			"food",
+			"weather",
+			"sort",
+			"find",
+			"talk",
+			"time",
+			"do",
+			"fun",
+			"science",
+		];
+		const groups = new Map<IconCategory, DatabaseColumnIconOption[]>();
+		for (const cat of categoryOrder) {
+			groups.set(cat, []);
+		}
+		for (const option of filteredOptions) {
+			const cat = option.category;
+			if (groups.has(cat)) {
+				groups.get(cat)?.push(option);
+			}
+		}
+		return groups;
+	}, [filteredOptions]);
 
 	function setOpen(nextOpen: boolean) {
 		if (open === undefined) setInternalOpen(nextOpen);
@@ -141,8 +170,8 @@ export function AppearancePicker({
 					</div>
 					<div className="commandPaletteBody">
 						<ScrollArea className="appearancePickerScroll">
-							<div className="appearancePickerGrid">
-								{showDefaultIcon ? (
+							{showDefaultIcon ? (
+								<div className="appearancePickerGrid appearancePickerDefaultSection">
 									<Button
 										type="button"
 										variant={iconValue ? "ghost" : "secondary"}
@@ -157,33 +186,78 @@ export function AppearancePicker({
 									>
 										<DatabaseColumnIcon iconName={defaultIconName} size={15} />
 									</Button>
-								) : null}
-								{filteredOptions.map((option) => {
-									const active =
-										option.id === selectedIconName && Boolean(iconValue);
-									return (
-										<Button
-											key={option.id}
-											type="button"
-											variant={active ? "secondary" : "ghost"}
-											size="icon-sm"
-											title={option.label}
-											aria-label={`Use ${option.label} icon`}
-											aria-pressed={active}
-											className="appearancePickerOption"
-											onClick={() => {
-												onIconChange?.(option.id, option);
-												setOpen(false);
-											}}
-										>
-											<DatabaseColumnIcon iconName={option.id} size={15} />
-										</Button>
-									);
-								})}
-								{filteredOptions.length === 0 ? (
-									<div className="appearancePickerEmpty">No icons found.</div>
-								) : null}
-							</div>
+								</div>
+							) : null}
+							{hasQuery ? (
+								<div className="appearancePickerGrid">
+									{filteredOptions.map((option) => {
+										const active =
+											option.id === selectedIconName && Boolean(iconValue);
+										return (
+											<Button
+												key={option.id}
+												type="button"
+												variant={active ? "secondary" : "ghost"}
+												size="icon-sm"
+												title={option.label}
+												aria-label={`Use ${option.label} icon`}
+												aria-pressed={active}
+												className="appearancePickerOption"
+												onClick={() => {
+													onIconChange?.(option.id, option);
+													setOpen(false);
+												}}
+											>
+												<DatabaseColumnIcon iconName={option.id} size={15} />
+											</Button>
+										);
+									})}
+									{filteredOptions.length === 0 ? (
+										<div className="appearancePickerEmpty">No icons found.</div>
+									) : null}
+								</div>
+							) : (
+								Array.from(groupedByCategory.entries()).map(
+									([category, options]) => {
+										if (options.length === 0) return null;
+										return (
+											<div key={category} className="appearancePickerSection">
+												<div className="appearancePickerCategoryLabel">
+													{ICON_CATEGORY_LABELS[category]}
+												</div>
+												<div className="appearancePickerGrid">
+													{options.map((option) => {
+														const active =
+															option.id === selectedIconName &&
+															Boolean(iconValue);
+														return (
+															<Button
+																key={option.id}
+																type="button"
+																variant={active ? "secondary" : "ghost"}
+																size="icon-sm"
+																title={option.label}
+																aria-label={`Use ${option.label} icon`}
+																aria-pressed={active}
+																className="appearancePickerOption"
+																onClick={() => {
+																	onIconChange?.(option.id, option);
+																	setOpen(false);
+																}}
+															>
+																<DatabaseColumnIcon
+																	iconName={option.id}
+																	size={15}
+																/>
+															</Button>
+														);
+													})}
+												</div>
+											</div>
+										);
+									},
+								)
+							)}
 						</ScrollArea>
 					</div>
 				</DialogContent>
@@ -210,7 +284,7 @@ export function AppearancePickerIconTrigger({
 			type="button"
 			variant="ghost"
 			size="icon-xs"
-			className={cn("shrink-0", className)}
+			className={`shrink-0${className ? ` ${className}` : ""}`}
 			disabled={disabled}
 			aria-label={label}
 			onClick={(event) => {
