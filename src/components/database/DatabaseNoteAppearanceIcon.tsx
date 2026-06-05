@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { FileTreeAppearance } from "../../lib/tauri";
+import { isMarkdownPath } from "../../utils/path";
 import { isEditorTextColor } from "../editor/textColors";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
@@ -31,7 +32,7 @@ export function DatabaseNoteAppearanceIcon({
 	className?: string;
 	size?: number;
 }) {
-	const { Icon, color } = getFileTypeInfo(notePath, true);
+	const { Icon, color } = getFileTypeInfo(notePath, isMarkdownPath(notePath));
 
 	if (appearance?.icon) {
 		return (

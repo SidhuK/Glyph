@@ -1,6 +1,28 @@
 {
 	"versions": [
 		{
+			"version": "0.6.4",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"Database column icon picker groups icons by category with a searchable flat grid and a categorized browse view.",
+						"Table column headers use a clickable icon picker.",
+						"Database table cells and Kanban cards show the note's custom file-tree icon and color.",
+						"Folio note rows show the first URL as a clickable chip in the footer.",
+						"Folio footer tags show the resolved tag icon."
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Default notes without a custom appearance show a default note icon in database views.",
+						"Folio note rows without tags show a URL chip in the footer."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.6.3",
 			"sections": [
 				{

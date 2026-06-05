@@ -56,9 +56,12 @@ type FolioImageRef =
 const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
 const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
+const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
-const URL_RE = /https?:\/\/[^\s<>"'`)\]}]+/i;
+const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
+let activeFolioUrlReads = 0;
+const queuedFolioUrlReads: Array<() => void> = [];
 
 interface FolioImageCandidate {
 	index: number;
@@ -111,12 +114,33 @@ function previewText(preview: string, title: string): string {
 }
 
 function cleanUrl(rawUrl: string): string {
-	return rawUrl.replace(/[.,;:!?]+$/g, "");
+	return rawUrl.replace(/[.,;:!?)]+$/g, "");
 }
 
 function extractFirstUrl(text: string): string {
 	const match = text.match(URL_RE);
 	return match?.[0] ? cleanUrl(match[0]) : "";
+}
+
+function runLimitedFolioUrlRead<T>(read: () => Promise<T>): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const run = () => {
+			activeFolioUrlReads += 1;
+			read()
+				.then(resolve, reject)
+				.finally(() => {
+					activeFolioUrlReads = Math.max(0, activeFolioUrlReads - 1);
+					queuedFolioUrlReads.shift()?.();
+				});
+		};
+
+		if (activeFolioUrlReads < FOLIO_NOTE_URL_READ_CONCURRENCY) {
+			run();
+			return;
+		}
+
+		queuedFolioUrlReads.push(run);
+	});
 }
 
 function urlLabel(url: string): string {
@@ -282,11 +306,14 @@ function useFolioFirstUrl(note: FolioItem): string {
 		if (!note.is_markdown) return;
 		void (async () => {
 			try {
-				const doc = await invoke("space_read_text_preview", {
-					path: note.note_path,
-					max_bytes: FOLIO_NOTE_URL_SCAN_MAX_BYTES,
+				const doc = await runLimitedFolioUrlRead(async () => {
+					if (cancelled) return null;
+					return await invoke("space_read_text_preview", {
+						path: note.note_path,
+						max_bytes: FOLIO_NOTE_URL_SCAN_MAX_BYTES,
+					});
 				});
-				if (cancelled) return;
+				if (cancelled || !doc) return;
 				setUrl(extractFirstUrl(doc.text));
 			} catch {
 				if (!cancelled) setUrl(previewUrl);
