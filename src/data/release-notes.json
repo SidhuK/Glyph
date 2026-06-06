@@ -1,6 +1,15 @@
 {
 	"versions": [
 		{
+			"version": "0.6.5",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": ["Changed the app icon."]
+				}
+			]
+		},
+		{
 			"version": "0.6.4",
 			"sections": [
 				{
