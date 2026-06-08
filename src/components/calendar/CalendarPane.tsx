@@ -278,6 +278,8 @@ export function CalendarPane({
 		() => new Map((data?.days ?? []).map((day) => [day.date, day])),
 		[data?.days],
 	);
+	const selectedDaySummary = daySummariesByDate.get(selectedDate);
+	const selectedDayTaskCount = selectedDaySummary?.task_count ?? 0;
 	const selectedDateObj = useMemo(
 		() => parseCalendarDate(selectedDate),
 		[selectedDate],
@@ -393,7 +395,6 @@ export function CalendarPane({
 										<strong className="calendarWeekDayNumber">
 											{format(parsed, "d")}
 										</strong>
-
 									</button>
 								);
 							})}
@@ -409,11 +410,13 @@ export function CalendarPane({
 									strokeWidth={1.15}
 									aria-hidden
 								/>
-								<span className="calendarWeekSummaryCount">{noteActivity.length}</span>
+								<span className="calendarWeekSummaryCount">
+									{noteActivity.length}
+								</span>
 								<span className="calendarWeekSummaryLabel">notes</span>
 							</span>
 						) : null}
-						{daySummariesByDate.get(selectedDate)?.has_daily_note ? (
+						{selectedDaySummary?.has_daily_note ? (
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={Calendar03Icon}
@@ -424,7 +427,7 @@ export function CalendarPane({
 								<span className="calendarWeekSummaryLabel">daily note</span>
 							</span>
 						) : null}
-						{(daySummariesByDate.get(selectedDate)?.task_count ?? 0) > 0 ? (
+						{selectedDayTaskCount > 0 ? (
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={CheckListIcon}
@@ -432,7 +435,9 @@ export function CalendarPane({
 									strokeWidth={1.15}
 									aria-hidden
 								/>
-								<span className="calendarWeekSummaryCount">{daySummariesByDate.get(selectedDate)?.task_count ?? 0}</span>
+								<span className="calendarWeekSummaryCount">
+									{selectedDayTaskCount}
+								</span>
 								<span className="calendarWeekSummaryLabel">tasks</span>
 							</span>
 						) : null}
@@ -444,7 +449,9 @@ export function CalendarPane({
 									strokeWidth={1.15}
 									aria-hidden
 								/>
-								<span className="calendarWeekSummaryCount">{overdueTasks.length}</span>
+								<span className="calendarWeekSummaryCount">
+									{overdueTasks.length}
+								</span>
 								<span className="calendarWeekSummaryLabel">overdue</span>
 							</span>
 						) : null}

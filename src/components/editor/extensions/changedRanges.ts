@@ -6,6 +6,30 @@ export interface ChangedRange {
 	to: number;
 }
 
+function remapPositionToFinalDoc(
+	transactions: readonly Transaction[],
+	transactionIndex: number,
+	stepMapIndex: number,
+	position: number,
+	assoc: -1 | 1,
+): number {
+	let mappedPosition = position;
+	const currentMaps = transactions[transactionIndex]?.mapping.maps ?? [];
+	for (let index = stepMapIndex + 1; index < currentMaps.length; index += 1) {
+		mappedPosition = currentMaps[index].map(mappedPosition, assoc);
+	}
+	for (
+		let index = transactionIndex + 1;
+		index < transactions.length;
+		index += 1
+	) {
+		for (const stepMap of transactions[index].mapping.maps) {
+			mappedPosition = stepMap.map(mappedPosition, assoc);
+		}
+	}
+	return mappedPosition;
+}
+
 export function changedRangesFromTransactions(
 	transactions: readonly Transaction[],
 	docSize: number,
@@ -13,14 +37,38 @@ export function changedRangesFromTransactions(
 	const ranges: ChangedRange[] = [];
 	let hasDocChange = false;
 
-	for (const transaction of transactions) {
+	for (
+		let transactionIndex = 0;
+		transactionIndex < transactions.length;
+		transactionIndex += 1
+	) {
+		const transaction = transactions[transactionIndex];
 		if (!transaction.docChanged) continue;
 		hasDocChange = true;
-		for (const stepMap of transaction.mapping.maps) {
+		for (
+			let stepMapIndex = 0;
+			stepMapIndex < transaction.mapping.maps.length;
+			stepMapIndex += 1
+		) {
+			const stepMap = transaction.mapping.maps[stepMapIndex];
 			stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
+				const finalStart = remapPositionToFinalDoc(
+					transactions,
+					transactionIndex,
+					stepMapIndex,
+					newStart,
+					-1,
+				);
+				const finalEnd = remapPositionToFinalDoc(
+					transactions,
+					transactionIndex,
+					stepMapIndex,
+					newEnd,
+					1,
+				);
 				ranges.push({
-					from: Math.max(0, Math.min(newStart, newEnd) - 1),
-					to: Math.min(docSize, Math.max(newStart, newEnd) + 1),
+					from: Math.max(0, Math.min(finalStart, finalEnd) - 1),
+					to: Math.min(docSize, Math.max(finalStart, finalEnd) + 1),
 				});
 			});
 		}
@@ -51,10 +99,6 @@ export function mergeChangedRanges(
 	return merged;
 }
 
-// Deduped overlapping ranges skip a repeated node's subtree because returning
-// false from nodesBetween prevents descent. Current callers either target
-// paragraph nodes or independently scan inline text, so they do not rely on
-// revisiting children from overlapping parent ranges.
 export function visitNodesInRanges(
 	state: EditorState,
 	ranges: readonly ChangedRange[],
@@ -65,7 +109,7 @@ export function visitNodesInRanges(
 	const seen = new Set<number>();
 	for (const range of ranges) {
 		state.doc.nodesBetween(range.from, range.to, (node, pos, parent, index) => {
-			if (seen.has(pos)) return false;
+			if (seen.has(pos)) return;
 			seen.add(pos);
 			return visitor(node, pos, parent, index);
 		});

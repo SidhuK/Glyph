@@ -148,6 +148,7 @@ export const AIMessageMarkdown = memo(function AIMessageMarkdown({
 
 	useEffect(() => {
 		if (streaming) return;
+		if (!html) return;
 		const container = containerRef.current;
 		if (!container) return;
 		const frameId = window.requestAnimationFrame(() => {
@@ -161,7 +162,7 @@ export const AIMessageMarkdown = memo(function AIMessageMarkdown({
 		return () => {
 			window.cancelAnimationFrame(frameId);
 		};
-	});
+	}, [html, streaming]);
 
 	useEffect(() => {
 		const container = containerRef.current;
