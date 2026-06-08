@@ -46,6 +46,7 @@
 	font-weight: var(--font-semibold);
 	line-height: 1.1;
 	letter-spacing: -0.01em;
+	text-wrap: balance;
 }
 
 .tasksDashboardTitleBlock p {
@@ -234,19 +235,24 @@ button.calendarTaskComposerChip:focus-visible,
 	height: 28px;
 	padding-inline: 10px 8px;
 	border: 0;
-	border-radius: var(--radius-2xl);
+	border-radius: var(--radius-full);
 	background: transparent;
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	transition: background-color var(--transition-fast), color
-		var(--transition-fast), box-shadow var(--transition-fast);
+		var(--transition-fast), box-shadow var(--transition-fast), scale
+		var(--transition-fast);
 }
 
 .tasksPaneFilter:hover,
 .tasksPaneFilter:focus-visible {
 	color: var(--text-primary);
+}
+
+.tasksPaneFilter:active {
+	scale: 0.96;
 }
 
 .tasksPaneFilter[data-active="true"] {
@@ -271,6 +277,7 @@ button.calendarTaskComposerChip:focus-visible,
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	letter-spacing: 0;
+	font-variant-numeric: tabular-nums;
 }
 
 .tasksPaneFilter[data-active="true"] .tasksPaneFilterCount {
@@ -355,6 +362,7 @@ button.calendarTaskComposerChip:focus-visible,
 	letter-spacing: 0;
 	line-height: 1;
 	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
 }
 
 .tasksPaneRows {
@@ -375,6 +383,7 @@ button.calendarTaskComposerChip:focus-visible,
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
 }
 
 .tasksPaneEmpty {
@@ -433,6 +442,18 @@ button.calendarTaskComposerChip:focus-visible,
 	position: relative;
 	margin: 2px 0 0;
 	cursor: pointer;
+}
+
+/* Extend the clickable target leftward into the row padding (nothing
+   interactive sits there) without growing the visible 14px checkbox. */
+.tasksCheckbox::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: -3px;
+	transform: translateY(-50%);
+	width: 34px;
+	height: 30px;
 }
 
 .tasksCheckbox input[type="checkbox"] {
@@ -509,7 +530,11 @@ button.calendarTaskComposerChip:focus-visible,
 	font-weight: var(--font-semibold);
 	cursor: pointer;
 	transition: border-color 120ms ease, color 120ms ease, background-color 120ms
-		ease;
+		ease, scale 120ms ease;
+}
+
+.tasksRowOpenButton:active {
+	scale: 0.96;
 }
 
 .tasksRowOpenButton:hover,
@@ -649,6 +674,7 @@ button.calendarTaskComposerChip:focus-visible,
 }
 
 .tasksScheduleBtn {
+	position: relative;
 	height: 24px;
 	width: 24px;
 	flex: 0 0 auto;
@@ -660,9 +686,25 @@ button.calendarTaskComposerChip:focus-visible,
 	color: var(--text-secondary);
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
-	transition: transform var(--transition-base), background-color
+	transition: scale var(--transition-base), background-color
 		var(--transition-base), color var(--transition-base), border-color
 		var(--transition-base);
+}
+
+/* Extend the hit area beyond the 24px visible button (sits at the row end,
+   no neighbouring control to collide with horizontally). */
+.tasksScheduleBtn::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 40px;
+	height: 30px;
+}
+
+.tasksScheduleBtn:active {
+	scale: 0.96;
 }
 
 .tasksScheduleBtn:hover,

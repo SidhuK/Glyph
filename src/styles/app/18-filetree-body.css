@@ -150,7 +150,7 @@
 }
 
 .fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
 	border-radius: 6px;
 }
 
@@ -159,11 +159,13 @@
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
-	background: var(--bg-active);
+	background: var(--bg-primary);
 	color: var(--text-primary);
 	border-radius: 6px;
-	border-color: color-mix(in srgb, var(--border-strong) 42%, transparent);
-	box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 6%, transparent);
+	box-shadow: 0 0.5px 1.5px
+		color-mix(in srgb, var(--text-primary) 6%, transparent), inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 50%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 40%, transparent);
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {

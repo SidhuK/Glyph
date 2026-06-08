@@ -10,9 +10,14 @@ export const springTransition = {
 
 export const rowVariants = {
 	idle: { x: 0, backgroundColor: "transparent" },
-	hover: { x: 0, backgroundColor: "var(--bg-hover)" },
+	hover: {
+		x: 0,
+		backgroundColor: "color-mix(in srgb, var(--bg-primary) 85%, transparent)",
+	},
 	active: {
-		backgroundColor: "var(--bg-active)",
+		backgroundColor: "var(--bg-primary)",
+		boxShadow:
+			"0 0.5px 1.5px color-mix(in srgb, var(--text-primary) 6%, transparent), inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 50%, transparent)",
 	},
 	tap: { scale: 0.98 },
 };

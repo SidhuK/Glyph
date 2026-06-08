@@ -105,18 +105,6 @@ function weekTitle(dates: string[]): string {
 	return `${format(first, "MMM d")} - ${format(last, "d, yyyy")}`;
 }
 
-function selectedMonthLabel(date: string): { month: string; year: string } {
-	const parsed = parseCalendarDate(date);
-	return {
-		month: format(parsed, "MMM"),
-		year: format(parsed, "yyyy"),
-	};
-}
-
-function countLabel(count: number, singular: string, plural = `${singular}s`) {
-	return `${count} ${count === 1 ? singular : plural}`;
-}
-
 export function CalendarPane({
 	initialData = null,
 	onOpenFile,
@@ -285,22 +273,7 @@ export function CalendarPane({
 
 	const overdueTasks = data?.tasks.overdue ?? [];
 	const noteActivity = data?.detail.note_activity ?? [];
-	const weekTaskCount = useMemo(
-		() => (data?.days ?? []).reduce((total, day) => total + day.task_count, 0),
-		[data?.days],
-	);
-	const weekNoteCount = useMemo(
-		() =>
-			(data?.days ?? []).reduce(
-				(total, day) => total + day.note_activity_count,
-				0,
-			),
-		[data?.days],
-	);
-	const weekDailyNoteCount = useMemo(
-		() => (data?.days ?? []).filter((day) => day.has_daily_note).length,
-		[data?.days],
-	);
+
 	const daySummariesByDate = useMemo(
 		() => new Map((data?.days ?? []).map((day) => [day.date, day])),
 		[data?.days],
@@ -313,7 +286,6 @@ export function CalendarPane({
 		() => format(selectedDateObj, "EEEE, MMMM d"),
 		[selectedDateObj],
 	);
-	const selectedMonth = selectedMonthLabel(selectedDate);
 
 	return (
 		<div className="calendarPaneOuter">
@@ -394,50 +366,6 @@ export function CalendarPane({
 					) : null}
 
 					<section className="calendarWeekPanel">
-						<div className="calendarWeekHeader">
-							<div className="calendarWeekMonth">
-								<span>{selectedMonth.month}</span>
-								<small>{selectedMonth.year}</small>
-							</div>
-							<div className="calendarWeekStats" aria-label="Week summary">
-								<span>
-									<strong>{weekNoteCount}</strong>
-									<span className="calendarWeekStatsLabel">
-										<HugeiconsIcon
-											icon={NoteIcon}
-											size={10}
-											strokeWidth={1.15}
-											aria-hidden
-										/>{" "}
-										notes
-									</span>
-								</span>
-								<span>
-									<strong>{weekTaskCount}</strong>
-									<span className="calendarWeekStatsLabel">
-										<HugeiconsIcon
-											icon={CheckListIcon}
-											size={10}
-											strokeWidth={1.15}
-											aria-hidden
-										/>{" "}
-										tasks
-									</span>
-								</span>
-								<span>
-									<strong>{weekDailyNoteCount}</strong>
-									<span className="calendarWeekStatsLabel">
-										<HugeiconsIcon
-											icon={Calendar03Icon}
-											size={10}
-											strokeWidth={1.15}
-											aria-hidden
-										/>{" "}
-										daily notes
-									</span>
-								</span>
-							</div>
-						</div>
 						<div
 							className="calendarWeekStrip"
 							aria-label={weekTitle(weekRange.dates)}
@@ -447,12 +375,6 @@ export function CalendarPane({
 								const isSelected = date === selectedDate;
 								const dayOfWeek = parsed.getDay();
 								const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-								const summary = daySummariesByDate.get(date);
-								const taskCount = summary?.task_count ?? 0;
-								const noteActivityCount = summary?.note_activity_count ?? 0;
-								const hasDailyNote = summary?.has_daily_note ?? false;
-								const overdueCount = isSelected ? overdueTasks.length : 0;
-
 								const dayLabel = format(parsed, "EEEE, MMM d");
 								return (
 									<button
@@ -471,74 +393,68 @@ export function CalendarPane({
 										<strong className="calendarWeekDayNumber">
 											{format(parsed, "d")}
 										</strong>
-										<span
-											className="calendarWeekSignals"
-											aria-label={`${dayLabel} workload details`}
-										>
-											{taskCount > 0 ? (
-												<span className="calendarWeekSignal calendarWeekTaskSignal">
-													<HugeiconsIcon
-														icon={CheckListIcon}
-														size={11}
-														strokeWidth={1.15}
-														aria-hidden
-													/>
-													<span className="calendarWeekSignalCount">
-														{taskCount}
-													</span>
-												</span>
-											) : null}
-											{noteActivityCount > 0 ? (
-												<span className="calendarWeekSignal calendarWeekNoteSignal">
-													<HugeiconsIcon
-														icon={NoteIcon}
-														size={11}
-														strokeWidth={1.15}
-														aria-hidden
-													/>
-													<span className="calendarWeekSignalCount">
-														{noteActivityCount}
-													</span>
-												</span>
-											) : null}
-											{hasDailyNote ? (
-												<span className="calendarWeekSignal calendarWeekDailySignal">
-													<HugeiconsIcon
-														icon={Calendar03Icon}
-														size={11}
-														strokeWidth={1.15}
-														aria-hidden
-													/>
-												</span>
-											) : null}
-											{overdueCount > 0 ? (
-												<span className="calendarWeekSignal calendarWeekOverdueSignal">
-													<HugeiconsIcon
-														icon={AlertCircleIcon}
-														size={11}
-														strokeWidth={1.15}
-														aria-hidden
-													/>
-													<span className="calendarWeekSignalCount">
-														{overdueCount}
-													</span>
-												</span>
-											) : null}
-										</span>
+
 									</button>
 								);
 							})}
 						</div>
 					</section>
 
+					<div className="calendarWeekSummaryStrip">
+						{noteActivity.length > 0 ? (
+							<span className="calendarWeekSummaryItem">
+								<HugeiconsIcon
+									icon={NoteIcon}
+									size={11}
+									strokeWidth={1.15}
+									aria-hidden
+								/>
+								<span className="calendarWeekSummaryCount">{noteActivity.length}</span>
+								<span className="calendarWeekSummaryLabel">notes</span>
+							</span>
+						) : null}
+						{daySummariesByDate.get(selectedDate)?.has_daily_note ? (
+							<span className="calendarWeekSummaryItem">
+								<HugeiconsIcon
+									icon={Calendar03Icon}
+									size={11}
+									strokeWidth={1.15}
+									aria-hidden
+								/>
+								<span className="calendarWeekSummaryLabel">daily note</span>
+							</span>
+						) : null}
+						{(daySummariesByDate.get(selectedDate)?.task_count ?? 0) > 0 ? (
+							<span className="calendarWeekSummaryItem">
+								<HugeiconsIcon
+									icon={CheckListIcon}
+									size={11}
+									strokeWidth={1.15}
+									aria-hidden
+								/>
+								<span className="calendarWeekSummaryCount">{daySummariesByDate.get(selectedDate)?.task_count ?? 0}</span>
+								<span className="calendarWeekSummaryLabel">tasks</span>
+							</span>
+						) : null}
+						{overdueTasks.length > 0 ? (
+							<span className="calendarWeekSummaryItem">
+								<HugeiconsIcon
+									icon={AlertCircleIcon}
+									size={11}
+									strokeWidth={1.15}
+									aria-hidden
+								/>
+								<span className="calendarWeekSummaryCount">{overdueTasks.length}</span>
+								<span className="calendarWeekSummaryLabel">overdue</span>
+							</span>
+						) : null}
+					</div>
+
 					<div className="calendarDashboardContent">
 						<section className="calendarPanelSection calendarNotesSection">
 							<div className="calendarPanelSectionHeader">
 								<div>
 									<h3>Notes</h3>
-									<span>
-										{countLabel(noteActivity.length, "note")} for this day
-									</span>
 								</div>
 								<Button
 									type="button"

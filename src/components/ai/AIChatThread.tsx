@@ -1,18 +1,14 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
-import { Fragment, Suspense, lazy, useState } from "react";
+import { Fragment, memo, useMemo, useState } from "react";
 import { isMarkdownPath } from "../../utils/path";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
+import { AIMessageMarkdown } from "./AIMessageMarkdown";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
 import type { RigChatStatus, UIMessage } from "./hooks/useRigChat";
-
-const AIMessageMarkdown = lazy(async () => {
-	const module = await import("./AIMessageMarkdown");
-	return { default: module.AIMessageMarkdown };
-});
 
 interface AIChatThreadProps {
 	messages: UIMessage[];
@@ -112,6 +108,132 @@ function extractCitations(events: ToolTimelineEvent[]): CitationItem[] {
 	return Array.from(byPath.values()).slice(0, 8);
 }
 
+interface AIChatMessageBodyProps {
+	msg: UIMessage;
+	index: number;
+	text: string;
+	isChatMode: boolean;
+	isPendingAssistant: boolean;
+	isFailedAssistant: boolean;
+	isStreamingAssistant: boolean;
+	isLastAssistantWithTimeline: boolean;
+	phaseStatusText: string;
+	shouldReduceMotion: boolean;
+	chatStatus: RigChatStatus;
+	onCopy: (text: string) => void;
+	onSave: (text: string) => void;
+	onRetry: (index: number) => void;
+}
+
+const AIChatMessageBody = memo(function AIChatMessageBody({
+	msg,
+	index,
+	text,
+	isChatMode,
+	isPendingAssistant,
+	isFailedAssistant,
+	isStreamingAssistant,
+	isLastAssistantWithTimeline,
+	phaseStatusText,
+	shouldReduceMotion,
+	chatStatus,
+	onCopy,
+	onSave,
+	onRetry,
+}: AIChatMessageBodyProps) {
+	return (
+		<>
+			{isPendingAssistant ? (
+				<m.div
+					className="aiPendingAssistant"
+					initial={
+						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.99 }
+					}
+					animate={{ opacity: 1, y: 0, scale: 1 }}
+					transition={
+						shouldReduceMotion
+							? { duration: 0 }
+							: { duration: 0.18, ease: "easeOut" }
+					}
+				>
+					<div className="aiPendingHeader">
+						<span className="aiPendingDot" />
+						<span>{phaseStatusText || "Preparing response..."}</span>
+					</div>
+					<div className="aiPendingSkeleton">
+						<span className="aiPendingLine aiPendingLine-1" />
+						<span className="aiPendingLine aiPendingLine-2" />
+					</div>
+				</m.div>
+			) : msg.role === "assistant" ? (
+				!isChatMode &&
+				isLastAssistantWithTimeline ? null : isStreamingAssistant ? (
+					<div className="aiStreamingCaretWrap">
+						<AIMessageMarkdown markdown={text} streaming />
+						<span className="aiStreamingCaret">▍</span>
+					</div>
+				) : (
+					<AIMessageMarkdown markdown={text} />
+				)
+			) : (
+				<div className="aiChatContent">{text}</div>
+			)}
+			{isFailedAssistant ? (
+				<div className="aiInlineError">
+					<span className="aiInlineErrorDot" />
+					<span className="aiInlineErrorText">Response failed</span>
+					<button
+						type="button"
+						className="aiInlineRetryBtn"
+						onClick={() => onRetry(index)}
+					>
+						<RefreshCw size={11} />
+						<span>Retry</span>
+					</button>
+				</div>
+			) : null}
+			{msg.role === "assistant" && text ? (
+				<div className="aiAssistantActions">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="aiAssistantActionBtn aiAssistantActionIconBtn"
+						onClick={() => onCopy(text)}
+						title="Copy response"
+						aria-label="Copy response"
+					>
+						<Files size={12} />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="aiAssistantActionBtn aiAssistantActionIconBtn"
+						onClick={() => onSave(text)}
+						title="Save response to file"
+						aria-label="Save response to file"
+					>
+						<Save size={12} />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="aiAssistantActionBtn aiAssistantActionIconBtn"
+						onClick={() => onRetry(index)}
+						title="Retry this response"
+						aria-label="Retry response"
+						disabled={chatStatus === "streaming"}
+					>
+						<RefreshCw size={12} />
+					</Button>
+				</div>
+			) : null}
+		</>
+	);
+});
+
 export function AIChatThread({
 	messages,
 	isChatMode,
@@ -124,7 +246,10 @@ export function AIChatThread({
 	onRetry,
 }: AIChatThreadProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const citations = extractCitations(toolTimeline);
+	const citations = useMemo(
+		() => extractCitations(toolTimeline),
+		[toolTimeline],
+	);
 	const [citationsOpen, setCitationsOpen] = useState(false);
 	const hasInterleavedTextTimeline = toolTimeline.some(
 		(e) => e.kind === "text",
@@ -172,104 +297,25 @@ export function AIChatThread({
 								msg.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
 							)}
 						>
-							{isPendingAssistant ? (
-								<m.div
-									className="aiPendingAssistant"
-									initial={
-										shouldReduceMotion
-											? false
-											: { opacity: 0, y: 4, scale: 0.99 }
-									}
-									animate={{ opacity: 1, y: 0, scale: 1 }}
-									transition={
-										shouldReduceMotion
-											? { duration: 0 }
-											: { duration: 0.18, ease: "easeOut" }
-									}
-								>
-									<div className="aiPendingHeader">
-										<span className="aiPendingDot" />
-										<span>{phaseStatusText || "Preparing response…"}</span>
-									</div>
-									<div className="aiPendingSkeleton">
-										<span className="aiPendingLine aiPendingLine-1" />
-										<span className="aiPendingLine aiPendingLine-2" />
-									</div>
-								</m.div>
-							) : msg.role === "assistant" ? (
-								!isChatMode &&
-								index === lastAssistantMessageIndex &&
-								hasInterleavedTextTimeline ? null : isStreamingAssistant ? (
-									<div className="aiStreamingCaretWrap">
-										<Suspense
-											fallback={<div className="aiChatContent">{text}</div>}
-										>
-											<AIMessageMarkdown markdown={text} />
-										</Suspense>
-										<span className="aiStreamingCaret">▍</span>
-									</div>
-								) : (
-									<Suspense
-										fallback={<div className="aiChatContent">{text}</div>}
-									>
-										<AIMessageMarkdown markdown={text} />
-									</Suspense>
-								)
-							) : (
-								<div className="aiChatContent">{text}</div>
-							)}
-							{isFailedAssistant ? (
-								<div className="aiInlineError">
-									<span className="aiInlineErrorDot" />
-									<span className="aiInlineErrorText">Response failed</span>
-									<button
-										type="button"
-										className="aiInlineRetryBtn"
-										onClick={() => onRetry(index)}
-									>
-										<RefreshCw size={11} />
-										<span>Retry</span>
-									</button>
-								</div>
-							) : null}
-							{msg.role === "assistant" && text ? (
-								<div className="aiAssistantActions">
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										className="aiAssistantActionBtn aiAssistantActionIconBtn"
-										onClick={() => onCopy(text)}
-										title="Copy response"
-										aria-label="Copy response"
-									>
-										<Files size={12} />
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										className="aiAssistantActionBtn aiAssistantActionIconBtn"
-										onClick={() => onSave(text)}
-										title="Save response to file"
-										aria-label="Save response to file"
-									>
-										<Save size={12} />
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										className="aiAssistantActionBtn aiAssistantActionIconBtn"
-										onClick={() => onRetry(index)}
-										title="Retry this response"
-										aria-label="Retry response"
-										disabled={chatStatus === "streaming"}
-									>
-										<RefreshCw size={12} />
-									</Button>
-								</div>
-							) : null}
+							<AIChatMessageBody
+								msg={msg}
+								index={index}
+								text={text}
+								isChatMode={isChatMode}
+								isPendingAssistant={isPendingAssistant}
+								isFailedAssistant={isFailedAssistant}
+								isStreamingAssistant={isStreamingAssistant}
+								isLastAssistantWithTimeline={
+									index === lastAssistantMessageIndex &&
+									hasInterleavedTextTimeline
+								}
+								phaseStatusText={phaseStatusText}
+								shouldReduceMotion={shouldReduceMotion === true}
+								chatStatus={chatStatus}
+								onCopy={onCopy}
+								onSave={onSave}
+								onRetry={onRetry}
+							/>
 							{msg.role === "assistant" &&
 							text &&
 							!isChatMode &&

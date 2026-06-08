@@ -260,7 +260,15 @@ export function LinkedNotePreviewSheet() {
 
 	useEffect(() => {
 		const onPointerMove = (event: PointerEvent) => {
-			pointerRef.current = { left: event.clientX, top: event.clientY };
+			const point = { left: event.clientX, top: event.clientY };
+			pointerRef.current = point;
+			const currentPreview = previewRef.current;
+			if (
+				currentPreview &&
+				!pointInPreviewSafeArea(point, currentPreview, sheetRef.current)
+			) {
+				closePreview();
+			}
 		};
 
 		const onPointerOver = (event: PointerEvent) => {

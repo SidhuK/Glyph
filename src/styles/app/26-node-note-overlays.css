@@ -423,6 +423,7 @@
 	max-width: 280px;
 	max-height: min(212px, 60vh);
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	scrollbar-width: thin;
 	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent)
 		transparent;
@@ -488,6 +489,7 @@
 	width: 280px;
 	max-height: 260px;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);

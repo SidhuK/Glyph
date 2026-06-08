@@ -13,6 +13,7 @@ import {
 	wikiLinkAttrsToMarkdown,
 } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
+import { lockEditorScrollDuringSuggestion } from "../suggestionScroll";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -312,8 +313,23 @@ export const WikiLink = Node.create({
 				editor: this.editor,
 				pluginKey: WIKI_LINK_SUGGESTION_KEY,
 				char: "[[",
+				allowSpaces: true,
 				allowedPrefixes: null,
 				startOfLine: false,
+				allow: ({ state, range }) => {
+					const query = state.doc.textBetween(
+						range.from + 2,
+						range.to,
+						"\n",
+						"\n",
+					);
+					return (
+						!query.includes("]]") &&
+						!query.includes("[") &&
+						!query.includes("]") &&
+						!query.includes("\n")
+					);
+				},
 				items: async ({ editor, query }) => {
 					const asEmbed = isEmbedSuggestionContextFromQuery(editor, query);
 					return getSuggestions(query, asEmbed);
@@ -347,6 +363,7 @@ export const WikiLink = Node.create({
 					let selectedIndex = 0;
 					let activeProps: SuggestionProps<WikiLinkSuggestionItem> | null =
 						null;
+					let unlockEditorScroll: (() => void) | null = null;
 
 					const updateSelection = (items: WikiLinkSuggestionItem[]) => {
 						if (!menu) return;
@@ -417,6 +434,11 @@ export const WikiLink = Node.create({
 						onStart: (props: SuggestionProps<WikiLinkSuggestionItem>) => {
 							activeProps = props;
 							selectedIndex = 0;
+							unlockEditorScroll?.();
+							unlockEditorScroll = lockEditorScrollDuringSuggestion(
+								props.editor,
+								() => menu,
+							);
 							createMenu(props);
 						},
 						onUpdate: (props: SuggestionProps<WikiLinkSuggestionItem>) => {
@@ -448,6 +470,8 @@ export const WikiLink = Node.create({
 							return false;
 						},
 						onExit: () => {
+							unlockEditorScroll?.();
+							unlockEditorScroll = null;
 							if (menu) menu.remove();
 							menu = null;
 							activeProps = null;

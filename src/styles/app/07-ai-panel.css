@@ -629,12 +629,6 @@
 	gap: 4px;
 }
 
-.aiToolInlineTextContent {
-	white-space: pre-wrap;
-	word-break: normal;
-	overflow-wrap: anywhere;
-}
-
 .aiToolTimelineItem-error {
 	border-color: var(--status-danger-border);
 }

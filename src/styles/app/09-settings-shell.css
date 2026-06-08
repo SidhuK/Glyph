@@ -351,14 +351,18 @@
 	flex-wrap: wrap;
 }
 
-.settingsTabButton:hover {
+.sidebarQuickActionBtn.settingsTabButton:hover {
 	color: var(--text-primary);
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
 }
 
-.settingsTabButtonActive {
+.sidebarQuickActionBtn.settingsTabButtonActive {
 	color: var(--text-primary);
-	background: var(--bg-active);
+	background: var(--bg-primary);
+	box-shadow: 0 0.5px 1.5px
+		color-mix(in srgb, var(--text-primary) 6%, transparent), inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 50%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 40%, transparent);
 }
 
 .settingsSidebarFooter {

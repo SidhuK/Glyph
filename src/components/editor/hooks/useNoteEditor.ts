@@ -4,7 +4,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { useEditor } from "@tiptap/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
 import {
 	joinYamlFrontmatter,
@@ -34,6 +34,7 @@ import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
+const MARKDOWN_SYNC_DEBOUNCE_MS = 120;
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -402,6 +403,7 @@ export function useNoteEditor({
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const onChangeRef = useRef(onChange);
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
@@ -409,6 +411,11 @@ export function useNoteEditor({
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const pendingMarkdownEditorRef = useRef<NonNullable<
+		ReturnType<typeof useEditor>
+	> | null>(null);
+	const markdownSyncTimeoutRef = useRef<number | null>(null);
+	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
@@ -500,9 +507,52 @@ export function useNoteEditor({
 	});
 
 	frontmatterRef.current = frontmatter;
+	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
 	interactiveRef.current = interactive;
 	modeRef.current = mode;
+
+	const clearScheduledMarkdownSync = useCallback(() => {
+		if (markdownSyncTimeoutRef.current !== null) {
+			window.clearTimeout(markdownSyncTimeoutRef.current);
+			markdownSyncTimeoutRef.current = null;
+		}
+		if (markdownSyncFrameRef.current !== null) {
+			window.cancelAnimationFrame(markdownSyncFrameRef.current);
+			markdownSyncFrameRef.current = null;
+		}
+	}, []);
+
+	const flushMarkdownSync = useCallback(() => {
+		clearScheduledMarkdownSync();
+		const instance = pendingMarkdownEditorRef.current;
+		pendingMarkdownEditorRef.current = null;
+		if (!instance || modeRef.current !== "rich" || !instance.isEditable) return;
+		const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
+		lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
+		const nextMarkdown = joinYamlFrontmatter(
+			frontmatterRef.current,
+			normalizeBody(nextBody),
+		);
+		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
+		lastEmittedMarkdownRef.current = nextMarkdown;
+		onChangeRef.current(nextMarkdown);
+	}, [clearScheduledMarkdownSync]);
+
+	const scheduleMarkdownSync = useCallback(
+		(instance: NonNullable<ReturnType<typeof useEditor>>) => {
+			pendingMarkdownEditorRef.current = instance;
+			clearScheduledMarkdownSync();
+			markdownSyncTimeoutRef.current = window.setTimeout(() => {
+				markdownSyncTimeoutRef.current = null;
+				markdownSyncFrameRef.current = window.requestAnimationFrame(() => {
+					markdownSyncFrameRef.current = null;
+					flushMarkdownSync();
+				});
+			}, MARKDOWN_SYNC_DEBOUNCE_MS);
+		},
+		[clearScheduledMarkdownSync, flushMarkdownSync],
+	);
 
 	const editor = useEditor(
 		{
@@ -653,16 +703,8 @@ export function useNoteEditor({
 					suppressUpdateRef.current = false;
 					return;
 				}
-				if (mode !== "rich" || !instance.isEditable) return;
-				const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
-				const nextMarkdown = joinYamlFrontmatter(
-					frontmatterRef.current,
-					normalizeBody(nextBody),
-				);
-				if (nextMarkdown === lastEmittedMarkdownRef.current) return;
-				lastEmittedMarkdownRef.current = nextMarkdown;
-				onChange(nextMarkdown);
+				if (modeRef.current !== "rich" || !instance.isEditable) return;
+				scheduleMarkdownSync(instance);
 			},
 		},
 		[
@@ -687,11 +729,18 @@ export function useNoteEditor({
 		if (!editor) return;
 		if (markdown === lastEmittedMarkdownRef.current) return;
 		if (editorBody === lastAppliedBodyRef.current) return;
+		flushMarkdownSync();
 		suppressUpdateRef.current = true;
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
-	}, [editor, editorBody, markdown]);
+	}, [editor, editorBody, flushMarkdownSync, markdown]);
+
+	useEffect(() => {
+		return () => {
+			flushMarkdownSync();
+		};
+	}, [flushMarkdownSync]);
 
 	useHydrateInlineImages(editor, enableHydrateInlineImages ? relPath : "");
 
