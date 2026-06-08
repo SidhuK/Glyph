@@ -9,11 +9,9 @@ export const springTransition = {
 } as const;
 
 export const rowVariants = {
-	idle: { x: 0, backgroundColor: "transparent" },
-	hover: { x: 0, backgroundColor: "var(--bg-hover)" },
-	active: {
-		backgroundColor: "var(--bg-active)",
-	},
+	idle: { x: 0 },
+	hover: { x: 0 },
+	active: { x: 0 },
 	tap: { scale: 0.98 },
 };
 

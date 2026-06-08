@@ -389,6 +389,7 @@
 .databaseBoardTag.is-muted {
 	color: var(--text-tertiary);
 	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+	font-variant-numeric: tabular-nums;
 }
 
 .databaseTagPillIcon {

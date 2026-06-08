@@ -537,7 +537,6 @@
 	display: flex;
 	flex-direction: column;
 	overflow: visible;
-	border: 1px solid var(--border-default);
 	border-radius: var(--radius-md);
 	background: var(--bg-secondary);
 	box-shadow: var(--shadow-lg);
@@ -585,10 +584,19 @@
 	border: none;
 	border-radius: 0;
 	background: transparent;
+	box-shadow: none;
 }
 
 .linkedNotePreviewText .rfNodeNoteEditorBody {
 	padding: 0;
+	background: transparent;
+}
+
+.linkedNotePreviewText .tiptapContentInline {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
 }
 
 .linkedNotePreviewText .ProseMirror {

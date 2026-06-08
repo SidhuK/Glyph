@@ -145,6 +145,8 @@ const {
 	};
 });
 
+const MARKDOWN_SYNC_DEBOUNCE_MS = 120;
+
 // React 19 expects tests to opt into act-aware scheduling.
 (
 	globalThis as typeof globalThis & {
@@ -266,6 +268,13 @@ async function flushImageUploadWork() {
 	await Promise.resolve();
 	await Promise.resolve();
 	await Promise.resolve();
+}
+
+async function flushMarkdownSyncWork() {
+	await new Promise((resolve) =>
+		setTimeout(resolve, MARKDOWN_SYNC_DEBOUNCE_MS + 20),
+	);
+	await new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
 type EditorOptionsWithPaste = {
@@ -425,6 +434,12 @@ describe("useNoteEditor", () => {
 				editor: mockEditor,
 				transaction: { docChanged: true },
 			});
+		});
+
+		expect(mockEditor.getMarkdown).not.toHaveBeenCalled();
+
+		await act(async () => {
+			await flushMarkdownSyncWork();
 		});
 
 		expect(onChange).toHaveBeenCalledWith("keep this line");

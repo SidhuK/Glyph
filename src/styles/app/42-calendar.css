@@ -18,7 +18,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
-	width: min(100%, 1120px);
+	width: min(100%, 896px);
 	min-height: min(760px, calc(100vh - 68px));
 	margin: 0 auto;
 }
@@ -78,6 +78,7 @@
 .calendarDashboardTitleBlock h2 {
 	font-size: 1.55rem;
 	line-height: 1.1;
+	text-wrap: balance;
 }
 
 .calendarDashboardTitleBlock p {
@@ -89,6 +90,29 @@
 	flex-direction: column;
 	flex: 1;
 	min-height: 0;
+}
+
+/* Extend hit area of the 24px header icon buttons. The action cluster has a
+   2px gap, so grow vertically only there to avoid colliding hit areas; the
+   standalone Notes button can take a full 40x40 target. */
+.calendarDashboardActions .sidebarTopIconButton,
+.calendarPanelSectionHeader .calendarAccentIconButton {
+	position: relative;
+}
+
+.calendarDashboardActions .sidebarTopIconButton::after,
+.calendarPanelSectionHeader .calendarAccentIconButton::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 100%;
+	height: 40px;
+}
+
+.calendarPanelSectionHeader .calendarAccentIconButton::after {
+	width: 40px;
 }
 
 .calendarAccentIconButton {
@@ -118,75 +142,15 @@
 .calendarPanelSection {
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	border-radius: var(--radius-lg);
-	background: var(--bg-secondary);
-	box-shadow: var(--shadow-sm);
-}
-
-.calendarWeekHeader {
-	display: grid;
-	grid-template-columns: minmax(120px, 0.32fr) minmax(0, 1fr);
-	align-items: center;
-	gap: 18px;
-	padding: 16px 18px 12px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
-.calendarWeekMonth {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	color: var(--text-secondary);
-	font-size: 1.08rem;
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.calendarWeekMonth small {
-	font-weight: var(--font-medium);
-}
-
-.calendarWeekStats {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 6px;
-	min-width: 0;
-}
-
-.calendarWeekStats > span {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
-	flex: 1;
-	max-width: 130px;
-	min-width: 0;
-	padding: 6px 8px;
-	border-radius: var(--pill-radius);
 	background: var(--bg-primary);
-	box-shadow: var(--pill-shadow);
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-}
-
-.calendarWeekStats strong {
-	color: var(--text-primary);
-	font-size: var(--text-md);
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.calendarWeekStatsLabel {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
+	box-shadow: var(--shadow-sm);
 }
 
 .calendarWeekStrip {
 	display: grid;
 	grid-template-columns: repeat(7, minmax(0, 1fr));
 	gap: 8px;
-	padding: 12px 18px 16px;
+	padding: 10px 18px 12px;
 }
 
 .calendarWeekDay {
@@ -194,17 +158,23 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 3px;
-	height: 98px;
+	gap: 2px;
+	height: 68px;
 	min-width: 0;
-	padding: 8px 6px;
+	padding: 6px 6px;
 	border: 1px solid transparent;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: color-mix(in srgb, var(--text-secondary) 58%, var(--text-tertiary));
 	font: inherit;
 	cursor: pointer;
-	transition: all var(--transition-fast);
+	transition: background-color var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast), scale
+		var(--transition-fast);
+}
+
+.calendarWeekDay:active {
+	scale: 0.96;
 }
 
 .calendarWeekDay:focus-visible {
@@ -224,29 +194,17 @@
 
 .calendarWeekDayNumber {
 	color: inherit;
-	font-size: 1.5rem;
+	font-size: 1.15rem;
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	line-height: 1;
+	font-variant-numeric: tabular-nums;
 }
 
 .calendarWeekDay[data-selected="true"] {
 	border-color: transparent;
-	background: var(--bg-primary);
-	box-shadow: var(--shadow-sm), 0 2px 8px rgba(0, 0, 0, 0.04);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--text-primary);
-}
-
-.calendarWeekDay[data-selected="true"]::after {
-	content: "";
-	display: block;
-	width: 28px;
-	height: 3px;
-	margin-top: auto;
-	border-radius: 4px;
-	background: var(--interactive-accent);
-	opacity: 0.3;
-	flex-shrink: 0;
 }
 
 .calendarWeekDay[data-selected="true"] .calendarWeekDayNumber {
@@ -309,6 +267,39 @@
 
 .calendarWeekOverdueSignal {
 	color: var(--status-danger-fg);
+}
+
+.calendarWeekSummaryStrip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 0 18px;
+}
+
+.calendarWeekSummaryItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--text-tertiary);
+	font-size: 0.68rem;
+	font-weight: var(--font-medium);
+	line-height: 1;
+}
+
+.calendarWeekSummaryItem svg {
+	color: var(--text-tertiary);
+}
+
+.calendarWeekSummaryCount {
+	color: var(--text-primary);
+	font-weight: var(--font-semibold);
+	font-size: 0.78rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.calendarWeekSummaryLabel {
+	color: var(--text-tertiary);
 }
 
 .calendarError {
@@ -386,12 +377,17 @@
 	min-height: 52px;
 	padding: 10px 10px 12px;
 	border: 0;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-primary);
 	line-height: 1.2;
 	text-align: left;
-	transition: background var(--transition-fast);
+	transition: background-color var(--transition-fast), scale
+		var(--transition-fast);
+}
+
+.calendarNoteRow:active {
+	scale: 0.99;
 }
 
 .calendarNoteIcon {
@@ -492,16 +488,8 @@
 		min-height: 0;
 	}
 
-	.calendarWeekHeader {
-		grid-template-columns: 1fr;
-	}
-
 	.calendarDashboardHeader {
 		align-items: flex-start;
-	}
-
-	.calendarWeekStats {
-		flex-wrap: wrap;
 	}
 
 	.calendarWeekStrip {

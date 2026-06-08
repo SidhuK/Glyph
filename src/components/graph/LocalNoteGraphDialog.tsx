@@ -215,25 +215,27 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 				"background-color": theme.node,
 				"border-color": theme.border,
 				"border-width": 1,
+				"corner-radius": "10px",
 				color: theme.text,
 				"font-family": "var(--font-ui)",
 				"font-size": 13,
 				"font-weight": 500,
 				height: "label",
 				label: "data(label)",
-				"line-height": 1.25,
+				"line-height": 1.3,
 				"min-height": "30px",
 				"min-width": "54px",
 				"overlay-opacity": 0,
-				padding: "9px 11px",
+				padding: "9px 12px",
 				shape: "round-rectangle",
 				"text-events": "yes",
 				"text-halign": "center",
 				"text-max-width": "190px",
 				"text-wrap": "ellipsis",
 				"text-valign": "center",
-				"transition-duration": 120,
-				"transition-property": "background-color, border-color, opacity",
+				"transition-duration": 180,
+				"transition-property":
+					"background-color, border-color, border-width, opacity",
 				width: "label",
 			},
 		},
@@ -333,31 +335,36 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			selector: "edge",
 			style: {
 				"curve-style": "bezier",
+				"line-cap": "round",
 				"line-color": theme.edge,
 				"source-arrow-shape": "none",
 				"target-arrow-color": theme.edge,
+				"target-arrow-shape": "triangle-backcurve",
+				"target-distance-from-node": 4,
 				"target-endpoint": "outside-to-node",
-				"target-arrow-shape": "triangle",
-				"arrow-scale": 0.9,
-				opacity: 0.34,
-				"transition-duration": 120,
-				"transition-property": "line-color, opacity, target-arrow-color",
-				width: 1.9,
+				"arrow-scale": 0.95,
+				opacity: 0.32,
+				"transition-duration": 180,
+				"transition-property": "line-color, opacity, target-arrow-color, width",
+				width: 1.6,
 			},
 		},
 		{
 			selector: "edge.tag-link",
 			style: {
 				"curve-style": "bezier",
+				"line-cap": "round",
 				"line-color": theme.accent,
-				"line-style": "dotted",
+				"line-style": "dashed",
+				"line-dash-pattern": [1, 5],
 				"source-arrow-shape": "none",
 				"target-arrow-color": theme.accent,
+				"target-arrow-shape": "triangle-backcurve",
+				"target-distance-from-node": 4,
 				"target-endpoint": "outside-to-node",
-				"target-arrow-shape": "triangle",
-				"arrow-scale": 0.7,
+				"arrow-scale": 0.72,
 				opacity: 0.3,
-				width: 1.55,
+				width: 1.5,
 			},
 		},
 		{
@@ -365,8 +372,8 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			style: {
 				"line-color": theme.accent,
 				"target-arrow-color": theme.accent,
-				opacity: 0.64,
-				width: 2.4,
+				opacity: 0.62,
+				width: 2.2,
 			},
 		},
 		{
@@ -374,8 +381,8 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			style: {
 				"line-color": theme.edgeIncoming,
 				"target-arrow-color": theme.edgeIncoming,
-				opacity: 0.48,
-				width: 2.05,
+				opacity: 0.46,
+				width: 1.9,
 			},
 		},
 		{
@@ -383,22 +390,29 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 			style: {
 				"line-color": theme.edgeInternal,
 				"target-arrow-color": theme.edgeInternal,
-				opacity: 0.42,
-				width: 1.8,
+				opacity: 0.4,
+				width: 1.6,
 			},
 		},
 		{
 			selector: "edge.reciprocal",
 			style: {
-				"control-point-distance": 38,
+				"control-point-distance": 34,
 				"control-point-weight": 0.5,
 				"curve-style": "unbundled-bezier",
 			},
 		},
 		{
+			selector: "edge.is-highlight",
+			style: {
+				opacity: 0.9,
+				width: 2.2,
+			},
+		},
+		{
 			selector: ".is-faded",
 			style: {
-				opacity: 0.16,
+				opacity: 0.12,
 			},
 		},
 	];
@@ -447,7 +461,7 @@ function runGraphLayout(cy: Core) {
 
 function highlightNeighborhood(cy: Core, nodeId: string | null) {
 	const elements = cy.elements();
-	elements.removeClass("is-faded is-focus is-neighbor");
+	elements.removeClass("is-faded is-focus is-neighbor is-highlight");
 	if (!nodeId) return;
 
 	const node = cy.getElementById(nodeId);
@@ -457,6 +471,7 @@ function highlightNeighborhood(cy: Core, nodeId: string | null) {
 	elements.not(neighborhood).addClass("is-faded");
 	node.addClass("is-focus");
 	node.neighborhood("node").addClass("is-neighbor");
+	node.connectedEdges().addClass("is-highlight");
 }
 
 function applyGraphTheme(cy: Core, container: HTMLElement) {
@@ -596,7 +611,7 @@ export function LocalNoteGraphDialog({
 							className="localNoteGraphClose"
 							aria-label="Close graph"
 						>
-							x
+							×
 						</button>
 					</DialogClose>
 					{loading ? (

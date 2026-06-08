@@ -1,5 +1,12 @@
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import type { Transaction } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type ChangedRange,
+	changedRangesFromTransactions,
+	mergeChangedRanges,
+} from "../extensions/changedRanges";
 
 export interface TOCHeading {
 	id: string;
@@ -37,52 +44,168 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 	return null;
 }
 
+function isSameHeadingList(
+	prev: readonly TOCHeading[],
+	next: readonly TOCHeading[],
+) {
+	return (
+		prev.length === next.length &&
+		prev.every(
+			(heading, index) =>
+				heading.pos === next[index].pos &&
+				heading.level === next[index].level &&
+				heading.text === next[index].text,
+		)
+	);
+}
+
+function headingFromNode(
+	node: ProseMirrorNode,
+	pos: number,
+): TOCHeading | null {
+	if (node.type.name !== "heading") return null;
+	const level = node.attrs.level as number;
+	const text = node.textContent;
+	if (!text.trim()) return null;
+	return {
+		id: `toc-${pos}`,
+		level,
+		text,
+		pos,
+	};
+}
+
+function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
+	const headings: TOCHeading[] = [];
+	doc.descendants((node, pos) => {
+		const heading = headingFromNode(node, pos);
+		if (heading) headings.push(heading);
+	});
+	return headings;
+}
+
+function expandRangesToTextblocks(
+	doc: ProseMirrorNode,
+	ranges: readonly ChangedRange[],
+): ChangedRange[] {
+	const expanded: ChangedRange[] = [];
+	for (const range of ranges) {
+		doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (!node.isTextblock) return;
+			expanded.push({ from: pos, to: pos + node.nodeSize });
+			return false;
+		});
+	}
+	return mergeChangedRanges(expanded.length ? expanded : ranges);
+}
+
+function extractHeadingsInRanges(
+	doc: ProseMirrorNode,
+	ranges: readonly ChangedRange[],
+): TOCHeading[] {
+	const headings: TOCHeading[] = [];
+	const seen = new Set<number>();
+	for (const range of ranges) {
+		doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (seen.has(pos)) return false;
+			seen.add(pos);
+			const heading = headingFromNode(node, pos);
+			if (heading) headings.push(heading);
+		});
+	}
+	return headings;
+}
+
+function rangeTouchesHeading(
+	heading: TOCHeading,
+	range: ChangedRange,
+): boolean {
+	return heading.pos >= range.from && heading.pos <= range.to;
+}
+
+function updateHeadingsFromTransaction(
+	current: readonly TOCHeading[],
+	transaction: Transaction,
+): TOCHeading[] {
+	const changedRanges = changedRangesFromTransactions(
+		[transaction],
+		transaction.doc.content.size,
+	);
+	if (!changedRanges.length) {
+		return current
+			.map((heading) => {
+				const result = transaction.mapping.mapResult(heading.pos, -1);
+				return result.deleted
+					? null
+					: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
+			})
+			.filter((heading): heading is TOCHeading => heading !== null);
+	}
+
+	const scanRanges = expandRangesToTextblocks(transaction.doc, changedRanges);
+	const next = current
+		.map((heading) => {
+			const result = transaction.mapping.mapResult(heading.pos, -1);
+			return result.deleted
+				? null
+				: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
+		})
+		.filter(
+			(heading): heading is TOCHeading =>
+				heading !== null &&
+				!scanRanges.some((range) => rangeTouchesHeading(heading, range)),
+		);
+
+	next.push(...extractHeadingsInRanges(transaction.doc, scanRanges));
+	next.sort((a, b) => a.pos - b.pos);
+	return next;
+}
+
 export function useTableOfContents(editor: Editor | null) {
 	const [headings, setHeadings] = useState<TOCHeading[]>([]);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const activeFrameRef = useRef<number | null>(null);
+	const headingsRef = useRef<TOCHeading[]>([]);
+	const headingsFrameRef = useRef<number | null>(null);
 
-	const extractHeadings = useCallback(() => {
+	const publishHeadings = useCallback(() => {
+		if (headingsFrameRef.current !== null) return;
+		headingsFrameRef.current = window.requestAnimationFrame(() => {
+			headingsFrameRef.current = null;
+			const next = headingsRef.current;
+			setHeadings((prev) => (isSameHeadingList(prev, next) ? prev : next));
+		});
+	}, []);
+
+	useEffect(() => {
 		if (!editor) {
+			headingsRef.current = [];
 			setHeadings([]);
 			return;
 		}
-		const next: TOCHeading[] = [];
-		editor.state.doc.descendants((node, pos) => {
-			if (node.type.name === "heading") {
-				const level = node.attrs.level as number;
-				const text = node.textContent;
-				if (text.trim()) {
-					next.push({
-						id: `toc-${pos}`,
-						level,
-						text,
-						pos,
-					});
-				}
-			}
-		});
-		setHeadings((prev) => {
-			const same =
-				prev.length === next.length &&
-				prev.every(
-					(h, i) =>
-						h.pos === next[i].pos &&
-						h.level === next[i].level &&
-						h.text === next[i].text,
-				);
-			return same ? prev : next;
-		});
-	}, [editor]);
-
-	useEffect(() => {
-		if (!editor) return;
-		extractHeadings();
-		editor.on("update", extractHeadings);
-		return () => {
-			editor.off("update", extractHeadings);
+		headingsRef.current = extractHeadingsFromDoc(editor.state.doc);
+		publishHeadings();
+		const updateHeadings = ({
+			transaction,
+		}: {
+			transaction: Transaction;
+		}) => {
+			if (!transaction.docChanged) return;
+			headingsRef.current = updateHeadingsFromTransaction(
+				headingsRef.current,
+				transaction,
+			);
+			publishHeadings();
 		};
-	}, [editor, extractHeadings]);
+		editor.on("transaction", updateHeadings);
+		return () => {
+			editor.off("transaction", updateHeadings);
+			if (headingsFrameRef.current !== null) {
+				window.cancelAnimationFrame(headingsFrameRef.current);
+				headingsFrameRef.current = null;
+			}
+		};
+	}, [editor, publishHeadings]);
 
 	useEffect(() => {
 		if (!editor || headings.length === 0) {

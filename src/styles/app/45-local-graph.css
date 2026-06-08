@@ -21,26 +21,34 @@
 	appearance: none;
 	position: absolute;
 	top: 12px;
-	right: 14px;
+	right: 12px;
 	z-index: 2;
 	display: grid;
 	place-items: center;
-	width: 24px;
-	height: 24px;
-	border: 0;
+	width: 28px;
+	height: 28px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 15px;
+	font-size: 18px;
 	line-height: 1;
 	cursor: pointer;
 	outline: none;
 	box-shadow: none;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s
+		ease;
+}
+
+.localNoteGraphClose:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 42%, transparent);
 }
 
 .localNoteGraphClose:focus,
-.localNoteGraphClose:focus-visible,
-.localNoteGraphClose:hover {
-	color: var(--text-secondary);
+.localNoteGraphClose:focus-visible {
+	color: var(--text-primary);
 	outline: none;
 	box-shadow: none;
 }
@@ -79,15 +87,19 @@
 	cursor: grab;
 	background-color: var(--local-graph-surface);
 	background-image: radial-gradient(
-		circle at center,
-		var(--local-graph-dot) 0.85px,
-		transparent 1px
-	);
-	background-position: center;
-	background-size: 22px 22px;
+			circle at center,
+			var(--local-graph-dot) 0.75px,
+			transparent 1.4px
+		),
+		radial-gradient(
+			ellipse 120% 90% at 50% 38%,
+			transparent 58%,
+			color-mix(in srgb, var(--bg-primary) 26%, transparent) 100%
+		);
+	background-position: center, center;
+	background-size: 24px 24px, cover;
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--border-light) 38%, transparent), inset 0 24px 70px
-		color-mix(in srgb, var(--bg-primary) 20%, transparent);
+		color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
 :root.dark .localNoteGraphViewport {

@@ -1,16 +1,16 @@
 .welcomeEmptyState {
 	--welcome-page-bg: var(--bg-primary);
 	--welcome-page-muted: color-mix(in srgb, var(--text-primary) 46%, transparent);
-	--welcome-brand-bg: color-mix(in srgb, var(--text-primary) 94%, black);
-	--welcome-brand-text: var(--bg-primary);
-	--welcome-brand-muted: color-mix(in srgb, var(--bg-primary) 52%, transparent);
+	--welcome-brand-bg: color-mix(in srgb, var(--text-primary) 10%, var(--bg-primary));
+	--welcome-brand-text: var(--text-primary);
+	--welcome-brand-muted: color-mix(in srgb, var(--text-primary) 52%, var(--bg-primary));
 	--welcome-brand-heading: color-mix(
 		in srgb,
-		var(--bg-primary) 66%,
+		var(--text-primary) 75%,
 		var(--text-secondary)
 	);
-	--welcome-brand-grid: color-mix(in srgb, var(--bg-primary) 5%, transparent);
-	--welcome-brand-line: color-mix(in srgb, var(--bg-primary) 10%, transparent);
+	--welcome-brand-grid: color-mix(in srgb, var(--text-primary) 8%, transparent);
+	--welcome-brand-line: color-mix(in srgb, var(--text-primary) 15%, transparent);
 	--welcome-brand-accent: color-mix(
 		in srgb,
 		var(--interactive-accent) 76%,

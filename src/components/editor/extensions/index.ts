@@ -15,6 +15,13 @@ import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import {
+	type ChangedRange,
+	changedRangesFromTransactions,
+	mergeChangedRanges,
+	visitChangedNodes,
+	visitNodesInRanges,
+} from "./changedRanges";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
 import { HeadingCollapse } from "./headingCollapse";
@@ -136,7 +143,7 @@ const CalloutDecorations = Extension.create({
 					init: (_config, state) => buildCalloutDecorations(state.doc),
 					apply(tr, decorations) {
 						if (!tr.docChanged) return decorations;
-						return buildCalloutDecorations(tr.doc);
+						return updateCalloutDecorations(tr, decorations);
 					},
 				},
 				props: {
@@ -153,110 +160,88 @@ const CalloutDecorations = Extension.create({
 function buildCalloutDecorations(doc: ProseMirrorNode): DecorationSet {
 	const decorations: Decoration[] = [];
 	doc.descendants((node, pos) => {
-		if (node.type.name !== "blockquote") return;
-		let parsed: { kind: string; title: string } | null = null;
-		for (let i = 0; i < node.childCount; i += 1) {
-			const child = node.child(i);
-			const text = child.textContent ?? "";
-			parsed = parseCalloutMarker(text);
-			if (parsed) break;
-		}
-		if (!parsed) return;
-		decorations.push(
-			Decoration.node(pos, pos + node.nodeSize, {
-				class: `callout callout-${parsed.kind}`,
-				"data-callout": parsed.kind,
-				"data-callout-title": parsed.title,
-			}),
-		);
+		const decoration = calloutDecorationForNode(node, pos);
+		if (decoration) decorations.push(decoration);
 	});
 	return decorations.length
 		? DecorationSet.create(doc, decorations)
 		: DecorationSet.empty;
 }
 
-const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
-
-interface ChangedRange {
-	from: number;
-	to: number;
+function calloutDecorationForNode(
+	node: ProseMirrorNode,
+	pos: number,
+): Decoration | null {
+	if (node.type.name !== "blockquote") return null;
+	let parsed: { kind: string; title: string } | null = null;
+	for (let i = 0; i < node.childCount; i += 1) {
+		const child = node.child(i);
+		const text = child.textContent ?? "";
+		parsed = parseCalloutMarker(text);
+		if (parsed) break;
+	}
+	if (!parsed) return null;
+	return Decoration.node(pos, pos + node.nodeSize, {
+		class: `callout callout-${parsed.kind}`,
+		"data-callout": parsed.kind,
+		"data-callout-title": parsed.title,
+	});
 }
 
-function changedRangesFromTransactions(
-	transactions: readonly Transaction[],
-	docSize: number,
-): ChangedRange[] {
-	const ranges: ChangedRange[] = [];
-	let hasDocChange = false;
-
-	for (const transaction of transactions) {
-		if (!transaction.docChanged) continue;
-		hasDocChange = true;
-		for (const stepMap of transaction.mapping.maps) {
-			stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
-				ranges.push({
-					from: Math.max(0, Math.min(newStart, newEnd) - 1),
-					to: Math.min(docSize, Math.max(newStart, newEnd) + 1),
-				});
-			});
-		}
-	}
-
-	if (!ranges.length) {
-		return hasDocChange ? [{ from: 0, to: docSize }] : [];
-	}
-
-	ranges.sort((a, b) => a.from - b.from || a.to - b.to);
-	const merged: ChangedRange[] = [];
+function calloutScanRanges(tr: Transaction): ChangedRange[] {
+	const ranges = changedRangesFromTransactions([tr], tr.doc.content.size);
+	if (!ranges.length) return [];
+	const expanded: ChangedRange[] = [];
 	for (const range of ranges) {
-		const previous = merged[merged.length - 1];
-		if (!previous || range.from > previous.to) {
-			merged.push({ ...range });
-			continue;
-		}
-		previous.to = Math.max(previous.to, range.to);
+		tr.doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (node.type.name !== "blockquote") return;
+			expanded.push({ from: pos, to: pos + node.nodeSize });
+			return false;
+		});
 	}
-	return merged;
+	return mergeChangedRanges(expanded.length ? expanded : ranges);
 }
+
+function buildCalloutDecorationsInRanges(
+	doc: ProseMirrorNode,
+	ranges: readonly ChangedRange[],
+): Decoration[] {
+	const decorations: Decoration[] = [];
+	const seen = new Set<number>();
+	for (const range of ranges) {
+		doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (seen.has(pos)) return false;
+			const decoration = calloutDecorationForNode(node, pos);
+			if (!decoration) return;
+			seen.add(pos);
+			decorations.push(decoration);
+			return false;
+		});
+	}
+	return decorations;
+}
+
+function updateCalloutDecorations(
+	tr: Transaction,
+	decorations: DecorationSet,
+): DecorationSet {
+	const scanRanges = calloutScanRanges(tr);
+	if (!scanRanges.length) return decorations.map(tr.mapping, tr.doc);
+	const mapped = decorations.map(tr.mapping, tr.doc);
+	const staleDecorations = scanRanges.flatMap((range) =>
+		mapped.find(range.from, range.to),
+	);
+	const nextDecorations = buildCalloutDecorationsInRanges(tr.doc, scanRanges);
+	return mapped.remove(staleDecorations).add(tr.doc, nextDecorations);
+}
+
+const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
 
 function selectionRange(state: EditorState): ChangedRange {
 	return {
 		from: Math.max(0, state.selection.from - 1),
 		to: Math.min(state.doc.content.size, state.selection.to + 1),
 	};
-}
-
-// Deduped overlapping ranges skip a repeated node's subtree because returning
-// false from nodesBetween prevents descent. Current callers either target
-// paragraph nodes or independently scan inline text, so they do not rely on
-// revisiting children from overlapping parent ranges.
-function visitNodesInRanges(
-	state: EditorState,
-	ranges: readonly ChangedRange[],
-	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
-): void {
-	if (!ranges.length) return;
-
-	const seen = new Set<number>();
-	for (const range of ranges) {
-		state.doc.nodesBetween(range.from, range.to, (node, pos, parent, index) => {
-			if (seen.has(pos)) return false;
-			seen.add(pos);
-			return visitor(node, pos, parent, index);
-		});
-	}
-}
-
-function visitChangedNodes(
-	transactions: readonly Transaction[],
-	state: EditorState,
-	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
-): void {
-	visitNodesInRanges(
-		state,
-		changedRangesFromTransactions(transactions, state.doc.content.size),
-		visitor,
-	);
 }
 
 function findMarkdownLinkTextMatches(text: string) {
