@@ -381,7 +381,11 @@ export const SidebarContent = memo(function SidebarContent({
 									: ""
 							}`}
 						>
-							<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={SearchIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
 							<span className="sidebarCommandSearchPlaceholder">
 								Quick Actions
 							</span>
@@ -406,7 +410,11 @@ export const SidebarContent = memo(function SidebarContent({
 							onFocus={onPrefetchCalendar}
 							title="Open Home"
 						>
-							<HugeiconsIcon icon={Home01Icon} size={14} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={Home01Icon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
 							<span className="sidebarQuickActionLabel">Home</span>
 						</button>
 						<button
@@ -426,7 +434,11 @@ export const SidebarContent = memo(function SidebarContent({
 							onFocus={() => onPrefetchDatabases()}
 							title="Open Collections"
 						>
-							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={LibraryIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
 							<span className="sidebarQuickActionLabel">Collections</span>
 						</button>
 						<button
@@ -446,7 +458,7 @@ export const SidebarContent = memo(function SidebarContent({
 						>
 							<HugeiconsIcon
 								icon={CollectionsBookmarkIcon}
-								size={14}
+								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
@@ -468,12 +480,12 @@ export const SidebarContent = memo(function SidebarContent({
 									<span>Notes</span>
 									{notesExpanded ? (
 										<ChevronDown
-											size={10}
+											size="var(--icon-xs)"
 											className="sidebarStackHeaderChevron"
 										/>
 									) : (
 										<ChevronRight
-											size={10}
+											size="var(--icon-xs)"
 											className="sidebarStackHeaderChevron"
 										/>
 									)}
@@ -490,7 +502,7 @@ export const SidebarContent = memo(function SidebarContent({
 									>
 										<HugeiconsIcon
 											icon={ExpandParagraphIcon}
-											size={13}
+											size="var(--icon-sm)"
 											strokeWidth={0.9}
 										/>
 									</button>
@@ -503,7 +515,7 @@ export const SidebarContent = memo(function SidebarContent({
 									>
 										<HugeiconsIcon
 											icon={ArrowShrinkIcon}
-											size={13}
+											size="var(--icon-sm)"
 											strokeWidth={0.9}
 										/>
 									</button>
@@ -566,7 +578,10 @@ export const SidebarContent = memo(function SidebarContent({
 									{spaceInitial(spaceLabel)}
 								</span>
 								<span className="sidebarSpaceName">{spaceLabel}</span>
-								<ChevronDown size={12} className="sidebarSpaceChevron" />
+								<ChevronDown
+									size="var(--icon-sm)"
+									className="sidebarSpaceChevron"
+								/>
 							</button>
 						</div>
 						<button
@@ -580,7 +595,11 @@ export const SidebarContent = memo(function SidebarContent({
 									: ""
 							}`}
 						>
-							<HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={NoteIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						</button>
 					</div>
 				</div>

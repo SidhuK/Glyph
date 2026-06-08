@@ -135,7 +135,7 @@ function ContextualEmptyState({
 		if (!onboarding.createdFirstNote) {
 			t.push({
 				key: "note",
-				icon: <FileText size={16} />,
+				icon: <FileText size="var(--icon-lg)" />,
 				text: "Create your first note",
 				action: "New note",
 				onClick: onCreateNote,
@@ -144,7 +144,7 @@ function ContextualEmptyState({
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
 			t.push({
 				key: "daily",
-				icon: <Calendar size={16} />,
+				icon: <Calendar size="var(--icon-lg)" />,
 				text: "Try a daily note — saved to your daily notes folder",
 				action: "Open daily note",
 				onClick: onOpenDailyNote,
@@ -338,7 +338,7 @@ function DailyNotesSetupToast({
 					<output className="dailyNotesSetupToast" aria-live="polite">
 						<div className="dailyNotesSetupToastHeader">
 							<div className="dailyNotesSetupToastIcon">
-								<Calendar size={16} />
+								<Calendar size="var(--icon-lg)" />
 							</div>
 							<div className="dailyNotesSetupToastTitleBlock">
 								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
@@ -366,7 +366,7 @@ function DailyNotesSetupToast({
 								className="dailyNotesSetupToastPrimary"
 								onClick={onOpenSettings}
 							>
-								<Settings size={14} />
+								<Settings size="var(--icon-md)" />
 								<span>Open settings</span>
 							</Button>
 						</div>

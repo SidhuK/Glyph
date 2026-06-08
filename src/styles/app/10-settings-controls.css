@@ -3,7 +3,7 @@
 	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
 	background: var(--settings-surface);
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
 	line-height: 1;
@@ -45,6 +45,8 @@
 	justify-content: space-between;
 	gap: 12px;
 	padding: 2px 4px 0;
+	width: 70%;
+	margin: 0 auto;
 }
 
 .settingsCard {
@@ -56,6 +58,12 @@
 	flex-direction: column;
 	overflow: hidden;
 	box-shadow: none;
+	width: 70%;
+	margin: 0 auto;
+}
+
+:root.dark .settingsCard {
+	background: var(--bg-tertiary);
 }
 
 .settingsCardActions {
@@ -66,7 +74,7 @@
 }
 
 .settingsCardTitle {
-	font-size: 15px;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
@@ -152,10 +160,10 @@
 }
 
 .settingsFieldControl > input,
-.settingsFieldControl > select,
+.settingsFieldControl > .settingsSelectWrap,
 .settingsFieldControl > textarea,
 .settingsFieldControl .settingsInline > input,
-.settingsFieldControl .settingsInline > select,
+.settingsFieldControl .settingsInline > .settingsSelectWrap,
 .settingsFieldControl .settingsInline > textarea {
 	flex: 1 1 220px;
 	min-width: 0;
@@ -165,17 +173,14 @@
 }
 
 .settingsField input,
-.settingsField select,
 .settingsField textarea,
 .settingsFieldControl input,
-.settingsFieldControl select,
 .settingsFieldControl textarea {
 	background: var(--settings-control-surface);
 	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
 }
 
 .settingsField input:focus-visible,
-.settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
 .settingsAccentDot:focus-visible {
@@ -184,34 +189,50 @@
 	outline-offset: 2px;
 }
 
-.settingsPane select {
+.settingsSelectWrap {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	width: 100%;
+	max-width: 360px;
+	min-width: 0;
+}
+
+.settingsSelectNative {
 	-webkit-appearance: none;
 	appearance: none;
-	--settings-select-chevron-color: color-mix(
-		in srgb,
-		var(--text-tertiary) 88%,
-		transparent
-	);
-
-	background-color: var(--settings-control-surface);
-	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
+	width: 100%;
+	background-color: var(--bg-tertiary);
+	border: 0;
 	border-radius: var(--radius-md);
 	color: var(--text-primary);
 	padding: 0 32px 0 10px;
 	height: 32px;
-	background-image: linear-gradient(
-			45deg,
-			transparent 50%,
-			var(--settings-select-chevron-color) 50%
-		),
-		linear-gradient(
-			135deg,
-			var(--settings-select-chevron-color) 50%,
-			transparent 50%
-		);
-	background-repeat: no-repeat;
-	background-position: calc(100% - 13px) 13px, calc(100% - 8px) 13px;
-	background-size: 5px 5px, 5px 5px;
+	min-height: 34px;
+}
+
+:root.light:not([data-light-theme]) .settingsSelectNative,
+:root.light[data-light-theme="glyph-default"] .settingsSelectNative {
+	background-color: rgb(251 250 251);
+}
+
+:root.dark .settingsSelectNative {
+	background-color: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);
+}
+
+.settingsSelectChevron {
+	position: absolute;
+	right: 10px;
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	pointer-events: none;
+	transition: color var(--transition-base);
+}
+
+.settingsSelectWrap:has(.settingsSelectNative:focus) .settingsSelectChevron,
+.settingsSelectWrap:has(.settingsSelectNative:focus-visible)
+	.settingsSelectChevron,
+.settingsSelectWrap:has(.settingsSelectNative:active) .settingsSelectChevron {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
 }
 
 .settingsPane input,
@@ -230,22 +251,16 @@
 .settingsPane input:focus-visible,
 .settingsPane textarea:focus,
 .settingsPane textarea:focus-visible,
-.settingsPane select:focus,
-.settingsPane select:focus-visible,
-.settingsPane select:active {
+.settingsSelectNative:focus,
+.settingsSelectNative:focus-visible,
+.settingsSelectNative:active {
 	outline: none;
 	box-shadow: 0 0 0 3px
 		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
-	--settings-select-chevron-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--text-primary)
-	);
 }
 
 .settingsHelp {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-secondary);
 	white-space: normal;
@@ -273,8 +288,8 @@
 }
 
 .settingsProviderNativeLogoImage {
-	width: 18px;
-	height: 18px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	object-fit: contain;
 	border-radius: 3px;
 	display: block;
@@ -292,20 +307,20 @@
 
 .settingsProviderNativeLogo[data-provider="opencode"]
 	.settingsProviderNativeLogoImage {
-	width: 21px;
-	height: 21px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 }
 
 .settingsProviderNativeLogo[data-provider="pi"]
 	.settingsProviderNativeLogoImage {
-	width: 20px;
-	height: 20px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 }
 
 .settingsProviderNativeLogo[data-provider="ollama"]
 	.settingsProviderNativeLogoImage {
-	width: 15px;
-	height: 20px;
+	width: calc(var(--icon-xl) * 0.75);
+	height: var(--icon-xl);
 }
 
 :root.dark
@@ -314,8 +329,11 @@
 	filter: brightness(0) invert(1);
 }
 
-.settingsFieldControl .settingsInline > select.settingsProviderNativeSelect {
+.settingsFieldControl
+	.settingsInline
+	> .settingsSelectWrap:has(.settingsProviderNativeSelect) {
 	flex-basis: 178px;
+	max-width: none;
 }
 
 .settingsActions {
@@ -382,7 +400,7 @@
 }
 
 .settingsLabel {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.01em;
 	color: var(--text-primary);
@@ -419,8 +437,8 @@
 
 .vimKeybindingsInfoButton svg {
 	display: block;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	color: currentcolor;
 	flex-shrink: 0;
 }
@@ -434,7 +452,7 @@
 }
 
 .vimKeybindingsPopoverTitle {
-	font-size: 13px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 	margin-bottom: 10px;
@@ -448,7 +466,7 @@
 	margin-bottom: 12px;
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-light) 76%, transparent);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
@@ -469,7 +487,7 @@
 	grid-template-columns: minmax(58px, max-content) 1fr;
 	align-items: baseline;
 	gap: 10px;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
 	color: var(--text-secondary);
 }
@@ -485,7 +503,7 @@
 	border-radius: var(--radius-sm);
 	background: var(--settings-control-surface-strong);
 	color: var(--text-primary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-family: var(--font-mono);
 	font-weight: var(--font-medium);
 	white-space: nowrap;
@@ -493,7 +511,7 @@
 
 .settingsValue {
 	max-width: 100%;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
 	color: var(--text-secondary);
 	overflow: hidden;
@@ -530,14 +548,14 @@
 .settingsList {
 	margin: 0;
 	padding: 0 16px 16px 32px;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.55;
 	color: var(--text-secondary);
 }
 
 .settingsEmpty {
 	padding: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-tertiary);
 }
@@ -549,7 +567,7 @@
 	border: 1px solid var(--status-danger-border);
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
 }
 

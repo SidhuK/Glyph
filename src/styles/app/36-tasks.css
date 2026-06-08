@@ -42,7 +42,7 @@
 .tasksDashboardTitleBlock h2 {
 	margin: 0;
 	color: var(--text-primary);
-	font-size: clamp(20px, 1.8vw, 24px);
+	font-size: calc(var(--text-base) * 1.7);
 	font-weight: var(--font-semibold);
 	line-height: 1.1;
 	letter-spacing: -0.01em;
@@ -273,7 +273,7 @@ button.calendarTaskComposerChip:focus-visible,
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-tertiary) 78%, transparent);
 	color: var(--text-tertiary);
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	letter-spacing: 0;
@@ -330,7 +330,7 @@ button.calendarTaskComposerChip:focus-visible,
 	min-width: 0;
 	margin: 0;
 	color: var(--text-secondary);
-	font-size: 0.7rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -357,7 +357,7 @@ button.calendarTaskComposerChip:focus-visible,
 	border-radius: var(--radius-full);
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	line-height: 1;
@@ -437,8 +437,8 @@ button.calendarTaskComposerChip:focus-visible,
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	position: relative;
 	margin: 2px 0 0;
 	cursor: pointer;
@@ -457,8 +457,8 @@ button.calendarTaskComposerChip:focus-visible,
 }
 
 .tasksCheckbox input[type="checkbox"] {
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	accent-color: var(--interactive-accent);
 	cursor: pointer;
 	transition: opacity 180ms ease, transform 180ms ease;
@@ -508,7 +508,7 @@ button.calendarTaskComposerChip:focus-visible,
 .tasksRowText {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: 0.9rem;
+	font-size: var(--text-base);
 	line-height: 1.15;
 	color: var(--text-primary);
 	overflow: hidden;
@@ -525,7 +525,7 @@ button.calendarTaskComposerChip:focus-visible,
 	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
 	color: var(--text-secondary);
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-semibold);
 	cursor: pointer;
@@ -569,7 +569,7 @@ button.calendarTaskComposerChip:focus-visible,
 		var(--interactive-accent) 7%,
 		var(--bg-primary)
 	);
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: color-mix(
 		in srgb,
@@ -596,7 +596,7 @@ button.calendarTaskComposerChip:focus-visible,
 	border-radius: var(--radius-7);
 	background: var(--bg-secondary);
 	color: var(--text-secondary);
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -681,7 +681,7 @@ button.calendarTaskComposerChip:focus-visible,
 	margin-left: auto;
 	padding: 0;
 	border-radius: var(--radius-7);
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	color: var(--text-secondary);
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
@@ -751,7 +751,7 @@ button.calendarTaskComposerChip:focus-visible,
 }
 
 .tasksDateFieldLabel {
-	font-size: 0.6rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0;
 	color: var(--text-secondary);
@@ -764,7 +764,7 @@ button.calendarTaskComposerChip:focus-visible,
 	background: transparent;
 	color: var(--text-primary);
 	font: inherit;
-	font-size: 0.82rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	outline: none;

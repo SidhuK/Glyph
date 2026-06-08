@@ -1,6 +1,7 @@
 import {
+	AiBrain04Icon,
+	LayoutAlignRightIcon,
 	SlidersHorizontalIcon,
-	SparklesIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
@@ -756,14 +757,9 @@ export function MarkdownEditorPane({
 		setInfoPanelOpen((open) => !open);
 	}, [setAiPanelOpen]);
 
-	const handleEditorActionsMenu = useCallback(
+	const handleViewModeMenu = useCallback(
 		(event: ReactMouseEvent<HTMLButtonElement>) => {
 			void showNativePopupMenu(event, [
-				{
-					label: "Info",
-					checked: infoPanelOpen,
-					action: toggleInfoPanel,
-				},
 				{
 					label: "Local graph",
 					action: () => setLocalGraphOpen(true),
@@ -785,16 +781,30 @@ export function MarkdownEditorPane({
 					action: () => setMode("plain"),
 				},
 			]).catch((error: unknown) => {
-				console.error("Failed to show editor actions menu", error);
+				console.error("Failed to show view mode menu", error);
 			});
 		},
-		[infoPanelOpen, mode, toggleInfoPanel],
+		[mode],
 	);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
 				<div className="markdownEditorTopActions">
+					<button
+						type="button"
+						className="markdownEditorMenuTrigger"
+						onClick={handleViewModeMenu}
+						aria-label="View mode options"
+						title="View mode options"
+						aria-haspopup="menu"
+					>
+						<HugeiconsIcon
+							icon={SlidersHorizontalIcon}
+							size="var(--icon-lg)"
+							strokeWidth={0.9}
+						/>
+					</button>
 					<button
 						type="button"
 						className="markdownEditorMenuTrigger markdownEditorAiTrigger"
@@ -822,19 +832,23 @@ export function MarkdownEditorPane({
 						}
 						aria-pressed={aiEnabled ? aiPanelOpen : undefined}
 					>
-						<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={0.9} />
+						<HugeiconsIcon
+							icon={AiBrain04Icon}
+							size="var(--icon-lg)"
+							strokeWidth={0.9}
+						/>
 					</button>
 					<button
 						type="button"
 						className="markdownEditorMenuTrigger"
-						onClick={handleEditorActionsMenu}
-						aria-label="Open editor actions"
-						title="Open editor actions"
-						aria-haspopup="menu"
+						onClick={toggleInfoPanel}
+						aria-label={infoPanelOpen ? "Close info" : "Open info"}
+						title={infoPanelOpen ? "Close info" : "Open info"}
+						aria-pressed={infoPanelOpen}
 					>
 						<HugeiconsIcon
-							icon={SlidersHorizontalIcon}
-							size={15}
+							icon={LayoutAlignRightIcon}
+							size="var(--icon-lg)"
 							strokeWidth={0.9}
 						/>
 					</button>

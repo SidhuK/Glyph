@@ -80,7 +80,7 @@ export function ColumnsPanel({
 				className="databaseViewRestoreButton"
 				onClick={onRestoreDefaultColumns}
 			>
-				<RefreshCw size={16} aria-hidden="true" />
+				<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 				Restore defaults
 			</button>
 		</section>

@@ -18,9 +18,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 30px;
-	height: 30px;
-	background: var(--bg-primary);
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	color: var(--text-secondary);
 }
 
@@ -32,7 +31,7 @@
 }
 
 .settingsChangelogSummaryEyebrow {
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	color: var(--text-secondary);
@@ -40,14 +39,14 @@
 }
 
 .settingsChangelogSummaryTitle {
-	font-size: 16px;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	line-height: 1.2;
 	color: var(--text-primary);
 }
 
 .settingsChangelogSummaryMeta {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.2;
 	color: var(--text-secondary);
 }
@@ -83,7 +82,7 @@
 }
 
 .settingsChangelogCategoryLabel {
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
 }
@@ -113,7 +112,7 @@
 }
 
 .settingsChangelogItem {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.5;
 	color: var(--text-secondary);
 }
@@ -122,7 +121,7 @@
 	padding: 20px;
 	text-align: center;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 }
 
 .whatsNewDialog {
@@ -166,7 +165,7 @@
 
 .whatsNewEyebrow {
 	margin-bottom: 7px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
@@ -174,7 +173,7 @@
 }
 
 .whatsNewDialog [data-slot="dialog-title"] {
-	font-size: 24px;
+	font-size: calc(var(--text-base) * 1.7);
 	line-height: 1.1;
 	color: var(--text-primary);
 }
@@ -184,7 +183,7 @@
 	align-items: center;
 	min-height: 24px;
 	padding: 0;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	color: var(--text-tertiary);
@@ -213,7 +212,7 @@
 	align-self: flex-start;
 	gap: 7px;
 	min-height: 20px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	color: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
@@ -224,8 +223,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 }
 
 .whatsNewList {
@@ -242,7 +241,7 @@
 	grid-template-columns: 6px minmax(0, 1fr);
 	gap: 11px;
 	align-items: start;
-	font-size: 13px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.6;
 	color: var(--text-secondary);
 }
@@ -309,7 +308,7 @@
 	}
 
 	.whatsNewDialog [data-slot="dialog-title"] {
-		font-size: 20px;
+		font-size: calc(var(--text-base) * 1.4);
 	}
 
 	.whatsNewFooter {

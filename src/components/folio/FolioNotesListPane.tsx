@@ -481,7 +481,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				<ul className="folioNotesList">
 					{visiblePinnedNotes.length > 0 ? (
 						<li className="folioNotesPinnedHeading">
-							<HugeiconsIcon icon={PinIcon} size={12} strokeWidth={1} />
+							<HugeiconsIcon
+								icon={PinIcon}
+								size="var(--icon-sm)"
+								strokeWidth={1}
+							/>
 							<span>Pinned</span>
 						</li>
 					) : null}

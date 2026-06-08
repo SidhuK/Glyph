@@ -121,7 +121,7 @@ export function AppearancePicker({
 					<div className="commandPaletteHeader">
 						<div className="commandPaletteInputWrapper">
 							<Search
-								size={13}
+								size="var(--icon-sm)"
 								className="commandPaletteSearchIcon"
 								aria-hidden="true"
 							/>
@@ -184,7 +184,10 @@ export function AppearancePicker({
 											setOpen(false);
 										}}
 									>
-										<DatabaseColumnIcon iconName={defaultIconName} size={15} />
+										<DatabaseColumnIcon
+											iconName={defaultIconName}
+											size="var(--icon-lg)"
+										/>
 									</Button>
 								</div>
 							) : null}
@@ -208,7 +211,10 @@ export function AppearancePicker({
 													setOpen(false);
 												}}
 											>
-												<DatabaseColumnIcon iconName={option.id} size={15} />
+												<DatabaseColumnIcon
+													iconName={option.id}
+													size="var(--icon-lg)"
+												/>
 											</Button>
 										);
 									})}
@@ -247,7 +253,7 @@ export function AppearancePicker({
 															>
 																<DatabaseColumnIcon
 																	iconName={option.id}
-																	size={15}
+																	size="var(--icon-lg)"
 																/>
 															</Button>
 														);
@@ -292,7 +298,7 @@ export function AppearancePickerIconTrigger({
 				onClick();
 			}}
 		>
-			<DatabaseColumnIcon iconName={iconName} size={14} />
+			<DatabaseColumnIcon iconName={iconName} size="var(--icon-md)" />
 		</Button>
 	);
 }

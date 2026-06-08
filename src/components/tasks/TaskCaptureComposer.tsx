@@ -77,7 +77,11 @@ export function TaskCaptureComposer({
 					disabled={pending || !value.trim()}
 					aria-label="Add task"
 				>
-					<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={CheckListIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
 				</Button>
 			</div>
 			{dateControls ? (

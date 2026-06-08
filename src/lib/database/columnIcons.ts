@@ -438,7 +438,7 @@ export const DATABASE_COLUMN_ICON_OPTIONS = [
 	{
 		id: "sparkles",
 		label: "Sparkles",
-		iconKey: "SparklesIcon",
+		iconKey: "AiBrain04Icon",
 		category: "fun",
 	},
 	{

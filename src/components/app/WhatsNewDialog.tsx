@@ -80,7 +80,7 @@ export function WhatsNewDialog({
 								<span className="whatsNewCategoryIcon" aria-hidden="true">
 									<HugeiconsIcon
 										icon={CATEGORY_ICONS[section.category]}
-										size={14}
+										size="var(--icon-md)"
 										strokeWidth={1.1}
 									/>
 								</span>

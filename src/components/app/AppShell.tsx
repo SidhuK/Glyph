@@ -1277,7 +1277,7 @@ export function AppShell() {
 									}`
 						}
 					>
-						<LayoutAlignLeft size={14} />
+						<LayoutAlignLeft size="var(--icon-md)" />
 					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}

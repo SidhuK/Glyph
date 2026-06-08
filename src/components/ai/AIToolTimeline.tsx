@@ -231,7 +231,7 @@ function GroupedStepCard({
 					className={cn("aiToolChevron", expanded && "aiToolChevron-open")}
 					aria-hidden
 				>
-					<ChevronDown size={12} />
+					<ChevronDown size="var(--icon-sm)" />
 				</span>
 			</button>
 			{summary ? <div className="aiToolSummary">{summary}</div> : null}
@@ -333,7 +333,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 									)}
 									aria-hidden
 								>
-									<ChevronDown size={12} />
+									<ChevronDown size="var(--icon-sm)" />
 								</span>
 							</button>
 							{summary ? <div className="aiToolSummary">{summary}</div> : null}

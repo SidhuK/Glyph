@@ -11,7 +11,7 @@
 	height: 30px;
 	padding: 0 8px;
 	border-radius: var(--radius-lg);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-family: var(--font-sans);
 	font-weight: var(--font-semibold);
 	border: 1px solid transparent;
@@ -38,8 +38,8 @@
 	align-items: center;
 	justify-content: center;
 	margin-right: 2px;
-	width: 16px;
-	height: 16px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 }
 
 .triggerLabel {
@@ -89,15 +89,15 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 20px;
-	height: 20px;
+	width: var(--icon-2xl);
+	height: var(--icon-2xl);
 	margin-right: 6px;
 	color: var(--text-tertiary);
 }
 
 .providerSvg {
-	width: 18px;
-	height: 18px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	object-fit: contain;
 	display: block;
 }
@@ -272,8 +272,8 @@
 
 .infoInline svg {
 	display: block;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	color: currentcolor;
 	flex-shrink: 0;
 }
@@ -313,7 +313,7 @@
 }
 
 .detailId {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	color: var(--text-tertiary);
 	word-break: break-all;
 	font-family: var(--font-mono, monospace);
@@ -326,7 +326,7 @@
 }
 
 .detailSectionTitle {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
 	text-transform: uppercase;
@@ -363,7 +363,7 @@
 	display: inline-block;
 	padding: 1px 6px;
 	border-radius: 4px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
 	border: 0;
 	color: var(--text-secondary);

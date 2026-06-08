@@ -44,7 +44,7 @@
 
 .markdownEditorFloatActions {
 	position: absolute;
-	top: -34px;
+	top: -40px;
 	right: 14px;
 	z-index: 24;
 	display: inline-flex;
@@ -100,7 +100,7 @@
 	gap: 6px;
 	padding: 0 8px;
 	min-height: 25px;
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	color: var(--text-secondary);
 	cursor: help;
@@ -115,7 +115,7 @@
 	min-height: 25px;
 	border-right: 1px solid
 		color-mix(in srgb, var(--border-light) 72%, transparent);
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	color: var(--text-secondary);
@@ -164,15 +164,15 @@
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	width: var(--task-progress-width, 16px);
-	height: var(--task-progress-height, 16px);
+	width: var(--task-progress-width, var(--icon-lg));
+	height: var(--task-progress-height, var(--icon-lg));
 	line-height: 0;
 }
 
 .markdownEditorTaskProgressRing {
-	width: var(--task-progress-ring-size, 14px);
-	height: var(--task-progress-ring-size, 14px);
-	flex: 0 0 var(--task-progress-ring-size, 14px);
+	width: var(--task-progress-ring-size, var(--icon-md));
+	height: var(--task-progress-ring-size, var(--icon-md));
+	flex: 0 0 var(--task-progress-ring-size, var(--icon-md));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -183,9 +183,19 @@
 
 .markdownEditorTaskProgressPie {
 	display: block;
-	width: var(--task-progress-pie-size, 7px);
-	height: var(--task-progress-pie-size, 7px);
-	flex: 0 0 var(--task-progress-pie-size, 7px);
+	width: var(
+		--task-progress-pie-size,
+		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+	);
+	height: var(
+		--task-progress-pie-size,
+		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+	);
+	flex: 0 0
+		var(
+			--task-progress-pie-size,
+			calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+		);
 	border-radius: 50%;
 	transition: background 180ms ease;
 }
@@ -228,7 +238,7 @@
 .markdownEditorStatsDock.is-collapsed .markdownEditorStatsItem {
 	padding: 0 5px;
 	gap: 4px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgressItem {
@@ -236,8 +246,8 @@
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
-	--task-progress-width: 14px;
-	--task-progress-height: 14px;
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
@@ -281,10 +291,6 @@
 .markdownEditorMenuTrigger:focus-visible {
 	outline: 2px solid var(--focus);
 	outline-offset: 2px;
-}
-
-.markdownEditorAiTrigger svg {
-	transform: translateY(-1px);
 }
 
 .markdownEditorCenter {
@@ -365,7 +371,7 @@
 }
 
 .markdownEditorInfoClose > span {
-	font-size: 16px;
+	font-size: calc(var(--text-base) * 1.1);
 	line-height: 1;
 	font-weight: 500;
 }
@@ -394,7 +400,7 @@
 
 .markdownEditorInfoSectionLabel {
 	margin: 0 0 7px;
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.035em;
 	text-transform: uppercase;
@@ -413,7 +419,7 @@
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 10px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.28;
 	color: var(--text-secondary);
 }
@@ -425,7 +431,7 @@
 
 .markdownEditorInfoRow code {
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	max-width: 180px;
 	overflow: hidden;
 	white-space: nowrap;
@@ -437,7 +443,7 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-primary);
 }
 
@@ -445,7 +451,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.3;
 	color: var(--text-secondary);
 }
@@ -468,7 +474,7 @@
 	padding: 4px 6px;
 	border-radius: 4px;
 	border-left: 0;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 	cursor: pointer;
 	overflow: hidden;
@@ -502,7 +508,7 @@
 }
 
 .markdownEditorInfoEmpty {
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.3;
 	color: var(--text-tertiary);
 }
@@ -512,14 +518,14 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 5px 6px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 }
 
 .markdownEditorInfoRelationshipGroup {
 	display: flex;
 	flex-direction: column;
 	gap: 5px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.28;
 	color: var(--text-secondary);
 }
@@ -575,7 +581,7 @@
 .linkedNotePreviewText {
 	margin: 0;
 	font: inherit;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
@@ -602,7 +608,7 @@
 .linkedNotePreviewText .ProseMirror {
 	min-height: 0;
 	padding: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 }
 
@@ -659,7 +665,7 @@
 	.markdownEditorStatsItem {
 		padding: 0 7px;
 		gap: 4px;
-		font-size: 10px;
+		font-size: calc(var(--text-base) * 0.8);
 		max-width: 32vw;
 		white-space: nowrap;
 		overflow: hidden;
@@ -669,7 +675,7 @@
 	.markdownEditorStatsPill::before {
 		padding: 0 7px;
 		gap: 4px;
-		font-size: 10px;
+		font-size: calc(var(--text-base) * 0.8);
 		max-width: 32vw;
 		white-space: nowrap;
 		overflow: hidden;

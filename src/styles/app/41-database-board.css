@@ -33,7 +33,7 @@
 
 .databaseBoardError,
 .databaseBoardEmptyText {
-	font-size: 0.82rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -43,7 +43,7 @@
 }
 
 .databaseCellError {
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
 }
 
@@ -138,15 +138,15 @@
 
 .databaseBoardLaneHandleDots {
 	display: inline-block;
-	width: 10px;
-	height: 10px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	background-image: radial-gradient(currentcolor 1.2px, transparent 1.2px);
 	background-size: 5px 5px;
 	background-position: 0 0;
 }
 
 .databaseBoardLaneTitle {
-	font-size: 0.7rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: color-mix(in srgb, white 92%, var(--text-primary));
 	letter-spacing: 0.045em;
@@ -202,7 +202,7 @@
 	border-radius: var(--database-radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 52%, transparent);
 	color: var(--text-tertiary);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	cursor: pointer;
 }
@@ -263,7 +263,7 @@
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: 0.93rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	line-height: 1.24;
 	color: var(--database-note-appearance-color, var(--text-primary));
@@ -276,7 +276,7 @@
 
 .databaseBoardCardTitleIcon {
 	display: inline-flex;
-	width: 14px;
+	width: var(--icon-md);
 	margin-right: 6px;
 	color: var(--database-note-appearance-color, var(--text-accent));
 	vertical-align: -2px;
@@ -308,10 +308,10 @@
 }
 
 .databaseBoardCardTaskProgress {
-	--task-progress-width: 14px;
-	--task-progress-height: 14px;
-	--task-progress-ring-size: 14px;
-	--task-progress-pie-size: 6px;
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex: 0 0 auto;
 	opacity: 0.9;
 }
@@ -354,15 +354,15 @@
 .databaseBoardCardStatus.propertyValueText {
 	flex: 0 0 auto;
 	height: auto;
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	white-space: nowrap;
 }
 
 .databaseBoardCardStatus .propertyValueTextIcon {
-	width: 11px;
-	height: 11px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	flex-basis: 11px;
 }
 
@@ -378,7 +378,7 @@
 	border: 0;
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-primary));
@@ -411,7 +411,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 3px;
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.2;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -446,7 +446,7 @@
 }
 
 .databaseBoardEmptyTitle {
-	font-size: 0.94rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }

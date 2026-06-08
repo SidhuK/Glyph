@@ -346,7 +346,7 @@ function AllDocsCard({
 							notePath={notePath}
 							appearance={noteAppearance}
 							className="allDocsCardTitleIcon"
-							size={14}
+							size="var(--icon-md)"
 						/>
 						{title}
 					</span>
@@ -384,7 +384,7 @@ function AllDocsCard({
 							<HugeiconsIcon
 								icon={Folder01Icon}
 								className="allDocsCardPathIcon"
-								size={12}
+								size="var(--icon-sm)"
 								strokeWidth={1.2}
 							/>
 							<span className="allDocsCardPathLabel">{pathLabel}</span>
@@ -401,7 +401,7 @@ function AllDocsCard({
 										<DatabaseColumnIcon
 											iconName={iconNameForTag(tag)}
 											className="allDocsCardTagIcon"
-											size={11}
+											size="var(--icon-xs)"
 											strokeWidth={1.2}
 										/>
 										{formatTagLabel(tag)}

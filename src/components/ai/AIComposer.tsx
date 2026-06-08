@@ -466,7 +466,7 @@ export function AIComposer({
 						className="aiAddPanelClose"
 						onClick={() => setAddPanelOpen(false)}
 					>
-						<X size={11} />
+						<X size="var(--icon-xs)" />
 					</button>
 				</div>
 			) : null}
@@ -483,7 +483,7 @@ export function AIComposer({
 								disabled={isAwaitingResponse}
 							>
 								<span className="aiComposerSuggestionIcon">
-									<File size={12} />
+									<File size="var(--icon-sm)" />
 								</span>
 								<span className="aiComposerSuggestionLabel">
 									{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
@@ -520,7 +520,11 @@ export function AIComposer({
 									onClick={handleInsertMentionTrigger}
 									disabled={isAwaitingResponse}
 								>
-									<HugeiconsIcon icon={AtIcon} size={13} strokeWidth={0.9} />
+									<HugeiconsIcon
+										icon={AtIcon}
+										size="var(--icon-sm)"
+										strokeWidth={0.9}
+									/>
 								</Button>
 							</div>
 							<div className="aiComposerRight">
@@ -541,7 +545,11 @@ export function AIComposer({
 								aria-label="Stop"
 								title="Stop"
 							>
-								<HugeiconsIcon icon={StopIcon} size={14} strokeWidth={0.9} />
+								<HugeiconsIcon
+									icon={StopIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
 							</button>
 						) : (
 							<Button
@@ -554,7 +562,7 @@ export function AIComposer({
 								aria-label="Send"
 								title="Send"
 							>
-								<HugeiconsIcon icon={ArrowUp02Icon} />
+								<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
 							</Button>
 						)}
 					</div>

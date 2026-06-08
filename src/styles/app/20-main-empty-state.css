@@ -47,8 +47,8 @@
 }
 
 .dailyNotesSetupToastIcon {
-	width: 30px;
-	height: 30px;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -65,7 +65,7 @@
 
 .dailyNotesSetupToastEyebrow {
 	margin-bottom: 2px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
@@ -74,7 +74,7 @@
 
 .dailyNotesSetupToastTitle {
 	margin: 0;
-	font-size: 15px;
+	font-size: calc(var(--text-base) * 1.1);
 	line-height: 1.25;
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.01em;
@@ -85,7 +85,7 @@
 .dailyNotesSetupToastText {
 	margin: 0;
 	padding-left: 42px;
-	font-size: 13px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
@@ -191,8 +191,8 @@
 }
 
 .starterStepIcon {
-	width: 36px;
-	height: 36px;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -334,7 +334,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
@@ -423,7 +423,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	border-radius: var(--radius-sm);
 	border: 1px solid var(--border-default);

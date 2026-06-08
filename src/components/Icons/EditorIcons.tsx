@@ -15,51 +15,103 @@ import {
 	TextUnderlineIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import type { IconProps } from "./NavigationIcons";
+import { type IconProps, withDefaultIconSize } from "./NavigationIcons";
 
 export const Bold = (props: IconProps) => (
-	<HugeiconsIcon icon={BoldIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={BoldIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Italic = (props: IconProps) => (
-	<HugeiconsIcon icon={ItalicIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={ItalicIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Underline = (props: IconProps) => (
-	<HugeiconsIcon icon={TextUnderlineIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={TextUnderlineIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Strikethrough = (props: IconProps) => (
-	<HugeiconsIcon icon={StrikethroughIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={StrikethroughIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Code = (props: IconProps) => (
-	<HugeiconsIcon icon={SourceCodeIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={SourceCodeIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Quote = (props: IconProps) => (
-	<HugeiconsIcon icon={QuoteIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={QuoteIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const List = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={LeftToRightListBulletIcon}
 		strokeWidth={0.9}
-		{...props}
+		{...withDefaultIconSize(props)}
 	/>
 );
 export const ListOrdered = (props: IconProps) => (
-	<HugeiconsIcon icon={ListOrderedIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={ListOrderedIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const ListChecks = (props: IconProps) => (
-	<HugeiconsIcon icon={ListChecksIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={ListChecksIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Heading1 = (props: IconProps) => (
-	<HugeiconsIcon icon={Heading1Icon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={Heading1Icon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Heading2 = (props: IconProps) => (
-	<HugeiconsIcon icon={Heading2Icon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={Heading2Icon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Heading3 = (props: IconProps) => (
-	<HugeiconsIcon icon={Heading3Icon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={Heading3Icon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Link2 = (props: IconProps) => (
-	<HugeiconsIcon icon={Link2Icon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={Link2Icon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );
 export const Edit = (props: IconProps) => (
-	<HugeiconsIcon icon={EditIcon} strokeWidth={0.9} {...props} />
+	<HugeiconsIcon
+		icon={EditIcon}
+		strokeWidth={0.9}
+		{...withDefaultIconSize(props)}
+	/>
 );

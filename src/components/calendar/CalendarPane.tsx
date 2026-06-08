@@ -309,7 +309,7 @@ export function CalendarPane({
 							>
 								<HugeiconsIcon
 									icon={ArrowLeftBigIcon}
-									size={13}
+									size="var(--icon-sm)"
 									strokeWidth={0.9}
 								/>
 							</Button>
@@ -323,7 +323,7 @@ export function CalendarPane({
 							>
 								<HugeiconsIcon
 									icon={Calendar03Icon}
-									size={14}
+									size="var(--icon-md)"
 									strokeWidth={0.9}
 								/>
 							</Button>
@@ -337,7 +337,7 @@ export function CalendarPane({
 							>
 								<HugeiconsIcon
 									icon={ArrowRightBigIcon}
-									size={13}
+									size="var(--icon-sm)"
 									strokeWidth={0.9}
 								/>
 							</Button>
@@ -351,7 +351,7 @@ export function CalendarPane({
 							>
 								<HugeiconsIcon
 									icon={MoreHorizontalIcon}
-									size={16}
+									size="var(--icon-lg)"
 									strokeWidth={0.9}
 								/>
 							</Button>
@@ -406,7 +406,7 @@ export function CalendarPane({
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={NoteIcon}
-									size={11}
+									size="var(--icon-xs)"
 									strokeWidth={1.15}
 									aria-hidden
 								/>
@@ -420,7 +420,7 @@ export function CalendarPane({
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={Calendar03Icon}
-									size={11}
+									size="var(--icon-xs)"
 									strokeWidth={1.15}
 									aria-hidden
 								/>
@@ -431,7 +431,7 @@ export function CalendarPane({
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={CheckListIcon}
-									size={11}
+									size="var(--icon-xs)"
 									strokeWidth={1.15}
 									aria-hidden
 								/>
@@ -445,7 +445,7 @@ export function CalendarPane({
 							<span className="calendarWeekSummaryItem">
 								<HugeiconsIcon
 									icon={AlertCircleIcon}
-									size={11}
+									size="var(--icon-xs)"
 									strokeWidth={1.15}
 									aria-hidden
 								/>
@@ -474,7 +474,7 @@ export function CalendarPane({
 								>
 									<HugeiconsIcon
 										icon={CalendarAdd01Icon}
-										size={13}
+										size="var(--icon-sm)"
 										strokeWidth={0.9}
 									/>
 								</Button>
@@ -485,7 +485,7 @@ export function CalendarPane({
 										<span className="calendarEmptyRowInner">
 											<HugeiconsIcon
 												icon={NoteIcon}
-												size={24}
+												size="var(--icon-2xl)"
 												strokeWidth={0.6}
 												aria-hidden
 											/>
@@ -511,7 +511,7 @@ export function CalendarPane({
 												<span className="calendarNoteIcon">
 													<HugeiconsIcon
 														icon={NoteIcon}
-														size={14}
+														size="var(--icon-md)"
 														strokeWidth={0.9}
 													/>
 												</span>
@@ -528,7 +528,7 @@ export function CalendarPane({
 																			<DatabaseColumnIcon
 																				iconName={iconNameForTag(tag)}
 																				className="calendarNoteTagIcon"
-																				size={10}
+																				size="var(--icon-xs)"
 																				strokeWidth={1.2}
 																			/>
 																		) : null}

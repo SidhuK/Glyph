@@ -171,16 +171,28 @@ function groupNotesByFolder(notes: TaskGroup[]): FolderTaskGroup[] {
 function groupIcon(icon: TaskGroup["icon"]) {
 	if (icon === "alert") {
 		return (
-			<HugeiconsIcon icon={AlertCircleIcon} size={13} strokeWidth={0.95} />
+			<HugeiconsIcon
+				icon={AlertCircleIcon}
+				size="var(--icon-sm)"
+				strokeWidth={0.95}
+			/>
 		);
 	}
 	if (icon === "note") {
-		return <HugeiconsIcon icon={NoteIcon} size={13} strokeWidth={0.95} />;
+		return (
+			<HugeiconsIcon icon={NoteIcon} size="var(--icon-sm)" strokeWidth={0.95} />
+		);
 	}
 	if (icon === "tag") {
-		return <Hash size={13} />;
+		return <Hash size="var(--icon-sm)" />;
 	}
-	return <HugeiconsIcon icon={CheckListIcon} size={13} strokeWidth={0.95} />;
+	return (
+		<HugeiconsIcon
+			icon={CheckListIcon}
+			size="var(--icon-sm)"
+			strokeWidth={0.95}
+		/>
+	);
 }
 
 function countLabel(count: number) {
@@ -584,7 +596,7 @@ export function TasksPane({
 								<div className="quickTaskDateFields">
 									<label>
 										<span>
-											<Calendar size={12} aria-hidden="true" />
+											<Calendar size="var(--icon-sm)" aria-hidden="true" />
 											Scheduled
 										</span>
 										<input
@@ -644,7 +656,7 @@ export function TasksPane({
 								size="xs"
 								onClick={onOpenDailyNotesSettings}
 							>
-								<Settings size={13} />
+								<Settings size="var(--icon-sm)" />
 								Settings
 							</Button>
 						</div>
@@ -656,7 +668,7 @@ export function TasksPane({
 
 					<div className="tasksPaneToolbar">
 						<div className="tasksPaneSearch">
-							<Search size={14} />
+							<Search size="var(--icon-md)" />
 							<Input
 								value={query}
 								onChange={(event) => setQuery(event.target.value)}
@@ -699,7 +711,7 @@ export function TasksPane({
 								<span className="calendarEmptyRowInner">
 									<HugeiconsIcon
 										icon={CheckListIcon}
-										size={24}
+										size="var(--icon-2xl)"
 										strokeWidth={0.6}
 										aria-hidden
 									/>
@@ -716,7 +728,7 @@ export function TasksPane({
 											<h3>
 												<HugeiconsIcon
 													icon={Folder01Icon}
-													size={13}
+													size="var(--icon-sm)"
 													strokeWidth={0.95}
 												/>
 												<span>{folder.label}</span>
@@ -742,7 +754,7 @@ export function TasksPane({
 												>
 													<HugeiconsIcon
 														icon={NoteIcon}
-														size={14}
+														size="var(--icon-md)"
 														strokeWidth={0.95}
 													/>
 													<div className="tasksRowContent">
@@ -800,7 +812,7 @@ export function TasksPane({
 											<h3>
 												<HugeiconsIcon
 													icon={Folder01Icon}
-													size={13}
+													size="var(--icon-sm)"
 													strokeWidth={0.95}
 												/>
 												<span>{folder.label}</span>
@@ -826,7 +838,7 @@ export function TasksPane({
 												>
 													<HugeiconsIcon
 														icon={NoteIcon}
-														size={14}
+														size="var(--icon-md)"
 														strokeWidth={0.95}
 													/>
 													<div className="tasksRowContent">

@@ -94,7 +94,7 @@ export function TemplatePickerDialog({
 						title="Template settings"
 						aria-label="Template settings"
 					>
-						<Settings size={15} />
+						<Settings size="var(--icon-lg)" />
 					</Button>
 					<Button
 						type="button"
@@ -104,7 +104,7 @@ export function TemplatePickerDialog({
 						title="Cancel"
 						aria-label="Cancel"
 					>
-						<X size={15} />
+						<X size="var(--icon-lg)" />
 					</Button>
 				</div>
 			</DialogContent>

@@ -4,9 +4,9 @@
 	--all-docs-card-aspect: 1 / 1;
 	--all-docs-card-padding: 12px;
 	--all-docs-card-gap: 10px;
-	--all-docs-card-title-size: 0.9rem;
-	--all-docs-card-preview-size: 0.78rem;
-	--all-docs-card-meta-size: 0.68rem;
+	--all-docs-card-title-size: var(--text-base);
+	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
+	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
 
 	display: flex;
 	flex: 1;
@@ -33,7 +33,7 @@
 }
 
 .allDocsTitle {
-	font-size: clamp(24px, 2.2vw, 30px);
+	font-size: calc(var(--text-base) * 2.1);
 	line-height: 1.08;
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
@@ -70,7 +70,7 @@
 }
 
 .allDocsSectionTitle {
-	font-size: 0.82rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0;
 	color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
@@ -193,7 +193,7 @@
 
 .allDocsCardTitleIcon {
 	display: inline-flex;
-	width: 14px;
+	width: var(--icon-md);
 	margin-right: 6px;
 	color: var(--database-note-appearance-color, var(--text-accent));
 	vertical-align: -2px;
@@ -340,10 +340,10 @@
 }
 
 .allDocsCardTaskProgress {
-	--task-progress-width: 14px;
-	--task-progress-height: 14px;
-	--task-progress-ring-size: 14px;
-	--task-progress-pie-size: 6px;
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 }
 
 .allDocsCardTaskProgress .markdownEditorTaskProgressRing {
@@ -380,7 +380,7 @@
 		var(--bg-secondary)
 	);
 	color: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 	white-space: nowrap;

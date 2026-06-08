@@ -1,9 +1,9 @@
 import {
+	AiBrain04Icon,
 	Archive02Icon,
 	CommandIcon,
 	GitBranchIcon,
 	Settings01Icon,
-	SparklesIcon,
 	Sun03Icon,
 	ToolsIcon,
 } from "@hugeicons/core-free-icons";
@@ -38,54 +38,74 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "general",
 		label: "General",
 		renderIcon: () => (
-			<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={Settings01Icon}
+				size="var(--icon-md)"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 	{
 		id: "appearance",
 		label: "Appearance",
 		renderIcon: () => (
-			<HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
 	},
 	{
 		id: "shortcuts",
 		label: "Shortcuts",
 		renderIcon: () => (
-			<HugeiconsIcon icon={CommandIcon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={CommandIcon}
+				size="var(--icon-md)"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 	{
 		id: "ai",
 		label: "Glyph AI",
 		renderIcon: () => (
-			<HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={AiBrain04Icon}
+				size="var(--icon-md)"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 	{
 		id: "space",
 		label: "Space",
-		renderIcon: () => <FolderOpen size={14} />,
+		renderIcon: () => <FolderOpen size="var(--icon-md)" />,
 	},
 	{
 		id: "git",
 		label: "Git",
 		renderIcon: () => (
-			<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={GitBranchIcon}
+				size="var(--icon-md)"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 	{
 		id: "advanced",
 		label: "Advanced",
 		renderIcon: () => (
-			<HugeiconsIcon icon={ToolsIcon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon icon={ToolsIcon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
 	},
 	{
 		id: "about",
 		label: "About",
 		renderIcon: () => (
-			<HugeiconsIcon icon={Archive02Icon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={Archive02Icon}
+				size="var(--icon-md)"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 ];

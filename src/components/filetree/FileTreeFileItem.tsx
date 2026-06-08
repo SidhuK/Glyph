@@ -326,12 +326,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{appearance?.icon ? (
 							<DatabaseColumnIcon
 								iconName={appearance.icon}
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 							/>
 						) : (
 							<Icon
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 								style={{ color: iconColor }}
 								aria-hidden="true"

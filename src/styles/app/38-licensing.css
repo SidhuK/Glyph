@@ -35,7 +35,7 @@
 .licenseLoadingPanel h1,
 .licenseLockTitle {
 	margin: 0;
-	font-size: clamp(28px, 4vw, 40px);
+	font-size: calc(var(--text-base) * 2.1);
 	line-height: 1.05;
 	letter-spacing: -0.03em;
 	color: var(--text-primary);
@@ -44,7 +44,7 @@
 .licenseLoadingPanel p,
 .licenseLockBody {
 	margin: 12px 0 0;
-	font-size: 14px;
+	font-size: var(--text-base);
 	line-height: 1.6;
 	color: var(--text-secondary);
 	max-width: 58ch;
@@ -52,7 +52,7 @@
 
 .licenseLockEyebrow {
 	margin-bottom: 10px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
@@ -68,7 +68,7 @@
 }
 
 .licenseLockMetaText {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -156,13 +156,13 @@
 }
 
 .licenseTrialBannerTitle {
-	font-size: 13px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .licenseTrialBannerMeta {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 

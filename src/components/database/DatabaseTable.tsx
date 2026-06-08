@@ -89,9 +89,9 @@ function SortIndicator({
 	return (
 		<span className="databaseHeaderSortIcon" aria-hidden="true">
 			{activeSort.direction === "desc" ? (
-				<ChevronDown size={12} />
+				<ChevronDown size="var(--icon-sm)" />
 			) : (
-				<ChevronUp size={12} />
+				<ChevronUp size="var(--icon-sm)" />
 			)}
 		</span>
 	);
@@ -340,7 +340,7 @@ export function DatabaseTable({
 													aria-label={`Add note to ${group.label}`}
 												>
 													<Plus
-														size={13}
+														size="var(--icon-sm)"
 														strokeWidth={1.6}
 														aria-hidden="true"
 													/>

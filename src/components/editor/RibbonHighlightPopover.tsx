@@ -41,7 +41,11 @@ export function RibbonHighlightPopover({
 					whileTap={canEdit ? { scale: 0.97 } : undefined}
 					transition={springPresets.snappy}
 				>
-					<HugeiconsIcon icon={HighlighterIcon} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={HighlighterIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
 				</m.button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
@@ -85,7 +89,7 @@ export function RibbonHighlightPopover({
 						onMouseDown={preventMouseDown}
 						onClick={button.onClear}
 					>
-						<X size={12} />
+						<X size="var(--icon-sm)" />
 					</button>
 				</div>
 			</DropdownMenuContent>

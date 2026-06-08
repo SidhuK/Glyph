@@ -288,7 +288,7 @@ export function NotePropertiesPanel({
 									)
 								}
 							>
-								<Plus size={12} />
+								<Plus size="var(--icon-sm)" />
 								Add property
 							</Button>
 						</div>

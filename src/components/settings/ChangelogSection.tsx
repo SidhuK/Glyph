@@ -65,7 +65,11 @@ export function ChangelogSection({ version }: ChangelogSectionProps) {
 		<div className="settingsChangelog">
 			<div className="settingsChangelogSummary">
 				<div className="settingsChangelogSummaryIcon" aria-hidden="true">
-					<HugeiconsIcon icon={NewReleasesIcon} size={18} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={NewReleasesIcon}
+						size="var(--icon-xl)"
+						strokeWidth={0.9}
+					/>
 				</div>
 				<div className="settingsChangelogSummaryCopy">
 					<div className="settingsChangelogSummaryEyebrow">Latest release</div>

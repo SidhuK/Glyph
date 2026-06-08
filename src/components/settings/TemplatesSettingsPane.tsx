@@ -11,6 +11,7 @@ import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 interface TemplateOption {
 	label: string;
@@ -372,7 +373,7 @@ export function TemplateSettingsSections() {
 									onClick={handleBrowseFolder}
 									disabled={loading}
 								>
-									<FolderOpen size={14} />
+									<FolderOpen size="var(--icon-md)" />
 									Browse
 								</Button>
 								{templatesFolder !== null ? (
@@ -386,7 +387,7 @@ export function TemplateSettingsSections() {
 										aria-label="Clear template folder"
 										title="Clear template folder"
 									>
-										<Trash2 size={14} />
+										<Trash2 size="var(--icon-md)" />
 									</Button>
 								) : null}
 							</div>
@@ -401,7 +402,7 @@ export function TemplateSettingsSections() {
 				</SettingsRow>
 
 				<SettingsRow label="Default daily note template">
-					<select
+					<SettingsSelect
 						value={dailyNoteTemplatePath ?? ""}
 						onChange={(event) =>
 							void handleDailyTemplateChange(event.target.value)
@@ -416,7 +417,7 @@ export function TemplateSettingsSections() {
 								{template.label}
 							</option>
 						))}
-					</select>
+					</SettingsSelect>
 				</SettingsRow>
 			</SettingsSection>
 		</>

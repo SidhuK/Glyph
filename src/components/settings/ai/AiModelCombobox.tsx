@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
+import { SettingsSelect } from "../SettingsSelect";
 
 interface AiModelComboboxProps {
 	profileId: string;
@@ -71,7 +72,7 @@ export function AiModelCombobox({
 	return (
 		<div className="modelCombobox">
 			<div className="modelComboboxInputWrap">
-				<select
+				<SettingsSelect
 					id="aiModel"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
@@ -83,7 +84,7 @@ export function AiModelCombobox({
 							{m.name}
 						</option>
 					))}
-				</select>
+				</SettingsSelect>
 				{statusLabel ? (
 					<span
 						className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}

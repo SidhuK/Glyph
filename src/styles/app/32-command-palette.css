@@ -109,7 +109,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-medium);
 	font-family: var(--font-mono);
@@ -256,7 +256,7 @@
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	color: var(--text-tertiary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.4;
 	backdrop-filter: blur(4px);
 }
@@ -295,8 +295,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 	flex: 0 0 auto;
 	color: var(--text-secondary);
 }
@@ -342,8 +342,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: var(--icon-2xl);
+	height: var(--icon-2xl);
 	flex: 0 0 auto;
 	color: var(--text-secondary);
 }
@@ -439,7 +439,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
@@ -482,7 +482,7 @@
 
 .commandPaletteSectionLabel {
 	padding: 6px 10px 3px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	font-weight: var(--font-medium);

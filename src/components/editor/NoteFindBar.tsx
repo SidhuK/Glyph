@@ -27,7 +27,7 @@ export function NoteFindBar({
 }: NoteFindBarProps) {
 	return (
 		<div className="noteFindBar nodrag nopan nowheel">
-			<Search size={13} className="noteFindIcon" aria-hidden />
+			<Search size="var(--icon-sm)" className="noteFindIcon" aria-hidden />
 			<Input
 				ref={inputRef}
 				className="noteFindInput"

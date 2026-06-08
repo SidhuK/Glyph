@@ -48,7 +48,7 @@
 }
 
 .aiCodeBlockLang {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
 	text-transform: uppercase;
@@ -56,7 +56,7 @@
 }
 
 .aiCodeBlockCopy {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	color: var(--text-tertiary);
 	background: transparent;
@@ -127,7 +127,7 @@
 }
 
 .aiToolDuration {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	padding: 1px 6px;
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);

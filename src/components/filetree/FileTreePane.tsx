@@ -236,7 +236,7 @@ function FolderBreadcrumb({
 						</button>
 						{!isLast ? (
 							<ChevronRight
-								size={11}
+								size="var(--icon-xs)"
 								className="fileTreeBreadcrumbSeparator"
 								aria-hidden="true"
 							/>
@@ -1056,14 +1056,14 @@ export const FileTreePane = memo(function FileTreePane({
 														>
 															<HugeiconsIcon
 																icon={PinIcon}
-																size={14}
+																size="var(--icon-md)"
 																strokeWidth={0.9}
 																className="fileTreePinIcon"
 																aria-hidden="true"
 															/>
 															<HugeiconsIcon
 																icon={PinOffIcon}
-																size={14}
+																size="var(--icon-md)"
 																strokeWidth={0.9}
 																className="fileTreePinOffIcon"
 																aria-hidden="true"

@@ -114,7 +114,10 @@ export function SortPanel({
 			{activeSort ? (
 				<div className="databaseViewSortRow">
 					<span className="databaseViewFilterColumn">
-						<DatabaseColumnIcon column={sortColumn ?? undefined} size={16} />
+						<DatabaseColumnIcon
+							column={sortColumn ?? undefined}
+							size="var(--icon-lg)"
+						/>
 						<select
 							className="databaseViewInlineSelect"
 							value={activeSort.column_id}
@@ -147,7 +150,7 @@ export function SortPanel({
 					disabled={!sortColumn}
 					onClick={() => setSort({ column_id: sortColumn?.id ?? "title" })}
 				>
-					<Plus size={14} aria-hidden="true" />
+					<Plus size="var(--icon-md)" aria-hidden="true" />
 					Add sort
 				</button>
 			)}

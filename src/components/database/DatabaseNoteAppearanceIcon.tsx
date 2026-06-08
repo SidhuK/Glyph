@@ -25,12 +25,12 @@ export function DatabaseNoteAppearanceIcon({
 	notePath,
 	appearance,
 	className,
-	size = 14,
+	size = "var(--icon-md)",
 }: {
 	notePath: string;
 	appearance?: FileTreeAppearance | null;
 	className?: string;
-	size?: number;
+	size?: string | number;
 }) {
 	const { Icon, color } = getFileTypeInfo(notePath, isMarkdownPath(notePath));
 

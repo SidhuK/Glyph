@@ -6,6 +6,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "../SettingsScaffold";
+import { SettingsSelect } from "../SettingsSelect";
 import { AiModelCombobox } from "./AiModelCombobox";
 
 interface AiProviderOption {
@@ -107,7 +108,7 @@ export function AiProviderSection({
 							className="settingsProviderNativeLogoImage"
 						/>
 					</div>
-					<select
+					<SettingsSelect
 						id="aiProvider"
 						className="settingsProviderNativeSelect"
 						value={profileDraft.provider}
@@ -124,7 +125,7 @@ export function AiProviderSection({
 								))}
 							</optgroup>
 						))}
-					</select>
+					</SettingsSelect>
 				</div>
 			</SettingsRow>
 
@@ -170,7 +171,7 @@ export function AiProviderSection({
 					description="Available when the current model exposes effort levels."
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
-						<select
+						<SettingsSelect
 							id="aiReasoningEffort"
 							value={
 								profileDraft.reasoning_effort ??
@@ -192,7 +193,7 @@ export function AiProviderSection({
 										: option.effort}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 					) : (
 						<div>
 							<Input

@@ -87,8 +87,8 @@
 }
 
 .fileTreeBreadcrumbSeparator {
-	width: 11px;
-	height: 11px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	color: var(--text-quaternary);
 	flex-shrink: 0;
 }
@@ -128,7 +128,7 @@
 	flex-shrink: 0;
 	margin-left: auto;
 	font-family: inherit;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.4;
 	color: var(--text-tertiary);
 	white-space: nowrap;
@@ -150,7 +150,7 @@
 }
 
 .fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow {
-	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+	background: var(--bg-hover);
 	border-radius: 6px;
 }
 
@@ -159,22 +159,9 @@
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
-	background: var(--bg-primary);
+	background: var(--bg-active);
 	color: var(--text-primary);
 	border-radius: 6px;
-	box-shadow: 0 0.5px 1.5px
-		color-mix(in srgb, var(--text-primary) 6%, transparent), inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 50%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 40%, transparent);
-}
-
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
-	font-weight: var(--font-semibold);
-}
-
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow svg,
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow svg * {
-	stroke-width: 1.2;
 }
 
 .fileTreeRowShell {
@@ -283,8 +270,8 @@
 
 .fileTreeChevron {
 	display: inline-flex;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	justify-content: center;
 	align-items: center;
 	color: var(--text-primary);
@@ -306,7 +293,7 @@
 
 .fileTreeIcon {
 	display: inline-flex;
-	width: 14px;
+	width: var(--icon-md);
 	justify-content: center;
 	color: var(--text-primary);
 	flex-shrink: 0;
@@ -352,7 +339,7 @@
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-tertiary) 82%, transparent);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.2;
 	white-space: normal;
 	word-break: normal;
@@ -365,7 +352,7 @@
 
 .fileTreeCounts {
 	flex-shrink: 0;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	color: var(--text-tertiary);
 	min-width: 18px;
 	text-align: right;
@@ -375,7 +362,7 @@
 
 .fileTreeExtBadge {
 	flex-shrink: 0;
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	padding: 2px 5px;
 	border: 0;
@@ -390,10 +377,10 @@
 }
 
 .fileTreeTaskProgress {
-	--task-progress-width: 14px;
-	--task-progress-height: 14px;
-	--task-progress-ring-size: 14px;
-	--task-progress-pie-size: 6px;
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex-shrink: 0;
 }
 

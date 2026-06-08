@@ -76,7 +76,7 @@
 }
 
 .calendarDashboardTitleBlock h2 {
-	font-size: 1.55rem;
+	font-size: calc(var(--text-base) * 1.8);
 	line-height: 1.1;
 	text-wrap: balance;
 }
@@ -187,14 +187,14 @@
 }
 
 .calendarWeekDayName {
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 }
 
 .calendarWeekDayNumber {
 	color: inherit;
-	font-size: 1.15rem;
+	font-size: calc(var(--text-base) * 1.3);
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	line-height: 1;
@@ -238,7 +238,7 @@
 	padding: 0 5px;
 	overflow: hidden;
 	border-radius: var(--pill-radius);
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 }
@@ -282,7 +282,7 @@
 	align-items: center;
 	gap: 5px;
 	color: var(--text-tertiary);
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1;
 }
@@ -294,7 +294,7 @@
 .calendarWeekSummaryCount {
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -394,7 +394,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 24px;
+	height: var(--icon-2xl);
 	color: var(--text-tertiary);
 }
 
@@ -460,7 +460,7 @@
 		var(--bg-secondary)
 	);
 	color: color-mix(in srgb, var(--interactive-accent) 58%, var(--text-primary));
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	white-space: nowrap;
@@ -514,11 +514,11 @@
 
 	.calendarWeekSignal {
 		padding-inline: 5px;
-		font-size: 0.58rem;
+		font-size: calc(var(--text-base) * 0.8);
 	}
 
 	.calendarDashboardTitleBlock h2 {
-		font-size: 1.2rem;
+		font-size: calc(var(--text-base) * 1.4);
 	}
 
 	.calendarPanelSection {

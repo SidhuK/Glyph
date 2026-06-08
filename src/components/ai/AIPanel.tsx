@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-	ChatAdd01Icon,
-	Logout05Icon,
-	SparklesIcon,
-} from "@hugeicons/core-free-icons";
+import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
@@ -339,9 +335,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				onMouseDown={onWindowDragMouseDown}
 			>
 				<div className="aiPanelHeaderLeft">
-					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={0.9} />
-					</div>
 					<button
 						type="button"
 						className={cn(
@@ -367,7 +360,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size={13} strokeWidth={0.9} />
+						<HugeiconsIcon
+							icon={ChatAdd01Icon}
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
 					</Button>
 					<Button
 						type="button"
@@ -379,7 +376,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Settings"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<SettingsIcon size={13} />
+						<SettingsIcon size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -391,7 +388,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={Logout05Icon} size={13} strokeWidth={0.9} />
+						<HugeiconsIcon
+							icon={Logout05Icon}
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
 					</Button>
 				</div>
 			</div>
@@ -446,14 +447,14 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						aria-label="Scroll to bottom"
 						title="Scroll to latest"
 					>
-						<ChevronDown size={14} />
+						<ChevronDown size="var(--icon-md)" />
 					</Button>
 				)}
 				{chat.error ? (
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>
 						<button type="button" onClick={() => chat.clearError()}>
-							<X size={11} />
+							<X size="var(--icon-xs)" />
 						</button>
 					</div>
 				) : null}
@@ -464,7 +465,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 							type="button"
 							onClick={() => actions.setAssistantActionError("")}
 						>
-							<X size={11} />
+							<X size="var(--icon-xs)" />
 						</button>
 					</div>
 				) : null}
