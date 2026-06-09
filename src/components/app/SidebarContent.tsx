@@ -8,21 +8,16 @@ import {
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-	type MouseEvent,
-	memo,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { useQuery } from "@tanstack/react-query";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import { type FsEntry, invoke } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -60,7 +55,6 @@ interface SidebarContentProps {
 	onOpenAllDocs: () => void;
 	onOpenCommandPalette: () => void;
 	spacePath: string | null;
-	onOpenSpace: () => Promise<void>;
 	activeTopSection: "home" | "all-notes" | "databases" | null;
 }
 
@@ -69,12 +63,6 @@ function formatSpaceLabel(path: string): string {
 	const parts = normalized.split("/").filter(Boolean);
 	if (parts.length === 0) return path;
 	return parts[parts.length - 1] ?? path;
-}
-
-function spaceInitial(label: string): string {
-	const trimmed = label.trim();
-	if (!trimmed) return "G";
-	return trimmed.slice(0, 1).toUpperCase();
 }
 
 function isSpaceContainerEntry(entry: FsEntry, spaceLabel: string): boolean {
@@ -105,6 +93,16 @@ function folioTreeRootEntries(
 	]);
 }
 
+function AllNotesCountBadge() {
+	const allDocsQuery = useQuery({
+		queryKey: navigationQueryKeys.allDocsList(),
+		queryFn: () => loadAllDocs(),
+	});
+	const count = allDocsQuery.data?.length ?? 0;
+	if (count === 0) return null;
+	return <span className="sidebarQuickActionCount">{count}</span>;
+}
+
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -130,7 +128,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenAllDocs,
 	onOpenCommandPalette,
 	spacePath,
-	onOpenSpace,
 	activeTopSection,
 }: SidebarContentProps) {
 	// Contexts
@@ -295,18 +292,6 @@ export const SidebarContent = memo(function SidebarContent({
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
 
-	const handleShowSpaceMenu = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			const rect = event.currentTarget.getBoundingClientRect();
-			void invoke("show_space_menu", { x: rect.left, y: rect.bottom }).catch(
-				(error: unknown) => {
-					console.warn("Failed to show native space menu", error);
-					void onOpenSpace();
-				},
-			);
-		},
-		[onOpenSpace],
-	);
 	const handleOpenAllNotes = useCallback(() => {
 		onOpenAllDocs();
 		if (folioMode) {
@@ -400,6 +385,30 @@ export const SidebarContent = memo(function SidebarContent({
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="new-note"
+							aria-label="New Note"
+							onClick={onNewNote}
+							title={`New Note${
+								newNoteShortcut
+									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+									: ""
+							}`}
+						>
+							<HugeiconsIcon
+								icon={NoteIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+							<span className="sidebarQuickActionLabel">New Note</span>
+							{newNoteShortcut ? (
+								<span className="sidebarQuickActionShortcut">
+									{formatShortcutForPlatform(newNoteShortcut)}
+								</span>
+							) : null}
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="dashboard"
 							data-active={activeTopSection === "home" ? "true" : "false"}
 							aria-label="Home"
@@ -409,6 +418,7 @@ export const SidebarContent = memo(function SidebarContent({
 							onMouseEnter={onPrefetchCalendar}
 							onFocus={onPrefetchCalendar}
 							title="Open Home"
+							style={{ marginTop: 8 }}
 						>
 							<HugeiconsIcon
 								icon={Home01Icon}
@@ -462,6 +472,7 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
+							<AllNotesCountBadge />
 						</button>
 					</div>
 					<div className="sidebarStack">
@@ -562,45 +573,6 @@ export const SidebarContent = memo(function SidebarContent({
 								onChangeTagIcon={handleChangeTagIcon}
 							/>
 						</section>
-					</div>
-				</div>
-				<div className="sidebarQuickActions sidebarFooter">
-					<div className="sidebarTopRow">
-						<div className="sidebarSpaceMenuAnchor">
-							<button
-								type="button"
-								className="sidebarSpaceSwitcher"
-								aria-haspopup="menu"
-								onClick={handleShowSpaceMenu}
-								title={spacePath ?? "Open space"}
-							>
-								<span className="sidebarSpaceBadge">
-									{spaceInitial(spaceLabel)}
-								</span>
-								<span className="sidebarSpaceName">{spaceLabel}</span>
-								<ChevronDown
-									size="var(--icon-sm)"
-									className="sidebarSpaceChevron"
-								/>
-							</button>
-						</div>
-						<button
-							type="button"
-							className="sidebarTopIconButton sidebarTopNewNoteButton"
-							onClick={onNewNote}
-							aria-label="Create a new note"
-							title={`Create a new note${
-								newNoteShortcut
-									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon
-								icon={NoteIcon}
-								size="var(--icon-lg)"
-								strokeWidth={0.9}
-							/>
-						</button>
 					</div>
 				</div>
 			</div>

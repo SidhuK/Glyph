@@ -41,7 +41,7 @@ use tracing::{error, warn};
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    LogicalPosition, PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
+    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
     WebviewWindowBuilder,
 };
 
@@ -1011,7 +1011,7 @@ fn quick_task_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
         WebviewUrl::App(format!("index.html?window={QUICK_TASK_WINDOW_LABEL}").into()),
     )
     .title("Quick Task")
-    .inner_size(560.0, 300.0)
+    .inner_size(520.0, 132.0)
     .resizable(false)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
@@ -1325,25 +1325,6 @@ fn set_recent_spaces_menu(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-fn show_space_menu(window: tauri::WebviewWindow, x: f64, y: f64) -> Result<(), String> {
-    let app = window.app_handle();
-    let menu = app
-        .menu()
-        .ok_or_else(|| "app menu is not available".to_string())?;
-    let mut target: Option<Submenu<_>> = None;
-    for item in menu.items().map_err(|error| error.to_string())? {
-        if let Some(found) = find_submenu_by_id(&item, SPACE_MENU_ID) {
-            target = Some(found);
-            break;
-        }
-    }
-    let submenu = target.ok_or_else(|| "space menu is not available".to_string())?;
-    window
-        .popup_menu_at(&submenu, Position::Logical(LogicalPosition::new(x, y)))
-        .map_err(|error| error.to_string())
-}
-
-#[tauri::command(rename_all = "snake_case")]
 fn set_menu_shortcuts(
     app: tauri::AppHandle,
     menu_state: State<'_, MenuState>,
@@ -1628,7 +1609,6 @@ pub fn run() {
             set_quick_task_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
-            show_space_menu,
             set_menu_shortcuts,
             set_window_vibrancy_theme,
             external_markdown::external_markdown_window_path,

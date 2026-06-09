@@ -88,6 +88,13 @@ interface SidebarBacklinkItem {
 }
 
 const UTF8_ENCODER = new TextEncoder();
+const INFO_PANEL_DERIVATION_DEBOUNCE_MS = 700;
+
+const EMPTY_STATS = {
+	words: 0,
+	characters: 0,
+	readingTime: "0s",
+};
 
 function countLines(markdown: string): number {
 	if (markdown.length === 0) return 0;
@@ -176,6 +183,7 @@ export function MarkdownEditorPane({
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
+	const [infoPanelText, setInfoPanelText] = useState(() => initialText);
 	const [savedText, setSavedText] = useState(() => initialText);
 	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
@@ -220,10 +228,14 @@ export function MarkdownEditorPane({
 
 	const isDirty = text !== savedText;
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
-		() => splitYamlFrontmatter(text),
-		[text],
+		() =>
+			infoPanelOpen
+				? splitYamlFrontmatter(infoPanelText)
+				: { frontmatter: null, body: "" },
+		[infoPanelOpen, infoPanelText],
 	);
 	const stats = useMemo(() => {
+		if (!infoPanelOpen) return EMPTY_STATS;
 		const words = countWords(currentBody);
 		const characters = currentBody.length;
 		return {
@@ -231,27 +243,28 @@ export function MarkdownEditorPane({
 			characters,
 			readingTime: formatReadingTime(words),
 		};
-	}, [currentBody]);
+	}, [currentBody, infoPanelOpen]);
 	const visibleTaskSummary = useMarkdownTaskSummary(
-		text,
-		showTaskProgressIndicator === true,
+		infoPanelText,
+		infoPanelOpen && showTaskProgressIndicator === true,
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
-		return UTF8_ENCODER.encode(text).length;
-	}, [infoPanelOpen, text]);
+		return UTF8_ENCODER.encode(infoPanelText).length;
+	}, [infoPanelOpen, infoPanelText]);
 	const lineCount = useMemo(() => {
 		if (!infoPanelOpen) return 0;
-		return countLines(text);
-	}, [infoPanelOpen, text]);
+		return countLines(infoPanelText);
+	}, [infoPanelOpen, infoPanelText]);
 	const linkedNotes = useMemo(() => {
+		if (!infoPanelOpen) return [];
 		const current = normalizeRelPath(relPath);
-		return extractLinkedNotes(text).filter((item) => {
+		return extractLinkedNotes(infoPanelText).filter((item) => {
 			const normalized = normalizeRelPath(item.id);
 			if (!normalized) return false;
 			return normalized !== current;
 		});
-	}, [relPath, text]);
+	}, [infoPanelOpen, relPath, infoPanelText]);
 	const sidebarBacklinks = useMemo(() => {
 		const merged = new Map<string, SidebarBacklinkItem>();
 
@@ -315,6 +328,19 @@ export function MarkdownEditorPane({
 		};
 	}, []);
 
+	useEffect(() => {
+		if (!infoPanelOpen) return;
+		setInfoPanelText(textRef.current);
+	}, [infoPanelOpen]);
+
+	useEffect(() => {
+		if (!infoPanelOpen) return;
+		const timer = window.setTimeout(() => {
+			setInfoPanelText(text);
+		}, INFO_PANEL_DERIVATION_DEBOUNCE_MS);
+		return () => window.clearTimeout(timer);
+	}, [infoPanelOpen, text]);
+
 	const isCurrentSession = useCallback((sessionId: number) => {
 		return mountedRef.current && documentSessionRef.current === sessionId;
 	}, []);
@@ -335,6 +361,7 @@ export function MarkdownEditorPane({
 		}
 		pendingExternalReloadRef.current = false;
 		setText(cached);
+		setInfoPanelText(cached);
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSaving(false);
@@ -371,6 +398,7 @@ export function MarkdownEditorPane({
 		autosaveQueuedRef.current = false;
 		hasUserEditsRef.current = false;
 		setText("");
+		setInfoPanelText("");
 		setSavedText("");
 		setLastSavedMtimeMs(null);
 		setSaving(false);
@@ -394,6 +422,7 @@ export function MarkdownEditorPane({
 				if (shouldReplaceText) {
 					textRef.current = doc.text;
 					setText(doc.text);
+					setInfoPanelText(doc.text);
 				}
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
@@ -428,6 +457,7 @@ export function MarkdownEditorPane({
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
 			setText(doc.text);
+			setInfoPanelText(doc.text);
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
@@ -606,7 +636,11 @@ export function MarkdownEditorPane({
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
 			setAiPanelOpen(() => false);
-			setInfoPanelOpen((open) => !open);
+			setInfoPanelOpen((open) => {
+				const nextOpen = !open;
+				if (nextOpen) setInfoPanelText(textRef.current);
+				return nextOpen;
+			});
 		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
@@ -737,24 +771,30 @@ export function MarkdownEditorPane({
 			const normalizedFrontmatter = nextFrontmatter?.trim().length
 				? nextFrontmatter
 				: null;
+			const { body } = splitYamlFrontmatter(textRef.current);
 			const nextMarkdown = joinYamlFrontmatter(
 				normalizedFrontmatter,
-				currentBody,
+				body,
 			);
 			if (nextMarkdown === textRef.current) return;
 			hasUserEditsRef.current = true;
 			textRef.current = nextMarkdown;
 			setText(nextMarkdown);
+			setInfoPanelText(nextMarkdown);
 			// Property edits are discrete commits — save immediately so the
 			// indexer picks up the change and databases/backlinks update.
 			void runAutosave();
 		},
-		[currentBody, runAutosave],
+		[runAutosave],
 	);
 
 	const toggleInfoPanel = useCallback(() => {
 		setAiPanelOpen(() => false);
-		setInfoPanelOpen((open) => !open);
+		setInfoPanelOpen((open) => {
+			const nextOpen = !open;
+			if (nextOpen) setInfoPanelText(textRef.current);
+			return nextOpen;
+		});
 	}, [setAiPanelOpen]);
 
 	const handleViewModeMenu = useCallback(

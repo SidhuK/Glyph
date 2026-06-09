@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+	Cards01Icon,
 	FilterMailIcon,
 	GridViewIcon,
 	SlidersVerticalIcon,
@@ -27,6 +28,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { CardFieldsPanel } from "./DatabaseViewOptionsCardFieldsPanel";
 import {
 	type ColumnMenuEntry,
 	ColumnsPanel,
@@ -40,7 +42,7 @@ import {
 	ensurePresetColumn,
 } from "./databaseViewPresets";
 
-type OptionsPanel = "source" | "columns" | "filters" | "sort";
+type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields";
 
 interface DatabaseViewOptionsPopoverProps {
 	config: DatabaseConfig;
@@ -534,6 +536,20 @@ export function DatabaseViewOptionsPopover({
 						updateConfig={updateConfig}
 					/>
 				) : null}
+				{activePanel === "card_fields" ? (
+					<CardFieldsPanel
+						fields={config.view.board_card_fields}
+						onChange={(fields) =>
+							void onChangeConfig({
+								...config,
+								view: {
+									...config.view,
+									board_card_fields: fields,
+								},
+							})
+						}
+					/>
+				) : null}
 				<section className="databaseViewOptionsMenu" aria-label="View settings">
 					{configError ? (
 						<div className="databaseViewPanelError">{configError}</div>
@@ -588,6 +604,21 @@ export function DatabaseViewOptionsPopover({
 						active={activePanel === "sort"}
 						onClick={() => togglePanel("sort")}
 					/>
+					{config.view.layout === "board" ? (
+						<OptionMenuRow
+							icon={
+								<HugeiconsIcon
+									icon={Cards01Icon}
+									size="var(--icon-lg)"
+									strokeWidth={0.9}
+								/>
+							}
+							label="Card fields"
+							value={`${(config.view.board_card_fields?.length ?? 0) > 0 ? config.view.board_card_fields?.length : "All"} shown`}
+							active={activePanel === "card_fields"}
+							onClick={() => togglePanel("card_fields")}
+						/>
+					) : null}
 					<button
 						type="button"
 						className="databaseViewRestoreButton"

@@ -45,51 +45,48 @@
 	position: relative;
 	display: flex;
 	align-items: center;
-	margin: 0 8px 6px;
-	height: 30px;
-	color: var(--text-tertiary);
+	width: 100%;
+	padding: 8px 8px 8px;
+	color: var(--text-secondary);
 	-webkit-app-region: no-drag;
 }
 
 .settingsSidebarSearchIcon {
 	position: absolute;
-	left: 9px;
+	left: 16px;
 	pointer-events: none;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .settingsSidebarSearchInput {
 	width: 100%;
-	height: 30px;
 	min-width: 0;
-	border: 1px solid var(--border-default);
-	border-radius: 8px;
-	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 0.9);
+	min-height: 26px;
+	padding: 2px 30px 2px 30px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 	line-height: 1;
 	outline: none;
-	padding: 0 30px 0 30px;
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
+	cursor: text;
 }
 
 .settingsSidebarSearchInput::placeholder {
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .settingsSidebarSearchInput:focus {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 38%,
-		var(--border-default)
-	);
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--text-primary));
+	color: var(--text-primary);
 }
 
 .settingsSidebarSearchClear {
 	position: absolute;
-	right: 5px;
+	right: 12px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

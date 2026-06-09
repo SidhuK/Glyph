@@ -130,6 +130,7 @@ interface DatabaseViewState {
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
+	board_card_fields?: string[];
 }
 
 export interface DatabaseColumn {
@@ -232,6 +233,7 @@ interface WorkspaceDatabaseView {
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
+	board_card_fields?: string[];
 	created_at: string;
 	updated_at: string;
 }
@@ -765,7 +767,6 @@ interface TauriCommands {
 		void
 	>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
-	show_space_menu: CommandDef<{ x: number; y: number }, void>;
 	set_menu_shortcuts: CommandDef<
 		{
 			accelerators: Record<string, string | null>;

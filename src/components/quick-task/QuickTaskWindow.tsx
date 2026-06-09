@@ -7,7 +7,7 @@ import { addTaskToDailyNote } from "../../lib/taskCapture";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { Calendar, ListChecks } from "../Icons";
+import { Calendar } from "../Icons";
 import { TaskCaptureComposer } from "../tasks/TaskCaptureComposer";
 
 interface QuickTaskSettings {
@@ -21,10 +21,6 @@ const EMPTY_SETTINGS: QuickTaskSettings = {
 	dailyNoteTemplatePath: null,
 	spacePath: null,
 };
-
-function dateLabel(date: string) {
-	return date || "No date";
-}
 
 export function QuickTaskWindow() {
 	const [today, setToday] = useState(() => todayIsoDateLocal());
@@ -70,20 +66,6 @@ export function QuickTaskWindow() {
 		resetScheduledDateToToday();
 		focusInput();
 	});
-
-	const appendTaskDraftToken = useCallback(
-		(token: string) => {
-			const trimmedToken = token.trim();
-			if (!trimmedToken) return;
-			setDraft((current) => {
-				if (current.includes(trimmedToken)) return current;
-				const trimmedDraft = current.trimEnd();
-				return trimmedDraft ? `${trimmedDraft} ${trimmedToken}` : trimmedToken;
-			});
-			focusInput();
-		},
-		[focusInput],
-	);
 
 	const save = useCallback(async () => {
 		const text = draft.trim();
@@ -140,7 +122,7 @@ export function QuickTaskWindow() {
 
 	return (
 		<div
-			className="quickNoteRoot quickTaskRoot"
+			className="quickTaskRoot"
 			onKeyDownCapture={(event) => {
 				if (event.key === "Escape") {
 					event.preventDefault();
@@ -152,79 +134,46 @@ export function QuickTaskWindow() {
 				}
 			}}
 		>
-			<div className="quickNoteDragHandle" data-tauri-drag-region />
-			<div className="quickTaskContent">
-				<header className="quickTaskHeader">
-					<div className="quickTaskTitle">
-						<ListChecks size="var(--icon-xl)" aria-hidden="true" />
-						<div>
-							<h1>Quick Task</h1>
-							<p>{settings.dailyNotesFolder ?? "Daily notes not configured"}</p>
-						</div>
+			<TaskCaptureComposer
+				inputRef={inputRef}
+				value={draft}
+				placeholder="Add a task..."
+				pending={saving}
+				onValueChange={setDraft}
+				onSubmit={() => void save()}
+				dateControls={
+					<div className="quickTaskDateFields">
+						<label>
+							<span>
+								<Calendar size="var(--icon-sm)" aria-hidden="true" />
+								Scheduled
+							</span>
+							<input
+								type="date"
+								value={scheduledDate}
+								onChange={(event) =>
+									setScheduledDate(event.currentTarget.value)
+								}
+								aria-label="Scheduled date"
+							/>
+						</label>
+						<label>
+							<span>Due</span>
+							<input
+								type="date"
+								value={dueDate}
+								onChange={(event) => setDueDate(event.currentTarget.value)}
+								aria-label="Due date"
+							/>
+						</label>
 					</div>
-				</header>
-				<TaskCaptureComposer
-					inputRef={inputRef}
-					value={draft}
-					placeholder="Add a task..."
-					pending={saving}
-					onValueChange={setDraft}
-					onSubmit={() => void save()}
-					dateControls={
-						<div className="quickTaskDateFields">
-							<label>
-								<span>
-									<Calendar size="var(--icon-sm)" aria-hidden="true" />
-									Scheduled
-								</span>
-								<input
-									type="date"
-									value={scheduledDate}
-									onChange={(event) =>
-										setScheduledDate(event.currentTarget.value)
-									}
-									aria-label="Scheduled date"
-								/>
-							</label>
-							<label>
-								<span>Due</span>
-								<input
-									type="date"
-									value={dueDate}
-									onChange={(event) => setDueDate(event.currentTarget.value)}
-									aria-label="Due date"
-								/>
-							</label>
-						</div>
-					}
-					chips={[
-						{
-							label: "Today",
-							active: scheduledDate === today,
-							onClick: () => {
-								setScheduledDate(today);
-								focusInput();
-							},
-						},
-						{
-							label: dueDate ? `Due ${dateLabel(dueDate)}` : "Due date",
-							active: Boolean(dueDate),
-							onClick: focusInput,
-						},
-						{
-							label: "Priority",
-							onClick: () => appendTaskDraftToken("#priority"),
-						},
-						{
-							label: "Inbox",
-							onClick: () => appendTaskDraftToken("#inbox"),
-						},
-					]}
-				/>
+				}
+			/>
+			{status ? (
 				<div className="quickTaskStatus" aria-live="polite">
 					{status}
 				</div>
-			</div>
+			) : null}
 		</div>
 	);
 }

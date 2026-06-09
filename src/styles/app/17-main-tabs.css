@@ -158,6 +158,7 @@
 		padding 140ms ease;
 }
 
+.mainTabsBreadcrumb[data-open="true"],
 .mainTabsBreadcrumb:hover,
 .mainTabsBreadcrumb:focus-within,
 .mainTabsBreadcrumb:has(.mainTabsBreadcrumbSepButton[data-state="open"]),
@@ -296,25 +297,6 @@
 	opacity: 1;
 }
 
-.mainTabsBreadcrumbIcon {
-	width: var(--icon-sm);
-	height: var(--icon-sm);
-	flex-shrink: 0;
-	color: currentcolor;
-	opacity: 0.82;
-}
-
-.mainTabsBreadcrumbButton[data-has-custom-color="true"]
-	.mainTabsBreadcrumbIcon {
-	color: var(--file-tree-row-icon-color);
-	opacity: 1;
-}
-
-.mainTabsBreadcrumbButton[data-has-custom-color="true"]
-	.mainTabsBreadcrumbLabel {
-	color: var(--file-tree-row-name-color);
-}
-
 .mainTabsBreadcrumbLabel {
 	min-width: 0;
 	overflow: hidden;
@@ -343,11 +325,6 @@
 	text-transform: uppercase;
 }
 
-.mainTabsBreadcrumbMenuSeparator {
-	margin: 3px 0 5px;
-	background: color-mix(in srgb, var(--border-light) 54%, transparent);
-}
-
 .mainTabsBreadcrumbMenuItem {
 	min-height: 30px;
 	padding: 0 8px;
@@ -362,21 +339,6 @@
 .mainTabsBreadcrumbMenuItem[data-highlighted] {
 	background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
 	color: var(--text-primary);
-}
-
-.mainTabsBreadcrumbMenuItem svg {
-	width: var(--icon-sm);
-	height: var(--icon-sm);
-	color: var(--text-tertiary);
-}
-
-.mainTabsBreadcrumbMenuItem[data-has-custom-color="true"] svg {
-	color: var(--file-tree-row-icon-color);
-}
-
-.mainTabsBreadcrumbMenuItem[data-has-custom-color="true"]
-	.mainTabsBreadcrumbMenuItemLabel {
-	color: var(--file-tree-row-name-color);
 }
 
 .mainTabsBreadcrumbMenuItemLabel {

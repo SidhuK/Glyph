@@ -16,7 +16,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 18px;
-	width: min(100%, 1040px);
+	width: min(100%, 620px);
 	min-height: min(720px, calc(100vh - 68px));
 	margin: 0 auto;
 }
@@ -130,53 +130,11 @@
 	font-size: var(--text-sm);
 }
 
-.calendarTaskComposerChips {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 5px;
-	min-width: 0;
-	padding-left: 30px;
-}
-
-.calendarTaskComposerChip {
-	border: 0;
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	color: var(--text-tertiary);
-	font-weight: var(--font-medium);
-	white-space: nowrap;
-}
-
-button.calendarTaskComposerChip {
-	cursor: pointer;
-}
-
-button.calendarTaskComposerChip:hover,
-button.calendarTaskComposerChip:focus-visible,
-.calendarTaskComposerChip[data-active="true"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 76%, var(--text-primary));
-}
-
-.tasksPaneToolbar {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	min-width: 0;
-	padding: 0;
-	border: 0;
-	background: transparent;
-}
-
 .tasksPaneSearch {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	flex: 1 1 240px;
+	width: 100%;
 	min-width: 0;
 	height: 32px;
 	padding-inline: 10px 12px;
@@ -219,9 +177,11 @@ button.calendarTaskComposerChip:focus-visible,
 .tasksPaneFilterBar {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	flex-wrap: wrap;
 	gap: 5px;
-	min-width: 0;
+	align-self: center;
+	max-width: 100%;
 	padding: 2px 6px;
 	border: 0;
 	border-radius: var(--radius-2xl);
@@ -775,6 +735,14 @@ button.calendarTaskComposerChip:focus-visible,
 	outline-offset: 2px;
 }
 
+:root.dark .tasksPaneRows {
+	background: var(--bg-tertiary);
+}
+
+:root.dark .tasksPaneSearch {
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
+}
+
 @container (max-width: 820px) {
 	.tasksMetaLink,
 	.tasksMetaTagInline {
@@ -793,17 +761,8 @@ button.calendarTaskComposerChip:focus-visible,
 }
 
 @container (max-width: 720px) {
-	.calendarTaskComposerChips {
-		padding-left: 0;
-	}
-
-	.tasksPaneToolbar {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 10px;
-	}
-
 	.tasksPaneFilterBar {
+		align-self: stretch;
 		overflow-x: auto;
 		flex-wrap: nowrap;
 		scrollbar-width: none;

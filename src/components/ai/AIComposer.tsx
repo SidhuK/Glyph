@@ -500,7 +500,7 @@ export function AIComposer({
 						tabIndex={0}
 						aria-multiline="true"
 						aria-label="Message"
-						data-placeholder={APP_TAGLINE}
+						data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
 						spellCheck
 						onInput={handleInput}
 						onPaste={handlePaste}

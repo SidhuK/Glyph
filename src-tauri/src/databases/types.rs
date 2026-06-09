@@ -101,6 +101,8 @@ pub struct DatabaseViewDefinition {
     pub board_lane_order: BTreeMap<String, Vec<String>>,
     #[serde(default)]
     pub board_card_order: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+    #[serde(default)]
+    pub board_card_fields: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
 }

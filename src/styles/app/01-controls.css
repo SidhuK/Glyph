@@ -35,7 +35,15 @@ button:hover:not(
 	color: var(--text-primary);
 }
 
-button:active {
+button:active:not(
+		:where(
+				.databaseBoardCard,
+				.databaseBoardLaneTitleButton,
+				.databaseBoardLaneHandle,
+				.databaseBoardColorRibbonSwatch,
+				.databaseBoardColorRibbonClear
+			)
+	) {
 	background: var(--bg-active);
 }
 

@@ -2,6 +2,9 @@
 
 ## Commands
 
+
+**Reference only — do not run these unless specifically stated by the user:**
+
 ```bash
 pnpm build          # TypeScript check + Vite build
 pnpm check          # Biome lint + format check

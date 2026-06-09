@@ -119,6 +119,8 @@ interface DatabaseBoardProps {
 		| ((laneId: string, color: EditorTextColor | null) => void)
 		| null;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
+	boardCardFields?: string[];
+	onBoardCardFieldsChange?: (fields: string[]) => void;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -535,8 +537,16 @@ export function DatabaseBoard({
 	statusColors = {},
 	onLaneColorChange,
 	onStatusColorChange,
+	boardCardFields,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const isCardFieldVisible = useCallback(
+		(fieldId: string) => {
+			if (!boardCardFields || boardCardFields.length === 0) return true;
+			return boardCardFields.includes(fieldId);
+		},
+		[boardCardFields],
+	);
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
 	const {
@@ -967,21 +977,24 @@ export function DatabaseBoard({
 																/>
 																{title}
 															</span>
-															<div className="databaseBoardCardTitleMeta">
-																<span
-																	className="databaseBoardCardTimestamp"
-																	title={`Updated ${updatedLabel}`}
-																>
-																	<HugeiconsIcon
-																		icon={Calendar03Icon}
-																		size="var(--icon-xs)"
-																		strokeWidth={1}
-																		aria-hidden="true"
-																	/>
-																	{compactUpdatedLabel}
-																</span>
-															</div>
-															{showTaskProgressIndicator &&
+															{isCardFieldVisible("date") ? (
+																<div className="databaseBoardCardTitleMeta">
+																	<span
+																		className="databaseBoardCardTimestamp"
+																		title={`Updated ${updatedLabel}`}
+																	>
+																		<HugeiconsIcon
+																			icon={Calendar03Icon}
+																			size="var(--icon-xs)"
+																			strokeWidth={1}
+																			aria-hidden="true"
+																		/>
+																		{compactUpdatedLabel}
+																	</span>
+																</div>
+															) : null}
+															{isCardFieldVisible("task_progress") &&
+															showTaskProgressIndicator &&
 															taskSummary.total_count > 0 ? (
 																<TaskProgressIndicator
 																	summary={taskSummary}
@@ -990,35 +1003,41 @@ export function DatabaseBoard({
 															) : null}
 														</div>
 													</div>
-													{visibleStatuses.length > 0 ||
-													visiblePriorities.length > 0 ? (
+													{(isCardFieldVisible("status") &&
+														visibleStatuses.length > 0) ||
+													(isCardFieldVisible("priority") &&
+														visiblePriorities.length > 0) ? (
 														<div className="databaseBoardCardMetaRow">
 															<div className="databaseBoardCardMetaGroup">
-																{visibleStatuses.map((status, statusIndex) => (
-																	<StatusPropertyPill
-																		key={`${row.note_path}:status:${statusIndex}:${status}`}
-																		value={status}
-																		colors={statusColors}
-																		className="databaseBoardCardStatus"
-																	/>
-																))}
-																{extraStatusCount > 0 ? (
+																{isCardFieldVisible("status") &&
+																	visibleStatuses.map((status, statusIndex) => (
+																		<StatusPropertyPill
+																			key={`${row.note_path}:status:${statusIndex}:${status}`}
+																			value={status}
+																			colors={statusColors}
+																			className="databaseBoardCardStatus"
+																		/>
+																	))}
+																{isCardFieldVisible("status") &&
+																extraStatusCount > 0 ? (
 																	<span className="databaseBoardTag is-muted">
 																		+{extraStatusCount}
 																	</span>
 																) : null}
 															</div>
 															<div className="databaseBoardCardMetaGroup is-priority">
-																{visiblePriorities.map(
-																	(priority, priorityIndex) => (
-																		<PriorityPropertyPill
-																			key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
-																			value={priority}
-																			className="databaseBoardCardStatus"
-																		/>
-																	),
-																)}
-																{extraPriorityCount > 0 ? (
+																{isCardFieldVisible("priority") &&
+																	visiblePriorities.map(
+																		(priority, priorityIndex) => (
+																			<PriorityPropertyPill
+																				key={`${row.note_path}:priority:${priorityIndex}:${priority}`}
+																				value={priority}
+																				className="databaseBoardCardStatus"
+																			/>
+																		),
+																	)}
+																{isCardFieldVisible("priority") &&
+																extraPriorityCount > 0 ? (
 																	<span className="databaseBoardTag is-muted">
 																		+{extraPriorityCount}
 																	</span>
@@ -1026,7 +1045,8 @@ export function DatabaseBoard({
 															</div>
 														</div>
 													) : null}
-													{visibleTags.length > 0 ? (
+													{isCardFieldVisible("tags") &&
+													visibleTags.length > 0 ? (
 														<div className="databaseBoardCardTags">
 															{visibleTags.map((tag) => (
 																<span

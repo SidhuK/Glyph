@@ -19,6 +19,8 @@ interface TaskAnchor {
 	top: number;
 }
 
+const TASK_ITEM_SELECTOR = "li[data-type='taskItem'], li[data-checked]";
+
 interface UseTaskInlineDatesArgs {
 	deferHeavyFeatures: boolean;
 	editor: Editor | null;
@@ -36,14 +38,14 @@ export function useTaskInlineDates({
 	mode,
 	onChange,
 }: UseTaskInlineDatesArgs) {
-	const [taskAnchors, setTaskAnchors] = useState<TaskAnchor[]>([]);
-	const [selectedTaskOrdinal, setSelectedTaskOrdinal] = useState<number | null>(
-		null,
-	);
+	const [selectedTaskAnchor, setSelectedTaskAnchor] =
+		useState<TaskAnchor | null>(null);
 	const [scheduleAnchor, setScheduleAnchor] = useState<TaskAnchor | null>(null);
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
 	const markdownRef = useRef(markdown);
+	const selectedTaskElementRef = useRef<HTMLElement | null>(null);
+	const selectedTaskOrdinalRef = useRef<number | null>(null);
 	const scheduleAnchorRef = useRef<TaskAnchor | null>(null);
 
 	useEffect(() => {
@@ -58,20 +60,24 @@ export function useTaskInlineDates({
 		(anchor: TaskAnchor | null) => {
 			setScheduleAnchor(anchor);
 			if (!anchor) {
-				setSelectedTaskOrdinal(null);
+				selectedTaskElementRef.current = null;
+				selectedTaskOrdinalRef.current = null;
+				setSelectedTaskAnchor(null);
 				setScheduledDate("");
 				setDueDate("");
 				return;
 			}
-			setSelectedTaskOrdinal(anchor.ordinal);
+			selectedTaskOrdinalRef.current = anchor.ordinal;
+			setSelectedTaskAnchor(anchor);
 		},
 		[],
 	);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || deferHeavyFeatures) {
-			setTaskAnchors([]);
-			setSelectedTaskOrdinal(null);
+			selectedTaskElementRef.current = null;
+			selectedTaskOrdinalRef.current = null;
+			setSelectedTaskAnchor(null);
 			setScheduleAnchorAndSelection(null);
 			return;
 		}
@@ -79,51 +85,102 @@ export function useTaskInlineDates({
 		const contentRoot = getMountedEditorContentRoot(host);
 		if (!host || !contentRoot) return;
 
-		const syncAnchors = () => {
-			const items = Array.from(
-				contentRoot.querySelectorAll(
-					"li[data-type='taskItem'], li[data-checked]",
-				),
+		const areAnchorsEqual = (
+			current: TaskAnchor | null,
+			next: TaskAnchor | null,
+		) =>
+			current?.left === next?.left &&
+			current?.ordinal === next?.ordinal &&
+			current?.top === next?.top;
+
+		const getTaskAnchor = (
+			item: HTMLElement,
+			ordinal: number,
+		): TaskAnchor => {
+			const { left, top } = getOffsetWithinAncestor(item, host);
+			const nextTop =
+				top + Math.max(0, Math.round((item.offsetHeight - 18) / 2));
+			return {
+				left: Math.max(12, left - 24),
+				ordinal,
+				top: nextTop,
+			};
+		};
+
+		const setActiveTaskAnchor = (anchor: TaskAnchor | null) => {
+			setSelectedTaskAnchor((current) =>
+				areAnchorsEqual(current, anchor) ? current : anchor,
+			);
+		};
+
+		const clearActiveTaskAnchor = () => {
+			selectedTaskElementRef.current = null;
+			selectedTaskOrdinalRef.current = null;
+			setActiveTaskAnchor(null);
+		};
+
+		const getTaskItems = () =>
+			Array.from(
+				contentRoot.querySelectorAll(TASK_ITEM_SELECTOR),
 			) as HTMLElement[];
-			const nextAnchors = items.map((item, ordinal) => {
-				const { left, top } = getOffsetWithinAncestor(item, host);
-				const nextTop =
-					top + Math.max(0, Math.round((item.offsetHeight - 18) / 2));
-				return {
-					left: Math.max(12, left - 24),
-					ordinal,
-					top: nextTop,
-				};
-			});
-			setTaskAnchors((current) => {
-				if (
-					current.length === nextAnchors.length &&
-					current.every(
-						(anchor, index) =>
-							anchor.left === nextAnchors[index]?.left &&
-							anchor.ordinal === nextAnchors[index]?.ordinal &&
-							anchor.top === nextAnchors[index]?.top,
-					)
-				) {
-					return current;
+
+		const getTaskElementByOrdinal = (ordinal: number) =>
+			getTaskItems()[ordinal] ?? null;
+
+		const syncActiveTaskAnchor = () => {
+			const scheduledAnchor = scheduleAnchorRef.current;
+			if (scheduledAnchor) {
+				const scheduledElement = getTaskElementByOrdinal(
+					scheduledAnchor.ordinal,
+				);
+				if (!scheduledElement) {
+					clearActiveTaskAnchor();
+					return;
 				}
-				return nextAnchors;
-			});
+				selectedTaskElementRef.current = scheduledElement;
+				selectedTaskOrdinalRef.current = scheduledAnchor.ordinal;
+				setActiveTaskAnchor(
+					getTaskAnchor(scheduledElement, scheduledAnchor.ordinal),
+				);
+				return;
+			}
+
+			const selectedTaskElement = selectedTaskElementRef.current;
+			const selectedTaskOrdinal = selectedTaskOrdinalRef.current;
+			if (selectedTaskOrdinal == null && !selectedTaskElement) return;
+			if (
+				selectedTaskOrdinal == null ||
+				!selectedTaskElement ||
+				!contentRoot.contains(selectedTaskElement)
+			) {
+				clearActiveTaskAnchor();
+				return;
+			}
+			setActiveTaskAnchor(
+				getTaskAnchor(selectedTaskElement, selectedTaskOrdinal),
+			);
 		};
 
 		const syncSelectedTask = () => {
 			const keepScheduledTaskSelected = () => {
 				const anchor = scheduleAnchorRef.current;
 				if (!anchor) return false;
-				setSelectedTaskOrdinal((current) =>
-					current === anchor.ordinal ? current : anchor.ordinal,
+				const scheduledElement = getTaskElementByOrdinal(anchor.ordinal);
+				selectedTaskElementRef.current = scheduledElement;
+				selectedTaskOrdinalRef.current = scheduledElement
+					? anchor.ordinal
+					: null;
+				setActiveTaskAnchor(
+					scheduledElement
+						? getTaskAnchor(scheduledElement, anchor.ordinal)
+						: null,
 				);
 				return true;
 			};
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				clearActiveTaskAnchor();
 				return;
 			}
 			const anchorElement =
@@ -132,40 +189,38 @@ export function useTaskInlineDates({
 					: selection.anchorNode.parentElement;
 			if (!anchorElement || !contentRoot.contains(anchorElement)) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				clearActiveTaskAnchor();
 				return;
 			}
 			const taskEl = anchorElement.closest(
-				"li[data-type='taskItem'], li[data-checked]",
+				TASK_ITEM_SELECTOR,
 			) as HTMLElement | null;
 			if (!taskEl) {
 				if (keepScheduledTaskSelected()) return;
-				setSelectedTaskOrdinal(null);
+				clearActiveTaskAnchor();
 				return;
 			}
-			const items = Array.from(
-				contentRoot.querySelectorAll(
-					"li[data-type='taskItem'], li[data-checked]",
-				),
-			) as HTMLElement[];
+			const items = getTaskItems();
 			const ordinal = items.indexOf(taskEl);
-			setSelectedTaskOrdinal((current) => {
-				const nextOrdinal = ordinal >= 0 ? ordinal : null;
-				return current === nextOrdinal ? current : nextOrdinal;
-			});
+			if (ordinal < 0) {
+				clearActiveTaskAnchor();
+				return;
+			}
+			selectedTaskElementRef.current = taskEl;
+			selectedTaskOrdinalRef.current = ordinal;
+			setActiveTaskAnchor(getTaskAnchor(taskEl, ordinal));
 		};
 
-		syncAnchors();
 		syncSelectedTask();
 		let anchorFrame = 0;
-		const scheduleSyncAnchors = () => {
+		const scheduleActiveTaskAnchorSync = () => {
 			if (anchorFrame) return;
 			anchorFrame = window.requestAnimationFrame(() => {
 				anchorFrame = 0;
-				syncAnchors();
+				syncActiveTaskAnchor();
 			});
 		};
-		const observer = new MutationObserver(scheduleSyncAnchors);
+		const observer = new MutationObserver(scheduleActiveTaskAnchorSync);
 		observer.observe(contentRoot, {
 			childList: true,
 			subtree: true,
@@ -186,12 +241,6 @@ export function useTaskInlineDates({
 		mode,
 		setScheduleAnchorAndSelection,
 	]);
-
-	const selectedTaskAnchor =
-		selectedTaskOrdinal == null
-			? null
-			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
-				null);
 
 	const openTaskPopover = useCallback(
 		async (anchor: TaskAnchor) => {

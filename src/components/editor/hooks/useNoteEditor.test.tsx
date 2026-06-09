@@ -145,7 +145,7 @@ const {
 	};
 });
 
-const MARKDOWN_SYNC_DEBOUNCE_MS = 120;
+const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 
 // React 19 expects tests to opt into act-aware scheduling.
 (

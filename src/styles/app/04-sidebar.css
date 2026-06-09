@@ -174,10 +174,6 @@
 	flex-shrink: 0;
 }
 
-.sidebarFooter {
-	padding: 6px 8px 10px;
-}
-
 .sidebarSectionContent {
 	flex: 1;
 	min-height: 0;
@@ -217,12 +213,8 @@
 	align-items: center;
 	gap: 6px;
 	min-height: 22px;
-	padding: 6px 16px 1px;
+	padding: 10px 16px 4px;
 	justify-content: space-between;
-	color: var(--text-primary);
-	font-size: var(--text-sm);
-	font-weight: var(--font-normal);
-	letter-spacing: 0;
 	flex-shrink: 0;
 }
 
@@ -242,9 +234,12 @@
 	cursor: pointer;
 	text-align: left;
 	font: inherit;
-	color: var(--text-primary);
-	font-weight: var(--font-normal);
-	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+	font-weight: var(--font-semibold);
+	font-size: calc(var(--text-base) * 0.72);
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -256,7 +251,7 @@
 .sidebarStackHeaderToggle:active {
 	background: transparent;
 	box-shadow: none;
-	color: var(--text-primary);
+	color: var(--text-secondary);
 	outline: none;
 }
 
@@ -292,7 +287,7 @@
 }
 
 .sidebarStackHeaderChevron {
-	color: var(--text-tertiary);
+	color: inherit;
 	flex-shrink: 0;
 }
 

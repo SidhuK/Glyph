@@ -6,7 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	useFileTreeContext,
 	useSpace,
@@ -211,10 +211,6 @@ function noteCountLabel(count: number) {
 	return `${count} ${count === 1 ? "note" : "notes"}`;
 }
 
-function dateLabel(date: string) {
-	return date;
-}
-
 export function TasksPane({
 	onOpenFile,
 	onOpenDailyNotesSettings,
@@ -226,7 +222,6 @@ export function TasksPane({
 	const [taskDraft, setTaskDraft] = useState("");
 	const [taskScheduledDate, setTaskScheduledDate] = useState(today);
 	const [taskDueDate, setTaskDueDate] = useState("");
-	const taskInputRef = useRef<HTMLInputElement>(null);
 	const queryClient = useQueryClient();
 	const { spacePath } = useSpace();
 	const {
@@ -260,24 +255,6 @@ export function TasksPane({
 			queryKey: navigationQueryKeys.allDocs(),
 		});
 	}, [queryClient]);
-
-	const focusTaskInput = useCallback(() => {
-		window.requestAnimationFrame(() => taskInputRef.current?.focus());
-	}, []);
-
-	const appendTaskDraftToken = useCallback(
-		(token: string) => {
-			const trimmedToken = token.trim();
-			if (!trimmedToken) return;
-			setTaskDraft((draft) => {
-				if (draft.includes(trimmedToken)) return draft;
-				const trimmedDraft = draft.trimEnd();
-				return trimmedDraft ? `${trimmedDraft} ${trimmedToken}` : trimmedToken;
-			});
-			focusTaskInput();
-		},
-		[focusTaskInput],
-	);
 
 	useTauriEvent("notes:external_changed", () => {
 		void invalidateTasks();
@@ -587,7 +564,6 @@ export function TasksPane({
 					{dailyNotesFolder ? (
 						<TaskCaptureComposer
 							className="tasksTaskComposer"
-							inputRef={taskInputRef}
 							value={taskDraft}
 							pending={submitTaskMutation.isPending}
 							onValueChange={setTaskDraft}
@@ -621,31 +597,6 @@ export function TasksPane({
 									</label>
 								</div>
 							}
-							chips={[
-								{
-									label: "Today",
-									active: taskScheduledDate === today,
-									onClick: () => {
-										setTaskScheduledDate(today);
-										focusTaskInput();
-									},
-								},
-								{
-									label: taskDueDate
-										? `Due ${dateLabel(taskDueDate)}`
-										: "Due date",
-									active: Boolean(taskDueDate),
-									onClick: focusTaskInput,
-								},
-								{
-									label: "Priority",
-									onClick: () => appendTaskDraftToken("#priority"),
-								},
-								{
-									label: "Inbox",
-									onClick: () => appendTaskDraftToken("#inbox"),
-								},
-							]}
 						/>
 					) : (
 						<div className="calendarInlineSetup tasksTaskComposerSetup">
@@ -666,33 +617,31 @@ export function TasksPane({
 						<div className="tasksPaneError">{visibleError}</div>
 					) : null}
 
-					<div className="tasksPaneToolbar">
-						<div className="tasksPaneSearch">
-							<Search size="var(--icon-md)" />
-							<Input
-								value={query}
-								onChange={(event) => setQuery(event.target.value)}
-								placeholder={showingNoteList ? "Search notes" : "Search tasks"}
-							/>
-						</div>
-						<div className="tasksPaneFilterBar" aria-label="Task filters">
-							{filterOptions.map((option) => (
-								<Button
-									key={option.key}
-									type="button"
-									variant="ghost"
-									size="sm"
-									className="tasksPaneFilter"
-									data-active={activeFilter === option.key ? "true" : undefined}
-									onClick={() => setActiveFilter(option.key)}
-								>
-									<span>{option.label}</span>
-									<Badge variant="outline" className="tasksPaneFilterCount">
-										{option.count}
-									</Badge>
-								</Button>
-							))}
-						</div>
+					<div className="tasksPaneSearch">
+						<Search size="var(--icon-md)" />
+						<Input
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder={showingNoteList ? "Search notes" : "Search tasks"}
+						/>
+					</div>
+					<div className="tasksPaneFilterBar" aria-label="Task filters">
+						{filterOptions.map((option) => (
+							<Button
+								key={option.key}
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="tasksPaneFilter"
+								data-active={activeFilter === option.key ? "true" : undefined}
+								onClick={() => setActiveFilter(option.key)}
+							>
+								<span>{option.label}</span>
+								<Badge variant="outline" className="tasksPaneFilterCount">
+									{option.count}
+								</Badge>
+							</Button>
+						))}
 					</div>
 
 					<section className="tasksPaneList" aria-label="Tasks">
