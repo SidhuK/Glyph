@@ -115,7 +115,6 @@ import {
 	SmileIcon,
 	SnowIcon,
 	SourceCodeIcon,
-	SparklesIcon,
 	StarFaceIcon,
 	StarIcon,
 	SteakIcon,
@@ -152,7 +151,7 @@ import type { DatabaseColumn } from "../../lib/database/types";
 interface DatabaseColumnIconProps {
 	column?: Pick<DatabaseColumn, "type" | "property_kind" | "icon">;
 	iconName?: string | null;
-	size?: number | undefined;
+	size?: string | number | undefined;
 	strokeWidth?: number;
 	className?: string;
 }
@@ -261,7 +260,6 @@ const DATABASE_COLUMN_ICONS_BY_KEY: Record<
 	SkullIcon,
 	SmileIcon,
 	SourceCodeIcon,
-	SparklesIcon,
 	StarFaceIcon,
 	StarIcon,
 	SteakIcon,
@@ -314,7 +312,7 @@ function iconDefinition(iconName: string) {
 export function DatabaseColumnIcon({
 	column,
 	iconName,
-	size = 14,
+	size = "var(--icon-md)",
 	strokeWidth,
 	className,
 }: DatabaseColumnIconProps) {

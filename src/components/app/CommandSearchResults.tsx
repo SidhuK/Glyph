@@ -135,7 +135,7 @@ export function SearchResultsList({
 							}}
 						>
 							<div className="commandPaletteRecentIcon">
-								<FileText size={14} />
+								<FileText size="var(--icon-md)" />
 							</div>
 							<div className="commandPaletteRecentContent">
 								<span className="commandPaletteResultTitle">

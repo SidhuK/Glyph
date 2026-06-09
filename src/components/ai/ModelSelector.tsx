@@ -166,7 +166,7 @@ export function ModelSelector({
 				<span
 					className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}
 				>
-					<ChevronDown size={12} />
+					<ChevronDown size="var(--icon-sm)" />
 				</span>
 			</button>
 
@@ -293,7 +293,7 @@ export function ModelSelector({
 													>
 														<HugeiconsIcon
 															icon={InformationCircleIcon}
-															size={14}
+															size="var(--icon-md)"
 															strokeWidth={0.9}
 														/>
 													</button>

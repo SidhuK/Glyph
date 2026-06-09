@@ -246,7 +246,7 @@ export function CommandPalette({
 					<div className="commandPaletteInputWrapper">
 						{activeTab === "search" && (
 							<span className="commandPaletteSearchIcon">
-								<Search size={15} />
+								<Search size="var(--icon-lg)" />
 							</span>
 						)}
 						<input

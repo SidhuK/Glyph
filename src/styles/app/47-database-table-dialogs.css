@@ -26,7 +26,7 @@
 	text-align: left;
 	padding-right: 10px;
 	border-bottom: 1px solid var(--border-light);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -147,8 +147,8 @@
 }
 
 .databaseHeaderIconPicker {
-	width: 18px;
-	height: 18px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	color: var(--text-tertiary);
 }
 
@@ -306,7 +306,7 @@
 
 .databaseTagEditor .databaseTagSuggestions .notePropertySuggestionsLabel {
 	padding: 0 4px 2px;
-	font-size: 0.64rem;
+	font-size: calc(var(--text-base) * 0.8);
 	letter-spacing: 0.08em;
 }
 
@@ -350,7 +350,7 @@
 	border: 0;
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
 	box-shadow: none;
@@ -404,7 +404,7 @@
 
 .databaseTitleCellIcon {
 	display: inline-flex;
-	width: 14px;
+	width: var(--icon-md);
 	flex: 0 0 auto;
 	color: var(--database-note-appearance-color, var(--text-accent));
 }
@@ -429,7 +429,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
 	color: var(--text-secondary);
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-semibold);
 	transition: border-color 120ms ease, color 120ms ease, background-color 120ms
@@ -537,7 +537,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--text-primary);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: 750;
 	letter-spacing: 0.06em;
 	line-height: 1.15;
@@ -702,13 +702,13 @@
 }
 
 .databasesEmptyTitle {
-	font-size: 1rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .databasesEmptyText {
-	font-size: 0.84rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 	max-width: 340px;
 	line-height: 1.5;

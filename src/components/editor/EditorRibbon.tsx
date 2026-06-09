@@ -131,7 +131,11 @@ export const EditorRibbon = memo(function EditorRibbon({
 							whileTap={canEdit ? { scale: 0.97 } : undefined}
 							transition={springPresets.snappy}
 						>
-							<HugeiconsIcon icon={NoteAddIcon} size={15} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={NoteAddIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						</m.button>
 					) : null}
 					<span className="ribbonDivider" />

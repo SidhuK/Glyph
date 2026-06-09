@@ -27,7 +27,7 @@
 }
 
 .externalMarkdownTitle {
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-bold);
 	line-height: 1.35;
 	color: var(--text-primary);
@@ -38,7 +38,7 @@
 
 .externalMarkdownPath {
 	margin-top: 2px;
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -55,7 +55,7 @@
 
 .externalMarkdownStatus {
 	min-width: 50px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	color: var(--text-secondary);
 	text-align: right;
@@ -80,7 +80,7 @@
 	border-radius: calc(var(--radius-md) - 2px);
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	white-space: nowrap;
 	transition: background-color var(--transition-base), color
@@ -100,8 +100,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 30px;
-	height: 30px;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
 	background: var(--bg-primary);
@@ -128,7 +128,7 @@
 	border-radius: var(--radius-md);
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
 	flex: 0 0 auto;
 }

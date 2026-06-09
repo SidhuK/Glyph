@@ -94,7 +94,11 @@ export function DatabaseFolderPicker({
 			}}
 		>
 			<span className="databasePickerTriggerIcon">
-				<HugeiconsIcon icon={Folder03Icon} size={14} strokeWidth={0.9} />
+				<HugeiconsIcon
+					icon={Folder03Icon}
+					size="var(--icon-md)"
+					strokeWidth={0.9}
+				/>
 			</span>
 			<span className="databasePickerTriggerText">
 				<span className="databasePickerTriggerLabel">{selectedLabel}</span>

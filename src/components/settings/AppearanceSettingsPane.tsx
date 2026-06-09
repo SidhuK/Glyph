@@ -42,8 +42,6 @@ import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
 	DEFAULT_FONT_FAMILY,
-	EDITOR_FONT_SIZE_OPTIONS,
-	UI_FONT_SIZE_OPTIONS,
 	loadAvailableFonts,
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
@@ -304,8 +302,6 @@ export function AppearanceSettingsPane() {
 					editorFontSize={editorFontSize}
 					availableFonts={availableFonts}
 					availableMonospaceFonts={availableMonospaceFonts}
-					uiFontSizeOptions={UI_FONT_SIZE_OPTIONS}
-					editorFontSizeOptions={EDITOR_FONT_SIZE_OPTIONS}
 					onFontFamilyChange={onFontFamilyChange}
 					onMonoFontFamilyChange={onMonoFontFamilyChange}
 					onUiFontSizeChange={onUiFontSizeChange}

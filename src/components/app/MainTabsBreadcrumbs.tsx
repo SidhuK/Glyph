@@ -156,7 +156,7 @@ function FolderBreadcrumbIcon({
 }: {
 	appearance?: FileTreeAppearance | null;
 	open: boolean;
-	size: number;
+	size: string | number;
 	className?: string;
 }) {
 	if (appearance?.icon) {
@@ -189,7 +189,7 @@ function FileBreadcrumbIcon({
 	path: string;
 	isMarkdown: boolean;
 	appearance?: FileTreeAppearance | null;
-	size: number;
+	size: string | number;
 	className?: string;
 }) {
 	if (appearance?.icon) {
@@ -322,7 +322,7 @@ export function MainTabsBreadcrumbs({
 						<span key="breadcrumb-overflow" className="mainTabsBreadcrumbItem">
 							{displayIndex > 0 ? (
 								<ChevronRight
-									size={10}
+									size="var(--icon-xs)"
 									className="mainTabsBreadcrumbSep"
 									aria-hidden="true"
 								/>
@@ -390,7 +390,7 @@ export function MainTabsBreadcrumbs({
 								<FolderBreadcrumbIcon
 									appearance={appearance}
 									open
-									size={12}
+									size="var(--icon-sm)"
 									className="mainTabsBreadcrumbIcon"
 								/>
 							) : (
@@ -398,7 +398,7 @@ export function MainTabsBreadcrumbs({
 									path={part.path}
 									isMarkdown={isMarkdownPath(part.path)}
 									appearance={appearance}
-									size={12}
+									size="var(--icon-sm)"
 									className="mainTabsBreadcrumbIcon"
 								/>
 							)}
@@ -462,14 +462,14 @@ function BreadcrumbOverflowMenu({
 								<FolderBreadcrumbIcon
 									appearance={appearance}
 									open={false}
-									size={13}
+									size="var(--icon-sm)"
 								/>
 							) : (
 								<FileBreadcrumbIcon
 									path={part.path}
 									isMarkdown={isMarkdownPath(part.path)}
 									appearance={appearance}
-									size={13}
+									size="var(--icon-sm)"
 								/>
 							)}
 							<span className="mainTabsBreadcrumbMenuItemLabel">
@@ -522,7 +522,7 @@ function BreadcrumbEntryMenu({
 					aria-label={`Browse ${menuTitleForDir(dirPath)}`}
 				>
 					<ChevronRight
-						size={10}
+						size="var(--icon-xs)"
 						className="mainTabsBreadcrumbSep"
 						aria-hidden="true"
 					/>
@@ -565,14 +565,14 @@ function BreadcrumbEntryMenu({
 										<FolderBreadcrumbIcon
 											appearance={appearance}
 											open={false}
-											size={13}
+											size="var(--icon-sm)"
 										/>
 									) : (
 										<FileBreadcrumbIcon
 											path={entry.rel_path}
 											isMarkdown={entry.is_markdown}
 											appearance={appearance}
-											size={13}
+											size="var(--icon-sm)"
 										/>
 									)}
 									<span className="mainTabsBreadcrumbMenuItemLabel">

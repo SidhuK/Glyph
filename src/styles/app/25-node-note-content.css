@@ -9,14 +9,14 @@
 	margin: 0 auto var(--space-2);
 	padding: var(--space-3) var(--editor-readable-content-gutter-compact)
 		var(--space-5);
-	font-size: 11px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	color: var(--text-tertiary);
 	box-sizing: border-box;
 }
 
 .editorBacklinksLabel {
 	text-transform: uppercase;
-	font-size: 10px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.06em;
 	flex: 0 0 auto;
@@ -69,8 +69,8 @@
 		center / contain no-repeat;
 
 	flex: 0 0 auto;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	background: var(--text-accent);
 	color: var(--text-accent);
 	mask: var(--wiki-link-file-icon-mask);
@@ -288,8 +288,8 @@
 /* Edit-mode heading rail (H1/H2/...) */
 .tiptapHostInline:not(.is-preview),
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
-	--heading-toggle-rail-width: 12px;
-	--heading-level-rail-width: 18px;
+	--heading-toggle-rail-width: calc(var(--editor-font-size) * 0.8);
+	--heading-level-rail-width: calc(var(--editor-font-size) * 1.2);
 	--heading-rail-gap: 6px;
 }
 
@@ -330,7 +330,7 @@
 		(var(--heading-level-rail-width) + var(--heading-rail-gap)) +
 		2px
 	);
-	font-size: 11px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.025em;
@@ -412,8 +412,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 12px;
-	height: 12px;
+	width: var(--heading-toggle-rail-width);
+	height: var(--heading-toggle-rail-width);
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -497,7 +497,7 @@
 .tiptapContentInline blockquote.callout::before {
 	content: attr(data-callout-title);
 	display: block;
-	font-size: 11px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	font-weight: var(--font-semibold);
@@ -703,7 +703,7 @@
 	border-collapse: separate;
 	border-spacing: 0;
 	margin: 12px 0;
-	font-size: 12px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	background: color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary));
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--border-light) 86%, transparent);
@@ -805,8 +805,8 @@
 	> label
 	input[type="checkbox"],
 .tiptapContentInline li[data-checked] > label input[type="checkbox"] {
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	accent-color: var(--interactive-accent);
 	cursor: pointer;
 	transition: opacity 180ms ease, transform 180ms ease;
@@ -907,17 +907,17 @@
 	}
 
 	.tiptapContentInline h1 {
-		font-size: 23px;
+		font-size: calc(var(--editor-font-size) * 1.4);
 		line-height: 1.28;
 	}
 
 	.tiptapContentInline h2 {
-		font-size: 19px;
+		font-size: calc(var(--editor-font-size) * 1.2);
 		line-height: 1.32;
 	}
 
 	.tiptapContentInline h3 {
-		font-size: 16.5px;
+		font-size: var(--editor-font-size);
 		line-height: 1.38;
 	}
 

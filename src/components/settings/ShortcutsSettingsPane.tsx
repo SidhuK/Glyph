@@ -1,9 +1,10 @@
+import { ReloadIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import {
 	type ShortcutBindings,
 	findShortcutConflict,
-	resetAllShortcutBindings,
 	resetShortcutBinding,
 	setShortcutBinding,
 } from "../../lib/settings";
@@ -24,6 +25,7 @@ import {
 	type ShortcutCategory,
 	getShortcutActionDefinition,
 } from "../../lib/shortcuts/registry";
+import { Trash2 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
@@ -66,8 +68,6 @@ export function ShortcutsSettingsPane() {
 	const [recordingDraft, setRecordingDraft] = useState<Shortcut | null>(null);
 	const [busyActionId, setBusyActionId] = useState<string | null>(null);
 	const [error, setError] = useState("");
-	const [resettingAll, setResettingAll] = useState(false);
-
 	const filteredActions = useMemo(() => {
 		const query = filter.trim().toLowerCase();
 		if (!query) return actionsWithBindings;
@@ -127,22 +127,6 @@ export function ShortcutsSettingsPane() {
 			setRecordingActionId((current) =>
 				current === actionId ? null : current,
 			);
-		}
-	};
-
-	const handleResetAll = async () => {
-		setResettingAll(true);
-		setError("");
-		try {
-			await resetAllShortcutBindings();
-			setRecordingActionId(null);
-			setRecordingDraft(null);
-		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : "Failed to reset shortcuts.",
-			);
-		} finally {
-			setResettingAll(false);
 		}
 	};
 
@@ -234,43 +218,16 @@ export function ShortcutsSettingsPane() {
 	return (
 		<div className="settingsPane shortcutsPane">
 			<div className="settingsGrid">
-				<SettingsSection
-					title="Customize Shortcuts"
-					aside={
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="shortcutResetAllButton"
-							disabled={resettingAll}
-							onClick={() => void handleResetAll()}
-						>
-							Reset All
-						</Button>
-					}
-				>
-					<div className="shortcutsToolbar">
-						<input
-							className="shortcutsSearchInput"
-							type="search"
-							value={filter}
-							onChange={(event) => setFilter(event.target.value)}
-							placeholder="Search actions, categories, or shortcuts"
-						/>
-						<div className="shortcutsHelpPanel">
-							<p className="shortcutsHelpText">
-								Click a shortcut, then press the keys you want to use. Shortcuts
-								save automatically and need Cmd, Ctrl, or Option plus another
-								key.
-							</p>
-							<div className="shortcutsHelpChips" aria-label="Shortcut tips">
-								<span>Esc cancels</span>
-								<span>Reset restores default</span>
-							</div>
-						</div>
-						{error ? <div className="shortcutError">{error}</div> : null}
-					</div>
-				</SettingsSection>
+				<div className="shortcutsToolbar">
+					<input
+						className="shortcutsSearchInput"
+						type="search"
+						value={filter}
+						onChange={(event) => setFilter(event.target.value)}
+						placeholder="Search actions, categories, or shortcuts"
+					/>
+					{error ? <div className="shortcutError">{error}</div> : null}
+				</div>
 				{groupedActions.map(([category, categoryActions]) => (
 					<SettingsSection
 						key={category}
@@ -315,8 +272,10 @@ export function ShortcutsSettingsPane() {
 												className="shortcutActionButton"
 												disabled={isBusy}
 												onClick={() => void handleDisable(action.id)}
+												aria-label="Disable shortcut"
+												title="Disable shortcut"
 											>
-												Disable
+												<Trash2 size="var(--icon-md)" />
 											</Button>
 											<Button
 												type="button"
@@ -325,8 +284,14 @@ export function ShortcutsSettingsPane() {
 												className="shortcutActionButton"
 												disabled={isBusy}
 												onClick={() => void handleReset(action.id)}
+												aria-label="Reset shortcut"
+												title="Reset shortcut"
 											>
-												Reset
+												<HugeiconsIcon
+													icon={ReloadIcon}
+													size="var(--icon-md)"
+													strokeWidth={0.9}
+												/>
 											</Button>
 										</div>
 									</div>

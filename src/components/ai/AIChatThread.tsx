@@ -187,7 +187,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						className="aiInlineRetryBtn"
 						onClick={() => onRetry(index)}
 					>
-						<RefreshCw size={11} />
+						<RefreshCw size="var(--icon-xs)" />
 						<span>Retry</span>
 					</button>
 				</div>
@@ -203,7 +203,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						title="Copy response"
 						aria-label="Copy response"
 					>
-						<Files size={12} />
+						<Files size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -214,7 +214,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						title="Save response to file"
 						aria-label="Save response to file"
 					>
-						<Save size={12} />
+						<Save size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -226,7 +226,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						aria-label="Retry response"
 						disabled={chatStatus === "streaming"}
 					>
-						<RefreshCw size={12} />
+						<RefreshCw size="var(--icon-sm)" />
 					</Button>
 				</div>
 			) : null}
@@ -360,7 +360,7 @@ export function AIChatThread({
 											)}
 											aria-hidden
 										>
-											<ChevronDown size={12} />
+											<ChevronDown size="var(--icon-sm)" />
 										</span>
 									</button>
 									{citationsOpen ? (

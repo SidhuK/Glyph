@@ -110,7 +110,11 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl("https://glyphformac.com")}
 						>
-							<HugeiconsIcon icon={GlobeIcon} size={16} strokeWidth={1.6} />
+							<HugeiconsIcon
+								icon={GlobeIcon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+							/>
 							Website
 						</Button>
 						<Button
@@ -120,7 +124,11 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl(PUBLIC_CHANGELOG_URL)}
 						>
-							<HugeiconsIcon icon={ListViewIcon} size={16} strokeWidth={1.6} />
+							<HugeiconsIcon
+								icon={ListViewIcon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+							/>
 							Release Notes
 						</Button>
 						<Button
@@ -130,7 +138,11 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
 						>
-							<HugeiconsIcon icon={DiscordIcon} size={16} strokeWidth={1.6} />
+							<HugeiconsIcon
+								icon={DiscordIcon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+							/>
 							Discord
 						</Button>
 						<Button
@@ -140,7 +152,11 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl("https://glyphformac.com/terms")}
 						>
-							<HugeiconsIcon icon={File01Icon} size={16} strokeWidth={1.6} />
+							<HugeiconsIcon
+								icon={File01Icon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+							/>
 							Terms
 						</Button>
 						<Button
@@ -150,7 +166,11 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl("https://glyphformac.com/privacy")}
 						>
-							<HugeiconsIcon icon={Shield01Icon} size={16} strokeWidth={1.6} />
+							<HugeiconsIcon
+								icon={Shield01Icon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+							/>
 							Privacy
 						</Button>
 					</div>

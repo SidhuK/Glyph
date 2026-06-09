@@ -14,6 +14,7 @@ import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -293,7 +294,7 @@ export function SpaceSettingsPane() {
 										onClick={handleBrowseFolder}
 										disabled={dailyNotesLoading}
 									>
-										<FolderOpen size={14} />
+										<FolderOpen size="var(--icon-md)" />
 										Browse
 									</Button>
 									{dailyNotesFolder ? (
@@ -307,7 +308,7 @@ export function SpaceSettingsPane() {
 											aria-label="Clear daily notes folder"
 											title="Clear daily notes folder"
 										>
-											<Trash2 size={14} />
+											<Trash2 size="var(--icon-md)" />
 										</Button>
 									) : null}
 								</div>
@@ -342,7 +343,7 @@ export function SpaceSettingsPane() {
 										disabled={quickNotesLoading}
 										onClick={() => void handleBrowseQuickNotesFolder()}
 									>
-										<FolderOpen size={14} />
+										<FolderOpen size="var(--icon-md)" />
 										Browse
 									</Button>
 									<Button
@@ -355,7 +356,7 @@ export function SpaceSettingsPane() {
 										aria-label="Reset quick notes folder"
 										title="Reset quick notes folder"
 									>
-										<Trash2 size={14} />
+										<Trash2 size="var(--icon-md)" />
 									</Button>
 								</div>
 							</div>
@@ -379,9 +380,8 @@ export function SpaceSettingsPane() {
 						interactive={false}
 					>
 						<div className="dailyNotesFolderField">
-							<select
+							<SettingsSelect
 								aria-label="Attachment location"
-								className="h-9 rounded-md border border-border bg-background px-3 text-sm shadow-none outline-none"
 								value={attachmentStorageMode}
 								onChange={(event) => {
 									void handleAttachmentModeChange(
@@ -395,7 +395,7 @@ export function SpaceSettingsPane() {
 										{option.label}
 									</option>
 								))}
-							</select>
+							</SettingsSelect>
 							<div className="settingsHelp">
 								{attachmentStorageMode === "space-root"
 									? "Saved at the top level of your space."
@@ -419,7 +419,7 @@ export function SpaceSettingsPane() {
 											onClick={handleBrowseAttachmentFolder}
 											disabled={attachmentsLoading}
 										>
-											<FolderOpen size={14} />
+											<FolderOpen size="var(--icon-md)" />
 											Browse
 										</Button>
 										<Button
@@ -432,7 +432,7 @@ export function SpaceSettingsPane() {
 											aria-label="Reset attachments folder"
 											title="Reset attachments folder"
 										>
-											<Trash2 size={14} />
+											<Trash2 size="var(--icon-md)" />
 										</Button>
 									</div>
 								</div>
@@ -451,18 +451,6 @@ export function SpaceSettingsPane() {
 				<SettingsSection
 					title="Search Index"
 					description="Rebuild the index if search results are incomplete, stale, or missing."
-					aside={
-						<Button
-							type="button"
-							size="xs"
-							onClick={() => {
-								void onRebuildIndex();
-							}}
-							disabled={!currentSpacePath || isIndexing}
-						>
-							{isIndexing ? "Rebuilding..." : "Rebuild"}
-						</Button>
-					}
 				>
 					<SettingsRow
 						label="Status"
@@ -470,9 +458,26 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsCompactStatus">
-							{reindexStatus ||
-								(!currentSpacePath ? "No space selected." : "Index is ready.")}
+						<div className="dailyNotesFolderRow">
+							<div className="dailyNotesFolderPath">
+								{reindexStatus ||
+									(!currentSpacePath
+										? "No space selected."
+										: "Index is ready.")}
+							</div>
+							<div className="settingsActions dailyNotesActions">
+								<Button
+									type="button"
+									size="sm"
+									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+									onClick={() => {
+										void onRebuildIndex();
+									}}
+									disabled={!currentSpacePath || isIndexing}
+								>
+									{isIndexing ? "Rebuilding..." : "Rebuild"}
+								</Button>
+							</div>
 						</div>
 					</SettingsRow>
 				</SettingsSection>

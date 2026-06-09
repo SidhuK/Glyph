@@ -32,7 +32,11 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 		<header className="folioNotesHeader">
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">
-					<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={SearchIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
 					<input
 						type="text"
 						inputMode="search"
@@ -43,7 +47,11 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 					/>
 				</label>
 				<label className="folioNotesSort">
-					<HugeiconsIcon icon={sortIcon} size={14} strokeWidth={1} />
+					<HugeiconsIcon
+						icon={sortIcon}
+						size="var(--icon-md)"
+						strokeWidth={1}
+					/>
 					<select
 						className="folioNotesSortSelect"
 						value={sortMode}

@@ -932,11 +932,15 @@ function DatabasesPaneContent({
 							className="databasesDropdownTrigger"
 							onClick={handleCollectionNativeMenu}
 						>
-							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={LibraryIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
 							<span className="databasesDropdownTriggerLabel">
 								{document?.database.name ?? "Select collection"}
 							</span>
-							<ChevronDown size={12} />
+							<ChevronDown size="var(--icon-sm)" />
 						</button>
 					) : (
 						<DropdownMenu>
@@ -944,13 +948,13 @@ function DatabasesPaneContent({
 								<button type="button" className="databasesDropdownTrigger">
 									<HugeiconsIcon
 										icon={LibraryIcon}
-										size={14}
+										size="var(--icon-md)"
 										strokeWidth={0.9}
 									/>
 									<span className="databasesDropdownTriggerLabel">
 										{document?.database.name ?? "Select collection"}
 									</span>
-									<ChevronDown size={12} />
+									<ChevronDown size="var(--icon-sm)" />
 								</button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent
@@ -965,7 +969,7 @@ function DatabasesPaneContent({
 									>
 										<HugeiconsIcon
 											icon={LibraryIcon}
-											size={13}
+											size="var(--icon-sm)"
 											strokeWidth={0.9}
 										/>
 										<span>{summary.name}</span>
@@ -976,7 +980,7 @@ function DatabasesPaneContent({
 									onSelect={() => void handleCreateDatabase()}
 									className="databasesDropdownItem databasesCollectionMenuItem"
 								>
-									<Plus size={13} />
+									<Plus size="var(--icon-sm)" />
 									<span>New collection</span>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
@@ -1026,7 +1030,7 @@ function DatabasesPaneContent({
 							disabled={document.database.is_system}
 							title="Delete collection"
 						>
-							<Trash2 size={14} />
+							<Trash2 size="var(--icon-md)" />
 						</Button>
 						<button
 							type="button"
@@ -1034,7 +1038,11 @@ function DatabasesPaneContent({
 							onClick={() => void handleCreateRow()}
 							title="New note"
 						>
-							<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={NoteIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
 							New Note
 						</button>
 					</div>
@@ -1092,7 +1100,7 @@ function DatabasesPaneContent({
 								<HugeiconsIcon
 									icon={MoreVerticalIcon}
 									className="databasesViewTabMenuIcon"
-									size={14}
+									size="var(--icon-md)"
 									strokeWidth={0.9}
 									color="currentColor"
 									aria-hidden
@@ -1110,7 +1118,7 @@ function DatabasesPaneContent({
 										<HugeiconsIcon
 											icon={MoreVerticalIcon}
 											className="databasesViewTabMenuIcon"
-											size={14}
+											size="var(--icon-md)"
 											strokeWidth={0.9}
 											color="currentColor"
 											aria-hidden
@@ -1134,14 +1142,14 @@ function DatabasesPaneContent({
 										onSelect={() => handleSelectViewLayout("table")}
 										className="databasesDropdownItem databasesViewTabMenuItem"
 									>
-										<Table size={13} />
+										<Table size="var(--icon-sm)" />
 										<span>Table</span>
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onSelect={() => handleSelectViewLayout("board")}
 										className="databasesDropdownItem databasesViewTabMenuItem"
 									>
-										<Kanban size={13} />
+										<Kanban size="var(--icon-sm)" />
 										<span>Board</span>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
@@ -1149,7 +1157,7 @@ function DatabasesPaneContent({
 										onSelect={handleRenameActiveView}
 										className="databasesDropdownItem databasesViewTabMenuItem"
 									>
-										<Edit size={13} />
+										<Edit size="var(--icon-sm)" />
 										<span>Rename</span>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
@@ -1158,7 +1166,7 @@ function DatabasesPaneContent({
 										onSelect={handleDeleteActiveView}
 										className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
 									>
-										<Trash2 size={13} />
+										<Trash2 size="var(--icon-sm)" />
 										<span>Delete view</span>
 									</DropdownMenuItem>
 								</DropdownMenuContent>
@@ -1171,7 +1179,7 @@ function DatabasesPaneContent({
 							title="Add view"
 							aria-label="Add view"
 						>
-							<Plus size={12} />
+							<Plus size="var(--icon-sm)" />
 						</button>
 						<DatabaseToolbar
 							className="databaseToolbarInline"
@@ -1313,7 +1321,11 @@ function DatabasesPaneContent({
 				</>
 			) : (
 				<div className="databasesEmptyState">
-					<HugeiconsIcon icon={LibraryIcon} size={32} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={LibraryIcon}
+						size="var(--icon-3xl)"
+						strokeWidth={0.9}
+					/>
 					<div className="databasesEmptyTitle">
 						{summaries.length === 0
 							? "Create your first collection"
@@ -1330,7 +1342,7 @@ function DatabasesPaneContent({
 							size="sm"
 							onClick={() => void handleCreateDatabase()}
 						>
-							<Plus size={13} />
+							<Plus size="var(--icon-sm)" />
 							Create Collection
 						</Button>
 					) : null}

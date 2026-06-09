@@ -207,7 +207,7 @@ function OptionMenuRow({
 			<span className="databaseViewOptionsRowIcon">{icon}</span>
 			<span className="databaseViewOptionsRowLabel">{label}</span>
 			{value ? <span className="databaseViewOptionsPill">{value}</span> : null}
-			<ChevronRight size={15} aria-hidden="true" />
+			<ChevronRight size="var(--icon-lg)" aria-hidden="true" />
 		</button>
 	);
 }
@@ -485,7 +485,7 @@ export function DatabaseViewOptionsPopover({
 				>
 					<HugeiconsIcon
 						icon={SlidersVerticalIcon}
-						size={14}
+						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
 				</Button>
@@ -539,7 +539,7 @@ export function DatabaseViewOptionsPopover({
 						<div className="databaseViewPanelError">{configError}</div>
 					) : null}
 					<OptionMenuRow
-						icon={<Search size={16} />}
+						icon={<Search size="var(--icon-lg)" />}
 						label="Source"
 						value={sourceLabel(config)}
 						active={activePanel === "source"}
@@ -547,7 +547,11 @@ export function DatabaseViewOptionsPopover({
 					/>
 					<OptionMenuRow
 						icon={
-							<HugeiconsIcon icon={GridViewIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={GridViewIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						}
 						label="Columns"
 						value={`${visibleCount} selected`}
@@ -558,7 +562,7 @@ export function DatabaseViewOptionsPopover({
 						icon={
 							<HugeiconsIcon
 								icon={FilterMailIcon}
-								size={16}
+								size="var(--icon-lg)"
 								strokeWidth={0.9}
 							/>
 						}
@@ -573,7 +577,11 @@ export function DatabaseViewOptionsPopover({
 					/>
 					<OptionMenuRow
 						icon={
-							<HugeiconsIcon icon={TextFontIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={TextFontIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						}
 						label="Sort by"
 						value={sortLabel(activeSort ?? undefined, config.columns)}
@@ -585,7 +593,7 @@ export function DatabaseViewOptionsPopover({
 						className="databaseViewRestoreButton"
 						onClick={resetViewOptions}
 					>
-						<RefreshCw size={16} aria-hidden="true" />
+						<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 						Restore defaults
 					</button>
 				</section>

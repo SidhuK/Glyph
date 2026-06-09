@@ -149,7 +149,7 @@ export function TaskRow({
 								className={`tasksMetaBadge tasksMetaBadge-${badge.tone}`}
 								title={`${badge.kind === "due" ? "Due" : "Scheduled"} ${badge.date}`}
 							>
-								<Calendar size={11} />
+								<Calendar size="var(--icon-xs)" />
 								{badge.label}
 							</Badge>
 						))}
@@ -174,7 +174,7 @@ export function TaskRow({
 								title={scheduleButtonTitle}
 								aria-label={scheduleButtonTitle}
 							>
-								<Calendar size={12} />
+								<Calendar size="var(--icon-sm)" />
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent className="tasksDatePopover" align="start">

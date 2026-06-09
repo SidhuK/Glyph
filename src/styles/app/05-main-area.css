@@ -160,7 +160,7 @@
 	background: transparent;
 	color: var(--text-tertiary);
 	font: inherit;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	cursor: pointer;

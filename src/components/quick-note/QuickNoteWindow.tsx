@@ -328,7 +328,7 @@ export function QuickNoteWindow() {
 			/>
 			<div className="quickNoteEditorChrome">
 				<div className="quickNoteTargetGroup">
-					<FileText size={14} aria-hidden="true" />
+					<FileText size="var(--icon-md)" aria-hidden="true" />
 					<div className="quickNoteTargetSelectWrap" ref={targetSelectorRef}>
 						<button
 							ref={targetTriggerRef}
@@ -350,7 +350,7 @@ export function QuickNoteWindow() {
 							<span className="quickNoteTargetTriggerDetail">
 								{selectedTarget.detail}
 							</span>
-							<ChevronDown size={12} aria-hidden="true" />
+							<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
 						</button>
 						{targetsOpen ? (
 							<div
@@ -423,7 +423,7 @@ export function QuickNoteWindow() {
 						disabled={saving || !hasText}
 						onClick={() => void save()}
 					>
-						<Save size={16} />
+						<Save size="var(--icon-lg)" />
 						<span className="quickNoteSaveLabel">Save</span>
 						<span className="commandPaletteShortcut" aria-hidden="true">
 							<kbd>

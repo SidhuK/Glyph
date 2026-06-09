@@ -89,7 +89,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 				<DatabaseColumnIcon
 					iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 					className="databaseTagPillIcon"
-					size={11}
+					size="var(--icon-xs)"
 					strokeWidth={1.2}
 				/>
 			) : null}
@@ -197,7 +197,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 							<DatabaseColumnIcon
 								iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 								className="databaseTagPillIcon"
-								size={11}
+								size="var(--icon-xs)"
 								strokeWidth={1.2}
 							/>
 						) : null}
@@ -583,11 +583,11 @@ function DatabaseCellEditor({
 							<DatabaseColumnIcon
 								iconName={iconNameForTag(value)}
 								className="databaseTagPillIcon"
-								size={11}
+								size="var(--icon-xs)"
 								strokeWidth={1.2}
 							/>
 							<span>{formatDatabaseTagLabel(value)}</span>
-							<X size={10} />
+							<X size="var(--icon-xs)" />
 						</button>
 					))}
 					<input
@@ -874,7 +874,7 @@ function DatabaseCellEditor({
 							title={`Remove ${value}`}
 						>
 							<span>{value}</span>
-							<X size={10} />
+							<X size="var(--icon-xs)" />
 						</button>
 					))}
 					<input
@@ -1440,7 +1440,7 @@ export function DatabaseCell({
 							notePath={row.note_path}
 							appearance={noteAppearance}
 							className="databaseTitleCellIcon"
-							size={14}
+							size="var(--icon-md)"
 						/>
 						{displayText.trim() ? (
 							<span className="databaseCellText">{displayText}</span>

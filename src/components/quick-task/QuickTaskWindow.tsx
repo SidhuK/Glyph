@@ -156,7 +156,7 @@ export function QuickTaskWindow() {
 			<div className="quickTaskContent">
 				<header className="quickTaskHeader">
 					<div className="quickTaskTitle">
-						<ListChecks size={17} aria-hidden="true" />
+						<ListChecks size="var(--icon-xl)" aria-hidden="true" />
 						<div>
 							<h1>Quick Task</h1>
 							<p>{settings.dailyNotesFolder ?? "Daily notes not configured"}</p>
@@ -174,7 +174,7 @@ export function QuickTaskWindow() {
 						<div className="quickTaskDateFields">
 							<label>
 								<span>
-									<Calendar size={12} aria-hidden="true" />
+									<Calendar size="var(--icon-sm)" aria-hidden="true" />
 									Scheduled
 								</span>
 								<input

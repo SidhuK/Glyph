@@ -33,7 +33,7 @@
 .settingsBackButton {
 	gap: 6px;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 }
 
@@ -66,7 +66,7 @@
 	border-radius: 8px;
 	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
 	color: var(--text-primary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1;
 	outline: none;
 	padding: 0 30px 0 30px;
@@ -155,7 +155,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	line-height: 17px;
 }
@@ -167,7 +167,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 14px;
 	color: var(--interactive-accent);
@@ -179,14 +179,14 @@
 	-webkit-line-clamp: 2;
 	overflow: hidden;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
 }
 
 .settingsSearchEmpty {
 	padding: 10px 8px;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
 }
 
@@ -218,7 +218,7 @@
 	margin: 0;
 	padding: 0 8px 5px;
 	color: var(--text-tertiary);
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1.2;
 	text-transform: uppercase;
@@ -251,7 +251,7 @@
 }
 
 .settingsFeedbackEyebrow {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -259,7 +259,7 @@
 }
 
 .settingsFeedbackTitle {
-	font-size: 14px;
+	font-size: var(--text-base);
 	font-weight: var(--font-bold);
 	line-height: 1.2;
 	color: var(--text-primary);
@@ -267,7 +267,7 @@
 
 .settingsFeedbackBody {
 	margin: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.5;
 	color: var(--text-secondary);
 }
@@ -328,8 +328,8 @@
 }
 
 .settingsTabIcon {
-	height: 16px;
-	width: 16px;
+	height: var(--icon-lg);
+	width: var(--icon-lg);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -353,16 +353,12 @@
 
 .sidebarQuickActionBtn.settingsTabButton:hover {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+	background: var(--bg-hover);
 }
 
 .sidebarQuickActionBtn.settingsTabButtonActive {
 	color: var(--text-primary);
-	background: var(--bg-primary);
-	box-shadow: 0 0.5px 1.5px
-		color-mix(in srgb, var(--text-primary) 6%, transparent), inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 50%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 40%, transparent);
+	background: var(--bg-active);
 }
 
 .settingsSidebarFooter {
@@ -402,21 +398,18 @@
 	gap: 4px;
 	padding: 0 0 16px;
 	background: transparent;
+	width: 70%;
+	max-width: 644px;
+	margin: 0 auto;
 }
 
 .settingsPanelHeader::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	height: 1px;
-	background: var(--border-light);
+	display: none;
 }
 
 .settingsPanelTitle {
 	margin: 0;
-	font-size: 21px;
+	font-size: calc(var(--text-base) * 1.5);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.02em;
 	color: var(--text-primary);

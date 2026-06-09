@@ -1082,7 +1082,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 								variant="ghost"
 								onClick={removeLinkFromDialog}
 							>
-								<X size={14} />
+								<X size="var(--icon-md)" />
 								Remove
 							</Button>
 							<Button type="submit">Apply</Button>

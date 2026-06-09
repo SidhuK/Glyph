@@ -15,6 +15,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 import { getAccentPreviewColor } from "./accentOptions";
 
 interface AppearanceThemeCardProps {
@@ -134,7 +135,7 @@ function ThemeSelector<T extends string>({
 								open && "is-open",
 							)}
 						>
-							<ChevronDown size={14} />
+							<ChevronDown size="var(--icon-md)" />
 						</span>
 					</button>
 				</PopoverTrigger>
@@ -216,7 +217,7 @@ export function AppearanceThemeCard({
 			description="Mix and match light and dark theme families."
 		>
 			<SettingsRow label="Select Theme" interactive={false}>
-				<select
+				<SettingsSelect
 					aria-label="Theme mode"
 					value={themeMode}
 					onChange={(event) =>
@@ -228,7 +229,7 @@ export function AppearanceThemeCard({
 							{option.label}
 						</option>
 					))}
-				</select>
+				</SettingsSelect>
 			</SettingsRow>
 
 			<ThemeSelector

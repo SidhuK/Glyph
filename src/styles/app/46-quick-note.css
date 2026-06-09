@@ -127,7 +127,7 @@
 .quickNoteTargetTriggerDetail {
 	flex: 1 1 auto;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 }
 
 .quickNoteTargetTrigger > svg {
@@ -190,7 +190,7 @@
 .quickNoteTargetOptionDetail {
 	flex: 0 1 auto;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 }
 
 .quickNoteTargetMenuGroup {
@@ -200,7 +200,7 @@
 .quickNoteTargetMenuGroupLabel {
 	padding: 7px 8px 4px;
 	color: var(--text-tertiary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	letter-spacing: 0;
@@ -275,7 +275,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	pointer-events: none;
 }
 
@@ -316,7 +316,7 @@
 .quickTaskTitle h1 {
 	margin: 0;
 	color: var(--text-primary);
-	font-size: 16px;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	line-height: 1.1;
 	letter-spacing: 0;

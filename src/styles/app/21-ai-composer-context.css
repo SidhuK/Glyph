@@ -132,7 +132,7 @@
 	height: 20px;
 	padding: 0 6px 0 4px;
 	border-radius: var(--radius-sm);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: 500;
 	line-height: 1;
 	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
@@ -204,7 +204,7 @@
 	align-items: center;
 	justify-content: center;
 	color: var(--text-tertiary);
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	border-radius: var(--radius-sm);
 	opacity: 0;
 	transition: background var(--transition-fast), color var(--transition-fast),
@@ -372,7 +372,7 @@ button.aiComposerSend:disabled {
 
 .aiInlineErrorText {
 	flex: 1;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--status-danger-fg);
 	font-weight: var(--font-medium);
 }
@@ -386,7 +386,7 @@ button.aiComposerSend:disabled {
 	border: 1px solid var(--status-danger-border);
 	background: transparent;
 	color: var(--status-danger-fg);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	cursor: pointer;
 	transition: background var(--transition-fast);

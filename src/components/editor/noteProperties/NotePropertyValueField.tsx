@@ -279,7 +279,7 @@ export function NotePropertyValueField({
 							aria-label={`Remove ${formatTagLabel(value)}`}
 						>
 							<span>{formatTagLabel(value)}</span>
-							<X size={10} />
+							<X size="var(--icon-xs)" />
 						</button>
 					))}
 					<input

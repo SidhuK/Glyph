@@ -131,7 +131,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					>
 						<HugeiconsIcon
 							icon={LocationAdd01Icon}
-							size={14}
+							size="var(--icon-md)"
 							strokeWidth={0.9}
 						/>
 					</button>
@@ -150,7 +150,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					>
 						<HugeiconsIcon
 							icon={LocationAdd01Icon}
-							size={14}
+							size="var(--icon-md)"
 							strokeWidth={0.9}
 						/>
 					</button>
@@ -179,7 +179,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 								<span className="codeBlockLanguageBtnIcon" aria-hidden>
 									<HugeiconsIcon
 										icon={SourceCodeIcon}
-										size={12}
+										size="var(--icon-sm)"
 										strokeWidth={0.9}
 									/>
 								</span>
@@ -231,7 +231,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 				>
 					<HugeiconsIcon
 						icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
-						size={12}
+						size="var(--icon-sm)"
 						strokeWidth={0.9}
 					/>
 				</button>
@@ -263,7 +263,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						>
 							<HugeiconsIcon
 								icon={Calendar03Icon}
-								size={13}
+								size="var(--icon-sm)"
 								strokeWidth={0.9}
 								aria-hidden
 							/>

@@ -3,7 +3,7 @@
 	border: none;
 	background: transparent;
 	color: var(--text-primary);
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.42;
 	padding: 3px 0;
 	border-radius: 0;
@@ -53,7 +53,7 @@
 }
 
 .notePropertiesToolbarLabel {
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.035em;
 	text-transform: uppercase;
@@ -123,8 +123,8 @@
 }
 
 .notePropertiesModePillIcon {
-	width: 13px;
-	height: 13px;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 	flex: 0 0 13px;
 }
 
@@ -167,7 +167,7 @@
 	border-radius: calc(var(--radius-md) - 2px);
 	padding-inline: 0;
 	font-family: var(--font-sans);
-	font-size: 12.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
 }
 
@@ -218,7 +218,7 @@ input.notePropertyValue {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	font-size: 12.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	letter-spacing: 0;
 }
 
@@ -248,7 +248,7 @@ input.notePropertyValue {
 	color: var(--text-primary);
 	min-width: 0;
 	overflow-wrap: break-word;
-	font-size: 12.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
 }
 
@@ -277,7 +277,7 @@ input.notePropertyValue {
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	text-transform: uppercase;
@@ -286,8 +286,8 @@ input.notePropertyValue {
 
 .notePropertyKindBadge svg {
 	color: var(--text-tertiary);
-	width: 12px;
-	height: 12px;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 }
 
 .notePropertyKindTrigger {
@@ -297,7 +297,7 @@ input.notePropertyValue {
 	justify-content: flex-start;
 	background: transparent;
 	box-shadow: none;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 }
 
 .notePropertyKindTrigger:hover,
@@ -329,7 +329,7 @@ input.notePropertyValue {
 	gap: 8px;
 	padding: 0 10px 0 12px;
 	border-radius: var(--database-control-radius, var(--radius-md));
-	font-size: 0.82rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 	position: relative;
 	transition: background-color 140ms ease, color 140ms ease;
@@ -355,8 +355,8 @@ input.notePropertyValue {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 15px;
-	height: 15px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 	color: var(--text-tertiary);
 	flex: 0 0 15px;
 }
@@ -412,8 +412,8 @@ input.notePropertyValue {
 }
 
 .propertyValueTextIcon {
-	width: 12px;
-	height: 12px;
+	width: var(--icon-sm);
+	height: var(--icon-sm);
 	flex: 0 0 12px;
 	color: currentcolor;
 }
@@ -584,7 +584,7 @@ input.notePropertyValue {
 	height: 20px;
 	padding: 0;
 	font-family: var(--font-sans);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-normal);
 	line-height: 1.35;
 }
@@ -601,7 +601,7 @@ input.notePropertyValue {
 }
 
 .notePropertySuggestionsLabel {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
@@ -648,7 +648,7 @@ input.notePropertyValue {
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	color: var(--text-tertiary);
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-family: var(--font-sans);
 	font-weight: var(--font-normal);
 }
@@ -667,7 +667,7 @@ input.notePropertyValue {
 	border-radius: var(--radius-full);
 	background: transparent;
 	color: var(--text-tertiary);
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	letter-spacing: 0.02em;
 }
 

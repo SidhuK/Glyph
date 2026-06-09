@@ -41,7 +41,6 @@
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-left: 0 solid transparent;
 	box-sizing: border-box;
 	transition:
 		width 180ms ease, flex-basis 180ms ease, padding 180ms ease,
@@ -94,8 +93,7 @@
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-left-width: 1px;
-	border-left-color: transparent;
+	/* border intentionally removed */
 }
 
 :root[data-translucent-sidebar="false"]
@@ -104,5 +102,4 @@
 	background: var(--bg-sidebar);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-left-color: var(--border-light);
 }

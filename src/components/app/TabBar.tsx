@@ -177,9 +177,9 @@ export function TabBar({
 					onRenameFile={onRenameFile}
 				/>
 				{showTabs ? (
-					<>
-						<DragDropProvider onDragEnd={handleDragEnd}>
-							<div className="mainTabsStrip">
+					<DragDropProvider onDragEnd={handleDragEnd}>
+						<div className="mainTabsStrip">
+							<div className="mainTabsStripTabs">
 								{tabs.map((tab, index) => (
 									<TabItem
 										key={tab.id}
@@ -195,21 +195,21 @@ export function TabBar({
 									/>
 								))}
 							</div>
-						</DragDropProvider>
-						<button
-							type="button"
-							className="mainTabAdd"
-							onClick={onOpenBlankTab}
-							title={`Open blank tab${
-								newTabShortcut
-									? ` (${formatShortcutForPlatform(newTabShortcut)})`
-									: ""
-							}`}
-							aria-label="Open blank tab"
-						>
-							+
-						</button>
-					</>
+							<button
+								type="button"
+								className="mainTabAdd"
+								onClick={onOpenBlankTab}
+								title={`Open blank tab${
+									newTabShortcut
+										? ` (${formatShortcutForPlatform(newTabShortcut)})`
+										: ""
+								}`}
+								aria-label="Open blank tab"
+							>
+								+
+							</button>
+						</div>
+					</DragDropProvider>
 				) : null}
 			</div>
 			<MainTabsBreadcrumbs

@@ -1,13 +1,31 @@
 .appearanceThemeDropdownTrigger,
 .appearanceThemeDropdownOption {
 	--theme-preview-accent: var(--interactive-accent);
-	--theme-preview-surface: var(--bg-secondary);
+	--theme-preview-surface: var(--bg-tertiary);
 	--theme-preview-surface-alt: var(--bg-tertiary);
 	--theme-preview-text: var(--text-primary);
 	--theme-preview-badge-bg: var(--bg-primary);
 	--theme-preview-badge-border: var(--border-default);
 	--theme-preview-badge-text: var(--interactive-accent);
 	--theme-preview-border: var(--border-default);
+}
+
+:root.light:not([data-light-theme]) .appearanceThemeDropdownTrigger,
+:root.light:not([data-light-theme]) .appearanceThemeDropdownOption,
+:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownTrigger,
+:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownOption {
+	--theme-preview-surface: rgb(251 250 251);
+	--theme-preview-surface-alt: rgb(251 250 251);
+}
+
+:root.dark .appearanceThemeDropdownTrigger,
+:root.dark .appearanceThemeDropdownOption {
+	--theme-preview-surface: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);
+	--theme-preview-surface-alt: color-mix(
+		in srgb,
+		var(--bg-tertiary) 88%,
+		#ffffff
+	);
 }
 
 .appearanceThemeDropdownTrigger {
@@ -19,19 +37,14 @@
 	padding: 7px 9px;
 	text-align: left;
 	border-radius: var(--radius-md);
-	border: 1px solid var(--theme-preview-border);
+	border: 0;
 	background: var(--theme-preview-surface);
 	color: var(--theme-preview-text);
-	transition: border-color var(--transition-base), background
-		var(--transition-base), box-shadow var(--transition-base);
+	transition: background var(--transition-base), box-shadow
+		var(--transition-base);
 }
 
 .appearanceThemeDropdownTrigger:hover {
-	border-color: color-mix(
-		in srgb,
-		var(--theme-preview-accent) 34%,
-		var(--theme-preview-border)
-	);
 	background: color-mix(
 		in srgb,
 		var(--theme-preview-surface) 84%,
@@ -44,7 +57,7 @@
 
 .appearanceThemeDropdownTitle,
 .appearanceThemeDropdownOptionTitle {
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: currentcolor;
 }
@@ -52,7 +65,7 @@
 .appearanceThemeDropdownDescription,
 .appearanceThemeDropdownOptionDescription {
 	margin-top: 1px;
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.25;
 	color: color-mix(
 		in srgb,
@@ -85,7 +98,7 @@
 	width: min(360px, calc(100vw - 24px));
 	padding: 8px;
 	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
+	border: 0;
 	background: var(--bg-primary);
 	box-shadow: none;
 }
@@ -99,20 +112,14 @@
 	padding: 7px 8px;
 	text-align: left;
 	border-radius: var(--radius-md);
-	border: 1px solid
-		color-mix(in srgb, var(--theme-preview-border) 84%, transparent);
+	border: 0;
 	background: var(--theme-preview-surface);
 	color: var(--theme-preview-text);
-	transition: border-color var(--transition-base), background
-		var(--transition-base), box-shadow var(--transition-base);
+	transition: background var(--transition-base), box-shadow
+		var(--transition-base);
 }
 
 .appearanceThemeDropdownOption:hover {
-	border-color: color-mix(
-		in srgb,
-		var(--theme-preview-accent) 34%,
-		var(--theme-preview-border)
-	);
 	background: color-mix(
 		in srgb,
 		var(--theme-preview-surface) 84%,
@@ -124,11 +131,6 @@
 }
 
 .appearanceThemeDropdownOption.is-selected {
-	border-color: color-mix(
-		in srgb,
-		var(--theme-preview-accent) 42%,
-		var(--theme-preview-border)
-	);
 	background: color-mix(
 		in srgb,
 		var(--theme-preview-surface) 74%,
@@ -159,7 +161,7 @@
 	border: 1px solid var(--theme-preview-badge-border);
 	background: var(--theme-preview-badge-bg);
 	color: var(--theme-preview-badge-text);
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.03em;
 }
@@ -176,14 +178,14 @@
 }
 
 .appearanceThemeDropdownHeaderTitle {
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .appearanceThemeDropdownHeaderHint {
 	margin-top: 3px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
 	color: var(--text-secondary);
 }

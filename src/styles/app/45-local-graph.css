@@ -31,7 +31,7 @@
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 18px;
+	font-size: calc(var(--text-base) * 1.3);
 	line-height: 1;
 	cursor: pointer;
 	outline: none;
@@ -130,7 +130,7 @@
 	backdrop-filter: blur(16px);
 	-webkit-backdrop-filter: blur(16px);
 	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	pointer-events: none;
 	box-shadow: 0 12px 30px

@@ -35,7 +35,7 @@ export function TrialBanner({ status, onDismiss }: TrialBannerProps) {
 					aria-label="Dismiss trial banner"
 					title="Dismiss"
 				>
-					<HugeiconsIcon icon={Close} size={14} strokeWidth={0.9} />
+					<HugeiconsIcon icon={Close} size="var(--icon-md)" strokeWidth={0.9} />
 				</button>
 				<Button
 					type="button"

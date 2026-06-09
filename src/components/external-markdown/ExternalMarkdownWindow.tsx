@@ -237,7 +237,7 @@ export function ExternalMarkdownWindow() {
 						aria-label="Save"
 						title="Save"
 					>
-						<Save size={15} />
+						<Save size="var(--icon-lg)" />
 					</button>
 				</div>
 			</header>
