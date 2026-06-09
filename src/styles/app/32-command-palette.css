@@ -103,9 +103,9 @@
 }
 
 .commandPaletteFooter kbd {
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
+	min-width: calc(var(--text-base) * 1.6);
+	height: calc(var(--text-base) * 1.6);
+	padding: 0 calc(var(--text-base) * 0.43);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

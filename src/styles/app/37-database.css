@@ -239,7 +239,7 @@
 	height: var(--icon-md);
 	min-width: var(--icon-md);
 	min-height: var(--icon-md);
-	flex: 0 0 14px;
+	flex: 0 0 var(--icon-md);
 }
 
 .databasesViewTabRenameInput {

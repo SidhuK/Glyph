@@ -50,6 +50,7 @@ function FontSizeControl({
 		<SettingsRow label={label} htmlFor={id} description={description}>
 			<div className="flex w-full justify-end">
 				<Input
+					id={id}
 					type="number"
 					className="w-14 text-right [font-variant-numeric:tabular-nums]"
 					min={min}

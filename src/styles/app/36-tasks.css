@@ -474,12 +474,12 @@ button.calendarTaskComposerChip:focus-visible,
 .tasksCheckbox::after {
 	content: "";
 	position: absolute;
-	top: 1px;
-	left: 4px;
-	width: 4px;
-	height: 8px;
-	border-right: 2px solid var(--interactive-accent);
-	border-bottom: 2px solid var(--interactive-accent);
+	top: calc(var(--icon-md) * 0.07);
+	left: calc(var(--icon-md) * 0.29);
+	width: calc(var(--icon-md) * 0.29);
+	height: calc(var(--icon-md) * 0.57);
+	border-right: calc(var(--icon-md) * 0.14) solid var(--interactive-accent);
+	border-bottom: calc(var(--icon-md) * 0.14) solid var(--interactive-accent);
 	pointer-events: none;
 	opacity: 0;
 	transform: rotate(45deg) scale(0.75);
