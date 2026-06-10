@@ -282,55 +282,14 @@
 .quickTaskRoot {
 	display: flex;
 	flex-direction: column;
-}
-
-.quickTaskContent {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	gap: 16px;
+	gap: 8px;
 	min-height: 0;
-	padding: 30px 24px 22px;
-}
-
-.quickTaskHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	min-width: 0;
-}
-
-.quickTaskTitle {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	min-width: 0;
-	color: var(--text-primary);
-}
-
-.quickTaskTitle > svg {
-	flex: 0 0 auto;
-	color: var(--interactive-accent);
-}
-
-.quickTaskTitle h1 {
-	margin: 0;
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 1.1);
-	font-weight: var(--font-semibold);
-	line-height: 1.1;
-	letter-spacing: 0;
-}
-
-.quickTaskTitle p {
-	max-width: 390px;
-	margin: 4px 0 0;
+	padding: 32px 16px;
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+	border-radius: 18px;
+	box-shadow: 0 16px 48px color-mix(in srgb, black 18%, transparent);
 	overflow: hidden;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	line-height: 1.2;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 .quickTaskRoot .calendarTaskComposer {

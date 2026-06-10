@@ -34,7 +34,7 @@ import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
-const MARKDOWN_SYNC_DEBOUNCE_MS = 120;
+const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -397,8 +397,13 @@ export function useNoteEditor({
 	pasteMarkdownBehavior = "plain-text",
 	onChange,
 }: UseNoteEditorOptions) {
-	const { frontmatter, body } = splitYamlFrontmatter(markdown);
-	const editorBody = preprocessMarkdownForEditor(body);
+	const { frontmatter, editorBody } = useMemo(() => {
+		const split = splitYamlFrontmatter(markdown);
+		return {
+			...split,
+			editorBody: preprocessMarkdownForEditor(split.body),
+		};
+	}, [markdown]);
 
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);

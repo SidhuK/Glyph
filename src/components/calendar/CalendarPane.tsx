@@ -317,7 +317,7 @@ export function CalendarPane({
 								type="button"
 								variant="ghost"
 								size="icon-xs"
-								className="sidebarTopIconButton calendarAccentIconButton"
+								className="sidebarTopIconButton"
 								onClick={goToToday}
 								aria-label="Today"
 							>
@@ -466,8 +466,8 @@ export function CalendarPane({
 								<Button
 									type="button"
 									variant="ghost"
-									size="icon-xs"
-									className="sidebarTopIconButton calendarAccentIconButton"
+									size="xs"
+									className="calendarDailyNoteBtn"
 									onClick={() => void openSelectedDailyNote()}
 									aria-label={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
 									title={`Open or create note for ${format(selectedDateObj, "MMM d")}`}
@@ -477,6 +477,7 @@ export function CalendarPane({
 										size="var(--icon-sm)"
 										strokeWidth={0.9}
 									/>
+									Daily Note
 								</Button>
 							</div>
 							<ul className="calendarNotesList">

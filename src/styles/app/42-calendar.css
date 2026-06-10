@@ -18,7 +18,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
-	width: min(100%, 896px);
+	width: min(100%, 620px);
 	min-height: min(760px, calc(100vh - 68px));
 	margin: 0 auto;
 }
@@ -93,15 +93,12 @@
 }
 
 /* Extend hit area of the 24px header icon buttons. The action cluster has a
-   2px gap, so grow vertically only there to avoid colliding hit areas; the
-   standalone Notes button can take a full 40x40 target. */
-.calendarDashboardActions .sidebarTopIconButton,
-.calendarPanelSectionHeader .calendarAccentIconButton {
+   2px gap, so grow vertically only there to avoid colliding hit areas. */
+.calendarDashboardActions .sidebarTopIconButton {
 	position: relative;
 }
 
-.calendarDashboardActions .sidebarTopIconButton::after,
-.calendarPanelSectionHeader .calendarAccentIconButton::after {
+.calendarDashboardActions .sidebarTopIconButton::after {
 	content: "";
 	position: absolute;
 	top: 50%;
@@ -109,10 +106,6 @@
 	transform: translate(-50%, -50%);
 	width: 100%;
 	height: 40px;
-}
-
-.calendarPanelSectionHeader .calendarAccentIconButton::after {
-	width: 40px;
 }
 
 .calendarAccentIconButton {
@@ -136,6 +129,33 @@
 	opacity: 1;
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
+}
+
+.calendarDailyNoteBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 28px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.calendarDailyNoteBtn:hover,
+.calendarDailyNoteBtn:focus-visible {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.calendarDailyNoteBtn svg {
+	color: currentcolor;
 }
 
 .calendarWeekPanel,
@@ -274,6 +294,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
+	min-height: 20px;
 	padding: 0 18px;
 }
 
@@ -481,6 +502,19 @@
 .calendarLoading {
 	padding-inline: 2px;
 	padding-block: 0;
+}
+
+:root.dark .calendarWeekPanel,
+:root.dark .calendarPanelSection {
+	background: var(--bg-tertiary);
+}
+
+:root.dark .calendarTaskComposer {
+	background: color-mix(in srgb, var(--bg-tertiary) 90%, var(--bg-primary));
+}
+
+:root.dark .calendarTaskComposer input {
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-tertiary));
 }
 
 @container (max-width: 780px) {

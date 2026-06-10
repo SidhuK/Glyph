@@ -73,6 +73,7 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         board_lane_colors: Default::default(),
         board_lane_order: Default::default(),
         board_card_order: Default::default(),
+        board_card_fields: Default::default(),
         created_at: now.clone(),
         updated_at: now,
     }

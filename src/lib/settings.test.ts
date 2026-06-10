@@ -2,13 +2,16 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { emitMock, storeState } = vi.hoisted(() => ({
+const { emitMock, listenMock, storeState } = vi.hoisted(() => ({
 	emitMock: vi.fn(() => Promise.resolve()),
+	listenMock: vi.fn(() => Promise.resolve(() => {})),
 	storeState: new Map<string, unknown>(),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({
 	emit: emitMock,
+	emitTo: emitMock,
+	listen: listenMock,
 }));
 
 vi.mock("@tauri-apps/plugin-store", () => ({
@@ -19,6 +22,12 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 
 		get<T>(key: string) {
 			return Promise.resolve((storeState.get(key) as T | undefined) ?? null);
+		}
+
+		entries<T>() {
+			return Promise.resolve(
+				Array.from(storeState.entries()) as Array<[string, T]>,
+			);
 		}
 
 		set(key: string, value: unknown) {

@@ -84,6 +84,7 @@ interface DatabasesPaneProps {
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
 const EMPTY_BOARD_CARD_ORDER: Record<string, Record<string, string[]>> = {};
+const EMPTY_BOARD_CARD_FIELDS: string[] = [];
 const MIN_DATABASE_COLUMN_WIDTH = 120;
 const MAX_DATABASE_COLUMN_WIDTH = 900;
 
@@ -116,6 +117,7 @@ function currentConfig(
 			board_lane_colors: view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
 			board_lane_order: view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
 			board_card_order: view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
+			board_card_fields: view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
 		},
 		columns: view.columns,
 		sorts: view.sorts,
@@ -150,6 +152,8 @@ function replaceCurrentView(
 							config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
 						board_card_order:
 							config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
+						board_card_fields:
+							config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
 						columns: config.columns,
 						sorts: config.sorts,
 						filters: config.filters,
@@ -1232,6 +1236,9 @@ function DatabasesPaneContent({
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onCreateRow={handleCreateRow}
 							onOpenColumns={() => setViewOptionsOpen(true)}
+							boardCardFields={
+								activeConfig.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS
+							}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,

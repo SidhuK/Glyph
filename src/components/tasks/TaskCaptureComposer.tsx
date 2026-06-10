@@ -9,19 +9,12 @@ import {
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 
-interface TaskCaptureChip {
-	label: string;
-	active?: boolean;
-	onClick: () => void;
-}
-
 interface TaskCaptureComposerProps {
 	className?: string;
 	inputRef?: RefObject<HTMLInputElement | null>;
 	value: string;
 	placeholder?: string;
 	pending: boolean;
-	chips: TaskCaptureChip[];
 	dateControls?: ReactNode;
 	onValueChange: (value: string) => void;
 	onSubmit: () => void;
@@ -34,7 +27,6 @@ export function TaskCaptureComposer({
 	value,
 	placeholder = "Add a task...",
 	pending,
-	chips,
 	dateControls,
 	onValueChange,
 	onSubmit,
@@ -87,24 +79,6 @@ export function TaskCaptureComposer({
 			{dateControls ? (
 				<div className="calendarTaskComposerDates">{dateControls}</div>
 			) : null}
-			<div
-				className="calendarTaskComposerChips"
-				aria-label="Task capture options"
-			>
-				{chips.map((chip) => (
-					<Button
-						key={chip.label}
-						type="button"
-						size="xs"
-						variant="ghost"
-						className="calendarTaskComposerChip"
-						data-active={chip.active ? "true" : undefined}
-						onClick={chip.onClick}
-					>
-						{chip.label}
-					</Button>
-				))}
-			</div>
 		</div>
 	);
 }

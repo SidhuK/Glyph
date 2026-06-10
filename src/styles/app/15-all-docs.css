@@ -122,15 +122,14 @@
 	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
 	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.26);
 	overflow: hidden;
-	transition: background-color 120ms ease, border-color 120ms ease, transform
-		120ms ease, box-shadow 120ms ease;
+	transition: background-color 120ms ease, border-color 120ms ease, box-shadow
+		120ms ease;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
 	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
 	box-shadow: 0 12px 24px -18px rgb(30 41 59 / 0.3);
-	transform: translateY(-1px);
 }
 
 .allDocsCard[data-state="selected"] .allDocsCardSurface {
@@ -153,14 +152,21 @@
 }
 
 .dark .allDocsCardSurface {
+	background: var(--bg-tertiary);
 	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.86);
 }
 
 .dark .allDocsCard:hover .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-hover));
 	box-shadow: 0 12px 22px -18px rgb(2 6 23 / 0.92);
 }
 
 .dark .allDocsCard[data-state="selected"] .allDocsCardSurface {
+	background: color-mix(
+		in srgb,
+		var(--bg-tertiary) 92%,
+		var(--interactive-accent)
+	);
 	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.9);
 }
 
@@ -211,6 +217,12 @@
 	line-height: 1.45;
 	overflow-wrap: anywhere;
 	white-space: normal;
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 1.45em), transparent);
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		#000 calc(100% - 1.45em),
+		transparent
+	);
 }
 
 .allDocsCardPreviewLine {
@@ -250,79 +262,6 @@
 	font-style: italic;
 }
 
-.allDocsCardFooter {
-	display: flex;
-	flex: 0 0 auto;
-	flex-direction: column;
-	gap: 8px;
-	min-width: 0;
-	margin-top: auto;
-	padding-top: 9px;
-	border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
-}
-
-.allDocsCardMetaRow {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-	color: var(--text-tertiary);
-	font-size: var(--all-docs-card-meta-size);
-	line-height: 1.25;
-}
-
-.allDocsCardPath {
-	min-width: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	overflow: hidden;
-	white-space: nowrap;
-}
-
-.allDocsCardPathIcon {
-	flex: 0 0 auto;
-	color: currentcolor;
-}
-
-.allDocsCardPathLabel {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardTime {
-	min-width: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	justify-self: end;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardTime::before {
-	content: "";
-	flex: 0 0 auto;
-	width: 3px;
-	height: 3px;
-	border-radius: 50%;
-	background: currentcolor;
-	opacity: 0.72;
-}
-
-.allDocsCardSignals {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	min-width: 0;
-}
-
 .allDocsCardTaskSummary {
 	display: inline-flex;
 	flex: 0 0 auto;
@@ -352,51 +291,6 @@
 
 .allDocsCardTaskText {
 	white-space: nowrap;
-}
-
-.allDocsCardTags {
-	display: flex;
-	flex: 1 1 auto;
-	flex-wrap: nowrap;
-	justify-content: flex-end;
-	gap: 5px;
-	min-width: 0;
-	overflow: hidden;
-}
-
-.allDocsCardTag {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	max-width: 100%;
-	flex: 0 1 auto;
-	min-width: 0;
-	padding: 2px 8px;
-	border: 0;
-	border-radius: 4px;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-secondary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	line-height: 1.25;
-	white-space: nowrap;
-	box-shadow: none;
-}
-
-.allDocsCardTag.is-muted {
-	--database-tone: var(--text-tertiary);
-	flex: 0 0 auto;
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
-	color: var(--text-tertiary);
-}
-
-.allDocsCardTagIcon {
-	flex: 0 0 auto;
-	color: currentcolor;
 }
 
 @media (max-width: 900px) {

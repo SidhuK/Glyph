@@ -1,72 +1,85 @@
 {
-	"fill": {
-		"automatic-gradient": "extended-gray:1.00000,1.00000",
-		"orientation": {
-			"start": {
-				"x": 0.5,
-				"y": 1
-			},
-			"stop": {
-				"x": 0.5,
-				"y": 0.3
-			}
-		}
-	},
-	"groups": [
-		{
-			"layers": [
-				{
-					"fill": {
-						"solid": "extended-gray:0.25000,1.00000"
-					},
-					"glass": false,
-					"hidden": false,
-					"image-name": "new-icon.png",
-					"name": "new-icon",
-					"position": {
-						"scale": 1.8,
-						"translation-in-points": [26.099999999999966, 41.890625]
-					}
-				},
-				{
-					"fill": {
-						"solid": "extended-gray:0.75000,1.00000"
-					},
-					"glass": false,
-					"hidden": false,
-					"image-name": "new-icon.png",
-					"name": "new-icon",
-					"position": {
-						"scale": 1.85,
-						"translation-in-points": [26.099999999999966, 48.53125]
-					}
-				},
-				{
-					"fill": {
-						"solid": "extended-srgb:1.00000,0.21961,0.23529,1.00000"
-					},
-					"glass": false,
-					"hidden": false,
-					"image-name": "new-icon.png",
-					"name": "new-icon",
-					"position": {
-						"scale": 1.89,
-						"translation-in-points": [26.099999999999966, 48.53125]
-					}
-				}
-			],
-			"shadow": {
-				"kind": "neutral",
-				"opacity": 0.5
-			},
-			"translucency": {
-				"enabled": true,
-				"value": 0.5
-			}
-		}
-	],
-	"supported-platforms": {
-		"circles": ["watchOS"],
-		"squares": "shared"
-	}
+  "fill" : {
+    "automatic-gradient" : "extended-gray:1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "_-2.png",
+          "name" : "_-2",
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              0.39999999999997726,
+              192.3750000000001
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "_-4.png",
+          "name" : "_-4",
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              255.4794996282542,
+              192.375
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "_-3.png",
+          "name" : "_-3",
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              -244.59970642547694,
+              192.3750000000001
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "Rectangle 2-2 2.png",
+          "name" : "Rectangle 2-2 2",
+          "position" : {
+            "scale" : 0.6,
+            "translation-in-points" : [
+              1.5,
+              199.0750000000005
+            ]
+          }
+        },
+        {
+          "glass" : false,
+          "image-name" : "Rectangle 3-2.svg",
+          "name" : "Rectangle 3-2",
+          "position" : {
+            "scale" : 0.6,
+            "translation-in-points" : [
+              0,
+              198.07500000000027
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
 }

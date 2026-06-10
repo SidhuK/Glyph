@@ -1,27 +1,22 @@
-import { Folder01Icon, Folder03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useState } from "react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { toast } from "sonner";
-import { useFileTreeContext } from "../../contexts";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
-import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
-import { type FileTreeAppearance, type FsEntry, invoke } from "../../lib/tauri";
+import { type FsEntry, invoke } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
-import { isMarkdownPath, parentDir } from "../../utils/path";
+import { parentDir } from "../../utils/path";
 import { ChevronRight } from "../Icons";
-import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
-import { isEditorTextColor } from "../editor/textColors";
-import { getFileTypeInfo } from "../filetree/fileTypeUtils";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 
@@ -81,27 +76,6 @@ function isPathSpecial(path: string): boolean {
 	);
 }
 
-function itemAppearanceStyle(
-	path: string,
-	appearance?: FileTreeAppearance | null,
-): CSSProperties | undefined {
-	const color =
-		appearance?.color && isEditorTextColor(appearance.color)
-			? appearance.color
-			: null;
-	if (!color) return undefined;
-	return {
-		...databaseValueToneStyleForColor(path, color),
-		"--file-tree-row-icon-color": "var(--database-tone)",
-		"--file-tree-row-name-color":
-			"color-mix(in srgb, var(--database-tone) 55%, var(--text-primary))",
-	} as CSSProperties;
-}
-
-function hasCustomColor(path: string, appearance?: FileTreeAppearance | null) {
-	return itemAppearanceStyle(path, appearance) ? "true" : "false";
-}
-
 function breadcrumbDisplayItems(
 	parts: BreadcrumbPart[],
 ): BreadcrumbDisplayItem[] {
@@ -148,71 +122,77 @@ function breadcrumbPartsForPath(path: string | null): BreadcrumbPart[] {
 	];
 }
 
-function FolderBreadcrumbIcon({
-	appearance,
-	open,
-	size,
-	className,
-}: {
-	appearance?: FileTreeAppearance | null;
-	open: boolean;
-	size: string | number;
-	className?: string;
-}) {
-	if (appearance?.icon) {
-		return (
-			<DatabaseColumnIcon
-				iconName={appearance.icon}
-				size={size}
-				className={className}
-			/>
-		);
-	}
-	return (
-		<HugeiconsIcon
-			icon={open ? Folder03Icon : Folder01Icon}
-			size={size}
-			strokeWidth={0.9}
-			className={className}
-			aria-hidden="true"
-		/>
-	);
+function entryLabel(entry: FsEntry) {
+	return entry.is_markdown ? entry.name.replace(/\.[^./]+$/, "") : entry.name;
 }
 
-function FileBreadcrumbIcon({
-	path,
-	isMarkdown,
-	appearance,
-	size,
-	className,
+function BreadcrumbMenuItem({
+	entry,
+	childrenByDir,
+	onLoadDir,
+	onNavigateDir,
+	onOpenFile,
 }: {
-	path: string;
-	isMarkdown: boolean;
-	appearance?: FileTreeAppearance | null;
-	size: string | number;
-	className?: string;
+	entry: FsEntry;
+	childrenByDir: Record<string, FsEntry[] | undefined>;
+	onLoadDir: (dirPath: string) => Promise<void>;
+	onNavigateDir: (dirPath: string) => void;
+	onOpenFile: (relPath: string) => Promise<void>;
 }) {
-	if (appearance?.icon) {
+	const childEntries = childrenByDir[entry.rel_path];
+	const loading = childEntries === undefined;
+	const isDir = entry.kind === "dir";
+
+	if (!isDir) {
 		return (
-			<DatabaseColumnIcon
-				iconName={appearance.icon}
-				size={size}
-				className={className}
-			/>
+			<DropdownMenuItem
+				key={entry.rel_path || ROOT_PATH_KEY}
+				className="mainTabsBreadcrumbMenuItem"
+				title={entry.rel_path || entry.name}
+				onSelect={() => void onOpenFile(entry.rel_path)}
+			>
+				<span className="mainTabsBreadcrumbMenuItemLabel">
+					{entryLabel(entry)}
+				</span>
+			</DropdownMenuItem>
 		);
 	}
-	const { Icon, color } = getFileTypeInfo(path, isMarkdown);
-	const iconColor =
-		appearance?.color && isEditorTextColor(appearance.color)
-			? "var(--file-tree-row-icon-color)"
-			: color;
+
 	return (
-		<Icon
-			size={size}
-			className={className}
-			style={{ color: iconColor }}
-			aria-hidden="true"
-		/>
+		<DropdownMenuSub
+			onOpenChange={(open) => {
+				if (open && loading) void onLoadDir(entry.rel_path);
+			}}
+		>
+			<DropdownMenuSubTrigger className="mainTabsBreadcrumbMenuItem">
+				<span className="mainTabsBreadcrumbMenuItemLabel">{entry.name}</span>
+			</DropdownMenuSubTrigger>
+			<DropdownMenuSubContent className="mainTabsBreadcrumbMenu" sideOffset={4}>
+				{loading ? (
+					<div className="mainTabsBreadcrumbMenuState">Loading...</div>
+				) : childEntries.length === 0 ? (
+					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
+				) : (
+					<>
+						{childEntries.slice(0, 40).map((child) => (
+							<BreadcrumbMenuItem
+								key={child.rel_path || ROOT_PATH_KEY}
+								entry={child}
+								childrenByDir={childrenByDir}
+								onLoadDir={onLoadDir}
+								onNavigateDir={onNavigateDir}
+								onOpenFile={onOpenFile}
+							/>
+						))}
+						{childEntries.length > 40 ? (
+							<div className="mainTabsBreadcrumbMenuState">
+								+{childEntries.length - 40} more
+							</div>
+						) : null}
+					</>
+				)}
+			</DropdownMenuSubContent>
+		</DropdownMenuSub>
 	);
 }
 
@@ -224,7 +204,7 @@ export function MainTabsBreadcrumbs({
 	onLoadBreadcrumbDir,
 	onOpenBreadcrumbFile,
 }: MainTabsBreadcrumbsProps) {
-	const { itemAppearance } = useFileTreeContext();
+	const [menuOpen, setMenuOpen] = useState(false);
 	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<
 		string | null
 	>(null);
@@ -315,7 +295,11 @@ export function MainTabsBreadcrumbs({
 	if (breadcrumbParts.length === 0) return null;
 
 	return (
-		<nav className="mainTabsBreadcrumb" aria-label="Current file path">
+		<nav
+			className="mainTabsBreadcrumb"
+			data-open={menuOpen ? "true" : undefined}
+			aria-label="Current file path"
+		>
 			{breadcrumbDisplay.map((item, displayIndex) => {
 				if (item.type === "overflow") {
 					return (
@@ -329,9 +313,9 @@ export function MainTabsBreadcrumbs({
 							) : null}
 							<BreadcrumbOverflowMenu
 								hiddenParts={item.hiddenParts}
-								itemAppearance={itemAppearance}
 								onNavigateDir={onNavigateBreadcrumbPath}
 								onOpenFile={onOpenBreadcrumbFile}
+								onMenuOpenChange={setMenuOpen}
 							/>
 						</span>
 					);
@@ -339,20 +323,15 @@ export function MainTabsBreadcrumbs({
 
 				const { part, originalIndex } = item;
 				const isCurrent = originalIndex === breadcrumbParts.length - 1;
-				const appearance = itemAppearance[part.path];
-				const appearanceStyle = itemAppearanceStyle(part.path, appearance);
-				const dirPath =
-					part.kind === "folder" ? part.path : parentDir(part.path);
 				const menuDirPath = breadcrumbParts[originalIndex - 1]?.path ?? "";
 				const menuEntries =
 					menuDirPath === "" ? rootEntries : childrenByDir[menuDirPath];
 				const menuItems = sortBreadcrumbEntries(menuEntries ?? []);
-				const key = part.path || ROOT_PATH_KEY;
 				const menuKey = `${originalIndex}:${menuDirPath || ROOT_PATH_KEY}`;
 
 				return (
 					<span
-						key={key}
+						key={part.path || ROOT_PATH_KEY}
 						className="mainTabsBreadcrumbItem"
 						data-current={isCurrent ? "true" : undefined}
 					>
@@ -364,11 +343,12 @@ export function MainTabsBreadcrumbs({
 								loading={menuEntries === undefined}
 								onOpenChange={(open) => {
 									setOpenBreadcrumbMenuKey(open ? menuKey : null);
+									setMenuOpen(open);
 								}}
 								onLoadDir={onLoadBreadcrumbDir}
 								onNavigateDir={onNavigateBreadcrumbPath}
 								onOpenFile={onOpenBreadcrumbFile}
-								itemAppearance={itemAppearance}
+								childrenByDir={childrenByDir}
 							/>
 						) : null}
 						<button
@@ -376,32 +356,16 @@ export function MainTabsBreadcrumbs({
 							className="mainTabsBreadcrumbButton"
 							aria-current={isCurrent ? "page" : undefined}
 							aria-disabled={isCurrent}
-							data-has-custom-color={hasCustomColor(part.path, appearance)}
-							style={appearanceStyle}
 							title={breadcrumbTooltip(part)}
 							onClick={() => {
-								if (!isCurrent) onNavigateBreadcrumbPath(dirPath);
+								if (!isCurrent && part.kind === "file") {
+									void onOpenBreadcrumbFile(part.path);
+								}
 							}}
 							onContextMenu={(event) =>
 								handleBreadcrumbContextMenu(event, part)
 							}
 						>
-							{part.kind === "folder" ? (
-								<FolderBreadcrumbIcon
-									appearance={appearance}
-									open
-									size="var(--icon-sm)"
-									className="mainTabsBreadcrumbIcon"
-								/>
-							) : (
-								<FileBreadcrumbIcon
-									path={part.path}
-									isMarkdown={isMarkdownPath(part.path)}
-									appearance={appearance}
-									size="var(--icon-sm)"
-									className="mainTabsBreadcrumbIcon"
-								/>
-							)}
 							<span className="mainTabsBreadcrumbLabel">{part.label}</span>
 						</button>
 					</span>
@@ -413,17 +377,21 @@ export function MainTabsBreadcrumbs({
 
 function BreadcrumbOverflowMenu({
 	hiddenParts,
-	itemAppearance,
 	onNavigateDir,
 	onOpenFile,
+	onMenuOpenChange,
 }: {
 	hiddenParts: BreadcrumbPart[];
-	itemAppearance: Record<string, FileTreeAppearance>;
 	onNavigateDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => Promise<void>;
+	onMenuOpenChange: (open: boolean) => void;
 }) {
 	return (
-		<DropdownMenu>
+		<DropdownMenu
+			onOpenChange={(nextOpen) => {
+				onMenuOpenChange(nextOpen);
+			}}
+		>
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
@@ -442,13 +410,10 @@ function BreadcrumbOverflowMenu({
 				className="mainTabsBreadcrumbMenu"
 			>
 				{hiddenParts.map((part) => {
-					const appearance = itemAppearance[part.path];
 					return (
 						<DropdownMenuItem
 							key={part.path || ROOT_PATH_KEY}
 							className="mainTabsBreadcrumbMenuItem"
-							data-has-custom-color={hasCustomColor(part.path, appearance)}
-							style={itemAppearanceStyle(part.path, appearance)}
 							title={breadcrumbTooltip(part)}
 							onSelect={() => {
 								if (part.kind === "folder") {
@@ -458,20 +423,6 @@ function BreadcrumbOverflowMenu({
 								void onOpenFile(part.path);
 							}}
 						>
-							{part.kind === "folder" ? (
-								<FolderBreadcrumbIcon
-									appearance={appearance}
-									open={false}
-									size="var(--icon-sm)"
-								/>
-							) : (
-								<FileBreadcrumbIcon
-									path={part.path}
-									isMarkdown={isMarkdownPath(part.path)}
-									appearance={appearance}
-									size="var(--icon-sm)"
-								/>
-							)}
 							<span className="mainTabsBreadcrumbMenuItemLabel">
 								{part.label}
 							</span>
@@ -492,7 +443,7 @@ function BreadcrumbEntryMenu({
 	onLoadDir,
 	onNavigateDir,
 	onOpenFile,
-	itemAppearance,
+	childrenByDir,
 }: {
 	open: boolean;
 	dirPath: string;
@@ -502,11 +453,8 @@ function BreadcrumbEntryMenu({
 	onLoadDir: (dirPath: string) => Promise<void>;
 	onNavigateDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => Promise<void>;
-	itemAppearance: Record<string, FileTreeAppearance>;
+	childrenByDir: Record<string, FsEntry[] | undefined>;
 }) {
-	const displayEntries = entries.slice(0, 40);
-	const hiddenCount = Math.max(0, entries.length - displayEntries.length);
-
 	return (
 		<DropdownMenu
 			open={open}
@@ -536,61 +484,23 @@ function BreadcrumbEntryMenu({
 				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">
 					{menuTitleForDir(dirPath)}
 				</DropdownMenuLabel>
-				<DropdownMenuSeparator className="mainTabsBreadcrumbMenuSeparator" />
 				{loading ? (
 					<div className="mainTabsBreadcrumbMenuState">Loading...</div>
-				) : displayEntries.length ? (
-					<>
-						{displayEntries.map((entry) => {
-							const appearance = itemAppearance[entry.rel_path];
-							return (
-								<DropdownMenuItem
-									key={entry.rel_path || ROOT_PATH_KEY}
-									className="mainTabsBreadcrumbMenuItem"
-									data-has-custom-color={hasCustomColor(
-										entry.rel_path,
-										appearance,
-									)}
-									style={itemAppearanceStyle(entry.rel_path, appearance)}
-									title={entry.rel_path || entry.name}
-									onSelect={() => {
-										if (entry.kind === "dir") {
-											onNavigateDir(entry.rel_path);
-											return;
-										}
-										void onOpenFile(entry.rel_path);
-									}}
-								>
-									{entry.kind === "dir" ? (
-										<FolderBreadcrumbIcon
-											appearance={appearance}
-											open={false}
-											size="var(--icon-sm)"
-										/>
-									) : (
-										<FileBreadcrumbIcon
-											path={entry.rel_path}
-											isMarkdown={entry.is_markdown}
-											appearance={appearance}
-											size="var(--icon-sm)"
-										/>
-									)}
-									<span className="mainTabsBreadcrumbMenuItemLabel">
-										{entry.is_markdown
-											? entry.name.replace(/\.[^./]+$/, "")
-											: entry.name}
-									</span>
-								</DropdownMenuItem>
-							);
-						})}
-						{hiddenCount > 0 ? (
-							<div className="mainTabsBreadcrumbMenuState">
-								+{hiddenCount} more
-							</div>
-						) : null}
-					</>
-				) : (
+				) : entries.length === 0 ? (
 					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
+				) : (
+					<>
+						{entries.map((entry) => (
+							<BreadcrumbMenuItem
+								key={entry.rel_path || ROOT_PATH_KEY}
+								entry={entry}
+								childrenByDir={childrenByDir}
+								onLoadDir={onLoadDir}
+								onNavigateDir={onNavigateDir}
+								onOpenFile={onOpenFile}
+							/>
+						))}
+					</>
 				)}
 			</DropdownMenuContent>
 		</DropdownMenu>

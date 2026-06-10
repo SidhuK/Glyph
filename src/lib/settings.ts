@@ -1,4 +1,4 @@
-import { emit, emitTo } from "@tauri-apps/api/event";
+import { type UnlistenFn, emit, emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
@@ -28,8 +28,63 @@ export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
+let settingsEntriesCache: Map<string, unknown> | null = null;
+let settingsEntriesPromise: Promise<Map<string, unknown>> | null = null;
+let settingsEntriesGeneration = 0;
+let settingsInvalidationUnlisten: UnlistenFn | null = null;
+let settingsInvalidationUnlistenPromise: Promise<UnlistenFn> | null = null;
+
+function runSettingsInvalidationUnlisten(unlisten: UnlistenFn): void {
+	try {
+		const result = unlisten() as unknown;
+		void Promise.resolve(result).catch(() => {});
+	} catch {
+		// Ignore listener cleanup races during Tauri window teardown.
+	}
+}
+
+function ensureSettingsInvalidationListener() {
+	if (settingsInvalidationUnlisten || settingsInvalidationUnlistenPromise)
+		return;
+
+	const unlistenPromise = listen("settings:updated", () => {
+		invalidateSettingsCache();
+	});
+	settingsInvalidationUnlistenPromise = unlistenPromise;
+	void unlistenPromise
+		.then((unlisten) => {
+			if (settingsInvalidationUnlistenPromise !== unlistenPromise) return;
+			settingsInvalidationUnlisten = unlisten;
+			settingsInvalidationUnlistenPromise = null;
+		})
+		.catch(() => {
+			if (settingsInvalidationUnlistenPromise === unlistenPromise) {
+				settingsInvalidationUnlistenPromise = null;
+			}
+		});
+}
+
+export function disposeSettingsInvalidationListener(): void {
+	const unlisten = settingsInvalidationUnlisten;
+	const unlistenPromise = settingsInvalidationUnlistenPromise;
+	settingsInvalidationUnlisten = null;
+	settingsInvalidationUnlistenPromise = null;
+
+	if (unlisten) {
+		runSettingsInvalidationUnlisten(unlisten);
+		return;
+	}
+	if (unlistenPromise) {
+		void unlistenPromise.then(runSettingsInvalidationUnlisten).catch(() => {});
+	}
+}
+
+if (import.meta.hot) {
+	import.meta.hot.dispose(disposeSettingsInvalidationListener);
+}
 
 async function getStore(): Promise<LazyStore> {
+	ensureSettingsInvalidationListener();
 	if (!storeInstance) {
 		storeInstance = new LazyStore("settings.json");
 		storeInitPromise = storeInstance.init();
@@ -38,6 +93,47 @@ async function getStore(): Promise<LazyStore> {
 		await storeInitPromise;
 	}
 	return storeInstance;
+}
+
+function invalidateSettingsCache() {
+	settingsEntriesGeneration += 1;
+	settingsEntriesCache = null;
+	settingsEntriesPromise = null;
+}
+
+async function saveSettingsStore(store: LazyStore): Promise<void> {
+	await store.save();
+	invalidateSettingsCache();
+}
+
+async function loadSettingsEntries(): Promise<Map<string, unknown>> {
+	if (settingsEntriesCache) return settingsEntriesCache;
+	if (settingsEntriesPromise) return settingsEntriesPromise;
+
+	const generation = settingsEntriesGeneration;
+	const promise = getStore()
+		.then((store) => store.entries<unknown>())
+		.then((entries) => {
+			const next = new Map(entries);
+			if (generation === settingsEntriesGeneration) {
+				settingsEntriesCache = next;
+			}
+			return next;
+		})
+		.finally(() => {
+			if (settingsEntriesPromise === promise) {
+				settingsEntriesPromise = null;
+			}
+		});
+	settingsEntriesPromise = promise;
+	return settingsEntriesPromise;
+}
+
+function getSettingValue<T>(
+	entries: Map<string, unknown>,
+	key: string,
+): T | undefined {
+	return entries.get(key) as T | undefined;
 }
 
 export type ThemeMode = "system" | "light" | "dark";
@@ -632,7 +728,7 @@ async function updateActiveSpaceSettings(
 		);
 		map[spacePath] = { ...map[spacePath], ...patch };
 		await store.set(KEYS.spaceScopedSettings, map);
-		await store.save();
+		await saveSettingsStore(store);
 	});
 	return spacePath;
 }
@@ -689,6 +785,7 @@ function normalizeQuickNotesFolder(value: unknown): string {
 export async function reloadFromDisk(): Promise<void> {
 	const store = await getStore();
 	await store.reload();
+	invalidateSettingsCache();
 }
 
 function isRecentFileArray(value: unknown): value is RecentFile[] {
@@ -711,92 +808,123 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 export async function loadSettings(
 	scope?: SettingsScope,
 ): Promise<AppSettings> {
-	const store = await getStore();
-	const [
-		currentSpacePathRaw,
-		recentSpacesRaw,
-		rawRecentFiles,
-		rawOnboardingLauncherSeen,
-		rawOnboardingStarterDismissed,
-		rawOnboardingCreatedFirstNote,
-		rawOnboardingUsedCommandPalette,
-		rawOnboardingOpenedDailyNote,
-		rawAiEnabled,
-		rawAiAssistantMode,
-		rawTheme,
-		rawAutoUpdateCheckInterval,
-		rawLightThemeId,
-		rawDarkThemeId,
-		rawAccent,
-		rawFontFamily,
-		rawMonoFontFamily,
-		rawFontSize,
-		rawEditorFontSize,
-		rawTranslucentApp,
-		rawShowToc,
-		rawShowFileTreeFolderCounts,
-		rawFolioMode,
-		dailyNotesFolderRaw,
-		rawQuickNotesFolder,
-		templatesFolderRaw,
-		templatesDailyNoteTemplateRaw,
-		taskSourceRaw,
-		rawEditorShowCollapsibleHeadings,
-		rawEditorShowFrontmatterInEditor,
-		rawEditorColorfulHeadings,
-		rawEditorBeautifulTags,
-		rawEditorWidthMode,
-		rawEditorAttachmentStorageMode,
-		rawEditorAttachmentFolder,
-		rawEditorEnablePeopleMentionsAsTags,
-		rawEditorVimKeybindings,
-		rawDatabaseShowColumnColor,
-		rawShortcutSettingsVersion,
-		rawShortcutBindings,
-		rawSpaceScopedSettings,
-	] = await Promise.all([
-		store.get<string | null>(KEYS.currentSpacePath),
-		store.get<string[] | null>(KEYS.recentSpaces),
-		store.get<unknown>(KEYS.recentFiles),
-		store.get<boolean | null>(KEYS.onboardingLauncherSeen),
-		store.get<boolean | null>(KEYS.onboardingStarterDismissed),
-		store.get<boolean | null>(KEYS.onboardingCreatedFirstNote),
-		store.get<boolean | null>(KEYS.onboardingUsedCommandPalette),
-		store.get<boolean | null>(KEYS.onboardingOpenedDailyNote),
-		store.get<boolean | null>(KEYS.aiEnabled),
-		store.get<unknown>(KEYS.aiAssistantMode),
-		store.get<unknown>(KEYS.theme),
-		store.get<unknown>(KEYS.autoUpdateCheckInterval),
-		store.get<unknown>(KEYS.lightThemeId),
-		store.get<unknown>(KEYS.darkThemeId),
-		store.get<unknown>(KEYS.accent),
-		store.get<unknown>(KEYS.fontFamily),
-		store.get<unknown>(KEYS.monoFontFamily),
-		store.get<unknown>(KEYS.fontSize),
-		store.get<unknown>(KEYS.editorFontSize),
-		store.get<boolean | null>(KEYS.translucentApp),
-		store.get<boolean | null>(KEYS.showToc),
-		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
-		store.get<boolean | null>(KEYS.folioMode),
-		store.get<string | null>(KEYS.dailyNotesFolder),
-		store.get<unknown>(KEYS.quickNotesFolder),
-		store.get<string | null>(KEYS.templatesFolder),
-		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
-		store.get<unknown>(KEYS.taskSource),
-		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
-		store.get<boolean | null>(KEYS.editorShowFrontmatterInEditor),
-		store.get<boolean | null>(KEYS.editorColorfulHeadings),
-		store.get<boolean | null>(KEYS.editorBeautifulTags),
-		store.get<unknown>(KEYS.editorEditorWidthMode),
-		store.get<unknown>(KEYS.editorAttachmentStorageMode),
-		store.get<string | null>(KEYS.editorAttachmentFolder),
-		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
-		store.get<boolean | null>(KEYS.editorVimKeybindings),
-		store.get<boolean | null>(KEYS.databaseShowColumnColor),
-		store.get<number | null>(KEYS.shortcutsVersion),
-		store.get<unknown>(KEYS.shortcutsBindings),
-		store.get<unknown>(KEYS.spaceScopedSettings),
-	]);
+	const entries = await loadSettingsEntries();
+	const currentSpacePathRaw = getSettingValue<string | null>(
+		entries,
+		KEYS.currentSpacePath,
+	);
+	const recentSpacesRaw = getSettingValue<string[] | null>(
+		entries,
+		KEYS.recentSpaces,
+	);
+	const rawRecentFiles = getSettingValue(entries, KEYS.recentFiles);
+	const rawOnboardingLauncherSeen = getSettingValue<boolean | null>(
+		entries,
+		KEYS.onboardingLauncherSeen,
+	);
+	const rawOnboardingStarterDismissed = getSettingValue<boolean | null>(
+		entries,
+		KEYS.onboardingStarterDismissed,
+	);
+	const rawOnboardingCreatedFirstNote = getSettingValue<boolean | null>(
+		entries,
+		KEYS.onboardingCreatedFirstNote,
+	);
+	const rawOnboardingUsedCommandPalette = getSettingValue<boolean | null>(
+		entries,
+		KEYS.onboardingUsedCommandPalette,
+	);
+	const rawOnboardingOpenedDailyNote = getSettingValue<boolean | null>(
+		entries,
+		KEYS.onboardingOpenedDailyNote,
+	);
+	const rawAiEnabled = getSettingValue<boolean | null>(entries, KEYS.aiEnabled);
+	const rawAiAssistantMode = getSettingValue(entries, KEYS.aiAssistantMode);
+	const rawTheme = getSettingValue(entries, KEYS.theme);
+	const rawAutoUpdateCheckInterval = getSettingValue(
+		entries,
+		KEYS.autoUpdateCheckInterval,
+	);
+	const rawLightThemeId = getSettingValue(entries, KEYS.lightThemeId);
+	const rawDarkThemeId = getSettingValue(entries, KEYS.darkThemeId);
+	const rawAccent = getSettingValue(entries, KEYS.accent);
+	const rawFontFamily = getSettingValue(entries, KEYS.fontFamily);
+	const rawMonoFontFamily = getSettingValue(entries, KEYS.monoFontFamily);
+	const rawFontSize = getSettingValue(entries, KEYS.fontSize);
+	const rawEditorFontSize = getSettingValue(entries, KEYS.editorFontSize);
+	const rawTranslucentApp = getSettingValue<boolean | null>(
+		entries,
+		KEYS.translucentApp,
+	);
+	const rawShowToc = getSettingValue<boolean | null>(entries, KEYS.showToc);
+	const rawShowFileTreeFolderCounts = getSettingValue<boolean | null>(
+		entries,
+		KEYS.showFileTreeFolderCounts,
+	);
+	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
+	const dailyNotesFolderRaw = getSettingValue<string | null>(
+		entries,
+		KEYS.dailyNotesFolder,
+	);
+	const rawQuickNotesFolder = getSettingValue(entries, KEYS.quickNotesFolder);
+	const templatesFolderRaw = getSettingValue<string | null>(
+		entries,
+		KEYS.templatesFolder,
+	);
+	const templatesDailyNoteTemplateRaw = getSettingValue<string | null>(
+		entries,
+		KEYS.templatesDailyNoteTemplate,
+	);
+	const taskSourceRaw = getSettingValue(entries, KEYS.taskSource);
+	const rawEditorShowCollapsibleHeadings = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorShowCollapsibleHeadings,
+	);
+	const rawEditorShowFrontmatterInEditor = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorShowFrontmatterInEditor,
+	);
+	const rawEditorColorfulHeadings = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorColorfulHeadings,
+	);
+	const rawEditorBeautifulTags = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorBeautifulTags,
+	);
+	const rawEditorWidthMode = getSettingValue(
+		entries,
+		KEYS.editorEditorWidthMode,
+	);
+	const rawEditorAttachmentStorageMode = getSettingValue(
+		entries,
+		KEYS.editorAttachmentStorageMode,
+	);
+	const rawEditorAttachmentFolder = getSettingValue<string | null>(
+		entries,
+		KEYS.editorAttachmentFolder,
+	);
+	const rawEditorEnablePeopleMentionsAsTags = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorEnablePeopleMentionsAsTags,
+	);
+	const rawEditorVimKeybindings = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorVimKeybindings,
+	);
+	const rawDatabaseShowColumnColor = getSettingValue<boolean | null>(
+		entries,
+		KEYS.databaseShowColumnColor,
+	);
+	const rawShortcutSettingsVersion = getSettingValue<number | null>(
+		entries,
+		KEYS.shortcutsVersion,
+	);
+	const rawShortcutBindings = getSettingValue(entries, KEYS.shortcutsBindings);
+	const rawSpaceScopedSettings = getSettingValue(
+		entries,
+		KEYS.spaceScopedSettings,
+	);
 	const scopedSettings = normalizeSpaceScopedSettingsMap(
 		rawSpaceScopedSettings,
 	);
@@ -832,7 +960,9 @@ export async function loadSettings(
 		rawFontFamily.trim() === "Satoshi" &&
 		fontFamily === DEFAULT_UI_FONT_FAMILY
 	) {
+		const store = await getStore();
 		await store.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
+		entries.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
 	}
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
@@ -969,13 +1099,13 @@ export async function setCurrentSpacePath(path: string): Promise<void> {
 	const prev = (await store.get<string[] | null>(KEYS.recentSpaces)) ?? [];
 	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
 	await store.set(KEYS.recentSpaces, next);
-	await store.save();
+	await saveSettingsStore(store);
 }
 
 export async function clearCurrentSpacePath(): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.currentSpacePath, null);
-	await store.save();
+	await saveSettingsStore(store);
 }
 
 export async function updateOnboardingSettings(
@@ -990,7 +1120,7 @@ export async function updateOnboardingSettings(
 	for (const [key, value] of entries) {
 		await store.set(ONBOARDING_KEYS[key], value);
 	}
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
 	});
@@ -1001,7 +1131,7 @@ async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
 	const sanitized = sanitizeShortcutBindings(bindings);
 	await store.set(KEYS.shortcutsVersion, DEFAULT_SHORTCUT_SETTINGS.version);
 	await store.set(KEYS.shortcutsBindings, sanitized);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ shortcuts: { bindings: sanitized } });
 	return sanitized;
 }
@@ -1077,7 +1207,7 @@ export async function resetAllShortcutBindings(): Promise<void> {
 		const store = await getStore();
 		await store.delete(KEYS.shortcutsVersion);
 		await store.delete(KEYS.shortcutsBindings);
-		await store.save();
+		await saveSettingsStore(store);
 		void emitSettingsUpdated({ shortcuts: { bindings: {} } });
 	});
 }
@@ -1096,27 +1226,27 @@ export async function setLastSeenReleaseNotesVersion(
 	if (!normalized) return;
 	const store = await getStore();
 	await store.set(KEYS.releaseNotesLastSeenVersion, normalized);
-	await store.save();
+	await saveSettingsStore(store);
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.aiAssistantMode, mode);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { aiAssistantMode: mode } });
 }
 
 export async function setAiEnabled(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.aiEnabled, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.theme, theme);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { theme } });
 }
 
@@ -1126,7 +1256,7 @@ export async function setUiLightThemeId(
 	const store = await getStore();
 	const next = asUiLightThemeId(lightThemeId);
 	await store.set(KEYS.lightThemeId, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { lightThemeId: next } });
 }
 
@@ -1136,7 +1266,7 @@ export async function setUiDarkThemeId(
 	const store = await getStore();
 	const next = asUiDarkThemeId(darkThemeId);
 	await store.set(KEYS.darkThemeId, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { darkThemeId: next } });
 }
 
@@ -1144,7 +1274,7 @@ export async function setUiAccent(accent: UiAccent): Promise<void> {
 	const store = await getStore();
 	const next = asUiAccent(accent);
 	await store.set(KEYS.accent, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { accent: next } });
 }
 
@@ -1152,7 +1282,7 @@ export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {
 	const store = await getStore();
 	const next = asUiFontFamily(fontFamily);
 	await store.set(KEYS.fontFamily, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { fontFamily: next } });
 }
 
@@ -1162,7 +1292,7 @@ export async function setUiMonoFontFamily(
 	const store = await getStore();
 	const next = asUiMonoFontFamily(fontFamily);
 	await store.set(KEYS.monoFontFamily, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { monoFontFamily: next } });
 }
 
@@ -1170,7 +1300,7 @@ export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
 	const store = await getStore();
 	const next = asUiFontSize(fontSize);
 	await store.set(KEYS.fontSize, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { fontSize: next } });
 }
 
@@ -1178,21 +1308,21 @@ export async function setUiEditorFontSize(fontSize: UiFontSize): Promise<void> {
 	const store = await getStore();
 	const next = asUiEditorFontSize(fontSize);
 	await store.set(KEYS.editorFontSize, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { editorFontSize: next } });
 }
 
 export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.translucentApp, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
 }
 
 export async function setShowToc(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.showToc, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { showToc: enabled } });
 }
 
@@ -1201,14 +1331,14 @@ export async function setShowFileTreeFolderCounts(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.showFileTreeFolderCounts, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
 }
 
 export async function setFolioMode(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.folioMode, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { folioMode: enabled } });
 }
 
@@ -1217,7 +1347,7 @@ export async function setEditorShowCollapsibleHeadings(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorShowCollapsibleHeadings, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { showCollapsibleHeadings: enabled },
 	});
@@ -1228,7 +1358,7 @@ export async function setEditorColorfulHeadings(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorColorfulHeadings, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
 	});
@@ -1237,7 +1367,7 @@ export async function setEditorColorfulHeadings(
 export async function setEditorBeautifulTags(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorBeautifulTags, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { beautifulTags: enabled },
 	});
@@ -1248,7 +1378,7 @@ export async function setEditorShowFrontmatterInEditor(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorShowFrontmatterInEditor, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { showFrontmatterInEditor: enabled },
 	});
@@ -1258,7 +1388,7 @@ export async function setEditorWidthMode(mode: EditorWidthMode): Promise<void> {
 	const store = await getStore();
 	const next = asEditorWidthMode(mode);
 	await store.set(KEYS.editorEditorWidthMode, next);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { editorWidthMode: next },
 	});
@@ -1284,7 +1414,7 @@ export async function setEditorAttachmentStorageMode(
 	}
 	const store = await getStore();
 	await store.set(KEYS.editorAttachmentStorageMode, nextMode);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { attachmentStorageMode: nextMode },
 	});
@@ -1313,7 +1443,7 @@ export async function setEditorAttachmentFolder(
 	}
 	const store = await getStore();
 	await store.set(KEYS.editorAttachmentFolder, nextFolder);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { attachmentFolder: nextFolder },
 	});
@@ -1324,7 +1454,7 @@ export async function setEditorEnablePeopleMentionsAsTags(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorEnablePeopleMentionsAsTags, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { enablePeopleMentionsAsTags: enabled },
 	});
@@ -1333,7 +1463,7 @@ export async function setEditorEnablePeopleMentionsAsTags(
 export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.editorVimKeybindings, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { vimKeybindings: enabled },
 	});
@@ -1367,7 +1497,7 @@ export async function setDailyNotesFolder(
 	} else {
 		await store.set(KEYS.dailyNotesFolder, nextFolder);
 	}
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
 }
 
@@ -1388,7 +1518,7 @@ export async function setQuickNotesFolder(
 	}
 	const store = await getStore();
 	await store.set(KEYS.quickNotesFolder, nextFolder);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ quickNotes: { folder: nextFolder } });
 }
 
@@ -1426,7 +1556,7 @@ export async function setTemplatesFolder(
 	} else {
 		await store.set(KEYS.templatesFolder, nextFolder);
 	}
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		templates: {
 			folder: nextFolder,
@@ -1468,7 +1598,7 @@ export async function setDailyNoteTemplate(
 	} else {
 		await store.set(KEYS.templatesDailyNoteTemplate, nextPath);
 	}
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		templates: { dailyNoteTemplate: nextPath },
 	});
@@ -1479,7 +1609,7 @@ export async function setDatabaseShowColumnColor(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.databaseShowColumnColor, enabled);
-	await store.save();
+	await saveSettingsStore(store);
 	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
 }
 
@@ -1496,7 +1626,7 @@ export async function setAutoUpdateLastCheckedAt(
 	} else {
 		await store.set(KEYS.autoUpdateLastCheckedAt, Math.floor(timestamp));
 	}
-	await store.save();
+	await saveSettingsStore(store);
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {
@@ -1520,5 +1650,5 @@ export async function addRecentFile(
 		...filtered,
 	].slice(0, 20);
 	await store.set(KEYS.recentFiles, next);
-	await store.save();
+	await saveSettingsStore(store);
 }

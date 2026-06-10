@@ -177,6 +177,14 @@
 	color: var(--text-primary);
 }
 
+:root.dark .homePaneSwitch {
+	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-primary));
+}
+
+:root.dark .homePaneSwitchSlider {
+	background: color-mix(in srgb, var(--bg-tertiary) 96%, #ffffff);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.homePaneContent .calendarDashboard > *,
 	.homePaneContent .tasksDashboard > * {

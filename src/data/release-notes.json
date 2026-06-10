@@ -6,38 +6,33 @@
 				{
 					"category": "Improved",
 					"items": [
-						"Sidebar hover states use a 12% accent tint. Active states use an 18% accent tint and an accent border.",
-						"Selected calendar days highlight with a subtle accent tint.",
-						"Calendar week view consolidates daily signals into a summary strip below the grid. The strip lists tasks, notes, daily notes, and overdue items for the selected day.",
-						"Welcome card background uses a 10% text tint over the primary background. Text and headings use the primary text color.",
-						"Wiki-link autocomplete stays open when you type spaces inside the query. It closes for invalid input like newlines or extra brackets.",
-						"Calendar day cells animate the properties that change. Home screen elements fade in one after another, top to bottom.",
-						"Local graph note boxes have rounder corners and more padding. Arrowheads curve and stop short of note edges. Lines use rounded tips and a three-level weight hierarchy. Outgoing lines are boldest, incoming lines are medium, and note-to-note lines are lightest. Dotted tag connections use a finer pattern. When you hover a note, its connected lines brighten and unrelated notes fade. The background dot grid is softer, with a subtle edge vignette. The close button uses a multiplication symbol.",
-						"Editor markdown sync debounces by 120ms after you stop typing, then runs in requestAnimationFrame. Pending edits flush before you switch tabs or close the editor.",
-						"Editor tag decorations, callout styling, and table of contents reprocess changed text ranges after the initial load.",
-						"AI responses render with a lightweight markdown engine. Each message drops the read-only TipTap editor. Streaming output shows plain text until the response finishes. AI chat thread memoizes message bodies so older messages stay stable while the newest response streams.",
-						"Typing in large notes allocates fewer temporary objects per keystroke. Less background work runs on every keystroke, so your typing stays smooth.",
+						"Sidebar navigation is cleaner and calmer. Hover and active states use subtler accent tints instead of heavy borders and layered shadows. The Notes and Tags headings use smaller uppercase text with wider letter spacing and muted color. The left and right sidebars lose their visible borders.",
+						"Note cards across All Notes, database boards, and Folio use a cleaner dark-mode surface. They now show only the title and content preview. The folder path, timestamp, and tag footer are gone.",
+						"Kanban board cards now let you choose which fields to show. Pick date, task progress, status, priority, and tags through a new Card fields dropdown in view settings. All fields show by default when none are configured.",
+						"Breadcrumbs use a cleaner, more minimal layout. The breadcrumb strip stays visible while you browse dropdown menus and submenus.",
+						"The editor is smoother and more responsive. The markdown sync waits longer after you stop typing before saving, and pending edits flush automatically when you switch tabs or close the editor. Tag decorations, callout styling, and the table of contents update only the changed text ranges. The info sidebar only recalculates stats while it is open. Large notes now stay responsive with less background work on every keystroke.",
+						"AI features got cleaner and faster. The composer placeholder hides when you have a note open. AI responses render with a lighter markdown engine, showing plain text while streaming and then formatting the finished message. Older messages stay stable while the newest one streams in. The AI panel uses a consistent brain icon throughout. The floating editor toolbar sits higher above the editor surface.",
+						"Calendar week view is cleaner and clearer. Daily signals consolidate into a summary strip below the grid that shows tasks, notes, daily notes, and overdue items for the selected day. Selected days highlight with a subtle accent tint. Day cells animate smoothly as they change.",
+						"The local graph looks better. Note boxes have rounder corners and more padding. Arrowheads curve and stop short of note edges. Lines use rounded tips and a three-level weight hierarchy. Outgoing lines are boldest, incoming lines are medium, and note-to-note lines are lightest. Dotted tag connections use a finer pattern. When you hover a note, its connected lines brighten and unrelated notes fade. The background dot grid is softer, with a subtle edge vignette. The close button uses a multiplication symbol.",
+						"Wiki-link autocomplete is more reliable. It stays open when you type spaces inside the query and closes for invalid input like newlines or extra brackets. It now closes when you click or focus outside it. The editor cannot scroll while the suggestion menu is open, so you never lose your place.",
+						"The welcome card uses a softer background with a 10% text tint and primary text color for cleaner readability.",
+						"Settings look better in dark mode. Cards use a tertiary background for calmer contrast. The keyboard shortcuts pane uses a consistent icon set, a centered layout, and flat minimal reset buttons.",
 						"The command palette uses a clearer icon for Open Local Graph.",
-						"AI panel sparkle icon shrinks to 15px. Floating editor toolbar moves 40px above the editor surface.",
-						"Left and right sidebars lose their visible borders.",
-						"AI features use a consistent brain icon.",
-						"Sidebar, file tree, and settings navigation use semantic --bg-hover and --bg-active colors. Active states drop the layered box-shadow and border combo.",
-						"Settings cards use a tertiary background in dark mode.",
-						"Keyboard shortcuts settings use a consistent icon set and a centered layout capped at 70% width. Reset buttons go flat and minimal.",
-						"New-tab button pins to the end of the tab strip while tabs scroll inside it."
+						"The new-tab button stays pinned to the end of the tab strip while tabs scroll inside it.",
+						"Transitions are smoother across database views, sidebar, and All Notes."
 					]
 				},
 				{
 					"category": "Fixed",
 					"items": [
-						"Slash command and wiki-link autocomplete menus close when you click or focus outside them.",
-						"You cannot scroll the editor while slash command or wiki-link suggestion menus are open. Scroll resumes when the menu closes.",
-						"Linked-note hover previews disappear when you move the pointer away."
+						"Slash command and wiki-link autocomplete menus now close when you click or focus outside them. The editor cannot scroll while a suggestion menu is open.",
+						"Linked-note hover previews disappear reliably when you move the pointer away."
 					]
 				},
 				{
 					"category": "Removed",
 					"items": [
+						"Sidebar footer with the space switcher.",
 						"Calendar week panel stats header row.",
 						"Per-day signal indicators inside calendar week cells.",
 						"Duplicate AI icon in the AI panel header.",

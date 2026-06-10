@@ -251,6 +251,18 @@
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 
+.dark .databaseBoardCard {
+	background: var(--bg-tertiary);
+}
+
+.dark .databaseBoardCard[data-state="selected"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-tertiary)
+	);
+}
+
 .databaseBoardCard[data-state="selected"] {
 	background: color-mix(
 		in srgb,
@@ -357,7 +369,6 @@
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
-	white-space: nowrap;
 }
 
 .databaseBoardCardStatus .propertyValueTextIcon {

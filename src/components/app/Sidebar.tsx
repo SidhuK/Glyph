@@ -33,7 +33,6 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
-	onOpenSpace: () => Promise<void>;
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
@@ -64,7 +63,6 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
-	onOpenSpace,
 	onOpenAllDocs,
 	onOpenCalendar,
 	onOpenDatabases,
@@ -148,7 +146,6 @@ export const Sidebar = memo(function Sidebar({
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenCommandPalette={onOpenCommandPalette}
 									spacePath={spacePath}
-									onOpenSpace={onOpenSpace}
 									activeTopSection={activeTopSection}
 								/>
 							</>
