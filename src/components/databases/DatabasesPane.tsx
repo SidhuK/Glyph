@@ -1291,15 +1291,6 @@ function DatabasesPaneContent({
 								})
 							}
 							onStatusColorChange={setStatusColor}
-							onBoardCardFieldsChange={(fields) =>
-								void handleSaveConfig({
-									...activeConfig,
-									view: {
-										...activeConfig.view,
-										board_card_fields: fields,
-									},
-								})
-							}
 							onSaveCell={handleUpdateCell}
 						/>
 					) : (

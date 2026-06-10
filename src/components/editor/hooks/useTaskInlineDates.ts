@@ -93,10 +93,7 @@ export function useTaskInlineDates({
 			current?.ordinal === next?.ordinal &&
 			current?.top === next?.top;
 
-		const getTaskAnchor = (
-			item: HTMLElement,
-			ordinal: number,
-		): TaskAnchor => {
+		const getTaskAnchor = (item: HTMLElement, ordinal: number): TaskAnchor => {
 			const { left, top } = getOffsetWithinAncestor(item, host);
 			const nextTop =
 				top + Math.max(0, Math.round((item.offsetHeight - 18) / 2));

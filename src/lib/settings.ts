@@ -1,4 +1,4 @@
-import { emit, emitTo, listen } from "@tauri-apps/api/event";
+import { type UnlistenFn, emit, emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
@@ -31,16 +31,56 @@ let storeInitPromise: Promise<void> | null = null;
 let settingsEntriesCache: Map<string, unknown> | null = null;
 let settingsEntriesPromise: Promise<Map<string, unknown>> | null = null;
 let settingsEntriesGeneration = 0;
-let settingsInvalidationListenerStarted = false;
+let settingsInvalidationUnlisten: UnlistenFn | null = null;
+let settingsInvalidationUnlistenPromise: Promise<UnlistenFn> | null = null;
+
+function runSettingsInvalidationUnlisten(unlisten: UnlistenFn): void {
+	try {
+		const result = unlisten() as unknown;
+		void Promise.resolve(result).catch(() => {});
+	} catch {
+		// Ignore listener cleanup races during Tauri window teardown.
+	}
+}
 
 function ensureSettingsInvalidationListener() {
-	if (settingsInvalidationListenerStarted) return;
-	settingsInvalidationListenerStarted = true;
-	void listen("settings:updated", () => {
+	if (settingsInvalidationUnlisten || settingsInvalidationUnlistenPromise)
+		return;
+
+	const unlistenPromise = listen("settings:updated", () => {
 		invalidateSettingsCache();
-	}).catch(() => {
-		settingsInvalidationListenerStarted = false;
 	});
+	settingsInvalidationUnlistenPromise = unlistenPromise;
+	void unlistenPromise
+		.then((unlisten) => {
+			if (settingsInvalidationUnlistenPromise !== unlistenPromise) return;
+			settingsInvalidationUnlisten = unlisten;
+			settingsInvalidationUnlistenPromise = null;
+		})
+		.catch(() => {
+			if (settingsInvalidationUnlistenPromise === unlistenPromise) {
+				settingsInvalidationUnlistenPromise = null;
+			}
+		});
+}
+
+export function disposeSettingsInvalidationListener(): void {
+	const unlisten = settingsInvalidationUnlisten;
+	const unlistenPromise = settingsInvalidationUnlistenPromise;
+	settingsInvalidationUnlisten = null;
+	settingsInvalidationUnlistenPromise = null;
+
+	if (unlisten) {
+		runSettingsInvalidationUnlisten(unlisten);
+		return;
+	}
+	if (unlistenPromise) {
+		void unlistenPromise.then(runSettingsInvalidationUnlisten).catch(() => {});
+	}
+}
+
+if (import.meta.hot) {
+	import.meta.hot.dispose(disposeSettingsInvalidationListener);
 }
 
 async function getStore(): Promise<LazyStore> {
@@ -798,10 +838,7 @@ export async function loadSettings(
 		entries,
 		KEYS.onboardingOpenedDailyNote,
 	);
-	const rawAiEnabled = getSettingValue<boolean | null>(
-		entries,
-		KEYS.aiEnabled,
-	);
+	const rawAiEnabled = getSettingValue<boolean | null>(entries, KEYS.aiEnabled);
 	const rawAiAssistantMode = getSettingValue(entries, KEYS.aiAssistantMode);
 	const rawTheme = getSettingValue(entries, KEYS.theme);
 	const rawAutoUpdateCheckInterval = getSettingValue(
@@ -824,10 +861,7 @@ export async function loadSettings(
 		entries,
 		KEYS.showFileTreeFolderCounts,
 	);
-	const rawFolioMode = getSettingValue<boolean | null>(
-		entries,
-		KEYS.folioMode,
-	);
+	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
 	const dailyNotesFolderRaw = getSettingValue<string | null>(
 		entries,
 		KEYS.dailyNotesFolder,

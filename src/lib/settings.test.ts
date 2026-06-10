@@ -25,9 +25,9 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 		}
 
 		entries<T>() {
-			return Promise.resolve(Array.from(storeState.entries()) as Array<
-				[string, T]
-			>);
+			return Promise.resolve(
+				Array.from(storeState.entries()) as Array<[string, T]>,
+			);
 		}
 
 		set(key: string, value: unknown) {

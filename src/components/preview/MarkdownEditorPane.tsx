@@ -772,10 +772,7 @@ export function MarkdownEditorPane({
 				? nextFrontmatter
 				: null;
 			const { body } = splitYamlFrontmatter(textRef.current);
-			const nextMarkdown = joinYamlFrontmatter(
-				normalizedFrontmatter,
-				body,
-			);
+			const nextMarkdown = joinYamlFrontmatter(normalizedFrontmatter, body);
 			if (nextMarkdown === textRef.current) return;
 			hasUserEditsRef.current = true;
 			textRef.current = nextMarkdown;

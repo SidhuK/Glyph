@@ -19,7 +19,9 @@ interface CardFieldsPanelProps {
 }
 
 export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
-	const active = new Set(fields ?? CARD_FIELDS.map((field) => field.id));
+	const active = new Set(
+		fields && fields.length > 0 ? fields : CARD_FIELDS.map((field) => field.id),
+	);
 
 	const toggleField = (fieldId: string, enabled: boolean) => {
 		const next = new Set(active);

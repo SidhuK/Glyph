@@ -120,7 +120,6 @@ interface DatabaseBoardProps {
 		| null;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
 	boardCardFields?: string[];
-	onBoardCardFieldsChange?: (fields: string[]) => void;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
