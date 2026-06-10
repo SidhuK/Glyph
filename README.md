@@ -1,7 +1,7 @@
 # Glyph
 
 <p align="center">
-  <img src="logo_g.png" alt="Glyph logo" width="140" />
+  <img src="logo_g.PNG" alt="Glyph logo" width="140" />
 </p>
 
 <p align="center">
