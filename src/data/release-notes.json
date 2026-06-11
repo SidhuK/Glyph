@@ -1,6 +1,25 @@
 {
 	"versions": [
 		{
+			"version": "0.7.1",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": [
+						"The welcome screen is more minimal.",
+						"Folio mode uses a cleaner UI."
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Kanban card field toggles now keep an empty selection as Title only. Missing card field settings still default to All shown, and Restore defaults clears the override.",
+						"Debounced markdown sync in `useNoteEditor.ts` now flushes the pending body for the file it started from, so switching notes no longer saves stale content."
+					]
+				}
+			]
+		},
+		{
 			"version": "0.7.0",
 			"sections": [
 				{

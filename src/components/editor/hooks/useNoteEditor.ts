@@ -4,7 +4,13 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { useEditor } from "@tiptap/react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { useState } from "react";
 import {
 	joinYamlFrontmatter,
@@ -251,6 +257,14 @@ interface UseNoteEditorOptions {
 	onChange: (nextMarkdown: string) => void;
 }
 
+interface PendingMarkdownSync {
+	instance: NonNullable<ReturnType<typeof useEditor>>;
+	frontmatter: string | null;
+	lastEmittedMarkdown: string;
+	onChange: (nextMarkdown: string) => void;
+	relPath: string;
+}
+
 function expandMarkdownLinkForEditing(
 	view: EditorView,
 	link: HTMLAnchorElement,
@@ -416,9 +430,7 @@ export function useNoteEditor({
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
-	const pendingMarkdownEditorRef = useRef<NonNullable<
-		ReturnType<typeof useEditor>
-	> | null>(null);
+	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
@@ -528,25 +540,39 @@ export function useNoteEditor({
 		}
 	}, []);
 
-	const flushMarkdownSync = useCallback(() => {
+	const flushMarkdownSync = useCallback((expectedRelPath?: string) => {
 		clearScheduledMarkdownSync();
-		const instance = pendingMarkdownEditorRef.current;
-		pendingMarkdownEditorRef.current = null;
-		if (!instance || modeRef.current !== "rich" || !instance.isEditable) return;
+		const pending = pendingMarkdownSyncRef.current;
+		pendingMarkdownSyncRef.current = null;
+		if (!pending) {
+			return;
+		}
+		if (expectedRelPath !== undefined && pending.relPath !== expectedRelPath) {
+			return;
+		}
+		const { instance } = pending;
 		const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-		lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
 		const nextMarkdown = joinYamlFrontmatter(
-			frontmatterRef.current,
+			pending.frontmatter,
 			normalizeBody(nextBody),
 		);
-		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
-		lastEmittedMarkdownRef.current = nextMarkdown;
-		onChangeRef.current(nextMarkdown);
+		if (pending.relPath === relPathRef.current) {
+			lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
+			lastEmittedMarkdownRef.current = nextMarkdown;
+		}
+		if (nextMarkdown === pending.lastEmittedMarkdown) return;
+		pending.onChange(nextMarkdown);
 	}, [clearScheduledMarkdownSync]);
 
 	const scheduleMarkdownSync = useCallback(
 		(instance: NonNullable<ReturnType<typeof useEditor>>) => {
-			pendingMarkdownEditorRef.current = instance;
+			pendingMarkdownSyncRef.current = {
+				instance,
+				frontmatter: frontmatterRef.current,
+				lastEmittedMarkdown: lastEmittedMarkdownRef.current,
+				onChange: onChangeRef.current,
+				relPath: relPathRef.current,
+			};
 			clearScheduledMarkdownSync();
 			markdownSyncTimeoutRef.current = window.setTimeout(() => {
 				markdownSyncTimeoutRef.current = null;
@@ -558,6 +584,12 @@ export function useNoteEditor({
 		},
 		[clearScheduledMarkdownSync, flushMarkdownSync],
 	);
+
+	useLayoutEffect(() => {
+		return () => {
+			flushMarkdownSync(relPath);
+		};
+	}, [flushMarkdownSync, relPath]);
 
 	const editor = useEditor(
 		{
@@ -734,12 +766,12 @@ export function useNoteEditor({
 		if (!editor) return;
 		if (markdown === lastEmittedMarkdownRef.current) return;
 		if (editorBody === lastAppliedBodyRef.current) return;
-		flushMarkdownSync();
+		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
-	}, [editor, editorBody, flushMarkdownSync, markdown]);
+	}, [editor, editorBody, flushMarkdownSync, markdown, relPath]);
 
 	useEffect(() => {
 		return () => {

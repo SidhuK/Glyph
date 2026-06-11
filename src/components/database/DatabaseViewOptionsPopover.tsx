@@ -28,7 +28,10 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { CardFieldsPanel } from "./DatabaseViewOptionsCardFieldsPanel";
+import {
+	CardFieldsPanel,
+	visibleCardFieldCount,
+} from "./DatabaseViewOptionsCardFieldsPanel";
 import {
 	type ColumnMenuEntry,
 	ColumnsPanel,
@@ -43,6 +46,13 @@ import {
 } from "./databaseViewPresets";
 
 type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields";
+
+function cardFieldsLabel(fields: string[] | undefined): string {
+	const fieldCount = visibleCardFieldCount(fields);
+	if (fieldCount === null) return "All shown";
+	if (fieldCount === 0) return "Title only";
+	return `${fieldCount} shown`;
+}
 
 interface DatabaseViewOptionsPopoverProps {
 	config: DatabaseConfig;
@@ -457,6 +467,7 @@ export function DatabaseViewOptionsPopover({
 				...config.view,
 				search: "",
 				board_group_by: null,
+				board_card_fields: undefined,
 			},
 			columns: defaultColumns,
 			sorts: [],
@@ -614,7 +625,7 @@ export function DatabaseViewOptionsPopover({
 								/>
 							}
 							label="Card fields"
-							value={`${(config.view.board_card_fields?.length ?? 0) > 0 ? config.view.board_card_fields?.length : "All"} shown`}
+							value={cardFieldsLabel(config.view.board_card_fields)}
 							active={activePanel === "card_fields"}
 							onClick={() => togglePanel("card_fields")}
 						/>

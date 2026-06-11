@@ -479,13 +479,13 @@ export function MarkdownEditorPane({
 			sessionId = documentSessionRef.current,
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
-				if (path !== relPath || !isCurrentSession(sessionId)) return;
 				setPrefetchedNote(path, {
 					rel_path: path,
 					text: saved,
 					etag: "",
 					mtime_ms: mtimeMs,
 				});
+				if (path !== relPath || !isCurrentSession(sessionId)) return;
 				savedTextRef.current = saved;
 				mtimeRef.current = mtimeMs;
 				setSavedText(saved);

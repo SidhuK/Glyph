@@ -13,6 +13,14 @@ const CARD_FIELDS: CardFieldEntry[] = [
 	{ id: "tags", label: "Tags" },
 ];
 
+const CARD_FIELD_IDS = new Set(CARD_FIELDS.map((field) => field.id));
+const TITLE_ONLY_CARD_FIELDS = ["__glyph_title_only__"];
+
+export function visibleCardFieldCount(fields: string[] | undefined): number | null {
+	if (!fields || fields.length === 0) return null;
+	return fields.filter((field) => CARD_FIELD_IDS.has(field)).length;
+}
+
 interface CardFieldsPanelProps {
 	fields: string[] | undefined;
 	onChange: (fields: string[]) => void;
@@ -20,7 +28,9 @@ interface CardFieldsPanelProps {
 
 export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
 	const active = new Set(
-		fields && fields.length > 0 ? fields : CARD_FIELDS.map((field) => field.id),
+		fields && fields.length > 0
+			? fields.filter((field) => CARD_FIELD_IDS.has(field))
+			: CARD_FIELDS.map((field) => field.id),
 	);
 
 	const toggleField = (fieldId: string, enabled: boolean) => {
@@ -30,7 +40,7 @@ export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
 		} else {
 			next.delete(fieldId);
 		}
-		onChange(Array.from(next));
+		onChange(next.size === 0 ? TITLE_ONLY_CARD_FIELDS : Array.from(next));
 	};
 
 	return (

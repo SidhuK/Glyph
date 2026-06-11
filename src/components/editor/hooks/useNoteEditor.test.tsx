@@ -208,21 +208,25 @@ vi.mock("./useHydrateInlineImages", () => ({
 }));
 
 function Harness({
+	markdown = "keep this line\nremove this line",
 	onChange,
 	onState,
 	pasteMarkdownBehavior = "plain-text",
+	relPath = "notes/test.md",
 }: {
+	markdown?: string;
 	onChange: (nextMarkdown: string) => void;
 	onState?: (state: {
 		colorfulHeadings: boolean;
 		showFrontmatterInEditor: boolean;
 	}) => void;
 	pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
+	relPath?: string;
 }) {
 	const state = useNoteEditor({
-		markdown: "keep this line\nremove this line",
+		markdown,
 		mode: "rich",
-		relPath: "notes/test.md",
+		relPath,
 		pasteMarkdownBehavior,
 		onChange,
 	});
@@ -443,6 +447,57 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(onChange).toHaveBeenCalledWith("keep this line");
+	});
+
+	it("flushes pending edits with the previous note context when the path changes", async () => {
+		const oldOnChange = vi.fn();
+		const newOnChange = vi.fn();
+		mockEditor.getMarkdown.mockReturnValue("typed old body");
+
+		await act(async () => {
+			root.render(
+				<Harness
+					markdown={"---\ntitle: Old\n---\nold body"}
+					relPath="notes/old.md"
+					onChange={oldOnChange}
+				/>,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			onTransaction?: (payload: {
+				editor: typeof mockEditor;
+				transaction: { docChanged: boolean };
+			}) => void;
+		} | null;
+
+		await act(async () => {
+			options?.onTransaction?.({
+				editor: mockEditor,
+				transaction: { docChanged: true },
+			});
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness
+					markdown={"---\ntitle: New\n---\nnew body"}
+					relPath="notes/new.md"
+					onChange={newOnChange}
+				/>,
+			);
+		});
+
+		expect(oldOnChange).toHaveBeenCalledWith(
+			"---\ntitle: Old\n---\ntyped old body",
+		);
+		expect(newOnChange).not.toHaveBeenCalled();
+
+		await act(async () => {
+			await flushMarkdownSyncWork();
+		});
+
+		expect(newOnChange).not.toHaveBeenCalled();
 	});
 
 	it("tracks colorful headings from settings and live updates", async () => {
