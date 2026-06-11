@@ -128,76 +128,198 @@
 	box-shadow: none;
 }
 
-.licenseTrialBanner {
-	position: fixed;
-	top: 12px;
-	left: 50%;
-	transform: translateX(-50%);
-	z-index: 60;
-	width: min(calc(100% - 24px), 720px);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 14px;
-	padding: 12px 14px;
-	border-radius: var(--radius-2xl);
-	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
-	backdrop-filter: blur(18px);
-	box-shadow: 0 10px 40px
-		color-mix(in srgb, var(--text-primary) 18%, transparent);
-}
-
-.licenseTrialBannerCopy {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	min-width: 0;
-}
-
-.licenseTrialBannerTitle {
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.licenseTrialBannerMeta {
-	font-size: calc(var(--text-base) * 0.9);
-	color: var(--text-secondary);
-}
-
-.licenseTrialBannerActions {
+.licenseSidebarFooter {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	flex-wrap: wrap;
+	width: calc(100% - 16px);
+	margin: 4px 8px 10px;
+	padding: 7px 7px 7px 10px;
+	flex-shrink: 0;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 70%, transparent),
+		color-mix(in srgb, var(--bg-secondary) 35%, transparent)
+	);
+	box-shadow: var(--shadow-sm);
 }
 
-.licenseTrialBannerDismiss {
-	display: inline-flex;
+.licenseSidebarFooter[data-mode="community"] {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 12px;
+	margin: 8px 8px 12px;
+	padding: 14px;
+	border-radius: calc(var(--radius-lg) + 2px);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--border-light)
+	);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--interactive-accent) 14%, var(--bg-primary)),
+		color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-secondary))
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 56%, transparent),
+		0 10px 26px color-mix(in srgb, var(--text-primary) 16%, transparent);
+}
+
+.licenseSidebarFooter[data-urgent="true"] {
+	border-color: color-mix(
+		in srgb,
+		var(--color-yellow-500) 38%,
+		var(--border-light)
+	);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--color-yellow-500) 12%, transparent),
+		color-mix(in srgb, var(--color-yellow-500) 4%, transparent)
+	);
+}
+
+.licenseSidebarInfo {
+	display: flex;
 	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
+	gap: 8px;
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 28px;
 	padding: 0;
-	border: 0;
-	border-radius: var(--radius-full);
+	border: none;
 	background: transparent;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
+	text-align: left;
 	cursor: pointer;
-	transition: color 140ms ease, background-color 140ms ease;
 }
 
-.licenseTrialBannerDismiss:hover {
-	background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarInfo {
+	display: block;
+	flex: 0 0 auto;
+	min-height: 0;
+	overflow: visible;
+	cursor: default;
+}
+
+.licenseSidebarText {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 6px;
+	min-width: 0;
+}
+
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarText {
+	width: 100%;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 7px;
+	overflow: visible;
+}
+
+.licenseSidebarLabel {
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.68);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.06em;
+	line-height: 1;
+	text-transform: uppercase;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.licenseSidebarMeta {
+	overflow: hidden;
 	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.82);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.licenseTrialBannerDismiss:focus-visible {
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarMeta {
+	font-size: calc(var(--text-base) * 0.95);
+	font-weight: var(--font-semibold);
+	white-space: normal;
+	line-height: 1.25;
+}
+
+.licenseSidebarBody {
+	display: none;
+}
+
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarBody {
+	display: block;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.84);
+	font-weight: var(--font-normal);
+	line-height: 1.42;
+	text-wrap: pretty;
+}
+
+.licenseSidebarNote {
+	display: none;
+}
+
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarNote {
+	display: block;
+	width: 100%;
+	padding-top: 8px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.76);
+	font-weight: var(--font-medium);
+	line-height: 1.3;
+}
+
+.licenseSidebarAction {
+	flex: 0 0 auto;
+	min-height: 26px;
+	padding: 0 12px;
+	border: none;
+	border-radius: var(--radius-md);
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 14%, transparent);
+	transition: background var(--transition-fast), transform 140ms ease,
+		box-shadow var(--transition-fast);
+}
+
+.licenseSidebarFooter[data-mode="community"] .licenseSidebarAction {
+	width: 100%;
+	flex: 0 0 auto;
+	min-height: 32px;
+	font-size: calc(var(--text-base) * 0.86);
+	box-shadow: 0 6px 14px
+		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+}
+
+.licenseSidebarAction:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 6px
+		color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+}
+
+.licenseSidebarAction:active {
+	transform: translateY(0) scale(0.97);
+}
+
+.licenseSidebarInfo:focus-visible,
+.licenseSidebarAction:focus-visible {
 	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	outline-offset: 2px;
-	color: var(--text-primary);
 }
 
 .licenseSettingsField {
@@ -223,15 +345,8 @@
 		border-radius: var(--radius-2xl);
 	}
 
-	.licenseLockActions,
-	.licenseTrialBanner,
-	.licenseTrialBannerActions {
+	.licenseLockActions {
 		flex-direction: column;
 		align-items: stretch;
-	}
-
-	.licenseTrialBanner {
-		top: 10px;
-		padding: 12px;
 	}
 }

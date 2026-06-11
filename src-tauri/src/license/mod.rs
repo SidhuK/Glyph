@@ -23,6 +23,10 @@ pub fn is_dev_force_licensed() -> bool {
     cfg!(debug_assertions) && env_flag_enabled(option_env!("GLYPH_DEV_FORCE_LICENSED"))
 }
 
+pub fn is_dev_force_trial() -> bool {
+    cfg!(debug_assertions) && env_flag_enabled(option_env!("GLYPH_DEV_FORCE_TRIAL"))
+}
+
 pub fn gumroad_product_id() -> &'static str {
     option_env!("GLYPH_GUMROAD_PRODUCT_ID")
         .map(str::trim)
