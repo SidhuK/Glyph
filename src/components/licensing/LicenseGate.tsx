@@ -45,9 +45,5 @@ export function LicenseGate({ children }: LicenseGateProps) {
 		);
 	}
 
-	return (
-		<UpdaterProvider value={autoUpdater}>
-			{children}
-		</UpdaterProvider>
-	);
+	return <UpdaterProvider value={autoUpdater}>{children}</UpdaterProvider>;
 }
