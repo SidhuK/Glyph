@@ -58,6 +58,7 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
+import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -813,10 +814,11 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"home" | "all-notes" | "databases" | null
+		"home" | "all-notes" | "graph" | "databases" | null
 	>(() => {
 		if (activeTabPath === CALENDAR_TAB_ID) return "home";
 		if (activeTabPath === ALL_DOCS_TAB_ID) return "all-notes";
+		if (activeTabPath === SPACE_GRAPH_TAB_ID) return "graph";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
 		return null;
 	}, [activeTabPath]);
@@ -853,6 +855,9 @@ export function AppShell() {
 		},
 		[openSpecialTab],
 	);
+	const openGraphView = useCallback(() => {
+		openSpecialTab(SPACE_GRAPH_TAB_ID);
+	}, [openSpecialTab]);
 	const createDatabaseAndOpen = useCallback(async () => {
 		try {
 			const summaries = await invoke("databases_list");
@@ -1112,6 +1117,7 @@ export function AppShell() {
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openGraphView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
 		openQuickNoteWindow,
@@ -1308,6 +1314,7 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
 				onOpenAllDocs={openAllDocsTab}
+				onOpenGraph={openGraphView}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}

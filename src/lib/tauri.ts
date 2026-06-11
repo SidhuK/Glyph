@@ -383,6 +383,43 @@ export interface LocalNoteGraph {
 	tag_edges: LocalGraphTagEdge[];
 }
 
+export interface SpaceGraphNode {
+	id: string;
+	title: string;
+	link_count: number;
+	tag_count: number;
+	is_isolated: boolean;
+}
+
+export interface SpaceGraphEdge {
+	from_id: string;
+	to_id: string;
+	kind: "link" | "relationship";
+}
+
+export interface SpaceGraphTagNode {
+	id: string;
+	tag: string;
+	title: string;
+	note_count: number;
+}
+
+export interface SpaceGraphTagEdge {
+	tag_id: string;
+	note_id: string;
+}
+
+export interface SpaceGraph {
+	nodes: SpaceGraphNode[];
+	edges: SpaceGraphEdge[];
+	tags: SpaceGraphTagNode[];
+	tag_edges: SpaceGraphTagEdge[];
+	truncated: boolean;
+	truncated_tags: boolean;
+	total_notes: number;
+	total_tags: number;
+}
+
 export interface TagCount {
 	tag: string;
 	direct_count: number;
@@ -1020,6 +1057,10 @@ interface TauriCommands {
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
+	space_graph: CommandDef<
+		{ max_nodes?: number; max_tags?: number },
+		SpaceGraph
+	>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<

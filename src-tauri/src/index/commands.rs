@@ -21,7 +21,8 @@ use super::tasks::{
 };
 use super::types::{
     BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalGraphTagEdge,
-    LocalGraphTagNode, LocalNoteGraph, PersonCount, SearchResult, TagCount, TaskDateInfo,
+    LocalGraphTagNode, LocalNoteGraph, PersonCount, SearchResult, SpaceGraph, SpaceGraphEdge,
+    SpaceGraphNode, SpaceGraphTagEdge, SpaceGraphTagNode, TagCount, TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1581,6 +1582,258 @@ fn local_graph_tag_expansion_for_seed_nodes(
     ))
 }
 
+struct SpaceGraphNodeSeed {
+    id: String,
+    title: String,
+    link_count: u32,
+    tag_count: u32,
+}
+
+fn space_graph_for_conn(
+    conn: &rusqlite::Connection,
+    max_nodes: usize,
+    max_tags: usize,
+) -> Result<SpaceGraph, String> {
+    let total_notes = conn
+        .query_row("SELECT COUNT(*) FROM notes", [], |row| row.get::<_, i64>(0))
+        .map(|count| count as u32)
+        .map_err(|e| e.to_string())?;
+    let truncated = total_notes as usize > max_nodes;
+    let people_tag_like = format!("{PEOPLE_TAG_NAMESPACE}%");
+    let node_limit = max_nodes.max(1);
+    let node_order = if truncated {
+        "(COALESCE(edge_counts.link_count, 0) + COALESCE(tag_counts.tag_count, 0)) DESC,
+         n.title COLLATE NOCASE ASC,
+         n.id ASC"
+    } else {
+        "n.title COLLATE NOCASE ASC, n.id ASC"
+    };
+    let node_query = format!(
+        "WITH edge_counts AS (
+            SELECT note_id, COUNT(*) AS link_count
+            FROM (
+                SELECT l.from_id AS note_id
+                FROM links l
+                JOIN notes target ON target.id = l.to_id
+                WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
+                UNION ALL
+                SELECT l.to_id AS note_id
+                FROM links l
+                JOIN notes source ON source.id = l.from_id
+                WHERE l.to_id IS NOT NULL AND l.from_id <> l.to_id
+                UNION ALL
+                SELECT r.from_id AS note_id
+                FROM note_relationships r
+                JOIN notes target ON target.id = r.to_id
+                WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
+                UNION ALL
+                SELECT r.to_id AS note_id
+                FROM note_relationships r
+                JOIN notes source ON source.id = r.from_id
+                WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
+            )
+            GROUP BY note_id
+         ),
+         tag_counts AS (
+            SELECT note_id, COUNT(DISTINCT tag) AS tag_count
+            FROM tags
+            WHERE is_explicit = 1
+              AND tag NOT LIKE ?
+            GROUP BY note_id
+         )
+         SELECT n.id,
+                n.title,
+                COALESCE(edge_counts.link_count, 0) AS link_count,
+                COALESCE(tag_counts.tag_count, 0) AS tag_count
+         FROM notes n
+         LEFT JOIN edge_counts ON edge_counts.note_id = n.id
+         LEFT JOIN tag_counts ON tag_counts.note_id = n.id
+         ORDER BY {node_order}
+         LIMIT ?"
+    );
+    let mut node_stmt = conn.prepare(&node_query).map_err(|e| e.to_string())?;
+    let mut node_rows = node_stmt
+        .query(rusqlite::params![people_tag_like, node_limit as i64])
+        .map_err(|e| e.to_string())?;
+    let mut node_seeds = Vec::new();
+    while let Some(row) = node_rows.next().map_err(|e| e.to_string())? {
+        node_seeds.push(SpaceGraphNodeSeed {
+            id: row.get(0).map_err(|e| e.to_string())?,
+            title: row.get(1).map_err(|e| e.to_string())?,
+            link_count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
+            tag_count: row.get::<_, i64>(3).map_err(|e| e.to_string())? as u32,
+        });
+    }
+
+    if node_seeds.is_empty() {
+        return Ok(SpaceGraph {
+            nodes: Vec::new(),
+            edges: Vec::new(),
+            tags: Vec::new(),
+            tag_edges: Vec::new(),
+            truncated,
+            truncated_tags: false,
+            total_notes,
+            total_tags: 0,
+        });
+    }
+
+    let selected_ids = node_seeds
+        .iter()
+        .map(|node| node.id.clone())
+        .collect::<Vec<_>>();
+    let selected_placeholders = std::iter::repeat_n("?", selected_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let edge_query = format!(
+        "SELECT DISTINCT from_id, to_id, kind
+         FROM (
+            SELECT from_id, to_id, 'link' AS kind
+            FROM links
+            WHERE to_id IS NOT NULL
+            UNION
+            SELECT from_id, to_id, 'relationship' AS kind
+            FROM note_relationships
+            WHERE to_id IS NOT NULL
+         )
+         WHERE from_id <> to_id
+           AND from_id IN ({selected_placeholders})
+           AND to_id IN ({selected_placeholders})
+         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC"
+    );
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    let edge_params = rusqlite::params_from_iter(selected_ids.iter().chain(selected_ids.iter()));
+    let mut edge_rows = edge_stmt.query(edge_params).map_err(|e| e.to_string())?;
+    let mut edges = Vec::new();
+    while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
+        edges.push(SpaceGraphEdge {
+            from_id: row.get(0).map_err(|e| e.to_string())?,
+            to_id: row.get(1).map_err(|e| e.to_string())?,
+            kind: row.get(2).map_err(|e| e.to_string())?,
+        });
+    }
+
+    let total_tag_query = format!(
+        "SELECT COUNT(*)
+         FROM (
+            SELECT DISTINCT tag
+            FROM tags
+            WHERE is_explicit = 1
+              AND tag NOT LIKE ?
+              AND note_id IN ({selected_placeholders})
+         )"
+    );
+    let mut total_tag_params = Vec::<rusqlite::types::Value>::new();
+    total_tag_params.push(format!("{PEOPLE_TAG_NAMESPACE}%").into());
+    total_tag_params.extend(selected_ids.iter().cloned().map(Into::into));
+    let total_tags = conn
+        .query_row(
+            &total_tag_query,
+            rusqlite::params_from_iter(total_tag_params),
+            |row| row.get::<_, i64>(0),
+        )
+        .map(|count| count as u32)
+        .map_err(|e| e.to_string())?;
+    let truncated_tags = total_tags as usize > max_tags;
+
+    let mut tags = Vec::new();
+    let mut tag_edges = Vec::new();
+    if max_tags > 0 && total_tags > 0 {
+        let tag_query = format!(
+            "SELECT tag, COUNT(DISTINCT note_id) AS note_count
+             FROM tags
+             WHERE is_explicit = 1
+               AND tag NOT LIKE ?
+               AND note_id IN ({selected_placeholders})
+             GROUP BY tag
+             ORDER BY note_count DESC, tag COLLATE NOCASE ASC
+             LIMIT ?"
+        );
+        let mut tag_params = Vec::<rusqlite::types::Value>::new();
+        tag_params.push(format!("{PEOPLE_TAG_NAMESPACE}%").into());
+        tag_params.extend(selected_ids.iter().cloned().map(Into::into));
+        tag_params.push((max_tags as i64).into());
+        let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
+        let mut tag_rows = tag_stmt
+            .query(rusqlite::params_from_iter(tag_params))
+            .map_err(|e| e.to_string())?;
+        let mut selected_tags = Vec::new();
+        while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
+            let tag: String = row.get(0).map_err(|e| e.to_string())?;
+            selected_tags.push(tag.clone());
+            tags.push(SpaceGraphTagNode {
+                id: local_graph_tag_id(&tag),
+                title: format!("#{tag}"),
+                tag,
+                note_count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
+            });
+        }
+
+        if !selected_tags.is_empty() {
+            let tag_placeholders = std::iter::repeat_n("?", selected_tags.len())
+                .collect::<Vec<_>>()
+                .join(", ");
+            let tag_edge_query = format!(
+                "SELECT DISTINCT tag, note_id
+                 FROM tags
+                 WHERE is_explicit = 1
+                   AND tag IN ({tag_placeholders})
+                   AND note_id IN ({selected_placeholders})
+                 ORDER BY tag COLLATE NOCASE ASC, note_id COLLATE NOCASE ASC"
+            );
+            let mut tag_edge_params = Vec::<rusqlite::types::Value>::new();
+            tag_edge_params.extend(selected_tags.iter().cloned().map(Into::into));
+            tag_edge_params.extend(selected_ids.iter().cloned().map(Into::into));
+            let mut tag_edge_stmt = conn.prepare(&tag_edge_query).map_err(|e| e.to_string())?;
+            let mut tag_edge_rows = tag_edge_stmt
+                .query(rusqlite::params_from_iter(tag_edge_params))
+                .map_err(|e| e.to_string())?;
+            while let Some(row) = tag_edge_rows.next().map_err(|e| e.to_string())? {
+                let tag: String = row.get(0).map_err(|e| e.to_string())?;
+                tag_edges.push(SpaceGraphTagEdge {
+                    tag_id: local_graph_tag_id(&tag),
+                    note_id: row.get(1).map_err(|e| e.to_string())?,
+                });
+            }
+        }
+    }
+
+    let mut returned_tag_edge_count_by_note = HashMap::<String, u32>::new();
+    for edge in &tag_edges {
+        *returned_tag_edge_count_by_note
+            .entry(edge.note_id.clone())
+            .or_insert(0) += 1;
+    }
+    let nodes = node_seeds
+        .into_iter()
+        .map(|node| {
+            let returned_tag_edge_count = returned_tag_edge_count_by_note
+                .get(&node.id)
+                .copied()
+                .unwrap_or(0);
+            SpaceGraphNode {
+                id: node.id,
+                title: node.title,
+                link_count: node.link_count,
+                tag_count: node.tag_count,
+                is_isolated: node.link_count == 0 && returned_tag_edge_count == 0,
+            }
+        })
+        .collect::<Vec<_>>();
+
+    Ok(SpaceGraph {
+        nodes,
+        edges,
+        tags,
+        tag_edges,
+        truncated,
+        truncated_tags,
+        total_notes,
+        total_tags,
+    })
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_local_graph(
     window: WebviewWindow,
@@ -1591,6 +1844,24 @@ pub async fn note_local_graph(
     tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteGraph, String> {
         let conn = open_db(&root)?;
         local_note_graph_for_conn(&conn, &note_id)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn space_graph(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    max_nodes: Option<u32>,
+    max_tags: Option<u32>,
+) -> Result<SpaceGraph, String> {
+    let root = state.root_for_window(&window)?;
+    let max_nodes = max_nodes.unwrap_or(1000).clamp(1, 10_000) as usize;
+    let max_tags = max_tags.unwrap_or(250).clamp(0, 1000) as usize;
+    tauri::async_runtime::spawn_blocking(move || -> Result<SpaceGraph, String> {
+        let conn = open_db(&root)?;
+        space_graph_for_conn(&conn, max_nodes, max_tags)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -1784,5 +2055,256 @@ mod local_graph_tests {
         assert_eq!(tag_edges.len(), 5);
         assert_eq!(tags.len(), 1);
         assert_eq!(tags[0].note_count, 5);
+    }
+}
+
+#[cfg(test)]
+mod space_graph_tests {
+    use std::time::Instant;
+
+    use rusqlite::Connection;
+
+    use crate::index::schema::ensure_schema;
+    use crate::index::tags::PEOPLE_TAG_NAMESPACE;
+
+    use super::space_graph_for_conn;
+
+    fn insert_note(conn: &Connection, id: &str, title: &str) {
+        conn.execute(
+            "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+             VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
+            rusqlite::params![id, title, id, format!("{id}-etag")],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn space_graph_under_cap_includes_linked_tagged_and_isolated_notes() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/alpha.md", "Alpha"),
+            ("notes/beta.md", "Beta"),
+            ("notes/tagged.md", "Tagged"),
+            ("notes/isolated.md", "Isolated"),
+        ] {
+            insert_note(&conn, id, title);
+        }
+        conn.execute(
+            "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+            rusqlite::params!["notes/alpha.md", "notes/beta.md"],
+        )
+        .unwrap();
+        for note_id in ["notes/alpha.md", "notes/tagged.md"] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, 'project', 1)",
+                [note_id],
+            )
+            .unwrap();
+        }
+
+        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        assert!(!graph.truncated);
+        assert_eq!(graph.total_notes, 4);
+        assert_eq!(graph.nodes.len(), 4);
+        assert_eq!(graph.edges.len(), 1);
+        assert_eq!(graph.edges[0].kind, "link");
+        assert_eq!(graph.tags.len(), 1);
+        assert_eq!(graph.tag_edges.len(), 2);
+
+        let isolated = graph
+            .nodes
+            .iter()
+            .find(|node| node.id == "notes/isolated.md")
+            .unwrap();
+        assert!(isolated.is_isolated);
+
+        let tagged = graph
+            .nodes
+            .iter()
+            .find(|node| node.id == "notes/tagged.md")
+            .unwrap();
+        assert!(!tagged.is_isolated);
+    }
+
+    #[test]
+    fn space_graph_truncates_to_highest_degree_nodes() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/high.md", "High"),
+            ("notes/medium.md", "Medium"),
+            ("notes/low.md", "Low"),
+            ("notes/zero.md", "Zero"),
+        ] {
+            insert_note(&conn, id, title);
+        }
+        for (from_id, to_id) in [
+            ("notes/high.md", "notes/medium.md"),
+            ("notes/high.md", "notes/low.md"),
+            ("notes/medium.md", "notes/high.md"),
+        ] {
+            conn.execute(
+                "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+                rusqlite::params![from_id, to_id],
+            )
+            .unwrap();
+        }
+        for tag in ["one", "two"] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES('notes/high.md', ?, 1)",
+                [tag],
+            )
+            .unwrap();
+        }
+
+        let graph = space_graph_for_conn(&conn, 2, 10).unwrap();
+        let node_ids = graph
+            .nodes
+            .iter()
+            .map(|node| node.id.as_str())
+            .collect::<Vec<_>>();
+        assert!(graph.truncated);
+        assert_eq!(graph.total_notes, 4);
+        assert_eq!(node_ids, vec!["notes/high.md", "notes/medium.md"]);
+        assert!(!node_ids.contains(&"notes/zero.md"));
+    }
+
+    #[test]
+    fn space_graph_excludes_edges_with_missing_endpoints() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "notes/source.md", "Source");
+
+        conn.execute(
+            "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+            rusqlite::params!["notes/source.md", "notes/missing.md"],
+        )
+        .unwrap();
+
+        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        assert!(graph.edges.is_empty());
+        assert_eq!(graph.nodes[0].link_count, 0);
+        assert!(graph.nodes[0].is_isolated);
+    }
+
+    #[test]
+    fn space_graph_returns_explicit_tags_and_excludes_people_and_virtual_tags() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "notes/tagged.md", "Tagged");
+
+        for (tag, is_explicit) in [
+            ("work".to_string(), 1),
+            (format!("{PEOPLE_TAG_NAMESPACE}ada"), 1),
+            ("virtual-parent".to_string(), 0),
+        ] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES('notes/tagged.md', ?, ?)",
+                rusqlite::params![tag, is_explicit],
+            )
+            .unwrap();
+        }
+
+        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        assert_eq!(graph.total_tags, 1);
+        assert_eq!(graph.tags.len(), 1);
+        assert_eq!(graph.tags[0].tag, "work");
+        assert_eq!(graph.tag_edges.len(), 1);
+    }
+
+    #[test]
+    fn space_graph_tag_cap_sets_truncated_tags() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "notes/tagged.md", "Tagged");
+
+        for tag in ["alpha", "beta"] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES('notes/tagged.md', ?, 1)",
+                [tag],
+            )
+            .unwrap();
+        }
+
+        let graph = space_graph_for_conn(&conn, 10, 1).unwrap();
+        assert_eq!(graph.total_tags, 2);
+        assert!(graph.truncated_tags);
+        assert_eq!(graph.tags.len(), 1);
+        assert_eq!(graph.tags[0].tag, "alpha");
+        assert_eq!(graph.tag_edges.len(), 1);
+    }
+
+    #[test]
+    fn space_graph_includes_relationship_edges() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "notes/source.md", "Source");
+        insert_note(&conn, "notes/target.md", "Target");
+
+        conn.execute(
+            "INSERT INTO note_relationships(from_id, field_key, to_id, to_title, target_title, ordinal)
+             VALUES(?, 'related', ?, NULL, 'Target', 0)",
+            rusqlite::params!["notes/source.md", "notes/target.md"],
+        )
+        .unwrap();
+
+        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        assert_eq!(graph.edges.len(), 1);
+        assert_eq!(graph.edges[0].kind, "relationship");
+        assert_eq!(graph.edges[0].from_id, "notes/source.md");
+        assert_eq!(graph.edges[0].to_id, "notes/target.md");
+    }
+
+    #[test]
+    fn space_graph_synthetic_scale_stays_under_spike_budget() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        let tx = conn.transaction().unwrap();
+        for index in 0..2_000 {
+            let id = format!("notes/n{index:04}.md");
+            let title = format!("Note {index:04}");
+            tx.execute(
+                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+                 VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
+                rusqlite::params![&id, &title, &id, format!("{id}-etag")],
+            )
+            .unwrap();
+        }
+        for index in 0..10_000 {
+            let from_id = format!("notes/n{:04}.md", index % 2_000);
+            let to_id = format!("notes/n{:04}.md", (index * 7 + 11) % 2_000);
+            if from_id == to_id {
+                continue;
+            }
+            tx.execute(
+                "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind)
+                 VALUES(?, ?, NULL, 'note')",
+                rusqlite::params![from_id, to_id],
+            )
+            .unwrap();
+        }
+        for index in 0..500 {
+            let note_id = format!("notes/n{:04}.md", index % 2_000);
+            let tag = format!("topic-{:03}", index % 125);
+            tx.execute(
+                "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
+                rusqlite::params![note_id, tag],
+            )
+            .unwrap();
+        }
+        tx.commit().unwrap();
+
+        let started = Instant::now();
+        let graph = space_graph_for_conn(&conn, 1_000, 250).unwrap();
+        let elapsed = started.elapsed();
+        println!("space_graph synthetic scale duration: {elapsed:?}");
+
+        assert!(graph.truncated);
+        assert_eq!(graph.nodes.len(), 1_000);
+        assert!(elapsed.as_millis() < 500);
     }
 }

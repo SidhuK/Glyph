@@ -49,6 +49,7 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
+import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -91,6 +92,11 @@ const TasksPane = lazy(loadTasksPane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
+	})),
+);
+const SpaceGraphView = lazy(() =>
+	import("../graph/SpaceGraphView").then((module) => ({
+		default: module.SpaceGraphView,
 	})),
 );
 
@@ -744,6 +750,15 @@ export const MainContent = memo(function MainContent({
 				</Suspense>
 			);
 		}
+		if (viewerPath === SPACE_GRAPH_TAB_ID) {
+			return (
+				<Suspense
+					fallback={<div className="databaseLoadingState">Loading graph…</div>}
+				>
+					<SpaceGraphView />
+				</Suspense>
+			);
+		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			const initialDoc = getPrefetchedNote(viewerPath);
 			const extractToNoteActions = {
@@ -813,6 +828,7 @@ export const MainContent = memo(function MainContent({
 			if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
 				void prefetchDatabasesLanding(openDatabasesId);
+				return;
 			}
 		},
 		[dailyNotesFolder, openDatabasesId, templateFolder],

@@ -98,6 +98,7 @@ interface UseAppCommandsDeps {
 	openCalendarTab: () => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
+	openGraphView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
 	openQuickTaskWindow: () => void;
@@ -368,6 +369,7 @@ export function useAppCommands({
 	openCalendarTab,
 	openDatabasesTab,
 	openGettingStarted,
+	openGraphView,
 	openPalette,
 	openQuickNoteWindow,
 	openQuickTaskWindow,
@@ -816,6 +818,20 @@ export function useAppCommands({
 				action: openTemplatesTab,
 			},
 			{
+				id: "open-graph-view",
+				label: "Open graph view",
+				icon: (
+					<HugeiconsIcon
+						icon={ThreeDMoveIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openGraphView,
+			},
+			{
 				id: "open-dashboard",
 				label: "Open home",
 				icon: (
@@ -1106,6 +1122,7 @@ export function useAppCommands({
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openGraphView,
 		openBlankTab,
 		openQuickNoteWindow,
 		openQuickTaskWindow,

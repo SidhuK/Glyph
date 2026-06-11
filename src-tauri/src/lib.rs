@@ -1682,6 +1682,7 @@ pub fn run() {
             index::commands::backlinks,
             index::commands::note_relationships,
             index::commands::note_local_graph,
+            index::commands::space_graph,
             space_fs::list::space_list_dir,
             space_fs::list::space_list_markdown_files,
             space_fs::list::space_list_non_markdown_files,
