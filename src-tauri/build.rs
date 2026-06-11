@@ -26,6 +26,7 @@ fn read_dotenv_value(path: &Path, key: &str) -> Option<String> {
 
 fn main() {
     println!("cargo:rerun-if-env-changed=GLYPH_DEV_FORCE_LICENSED");
+    println!("cargo:rerun-if-env-changed=GLYPH_DEV_FORCE_TRIAL");
     println!("cargo:rerun-if-changed=.env");
     println!("cargo:rerun-if-changed=.env.local");
 
@@ -33,9 +34,16 @@ fn main() {
         .ok()
         .or_else(|| read_dotenv_value(Path::new(".env.local"), "GLYPH_DEV_FORCE_LICENSED"))
         .or_else(|| read_dotenv_value(Path::new(".env"), "GLYPH_DEV_FORCE_LICENSED"));
+    let dev_force_trial = env::var("GLYPH_DEV_FORCE_TRIAL")
+        .ok()
+        .or_else(|| read_dotenv_value(Path::new(".env.local"), "GLYPH_DEV_FORCE_TRIAL"))
+        .or_else(|| read_dotenv_value(Path::new(".env"), "GLYPH_DEV_FORCE_TRIAL"));
 
     if let Some(value) = dev_force_licensed {
         println!("cargo:rustc-env=GLYPH_DEV_FORCE_LICENSED={value}");
+    }
+    if let Some(value) = dev_force_trial {
+        println!("cargo:rustc-env=GLYPH_DEV_FORCE_TRIAL={value}");
     }
 
     tauri_build::build()

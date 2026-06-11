@@ -1,6 +1,15 @@
 {
 	"versions": [
 		{
+			"version": "0.7.2",
+			"sections": [
+				{
+					"category": "Improved",
+					"items": ["Cleaner trial banner."]
+				}
+			]
+		},
+		{
 			"version": "0.7.1",
 			"sections": [
 				{
