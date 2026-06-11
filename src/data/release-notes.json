@@ -14,7 +14,7 @@
 					"category": "Fixed",
 					"items": [
 						"Kanban card field toggles now keep an empty selection as Title only. Missing card field settings still default to All shown, and Restore defaults clears the override.",
-						"Debounced markdown sync in `useNoteEditor.ts` now flushes the pending body for the file it started from, so switching notes no longer saves stale content."
+						"Debounced markdown sync now flushes the pending body for the file it started from, so switching notes no longer saves stale content."
 					]
 				}
 			]

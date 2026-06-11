@@ -1,70 +1,70 @@
 .welcomeScreen {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: var(--bg-primary);
-  text-align: center;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: var(--bg-primary);
+	text-align: center;
 }
 
 .welcomeScreenBody {
-  max-width: 480px;
+	max-width: 480px;
 }
 
 .welcomeScreenIcon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 16px;
-  object-fit: contain;
-  pointer-events: none;
+	width: 48px;
+	height: 48px;
+	margin: 0 auto 16px;
+	object-fit: contain;
+	pointer-events: none;
 }
 
 .welcomeScreenKicker {
-  margin: 20px 0 0;
-  color: var(--text-secondary);
-  font-size: calc(var(--text-base) * 0.85);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+	margin: 20px 0 0;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.85);
+	font-weight: 500;
+	letter-spacing: 0.02em;
 }
 
 .welcomeScreenTitle {
-  margin: 0 0 16px;
-  color: var(--text-primary);
-  font-size: calc(var(--text-base) * 2.4);
-  font-weight: 650;
-  line-height: 1.15;
+	margin: 0 0 16px;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 2.4);
+	font-weight: 650;
+	line-height: 1.15;
 }
 
 .welcomeScreenTitleSub {
-  display: block;
-  margin-top: 8px;
-  color: var(--text-secondary);
-  font-size: calc(var(--text-base) * 1.05);
-  font-weight: 500;
-  letter-spacing: 0.02em;
+	display: block;
+	margin-top: 8px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 1.05);
+	font-weight: 500;
+	letter-spacing: 0.02em;
 }
 
 .welcomeScreenSub {
-  margin: 0 0 32px;
-  color: var(--text-secondary);
-  font-size: calc(var(--text-base) * 0.95);
-  line-height: 1.5;
+	margin: 0 0 32px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.95);
+	line-height: 1.5;
 }
 
 .welcomeScreenBtn {
-  min-width: 160px;
-  padding: 10px 24px;
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: calc(var(--text-base) * 0.9);
-  font-weight: var(--font-medium);
-  cursor: pointer;
+	min-width: 160px;
+	padding: 10px 24px;
+	color: var(--text-primary);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-primary);
+	border-radius: var(--radius-md);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+	cursor: pointer;
 }
 
 .welcomeScreenBtn:disabled {
-  cursor: wait;
-  opacity: 0.5;
+	cursor: wait;
+	opacity: 0.5;
 }

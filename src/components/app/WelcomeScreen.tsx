@@ -34,7 +34,9 @@ export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 				/>
 				<h1 className="welcomeScreenTitle">
 					Glyph
-					<span className="welcomeScreenTitleSub">Write. Reflect. Discover.</span>
+					<span className="welcomeScreenTitleSub">
+						Write. Reflect. Discover.
+					</span>
 				</h1>
 				<p className="welcomeScreenSub">
 					Open your current notes folder or create a new workspace.

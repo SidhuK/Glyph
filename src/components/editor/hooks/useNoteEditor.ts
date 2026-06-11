@@ -540,29 +540,35 @@ export function useNoteEditor({
 		}
 	}, []);
 
-	const flushMarkdownSync = useCallback((expectedRelPath?: string) => {
-		clearScheduledMarkdownSync();
-		const pending = pendingMarkdownSyncRef.current;
-		pendingMarkdownSyncRef.current = null;
-		if (!pending) {
-			return;
-		}
-		if (expectedRelPath !== undefined && pending.relPath !== expectedRelPath) {
-			return;
-		}
-		const { instance } = pending;
-		const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-		const nextMarkdown = joinYamlFrontmatter(
-			pending.frontmatter,
-			normalizeBody(nextBody),
-		);
-		if (pending.relPath === relPathRef.current) {
-			lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
-			lastEmittedMarkdownRef.current = nextMarkdown;
-		}
-		if (nextMarkdown === pending.lastEmittedMarkdown) return;
-		pending.onChange(nextMarkdown);
-	}, [clearScheduledMarkdownSync]);
+	const flushMarkdownSync = useCallback(
+		(expectedRelPath?: string) => {
+			clearScheduledMarkdownSync();
+			const pending = pendingMarkdownSyncRef.current;
+			pendingMarkdownSyncRef.current = null;
+			if (!pending) {
+				return;
+			}
+			if (
+				expectedRelPath !== undefined &&
+				pending.relPath !== expectedRelPath
+			) {
+				return;
+			}
+			const { instance } = pending;
+			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
+			const nextMarkdown = joinYamlFrontmatter(
+				pending.frontmatter,
+				normalizeBody(nextBody),
+			);
+			if (pending.relPath === relPathRef.current) {
+				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
+				lastEmittedMarkdownRef.current = nextMarkdown;
+			}
+			if (nextMarkdown === pending.lastEmittedMarkdown) return;
+			pending.onChange(nextMarkdown);
+		},
+		[clearScheduledMarkdownSync],
+	);
 
 	const scheduleMarkdownSync = useCallback(
 		(instance: NonNullable<ReturnType<typeof useEditor>>) => {
