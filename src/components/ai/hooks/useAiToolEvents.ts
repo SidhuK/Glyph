@@ -382,16 +382,13 @@ export function useAiToolEvents({
 	}, []);
 
 	return {
-		activeTools: state.activeTools,
 		lastToolEvent: state.lastToolEvent,
 		toolTimeline: state.toolTimeline,
 		setToolTimeline,
 		toolStatusText,
 		phaseStatusText,
 		isAwaitingResponse,
-		responsePhase: state.responsePhase,
 		setResponsePhase,
-		showSlowStart: state.showSlowStart,
 		setShowSlowStart,
 		clearSlowStartTimer,
 		clearFinalizingTimer,

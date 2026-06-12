@@ -26,7 +26,6 @@
 	--border-focus: rgba(55, 53, 47, 0.32);
 
 	--interactive-hover: rgba(55, 53, 47, 0.08);
-	--interactive-active: rgba(55, 53, 47, 0.16);
 	--interactive-accent: var(--glyph-user-accent, var(--color-gray-800));
 	--interactive-accent-hover: var(
 		--glyph-user-accent-hover,
@@ -41,39 +40,17 @@
 	--selection-bg-muted: rgba(55, 53, 47, 0.08);
 
 	--feedback-error-bg: var(--color-red-100);
-	--feedback-success-bg: var(--color-green-100);
 	--status-info-fg: var(--color-blue-600);
-	--status-info-bg: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
-	--status-info-border: color-mix(
-		in srgb,
-		var(--color-blue-500) 34%,
-		transparent
-	);
 	--status-success-fg: var(--color-green-500);
 	--status-success-bg: color-mix(
 		in srgb,
 		var(--color-green-500) 14%,
 		transparent
 	);
-	--status-success-border: color-mix(
-		in srgb,
-		var(--color-green-500) 34%,
-		transparent
-	);
 	--status-warning-fg: color-mix(
 		in srgb,
 		var(--color-yellow-500) 92%,
 		var(--text-primary)
-	);
-	--status-warning-bg: color-mix(
-		in srgb,
-		var(--color-yellow-500) 16%,
-		transparent
-	);
-	--status-warning-border: color-mix(
-		in srgb,
-		var(--color-yellow-500) 38%,
-		transparent
 	);
 	--status-danger-fg: var(--color-red-600);
 	--status-danger-bg: color-mix(in srgb, var(--color-red-500) 12%, transparent);
@@ -85,7 +62,6 @@
 
 	--ai-accent-chat: #014f86;
 	--ai-accent-create: #c1121f;
-	--task-bucket-inbox: #0077b6;
 	--task-bucket-today: #bc8f00;
 	--task-bucket-upcoming: #c97a00;
 	--callout-info: var(--color-blue-400);
@@ -121,7 +97,6 @@
 		transparent
 	);
 
-	--scrollbar-track: transparent;
 	--scrollbar-thumb: rgba(55, 53, 47, 0.16);
 	--scrollbar-thumb-hover: rgba(55, 53, 47, 0.28);
 

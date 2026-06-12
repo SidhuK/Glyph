@@ -19,7 +19,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
@@ -286,7 +286,6 @@ interface TreeEntriesProps {
 		direction: -1 | 1,
 		currentTarget: HTMLElement,
 	) => void;
-	showTaskProgressIndicator: boolean;
 	taskSummariesByPath: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
@@ -323,7 +322,6 @@ function TreeEntries({
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
 	onArrowNavigate,
-	showTaskProgressIndicator,
 	taskSummariesByPath,
 	showFilePreviews = false,
 	filePreviewsByPath = {},
@@ -401,7 +399,6 @@ function TreeEntries({
 									onTogglePinnedFile={onTogglePinnedFile}
 									onMoveClickSuppressRef={onMoveClickSuppressRef}
 									onArrowNavigate={onArrowNavigate}
-									showTaskProgressIndicator={showTaskProgressIndicator}
 									taskSummariesByPath={taskSummariesByPath}
 									showFilePreviews={showFilePreviews}
 									filePreviewsByPath={filePreviewsByPath}
@@ -435,11 +432,7 @@ function TreeEntries({
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
 						onArrowNavigate={onArrowNavigate}
-						taskSummary={
-							showTaskProgressIndicator
-								? (taskSummariesByPath[e.rel_path] ?? null)
-								: null
-						}
+						taskSummary={taskSummariesByPath[e.rel_path] ?? null}
 						previewText={
 							showFilePreviews && e.is_markdown
 								? (filePreviewsByPath[e.rel_path] ?? null)
@@ -481,7 +474,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
@@ -634,7 +627,7 @@ export const FileTreePane = memo(function FileTreePane({
 	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		Boolean(spacePath) && showTaskProgressIndicator,
+		Boolean(spacePath),
 		taskSummaryRefreshKey,
 	);
 
@@ -1000,7 +993,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
@@ -1085,8 +1077,7 @@ export const FileTreePane = memo(function FileTreePane({
 															<span className="fileTreeName">
 																{file.displayName}
 															</span>
-															{showTaskProgressIndicator &&
-															(taskSummariesByPath[file.path]?.total_count ??
+															{(taskSummariesByPath[file.path]?.total_count ??
 																0) > 0 ? (
 																<TaskProgressIndicator
 																	summary={taskSummariesByPath[file.path]}
@@ -1139,7 +1130,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 							/>
 						) : null}

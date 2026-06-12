@@ -17,7 +17,7 @@ interface AddTaskToDailyNoteOptions {
 	spacePath: string | null;
 }
 
-export interface AddTaskToDailyNoteResult {
+interface AddTaskToDailyNoteResult {
 	path: string;
 	text: string;
 	previousDoc: TextFileDoc;

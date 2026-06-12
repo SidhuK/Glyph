@@ -61,7 +61,6 @@
 	--font-semibold: 600;
 	--font-bold: 700;
 
-	--space-0: 0;
 	--space-1: 4px;
 	--space-2: 8px;
 	--space-3: 12px;
@@ -75,7 +74,6 @@
 	--radius-4: 4px;
 	--radius-6: 6px;
 	--radius-7: 7px;
-	--radius-8: 8px;
 	--radius-10: 10px;
 	--radius-14: 14px;
 	--radius-18: 18px;
@@ -93,15 +91,12 @@
 	--radius-full: var(--radius-round);
 
 	--shadow-sm: none;
-	--shadow-md: none;
 	--shadow-lg: none;
 	--shadow-xl: none;
 	--shadow-float: none;
 
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
 	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
 	--glyph-user-accent: initial;
 	--glyph-user-accent-hover: initial;

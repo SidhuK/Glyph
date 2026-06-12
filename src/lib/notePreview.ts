@@ -79,5 +79,3 @@ export function joinYamlFrontmatter(
 	const normalizedBody = b.length ? b.replace(/^\n+/, "\n") : "";
 	return `${fm}\n${normalizedBody}`;
 }
-
-export { titleForFile };

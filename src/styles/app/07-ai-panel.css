@@ -65,30 +65,6 @@
 	--ai-mode-accent: var(--ai-accent-create);
 }
 
-.aiPanel[data-ai-preset="brainstorm"] {
-	--ai-preset-accent: #4a90d9;
-}
-
-.aiPanel[data-ai-preset="builder"] {
-	--ai-preset-accent: #d97a3a;
-}
-
-.aiPanel[data-ai-preset="tasks"] {
-	--ai-preset-accent: #c9a832;
-}
-
-.aiPanel[data-ai-preset="editor"] {
-	--ai-preset-accent: #c76b5a;
-}
-
-.aiPanel[data-ai-preset="research"] {
-	--ai-preset-accent: #6b7fd9;
-}
-
-.aiPanel[data-ai-preset="daily"] {
-	--ai-preset-accent: #5a8fd9;
-}
-
 .dark .aiPanel[data-ai-mode="chat"] {
 	--ai-mode-accent: var(--ai-accent-chat);
 }
@@ -111,15 +87,6 @@
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
-}
-
-.aiPanelTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	color: var(--text-primary);
-	font-weight: var(--font-semibold);
-	font-size: var(--text-sm);
 }
 
 .aiPanelHistoryButton {

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	APP_COMMANDS,
-	getCommandDefinitionByMenuId,
-	listCommandDefinitions,
-} from "./commandManifest";
+import { APP_COMMANDS, listCommandDefinitions } from "./commandManifest";
 
 const FRONTEND_MENU_COMMAND_IDS = [
 	"new-note",
@@ -39,7 +35,10 @@ describe("app command manifest", () => {
 
 		expect(new Set(menuIds).size).toBe(menuIds.length);
 		for (const menuId of menuIds) {
-			expect(getCommandDefinitionByMenuId(menuId)?.menuId).toBe(menuId);
+			expect(
+				listCommandDefinitions().find((command) => command.menuId === menuId)
+					?.menuId,
+			).toBe(menuId);
 		}
 	});
 

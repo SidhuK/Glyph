@@ -79,7 +79,6 @@ interface DatabasesPaneProps {
 	initialDatabaseId?: string | null;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 	initialRows?: WorkspaceDatabaseQueryResult | null;
-	openRequestNonce?: number;
 }
 
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
@@ -1347,9 +1346,6 @@ function DatabasesPaneContent({
 
 export function DatabasesPane(props: DatabasesPaneProps) {
 	return (
-		<DatabasesPaneContent
-			key={`${props.openRequestNonce ?? 0}:${props.initialDatabaseId ?? ""}`}
-			{...props}
-		/>
+		<DatabasesPaneContent key={props.initialDatabaseId ?? ""} {...props} />
 	);
 }

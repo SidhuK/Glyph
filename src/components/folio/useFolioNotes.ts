@@ -5,11 +5,7 @@ import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename } from "../../utils/path";
-import {
-	type FolioScope,
-	folioScopeTitle,
-	normalizeFolioPath,
-} from "./folioScopes";
+import { type FolioScope, normalizeFolioPath } from "./folioScopes";
 
 export interface FolioItem extends Omit<AllDocsItem, "created" | "updated"> {
 	created: string | null;
@@ -61,21 +57,6 @@ function filterNotesForScope(
 			return notes.filter(
 				(note) => note.is_markdown && personMatches(note.people, scope.handle),
 			);
-		case "search": {
-			const query = scope.query.trim().toLowerCase();
-			if (!query) return notes;
-			return notes.filter((note) => {
-				const haystack = [
-					note.title,
-					note.preview,
-					note.note_path,
-					...note.tags,
-				]
-					.join(" ")
-					.toLowerCase();
-				return haystack.includes(query);
-			});
-		}
 		default:
 			return notes;
 	}
@@ -179,7 +160,6 @@ export function useFolioNotes(scope: FolioScope) {
 		filesTruncated:
 			includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
 		error: query.error ?? filesQuery.error,
-		title: folioScopeTitle(scope),
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
 	};
 }

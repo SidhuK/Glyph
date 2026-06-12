@@ -7,7 +7,6 @@
 	--theme-preview-badge-bg: var(--bg-primary);
 	--theme-preview-badge-border: var(--border-default);
 	--theme-preview-badge-text: var(--interactive-accent);
-	--theme-preview-border: var(--border-default);
 }
 
 :root.dark .appearanceThemeDropdownTrigger,

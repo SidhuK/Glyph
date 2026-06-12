@@ -710,18 +710,6 @@
 	border-radius: calc(var(--radius-lg) - 2px);
 }
 
-.tiptapContentInline .tableWrapper {
-	width: 100%;
-	max-width: 100%;
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
-	margin: 12px 0;
-}
-
-.tiptapContentInline .tableWrapper table {
-	margin: 0;
-}
-
 .tiptapContentInline th,
 .tiptapContentInline td {
 	border: 1px solid var(--border-light);

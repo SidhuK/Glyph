@@ -20,10 +20,7 @@ import {
 	useUILayoutContext,
 } from "../../contexts";
 import { useMarkdownTaskSummary } from "../../hooks/useMarkdownTaskSummary";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import {
-	FORCE_NOTE_EDIT_MODE_EVENT,
-	type ForceNoteEditModeDetail,
 	OPEN_LOCAL_GRAPH_EVENT,
 	type OpenLocalGraphDetail,
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
@@ -197,7 +194,7 @@ export function MarkdownEditorPane({
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
@@ -246,7 +243,7 @@ export function MarkdownEditorPane({
 	}, [currentBody, infoPanelOpen]);
 	const visibleTaskSummary = useMarkdownTaskSummary(
 		infoPanelText,
-		infoPanelOpen && showTaskProgressIndicator === true,
+		infoPanelOpen,
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
@@ -622,11 +619,6 @@ export function MarkdownEditorPane({
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
 	useEffect(() => {
-		const handleForceEditMode = (event: Event) => {
-			const detail = (event as CustomEvent<ForceNoteEditModeDetail>).detail;
-			if (!detail?.path || detail.path !== relPath) return;
-			setMode("rich");
-		};
 		const handleOpenLocalGraph = (event: Event) => {
 			const detail = (event as CustomEvent<OpenLocalGraphDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
@@ -642,17 +634,12 @@ export function MarkdownEditorPane({
 				return nextOpen;
 			});
 		};
-		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
 		window.addEventListener(
 			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 			handleToggleInfoSidebar,
 		);
 		return () => {
-			window.removeEventListener(
-				FORCE_NOTE_EDIT_MODE_EVENT,
-				handleForceEditMode,
-			);
 			window.removeEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
 			window.removeEventListener(
 				TOGGLE_NOTE_INFO_SIDEBAR_EVENT,

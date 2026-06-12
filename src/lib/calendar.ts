@@ -12,7 +12,7 @@ export function parseCalendarDate(date: string): Date {
 	return parseISO(`${date}T00:00:00`);
 }
 
-export function formatCalendarDate(date: Date): string {
+function formatCalendarDate(date: Date): string {
 	return format(date, "yyyy-MM-dd");
 }
 

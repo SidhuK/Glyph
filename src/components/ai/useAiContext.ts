@@ -74,7 +74,6 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData | null
 
 export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
-	const [charBudget, setCharBudget] = useState(DEFAULT_CHAR_BUDGET);
 	const indexQuery = useQuery({
 		queryKey: aiContextIndexQueryKey,
 		queryFn: async () => {
@@ -177,7 +176,7 @@ export function useAiContext(contextSearch = "") {
 			const built = await invoke("ai_context_build", {
 				request: {
 					attachments: attachedFolders,
-					char_budget: charBudget,
+					char_budget: DEFAULT_CHAR_BUDGET,
 				},
 			});
 			const manifest: ContextManifest = {
@@ -195,13 +194,6 @@ export function useAiContext(contextSearch = "") {
 		},
 	});
 
-	const resolveAttachedPathsMutation = useMutation({
-		mutationFn: () =>
-			invoke("ai_context_resolve_paths", {
-				attachments: attachedFolders,
-			}),
-	});
-
 	const buildPayload = useCallback(async () => {
 		try {
 			return await buildPayloadMutation.mutateAsync();
@@ -214,13 +206,7 @@ export function useAiContext(contextSearch = "") {
 		return buildPayload();
 	}, [buildPayload]);
 
-	const resolveAttachedPaths = useCallback(
-		() => resolveAttachedPathsMutation.mutateAsync(),
-		[resolveAttachedPathsMutation],
-	);
-
 	return {
-		attachedFolders,
 		addContext,
 		removeContext,
 		hasContext,
@@ -228,16 +214,10 @@ export function useAiContext(contextSearch = "") {
 		folderIndexError:
 			indexQuery.error != null ? extractErrorMessage(indexQuery.error) : "",
 		visibleSuggestions,
-		payloadManifest: buildPayloadMutation.data?.manifest ?? null,
 		payloadError:
 			buildPayloadMutation.error != null
 				? extractErrorMessage(buildPayloadMutation.error)
 				: "",
-		payloadBuilding: buildPayloadMutation.isPending,
-		buildPayload,
 		ensurePayload,
-		resolveAttachedPaths,
-		charBudget,
-		setCharBudget,
 	};
 }

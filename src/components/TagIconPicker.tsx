@@ -12,7 +12,7 @@ import {
 	AppearancePickerIconTrigger,
 } from "./AppearancePicker";
 
-export interface TagIconPickerProps {
+interface TagIconPickerProps {
 	tag: string;
 	value?: string | null;
 	overrides?: TagIconOverrides | null;

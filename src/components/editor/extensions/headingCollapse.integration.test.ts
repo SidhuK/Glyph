@@ -2,7 +2,6 @@
 
 import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
-import { headingCollapsePluginKey } from "./headingCollapse";
 import { createEditorExtensions } from "./index";
 
 function createEditor(markdown: string) {
@@ -111,11 +110,10 @@ describe("Heading collapse integration", () => {
 
 			harness.editor.commands.insertContentAt(alpha.pos + 1, "Updated ");
 
-			const pluginState = headingCollapsePluginKey.getState(
-				harness.editor.state,
-			);
-			expect(pluginState?.collapsedPositions.size).toBe(1);
 			expect(findBlockByText(harness.element, "Updated Alpha")).toBeTruthy();
+			expect(
+				findBlockByText(harness.element, "Beta body")?.className,
+			).toContain("headingCollapseHidden");
 			expect(
 				findBlockByText(harness.element, "Alpha body")?.className,
 			).toContain("headingCollapseHidden");
@@ -152,10 +150,6 @@ describe("Heading collapse integration", () => {
 
 			harness.editor.commands.expandHeadingAncestors(gamma.pos);
 
-			const pluginState = headingCollapsePluginKey.getState(
-				harness.editor.state,
-			);
-			expect(pluginState?.collapsedPositions.size).toBe(0);
 			expect(
 				findBlockByText(harness.element, "Gamma body")?.className,
 			).not.toContain("headingCollapseHidden");
@@ -207,10 +201,6 @@ describe("Heading collapse integration", () => {
 
 		try {
 			harness.editor.commands.collapseAllHeadings();
-			const collapsedState = headingCollapsePluginKey.getState(
-				harness.editor.state,
-			);
-			expect(collapsedState?.collapsedPositions.size).toBe(3);
 			expect(
 				findBlockByText(harness.element, "Alpha body")?.className,
 			).toContain("headingCollapseHidden");
@@ -222,10 +212,6 @@ describe("Heading collapse integration", () => {
 			).toContain("headingCollapseHidden");
 
 			harness.editor.commands.expandAllHeadings();
-			const expandedState = headingCollapsePluginKey.getState(
-				harness.editor.state,
-			);
-			expect(expandedState?.collapsedPositions.size).toBe(0);
 			expect(
 				findBlockByText(harness.element, "Alpha body")?.className,
 			).not.toContain("headingCollapseHidden");

@@ -1,10 +1,6 @@
 import { cn } from "../../lib/utils";
 
-export type CanvasPaneAwaitVariant =
-	| "all-docs"
-	| "databases"
-	| "graph"
-	| "home";
+type CanvasPaneAwaitVariant = "all-docs" | "databases" | "graph" | "home";
 
 interface CanvasPaneAwaitProps {
 	variant: CanvasPaneAwaitVariant;

@@ -60,7 +60,6 @@
 
 .calendarDashboardTitleBlock p,
 .calendarPanelSectionHeader span,
-.calendarWeekMonth small,
 .calendarNoteTime {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
@@ -233,59 +232,6 @@
 
 .calendarWeekDay[data-weekend="true"] .calendarWeekDayName {
 	opacity: 0.5;
-}
-
-.calendarWeekSignals {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-wrap: wrap;
-	gap: 3px;
-	width: 100%;
-	min-height: 30px;
-	margin-top: 1px;
-	padding: 0;
-}
-
-.calendarWeekSignal {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 2px;
-	min-width: 19px;
-	height: 19px;
-	padding: 0 5px;
-	overflow: hidden;
-	border-radius: var(--pill-radius);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.calendarWeekSignal svg {
-	flex: 0 0 auto;
-	color: currentcolor;
-}
-
-.calendarWeekSignalCount {
-	min-width: 0;
-	color: currentcolor;
-}
-
-.calendarWeekTaskSignal {
-	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
-}
-
-.calendarWeekNoteSignal {
-	color: var(--text-secondary);
-}
-
-.calendarWeekDailySignal {
-	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
-}
-
-.calendarWeekOverdueSignal {
-	color: var(--status-danger-fg);
 }
 
 .calendarWeekSummaryStrip {
@@ -538,11 +484,6 @@
 	.calendarWeekDay {
 		height: 88px;
 		padding-inline: 4px;
-	}
-
-	.calendarWeekSignal {
-		padding-inline: 5px;
-		font-size: calc(var(--text-base) * 0.8);
 	}
 
 	.calendarDashboardTitleBlock h2 {

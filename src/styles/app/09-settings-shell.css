@@ -4,11 +4,6 @@
 
 .settingsTabPanel {
 	--settings-surface: var(--bg-tertiary);
-	--settings-surface-muted: color-mix(
-		in srgb,
-		var(--bg-tertiary) 82%,
-		var(--bg-primary)
-	);
 	--settings-surface-soft: color-mix(
 		in srgb,
 		var(--bg-tertiary) 58%,

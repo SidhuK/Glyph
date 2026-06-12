@@ -218,13 +218,6 @@
 	padding: 0;
 }
 
-.databasesHeaderSource {
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	white-space: nowrap;
-}
-
 .databasesViewBar {
 	display: flex;
 	align-items: center;
@@ -384,12 +377,6 @@
 .databaseToolbarSearchClear:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
-}
-
-.databaseFooterPath,
-.databaseCellEmpty {
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
 }
 
 .databaseToolbarChip {

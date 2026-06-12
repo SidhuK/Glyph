@@ -3,7 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -273,7 +273,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				: -1,
 		[activeTabPath, visibleNotes],
 	);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
 		() =>
 			visibleNotes
@@ -283,7 +282,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		showTaskProgressIndicator,
+		true,
 		taskSummaryRefreshKey,
 	);
 	const tagIconOverrides = useMemo(
@@ -495,7 +494,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onOpenAppearancePicker={setAppearancePickerPath}
 							iconNameForTag={iconNameForTag}
 							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
+								note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
 									: null
 							}
@@ -526,7 +525,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onOpenAppearancePicker={setAppearancePickerPath}
 							iconNameForTag={iconNameForTag}
 							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
+								note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
 									: null
 							}

@@ -27,7 +27,7 @@ import {
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
-export interface UILayoutContextValue {
+interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	sidebarWidth: number;
@@ -54,7 +54,7 @@ export interface UILayoutContextValue {
 	setSettingsTab: (tab: SettingsTab) => void;
 }
 
-export interface AISidebarContextValue {
+interface AISidebarContextValue {
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;

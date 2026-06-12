@@ -21,7 +21,7 @@ import {
 } from "react";
 import { useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
@@ -569,7 +569,7 @@ export function DatabaseBoard({
 	const [moveError, setMoveError] = useState("");
 	const [laneEdit, setLaneEdit] = useState<LaneEditState | null>(null);
 	const suppressClickRef = useRef(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],
@@ -585,10 +585,7 @@ export function DatabaseBoard({
 		() => Array.from(new Set(rows.map((row) => row.note_path).filter(Boolean))),
 		[rows],
 	);
-	const taskSummariesByPath = useTaskSummariesForPaths(
-		taskSummaryPaths,
-		showTaskProgressIndicator,
-	);
+	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
 	const reorderableLanes = useMemo(
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		[lanes],
@@ -993,7 +990,6 @@ export function DatabaseBoard({
 																</div>
 															) : null}
 															{isCardFieldVisible("task_progress") &&
-															showTaskProgressIndicator &&
 															taskSummary.total_count > 0 ? (
 																<TaskProgressIndicator
 																	summary={taskSummary}

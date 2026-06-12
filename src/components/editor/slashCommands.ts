@@ -8,7 +8,17 @@ import Suggestion, {
 import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
-import type { SlashCommandItem } from "./types";
+
+interface SlashCommandItem {
+	icon: string;
+	title: string;
+	description: string;
+	keywords: string[];
+	command: (ctx: {
+		editor: Editor;
+		range: { from: number; to: number };
+	}) => void;
+}
 
 function clampSlashCommandIndex(index: number, itemCount: number) {
 	if (itemCount <= 0) return 0;

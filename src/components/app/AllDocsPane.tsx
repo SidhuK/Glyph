@@ -9,7 +9,7 @@ import {
 import { m, useReducedMotion } from "motion/react";
 import { type KeyboardEvent, memo, useMemo, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
@@ -178,7 +178,6 @@ interface PrepareAllDocsCardPropsArgs {
 	sectionIndex: number;
 	selectedNotePath: string | null;
 	taskSummariesByPath: Record<string, NoteTaskSummary>;
-	showTaskProgressIndicator: boolean;
 	selectNote: (notePath: string) => void;
 	onOpenFile: AllDocsPaneProps["onOpenFile"];
 }
@@ -189,14 +188,11 @@ function prepareAllDocsCardProps({
 	sectionIndex,
 	selectedNotePath,
 	taskSummariesByPath,
-	showTaskProgressIndicator,
 	selectNote,
 	onOpenFile,
 }: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
 	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
-	const taskSummary = showTaskProgressIndicator
-		? taskSummariesByPath[note.note_path]
-		: undefined;
+	const taskSummary = taskSummariesByPath[note.note_path];
 
 	return {
 		notePath: note.note_path,
@@ -331,10 +327,9 @@ export const AllDocsPane = memo(function AllDocsPane({
 	});
 	const notes = notesQuery.data ?? [];
 	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		notePaths,
-		showTaskProgressIndicator,
+		true,
 		taskSummaryRefreshKey,
 	);
 	useTauriEvent("notes:external_changed", () => {
@@ -399,7 +394,6 @@ export const AllDocsPane = memo(function AllDocsPane({
 									sectionIndex,
 									selectedNotePath,
 									taskSummariesByPath,
-									showTaskProgressIndicator,
 									selectNote: setSelectedNotePath,
 									onOpenFile,
 								});
