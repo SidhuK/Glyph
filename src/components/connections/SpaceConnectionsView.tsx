@@ -213,25 +213,51 @@ function clearPersistentConnectionsLayoutCaches() {
 function writeConnectionsLayoutCache(
 	spacePath: string | null,
 	signature: string,
-	cy: Core,
+	positions: Record<string, ConnectionsPosition>,
 ) {
 	try {
-		const positions: Record<string, ConnectionsPosition> = {};
-		for (const node of cy.nodes()) {
-			const position = node.position();
-			positions[node.id()] = { x: position.x, y: position.y };
+		const cachedPositions: Record<string, ConnectionsPosition> = {};
+		const raw = window.sessionStorage.getItem(
+			connectionsLayoutCacheKey(spacePath),
+		);
+		if (raw) {
+			const parsed: unknown = JSON.parse(raw);
+			if (parsed && typeof parsed === "object") {
+				const record = parsed as Record<PropertyKey, unknown>;
+				if (
+					record.version === CONNECTIONS_LAYOUT_CACHE_VERSION &&
+					record.signature === signature &&
+					record.positions &&
+					typeof record.positions === "object"
+				) {
+					for (const [id, position] of Object.entries(record.positions)) {
+						if (isConnectionsPosition(position)) {
+							cachedPositions[id] = { x: position.x, y: position.y };
+						}
+					}
+				}
+			}
 		}
 		window.sessionStorage.setItem(
 			connectionsLayoutCacheKey(spacePath),
 			JSON.stringify({
 				version: CONNECTIONS_LAYOUT_CACHE_VERSION,
 				signature,
-				positions,
+				positions: { ...cachedPositions, ...positions },
 			} satisfies CachedConnectionsLayout),
 		);
 	} catch {
 		// Cache writes are best-effort; rendering should never depend on storage.
 	}
+}
+
+function positionsForNodes(cy: Core): Record<string, ConnectionsPosition> {
+	const positions: Record<string, ConnectionsPosition> = {};
+	for (const node of cy.nodes()) {
+		const position = node.position();
+		positions[node.id()] = { x: position.x, y: position.y };
+	}
+	return positions;
 }
 
 function openNote(nodeId: string) {
@@ -404,6 +430,9 @@ export function SpaceConnectionsView() {
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
 	const loadConnectionsCleanupRef = useRef<(() => void) | null>(null);
+	const activeSpacePathRef = useRef(spacePath);
+	const previousSpacePathRef = useRef(spacePath);
+	activeSpacePathRef.current = spacePath;
 	const signature = useMemo(
 		() => (graph ? connectionsSignature(graph) : ""),
 		[graph],
@@ -418,7 +447,14 @@ export function SpaceConnectionsView() {
 		clearPersistentConnectionsLayoutCaches();
 	}, []);
 
+	useEffect(() => {
+		if (previousSpacePathRef.current === spacePath) return;
+		previousSpacePathRef.current = spacePath;
+		setMaxNodes(DEFAULT_SPACE_CONNECTIONS_NODES);
+	}, [spacePath]);
+
 	const loadConnections = useCallback(() => {
+		const requestSpacePath = spacePath;
 		loadConnectionsCleanupRef.current?.();
 		let cancelled = false;
 		setLoading(true);
@@ -434,26 +470,30 @@ export function SpaceConnectionsView() {
 			max_tags: MAX_SPACE_CONNECTIONS_TAGS,
 		})
 			.then((nextGraph) => {
-				if (cancelled) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setGraph(nextGraph);
 				setGenerationProgress(nextGraph.nodes.length > 0 ? 40 : 100);
 				setGenerating(nextGraph.nodes.length > 0);
 			})
 			.catch((cause) => {
-				if (cancelled) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setGraph(null);
 				setGenerating(false);
 				setGenerationProgress(0);
 				setError(cause instanceof Error ? cause.message : String(cause));
 			})
 			.finally(() => {
-				if (!cancelled) setLoading(false);
+				if (!cancelled && activeSpacePathRef.current === requestSpacePath) {
+					setLoading(false);
+				}
 				if (loadConnectionsCleanupRef.current === cleanup) {
 					loadConnectionsCleanupRef.current = null;
 				}
 			});
 		return cleanup;
-	}, [maxNodes]);
+	}, [maxNodes, spacePath]);
 
 	useEffect(() => loadConnections(), [loadConnections]);
 
@@ -492,6 +532,20 @@ export function SpaceConnectionsView() {
 		if (!container) return;
 		let disposed = false;
 		let completeTimer: number | null = null;
+		let cacheWriteTimer: number | null = null;
+		let pendingCachePositions: Record<string, ConnectionsPosition> = {};
+		const scheduleLayoutCacheWrite = (
+			positions: Record<string, ConnectionsPosition>,
+		) => {
+			pendingCachePositions = { ...pendingCachePositions, ...positions };
+			if (cacheWriteTimer !== null) return;
+			cacheWriteTimer = window.setTimeout(() => {
+				cacheWriteTimer = null;
+				const nextPositions = pendingCachePositions;
+				pendingCachePositions = {};
+				writeConnectionsLayoutCache(spacePath, signature, nextPositions);
+			}, 120);
+		};
 		const visibleNodeCount = graph.nodes.length + graph.tags.length;
 		const layoutMode = cachedLayout
 			? "preset"
@@ -526,7 +580,11 @@ export function SpaceConnectionsView() {
 					organicizeNoteCloud(cy);
 					scatterSatelliteNodes(cy);
 				}
-				writeConnectionsLayoutCache(spacePath, signature, cy);
+				writeConnectionsLayoutCache(
+					spacePath,
+					signature,
+					positionsForNodes(cy),
+				);
 				if (!disposed) {
 					setGenerationProgress(100);
 					completeTimer = window.setTimeout(() => {
@@ -547,8 +605,11 @@ export function SpaceConnectionsView() {
 			}
 			highlightNeighborhood(cy, null);
 		});
-		cy.on("dragfree", "node", () => {
-			writeConnectionsLayoutCache(spacePath, signature, cy);
+		cy.on("dragfree", "node", (event) => {
+			const position = event.target.position();
+			scheduleLayoutCacheWrite({
+				[event.target.id()]: { x: position.x, y: position.y },
+			});
 		});
 		cy.on("tap", "node", (event) => {
 			if (event.target.hasClass("tag")) {
@@ -586,6 +647,9 @@ export function SpaceConnectionsView() {
 			disposed = true;
 			if (completeTimer !== null) {
 				window.clearTimeout(completeTimer);
+			}
+			if (cacheWriteTimer !== null) {
+				window.clearTimeout(cacheWriteTimer);
 			}
 			themeObserver.disconnect();
 			observer.disconnect();

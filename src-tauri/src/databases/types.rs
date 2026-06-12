@@ -6,6 +6,10 @@ fn default_true() -> bool {
     true
 }
 
+fn default_database_store_version() -> u32 {
+    1
+}
+
 fn default_database_layout() -> String {
     "board".to_string()
 }
@@ -140,13 +144,25 @@ pub struct DatabaseDefinition {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseStore {
+    #[serde(default = "default_database_store_version")]
+    pub version: u32,
     #[serde(default)]
     pub databases: Vec<DatabaseDefinition>,
     #[serde(default)]
     pub status_colors: BTreeMap<String, String>,
+}
+
+impl Default for DatabaseStore {
+    fn default() -> Self {
+        Self {
+            version: default_database_store_version(),
+            databases: Vec::new(),
+            status_colors: BTreeMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -46,11 +46,17 @@
 	border-color: color-mix(in srgb, var(--border-default) 42%, transparent);
 }
 
-.localNoteConnectionsClose:focus,
-.localNoteConnectionsClose:focus-visible {
+.localNoteConnectionsClose:focus {
 	color: var(--text-primary);
 	outline: none;
 	box-shadow: none;
+}
+
+.localNoteConnectionsClose:focus-visible {
+	color: var(--text-primary);
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .localNoteConnectionsState {

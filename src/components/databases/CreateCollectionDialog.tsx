@@ -1,6 +1,6 @@
 import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	folderNameFromPath,
 	nextCollectionName,
@@ -65,6 +65,10 @@ export function CreateCollectionDialog({
 	const [name, setName] = useState("");
 	const [nameTouched, setNameTouched] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const normalizedFolder = useMemo(
+		() => normalizeCollectionFolderPath(folder),
+		[folder],
+	);
 
 	useEffect(() => {
 		if (!open) {
@@ -83,8 +87,10 @@ export function CreateCollectionDialog({
 	};
 
 	const handleSubmit = async () => {
-		const normalizedFolder = normalizeCollectionFolderPath(folder);
-		if (!normalizedFolder) return;
+		if (!normalizedFolder) {
+			onError("Choose a project folder.");
+			return;
+		}
 		setLoading(true);
 		try {
 			const created = await invoke("databases_create", {
@@ -189,7 +195,7 @@ export function CreateCollectionDialog({
 						<Button
 							type="submit"
 							className="createCollectionCta"
-							disabled={loading || !folder.trim()}
+							disabled={loading || !normalizedFolder}
 						>
 							{loading ? "Creating…" : "Create collection"}
 						</Button>

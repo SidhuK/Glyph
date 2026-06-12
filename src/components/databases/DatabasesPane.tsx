@@ -177,6 +177,9 @@ function DatabasesPaneContent({
 				</>
 			) : (
 				<div className="databasesEmptyState">
+					{ui.error ? (
+						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
+					) : null}
 					<HugeiconsIcon
 						icon={LibraryIcon}
 						size="var(--icon-3xl)"

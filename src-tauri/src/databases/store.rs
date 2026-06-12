@@ -209,6 +209,9 @@ fn normalize_status_colors(store: &mut DatabaseStore) {
 }
 
 fn normalize_store_on_load(mut store: DatabaseStore) -> DatabaseStore {
+    if store.version == 0 {
+        store.version = 1;
+    }
     normalize_store_property_kinds(&mut store);
     prune_unsupported_view_layouts(&mut store);
     normalize_status_colors(&mut store);
@@ -218,6 +221,7 @@ fn normalize_store_on_load(mut store: DatabaseStore) -> DatabaseStore {
 
 fn default_store() -> DatabaseStore {
     DatabaseStore {
+        version: 1,
         status_colors: BTreeMap::new(),
         databases: Vec::new(),
     }

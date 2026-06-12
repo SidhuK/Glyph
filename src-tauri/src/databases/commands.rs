@@ -56,21 +56,23 @@ fn slugify_title(title: &str) -> String {
 fn normalize_database_name(name: &str) -> Result<String, String> {
     let normalized = name.trim();
     if normalized.is_empty() {
-        return Err("database name cannot be empty".to_string());
+        return Err("collection name cannot be empty".to_string());
     }
     Ok(normalized.to_string())
 }
 
-fn normalize_collection_folder(folder: &str) -> Result<String, String> {
-    let normalized = folder
-        .trim()
-        .replace('\\', "/")
-        .trim_matches('/')
-        .to_string();
+fn normalize_collection_folder(base_dir: &Path, folder: &str) -> Result<String, String> {
+    let trimmed = folder.trim().replace('\\', "/");
+    if Path::new(&trimmed).is_absolute() {
+        return Err("folder must be relative".to_string());
+    }
+    let normalized = trimmed.trim_matches('/').to_string();
     if normalized.is_empty() {
         return Err("folder is required".to_string());
     }
-    deny_hidden_rel_path(&PathBuf::from(&normalized))?;
+    let rel = PathBuf::from(&normalized);
+    deny_hidden_rel_path(&rel)?;
+    paths::join_under(base_dir, &rel)?;
     Ok(normalized)
 }
 
@@ -543,10 +545,10 @@ pub async fn databases_create(
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
         let normalized_name = normalize_database_name(&name)?;
-        let normalized_folder = normalize_collection_folder(&folder)?;
+        let normalized_folder = normalize_collection_folder(&root, &folder)?;
         let mut store = load_store(&root)?;
         if database_name_exists(&store.databases, &normalized_name, None) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let now = chrono::Utc::now().to_rfc3339();
         let database = super::types::DatabaseDefinition {
@@ -595,10 +597,14 @@ pub async fn databases_update(
             .ok_or_else(|| "database not found".to_string())?;
         let normalized_name = normalize_database_name(&database.name)?;
         if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let mut next = database.clone();
         next.name = normalized_name;
+        if next.source.kind == "folder" {
+            next.source.value = normalize_collection_folder(&root, &next.source.value)?;
+        }
+        next.new_note.folder = normalize_collection_folder(&root, &next.new_note.folder)?;
         prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();

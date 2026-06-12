@@ -123,10 +123,16 @@ interface DatabaseNewNoteConfig {
 	folder: string;
 }
 
+interface WorkspaceDatabaseGrouping {
+	column_id: string;
+	ascending: boolean;
+}
+
 interface DatabaseViewState {
 	layout: "table" | "board";
 	search?: string;
 	board_group_by?: string | null;
+	board_grouping?: WorkspaceDatabaseGrouping | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
@@ -212,11 +218,6 @@ export interface DatabaseRow {
 	tags: string[];
 	linked_notes?: string[];
 	properties: Record<string, DatabaseCellValue>;
-}
-
-interface WorkspaceDatabaseGrouping {
-	column_id: string;
-	ascending: boolean;
 }
 
 interface WorkspaceDatabaseView {

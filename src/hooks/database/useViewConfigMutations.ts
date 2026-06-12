@@ -4,14 +4,14 @@ import {
 	patchBoardMapField,
 	patchViewState,
 	removeBoardLaneColor,
+	viewToConfig,
 } from "../../lib/database/viewConfig";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
-	WorkspaceDatabaseDefinition,
 	WorkspaceDatabaseDocument,
 } from "../../lib/tauri";
-import type { DatabaseBoardHandlers } from "./types";
+import type { DatabaseBoardHandlers, SaveDatabase } from "./types";
 
 const MIN_DATABASE_COLUMN_WIDTH = 120;
 const MAX_DATABASE_COLUMN_WIDTH = 900;
@@ -20,9 +20,7 @@ export interface UseViewConfigMutationsOptions {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
 	activeConfig: DatabaseConfig | null;
-	saveDatabase: (
-		nextDatabase: WorkspaceDatabaseDefinition,
-	) => Promise<WorkspaceDatabaseDocument>;
+	saveDatabase: SaveDatabase;
 }
 
 export function useViewConfigMutations({
@@ -34,29 +32,40 @@ export function useViewConfigMutations({
 	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
 
 	const handleSaveConfig = useCallback(
-		async (nextConfig: DatabaseConfig) => {
+		async (
+			nextConfig: DatabaseConfig | ((config: DatabaseConfig) => DatabaseConfig),
+		) => {
 			if (!document || !selectedViewId) return;
-			await saveDatabase(
-				applyConfigToView(document.database, selectedViewId, nextConfig),
-			);
+			await saveDatabase((currentDatabase) => {
+				const currentConfig = viewToConfig(currentDatabase, selectedViewId);
+				if (!currentConfig) return currentDatabase;
+				const resolvedConfig =
+					typeof nextConfig === "function"
+						? nextConfig(currentConfig)
+						: nextConfig;
+				if (resolvedConfig === currentConfig) return currentDatabase;
+				return applyConfigToView(
+					currentDatabase,
+					selectedViewId,
+					resolvedConfig,
+				);
+			});
 		},
 		[document, saveDatabase, selectedViewId],
 	);
 
 	const patchActiveView = useCallback(
 		(viewPatch: Partial<DatabaseConfig["view"]>) => {
-			if (!activeConfig) return;
-			void handleSaveConfig(patchViewState(activeConfig, viewPatch));
+			void handleSaveConfig((config) => patchViewState(config, viewPatch));
 		},
-		[activeConfig, handleSaveConfig],
+		[handleSaveConfig],
 	);
 
 	const patchActiveConfig = useCallback(
 		(buildNext: (config: DatabaseConfig) => DatabaseConfig) => {
-			if (!activeConfig) return;
-			void handleSaveConfig(buildNext(activeConfig));
+			void handleSaveConfig(buildNext);
 		},
-		[activeConfig, handleSaveConfig],
+		[handleSaveConfig],
 	);
 
 	const handleLaneOrderChange = useCallback(
@@ -116,59 +125,61 @@ export function useViewConfigMutations({
 
 	const handleResizeColumn = useCallback(
 		(columnId: string, width: number) => {
-			if (!activeConfig) return;
 			const nextWidth = Math.min(
 				MAX_DATABASE_COLUMN_WIDTH,
 				Math.max(MIN_DATABASE_COLUMN_WIDTH, Math.round(width)),
 			);
-			const currentWidth =
-				activeConfig.columns.find((column) => column.id === columnId)?.width ??
-				null;
-			if (currentWidth != null && Math.round(currentWidth) === nextWidth) {
-				return;
-			}
-			void handleSaveConfig({
-				...activeConfig,
-				columns: activeConfig.columns.map((column) =>
-					column.id === columnId ? { ...column, width: nextWidth } : column,
-				),
+			void handleSaveConfig((config) => {
+				const currentWidth =
+					config.columns.find((column) => column.id === columnId)?.width ??
+					null;
+				if (currentWidth != null && Math.round(currentWidth) === nextWidth) {
+					return config;
+				}
+				return {
+					...config,
+					columns: config.columns.map((column) =>
+						column.id === columnId ? { ...column, width: nextWidth } : column,
+					),
+				};
 			});
 		},
-		[activeConfig, handleSaveConfig],
+		[handleSaveConfig],
 	);
 
 	const handleChangeColumnIcon = useCallback(
 		(columnId: string, iconName: string | null) => {
-			if (!activeConfig) return;
 			const nextIcon = iconName?.trim() || null;
-			const currentIcon =
-				activeConfig.columns.find((column) => column.id === columnId)?.icon ??
-				null;
-			if (currentIcon === nextIcon) return;
-			void handleSaveConfig({
-				...activeConfig,
-				columns: activeConfig.columns.map((column) =>
-					column.id === columnId ? { ...column, icon: nextIcon } : column,
-				),
+			void handleSaveConfig((config) => {
+				const currentIcon =
+					config.columns.find((column) => column.id === columnId)?.icon ?? null;
+				if (currentIcon === nextIcon) return config;
+				return {
+					...config,
+					columns: config.columns.map((column) =>
+						column.id === columnId ? { ...column, icon: nextIcon } : column,
+					),
+				};
 			});
 		},
-		[activeConfig, handleSaveConfig],
+		[handleSaveConfig],
 	);
 
 	const handleToggleSort = useCallback(
 		(column: DatabaseColumn) => {
-			if (!activeConfig) return;
-			void handleSaveConfig({
-				...activeConfig,
-				sorts:
-					activeConfig.sorts[0]?.column_id === column.id
-						? activeConfig.sorts[0]?.direction === "asc"
-							? [{ column_id: column.id, direction: "desc" }]
-							: []
-						: [{ column_id: column.id, direction: "asc" }],
+			void handleSaveConfig((config) => {
+				return {
+					...config,
+					sorts:
+						config.sorts[0]?.column_id === column.id
+							? config.sorts[0]?.direction === "asc"
+								? [{ column_id: column.id, direction: "desc" }]
+								: []
+							: [{ column_id: column.id, direction: "asc" }],
+				};
 			});
 		},
-		[activeConfig, handleSaveConfig],
+		[handleSaveConfig],
 	);
 
 	return {

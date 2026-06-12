@@ -5,6 +5,14 @@ import type {
 } from "../../lib/tauri";
 
 export type DatabaseView = WorkspaceDatabaseDefinition["views"][number];
+export type SaveDatabaseInput =
+	| WorkspaceDatabaseDefinition
+	| ((
+			currentDatabase: WorkspaceDatabaseDefinition,
+	  ) => WorkspaceDatabaseDefinition);
+export type SaveDatabase = (
+	nextDatabase: SaveDatabaseInput,
+) => Promise<WorkspaceDatabaseDocument>;
 
 export interface PaneErrorHandlers {
 	setError: (message: string) => void;

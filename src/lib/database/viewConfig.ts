@@ -21,6 +21,7 @@ export function viewToConfig(
 			layout: view.layout,
 			search: view.search ?? "",
 			board_group_by: view.grouping?.column_id ?? null,
+			board_grouping: view.grouping ? { ...view.grouping } : null,
 			board_lane_colors: view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
 			board_lane_order: view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
 			board_card_order: view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
@@ -41,32 +42,36 @@ export function applyConfigToView(
 		...database,
 		source: config.source,
 		new_note: config.new_note,
-		views: database.views.map((view) =>
-			view.id === viewId
-				? {
-						...view,
-						layout: config.view.layout,
-						search: config.view.search ?? "",
-						grouping: config.view.board_group_by
-							? {
-									column_id: config.view.board_group_by,
-									ascending: true,
-								}
-							: null,
-						board_lane_colors:
-							config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
-						board_lane_order:
-							config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
-						board_card_order:
-							config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
-						board_card_fields:
-							config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
-						columns: config.columns,
-						sorts: config.sorts,
-						filters: config.filters,
-					}
-				: view,
-		),
+		views: database.views.map((view) => {
+			if (view.id !== viewId) return view;
+			const grouping = config.view.board_group_by
+				? config.view.board_grouping?.column_id === config.view.board_group_by
+					? { ...config.view.board_grouping }
+					: view.grouping?.column_id === config.view.board_group_by
+						? { ...view.grouping }
+						: {
+								column_id: config.view.board_group_by,
+								ascending: true,
+							}
+				: null;
+			return {
+				...view,
+				layout: config.view.layout,
+				search: config.view.search ?? "",
+				grouping,
+				board_lane_colors:
+					config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
+				board_lane_order:
+					config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
+				board_card_order:
+					config.view.board_card_order ?? EMPTY_BOARD_CARD_ORDER,
+				board_card_fields:
+					config.view.board_card_fields ?? EMPTY_BOARD_CARD_FIELDS,
+				columns: config.columns,
+				sorts: config.sorts,
+				filters: config.filters,
+			};
+		}),
 	};
 }
 

@@ -10,10 +10,11 @@ export type ActionMenuIconKey =
 
 export type ActionMenuItem =
 	| { type: "separator" }
-	| { type: "label"; label: string }
+	| { type: "label"; label: string; key?: string }
 	| {
 			type: "item";
 			label: string;
+			key?: string;
 			onSelect: () => void;
 			checked?: boolean;
 			enabled?: boolean;

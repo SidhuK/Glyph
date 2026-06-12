@@ -6,13 +6,12 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { DatabaseView } from "../../hooks/database/types";
+import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { createDefaultDatabaseView } from "../../lib/database/defaultView";
 import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { buildViewMenuItems } from "../../lib/database/viewMenuItems";
 import type {
 	DatabaseConfig,
-	WorkspaceDatabaseDefinition,
 	WorkspaceDatabaseDocument,
 } from "../../lib/tauri";
 
@@ -20,9 +19,7 @@ export interface UseDatabaseViewTabsOptions {
 	document: WorkspaceDatabaseDocument;
 	selectedViewId: string;
 	setSelectedViewId: (viewId: string | null) => void;
-	saveDatabase: (
-		nextDatabase: WorkspaceDatabaseDefinition,
-	) => Promise<WorkspaceDatabaseDocument>;
+	saveDatabase: SaveDatabase;
 	clearError: () => void;
 	activeView: DatabaseView;
 	patchActiveView: (viewPatch: Partial<DatabaseConfig["view"]>) => void;
@@ -118,27 +115,42 @@ export function useDatabaseViewTabs({
 		(event: KeyboardEvent<HTMLButtonElement>, viewId: string) => {
 			const index = views.findIndex((view) => view.id === viewId);
 			if (index < 0) return;
+			const tabList = event.currentTarget.closest('[role="tablist"]');
+			const selectAndFocusView = (nextViewId: string) => {
+				setSelectedViewId(nextViewId);
+				window.requestAnimationFrame(() => {
+					const tabs =
+						tabList?.querySelectorAll<HTMLButtonElement>(".databasesViewTab") ??
+						[];
+					for (const tab of tabs) {
+						if (tab.dataset.viewId === nextViewId) {
+							tab.focus();
+							break;
+						}
+					}
+				});
+			};
 
 			if (event.key === "ArrowRight") {
 				event.preventDefault();
 				const next = views[index + 1] ?? views[0];
-				setSelectedViewId(next.id);
+				selectAndFocusView(next.id);
 				return;
 			}
 			if (event.key === "ArrowLeft") {
 				event.preventDefault();
 				const prev = views[index - 1] ?? views[views.length - 1];
-				setSelectedViewId(prev.id);
+				selectAndFocusView(prev.id);
 				return;
 			}
 			if (event.key === "Home") {
 				event.preventDefault();
-				setSelectedViewId(views[0].id);
+				selectAndFocusView(views[0].id);
 				return;
 			}
 			if (event.key === "End") {
 				event.preventDefault();
-				setSelectedViewId(views[views.length - 1].id);
+				selectAndFocusView(views[views.length - 1].id);
 			}
 		},
 		[setSelectedViewId, views],

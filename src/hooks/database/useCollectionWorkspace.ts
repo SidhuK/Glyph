@@ -24,7 +24,7 @@ import type {
 	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import type { PaneErrorHandlers } from "./types";
+import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
 export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
 	databasesOpenRequest: DatabasesOpenRequest;
@@ -76,7 +76,10 @@ export function useCollectionWorkspace({
 	const previousOpenRequestRef = useRef(databasesOpenRequest);
 	const previousDatabaseIdRef = useRef(selectedDatabaseId);
 	const documentIdRef = useRef(document?.database.id ?? null);
+	const documentRef = useRef(document);
+	const saveQueueRef = useRef(Promise.resolve());
 	documentIdRef.current = document?.database.id ?? null;
+	documentRef.current = document;
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
@@ -132,6 +135,7 @@ export function useCollectionWorkspace({
 	useEffect(() => {
 		if (!selectedDatabaseId) {
 			setDocument(null);
+			setNameDraft("");
 			setLoading(false);
 			return;
 		}
@@ -140,6 +144,10 @@ export function useCollectionWorkspace({
 		const needsFetch = documentIdRef.current !== selectedDatabaseId;
 		setLoading(needsFetch);
 		clearError();
+		if (needsFetch) {
+			setDocument(null);
+			setNameDraft("");
+		}
 
 		void prefetchDatabaseDocument(selectedDatabaseId)
 			.then((next) => {
@@ -207,32 +215,52 @@ export function useCollectionWorkspace({
 	}, []);
 
 	const saveDatabase = useCallback(
-		async (nextDatabase: WorkspaceDatabaseDefinition) => {
-			const prevDatabase = document?.database ?? null;
-			try {
-				const saved = await invoke("databases_update", {
-					database: nextDatabase,
-				});
-				clearError();
-				setDocument(saved);
-				setNameDraft(saved.database.name);
-				invalidateDatabasePrefetch(saved.database.id);
-				setPrefetchedDatabaseDocument(saved.database.id, saved);
-				if (
-					!prevDatabase ||
-					shouldReloadSummaries(prevDatabase, saved.database)
-				) {
-					invalidateDatabaseSummariesPrefetch();
-					await loadSummaries();
+		(nextDatabaseOrUpdater: SaveDatabaseInput) => {
+			const run = async () => {
+				const currentDocument = documentRef.current;
+				const prevDatabase = currentDocument?.database ?? null;
+				if (!prevDatabase && typeof nextDatabaseOrUpdater === "function") {
+					throw new Error("database not loaded");
 				}
-				return saved;
-			} catch (cause) {
-				const message = extractErrorMessage(cause);
-				setError(message);
-				throw cause instanceof Error ? cause : new Error(message);
-			}
+				const nextDatabase =
+					typeof nextDatabaseOrUpdater === "function"
+						? nextDatabaseOrUpdater(prevDatabase as WorkspaceDatabaseDefinition)
+						: nextDatabaseOrUpdater;
+				if (nextDatabase === prevDatabase && currentDocument) {
+					return currentDocument;
+				}
+				try {
+					const saved = await invoke("databases_update", {
+						database: nextDatabase,
+					});
+					clearError();
+					documentRef.current = saved;
+					setDocument(saved);
+					setNameDraft(saved.database.name);
+					invalidateDatabasePrefetch(saved.database.id);
+					setPrefetchedDatabaseDocument(saved.database.id, saved);
+					if (
+						!prevDatabase ||
+						shouldReloadSummaries(prevDatabase, saved.database)
+					) {
+						invalidateDatabaseSummariesPrefetch();
+						await loadSummaries();
+					}
+					return saved;
+				} catch (cause) {
+					const message = extractErrorMessage(cause);
+					setError(message);
+					throw cause instanceof Error ? cause : new Error(message);
+				}
+			};
+			const pending = saveQueueRef.current.then(run, run);
+			saveQueueRef.current = pending.then(
+				() => undefined,
+				() => undefined,
+			);
+			return pending;
 		},
-		[clearError, document?.database, loadSummaries, setError],
+		[clearError, loadSummaries, setError],
 	);
 
 	const commitDatabaseRename = useCallback(() => {

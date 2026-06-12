@@ -30,7 +30,8 @@ export function collectionFolderBreadcrumbParts(
 }
 
 export function folderNameFromPath(path: string): string {
-	const parts = path.split("/").filter(Boolean);
+	const normalized = normalizeCollectionFolderPath(path);
+	const parts = normalized.split("/").filter(Boolean);
 	return parts[parts.length - 1] ?? path;
 }
 

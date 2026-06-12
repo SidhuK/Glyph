@@ -1,6 +1,6 @@
 import { LibraryIcon, NoteIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import { buildCollectionMenuItems } from "../../lib/database/viewMenuItems";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
@@ -36,6 +36,7 @@ export function CollectionTopBar({
 	views,
 	actions,
 }: CollectionTopBarProps) {
+	const skipNextBlurCommitRef = useRef(false);
 	const collectionMenuItems = useMemo(
 		() =>
 			buildCollectionMenuItems(
@@ -69,10 +70,17 @@ export function CollectionTopBar({
 								width: `${Math.min(Math.max(doc.nameDraft.trim().length + 1, 10), 36)}ch`,
 							}}
 							onChange={(event) => doc.setNameDraft(event.target.value)}
-							onBlur={doc.commitDatabaseRename}
+							onBlur={() => {
+								if (skipNextBlurCommitRef.current) {
+									skipNextBlurCommitRef.current = false;
+									return;
+								}
+								doc.commitDatabaseRename();
+							}}
 							onKeyDown={(event) => {
 								if (event.key === "Enter") {
 									event.preventDefault();
+									skipNextBlurCommitRef.current = true;
 									doc.commitDatabaseRename();
 									(event.target as HTMLInputElement).blur();
 								}
@@ -146,6 +154,7 @@ export function CollectionTopBar({
 						className="databasesTopActionButton databasesTopActionButtonDanger"
 						onClick={() => void doc.handleDeleteDatabase()}
 						title="Delete collection"
+						aria-label="Delete collection"
 					>
 						<Trash2 size="var(--icon-md)" />
 					</Button>

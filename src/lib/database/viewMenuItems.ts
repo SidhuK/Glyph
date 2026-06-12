@@ -58,6 +58,7 @@ export function buildCollectionMenuItems(
 	const items: ActionMenuItem[] = summaries.map((summary) => ({
 		type: "item",
 		label: summary.name,
+		key: `collection-${summary.id}`,
 		checked: summary.id === selectedDatabaseId,
 		iconKey: "library",
 		onSelect: () => setSelectedDatabaseId(summary.id),
@@ -70,6 +71,7 @@ export function buildCollectionMenuItems(
 	items.push({
 		type: "item",
 		label: "New collection",
+		key: "new-collection",
 		iconKey: "plus",
 		onSelect: openCreateCollectionDialog,
 	});

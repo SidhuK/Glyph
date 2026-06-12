@@ -1,16 +1,12 @@
-import type {
-	WorkspaceDatabaseDefinition,
-	WorkspaceDatabaseDocument,
-} from "../../lib/tauri";
+import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
+import type { SaveDatabase } from "./types";
 import { useActiveViewConfig } from "./useActiveViewConfig";
 import { useViewConfigMutations } from "./useViewConfigMutations";
 
 export interface UseDatabaseViewActionsOptions {
 	document: WorkspaceDatabaseDocument | null;
 	selectedViewId: string | null;
-	saveDatabase: (
-		nextDatabase: WorkspaceDatabaseDefinition,
-	) => Promise<WorkspaceDatabaseDocument>;
+	saveDatabase: SaveDatabase;
 }
 
 export function useDatabaseViewActions({

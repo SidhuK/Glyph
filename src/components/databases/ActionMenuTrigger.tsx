@@ -112,7 +112,7 @@ export function ActionMenuTrigger({
 				{(() => {
 					let separatorCount = 0;
 
-					return items.map((item) => {
+					return items.map((item, index) => {
 						if (item.type === "separator") {
 							separatorCount += 1;
 							return (
@@ -126,7 +126,7 @@ export function ActionMenuTrigger({
 						if (item.type === "label") {
 							return (
 								<DropdownMenuLabel
-									key={`label-${item.label}`}
+									key={`label-${item.key ?? `${item.label}-${index}`}`}
 									className={labelClassName}
 								>
 									{item.label}
@@ -145,7 +145,7 @@ export function ActionMenuTrigger({
 
 						return (
 							<DropdownMenuItem
-								key={`item-${item.label}`}
+								key={`item-${item.key ?? `${item.label}-${index}`}`}
 								disabled={item.enabled === false}
 								onSelect={item.onSelect}
 								className={classes}

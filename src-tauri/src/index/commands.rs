@@ -21,8 +21,9 @@ use super::tasks::{
 };
 use super::types::{
     BacklinkItem, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode, LocalConnectionsTagEdge,
-    LocalConnectionsTagNode, LocalNoteConnections, PersonCount, SearchResult, SpaceConnections, SpaceConnectionsEdge,
-    SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount, TaskDateInfo,
+    LocalConnectionsTagNode, LocalNoteConnections, PersonCount, SearchResult, SpaceConnectionKind, SpaceConnections,
+    SpaceConnectionsEdge, SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount,
+    TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1678,13 +1679,18 @@ fn space_connections_for_conn(
         });
     }
 
-    let selected_id_set = node_seeds
+    let selected_ids = node_seeds
         .iter()
         .map(|node| node.id.as_str())
-        .collect::<HashSet<_>>();
+        .collect::<Vec<_>>();
+    let selected_id_values = std::iter::repeat("(?)")
+        .take(selected_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
 
-    let edge_query =
-        "SELECT DISTINCT from_id, to_id, kind
+    let edge_query = format!(
+        "WITH selected_ids(id) AS (VALUES {selected_id_values})
+         SELECT DISTINCT from_id, to_id, kind
          FROM (
             SELECT from_id, to_id, 'link' AS kind
             FROM links
@@ -1695,41 +1701,50 @@ fn space_connections_for_conn(
             WHERE to_id IS NOT NULL
          )
          WHERE from_id <> to_id
-         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC";
-    let mut edge_stmt = conn.prepare(edge_query).map_err(|e| e.to_string())?;
-    let mut edge_rows = edge_stmt.query([]).map_err(|e| e.to_string())?;
+           AND from_id IN (SELECT id FROM selected_ids)
+           AND to_id IN (SELECT id FROM selected_ids)
+         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC"
+    );
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    let mut edge_rows = edge_stmt
+        .query(rusqlite::params_from_iter(selected_ids.iter().copied()))
+        .map_err(|e| e.to_string())?;
     let mut edges = Vec::new();
     while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
         let from_id: String = row.get(0).map_err(|e| e.to_string())?;
         let to_id: String = row.get(1).map_err(|e| e.to_string())?;
-        if !selected_id_set.contains(from_id.as_str())
-            || !selected_id_set.contains(to_id.as_str())
-        {
-            continue;
-        }
+        let kind = match row.get::<_, String>(2).map_err(|e| e.to_string())?.as_str() {
+            "link" => SpaceConnectionKind::Link,
+            "relationship" => SpaceConnectionKind::Relationship,
+            other => return Err(format!("unsupported connection kind '{other}'")),
+        };
         edges.push(SpaceConnectionsEdge {
             from_id,
             to_id,
-            kind: row.get(2).map_err(|e| e.to_string())?,
+            kind,
         });
     }
 
-    let tag_query =
-        "SELECT note_id, tag
+    let tag_query = format!(
+        "WITH selected_ids(id) AS (VALUES {selected_id_values})
+         SELECT note_id, tag
          FROM tags
          WHERE is_explicit = 1
            AND tag NOT LIKE ?
-         ORDER BY tag COLLATE NOCASE ASC, note_id COLLATE NOCASE ASC";
-    let mut tag_stmt = conn.prepare(tag_query).map_err(|e| e.to_string())?;
+           AND note_id IN (SELECT id FROM selected_ids)
+         ORDER BY tag COLLATE NOCASE ASC, note_id COLLATE NOCASE ASC"
+    );
+    let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
+    let tag_params = selected_ids
+        .iter()
+        .map(|id| (*id).to_string())
+        .chain(std::iter::once(format!("{PEOPLE_TAG_NAMESPACE}%")));
     let mut tag_rows = tag_stmt
-        .query([format!("{PEOPLE_TAG_NAMESPACE}%")])
+        .query(rusqlite::params_from_iter(tag_params))
         .map_err(|e| e.to_string())?;
     let mut note_ids_by_tag = HashMap::<String, HashSet<String>>::new();
     while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
         let note_id: String = row.get(0).map_err(|e| e.to_string())?;
-        if !selected_id_set.contains(note_id.as_str()) {
-            continue;
-        }
         let tag: String = row.get(1).map_err(|e| e.to_string())?;
         note_ids_by_tag.entry(tag).or_default().insert(note_id);
     }
@@ -1794,8 +1809,6 @@ fn space_connections_for_conn(
             }
         }
     }
-    drop(selected_id_set);
-
     let nodes = node_seeds
         .into_iter()
         .map(|node| SpaceConnectionsNode {

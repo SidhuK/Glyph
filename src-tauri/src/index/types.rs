@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
 pub struct SearchResult {
@@ -65,11 +65,18 @@ pub struct SpaceConnectionsNode {
     pub is_isolated: bool,
 }
 
+#[derive(Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SpaceConnectionKind {
+    Link,
+    Relationship,
+}
+
 #[derive(Serialize)]
 pub struct SpaceConnectionsEdge {
     pub from_id: String,
     pub to_id: String,
-    pub kind: String,
+    pub kind: SpaceConnectionKind,
 }
 
 #[derive(Serialize)]

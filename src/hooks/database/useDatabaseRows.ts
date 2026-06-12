@@ -37,17 +37,32 @@ export function useDatabaseRows({
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
+	const previousSelectionRef = useRef<{
+		databaseId: string | null;
+		viewId: string | null;
+	} | null>(null);
 
 	const clearRows = useCallback(() => {
+		rowRequestTokenRef.current += 1;
 		setRows([]);
 		setRowsTruncated(false);
+		setSelectedRowPath(null);
 	}, []);
 
 	useEffect(() => {
-		if (!selectedDatabaseId) {
-			clearRows();
+		const previous = previousSelectionRef.current;
+		if (
+			previous?.databaseId === selectedDatabaseId &&
+			previous.viewId === selectedViewId
+		) {
+			return;
 		}
-	}, [clearRows, selectedDatabaseId]);
+		previousSelectionRef.current = {
+			databaseId: selectedDatabaseId,
+			viewId: selectedViewId,
+		};
+		clearRows();
+	}, [clearRows, selectedDatabaseId, selectedViewId]);
 
 	const loadRows = useCallback(async () => {
 		const requestToken = rowRequestTokenRef.current + 1;
@@ -62,6 +77,7 @@ export function useDatabaseRows({
 			if (rowRequestTokenRef.current === requestToken) {
 				setRows([]);
 				setRowsTruncated(false);
+				setSelectedRowPath(null);
 			}
 			return;
 		}

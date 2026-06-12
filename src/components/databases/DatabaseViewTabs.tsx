@@ -2,11 +2,10 @@ import { MoreVerticalIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { useCallback, useRef } from "react";
-import type { DatabaseView } from "../../hooks/database/types";
+import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
 import type {
 	DatabaseConfig,
-	WorkspaceDatabaseDefinition,
 	WorkspaceDatabaseDocument,
 } from "../../lib/tauri";
 import { Kanban, Plus, Table } from "../Icons";
@@ -18,9 +17,7 @@ interface DatabaseViewTabsProps {
 	document: WorkspaceDatabaseDocument;
 	selectedViewId: string;
 	setSelectedViewId: (viewId: string | null) => void;
-	saveDatabase: (
-		nextDatabase: WorkspaceDatabaseDefinition,
-	) => Promise<WorkspaceDatabaseDocument>;
+	saveDatabase: SaveDatabase;
 	clearError: () => void;
 	activeView: DatabaseView;
 	patchActiveView: (viewPatch: Partial<DatabaseConfig["view"]>) => void;
@@ -121,6 +118,7 @@ export function DatabaseViewTabs({
 							className={`databasesViewTab${isActive ? " is-active" : ""}`}
 							aria-selected={isActive}
 							tabIndex={isActive ? 0 : -1}
+							data-view-id={view.id}
 							title={view.name}
 							onClick={() => setSelectedViewId(view.id)}
 							onDoubleClick={() => beginViewRename(view.id)}
