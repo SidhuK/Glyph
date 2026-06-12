@@ -115,6 +115,15 @@
 	cursor: grabbing;
 }
 
+.spaceGraphLoadFullButton {
+	min-height: 0;
+	height: 22px;
+	padding: 0 7px;
+	border-radius: calc(var(--radius-md) * 0.75);
+	font-size: 11px;
+	line-height: 1;
+}
+
 .localNoteGraphLegend {
 	position: absolute;
 	left: 14px;

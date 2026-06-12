@@ -150,17 +150,6 @@ export function graphStyles(theme: GraphTheme): StylesheetJson {
 			},
 		},
 		{
-			selector: "node.hover-label",
-			style: {
-				color: theme.text,
-				"font-size": 10,
-				"font-weight": 400,
-				"text-outline-color": theme.background,
-				"text-outline-opacity": 0.72,
-				"text-outline-width": 0.8,
-			},
-		},
-		{
 			selector: "node.connected",
 			style: {
 				"border-color": theme.nodeActiveBorder,
@@ -214,6 +203,16 @@ export function graphStyles(theme: GraphTheme): StylesheetJson {
 			style: {
 				"border-width": 1.8,
 				"font-size": 12.5,
+			},
+		},
+		{
+			selector: "node.hover-label",
+			style: {
+				color: theme.text,
+				"font-size": 10,
+				"font-weight": 400,
+				"text-outline-opacity": 0,
+				"text-outline-width": 0,
 			},
 		},
 		{

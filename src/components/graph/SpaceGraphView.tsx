@@ -16,14 +16,14 @@ import {
 	runGraphLayout,
 } from "./graphTheme";
 
-const DEFAULT_SPACE_GRAPH_NODES = 1500;
+const DEFAULT_SPACE_GRAPH_NODES = 1000;
 const FULL_SPACE_GRAPH_NODES = 10_000;
 const MAX_SPACE_GRAPH_TAGS = 250;
 const LARGE_GRAPH_LAYOUT_THRESHOLD = 2400;
 const SATELLITE_GAP = 130;
 const SATELLITE_SPACING = 44;
 const GRAPH_LAYOUT_CACHE_PREFIX = "glyph.spaceGraph.layout:";
-const GRAPH_LAYOUT_ALGORITHM = "organic-cloud";
+const GRAPH_LAYOUT_ALGORITHM = "organic-cloud-v2";
 const MIN_NOTE_NODE_SIZE = 10;
 const MAX_NOTE_NODE_SIZE = 34;
 const MIN_TAG_NODE_SIZE = 14;
@@ -344,6 +344,13 @@ function GraphProgressOverlay({
 	);
 }
 
+function fullGraphNoteCountLabel(totalNotes: number) {
+	if (totalNotes > FULL_SPACE_GRAPH_NODES) {
+		return `the top ${FULL_SPACE_GRAPH_NODES.toLocaleString()} of ${totalNotes.toLocaleString()} notes`;
+	}
+	return `${totalNotes.toLocaleString()} notes`;
+}
+
 export function SpaceGraphView() {
 	const { spacePath } = useSpace();
 	const [graph, setGraph] = useState<SpaceGraph | null>(null);
@@ -401,6 +408,22 @@ export function SpaceGraphView() {
 
 	useEffect(() => loadGraph(), [loadGraph]);
 
+	const handleLoadFullGraph = useCallback(async () => {
+		if (!graph) return;
+		const { confirm } = await import("@tauri-apps/plugin-dialog");
+		const noteCountLabel = fullGraphNoteCountLabel(graph.total_notes);
+		const confirmed = await confirm(
+			`This will render ${noteCountLabel} at once. Large graphs can use a lot of memory and may make Glyph slow or temporarily unresponsive.`,
+			{
+				title: "Load the full graph?",
+				okLabel: "Load full graph",
+				cancelLabel: "Cancel",
+			},
+		);
+		if (!confirmed) return;
+		setMaxNodes(FULL_SPACE_GRAPH_NODES);
+	}, [graph]);
+
 	useEffect(() => {
 		if (!loading && !generating) return;
 		const ceiling = loading ? 35 : 92;
@@ -439,6 +462,7 @@ export function SpaceGraphView() {
 			boxSelectionEnabled: false,
 			container,
 			elements: graphElements(graph, cachedLayout?.positions),
+			layout: { name: "preset" },
 			maxZoom: 2.1,
 			minZoom: 0.18,
 			style: graphStylesForContainer(container),
@@ -579,12 +603,14 @@ export function SpaceGraphView() {
 				aria-label="Space graph"
 			/>
 			{graph.truncated && maxNodes < FULL_SPACE_GRAPH_NODES ? (
-				<div className="absolute right-4 top-4">
+				<div className="absolute right-4 bottom-4">
 					<Button
 						type="button"
-						size="sm"
-						variant="secondary"
-						onClick={() => setMaxNodes(FULL_SPACE_GRAPH_NODES)}
+						className="spaceGraphLoadFullButton"
+						size="xs"
+						onClick={() => {
+							void handleLoadFullGraph();
+						}}
 					>
 						Load full graph
 					</Button>
