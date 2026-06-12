@@ -5,6 +5,7 @@ import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { parentDir } from "../../utils/path";
@@ -72,6 +73,7 @@ function isPathSpecial(path: string): boolean {
 		path === ALL_DOCS_TAB_ID ||
 		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
+		path === SPACE_GRAPH_TAB_ID ||
 		path === TEMPLATES_TAB_ID
 	);
 }

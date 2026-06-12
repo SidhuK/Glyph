@@ -57,6 +57,48 @@ pub struct LocalNoteGraph {
 }
 
 #[derive(Serialize)]
+pub struct SpaceGraphNode {
+    pub id: String,
+    pub title: String,
+    pub link_count: u32,
+    pub tag_count: u32,
+    pub is_isolated: bool,
+}
+
+#[derive(Serialize)]
+pub struct SpaceGraphEdge {
+    pub from_id: String,
+    pub to_id: String,
+    pub kind: String,
+}
+
+#[derive(Serialize)]
+pub struct SpaceGraphTagNode {
+    pub id: String,
+    pub tag: String,
+    pub title: String,
+    pub note_count: u32,
+}
+
+#[derive(Serialize)]
+pub struct SpaceGraphTagEdge {
+    pub tag_id: String,
+    pub note_id: String,
+}
+
+#[derive(Serialize)]
+pub struct SpaceGraph {
+    pub nodes: Vec<SpaceGraphNode>,
+    pub edges: Vec<SpaceGraphEdge>,
+    pub tags: Vec<SpaceGraphTagNode>,
+    pub tag_edges: Vec<SpaceGraphTagEdge>,
+    pub truncated: bool,
+    pub truncated_tags: bool,
+    pub total_notes: u32,
+    pub total_tags: u32,
+}
+
+#[derive(Serialize)]
 pub struct TagCount {
     pub tag: String,
     pub direct_count: u32,

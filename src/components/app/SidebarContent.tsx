@@ -6,6 +6,7 @@ import {
 	LibraryIcon,
 	NoteIcon,
 	SearchIcon,
+	ThreeDMoveIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -54,9 +55,10 @@ interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
+	onOpenGraph: () => void;
 	onOpenCommandPalette: () => void;
 	spacePath: string | null;
-	activeTopSection: "home" | "all-notes" | "databases" | null;
+	activeTopSection: "home" | "all-notes" | "graph" | "databases" | null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -127,6 +129,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
+	onOpenGraph,
 	onOpenCommandPalette,
 	spacePath,
 	activeTopSection,
@@ -475,6 +478,25 @@ export const SidebarContent = memo(function SidebarContent({
 							/>
 							<span className="sidebarQuickActionLabel">All Notes</span>
 							<AllNotesCountBadge />
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="graph"
+							data-active={activeTopSection === "graph" ? "true" : "false"}
+							aria-label="Graph"
+							aria-pressed={activeTopSection === "graph"}
+							aria-current={activeTopSection === "graph" ? "page" : undefined}
+							onClick={onOpenGraph}
+							title="Open Graph"
+						>
+							<HugeiconsIcon
+								icon={ThreeDMoveIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+							<span className="sidebarQuickActionLabel">Graph</span>
+							<span className="sidebarQuickActionBeta">Beta</span>
 						</button>
 					</div>
 					<div className="sidebarStack">
