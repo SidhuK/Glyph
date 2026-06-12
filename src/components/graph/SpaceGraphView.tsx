@@ -23,6 +23,7 @@ const LARGE_GRAPH_LAYOUT_THRESHOLD = 2400;
 const SATELLITE_GAP = 130;
 const SATELLITE_SPACING = 44;
 const GRAPH_LAYOUT_CACHE_PREFIX = "glyph.spaceGraph.layout:";
+const GRAPH_LAYOUT_CACHE_VERSION = 1;
 const GRAPH_LAYOUT_ALGORITHM = "organic-cloud-v2";
 const MIN_NOTE_NODE_SIZE = 10;
 const MAX_NOTE_NODE_SIZE = 34;
@@ -35,6 +36,7 @@ interface GraphPosition {
 }
 
 interface CachedGraphLayout {
+	version: number;
 	signature: string;
 	positions: Record<string, GraphPosition>;
 }
@@ -166,7 +168,13 @@ function readGraphLayoutCache(
 		const parsed: unknown = JSON.parse(raw);
 		if (!parsed || typeof parsed !== "object") return null;
 		const record = parsed as Record<PropertyKey, unknown>;
-		if (record.signature !== signature || !record.positions) return null;
+		if (
+			record.version !== GRAPH_LAYOUT_CACHE_VERSION ||
+			record.signature !== signature ||
+			!record.positions
+		) {
+			return null;
+		}
 		if (typeof record.positions !== "object") return null;
 
 		const positions: Record<string, GraphPosition> = {};
@@ -176,7 +184,7 @@ function readGraphLayoutCache(
 			}
 		}
 		if (Object.keys(positions).length === 0) return null;
-		return { signature, positions };
+		return { version: GRAPH_LAYOUT_CACHE_VERSION, signature, positions };
 	} catch {
 		return null;
 	}
@@ -213,7 +221,11 @@ function writeGraphLayoutCache(
 		}
 		window.sessionStorage.setItem(
 			graphLayoutCacheKey(spacePath),
-			JSON.stringify({ signature, positions } satisfies CachedGraphLayout),
+			JSON.stringify({
+				version: GRAPH_LAYOUT_CACHE_VERSION,
+				signature,
+				positions,
+			} satisfies CachedGraphLayout),
 		);
 	} catch {
 		// Cache writes are best-effort; rendering should never depend on storage.
@@ -361,6 +373,7 @@ export function SpaceGraphView() {
 	const [maxNodes, setMaxNodes] = useState(DEFAULT_SPACE_GRAPH_NODES);
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
+	const loadGraphCleanupRef = useRef<(() => void) | null>(null);
 	const signature = useMemo(
 		() => (graph ? graphSignature(graph) : ""),
 		[graph],
@@ -376,11 +389,16 @@ export function SpaceGraphView() {
 	}, []);
 
 	const loadGraph = useCallback(() => {
+		loadGraphCleanupRef.current?.();
 		let cancelled = false;
 		setLoading(true);
 		setGenerating(false);
 		setGenerationProgress(8);
 		setError("");
+		const cleanup = () => {
+			cancelled = true;
+		};
+		loadGraphCleanupRef.current = cleanup;
 		void invoke("space_graph", {
 			max_nodes: maxNodes,
 			max_tags: MAX_SPACE_GRAPH_TAGS,
@@ -400,10 +418,11 @@ export function SpaceGraphView() {
 			})
 			.finally(() => {
 				if (!cancelled) setLoading(false);
+				if (loadGraphCleanupRef.current === cleanup) {
+					loadGraphCleanupRef.current = null;
+				}
 			});
-		return () => {
-			cancelled = true;
-		};
+		return cleanup;
 	}, [maxNodes]);
 
 	useEffect(() => loadGraph(), [loadGraph]);
@@ -475,8 +494,8 @@ export function SpaceGraphView() {
 			afterLayout: () => {
 				if (!cachedLayout) {
 					organicizeNoteCloud(cy);
+					scatterSatelliteNodes(cy);
 				}
-				scatterSatelliteNodes(cy);
 				writeGraphLayoutCache(spacePath, signature, cy);
 				if (!disposed) {
 					setGenerationProgress(100);
@@ -599,7 +618,7 @@ export function SpaceGraphView() {
 		<section className="relative flex h-full min-h-0 flex-1 overflow-hidden bg-background">
 			<div
 				ref={containerRef}
-				className="h-full min-h-0 flex-1"
+				className="localNoteGraphViewport h-full min-h-0 flex-1"
 				aria-label="Space graph"
 			/>
 			{graph.truncated && maxNodes < FULL_SPACE_GRAPH_NODES ? (

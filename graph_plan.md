@@ -183,12 +183,13 @@ In `src-tauri/src/index/commands.rs`:
      exceeds `max_tags`.
    - Select `tag_edges` only between returned tags and returned notes; dedupe
      `(tag_id,note_id)`.
-   - `is_isolated` is true when a note has zero note-to-note edges and zero
-     returned tag edges. This makes truly standalone notes easy to style and
-     count in the renderer.
+   - `is_isolated` is true when a note has zero indexed note-to-note links and
+     zero indexed explicit non-people tags. This makes truly standalone notes
+     easy to style and count in the renderer.
 3. Add the Tauri command `space_graph(window, state, max_nodes: Option<u32>, max_tags: Option<u32>)`
    mirroring `note_local_graph`'s wrapper exactly (default `max_nodes` 1000,
-   clamp to `1..=5000`; default `max_tags` 250, clamp to `0..=1000`).
+   clamp to `1..=10_000`, matching `FULL_SPACE_GRAPH_NODES`; default
+   `max_tags` 250, clamp to `0..=1000`).
 4. Register `index::commands::space_graph` in `src-tauri/src/lib.rs` next to
    `note_local_graph` (line 1684).
 5. Add tests in a new `mod space_graph_tests` modeled on `local_graph_tests`:

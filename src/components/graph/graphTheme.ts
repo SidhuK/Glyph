@@ -11,6 +11,7 @@ interface GraphTheme {
 	node: string;
 	nodeActive: string;
 	nodeActiveBorder: string;
+	tagNode: string;
 	text: string;
 	textInverse: string;
 	textMuted: string;
@@ -73,6 +74,7 @@ function graphThemeFor(element: HTMLElement): GraphTheme {
 		"--local-graph-edge-incoming",
 		"#1f2328",
 	);
+	const tagNode = cssColor(element, "--local-graph-tag-node", accent);
 
 	return {
 		accent,
@@ -84,6 +86,7 @@ function graphThemeFor(element: HTMLElement): GraphTheme {
 		node,
 		nodeActive: node,
 		nodeActiveBorder: accent,
+		tagNode,
 		text,
 		textInverse,
 		textMuted,
@@ -187,9 +190,9 @@ export function graphStyles(theme: GraphTheme): StylesheetJson {
 		{
 			selector: "node.tag",
 			style: {
-				"background-color": "#f2b84b",
+				"background-color": theme.tagNode,
 				"background-opacity": 0.42,
-				"border-color": "#c88b1f",
+				"border-color": theme.tagNode,
 				"border-style": "dashed",
 				"border-width": 1.4,
 				color: theme.text,

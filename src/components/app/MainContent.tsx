@@ -830,6 +830,9 @@ export const MainContent = memo(function MainContent({
 				void prefetchDatabasesLanding(openDatabasesId);
 				return;
 			}
+			if (target === SPACE_GRAPH_TAB_ID) {
+				return;
+			}
 		},
 		[dailyNotesFolder, openDatabasesId, templateFolder],
 	);

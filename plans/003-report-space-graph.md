@@ -31,4 +31,4 @@
 
 ## Recommendation
 
-Go for a production feature after a manual webview performance pass. Backend shape is reusable and additive; the remaining work is mostly interaction design and live-update behavior. Estimated production effort: M for a polished v1, L if saved layouts, filters, and incremental updates are included.
+Production work is gated on the recorded failing `pnpm test` run being fixed or formally waived before any M/L effort begins. After that prerequisite and a manual webview performance pass, the backend shape is reusable and additive; the remaining work is mostly interaction design and live-update behavior. Estimated production effort: M for a polished v1, L if saved layouts, filters, and incremental updates are included.

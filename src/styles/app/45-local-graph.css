@@ -74,6 +74,7 @@
 	--local-graph-edge: rgba(38, 35, 29, 0.58);
 	--local-graph-edge-incoming: #26231d;
 	--local-graph-note-bg: #ffffff;
+	--local-graph-tag-node: var(--interactive-accent);
 	--local-graph-text: #26231d;
 	--local-graph-text-inverse: #ffffff;
 	--local-graph-surface: color-mix(
