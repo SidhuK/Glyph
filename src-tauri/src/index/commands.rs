@@ -20,9 +20,9 @@ use super::tasks::{
     IndexedTask, NoteTaskSummary, NoteTaskSummaryItem,
 };
 use super::types::{
-    BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalGraphTagEdge,
-    LocalGraphTagNode, LocalNoteGraph, PersonCount, SearchResult, SpaceGraph, SpaceGraphEdge,
-    SpaceGraphNode, SpaceGraphTagEdge, SpaceGraphTagNode, TagCount, TaskDateInfo,
+    BacklinkItem, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode, LocalConnectionsTagEdge,
+    LocalConnectionsTagNode, LocalNoteConnections, PersonCount, SearchResult, SpaceConnections, SpaceConnectionsEdge,
+    SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount, TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1327,10 +1327,10 @@ pub async fn note_relationships(
     .map_err(|e| e.to_string())?
 }
 
-fn local_note_graph_for_conn(
+fn local_note_connections_for_conn(
     conn: &rusqlite::Connection,
     note_id: &str,
-) -> Result<LocalNoteGraph, String> {
+) -> Result<LocalNoteConnections, String> {
     const COMMON_TAG_LIMIT: usize = 12;
     const TAGGED_NOTES_PER_TAG_LIMIT: usize = 12;
     const TOTAL_TAGGED_NOTES_LIMIT: usize = 64;
@@ -1340,7 +1340,7 @@ fn local_note_graph_for_conn(
             "SELECT id, title FROM notes WHERE id = ? LIMIT 1",
             [note_id],
             |row| {
-                Ok(LocalGraphNode {
+                Ok(LocalConnectionsNode {
                     id: row.get(0)?,
                     title: row.get(1)?,
                     is_center: true,
@@ -1350,7 +1350,7 @@ fn local_note_graph_for_conn(
         .map_err(|e| e.to_string())?;
 
     let mut nodes_by_id = HashMap::new();
-    nodes_by_id.insert(center.id.clone(), LocalGraphNode { ..center.clone() });
+    nodes_by_id.insert(center.id.clone(), LocalConnectionsNode { ..center.clone() });
 
     let mut neighbor_stmt = conn
         .prepare(
@@ -1386,7 +1386,7 @@ fn local_note_graph_for_conn(
         let title: String = row.get(1).map_err(|e| e.to_string())?;
         nodes_by_id.insert(
             id.clone(),
-            LocalGraphNode {
+            LocalConnectionsNode {
                 id,
                 title,
                 is_center: false,
@@ -1395,7 +1395,7 @@ fn local_note_graph_for_conn(
     }
 
     let seed_node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
-    let (tags, tagged_nodes, tag_edges) = local_graph_tag_expansion_for_seed_nodes(
+    let (tags, tagged_nodes, tag_edges) = local_connections_tag_expansion_for_seed_nodes(
         conn,
         &seed_node_ids,
         COMMON_TAG_LIMIT,
@@ -1430,7 +1430,7 @@ fn local_note_graph_for_conn(
     let mut edge_rows = edge_stmt.query(params).map_err(|e| e.to_string())?;
     let mut edges = Vec::new();
     while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
-        edges.push(LocalGraphEdge {
+        edges.push(LocalConnectionsEdge {
             source: row.get(0).map_err(|e| e.to_string())?,
             target: row.get(1).map_err(|e| e.to_string())?,
         });
@@ -1445,7 +1445,7 @@ fn local_note_graph_for_conn(
             .then_with(|| left.id.cmp(&right.id))
     });
 
-    Ok(LocalNoteGraph {
+    Ok(LocalNoteConnections {
         center,
         nodes,
         edges,
@@ -1454,11 +1454,11 @@ fn local_note_graph_for_conn(
     })
 }
 
-fn local_graph_tag_id(tag: &str) -> String {
+fn local_connections_tag_id(tag: &str) -> String {
     format!("glyph:tag:{tag}")
 }
 
-fn local_graph_tag_expansion_for_seed_nodes(
+fn local_connections_tag_expansion_for_seed_nodes(
     conn: &rusqlite::Connection,
     seed_node_ids: &[String],
     tag_limit: usize,
@@ -1466,9 +1466,9 @@ fn local_graph_tag_expansion_for_seed_nodes(
     total_tagged_notes_limit: usize,
 ) -> Result<
     (
-        Vec<LocalGraphTagNode>,
-        Vec<LocalGraphNode>,
-        Vec<LocalGraphTagEdge>,
+        Vec<LocalConnectionsTagNode>,
+        Vec<LocalConnectionsNode>,
+        Vec<LocalConnectionsTagEdge>,
     ),
     String,
 > {
@@ -1520,7 +1520,7 @@ fn local_graph_tag_expansion_for_seed_nodes(
          LIMIT ?"
     );
     let mut tag_edges = Vec::new();
-    let mut tagged_nodes_by_id = HashMap::<String, LocalGraphNode>::new();
+    let mut tagged_nodes_by_id = HashMap::<String, LocalConnectionsNode>::new();
     let mut note_count_by_tag = HashMap::<String, u32>::new();
     let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
     for tag in &tag_names {
@@ -1549,14 +1549,14 @@ fn local_graph_tag_expansion_for_seed_nodes(
             let title: String = row.get(1).map_err(|e| e.to_string())?;
             tagged_nodes_by_id
                 .entry(note_id.clone())
-                .or_insert(LocalGraphNode {
+                .or_insert(LocalConnectionsNode {
                     id: note_id.clone(),
                     title,
                     is_center: false,
                 });
             *note_count_by_tag.entry(tag.clone()).or_insert(0) += 1;
-            tag_edges.push(LocalGraphTagEdge {
-                tag_id: local_graph_tag_id(tag),
+            tag_edges.push(LocalConnectionsTagEdge {
+                tag_id: local_connections_tag_id(tag),
                 note_id,
             });
         }
@@ -1566,8 +1566,8 @@ fn local_graph_tag_expansion_for_seed_nodes(
         .into_iter()
         .filter_map(|tag| {
             let note_count = note_count_by_tag.get(&tag).copied()?;
-            Some(LocalGraphTagNode {
-                id: local_graph_tag_id(&tag),
+            Some(LocalConnectionsTagNode {
+                id: local_connections_tag_id(&tag),
                 title: format!("#{tag}"),
                 tag,
                 note_count,
@@ -1582,18 +1582,18 @@ fn local_graph_tag_expansion_for_seed_nodes(
     ))
 }
 
-struct SpaceGraphNodeSeed {
+struct SpaceConnectionsNodeSeed {
     id: String,
     title: String,
     link_count: u32,
     tag_count: u32,
 }
 
-fn space_graph_for_conn(
+fn space_connections_for_conn(
     conn: &rusqlite::Connection,
     max_nodes: usize,
     max_tags: usize,
-) -> Result<SpaceGraph, String> {
+) -> Result<SpaceConnections, String> {
     let total_notes = conn
         .query_row("SELECT COUNT(*) FROM notes", [], |row| row.get::<_, i64>(0))
         .map(|count| count as u32)
@@ -1657,7 +1657,7 @@ fn space_graph_for_conn(
         .map_err(|e| e.to_string())?;
     let mut node_seeds = Vec::new();
     while let Some(row) = node_rows.next().map_err(|e| e.to_string())? {
-        node_seeds.push(SpaceGraphNodeSeed {
+        node_seeds.push(SpaceConnectionsNodeSeed {
             id: row.get(0).map_err(|e| e.to_string())?,
             title: row.get(1).map_err(|e| e.to_string())?,
             link_count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
@@ -1666,7 +1666,7 @@ fn space_graph_for_conn(
     }
 
     if node_seeds.is_empty() {
-        return Ok(SpaceGraph {
+        return Ok(SpaceConnections {
             nodes: Vec::new(),
             edges: Vec::new(),
             tags: Vec::new(),
@@ -1707,7 +1707,7 @@ fn space_graph_for_conn(
         {
             continue;
         }
-        edges.push(SpaceGraphEdge {
+        edges.push(SpaceConnectionsEdge {
             from_id,
             to_id,
             kind: row.get(2).map_err(|e| e.to_string())?,
@@ -1757,8 +1757,8 @@ fn space_graph_for_conn(
         selected_tags.truncate(max_tags);
 
         for (tag, note_count) in &selected_tags {
-            tags.push(SpaceGraphTagNode {
-                id: local_graph_tag_id(tag),
+            tags.push(SpaceConnectionsTagNode {
+                id: local_connections_tag_id(tag),
                 title: format!("#{tag}"),
                 tag: tag.clone(),
                 note_count: *note_count,
@@ -1787,8 +1787,8 @@ fn space_graph_for_conn(
                     .then_with(|| left_note_id.cmp(right_note_id))
             });
             for (tag, note_id) in selected_tag_edges {
-                tag_edges.push(SpaceGraphTagEdge {
-                    tag_id: local_graph_tag_id(&tag),
+                tag_edges.push(SpaceConnectionsTagEdge {
+                    tag_id: local_connections_tag_id(&tag),
                     note_id,
                 });
             }
@@ -1798,7 +1798,7 @@ fn space_graph_for_conn(
 
     let nodes = node_seeds
         .into_iter()
-        .map(|node| SpaceGraphNode {
+        .map(|node| SpaceConnectionsNode {
             id: node.id,
             title: node.title,
             link_count: node.link_count,
@@ -1807,7 +1807,7 @@ fn space_graph_for_conn(
         })
         .collect::<Vec<_>>();
 
-    Ok(SpaceGraph {
+    Ok(SpaceConnections {
         nodes,
         edges,
         tags,
@@ -1820,48 +1820,48 @@ fn space_graph_for_conn(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn note_local_graph(
+pub async fn note_local_connections(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
-) -> Result<LocalNoteGraph, String> {
+) -> Result<LocalNoteConnections, String> {
     let root = state.root_for_window(&window)?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteGraph, String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteConnections, String> {
         let conn = open_db(&root)?;
-        local_note_graph_for_conn(&conn, &note_id)
+        local_note_connections_for_conn(&conn, &note_id)
     })
     .await
     .map_err(|e| e.to_string())?
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn space_graph(
+pub async fn space_connections(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     max_nodes: Option<u32>,
     max_tags: Option<u32>,
-) -> Result<SpaceGraph, String> {
+) -> Result<SpaceConnections, String> {
     let root = state.root_for_window(&window)?;
     let max_nodes = max_nodes.unwrap_or(1000).clamp(1, 10_000) as usize;
     let max_tags = max_tags.unwrap_or(250).clamp(0, 1000) as usize;
-    tauri::async_runtime::spawn_blocking(move || -> Result<SpaceGraph, String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<SpaceConnections, String> {
         let conn = open_db(&root)?;
-        space_graph_for_conn(&conn, max_nodes, max_tags)
+        space_connections_for_conn(&conn, max_nodes, max_tags)
     })
     .await
     .map_err(|e| e.to_string())?
 }
 
 #[cfg(test)]
-mod local_graph_tests {
+mod local_connections_tests {
     use rusqlite::Connection;
 
     use crate::index::schema::ensure_schema;
 
-    use super::{local_graph_tag_expansion_for_seed_nodes, local_note_graph_for_conn};
+    use super::{local_connections_tag_expansion_for_seed_nodes, local_note_connections_for_conn};
 
     #[test]
-    fn local_note_graph_returns_center_neighbors_and_internal_edges() {
+    fn local_note_connections_returns_center_neighbors_and_internal_edges() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -1900,7 +1900,7 @@ mod local_graph_tests {
         )
         .unwrap();
 
-        let graph = local_note_graph_for_conn(&conn, "notes/center.md").unwrap();
+        let graph = local_note_connections_for_conn(&conn, "notes/center.md").unwrap();
         assert_eq!(graph.center.id, "notes/center.md");
         assert_eq!(graph.nodes.len(), 4);
 
@@ -1928,7 +1928,7 @@ mod local_graph_tests {
     }
 
     #[test]
-    fn local_note_graph_handles_single_isolated_note() {
+    fn local_note_connections_handles_single_isolated_note() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -1939,7 +1939,7 @@ mod local_graph_tests {
         )
         .unwrap();
 
-        let graph = local_note_graph_for_conn(&conn, "notes/solo.md").unwrap();
+        let graph = local_note_connections_for_conn(&conn, "notes/solo.md").unwrap();
         assert_eq!(graph.center.id, "notes/solo.md");
         assert_eq!(graph.nodes.len(), 1);
         assert!(graph.nodes[0].is_center);
@@ -1947,7 +1947,7 @@ mod local_graph_tests {
     }
 
     #[test]
-    fn local_note_graph_caps_tag_expansion_per_tag() {
+    fn local_note_connections_caps_tag_expansion_per_tag() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -1981,7 +1981,7 @@ mod local_graph_tests {
         )
         .unwrap();
 
-        let graph = local_note_graph_for_conn(&conn, "notes/center.md").unwrap();
+        let graph = local_note_connections_for_conn(&conn, "notes/center.md").unwrap();
         assert_eq!(graph.nodes.len(), 12);
         assert_eq!(graph.tag_edges.len(), 12);
         assert!(graph.nodes.iter().any(|node| node.id == "notes/center.md"));
@@ -1999,7 +1999,7 @@ mod local_graph_tests {
     }
 
     #[test]
-    fn local_graph_tag_expansion_caps_total_expanded_nodes() {
+    fn local_connections_tag_expansion_caps_total_expanded_nodes() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -2034,7 +2034,7 @@ mod local_graph_tests {
             "notes/neighbor.md".to_string(),
         ];
         let (tags, tagged_nodes, tag_edges) =
-            local_graph_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5).unwrap();
+            local_connections_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5).unwrap();
 
         assert_eq!(tagged_nodes.len(), 5);
         assert_eq!(tag_edges.len(), 5);
@@ -2044,7 +2044,7 @@ mod local_graph_tests {
 }
 
 #[cfg(test)]
-mod space_graph_tests {
+mod space_connections_tests {
     use std::{env, time::Instant};
 
     use rusqlite::Connection;
@@ -2052,7 +2052,7 @@ mod space_graph_tests {
     use crate::index::schema::ensure_schema;
     use crate::index::tags::PEOPLE_TAG_NAMESPACE;
 
-    use super::space_graph_for_conn;
+    use super::space_connections_for_conn;
 
     fn insert_note(conn: &Connection, id: &str, title: &str) {
         conn.execute(
@@ -2064,7 +2064,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_under_cap_includes_linked_tagged_and_isolated_notes() {
+    fn space_connections_under_cap_includes_linked_tagged_and_isolated_notes() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -2089,7 +2089,7 @@ mod space_graph_tests {
             .unwrap();
         }
 
-        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert!(!graph.truncated);
         assert_eq!(graph.total_notes, 4);
         assert_eq!(graph.nodes.len(), 4);
@@ -2114,7 +2114,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_truncates_to_highest_degree_nodes() {
+    fn space_connections_truncates_to_highest_degree_nodes() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -2145,7 +2145,7 @@ mod space_graph_tests {
             .unwrap();
         }
 
-        let graph = space_graph_for_conn(&conn, 2, 10).unwrap();
+        let graph = space_connections_for_conn(&conn, 2, 10).unwrap();
         let node_ids = graph
             .nodes
             .iter()
@@ -2158,7 +2158,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_excludes_edges_with_missing_endpoints() {
+    fn space_connections_excludes_edges_with_missing_endpoints() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/source.md", "Source");
@@ -2169,14 +2169,14 @@ mod space_graph_tests {
         )
         .unwrap();
 
-        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert!(graph.edges.is_empty());
         assert_eq!(graph.nodes[0].link_count, 0);
         assert!(graph.nodes[0].is_isolated);
     }
 
     #[test]
-    fn space_graph_returns_explicit_tags_and_excludes_people_and_virtual_tags() {
+    fn space_connections_returns_explicit_tags_and_excludes_people_and_virtual_tags() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/tagged.md", "Tagged");
@@ -2193,7 +2193,7 @@ mod space_graph_tests {
             .unwrap();
         }
 
-        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.total_tags, 1);
         assert_eq!(graph.tags.len(), 1);
         assert_eq!(graph.tags[0].tag, "work");
@@ -2201,7 +2201,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_tag_cap_sets_truncated_tags() {
+    fn space_connections_tag_cap_sets_truncated_tags() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/tagged.md", "Tagged");
@@ -2214,7 +2214,7 @@ mod space_graph_tests {
             .unwrap();
         }
 
-        let graph = space_graph_for_conn(&conn, 10, 1).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 1).unwrap();
         assert_eq!(graph.total_tags, 2);
         assert!(graph.truncated_tags);
         assert_eq!(graph.tags.len(), 1);
@@ -2223,7 +2223,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_includes_relationship_edges() {
+    fn space_connections_includes_relationship_edges() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/source.md", "Source");
@@ -2236,7 +2236,7 @@ mod space_graph_tests {
         )
         .unwrap();
 
-        let graph = space_graph_for_conn(&conn, 10, 10).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.edges.len(), 1);
         assert_eq!(graph.edges[0].kind, "relationship");
         assert_eq!(graph.edges[0].from_id, "notes/source.md");
@@ -2244,7 +2244,7 @@ mod space_graph_tests {
     }
 
     #[test]
-    fn space_graph_synthetic_scale_stays_under_spike_budget() {
+    fn space_connections_synthetic_scale_stays_under_spike_budget() {
         if env::var("RUN_PERF_TESTS").ok().as_deref() != Some("1") {
             return;
         }
@@ -2288,9 +2288,9 @@ mod space_graph_tests {
         tx.commit().unwrap();
 
         let started = Instant::now();
-        let graph = space_graph_for_conn(&conn, 1_000, 250).unwrap();
+        let graph = space_connections_for_conn(&conn, 1_000, 250).unwrap();
         let elapsed = started.elapsed();
-        println!("space_graph synthetic scale duration: {elapsed:?}");
+        println!("space_connections synthetic scale duration: {elapsed:?}");
 
         assert!(graph.truncated);
         assert_eq!(graph.nodes.len(), 1_000);

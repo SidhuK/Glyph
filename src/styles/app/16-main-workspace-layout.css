@@ -31,7 +31,8 @@
 	border-bottom-right-radius: 0;
 }
 
-.canvasPaneHost[data-space-graph="true"] :is(.spaceGraphHost, .canvasPaneAwait),
+.canvasPaneHost[data-space-connections="true"]
+	:is(.spaceConnectionsHost, .canvasPaneAwait),
 .canvasPaneHost[data-all-docs="true"] :is(.allDocsPane, .canvasPaneAwait),
 .canvasPaneHost[data-databases="true"] :is(.databaseHostPane, .canvasPaneAwait),
 .canvasPaneHost[data-home="true"] :is(.homePaneHost, .canvasPaneAwait) {
@@ -41,7 +42,7 @@
 }
 
 .canvasPaneHost:is(
-		[data-space-graph="true"],
+		[data-space-connections="true"],
 		[data-all-docs="true"],
 		[data-databases="true"],
 		[data-home="true"]
@@ -53,14 +54,14 @@
 }
 
 .canvasPaneHost:is(
-		[data-space-graph="true"],
+		[data-space-connections="true"],
 		[data-all-docs="true"],
 		[data-databases="true"],
 		[data-home="true"]
 	)
 	.mainTabsBarWrap,
 .canvasPaneHost:is(
-		[data-space-graph="true"],
+		[data-space-connections="true"],
 		[data-all-docs="true"],
 		[data-databases="true"],
 		[data-home="true"]

@@ -3,7 +3,11 @@ import {
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
 import { buildWeekRange } from "./calendar";
-import { readStoredSelectedViewId } from "./database/selectedViewStorage";
+import {
+	readStoredSelectedDatabaseId,
+	resolveSelectedDatabaseId,
+	resolveSelectedViewId,
+} from "./database/selectedViewStorage";
 import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
@@ -327,13 +331,17 @@ export async function prefetchDatabasesLanding(
 	initialDatabaseId?: string | null,
 ) {
 	const summaries = await prefetchDatabaseSummaries();
-	const databaseId = initialDatabaseId ?? summaries[0]?.id ?? null;
+	const databaseId = resolveSelectedDatabaseId(summaries, {
+		current: null,
+		openRequestId: initialDatabaseId ?? null,
+		storedId: readStoredSelectedDatabaseId(),
+	});
 	if (!databaseId) return;
 	const document = await prefetchDatabaseDocument(databaseId);
-	const viewIds = document.database.views.map((view) => view.id);
-	const storedViewId = readStoredSelectedViewId(databaseId, viewIds);
-	const preferredViewId =
-		storedViewId ?? document.database.views[0]?.id ?? null;
+	const preferredViewId = resolveSelectedViewId(
+		databaseId,
+		document.database.views,
+	);
 	if (!preferredViewId) return;
 	await prefetchDatabaseRows(databaseId, preferredViewId);
 }

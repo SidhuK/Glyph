@@ -1,7 +1,7 @@
 import cytoscape, { type Core, type StylesheetJson } from "cytoscape";
 import fcose from "cytoscape-fcose";
 
-interface GraphTheme {
+interface ConnectionsTheme {
 	accent: string;
 	background: string;
 	border: string;
@@ -57,24 +57,24 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 	return normalizeCssColor(color || fallback);
 }
 
-function graphThemeFor(element: HTMLElement): GraphTheme {
+function connectionsThemeFor(element: HTMLElement): ConnectionsTheme {
 	const accent = cssColor(element, "--interactive-accent", "#5b8def");
 	const background = cssColor(element, "--bg-secondary", "#f6f6f4");
 	const node = cssColor(element, "--bg-primary", "#ffffff");
 	const text = cssColor(element, "--text-primary", "#1f2328");
 	const textInverse = cssColor(
 		element,
-		"--local-graph-text-inverse",
+		"--local-connections-text-inverse",
 		"#ffffff",
 	);
 	const textMuted = cssColor(element, "--text-secondary", "#667085");
-	const border = cssColor(element, "--local-graph-border", "#d7d7d2");
+	const border = cssColor(element, "--local-connections-border", "#d7d7d2");
 	const edgeIncoming = cssColor(
 		element,
-		"--local-graph-edge-incoming",
+		"--local-connections-edge-incoming",
 		"#1f2328",
 	);
-	const tagNode = cssColor(element, "--local-graph-tag-node", accent);
+	const tagNode = cssColor(element, "--local-connections-tag-node", accent);
 
 	return {
 		accent,
@@ -93,7 +93,7 @@ function graphThemeFor(element: HTMLElement): GraphTheme {
 	};
 }
 
-function graphStyles(theme: GraphTheme): StylesheetJson {
+function connectionsStyles(theme: ConnectionsTheme): StylesheetJson {
 	return [
 		{
 			selector: "core",
@@ -299,7 +299,7 @@ function graphStyles(theme: GraphTheme): StylesheetJson {
 	];
 }
 
-export function graphLayoutSpacing(cy: Core) {
+export function connectionsLayoutSpacing(cy: Core) {
 	const nodeCount = cy.nodes().length;
 	const density = Math.min(nodeCount / 1000, 1);
 	const idealEdgeLength = Math.round(130 + density * 80);
@@ -313,13 +313,16 @@ export function graphLayoutSpacing(cy: Core) {
 	};
 }
 
-interface RunGraphLayoutOptions {
+interface RunConnectionsLayoutOptions {
 	mode: "fcose" | "preset" | "random";
 	afterLayout?: () => void;
 }
 
-export function runGraphLayout(cy: Core, options: RunGraphLayoutOptions) {
-	const spacing = graphLayoutSpacing(cy);
+export function runConnectionsLayout(
+	cy: Core,
+	options: RunConnectionsLayoutOptions,
+) {
+	const spacing = connectionsLayoutSpacing(cy);
 	if (options.mode === "preset") {
 		const layout = cy.layout({
 			name: "preset",
@@ -390,33 +393,35 @@ export function highlightNeighborhood(cy: Core, nodeId: string | null) {
 	node.connectedEdges().addClass("is-highlight");
 }
 
-export function applyGraphTheme(cy: Core, container: HTMLElement) {
-	cy.style(graphStyles(graphThemeFor(container)));
+export function applyConnectionsTheme(cy: Core, container: HTMLElement) {
+	cy.style(connectionsStyles(connectionsThemeFor(container)));
 }
 
-export function graphStylesForContainer(container: HTMLElement) {
-	return graphStyles(graphThemeFor(container));
+export function connectionsStylesForContainer(container: HTMLElement) {
+	return connectionsStyles(connectionsThemeFor(container));
 }
 
-interface LocalNoteGraphTheme extends GraphTheme {
+interface LocalNoteConnectionsTheme extends ConnectionsTheme {
 	nodeCenter: string;
 }
 
-function localNoteGraphThemeFor(element: HTMLElement): LocalNoteGraphTheme {
+function localNoteConnectionsThemeFor(
+	element: HTMLElement,
+): LocalNoteConnectionsTheme {
 	const accent = cssColor(element, "--interactive-accent", "#5b8def");
 	const background = cssColor(element, "--bg-secondary", "#f6f6f4");
-	const node = cssColor(element, "--local-graph-note-bg", "#ffffff");
-	const text = cssColor(element, "--local-graph-text", "#1f2328");
+	const node = cssColor(element, "--local-connections-note-bg", "#ffffff");
+	const text = cssColor(element, "--local-connections-text", "#1f2328");
 	const textInverse = cssColor(
 		element,
-		"--local-graph-text-inverse",
+		"--local-connections-text-inverse",
 		"#ffffff",
 	);
-	const textMuted = cssColor(element, "--local-graph-edge", "#667085");
-	const border = cssColor(element, "--local-graph-border", "#d7d7d2");
+	const textMuted = cssColor(element, "--local-connections-edge", "#667085");
+	const border = cssColor(element, "--local-connections-border", "#d7d7d2");
 	const edgeIncoming = cssColor(
 		element,
-		"--local-graph-edge-incoming",
+		"--local-connections-edge-incoming",
 		"#1f2328",
 	);
 
@@ -438,7 +443,9 @@ function localNoteGraphThemeFor(element: HTMLElement): LocalNoteGraphTheme {
 	};
 }
 
-function localNoteGraphStyles(theme: LocalNoteGraphTheme): StylesheetJson {
+function localNoteConnectionsStyles(
+	theme: LocalNoteConnectionsTheme,
+): StylesheetJson {
 	return [
 		{
 			selector: "core",
@@ -663,7 +670,7 @@ function localNoteGraphStyles(theme: LocalNoteGraphTheme): StylesheetJson {
 	];
 }
 
-export function localNoteGraphLayoutSpacing(cy: Core) {
+export function localNoteConnectionsLayoutSpacing(cy: Core) {
 	const nodeCount = cy.nodes().length;
 	const density = Math.min(nodeCount / 52, 1);
 	const idealEdgeLength = Math.round(150 + density * 70);
@@ -677,8 +684,8 @@ export function localNoteGraphLayoutSpacing(cy: Core) {
 	};
 }
 
-export function runLocalNoteGraphLayout(cy: Core) {
-	const spacing = localNoteGraphLayoutSpacing(cy);
+export function runLocalNoteConnectionsLayout(cy: Core) {
+	const spacing = localNoteConnectionsLayoutSpacing(cy);
 	const layout = cy.layout({
 		name: "fcose",
 		animate: false,
@@ -704,10 +711,13 @@ export function runLocalNoteGraphLayout(cy: Core) {
 	layout.run();
 }
 
-export function localNoteGraphStylesForContainer(container: HTMLElement) {
-	return localNoteGraphStyles(localNoteGraphThemeFor(container));
+export function localNoteConnectionsStylesForContainer(container: HTMLElement) {
+	return localNoteConnectionsStyles(localNoteConnectionsThemeFor(container));
 }
 
-export function applyLocalNoteGraphTheme(cy: Core, container: HTMLElement) {
-	cy.style(localNoteGraphStyles(localNoteGraphThemeFor(container)));
+export function applyLocalNoteConnectionsTheme(
+	cy: Core,
+	container: HTMLElement,
+) {
+	cy.style(localNoteConnectionsStyles(localNoteConnectionsThemeFor(container)));
 }

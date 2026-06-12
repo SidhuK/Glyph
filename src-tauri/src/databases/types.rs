@@ -7,7 +7,7 @@ fn default_true() -> bool {
 }
 
 fn default_database_layout() -> String {
-    "table".to_string()
+    "board".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -130,8 +130,6 @@ pub struct DatabaseDefinition {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
-    #[serde(default)]
-    pub is_system: bool,
     pub source: DatabaseSource,
     pub new_note: DatabaseNewNoteConfig,
     #[serde(default)]
@@ -145,7 +143,6 @@ pub struct DatabaseDefinition {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseStore {
-    pub version: u32,
     #[serde(default)]
     pub databases: Vec<DatabaseDefinition>,
     #[serde(default)]
@@ -161,8 +158,6 @@ pub struct DatabaseSummary {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
-    #[serde(default)]
-    pub is_system: bool,
     #[serde(default)]
     pub view_count: u32,
 }

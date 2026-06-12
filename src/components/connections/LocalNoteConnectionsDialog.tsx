@@ -1,6 +1,6 @@
 import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { LocalNoteGraph } from "../../lib/tauri";
+import type { LocalNoteConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import {
@@ -10,22 +10,25 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import {
-	applyLocalNoteGraphTheme,
+	applyLocalNoteConnectionsTheme,
 	highlightNeighborhood,
-	localNoteGraphLayoutSpacing,
-	localNoteGraphStylesForContainer,
+	localNoteConnectionsLayoutSpacing,
+	localNoteConnectionsStylesForContainer,
 	registerFcose,
-	runLocalNoteGraphLayout,
-} from "./graphTheme";
+	runLocalNoteConnectionsLayout,
+} from "./connectionsTheme";
 
-interface LocalNoteGraphDialogProps {
+interface LocalNoteConnectionsDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	noteId: string;
-	graphRefreshKey?: number;
+	connectionsRefreshKey?: number;
 }
 
-function nodeClasses(node: LocalNoteGraph["nodes"][number], weight: number) {
+function nodeClasses(
+	node: LocalNoteConnections["nodes"][number],
+	weight: number,
+) {
 	const classes = [];
 	if (node.is_center) {
 		classes.push("center");
@@ -39,7 +42,7 @@ function nodeClasses(node: LocalNoteGraph["nodes"][number], weight: number) {
 	return classes.join(" ");
 }
 
-function graphElements(graph: LocalNoteGraph): ElementDefinition[] {
+function connectionElements(graph: LocalNoteConnections): ElementDefinition[] {
 	const degreeById = new Map(graph.nodes.map((node) => [node.id, 0]));
 	const edgeKeys = new Set(
 		graph.edges.map((edge) => `${edge.source}->${edge.target}`),
@@ -105,13 +108,13 @@ function graphElements(graph: LocalNoteGraph): ElementDefinition[] {
 	];
 }
 
-export function LocalNoteGraphDialog({
+export function LocalNoteConnectionsDialog({
 	open,
 	onOpenChange,
 	noteId,
-	graphRefreshKey = 0,
-}: LocalNoteGraphDialogProps) {
-	const [graph, setGraph] = useState<LocalNoteGraph | null>(null);
+	connectionsRefreshKey = 0,
+}: LocalNoteConnectionsDialogProps) {
+	const [graph, setGraph] = useState<LocalNoteConnections | null>(null);
 	const [error, setError] = useState("");
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
@@ -133,12 +136,12 @@ export function LocalNoteGraphDialog({
 
 	useEffect(() => {
 		if (!open || !noteId) return;
-		void graphRefreshKey;
+		void connectionsRefreshKey;
 		let cancelled = false;
 		setGraph(null);
 		setError("");
 
-		void invoke("note_local_graph", { note_id: noteId })
+		void invoke("note_local_connections", { note_id: noteId })
 			.then((nextGraph) => {
 				if (cancelled) return;
 				setGraph(nextGraph);
@@ -152,7 +155,7 @@ export function LocalNoteGraphDialog({
 		return () => {
 			cancelled = true;
 		};
-	}, [graphRefreshKey, noteId, open]);
+	}, [connectionsRefreshKey, noteId, open]);
 
 	useEffect(() => {
 		if (!open || !graph || error) return;
@@ -164,15 +167,15 @@ export function LocalNoteGraphDialog({
 		const cy = cytoscape({
 			boxSelectionEnabled: false,
 			container,
-			elements: graphElements(graph),
+			elements: connectionElements(graph),
 			maxZoom: 2.2,
 			minZoom: 0.35,
-			style: localNoteGraphStylesForContainer(container),
+			style: localNoteConnectionsStylesForContainer(container),
 			userZoomingEnabled: true,
 			wheelSensitivity: 0.18,
 		});
 		cyRef.current = cy;
-		runLocalNoteGraphLayout(cy);
+		runLocalNoteConnectionsLayout(cy);
 
 		cy.on("mouseover", "node", (event) => {
 			highlightNeighborhood(cy, event.target.id());
@@ -195,12 +198,12 @@ export function LocalNoteGraphDialog({
 
 		const observer = new ResizeObserver(() => {
 			cy.resize();
-			cy.fit(undefined, localNoteGraphLayoutSpacing(cy).padding);
+			cy.fit(undefined, localNoteConnectionsLayoutSpacing(cy).padding);
 		});
 		observer.observe(container);
 
 		const themeObserver = new MutationObserver(() => {
-			applyLocalNoteGraphTheme(cy, container);
+			applyLocalNoteConnectionsTheme(cy, container);
 		});
 		themeObserver.observe(document.documentElement, {
 			attributeFilter: [
@@ -222,62 +225,68 @@ export function LocalNoteGraphDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="localNoteGraphDialog" showCloseButton={false}>
+			<DialogContent
+				className="localNoteConnectionsDialog"
+				showCloseButton={false}
+			>
 				<DialogTitle className="sr-only">Connected Notes</DialogTitle>
 
-				<div className="localNoteGraphBody">
+				<div className="localNoteConnectionsBody">
 					<DialogClose asChild>
 						<button
 							type="button"
-							className="localNoteGraphClose"
-							aria-label="Close graph"
+							className="localNoteConnectionsClose"
+							aria-label="Close connections"
 						>
 							×
 						</button>
 					</DialogClose>
 					{error ? (
-						<div className="localNoteGraphState">
-							Could not load graph: {error}
+						<div className="localNoteConnectionsState">
+							Could not load connections: {error}
 						</div>
 					) : (
-						<div className="localNoteGraphStage">
+						<div className="localNoteConnectionsStage">
 							<div
 								ref={containerRef}
-								className="localNoteGraphViewport"
-								aria-label="Connected notes graph"
+								className="localNoteConnectionsViewport"
+								aria-label="Local connections"
 							/>
-							<div className="localNoteGraphLegend" aria-label="Graph legend">
-								<span className="localNoteGraphLegendItem">
+							<div
+								className="localNoteConnectionsLegend"
+								aria-label="Connections legend"
+							>
+								<span className="localNoteConnectionsLegendItem">
 									<span
-										className="localNoteGraphLegendNode is-current"
+										className="localNoteConnectionsLegendNode is-current"
 										aria-hidden="true"
 									/>
 									Open note
 								</span>
-								<span className="localNoteGraphLegendItem">
+								<span className="localNoteConnectionsLegendItem">
 									<span
-										className="localNoteGraphLegendNode is-note"
+										className="localNoteConnectionsLegendNode is-note"
 										aria-hidden="true"
 									/>
 									Note
 								</span>
-								<span className="localNoteGraphLegendItem">
+								<span className="localNoteConnectionsLegendItem">
 									<span
-										className="localNoteGraphLegendNode is-tag"
+										className="localNoteConnectionsLegendNode is-tag"
 										aria-hidden="true"
 									/>
 									Tag
 								</span>
-								<span className="localNoteGraphLegendItem">
+								<span className="localNoteConnectionsLegendItem">
 									<span
-										className="localNoteGraphLegendEdge is-link"
+										className="localNoteConnectionsLegendEdge is-link"
 										aria-hidden="true"
 									/>
 									Note link
 								</span>
-								<span className="localNoteGraphLegendItem">
+								<span className="localNoteConnectionsLegendItem">
 									<span
-										className="localNoteGraphLegendEdge is-tag-link"
+										className="localNoteConnectionsLegendEdge is-tag-link"
 										aria-hidden="true"
 									/>
 									Shares tag

@@ -1,6 +1,6 @@
 import { cn } from "../../lib/utils";
 
-type CanvasPaneAwaitVariant = "all-docs" | "databases" | "graph" | "home";
+type CanvasPaneAwaitVariant = "all-docs" | "databases" | "connections" | "home";
 
 interface CanvasPaneAwaitProps {
 	variant: CanvasPaneAwaitVariant;
@@ -11,7 +11,7 @@ export function CanvasPaneAwait({ variant }: CanvasPaneAwaitProps) {
 		<div
 			className={cn(
 				"canvasPaneAwait",
-				variant === "graph" && "localNoteGraphViewport",
+				variant === "connections" && "localNoteConnectionsViewport",
 			)}
 			data-variant={variant}
 			aria-busy="true"

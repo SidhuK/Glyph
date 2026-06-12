@@ -21,20 +21,20 @@ pub struct BacklinkItem {
 }
 
 #[derive(Clone, Serialize)]
-pub struct LocalGraphNode {
+pub struct LocalConnectionsNode {
     pub id: String,
     pub title: String,
     pub is_center: bool,
 }
 
 #[derive(Serialize)]
-pub struct LocalGraphEdge {
+pub struct LocalConnectionsEdge {
     pub source: String,
     pub target: String,
 }
 
 #[derive(Clone, Serialize)]
-pub struct LocalGraphTagNode {
+pub struct LocalConnectionsTagNode {
     pub id: String,
     pub tag: String,
     pub title: String,
@@ -42,22 +42,22 @@ pub struct LocalGraphTagNode {
 }
 
 #[derive(Serialize)]
-pub struct LocalGraphTagEdge {
+pub struct LocalConnectionsTagEdge {
     pub tag_id: String,
     pub note_id: String,
 }
 
 #[derive(Serialize)]
-pub struct LocalNoteGraph {
-    pub center: LocalGraphNode,
-    pub nodes: Vec<LocalGraphNode>,
-    pub edges: Vec<LocalGraphEdge>,
-    pub tags: Vec<LocalGraphTagNode>,
-    pub tag_edges: Vec<LocalGraphTagEdge>,
+pub struct LocalNoteConnections {
+    pub center: LocalConnectionsNode,
+    pub nodes: Vec<LocalConnectionsNode>,
+    pub edges: Vec<LocalConnectionsEdge>,
+    pub tags: Vec<LocalConnectionsTagNode>,
+    pub tag_edges: Vec<LocalConnectionsTagEdge>,
 }
 
 #[derive(Serialize)]
-pub struct SpaceGraphNode {
+pub struct SpaceConnectionsNode {
     pub id: String,
     pub title: String,
     pub link_count: u32,
@@ -66,14 +66,14 @@ pub struct SpaceGraphNode {
 }
 
 #[derive(Serialize)]
-pub struct SpaceGraphEdge {
+pub struct SpaceConnectionsEdge {
     pub from_id: String,
     pub to_id: String,
     pub kind: String,
 }
 
 #[derive(Serialize)]
-pub struct SpaceGraphTagNode {
+pub struct SpaceConnectionsTagNode {
     pub id: String,
     pub tag: String,
     pub title: String,
@@ -81,17 +81,17 @@ pub struct SpaceGraphTagNode {
 }
 
 #[derive(Serialize)]
-pub struct SpaceGraphTagEdge {
+pub struct SpaceConnectionsTagEdge {
     pub tag_id: String,
     pub note_id: String,
 }
 
 #[derive(Serialize)]
-pub struct SpaceGraph {
-    pub nodes: Vec<SpaceGraphNode>,
-    pub edges: Vec<SpaceGraphEdge>,
-    pub tags: Vec<SpaceGraphTagNode>,
-    pub tag_edges: Vec<SpaceGraphTagEdge>,
+pub struct SpaceConnections {
+    pub nodes: Vec<SpaceConnectionsNode>,
+    pub edges: Vec<SpaceConnectionsEdge>,
+    pub tags: Vec<SpaceConnectionsTagNode>,
+    pub tag_edges: Vec<SpaceConnectionsTagEdge>,
     pub truncated: bool,
     pub truncated_tags: bool,
     pub total_notes: u32,

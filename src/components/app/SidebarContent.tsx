@@ -1,12 +1,12 @@
 import {
 	ArrowShrinkIcon,
+	ChartRelationshipIcon,
 	CollectionsBookmarkIcon,
 	ExpandParagraphIcon,
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
 	SearchIcon,
-	ThreeDMoveIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -59,10 +59,10 @@ interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
-	onOpenGraph: () => void;
+	onOpenConnections: () => void;
 	onOpenCommandPalette: () => void;
 	spacePath: string | null;
-	activeTopSection: "home" | "all-notes" | "graph" | "databases" | null;
+	activeTopSection: "home" | "all-notes" | "connections" | "databases" | null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -133,7 +133,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
-	onOpenGraph,
+	onOpenConnections,
 	onOpenCommandPalette,
 	spacePath,
 	activeTopSection,
@@ -486,21 +486,24 @@ export const SidebarContent = memo(function SidebarContent({
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="graph"
-							data-active={activeTopSection === "graph" ? "true" : "false"}
-							aria-label="Graph"
-							aria-pressed={activeTopSection === "graph"}
-							aria-current={activeTopSection === "graph" ? "page" : undefined}
-							onClick={onOpenGraph}
-							title="Open Graph"
+							data-kind="connections"
+							data-active={
+								activeTopSection === "connections" ? "true" : "false"
+							}
+							aria-label="Connections"
+							aria-pressed={activeTopSection === "connections"}
+							aria-current={
+								activeTopSection === "connections" ? "page" : undefined
+							}
+							onClick={onOpenConnections}
+							title="Open Connections"
 						>
 							<HugeiconsIcon
-								icon={ThreeDMoveIcon}
+								icon={ChartRelationshipIcon}
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">Graph</span>
-							<span className="sidebarQuickActionBeta">Beta</span>
+							<span className="sidebarQuickActionLabel">Connections</span>
 						</button>
 					</div>
 					<div className="sidebarStack">

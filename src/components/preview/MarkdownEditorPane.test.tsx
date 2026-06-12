@@ -7,12 +7,12 @@ import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
 const {
 	noteInlineEditorMock,
-	localNoteGraphDialogMock,
+	localNoteConnectionsDialogMock,
 	invokeMock,
 	showNativePopupMenuMock,
 } = vi.hoisted(() => ({
 	noteInlineEditorMock: vi.fn(),
-	localNoteGraphDialogMock: vi.fn(),
+	localNoteConnectionsDialogMock: vi.fn(),
 	invokeMock: vi.fn(),
 	showNativePopupMenuMock: vi.fn(),
 }));
@@ -80,19 +80,21 @@ vi.mock("../editor/FloatingTOC", () => ({
 	FloatingTOC: () => null,
 }));
 
-vi.mock("../graph/LocalNoteGraphDialog", () => ({
-	LocalNoteGraphDialog: ({
+vi.mock("../connections/LocalNoteConnectionsDialog", () => ({
+	LocalNoteConnectionsDialog: ({
 		open,
 		noteId,
-		graphRefreshKey,
+		connectionsRefreshKey,
 	}: {
 		open: boolean;
 		onOpenChange: (open: boolean) => void;
 		noteId: string;
-		graphRefreshKey?: number;
+		connectionsRefreshKey?: number;
 	}) => {
-		localNoteGraphDialogMock({ open, noteId, graphRefreshKey });
-		return open ? <div data-testid="local-note-graph">Local graph</div> : null;
+		localNoteConnectionsDialogMock({ open, noteId, connectionsRefreshKey });
+		return open ? (
+			<div data-testid="local-note-connections">Local connections</div>
+		) : null;
 	},
 }));
 
@@ -223,7 +225,7 @@ describe("MarkdownEditorPane", () => {
 		invokeMock.mockReset();
 		invokeMock.mockImplementation(mockInvoke);
 		noteInlineEditorMock.mockReset();
-		localNoteGraphDialogMock.mockReset();
+		localNoteConnectionsDialogMock.mockReset();
 		showNativePopupMenuMock.mockReset();
 		showNativePopupMenuMock.mockResolvedValue(false);
 
@@ -388,7 +390,7 @@ describe("MarkdownEditorPane", () => {
 		expect(container.textContent).toContain("Saved");
 	});
 
-	it("opens the local graph from the actions menu", async () => {
+	it("opens local connections from the actions menu", async () => {
 		await act(async () => {
 			root.render(
 				<MarkdownEditorPane
@@ -409,17 +411,17 @@ describe("MarkdownEditorPane", () => {
 		expect(showNativePopupMenuMock).toHaveBeenCalled();
 
 		await act(async () => {
-			runNativeMenuAction("Local graph");
+			runNativeMenuAction("Local connections");
 		});
 
 		expect(
-			container.querySelector('[data-testid="local-note-graph"]'),
+			container.querySelector('[data-testid="local-note-connections"]'),
 		).toBeTruthy();
-		expect(localNoteGraphDialogMock).toHaveBeenLastCalledWith(
+		expect(localNoteConnectionsDialogMock).toHaveBeenLastCalledWith(
 			expect.objectContaining({
 				open: true,
 				noteId: "notes/graph.md",
-				graphRefreshKey: 7,
+				connectionsRefreshKey: 7,
 			}),
 		);
 	});

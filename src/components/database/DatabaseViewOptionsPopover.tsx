@@ -67,23 +67,15 @@ interface FilterKeyEntry {
 	signature: string;
 }
 
-const RESERVED_PROPERTY_KEYS = new Set([
-	"created",
-	"folder",
-	"glyph",
-	"linked_notes",
-	"path",
-	"tags",
-	"title",
-	"updated",
-]);
-
-const defaultColumns: DatabaseColumn[] = [
+const RESTORE_DEFAULT_COLUMNS: DatabaseColumn[] = [
 	{
 		id: "title",
 		type: "title",
 		label: "Title",
-		icon: defaultDatabaseColumnIconName({ type: "title", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "title",
+			property_kind: null,
+		}),
 		width: 320,
 		visible: true,
 	},
@@ -91,7 +83,10 @@ const defaultColumns: DatabaseColumn[] = [
 		id: "tags",
 		type: "tags",
 		label: "Tags",
-		icon: defaultDatabaseColumnIconName({ type: "tags", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "tags",
+			property_kind: null,
+		}),
 		width: 220,
 		visible: true,
 	},
@@ -108,8 +103,19 @@ const defaultColumns: DatabaseColumn[] = [
 	},
 ];
 
+const RESERVED_PROPERTY_KEYS = new Set([
+	"created",
+	"folder",
+	"glyph",
+	"linked_notes",
+	"path",
+	"tags",
+	"title",
+	"updated",
+]);
+
 const builtInColumns: DatabaseColumn[] = [
-	...defaultColumns,
+	...RESTORE_DEFAULT_COLUMNS,
 	{
 		id: "folder",
 		type: "folder",
@@ -469,7 +475,7 @@ export function DatabaseViewOptionsPopover({
 				board_group_by: null,
 				board_card_fields: undefined,
 			},
-			columns: defaultColumns,
+			columns: RESTORE_DEFAULT_COLUMNS,
 			sorts: [],
 			filters: [],
 		});
@@ -519,7 +525,10 @@ export function DatabaseViewOptionsPopover({
 						setColumnEnabled={setColumnEnabled}
 						updateColumns={updateColumns}
 						onRestoreDefaultColumns={() =>
-							void updateConfig({ ...config, columns: defaultColumns })
+							void updateConfig({
+								...config,
+								columns: RESTORE_DEFAULT_COLUMNS,
+							})
 						}
 					/>
 				) : null}

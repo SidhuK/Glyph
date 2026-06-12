@@ -180,21 +180,6 @@
 	line-height: 1;
 }
 
-.sidebarQuickActionBeta {
-	flex: 0 0 auto;
-	margin-left: auto;
-	padding: 1px 5px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
-	font-size: calc(var(--text-base) * 0.68);
-	font-weight: var(--font-medium);
-	font-family: var(--font-sans);
-	line-height: 1.2;
-	letter-spacing: 0;
-	text-transform: uppercase;
-}
-
 .sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionShortcut {
 	background: color-mix(
 		in srgb,
