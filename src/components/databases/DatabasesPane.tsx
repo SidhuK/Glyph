@@ -250,11 +250,7 @@ function DatabasesPaneContent({
 			previousOpenRequest.nonce !== nextOpenRequest.nonce;
 		previousOpenRequestRef.current = nextOpenRequest;
 
-		if (
-			!initialDatabaseId ||
-			!requestChanged ||
-			selectedDatabaseId === initialDatabaseId
-		) {
+		if (!initialDatabaseId || !requestChanged) {
 			return;
 		}
 
@@ -262,12 +258,7 @@ function DatabasesPaneContent({
 		setSelectedViewId(
 			initialSelectedViewId(initialDatabaseId, initialDocument),
 		);
-	}, [
-		initialDatabaseId,
-		initialDocument,
-		openRequestNonce,
-		selectedDatabaseId,
-	]);
+	}, [initialDatabaseId, initialDocument, openRequestNonce]);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
