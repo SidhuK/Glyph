@@ -10,14 +10,6 @@
 	--theme-preview-border: var(--border-default);
 }
 
-:root.light:not([data-light-theme]) .appearanceThemeDropdownTrigger,
-:root.light:not([data-light-theme]) .appearanceThemeDropdownOption,
-:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownTrigger,
-:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownOption {
-	--theme-preview-surface: rgb(251 250 251);
-	--theme-preview-surface-alt: rgb(251 250 251);
-}
-
 :root.dark .appearanceThemeDropdownTrigger,
 :root.dark .appearanceThemeDropdownOption {
 	--theme-preview-surface: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);

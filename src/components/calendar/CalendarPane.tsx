@@ -177,7 +177,6 @@ export function CalendarPane({
 		initialData: matchingInitialData,
 	});
 	const data = calendarQuery.data ?? null;
-	const loading = calendarQuery.isFetching;
 
 	const invalidateCalendar = useCallback(async () => {
 		await queryClient.invalidateQueries({
@@ -560,10 +559,6 @@ export function CalendarPane({
 							</ul>
 						</section>
 					</div>
-
-					{loading ? (
-						<div className="calendarLoading">Refreshing...</div>
-					) : null}
 				</div>
 			</section>
 		</div>

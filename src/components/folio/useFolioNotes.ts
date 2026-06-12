@@ -23,15 +23,8 @@ const folioFilesQueryKey = (folderPrefix: string | null) =>
 	["navigation", "folio-files", folderPrefix ?? "__all__"] as const;
 
 function folderForScope(scope: FolioScope): string | null {
-	switch (scope.kind) {
-		case "folder":
-			return normalizeFolioPath(scope.folderPrefix) || null;
-		case "daily":
-		case "templates":
-			return normalizeFolioPath(scope.folderPrefix) || null;
-		default:
-			return null;
-	}
+	if (scope.kind !== "folder") return null;
+	return normalizeFolioPath(scope.folderPrefix) || null;
 }
 
 function tagMatches(noteTags: string[], tag: string): boolean {
@@ -146,19 +139,16 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 export function useFolioNotes(scope: FolioScope) {
 	const queryClient = useQueryClient();
 	const folderPrefix = folderForScope(scope);
-	const folderRequired =
-		(scope.kind === "daily" || scope.kind === "templates") && !folderPrefix;
 	const includesNonMarkdownFiles =
 		scope.kind !== "tag" && scope.kind !== "person";
 	const query = useQuery({
 		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		queryFn: () => loadAllDocs(folderPrefix),
-		enabled: !folderRequired,
 	});
 	const filesQuery = useQuery({
 		queryKey: folioFilesQueryKey(folderPrefix),
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
-		enabled: !folderRequired && includesNonMarkdownFiles,
+		enabled: includesNonMarkdownFiles,
 	});
 
 	useTauriEvent("notes:external_changed", () => {
@@ -188,10 +178,8 @@ export function useFolioNotes(scope: FolioScope) {
 		notes: items,
 		filesTruncated:
 			includesNonMarkdownFiles && (filesQuery.data?.truncated ?? false),
-		isLoading: query.isLoading || filesQuery.isLoading,
 		error: query.error ?? filesQuery.error,
 		title: folioScopeTitle(scope),
 		nonMarkdownFileLimit: FOLIO_NON_MARKDOWN_FILE_LIMIT,
-		missingFolder: folderRequired,
 	};
 }

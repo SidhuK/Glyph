@@ -28,34 +28,34 @@
 
 :root.dark:not([data-dark-theme]),
 :root.dark[data-dark-theme="glyph-default-dark"] {
-	/* Glyph Ink — OKLCH-derived cool charcoal with tinted floating shadows. */
-	--bg-primary: oklch(0.185 0.008 270);
-	--bg-secondary: oklch(0.22 0.009 270);
-	--bg-tertiary: oklch(0.272 0.01 270);
+	/* Clean neutral default — warm charcoal surfaces with soft off-white text. */
+	--bg-primary: #191919;
+	--bg-secondary: #252525;
+	--bg-tertiary: #2f2f2f;
 	--bg-hover: rgba(255, 255, 255, 0.05);
-	--bg-active: rgba(255, 255, 255, 0.1);
-	--bg-sidebar: oklch(0.22 0.009 270);
-	--bg-canvas: oklch(0.155 0.008 270);
-	--text-primary: oklch(0.938 0.003 270);
-	--text-secondary: rgba(236, 236, 238, 0.66);
-	--text-tertiary: rgba(236, 236, 238, 0.45);
-	--text-placeholder: rgba(236, 236, 238, 0.3);
-	--text-inverse: oklch(0.185 0.008 270);
-	--text-accent: oklch(0.938 0.003 270);
+	--bg-active: rgba(255, 255, 255, 0.08);
+	--bg-sidebar: #252525;
+	--bg-canvas: #141414;
+	--text-primary: #e8e8e8;
+	--text-secondary: rgba(232, 232, 232, 0.68);
+	--text-tertiary: rgba(232, 232, 232, 0.45);
+	--text-placeholder: rgba(232, 232, 232, 0.32);
+	--text-inverse: #191919;
+	--text-accent: #e8e8e8;
 	--text-error: var(--color-red-500);
 	--border-light: rgba(255, 255, 255, 0.06);
-	--border-default: rgba(255, 255, 255, 0.09);
+	--border-default: rgba(255, 255, 255, 0.1);
 	--border-strong: rgba(255, 255, 255, 0.16);
 	--border-focus: rgba(255, 255, 255, 0.24);
 	--interactive-hover: rgba(255, 255, 255, 0.05);
-	--interactive-active: rgba(255, 255, 255, 0.1);
-	--interactive-accent: var(--glyph-user-accent, #ececee);
+	--interactive-active: rgba(255, 255, 255, 0.08);
+	--interactive-accent: var(--glyph-user-accent, #e8e8e8);
 	--interactive-accent-hover: var(--glyph-user-accent-hover, #ffffff);
-	--accent-color: var(--glyph-user-accent, #ececee);
+	--accent-color: var(--glyph-user-accent, #e8e8e8);
 	--link-color: var(--color-blue-300);
 	--link-color-hover: var(--color-blue-200);
-	--selection-bg: rgba(255, 255, 255, 0.12);
-	--selection-bg-muted: rgba(255, 255, 255, 0.08);
+	--selection-bg: rgba(255, 255, 255, 0.1);
+	--selection-bg-muted: rgba(255, 255, 255, 0.06);
 	--feedback-error-bg: rgba(224, 62, 62, 0.18);
 	--feedback-success-bg: rgba(15, 123, 15, 0.18);
 	--status-info-fg: var(--color-blue-300);
@@ -109,20 +109,7 @@
 	--callout-error: var(--color-red-dark-400);
 	--scrollbar-thumb: rgba(255, 255, 255, 0.14);
 	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
-	--glass-bg: rgba(23, 23, 26, 0.62);
-
-	/* Tinted floating shadows with inset top hairline for depth. */
-	--shadow-color: rgba(0, 0, 0, 1);
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0
-		rgba(255, 255, 255, 0.04);
-	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3),
-		inset 0 1px 0 rgba(255, 255, 255, 0.05);
-	--shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.3),
-		inset 0 1px 0 rgba(255, 255, 255, 0.06);
-	--shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.35),
-		inset 0 1px 0 rgba(255, 255, 255, 0.07);
-	--shadow-float: 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35),
-		inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	--glass-bg: rgba(25, 25, 25, 0.72);
 }
 
 :root.dark[data-dark-theme="solarized-dark"] {

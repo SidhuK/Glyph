@@ -85,9 +85,9 @@
 
 	--ai-accent-chat: #014f86;
 	--ai-accent-create: #c1121f;
-	--task-bucket-inbox: oklch(0.63 0.12 165);
-	--task-bucket-today: oklch(0.66 0.17 85);
-	--task-bucket-upcoming: oklch(0.62 0.14 240);
+	--task-bucket-inbox: #0077b6;
+	--task-bucket-today: #bc8f00;
+	--task-bucket-upcoming: #c97a00;
 	--callout-info: var(--color-blue-400);
 	--callout-tip: #3ccf8e;
 	--callout-warning: #f0b429;

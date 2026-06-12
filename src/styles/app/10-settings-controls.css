@@ -211,11 +211,6 @@
 	min-height: 34px;
 }
 
-:root.light:not([data-light-theme]) .settingsSelectNative,
-:root.light[data-light-theme="glyph-default"] .settingsSelectNative {
-	background-color: rgb(251 250 251);
-}
-
 :root.dark .settingsSelectNative {
 	background-color: color-mix(in srgb, var(--bg-tertiary) 88%, #ffffff);
 }

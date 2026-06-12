@@ -3,8 +3,6 @@ export type FolioScope =
 	| { kind: "folder"; folderPrefix: string }
 	| { kind: "tag"; tag: string }
 	| { kind: "person"; handle: string }
-	| { kind: "daily"; folderPrefix: string | null }
-	| { kind: "templates"; folderPrefix: string | null }
 	| { kind: "search"; query: string };
 
 export type FolioNotesSortMode = "alphabetical" | "edited" | "created";
@@ -35,10 +33,6 @@ export function folioScopeTitle(scope: FolioScope): string {
 				: `#${scope.tag}`;
 		case "person":
 			return scope.handle.startsWith("@") ? scope.handle : `@${scope.handle}`;
-		case "daily":
-			return "Daily Notes";
-		case "templates":
-			return "Templates";
 		case "search":
 			return scope.query.trim() ? `Search: ${scope.query.trim()}` : "Search";
 	}

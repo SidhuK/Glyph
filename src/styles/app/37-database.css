@@ -41,6 +41,10 @@
 	background: var(--bg-primary);
 }
 
+.canvasPaneHost[data-databases="true"] .databaseHostPane {
+	padding-top: var(--header-height);
+}
+
 .databasesDropdownContent,
 .databasePickerMenu,
 .databaseBoardColorMenu,

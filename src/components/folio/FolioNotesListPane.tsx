@@ -185,14 +185,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		tagAppearance,
 	} = useFileTreeContext();
 	const queryClient = useQueryClient();
-	const {
-		notes,
-		filesTruncated,
-		isLoading,
-		error,
-		nonMarkdownFileLimit,
-		missingFolder,
-	} = useFolioNotes(folioScope);
+	const { notes, filesTruncated, error, nonMarkdownFileLimit } =
+		useFolioNotes(folioScope);
 	const normalizedPinnedFiles = useMemo(
 		() =>
 			pinnedFiles
@@ -446,16 +440,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	}, [activeTabPath, scrollNoteIntoView]);
 
 	const body = (() => {
-		if (missingFolder) {
-			return (
-				<div className="folioNotesState">
-					Set a folder in Settings to browse this scope.
-				</div>
-			);
-		}
-		if (isLoading) {
-			return <div className="folioNotesState">Loading notes…</div>;
-		}
 		if (error) {
 			return (
 				<div className="folioNotesState">

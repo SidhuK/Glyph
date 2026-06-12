@@ -653,7 +653,6 @@ export function TasksPane({
 										? `${scheduledTaskCountLabel(visibleTaskCount)}, ${noteCountLabel(visibleUnscheduledNoteGroups.length)} with unscheduled tasks`
 										: countLabel(visibleTaskCount)}
 							</span>
-							{tasksQuery.isFetching ? <span>Refreshing...</span> : null}
 						</div>
 						{!hasVisibleResults ? (
 							<div className="tasksPaneEmpty">

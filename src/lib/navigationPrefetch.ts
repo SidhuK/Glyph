@@ -93,6 +93,12 @@ export const navigationQueryKeys = {
 			...navigationQueryKeys.allDocs(),
 			normalizeAllDocsFolder(folderPrefix),
 		] as const,
+	allDocsCount: (folderPrefix?: string | null) =>
+		[
+			...navigationQueryKeys.allDocs(),
+			"count",
+			normalizeAllDocsFolder(folderPrefix),
+		] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
 };
 
@@ -332,10 +338,24 @@ export async function prefetchDatabasesLanding(
 	await prefetchDatabaseRows(databaseId, preferredViewId);
 }
 
+export const ALL_DOCS_LIST_LIMIT = 2000;
+
+export function formatAllDocsCountLabel(count: number): string | null {
+	if (count <= 0) return null;
+	if (count > ALL_DOCS_LIST_LIMIT) return `${ALL_DOCS_LIST_LIMIT}+`;
+	return String(count);
+}
+
+export async function loadAllDocsCount(folderPrefix?: string | null) {
+	return invoke("all_docs_count", {
+		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+	});
+}
+
 export async function loadAllDocs(folderPrefix?: string | null) {
 	const normalized = normalizeAllDocsFolder(folderPrefix);
 	const items = await invoke("all_docs_list", {
-		limit: 2000,
+		limit: ALL_DOCS_LIST_LIMIT,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
 	});
 	if (normalized === "__all__") return items;

@@ -23,7 +23,6 @@ interface PreviewState {
 	relPath: string;
 	content: string;
 	error: string;
-	loading: boolean;
 	anchor: DOMRect;
 	position: Position;
 }
@@ -195,15 +194,6 @@ export function LinkedNotePreviewSheet() {
 
 			openTimerRef.current = window.setTimeout(() => {
 				if (requestIdRef.current !== requestId) return;
-				setPreview({
-					target,
-					relPath: "",
-					content: "",
-					error: "",
-					loading: true,
-					anchor,
-					position,
-				});
 
 				void (async () => {
 					try {
@@ -222,7 +212,6 @@ export function LinkedNotePreviewSheet() {
 							relPath,
 							content,
 							error: "",
-							loading: false,
 							anchor,
 							position,
 						});
@@ -233,7 +222,6 @@ export function LinkedNotePreviewSheet() {
 							relPath: "",
 							content: "",
 							error: e instanceof Error ? e.message : String(e),
-							loading: false,
 							anchor,
 							position,
 						});
@@ -339,13 +327,9 @@ export function LinkedNotePreviewSheet() {
 			aria-label="Linked note preview"
 		>
 			<div className="linkedNotePreviewBody">
-				{preview.loading ? (
-					<div className="markdownEditorInfoEmpty">Loading preview…</div>
-				) : null}
-				{!preview.loading && preview.error ? (
+				{preview.error ? (
 					<div className="markdownEditorInfoEmpty">{preview.error}</div>
-				) : null}
-				{!preview.loading && !preview.error ? (
+				) : (
 					<div className="linkedNotePreviewText">
 						{preview.content.trim() ? (
 							<NoteInlineEditor
@@ -361,7 +345,7 @@ export function LinkedNotePreviewSheet() {
 							<div className="markdownEditorInfoEmpty">Empty note</div>
 						)}
 					</div>
-				) : null}
+				)}
 			</div>
 		</aside>,
 		document.body,

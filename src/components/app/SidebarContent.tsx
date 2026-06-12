@@ -16,7 +16,11 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
+import {
+	formatAllDocsCountLabel,
+	loadAllDocsCount,
+	navigationQueryKeys,
+} from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
@@ -97,13 +101,13 @@ function folioTreeRootEntries(
 }
 
 function AllNotesCountBadge() {
-	const allDocsQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(),
-		queryFn: () => loadAllDocs(),
+	const countQuery = useQuery({
+		queryKey: navigationQueryKeys.allDocsCount(),
+		queryFn: () => loadAllDocsCount(),
 	});
-	const count = allDocsQuery.data?.length ?? 0;
-	if (count === 0) return null;
-	return <span className="sidebarQuickActionCount">{count}</span>;
+	const label = formatAllDocsCountLabel(countQuery.data ?? 0);
+	if (!label) return null;
+	return <span className="sidebarQuickActionCount">{label}</span>;
 }
 
 export const SidebarContent = memo(function SidebarContent({

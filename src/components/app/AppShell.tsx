@@ -63,7 +63,7 @@ import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
+
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
@@ -836,9 +836,6 @@ export function AppShell() {
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ALL_DOCS_TAB_ID);
 	}, [openSpecialTab]);
-	const openTemplatesTab = useCallback(() => {
-		openSpecialTab(TEMPLATES_TAB_ID);
-	}, [openSpecialTab]);
 	const [homeView, setHomeView] = useState<"home" | "tasks">("home");
 	const openTasksView = useCallback(() => {
 		setHomeView("tasks");
@@ -1125,7 +1122,6 @@ export function AppShell() {
 		openSearchPalette,
 		openSettings,
 		openTasksView,
-		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,
 		pinnedFiles,

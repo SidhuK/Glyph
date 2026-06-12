@@ -117,7 +117,7 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 	return {
 		summaries,
 		selectedJobId,
-		listLoading: summariesQuery.isFetching,
+		listLoading: summariesQuery.isLoading,
 		loadingJobId: loadChatMutation.isPending
 			? loadChatMutation.variables
 			: null,

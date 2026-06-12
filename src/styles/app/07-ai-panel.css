@@ -66,27 +66,27 @@
 }
 
 .aiPanel[data-ai-preset="brainstorm"] {
-	--ai-preset-accent: oklch(0.68 0.16 220);
+	--ai-preset-accent: #4a90d9;
 }
 
 .aiPanel[data-ai-preset="builder"] {
-	--ai-preset-accent: oklch(0.7 0.16 45);
+	--ai-preset-accent: #d97a3a;
 }
 
 .aiPanel[data-ai-preset="tasks"] {
-	--ai-preset-accent: oklch(0.74 0.16 88);
+	--ai-preset-accent: #c9a832;
 }
 
 .aiPanel[data-ai-preset="editor"] {
-	--ai-preset-accent: oklch(0.66 0.11 18);
+	--ai-preset-accent: #c76b5a;
 }
 
 .aiPanel[data-ai-preset="research"] {
-	--ai-preset-accent: oklch(0.66 0.14 255);
+	--ai-preset-accent: #6b7fd9;
 }
 
 .aiPanel[data-ai-preset="daily"] {
-	--ai-preset-accent: oklch(0.66 0.13 242);
+	--ai-preset-accent: #5a8fd9;
 }
 
 .dark .aiPanel[data-ai-mode="chat"] {

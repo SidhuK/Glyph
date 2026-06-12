@@ -32,6 +32,53 @@
 	border-bottom-right-radius: 0;
 }
 
+.canvasPaneHost[data-space-graph="true"] :is(.spaceGraphHost, .canvasPaneAwait),
+.canvasPaneHost[data-all-docs="true"] :is(.allDocsPane, .canvasPaneAwait),
+.canvasPaneHost[data-databases="true"] :is(.databaseHostPane, .canvasPaneAwait),
+.canvasPaneHost[data-home="true"] :is(.homePaneHost, .canvasPaneAwait) {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+
+.canvasPaneHost:is(
+		[data-space-graph="true"],
+		[data-all-docs="true"],
+		[data-databases="true"],
+		[data-home="true"]
+	)
+	.mainTabBarTransition {
+	position: relative;
+	z-index: 1;
+	flex-shrink: 0;
+}
+
+.canvasPaneHost:is(
+		[data-space-graph="true"],
+		[data-all-docs="true"],
+		[data-databases="true"],
+		[data-home="true"]
+	)
+	.mainTabsBarWrap,
+.canvasPaneHost:is(
+		[data-space-graph="true"],
+		[data-all-docs="true"],
+		[data-databases="true"],
+		[data-home="true"]
+	)
+	.mainTabsBar {
+	background: transparent;
+}
+
+.canvasPaneAwait[data-variant="all-docs"] {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+}
+
+.canvasPaneAwait[data-variant="databases"],
+.canvasPaneAwait[data-variant="home"] {
+	background: var(--bg-primary);
+}
+
 .notesInfoSidebarHost {
 	flex: 0 0 0;
 	width: 0;

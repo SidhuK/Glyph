@@ -157,7 +157,6 @@
 	color: var(--text-tertiary);
 }
 
-.dropdownLoading,
 .dropdownEmpty,
 .dropdownError {
 	padding: 16px 12px;

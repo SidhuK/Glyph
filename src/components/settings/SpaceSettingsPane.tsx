@@ -78,19 +78,16 @@ export function SpaceSettingsPane() {
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
-	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageModeState] =
 		useState<AttachmentStorageMode>("note-folder");
 	const [attachmentFolder, setAttachmentFolderState] = useState(
 		DEFAULT_ATTACHMENT_FOLDER,
 	);
-	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
 	const [attachmentError, setAttachmentError] = useState<string | null>(null);
 	const [quickNotesFolder, setQuickNotesFolderState] = useState(
 		DEFAULT_QUICK_NOTES_FOLDER,
 	);
-	const [quickNotesLoading, setQuickNotesLoading] = useState(true);
 	const [quickNotesError, setQuickNotesError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
@@ -115,9 +112,6 @@ export function SpaceSettingsPane() {
 
 	const refresh = useCallback(async () => {
 		setError("");
-		setDailyNotesLoading(true);
-		setAttachmentsLoading(true);
-		setQuickNotesLoading(true);
 		try {
 			const currentSpace = await invoke("space_get_current");
 			const settingsScope = { spacePath: currentSpace };
@@ -131,10 +125,6 @@ export function SpaceSettingsPane() {
 			);
 		} catch (e) {
 			setError(extractErrorMessage(e));
-		} finally {
-			setDailyNotesLoading(false);
-			setAttachmentsLoading(false);
-			setQuickNotesLoading(false);
 		}
 	}, []);
 
@@ -281,9 +271,7 @@ export function SpaceSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<div className="dailyNotesFolderPath">
-									{dailyNotesLoading
-										? "Loading..."
-										: (dailyNotesFolder ?? "Not configured")}
+									{dailyNotesFolder ?? "Not configured"}
 								</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
@@ -292,7 +280,6 @@ export function SpaceSettingsPane() {
 										size="sm"
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleBrowseFolder}
-										disabled={dailyNotesLoading}
 									>
 										<FolderOpen size="var(--icon-md)" />
 										Browse
@@ -304,7 +291,6 @@ export function SpaceSettingsPane() {
 											size="icon-sm"
 											className="rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleClearFolder}
-											disabled={dailyNotesLoading}
 											aria-label="Clear daily notes folder"
 											title="Clear daily notes folder"
 										>
@@ -331,16 +317,13 @@ export function SpaceSettingsPane() {
 					>
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
-								<div className="dailyNotesFolderPath">
-									{quickNotesLoading ? "Loading..." : quickNotesFolder}
-								</div>
+								<div className="dailyNotesFolderPath">{quickNotesFolder}</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
 										type="button"
 										variant="outline"
 										size="sm"
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										disabled={quickNotesLoading}
 										onClick={() => void handleBrowseQuickNotesFolder()}
 									>
 										<FolderOpen size="var(--icon-md)" />
@@ -352,7 +335,6 @@ export function SpaceSettingsPane() {
 										size="icon-sm"
 										className="rounded-md border-border bg-background justify-center shadow-none"
 										onClick={() => void handleResetQuickNotesFolder()}
-										disabled={quickNotesLoading}
 										aria-label="Reset quick notes folder"
 										title="Reset quick notes folder"
 									>
@@ -388,7 +370,6 @@ export function SpaceSettingsPane() {
 										event.target.value as AttachmentStorageMode,
 									);
 								}}
-								disabled={attachmentsLoading}
 							>
 								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
 									<option key={option.value} value={option.value}>
@@ -406,9 +387,7 @@ export function SpaceSettingsPane() {
 							{attachmentStorageMode === "specific-folder" ? (
 								<div className="dailyNotesFolderRow">
 									<div className="dailyNotesFolderPath">
-										{attachmentsLoading
-											? "Loading..."
-											: attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
+										{attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
 									</div>
 									<div className="settingsActions dailyNotesActions">
 										<Button
@@ -417,7 +396,6 @@ export function SpaceSettingsPane() {
 											size="sm"
 											className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleBrowseAttachmentFolder}
-											disabled={attachmentsLoading}
 										>
 											<FolderOpen size="var(--icon-md)" />
 											Browse
@@ -428,7 +406,6 @@ export function SpaceSettingsPane() {
 											size="icon-sm"
 											className="rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleResetAttachmentFolder}
-											disabled={attachmentsLoading}
 											aria-label="Reset attachments folder"
 											title="Reset attachments folder"
 										>

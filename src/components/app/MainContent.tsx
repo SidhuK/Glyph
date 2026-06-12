@@ -53,7 +53,6 @@ import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { cn } from "../../lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { Calendar, FileText, Settings } from "../Icons";
@@ -74,6 +73,7 @@ import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
+import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -422,13 +422,8 @@ export const MainContent = memo(function MainContent({
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
-	const {
-		dailyNotesFolder,
-		templateFolder,
-		folioMode,
-		settingsMode,
-		settingsTab,
-	} = useUILayoutContext();
+	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
+		useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -575,9 +570,6 @@ export const MainContent = memo(function MainContent({
 			void loadAllDocsPane();
 			void loadTasksPane();
 			void prefetchAllDocs(null);
-			if (templateFolder) {
-				void prefetchAllDocs(templateFolder);
-			}
 			void prefetchCalendarData({
 				anchorDate:
 					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
@@ -599,7 +591,7 @@ export const MainContent = memo(function MainContent({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [dailyNotesFolder, openDatabasesId, spacePath, templateFolder]);
+	}, [dailyNotesFolder, openDatabasesId, spacePath]);
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
@@ -614,34 +606,8 @@ export const MainContent = memo(function MainContent({
 		if (viewerPath === ALL_DOCS_TAB_ID) {
 			const initialNotes = getPrefetchedAllDocs(null);
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading all notes…</div>
-					}
-				>
+				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
-				</Suspense>
-			);
-		}
-		if (viewerPath === TEMPLATES_TAB_ID) {
-			const initialNotes = getPrefetchedAllDocs(templateFolder);
-			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading templates…</div>
-					}
-				>
-					<AllDocsPane
-						title="Templates"
-						folderPrefix={templateFolder}
-						emptyMessage={
-							templateFolder
-								? "No notes found in the template folder yet."
-								: "Set a template folder in Settings to browse templates here."
-						}
-						initialNotes={initialNotes}
-						onOpenFile={onOpenFile}
-					/>
 				</Suspense>
 			);
 		}
@@ -687,22 +653,14 @@ export const MainContent = memo(function MainContent({
 					</div>
 					<div key={homeView} className="homePaneContent">
 						{isTasksView ? (
-							<Suspense
-								fallback={
-									<div className="databaseLoadingState">Loading tasks…</div>
-								}
-							>
+							<Suspense fallback={<CanvasPaneAwait variant="home" />}>
 								<TasksPane
 									onOpenFile={onOpenFile}
 									onOpenDailyNotesSettings={onOpenDailyNotesSettings}
 								/>
 							</Suspense>
 						) : (
-							<Suspense
-								fallback={
-									<div className="databaseLoadingState">Loading calendar…</div>
-								}
-							>
+							<Suspense fallback={<CanvasPaneAwait variant="home" />}>
 								<CalendarPane
 									initialData={initialCalendarData}
 									onOpenFile={onOpenFile}
@@ -733,11 +691,7 @@ export const MainContent = memo(function MainContent({
 					? getPrefetchedDatabaseRows(initialDatabaseId, initialViewId)
 					: null;
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading collections…</div>
-					}
-				>
+				<Suspense fallback={<CanvasPaneAwait variant="databases" />}>
 					<DatabasesPane
 						onOpenFile={onOpenFile}
 						onRenameNotePath={(notePath, nextName) =>
@@ -752,9 +706,7 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath === SPACE_GRAPH_TAB_ID) {
 			return (
-				<Suspense
-					fallback={<div className="databaseLoadingState">Loading graph…</div>}
-				>
+				<Suspense fallback={<CanvasPaneAwait variant="graph" />}>
 					<SpaceGraphView />
 				</Suspense>
 			);
@@ -792,7 +744,6 @@ export const MainContent = memo(function MainContent({
 		openDatabasesId,
 		dailyNotesFolder,
 		homeView,
-		templateFolder,
 		viewerPath,
 		setDirtyByPath,
 	]);
@@ -807,11 +758,6 @@ export const MainContent = memo(function MainContent({
 			if (target === ALL_DOCS_TAB_ID) {
 				void loadAllDocsPane();
 				void prefetchAllDocs(null);
-				return;
-			}
-			if (target === TEMPLATES_TAB_ID) {
-				void loadAllDocsPane();
-				void prefetchAllDocs(templateFolder);
 				return;
 			}
 			if (target === CALENDAR_TAB_ID) {
@@ -834,18 +780,14 @@ export const MainContent = memo(function MainContent({
 				return;
 			}
 		},
-		[dailyNotesFolder, openDatabasesId, templateFolder],
+		[dailyNotesFolder, openDatabasesId],
 	);
 
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
 		general: <GeneralSettingsPane />,
 		appearance: <AppearanceSettingsPane />,
 		shortcuts: (
-			<Suspense
-				fallback={
-					<div className="databaseLoadingState">Loading shortcuts…</div>
-				}
-			>
+			<Suspense fallback={null}>
 				<ShortcutsSettingsPane />
 			</Suspense>
 		),
@@ -861,8 +803,18 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
+	const isSpaceGraphTab = viewerPath === SPACE_GRAPH_TAB_ID;
+	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
+	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
+	const isHomeTab = viewerPath === CALENDAR_TAB_ID;
 	const editorCanvas = (
-		<div className="canvasPaneHost">
+		<div
+			className="canvasPaneHost"
+			data-space-graph={isSpaceGraphTab ? "true" : undefined}
+			data-all-docs={isAllDocsTab ? "true" : undefined}
+			data-databases={isDatabasesTab ? "true" : undefined}
+			data-home={isHomeTab ? "true" : undefined}
+		>
 			<DailyNotesSetupToast
 				visible={dailyNoteSetupToastVisible}
 				onDismiss={() => setDailyNoteSetupToastVisible(false)}

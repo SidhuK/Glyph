@@ -7,15 +7,20 @@
 	--all-docs-card-title-size: var(--text-base);
 	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
 	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
+	--all-docs-pane-padding: clamp(20px, 2.8vw, 32px);
 
 	display: flex;
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
 	overflow-y: auto;
-	padding: clamp(20px, 2.8vw, 32px);
+	padding: var(--all-docs-pane-padding);
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	gap: 18px;
+}
+
+.canvasPaneHost[data-all-docs="true"] .allDocsPane {
+	padding-top: calc(var(--header-height) + var(--all-docs-pane-padding));
 }
 
 .allDocsHeader {

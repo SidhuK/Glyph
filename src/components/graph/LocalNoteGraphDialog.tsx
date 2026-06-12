@@ -485,7 +485,6 @@ export function LocalNoteGraphDialog({
 	graphRefreshKey = 0,
 }: LocalNoteGraphDialogProps) {
 	const [graph, setGraph] = useState<LocalNoteGraph | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
@@ -509,7 +508,7 @@ export function LocalNoteGraphDialog({
 		if (!open || !noteId) return;
 		void graphRefreshKey;
 		let cancelled = false;
-		setLoading(true);
+		setGraph(null);
 		setError("");
 
 		void invoke("note_local_graph", { note_id: noteId })
@@ -521,11 +520,6 @@ export function LocalNoteGraphDialog({
 				if (cancelled) return;
 				setGraph(null);
 				setError(cause instanceof Error ? cause.message : String(cause));
-			})
-			.finally(() => {
-				if (!cancelled) {
-					setLoading(false);
-				}
 			});
 
 		return () => {
@@ -534,7 +528,7 @@ export function LocalNoteGraphDialog({
 	}, [graphRefreshKey, noteId, open]);
 
 	useEffect(() => {
-		if (!open || !graph || loading || error) return;
+		if (!open || !graph || error) return;
 		const container = containerRef.current;
 		if (!container) return;
 
@@ -597,7 +591,7 @@ export function LocalNoteGraphDialog({
 			cy.destroy();
 			cyRef.current = null;
 		};
-	}, [error, graph, loading, open, openNode]);
+	}, [error, graph, open, openNode]);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -614,17 +608,11 @@ export function LocalNoteGraphDialog({
 							×
 						</button>
 					</DialogClose>
-					{loading ? (
-						<div className="localNoteGraphState">
-							Loading note connections...
-						</div>
-					) : null}
-					{!loading && error ? (
+					{error ? (
 						<div className="localNoteGraphState">
 							Could not load graph: {error}
 						</div>
-					) : null}
-					{!loading && !error ? (
+					) : (
 						<div className="localNoteGraphStage">
 							<div
 								ref={containerRef}
@@ -669,7 +657,7 @@ export function LocalNoteGraphDialog({
 								</span>
 							</div>
 						</div>
-					) : null}
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>

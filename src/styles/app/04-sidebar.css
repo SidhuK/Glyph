@@ -339,8 +339,9 @@
 }
 
 :root[data-translucent-app-frame="false"] .sidebarResizeHandle {
-	margin-left: -4px;
-	margin-right: -4px;
+	margin-left: 0;
+	margin-right: 0;
+	background: var(--bg-sidebar);
 }
 
 .sidebarResizeHandle::before {

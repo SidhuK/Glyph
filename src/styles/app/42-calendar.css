@@ -61,8 +61,7 @@
 .calendarDashboardTitleBlock p,
 .calendarPanelSectionHeader span,
 .calendarWeekMonth small,
-.calendarNoteTime,
-.calendarLoading {
+.calendarNoteTime {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 }
@@ -497,11 +496,6 @@
 .calendarNoteTag.is-muted {
 	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
 	color: var(--text-tertiary);
-}
-
-.calendarLoading {
-	padding-inline: 2px;
-	padding-block: 0;
 }
 
 :root.dark .calendarWeekPanel,

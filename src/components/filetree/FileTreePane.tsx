@@ -784,7 +784,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
 		: null;
-	const focusedEntriesLoading = Boolean(focusedDirPath && !focusedEntries);
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -969,15 +968,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onNavigate={handleEnterDir}
 							onExit={handleExitFocusedDir}
 						/>
-						{focusedEntriesLoading ? (
-							<m.div
-								className="fileTreeEmpty"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-							>
-								Loading folder...
-							</m.div>
-						) : focusedEntries?.length ? (
+						{focusedEntries === null ? null : focusedEntries.length ? (
 							<TreeEntries
 								entries={focusedEntries}
 								parentDepth={-1}
