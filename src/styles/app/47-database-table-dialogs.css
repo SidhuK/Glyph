@@ -141,11 +141,6 @@
 	min-width: 0;
 }
 
-.databaseHeaderIcon {
-	color: var(--text-tertiary);
-	flex: 0 0 auto;
-}
-
 .databaseHeaderIconPicker {
 	width: var(--icon-xl);
 	height: var(--icon-xl);
@@ -447,8 +442,7 @@
 	);
 }
 
-.databaseCellText,
-.databaseFooterPath {
+.databaseCellText {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -564,15 +558,6 @@
 .databaseNoticeError {
 	color: var(--text-error);
 	background: color-mix(in srgb, #f6d8d1 20%, var(--bg-primary));
-}
-
-.databaseNoticeInfo {
-	color: var(--text-secondary);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 7%,
-		var(--bg-primary)
-	);
 }
 
 .databaseEmptyCell {

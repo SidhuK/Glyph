@@ -93,6 +93,12 @@ export const navigationQueryKeys = {
 			...navigationQueryKeys.allDocs(),
 			normalizeAllDocsFolder(folderPrefix),
 		] as const,
+	allDocsCount: (folderPrefix?: string | null) =>
+		[
+			...navigationQueryKeys.allDocs(),
+			"count",
+			normalizeAllDocsFolder(folderPrefix),
+		] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
 };
 
@@ -332,10 +338,24 @@ export async function prefetchDatabasesLanding(
 	await prefetchDatabaseRows(databaseId, preferredViewId);
 }
 
+export const ALL_DOCS_LIST_LIMIT = 2000;
+
+export function formatAllDocsCountLabel(count: number): string | null {
+	if (count <= 0) return null;
+	if (count > ALL_DOCS_LIST_LIMIT) return `${ALL_DOCS_LIST_LIMIT}+`;
+	return String(count);
+}
+
+export async function loadAllDocsCount(folderPrefix?: string | null) {
+	return invoke("all_docs_count", {
+		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+	});
+}
+
 export async function loadAllDocs(folderPrefix?: string | null) {
 	const normalized = normalizeAllDocsFolder(folderPrefix);
 	const items = await invoke("all_docs_list", {
-		limit: 2000,
+		limit: ALL_DOCS_LIST_LIMIT,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
 	});
 	if (normalized === "__all__") return items;
@@ -373,9 +393,10 @@ function updateAllDocsListCaches(
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
-		const folderKey = Array.isArray(query.queryKey)
-			? String(query.queryKey[2] ?? "__all__")
-			: "__all__";
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 3) {
+			continue;
+		}
+		const folderKey = normalizeAllDocsFolder(String(query.queryKey[2] ?? ""));
 		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
 		if (!current) continue;
 		queryClient.setQueryData<AllDocsItem[]>(
@@ -391,6 +412,9 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 3) {
+			continue;
+		}
 		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
 		const item = current?.find(
 			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,

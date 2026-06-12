@@ -937,16 +937,6 @@
 			"commandPalette": true,
 			"menuId": "space.settings"
 		},
-		"open-templates": {
-			"id": "open-templates",
-			"label": "Open Templates",
-			"description": "Open the templates view.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"previous-tab": {
 			"id": "previous-tab",
 			"label": "Previous Tab",

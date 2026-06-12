@@ -22,7 +22,7 @@ import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
-export interface FileTreeContextValue {
+interface FileTreeContextValue {
 	rootEntries: FsEntry[];
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),

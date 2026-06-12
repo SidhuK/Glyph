@@ -23,7 +23,7 @@ type HeadingCollapseMeta =
 	| { type: "set-enabled"; enabled: boolean }
 	| { type: "set-all-collapsed"; collapsed: boolean };
 
-export const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
+const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
 	"heading-collapse",
 );
 

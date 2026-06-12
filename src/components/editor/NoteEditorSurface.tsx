@@ -24,7 +24,7 @@ import type {
 	SelectionRibbonPosition,
 } from "./noteEditorOverlayTypes";
 
-export interface NoteEditorSurfaceProps {
+interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
 	colorfulHeadings: boolean;

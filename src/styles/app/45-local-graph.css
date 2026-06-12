@@ -69,14 +69,14 @@
 }
 
 .localNoteGraphViewport {
-	--local-graph-border: rgba(38, 35, 29, 0.14);
+	--local-graph-border: var(--border-default);
 	--local-graph-dot: color-mix(in srgb, var(--text-secondary) 18%, transparent);
-	--local-graph-edge: rgba(38, 35, 29, 0.58);
-	--local-graph-edge-incoming: #26231d;
-	--local-graph-note-bg: #ffffff;
+	--local-graph-edge: color-mix(in srgb, var(--text-primary) 58%, transparent);
+	--local-graph-edge-incoming: var(--text-primary);
+	--local-graph-note-bg: var(--bg-primary);
 	--local-graph-tag-node: var(--interactive-accent);
-	--local-graph-text: #26231d;
-	--local-graph-text-inverse: #ffffff;
+	--local-graph-text: var(--text-primary);
+	--local-graph-text-inverse: var(--text-inverse);
 	--local-graph-surface: color-mix(
 		in srgb,
 		var(--bg-secondary) 88%,
@@ -97,19 +97,13 @@
 			transparent 58%,
 			color-mix(in srgb, var(--bg-primary) 26%, transparent) 100%
 		);
-	background-position: center, center;
+	background-position: 0 0, center;
 	background-size: 24px 24px, cover;
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
-:root.dark .localNoteGraphViewport {
-	--local-graph-border: rgba(255, 255, 255, 0.14);
-	--local-graph-edge: rgba(236, 236, 238, 0.58);
-	--local-graph-edge-incoming: #ececee;
-	--local-graph-note-bg: #1f2024;
-	--local-graph-text: #ececee;
-	--local-graph-text-inverse: #17171a;
+.localNoteGraphStage .localNoteGraphViewport {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
 .localNoteGraphViewport:active {
@@ -123,6 +117,100 @@
 	border-radius: calc(var(--radius-md) * 0.75);
 	font-size: 11px;
 	line-height: 1;
+}
+
+.spaceGraphProgressOverlay {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, var(--bg-primary) 36%, transparent);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.spaceGraphProgressCard {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: min(300px, calc(100vw - 3rem));
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	box-shadow: 0 12px 30px
+		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
+}
+
+.spaceGraphProgressHeader {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	min-width: 0;
+}
+
+.spaceGraphProgressSpinner {
+	flex: 0 0 auto;
+	margin-top: 1px;
+	color: var(--interactive-accent);
+}
+
+.spaceGraphProgressMessage {
+	min-width: 0;
+	flex: 1;
+	margin: 0;
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+	font-size: calc(var(--text-base) * 0.85);
+	line-height: 1.35;
+	text-wrap: pretty;
+}
+
+.spaceGraphProgressBarRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.spaceGraphProgressTrack {
+	appearance: none;
+	-webkit-appearance: none;
+	display: block;
+	flex: 1;
+	height: 3px;
+	overflow: hidden;
+	border: 0;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 55%, transparent);
+}
+
+.spaceGraphProgressTrack::-webkit-progress-bar {
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 55%, transparent);
+}
+
+.spaceGraphProgressTrack::-webkit-progress-value {
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	transition: width 180ms ease;
+}
+
+.spaceGraphProgressTrack::-moz-progress-bar {
+	border-radius: 999px;
+	background: var(--interactive-accent);
+}
+
+.spaceGraphProgressPercent {
+	flex: 0 0 auto;
+	min-width: 2.75ch;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	text-align: right;
 }
 
 .localNoteGraphLegend {

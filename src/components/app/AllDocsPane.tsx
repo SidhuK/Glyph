@@ -9,7 +9,7 @@ import {
 import { m, useReducedMotion } from "motion/react";
 import { type KeyboardEvent, memo, useMemo, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
@@ -29,22 +29,11 @@ import {
 } from "../database/DatabaseNoteAppearanceIcon";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
+import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
-	title?: string;
-	folderPrefix?: string | null;
-	emptyMessage?: string;
 	initialNotes?: AllDocsItem[] | null;
-}
-
-function normalizeFolderPrefix(value: string | null): string | null {
-	if (typeof value !== "string") return null;
-	const normalized = value
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-	return normalized || null;
 }
 
 function titleFromPath(notePath: string): string {
@@ -189,7 +178,6 @@ interface PrepareAllDocsCardPropsArgs {
 	sectionIndex: number;
 	selectedNotePath: string | null;
 	taskSummariesByPath: Record<string, NoteTaskSummary>;
-	showTaskProgressIndicator: boolean;
 	selectNote: (notePath: string) => void;
 	onOpenFile: AllDocsPaneProps["onOpenFile"];
 }
@@ -200,14 +188,11 @@ function prepareAllDocsCardProps({
 	sectionIndex,
 	selectedNotePath,
 	taskSummariesByPath,
-	showTaskProgressIndicator,
 	selectNote,
 	onOpenFile,
 }: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
 	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
-	const taskSummary = showTaskProgressIndicator
-		? taskSummariesByPath[note.note_path]
-		: undefined;
+	const taskSummary = taskSummariesByPath[note.note_path];
 
 	return {
 		notePath: note.note_path,
@@ -328,9 +313,6 @@ function AllDocsCard({
 
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
-	title = "All Notes",
-	folderPrefix = null,
-	emptyMessage = "No notes yet. Create one to get started.",
 	initialNotes = null,
 }: AllDocsPaneProps) {
 	const { itemAppearance } = useFileTreeContext();
@@ -338,26 +320,21 @@ export const AllDocsPane = memo(function AllDocsPane({
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const queryClient = useQueryClient();
-	const normalizedFolderPrefix = useMemo(
-		() => normalizeFolderPrefix(folderPrefix),
-		[folderPrefix],
-	);
 	const notesQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
-		queryFn: () => loadAllDocs(normalizedFolderPrefix),
+		queryKey: navigationQueryKeys.allDocsList(null),
+		queryFn: () => loadAllDocs(null),
 		initialData: initialNotes ?? undefined,
 	});
 	const notes = notesQuery.data ?? [];
 	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		notePaths,
-		showTaskProgressIndicator,
+		true,
 		taskSummaryRefreshKey,
 	);
 	useTauriEvent("notes:external_changed", () => {
 		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
+			queryKey: navigationQueryKeys.allDocsList(null),
 		});
 		setTaskSummaryRefreshKey((key) => key + 1);
 	});
@@ -376,23 +353,14 @@ export const AllDocsPane = memo(function AllDocsPane({
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
 	}, [notes]);
-	const emptyStateMessage = useMemo(() => {
-		if (notes.length === 0) {
-			return emptyMessage;
-		}
-		return "No notes found.";
-	}, [emptyMessage, notes.length]);
-
-	const loadingLabel = title.toLowerCase();
-
 	if (notesQuery.isLoading) {
-		return <div className="databaseLoadingState">Loading {loadingLabel}…</div>;
+		return <CanvasPaneAwait variant="all-docs" />;
 	}
 
 	if (notesQuery.error) {
 		return (
 			<div className="databaseLoadingState">
-				Could not load {loadingLabel}:{" "}
+				Could not load all notes:{" "}
 				{notesQuery.error instanceof Error
 					? notesQuery.error.message
 					: String(notesQuery.error)}
@@ -404,12 +372,14 @@ export const AllDocsPane = memo(function AllDocsPane({
 		<section className="allDocsPane">
 			<header className="allDocsHeader">
 				<div className="allDocsHeadingGroup">
-					<h1 className="allDocsTitle">{title}</h1>
+					<h1 className="allDocsTitle">All Notes</h1>
 				</div>
 			</header>
 			<div className="allDocsSections">
 				{notes.length === 0 ? (
-					<div className="databaseLoadingState">{emptyStateMessage}</div>
+					<div className="databaseLoadingState">
+						No notes yet. Create one to get started.
+					</div>
 				) : null}
 				{sections.map((section, sectionIndex) => (
 					<section key={section.id} className="allDocsSection">
@@ -424,7 +394,6 @@ export const AllDocsPane = memo(function AllDocsPane({
 									sectionIndex,
 									selectedNotePath,
 									taskSummariesByPath,
-									showTaskProgressIndicator,
 									selectNote: setSelectedNotePath,
 									onOpenFile,
 								});

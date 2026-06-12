@@ -3,7 +3,6 @@ import {
 	joinYamlFrontmatter,
 	parseNotePreview,
 	splitYamlFrontmatter,
-	titleForFile,
 } from "./notePreview";
 
 describe("notePreview", () => {
@@ -45,8 +44,8 @@ Body`;
 	});
 
 	it("derives fallback title from file name", () => {
-		expect(titleForFile("notes/Plan.md")).toBe("Plan");
-		expect(titleForFile("notes/config.json")).toBe("config.json");
+		expect(parseNotePreview("notes/Plan.md", "").title).toBe("Plan");
+		expect(parseNotePreview("notes/config.json", "").title).toBe("config.json");
 	});
 
 	it("splits and joins YAML frontmatter consistently", () => {

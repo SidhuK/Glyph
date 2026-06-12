@@ -33,14 +33,3 @@ export interface NoteInlineEditorProps {
 		| undefined;
 	onEditorReady?: ((editor: Editor | null) => void) | undefined;
 }
-
-export interface SlashCommandItem {
-	icon: string;
-	title: string;
-	description: string;
-	keywords: string[];
-	command: (ctx: {
-		editor: Editor;
-		range: { from: number; to: number };
-	}) => void;
-}

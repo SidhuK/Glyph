@@ -64,7 +64,6 @@ export function ModelSelector({
 		enabled: open && Boolean(profileId),
 	});
 	const models = modelsQuery.data ?? null;
-	const loading = modelsQuery.isFetching;
 	const error = modelsQuery.error
 		? modelsQuery.error instanceof Error
 			? modelsQuery.error.message
@@ -198,9 +197,6 @@ export function ModelSelector({
 						</div>
 						<div className={styles.dropdownBody}>
 							<div className={styles.dropdownList}>
-								{loading && (
-									<div className={styles.dropdownLoading}>Loading models…</div>
-								)}
 								{error && (
 									<div className={styles.dropdownError}>
 										{error}
@@ -214,12 +210,12 @@ export function ModelSelector({
 										</button>
 									</div>
 								)}
-								{!loading && !error && models?.length === 0 && (
+								{!error && models?.length === 0 && (
 									<div className={styles.dropdownEmpty}>
 										No models available
 									</div>
 								)}
-								{!loading && !error && (models?.length ?? 0) > 0 && (
+								{!error && (models?.length ?? 0) > 0 && (
 									<input
 										type="search"
 										className={styles.modelSearch}
@@ -228,8 +224,7 @@ export function ModelSelector({
 										onChange={(e) => setModelQuery(e.target.value)}
 									/>
 								)}
-								{!loading &&
-									!error &&
+								{!error &&
 									models &&
 									models.length > 0 &&
 									filteredModels.length === 0 && (
@@ -237,8 +232,7 @@ export function ModelSelector({
 											No models match your search
 										</div>
 									)}
-								{!loading &&
-									!error &&
+								{!error &&
 									filteredModels.map((m) => {
 										const detailAvailable = hasDetailData(
 											m,

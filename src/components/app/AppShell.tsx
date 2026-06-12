@@ -63,7 +63,7 @@ import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
+
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
@@ -153,6 +153,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
+	const [openDatabasesRequestNonce, setOpenDatabasesRequestNonce] = useState(0);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -783,6 +784,7 @@ export function AppShell() {
 				const changed = [...fsRefreshQueueRef.current];
 				fsRefreshQueueRef.current.clear();
 				if (!changed.length) return;
+				invalidateAllDocsPrefetch();
 				const dirs = new Set<string>([""]);
 				for (const rel of changed) {
 					dirs.add(parentDir(rel));
@@ -836,9 +838,6 @@ export function AppShell() {
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ALL_DOCS_TAB_ID);
 	}, [openSpecialTab]);
-	const openTemplatesTab = useCallback(() => {
-		openSpecialTab(TEMPLATES_TAB_ID);
-	}, [openSpecialTab]);
 	const [homeView, setHomeView] = useState<"home" | "tasks">("home");
 	const openTasksView = useCallback(() => {
 		setHomeView("tasks");
@@ -851,6 +850,7 @@ export function AppShell() {
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null) => {
 			setOpenDatabasesId(databaseId ?? null);
+			setOpenDatabasesRequestNonce((current) => current + 1);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
 		[openSpecialTab],
@@ -1125,7 +1125,6 @@ export function AppShell() {
 		openSearchPalette,
 		openSettings,
 		openTasksView,
-		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,
 		pinnedFiles,
@@ -1369,6 +1368,7 @@ export function AppShell() {
 				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
+				openDatabasesRequestNonce={openDatabasesRequestNonce}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				homeView={homeView}
 				onHomeViewChange={setHomeView}

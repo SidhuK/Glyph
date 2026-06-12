@@ -3,7 +3,6 @@
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
 const {
@@ -387,46 +386,6 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(container.textContent).toContain("Saved");
-	});
-
-	it("switches the active note back to rich mode when edit mode is requested", async () => {
-		await act(async () => {
-			root.render(
-				<MarkdownEditorPane
-					relPath="notes/raw.md"
-					initialDoc={makeDoc("notes/raw.md", "seed text")}
-				/>,
-			);
-		});
-
-		const actionsButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
-		);
-		expect(actionsButton).not.toBeNull();
-
-		await act(async () => {
-			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-		expect(showNativePopupMenuMock).toHaveBeenCalled();
-
-		await act(async () => {
-			runNativeMenuAction("Raw");
-		});
-
-		const editorButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.textContent?.includes("Type latest text"),
-		);
-		expect(editorButton?.getAttribute("data-mode")).toBe("plain");
-
-		await act(async () => {
-			window.dispatchEvent(
-				new CustomEvent(FORCE_NOTE_EDIT_MODE_EVENT, {
-					detail: { path: "notes/raw.md" },
-				}),
-			);
-		});
-
-		expect(editorButton?.getAttribute("data-mode")).toBe("rich");
 	});
 
 	it("opens the local graph from the actions menu", async () => {

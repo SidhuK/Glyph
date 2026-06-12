@@ -264,16 +264,6 @@
 	outline: none;
 }
 
-.mermaidCanvasLoading {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: calc(var(--text-base) * 0.9);
-	color: var(--text-secondary);
-}
-
 .mermaidCanvasError {
 	position: absolute;
 	inset: 0;
@@ -411,10 +401,6 @@
 
 .taskInlineDatePopover {
 	width: 286px;
-}
-
-.taskInlineDateActions {
-	margin-top: 0;
 }
 
 .slashCommandMenu {

@@ -1,8 +1,6 @@
 import type { FsEntry } from "../lib/tauri";
 import { normalizeRelPath } from "../utils/path";
 
-export { normalizeRelPath };
-
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;
 	if (a.kind === "file" && b.kind === "dir") return 1;

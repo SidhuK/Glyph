@@ -116,7 +116,7 @@ export function mergeRectsByLine(
 	return lines;
 }
 
-export function buildEdge(
+function buildEdge(
 	startX: number,
 	endX: number,
 	baseY: number,

@@ -7,7 +7,6 @@ import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
 import { type FsEntry, invoke } from "../../lib/tauri";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { parentDir } from "../../utils/path";
 import { ChevronRight } from "../Icons";
 import {
@@ -73,8 +72,7 @@ function isPathSpecial(path: string): boolean {
 		path === ALL_DOCS_TAB_ID ||
 		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === SPACE_GRAPH_TAB_ID ||
-		path === TEMPLATES_TAB_ID
+		path === SPACE_GRAPH_TAB_ID
 	);
 }
 
@@ -170,9 +168,7 @@ function BreadcrumbMenuItem({
 				<span className="mainTabsBreadcrumbMenuItemLabel">{entry.name}</span>
 			</DropdownMenuSubTrigger>
 			<DropdownMenuSubContent className="mainTabsBreadcrumbMenu" sideOffset={4}>
-				{loading ? (
-					<div className="mainTabsBreadcrumbMenuState">Loading...</div>
-				) : childEntries.length === 0 ? (
+				{loading ? null : childEntries.length === 0 ? (
 					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
 				) : (
 					<>
@@ -486,9 +482,7 @@ function BreadcrumbEntryMenu({
 				<DropdownMenuLabel className="mainTabsBreadcrumbMenuLabel">
 					{menuTitleForDir(dirPath)}
 				</DropdownMenuLabel>
-				{loading ? (
-					<div className="mainTabsBreadcrumbMenuState">Loading...</div>
-				) : entries.length === 0 ? (
+				{loading ? null : entries.length === 0 ? (
 					<div className="mainTabsBreadcrumbMenuState">Empty folder</div>
 				) : (
 					<>

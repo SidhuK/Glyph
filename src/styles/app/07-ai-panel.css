@@ -65,30 +65,6 @@
 	--ai-mode-accent: var(--ai-accent-create);
 }
 
-.aiPanel[data-ai-preset="brainstorm"] {
-	--ai-preset-accent: oklch(0.68 0.16 220);
-}
-
-.aiPanel[data-ai-preset="builder"] {
-	--ai-preset-accent: oklch(0.7 0.16 45);
-}
-
-.aiPanel[data-ai-preset="tasks"] {
-	--ai-preset-accent: oklch(0.74 0.16 88);
-}
-
-.aiPanel[data-ai-preset="editor"] {
-	--ai-preset-accent: oklch(0.66 0.11 18);
-}
-
-.aiPanel[data-ai-preset="research"] {
-	--ai-preset-accent: oklch(0.66 0.14 255);
-}
-
-.aiPanel[data-ai-preset="daily"] {
-	--ai-preset-accent: oklch(0.66 0.13 242);
-}
-
 .dark .aiPanel[data-ai-mode="chat"] {
 	--ai-mode-accent: var(--ai-accent-chat);
 }
@@ -111,15 +87,6 @@
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
-}
-
-.aiPanelTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	color: var(--text-primary);
-	font-weight: var(--font-semibold);
-	font-size: var(--text-sm);
 }
 
 .aiPanelHistoryButton {

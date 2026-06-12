@@ -29,7 +29,7 @@ function isSpaceWindow(): boolean {
 	}
 }
 
-export interface SpaceContextValue {
+interface SpaceContextValue {
 	info: AppInfo | null;
 	error: string;
 	setError: (error: string) => void;

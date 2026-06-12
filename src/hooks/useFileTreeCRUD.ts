@@ -16,11 +16,10 @@ import {
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
-import { isMarkdownPath, parentDir } from "../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
 	normalizeEntry,
-	normalizeRelPath,
 	rewritePrefix,
 	withInsertedEntry,
 } from "./fileTreeHelpers";

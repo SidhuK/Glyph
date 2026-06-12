@@ -56,12 +56,10 @@ export function GitSettingsPane() {
 	const [config, setConfig] = useState<GitSyncConfig | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageMode] =
 		useState<AttachmentStorageMode>("note-folder");
-	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
 
 	const load = useCallback(async () => {
-		setLoading(true);
 		setError("");
 		try {
 			const [nextStatus, nextConfig, settings] = await Promise.all([
@@ -74,8 +72,6 @@ export function GitSettingsPane() {
 			setAttachmentStorageMode(settings.editor.attachmentStorageMode);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
-		} finally {
-			setLoading(false);
 		}
 	}, []);
 
@@ -183,13 +179,7 @@ export function GitSettingsPane() {
 									strokeWidth={0.9}
 								/>
 							}
-							value={
-								loading
-									? "Loading..."
-									: status?.git_installed
-										? "Installed"
-										: "Missing"
-							}
+							value={status?.git_installed ? "Installed" : "Missing"}
 						/>
 					</SettingsRow>
 					<SettingsRow

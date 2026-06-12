@@ -14,7 +14,7 @@ export type TagIconOverrides = Readonly<
 export const DEFAULT_TAG_ICON_NAME = "tag" satisfies TagIconName;
 export const TAG_ICON_OPTIONS = DATABASE_COLUMN_ICON_OPTIONS;
 
-export const PREDEFINED_TAG_ICON_ALIASES = {
+const PREDEFINED_TAG_ICON_ALIASES = {
 	achievement: "award",
 	ai: "ai",
 	alarm: "alarm-clock",
@@ -193,7 +193,7 @@ export function normalizeTagIconKey(tag: string): string | null {
 	return normalized.split("/").every(Boolean) ? normalized : null;
 }
 
-export function getTagIconOption(
+function getTagIconOption(
 	iconName: string | null | undefined,
 ): TagIconOption | null {
 	return getDatabaseColumnIconOption(iconName);

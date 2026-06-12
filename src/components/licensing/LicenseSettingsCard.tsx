@@ -26,8 +26,7 @@ function statusPillClassName(status: LicenseStatus | null): string {
 	}
 }
 
-function statusLabel(status: LicenseStatus | null): string {
-	if (!status) return "Loading";
+function statusLabel(status: LicenseStatus): string {
 	switch (status.mode) {
 		case "licensed":
 			return "Licensed";
@@ -41,7 +40,7 @@ function statusLabel(status: LicenseStatus | null): string {
 }
 
 export function LicenseSettingsCard() {
-	const { status, loading, error, reload } = useLicenseStatus(false);
+	const { status, error, reload } = useLicenseStatus(false);
 	const [licenseKey, setLicenseKey] = useState("");
 	const [actionError, setActionError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
@@ -118,9 +117,11 @@ export function LicenseSettingsCard() {
 		<SettingsSection
 			title="License"
 			aside={
-				<span className={statusPillClassName(status)}>
-					{statusLabel(status)}
-				</span>
+				status ? (
+					<span className={statusPillClassName(status)}>
+						{statusLabel(status)}
+					</span>
+				) : null
 			}
 		>
 			{error ? <div className="settingsError">{error}</div> : null}
@@ -205,7 +206,7 @@ export function LicenseSettingsCard() {
 								type="button"
 								size="sm"
 								onClick={() => void handleActivate()}
-								disabled={loading || isSubmitting}
+								disabled={isSubmitting}
 							>
 								{isSubmitting ? "Verifying..." : "Activate"}
 							</Button>

@@ -4,7 +4,7 @@ import { invoke } from "../../../lib/tauri";
 
 const WIKI_LINK_SUGGESTION_LIMIT = 8;
 
-export interface WikiLinkSuggestion {
+interface WikiLinkSuggestion {
 	path: string;
 	title: string;
 	insertText: string;

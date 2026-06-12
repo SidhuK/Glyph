@@ -2,9 +2,6 @@
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
-	--app-frame-inline: 0px;
-	--app-frame-block: 0px;
-	--app-radius: 0px;
 	--window-control-toggle-offset: 90px;
 	--collapsed-sidebar-top-reserve: calc(
 		var(--window-control-toggle-offset) +

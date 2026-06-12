@@ -3,7 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -185,14 +185,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		tagAppearance,
 	} = useFileTreeContext();
 	const queryClient = useQueryClient();
-	const {
-		notes,
-		filesTruncated,
-		isLoading,
-		error,
-		nonMarkdownFileLimit,
-		missingFolder,
-	} = useFolioNotes(folioScope);
+	const { notes, filesTruncated, error, nonMarkdownFileLimit } =
+		useFolioNotes(folioScope);
 	const normalizedPinnedFiles = useMemo(
 		() =>
 			pinnedFiles
@@ -279,7 +273,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				: -1,
 		[activeTabPath, visibleNotes],
 	);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
 	const taskSummaryPaths = useMemo(
 		() =>
 			visibleNotes
@@ -289,7 +282,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		showTaskProgressIndicator,
+		true,
 		taskSummaryRefreshKey,
 	);
 	const tagIconOverrides = useMemo(
@@ -446,16 +439,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	}, [activeTabPath, scrollNoteIntoView]);
 
 	const body = (() => {
-		if (missingFolder) {
-			return (
-				<div className="folioNotesState">
-					Set a folder in Settings to browse this scope.
-				</div>
-			);
-		}
-		if (isLoading) {
-			return <div className="folioNotesState">Loading notes…</div>;
-		}
 		if (error) {
 			return (
 				<div className="folioNotesState">
@@ -511,7 +494,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onOpenAppearancePicker={setAppearancePickerPath}
 							iconNameForTag={iconNameForTag}
 							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
+								note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
 									: null
 							}
@@ -542,7 +525,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							onOpenAppearancePicker={setAppearancePickerPath}
 							iconNameForTag={iconNameForTag}
 							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
+								note.is_markdown
 									? (taskSummariesByPath[note.note_path] ?? null)
 									: null
 							}

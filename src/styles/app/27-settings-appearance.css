@@ -7,15 +7,6 @@
 	--theme-preview-badge-bg: var(--bg-primary);
 	--theme-preview-badge-border: var(--border-default);
 	--theme-preview-badge-text: var(--interactive-accent);
-	--theme-preview-border: var(--border-default);
-}
-
-:root.light:not([data-light-theme]) .appearanceThemeDropdownTrigger,
-:root.light:not([data-light-theme]) .appearanceThemeDropdownOption,
-:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownTrigger,
-:root.light[data-light-theme="glyph-default"] .appearanceThemeDropdownOption {
-	--theme-preview-surface: rgb(251 250 251);
-	--theme-preview-surface-alt: rgb(251 250 251);
 }
 
 :root.dark .appearanceThemeDropdownTrigger,

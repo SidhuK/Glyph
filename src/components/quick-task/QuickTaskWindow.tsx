@@ -23,10 +23,9 @@ const EMPTY_SETTINGS: QuickTaskSettings = {
 };
 
 export function QuickTaskWindow() {
-	const [today, setToday] = useState(() => todayIsoDateLocal());
 	const [settings, setSettings] = useState<QuickTaskSettings>(EMPTY_SETTINGS);
 	const [draft, setDraft] = useState("");
-	const [scheduledDate, setScheduledDate] = useState(today);
+	const [scheduledDate, setScheduledDate] = useState(() => todayIsoDateLocal());
 	const [dueDate, setDueDate] = useState("");
 	const [status, setStatus] = useState("");
 	const [saving, setSaving] = useState(false);
@@ -37,9 +36,7 @@ export function QuickTaskWindow() {
 	}, []);
 
 	const resetScheduledDateToToday = useCallback(() => {
-		const nextToday = todayIsoDateLocal();
-		setToday(nextToday);
-		setScheduledDate(nextToday);
+		setScheduledDate(todayIsoDateLocal());
 	}, []);
 
 	const refreshSettings = useCallback(async (withReload = false) => {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { FsEntry } from "../lib/tauri";
+import { normalizeRelPath } from "../utils/path";
 import {
 	areEntriesEqual,
 	compareEntries,
 	normalizeEntries,
 	normalizeEntry,
-	normalizeRelPath,
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 

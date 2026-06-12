@@ -25,13 +25,13 @@ interface MermaidCanvasState {
 	lastViewportSize: MermaidCanvasSize | null;
 }
 
-export interface MermaidCanvasOptions {
+interface MermaidCanvasOptions {
 	svgHtml: string;
 	editMode: boolean;
 	onEditCode: () => void;
 }
 
-export interface MermaidCanvasMount {
+interface MermaidCanvasMount {
 	element: HTMLElement;
 	destroy: () => void;
 }

@@ -1,4 +1,4 @@
-import { Refresh01Icon } from "@hugeicons/core-free-icons";
+import { LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -313,12 +313,12 @@ function organicizeNoteCloud(cy: Core) {
 }
 
 function graphProgressMessage(graph: SpaceGraph | null, loading: boolean) {
-	if (loading) return "Loading graph data...";
-	if (!graph) return "Generating graph...";
+	if (loading) return "Loading notes and links…";
+	if (!graph) return "Laying out graph…";
 	if (graph.truncated) {
-		return `Generating graph... showing top ${graph.nodes.length} of ${graph.total_notes} notes.`;
+		return `Laying out top ${graph.nodes.length} of ${graph.total_notes} notes…`;
 	}
-	return "Generating graph...";
+	return "Laying out graph…";
 }
 
 function GraphProgressOverlay({
@@ -334,22 +334,33 @@ function GraphProgressOverlay({
 }) {
 	const clampedProgress = Math.max(0, Math.min(100, Math.round(progress)));
 	const message = usingCachedLayout
-		? "Restoring cached layout..."
+		? "Restoring cached layout…"
 		: graphProgressMessage(graph, loading);
 
 	return (
-		<div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-			<div className="flex w-72 max-w-[calc(100vw-3rem)] flex-col gap-3 rounded-md border border-border bg-background p-4 text-center shadow-sm">
-				<div className="text-sm font-medium text-foreground">Space graph</div>
-				<p className="text-xs text-muted-foreground">{message}</p>
-				<progress
-					className="h-1 w-full"
-					aria-label="Generating graph"
-					max={100}
-					value={clampedProgress}
-				/>
-				<div className="text-[11px] tabular-nums text-muted-foreground">
-					{clampedProgress}%
+		<div
+			className="spaceGraphProgressOverlay"
+			aria-live="polite"
+			aria-busy="true"
+		>
+			<div className="spaceGraphProgressCard">
+				<div className="spaceGraphProgressHeader">
+					<HugeiconsIcon
+						icon={LoaderCircle}
+						className="spaceGraphProgressSpinner animate-spin"
+						size="var(--icon-sm)"
+						strokeWidth={0.9}
+					/>
+					<p className="spaceGraphProgressMessage">{message}</p>
+				</div>
+				<div className="spaceGraphProgressBarRow">
+					<progress
+						className="spaceGraphProgressTrack"
+						aria-label="Graph generation progress"
+						max={100}
+						value={clampedProgress}
+					/>
+					<span className="spaceGraphProgressPercent">{clampedProgress}%</span>
 				</div>
 			</div>
 		</div>
@@ -566,7 +577,11 @@ export function SpaceGraphView() {
 
 	if (loading) {
 		return (
-			<section className="relative flex h-full min-h-0 flex-1 overflow-hidden bg-background">
+			<section className="spaceGraphHost relative h-full min-h-0 flex-1 overflow-hidden">
+				<div
+					className="localNoteGraphViewport absolute inset-0"
+					aria-hidden="true"
+				/>
 				<GraphProgressOverlay
 					graph={graph}
 					loading={loading}
@@ -615,10 +630,10 @@ export function SpaceGraphView() {
 	}
 
 	return (
-		<section className="relative flex h-full min-h-0 flex-1 overflow-hidden bg-background">
+		<section className="spaceGraphHost relative h-full min-h-0 flex-1 overflow-hidden">
 			<div
 				ref={containerRef}
-				className="localNoteGraphViewport h-full min-h-0 flex-1"
+				className="localNoteGraphViewport absolute inset-0"
 				aria-label="Space graph"
 			/>
 			{graph.truncated && maxNodes < FULL_SPACE_GRAPH_NODES ? (

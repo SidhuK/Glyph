@@ -6,7 +6,6 @@ import {
 	CheckListIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
-	DocumentCodeIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -105,7 +104,6 @@ interface UseAppCommandsDeps {
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
 	openTasksView: () => void;
-	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
 	openMarkdownTabsLength: number;
@@ -376,7 +374,6 @@ export function useAppCommands({
 	openSearchPalette,
 	openSettings,
 	openTasksView,
-	openTemplatesTab,
 	openWorkspaceFile,
 	showWelcomeNote,
 	openMarkdownTabsLength,
@@ -804,20 +801,6 @@ export function useAppCommands({
 				action: openTasksView,
 			},
 			{
-				id: "open-templates",
-				label: "Open templates",
-				icon: (
-					<HugeiconsIcon
-						icon={DocumentCodeIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openTemplatesTab,
-			},
-			{
 				id: "open-graph-view",
 				label: "Open graph view",
 				icon: (
@@ -1117,7 +1100,6 @@ export function useAppCommands({
 		spacePath,
 		openAllDocsTab,
 		openTasksView,
-		openTemplatesTab,
 		openSearchPalette,
 		openCalendarTab,
 		openDatabasesTab,

@@ -15,7 +15,6 @@ const {
 	pinnedFilesRef,
 	togglePinnedFileMock,
 	taskSummariesRef,
-	showTaskProgressIndicatorRef,
 } = vi.hoisted(() => ({
 	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
@@ -29,7 +28,6 @@ const {
 			{ total_count: number; completed_count: number; open_count: number }
 		>,
 	},
-	showTaskProgressIndicatorRef: { current: true as boolean | null },
 }));
 
 vi.mock("../../contexts", () => ({
@@ -66,10 +64,6 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 
 vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: () => {},
-}));
-
-vi.mock("../../hooks/useTaskProgressIndicatorSetting", () => ({
-	useTaskProgressIndicatorSetting: () => showTaskProgressIndicatorRef.current,
 }));
 
 vi.mock("../../hooks/useTaskSummariesForPaths", () => ({
@@ -133,7 +127,6 @@ describe("FolioNotesListPane", () => {
 		scopeRef.current = { kind: "all" };
 		pinnedFilesRef.current = [];
 		taskSummariesRef.current = {};
-		showTaskProgressIndicatorRef.current = true;
 		loadAllDocsMock.mockResolvedValue(notes);
 		invokeMock.mockResolvedValue([]);
 		queryClient = new QueryClient({

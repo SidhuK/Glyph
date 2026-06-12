@@ -55,6 +55,7 @@ import {
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
+import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
@@ -76,9 +77,9 @@ interface DatabasesPaneProps {
 		nextName: string,
 	) => Promise<string | null>;
 	initialDatabaseId?: string | null;
+	openRequestNonce?: number;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 	initialRows?: WorkspaceDatabaseQueryResult | null;
-	openRequestNonce?: number;
 }
 
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
@@ -123,6 +124,23 @@ function currentConfig(
 		sorts: view.sorts,
 		filters: view.filters,
 	};
+}
+
+function initialSelectedViewId(
+	databaseId: string | null,
+	document: WorkspaceDatabaseDocument | null,
+): string | null {
+	if (!databaseId || !document || document.database.id !== databaseId) {
+		return null;
+	}
+	const storedViewId = readStoredSelectedViewId(databaseId);
+	if (
+		storedViewId &&
+		document.database.views.some((view) => view.id === storedViewId)
+	) {
+		return storedViewId;
+	}
+	return document.database.views[0]?.id ?? null;
 }
 
 function replaceCurrentView(
@@ -179,6 +197,7 @@ function DatabasesPaneContent({
 	onOpenFile,
 	onRenameNotePath,
 	initialDatabaseId = null,
+	openRequestNonce,
 	initialDocument = null,
 	initialRows = null,
 }: DatabasesPaneProps) {
@@ -191,15 +210,7 @@ function DatabasesPaneContent({
 	const [selectedViewId, setSelectedViewId] = useState<string | null>(() => {
 		const databaseId =
 			initialDocument?.database.id ?? initialDatabaseId ?? null;
-		if (!databaseId || !initialDocument) return null;
-		const storedViewId = readStoredSelectedViewId(databaseId);
-		if (
-			storedViewId &&
-			initialDocument.database.views.some((view) => view.id === storedViewId)
-		) {
-			return storedViewId;
-		}
-		return initialDocument.database.views[0]?.id ?? null;
+		return initialSelectedViewId(databaseId, initialDocument);
 	});
 	const [document, setDocument] = useState<WorkspaceDatabaseDocument | null>(
 		initialDocument,
@@ -211,7 +222,6 @@ function DatabasesPaneContent({
 		() => initialRows?.truncated ?? false,
 	);
 	const [loading, setLoading] = useState(() => !initialDocument);
-	const [rowsLoading, setRowsLoading] = useState(() => !initialRows);
 	const [error, setError] = useState("");
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
 	const [nameDraft, setNameDraft] = useState("");
@@ -222,8 +232,33 @@ function DatabasesPaneContent({
 	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
+	const previousOpenRequestRef = useRef({
+		databaseId: initialDatabaseId,
+		nonce: openRequestNonce ?? null,
+	});
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
+
+	useEffect(() => {
+		const nextOpenRequest = {
+			databaseId: initialDatabaseId,
+			nonce: openRequestNonce ?? null,
+		};
+		const previousOpenRequest = previousOpenRequestRef.current;
+		const requestChanged =
+			previousOpenRequest.databaseId !== nextOpenRequest.databaseId ||
+			previousOpenRequest.nonce !== nextOpenRequest.nonce;
+		previousOpenRequestRef.current = nextOpenRequest;
+
+		if (!initialDatabaseId || !requestChanged) {
+			return;
+		}
+
+		setSelectedDatabaseId(initialDatabaseId);
+		setSelectedViewId(
+			initialSelectedViewId(initialDatabaseId, initialDocument),
+		);
+	}, [initialDatabaseId, initialDocument, openRequestNonce]);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
@@ -375,51 +410,40 @@ function DatabasesPaneContent({
 		[activeConfig?.columns],
 	);
 
-	const loadRows = useCallback(
-		async (options?: { background?: boolean }) => {
-			const requestToken = rowRequestTokenRef.current + 1;
-			rowRequestTokenRef.current = requestToken;
-			if (
-				!selectedDatabaseId ||
-				!selectedViewId ||
-				!document ||
-				document.database.id !== selectedDatabaseId ||
-				!document.database.views.some((view) => view.id === selectedViewId)
-			) {
-				if (rowRequestTokenRef.current === requestToken) {
-					setRows([]);
-					setRowsTruncated(false);
-				}
+	const loadRows = useCallback(async () => {
+		const requestToken = rowRequestTokenRef.current + 1;
+		rowRequestTokenRef.current = requestToken;
+		if (
+			!selectedDatabaseId ||
+			!selectedViewId ||
+			!document ||
+			document.database.id !== selectedDatabaseId ||
+			!document.database.views.some((view) => view.id === selectedViewId)
+		) {
+			if (rowRequestTokenRef.current === requestToken) {
+				setRows([]);
+				setRowsTruncated(false);
+			}
+			return;
+		}
+		try {
+			const next = await prefetchDatabaseRows(
+				selectedDatabaseId,
+				selectedViewId,
+			);
+			if (rowRequestTokenRef.current !== requestToken) {
 				return;
 			}
-			const shouldShowLoading = !options?.background;
-			if (shouldShowLoading) {
-				setRowsLoading(true);
+			setRows(next.rows);
+			setRowsTruncated(next.truncated);
+			setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
+		} catch (cause) {
+			if (rowRequestTokenRef.current !== requestToken) {
+				return;
 			}
-			try {
-				const next = await prefetchDatabaseRows(
-					selectedDatabaseId,
-					selectedViewId,
-				);
-				if (rowRequestTokenRef.current !== requestToken) {
-					return;
-				}
-				setRows(next.rows);
-				setRowsTruncated(next.truncated);
-				setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
-			} catch (cause) {
-				if (rowRequestTokenRef.current !== requestToken) {
-					return;
-				}
-				setError(extractErrorMessage(cause));
-			} finally {
-				if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
-					setRowsLoading(false);
-				}
-			}
-		},
-		[document, selectedDatabaseId, selectedViewId],
-	);
+			setError(extractErrorMessage(cause));
+		}
+	}, [document, selectedDatabaseId, selectedViewId]);
 
 	useEffect(() => {
 		if (!selectedDatabaseId || !selectedViewId) return;
@@ -430,8 +454,7 @@ function DatabasesPaneContent({
 		if (cachedRows) {
 			setRows(cachedRows.rows);
 			setRowsTruncated(cachedRows.truncated);
-			setRowsLoading(false);
-			void loadRows({ background: true });
+			void loadRows();
 			return;
 		}
 		void loadRows();
@@ -460,7 +483,7 @@ function DatabasesPaneContent({
 				if (selectedDatabaseId) {
 					invalidateDatabaseRowsPrefetch(selectedDatabaseId);
 				}
-				void loadRows({ background: true });
+				void loadRows();
 			}, 150);
 		},
 		[loadRows, selectedDatabaseId],
@@ -609,7 +632,7 @@ function DatabasesPaneContent({
 					invalidateDatabasePrefetch(document.database.id);
 					setPrefetchedDatabaseDocument(document.database.id, document);
 				}
-				void loadRows({ background: true });
+				void loadRows();
 				void emit("notes:external_changed", {
 					rel_path: notePath,
 					removed: false,
@@ -698,7 +721,7 @@ function DatabasesPaneContent({
 							)
 						: [created.row, ...current],
 				);
-				void loadRows({ background: true });
+				void loadRows();
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
 			}
@@ -923,7 +946,7 @@ function DatabasesPaneContent({
 	const nativeActionMenusEnabled = isNativeContextMenuAvailable();
 
 	if (loading) {
-		return <div className="databaseLoadingState">Loading collections…</div>;
+		return <CanvasPaneAwait variant="databases" />;
 	}
 
 	return (
@@ -1215,9 +1238,7 @@ function DatabasesPaneContent({
 							Limited to the first 200 notes.
 						</div>
 					) : null}
-					{rowsLoading ? (
-						<div className="databaseLoadingState">Loading rows…</div>
-					) : activeConfig.view.layout === "board" ? (
+					{activeConfig.view.layout === "board" ? (
 						<DatabaseBoard
 							rows={rows}
 							columns={activeConfig.columns}
@@ -1361,9 +1382,6 @@ function DatabasesPaneContent({
 
 export function DatabasesPane(props: DatabasesPaneProps) {
 	return (
-		<DatabasesPaneContent
-			key={`${props.openRequestNonce ?? 0}:${props.initialDatabaseId ?? ""}`}
-			{...props}
-		/>
+		<DatabasesPaneContent key={props.initialDatabaseId ?? ""} {...props} />
 	);
 }

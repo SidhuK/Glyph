@@ -1,4 +1,4 @@
-export type SelectionRibbonPlacement = "above" | "below";
+type SelectionRibbonPlacement = "above" | "below";
 
 export interface SelectionRibbonPosition {
 	top: number;
