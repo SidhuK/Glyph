@@ -34,6 +34,11 @@
 	--scrollbar-thumb-hover: rgba(55, 53, 47, 0.24);
 
 	--glass-bg: rgba(255, 255, 255, 0.82);
+
+	--shadow-sm: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+	--shadow-float: none;
 }
 
 :root.light[data-light-theme="notion"] {

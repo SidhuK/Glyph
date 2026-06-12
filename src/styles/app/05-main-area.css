@@ -53,6 +53,10 @@
 	padding-top: var(--header-height);
 }
 
+.mainArea .canvasPaneHost[data-home="true"] .canvasPaneAwait {
+	top: var(--header-height);
+}
+
 @keyframes home-stagger-in {
 	from {
 		opacity: 0;

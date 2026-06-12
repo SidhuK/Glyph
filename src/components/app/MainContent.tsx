@@ -309,6 +309,7 @@ interface MainContentProps {
 	onGoForward: () => void;
 	showGettingStartedRequest: number;
 	openDatabasesId: string | null;
+	openDatabasesRequestNonce: number;
 	dailyNoteSetupNoticeRequest: number;
 	homeView: HomeView;
 	onHomeViewChange: (view: HomeView) => void;
@@ -414,6 +415,7 @@ export const MainContent = memo(function MainContent({
 	onGoForward,
 	showGettingStartedRequest,
 	openDatabasesId,
+	openDatabasesRequestNonce,
 	dailyNoteSetupNoticeRequest,
 	homeView,
 	onHomeViewChange,
@@ -698,6 +700,7 @@ export const MainContent = memo(function MainContent({
 							fileTree.onRenameDir(notePath, nextName, "file")
 						}
 						initialDatabaseId={initialDatabaseId}
+						openRequestNonce={openDatabasesRequestNonce}
 						initialDocument={initialDocument}
 						initialRows={initialRows}
 					/>
@@ -742,6 +745,7 @@ export const MainContent = memo(function MainContent({
 		onOpenDailyNotesSettings,
 		onHomeViewChange,
 		openDatabasesId,
+		openDatabasesRequestNonce,
 		dailyNotesFolder,
 		homeView,
 		viewerPath,

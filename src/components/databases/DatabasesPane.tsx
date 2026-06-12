@@ -77,6 +77,7 @@ interface DatabasesPaneProps {
 		nextName: string,
 	) => Promise<string | null>;
 	initialDatabaseId?: string | null;
+	openRequestNonce?: number;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 	initialRows?: WorkspaceDatabaseQueryResult | null;
 }
@@ -123,6 +124,23 @@ function currentConfig(
 		sorts: view.sorts,
 		filters: view.filters,
 	};
+}
+
+function initialSelectedViewId(
+	databaseId: string | null,
+	document: WorkspaceDatabaseDocument | null,
+): string | null {
+	if (!databaseId || !document || document.database.id !== databaseId) {
+		return null;
+	}
+	const storedViewId = readStoredSelectedViewId(databaseId);
+	if (
+		storedViewId &&
+		document.database.views.some((view) => view.id === storedViewId)
+	) {
+		return storedViewId;
+	}
+	return document.database.views[0]?.id ?? null;
 }
 
 function replaceCurrentView(
@@ -179,6 +197,7 @@ function DatabasesPaneContent({
 	onOpenFile,
 	onRenameNotePath,
 	initialDatabaseId = null,
+	openRequestNonce,
 	initialDocument = null,
 	initialRows = null,
 }: DatabasesPaneProps) {
@@ -191,15 +210,7 @@ function DatabasesPaneContent({
 	const [selectedViewId, setSelectedViewId] = useState<string | null>(() => {
 		const databaseId =
 			initialDocument?.database.id ?? initialDatabaseId ?? null;
-		if (!databaseId || !initialDocument) return null;
-		const storedViewId = readStoredSelectedViewId(databaseId);
-		if (
-			storedViewId &&
-			initialDocument.database.views.some((view) => view.id === storedViewId)
-		) {
-			return storedViewId;
-		}
-		return initialDocument.database.views[0]?.id ?? null;
+		return initialSelectedViewId(databaseId, initialDocument);
 	});
 	const [document, setDocument] = useState<WorkspaceDatabaseDocument | null>(
 		initialDocument,
@@ -221,8 +232,42 @@ function DatabasesPaneContent({
 	const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
+	const previousOpenRequestRef = useRef({
+		databaseId: initialDatabaseId,
+		nonce: openRequestNonce ?? null,
+	});
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const { colors: statusColors, setStatusColor } = useStatusPropertyColors();
+
+	useEffect(() => {
+		const nextOpenRequest = {
+			databaseId: initialDatabaseId,
+			nonce: openRequestNonce ?? null,
+		};
+		const previousOpenRequest = previousOpenRequestRef.current;
+		const requestChanged =
+			previousOpenRequest.databaseId !== nextOpenRequest.databaseId ||
+			previousOpenRequest.nonce !== nextOpenRequest.nonce;
+		previousOpenRequestRef.current = nextOpenRequest;
+
+		if (
+			!initialDatabaseId ||
+			!requestChanged ||
+			selectedDatabaseId === initialDatabaseId
+		) {
+			return;
+		}
+
+		setSelectedDatabaseId(initialDatabaseId);
+		setSelectedViewId(
+			initialSelectedViewId(initialDatabaseId, initialDocument),
+		);
+	}, [
+		initialDatabaseId,
+		initialDocument,
+		openRequestNonce,
+		selectedDatabaseId,
+	]);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();

@@ -393,9 +393,10 @@ function updateAllDocsListCaches(
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
-		const folderKey = Array.isArray(query.queryKey)
-			? String(query.queryKey[2] ?? "__all__")
-			: "__all__";
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 3) {
+			continue;
+		}
+		const folderKey = normalizeAllDocsFolder(String(query.queryKey[2] ?? ""));
 		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
 		if (!current) continue;
 		queryClient.setQueryData<AllDocsItem[]>(
@@ -411,6 +412,9 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 3) {
+			continue;
+		}
 		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
 		const item = current?.find(
 			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,

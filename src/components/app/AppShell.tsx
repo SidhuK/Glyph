@@ -153,6 +153,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
+	const [openDatabasesRequestNonce, setOpenDatabasesRequestNonce] = useState(0);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -783,6 +784,7 @@ export function AppShell() {
 				const changed = [...fsRefreshQueueRef.current];
 				fsRefreshQueueRef.current.clear();
 				if (!changed.length) return;
+				invalidateAllDocsPrefetch();
 				const dirs = new Set<string>([""]);
 				for (const rel of changed) {
 					dirs.add(parentDir(rel));
@@ -848,6 +850,7 @@ export function AppShell() {
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null) => {
 			setOpenDatabasesId(databaseId ?? null);
+			setOpenDatabasesRequestNonce((current) => current + 1);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
 		[openSpecialTab],
@@ -1365,6 +1368,7 @@ export function AppShell() {
 				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
+				openDatabasesRequestNonce={openDatabasesRequestNonce}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				homeView={homeView}
 				onHomeViewChange={setHomeView}
