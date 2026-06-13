@@ -230,9 +230,13 @@ export function useCollectionWorkspace({
 					return currentDocument;
 				}
 				try {
+					const savedDatabaseId = currentDocument?.database.id;
 					const saved = await invoke("databases_update", {
 						database: nextDatabase,
 					});
+					if (savedDatabaseId && saved.database.id !== savedDatabaseId) {
+						return saved;
+					}
 					clearError();
 					documentRef.current = saved;
 					setDocument(saved);

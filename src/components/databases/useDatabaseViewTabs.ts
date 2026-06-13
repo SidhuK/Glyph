@@ -86,14 +86,18 @@ export function useDatabaseViewTabs({
 	const handleDeleteView = useCallback(
 		async (viewId: string) => {
 			if (document.database.views.length <= 1) return;
-			const saved = await saveDatabase({
-				...document.database,
-				views: document.database.views.filter((v) => v.id !== viewId),
-			});
-			if (selectedViewId === viewId) {
-				setSelectedViewId(
-					resolveSelectedViewId(saved.database.id, saved.database.views),
-				);
+			try {
+				const saved = await saveDatabase({
+					...document.database,
+					views: document.database.views.filter((v) => v.id !== viewId),
+				});
+				if (selectedViewId === viewId) {
+					setSelectedViewId(
+						resolveSelectedViewId(saved.database.id, saved.database.views),
+					);
+				}
+			} catch {
+				// saveDatabase owns surfacing the error; avoid unhandled rejections.
 			}
 		},
 		[document, saveDatabase, selectedViewId, setSelectedViewId],
@@ -157,7 +161,7 @@ export function useDatabaseViewTabs({
 	);
 
 	const handleDeleteActiveView = useCallback(() => {
-		void handleDeleteView(activeView.id);
+		void handleDeleteView(activeView.id).catch(() => undefined);
 	}, [activeView.id, handleDeleteView]);
 
 	const handleCreateView = useCallback(async () => {
