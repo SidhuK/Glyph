@@ -1,4 +1,4 @@
-.localNoteGraphDialog {
+.localNoteConnectionsDialog {
 	width: clamp(620px, 68vw, 1040px);
 	max-width: calc(100vw - 2rem);
 	padding: 0;
@@ -10,14 +10,14 @@
 		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
 }
 
-.localNoteGraphBody {
+.localNoteConnectionsBody {
 	height: clamp(460px, 66vh, 760px);
 	min-height: min(420px, calc(100vh - 7rem));
 	max-height: calc(100vh - 5.5rem);
 	position: relative;
 }
 
-.localNoteGraphClose {
+.localNoteConnectionsClose {
 	appearance: none;
 	position: absolute;
 	top: 12px;
@@ -40,20 +40,26 @@
 		ease;
 }
 
-.localNoteGraphClose:hover {
+.localNoteConnectionsClose:hover {
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	border-color: color-mix(in srgb, var(--border-default) 42%, transparent);
 }
 
-.localNoteGraphClose:focus,
-.localNoteGraphClose:focus-visible {
+.localNoteConnectionsClose:focus {
 	color: var(--text-primary);
 	outline: none;
 	box-shadow: none;
 }
 
-.localNoteGraphState {
+.localNoteConnectionsClose:focus-visible {
+	color: var(--text-primary);
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.localNoteConnectionsState {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -62,22 +68,30 @@
 	font-size: var(--text-sm);
 }
 
-.localNoteGraphStage {
+.localNoteConnectionsStage {
 	position: relative;
 	width: 100%;
 	height: 100%;
 }
 
-.localNoteGraphViewport {
-	--local-graph-border: var(--border-default);
-	--local-graph-dot: color-mix(in srgb, var(--text-secondary) 18%, transparent);
-	--local-graph-edge: color-mix(in srgb, var(--text-primary) 58%, transparent);
-	--local-graph-edge-incoming: var(--text-primary);
-	--local-graph-note-bg: var(--bg-primary);
-	--local-graph-tag-node: var(--interactive-accent);
-	--local-graph-text: var(--text-primary);
-	--local-graph-text-inverse: var(--text-inverse);
-	--local-graph-surface: color-mix(
+.localNoteConnectionsViewport {
+	--local-connections-border: var(--border-default);
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-secondary) 18%,
+		transparent
+	);
+	--local-connections-edge: color-mix(
+		in srgb,
+		var(--text-primary) 58%,
+		transparent
+	);
+	--local-connections-edge-incoming: var(--text-primary);
+	--local-connections-note-bg: var(--bg-primary);
+	--local-connections-tag-node: var(--interactive-accent);
+	--local-connections-text: var(--text-primary);
+	--local-connections-text-inverse: var(--text-inverse);
+	--local-connections-surface: color-mix(
 		in srgb,
 		var(--bg-secondary) 88%,
 		var(--bg-primary)
@@ -86,10 +100,10 @@
 	width: 100%;
 	height: 100%;
 	cursor: grab;
-	background-color: var(--local-graph-surface);
+	background-color: var(--local-connections-surface);
 	background-image: radial-gradient(
 			circle at center,
-			var(--local-graph-dot) 0.75px,
+			var(--local-connections-dot) 0.75px,
 			transparent 1.4px
 		),
 		radial-gradient(
@@ -101,16 +115,55 @@
 	background-size: 24px 24px, cover;
 }
 
-.localNoteGraphStage .localNoteGraphViewport {
+.localNoteConnectionsStage .localNoteConnectionsViewport {
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
-.localNoteGraphViewport:active {
+.localNoteConnectionsViewport:active {
 	cursor: grabbing;
 }
 
-.spaceGraphLoadFullButton {
+.spaceConnectionsBetaBadge {
+	position: absolute;
+	bottom: 16px;
+	left: 16px;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-width: 220px;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 6%, transparent);
+	pointer-events: none;
+}
+
+.spaceConnectionsBetaBadgeLabel {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.spaceConnectionsBetaBadgeCopy {
+	margin: 0;
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: 400;
+	font-family: var(--font-sans);
+	line-height: 1.35;
+}
+
+.spaceConnectionsLoadFullButton {
 	min-height: 0;
 	height: 22px;
 	padding: 0 7px;
@@ -119,7 +172,7 @@
 	line-height: 1;
 }
 
-.spaceGraphProgressOverlay {
+.spaceConnectionsProgressOverlay {
 	position: absolute;
 	inset: 0;
 	z-index: 2;
@@ -131,7 +184,7 @@
 	-webkit-backdrop-filter: blur(10px);
 }
 
-.spaceGraphProgressCard {
+.spaceConnectionsProgressCard {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -146,20 +199,20 @@
 		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
 }
 
-.spaceGraphProgressHeader {
+.spaceConnectionsProgressHeader {
 	display: flex;
 	align-items: flex-start;
 	gap: 8px;
 	min-width: 0;
 }
 
-.spaceGraphProgressSpinner {
+.spaceConnectionsProgressSpinner {
 	flex: 0 0 auto;
 	margin-top: 1px;
 	color: var(--interactive-accent);
 }
 
-.spaceGraphProgressMessage {
+.spaceConnectionsProgressMessage {
 	min-width: 0;
 	flex: 1;
 	margin: 0;
@@ -169,13 +222,13 @@
 	text-wrap: pretty;
 }
 
-.spaceGraphProgressBarRow {
+.spaceConnectionsProgressBarRow {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 }
 
-.spaceGraphProgressTrack {
+.spaceConnectionsProgressTrack {
 	appearance: none;
 	-webkit-appearance: none;
 	display: block;
@@ -187,23 +240,23 @@
 	background: color-mix(in srgb, var(--border-default) 55%, transparent);
 }
 
-.spaceGraphProgressTrack::-webkit-progress-bar {
+.spaceConnectionsProgressTrack::-webkit-progress-bar {
 	border-radius: 999px;
 	background: color-mix(in srgb, var(--border-default) 55%, transparent);
 }
 
-.spaceGraphProgressTrack::-webkit-progress-value {
+.spaceConnectionsProgressTrack::-webkit-progress-value {
 	border-radius: 999px;
 	background: var(--interactive-accent);
 	transition: width 180ms ease;
 }
 
-.spaceGraphProgressTrack::-moz-progress-bar {
+.spaceConnectionsProgressTrack::-moz-progress-bar {
 	border-radius: 999px;
 	background: var(--interactive-accent);
 }
 
-.spaceGraphProgressPercent {
+.spaceConnectionsProgressPercent {
 	flex: 0 0 auto;
 	min-width: 2.75ch;
 	color: var(--text-tertiary);
@@ -213,7 +266,7 @@
 	text-align: right;
 }
 
-.localNoteGraphLegend {
+.localNoteConnectionsLegend {
 	position: absolute;
 	left: 14px;
 	bottom: 14px;
@@ -235,18 +288,18 @@
 		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
 }
 
-.localNoteGraphLegendItem {
+.localNoteConnectionsLegendItem {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
 	white-space: nowrap;
 }
 
-.localNoteGraphLegendItem:last-child {
+.localNoteConnectionsLegendItem:last-child {
 	grid-column: 1 / -1;
 }
 
-.localNoteGraphLegendNode {
+.localNoteConnectionsLegendNode {
 	display: inline-block;
 	width: 28px;
 	height: 10px;
@@ -255,12 +308,12 @@
 	background: var(--bg-primary);
 }
 
-.localNoteGraphLegendNode.is-current {
+.localNoteConnectionsLegendNode.is-current {
 	border-color: var(--interactive-accent);
 	background: var(--interactive-accent);
 }
 
-.localNoteGraphLegendNode.is-note {
+.localNoteConnectionsLegendNode.is-note {
 	border-color: color-mix(
 		in srgb,
 		var(--interactive-accent) 52%,
@@ -268,13 +321,13 @@
 	);
 }
 
-.localNoteGraphLegendNode.is-tag {
+.localNoteConnectionsLegendNode.is-tag {
 	border-style: dashed;
 	border-color: var(--interactive-accent);
 	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
 }
 
-.localNoteGraphLegendEdge {
+.localNoteConnectionsLegendEdge {
 	position: relative;
 	display: inline-block;
 	width: 28px;
@@ -282,7 +335,7 @@
 	background: color-mix(in srgb, var(--text-secondary) 68%, transparent);
 }
 
-.localNoteGraphLegendEdge::after {
+.localNoteConnectionsLegendEdge::after {
 	position: absolute;
 	top: 50%;
 	right: -1px;
@@ -296,13 +349,13 @@
 	transform: translateY(-50%);
 }
 
-.localNoteGraphLegendEdge.is-link {
+.localNoteConnectionsLegendEdge.is-link {
 	height: 2px;
 	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
 	background: currentcolor;
 }
 
-.localNoteGraphLegendEdge.is-tag-link {
+.localNoteConnectionsLegendEdge.is-tag-link {
 	color: color-mix(
 		in srgb,
 		var(--interactive-accent) 62%,
@@ -316,35 +369,35 @@
 }
 
 @media (max-width: 900px) {
-	.localNoteGraphDialog {
+	.localNoteConnectionsDialog {
 		width: min(92vw, 760px);
 		max-width: calc(100vw - 1rem);
 	}
 
-	.localNoteGraphBody {
+	.localNoteConnectionsBody {
 		height: min(60vh, calc(100vh - 7rem));
 		min-height: 360px;
 	}
 
-	.localNoteGraphLegend {
+	.localNoteConnectionsLegend {
 		grid-template-columns: repeat(2, minmax(88px, max-content));
 		gap: 6px 10px;
 	}
 }
 
 @media (max-width: 640px) {
-	.localNoteGraphDialog {
+	.localNoteConnectionsDialog {
 		width: calc(100vw - 0.5rem);
 		max-width: calc(100vw - 0.5rem);
 	}
 
-	.localNoteGraphBody {
+	.localNoteConnectionsBody {
 		height: min(58vh, calc(100vh - 6rem));
 		min-height: 320px;
 		max-height: calc(100vh - 6rem);
 	}
 
-	.localNoteGraphLegend {
+	.localNoteConnectionsLegend {
 		right: 10px;
 		bottom: 10px;
 		left: 10px;

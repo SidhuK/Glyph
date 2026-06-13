@@ -842,10 +842,10 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
-		"open-local-graph": {
-			"id": "open-local-graph",
-			"label": "Open Local Graph",
-			"description": "Open the local graph for the current note.",
+		"open-local-connections": {
+			"id": "open-local-connections",
+			"label": "Open Local Connections",
+			"description": "Open local connections for the current note.",
 			"category": "file",
 			"context": "editor",
 			"defaultBinding": {

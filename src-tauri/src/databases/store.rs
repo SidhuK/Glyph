@@ -7,12 +7,11 @@ use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseFilter, DatabaseNewNoteConfig,
-    DatabaseSchemaField, DatabaseSource, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
+    DatabaseCellValue, DatabaseColumn, DatabaseStore, DatabaseSummary, DatabaseViewDefinition,
+    DatabaseViewGrouping,
 };
 
 const DATABASES_STORE_FILE: &str = "databases.json";
-const DATABASES_STORE_VERSION: u32 = 3;
 
 fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
@@ -22,16 +21,12 @@ fn databases_store_path(space_root: &Path) -> Result<PathBuf, String> {
     Ok(ensure_glyph_dir(space_root)?.join(DATABASES_STORE_FILE))
 }
 
-fn stable_view_id(seed: &str) -> String {
-    format!("system-view:{seed}")
-}
-
 pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
     let now = now_iso();
     DatabaseViewDefinition {
         id: Uuid::new_v4().to_string(),
         name: name.to_string(),
-        layout: "table".to_string(),
+        layout: "board".to_string(),
         search: String::new(),
         icon: None,
         color: None,
@@ -69,78 +64,14 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         ],
         sorts: Vec::new(),
         filters: Vec::new(),
-        grouping: None,
+        grouping: Some(DatabaseViewGrouping {
+            column_id: "tags".to_string(),
+            ascending: true,
+        }),
         board_lane_colors: Default::default(),
         board_lane_order: Default::default(),
         board_card_order: Default::default(),
         board_card_fields: Default::default(),
-        created_at: now.clone(),
-        updated_at: now,
-    }
-}
-
-fn recent_view() -> DatabaseViewDefinition {
-    let mut view = default_view("Recent");
-    view.name = "Recent".to_string();
-    view.filters = vec![DatabaseFilter {
-        column_id: "updated".to_string(),
-        operator: "within_last_7_days".to_string(),
-        value_text: Some("Last 7 Days".to_string()),
-        value_bool: None,
-        value_list: Vec::new(),
-    }];
-    view
-}
-
-fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
-    let now = now_iso();
-    let mut view = if recent {
-        recent_view()
-    } else {
-        default_view("Table")
-    };
-    view.id = stable_view_id(&format!("glyph://system-database/{id}/{}", view.name));
-    DatabaseDefinition {
-        id: id.to_string(),
-        name: name.to_string(),
-        icon: None,
-        color: None,
-        is_system: true,
-        source: DatabaseSource {
-            kind: "all_notes".to_string(),
-            value: String::new(),
-            recursive: true,
-        },
-        new_note: DatabaseNewNoteConfig {
-            folder: String::new(),
-        },
-        schema: vec![
-            DatabaseSchemaField {
-                id: "title".to_string(),
-                label: "Title".to_string(),
-                kind: "title".to_string(),
-                property_key: None,
-                default_value: None,
-                relation_database_id: None,
-            },
-            DatabaseSchemaField {
-                id: "tags".to_string(),
-                label: "Tags".to_string(),
-                kind: "tags".to_string(),
-                property_key: None,
-                default_value: None,
-                relation_database_id: None,
-            },
-            DatabaseSchemaField {
-                id: "updated".to_string(),
-                label: "Updated".to_string(),
-                kind: "datetime".to_string(),
-                property_key: None,
-                default_value: None,
-                relation_database_id: None,
-            },
-        ],
-        views: vec![view],
         created_at: now.clone(),
         updated_at: now,
     }
@@ -259,7 +190,7 @@ fn prune_unsupported_view_layouts(store: &mut DatabaseStore) {
             .views
             .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
         if database.views.is_empty() {
-            database.views.push(default_view("Table"));
+            database.views.push(default_view("View 1"));
         }
     }
 }
@@ -277,14 +208,22 @@ fn normalize_status_colors(store: &mut DatabaseStore) {
         .retain(|status, color| !status.trim().is_empty() && is_valid_status_color(color));
 }
 
+fn normalize_store_on_load(mut store: DatabaseStore) -> DatabaseStore {
+    if store.version == 0 {
+        store.version = 1;
+    }
+    normalize_store_property_kinds(&mut store);
+    prune_unsupported_view_layouts(&mut store);
+    normalize_status_colors(&mut store);
+    normalize_schema_field_defaults(&mut store);
+    store
+}
+
 fn default_store() -> DatabaseStore {
     DatabaseStore {
-        version: DATABASES_STORE_VERSION,
+        version: 1,
         status_colors: BTreeMap::new(),
-        databases: vec![
-            system_database("all-notes", "All Notes", false),
-            system_database("recently-edited", "Recently Edited", true),
-        ],
+        databases: Vec::new(),
     }
 }
 
@@ -292,22 +231,8 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
     let path = databases_store_path(space_root)?;
     match std::fs::read(&path) {
         Ok(bytes) => {
-            let mut store: DatabaseStore =
-                serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-            if store.version > DATABASES_STORE_VERSION {
-                return Err(format!(
-                    "unsupported databases store version {} (max supported {})",
-                    store.version, DATABASES_STORE_VERSION
-                ));
-            }
-            if store.version == 0 {
-                store.version = DATABASES_STORE_VERSION;
-            }
-            normalize_store_property_kinds(&mut store);
-            prune_unsupported_view_layouts(&mut store);
-            normalize_status_colors(&mut store);
-            normalize_schema_field_defaults(&mut store);
-            Ok(bootstrap_defaults(store))
+            let store: DatabaseStore = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+            Ok(normalize_store_on_load(store))
         }
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(default_store()),
         Err(err) => Err(err.to_string()),
@@ -320,21 +245,6 @@ pub fn save_store(space_root: &Path, store: &DatabaseStore) -> Result<(), String
     io_atomic::write_atomic(&path, &bytes).map_err(|e| e.to_string())
 }
 
-pub fn bootstrap_defaults(mut store: DatabaseStore) -> DatabaseStore {
-    let defaults = default_store();
-    for database in defaults.databases {
-        if store.databases.iter().any(|entry| entry.id == database.id) {
-            continue;
-        }
-        store.databases.push(database);
-    }
-    store.version = DATABASES_STORE_VERSION;
-    prune_unsupported_view_layouts(&mut store);
-    normalize_status_colors(&mut store);
-    normalize_schema_field_defaults(&mut store);
-    store
-}
-
 pub fn list_summaries(store: &DatabaseStore) -> Vec<DatabaseSummary> {
     let mut summaries = store
         .databases
@@ -344,7 +254,6 @@ pub fn list_summaries(store: &DatabaseStore) -> Vec<DatabaseSummary> {
             name: database.name.clone(),
             icon: database.icon.clone(),
             color: database.color.clone(),
-            is_system: database.is_system,
             view_count: database.views.len() as u32,
         })
         .collect::<Vec<_>>();

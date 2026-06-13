@@ -39,6 +39,11 @@ import {
 	dispatchPathRemoved,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
+import {
+	INITIAL_DATABASES_OPEN_REQUEST,
+	consumeCreateCollectionDialog,
+	nextDatabasesOpenRequest,
+} from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	invalidateAllDocsPrefetch,
@@ -58,7 +63,7 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
-import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -152,8 +157,9 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
-	const [openDatabasesRequestNonce, setOpenDatabasesRequestNonce] = useState(0);
+	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(
+		INITIAL_DATABASES_OPEN_REQUEST,
+	);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -816,11 +822,11 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"home" | "all-notes" | "graph" | "databases" | null
+		"home" | "all-notes" | "connections" | "databases" | null
 	>(() => {
 		if (activeTabPath === CALENDAR_TAB_ID) return "home";
 		if (activeTabPath === ALL_DOCS_TAB_ID) return "all-notes";
-		if (activeTabPath === SPACE_GRAPH_TAB_ID) return "graph";
+		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
 		return null;
 	}, [activeTabPath]);
@@ -848,44 +854,28 @@ export function AppShell() {
 		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
-		(databaseId?: string | null) => {
-			setOpenDatabasesId(databaseId ?? null);
-			setOpenDatabasesRequestNonce((current) => current + 1);
+		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
+			setDatabasesOpenRequest((current) =>
+				nextDatabasesOpenRequest(current, {
+					databaseId: databaseId ?? null,
+					openCreateDialog: options?.openCreateDialog ?? false,
+				}),
+			);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
 		[openSpecialTab],
 	);
-	const openGraphView = useCallback(() => {
-		openSpecialTab(SPACE_GRAPH_TAB_ID);
+	const openConnectionsView = useCallback(() => {
+		openSpecialTab(SPACE_CONNECTIONS_TAB_ID);
 	}, [openSpecialTab]);
-	const createDatabaseAndOpen = useCallback(async () => {
-		try {
-			const summaries = await invoke("databases_list");
-			const existing = new Set(
-				summaries.map((entry) => entry.name.trim().toLowerCase()),
-			);
-			let name = "New Database";
-			if (existing.has(name.toLowerCase())) {
-				let suffix = 2;
-				while (existing.has(`new database ${suffix}`)) {
-					suffix += 1;
-				}
-				name = `New Database ${suffix}`;
-			}
-			const created = await invoke("databases_create", {
-				name,
-			});
-			openDatabasesTab(created.database.id);
-			return created.database.id;
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			setError(message);
-			toast.error("Could not create database", {
-				description: message,
-			});
-			return null;
-		}
-	}, [openDatabasesTab, setError]);
+	const createDatabaseAndOpen = useCallback(() => {
+		openDatabasesTab(null, { openCreateDialog: true });
+	}, [openDatabasesTab]);
+	const consumeDatabasesOpenRequest = useCallback(() => {
+		setDatabasesOpenRequest((current) =>
+			consumeCreateCollectionDialog(current),
+		);
+	}, []);
 	const prefetchWorkspaceFile = useCallback((path: string) => {
 		if (!isMarkdownPath(path)) return;
 		prefetchNote(path);
@@ -1117,7 +1107,7 @@ export function AppShell() {
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
-		openGraphView,
+		openConnectionsView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
 		openQuickNoteWindow,
@@ -1313,7 +1303,7 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
 				onOpenAllDocs={openAllDocsTab}
-				onOpenGraph={openGraphView}
+				onOpenConnections={openConnectionsView}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}
@@ -1367,8 +1357,8 @@ export function AppShell() {
 				onGoBack={goBack}
 				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
-				openDatabasesId={openDatabasesId}
-				openDatabasesRequestNonce={openDatabasesRequestNonce}
+				databasesOpenRequest={databasesOpenRequest}
+				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				homeView={homeView}
 				onHomeViewChange={setHomeView}

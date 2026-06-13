@@ -28,7 +28,9 @@ button:hover:not(
 				.databaseBoardLaneTitleButton,
 				.databaseBoardLaneHandle,
 				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear
+				.databaseBoardColorRibbonClear,
+				.databasesViewTab,
+				.databasesCollectionSwitcher
 			)
 	) {
 	background: var(--bg-hover);
@@ -41,7 +43,9 @@ button:active:not(
 				.databaseBoardLaneTitleButton,
 				.databaseBoardLaneHandle,
 				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear
+				.databaseBoardColorRibbonClear,
+				.databasesViewTab,
+				.databasesCollectionSwitcher
 			)
 	) {
 	background: var(--bg-active);
@@ -60,7 +64,9 @@ button:disabled:hover:not(
 				.databaseBoardLaneTitleButton,
 				.databaseBoardLaneHandle,
 				.databaseBoardColorRibbonSwatch,
-				.databaseBoardColorRibbonClear
+				.databaseBoardColorRibbonClear,
+				.databasesViewTab,
+				.databasesCollectionSwitcher
 			)
 	) {
 	background: transparent;

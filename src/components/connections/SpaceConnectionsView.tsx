@@ -3,45 +3,45 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
-import type { SpaceGraph, SpaceGraphNode } from "../../lib/tauri";
+import type { SpaceConnections, SpaceConnectionsNode } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import {
-	applyGraphTheme,
-	graphLayoutSpacing,
-	graphStylesForContainer,
+	applyConnectionsTheme,
+	connectionsLayoutSpacing,
+	connectionsStylesForContainer,
 	highlightNeighborhood,
 	registerFcose,
-	runGraphLayout,
-} from "./graphTheme";
+	runConnectionsLayout,
+} from "./connectionsTheme";
 
-const DEFAULT_SPACE_GRAPH_NODES = 1000;
-const FULL_SPACE_GRAPH_NODES = 10_000;
-const MAX_SPACE_GRAPH_TAGS = 250;
-const LARGE_GRAPH_LAYOUT_THRESHOLD = 2400;
+const DEFAULT_SPACE_CONNECTIONS_NODES = 1000;
+const FULL_SPACE_CONNECTIONS_NODES = 10_000;
+const MAX_SPACE_CONNECTIONS_TAGS = 250;
+const LARGE_CONNECTIONS_LAYOUT_THRESHOLD = 2400;
 const SATELLITE_GAP = 130;
 const SATELLITE_SPACING = 44;
-const GRAPH_LAYOUT_CACHE_PREFIX = "glyph.spaceGraph.layout:";
-const GRAPH_LAYOUT_CACHE_VERSION = 1;
-const GRAPH_LAYOUT_ALGORITHM = "organic-cloud-v2";
+const CONNECTIONS_LAYOUT_CACHE_PREFIX = "glyph.spaceConnections.layout:";
+const CONNECTIONS_LAYOUT_CACHE_VERSION = 1;
+const CONNECTIONS_LAYOUT_ALGORITHM = "organic-cloud-v2";
 const MIN_NOTE_NODE_SIZE = 10;
 const MAX_NOTE_NODE_SIZE = 34;
 const MIN_TAG_NODE_SIZE = 14;
 const MAX_TAG_NODE_SIZE = 30;
 
-interface GraphPosition {
+interface ConnectionsPosition {
 	x: number;
 	y: number;
 }
 
-interface CachedGraphLayout {
+interface CachedConnectionsLayout {
 	version: number;
 	signature: string;
-	positions: Record<string, GraphPosition>;
+	positions: Record<string, ConnectionsPosition>;
 }
 
-function noteNodeClasses(node: SpaceGraphNode) {
+function noteNodeClasses(node: SpaceConnectionsNode) {
 	const weight = node.link_count + node.tag_count;
 	const classes = [];
 	if (node.is_isolated) {
@@ -62,9 +62,9 @@ function scaledNodeSize(weight: number, minSize: number, maxSize: number) {
 	return Math.round(minSize + normalized * (maxSize - minSize));
 }
 
-function graphElements(
-	graph: SpaceGraph,
-	positions?: Record<string, GraphPosition>,
+function connectionElements(
+	graph: SpaceConnections,
+	positions?: Record<string, ConnectionsPosition>,
 ): ElementDefinition[] {
 	return [
 		...graph.nodes.map((node) => {
@@ -132,10 +132,10 @@ function hashString(value: string) {
 	return (hash >>> 0).toString(36);
 }
 
-function graphSignature(graph: SpaceGraph) {
+function connectionsSignature(graph: SpaceConnections) {
 	const source = [
 		graph.total_notes,
-		GRAPH_LAYOUT_ALGORITHM,
+		CONNECTIONS_LAYOUT_ALGORITHM,
 		graph.nodes.length,
 		graph.tags.length,
 		graph.edges.length,
@@ -148,28 +148,30 @@ function graphSignature(graph: SpaceGraph) {
 	return hashString(source);
 }
 
-function graphLayoutCacheKey(spacePath: string | null) {
-	return `${GRAPH_LAYOUT_CACHE_PREFIX}${spacePath ?? "no-space"}`;
+function connectionsLayoutCacheKey(spacePath: string | null) {
+	return `${CONNECTIONS_LAYOUT_CACHE_PREFIX}${spacePath ?? "no-space"}`;
 }
 
-function isGraphPosition(value: unknown): value is GraphPosition {
+function isConnectionsPosition(value: unknown): value is ConnectionsPosition {
 	if (!value || typeof value !== "object") return false;
 	const record = value as Record<PropertyKey, unknown>;
 	return typeof record.x === "number" && typeof record.y === "number";
 }
 
-function readGraphLayoutCache(
+function readConnectionsLayoutCache(
 	spacePath: string | null,
 	signature: string,
-): CachedGraphLayout | null {
+): CachedConnectionsLayout | null {
 	try {
-		const raw = window.sessionStorage.getItem(graphLayoutCacheKey(spacePath));
+		const raw = window.sessionStorage.getItem(
+			connectionsLayoutCacheKey(spacePath),
+		);
 		if (!raw) return null;
 		const parsed: unknown = JSON.parse(raw);
 		if (!parsed || typeof parsed !== "object") return null;
 		const record = parsed as Record<PropertyKey, unknown>;
 		if (
-			record.version !== GRAPH_LAYOUT_CACHE_VERSION ||
+			record.version !== CONNECTIONS_LAYOUT_CACHE_VERSION ||
 			record.signature !== signature ||
 			!record.positions
 		) {
@@ -177,26 +179,26 @@ function readGraphLayoutCache(
 		}
 		if (typeof record.positions !== "object") return null;
 
-		const positions: Record<string, GraphPosition> = {};
+		const positions: Record<string, ConnectionsPosition> = {};
 		for (const [id, position] of Object.entries(record.positions)) {
-			if (isGraphPosition(position)) {
+			if (isConnectionsPosition(position)) {
 				positions[id] = { x: position.x, y: position.y };
 			}
 		}
 		if (Object.keys(positions).length === 0) return null;
-		return { version: GRAPH_LAYOUT_CACHE_VERSION, signature, positions };
+		return { version: CONNECTIONS_LAYOUT_CACHE_VERSION, signature, positions };
 	} catch {
 		return null;
 	}
 }
 
-function clearPersistentGraphLayoutCaches() {
+function clearPersistentConnectionsLayoutCaches() {
 	try {
 		const keys: string[] = [];
 		for (let index = 0; index < window.localStorage.length; index += 1) {
 			const key = window.localStorage.key(index);
 			if (!key) continue;
-			if (key.startsWith(GRAPH_LAYOUT_CACHE_PREFIX)) {
+			if (key.startsWith(CONNECTIONS_LAYOUT_CACHE_PREFIX)) {
 				keys.push(key);
 			}
 		}
@@ -208,28 +210,54 @@ function clearPersistentGraphLayoutCaches() {
 	}
 }
 
-function writeGraphLayoutCache(
+function writeConnectionsLayoutCache(
 	spacePath: string | null,
 	signature: string,
-	cy: Core,
+	positions: Record<string, ConnectionsPosition>,
 ) {
 	try {
-		const positions: Record<string, GraphPosition> = {};
-		for (const node of cy.nodes()) {
-			const position = node.position();
-			positions[node.id()] = { x: position.x, y: position.y };
+		const cachedPositions: Record<string, ConnectionsPosition> = {};
+		const raw = window.sessionStorage.getItem(
+			connectionsLayoutCacheKey(spacePath),
+		);
+		if (raw) {
+			const parsed: unknown = JSON.parse(raw);
+			if (parsed && typeof parsed === "object") {
+				const record = parsed as Record<PropertyKey, unknown>;
+				if (
+					record.version === CONNECTIONS_LAYOUT_CACHE_VERSION &&
+					record.signature === signature &&
+					record.positions &&
+					typeof record.positions === "object"
+				) {
+					for (const [id, position] of Object.entries(record.positions)) {
+						if (isConnectionsPosition(position)) {
+							cachedPositions[id] = { x: position.x, y: position.y };
+						}
+					}
+				}
+			}
 		}
 		window.sessionStorage.setItem(
-			graphLayoutCacheKey(spacePath),
+			connectionsLayoutCacheKey(spacePath),
 			JSON.stringify({
-				version: GRAPH_LAYOUT_CACHE_VERSION,
+				version: CONNECTIONS_LAYOUT_CACHE_VERSION,
 				signature,
-				positions,
-			} satisfies CachedGraphLayout),
+				positions: { ...cachedPositions, ...positions },
+			} satisfies CachedConnectionsLayout),
 		);
 	} catch {
 		// Cache writes are best-effort; rendering should never depend on storage.
 	}
+}
+
+function positionsForNodes(cy: Core): Record<string, ConnectionsPosition> {
+	const positions: Record<string, ConnectionsPosition> = {};
+	for (const node of cy.nodes()) {
+		const position = node.position();
+		positions[node.id()] = { x: position.x, y: position.y };
+	}
+	return positions;
 }
 
 function openNote(nodeId: string) {
@@ -312,22 +340,25 @@ function organicizeNoteCloud(cy: Core) {
 	}
 }
 
-function graphProgressMessage(graph: SpaceGraph | null, loading: boolean) {
+function connectionsProgressMessage(
+	graph: SpaceConnections | null,
+	loading: boolean,
+) {
 	if (loading) return "Loading notes and links…";
-	if (!graph) return "Laying out graph…";
+	if (!graph) return "Laying out connections…";
 	if (graph.truncated) {
 		return `Laying out top ${graph.nodes.length} of ${graph.total_notes} notes…`;
 	}
-	return "Laying out graph…";
+	return "Laying out connections…";
 }
 
-function GraphProgressOverlay({
+function ConnectionsProgressOverlay({
 	graph,
 	loading,
 	progress,
 	usingCachedLayout,
 }: {
-	graph: SpaceGraph | null;
+	graph: SpaceConnections | null;
 	loading: boolean;
 	progress: number;
 	usingCachedLayout: boolean;
@@ -335,72 +366,96 @@ function GraphProgressOverlay({
 	const clampedProgress = Math.max(0, Math.min(100, Math.round(progress)));
 	const message = usingCachedLayout
 		? "Restoring cached layout…"
-		: graphProgressMessage(graph, loading);
+		: connectionsProgressMessage(graph, loading);
 
 	return (
 		<div
-			className="spaceGraphProgressOverlay"
+			className="spaceConnectionsProgressOverlay"
 			aria-live="polite"
 			aria-busy="true"
 		>
-			<div className="spaceGraphProgressCard">
-				<div className="spaceGraphProgressHeader">
+			<div className="spaceConnectionsProgressCard">
+				<div className="spaceConnectionsProgressHeader">
 					<HugeiconsIcon
 						icon={LoaderCircle}
-						className="spaceGraphProgressSpinner animate-spin"
+						className="spaceConnectionsProgressSpinner animate-spin"
 						size="var(--icon-sm)"
 						strokeWidth={0.9}
 					/>
-					<p className="spaceGraphProgressMessage">{message}</p>
+					<p className="spaceConnectionsProgressMessage">{message}</p>
 				</div>
-				<div className="spaceGraphProgressBarRow">
+				<div className="spaceConnectionsProgressBarRow">
 					<progress
-						className="spaceGraphProgressTrack"
-						aria-label="Graph generation progress"
+						className="spaceConnectionsProgressTrack"
+						aria-label="Connections generation progress"
 						max={100}
 						value={clampedProgress}
 					/>
-					<span className="spaceGraphProgressPercent">{clampedProgress}%</span>
+					<span className="spaceConnectionsProgressPercent">
+						{clampedProgress}%
+					</span>
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function fullGraphNoteCountLabel(totalNotes: number) {
-	if (totalNotes > FULL_SPACE_GRAPH_NODES) {
-		return `the top ${FULL_SPACE_GRAPH_NODES.toLocaleString()} of ${totalNotes.toLocaleString()} notes`;
+function SpaceConnectionsBetaBadge() {
+	return (
+		<output className="spaceConnectionsBetaBadge" aria-live="polite">
+			<span className="spaceConnectionsBetaBadgeLabel">Beta</span>
+			<p className="spaceConnectionsBetaBadgeCopy">
+				Early access. Larger spaces may feel sluggish or unfinished while I keep
+				refining this view.
+			</p>
+		</output>
+	);
+}
+
+function fullConnectionsNoteCountLabel(totalNotes: number) {
+	if (totalNotes > FULL_SPACE_CONNECTIONS_NODES) {
+		return `the top ${FULL_SPACE_CONNECTIONS_NODES.toLocaleString()} of ${totalNotes.toLocaleString()} notes`;
 	}
 	return `${totalNotes.toLocaleString()} notes`;
 }
 
-export function SpaceGraphView() {
+export function SpaceConnectionsView() {
 	const { spacePath } = useSpace();
-	const [graph, setGraph] = useState<SpaceGraph | null>(null);
+	const [graph, setGraph] = useState<SpaceConnections | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [generating, setGenerating] = useState(false);
 	const [generationProgress, setGenerationProgress] = useState(0);
 	const [error, setError] = useState("");
-	const [maxNodes, setMaxNodes] = useState(DEFAULT_SPACE_GRAPH_NODES);
+	const [maxNodes, setMaxNodes] = useState(DEFAULT_SPACE_CONNECTIONS_NODES);
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const cyRef = useRef<Core | null>(null);
-	const loadGraphCleanupRef = useRef<(() => void) | null>(null);
+	const loadConnectionsCleanupRef = useRef<(() => void) | null>(null);
+	const activeSpacePathRef = useRef(spacePath);
+	const previousSpacePathRef = useRef(spacePath);
+	activeSpacePathRef.current = spacePath;
 	const signature = useMemo(
-		() => (graph ? graphSignature(graph) : ""),
+		() => (graph ? connectionsSignature(graph) : ""),
 		[graph],
 	);
 	const cachedLayout = useMemo(
-		() => (signature ? readGraphLayoutCache(spacePath, signature) : null),
+		() => (signature ? readConnectionsLayoutCache(spacePath, signature) : null),
 		[signature, spacePath],
 	);
 	const usingCachedLayout = Boolean(cachedLayout);
 
 	useEffect(() => {
-		clearPersistentGraphLayoutCaches();
+		clearPersistentConnectionsLayoutCaches();
 	}, []);
 
-	const loadGraph = useCallback(() => {
-		loadGraphCleanupRef.current?.();
+	useEffect(() => {
+		if (previousSpacePathRef.current === spacePath) return;
+		previousSpacePathRef.current = spacePath;
+		setMaxNodes(DEFAULT_SPACE_CONNECTIONS_NODES);
+	}, [spacePath]);
+
+	const loadConnections = useCallback(() => {
+		const requestSpacePath = spacePath;
+		loadConnectionsCleanupRef.current?.();
 		let cancelled = false;
 		setLoading(true);
 		setGenerating(false);
@@ -409,49 +464,53 @@ export function SpaceGraphView() {
 		const cleanup = () => {
 			cancelled = true;
 		};
-		loadGraphCleanupRef.current = cleanup;
-		void invoke("space_graph", {
+		loadConnectionsCleanupRef.current = cleanup;
+		void invoke("space_connections", {
 			max_nodes: maxNodes,
-			max_tags: MAX_SPACE_GRAPH_TAGS,
+			max_tags: MAX_SPACE_CONNECTIONS_TAGS,
 		})
 			.then((nextGraph) => {
-				if (cancelled) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setGraph(nextGraph);
 				setGenerationProgress(nextGraph.nodes.length > 0 ? 40 : 100);
 				setGenerating(nextGraph.nodes.length > 0);
 			})
 			.catch((cause) => {
-				if (cancelled) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setGraph(null);
 				setGenerating(false);
 				setGenerationProgress(0);
 				setError(cause instanceof Error ? cause.message : String(cause));
 			})
 			.finally(() => {
-				if (!cancelled) setLoading(false);
-				if (loadGraphCleanupRef.current === cleanup) {
-					loadGraphCleanupRef.current = null;
+				if (!cancelled && activeSpacePathRef.current === requestSpacePath) {
+					setLoading(false);
+				}
+				if (loadConnectionsCleanupRef.current === cleanup) {
+					loadConnectionsCleanupRef.current = null;
 				}
 			});
 		return cleanup;
-	}, [maxNodes]);
+	}, [maxNodes, spacePath]);
 
-	useEffect(() => loadGraph(), [loadGraph]);
+	useEffect(() => loadConnections(), [loadConnections]);
 
-	const handleLoadFullGraph = useCallback(async () => {
+	const handleLoadFullConnections = useCallback(async () => {
 		if (!graph) return;
 		const { confirm } = await import("@tauri-apps/plugin-dialog");
-		const noteCountLabel = fullGraphNoteCountLabel(graph.total_notes);
+		const noteCountLabel = fullConnectionsNoteCountLabel(graph.total_notes);
 		const confirmed = await confirm(
-			`This will render ${noteCountLabel} at once. Large graphs can use a lot of memory and may make Glyph slow or temporarily unresponsive.`,
+			`This will render ${noteCountLabel} at once. Large connection maps can use a lot of memory and may make Glyph slow or temporarily unresponsive.`,
 			{
-				title: "Load the full graph?",
-				okLabel: "Load full graph",
+				title: "Load all connections?",
+				okLabel: "Load all connections",
 				cancelLabel: "Cancel",
 			},
 		);
 		if (!confirmed) return;
-		setMaxNodes(FULL_SPACE_GRAPH_NODES);
+		setMaxNodes(FULL_SPACE_CONNECTIONS_NODES);
 	}, [graph]);
 
 	useEffect(() => {
@@ -473,10 +532,24 @@ export function SpaceGraphView() {
 		if (!container) return;
 		let disposed = false;
 		let completeTimer: number | null = null;
+		let cacheWriteTimer: number | null = null;
+		let pendingCachePositions: Record<string, ConnectionsPosition> = {};
+		const scheduleLayoutCacheWrite = (
+			positions: Record<string, ConnectionsPosition>,
+		) => {
+			pendingCachePositions = { ...pendingCachePositions, ...positions };
+			if (cacheWriteTimer !== null) return;
+			cacheWriteTimer = window.setTimeout(() => {
+				cacheWriteTimer = null;
+				const nextPositions = pendingCachePositions;
+				pendingCachePositions = {};
+				writeConnectionsLayoutCache(spacePath, signature, nextPositions);
+			}, 120);
+		};
 		const visibleNodeCount = graph.nodes.length + graph.tags.length;
 		const layoutMode = cachedLayout
 			? "preset"
-			: visibleNodeCount >= LARGE_GRAPH_LAYOUT_THRESHOLD
+			: visibleNodeCount >= LARGE_CONNECTIONS_LAYOUT_THRESHOLD
 				? "random"
 				: "fcose";
 
@@ -491,23 +564,27 @@ export function SpaceGraphView() {
 		const cy = cytoscape({
 			boxSelectionEnabled: false,
 			container,
-			elements: graphElements(graph, cachedLayout?.positions),
+			elements: connectionElements(graph, cachedLayout?.positions),
 			layout: { name: "preset" },
 			maxZoom: 2.1,
 			minZoom: 0.18,
-			style: graphStylesForContainer(container),
+			style: connectionsStylesForContainer(container),
 			userZoomingEnabled: true,
 			wheelSensitivity: 0.16,
 		});
 		cyRef.current = cy;
-		runGraphLayout(cy, {
+		runConnectionsLayout(cy, {
 			mode: layoutMode,
 			afterLayout: () => {
 				if (!cachedLayout) {
 					organicizeNoteCloud(cy);
 					scatterSatelliteNodes(cy);
 				}
-				writeGraphLayoutCache(spacePath, signature, cy);
+				writeConnectionsLayoutCache(
+					spacePath,
+					signature,
+					positionsForNodes(cy),
+				);
 				if (!disposed) {
 					setGenerationProgress(100);
 					completeTimer = window.setTimeout(() => {
@@ -528,8 +605,11 @@ export function SpaceGraphView() {
 			}
 			highlightNeighborhood(cy, null);
 		});
-		cy.on("dragfree", "node", () => {
-			writeGraphLayoutCache(spacePath, signature, cy);
+		cy.on("dragfree", "node", (event) => {
+			const position = event.target.position();
+			scheduleLayoutCacheWrite({
+				[event.target.id()]: { x: position.x, y: position.y },
+			});
 		});
 		cy.on("tap", "node", (event) => {
 			if (event.target.hasClass("tag")) {
@@ -546,12 +626,12 @@ export function SpaceGraphView() {
 
 		const observer = new ResizeObserver(() => {
 			cy.resize();
-			cy.fit(undefined, graphLayoutSpacing(cy).padding);
+			cy.fit(undefined, connectionsLayoutSpacing(cy).padding);
 		});
 		observer.observe(container);
 
 		const themeObserver = new MutationObserver(() => {
-			applyGraphTheme(cy, container);
+			applyConnectionsTheme(cy, container);
 		});
 		themeObserver.observe(document.documentElement, {
 			attributeFilter: [
@@ -568,6 +648,9 @@ export function SpaceGraphView() {
 			if (completeTimer !== null) {
 				window.clearTimeout(completeTimer);
 			}
+			if (cacheWriteTimer !== null) {
+				window.clearTimeout(cacheWriteTimer);
+			}
 			themeObserver.disconnect();
 			observer.disconnect();
 			cy.destroy();
@@ -577,12 +660,13 @@ export function SpaceGraphView() {
 
 	if (loading) {
 		return (
-			<section className="spaceGraphHost relative h-full min-h-0 flex-1 overflow-hidden">
+			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
 				<div
-					className="localNoteGraphViewport absolute inset-0"
+					className="localNoteConnectionsViewport absolute inset-0"
 					aria-hidden="true"
 				/>
-				<GraphProgressOverlay
+				<SpaceConnectionsBetaBadge />
+				<ConnectionsProgressOverlay
 					graph={graph}
 					loading={loading}
 					progress={generationProgress}
@@ -597,13 +681,13 @@ export function SpaceGraphView() {
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
 				<div className="flex max-w-md flex-col items-center gap-3 text-center">
 					<p className="text-sm text-muted-foreground">
-						Could not load the graph: {error}
+						Could not load connections: {error}
 					</p>
 					<Button
 						type="button"
 						size="sm"
 						onClick={() => {
-							loadGraph();
+							loadConnections();
 						}}
 					>
 						<HugeiconsIcon
@@ -630,33 +714,34 @@ export function SpaceGraphView() {
 	}
 
 	return (
-		<section className="spaceGraphHost relative h-full min-h-0 flex-1 overflow-hidden">
+		<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
 			<div
 				ref={containerRef}
-				className="localNoteGraphViewport absolute inset-0"
-				aria-label="Space graph"
+				className="localNoteConnectionsViewport absolute inset-0"
+				aria-label="Space connections"
 			/>
-			{graph.truncated && maxNodes < FULL_SPACE_GRAPH_NODES ? (
+			<SpaceConnectionsBetaBadge />
+			{graph.truncated && maxNodes < FULL_SPACE_CONNECTIONS_NODES ? (
 				<div className="absolute right-4 bottom-4">
 					<Button
 						type="button"
-						className="spaceGraphLoadFullButton"
+						className="spaceConnectionsLoadFullButton"
 						size="xs"
 						onClick={() => {
-							void handleLoadFullGraph();
+							void handleLoadFullConnections();
 						}}
 					>
-						Load full graph
+						Load all connections
 					</Button>
 				</div>
 			) : null}
-			{graph.truncated && maxNodes >= FULL_SPACE_GRAPH_NODES ? (
+			{graph.truncated && maxNodes >= FULL_SPACE_CONNECTIONS_NODES ? (
 				<div className="absolute right-4 top-4 rounded-md border border-border bg-background/95 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
 					Showing top {graph.nodes.length} of {graph.total_notes} notes
 				</div>
 			) : null}
 			{generating ? (
-				<GraphProgressOverlay
+				<ConnectionsProgressOverlay
 					graph={graph}
 					loading={loading}
 					progress={generationProgress}

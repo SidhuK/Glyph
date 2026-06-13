@@ -29,7 +29,8 @@ import {
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
-import { readStoredSelectedViewId } from "../../lib/database/selectedViewStorage";
+import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
+import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedAllDocs,
@@ -49,7 +50,7 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
-import { SPACE_GRAPH_TAB_ID } from "../../lib/spaceGraph";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -94,9 +95,9 @@ const ShortcutsSettingsPane = lazy(() =>
 		default: module.ShortcutsSettingsPane,
 	})),
 );
-const SpaceGraphView = lazy(() =>
-	import("../graph/SpaceGraphView").then((module) => ({
-		default: module.SpaceGraphView,
+const SpaceConnectionsView = lazy(() =>
+	import("../connections/SpaceConnectionsView").then((module) => ({
+		default: module.SpaceConnectionsView,
 	})),
 );
 
@@ -308,8 +309,8 @@ interface MainContentProps {
 	onGoBack: () => void;
 	onGoForward: () => void;
 	showGettingStartedRequest: number;
-	openDatabasesId: string | null;
-	openDatabasesRequestNonce: number;
+	databasesOpenRequest: DatabasesOpenRequest;
+	onConsumeDatabasesOpenRequest?: () => void;
 	dailyNoteSetupNoticeRequest: number;
 	homeView: HomeView;
 	onHomeViewChange: (view: HomeView) => void;
@@ -414,8 +415,8 @@ export const MainContent = memo(function MainContent({
 	onGoBack,
 	onGoForward,
 	showGettingStartedRequest,
-	openDatabasesId,
-	openDatabasesRequestNonce,
+	databasesOpenRequest,
+	onConsumeDatabasesOpenRequest,
 	dailyNoteSetupNoticeRequest,
 	homeView,
 	onHomeViewChange,
@@ -579,7 +580,7 @@ export const MainContent = memo(function MainContent({
 					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
 				dailyNotesFolder,
 			});
-			void prefetchDatabasesLanding(openDatabasesId);
+			void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
 		};
 		if (typeof window.requestIdleCallback === "function") {
 			const idleId = window.requestIdleCallback(run, { timeout: 900 });
@@ -593,7 +594,7 @@ export const MainContent = memo(function MainContent({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [dailyNotesFolder, openDatabasesId, spacePath]);
+	}, [dailyNotesFolder, databasesOpenRequest.databaseId, spacePath]);
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
@@ -675,18 +676,16 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
-			const initialDatabaseId = openDatabasesId ?? null;
+			const initialDatabaseId = databasesOpenRequest.databaseId;
 			const initialDocument = initialDatabaseId
 				? getPrefetchedDatabaseDocument(initialDatabaseId)
 				: null;
 			const initialViewId =
 				initialDatabaseId && initialDocument
-					? (readStoredSelectedViewId(
+					? resolveSelectedViewId(
 							initialDatabaseId,
-							initialDocument.database.views.map((view) => view.id),
-						) ??
-						initialDocument.database.views[0]?.id ??
-						null)
+							initialDocument.database.views,
+						)
 					: null;
 			const initialRows =
 				initialViewId && initialDatabaseId
@@ -699,18 +698,18 @@ export const MainContent = memo(function MainContent({
 						onRenameNotePath={(notePath, nextName) =>
 							fileTree.onRenameDir(notePath, nextName, "file")
 						}
-						initialDatabaseId={initialDatabaseId}
-						openRequestNonce={openDatabasesRequestNonce}
+						databasesOpenRequest={databasesOpenRequest}
+						onConsumeOpenRequest={onConsumeDatabasesOpenRequest}
 						initialDocument={initialDocument}
 						initialRows={initialRows}
 					/>
 				</Suspense>
 			);
 		}
-		if (viewerPath === SPACE_GRAPH_TAB_ID) {
+		if (viewerPath === SPACE_CONNECTIONS_TAB_ID) {
 			return (
-				<Suspense fallback={<CanvasPaneAwait variant="graph" />}>
-					<SpaceGraphView />
+				<Suspense fallback={<CanvasPaneAwait variant="connections" />}>
+					<SpaceConnectionsView />
 				</Suspense>
 			);
 		}
@@ -744,8 +743,8 @@ export const MainContent = memo(function MainContent({
 		onOpenFileInNewTab,
 		onOpenDailyNotesSettings,
 		onHomeViewChange,
-		openDatabasesId,
-		openDatabasesRequestNonce,
+		databasesOpenRequest,
+		onConsumeDatabasesOpenRequest,
 		dailyNotesFolder,
 		homeView,
 		viewerPath,
@@ -777,14 +776,14 @@ export const MainContent = memo(function MainContent({
 			}
 			if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
-				void prefetchDatabasesLanding(openDatabasesId);
+				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
 				return;
 			}
-			if (target === SPACE_GRAPH_TAB_ID) {
+			if (target === SPACE_CONNECTIONS_TAB_ID) {
 				return;
 			}
 		},
-		[dailyNotesFolder, openDatabasesId],
+		[dailyNotesFolder, databasesOpenRequest.databaseId],
 	);
 
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
@@ -807,14 +806,14 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const isSpaceGraphTab = viewerPath === SPACE_GRAPH_TAB_ID;
+	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
 	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
 	const isHomeTab = viewerPath === CALENDAR_TAB_ID;
 	const editorCanvas = (
 		<div
 			className="canvasPaneHost"
-			data-space-graph={isSpaceGraphTab ? "true" : undefined}
+			data-space-connections={isSpaceConnectionsTab ? "true" : undefined}
 			data-all-docs={isAllDocsTab ? "true" : undefined}
 			data-databases={isDatabasesTab ? "true" : undefined}
 			data-home={isHomeTab ? "true" : undefined}

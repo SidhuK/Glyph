@@ -3,6 +3,7 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	CalendarAdd01Icon,
+	ChartRelationshipIcon,
 	CheckListIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
@@ -24,7 +25,6 @@ import {
 	SidebarLeftIcon,
 	SquareLock02Icon,
 	TableIcon,
-	ThreeDMoveIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
 	dispatchEditorMenuAction,
-	dispatchOpenLocalGraph,
+	dispatchOpenLocalConnections,
 	dispatchToggleNoteInfoSidebar,
 } from "../../lib/appEvents";
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
@@ -74,7 +74,7 @@ interface UseAppCommandsDeps {
 	closeActiveTab: () => void;
 	closeAllTabs: () => void;
 	closeSpace: () => void;
-	createDatabaseAndOpen: () => Promise<string | null>;
+	createDatabaseAndOpen: () => void;
 	createNoteInSelectedFolder: () => Promise<string | null>;
 	fileTree: UseFileTreeResult;
 	getBinding: (actionId: ShortcutActionId) => EffectiveShortcutBindings[string];
@@ -97,7 +97,7 @@ interface UseAppCommandsDeps {
 	openCalendarTab: () => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
-	openGraphView: () => void;
+	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
 	openQuickTaskWindow: () => void;
@@ -367,7 +367,7 @@ export function useAppCommands({
 	openCalendarTab,
 	openDatabasesTab,
 	openGettingStarted,
-	openGraphView,
+	openConnectionsView,
 	openPalette,
 	openQuickNoteWindow,
 	openQuickTaskWindow,
@@ -528,7 +528,7 @@ export function useAppCommands({
 				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: () => void createDatabaseAndOpen(),
+				action: createDatabaseAndOpen,
 			},
 			{
 				id: "new-folder",
@@ -652,11 +652,11 @@ export function useAppCommands({
 					dispatchEditorMenuAction({ action: "expand_all_headings" }),
 			},
 			{
-				id: "open-local-graph",
-				label: "Open local graph",
+				id: "open-local-connections",
+				label: "Open local connections",
 				icon: (
 					<HugeiconsIcon
-						icon={ThreeDMoveIcon}
+						icon={ChartRelationshipIcon}
 						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
@@ -667,7 +667,7 @@ export function useAppCommands({
 				allowInEditable: true,
 				action: () => {
 					if (!activeMarkdownTabPath) return;
-					dispatchOpenLocalGraph({ path: activeMarkdownTabPath });
+					dispatchOpenLocalConnections({ path: activeMarkdownTabPath });
 				},
 			},
 			{
@@ -801,18 +801,18 @@ export function useAppCommands({
 				action: openTasksView,
 			},
 			{
-				id: "open-graph-view",
-				label: "Open graph view",
+				id: "open-connections",
+				label: "Open Connections",
 				icon: (
 					<HugeiconsIcon
-						icon={ThreeDMoveIcon}
+						icon={ChartRelationshipIcon}
 						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
 				category: "Navigation",
 				enabled: Boolean(spacePath),
-				action: openGraphView,
+				action: openConnectionsView,
 			},
 			{
 				id: "open-dashboard",
@@ -1104,7 +1104,7 @@ export function useAppCommands({
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
-		openGraphView,
+		openConnectionsView,
 		openBlankTab,
 		openQuickNoteWindow,
 		openQuickTaskWindow,

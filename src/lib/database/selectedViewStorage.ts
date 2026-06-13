@@ -80,3 +80,39 @@ export function writeStoredSelectedViewId(
 		// Best-effort UI persistence.
 	}
 }
+
+function isIdInList<T extends { id: string }>(
+	id: string | null | undefined,
+	items: T[],
+): id is string {
+	return Boolean(id && items.some((item) => item.id === id));
+}
+
+export function resolveSelectedViewId(
+	databaseId: string | null,
+	views: Array<{ id: string }>,
+	current?: string | null,
+): string | null {
+	if (!databaseId || views.length === 0) return null;
+	const viewIds = views.map((view) => view.id);
+	if (current && viewIds.includes(current)) return current;
+	const storedId = readStoredSelectedViewId(databaseId, viewIds);
+	if (storedId) return storedId;
+	return views[0]?.id ?? null;
+}
+
+export function resolveSelectedDatabaseId(
+	summaries: Array<{ id: string }>,
+	options: {
+		current: string | null;
+		openRequestId: string | null;
+		storedId: string | null;
+	},
+): string | null {
+	if (isIdInList(options.current, summaries)) return options.current;
+	if (isIdInList(options.openRequestId, summaries)) {
+		return options.openRequestId;
+	}
+	if (isIdInList(options.storedId, summaries)) return options.storedId;
+	return summaries[0]?.id ?? null;
+}

@@ -20,7 +20,7 @@ use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
 use super::store::{
-    bootstrap_defaults, default_field_value, default_view, list_summaries, load_store, save_store,
+    default_field_value, default_view, list_summaries, load_store, save_store,
 };
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
@@ -56,9 +56,24 @@ fn slugify_title(title: &str) -> String {
 fn normalize_database_name(name: &str) -> Result<String, String> {
     let normalized = name.trim();
     if normalized.is_empty() {
-        return Err("database name cannot be empty".to_string());
+        return Err("collection name cannot be empty".to_string());
     }
     Ok(normalized.to_string())
+}
+
+fn normalize_collection_folder(base_dir: &Path, folder: &str) -> Result<String, String> {
+    let trimmed = folder.trim().replace('\\', "/");
+    if Path::new(&trimmed).is_absolute() {
+        return Err("folder must be relative".to_string());
+    }
+    let normalized = trimmed.trim_matches('/').to_string();
+    if normalized.is_empty() {
+        return Err("folder is required".to_string());
+    }
+    let rel = PathBuf::from(&normalized);
+    deny_hidden_rel_path(&rel)?;
+    paths::join_under(base_dir, &rel)?;
+    Ok(normalized)
 }
 
 fn normalize_status_id(status: &str) -> Result<String, String> {
@@ -92,7 +107,7 @@ fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
         .views
         .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
     if database.views.is_empty() {
-        database.views.push(default_view("Table"));
+        database.views.push(default_view("View 1"));
     }
 }
 
@@ -504,7 +519,7 @@ pub async fn databases_get(
 ) -> Result<DatabaseDocument, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .into_iter()
@@ -521,6 +536,7 @@ pub async fn databases_create(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     name: String,
+    folder: String,
 ) -> Result<DatabaseDocument, String> {
     let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
@@ -529,9 +545,10 @@ pub async fn databases_create(
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
         let normalized_name = normalize_database_name(&name)?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
+        let normalized_folder = normalize_collection_folder(&root, &folder)?;
+        let mut store = load_store(&root)?;
         if database_name_exists(&store.databases, &normalized_name, None) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let now = chrono::Utc::now().to_rfc3339();
         let database = super::types::DatabaseDefinition {
@@ -539,17 +556,16 @@ pub async fn databases_create(
             name: normalized_name,
             icon: None,
             color: None,
-            is_system: false,
             source: super::types::DatabaseSource {
-                kind: "all_notes".to_string(),
-                value: String::new(),
+                kind: "folder".to_string(),
+                value: normalized_folder.clone(),
                 recursive: true,
             },
             new_note: super::types::DatabaseNewNoteConfig {
-                folder: String::new(),
+                folder: normalized_folder,
             },
             schema: Vec::new(),
-            views: vec![default_view("Table")],
+            views: vec![default_view("View 1")],
             created_at: now.clone(),
             updated_at: now,
         };
@@ -573,21 +589,22 @@ pub async fn databases_update(
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
+        let mut store = load_store(&root)?;
         let index = store
             .databases
             .iter()
             .position(|entry| entry.id == database.id)
             .ok_or_else(|| "database not found".to_string())?;
         let normalized_name = normalize_database_name(&database.name)?;
-        if store.databases[index].is_system && normalized_name != store.databases[index].name {
-            return Err("system databases cannot be renamed".to_string());
-        }
         if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let mut next = database.clone();
         next.name = normalized_name;
+        if next.source.kind == "folder" {
+            next.source.value = normalize_collection_folder(&root, &next.source.value)?;
+        }
+        next.new_note.folder = normalize_collection_folder(&root, &next.new_note.folder)?;
         prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
@@ -610,15 +627,7 @@ pub async fn databases_delete(
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
-        if store
-            .databases
-            .iter()
-            .find(|entry| entry.id == database_id)
-            .is_some_and(|entry| entry.is_system)
-        {
-            return Err("system databases cannot be deleted".to_string());
-        }
+        let mut store = load_store(&root)?;
         store.databases.retain(|entry| entry.id != database_id);
         save_store(&root, &store)
     })
@@ -637,7 +646,7 @@ pub async fn databases_query_rows(
 ) -> Result<super::types::DatabaseQueryResult, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .iter()
@@ -702,7 +711,7 @@ pub async fn databases_create_row(
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .iter()

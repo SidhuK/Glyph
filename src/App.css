@@ -36,6 +36,8 @@
 @import "./styles/app/36-tasks.css";
 @import "./styles/app/37-database-pickers.css";
 @import "./styles/app/37-database.css";
+@import "./styles/app/37-database-collections.css";
+@import "./styles/app/37-database-views.css";
 @import "./styles/app/41-database-board.css";
 @import "./styles/app/47-database-table-dialogs.css";
 @import "./styles/app/49-folio-mode.css";
@@ -44,7 +46,7 @@
 @import "./styles/app/40-template-picker.css";
 @import "./styles/app/42-calendar.css";
 @import "./styles/app/44-settings-changelog.css";
-@import "./styles/app/45-local-graph.css";
+@import "./styles/app/45-local-connections.css";
 @import "./styles/app/46-quick-note.css";
 @import "./styles/app/47-external-markdown.css";
 

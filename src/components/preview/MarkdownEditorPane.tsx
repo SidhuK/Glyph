@@ -21,8 +21,8 @@ import {
 } from "../../contexts";
 import { useMarkdownTaskSummary } from "../../hooks/useMarkdownTaskSummary";
 import {
-	OPEN_LOCAL_GRAPH_EVENT,
-	type OpenLocalGraphDetail,
+	OPEN_LOCAL_CONNECTIONS_EVENT,
+	type OpenLocalConnectionsDetail,
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
@@ -44,6 +44,7 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
+import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
@@ -52,7 +53,6 @@ import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,
 } from "../editor/types";
-import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
@@ -187,7 +187,7 @@ export function MarkdownEditorPane({
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
 	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
-	const [localGraphOpen, setLocalGraphOpen] = useState(false);
+	const [localConnectionsOpen, setLocalConnectionsOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
 	);
@@ -370,7 +370,7 @@ export function MarkdownEditorPane({
 			setInfoPanelOpen(false);
 		}
 		activeRelPathRef.current = relPath;
-		setLocalGraphOpen(false);
+		setLocalConnectionsOpen(false);
 		setPreviewContext(null);
 		setLinkedMentions([]);
 		if (initialDoc) {
@@ -619,10 +619,10 @@ export function MarkdownEditorPane({
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
 	useEffect(() => {
-		const handleOpenLocalGraph = (event: Event) => {
-			const detail = (event as CustomEvent<OpenLocalGraphDetail>).detail;
+		const handleOpenLocalConnections = (event: Event) => {
+			const detail = (event as CustomEvent<OpenLocalConnectionsDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setLocalGraphOpen(true);
+			setLocalConnectionsOpen(true);
 		};
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
@@ -634,13 +634,19 @@ export function MarkdownEditorPane({
 				return nextOpen;
 			});
 		};
-		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
+		window.addEventListener(
+			OPEN_LOCAL_CONNECTIONS_EVENT,
+			handleOpenLocalConnections,
+		);
 		window.addEventListener(
 			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 			handleToggleInfoSidebar,
 		);
 		return () => {
-			window.removeEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
+			window.removeEventListener(
+				OPEN_LOCAL_CONNECTIONS_EVENT,
+				handleOpenLocalConnections,
+			);
 			window.removeEventListener(
 				TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 				handleToggleInfoSidebar,
@@ -785,8 +791,8 @@ export function MarkdownEditorPane({
 		(event: ReactMouseEvent<HTMLButtonElement>) => {
 			void showNativePopupMenu(event, [
 				{
-					label: "Local graph",
-					action: () => setLocalGraphOpen(true),
+					label: "Local connections",
+					action: () => setLocalConnectionsOpen(true),
 				},
 				{ type: "separator" },
 				{
@@ -939,11 +945,11 @@ export function MarkdownEditorPane({
 			/>
 			<LinkedNotePreviewSheet />
 
-			<LocalNoteGraphDialog
-				open={localGraphOpen}
-				onOpenChange={setLocalGraphOpen}
+			<LocalNoteConnectionsDialog
+				open={localConnectionsOpen}
+				onOpenChange={setLocalConnectionsOpen}
 				noteId={relPath}
-				graphRefreshKey={lastSavedMtimeMs ?? 0}
+				connectionsRefreshKey={lastSavedMtimeMs ?? 0}
 			/>
 		</section>
 	);

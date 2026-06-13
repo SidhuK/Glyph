@@ -38,7 +38,7 @@ If you remember one shortcut, make it `Cmd+K`. It opens the command palette, whe
 - Use `Cmd+P` to open files by name.
 - Pin notes you open often.
 - Open All Notes to scan everything in the space.
-- Use the local graph to see links around the current note.
+- Use local connections to see links around the current note.
 
 ## Plan your day
 

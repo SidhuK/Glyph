@@ -9,7 +9,7 @@ This design keeps databases offline and file-based. It also means database behav
 Backend:
 
 - `src-tauri/src/databases/types.rs`: database document, view, column, filter, row types
-- `src-tauri/src/databases/store.rs`: `.glyph/databases.json`, defaults, normalization
+- `src-tauri/src/databases/store.rs`: `.glyph/databases.json` load/save and default view helpers
 - `src-tauri/src/databases/query.rs`: source selection, filtering, sorting, row hydration
 - `src-tauri/src/databases/commands.rs`: Tauri commands and frontmatter mutations
 - `src-tauri/src/index/properties.rs`: indexed frontmatter property rows
@@ -18,14 +18,15 @@ Backend:
 
 Frontend:
 
-- `src/components/databases/DatabasesPane.tsx`: databases landing
+- `src/components/databases/DatabasesPane.tsx`: collections landing
+- `src/components/databases/CreateCollectionDialog.tsx`: new collection flow (folder required)
 - `src/components/database/DatabaseTable.tsx`: table view
 - `src/components/database/DatabaseBoard.tsx`: board view
 - `src/components/database/DatabaseToolbar.tsx`: view controls
 - `src/components/database/DatabaseCell.tsx`: cell rendering and editing
 - `src/components/database/DatabaseViewOptions*.tsx`: source, columns, filters, sort panels
 - `src/hooks/database/useDatabaseBoard.ts`: board state helpers
-- `src/lib/database/`: config, board, selected view storage, types
+- `src/lib/database/`: config, board, collection helpers, selected view storage, types
 - `src/lib/tauri.ts`: database IPC types
 
 ## Durable Model
@@ -40,37 +41,36 @@ The store shape:
 
 ```rust
 pub struct DatabaseStore {
-    pub version: u32,
     pub databases: Vec<DatabaseDefinition>,
     pub status_colors: BTreeMap<String, String>,
 }
 ```
 
-Current store version:
+The store contains collection definitions and view preferences. It does not contain row data. Row data comes from notes and the SQLite index.
 
-```rust
-const DATABASES_STORE_VERSION: u32 = 3;
-```
+There is no store version field and no load-time migration. `load_store()` parses JSON as-is. Unknown JSON fields are ignored by serde.
 
-The store contains definitions and view preferences. It does not contain row data. Row data comes from notes and the SQLite index.
+## Collections
 
-## Default Databases
+Collections are user-created databases. New spaces start with an empty store.
 
-`default_store()` creates two system databases:
+`default_store()` returns:
 
-- `all-notes`
-- `recently-edited`
+- `databases: []`
+- `status_colors: {}`
 
-`bootstrap_defaults()` appends missing system databases when loading an existing store.
+Creating a collection (`databases_create`) requires a folder. The backend rejects an empty folder path. New collections are created with:
 
-System databases:
+- `source.kind = "folder"`
+- `source.value` = chosen folder (recursive)
+- `new_note.folder` = same folder
+- one default view named `View 1`
+- default view layout `board`, grouped by `tags`
+- default columns: title, tags, updated
 
-- use `is_system = true`
-- cannot be deleted
-- cannot be renamed
-- use stable ids
+The frontend opens `CreateCollectionDialog` before calling `databases_create`. Command palette "New collection" opens the databases tab and the same dialog.
 
-Default views include columns for title, tags, and updated time. The Recently Edited view adds a `within_last_7_days` filter.
+Users can still change a collection source to `all_notes`, `tag`, or `search` later through view options.
 
 ## Database Definition
 
@@ -80,7 +80,6 @@ Default views include columns for title, tags, and updated time. The Recently Ed
 - `name`
 - `icon`
 - `color`
-- `is_system`
 - `source`
 - `new_note`
 - `schema`
@@ -117,7 +116,7 @@ Default views include columns for title, tags, and updated time. The Recently Ed
 - board card order
 - timestamps
 
-Unsupported layouts are pruned on load and update. If all views disappear after pruning, the store adds a default table view.
+Unsupported layouts are pruned on `databases_update`. If all views disappear after pruning, the store adds a default board view named `View 1` grouped by `tags`.
 
 ## Columns
 
@@ -149,23 +148,13 @@ Property kinds include:
 - `relation`
 - `multi_select`
 
-Store normalization downgrades unsupported frontmatter property kinds to `text`.
-
 ## Loading and Saving the Store
 
 `load_store()`:
 
 1. Reads `.glyph/databases.json`.
 2. Parses JSON into `DatabaseStore`.
-3. Rejects stores newer than the supported version.
-4. Upgrades version `0` to current version.
-5. Normalizes property kinds.
-6. Prunes unsupported layouts.
-7. Normalizes status colors.
-8. Adds missing default field values.
-9. Bootstraps default system databases.
-
-If the file does not exist, it returns `default_store()`.
+3. Returns `default_store()` if the file does not exist.
 
 `save_store()` writes pretty JSON with `io_atomic::write_atomic()`.
 
@@ -373,7 +362,7 @@ status_colors: BTreeMap<String, String>
 - purple
 - red
 
-Invalid colors are dropped on load.
+Invalid colors are rejected by `databases_status_color_set`.
 
 ## Preview Context
 
@@ -392,16 +381,19 @@ It reads the note file and queries backlinks from the index. This command accept
 
 ## Frontend Flow
 
-Typical database page flow:
+Typical collections page flow:
 
 1. `DatabasesPane` lists summaries with `databases_list`.
-2. User opens a database.
-3. Frontend calls `databases_get` to load definition and available properties.
-4. Frontend selects a view.
-5. Table or board calls `databases_query_rows`.
-6. Cell edits call `databases_update_cell`.
-7. View edits call `databases_update`.
-8. New row action calls `databases_create_row`.
+2. If no collections exist, the pane shows an empty state with "Create Collection".
+3. Creating a collection opens `CreateCollectionDialog`, requires a folder pick, then calls `databases_create` with `name` and `folder`.
+4. User opens a collection.
+5. Frontend calls `databases_get` to load definition and available properties.
+6. Frontend selects a view.
+7. Table or board calls `databases_query_rows`.
+8. Cell edits call `databases_update_cell`.
+9. View edits call `databases_update`.
+10. New row action calls `databases_create_row`.
+11. Delete collection uses Tauri `confirm()` before `databases_delete`.
 
 Available properties come from the index, not from the database store alone. If property suggestions are stale, rebuild the index.
 
@@ -411,17 +403,18 @@ When changing databases:
 
 1. Decide whether the data belongs in note frontmatter or `.glyph/databases.json`.
 2. Update Rust types and TypeScript IPC types together.
-3. Bump `DATABASES_STORE_VERSION` only when old stores need normalization or rejection.
-4. Add normalization for unsupported or old values.
-5. Keep row content derived from Markdown and index rows.
-6. Use `db_store_mutex()` for store writes.
-7. Use atomic writes for store saves and note writes.
-8. Reindex notes after any frontmatter mutation.
-9. Update both table and board behavior when changing view fields.
+3. Use a hard cutover for store shape changes. Do not add version fields or load-time migration.
+4. Keep row content derived from Markdown and index rows.
+5. Use `db_store_mutex()` for store writes.
+6. Use atomic writes for store saves and note writes.
+7. Reindex notes after any frontmatter mutation.
+8. Update both table and board behavior when changing view fields.
+9. Keep destructive actions behind Tauri `confirm()`, not `window.confirm`.
 
 ## Debugging Map
 
-- Database missing: inspect `databases.json` and `bootstrap_defaults()`.
+- Collection missing: inspect `databases.json` and confirm `databases_create` succeeded.
+- Empty collections pane: expected when `databases` is `[]`; use Create Collection.
 - Row missing: inspect source selection and index `notes` rows.
 - Property column empty: inspect `note_properties` indexing.
 - Cell edit does not persist: inspect `apply_cell_update_to_markdown()`.

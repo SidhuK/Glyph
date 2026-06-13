@@ -123,10 +123,16 @@ interface DatabaseNewNoteConfig {
 	folder: string;
 }
 
+interface WorkspaceDatabaseGrouping {
+	column_id: string;
+	ascending: boolean;
+}
+
 interface DatabaseViewState {
 	layout: "table" | "board";
 	search?: string;
 	board_group_by?: string | null;
+	board_grouping?: WorkspaceDatabaseGrouping | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
@@ -214,11 +220,6 @@ export interface DatabaseRow {
 	properties: Record<string, DatabaseCellValue>;
 }
 
-interface WorkspaceDatabaseGrouping {
-	column_id: string;
-	ascending: boolean;
-}
-
 interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
@@ -252,7 +253,6 @@ export interface WorkspaceDatabaseDefinition {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
-	is_system?: boolean;
 	source: {
 		kind: "all_notes" | "folder" | "tag" | "search";
 		value: string;
@@ -270,7 +270,6 @@ export interface WorkspaceDatabaseSummary {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
-	is_system?: boolean;
 	view_count: number;
 }
 
@@ -352,38 +351,38 @@ export interface NoteRelationship {
 	ordinal: number;
 }
 
-interface LocalGraphNode {
+interface LocalConnectionsNode {
 	id: string;
 	title: string;
 	is_center: boolean;
 }
 
-interface LocalGraphEdge {
+interface LocalConnectionsEdge {
 	source: string;
 	target: string;
 }
 
-interface LocalGraphTagNode {
+interface LocalConnectionsTagNode {
 	id: string;
 	tag: string;
 	title: string;
 	note_count: number;
 }
 
-interface LocalGraphTagEdge {
+interface LocalConnectionsTagEdge {
 	tag_id: string;
 	note_id: string;
 }
 
-export interface LocalNoteGraph {
-	center: LocalGraphNode;
-	nodes: LocalGraphNode[];
-	edges: LocalGraphEdge[];
-	tags: LocalGraphTagNode[];
-	tag_edges: LocalGraphTagEdge[];
+export interface LocalNoteConnections {
+	center: LocalConnectionsNode;
+	nodes: LocalConnectionsNode[];
+	edges: LocalConnectionsEdge[];
+	tags: LocalConnectionsTagNode[];
+	tag_edges: LocalConnectionsTagEdge[];
 }
 
-export interface SpaceGraphNode {
+export interface SpaceConnectionsNode {
 	id: string;
 	title: string;
 	link_count: number;
@@ -391,29 +390,29 @@ export interface SpaceGraphNode {
 	is_isolated: boolean;
 }
 
-export interface SpaceGraphEdge {
+export interface SpaceConnectionsEdge {
 	from_id: string;
 	to_id: string;
 	kind: "link" | "relationship";
 }
 
-export interface SpaceGraphTagNode {
+export interface SpaceConnectionsTagNode {
 	id: string;
 	tag: string;
 	title: string;
 	note_count: number;
 }
 
-export interface SpaceGraphTagEdge {
+export interface SpaceConnectionsTagEdge {
 	tag_id: string;
 	note_id: string;
 }
 
-export interface SpaceGraph {
-	nodes: SpaceGraphNode[];
-	edges: SpaceGraphEdge[];
-	tags: SpaceGraphTagNode[];
-	tag_edges: SpaceGraphTagEdge[];
+export interface SpaceConnections {
+	nodes: SpaceConnectionsNode[];
+	edges: SpaceConnectionsEdge[];
+	tags: SpaceConnectionsTagNode[];
+	tag_edges: SpaceConnectionsTagEdge[];
 	truncated: boolean;
 	truncated_tags: boolean;
 	total_notes: number;
@@ -940,7 +939,10 @@ interface TauriCommands {
 	>;
 	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
 	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
-	databases_create: CommandDef<{ name: string }, WorkspaceDatabaseDocument>;
+	databases_create: CommandDef<
+		{ name: string; folder: string },
+		WorkspaceDatabaseDocument
+	>;
 	databases_update: CommandDef<
 		{ database: WorkspaceDatabaseDefinition },
 		WorkspaceDatabaseDocument
@@ -1056,10 +1058,10 @@ interface TauriCommands {
 		BacklinkItem[]
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
-	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
-	space_graph: CommandDef<
+	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
+	space_connections: CommandDef<
 		{ max_nodes?: number; max_tags?: number },
-		SpaceGraph
+		SpaceConnections
 	>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
