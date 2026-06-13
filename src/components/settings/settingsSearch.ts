@@ -512,13 +512,6 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["glyphformac.com", "home"],
 	},
 	{
-		id: "about-release-notes",
-		tab: "about",
-		title: "Release Notes",
-		description: "Open published release notes.",
-		keywords: ["changelog", "updates"],
-	},
-	{
 		id: "about-discord",
 		tab: "about",
 		title: "Discord",
@@ -572,8 +565,9 @@ const SETTINGS_SEARCH_ITEMS = [
 	{
 		id: "about-changelog",
 		tab: "about",
-		section: "Changelog",
+		section: "Updates",
 		title: "Changelog",
+		description: "Open the published Glyph changelog.",
 		keywords: ["release notes", "version", "updates"],
 	},
 ] as const satisfies readonly SettingsSearchEntry[];

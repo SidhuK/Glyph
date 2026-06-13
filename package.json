@@ -9,7 +9,6 @@
 		"build": "tsc && vite build",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"generate:release-notes": "node scripts/generate-release-notes.mjs",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"check": "biome check .",
