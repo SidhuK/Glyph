@@ -21,10 +21,6 @@ import {
 	useUILayoutContext,
 	useUpdaterContext,
 } from "../../contexts";
-import {
-	CHANGELOG_DATA,
-	type VersionReleaseNotes,
-} from "../../data/releaseNotes";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
@@ -56,12 +52,7 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import {
-	getLastSeenReleaseNotesVersion,
-	loadSettings,
-	setLastSeenReleaseNotesVersion,
-	updateOnboardingSettings,
-} from "../../lib/settings";
+import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { todayIsoDateLocal } from "../../lib/tasks";
@@ -79,7 +70,6 @@ import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
-import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
@@ -176,8 +166,6 @@ export function AppShell() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-	const [whatsNewVersion, setWhatsNewVersion] =
-		useState<VersionReleaseNotes | null>(null);
 	const autoUpdater = useUpdaterContext();
 	const [sidebarAutoCollapsed, setSidebarAutoCollapsed] = useState(() =>
 		typeof window === "undefined"
@@ -257,35 +245,6 @@ export function AppShell() {
 			cancelled = true;
 		};
 	}, []);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			try {
-				const [appInfo, lastSeenVersion] = await Promise.all([
-					invoke("app_info"),
-					getLastSeenReleaseNotesVersion(),
-				]);
-				const version = CHANGELOG_DATA.versions.find(
-					(entry) => entry.version === appInfo.version,
-				);
-				if (cancelled || !version || lastSeenVersion === version.version)
-					return;
-				setWhatsNewVersion(version);
-			} catch (error) {
-				console.warn("Failed to load release notes prompt state", error);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	const closeWhatsNewDialog = useCallback(() => {
-		const version = whatsNewVersion?.version;
-		setWhatsNewVersion(null);
-		if (version) void setLastSeenReleaseNotesVersion(version);
-	}, [whatsNewVersion?.version]);
 
 	useTauriEvent(
 		"settings:updated",
@@ -1388,11 +1347,6 @@ export function AppShell() {
 				onClose={() => setTemplatePickerOpen(false)}
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
-			/>
-			<WhatsNewDialog
-				open={whatsNewVersion !== null}
-				version={whatsNewVersion}
-				onClose={closeWhatsNewDialog}
 			/>
 		</div>
 	);

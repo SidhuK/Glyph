@@ -84,64 +84,41 @@ jobs:
 
           latest_tag="$(git tag -l 'v*' --sort=-v:refname | head -n1 || true)"
           file_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
-          release_notes_version="$(node -p "JSON.parse(require('fs').readFileSync('src/data/release-notes.json','utf8')).versions?.[0]?.version ?? ''")"
           tag_version="${latest_tag#v}"
           if [ -z "${latest_tag}" ]; then
             tag_version="0.0.0"
           fi
 
-          candidate_version="$(node -e '
-            const [fileVersion, releaseNotesVersion] = process.argv.slice(1);
-            const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
+          version_order="$(node -e '
+            const [fileVersion, tagVersion] = process.argv.slice(1);
             const valid = (v) => /^\d+\.\d+\.\d+$/.test(v);
-            const compare = (a, b) => {
-              const av = parse(a);
-              const bv = parse(b);
-              return Math.sign(av[0] - bv[0] || av[1] - bv[1] || av[2] - bv[2]);
-            };
             if (!valid(fileVersion)) {
               throw new Error(`Invalid app version: ${fileVersion}`);
             }
-            if (releaseNotesVersion && !valid(releaseNotesVersion)) {
-              throw new Error(`Invalid release notes version: ${releaseNotesVersion}`);
+            if (!valid(tagVersion)) {
+              throw new Error(`Invalid tag version: ${tagVersion}`);
             }
-            const candidate =
-              releaseNotesVersion && compare(releaseNotesVersion, fileVersion) === 1
-                ? releaseNotesVersion
-                : fileVersion;
-            process.stdout.write(candidate);
-          ' "${file_version}" "${release_notes_version}")"
-
-          version_order="$(node -e '
-            const [a, b] = process.argv.slice(1);
             const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
-            const av = parse(a);
-            const bv = parse(b);
+            const av = parse(fileVersion);
+            const bv = parse(tagVersion);
             const cmp =
               av[0] - bv[0] ||
               av[1] - bv[1] ||
               av[2] - bv[2];
             process.stdout.write(String(Math.sign(cmp)));
-          ' "${candidate_version}" "${tag_version}")"
+          ' "${file_version}" "${tag_version}")"
 
           if ! [[ "${version_order}" =~ ^(-1|0|1)$ ]]; then
             echo "Invalid version ordering result: ${version_order}"
             exit 1
           fi
 
-          if [ "${version_order}" = "1" ]; then
-            next_version="${candidate_version}"
-          else
-            IFS='.' read -r major minor patch <<< "${tag_version}"
-            if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
-              echo "Invalid tag version: ${tag_version}"
-              exit 1
-            fi
-
-            next_patch=$((patch + 1))
-            next_version="${major}.${minor}.${next_patch}"
+          if [ "${version_order}" != "1" ]; then
+            echo "src-tauri/tauri.conf.json version (${file_version}) must be greater than latest tag (${latest_tag:-none})."
+            exit 1
           fi
 
+          next_version="${file_version}"
           next_tag="v${next_version}"
 
           echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
@@ -172,12 +149,6 @@ jobs:
           sed -i.bak -E "0,/^version = \"[^\"]+\"/s//version = \"${NEXT_VERSION}\"/" src-tauri/Cargo.toml
           rm -f src-tauri/Cargo.toml.bak
 
-      - name: Generate release notes
-        env:
-          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
-          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
-        run: node scripts/generate-release-notes.mjs
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -190,17 +161,70 @@ jobs:
           pnpm build
           cd src-tauri && cargo check
 
-      - name: Build changelog
-        id: changelog
+      - name: Generate GitHub release notes
+        id: release_notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+          TARGET_COMMITISH: ${{ github.sha }}
         run: |
           set -euo pipefail
 
-          delimiter="RELEASE_NOTES_$(date +%s)_$RANDOM"
-          {
-            echo "body<<${delimiter}"
-            cat RELEASE_NOTES.md
-            printf '\n%s\n' "${delimiter}"
-          } >> "$GITHUB_OUTPUT"
+          node <<'NODE'
+          const fs = require("fs");
+
+          async function main() {
+            const repository = process.env.GITHUB_REPOSITORY;
+            const token = process.env.GITHUB_TOKEN;
+            const latestTag = process.env.LATEST_TAG;
+            const nextTag = process.env.NEXT_TAG;
+            const targetCommitish = process.env.TARGET_COMMITISH;
+
+            const payload = {
+              tag_name: nextTag,
+              target_commitish: targetCommitish,
+            };
+
+            if (latestTag) {
+              payload.previous_tag_name = latestTag;
+            }
+
+            const response = await fetch(
+              `https://api.github.com/repos/${repository}/releases/generate-notes`,
+              {
+                method: "POST",
+                headers: {
+                  Accept: "application/vnd.github+json",
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                  "X-GitHub-Api-Version": "2022-11-28",
+                },
+                body: JSON.stringify(payload),
+              },
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to generate release notes: ${response.status} ${await response.text()}`,
+              );
+            }
+
+            const notes = await response.json();
+            const body = String(notes.body ?? "").trim();
+            const delimiter = `RELEASE_NOTES_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+            fs.appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `body<<${delimiter}\n${body || `Glyph ${nextTag}`}\n${delimiter}\n`,
+            );
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
 
       - name: Build and publish release
         uses: tauri-apps/tauri-action@v0
@@ -222,7 +246,7 @@ jobs:
         with:
           tagName: ${{ steps.version.outputs.next_tag }}
           releaseName: "Glyph ${{ steps.version.outputs.next_tag }}"
-          releaseBody: ${{ steps.changelog.outputs.body }}
+          releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: false
           prerelease: false
           includeUpdaterJson: true

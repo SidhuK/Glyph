@@ -9,16 +9,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
-import { CHANGELOG_DATA } from "../../data/releaseNotes";
 import { useLicenseStatus } from "../../lib/license";
-import { PUBLIC_CHANGELOG_URL } from "../../lib/releaseNotes";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
-import { ChangelogSection } from "./ChangelogSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
-
-const LATEST_CHANGELOG_VERSION = CHANGELOG_DATA.versions[0] ?? null;
 
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
@@ -116,20 +111,6 @@ export function AboutSettingsPane() {
 								strokeWidth={1.6}
 							/>
 							Website
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							className="aboutLinkButton"
-							onClick={() => void openUrl(PUBLIC_CHANGELOG_URL)}
-						>
-							<HugeiconsIcon
-								icon={ListViewIcon}
-								size="var(--icon-lg)"
-								strokeWidth={1.6}
-							/>
-							Release Notes
 						</Button>
 						<Button
 							type="button"
@@ -253,10 +234,28 @@ export function AboutSettingsPane() {
 							<p className="settingsHint">{updateStatus}</p>
 						</SettingsRow>
 					) : null}
-				</SettingsSection>
-
-				<SettingsSection title="Changelog">
-					<ChangelogSection version={LATEST_CHANGELOG_VERSION} />
+					<SettingsRow
+						label="Changelog"
+						description="Open the published Glyph changelog in your browser."
+					>
+						<div className="settingsActions">
+							<Button
+								type="button"
+								size="sm"
+								variant="outline"
+								onClick={() =>
+									void openUrl("https://glyphformac.com/changelog")
+								}
+							>
+								<HugeiconsIcon
+									icon={ListViewIcon}
+									size="var(--icon-md)"
+									strokeWidth={1.6}
+								/>
+								View Changelog
+							</Button>
+						</div>
+					</SettingsRow>
 				</SettingsSection>
 			</div>
 		</div>
