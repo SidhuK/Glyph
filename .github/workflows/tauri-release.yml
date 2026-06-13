@@ -184,7 +184,6 @@ jobs:
             const payload = {
               tag_name: nextTag,
               target_commitish: targetCommitish,
-              release_name: `Glyph ${nextTag}`,
             };
 
             if (latestTag) {
