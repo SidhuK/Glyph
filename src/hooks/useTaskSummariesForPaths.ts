@@ -1,10 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { peekCachedMarkdownDoc } from "../components/preview/markdownCache";
-import {
-	EMPTY_CHECKLIST_SUMMARY,
-	summarizeChecklistsFromMarkdown,
-} from "../lib/checklistSummary";
+import { summarizeChecklistsFromMarkdown } from "../lib/checklistSummary";
 import { navigationQueryKeys } from "../lib/navigationPrefetch";
 import { type NoteTaskSummary, invoke } from "../lib/tauri";
 

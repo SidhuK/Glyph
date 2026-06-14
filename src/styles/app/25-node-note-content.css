@@ -334,16 +334,15 @@
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before,
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
-	position: absolute;
-	top: auto;
-	bottom: 0;
-	left: calc(
-		-1 *
-		(var(--heading-level-rail-width) + var(--heading-rail-gap)) +
-		2px
+	display: inline-block;
+	width: var(--heading-level-rail-width);
+	margin-left: calc(
+		-1 * (var(--heading-level-rail-width) + var(--heading-rail-gap))
 	);
+	margin-right: var(--heading-rail-gap);
+	vertical-align: baseline;
+	text-align: right;
 	font-size: calc(var(--editor-font-size) * 0.8);
-	line-height: 1;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.025em;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
@@ -352,17 +351,14 @@
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before {
 	content: "H1";
-	bottom: 6px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before {
 	content: "H2";
-	bottom: 5px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before {
 	content: "H3";
-	bottom: 4px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before {

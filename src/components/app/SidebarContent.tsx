@@ -22,7 +22,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
-import { ChevronDown, ChevronRight } from "../Icons";
+import { Calendar, ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
@@ -58,6 +58,7 @@ interface SidebarContentProps {
 	onOpenAllDocs: () => void;
 	onOpenConnections: () => void;
 	onOpenCommandPalette: () => void;
+	onOpenCalendar: () => void;
 	spacePath: string | null;
 	activeTopSection: "all-notes" | "connections" | "databases" | null;
 }
@@ -130,6 +131,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenAllDocs,
 	onOpenConnections,
 	onOpenCommandPalette,
+	onOpenCalendar,
 	spacePath,
 	activeTopSection,
 }: SidebarContentProps) {
@@ -358,7 +360,7 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionContent">
-					<div className="sidebarCommandSearch">
+					<div className="sidebarCommandSearchRow">
 						<button
 							type="button"
 							className="sidebarCommandSearchButton"
@@ -383,6 +385,15 @@ export const SidebarContent = memo(function SidebarContent({
 									{formatShortcutForPlatform(commandPaletteShortcut)}
 								</span>
 							) : null}
+						</button>
+						<button
+							type="button"
+							className="sidebarCalendarButton"
+							onClick={onOpenCalendar}
+							aria-label="Open calendar"
+							title="Open calendar"
+						>
+							<Calendar size="var(--icon-md)" />
 						</button>
 					</div>
 					<div className="sidebarNavRow">

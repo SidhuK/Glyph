@@ -34,6 +34,7 @@ import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
 } from "../../lib/appEvents";
+import { invalidateCalendarPrefetch } from "../../lib/calendarActivity";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
 	consumeCreateCollectionDialog,
@@ -62,6 +63,10 @@ import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import {
+	CalendarPaletteController,
+	preloadCalendarPalette,
+} from "./CalendarPaletteController";
 import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
@@ -150,6 +155,7 @@ export function AppShell() {
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
+	const [calendarOpen, setCalendarOpen] = useState(false);
 	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
 	const [templatePickerItems, setTemplatePickerItems] = useState<
@@ -216,6 +222,7 @@ export function AppShell() {
 			void loadCommandPalette().then(() => {
 				if (!cancelled) setCommandPaletteMounted(true);
 			});
+			preloadCalendarPalette();
 		}, 500);
 		return () => {
 			cancelled = true;
@@ -425,7 +432,7 @@ export function AppShell() {
 		});
 	});
 
-	const { openOrCreateDailyNote } = useDailyNote({
+	const { openOrCreateDailyNote, openOrCreateDailyNoteAtDate } = useDailyNote({
 		onOpenFile: (path) => openWorkspaceFile(path),
 		setError,
 		spacePath,
@@ -551,6 +558,32 @@ export function AppShell() {
 		}
 		void handleOpenDailyNote();
 	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
+
+	const openCalendar = useCallback(() => {
+		if (!spacePath) return;
+		setCalendarOpen(true);
+	}, [spacePath]);
+
+	const closeCalendar = useCallback(() => {
+		setCalendarOpen(false);
+	}, []);
+
+	const handleOpenDailyNoteAtDate = useCallback(
+		async (date: string) => {
+			if (!dailyNotesFolder) {
+				setDailyNoteSetupNoticeRequest((value) => value + 1);
+				return;
+			}
+			try {
+				await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
+			} catch (e) {
+				setError(
+					`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
+				);
+			}
+		},
+		[dailyNotesFolder, openOrCreateDailyNoteAtDate, setError],
+	);
 
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
@@ -725,6 +758,7 @@ export function AppShell() {
 				const changed = [...fsRefreshQueueRef.current];
 				fsRefreshQueueRef.current.clear();
 				if (!changed.length) return;
+				invalidateCalendarPrefetch();
 				invalidateAllDocsPrefetch();
 				const dirs = new Set<string>([""]);
 				for (const rel of changed) {
@@ -740,6 +774,7 @@ export function AppShell() {
 	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
 	useTauriEvent("notes:external_changed", (payload) => {
 		const relPath = normalizeRelPath(payload.rel_path);
+		invalidateCalendarPrefetch();
 		invalidateAllDocsPrefetch();
 		invalidateDatabaseRowsPrefetch();
 		if (relPath) {
@@ -1208,6 +1243,7 @@ export function AppShell() {
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
 				onOpenCommandPalette={openCommandPalette}
+				onOpenCalendar={openCalendar}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}
@@ -1276,6 +1312,14 @@ export function AppShell() {
 					/>
 				</Suspense>
 			) : null}
+			<CalendarPaletteController
+				open={calendarOpen}
+				onClose={closeCalendar}
+				spacePath={spacePath}
+				dailyNoteFolder={dailyNotesFolder}
+				onOpenNote={(path) => void openWorkspaceFile(path)}
+				onOpenDailyNoteAtDate={(date) => void handleOpenDailyNoteAtDate(date)}
+			/>
 			<TemplatePickerDialog
 				open={templatePickerOpen}
 				templates={templatePickerItems}
