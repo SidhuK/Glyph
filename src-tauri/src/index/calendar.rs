@@ -42,6 +42,21 @@ struct CalendarNoteEvent {
     kind: CalendarNoteKind,
 }
 
+#[derive(Clone, Copy)]
+enum TimestampColumn {
+    Created,
+    Updated,
+}
+
+impl TimestampColumn {
+    fn sql_name(self) -> &'static str {
+        match self {
+            Self::Created => "created",
+            Self::Updated => "updated",
+        }
+    }
+}
+
 fn parse_iso_date(value: &str) -> Result<String, String> {
     let trimmed = value.trim();
     if trimmed.len() != 10 {
@@ -144,13 +159,14 @@ fn collect_daily_note_events(
 
 fn collect_timestamp_events(
     conn: &Connection,
-    timestamp_column: &str,
+    timestamp_column: TimestampColumn,
     kind: CalendarNoteKind,
     from_date: &str,
     to_date: &str,
     events: &mut Vec<CalendarNoteEvent>,
 ) -> Result<(), String> {
     let (prefilter_from_date, prefilter_to_date) = expanded_date_prefilter(from_date, to_date)?;
+    let timestamp_column = timestamp_column.sql_name();
     let sql = format!(
         "SELECT path, title, {timestamp_column}
          FROM notes
@@ -188,7 +204,7 @@ fn query_calendar_events(
     collect_daily_note_events(conn, from_date, to_date, daily_folder, &mut events)?;
     collect_timestamp_events(
         conn,
-        "created",
+        TimestampColumn::Created,
         CalendarNoteKind::Created,
         from_date,
         to_date,
@@ -196,7 +212,7 @@ fn query_calendar_events(
     )?;
     collect_timestamp_events(
         conn,
-        "updated",
+        TimestampColumn::Updated,
         CalendarNoteKind::Edited,
         from_date,
         to_date,

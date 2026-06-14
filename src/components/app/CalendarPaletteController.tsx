@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 
 const loadCalendarPalette = () =>
 	import("./CalendarPalette").then((module) => ({
@@ -34,16 +34,6 @@ export function CalendarPaletteController({
 		if (open) setMounted(true);
 	}, [open]);
 
-	const handleOpenNote = useCallback(
-		(path: string) => onOpenNote(path),
-		[onOpenNote],
-	);
-
-	const handleOpenDailyNoteAtDate = useCallback(
-		(date: string) => onOpenDailyNoteAtDate(date),
-		[onOpenDailyNoteAtDate],
-	);
-
 	if (!mounted) return null;
 
 	return (
@@ -53,8 +43,8 @@ export function CalendarPaletteController({
 				onClose={onClose}
 				spacePath={spacePath}
 				dailyNoteFolder={dailyNoteFolder}
-				onOpenNote={handleOpenNote}
-				onOpenDailyNoteAtDate={handleOpenDailyNoteAtDate}
+				onOpenNote={onOpenNote}
+				onOpenDailyNoteAtDate={onOpenDailyNoteAtDate}
 			/>
 		</Suspense>
 	);

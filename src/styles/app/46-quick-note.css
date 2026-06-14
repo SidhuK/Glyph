@@ -179,19 +179,12 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	white-space: nowrap;
-	cursor: pointer;
+	cursor: default;
 	transition: color var(--transition-fast);
-}
-
-.quickNoteTargetButton:hover:not(:disabled),
-.quickNoteTargetButton:focus-visible {
-	color: var(--text-primary);
-	outline: none;
 }
 
 .quickNoteTargetButton[aria-current="page"] {
 	color: var(--text-primary);
-	cursor: default;
 }
 
 .quickNoteTargetLabel,

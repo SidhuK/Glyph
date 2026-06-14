@@ -1,5 +1,13 @@
 import { Extension } from "@tiptap/core";
-import { Plugin, PluginKey, Selection, TextSelection } from "@tiptap/pm/state";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import {
+	type EditorState,
+	Plugin,
+	PluginKey,
+	Selection,
+	TextSelection,
+} from "@tiptap/pm/state";
+import { encodeMarkdownImageSrc } from "./markdownImage";
 
 export const markdownImagePreviewPluginKey = new PluginKey(
 	"markdown-image-preview",
@@ -30,9 +38,10 @@ function buildImageMarkdown(attrs: Record<string, unknown>): string | null {
 	if (!originSrc) return null;
 	const alt = typeof attrs.alt === "string" ? attrs.alt.trim() : "";
 	const title = typeof attrs.title === "string" ? attrs.title.trim() : "";
+	const encodedSrc = encodeMarkdownImageSrc(originSrc);
 	return title
-		? `![${alt}](${originSrc} "${title}")`
-		: `![${alt}](${originSrc})`;
+		? `![${alt}](${encodedSrc} "${title}")`
+		: `![${alt}](${encodedSrc})`;
 }
 
 type ExpandOp = {
@@ -53,6 +62,45 @@ type CollapseOp = {
 
 type PreviewOp = ExpandOp | CollapseOp;
 
+type ScanRange = {
+	from: number;
+	to: number;
+};
+
+function selectionScanRanges(
+	oldState: EditorState,
+	newState: EditorState,
+): ScanRange[] {
+	const ranges: ScanRange[] = [];
+	const seen = new Set<string>();
+
+	const addRange = (from: number, to: number) => {
+		const boundedFrom = Math.max(0, Math.min(from, newState.doc.content.size));
+		const boundedTo = Math.max(
+			boundedFrom,
+			Math.min(to, newState.doc.content.size),
+		);
+		if (boundedFrom === boundedTo) return;
+		const key = `${boundedFrom}:${boundedTo}`;
+		if (seen.has(key)) return;
+		seen.add(key);
+		ranges.push({ from: boundedFrom, to: boundedTo });
+	};
+
+	const addSelection = (selection: Selection) => {
+		addRange(selection.from, selection.to);
+		for (const pos of [selection.from, selection.to]) {
+			const $pos = newState.doc.resolve(pos);
+			if ($pos.depth === 0) continue;
+			addRange($pos.before($pos.depth), $pos.after($pos.depth));
+		}
+	};
+
+	addSelection(oldState.selection);
+	addSelection(newState.selection);
+	return ranges;
+}
+
 export const MarkdownImageLivePreview = Extension.create({
 	name: "markdown-image-live-preview",
 	addProseMirrorPlugins() {
@@ -63,8 +111,8 @@ export const MarkdownImageLivePreview = Extension.create({
 				appendTransaction(transactions, oldState, newState) {
 					if (!editor?.isEditable) return null;
 					const selectionChanged = transactions.some((tr) => tr.selectionSet);
-					const relevant =
-						selectionChanged || transactions.some((tr) => tr.docChanged);
+					const docChanged = transactions.some((tr) => tr.docChanged);
+					const relevant = selectionChanged || docChanged;
 					if (!relevant) return null;
 					if (
 						transactions.some(
@@ -80,8 +128,11 @@ export const MarkdownImageLivePreview = Extension.create({
 
 					const { from: selFrom, to: selTo } = newState.selection;
 					const ops: PreviewOp[] = [];
+					const visitedPositions = new Set<number>();
 
-					newState.doc.descendants((node, pos) => {
+					const visitNode = (node: ProseMirrorNode, pos: number) => {
+						if (visitedPositions.has(pos)) return false;
+						visitedPositions.add(pos);
 						const start = pos;
 						const end = pos + node.nodeSize;
 						const caretInside = selFrom < end && selTo > start;
@@ -135,7 +186,15 @@ export const MarkdownImageLivePreview = Extension.create({
 						}
 
 						return undefined;
-					});
+					};
+
+					if (docChanged) {
+						newState.doc.descendants(visitNode);
+					} else {
+						for (const range of selectionScanRanges(oldState, newState)) {
+							newState.doc.nodesBetween(range.from, range.to, visitNode);
+						}
+					}
 
 					if (!ops.length) return null;
 
@@ -194,7 +253,10 @@ export const MarkdownImageLivePreview = Extension.create({
 						const bias = selectionHead <= collapsedStart ? -1 : 1;
 						const mappedHead = Math.max(
 							0,
-							Math.min(tr.doc.content.size, tr.mapping.map(selectionHead, bias)),
+							Math.min(
+								tr.doc.content.size,
+								tr.mapping.map(selectionHead, bias),
+							),
 						);
 						try {
 							tr = tr.setSelection(
@@ -206,6 +268,7 @@ export const MarkdownImageLivePreview = Extension.create({
 					}
 
 					tr.setMeta(markdownImagePreviewPluginKey, "applied");
+					// Selection-driven preview toggles should not pollute the user's undo stack.
 					tr.setMeta("addToHistory", false);
 					return tr;
 				},

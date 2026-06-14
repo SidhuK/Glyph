@@ -305,7 +305,8 @@ export function QuickNoteTargetBreadcrumbs({
 				...current,
 				[dirPath]: sortTargetEntries(entries),
 			}));
-		} catch {
+		} catch (cause) {
+			console.error("Failed to load quick note target directory", cause);
 			setChildrenByDir((current) => ({
 				...current,
 				[dirPath]: [],
@@ -370,15 +371,13 @@ export function QuickNoteTargetBreadcrumbs({
 								childrenByDir={childrenByDir}
 							/>
 						) : null}
-						<button
-							type="button"
+						<span
 							className="quickNoteTargetButton"
 							aria-current={isCurrent ? "page" : undefined}
-							aria-disabled={isCurrent}
 							title={part.path || "Space"}
 						>
 							<span className="quickNoteTargetLabel">{part.label}</span>
-						</button>
+						</span>
 					</span>
 				);
 			})}

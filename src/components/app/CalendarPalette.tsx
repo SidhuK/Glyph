@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { NoteIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +14,6 @@ import {
 } from "../../lib/calendarActivity";
 import { getTodayDateString } from "../../lib/dailyNotes";
 import type { CalendarDateNote, CalendarDayActivity } from "../../lib/tauri";
-import { cn } from "@/lib/utils";
 import { Calendar } from "../ui/shadcn/calendar";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 
@@ -311,6 +311,13 @@ export function CalendarPalette({
 					<div className="calendarPaletteNotesList">
 						{notesQuery.isLoading ? (
 							<p className="calendarPaletteNotesStatus">Loading notes…</p>
+						) : notesQuery.isError ? (
+							<p className="calendarPaletteNotesStatus" role="alert">
+								Could not load notes:{" "}
+								{notesQuery.error instanceof Error
+									? notesQuery.error.message
+									: String(notesQuery.error)}
+							</p>
 						) : notesForList.length > 0 ? (
 							<ul className="calendarPaletteNotesItems">
 								{notesForList.map((note) => (
@@ -341,7 +348,10 @@ export function CalendarPalette({
 							</ul>
 						) : (
 							<div className="calendarPaletteNotesEmpty">
-								<span className="calendarPaletteNotesEmptyIcon" aria-hidden="true">
+								<span
+									className="calendarPaletteNotesEmptyIcon"
+									aria-hidden="true"
+								>
 									<HugeiconsIcon
 										icon={NoteIcon}
 										size="var(--icon-xl)"

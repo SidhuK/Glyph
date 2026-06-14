@@ -92,6 +92,8 @@ export function QuickNoteWindow() {
 	const [saving, setSaving] = useState(false);
 	const [targetValue, setTargetValue] = useState(QUICK_NOTE_TARGET_VALUE);
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const statusTimerRef = useRef<number | null>(null);
+	const focusTimerRef = useRef<number | null>(null);
 
 	const hasText = draft.trim().length > 0;
 	const todayQuickNotePath = useMemo(() => quickNotePath(folder), [folder]);
@@ -126,13 +128,26 @@ export function QuickNoteWindow() {
 	}, []);
 
 	useEffect(() => {
-		void refreshSettings().catch(() => {});
+		void refreshSettings().catch((cause) => {
+			console.error("Failed to load quick note settings", cause);
+		});
 		const focusTimer = window.setTimeout(
 			() => textareaRef.current?.focus(),
 			80,
 		);
 		return () => window.clearTimeout(focusTimer);
 	}, [refreshSettings]);
+
+	useEffect(() => {
+		return () => {
+			if (statusTimerRef.current !== null) {
+				window.clearTimeout(statusTimerRef.current);
+			}
+			if (focusTimerRef.current !== null) {
+				window.clearTimeout(focusTimerRef.current);
+			}
+		};
+	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.quickNotes?.folder === "string") {
@@ -153,14 +168,23 @@ export function QuickNoteWindow() {
 			setDraft("");
 			setStatus(`Saved ${savedLabel(path)}`);
 			void emit("quick-note:open_note", { path }).catch(() => {});
-			window.setTimeout(() => setStatus(""), 1600);
-			window.setTimeout(() => textareaRef.current?.focus(), 20);
+			if (statusTimerRef.current !== null) {
+				window.clearTimeout(statusTimerRef.current);
+			}
+			if (focusTimerRef.current !== null) {
+				window.clearTimeout(focusTimerRef.current);
+			}
+			statusTimerRef.current = window.setTimeout(() => setStatus(""), 1600);
+			focusTimerRef.current = window.setTimeout(
+				() => textareaRef.current?.focus(),
+				20,
+			);
 		} catch (cause) {
 			setStatus(cause instanceof Error ? cause.message : String(cause));
 		} finally {
 			setSaving(false);
 		}
-	}, [draft, folder, saving, selectedTarget]);
+	}, [draft, folder, saving, selectedTarget.path, selectedTarget.value]);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
 		const primary = event.metaKey || event.ctrlKey;

@@ -337,7 +337,8 @@
 	display: inline-block;
 	width: var(--heading-level-rail-width);
 	margin-left: calc(
-		-1 * (var(--heading-level-rail-width) + var(--heading-rail-gap))
+		-1 *
+		(var(--heading-level-rail-width) + var(--heading-rail-gap))
 	);
 	margin-right: var(--heading-rail-gap);
 	vertical-align: baseline;

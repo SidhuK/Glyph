@@ -61,12 +61,12 @@ import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
-import { MainContent } from "./MainContent";
-import { Sidebar } from "./Sidebar";
 import {
 	CalendarPaletteController,
 	preloadCalendarPalette,
 } from "./CalendarPaletteController";
+import { MainContent } from "./MainContent";
+import { Sidebar } from "./Sidebar";
 import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
