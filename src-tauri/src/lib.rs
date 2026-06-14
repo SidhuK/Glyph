@@ -993,6 +993,33 @@ fn is_space_host_window_label(label: &str) -> bool {
     label == "main" || space::commands::is_space_window(label)
 }
 
+fn is_auxiliary_persisted_window(label: &str) -> bool {
+    label == "settings" || label == QUICK_NOTE_WINDOW_LABEL || label == "quick-task"
+}
+
+fn destroy_auxiliary_persisted_windows(app: &tauri::AppHandle) {
+    for (label, window) in app.webview_windows() {
+        if is_auxiliary_persisted_window(&label) {
+            let _ = window.destroy();
+        }
+    }
+}
+
+fn prepare_host_window_close(window: &tauri::Window) {
+    if !is_space_host_window_label(window.label()) {
+        return;
+    }
+    let app = window.app_handle();
+    let host_count = app
+        .webview_windows()
+        .into_iter()
+        .filter(|(label, _)| is_space_host_window_label(label))
+        .count();
+    if host_count <= 1 {
+        destroy_auxiliary_persisted_windows(&app);
+    }
+}
+
 fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
     app.webview_windows().into_iter().find(|(label, window)| {
         is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
@@ -1452,13 +1479,9 @@ pub fn run() {
                 }
             }
 
-            #[cfg(target_os = "macos")]
-            if window.label() == "main" {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    // Keep app alive on macOS when the last window is closed.
-                    // Dock activation can then restore this window.
-                    api.prevent_close();
-                    let _ = window.hide();
+            if is_space_host_window_label(window.label()) {
+                if let WindowEvent::CloseRequested { .. } = event {
+                    prepare_host_window_close(window);
                 }
             }
         })
@@ -1545,6 +1568,8 @@ pub fn run() {
             index::commands::index_set_people_mentions_as_tags_enabled,
             index::commands::all_docs_list,
             index::commands::all_docs_count,
+            index::calendar::index_calendar_activity,
+            index::calendar::index_calendar_notes_for_date,
             index::commands::tags_list,
             index::commands::people_list,
             index::commands::task_summary,
@@ -1598,13 +1623,5 @@ pub fn run() {
                 return;
             }
 
-            #[cfg(target_os = "macos")]
-            if let RunEvent::Reopen { .. } = event {
-                if let Some(window) = app_handle.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.unminimize();
-                    let _ = window.set_focus();
-                }
-            }
         });
 }

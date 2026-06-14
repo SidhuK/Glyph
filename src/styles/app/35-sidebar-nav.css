@@ -77,6 +77,52 @@
 	padding: 4px 8px 0;
 }
 
+.sidebarCommandSearchRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 8px;
+}
+
+.sidebarCommandSearchRow .sidebarCommandSearchButton {
+	flex: 1;
+	min-width: 0;
+}
+
+.sidebarCalendarButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 30px;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.sidebarCalendarButton > svg {
+	display: block;
+}
+
+.sidebarCalendarButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	border-color: var(--border-light);
+}
+
+.sidebarCalendarButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
 .sidebarCommandSearch {
 	width: 100%;
 	padding: 8px 8px 8px;
@@ -129,45 +175,37 @@
 .sidebarCommandSearchShortcut {
 	display: inline-flex;
 	align-items: center;
-	justify-content: center;
 	flex: 0 0 auto;
-	min-width: 20px;
-	height: 20px;
 	margin-left: auto;
-	padding: 0 6px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
-	background: var(--bg-secondary);
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;
+	letter-spacing: 0.02em;
 }
 
 .sidebarQuickActionShortcut {
 	display: inline-flex;
 	align-items: center;
-	justify-content: center;
 	flex: 0 0 auto;
-	min-width: 20px;
-	height: 20px;
 	margin-left: auto;
-	padding: 0 6px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
-	background: var(--bg-secondary);
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;
+	letter-spacing: 0.02em;
 	opacity: 0;
 	transition: opacity var(--transition-fast);
 }
 
 .sidebarQuickActionBtn:hover .sidebarQuickActionShortcut {
 	opacity: 1;
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionShortcut {
+	color: var(--text-inverse);
 }
 
 .sidebarQuickActionCount {
@@ -178,20 +216,6 @@
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionShortcut {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 88%,
-		var(--text-primary)
-	);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 75%,
-		var(--text-primary)
-	);
-	color: var(--text-inverse);
 }
 
 .sidebarNavBtn {
@@ -226,6 +250,7 @@
 .sidebarQuickActionBtn[data-kind="new-note"] {
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
+	margin-bottom: 6px;
 }
 
 .sidebarQuickActionBtn[data-kind="new-note"] > svg {

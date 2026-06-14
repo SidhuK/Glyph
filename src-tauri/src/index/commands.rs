@@ -16,9 +16,10 @@ use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
 use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::types::{
-    BacklinkItem, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode, LocalConnectionsTagEdge,
-    LocalConnectionsTagNode, LocalNoteConnections, PersonCount, SearchResult, SpaceConnectionKind, SpaceConnections,
-    SpaceConnectionsEdge, SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount,
+    BacklinkItem, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode,
+    LocalConnectionsTagEdge, LocalConnectionsTagNode, LocalNoteConnections, PersonCount,
+    SearchResult, SpaceConnectionKind, SpaceConnections, SpaceConnectionsEdge,
+    SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1328,7 +1329,8 @@ mod local_connections_tests {
             "notes/neighbor.md".to_string(),
         ];
         let (tags, tagged_nodes, tag_edges) =
-            local_connections_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5).unwrap();
+            local_connections_tag_expansion_for_seed_nodes(&conn, &seed_node_ids, 12, 12, 5)
+                .unwrap();
 
         assert_eq!(tagged_nodes.len(), 5);
         assert_eq!(tag_edges.len(), 5);

@@ -419,19 +419,18 @@ input.notePropertyValue {
 }
 
 .propertyValueText > span {
-	overflow: visible;
-	white-space: normal;
+	white-space: nowrap;
 }
 
 .notePropertyStatusStatic {
-	max-width: 100%;
+	max-width: none;
 }
 
 .notePropertyStatusTrigger {
 	display: inline-flex;
 	align-items: center;
 	justify-content: flex-start;
-	max-width: 100%;
+	max-width: none;
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -439,8 +438,25 @@ input.notePropertyValue {
 	cursor: pointer;
 }
 
+.notePropertyStatusTrigger:not(.databaseStatusTrigger) .propertyValueText {
+	max-width: none;
+	flex-shrink: 0;
+}
+
 .databaseStatusTrigger {
 	width: 100%;
+	max-width: 100%;
+}
+
+.databaseStatusTrigger .propertyValueText {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.databaseStatusTrigger .propertyValueText > span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .notePropertyStatusTrigger:hover .propertyValueText,

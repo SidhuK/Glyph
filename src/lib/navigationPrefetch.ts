@@ -495,10 +495,7 @@ function cachedTaskSummaryForPath(path: string): NoteTaskSummary | undefined {
 	return undefined;
 }
 
-function taskSummariesEqual(
-	left: NoteTaskSummary,
-	right: NoteTaskSummary,
-) {
+function taskSummariesEqual(left: NoteTaskSummary, right: NoteTaskSummary) {
 	return (
 		left?.total_count === right.total_count &&
 		left.completed_count === right.completed_count &&

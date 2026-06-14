@@ -327,6 +327,19 @@ export interface AllDocsItem {
 	people?: string[];
 }
 
+export interface CalendarDayActivity {
+	date: string;
+	hasDailyNote: boolean;
+	hasCreated: boolean;
+	hasEdited: boolean;
+}
+
+export interface CalendarDateNote {
+	path: string;
+	title: string;
+	kinds: Array<"daily" | "created" | "edited">;
+}
+
 export interface SearchAdvancedRequest {
 	query?: string | null;
 	tags?: string[];
@@ -927,6 +940,21 @@ interface TauriCommands {
 		AllDocsItem[]
 	>;
 	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;
+	index_calendar_activity: CommandDef<
+		{
+			from_date: string;
+			to_date: string;
+			daily_note_folder?: string | null;
+		},
+		CalendarDayActivity[]
+	>;
+	index_calendar_notes_for_date: CommandDef<
+		{
+			date: string;
+			daily_note_folder?: string | null;
+		},
+		CalendarDateNote[]
+	>;
 	tags_list: CommandDef<
 		{ limit?: number | null; offset?: number | null },
 		TagCount[]

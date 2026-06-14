@@ -76,12 +76,15 @@
 	background: transparent;
 }
 
-.databaseBoardLane[data-workflow-state="done"] {
+.databaseBoardLane[data-show-column-color="true"][data-workflow-state="done"] {
 	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
 }
 
 .databaseBoardLane[data-workflow-state="archived"] {
 	opacity: 0.82;
+}
+
+.databaseBoardLane[data-show-column-color="true"][data-workflow-state="archived"] {
 	background: color-mix(in srgb, var(--text-tertiary) 7%, var(--bg-secondary));
 }
 
