@@ -41,8 +41,8 @@ import {
 } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
@@ -286,7 +286,7 @@ interface TreeEntriesProps {
 		direction: -1 | 1,
 		currentTarget: HTMLElement,
 	) => void;
-	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
@@ -322,7 +322,7 @@ function TreeEntries({
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
 	onArrowNavigate,
-	taskSummariesByPath,
+	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
 }: TreeEntriesProps) {

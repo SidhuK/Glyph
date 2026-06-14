@@ -35,10 +35,8 @@ interface SidebarProps {
 	spacePath: string | null;
 	onOpenAllDocs: () => void;
 	onOpenConnections: () => void;
-	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
-	activeTopSection: "home" | "all-notes" | "connections" | "databases" | null;
-	onPrefetchCalendar: () => void;
+	activeTopSection: "all-notes" | "connections" | "databases" | null;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
@@ -66,10 +64,8 @@ export const Sidebar = memo(function Sidebar({
 	spacePath,
 	onOpenAllDocs,
 	onOpenConnections,
-	onOpenCalendar,
 	onOpenDatabases,
 	activeTopSection,
-	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
@@ -139,9 +135,7 @@ export const Sidebar = memo(function Sidebar({
 									onDeletePath={onDeletePath}
 									onMovePath={onMovePath}
 									onSelectTag={onSelectTag}
-									onOpenCalendar={onOpenCalendar}
 									onOpenDatabases={onOpenDatabases}
-									onPrefetchCalendar={onPrefetchCalendar}
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}

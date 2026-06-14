@@ -163,7 +163,6 @@ describe("MarkdownEditorPane", () => {
 					params: { frontmatter?: string | null },
 			  ]
 			| [command: "databases_preview_context", params: { note_path: string }]
-			| [command: "task_summary", params: { markdown: string }]
 	) {
 		const [command, params] = args;
 		if (command === "space_write_text") {
@@ -174,13 +173,6 @@ describe("MarkdownEditorPane", () => {
 		}
 		if (command === "space_read_text") {
 			return Promise.resolve(makeDoc(params.path, "", 1));
-		}
-		if (command === "task_summary") {
-			return Promise.resolve({
-				total_count: 0,
-				completed_count: 0,
-				open_count: 0,
-			});
 		}
 		if (command === "databases_preview_context") {
 			return Promise.resolve({
@@ -306,13 +298,6 @@ describe("MarkdownEditorPane", () => {
 			}
 			if (command === "space_read_text") {
 				return Promise.resolve(makeDoc(params.path, "", 1));
-			}
-			if (command === "task_summary") {
-				return Promise.resolve({
-					total_count: 0,
-					completed_count: 0,
-					open_count: 0,
-				});
 			}
 			if (command === "databases_preview_context") {
 				return Promise.resolve({

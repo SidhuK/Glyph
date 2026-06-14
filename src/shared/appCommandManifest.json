@@ -801,16 +801,6 @@
 			"commandPalette": true,
 			"menuId": "file.open_daily_note"
 		},
-		"open-dashboard": {
-			"id": "open-dashboard",
-			"label": "Open Home",
-			"description": "Open the home dashboard.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"open-databases": {
 			"id": "open-databases",
 			"label": "Open Collections",
@@ -868,22 +858,6 @@
 				"alt": true,
 				"shift": true,
 				"key": "q"
-			},
-			"allowInEditable": true,
-			"commandPalette": true
-		},
-		"open-quick-task": {
-			"id": "open-quick-task",
-			"label": "Open Quick Task",
-			"description": "Open the floating quick task capture window.",
-			"category": "file",
-			"context": "global",
-			"defaultBinding": {
-				"meta": true,
-				"ctrl": true,
-				"alt": true,
-				"shift": true,
-				"key": "t"
 			},
 			"allowInEditable": true,
 			"commandPalette": true

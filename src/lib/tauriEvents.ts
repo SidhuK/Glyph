@@ -31,8 +31,6 @@ type TauriEventMap = {
 	"menu:open_ai_settings": undefined;
 	"menu:editor_action": { action: string };
 	"quick-note:open_note": { path: string };
-	"quick-task:shown": undefined;
-	"quick-task:open_note": { path: string };
 	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };
@@ -100,9 +98,6 @@ type TauriEventMap = {
 		templates?: {
 			folder?: string | null;
 			dailyNoteTemplate?: string | null;
-		};
-		tasks?: {
-			source?: { mode?: "space" | "folders"; folders?: string[] };
 		};
 		database?: {
 			showColumnColor?: boolean;

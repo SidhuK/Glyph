@@ -21,8 +21,8 @@ import {
 } from "react";
 import { useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
-
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
+
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
@@ -53,6 +53,7 @@ import {
 } from "../../lib/tagIcons";
 import type { NoteTaskSummary } from "../../lib/tauri";
 import { Plus } from "../Icons";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
@@ -66,7 +67,6 @@ import {
 	StatusPropertyPill,
 	statusPropertyIconForValue,
 } from "../status/StatusPropertyPill";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -907,7 +907,7 @@ export function DatabaseBoard({
 												row.updated,
 											);
 											const taskSummary =
-												taskSummariesByPath[row.note_path] ??
+												taskSummariesByPath?.[row.note_path] ??
 												EMPTY_TASK_SUMMARY;
 											const noteAppearance =
 												itemAppearance[row.note_path] ?? null;

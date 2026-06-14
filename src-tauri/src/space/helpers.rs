@@ -17,7 +17,7 @@ const ONBOARDING_NOTE_CONTENT: &str = r#"# Welcome to Glyph
 
 Is Glyph the first notes app you have ever opened? Almost certainly not. Is it going to claim that writing things down was invented five minutes ago? Also no.
 
-Glyph is a local-first desktop space for notes, tasks, collections, previews, and AI-assisted thinking. The important part is boring in the best way: your notes are plain Markdown files in the folder you chose. Use the same notes in Obsidian, VS Code, Typora, iA Writer, Logseq, or any app that understands Markdown.
+Glyph is a local-first desktop space for notes, collections, previews, and AI-assisted thinking. The important part is boring in the best way: your notes are plain Markdown files in the folder you chose. Use the same notes in Obsidian, VS Code, Typora, iA Writer, Logseq, or any app that understands Markdown.
 
 This note is fully editable. Try things here, make a mess, or delete it when it has done its job.
 
@@ -29,7 +29,7 @@ If you remember one shortcut, make it `Cmd+K`. It opens the command palette, whe
 
 - Create a note with `Cmd+N`.
 - Create folders from the sidebar.
-- Type `/` for headings, lists, tasks, callouts, tables, and code blocks.
+- Type `/` for headings, lists, callouts, tables, and code blocks.
 - Type `[[` to link another note.
 - Add `#tags` anywhere in your text.
 
@@ -43,8 +43,6 @@ If you remember one shortcut, make it `Cmd+K`. It opens the command palette, whe
 ## Plan your day
 
 - Open today's note with `Cmd+Shift+D`.
-- Use Calendar to move between daily notes.
-- Add tasks with checkboxes and finish them from the task views.
 
 ## Add structure
 

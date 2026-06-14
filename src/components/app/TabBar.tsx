@@ -9,7 +9,6 @@ import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
@@ -56,7 +55,6 @@ const MAIN_TAB_SENSORS = [
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
-		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);
@@ -102,7 +100,6 @@ export function TabBar({
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
-			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";
 			const parts = (tab.target ?? "").split("/").filter(Boolean);

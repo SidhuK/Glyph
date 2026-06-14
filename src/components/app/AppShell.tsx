@@ -34,7 +34,6 @@ import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
 } from "../../lib/appEvents";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
 	consumeCreateCollectionDialog,
@@ -43,19 +42,16 @@ import {
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	invalidateAllDocsPrefetch,
-	invalidateCalendarPrefetch,
 	invalidateDatabaseRowsPrefetch,
 	invalidatePrefetchedNote,
-	invalidateTasksPrefetch,
+	invalidateTaskSummariesPrefetchForNote,
 	prefetchAllDocs,
-	prefetchCalendarData,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
@@ -72,11 +68,7 @@ import {
 } from "./TemplatePickerDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
-import {
-	loadAllDocsPane,
-	loadCalendarPane,
-	loadDatabasesPane,
-} from "./prefetchablePanes";
+import { loadAllDocsPane, loadDatabasesPane } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
@@ -424,28 +416,12 @@ export function AppShell() {
 		});
 	}, [setError]);
 
-	const openQuickTaskWindow = useCallback(() => {
-		void invoke("show_quick_task_window").catch((cause) => {
-			const message = cause instanceof Error ? cause.message : String(cause);
-			setError(message);
-		});
-	}, [setError]);
-
 	useTauriEvent("quick-note:open_note", (payload) => {
 		void openWorkspaceFile(payload.path).catch((cause) => {
 			console.error("Failed to open quick note", cause);
 			const message = cause instanceof Error ? cause.message : String(cause);
 			setError(message);
 			toast.error("Could not open quick note", { description: message });
-		});
-	});
-
-	useTauriEvent("quick-task:open_note", (payload) => {
-		void openWorkspaceFile(payload.path).catch((cause) => {
-			console.error("Failed to open quick task note", cause);
-			const message = cause instanceof Error ? cause.message : String(cause);
-			setError(message);
-			toast.error("Could not open quick task note", { description: message });
 		});
 	});
 
@@ -765,10 +741,11 @@ export function AppShell() {
 	useTauriEvent("notes:external_changed", (payload) => {
 		const relPath = normalizeRelPath(payload.rel_path);
 		invalidateAllDocsPrefetch();
-		invalidateCalendarPrefetch();
 		invalidateDatabaseRowsPrefetch();
-		invalidateTasksPrefetch();
 		if (relPath) {
+			void invalidateTaskSummariesPrefetchForNote(relPath, {
+				removed: payload.removed,
+			});
 			invalidatePrefetchedNote(relPath);
 		}
 	});
@@ -781,9 +758,8 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"home" | "all-notes" | "connections" | "databases" | null
+		"all-notes" | "connections" | "databases" | null
 	>(() => {
-		if (activeTabPath === CALENDAR_TAB_ID) return "home";
 		if (activeTabPath === ALL_DOCS_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
@@ -802,15 +778,6 @@ export function AppShell() {
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ALL_DOCS_TAB_ID);
-	}, [openSpecialTab]);
-	const [homeView, setHomeView] = useState<"home" | "tasks">("home");
-	const openTasksView = useCallback(() => {
-		setHomeView("tasks");
-		openSpecialTab(CALENDAR_TAB_ID);
-	}, [openSpecialTab]);
-	const openCalendarTab = useCallback(() => {
-		setHomeView("home");
-		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
@@ -839,19 +806,6 @@ export function AppShell() {
 		if (!isMarkdownPath(path)) return;
 		prefetchNote(path);
 	}, []);
-	const prefetchCalendarTab = useCallback(() => {
-		void loadCalendarPane();
-		const today = todayIsoDateLocal();
-		const anchorDate = window.localStorage.getItem("glyph.calendar.anchorDate");
-		const selectedDate = window.localStorage.getItem(
-			"glyph.calendar.selectedDate",
-		);
-		void prefetchCalendarData({
-			anchorDate: anchorDate ?? today,
-			selectedDate: selectedDate ?? today,
-			dailyNotesFolder,
-		});
-	}, [dailyNotesFolder]);
 	const prefetchDatabasesTab = useCallback((databaseId?: string | null) => {
 		void loadDatabasesPane();
 		void prefetchDatabasesLanding(databaseId);
@@ -1063,17 +1017,14 @@ export function AppShell() {
 		onOpenSpace,
 		openAllDocsTab,
 		openBlankTab,
-		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
 		openConnectionsView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
 		openQuickNoteWindow,
-		openQuickTaskWindow,
 		openSearchPalette,
 		openSettings,
-		openTasksView,
 		openWorkspaceFile,
 		showWelcomeNote,
 		pinnedFiles,
@@ -1134,11 +1085,7 @@ export function AppShell() {
 				},
 			})),
 			...commands
-				.filter(
-					(command) =>
-						command.id !== "open-quick-note" &&
-						command.id !== "open-quick-task",
-				)
+				.filter((command) => command.id !== "open-quick-note")
 				.map((command) => ({
 					id: command.id,
 					shortcut: command.shortcut,
@@ -1184,14 +1131,6 @@ export function AppShell() {
 			accelerator: toTauriAccelerator(getBinding("open-quick-note")),
 		}).catch((cause) => {
 			console.warn("Failed to register quick note shortcut", cause);
-		});
-	}, [getBinding]);
-
-	useEffect(() => {
-		void invoke("set_quick_task_global_shortcut", {
-			accelerator: toTauriAccelerator(getBinding("open-quick-task")),
-		}).catch((cause) => {
-			console.warn("Failed to register quick task shortcut", cause);
 		});
 	}, [getBinding]);
 
@@ -1263,10 +1202,8 @@ export function AppShell() {
 				spacePath={spacePath}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenConnections={openConnectionsView}
-				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}
-				onPrefetchCalendar={prefetchCalendarTab}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
@@ -1319,8 +1256,6 @@ export function AppShell() {
 				databasesOpenRequest={databasesOpenRequest}
 				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
-				homeView={homeView}
-				onHomeViewChange={setHomeView}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>

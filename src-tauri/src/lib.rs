@@ -47,9 +47,7 @@ use tauri::{
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
-static QUICK_TASK_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
-const QUICK_TASK_WINDOW_LABEL: &str = "quick-task";
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
 
@@ -131,11 +129,6 @@ struct MenuState {
 
 #[derive(Default)]
 struct QuickNoteShortcutState {
-    current_accelerator: Mutex<Option<String>>,
-}
-
-#[derive(Default)]
-struct QuickTaskShortcutState {
     current_accelerator: Mutex<Option<String>>,
 }
 
@@ -996,42 +989,6 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     Ok(window)
 }
 
-fn quick_task_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
-    let _guard = QUICK_TASK_WINDOW_LOCK
-        .lock()
-        .map_err(|_| "failed to lock quick task window state".to_string())?;
-
-    if let Some(window) = app.get_webview_window(QUICK_TASK_WINDOW_LABEL) {
-        return Ok(window);
-    }
-
-    let window = WebviewWindowBuilder::new(
-        app,
-        QUICK_TASK_WINDOW_LABEL,
-        WebviewUrl::App(format!("index.html?window={QUICK_TASK_WINDOW_LABEL}").into()),
-    )
-    .title("Quick Task")
-    .inner_size(520.0, 132.0)
-    .resizable(false)
-    .decorations(true)
-    .title_bar_style(TitleBarStyle::Overlay)
-    .hidden_title(true)
-    .transparent(true)
-    .always_on_top(true)
-    .visible_on_all_workspaces(true)
-    .skip_taskbar(true)
-    .shadow(true)
-    .visible(false)
-    .center()
-    .build()
-    .map_err(|error| error.to_string())?;
-
-    #[cfg(target_os = "macos")]
-    apply_main_window_vibrancy(&window, None)?;
-
-    Ok(window)
-}
-
 fn is_space_host_window_label(label: &str) -> bool {
     label == "main" || space::commands::is_space_window(label)
 }
@@ -1077,37 +1034,14 @@ fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
     window.set_focus().map_err(|error| error.to_string())
 }
 
-fn show_quick_task_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
-    sync_fallback_space_to_focused_window(app);
-    let window = quick_task_window(app)?;
-    let _ = window.center();
-    window.show().map_err(|error| error.to_string())?;
-    window.unminimize().map_err(|error| error.to_string())?;
-    let _ = window.emit("quick-task:shown", ());
-    window.set_focus().map_err(|error| error.to_string())
-}
-
 #[tauri::command]
 fn show_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
     show_quick_note_window_for_app(&app)
 }
 
 #[tauri::command]
-fn show_quick_task_window(app: tauri::AppHandle) -> Result<(), String> {
-    show_quick_task_window_for_app(&app)
-}
-
-#[tauri::command]
 fn hide_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window(QUICK_NOTE_WINDOW_LABEL) {
-        window.hide().map_err(|error| error.to_string())?;
-    }
-    Ok(())
-}
-
-#[tauri::command]
-fn hide_quick_task_window(app: tauri::AppHandle) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window(QUICK_TASK_WINDOW_LABEL) {
         window.hide().map_err(|error| error.to_string())?;
     }
     Ok(())
@@ -1183,53 +1117,6 @@ fn set_quick_note_global_shortcut(
     if let Some(previous) = current.take() {
         if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
             warn!("Failed to unregister previous quick note shortcut: {error}");
-        }
-    }
-
-    Ok(())
-}
-
-#[tauri::command(rename_all = "snake_case")]
-fn set_quick_task_global_shortcut(
-    app: tauri::AppHandle,
-    state: State<'_, QuickTaskShortcutState>,
-    accelerator: Option<String>,
-) -> Result<(), String> {
-    let next = accelerator
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty());
-    let mut current = state
-        .current_accelerator
-        .lock()
-        .map_err(|_| "failed to lock quick task shortcut state".to_string())?;
-
-    if current.as_ref() == next.as_ref() {
-        return Ok(());
-    }
-
-    if let Some(next_accelerator) = next {
-        app.global_shortcut()
-            .on_shortcut(next_accelerator.as_str(), |app, _shortcut, event| {
-                if event.state == ShortcutState::Pressed {
-                    if let Err(error) = show_quick_task_window_for_app(app) {
-                        warn!("Failed to show quick task window: {error}");
-                    }
-                }
-            })
-            .map_err(|error| error.to_string())?;
-
-        if let Some(previous) = current.take() {
-            if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
-                warn!("Failed to unregister previous quick task shortcut: {error}");
-            }
-        }
-        *current = Some(next_accelerator);
-        return Ok(());
-    }
-
-    if let Some(previous) = current.take() {
-        if let Err(error) = app.global_shortcut().unregister(previous.as_str()) {
-            warn!("Failed to unregister previous quick task shortcut: {error}");
         }
     }
 
@@ -1534,13 +1421,6 @@ pub fn run() {
                 }
             }
 
-            if window.label() == QUICK_TASK_WINDOW_LABEL {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    api.prevent_close();
-                    let _ = window.hide();
-                }
-            }
-
             if external_markdown::is_external_markdown_window(window.label()) {
                 match event {
                     WindowEvent::CloseRequested { api, .. } => {
@@ -1589,7 +1469,6 @@ pub fn run() {
         .manage(external_markdown::ExternalMarkdownState::default())
         .manage(MenuState::default())
         .manage(QuickNoteShortcutState::default())
-        .manage(QuickTaskShortcutState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -1602,11 +1481,8 @@ pub fn run() {
             system_monospace_fonts_list,
             show_quick_note_window,
             hide_quick_note_window,
-            show_quick_task_window,
-            hide_quick_task_window,
             show_main_window,
             set_quick_note_global_shortcut,
-            set_quick_task_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
             set_menu_shortcuts,
@@ -1669,14 +1545,8 @@ pub fn run() {
             index::commands::index_set_people_mentions_as_tags_enabled,
             index::commands::all_docs_list,
             index::commands::all_docs_count,
-            index::commands::calendar_query_range,
             index::commands::tags_list,
             index::commands::people_list,
-            index::commands::tasks_query_global,
-            index::commands::task_set_checked,
-            index::commands::task_set_dates,
-            index::commands::task_dates_by_ordinal,
-            index::commands::task_update_by_ordinal,
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
             index::commands::backlinks,

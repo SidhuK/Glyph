@@ -78,8 +78,6 @@
 	--status-danger-border: color-mix(in srgb, #e03e3e 34%, transparent);
 	--ai-accent-chat: #0f6e91;
 	--ai-accent-create: #c1121f;
-	--task-bucket-today: #bc8f00;
-	--task-bucket-upcoming: #c97a00;
 	--callout-info: #3b9bdc;
 	--callout-tip: #3ccf8e;
 	--callout-warning: #f0b429;
@@ -126,8 +124,6 @@
 	--status-danger-border: color-mix(in srgb, #dc322f 32%, transparent);
 	--ai-accent-chat: #268bd2;
 	--ai-accent-create: #cb4b16;
-	--task-bucket-today: #b58900;
-	--task-bucket-upcoming: #cb4b16;
 	--callout-info: #268bd2;
 	--callout-tip: #859900;
 	--callout-warning: #b58900;
@@ -174,8 +170,6 @@
 	--status-danger-border: color-mix(in srgb, #cf222e 30%, transparent);
 	--ai-accent-chat: #0969da;
 	--ai-accent-create: #cf222e;
-	--task-bucket-today: #9a6700;
-	--task-bucket-upcoming: #bc4c00;
 	--callout-info: #2f81f7;
 	--callout-tip: #1a7f37;
 	--callout-warning: #bf8700;
@@ -222,8 +216,6 @@
 	--status-danger-border: color-mix(in srgb, #bf616a 30%, transparent);
 	--ai-accent-chat: #5e81ac;
 	--ai-accent-create: #bf616a;
-	--task-bucket-today: #d08770;
-	--task-bucket-upcoming: #b48ead;
 	--callout-info: #81a1c1;
 	--callout-tip: #a3be8c;
 	--callout-warning: #ebcb8b;
@@ -398,8 +390,6 @@
 	--status-danger-border: color-mix(in srgb, #d20f39 30%, transparent);
 	--ai-accent-chat: #1e66f5;
 	--ai-accent-create: #ea76cb;
-	--task-bucket-today: #df8e1d;
-	--task-bucket-upcoming: #fe640b;
 	--callout-info: #04a5e5;
 	--callout-tip: #40a02b;
 	--callout-warning: #df8e1d;
@@ -439,8 +429,6 @@
 	);
 	--ai-accent-chat: var(--interactive-accent);
 	--ai-accent-create: var(--accent-color);
-	--task-bucket-today: var(--status-warning-fg);
-	--task-bucket-upcoming: var(--accent-color);
 	--callout-info: var(--status-info-fg);
 	--callout-tip: var(--status-success-fg);
 	--callout-warning: var(--status-warning-fg);
@@ -484,8 +472,6 @@
 	--status-danger-border: color-mix(in srgb, #9d0006 30%, transparent);
 	--ai-accent-chat: #076678;
 	--ai-accent-create: #af3a03;
-	--task-bucket-today: #b57614;
-	--task-bucket-upcoming: #af3a03;
 	--callout-info: #458588;
 	--callout-tip: #79740e;
 	--callout-warning: #b57614;
@@ -532,8 +518,6 @@
 	--status-danger-border: color-mix(in srgb, #f07171 30%, transparent);
 	--ai-accent-chat: #399ee6;
 	--ai-accent-create: #ff9940;
-	--task-bucket-today: #f2ae49;
-	--task-bucket-upcoming: #ff9940;
 	--callout-info: #55b4d4;
 	--callout-tip: #86b300;
 	--callout-warning: #f2ae49;
@@ -580,8 +564,6 @@
 	--status-danger-border: color-mix(in srgb, #f52a65 30%, transparent);
 	--ai-accent-chat: #2e7de9;
 	--ai-accent-create: #9854f1;
-	--task-bucket-today: #8c6c3e;
-	--task-bucket-upcoming: #9854f1;
 	--callout-info: #2e7de9;
 	--callout-tip: #587539;
 	--callout-warning: #8c6c3e;
@@ -628,8 +610,6 @@
 	--status-danger-border: color-mix(in srgb, #f43e5c 30%, transparent);
 	--ai-accent-chat: #1d8991;
 	--ai-accent-create: #f6661e;
-	--task-bucket-today: #f9c74f;
-	--task-bucket-upcoming: #f6661e;
 	--callout-info: #1d8991;
 	--callout-tip: #38ada9;
 	--callout-warning: #f9c74f;
@@ -676,8 +656,6 @@
 	--status-danger-border: color-mix(in srgb, #d14d41 30%, transparent);
 	--ai-accent-chat: #205ea6;
 	--ai-accent-create: #ce5d97;
-	--task-bucket-today: #ad8301;
-	--task-bucket-upcoming: #da702c;
 	--callout-info: #4385be;
 	--callout-tip: #879a39;
 	--callout-warning: #d0a215;

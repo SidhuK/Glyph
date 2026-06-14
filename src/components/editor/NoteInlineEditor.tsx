@@ -46,7 +46,6 @@ import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
-import { useTaskInlineDates } from "./hooks/useTaskInlineDates";
 import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
@@ -295,14 +294,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		editor,
 		hostRef: tiptapHostRef,
 		mode,
-	});
-	const taskInlineDates = useTaskInlineDates({
-		deferHeavyFeatures,
-		editor,
-		hostRef: tiptapHostRef,
-		markdown,
-		mode,
-		onChange,
 	});
 	const extractToNote = useExtractSelectionToNote({
 		actions: extractToNoteActions,
@@ -898,42 +889,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		],
 	);
 
-	const resetTaskDraftDates = useCallback(() => {
-		void taskInlineDates.resetDraftDates();
-	}, [taskInlineDates.resetDraftDates]);
-	const updateTaskDates = useCallback(
-		(scheduled: string, due: string) => {
-			void taskInlineDates.updateTaskDates(scheduled, due);
-		},
-		[taskInlineDates.updateTaskDates],
-	);
-	const taskControls = useMemo(
-		() => ({
-			selectedAnchor: taskInlineDates.selectedTaskAnchor,
-			scheduleAnchor: taskInlineDates.scheduleAnchor,
-			onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
-			onOpenPopover: taskInlineDates.openTaskPopover,
-			scheduledDate: taskInlineDates.scheduledDate,
-			dueDate: taskInlineDates.dueDate,
-			onScheduledDateChange: taskInlineDates.setScheduledDate,
-			onDueDateChange: taskInlineDates.setDueDate,
-			onResetDraftDates: resetTaskDraftDates,
-			onUpdateDates: updateTaskDates,
-		}),
-		[
-			resetTaskDraftDates,
-			taskInlineDates.dueDate,
-			taskInlineDates.openTaskPopover,
-			taskInlineDates.scheduleAnchor,
-			taskInlineDates.scheduledDate,
-			taskInlineDates.selectedTaskAnchor,
-			taskInlineDates.setDueDate,
-			taskInlineDates.setScheduleAnchor,
-			taskInlineDates.setScheduledDate,
-			updateTaskDates,
-		],
-	);
-
 	const backlinkControls = useMemo(
 		() => ({
 			show: showBacklinks,
@@ -1005,7 +960,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						}
 						table={tableControls}
 						codeBlock={codeBlockControls}
-						task={taskControls}
 						backlinks={backlinkControls}
 					/>
 				) : null}

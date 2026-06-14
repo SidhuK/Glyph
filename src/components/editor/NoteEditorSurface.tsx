@@ -1,5 +1,4 @@
 import {
-	Calendar03Icon,
 	Copy01Icon,
 	LocationAdd01Icon,
 	SourceCodeIcon,
@@ -53,25 +52,6 @@ interface NoteEditorSurfaceProps {
 		onCopy: () => void;
 	};
 
-	task: {
-		selectedAnchor: { left: number; ordinal: number; top: number } | null;
-		scheduleAnchor: { left: number; ordinal: number; top: number } | null;
-		onScheduleAnchorChange: (
-			anchor: { left: number; ordinal: number; top: number } | null,
-		) => void;
-		onOpenPopover: (anchor: {
-			left: number;
-			ordinal: number;
-			top: number;
-		}) => void;
-		scheduledDate: string;
-		dueDate: string;
-		onScheduledDateChange: (date: string) => void;
-		onDueDateChange: (date: string) => void;
-		onResetDraftDates: () => void;
-		onUpdateDates: (scheduled: string, due: string) => void;
-	};
-
 	backlinks: {
 		show: boolean;
 		items: BacklinkItem[];
@@ -89,7 +69,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	onExtractSelectionToNote,
 	table,
 	codeBlock,
-	task,
 	backlinks,
 }: NoteEditorSurfaceProps) {
 	const hostClassName = [
@@ -235,92 +214,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						strokeWidth={0.9}
 					/>
 				</button>
-			) : null}
-			{canEdit && task.selectedAnchor ? (
-				<Popover
-					open={task.scheduleAnchor?.ordinal === task.selectedAnchor.ordinal}
-					onOpenChange={(open) => {
-						if (!open) {
-							task.onResetDraftDates();
-							task.onScheduleAnchorChange(null);
-						}
-					}}
-				>
-					<PopoverTrigger asChild>
-						<button
-							type="button"
-							className="taskInlineDateBtn"
-							style={{
-								top: `${task.selectedAnchor.top}px`,
-								left: `${task.selectedAnchor.left}px`,
-							}}
-							onClick={() => {
-								if (!task.selectedAnchor) return;
-								void task.onOpenPopover(task.selectedAnchor);
-							}}
-							title="Schedule selected task"
-							aria-label="Schedule selected task"
-						>
-							<HugeiconsIcon
-								icon={Calendar03Icon}
-								size="var(--icon-sm)"
-								strokeWidth={0.9}
-								aria-hidden
-							/>
-						</button>
-					</PopoverTrigger>
-					<PopoverContent
-						className="tasksDatePopover taskInlineDatePopover"
-						align="start"
-					>
-						<div className="tasksDateNativeFields">
-							<label className="tasksDateNativeField">
-								<span className="tasksDateFieldLabel">scheduled</span>
-								<input
-									type="date"
-									value={task.scheduledDate}
-									onChange={(event) => {
-										task.onScheduledDateChange(event.currentTarget.value);
-									}}
-									onBlur={(event) =>
-										task.onUpdateDates(event.currentTarget.value, task.dueDate)
-									}
-									onKeyDown={(event) => {
-										if (event.key !== "Enter") return;
-										event.preventDefault();
-										task.onUpdateDates(event.currentTarget.value, task.dueDate);
-									}}
-									aria-label="Scheduled date"
-								/>
-							</label>
-							<label className="tasksDateNativeField">
-								<span className="tasksDateFieldLabel">due</span>
-								<input
-									type="date"
-									value={task.dueDate}
-									onChange={(event) => {
-										task.onDueDateChange(event.currentTarget.value);
-									}}
-									onBlur={(event) =>
-										task.onUpdateDates(
-											task.scheduledDate,
-											event.currentTarget.value,
-										)
-									}
-									onKeyDown={(event) => {
-										if (event.key !== "Enter") return;
-										event.preventDefault();
-										task.onUpdateDates(
-											task.scheduledDate,
-											event.currentTarget.value,
-										);
-									}}
-									aria-label="Due date"
-								/>
-							</label>
-						</div>
-					</PopoverContent>
-				</Popover>
 			) : null}
 			{backlinks.show && backlinks.items.length > 0 ? (
 				<div className="editorBacklinks" aria-label="Backlinks">

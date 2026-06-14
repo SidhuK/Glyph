@@ -3,7 +3,6 @@ import {
 	ChartRelationshipIcon,
 	CollectionsBookmarkIcon,
 	ExpandParagraphIcon,
-	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
 	SearchIcon,
@@ -52,9 +51,7 @@ interface SidebarContentProps {
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
-	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
-	onPrefetchCalendar: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
@@ -62,7 +59,7 @@ interface SidebarContentProps {
 	onOpenConnections: () => void;
 	onOpenCommandPalette: () => void;
 	spacePath: string | null;
-	activeTopSection: "home" | "all-notes" | "connections" | "databases" | null;
+	activeTopSection: "all-notes" | "connections" | "databases" | null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -126,9 +123,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onDeletePath,
 	onMovePath,
 	onSelectTag,
-	onOpenCalendar,
 	onOpenDatabases,
-	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
@@ -414,27 +409,6 @@ export const SidebarContent = memo(function SidebarContent({
 									{formatShortcutForPlatform(newNoteShortcut)}
 								</span>
 							) : null}
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="dashboard"
-							data-active={activeTopSection === "home" ? "true" : "false"}
-							aria-label="Home"
-							aria-pressed={activeTopSection === "home"}
-							aria-current={activeTopSection === "home" ? "page" : undefined}
-							onClick={onOpenCalendar}
-							onMouseEnter={onPrefetchCalendar}
-							onFocus={onPrefetchCalendar}
-							title="Open Home"
-							style={{ marginTop: 8 }}
-						>
-							<HugeiconsIcon
-								icon={Home01Icon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">Home</span>
 						</button>
 						<button
 							type="button"

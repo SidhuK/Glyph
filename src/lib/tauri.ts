@@ -432,6 +432,16 @@ export interface PersonCount {
 	count: number;
 }
 
+export interface NoteTaskSummary {
+	total_count: number;
+	completed_count: number;
+	open_count: number;
+}
+
+interface NoteTaskSummaryItem extends NoteTaskSummary {
+	note_path: string;
+}
+
 export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
@@ -442,21 +452,6 @@ export interface DirChildSummary {
 
 interface IndexRebuildResult {
 	indexed: number;
-}
-
-interface TaskDateInfo {
-	scheduled_date: string;
-	due_date: string;
-}
-
-export interface NoteTaskSummary {
-	total_count: number;
-	completed_count: number;
-	open_count: number;
-}
-
-interface NoteTaskSummaryItem extends NoteTaskSummary {
-	note_path: string;
 }
 
 interface AiContextAttachment {
@@ -493,69 +488,6 @@ interface AiContextBuildResponse {
 	payload: string;
 	manifest: AiContextManifestResponse;
 	resolved_paths: string[];
-}
-
-export interface TaskItem {
-	task_id: string;
-	note_id: string;
-	note_title: string;
-	note_path: string;
-	line_start: number;
-	raw_text: string;
-	checked: boolean;
-	status: string;
-	priority: number;
-	due_date: string | null;
-	scheduled_date: string | null;
-	section: string | null;
-	note_updated: string;
-}
-
-export type GlobalTaskFilter =
-	| "today"
-	| "overdue"
-	| "inbox"
-	| "no_date"
-	| "all";
-
-interface CalendarDaySummary {
-	date: string;
-	task_count: number;
-	note_activity_count: number;
-	has_daily_note: boolean;
-	needs_daily_note_setup: boolean;
-}
-
-export interface CalendarNoteActivityItem {
-	note_id: string;
-	note_path: string;
-	title: string;
-	preview?: string | null;
-	tags: string[];
-	created: string;
-	updated: string;
-	created_on_day: boolean;
-	edited_on_day: boolean;
-}
-
-interface CalendarDayDetail {
-	selected_date: string;
-	note_activity: CalendarNoteActivityItem[];
-	daily_note_path: string | null;
-	has_daily_note: boolean;
-	daily_note_configured: boolean;
-}
-
-interface CalendarTaskGroups {
-	overdue: TaskItem[];
-	for_day: TaskItem[];
-	ongoing: TaskItem[];
-}
-
-export interface CalendarRangeResponse {
-	days: CalendarDaySummary[];
-	detail: CalendarDayDetail;
-	tasks: CalendarTaskGroups;
 }
 
 type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
@@ -791,14 +723,8 @@ interface TauriCommands {
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
 	show_quick_note_window: CommandDef<void, void>;
 	hide_quick_note_window: CommandDef<void, void>;
-	show_quick_task_window: CommandDef<void, void>;
-	hide_quick_task_window: CommandDef<void, void>;
 	show_main_window: CommandDef<void, void>;
 	set_quick_note_global_shortcut: CommandDef<
-		{ accelerator?: string | null },
-		void
-	>;
-	set_quick_task_global_shortcut: CommandDef<
 		{ accelerator?: string | null },
 		void
 	>;
@@ -1001,15 +927,6 @@ interface TauriCommands {
 		AllDocsItem[]
 	>;
 	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;
-	calendar_query_range: CommandDef<
-		{
-			start_date: string;
-			end_date: string;
-			selected_date: string;
-			daily_notes_folder?: string | null;
-		},
-		CalendarRangeResponse
-	>;
 	tags_list: CommandDef<
 		{ limit?: number | null; offset?: number | null },
 		TagCount[]
@@ -1017,36 +934,6 @@ interface TauriCommands {
 	people_list: CommandDef<
 		{ limit?: number | null; offset?: number | null },
 		PersonCount[]
-	>;
-	tasks_query_global: CommandDef<
-		{
-			filter?: GlobalTaskFilter | null;
-			today_date?: string | null;
-			limit?: number | null;
-		},
-		TaskItem[]
-	>;
-	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
-	task_set_dates: CommandDef<
-		{
-			task_id: string;
-			scheduled_date?: string | null;
-			due_date?: string | null;
-		},
-		void
-	>;
-	task_dates_by_ordinal: CommandDef<
-		{ markdown: string; ordinal: number },
-		TaskDateInfo | null
-	>;
-	task_update_by_ordinal: CommandDef<
-		{
-			markdown: string;
-			ordinal: number;
-			scheduled_date: string;
-			due_date: string;
-		},
-		string | null
 	>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
 	task_summaries_for_paths: CommandDef<

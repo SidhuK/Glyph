@@ -23,11 +23,11 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
 } from "../database/DatabaseNoteAppearanceIcon";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
@@ -177,7 +177,7 @@ interface PrepareAllDocsCardPropsArgs {
 	index: number;
 	sectionIndex: number;
 	selectedNotePath: string | null;
-	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	selectNote: (notePath: string) => void;
 	onOpenFile: AllDocsPaneProps["onOpenFile"];
 }
@@ -187,13 +187,12 @@ function prepareAllDocsCardProps({
 	index,
 	sectionIndex,
 	selectedNotePath,
-	taskSummariesByPath,
+	taskSummariesByPath = {},
 	selectNote,
 	onOpenFile,
 }: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
 	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
-	const taskSummary = taskSummariesByPath[note.note_path];
-
+	const taskSummary = taskSummariesByPath[note.note_path] ?? undefined;
 	return {
 		notePath: note.note_path,
 		title: noteTitle,
