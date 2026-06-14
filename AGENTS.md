@@ -44,12 +44,12 @@ Repo extras: internal product and engineering docs live in `docs/`.
 - **`components/database/`** — Database-note UI: table/board views, source picker, column dialogs, toolbar, cells
 - **`components/licensing/`** — Trial, license gate, lock screen, and settings surfaces
 - **`components/preview/`** — `MarkdownEditorPane`
-- **`components/tasks/`** — `TasksPane`, `TaskRow`, `TaskCheckbox`
+- **`components/checklists/`** — `TaskProgressIndicator` (markdown checklist progress rings)
 - **`components/settings/`** — Settings panes: AI, Appearance (accent, typography), Space, DailyNotes, General, About
 - **`components/ui/`** — shadcn/ui primitives under `shadcn/` plus shared motion helpers in `animations.ts`
 - **`components/Icons/`** — Shared icon wrappers for editor, file, navigation, and action icons
 - **`hooks/`** — Core app hooks such as `useFileTree`, `useFileTreeCRUD`, `useViewLoader`, `useSearch`, `useCommandShortcuts`, `useMenuListeners`, `useDailyNote`, `useRecentFiles`, plus `hooks/database/`
-- **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/`, `views/`, `database/`, and utilities like `settings.ts`, `dailyNotes.ts`, `tasks.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
+- **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/`, `views/`, `database/`, and utilities like `settings.ts`, `dailyNotes.ts`, `checklistSummary.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
 - **`utils/`** — `path.ts`, `window.ts`
 - **`styles/`** — `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
 
@@ -59,7 +59,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 - **`space/`** — Space lifecycle: open/close/create, file `watcher.rs`, `state.rs`
 - **`space_fs/`** — Filesystem ops: listing, summaries, view data, link ops, and `read_write/` for text/preview/path/trash operations
 - **`notes/`** — Note CRUD, attachments, frontmatter/properties helpers, and Tauri commands/types
-- **`index/`** — SQLite index: schema, indexer, search, tags, links, frontmatter/properties, helpers, and `tasks/`
+- **`index/`** — SQLite index: schema, indexer, search, tags, links, frontmatter/properties, helpers, and `checklists/`
 - **`database/`** — Database-note parsing, queries, mutations, config rendering, and shared types
 - **`ai_rig/`** — Rig AI runtime: providers, models, runtime, tools, commands, events, history, audit, store, and context
 - **`ai_codex/`** — Codex/ChatGPT account state, transport, chat flow, and Tauri commands

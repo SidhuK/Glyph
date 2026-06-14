@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
@@ -70,7 +69,6 @@ function menuTitleForDir(path: string) {
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
-		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);

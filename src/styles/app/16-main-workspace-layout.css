@@ -34,8 +34,8 @@
 .canvasPaneHost[data-space-connections="true"]
 	:is(.spaceConnectionsHost, .canvasPaneAwait),
 .canvasPaneHost[data-all-docs="true"] :is(.allDocsPane, .canvasPaneAwait),
-.canvasPaneHost[data-databases="true"] :is(.databaseHostPane, .canvasPaneAwait),
-.canvasPaneHost[data-home="true"] :is(.homePaneHost, .canvasPaneAwait) {
+.canvasPaneHost[data-databases="true"]
+	:is(.databaseHostPane, .canvasPaneAwait) {
 	position: absolute;
 	inset: 0;
 	z-index: 0;
@@ -44,8 +44,7 @@
 .canvasPaneHost:is(
 		[data-space-connections="true"],
 		[data-all-docs="true"],
-		[data-databases="true"],
-		[data-home="true"]
+		[data-databases="true"]
 	)
 	.mainTabBarTransition {
 	position: relative;
@@ -56,15 +55,13 @@
 .canvasPaneHost:is(
 		[data-space-connections="true"],
 		[data-all-docs="true"],
-		[data-databases="true"],
-		[data-home="true"]
+		[data-databases="true"]
 	)
 	.mainTabsBarWrap,
 .canvasPaneHost:is(
 		[data-space-connections="true"],
 		[data-all-docs="true"],
-		[data-databases="true"],
-		[data-home="true"]
+		[data-databases="true"]
 	)
 	.mainTabsBar {
 	background: transparent;
@@ -74,8 +71,7 @@
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 }
 
-.canvasPaneAwait[data-variant="databases"],
-.canvasPaneAwait[data-variant="home"] {
+.canvasPaneAwait[data-variant="databases"] {
 	background: var(--bg-primary);
 }
 

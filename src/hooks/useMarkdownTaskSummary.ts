@@ -1,48 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+	EMPTY_CHECKLIST_SUMMARY,
+	summarizeChecklistsFromMarkdown,
+} from "../lib/checklistSummary";
 import { type NoteTaskSummary, invoke } from "../lib/tauri";
 
-const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
-	total_count: 0,
-	completed_count: 0,
-	open_count: 0,
-};
-
-function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
-	let total_count = 0;
-	let completed_count = 0;
-
-	for (const line of markdown.split(/\r?\n/)) {
-		const match = line.match(/^\s*[-*+] \[([ xX])\] /);
-		if (!match) continue;
-		total_count += 1;
-		if (match[1].toLowerCase() === "x") {
-			completed_count += 1;
-		}
-	}
-
-	return {
-		total_count,
-		completed_count,
-		open_count: total_count - completed_count,
-	};
-}
-
 export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
-	const [taskSummary, setTaskSummary] =
-		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
+	const [taskSummary, setTaskSummary] = useState<NoteTaskSummary>(
+		EMPTY_CHECKLIST_SUMMARY,
+	);
 	const timerRef = useRef<number | null>(null);
 	const requestTokenRef = useRef(0);
 	const mountedRef = useRef(true);
 
 	const fallbackTaskSummary = useMemo(
-		() => (enabled ? summarizeTasksFromMarkdown(markdown) : EMPTY_TASK_SUMMARY),
+		() =>
+			enabled
+				? summarizeChecklistsFromMarkdown(markdown)
+				: EMPTY_CHECKLIST_SUMMARY,
 		[enabled, markdown],
 	);
 	const visibleTaskSummary = enabled
 		? taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
 			? taskSummary
 			: fallbackTaskSummary
-		: taskSummary;
+		: EMPTY_CHECKLIST_SUMMARY;
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -56,13 +38,18 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 	}, []);
 
 	useEffect(() => {
+		if (!enabled) {
+			setTaskSummary(EMPTY_CHECKLIST_SUMMARY);
+			return;
+		}
+
+		setTaskSummary(fallbackTaskSummary);
+
 		if (timerRef.current !== null) {
 			window.clearTimeout(timerRef.current);
 			timerRef.current = null;
 		}
 		requestTokenRef.current += 1;
-		setTaskSummary(EMPTY_TASK_SUMMARY);
-		if (!enabled) return;
 
 		const requestToken = requestTokenRef.current;
 
@@ -73,18 +60,17 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 					if (!mountedRef.current || requestTokenRef.current !== requestToken) {
 						return;
 					}
-					const fallback = summarizeTasksFromMarkdown(markdown);
 					setTaskSummary(
-						summary.total_count > 0 || fallback.total_count === 0
+						summary.total_count > 0 || fallbackTaskSummary.total_count === 0
 							? summary
-							: fallback,
+							: fallbackTaskSummary,
 					);
 				})
 				.catch(() => {
 					if (!mountedRef.current || requestTokenRef.current !== requestToken) {
 						return;
 					}
-					setTaskSummary(summarizeTasksFromMarkdown(markdown));
+					setTaskSummary(fallbackTaskSummary);
 				});
 		}, 90);
 
@@ -94,7 +80,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 				timerRef.current = null;
 			}
 		};
-	}, [enabled, markdown]);
+	}, [enabled, fallbackTaskSummary, markdown]);
 
 	return visibleTaskSummary;
 }

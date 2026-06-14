@@ -10,9 +10,9 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,

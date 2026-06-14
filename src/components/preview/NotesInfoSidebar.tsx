@@ -9,6 +9,7 @@ import type {
 	WorkspaceDatabasePreviewContext,
 } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { NotePropertiesPanel } from "../editor/NotePropertiesPanel";
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
 import {
@@ -16,7 +17,6 @@ import {
 	dispatchWikiLinkClick,
 } from "../editor/markdown/editorEvents";
 import type { NoteInlineEditorMode } from "../editor/types";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 
 interface SidebarBacklinkItem {
 	id: string;

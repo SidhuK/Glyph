@@ -14,7 +14,6 @@ const {
 	scopeRef,
 	pinnedFilesRef,
 	togglePinnedFileMock,
-	taskSummariesRef,
 } = vi.hoisted(() => ({
 	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
@@ -22,12 +21,6 @@ const {
 	scopeRef: { current: { kind: "all" } as FolioScope },
 	pinnedFilesRef: { current: [] as string[] },
 	togglePinnedFileMock: vi.fn(),
-	taskSummariesRef: {
-		current: {} as Record<
-			string,
-			{ total_count: number; completed_count: number; open_count: number }
-		>,
-	},
 }));
 
 vi.mock("../../contexts", () => ({
@@ -64,10 +57,6 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 
 vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: () => {},
-}));
-
-vi.mock("../../hooks/useTaskSummariesForPaths", () => ({
-	useTaskSummariesForPaths: () => taskSummariesRef.current,
 }));
 
 (
@@ -126,7 +115,7 @@ describe("FolioNotesListPane", () => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
 		pinnedFilesRef.current = [];
-		taskSummariesRef.current = {};
+
 		loadAllDocsMock.mockResolvedValue(notes);
 		invokeMock.mockResolvedValue([]);
 		queryClient = new QueryClient({
@@ -229,30 +218,6 @@ describe("FolioNotesListPane", () => {
 				.querySelector('[data-folio-note-path="Ideas/Sketch.md"]')
 				?.getAttribute("data-pinned"),
 		).toBe("true");
-	});
-
-	it("renders task progress rings on note cards", async () => {
-		taskSummariesRef.current = {
-			"Projects/Roadmap.md": {
-				total_count: 4,
-				completed_count: 3,
-				open_count: 1,
-			},
-		};
-
-		await act(async () => renderPane());
-		await waitFor(() => container.textContent?.includes("Roadmap") ?? false);
-
-		expect(
-			container.querySelector(
-				'[data-folio-note-path="Projects/Roadmap.md"] [aria-label="3 of 4 tasks completed"]',
-			),
-		).toBeTruthy();
-		expect(
-			container.querySelector(
-				'[data-folio-note-path="Ideas/Sketch.md"] .folioNoteTaskProgress',
-			),
-		).toBeNull();
 	});
 
 	it("sorts by edited time when selected", async () => {

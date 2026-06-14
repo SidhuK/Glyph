@@ -495,7 +495,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							iconNameForTag={iconNameForTag}
 							taskSummary={
 								note.is_markdown
-									? (taskSummariesByPath[note.note_path] ?? null)
+									? (taskSummariesByPath?.[note.note_path] ?? null)
 									: null
 							}
 						/>
@@ -526,7 +526,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 							iconNameForTag={iconNameForTag}
 							taskSummary={
 								note.is_markdown
-									? (taskSummariesByPath[note.note_path] ?? null)
+									? (taskSummariesByPath?.[note.note_path] ?? null)
 									: null
 							}
 						/>

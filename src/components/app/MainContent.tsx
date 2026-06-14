@@ -27,19 +27,16 @@ import {
 	type PathRemovedDetail,
 	type PathRenamedDetail,
 } from "../../lib/appEvents";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedAllDocs,
-	getPrefetchedCalendarData,
 	getPrefetchedDatabaseDocument,
 	getPrefetchedDatabaseRows,
 	getPrefetchedNote,
 	prefetchAllDocs,
-	prefetchCalendarData,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -51,7 +48,6 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import { todayIsoDateLocal } from "../../lib/tasks";
 import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { cn } from "../../lib/utils";
@@ -78,18 +74,11 @@ import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
-import {
-	loadAllDocsPane,
-	loadCalendarPane,
-	loadDatabasesPane,
-	loadTasksPane,
-} from "./prefetchablePanes";
+import { loadAllDocsPane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
 const DatabasesPane = lazy(loadDatabasesPane);
-const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
-const TasksPane = lazy(loadTasksPane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
@@ -100,17 +89,6 @@ const SpaceConnectionsView = lazy(() =>
 		default: module.SpaceConnectionsView,
 	})),
 );
-
-type HomeView = "home" | "tasks";
-
-function readStorage(key: string): string | null {
-	if (typeof window === "undefined") return null;
-	try {
-		return window.localStorage.getItem(key);
-	} catch {
-		return null;
-	}
-}
 
 interface EmptyTip {
 	key: string;
@@ -312,8 +290,6 @@ interface MainContentProps {
 	databasesOpenRequest: DatabasesOpenRequest;
 	onConsumeDatabasesOpenRequest?: () => void;
 	dailyNoteSetupNoticeRequest: number;
-	homeView: HomeView;
-	onHomeViewChange: (view: HomeView) => void;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
 }
@@ -418,8 +394,6 @@ export const MainContent = memo(function MainContent({
 	databasesOpenRequest,
 	onConsumeDatabasesOpenRequest,
 	dailyNoteSetupNoticeRequest,
-	homeView,
-	onHomeViewChange,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
@@ -568,18 +542,9 @@ export const MainContent = memo(function MainContent({
 		let cancelled = false;
 		const run = () => {
 			if (cancelled) return;
-			void loadCalendarPane();
 			void loadDatabasesPane();
 			void loadAllDocsPane();
-			void loadTasksPane();
 			void prefetchAllDocs(null);
-			void prefetchCalendarData({
-				anchorDate:
-					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-				selectedDate:
-					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-				dailyNotesFolder,
-			});
 			void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
 		};
 		if (typeof window.requestIdleCallback === "function") {
@@ -594,7 +559,7 @@ export const MainContent = memo(function MainContent({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [dailyNotesFolder, databasesOpenRequest.databaseId, spacePath]);
+	}, [databasesOpenRequest.databaseId, spacePath]);
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
@@ -612,67 +577,6 @@ export const MainContent = memo(function MainContent({
 				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
 				</Suspense>
-			);
-		}
-		if (viewerPath === CALENDAR_TAB_ID) {
-			const initialCalendarData = getPrefetchedCalendarData({
-				anchorDate:
-					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-				selectedDate:
-					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-				dailyNotesFolder,
-			});
-			const isTasksView = homeView === "tasks";
-			return (
-				<div className="homePaneHost">
-					<div className="homePaneSwitchWrap">
-						<div
-							className="homePaneSwitch"
-							data-active-tab={isTasksView ? "tasks" : "home"}
-						>
-							<div className="homePaneSwitchSlider" />
-							<button
-								type="button"
-								className="homePaneSwitchTab"
-								data-active={!isTasksView ? "true" : "false"}
-								aria-pressed={!isTasksView}
-								onClick={() => onHomeViewChange("home")}
-							>
-								Home
-							</button>
-							<button
-								type="button"
-								className="homePaneSwitchTab"
-								data-active={isTasksView ? "true" : "false"}
-								aria-pressed={isTasksView}
-								onClick={() => {
-									void loadTasksPane();
-									onHomeViewChange("tasks");
-								}}
-							>
-								Tasks
-							</button>
-						</div>
-					</div>
-					<div key={homeView} className="homePaneContent">
-						{isTasksView ? (
-							<Suspense fallback={<CanvasPaneAwait variant="home" />}>
-								<TasksPane
-									onOpenFile={onOpenFile}
-									onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-								/>
-							</Suspense>
-						) : (
-							<Suspense fallback={<CanvasPaneAwait variant="home" />}>
-								<CalendarPane
-									initialData={initialCalendarData}
-									onOpenFile={onOpenFile}
-									onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-								/>
-							</Suspense>
-						)}
-					</div>
-				</div>
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
@@ -741,12 +645,8 @@ export const MainContent = memo(function MainContent({
 		fileTree,
 		onOpenFile,
 		onOpenFileInNewTab,
-		onOpenDailyNotesSettings,
-		onHomeViewChange,
 		databasesOpenRequest,
 		onConsumeDatabasesOpenRequest,
-		dailyNotesFolder,
-		homeView,
 		viewerPath,
 		setDirtyByPath,
 	]);
@@ -763,17 +663,6 @@ export const MainContent = memo(function MainContent({
 				void prefetchAllDocs(null);
 				return;
 			}
-			if (target === CALENDAR_TAB_ID) {
-				void loadCalendarPane();
-				void prefetchCalendarData({
-					anchorDate:
-						readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-					selectedDate:
-						readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-					dailyNotesFolder,
-				});
-				return;
-			}
 			if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
 				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
@@ -783,7 +672,7 @@ export const MainContent = memo(function MainContent({
 				return;
 			}
 		},
-		[dailyNotesFolder, databasesOpenRequest.databaseId],
+		[databasesOpenRequest.databaseId],
 	);
 
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
@@ -809,14 +698,12 @@ export const MainContent = memo(function MainContent({
 	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
 	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
-	const isHomeTab = viewerPath === CALENDAR_TAB_ID;
 	const editorCanvas = (
 		<div
 			className="canvasPaneHost"
 			data-space-connections={isSpaceConnectionsTab ? "true" : undefined}
 			data-all-docs={isAllDocsTab ? "true" : undefined}
 			data-databases={isDatabasesTab ? "true" : undefined}
-			data-home={isHomeTab ? "true" : undefined}
 		>
 			<DailyNotesSetupToast
 				visible={dailyNoteSetupToastVisible}

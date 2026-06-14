@@ -156,6 +156,18 @@
 	pointer-events: none;
 }
 
+.tiptapContentInline
+	ul[data-type="taskList"]
+	li[data-type="taskItem"]
+	> div
+	> p.is-editor-empty:first-child::before,
+.tiptapContentInline
+	li[data-type="taskItem"]
+	> div
+	> p.is-editor-empty:first-child::before {
+	float: none;
+}
+
 .tiptapContentInline {
 	letter-spacing: 0;
 	line-height: 1.68;
@@ -763,28 +775,43 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li,
+.tiptapContentInline li[data-type="taskItem"],
 .tiptapContentInline li[data-checked] {
 	display: flex !important;
 	align-items: flex-start;
-	gap: 8px;
+	gap: 0.55em;
 	list-style: none !important;
 	margin: 0 0 var(--space-2);
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li::marker,
+.tiptapContentInline li[data-type="taskItem"]::marker,
 .tiptapContentInline li[data-checked]::marker {
 	content: "";
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > label,
+.tiptapContentInline li[data-type="taskItem"] > label,
 .tiptapContentInline li[data-checked] > label {
-	margin: 2px 0 0;
+	margin: calc((1.68em - var(--icon-md)) / 2) 0 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex: 0 0 auto;
-	width: auto;
+	flex: 0 0 var(--icon-md);
+	width: var(--icon-md);
+	height: var(--icon-md);
 	position: relative;
+	user-select: none;
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li > label > span,
+.tiptapContentInline li[data-type="taskItem"] > label > span,
+.tiptapContentInline li[data-checked] > label > span {
+	position: absolute;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+	pointer-events: none;
 }
 
 .tiptapContentInline
@@ -792,9 +819,13 @@
 	> li
 	> label
 	input[type="checkbox"],
+.tiptapContentInline li[data-type="taskItem"] > label input[type="checkbox"],
 .tiptapContentInline li[data-checked] > label input[type="checkbox"] {
 	width: var(--icon-md);
 	height: var(--icon-md);
+	margin: 0;
+	padding: 0;
+	flex: 0 0 auto;
 	accent-color: var(--interactive-accent);
 	cursor: pointer;
 	transition: opacity 180ms ease, transform 180ms ease;
@@ -811,13 +842,16 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > label::after,
+.tiptapContentInline li[data-type="taskItem"] > label::after,
 .tiptapContentInline li[data-checked] > label::after {
 	content: "";
 	position: absolute;
-	top: 1px;
-	left: 4px;
+	top: 50%;
+	left: 50%;
 	width: 4px;
 	height: 8px;
+	margin-top: -5px;
+	margin-left: -3px;
 	border-right: 2px solid var(--interactive-accent);
 	border-bottom: 2px solid var(--interactive-accent);
 	pointer-events: none;
@@ -936,25 +970,32 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div,
+.tiptapContentInline li[data-type="taskItem"] > div,
 .tiptapContentInline li[data-checked] > div {
+	flex: 1 1 auto;
 	min-width: 0;
-	width: 100%;
+	width: auto;
 	display: block;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p,
+.tiptapContentInline li[data-type="taskItem"] > div > p,
 .tiptapContentInline li[data-checked] > div > p {
 	min-width: 1px;
+	margin: 0;
+	line-height: inherit;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p:first-child,
+.tiptapContentInline li[data-type="taskItem"] > div > p:first-child,
 .tiptapContentInline li[data-checked] > div > p:first-child {
 	margin: 0;
-	display: inline-block;
+	display: block;
 	min-width: 1px;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p:not(:first-child),
+.tiptapContentInline li[data-type="taskItem"] > div > p:not(:first-child),
 .tiptapContentInline li[data-checked] > div > p:not(:first-child) {
 	display: block;
 	margin: var(--space-1) 0 0;
@@ -968,6 +1009,7 @@
 	> li
 	> div
 	> :not(p):not(:first-child),
+.tiptapContentInline li[data-type="taskItem"] > div > :not(p):not(:first-child),
 .tiptapContentInline li[data-checked] > div > :not(p):not(:first-child) {
 	margin-top: var(--space-1);
 	color: var(--text-secondary);
@@ -978,6 +1020,11 @@
 .tiptapContentInline
 	ul[data-type="taskList"]
 	> li
+	> div
+	> :not(p):not(:first-child)
+	p,
+.tiptapContentInline
+	li[data-type="taskItem"]
 	> div
 	> :not(p):not(:first-child)
 	p,

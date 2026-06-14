@@ -75,8 +75,6 @@
 	);
 	--ai-accent-chat: var(--color-blue-dark-400);
 	--ai-accent-create: var(--color-red-dark-300);
-	--task-bucket-today: var(--color-yellow-dark-400);
-	--task-bucket-upcoming: var(--color-orange-dark-400);
 	--callout-info: var(--color-blue-dark-400);
 	--callout-tip: var(--color-green-dark-400);
 	--callout-warning: var(--color-yellow-dark-400);
@@ -123,8 +121,6 @@
 	--status-danger-border: color-mix(in srgb, #dc322f 40%, transparent);
 	--ai-accent-chat: #268bd2;
 	--ai-accent-create: #cb4b16;
-	--task-bucket-today: #b58900;
-	--task-bucket-upcoming: #cb4b16;
 	--callout-info: #268bd2;
 	--callout-tip: #859900;
 	--callout-warning: #b58900;
@@ -171,8 +167,6 @@
 	--status-danger-border: color-mix(in srgb, #ff7b72 40%, transparent);
 	--ai-accent-chat: #58a6ff;
 	--ai-accent-create: #ff7b72;
-	--task-bucket-today: #d29922;
-	--task-bucket-upcoming: #db6d28;
 	--callout-info: #58a6ff;
 	--callout-tip: #3fb950;
 	--callout-warning: #d29922;
@@ -219,8 +213,6 @@
 	--status-danger-border: color-mix(in srgb, #bf616a 40%, transparent);
 	--ai-accent-chat: #88c0d0;
 	--ai-accent-create: #bf616a;
-	--task-bucket-today: #ebcb8b;
-	--task-bucket-upcoming: #d08770;
 	--callout-info: #88c0d0;
 	--callout-tip: #a3be8c;
 	--callout-warning: #ebcb8b;
@@ -267,8 +259,6 @@
 	--status-danger-border: color-mix(in srgb, #f7768e 40%, transparent);
 	--ai-accent-chat: #7dcfff;
 	--ai-accent-create: #f7768e;
-	--task-bucket-today: #e0af68;
-	--task-bucket-upcoming: #bb9af7;
 	--callout-info: #7dcfff;
 	--callout-tip: #9ece6a;
 	--callout-warning: #e0af68;
@@ -315,8 +305,6 @@
 	--status-danger-border: color-mix(in srgb, #ff5555 40%, transparent);
 	--ai-accent-chat: #8be9fd;
 	--ai-accent-create: #ff5555;
-	--task-bucket-today: #f1fa8c;
-	--task-bucket-upcoming: #ffb86c;
 	--callout-info: #8be9fd;
 	--callout-tip: #50fa7b;
 	--callout-warning: #f1fa8c;
@@ -468,8 +456,6 @@
 	--status-danger-border: color-mix(in srgb, #f38ba8 40%, transparent);
 	--ai-accent-chat: #89b4fa;
 	--ai-accent-create: #f5c2e7;
-	--task-bucket-today: #f9e2af;
-	--task-bucket-upcoming: #fab387;
 	--callout-info: #74c7ec;
 	--callout-tip: #a6e3a1;
 	--callout-warning: #f9e2af;
@@ -505,8 +491,6 @@
 	);
 	--ai-accent-chat: var(--interactive-accent);
 	--ai-accent-create: var(--accent-color);
-	--task-bucket-today: var(--status-warning-fg);
-	--task-bucket-upcoming: var(--accent-color);
 	--callout-info: var(--status-info-fg);
 	--callout-tip: var(--status-success-fg);
 	--callout-warning: var(--status-warning-fg);
@@ -550,8 +534,6 @@
 	--status-danger-border: color-mix(in srgb, #fb4934 40%, transparent);
 	--ai-accent-chat: #83a598;
 	--ai-accent-create: #fe8019;
-	--task-bucket-today: #fabd2f;
-	--task-bucket-upcoming: #fe8019;
 	--callout-info: #83a598;
 	--callout-tip: #b8bb26;
 	--callout-warning: #fabd2f;
@@ -598,8 +580,6 @@
 	--status-danger-border: color-mix(in srgb, #f92672 40%, transparent);
 	--ai-accent-chat: #819aff;
 	--ai-accent-create: #f92672;
-	--task-bucket-today: #e6db74;
-	--task-bucket-upcoming: #fd971f;
 	--callout-info: #819aff;
 	--callout-tip: #a6e22e;
 	--callout-warning: #e6db74;
@@ -646,8 +626,6 @@
 	--status-danger-border: color-mix(in srgb, #d95757 40%, transparent);
 	--ai-accent-chat: #39bae6;
 	--ai-accent-create: #e6b450;
-	--task-bucket-today: #ffb454;
-	--task-bucket-upcoming: #ff8f40;
 	--callout-info: #39bae6;
 	--callout-tip: #aad94c;
 	--callout-warning: #ffb454;
@@ -694,8 +672,6 @@
 	--status-danger-border: color-mix(in srgb, #ff8080 40%, transparent);
 	--ai-accent-chat: #99ffe4;
 	--ai-accent-create: #ff7300;
-	--task-bucket-today: #ffc799;
-	--task-bucket-upcoming: #ff7300;
 	--callout-info: #a0a0a0;
 	--callout-tip: #99ffe4;
 	--callout-warning: #ffc799;
@@ -742,8 +718,6 @@
 	--status-danger-border: color-mix(in srgb, #d14d41 40%, transparent);
 	--ai-accent-chat: #4385be;
 	--ai-accent-create: #ce5d97;
-	--task-bucket-today: #d0a215;
-	--task-bucket-upcoming: #da702c;
 	--callout-info: #4385be;
 	--callout-tip: #879a39;
 	--callout-warning: #d0a215;
@@ -790,8 +764,6 @@
 	--status-danger-border: color-mix(in srgb, #e67e80 40%, transparent);
 	--ai-accent-chat: #7fbbb3;
 	--ai-accent-create: #a7c080;
-	--task-bucket-today: #dbbc7f;
-	--task-bucket-upcoming: #e69875;
 	--callout-info: #7fbbb3;
 	--callout-tip: #a7c080;
 	--callout-warning: #dbbc7f;

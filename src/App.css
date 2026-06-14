@@ -33,7 +33,6 @@
 @import "./styles/app/32-command-palette.css";
 @import "./styles/app/33-model-combobox.css";
 @import "./styles/app/35-sidebar-nav.css";
-@import "./styles/app/36-tasks.css";
 @import "./styles/app/37-database-pickers.css";
 @import "./styles/app/37-database.css";
 @import "./styles/app/37-database-collections.css";
@@ -44,7 +43,6 @@
 @import "./styles/app/38-licensing.css";
 @import "./styles/app/39-floating-toc.css";
 @import "./styles/app/40-template-picker.css";
-@import "./styles/app/42-calendar.css";
 @import "./styles/app/45-local-connections.css";
 @import "./styles/app/46-quick-note.css";
 @import "./styles/app/47-external-markdown.css";

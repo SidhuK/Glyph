@@ -1,3 +1,4 @@
+pub mod checklists;
 pub mod commands;
 pub(crate) mod db;
 mod frontmatter;
@@ -10,7 +11,6 @@ pub(crate) mod schema;
 pub(crate) mod search_advanced;
 mod search_hybrid;
 pub(crate) mod tags;
-mod tasks;
 mod types;
 
 pub use db::open_db;

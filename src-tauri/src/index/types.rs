@@ -119,10 +119,3 @@ pub struct PersonCount {
     pub handle: String,
     pub count: u32,
 }
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub struct TaskDateInfo {
-    pub scheduled_date: String,
-    pub due_date: String,
-}

@@ -372,37 +372,6 @@
 	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 }
 
-.taskInlineDateBtn {
-	position: absolute;
-	left: calc(
-		var(--editor-readable-content-gutter-compact) +
-		var(--heading-toggle-rail-width) +
-		var(--heading-rail-gap) -
-		1px
-	);
-	z-index: 15;
-	width: 18px;
-	height: 18px;
-	border: none;
-	background: transparent;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-	border-radius: var(--radius-sm);
-	transform: translateY(-1px);
-}
-
-.taskInlineDateBtn:hover {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
-}
-
-.taskInlineDatePopover {
-	width: 286px;
-}
-
 .slashCommandMenu {
 	position: fixed;
 	min-width: 220px;

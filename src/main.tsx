@@ -6,7 +6,6 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
-import { QuickTaskWindow } from "./components/quick-task/QuickTaskWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyEditorWidthMode,
@@ -24,7 +23,6 @@ import {
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 	MAIN_WINDOW_LABEL,
 	QUICK_NOTE_WINDOW_LABEL,
-	QUICK_TASK_WINDOW_LABEL,
 } from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
@@ -243,7 +241,6 @@ function currentWindowLabel(): string {
 
 const windowLabel = currentWindowLabel();
 const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
-const isQuickTaskWindow = windowLabel === QUICK_TASK_WINDOW_LABEL;
 const isExternalMarkdownWindow = windowLabel.startsWith(
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 );
@@ -254,8 +251,6 @@ ReactDOM.createRoot(rootEl).render(
 			<ThemeAndTypographyBridge />
 			{isQuickNoteWindow ? (
 				<QuickNoteWindow />
-			) : isQuickTaskWindow ? (
-				<QuickTaskWindow />
 			) : isExternalMarkdownWindow ? (
 				<ExternalMarkdownWindow />
 			) : (

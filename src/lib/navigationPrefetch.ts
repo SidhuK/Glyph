@@ -2,7 +2,7 @@ import {
 	clearMarkdownDocCache,
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
-import { buildWeekRange } from "./calendar";
+import { summarizeChecklistsFromMarkdown } from "./checklistSummary";
 import {
 	readStoredSelectedDatabaseId,
 	resolveSelectedDatabaseId,
@@ -12,8 +12,8 @@ import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
 	AllDocsItem,
-	CalendarRangeResponse,
 	DatabaseRow,
+	NoteTaskSummary,
 	TextFileDoc,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseQueryResult,
@@ -52,26 +52,13 @@ const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
 	Date.parse(right.updated) - Date.parse(left.updated) ||
 	left.note_path.localeCompare(right.note_path);
 
+type TaskSummaryCache = Record<string, NoteTaskSummary>;
+
 export const navigationQueryKeys = {
 	all: ["navigation"] as const,
 	notes: () => [...navigationQueryKeys.all, "notes"] as const,
 	note: (path: string) =>
 		[...navigationQueryKeys.notes(), path.trim()] as const,
-	calendar: () => [...navigationQueryKeys.all, "calendar"] as const,
-	calendarRange: (args: {
-		anchorDate: string;
-		selectedDate: string;
-		dailyNotesFolder: string | null;
-	}) => {
-		const range = buildWeekRange(args.anchorDate);
-		return [
-			...navigationQueryKeys.calendar(),
-			range.start,
-			range.end,
-			args.selectedDate,
-			args.dailyNotesFolder ?? "",
-		] as const;
-	},
 	databases: () => [...navigationQueryKeys.all, "databases"] as const,
 	databaseSummaries: () =>
 		[...navigationQueryKeys.databases(), "summaries"] as const,
@@ -88,9 +75,6 @@ export const navigationQueryKeys = {
 			databaseId.trim(),
 			viewId.trim(),
 		] as const,
-	tasks: () => [...navigationQueryKeys.all, "tasks"] as const,
-	tasksList: (filter: string) =>
-		[...navigationQueryKeys.tasks(), filter.trim() || "all"] as const,
 	allDocs: () => [...navigationQueryKeys.all, "all-docs"] as const,
 	allDocsList: (folderPrefix?: string | null) =>
 		[
@@ -136,49 +120,6 @@ export function invalidatePrefetchedNote(path?: string | null) {
 		return;
 	}
 	queryClient.removeQueries({ queryKey: navigationQueryKeys.note(path) });
-}
-
-export function loadCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	const range = buildWeekRange(args.anchorDate);
-	return invoke("calendar_query_range", {
-		start_date: range.start,
-		end_date: range.end,
-		selected_date: args.selectedDate,
-		daily_notes_folder: args.dailyNotesFolder,
-	});
-}
-
-export function prefetchCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	return queryClient.fetchQuery({
-		queryKey: navigationQueryKeys.calendarRange(args),
-		queryFn: () => loadCalendarData(args),
-	});
-}
-
-export function getPrefetchedCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	return (
-		queryClient.getQueryData<CalendarRangeResponse>(
-			navigationQueryKeys.calendarRange(args),
-		) ?? null
-	);
-}
-
-export function invalidateCalendarPrefetch() {
-	void queryClient.invalidateQueries({
-		queryKey: navigationQueryKeys.calendar(),
-	});
 }
 
 export function prefetchDatabaseSummaries() {
@@ -537,10 +478,59 @@ export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
 	});
 }
 
-export function invalidateTasksPrefetch() {
+export function invalidateTaskSummariesPrefetch() {
 	void queryClient.invalidateQueries({
-		queryKey: navigationQueryKeys.tasks(),
+		queryKey: navigationQueryKeys.taskSummaries(),
 	});
+}
+
+function cachedTaskSummaryForPath(path: string): NoteTaskSummary | undefined {
+	const summaries = queryClient.getQueriesData<TaskSummaryCache>({
+		queryKey: navigationQueryKeys.taskSummaries(),
+	});
+	for (const [, data] of summaries) {
+		const summary = data?.[path];
+		if (summary) return summary;
+	}
+	return undefined;
+}
+
+function taskSummariesEqual(
+	left: NoteTaskSummary | undefined,
+	right: NoteTaskSummary,
+) {
+	return (
+		left?.total_count === right.total_count &&
+		left.completed_count === right.completed_count &&
+		left.open_count === right.open_count
+	);
+}
+
+export async function invalidateTaskSummariesPrefetchForNote(
+	path: string,
+	options: { removed?: boolean } = {},
+) {
+	const normalizedPath = normalizeAllDocsPath(path);
+	if (!normalizedPath) return;
+
+	const cachedSummary = cachedTaskSummaryForPath(normalizedPath);
+	if (options.removed) {
+		if (cachedSummary) invalidateTaskSummariesPrefetch();
+		return;
+	}
+
+	try {
+		const doc = await invoke("space_read_text", { path: normalizedPath });
+		const nextSummary = summarizeChecklistsFromMarkdown(doc.text);
+		const shouldInvalidate = cachedSummary
+			? !taskSummariesEqual(cachedSummary, nextSummary)
+			: nextSummary.total_count > 0;
+		if (shouldInvalidate) {
+			invalidateTaskSummariesPrefetch();
+		}
+	} catch {
+		if (cachedSummary) invalidateTaskSummariesPrefetch();
+	}
 }
 
 export function invalidateNavigationPrefetch() {

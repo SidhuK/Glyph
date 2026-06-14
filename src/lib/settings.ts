@@ -189,7 +189,6 @@ const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
 	"comfortable",
 	"wide",
 ]);
-type TaskSourceMode = "space" | "folders";
 export interface OnboardingSettings {
 	launcherSeen: boolean;
 	starterDismissed: boolean;
@@ -205,15 +204,6 @@ export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 	usedCommandPalette: false,
 	openedDailyNote: false,
 };
-
-interface TaskSourceSetting {
-	mode: TaskSourceMode;
-	folders: string[];
-}
-
-function defaultTaskSourceSetting(): TaskSourceSetting {
-	return { mode: "space", folders: [] };
-}
 
 interface DatabaseSettings {
 	showColumnColor: boolean;
@@ -383,9 +373,6 @@ async function emitSettingsUpdated(payload: {
 		folder?: string | null;
 		dailyNoteTemplate?: string | null;
 	};
-	tasks?: {
-		source?: TaskSourceSetting;
-	};
 	database?: {
 		showColumnColor?: boolean;
 	};
@@ -452,9 +439,6 @@ interface AppSettings {
 		folder: string | null;
 		dailyNoteTemplate: string | null;
 	};
-	tasks: {
-		source: TaskSourceSetting;
-	};
 	shortcuts: ShortcutSettings;
 	editor: EditorSettings;
 	database: DatabaseSettings;
@@ -465,7 +449,6 @@ interface SpaceScopedSettings {
 	quickNotesFolder?: string;
 	templatesFolder?: string | null;
 	templatesDailyNoteTemplate?: string | null;
-	taskSource?: TaskSourceSetting;
 	attachmentStorageMode?: AttachmentStorageMode;
 	attachmentFolder?: string | null;
 }
@@ -526,7 +509,6 @@ const KEYS = {
 	quickNotesFolder: "quickNotes.folder",
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
-	taskSource: "tasks.source",
 	shortcutsVersion: "shortcuts.version",
 	shortcutsBindings: "shortcuts.bindings",
 	databaseShowColumnColor: "database.showColumnColor",
@@ -672,9 +654,6 @@ function normalizeSpaceScopedSettings(value: unknown): SpaceScopedSettings {
 				? normalizeRelPath(value.templatesDailyNoteTemplate) || null
 				: null;
 	}
-	if ("taskSource" in value) {
-		out.taskSource = normalizeTaskSourceSetting(value.taskSource);
-	}
 	if ("attachmentStorageMode" in value) {
 		out.attachmentStorageMode = asAttachmentStorageMode(
 			value.attachmentStorageMode,
@@ -747,32 +726,6 @@ export function findShortcutConflict(
 		if (getShortcutSignature(existing) === signature) return action.id;
 	}
 	return null;
-}
-
-function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
-	const rawMode =
-		typeof value === "object" && value !== null && "mode" in value
-			? (value as { mode?: unknown }).mode
-			: null;
-	const mode: TaskSourceMode = rawMode === "folders" ? "folders" : "space";
-	const rawFolders =
-		typeof value === "object" && value !== null && "folders" in value
-			? (value as { folders?: unknown }).folders
-			: [];
-	const folders = Array.isArray(rawFolders)
-		? Array.from(
-				new Set(
-					rawFolders
-						.filter((entry): entry is string => typeof entry === "string")
-						.map((entry) => normalizeRelPath(entry))
-						.filter(Boolean),
-				),
-			).slice(0, 50)
-		: [];
-	return {
-		mode,
-		folders,
-	};
 }
 
 function normalizeQuickNotesFolder(value: unknown): string {
@@ -874,7 +827,6 @@ export async function loadSettings(
 		entries,
 		KEYS.templatesDailyNoteTemplate,
 	);
-	const taskSourceRaw = getSettingValue(entries, KEYS.taskSource);
 	const rawEditorShowCollapsibleHeadings = getSettingValue<boolean | null>(
 		entries,
 		KEYS.editorShowCollapsibleHeadings,
@@ -997,9 +949,6 @@ export async function loadSettings(
 		: typeof templatesDailyNoteTemplateRaw === "string"
 			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
 			: null;
-	const taskSource = hasActiveSpace
-		? (activeScopedSettings?.taskSource ?? defaultTaskSourceSetting())
-		: normalizeTaskSourceSetting(taskSourceRaw);
 	const shortcutBindings = sanitizeShortcutBindings(rawShortcutBindings);
 	const shortcuts: ShortcutSettings = {
 		version:
@@ -1082,9 +1031,6 @@ export async function loadSettings(
 		templates: {
 			folder: templatesFolder,
 			dailyNoteTemplate: templatesDailyNoteTemplate,
-		},
-		tasks: {
-			source: taskSource,
 		},
 		shortcuts,
 		editor,

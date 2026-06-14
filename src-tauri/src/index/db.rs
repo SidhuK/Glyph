@@ -4,9 +4,10 @@ use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
+use super::checklists::checklist_counts;
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 6;
+const INDEX_DB_VERSION: i32 = 7;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -14,7 +15,10 @@ fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
     CACHE.get_or_init(|| Mutex::new(HashSet::new()))
 }
 
-fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
+fn migrate_if_needed(
+    conn: &rusqlite::Connection,
+    space_root: &Path,
+) -> Result<(), String> {
     let current_version: i32 = conn
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .map_err(|e| e.to_string())?;
@@ -37,6 +41,10 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
 
     if current_version < 6 {
         migrate_priority_property_kinds(conn)?;
+    }
+
+    if current_version < 7 {
+        migrate_checklist_summary_columns(conn, space_root)?;
     }
 
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
@@ -108,6 +116,51 @@ fn migrate_status_property_kinds(conn: &rusqlite::Connection) -> Result<(), Stri
     Ok(())
 }
 
+fn migrate_checklist_summary_columns(
+    conn: &rusqlite::Connection,
+    space_root: &Path,
+) -> Result<(), String> {
+    if !table_has_column(conn, "notes", "checklist_total")? {
+        conn.execute(
+            "ALTER TABLE notes ADD COLUMN checklist_total INTEGER NOT NULL DEFAULT 0",
+            [],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    if !table_has_column(conn, "notes", "checklist_completed")? {
+        conn.execute(
+            "ALTER TABLE notes ADD COLUMN checklist_completed INTEGER NOT NULL DEFAULT 0",
+            [],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    let mut stmt = conn
+        .prepare("SELECT path FROM notes")
+        .map_err(|e| e.to_string())?;
+    let paths = stmt
+        .query_map([], |row| row.get::<_, String>(0))
+        .map_err(|e| e.to_string())?
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
+
+    for path in paths {
+        let abs = crate::paths::join_under(space_root, Path::new(&path))?;
+        let markdown = match std::fs::read_to_string(&abs) {
+            Ok(text) => text,
+            Err(_) => continue,
+        };
+        let (checklist_total, checklist_completed) = checklist_counts(&markdown);
+        conn.execute(
+            "UPDATE notes SET checklist_total = ?, checklist_completed = ? WHERE path = ?",
+            rusqlite::params![checklist_total, checklist_completed, path],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
 fn migrate_priority_property_kinds(conn: &rusqlite::Connection) -> Result<(), String> {
     conn.execute(
         "UPDATE note_properties
@@ -166,7 +219,7 @@ pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
     let mut cache = schema_cache().lock().unwrap_or_else(|p| p.into_inner());
     if !cache.contains(&path) {
         ensure_schema(&conn)?;
-        migrate_if_needed(&conn)?;
+        migrate_if_needed(&conn, space_root)?;
         cache.insert(path);
     }
 

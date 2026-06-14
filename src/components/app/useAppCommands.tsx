@@ -4,14 +4,12 @@ import {
 	ArrowRight,
 	CalendarAdd01Icon,
 	ChartRelationshipIcon,
-	CheckListIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
 	FolderRemoveIcon,
-	Home01Icon,
 	InformationCircleIcon,
 	LibraryIcon,
 	Link01Icon,
@@ -94,16 +92,13 @@ interface UseAppCommandsDeps {
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
 	openBlankTab: () => void;
-	openCalendarTab: () => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
 	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
-	openQuickTaskWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
-	openTasksView: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
 	openMarkdownTabsLength: number;
@@ -364,16 +359,13 @@ export function useAppCommands({
 	onOpenSpace,
 	openAllDocsTab,
 	openBlankTab,
-	openCalendarTab,
 	openDatabasesTab,
 	openGettingStarted,
 	openConnectionsView,
 	openPalette,
 	openQuickNoteWindow,
-	openQuickTaskWindow,
 	openSearchPalette,
 	openSettings,
-	openTasksView,
 	openWorkspaceFile,
 	showWelcomeNote,
 	openMarkdownTabsLength,
@@ -441,21 +433,6 @@ export function useAppCommands({
 				enabled: true,
 				allowInEditable: true,
 				action: openQuickNoteWindow,
-			},
-			{
-				id: "open-quick-task",
-				label: "Open quick task",
-				icon: (
-					<HugeiconsIcon
-						icon={CheckListIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				category: "File Operations",
-				enabled: true,
-				allowInEditable: true,
-				action: openQuickTaskWindow,
 			},
 			{
 				id: "create-from-template",
@@ -787,20 +764,6 @@ export function useAppCommands({
 				action: openAllDocsTab,
 			},
 			{
-				id: "open-tasks",
-				label: "Open tasks",
-				icon: (
-					<HugeiconsIcon
-						icon={CheckListIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openTasksView,
-			},
-			{
 				id: "open-connections",
 				label: "Open Connections",
 				icon: (
@@ -813,20 +776,6 @@ export function useAppCommands({
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: openConnectionsView,
-			},
-			{
-				id: "open-dashboard",
-				label: "Open home",
-				icon: (
-					<HugeiconsIcon
-						icon={Home01Icon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openCalendarTab,
 			},
 			{
 				id: "open-databases",
@@ -1099,15 +1048,12 @@ export function useAppCommands({
 		showCollapsibleHeadings,
 		spacePath,
 		openAllDocsTab,
-		openTasksView,
 		openSearchPalette,
-		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
 		openConnectionsView,
 		openBlankTab,
 		openQuickNoteWindow,
-		openQuickTaskWindow,
 		openWorkspaceFile,
 		showWelcomeNote,
 		gitSync,

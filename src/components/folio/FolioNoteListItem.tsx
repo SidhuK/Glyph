@@ -14,6 +14,7 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, parentDir, splitEditableFileName } from "../../utils/path";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import {
@@ -22,7 +23,6 @@ import {
 } from "../editor/textColors";
 import { fileTreeAppearanceNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import type { FolioItem } from "./useFolioNotes";
 
 interface FolioNoteListItemProps {
