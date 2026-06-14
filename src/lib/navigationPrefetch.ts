@@ -496,7 +496,7 @@ function cachedTaskSummaryForPath(path: string): NoteTaskSummary | undefined {
 }
 
 function taskSummariesEqual(
-	left: NoteTaskSummary | undefined,
+	left: NoteTaskSummary,
 	right: NoteTaskSummary,
 ) {
 	return (

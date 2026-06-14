@@ -16,7 +16,7 @@ pub fn query_note_checklist_summaries(
     let sql = format!(
         "SELECT path, checklist_total, checklist_completed
          FROM notes
-         WHERE path IN ({placeholders})
+         WHERE id IN ({placeholders})
            AND checklist_total > 0"
     );
 

@@ -144,19 +144,29 @@ fn migrate_checklist_summary_columns(
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
 
+    let mut updates = Vec::new();
     for path in paths {
         let abs = crate::paths::join_under(space_root, Path::new(&path))?;
-        let markdown = match std::fs::read_to_string(&abs) {
-            Ok(text) => text,
-            Err(_) => continue,
-        };
+        let markdown = std::fs::read_to_string(&abs).map_err(|e| {
+            format!("Failed to read note during checklist summary migration ({path}): {e}")
+        })?;
         let (checklist_total, checklist_completed) = checklist_counts(&markdown);
-        conn.execute(
+        updates.push((path, checklist_total, checklist_completed));
+    }
+
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    for (path, checklist_total, checklist_completed) in updates {
+        tx.execute(
             "UPDATE notes SET checklist_total = ?, checklist_completed = ? WHERE path = ?",
             rusqlite::params![checklist_total, checklist_completed, path],
         )
         .map_err(|e| e.to_string())?;
     }
+    tx.execute("DROP TABLE IF EXISTS tasks", [])
+        .map_err(|e| e.to_string())?;
+    tx.execute("DROP TABLE IF EXISTS tasks_fts", [])
+        .map_err(|e| e.to_string())?;
+    tx.commit().map_err(|e| e.to_string())?;
 
     Ok(())
 }

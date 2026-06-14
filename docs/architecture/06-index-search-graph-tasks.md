@@ -305,5 +305,3 @@ When changing the index:
 - Tag count wrong: inspect explicit vs derived tag rows.
 - Backlink wrong after rename: inspect link rewrite and `remove_note()`.
 - Database row missing: inspect `source_ids()` in `databases/query.rs` and `notes` rows.
-- Task checkbox writes wrong line: inspect task ordinal parsing and task source hashes.
-- Rebuild slow: inspect full space walk and per-note parser work.
