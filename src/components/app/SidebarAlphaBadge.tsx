@@ -29,7 +29,7 @@ export function SidebarAlphaBadge() {
 	if (!isAlphaVersion(appInfo?.version)) return null;
 
 	return (
-		<div className="sidebarAlphaBadgeRow">
+		<div className="sidebarFooterAlpha">
 			<div className="sidebarAlphaBadge">
 				<HugeiconsIcon icon={AlphaIcon} size="10px" strokeWidth={1.8} />
 				<span className="sidebarAlphaBadgeText">Alpha</span>

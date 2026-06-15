@@ -593,9 +593,7 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
-			<div className="sidebarFooterAlpha">
-				<SidebarAlphaBadge />
-			</div>
+			<SidebarAlphaBadge />
 			<LicenseStatusFooter />
 		</>
 	);
