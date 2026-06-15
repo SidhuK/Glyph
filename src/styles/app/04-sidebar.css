@@ -121,16 +121,15 @@
 .windowChromeUpdateButton {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
-	height: 24px;
-	padding: 0 8px 0 7px;
+	height: 20px;
+	padding: 0 6px 0 5px;
 	border: none;
-	border-radius: var(--radius-full);
-	background: var(--color-blue-dark-400);
+	border-radius: 8px;
+	background: rgb(0 112 249);
 	box-shadow: inset 0 0 0 0.5px color-mix(in srgb, white 28%, transparent);
 	color: white;
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-bold);
+	font-size: calc(var(--text-base) * 0.85);
+	font-weight: var(--font-normal);
 	letter-spacing: 0.08em;
 	line-height: 1;
 	white-space: nowrap;
@@ -139,18 +138,13 @@
 }
 
 .windowChromeUpdateButton:hover {
-	background: color-mix(in srgb, var(--color-blue-dark-400) 82%, white);
+	background: color-mix(in srgb, rgb(0 112 249) 82%, white);
 }
 
 .windowChromeUpdateButton:focus-visible {
 	outline: 2px solid
-		color-mix(in srgb, var(--color-blue-dark-400) 40%, white 60%);
+		color-mix(in srgb, rgb(0 112 249) 40%, white 60%);
 	outline-offset: 2px;
-}
-
-.windowChromeUpdateButton svg {
-	width: var(--icon-sm);
-	height: var(--icon-sm);
 }
 
 .sidebarSection {

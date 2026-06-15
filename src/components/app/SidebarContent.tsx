@@ -26,6 +26,7 @@ import { Calendar, ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
+import { SidebarAlphaBadge } from "./SidebarAlphaBadge";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -592,6 +593,7 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
+			<SidebarAlphaBadge />
 			<LicenseStatusFooter />
 		</>
 	);
