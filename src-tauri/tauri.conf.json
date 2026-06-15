@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "Glyph",
-	"version": "0.7.4",
+	"version": "0.7.5",
 	"identifier": "com.karatsidhu.glyph",
 	"build": {
 		"beforeDevCommand": "pnpm dev",
@@ -57,7 +57,7 @@
 		"updater": {
 			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUzMDlDQjRBQkM2ODYzMEMKUldRTVkyaThTc3NKNHpsV1pzbXpnMFZPSXFKdnhWU082eFpjYU1nVlRWZjhuRVpQZXl5ekF6cGoK",
 			"endpoints": [
-				"https://github.com/SidhuK/Glyph/releases/latest/download/latest.json"
+				"https://raw.githubusercontent.com/SidhuK/Glyph/update-manifests/stable/latest.json"
 			]
 		}
 	}

@@ -7,6 +7,15 @@ export interface AppInfo {
 	identifier: string;
 }
 
+export interface ReleaseChannelUpdate {
+	rid: number;
+	currentVersion: string;
+	version: string;
+	date?: string;
+	body?: string;
+	rawJson: Record<string, unknown>;
+}
+
 interface SpaceInfo {
 	root: string;
 	schema_version: number;
@@ -731,6 +740,10 @@ type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
+	updater_check_release_channel: CommandDef<
+		{ channel: "stable" | "alpha" },
+		ReleaseChannelUpdate | null
+	>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;

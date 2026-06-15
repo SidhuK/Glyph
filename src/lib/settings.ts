@@ -26,6 +26,8 @@ import {
 export type { AiAssistantMode } from "./tauri";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
+export type ReleaseChannel = "stable" | "alpha";
+
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
 let settingsEntriesCache: Map<string, unknown> | null = null;
@@ -344,11 +346,16 @@ function asUiEditorFontSize(value: unknown): UiFontSize {
 	return DEFAULT_EDITOR_FONT_SIZE;
 }
 
+function asReleaseChannel(value: unknown): ReleaseChannel {
+	return value === "alpha" ? "alpha" : "stable";
+}
+
 async function emitSettingsUpdated(payload: {
 	spacePath?: string;
 	ui?: {
 		theme?: ThemeMode;
 		autoUpdateCheckInterval?: AutoUpdateCheckInterval;
+		releaseChannel?: ReleaseChannel;
 		lightThemeId?: UiLightThemeId;
 		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
@@ -418,6 +425,7 @@ interface AppSettings {
 		aiEnabled: boolean;
 		theme: ThemeMode;
 		autoUpdateCheckInterval: AutoUpdateCheckInterval;
+		releaseChannel: ReleaseChannel;
 		lightThemeId: UiLightThemeId;
 		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
@@ -484,6 +492,7 @@ const KEYS = {
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
+	releaseChannel: "updates.releaseChannel",
 	lightThemeId: "ui.lightThemeId",
 	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
@@ -797,6 +806,7 @@ export async function loadSettings(
 		entries,
 		KEYS.autoUpdateCheckInterval,
 	);
+	const rawReleaseChannel = getSettingValue(entries, KEYS.releaseChannel);
 	const rawLightThemeId = getSettingValue(entries, KEYS.lightThemeId);
 	const rawDarkThemeId = getSettingValue(entries, KEYS.darkThemeId);
 	const rawAccent = getSettingValue(entries, KEYS.accent);
@@ -902,6 +912,7 @@ export async function loadSettings(
 	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
 		rawAutoUpdateCheckInterval,
 	);
+	const releaseChannel = asReleaseChannel(rawReleaseChannel);
 	const lightThemeId = asUiLightThemeId(rawLightThemeId);
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
@@ -1009,6 +1020,7 @@ export async function loadSettings(
 			aiEnabled,
 			theme,
 			autoUpdateCheckInterval,
+			releaseChannel,
 			lightThemeId,
 			darkThemeId,
 			accent,
@@ -1555,6 +1567,16 @@ export async function setAutoUpdateLastCheckedAt(
 		await store.set(KEYS.autoUpdateLastCheckedAt, Math.floor(timestamp));
 	}
 	await saveSettingsStore(store);
+}
+
+export async function setReleaseChannel(
+	channel: ReleaseChannel,
+): Promise<void> {
+	const nextChannel = asReleaseChannel(channel);
+	const store = await getStore();
+	await store.set(KEYS.releaseChannel, nextChannel);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { releaseChannel: nextChannel } });
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

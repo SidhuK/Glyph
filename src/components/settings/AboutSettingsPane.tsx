@@ -7,19 +7,32 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
+import {
+	type ReleaseChannel,
+	loadSettings,
+	setReleaseChannel,
+} from "../../lib/settings";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
 		useLicenseStatus(false);
 	const autoUpdater = useUpdaterContext();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
+	const [releaseChannelState, setReleaseChannelState] =
+		useState<ReleaseChannel>("stable");
+	const releaseChannelTouchedRef = useRef(false);
+	const [isSavingReleaseChannel, setIsSavingReleaseChannel] = useState(false);
 	const [error, setError] = useState("");
 	const [updateStatus, setUpdateStatus] = useState("");
 	useEffect(() => {
@@ -35,6 +48,20 @@ export function AboutSettingsPane() {
 				}
 			}
 		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled && !releaseChannelTouchedRef.current) {
+					setReleaseChannelState(settings.ui.releaseChannel);
+				}
+			})
+			.catch(() => undefined);
 		return () => {
 			cancelled = true;
 		};
@@ -179,33 +206,68 @@ export function AboutSettingsPane() {
 							<p className="settingsHint">Unknown license status</p>
 						</SettingsRow>
 					) : licenseStatus.can_auto_update ? (
-						<SettingsRow
-							label="App updates"
-							description="Checks immediately and downloads the latest published version in the background. Installation only happens when you choose it."
-						>
-							<div className="settingsActions">
-								<Button
-									type="button"
-									size="sm"
-									disabled={autoUpdater.isChecking}
-									onClick={() => void handleCheckForUpdates()}
-								>
-									{autoUpdater.isChecking ? "Checking…" : "Check for Updates"}
-								</Button>
-								{autoUpdater.updateReady ? (
+						<>
+							<SettingsRow
+								label="App updates"
+								description="Checks immediately and downloads the latest published version in the background. Installation only happens when you choose it."
+							>
+								<div className="settingsActions">
 									<Button
 										type="button"
 										size="sm"
-										variant="outline"
-										onClick={autoUpdater.installAndRelaunch}
+										disabled={autoUpdater.isChecking}
+										onClick={() => void handleCheckForUpdates()}
 									>
-										{autoUpdater.updateVersion
-											? `Install ${autoUpdater.updateVersion}`
-											: "Install Update"}
+										{autoUpdater.isChecking ? "Checking…" : "Check for Updates"}
 									</Button>
-								) : null}
-							</div>
-						</SettingsRow>
+									{autoUpdater.updateReady ? (
+										<Button
+											type="button"
+											size="sm"
+											variant="outline"
+											onClick={autoUpdater.installAndRelaunch}
+										>
+											{autoUpdater.updateVersion
+												? `Install ${autoUpdater.updateVersion}`
+												: "Install Update"}
+										</Button>
+									) : null}
+								</div>
+							</SettingsRow>
+							<SettingsRow
+								label="Alpha releases"
+								description="Get early access to alpha builds. These may be unstable, so only turn this on if you’re comfortable testing unfinished releases."
+							>
+								<SettingsToggle
+									checked={releaseChannelState === "alpha"}
+									disabled={isSavingReleaseChannel}
+									ariaLabel="Alpha releases"
+									onCheckedChange={(checked) => {
+										const previous = releaseChannelState;
+										const nextChannel: ReleaseChannel = checked
+											? "alpha"
+											: "stable";
+										releaseChannelTouchedRef.current = true;
+										setError("");
+										setUpdateStatus("");
+										setReleaseChannelState(nextChannel);
+										setIsSavingReleaseChannel(true);
+										void setReleaseChannel(nextChannel)
+											.catch((cause) => {
+												setReleaseChannelState(previous);
+												setError(
+													cause instanceof Error
+														? cause.message
+														: "Failed to save release channel",
+												);
+											})
+											.finally(() => {
+												setIsSavingReleaseChannel(false);
+											});
+									}}
+								/>
+							</SettingsRow>
+						</>
 					) : (
 						<SettingsRow
 							label="Community build"

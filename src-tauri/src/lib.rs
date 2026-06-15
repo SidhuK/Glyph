@@ -17,6 +17,7 @@ mod net;
 mod notes;
 mod paths;
 mod pinned_files;
+mod release_channels;
 mod space;
 mod space_fs;
 mod system_fonts;
@@ -1500,6 +1501,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             app_info,
+            release_channels::updater_check_release_channel,
             system_fonts_list,
             system_monospace_fonts_list,
             show_quick_note_window,

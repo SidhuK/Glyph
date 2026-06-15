@@ -4,6 +4,7 @@ import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
+	ReleaseChannel,
 	UiAccent,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
@@ -75,6 +76,7 @@ type TauriEventMap = {
 		ui?: {
 			theme?: string;
 			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
+			releaseChannel?: ReleaseChannel;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
 			accent?: UiAccent;

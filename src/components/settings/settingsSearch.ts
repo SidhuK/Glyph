@@ -540,6 +540,14 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["release", "version", "update"],
 	},
 	{
+		id: "about-alpha-releases",
+		tab: "about",
+		section: "Updates",
+		title: "Alpha releases",
+		description: "Receive early release builds before they become stable.",
+		keywords: ["alpha", "prerelease", "beta", "release channel"],
+	},
+	{
 		id: "about-license-status",
 		tab: "about",
 		section: "Updates",
