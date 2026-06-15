@@ -431,6 +431,13 @@ mod tests {
     }
 
     #[test]
+    fn parse_rig_ollama_base_url_preserves_proxy_prefix() {
+        let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
+        let url = parse_rig_ollama_base_url(&profile).expect("ollama url should parse");
+        assert_eq!(url, "http://localhost:11434/ollama");
+    }
+
+    #[test]
     fn parse_ollama_base_url_preserves_proxy_prefix() {
         let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
         let url = parse_ollama_base_url(&profile).expect("ollama url should parse");

@@ -99,14 +99,12 @@ pub async fn run_with_rig(
         .base_url
         .as_deref()
         .map(|_| parse_rig_base_url(profile))
-        .transpose()
-        .map_err(|e| e.to_string())?;
+        .transpose()?;
     let custom_ollama_base_url = profile
         .base_url
         .as_deref()
         .map(|_| parse_rig_ollama_base_url(profile))
-        .transpose()
-        .map_err(|e| e.to_string())?;
+        .transpose()?;
 
     let _ = app.emit(
         "ai:status",
@@ -405,14 +403,12 @@ pub async fn generate_chat_title_with_rig(
         .base_url
         .as_deref()
         .map(|_| parse_rig_base_url(profile))
-        .transpose()
-        .map_err(|e| e.to_string())?;
+        .transpose()?;
     let custom_ollama_base_url = profile
         .base_url
         .as_deref()
         .map(|_| parse_rig_ollama_base_url(profile))
-        .transpose()
-        .map_err(|e| e.to_string())?;
+        .transpose()?;
 
     let user_text = messages
         .iter()
