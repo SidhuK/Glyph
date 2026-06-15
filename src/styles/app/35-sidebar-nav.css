@@ -265,3 +265,34 @@
 .sidebarQuickActionBtn[data-kind="new-note"]:hover > svg {
 	color: var(--text-inverse);
 }
+
+/* ── Alpha version badge ── */
+.sidebarAlphaBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 8px 3px 6px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	color: var(--interactive-accent);
+	font-size: 9px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	line-height: 1;
+	pointer-events: none;
+	user-select: none;
+	white-space: nowrap;
+	box-shadow: var(--pill-shadow);
+}
+
+.sidebarAlphaBadge svg {
+	flex-shrink: 0;
+	color: currentColor;
+}
+
+.sidebarAlphaBadgeText {
+	white-space: nowrap;
+}
