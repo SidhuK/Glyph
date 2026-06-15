@@ -1,7 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { Update } from "@tauri-apps/plugin-updater";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type ReleaseChannel,
 	loadSettings,
@@ -74,22 +74,31 @@ export interface AutoUpdaterState {
 export function useAutoUpdater(enabled = true): AutoUpdaterState {
 	const [releaseChannel, setReleaseChannelState] =
 		useState<ReleaseChannel>("stable");
+	const releaseChannelRef = useRef(releaseChannel);
+	const [releaseChannelLoaded, setReleaseChannelLoaded] = useState(false);
 	const [update, setUpdate] = useState<Update | null>(
 		cachedUpdate?.channel === "stable" ? cachedUpdate.update : null,
 	);
 	const [isChecking, setIsChecking] = useState(false);
 
 	const checkForUpdates = useCallback(async () => {
-		if (!enabled) return null;
+		if (!enabled || !releaseChannelLoaded) return null;
+		const requestedChannel = releaseChannel;
 		setIsChecking(true);
 		try {
-			const nextUpdate = await downloadUpdate(releaseChannel);
-			setUpdate(nextUpdate);
+			const nextUpdate = await downloadUpdate(requestedChannel);
+			if (releaseChannelRef.current === requestedChannel) {
+				setUpdate(nextUpdate);
+			}
 			return nextUpdate;
 		} finally {
 			setIsChecking(false);
 		}
-	}, [enabled, releaseChannel]);
+	}, [enabled, releaseChannel, releaseChannelLoaded]);
+
+	useEffect(() => {
+		releaseChannelRef.current = releaseChannel;
+	}, [releaseChannel]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -97,7 +106,10 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 			.then((settings) => {
 				if (!cancelled) setReleaseChannelState(settings.ui.releaseChannel);
 			})
-			.catch(() => undefined);
+			.catch(() => undefined)
+			.finally(() => {
+				if (!cancelled) setReleaseChannelLoaded(true);
+			});
 		return () => {
 			cancelled = true;
 		};
@@ -107,11 +119,14 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		const nextChannel = payload.ui?.releaseChannel;
 		if (!nextChannel) return;
 		setReleaseChannelState(nextChannel);
-		setUpdate(cachedUpdate?.channel === nextChannel ? cachedUpdate.update : null);
+		setReleaseChannelLoaded(true);
+		setUpdate(
+			cachedUpdate?.channel === nextChannel ? cachedUpdate.update : null,
+		);
 	});
 
 	useEffect(() => {
-		if (!enabled) {
+		if (!enabled || !releaseChannelLoaded) {
 			setUpdate(null);
 			return;
 		}
@@ -135,7 +150,7 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		return () => {
 			window.clearInterval(intervalId);
 		};
-	}, [checkForUpdates, enabled, releaseChannel]);
+	}, [checkForUpdates, enabled, releaseChannel, releaseChannelLoaded]);
 
 	const installAndRelaunch = useCallback(() => {
 		if (!update) return;

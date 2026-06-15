@@ -18,7 +18,11 @@ import {
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
