@@ -82,48 +82,82 @@ jobs:
         run: |
           set -euo pipefail
 
-          latest_tag="$(git tag -l 'v*' --sort=-v:refname | head -n1 || true)"
           file_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
-          tag_version="${latest_tag#v}"
-          if [ -z "${latest_tag}" ]; then
-            tag_version="0.0.0"
-          fi
-
-          version_order="$(node -e '
-            const [fileVersion, tagVersion] = process.argv.slice(1);
-            const valid = (v) => /^\d+\.\d+\.\d+$/.test(v);
-            if (!valid(fileVersion)) {
-              throw new Error(`Invalid app version: ${fileVersion}`);
+          version_payload="$(node - "${file_version}" <<'NODE'
+          const { execFileSync } = require("node:child_process");
+          const [fileVersion] = process.argv.slice(2);
+          const pattern = /^(\d+)\.(\d+)\.(\d+)(?:-alpha\.(\d+))?$/;
+          const parse = (version) => {
+            const match = pattern.exec(version);
+            if (!match) {
+              throw new Error(
+                `Invalid version: ${version}. Use x.y.z or x.y.z-alpha.N`,
+              );
             }
-            if (!valid(tagVersion)) {
-              throw new Error(`Invalid tag version: ${tagVersion}`);
-            }
-            const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
-            const av = parse(fileVersion);
-            const bv = parse(tagVersion);
-            const cmp =
-              av[0] - bv[0] ||
-              av[1] - bv[1] ||
-              av[2] - bv[2];
-            process.stdout.write(String(Math.sign(cmp)));
-          ' "${file_version}" "${tag_version}")"
+            return {
+              raw: version,
+              major: Number(match[1]),
+              minor: Number(match[2]),
+              patch: Number(match[3]),
+              alpha: match[4] === undefined ? null : Number(match[4]),
+            };
+          };
+          const compare = (left, right) =>
+            left.major - right.major ||
+            left.minor - right.minor ||
+            left.patch - right.patch ||
+            (left.alpha === null && right.alpha === null
+              ? 0
+              : left.alpha === null
+                ? 1
+                : right.alpha === null
+                  ? -1
+                  : left.alpha - right.alpha);
 
-          if ! [[ "${version_order}" =~ ^(-1|0|1)$ ]]; then
-            echo "Invalid version ordering result: ${version_order}"
-            exit 1
-          fi
+          const current = parse(fileVersion);
+          const tags = execFileSync("git", ["tag", "-l", "v*"], {
+            encoding: "utf8",
+          })
+            .split(/\r?\n/)
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+            .map((tag) => ({ tag, version: tag.replace(/^v/, "") }))
+            .map(({ tag, version }) => ({ tag, parsed: parse(version) }))
+            .sort((a, b) => compare(b.parsed, a.parsed));
 
-          if [ "${version_order}" != "1" ]; then
-            echo "src-tauri/tauri.conf.json version (${file_version}) must be greater than latest tag (${latest_tag:-none})."
-            exit 1
-          fi
+          const latest = tags[0] ?? null;
+          if (latest && compare(current, latest.parsed) <= 0) {
+            throw new Error(
+              `src-tauri/tauri.conf.json version (${fileVersion}) must be greater than latest tag (${latest.tag}).`,
+            );
+          }
 
-          next_version="${file_version}"
-          next_tag="v${next_version}"
+          const channel = current.alpha === null ? "stable" : "alpha";
+          const latestStable = tags.find((item) => item.parsed.alpha === null) ?? null;
+          const previousNotesTag =
+            channel === "stable" ? (latestStable?.tag ?? "") : (latest?.tag ?? "");
+          const output = {
+            latestTag: previousNotesTag,
+            nextVersion: fileVersion,
+            nextTag: `v${fileVersion}`,
+            channel,
+            isPrerelease: channel === "alpha",
+          };
+          process.stdout.write(JSON.stringify(output));
+          NODE
+          )"
+
+          latest_tag="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).latestTag)' "${version_payload}")"
+          next_version="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).nextVersion)' "${version_payload}")"
+          next_tag="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).nextTag)' "${version_payload}")"
+          channel="$(node -e 'process.stdout.write(JSON.parse(process.argv[1]).channel)' "${version_payload}")"
+          is_prerelease="$(node -e 'process.stdout.write(String(JSON.parse(process.argv[1]).isPrerelease))' "${version_payload}")"
 
           echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
           echo "next_version=${next_version}" >> "$GITHUB_OUTPUT"
           echo "next_tag=${next_tag}" >> "$GITHUB_OUTPUT"
+          echo "channel=${channel}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=${is_prerelease}" >> "$GITHUB_OUTPUT"
 
       - name: Sync version files
         env:
@@ -248,10 +282,102 @@ jobs:
           releaseName: "Glyph ${{ steps.version.outputs.next_tag }}"
           releaseBody: ${{ steps.release_notes.outputs.body }}
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
           includeUpdaterJson: true
 
+      - name: Publish updater manifest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANNEL: ${{ steps.version.outputs.channel }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+
+          manifest_source="$(mktemp -d)"
+          manifest_worktree="$(mktemp -d)"
+          rm -rf "${manifest_worktree}"
+
+          node - "${manifest_source}/latest.json" <<'NODE'
+          const fs = require("node:fs");
+
+          async function main() {
+            const [outputPath] = process.argv.slice(2);
+            const repository = process.env.GITHUB_REPOSITORY;
+            const token = process.env.GITHUB_TOKEN;
+            const tag = process.env.NEXT_TAG;
+            const headers = {
+              Accept: "application/vnd.github+json",
+              Authorization: `Bearer ${token}`,
+              "X-GitHub-Api-Version": "2022-11-28",
+            };
+
+            const releaseResponse = await fetch(
+              `https://api.github.com/repos/${repository}/releases/tags/${encodeURIComponent(tag)}`,
+              { headers },
+            );
+            if (!releaseResponse.ok) {
+              throw new Error(
+                `Failed to load release ${tag}: ${releaseResponse.status} ${await releaseResponse.text()}`,
+              );
+            }
+
+            const release = await releaseResponse.json();
+            const asset = release.assets?.find((item) => item.name === "latest.json");
+            if (!asset) {
+              throw new Error(`Release ${tag} does not have a latest.json asset.`);
+            }
+
+            const assetResponse = await fetch(asset.url, {
+              headers: { ...headers, Accept: "application/octet-stream" },
+            });
+            if (!assetResponse.ok) {
+              throw new Error(
+                `Failed to download latest.json: ${assetResponse.status} ${await assetResponse.text()}`,
+              );
+            }
+
+            fs.writeFileSync(outputPath, Buffer.from(await assetResponse.arrayBuffer()));
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+          if git ls-remote --exit-code --heads origin update-manifests >/dev/null 2>&1; then
+            git fetch origin update-manifests:update-manifests
+            git worktree add "${manifest_worktree}" update-manifests
+          else
+            git worktree add --detach "${manifest_worktree}" HEAD
+            git -C "${manifest_worktree}" checkout --orphan update-manifests
+            git -C "${manifest_worktree}" rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          channels="${CHANNEL}"
+          if [ "${CHANNEL}" = "stable" ]; then
+            channels="stable alpha"
+          fi
+
+          for channel in ${channels}; do
+            mkdir -p "${manifest_worktree}/${channel}"
+            cp "${manifest_source}/latest.json" "${manifest_worktree}/${channel}/latest.json"
+            git -C "${manifest_worktree}" add "${channel}/latest.json"
+          done
+
+          git -C "${manifest_worktree}" config user.name "github-actions[bot]"
+          git -C "${manifest_worktree}" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git -C "${manifest_worktree}" diff --cached --quiet; then
+            echo "Updater manifest is already current."
+            exit 0
+          fi
+
+          git -C "${manifest_worktree}" commit -m "Update ${CHANNEL} updater manifests for ${NEXT_TAG}"
+          git -C "${manifest_worktree}" push origin HEAD:update-manifests
+
       - name: Notify Homebrew tap
+        if: steps.version.outputs.channel == 'stable'
         env:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_DISPATCH_TOKEN }}
         run: |
