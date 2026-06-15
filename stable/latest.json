@@ -1,0 +1,15 @@
+{
+  "version": "0.7.5",
+  "notes": "## What's Changed\n* releases-channel-alpha.etc by @SidhuK in https://github.com/SidhuK/Glyph/pull/175\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.7.4...v0.7.5",
+  "pub_date": "2026-06-15T04:28:52.777Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDM0ZHRhYk56bHY3Y3k4RXhuUW91b1lSaE1RdTY5Sk1xck5EbjBPTlp1N3Z1dVVLUHJYSXp1TDU5NlVsOFpKWDhLMTNXamVtb2FrYVFCMVZybjNHZHc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNDk3NzI2CWZpbGU6R2x5cGguYXBwLnRhci5negpSeUlyVE5tc1duYVJVWERNMmQvc3NzUFlxdFhRK2F5R0FWbTF6bnUrL2FOSmp5dU1yUlBHSUNEZSt0N0tEbnRxV1pFdGwvNFdwVndlbklqd3l0ZWhCQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.7.5/Glyph_aarch64.app.tar.gz"
+    },
+    "darwin-aarch64-app": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDM0ZHRhYk56bHY3Y3k4RXhuUW91b1lSaE1RdTY5Sk1xck5EbjBPTlp1N3Z1dVVLUHJYSXp1TDU5NlVsOFpKWDhLMTNXamVtb2FrYVFCMVZybjNHZHc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNDk3NzI2CWZpbGU6R2x5cGguYXBwLnRhci5negpSeUlyVE5tc1duYVJVWERNMmQvc3NzUFlxdFhRK2F5R0FWbTF6bnUrL2FOSmp5dU1yUlBHSUNEZSt0N0tEbnRxV1pFdGwvNFdwVndlbklqd3l0ZWhCQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.7.5/Glyph_aarch64.app.tar.gz"
+    }
+  }
+}
