@@ -1,8 +1,8 @@
-use std::net::{IpAddr, ToSocketAddrs};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, ToSocketAddrs};
 
 use url::Url;
 
-fn is_forbidden_v4(v4: std::net::Ipv4Addr) -> bool {
+fn is_forbidden_v4(v4: Ipv4Addr) -> bool {
     v4.is_private()
         || v4.is_loopback()
         || v4.is_link_local()
@@ -10,6 +10,24 @@ fn is_forbidden_v4(v4: std::net::Ipv4Addr) -> bool {
         || v4.is_documentation()
         || v4.is_unspecified()
         || v4.is_multicast()
+}
+
+fn embedded_6to4_v4(v6: Ipv6Addr) -> Option<Ipv4Addr> {
+    let octets = v6.octets();
+    if octets[0] == 0x20 && octets[1] == 0x02 {
+        return Some(Ipv4Addr::new(octets[2], octets[3], octets[4], octets[5]));
+    }
+    None
+}
+
+fn embedded_nat64_well_known_v4(v6: Ipv6Addr) -> Option<Ipv4Addr> {
+    let octets = v6.octets();
+    if octets[..12] == [0x00, 0x64, 0xff, 0x9b, 0, 0, 0, 0, 0, 0, 0, 0] {
+        return Some(Ipv4Addr::new(
+            octets[12], octets[13], octets[14], octets[15],
+        ));
+    }
+    None
 }
 
 fn is_forbidden_ip(ip: IpAddr) -> bool {
@@ -26,6 +44,8 @@ fn is_forbidden_ip(ip: IpAddr) -> bool {
                 // considered loopback by Ipv6Addr::is_loopback(). Unwrap the
                 // inner IPv4 address and apply the same private-range checks.
                 || v6.to_ipv4_mapped().is_some_and(|v4| is_forbidden_v4(v4))
+                || embedded_6to4_v4(v6).is_some_and(|v4| is_forbidden_v4(v4))
+                || embedded_nat64_well_known_v4(v6).is_some_and(|v4| is_forbidden_v4(v4))
         }
     }
 }
@@ -124,6 +144,28 @@ mod tests {
     fn mapped_public_allowed() {
         // ::ffff:93.184.216.34 wraps a public IPv4 — should be allowed.
         assert!(check("http://[::ffff:93.184.216.34]/").is_ok());
+    }
+
+    #[test]
+    fn six_to_four_private_blocked() {
+        assert!(check("http://[2002:7f00:0001::]/").is_err());
+        assert!(check("http://[2002:0a00:0001::]/").is_err());
+    }
+
+    #[test]
+    fn six_to_four_public_allowed() {
+        assert!(check("http://[2002:5db8:d822::]/").is_ok());
+    }
+
+    #[test]
+    fn nat64_well_known_private_blocked() {
+        assert!(check("http://[64:ff9b::7f00:1]/").is_err());
+        assert!(check("http://[64:ff9b::a00:1]/").is_err());
+    }
+
+    #[test]
+    fn nat64_well_known_public_allowed() {
+        assert!(check("http://[64:ff9b::5db8:d822]/").is_ok());
     }
 
     #[test]
