@@ -122,7 +122,13 @@ jobs:
             .map((tag) => tag.trim())
             .filter(Boolean)
             .map((tag) => ({ tag, version: tag.replace(/^v/, "") }))
-            .map(({ tag, version }) => ({ tag, parsed: parse(version) }))
+            .flatMap(({ tag, version }) => {
+              try {
+                return [{ tag, parsed: parse(version) }];
+              } catch {
+                return [];
+              }
+            })
             .sort((a, b) => compare(b.parsed, a.parsed));
 
           const latest = tags[0] ?? null;
@@ -296,6 +302,7 @@ jobs:
           manifest_source="$(mktemp -d)"
           manifest_worktree="$(mktemp -d)"
           rm -rf "${manifest_worktree}"
+          trap 'git worktree remove --force "${manifest_worktree}" >/dev/null 2>&1 || rm -rf "${manifest_worktree}"' EXIT
 
           node - "${manifest_source}/latest.json" <<'NODE'
           const fs = require("node:fs");

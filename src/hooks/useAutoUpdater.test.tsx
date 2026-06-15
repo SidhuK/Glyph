@@ -135,4 +135,27 @@ describe("useAutoUpdater", () => {
 		});
 		expect(states).toContain(false);
 	});
+
+	it("reports updateReady when an update is available", async () => {
+		const states: boolean[] = [];
+		invokeMock.mockResolvedValue({ version: "1.2.3" });
+
+		await act(async () => {
+			root.render(
+				<Harness
+					enabled
+					onReady={(ready) => {
+						states.push(ready);
+					}}
+				/>,
+			);
+		});
+
+		await act(async () => {
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+		});
+
+		expect(states).toContain(true);
+	});
 });

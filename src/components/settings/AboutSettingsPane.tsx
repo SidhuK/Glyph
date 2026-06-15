@@ -7,7 +7,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import {
@@ -31,6 +31,7 @@ export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [releaseChannelState, setReleaseChannelState] =
 		useState<ReleaseChannel>("stable");
+	const releaseChannelTouchedRef = useRef(false);
 	const [isSavingReleaseChannel, setIsSavingReleaseChannel] = useState(false);
 	const [error, setError] = useState("");
 	const [updateStatus, setUpdateStatus] = useState("");
@@ -56,7 +57,9 @@ export function AboutSettingsPane() {
 		let cancelled = false;
 		void loadSettings()
 			.then((settings) => {
-				if (!cancelled) setReleaseChannelState(settings.ui.releaseChannel);
+				if (!cancelled && !releaseChannelTouchedRef.current) {
+					setReleaseChannelState(settings.ui.releaseChannel);
+				}
 			})
 			.catch(() => undefined);
 		return () => {
@@ -244,6 +247,7 @@ export function AboutSettingsPane() {
 										const nextChannel: ReleaseChannel = checked
 											? "alpha"
 											: "stable";
+										releaseChannelTouchedRef.current = true;
 										setError("");
 										setUpdateStatus("");
 										setReleaseChannelState(nextChannel);

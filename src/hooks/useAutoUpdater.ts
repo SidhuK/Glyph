@@ -55,8 +55,10 @@ async function downloadUpdate(channel: ReleaseChannel): Promise<Update | null> {
 			console.warn("Auto-update check/download failed", error);
 			return null;
 		} finally {
-			inFlightUpdateCheck = null;
-			inFlightChannel = null;
+			if (inFlightChannel === channel) {
+				inFlightUpdateCheck = null;
+				inFlightChannel = null;
+			}
 		}
 	})();
 
@@ -76,9 +78,7 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		useState<ReleaseChannel>("stable");
 	const releaseChannelRef = useRef(releaseChannel);
 	const [releaseChannelLoaded, setReleaseChannelLoaded] = useState(false);
-	const [update, setUpdate] = useState<Update | null>(
-		cachedUpdate?.channel === "stable" ? cachedUpdate.update : null,
-	);
+	const [update, setUpdate] = useState<Update | null>(null);
 	const [isChecking, setIsChecking] = useState(false);
 
 	const checkForUpdates = useCallback(async () => {
