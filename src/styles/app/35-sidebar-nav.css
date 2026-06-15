@@ -296,3 +296,10 @@
 .sidebarAlphaBadgeText {
 	white-space: nowrap;
 }
+
+/* ── Alpha badge in footer, right-aligned ── */
+.sidebarFooterAlpha {
+	display: flex;
+	justify-content: flex-end;
+	padding: 6px 12px 0;
+}

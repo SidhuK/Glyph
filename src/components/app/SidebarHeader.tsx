@@ -3,7 +3,6 @@ import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
-import { SidebarAlphaBadge } from "./SidebarAlphaBadge";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
@@ -30,7 +29,6 @@ export function SidebarHeader({
 			/>
 			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
-					<SidebarAlphaBadge />
 					<WindowChromeIconButton
 						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 						ariaPressed={!sidebarCollapsed}
