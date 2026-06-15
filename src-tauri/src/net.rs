@@ -3,6 +3,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, ToSocketAddrs};
 use url::Url;
 
 fn is_forbidden_v4(v4: Ipv4Addr) -> bool {
+    let octets = v4.octets();
     v4.is_private()
         || v4.is_loopback()
         || v4.is_link_local()
@@ -10,6 +11,9 @@ fn is_forbidden_v4(v4: Ipv4Addr) -> bool {
         || v4.is_documentation()
         || v4.is_unspecified()
         || v4.is_multicast()
+        || (octets[0] == 100 && (64..=127).contains(&octets[1]))
+        || (octets[0] == 198 && (octets[1] == 18 || octets[1] == 19))
+        || octets[0] >= 240
 }
 
 fn embedded_6to4_v4(v6: Ipv6Addr) -> Option<Ipv4Addr> {
@@ -144,6 +148,25 @@ mod tests {
     fn mapped_public_allowed() {
         // ::ffff:93.184.216.34 wraps a public IPv4 — should be allowed.
         assert!(check("http://[::ffff:93.184.216.34]/").is_ok());
+    }
+
+    #[test]
+    fn public_v6_allowed() {
+        assert!(check("http://[2606:4700:4700::1111]/").is_ok());
+    }
+
+    #[test]
+    fn special_v4_ranges_blocked() {
+        assert!(check("http://100.64.0.1/").is_err());
+        assert!(check("http://198.18.0.1/").is_err());
+        assert!(check("http://240.0.0.1/").is_err());
+    }
+
+    #[test]
+    fn mapped_special_v4_ranges_blocked() {
+        assert!(check("http://[::ffff:100.64.0.1]/").is_err());
+        assert!(check("http://[::ffff:198.18.0.1]/").is_err());
+        assert!(check("http://[::ffff:240.0.0.1]/").is_err());
     }
 
     #[test]
