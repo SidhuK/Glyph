@@ -68,7 +68,7 @@ function rebuildRowsPages(
 					available_properties: availableProperties,
 					total_count: totalCount,
 					truncated: hadMore,
-					next_offset: hadMore ? pageSize : null,
+					next_offset: hadMore ? 0 : null,
 				},
 			],
 			pageParams: [0],
@@ -136,13 +136,15 @@ export function useDatabaseRows({
 	const setRows = useCallback<Dispatch<SetStateAction<DatabaseRow[]>>>(
 		(updater) => {
 			if (!selectedDatabaseId || !selectedViewId) return;
-			queryClient.setQueryData<DatabaseRowsPagesData>(rowsQueryKey, (current) => {
-				const currentRows =
-					current?.pages.flatMap((page) => page.rows) ?? [];
-				const nextRows =
-					typeof updater === "function" ? updater(currentRows) : updater;
-				return rebuildRowsPages(current, nextRows, pageSize);
-			});
+			queryClient.setQueryData<DatabaseRowsPagesData>(
+				rowsQueryKey,
+				(current) => {
+					const currentRows = current?.pages.flatMap((page) => page.rows) ?? [];
+					const nextRows =
+						typeof updater === "function" ? updater(currentRows) : updater;
+					return rebuildRowsPages(current, nextRows, pageSize);
+				},
+			);
 		},
 		[pageSize, queryClient, rowsQueryKey, selectedDatabaseId, selectedViewId],
 	);
@@ -173,12 +175,8 @@ export function useDatabaseRows({
 			setSelectedRowPath(null);
 			return;
 		}
-		try {
-			await rowsQuery.refetch();
-		} catch (cause) {
-			setError(extractErrorMessage(cause));
-		}
-	}, [canLoadRows, rowsQuery, setError]);
+		await rowsQuery.refetch();
+	}, [canLoadRows, rowsQuery]);
 
 	useEffect(() => {
 		if (rowsQuery.error) {

@@ -333,7 +333,8 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		() =>
 			activeTabPath
 				? virtualRows.findIndex(
-						(row) => row.kind === "note" && row.note.note_path === activeTabPath,
+						(row) =>
+							row.kind === "note" && row.note.note_path === activeTabPath,
 					)
 				: -1,
 		[activeTabPath, virtualRows],

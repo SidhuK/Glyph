@@ -2,12 +2,7 @@ import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
-import {
-	useCallback,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { useSentinelLoadMore } from "../../hooks/useLoadMoreTriggers";
@@ -51,11 +46,11 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
 	DatabaseBoardCardView,
 	DatabaseBoardLaneView,
 } from "./DatabaseBoardViews";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
@@ -94,7 +89,7 @@ interface DatabaseBoardProps {
 	boardCardFields?: string[];
 	hasMoreRows?: boolean;
 	isLoadingMoreRows?: boolean;
-	onLoadMoreRows?: () => void | Promise<unknown>;
+	onLoadMoreRows?: () => undefined | Promise<unknown>;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -179,7 +174,6 @@ function formatCompactBoardDateTime(value: string): string {
 		.replace(/\s/g, "");
 	return `${month} ${day}, ${time}`;
 }
-
 
 export function DatabaseBoard({
 	rows,

@@ -4,7 +4,7 @@ import { type RefObject, useEffect } from "react";
 interface LoadMoreState {
 	hasMore: boolean;
 	isLoading: boolean;
-	onLoadMore?: () => void | Promise<unknown>;
+	onLoadMore?: () => undefined | Promise<unknown>;
 }
 
 interface VirtualLoadMoreOptions extends LoadMoreState {
@@ -27,7 +27,14 @@ export function useVirtualLoadMore({
 		if (!lastVirtualItem) return;
 		if (lastVirtualItem.index < totalItems - remainingItems) return;
 		void onLoadMore();
-	}, [hasMore, isLoading, onLoadMore, remainingItems, totalItems, virtualItems]);
+	}, [
+		hasMore,
+		isLoading,
+		onLoadMore,
+		remainingItems,
+		totalItems,
+		virtualItems,
+	]);
 }
 
 interface SentinelLoadMoreOptions<

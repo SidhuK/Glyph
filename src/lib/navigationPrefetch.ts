@@ -315,7 +315,7 @@ function rebuildAllDocsPages(
 	}
 	if (pages.length === 0) {
 		return {
-			pages: [{ items: [], nextOffset: hadMore ? ALL_DOCS_PAGE_SIZE : null }],
+			pages: [{ items: [], nextOffset: hadMore ? 0 : null }],
 			pageParams: [0],
 		};
 	}

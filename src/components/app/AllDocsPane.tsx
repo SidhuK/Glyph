@@ -140,14 +140,14 @@ type VirtualAllDocsRow =
 			id: string;
 			kind: "header";
 			label: string;
-		}
+	  }
 	| {
 			id: string;
 			kind: "cards";
 			sectionIndex: number;
 			rowIndex: number;
 			notes: AllDocsItem[];
-		};
+	  };
 
 function sectionForDate(iso: string): AllDocsSection["id"] {
 	const today = startOfToday();
@@ -503,6 +503,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 					return (
 						<div
 							key={virtualRow.key}
+							data-index={virtualRow.index}
 							ref={(node) => rowVirtualizer.measureElement(node)}
 							className="allDocsVirtualRow"
 							style={{ transform: `translateY(${virtualRow.start}px)` }}

@@ -219,7 +219,7 @@ pub async fn all_docs_list(
             )));
         }
         sql.push_str(
-            "ORDER BY n.updated DESC LIMIT ? OFFSET ?
+            "ORDER BY n.updated DESC, n.id DESC LIMIT ? OFFSET ?
              ),
              tag_blob AS (
                  SELECT ordered_tags.note_id, GROUP_CONCAT(ordered_tags.tag, '\n') AS tags
@@ -248,7 +248,7 @@ pub async fn all_docs_list(
              FROM visible_notes vn
              LEFT JOIN tag_blob ON tag_blob.note_id = vn.id
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
-             ORDER BY vn.updated DESC",
+             ORDER BY vn.updated DESC, vn.id DESC",
         );
         params.push(rusqlite::types::Value::from(limit));
         params.push(rusqlite::types::Value::from(offset));

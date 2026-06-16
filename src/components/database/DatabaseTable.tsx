@@ -58,7 +58,7 @@ interface DatabaseTableProps {
 	onResizeColumn: (columnId: string, width: number) => void;
 	hasMoreRows?: boolean;
 	isLoadingMoreRows?: boolean;
-	onLoadMoreRows?: () => void | Promise<unknown>;
+	onLoadMoreRows?: () => undefined | Promise<unknown>;
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
