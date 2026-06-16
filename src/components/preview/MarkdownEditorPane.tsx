@@ -27,6 +27,7 @@ import {
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { canShowGitHistory } from "../../lib/gitSyncUi";
 import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
@@ -176,15 +177,6 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	return Array.from(out.values());
 }
 
-function hasSupportedGitRepo(status: GitSyncStatus): boolean {
-	return (
-		status.git_installed &&
-		status.repo_detected &&
-		status.repo_root_matches_space &&
-		!status.unsupported_parent_repo
-	);
-}
-
 export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
@@ -240,9 +232,7 @@ export function MarkdownEditorPane({
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
-	const hasSupportedGit = gitSyncStatus
-		? hasSupportedGitRepo(gitSyncStatus)
-		: false;
+	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
 
 	useEffect(() => {
 		if (hasSupportedGit) return;

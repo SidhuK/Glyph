@@ -2,6 +2,7 @@ import { BadgeInfoIcon, GitBranchIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
 	relationshipTargetLabel,
@@ -95,15 +96,6 @@ function formatFileSize(bytes: number): string {
 	})} ${units[unitIndex]}`;
 }
 
-function hasSupportedGitRepo(status: GitSyncStatus | null | undefined): boolean {
-	return Boolean(
-		status?.git_installed &&
-			status.repo_detected &&
-			status.repo_root_matches_space &&
-			!status.unsupported_parent_repo,
-	);
-}
-
 export function NotesInfoSidebar({
 	open,
 	mode,
@@ -132,7 +124,7 @@ export function NotesInfoSidebar({
 	const [host, setHost] = useState<HTMLElement | null>(null);
 	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
 	const hasGitHistoryTab =
-		hasSupportedGitRepo(gitSyncStatus) && Boolean(onSelectGitDiff);
+		canShowGitHistory(gitSyncStatus) && Boolean(onSelectGitDiff);
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;

@@ -1,6 +1,6 @@
 import { GitCommitHorizontalIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type GitCommitDiff,
@@ -96,6 +96,7 @@ export function GitHistorySidebar({
 	const [loading, setLoading] = useState(false);
 	const [loadingCommit, setLoadingCommit] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const diffRequestIdRef = useRef(0);
 	const nowMs = useMemo(() => Date.now(), [commits]);
 	const groups = useMemo(
 		() => groupHistoryCommits(commits, nowMs),
@@ -103,6 +104,13 @@ export function GitHistorySidebar({
 	);
 
 	useEffect(() => {
+		return () => {
+			diffRequestIdRef.current += 1;
+		};
+	}, []);
+
+	useEffect(() => {
+		diffRequestIdRef.current += 1;
 		setCommits([]);
 		setExpandedGroupKeys(new Set());
 		setError(null);
@@ -144,6 +152,8 @@ export function GitHistorySidebar({
 	const handleSelectCommit = useCallback(
 		async (commit: GitHistoryCommit) => {
 			if (!relPath) return;
+			const requestId = diffRequestIdRef.current + 1;
+			diffRequestIdRef.current = requestId;
 			setLoadingCommit(commit.hash);
 			setError(null);
 			try {
@@ -151,11 +161,15 @@ export function GitHistorySidebar({
 					path: relPath,
 					commit: commit.hash,
 				});
+				if (diffRequestIdRef.current !== requestId) return;
 				onSelectDiff(diff);
 			} catch (cause) {
+				if (diffRequestIdRef.current !== requestId) return;
 				setError(extractErrorMessage(cause));
 			} finally {
-				setLoadingCommit(null);
+				if (diffRequestIdRef.current === requestId) {
+					setLoadingCommit(null);
+				}
 			}
 		},
 		[onSelectDiff, relPath],

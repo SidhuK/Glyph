@@ -580,6 +580,7 @@ export interface GitSyncStatus {
 export interface GitHistoryCommit {
 	hash: string;
 	short_hash: string;
+	rel_path: string;
 	author_name: string;
 	author_email: string;
 	timestamp_ms: number;

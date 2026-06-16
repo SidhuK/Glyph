@@ -67,6 +67,7 @@ pub fn git_history_list(
 ) -> Result<Vec<GitHistoryCommit>, String> {
     let space_root = space_state.root_for_window(&window)?;
     let rel_path = validate_space_rel_path(&space_root, &path)?;
+    ensure_repo_at_space_root(&space_root)?;
     let raw = super::git::file_history(&space_root, &rel_path, limit.unwrap_or(30))?;
     Ok(parse_history_commits(&raw))
 }
@@ -80,13 +81,32 @@ pub fn git_history_diff(
 ) -> Result<GitCommitDiff, String> {
     let space_root = space_state.root_for_window(&window)?;
     let rel_path = validate_space_rel_path(&space_root, &path)?;
+    ensure_repo_at_space_root(&space_root)?;
     validate_commit_hash(&commit)?;
-    let diff = super::git::commit_file_diff(&space_root, &commit, &rel_path)?;
     let commit = parse_history_commits(&super::git::file_history(&space_root, &rel_path, 100)?)
         .into_iter()
         .find(|item| item.hash == commit || item.short_hash == commit)
         .ok_or_else(|| "commit was not found for this file".to_string())?;
+    let diff_path = if commit.rel_path.is_empty() {
+        rel_path.as_str()
+    } else {
+        commit.rel_path.as_str()
+    };
+    let diff = super::git::commit_file_diff(&space_root, &commit.hash, diff_path)?;
     Ok(GitCommitDiff { commit, diff })
+}
+
+fn ensure_repo_at_space_root(space_root: &std::path::Path) -> Result<(), String> {
+    match super::git::inspect_repo(space_root)? {
+        super::git::RepoInspection::AtRoot { .. } => Ok(()),
+        super::git::RepoInspection::Nested { .. } => Err(
+            "git history is only available when the repository is rooted at the opened space"
+                .to_string(),
+        ),
+        super::git::RepoInspection::None => {
+            Err("git history is only available in a Git repository".to_string())
+        }
+    }
 }
 
 fn validate_space_rel_path(space_root: &std::path::Path, path: &str) -> Result<String, String> {
@@ -125,9 +145,12 @@ fn parse_history_commits(raw: &str) -> Vec<GitHistoryCommit> {
         let Some(commit) = current.as_mut() else {
             continue;
         };
-        let Some((added, deleted)) = parse_numstat_line(line) else {
+        let Some((added, deleted, rel_path)) = parse_numstat_line(line) else {
             continue;
         };
+        if commit.rel_path.is_empty() {
+            commit.rel_path = normalize_numstat_path(&rel_path);
+        }
         let modified = added.min(deleted);
         commit.modified_count = commit.modified_count.saturating_add(modified);
         commit.added_count = commit
@@ -160,6 +183,7 @@ fn parse_history_commit_line(line: &str) -> Option<GitHistoryCommit> {
     Some(GitHistoryCommit {
         hash,
         short_hash,
+        rel_path: String::new(),
         author_name,
         author_email,
         timestamp_ms,
@@ -170,9 +194,23 @@ fn parse_history_commit_line(line: &str) -> Option<GitHistoryCommit> {
     })
 }
 
-fn parse_numstat_line(line: &str) -> Option<(u32, u32)> {
+fn parse_numstat_line(line: &str) -> Option<(u32, u32, String)> {
     let mut parts = line.split('\t');
     let added = parts.next()?.parse::<u32>().ok()?;
     let deleted = parts.next()?.parse::<u32>().ok()?;
-    Some((added, deleted))
+    let rel_path = parts.next()?.to_string();
+    Some((added, deleted, rel_path))
+}
+
+fn normalize_numstat_path(path: &str) -> String {
+    let Some((prefix, renamed_to)) = path.rsplit_once(" => ") else {
+        return path.to_string();
+    };
+    let Some((base, _)) = prefix.rsplit_once('{') else {
+        return renamed_to.to_string();
+    };
+    let Some((name, suffix)) = renamed_to.split_once('}') else {
+        return renamed_to.to_string();
+    };
+    format!("{base}{name}{suffix}")
 }

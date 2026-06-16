@@ -198,6 +198,7 @@ impl Default for GitSyncStatus {
 pub struct GitHistoryCommit {
     pub hash: String,
     pub short_hash: String,
+    pub rel_path: String,
     pub author_name: String,
     pub author_email: String,
     pub timestamp_ms: i64,
