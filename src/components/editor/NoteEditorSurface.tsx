@@ -8,7 +8,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
-import type { BacklinkItem } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { NoteSelectionOverlay } from "./NoteSelectionOverlay";
@@ -16,7 +15,6 @@ import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
-import { dispatchWikiLinkClick } from "./markdown/editorEvents";
 import type {
 	SelectedCodeBlockState,
 	SelectedTableState,
@@ -47,12 +45,6 @@ interface NoteEditorSurfaceProps {
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
 		onCopy: () => void;
 	};
-
-	backlinks: {
-		show: boolean;
-		items: BacklinkItem[];
-		interactive: boolean;
-	};
 }
 
 export const NoteEditorSurface = memo(function NoteEditorSurface({
@@ -63,7 +55,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	hostRef,
 	table,
 	codeBlock,
-	backlinks,
 }: NoteEditorSurfaceProps) {
 	const hostClassName = [
 		"tiptapHostInline",
@@ -205,48 +196,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						strokeWidth={0.9}
 					/>
 				</button>
-			) : null}
-			{backlinks.show && backlinks.items.length > 0 ? (
-				<div className="editorBacklinks" aria-label="Backlinks">
-					<div className="editorBacklinksRow">
-						<div className="editorBacklinksLabel">
-							Linked mentions ({backlinks.items.length})
-						</div>
-						{backlinks.items.map((item) =>
-							backlinks.interactive ? (
-								<button
-									key={item.id}
-									type="button"
-									className="wikiLink"
-									data-target={item.id}
-									onClick={() =>
-										dispatchWikiLinkClick({
-											raw: `[[${item.id}]]`,
-											target: item.id,
-											alias: null,
-											anchorKind: "none",
-											anchor: null,
-											unresolved: false,
-										})
-									}
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.title || item.id}
-								</button>
-							) : (
-								<span
-									key={item.id}
-									className="wikiLink"
-									data-target={item.id}
-									aria-disabled
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.title || item.id}
-								</span>
-							),
-						)}
-					</div>
-				</div>
 			) : null}
 		</NoteSelectionOverlay>
 	);

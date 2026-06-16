@@ -249,7 +249,6 @@ export function ExternalMarkdownWindow() {
 					markdown={text}
 					relPath={path}
 					mode={mode}
-					showBacklinks={false}
 					deferHeavyFeatures
 					pasteMarkdownBehavior="smart-markdown"
 					onChange={handleChange}

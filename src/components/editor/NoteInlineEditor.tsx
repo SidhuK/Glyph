@@ -14,7 +14,7 @@ import {
 	type EditorMenuActionDetail,
 } from "../../lib/appEvents";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { type BacklinkItem, invoke } from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -175,7 +175,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	relPath,
 	mode,
 	interactive = true,
-	showBacklinks = true,
 	deferHeavyFeatures = false,
 	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
@@ -205,7 +204,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
-	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
@@ -262,25 +260,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		mode,
 		relPath,
 	]);
-
-	useEffect(() => {
-		if (!relPath || !showBacklinks || deferHeavyFeatures) {
-			setBacklinks([]);
-			return;
-		}
-		let cancelled = false;
-		void (async () => {
-			try {
-				const items = await invoke("backlinks", { note_id: relPath });
-				if (!cancelled) setBacklinks(items);
-			} catch {
-				if (!cancelled) setBacklinks([]);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [deferHeavyFeatures, relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 	const selectedTable = useTableInlineControls({
@@ -883,15 +862,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		],
 	);
 
-	const backlinkControls = useMemo(
-		() => ({
-			show: showBacklinks,
-			items: backlinks,
-			interactive,
-		}),
-		[backlinks, interactive, showBacklinks],
-	);
-
 	return (
 		<div
 			className={[
@@ -949,7 +919,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						hostRef={handleTiptapHostRef}
 						table={tableControls}
 						codeBlock={codeBlockControls}
-						backlinks={backlinkControls}
 					/>
 				) : null}
 			</div>
