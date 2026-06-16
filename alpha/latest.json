@@ -1,15 +1,15 @@
 {
-  "version": "0.8.0-alpha.1",
-  "notes": "## What's Changed\n* Editor table fixed font size by @SidhuK in https://github.com/SidhuK/Glyph/pull/176\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.7.5...v0.8.0-alpha.1",
-  "pub_date": "2026-06-15T04:53:10.738Z",
+  "version": "0.8.0-alpha.2",
+  "notes": "## What's Changed\n* Fix SSRF bypass via IPv4-mapped IPv6 addresses by @SidhuK in https://github.com/SidhuK/Glyph/pull/177\n* Sidebar alpha badge & update button refinements 0.8.0(alpha.2) by @SidhuK in https://github.com/SidhuK/Glyph/pull/178\n* fix: normalize Rig AI base URLs by @StreamlinedStartup in https://github.com/SidhuK/Glyph/pull/153\n* git diffs functionality added by @SidhuK in https://github.com/SidhuK/Glyph/pull/179\n* refactor(git-sync): provide gitSyncStatus via context instead of prop… by @SidhuK in https://github.com/SidhuK/Glyph/pull/180\n\n## New Contributors\n* @StreamlinedStartup made their first contribution in https://github.com/SidhuK/Glyph/pull/153\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.0-alpha.1...v0.8.0-alpha.2",
+  "pub_date": "2026-06-16T04:46:19.689Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHliaWNPOUNqa3VWVWkxZTVscE5Oa3k1ZXNhS0R1THNpQW1BOUVWSXM0aXArQkJaM1ZBVndxNUVHcEljT2VFdkVMYmIxS2l2UFBwdzQ3N3liUVh0bVFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNDk5MTg1CWZpbGU6R2x5cGguYXBwLnRhci5negpuMExIYzRoUTBZYXRPcXcyMlBHd3VuVnBtUHcwQUJ3WUl4N1JISlRtRUpOcU5xRyszWXVvOGk2Mk9TM3dwOWdWQVBaeXNTWWdmelJnRDMvc0p0UTZEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.0-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrRU9jMGx1K0QvZnI1S09uZmlnWWZIMHZYcVpCRGlqNnM4VngxdUx5cXlzT1hRejA4RWV4SDNsZjVxWTd1V1dKZWVrSVRiOVhkTmRYdVFFUklnaUFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNTg1MTc1CWZpbGU6R2x5cGguYXBwLnRhci5negpNbDhiYk1xazE3cUQ4d2JxWWxXNlVDWnp5WlM5WXZhczl1aWJsSXQxU2JBdyt5Z3pzUmt4aDVFQjA0aUxmMFBaK3BBenp1THJndGM1Q1RhWHFNWkFCZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.0-alpha.2/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHliaWNPOUNqa3VWVWkxZTVscE5Oa3k1ZXNhS0R1THNpQW1BOUVWSXM0aXArQkJaM1ZBVndxNUVHcEljT2VFdkVMYmIxS2l2UFBwdzQ3N3liUVh0bVFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNDk5MTg1CWZpbGU6R2x5cGguYXBwLnRhci5negpuMExIYzRoUTBZYXRPcXcyMlBHd3VuVnBtUHcwQUJ3WUl4N1JISlRtRUpOcU5xRyszWXVvOGk2Mk9TM3dwOWdWQVBaeXNTWWdmelJnRDMvc0p0UTZEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.0-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrRU9jMGx1K0QvZnI1S09uZmlnWWZIMHZYcVpCRGlqNnM4VngxdUx5cXlzT1hRejA4RWV4SDNsZjVxWTd1V1dKZWVrSVRiOVhkTmRYdVFFUklnaUFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxNTg1MTc1CWZpbGU6R2x5cGguYXBwLnRhci5negpNbDhiYk1xazE3cUQ4d2JxWWxXNlVDWnp5WlM5WXZhczl1aWJsSXQxU2JBdyt5Z3pzUmt4aDVFQjA0aUxmMFBaK3BBenp1THJndGM1Q1RhWHFNWkFCZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.0-alpha.2/Glyph_aarch64.app.tar.gz"
     }
   }
 }
