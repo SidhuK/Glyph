@@ -17,6 +17,7 @@ import {
 	useAISidebarContext,
 	useEditorContext,
 	useFileTreeContext,
+	useGitSyncContext,
 	useSpace,
 	useUILayoutContext,
 	useUpdaterContext,
@@ -24,7 +25,6 @@ import {
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
-import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
@@ -178,10 +178,7 @@ export function AppShell() {
 		},
 		[setSidebarCollapsedState, sidebarAutoCollapsed],
 	);
-	const gitSync = useGitSync({
-		spacePath,
-		saveCurrentEditor,
-	});
+	const gitSync = useGitSyncContext();
 	const lastGitSyncStatusRef = useRef<{
 		isSyncing: boolean;
 		phase: string;
@@ -1294,7 +1291,6 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
-				gitSyncStatus={gitSync.status}
 			/>
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}

@@ -48,7 +48,7 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import type { FsEntry, GitCommitDiff, GitSyncStatus } from "../../lib/tauri";
+import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { cn } from "../../lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -297,7 +297,6 @@ interface MainContentProps {
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
-	gitSyncStatus?: GitSyncStatus | null;
 }
 
 function DailyNotesSetupToast({
@@ -402,7 +401,6 @@ export const MainContent = memo(function MainContent({
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
-	gitSyncStatus = null,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
@@ -661,7 +659,6 @@ export const MainContent = memo(function MainContent({
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
 					gitDiff={activeGitDiff}
 					onGitDiffChange={handleGitDiffChange}
-					gitSyncStatus={gitSyncStatus}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -683,7 +680,6 @@ export const MainContent = memo(function MainContent({
 		setDirtyByPath,
 		activeGitDiff,
 		handleGitDiffChange,
-		gitSyncStatus,
 	]);
 
 	const handlePrefetchTab = useCallback(

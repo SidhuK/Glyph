@@ -16,6 +16,7 @@ import {
 import {
 	useAISidebarContext,
 	useEditorRegistration,
+	useGitSyncContext,
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
@@ -38,7 +39,6 @@ import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
 	type GitCommitDiff,
-	type GitSyncStatus,
 	type NoteRelationship,
 	type TextFileDoc,
 	type WorkspaceDatabasePreviewContext,
@@ -71,7 +71,6 @@ interface MarkdownEditorPaneProps {
 	onInfoSidebarOpenChange?: (open: boolean) => void;
 	gitDiff?: GitCommitDiff | null;
 	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
-	gitSyncStatus?: GitSyncStatus | null;
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
@@ -183,7 +182,6 @@ export function MarkdownEditorPane({
 	onInfoSidebarOpenChange,
 	gitDiff = null,
 	onGitDiffChange,
-	gitSyncStatus = null,
 	initialDoc = null,
 	initialError = "",
 	extractToNoteActions,
@@ -232,6 +230,7 @@ export function MarkdownEditorPane({
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
+	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
 
 	useEffect(() => {
