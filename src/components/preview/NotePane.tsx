@@ -1,4 +1,4 @@
-import type { GitCommitDiff, GitSyncStatus, TextFileDoc } from "../../lib/tauri";
+import type { GitCommitDiff, TextFileDoc } from "../../lib/tauri";
 import type { ExtractToNoteActions } from "../editor/types";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
@@ -8,7 +8,6 @@ interface NotePaneProps {
 	onInfoSidebarOpenChange?: (open: boolean) => void;
 	gitDiff?: GitCommitDiff | null;
 	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
-	gitSyncStatus?: GitSyncStatus | null;
 	initialDoc?: TextFileDoc | null;
 	extractToNoteActions?: ExtractToNoteActions;
 }
@@ -19,7 +18,6 @@ export function NotePane({
 	onInfoSidebarOpenChange,
 	gitDiff = null,
 	onGitDiffChange,
-	gitSyncStatus = null,
 	initialDoc = null,
 	extractToNoteActions,
 }: NotePaneProps) {
@@ -31,7 +29,6 @@ export function NotePane({
 			onInfoSidebarOpenChange={onInfoSidebarOpenChange}
 			gitDiff={gitDiff}
 			onGitDiffChange={onGitDiffChange}
-			gitSyncStatus={gitSyncStatus}
 			extractToNoteActions={extractToNoteActions}
 		/>
 	);
