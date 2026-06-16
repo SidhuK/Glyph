@@ -83,6 +83,21 @@ fn run_git(space_root: &Path, args: &[&str]) -> Result<String, String> {
     }
 }
 
+fn run_git_owned(space_root: &Path, args: Vec<String>) -> Result<String, String> {
+    let (success, stdout, stderr) = run_command({
+        let mut command = Command::new("git");
+        command.current_dir(space_root).args(args.iter());
+        command
+    })?;
+    if success {
+        Ok(stdout)
+    } else if stderr.is_empty() {
+        Err("git command failed".to_string())
+    } else {
+        Err(stderr)
+    }
+}
+
 fn run_git_maybe(space_root: &Path, args: &[&str]) -> Result<Option<String>, String> {
     let (success, stdout, _) = run_command({
         let mut command = Command::new("git");
@@ -429,6 +444,40 @@ pub fn upsert_managed_gitignore(
 pub fn stage_for_sync(space_root: &Path) -> Result<(), String> {
     run_git(space_root, &["add", "-A", "."])?;
     Ok(())
+}
+
+pub fn file_history(space_root: &Path, rel_path: &str, limit: u32) -> Result<String, String> {
+    run_git_owned(
+        space_root,
+        vec![
+            "log".to_string(),
+            "--follow".to_string(),
+            "--date-order".to_string(),
+            format!("-n{}", limit.clamp(1, 100)),
+            "--format=%x1e%H%x1f%h%x1f%an%x1f%ae%x1f%at%x1f%s".to_string(),
+            "--numstat".to_string(),
+            "--".to_string(),
+            rel_path.to_string(),
+        ],
+    )
+}
+
+pub fn commit_file_diff(space_root: &Path, commit: &str, rel_path: &str) -> Result<String, String> {
+    run_git_owned(
+        space_root,
+        vec![
+            "show".to_string(),
+            "--format=".to_string(),
+            "--no-ext-diff".to_string(),
+            "--find-renames".to_string(),
+            "--patch".to_string(),
+            "--no-color".to_string(),
+            "--unified=3".to_string(),
+            commit.to_string(),
+            "--".to_string(),
+            rel_path.to_string(),
+        ],
+    )
 }
 
 #[cfg(test)]
