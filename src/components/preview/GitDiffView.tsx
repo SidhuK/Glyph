@@ -59,7 +59,7 @@ function formatCommitDate(timestampMs: number): string {
 }
 
 export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
-	const lines = diff.diff.length ? diff.diff.split("\n") : [];
+	const lines = diff.diff.length ? diff.diff.trimEnd().split("\n") : [];
 	const dateLabel = formatCommitDate(diff.commit.timestamp_ms);
 
 	return (

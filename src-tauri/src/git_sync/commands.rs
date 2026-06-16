@@ -77,22 +77,18 @@ pub fn git_history_diff(
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     path: String,
-    commit: String,
+    commit: GitHistoryCommit,
 ) -> Result<GitCommitDiff, String> {
     let space_root = space_state.root_for_window(&window)?;
     let rel_path = validate_space_rel_path(&space_root, &path)?;
     ensure_repo_at_space_root(&space_root)?;
-    validate_commit_hash(&commit)?;
-    let commit = parse_history_commits(&super::git::file_history(&space_root, &rel_path, 100)?)
-        .into_iter()
-        .find(|item| item.hash == commit || item.short_hash == commit)
-        .ok_or_else(|| "commit was not found for this file".to_string())?;
+    validate_commit_hash(&commit.hash)?;
     let diff_path = if commit.rel_path.is_empty() {
-        rel_path.as_str()
+        rel_path
     } else {
-        commit.rel_path.as_str()
+        validate_space_rel_path(&space_root, &commit.rel_path)?
     };
-    let diff = super::git::commit_file_diff(&space_root, &commit.hash, diff_path)?;
+    let diff = super::git::commit_file_diff(&space_root, &commit.hash, &diff_path)?;
     Ok(GitCommitDiff { commit, diff })
 }
 

@@ -159,7 +159,7 @@ export function GitHistorySidebar({
 			try {
 				const diff = await invoke("git_history_diff", {
 					path: relPath,
-					commit: commit.hash,
+					commit,
 				});
 				if (diffRequestIdRef.current !== requestId) return;
 				onSelectDiff(diff);

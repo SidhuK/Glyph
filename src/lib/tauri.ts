@@ -1022,7 +1022,7 @@ interface TauriCommands {
 		GitHistoryCommit[]
 	>;
 	git_history_diff: CommandDef<
-		{ path: string; commit: string },
+		{ path: string; commit: GitHistoryCommit },
 		GitCommitDiff
 	>;
 

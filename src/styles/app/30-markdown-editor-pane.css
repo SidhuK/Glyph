@@ -616,7 +616,7 @@
 }
 
 .gitHistoryHash {
-	color: #2563eb;
+	color: var(--accent);
 	font-family: var(--font-mono);
 	font-size: calc(var(--text-base) * 0.84);
 	font-variant-numeric: tabular-nums;
