@@ -42,6 +42,7 @@ pub(crate) struct ProviderSupportEntry {
     display_name: String,
     #[serde(default)]
     url: Option<String>,
+    #[serde(default)]
     endpoints: HashMap<String, bool>,
 }
 
