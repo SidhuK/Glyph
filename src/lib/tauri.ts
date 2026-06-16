@@ -577,6 +577,24 @@ export interface GitSyncStatus {
 	message: string | null;
 }
 
+export interface GitHistoryCommit {
+	hash: string;
+	short_hash: string;
+	rel_path: string;
+	author_name: string;
+	author_email: string;
+	timestamp_ms: number;
+	subject: string;
+	added_count: number;
+	modified_count: number;
+	deleted_count: number;
+}
+
+export interface GitCommitDiff {
+	commit: GitHistoryCommit;
+	diff: string;
+}
+
 interface GitSyncContext {
 	templates_folder?: string | null;
 	attachment_storage_mode?: AttachmentStorageMode | null;
@@ -999,6 +1017,14 @@ interface TauriCommands {
 	>;
 	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
 	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
+	git_history_list: CommandDef<
+		{ path: string; limit?: number | null },
+		GitHistoryCommit[]
+	>;
+	git_history_diff: CommandDef<
+		{ path: string; commit: GitHistoryCommit },
+		GitCommitDiff
+	>;
 
 	ai_profiles_list: CommandDef<void, AiProfile[]>;
 	ai_active_profile_get: CommandDef<void, string | null>;

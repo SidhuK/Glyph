@@ -142,6 +142,159 @@
 	display: flex;
 }
 
+.gitDiffView {
+	width: 100%;
+	max-width: none;
+	margin: 0 auto;
+	padding: 0 0 80px;
+	color: var(--text-primary);
+}
+
+.gitDiffHeader {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: 14px var(--editor-readable-content-gutter);
+	background: color-mix(
+		in srgb,
+		var(--bg-canvas, var(--bg-primary)) 94%,
+		transparent
+	);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.gitDiffBackButton {
+	height: 28px;
+	padding: 0 10px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.82);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.gitDiffBackButton:hover {
+	background: var(--bg-hover);
+}
+
+.gitDiffCommitMeta {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.gitDiffCommitMeta strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.gitDiffCommitMeta span {
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+}
+
+.gitDiffBody {
+	width: 100%;
+	overflow: visible;
+	background: transparent;
+}
+
+.gitDiffLine {
+	display: flex;
+	width: 100%;
+	min-height: 23px;
+	margin: 0;
+	padding: 0 var(--editor-readable-content-gutter);
+	color: var(--text-secondary);
+}
+
+.gitDiffLineInner {
+	display: grid;
+	grid-template-columns: 34px minmax(0, 1fr);
+	width: 100%;
+	min-width: 0;
+	max-width: var(--readable-content-outer-width);
+	margin: 0 auto;
+}
+
+.gitDiffMarker {
+	padding: 0 9px 0 0;
+	color: var(--text-tertiary);
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.78);
+	font-variant-numeric: tabular-nums;
+	line-height: 23px;
+	text-align: right;
+	user-select: none;
+}
+
+.gitDiffCode {
+	display: block;
+	min-width: 0;
+	overflow-x: auto;
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 23px;
+	tab-size: 2;
+	white-space: pre;
+}
+
+.gitDiffLine[data-kind="add"] {
+	background: color-mix(in srgb, #22c55e 10%, transparent);
+	color: color-mix(in srgb, #15803d 78%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="add"] .gitDiffMarker {
+	color: color-mix(in srgb, #15803d 82%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="delete"] {
+	background: color-mix(in srgb, #ef4444 10%, transparent);
+	color: color-mix(in srgb, #b91c1c 78%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="delete"] .gitDiffMarker {
+	color: color-mix(in srgb, #b91c1c 82%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="hunk"] {
+	margin-top: 12px;
+	background: color-mix(in srgb, var(--accent) 8%, transparent);
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.gitDiffLine[data-kind="hunk"] .gitDiffMarker {
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.7);
+}
+
+.gitDiffLine[data-kind="meta"] {
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	color: var(--text-tertiary);
+}
+
+.gitDiffLine[data-kind="meta"] .gitDiffCode {
+	font-size: calc(var(--text-base) * 0.76);
+}
+
+.gitDiffEmpty {
+	padding: 24px var(--editor-readable-content-gutter);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+}
+
 .notesInfoSidebarPanel {
 	width: 100%;
 	height: 100%;
@@ -160,11 +313,11 @@
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	height: 32px;
-	padding: 0 10px;
+	min-height: 42px;
+	padding: 8px 8px 5px 10px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: space-between;
 	border-bottom: none;
 	background: transparent;
 	backdrop-filter: none;
@@ -215,6 +368,49 @@
 	font-weight: 500;
 }
 
+.markdownEditorInfoTabs {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+}
+
+.markdownEditorInfoTab {
+	height: 24px;
+	padding: 0 9px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: calc(var(--text-base) * 0.76);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markdownEditorInfoTab:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+}
+
+.markdownEditorInfoTab[data-active="true"] {
+	color: var(--text-primary);
+	background: var(--bg-primary);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.markdownEditorInfoTab:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
 .markdownEditorInfoBody {
 	flex: 1;
 	min-height: 0;
@@ -226,6 +422,235 @@
 .markdownEditorInfoSection {
 	position: relative;
 	padding: 10px 0 12px;
+}
+
+.gitHistoryPanel {
+	background: transparent;
+	padding-top: 2px;
+}
+
+.gitHistoryHeader {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	width: 100%;
+	padding: 2px 12px 10px;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+}
+
+.gitHistoryHeader strong {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.1;
+	text-wrap: balance;
+}
+
+.gitHistoryHeader span {
+	max-width: 100%;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.76);
+	line-height: 1.6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gitHistoryBody {
+	padding: 0 0 4px;
+}
+
+.gitHistoryList {
+	display: flex;
+	flex-direction: column;
+	margin: 0 -10px;
+}
+
+.gitHistoryGroup {
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.gitHistoryGroup:last-child {
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.gitHistoryGroupHeader {
+	display: flex;
+	min-height: 38px;
+	width: 100%;
+	align-items: center;
+	gap: 8px;
+	padding: 0 20px;
+	border: 0;
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+	color: var(--text-secondary);
+	text-align: left;
+	cursor: pointer;
+}
+
+.gitHistoryGroupHeader:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+	color: var(--text-primary);
+}
+
+.gitHistoryGroupHeader:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: -2px;
+}
+
+.gitHistoryGroupHeader span {
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.1;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gitHistoryGroupHeader em {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-style: normal;
+	font-variant-numeric: tabular-nums;
+}
+
+.gitHistoryGroupItems {
+	display: flex;
+	flex-direction: column;
+}
+
+.gitHistoryItem {
+	position: relative;
+	display: flex;
+	width: 100%;
+	min-height: 76px;
+	align-items: center;
+	gap: 10px;
+	padding: 13px 18px 13px 20px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: none;
+}
+
+.gitHistoryItem + .gitHistoryItem {
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+}
+
+.gitHistoryItem:hover,
+.gitHistoryItemSelected {
+	background: color-mix(in srgb, var(--bg-hover) 56%, transparent);
+}
+
+.gitHistoryItem:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: -2px;
+}
+
+.gitHistoryItemSelected {
+	background: color-mix(in srgb, var(--accent) 7%, var(--bg-hover));
+}
+
+.gitHistoryMarker {
+	display: inline-flex;
+	flex: 0 0 24px;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-full);
+	color: var(--text-tertiary);
+	box-shadow: none;
+	transition: none;
+}
+
+.gitHistoryItem:hover .gitHistoryMarker,
+.gitHistoryItemSelected .gitHistoryMarker {
+	color: var(--text-primary);
+}
+
+.gitHistoryContent {
+	display: flex;
+	min-width: 0;
+	flex: 1;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.gitHistoryTopLine {
+	display: grid;
+	min-width: 0;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 8px;
+}
+
+.gitHistorySubject {
+	overflow: hidden;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.96);
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	text-wrap: pretty;
+	white-space: nowrap;
+}
+
+.gitHistoryMeta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+}
+
+.gitHistoryHash {
+	color: var(--accent);
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.84);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.gitHistoryOpenIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.gitHistoryStat {
+	font-weight: var(--font-medium);
+}
+
+.gitHistoryStatAdd {
+	color: color-mix(in srgb, #059669 82%, var(--text-primary));
+}
+
+.gitHistoryStatModify {
+	color: color-mix(in srgb, #d97706 86%, var(--text-primary));
+}
+
+.gitHistoryStatDelete {
+	color: color-mix(in srgb, #dc2626 84%, var(--text-primary));
+}
+
+.gitHistoryLoading {
+	position: absolute;
+	right: 18px;
+	bottom: 10px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.74);
 }
 
 .markdownEditorInfoSection + .markdownEditorInfoSection {

@@ -1,3 +1,4 @@
+use std::io::Read;
 use std::path::{Component, Path};
 use std::process::{Command, Stdio};
 use std::thread;
@@ -9,6 +10,10 @@ use crate::io_atomic;
 const GLYPH_GITIGNORE_START: &str = "# >>> Glyph Git Sync >>>";
 const GLYPH_GITIGNORE_END: &str = "# <<< Glyph Git Sync <<<";
 const GIT_COMMAND_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Maximum number of commits returned by `file_history`. Shared so callers that
+/// re-derive history (e.g. diff lookups) stay consistent with this ceiling.
+pub const MAX_FILE_HISTORY_LIMIT: u32 = 100;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RepoInspection {
@@ -34,26 +39,53 @@ fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
         .spawn()
         .map_err(|error| error.to_string())?;
 
+    // Drain stdout/stderr concurrently so git never blocks writing to a full
+    // pipe buffer (~64KB) while we poll for exit, which would otherwise deadlock
+    // and trip the timeout on large diffs/histories.
+    let mut stdout_pipe = child
+        .stdout
+        .take()
+        .ok_or_else(|| "failed to capture git stdout".to_string())?;
+    let mut stderr_pipe = child
+        .stderr
+        .take()
+        .ok_or_else(|| "failed to capture git stderr".to_string())?;
+    let stdout_handle = thread::spawn(move || {
+        let mut buffer = Vec::new();
+        let _ = stdout_pipe.read_to_end(&mut buffer);
+        buffer
+    });
+    let stderr_handle = thread::spawn(move || {
+        let mut buffer = Vec::new();
+        let _ = stderr_pipe.read_to_end(&mut buffer);
+        buffer
+    });
+
     let deadline = Instant::now() + GIT_COMMAND_TIMEOUT;
-    loop {
+    let status = loop {
         match child.try_wait().map_err(|error| error.to_string())? {
-            Some(_) => break,
+            Some(status) => break status,
             None if Instant::now() >= deadline => {
                 let _ = child.kill();
                 let _ = child.wait();
+                let _ = stdout_handle.join();
+                let _ = stderr_handle.join();
                 return Err("git command timed out".to_string());
             }
             None => thread::sleep(Duration::from_millis(50)),
         }
-    }
+    };
 
-    let output = child
-        .wait_with_output()
-        .map_err(|error| error.to_string())?;
+    let stdout = stdout_handle
+        .join()
+        .map_err(|_| "git stdout reader panicked".to_string())?;
+    let stderr = stderr_handle
+        .join()
+        .map_err(|_| "git stderr reader panicked".to_string())?;
     Ok((
-        output.status.success(),
-        String::from_utf8_lossy(&output.stdout).trim().to_string(),
-        String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        status.success(),
+        String::from_utf8_lossy(&stdout).trim().to_string(),
+        String::from_utf8_lossy(&stderr).trim().to_string(),
     ))
 }
 
@@ -78,6 +110,21 @@ fn run_git(space_root: &Path, args: &[&str]) -> Result<String, String> {
         Ok(stdout)
     } else if stderr.is_empty() {
         Err(format!("git {} failed", args.join(" ")))
+    } else {
+        Err(stderr)
+    }
+}
+
+fn run_git_owned(space_root: &Path, args: Vec<String>) -> Result<String, String> {
+    let (success, stdout, stderr) = run_command({
+        let mut command = Command::new("git");
+        command.current_dir(space_root).args(args.iter());
+        command
+    })?;
+    if success {
+        Ok(stdout)
+    } else if stderr.is_empty() {
+        Err("git command failed".to_string())
     } else {
         Err(stderr)
     }
@@ -429,6 +476,40 @@ pub fn upsert_managed_gitignore(
 pub fn stage_for_sync(space_root: &Path) -> Result<(), String> {
     run_git(space_root, &["add", "-A", "."])?;
     Ok(())
+}
+
+pub fn file_history(space_root: &Path, rel_path: &str, limit: u32) -> Result<String, String> {
+    run_git_owned(
+        space_root,
+        vec![
+            "log".to_string(),
+            "--follow".to_string(),
+            "--date-order".to_string(),
+            format!("-n{}", limit.clamp(1, MAX_FILE_HISTORY_LIMIT)),
+            "--format=%x1e%H%x1f%h%x1f%an%x1f%ae%x1f%at%x1f%s".to_string(),
+            "--numstat".to_string(),
+            "--".to_string(),
+            rel_path.to_string(),
+        ],
+    )
+}
+
+pub fn commit_file_diff(space_root: &Path, commit: &str, rel_path: &str) -> Result<String, String> {
+    run_git_owned(
+        space_root,
+        vec![
+            "show".to_string(),
+            "--format=".to_string(),
+            "--no-ext-diff".to_string(),
+            "--find-renames".to_string(),
+            "--patch".to_string(),
+            "--no-color".to_string(),
+            "--unified=3".to_string(),
+            commit.to_string(),
+            "--".to_string(),
+            rel_path.to_string(),
+        ],
+    )
 }
 
 #[cfg(test)]

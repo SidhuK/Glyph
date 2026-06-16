@@ -1,10 +1,15 @@
+import { BadgeInfoIcon, GitBranchIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
 	relationshipTargetLabel,
 } from "../../lib/relationships";
 import type {
+	GitCommitDiff,
+	GitSyncStatus,
 	NoteTaskSummary,
 	WorkspaceDatabasePreviewContext,
 } from "../../lib/tauri";
@@ -17,6 +22,9 @@ import {
 	dispatchWikiLinkClick,
 } from "../editor/markdown/editorEvents";
 import type { NoteInlineEditorMode } from "../editor/types";
+import { GitHistorySidebar } from "./GitHistorySidebar";
+
+type InfoSidebarTab = "info" | "history";
 
 interface SidebarBacklinkItem {
 	id: string;
@@ -53,6 +61,9 @@ interface NotesInfoSidebarProps {
 	lineCount: number;
 	utf8SizeBytes: number;
 	saveLabel: string;
+	gitSyncStatus?: GitSyncStatus | null;
+	selectedGitCommitHash?: string | null;
+	onSelectGitDiff?: (diff: GitCommitDiff) => void;
 	onClose: () => void;
 }
 
@@ -105,14 +116,34 @@ export function NotesInfoSidebar({
 	lineCount,
 	utf8SizeBytes,
 	saveLabel,
+	gitSyncStatus = null,
+	selectedGitCommitHash = null,
+	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
 	const [host, setHost] = useState<HTMLElement | null>(null);
+	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
+	const hasGitHistoryTab =
+		canShowGitHistory(gitSyncStatus) && Boolean(onSelectGitDiff);
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;
 		setHost(document.getElementById("notes-info-sidebar-root"));
 	}, []);
+
+	useEffect(() => {
+		setActiveTab("info");
+	}, [relPath]);
+
+	useEffect(() => {
+		if (!open) {
+			setActiveTab("info");
+			return;
+		}
+		if (!hasGitHistoryTab && activeTab === "history") {
+			setActiveTab("info");
+		}
+	}, [activeTab, hasGitHistoryTab, open]);
 
 	if (!open || mode === "plain" || hasError) return null;
 
@@ -123,6 +154,45 @@ export function NotesInfoSidebar({
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			>
+				<div
+					className="markdownEditorInfoTabs"
+					role="tablist"
+					aria-label="Note sidebar"
+					data-window-drag-ignore
+				>
+					<button
+						type="button"
+						className="markdownEditorInfoTab"
+						role="tab"
+						aria-selected={activeTab === "info"}
+						data-active={activeTab === "info" ? "true" : undefined}
+						onClick={() => setActiveTab("info")}
+					>
+						<HugeiconsIcon
+							icon={BadgeInfoIcon}
+							size="var(--icon-sm)"
+							strokeWidth={1}
+						/>
+						Info
+					</button>
+					{hasGitHistoryTab ? (
+						<button
+							type="button"
+							className="markdownEditorInfoTab"
+							role="tab"
+							aria-selected={activeTab === "history"}
+							data-active={activeTab === "history" ? "true" : undefined}
+							onClick={() => setActiveTab("history")}
+						>
+							<HugeiconsIcon
+								icon={GitBranchIcon}
+								size="var(--icon-sm)"
+								strokeWidth={1}
+							/>
+							History
+						</button>
+					) : null}
+				</div>
 				<button
 					type="button"
 					className="markdownEditorInfoClose"
@@ -134,30 +204,32 @@ export function NotesInfoSidebar({
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">
-				<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
-					<NotePropertiesPanel
-						frontmatter={frontmatter}
-						onChange={onFrontmatterChange}
-					/>
-				</section>
+				{activeTab === "info" ? (
+					<>
+						<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
+							<NotePropertiesPanel
+								frontmatter={frontmatter}
+								onChange={onFrontmatterChange}
+							/>
+						</section>
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Stats</h3>
-					<div className="markdownEditorInfoRows">
-						<div className="markdownEditorInfoRow">
-							<span>Words</span>
-							<strong>{stats.words.toLocaleString()}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Characters</span>
-							<strong>{stats.characters.toLocaleString()}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Reading time</span>
-							<strong>{stats.readingTime}</strong>
-						</div>
-					</div>
-				</section>
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Stats</h3>
+							<div className="markdownEditorInfoRows">
+								<div className="markdownEditorInfoRow">
+									<span>Words</span>
+									<strong>{stats.words.toLocaleString()}</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Characters</span>
+									<strong>{stats.characters.toLocaleString()}</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Reading time</span>
+									<strong>{stats.readingTime}</strong>
+								</div>
+							</div>
+						</section>
 
 				<section className="markdownEditorInfoSection">
 					<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
@@ -345,6 +417,18 @@ export function NotesInfoSidebar({
 						</div>
 					</div>
 				</section>
+
+					</>
+				) : null}
+
+				{activeTab === "history" && hasGitHistoryTab && onSelectGitDiff ? (
+					<GitHistorySidebar
+						open={open}
+						relPath={relPath}
+						selectedCommitHash={selectedGitCommitHash}
+						onSelectDiff={onSelectGitDiff}
+					/>
+				) : null}
 			</div>
 		</aside>
 	);

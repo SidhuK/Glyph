@@ -1609,6 +1609,8 @@ pub fn run() {
             git_sync::commands::git_sync_config_update,
             git_sync::commands::git_sync_run,
             git_sync::commands::git_sync_disconnect,
+            git_sync::commands::git_history_list,
+            git_sync::commands::git_history_diff,
             space::commands::space_create,
             space::commands::space_open,
             space::commands::space_open_window,

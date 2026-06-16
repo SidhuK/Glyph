@@ -1294,6 +1294,7 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
+				gitSyncStatus={gitSync.status}
 			/>
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
