@@ -29,12 +29,10 @@ import {
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
-import { resolveSelectedViewId } from "../../lib/database/selectedViewStorage";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedAllDocs,
 	getPrefetchedDatabaseDocument,
-	getPrefetchedDatabaseRows,
 	getPrefetchedNote,
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
@@ -575,7 +573,6 @@ export const MainContent = memo(function MainContent({
 			if (cancelled) return;
 			void loadDatabasesPane();
 			void loadAllDocsPane();
-			void prefetchAllDocs(null);
 			void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
 		};
 		if (typeof window.requestIdleCallback === "function") {
@@ -615,17 +612,6 @@ export const MainContent = memo(function MainContent({
 			const initialDocument = initialDatabaseId
 				? getPrefetchedDatabaseDocument(initialDatabaseId)
 				: null;
-			const initialViewId =
-				initialDatabaseId && initialDocument
-					? resolveSelectedViewId(
-							initialDatabaseId,
-							initialDocument.database.views,
-						)
-					: null;
-			const initialRows =
-				initialViewId && initialDatabaseId
-					? getPrefetchedDatabaseRows(initialDatabaseId, initialViewId)
-					: null;
 			return (
 				<Suspense fallback={<CanvasPaneAwait variant="databases" />}>
 					<DatabasesPane
@@ -636,7 +622,6 @@ export const MainContent = memo(function MainContent({
 						databasesOpenRequest={databasesOpenRequest}
 						onConsumeOpenRequest={onConsumeDatabasesOpenRequest}
 						initialDocument={initialDocument}
-						initialRows={initialRows}
 					/>
 				</Suspense>
 			);

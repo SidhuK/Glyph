@@ -194,10 +194,12 @@ pub async fn all_docs_list(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
+    offset: Option<u32>,
     folder_prefix: Option<String>,
 ) -> Result<Vec<AllDocsItem>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
+    let offset = offset.unwrap_or(0) as i64;
     let folder_prefix = folder_prefix
         .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
         .filter(|value| !value.is_empty());
@@ -217,7 +219,7 @@ pub async fn all_docs_list(
             )));
         }
         sql.push_str(
-            "ORDER BY n.updated DESC LIMIT ?
+            "ORDER BY n.updated DESC, n.id DESC LIMIT ? OFFSET ?
              ),
              tag_blob AS (
                  SELECT ordered_tags.note_id, GROUP_CONCAT(ordered_tags.tag, '\n') AS tags
@@ -246,9 +248,10 @@ pub async fn all_docs_list(
              FROM visible_notes vn
              LEFT JOIN tag_blob ON tag_blob.note_id = vn.id
              LEFT JOIN people_blob ON people_blob.note_id = vn.id
-             ORDER BY vn.updated DESC",
+             ORDER BY vn.updated DESC, vn.id DESC",
         );
         params.push(rusqlite::types::Value::from(limit));
+        params.push(rusqlite::types::Value::from(offset));
         let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
         let mut rows = stmt
             .query(rusqlite::params_from_iter(params.iter()))

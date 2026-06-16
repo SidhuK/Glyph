@@ -152,6 +152,27 @@
 	padding: 2px 6px 8px;
 }
 
+.folioNotesList.is-virtualized {
+	position: relative;
+	display: block;
+}
+
+.folioNotesList.is-virtualized::before {
+	content: "";
+	display: block;
+	height: var(--folio-virtual-height, 0px);
+	pointer-events: none;
+}
+
+.folioNotesVirtualRow {
+	position: absolute;
+	top: 0;
+	left: 6px;
+	right: 6px;
+	width: auto;
+	will-change: transform;
+}
+
 .folioNoteListItem {
 	margin: 1px 0;
 	padding: 0;

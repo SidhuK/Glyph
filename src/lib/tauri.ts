@@ -967,7 +967,11 @@ interface TauriCommands {
 		void
 	>;
 	all_docs_list: CommandDef<
-		{ limit?: number | null; folder_prefix?: string | null },
+		{
+			limit?: number | null;
+			offset?: number | null;
+			folder_prefix?: string | null;
+		},
 		AllDocsItem[]
 	>;
 	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;

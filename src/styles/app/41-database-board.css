@@ -31,6 +31,13 @@
 	padding: 10px 6px 12px;
 }
 
+.databaseBoardLoadMoreSentinel {
+	width: 100%;
+	height: 1px;
+	flex: 0 0 auto;
+	pointer-events: none;
+}
+
 .databaseBoardError,
 .databaseBoardEmptyText {
 	font-size: calc(var(--text-base) * 0.9);
@@ -491,4 +498,47 @@
 	min-width: 100%;
 	table-layout: fixed;
 	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized {
+	display: grid;
+}
+
+.databaseTable.is-virtualized [data-slot="table-header"] {
+	position: sticky;
+	top: 0;
+	z-index: 8;
+	display: grid;
+	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized [data-slot="table-body"] {
+	position: relative;
+	display: grid;
+}
+
+.databaseTable.is-virtualized [data-slot="table-body"] [data-slot="table-row"],
+.databaseTable.is-virtualized .databaseGroupHeaderRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	width: max-content;
+	min-width: 100%;
+	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized .databaseHeaderRow {
+	display: flex;
+	width: max-content;
+	min-width: 100%;
+}
+
+.databaseTable.is-virtualized .databaseGroupCell {
+	width: 100%;
+}
+
+.databaseTable.is-virtualized .databaseBodyCell {
+	display: flex;
+	align-items: center;
 }

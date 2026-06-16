@@ -1,16 +1,28 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type InfiniteData,
+	useInfiniteQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import {
+	type Dispatch,
+	type SetStateAction,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
-	getPrefetchedDatabaseRows,
 	invalidateDatabaseRowsPrefetch,
-	prefetchDatabaseRows,
-	setPrefetchedDatabaseRows,
+	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type {
 	DatabaseRow,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseQueryResult,
 } from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import type { PaneErrorHandlers } from "./types";
 
@@ -18,34 +30,126 @@ export interface UseDatabaseRowsOptions extends PaneErrorHandlers {
 	selectedDatabaseId: string | null;
 	selectedViewId: string | null;
 	document: WorkspaceDatabaseDocument | null;
-	initialRows?: WorkspaceDatabaseQueryResult | null;
+	pageSize?: number;
+}
+
+type DatabaseRowsPagesData = InfiniteData<WorkspaceDatabaseQueryResult, number>;
+
+function rebuildRowsPages(
+	current: DatabaseRowsPagesData | undefined,
+	rows: DatabaseRow[],
+	pageSize: number,
+): DatabaseRowsPagesData {
+	const fallbackPage = current?.pages.find(
+		(page) => page.available_properties.length > 0,
+	);
+	const availableProperties = fallbackPage?.available_properties ?? [];
+	const hadMore = current?.pages[current.pages.length - 1]?.next_offset != null;
+	const totalCount = hadMore
+		? Math.max(current?.pages[0]?.total_count ?? 0, rows.length)
+		: rows.length;
+	const pages: WorkspaceDatabaseQueryResult[] = [];
+	for (let offset = 0; offset < rows.length; offset += pageSize) {
+		const pageRows = rows.slice(offset, offset + pageSize);
+		const hasLocalNext = offset + pageSize < rows.length;
+		pages.push({
+			rows: pageRows,
+			available_properties: availableProperties,
+			total_count: totalCount,
+			truncated: hasLocalNext || hadMore,
+			next_offset: hasLocalNext || hadMore ? offset + pageRows.length : null,
+		});
+	}
+	if (pages.length === 0) {
+		return {
+			pages: [
+				{
+					rows: [],
+					available_properties: availableProperties,
+					total_count: totalCount,
+					truncated: hadMore,
+					next_offset: hadMore ? 0 : null,
+				},
+			],
+			pageParams: [0],
+		};
+	}
+	return {
+		pages,
+		pageParams: pages.map((_, index) => index * pageSize),
+	};
 }
 
 export function useDatabaseRows({
 	selectedDatabaseId,
 	selectedViewId,
 	document,
-	initialRows = null,
+	pageSize = 200,
 	setError,
 }: UseDatabaseRowsOptions) {
-	const [rows, setRows] = useState<DatabaseRow[]>(
-		() => initialRows?.rows ?? [],
-	);
-	const [rowsTruncated, setRowsTruncated] = useState(
-		() => initialRows?.truncated ?? false,
-	);
+	const queryClient = useQueryClient();
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-	const rowRequestTokenRef = useRef(0);
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const previousSelectionRef = useRef<{
 		databaseId: string | null;
 		viewId: string | null;
+		pageSize: number;
 	} | null>(null);
 
+	const canLoadRows =
+		selectedDatabaseId != null &&
+		selectedViewId != null &&
+		document != null &&
+		document.database.id === selectedDatabaseId &&
+		document.database.views.some((view) => view.id === selectedViewId);
+	const rowsQueryKey = useMemo(
+		() =>
+			selectedDatabaseId && selectedViewId
+				? navigationQueryKeys.databaseRowsPages(
+						selectedDatabaseId,
+						selectedViewId,
+						pageSize,
+					)
+				: [...navigationQueryKeys.databases(), "rows-pages", "__inactive__"],
+		[pageSize, selectedDatabaseId, selectedViewId],
+	);
+	const rowsQuery = useInfiniteQuery<WorkspaceDatabaseQueryResult, Error>({
+		queryKey: rowsQueryKey,
+		queryFn: ({ pageParam }) => {
+			const offset = typeof pageParam === "number" ? pageParam : 0;
+			return invoke("databases_query_rows", {
+				database_id: selectedDatabaseId ?? "",
+				view_id: selectedViewId ?? "",
+				offset,
+				limit: pageSize,
+			});
+		},
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.next_offset ?? undefined,
+		enabled: canLoadRows,
+	});
+
+	const rows = useMemo(
+		() => rowsQuery.data?.pages.flatMap((page) => page.rows) ?? [],
+		[rowsQuery.data],
+	);
+	const setRows = useCallback<Dispatch<SetStateAction<DatabaseRow[]>>>(
+		(updater) => {
+			if (!selectedDatabaseId || !selectedViewId) return;
+			queryClient.setQueryData<DatabaseRowsPagesData>(
+				rowsQueryKey,
+				(current) => {
+					const currentRows = current?.pages.flatMap((page) => page.rows) ?? [];
+					const nextRows =
+						typeof updater === "function" ? updater(currentRows) : updater;
+					return rebuildRowsPages(current, nextRows, pageSize);
+				},
+			);
+		},
+		[pageSize, queryClient, rowsQueryKey, selectedDatabaseId, selectedViewId],
+	);
+
 	const clearRows = useCallback(() => {
-		rowRequestTokenRef.current += 1;
-		setRows([]);
-		setRowsTruncated(false);
 		setSelectedRowPath(null);
 	}, []);
 
@@ -53,63 +157,32 @@ export function useDatabaseRows({
 		const previous = previousSelectionRef.current;
 		if (
 			previous?.databaseId === selectedDatabaseId &&
-			previous.viewId === selectedViewId
+			previous.viewId === selectedViewId &&
+			previous.pageSize === pageSize
 		) {
 			return;
 		}
 		previousSelectionRef.current = {
 			databaseId: selectedDatabaseId,
 			viewId: selectedViewId,
+			pageSize,
 		};
-		clearRows();
-	}, [clearRows, selectedDatabaseId, selectedViewId]);
+		setSelectedRowPath(null);
+	}, [pageSize, selectedDatabaseId, selectedViewId]);
 
 	const loadRows = useCallback(async () => {
-		const requestToken = rowRequestTokenRef.current + 1;
-		rowRequestTokenRef.current = requestToken;
-		if (
-			!selectedDatabaseId ||
-			!selectedViewId ||
-			!document ||
-			document.database.id !== selectedDatabaseId ||
-			!document.database.views.some((view) => view.id === selectedViewId)
-		) {
-			if (rowRequestTokenRef.current === requestToken) {
-				setRows([]);
-				setRowsTruncated(false);
-				setSelectedRowPath(null);
-			}
+		if (!canLoadRows) {
+			setSelectedRowPath(null);
 			return;
 		}
-		try {
-			const next = await prefetchDatabaseRows(
-				selectedDatabaseId,
-				selectedViewId,
-			);
-			if (rowRequestTokenRef.current !== requestToken) return;
-			setRows(next.rows);
-			setRowsTruncated(next.truncated);
-			setPrefetchedDatabaseRows(selectedDatabaseId, selectedViewId, next);
-		} catch (cause) {
-			if (rowRequestTokenRef.current !== requestToken) return;
-			setError(extractErrorMessage(cause));
-		}
-	}, [document, selectedDatabaseId, selectedViewId, setError]);
+		await rowsQuery.refetch();
+	}, [canLoadRows, rowsQuery]);
 
 	useEffect(() => {
-		if (!selectedDatabaseId || !selectedViewId) return;
-		const cachedRows = getPrefetchedDatabaseRows(
-			selectedDatabaseId,
-			selectedViewId,
-		);
-		if (cachedRows) {
-			setRows(cachedRows.rows);
-			setRowsTruncated(cachedRows.truncated);
-			void loadRows();
-			return;
+		if (rowsQuery.error) {
+			setError(extractErrorMessage(rowsQuery.error));
 		}
-		void loadRows();
-	}, [loadRows, selectedDatabaseId, selectedViewId]);
+	}, [rowsQuery.error, setError]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: clear pending background reloads when the row loader changes.
 	useEffect(
@@ -125,7 +198,6 @@ export function useDatabaseRows({
 	const scheduleRowsRefreshForNoteChange = useCallback(
 		(payload: { rel_path: string; removed: boolean }) => {
 			if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
-			rowRequestTokenRef.current += 1;
 			if (fsRowsRefreshTimerRef.current !== null) {
 				window.clearTimeout(fsRowsRefreshTimerRef.current);
 			}
@@ -146,7 +218,9 @@ export function useDatabaseRows({
 	return {
 		rows,
 		setRows,
-		rowsTruncated,
+		hasMoreRows: rowsQuery.hasNextPage,
+		isLoadingMoreRows: rowsQuery.isFetchingNextPage,
+		loadMoreRows: rowsQuery.fetchNextPage,
 		selectedRowPath,
 		setSelectedRowPath,
 		loadRows,

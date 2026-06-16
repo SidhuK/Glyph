@@ -1,4 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	isSameDay,
 	isSameMonth,
@@ -7,13 +8,22 @@ import {
 	subDays,
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
-import { type KeyboardEvent, memo, useMemo, useState } from "react";
+import {
+	type KeyboardEvent,
+	memo,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext } from "../../contexts";
 
+import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
-	loadAllDocs,
+	ALL_DOCS_PAGE_SIZE,
+	loadAllDocsPage,
 	navigationQueryKeys,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -124,6 +134,20 @@ type AllDocsSection = {
 	label: string;
 	notes: AllDocsItem[];
 };
+
+type VirtualAllDocsRow =
+	| {
+			id: string;
+			kind: "header";
+			label: string;
+	  }
+	| {
+			id: string;
+			kind: "cards";
+			sectionIndex: number;
+			rowIndex: number;
+			notes: AllDocsItem[];
+	  };
 
 function sectionForDate(iso: string): AllDocsSection["id"] {
 	const today = startOfToday();
@@ -316,15 +340,38 @@ export const AllDocsPane = memo(function AllDocsPane({
 }: AllDocsPaneProps) {
 	const { itemAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
+	const paneRef = useRef<HTMLElement>(null);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
+	const [paneWidth, setPaneWidth] = useState(0);
 	const queryClient = useQueryClient();
-	const notesQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(null),
-		queryFn: () => loadAllDocs(null),
-		initialData: initialNotes ?? undefined,
+	const notesQuery = useInfiniteQuery({
+		queryKey: navigationQueryKeys.allDocsPages(null),
+		queryFn: ({ pageParam }) => {
+			const offset = typeof pageParam === "number" ? pageParam : 0;
+			return loadAllDocsPage(null, offset);
+		},
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+		initialData: initialNotes
+			? {
+					pages: [
+						{
+							items: initialNotes.slice(0, ALL_DOCS_PAGE_SIZE),
+							nextOffset:
+								initialNotes.length >= ALL_DOCS_PAGE_SIZE
+									? ALL_DOCS_PAGE_SIZE
+									: null,
+						},
+					],
+					pageParams: [0],
+				}
+			: undefined,
 	});
-	const notes = notesQuery.data ?? [];
+	const notes = useMemo(
+		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
+		[notesQuery.data],
+	);
 	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		notePaths,
@@ -333,10 +380,23 @@ export const AllDocsPane = memo(function AllDocsPane({
 	);
 	useTauriEvent("notes:external_changed", () => {
 		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(null),
+			queryKey: navigationQueryKeys.allDocs(),
 		});
 		setTaskSummaryRefreshKey((key) => key + 1);
 	});
+
+	useEffect(() => {
+		const pane = paneRef.current;
+		if (!pane) return;
+		const observer = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (!entry) return;
+			setPaneWidth(entry.contentRect.width);
+		});
+		observer.observe(pane);
+		setPaneWidth(pane.clientWidth);
+		return () => observer.disconnect();
+	}, []);
 
 	const sections = useMemo<AllDocsSection[]>(() => {
 		const buckets = new Map<string, AllDocsItem[]>();
@@ -352,6 +412,60 @@ export const AllDocsPane = memo(function AllDocsPane({
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
 	}, [notes]);
+
+	const columnCount = useMemo(() => {
+		const minCardWidth = paneWidth <= 640 ? 144 : paneWidth <= 900 ? 160 : 184;
+		const gap = 10;
+		return Math.max(1, Math.floor((paneWidth + gap) / (minCardWidth + gap)));
+	}, [paneWidth]);
+	const virtualRows = useMemo<VirtualAllDocsRow[]>(() => {
+		const rows: VirtualAllDocsRow[] = [];
+		for (const [sectionIndex, section] of sections.entries()) {
+			rows.push({
+				id: `header:${section.id}`,
+				kind: "header",
+				label: section.label,
+			});
+			for (
+				let startIndex = 0, rowIndex = 0;
+				startIndex < section.notes.length;
+				startIndex += columnCount, rowIndex += 1
+			) {
+				rows.push({
+					id: `cards:${section.id}:${rowIndex}`,
+					kind: "cards",
+					sectionIndex,
+					rowIndex,
+					notes: section.notes.slice(startIndex, startIndex + columnCount),
+				});
+			}
+		}
+		return rows;
+	}, [columnCount, sections]);
+	const cardEstimate = useMemo(() => {
+		if (paneWidth <= 0) return 200;
+		const gap = 10;
+		const width = (paneWidth - gap * (columnCount - 1)) / columnCount;
+		const minHeight = paneWidth <= 640 ? 176 : 184;
+		return Math.max(minHeight, width) + gap;
+	}, [columnCount, paneWidth]);
+	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
+		count: virtualRows.length,
+		estimateSize: (index) =>
+			virtualRows[index]?.kind === "header" ? 32 : cardEstimate,
+		getScrollElement: () => paneRef.current,
+		overscan: 5,
+	});
+	const virtualItems = rowVirtualizer.getVirtualItems();
+	useVirtualLoadMore({
+		hasMore: notesQuery.hasNextPage,
+		isLoading: notesQuery.isFetchingNextPage,
+		onLoadMore: notesQuery.fetchNextPage,
+		virtualItems,
+		totalItems: virtualRows.length,
+		remainingItems: 4,
+	});
+
 	if (notesQuery.isLoading) {
 		return <CanvasPaneAwait variant="all-docs" />;
 	}
@@ -368,49 +482,65 @@ export const AllDocsPane = memo(function AllDocsPane({
 	}
 
 	return (
-		<section className="allDocsPane">
+		<section ref={paneRef} className="allDocsPane">
 			<header className="allDocsHeader">
 				<div className="allDocsHeadingGroup">
 					<h1 className="allDocsTitle">All Notes</h1>
 				</div>
 			</header>
-			<div className="allDocsSections">
+			<div
+				className="allDocsSections is-virtualized"
+				style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+			>
 				{notes.length === 0 ? (
 					<div className="databaseLoadingState">
 						No notes yet. Create one to get started.
 					</div>
 				) : null}
-				{sections.map((section, sectionIndex) => (
-					<section key={section.id} className="allDocsSection">
-						<div className="allDocsSectionHeader">
-							<h2 className="allDocsSectionTitle">{section.label}</h2>
-						</div>
-						<div className="allDocsGrid">
-							{section.notes.map((note, index) => {
-								const cardProps = prepareAllDocsCardProps({
-									note,
-									index,
-									sectionIndex,
-									selectedNotePath,
-									taskSummariesByPath,
-									selectNote: setSelectedNotePath,
-									onOpenFile,
-								});
+				{virtualItems.map((virtualRow) => {
+					const row = virtualRows[virtualRow.index];
+					if (!row) return null;
+					return (
+						<div
+							key={virtualRow.key}
+							data-index={virtualRow.index}
+							ref={(node) => rowVirtualizer.measureElement(node)}
+							className="allDocsVirtualRow"
+							style={{ transform: `translateY(${virtualRow.start}px)` }}
+						>
+							{row.kind === "header" ? (
+								<div className="allDocsSectionHeader">
+									<h2 className="allDocsSectionTitle">{row.label}</h2>
+								</div>
+							) : (
+								<div className="allDocsGrid">
+									{row.notes.map((note, index) => {
+										const cardProps = prepareAllDocsCardProps({
+											note,
+											index: row.rowIndex * columnCount + index,
+											sectionIndex: row.sectionIndex,
+											selectedNotePath,
+											taskSummariesByPath,
+											selectNote: setSelectedNotePath,
+											onOpenFile,
+										});
 
-								return (
-									<AllDocsCard
-										key={note.note_path}
-										{...cardProps}
-										noteAppearance={itemAppearance[note.note_path] ?? null}
-										shouldReduceMotion={shouldReduceMotion}
-										springPreset={springPresets.snappy}
-										TaskProgressComponent={TaskProgressIndicator}
-									/>
-								);
-							})}
+										return (
+											<AllDocsCard
+												key={note.note_path}
+												{...cardProps}
+												noteAppearance={itemAppearance[note.note_path] ?? null}
+												shouldReduceMotion={shouldReduceMotion}
+												springPreset={springPresets.snappy}
+												TaskProgressComponent={TaskProgressIndicator}
+											/>
+										);
+									})}
+								</div>
+							)}
 						</div>
-					</section>
-				))}
+					);
+				})}
 			</div>
 		</section>
 	);

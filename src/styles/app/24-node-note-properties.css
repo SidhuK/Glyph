@@ -450,13 +450,24 @@ input.notePropertyValue {
 
 .databaseStatusTrigger .propertyValueText {
 	min-width: 0;
-	max-width: 100%;
+	width: 100%;
 }
 
 .databaseStatusTrigger .propertyValueText > span {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	flex: 1 1 auto;
+}
+
+.databaseCellButton.is-pill-list .propertyValueText {
+	width: 100%;
+	min-width: 0;
+}
+
+.databaseCellButton.is-pill-list .propertyValueText > span {
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .notePropertyStatusTrigger:hover .propertyValueText,
