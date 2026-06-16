@@ -24,7 +24,11 @@ interface GitHistoryGroup {
 }
 
 function startOfDayMs(date: Date): number {
-	return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+	return new Date(
+		date.getFullYear(),
+		date.getMonth(),
+		date.getDate(),
+	).getTime();
 }
 
 function formatGroupLabel(timestampMs: number, nowMs: number): string {
@@ -97,6 +101,7 @@ export function GitHistorySidebar({
 	const [loadingCommit, setLoadingCommit] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const diffRequestIdRef = useRef(0);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: recompute the reference time whenever commits change.
 	const nowMs = useMemo(() => Date.now(), [commits]);
 	const groups = useMemo(
 		() => groupHistoryCommits(commits, nowMs),
@@ -109,6 +114,7 @@ export function GitHistorySidebar({
 		};
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset history state when the active note path changes.
 	useEffect(() => {
 		diffRequestIdRef.current += 1;
 		setCommits([]);
@@ -262,10 +268,7 @@ export function GitHistorySidebar({
 															</span>
 															<span className="gitHistoryMeta">
 																<span>
-																	{formatCommitDate(
-																		commit.timestamp_ms,
-																		nowMs,
-																	)}
+																	{formatCommitDate(commit.timestamp_ms, nowMs)}
 																</span>
 																{commit.added_count > 0 ? (
 																	<span className="gitHistoryStat gitHistoryStatAdd">
@@ -274,8 +277,7 @@ export function GitHistorySidebar({
 																) : null}
 																{commit.modified_count > 0 ? (
 																	<span className="gitHistoryStat gitHistoryStatModify">
-																		~
-																		{commit.modified_count.toLocaleString()}
+																		~{commit.modified_count.toLocaleString()}
 																	</span>
 																) : null}
 																{commit.deleted_count > 0 ? (

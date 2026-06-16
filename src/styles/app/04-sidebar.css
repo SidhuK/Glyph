@@ -142,8 +142,7 @@
 }
 
 .windowChromeUpdateButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, rgb(0 112 249) 40%, white 60%);
+	outline: 2px solid color-mix(in srgb, rgb(0 112 249) 40%, white 60%);
 	outline-offset: 2px;
 }
 

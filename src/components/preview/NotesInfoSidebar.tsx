@@ -131,6 +131,7 @@ export function NotesInfoSidebar({
 		setHost(document.getElementById("notes-info-sidebar-root"));
 	}, []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset to the info tab when the active note path changes.
 	useEffect(() => {
 		setActiveTab("info");
 	}, [relPath]);
@@ -231,193 +232,199 @@ export function NotesInfoSidebar({
 							</div>
 						</section>
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
-					<div className="markdownEditorInfoTaskSummary">
-						<TaskProgressIndicator summary={taskSummary} />
-						<span>
-							{taskSummary.completed_count.toLocaleString()} of{" "}
-							{taskSummary.total_count.toLocaleString()} done
-						</span>
-					</div>
-				</section>
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
+							<div className="markdownEditorInfoTaskSummary">
+								<TaskProgressIndicator summary={taskSummary} />
+								<span>
+									{taskSummary.completed_count.toLocaleString()} of{" "}
+									{taskSummary.total_count.toLocaleString()} done
+								</span>
+							</div>
+						</section>
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Outline</h3>
-					{tocHeadings.length > 0 ? (
-						<div className="markdownEditorInfoOutline">
-							{tocHeadings.map((heading) => (
-								<button
-									key={heading.id}
-									type="button"
-									className="markdownEditorInfoOutlineItem"
-									data-active={tocActiveId === heading.id ? "true" : undefined}
-									data-level={heading.level}
-									onClick={() => onSelectHeading(heading)}
-									title={heading.text}
-								>
-									{heading.text}
-								</button>
-							))}
-						</div>
-					) : (
-						<div className="markdownEditorInfoEmpty">
-							No headings in this note yet.
-						</div>
-					)}
-				</section>
-
-				{backlinks.length > 0 ? (
-					<section className="markdownEditorInfoSection">
-						<h3 className="markdownEditorInfoSectionLabel">Backlinks</h3>
-						<div className="markdownEditorInfoLinkList">
-							{backlinks.map((item) => (
-								<button
-									key={item.id}
-									type="button"
-									className="wikiLink"
-									data-target={item.id}
-									onClick={() =>
-										dispatchWikiLinkClick({
-											raw: `[[${item.id}]]`,
-											target: item.id,
-											alias: null,
-											anchorKind: "none",
-											anchor: null,
-											unresolved: false,
-										})
-									}
-									title={item.id}
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.label}
-								</button>
-							))}
-						</div>
-					</section>
-				) : null}
-
-				{relationshipGroups.length > 0 ? (
-					<section className="markdownEditorInfoSection">
-						<h3 className="markdownEditorInfoSectionLabel">Relationships</h3>
-						<div className="markdownEditorInfoRows">
-							{relationshipGroups.map((group) => (
-								<div
-									key={group.field_key}
-									className="markdownEditorInfoRelationshipGroup"
-								>
-									<span>{group.field_key}</span>
-									<div className="markdownEditorInfoLinkList">
-										{group.items.map((item) => {
-											const target = item.to_id ?? item.target_title;
-											if (!target) return null;
-											return (
-												<button
-													key={`${group.field_key}:${item.ordinal}:${target}`}
-													type="button"
-													className="wikiLink"
-													data-target={target}
-													onClick={() =>
-														dispatchWikiLinkClick({
-															raw: `[[${target}]]`,
-															target,
-															alias: null,
-															anchorKind: "none",
-															anchor: null,
-															unresolved: item.to_id === null,
-														})
-													}
-													title={target}
-												>
-													<span className="wikiLinkIcon" aria-hidden="true" />
-													{relationshipTargetLabel(item)}
-												</button>
-											);
-										})}
-									</div>
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Outline</h3>
+							{tocHeadings.length > 0 ? (
+								<div className="markdownEditorInfoOutline">
+									{tocHeadings.map((heading) => (
+										<button
+											key={heading.id}
+											type="button"
+											className="markdownEditorInfoOutlineItem"
+											data-active={
+												tocActiveId === heading.id ? "true" : undefined
+											}
+											data-level={heading.level}
+											onClick={() => onSelectHeading(heading)}
+											title={heading.text}
+										>
+											{heading.text}
+										</button>
+									))}
 								</div>
-							))}
-						</div>
-					</section>
-				) : null}
+							) : (
+								<div className="markdownEditorInfoEmpty">
+									No headings in this note yet.
+								</div>
+							)}
+						</section>
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Linked notes</h3>
-					{linkedNotes.length > 0 ? (
-						<div className="markdownEditorInfoLinkList">
-							{linkedNotes.map((item) => (
-								<button
-									key={`${item.kind}:${item.id}`}
-									type="button"
-									className="wikiLink"
-									data-target={item.kind === "wiki" ? item.id : undefined}
-									onClick={() => {
-										if (item.kind === "wiki") {
-											dispatchWikiLinkClick({
-												raw: `[[${item.id}]]`,
-												target: item.id,
-												alias: null,
-												anchorKind: "none",
-												anchor: null,
-												unresolved: false,
-											});
-											return;
-										}
-										dispatchMarkdownLinkClick({
-											href: item.id,
-											sourcePath: relPath,
-										});
-									}}
-									title={item.id}
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.label}
-								</button>
-							))}
-						</div>
-					) : (
-						<div className="markdownEditorInfoEmpty">No linked notes.</div>
-					)}
-				</section>
+						{backlinks.length > 0 ? (
+							<section className="markdownEditorInfoSection">
+								<h3 className="markdownEditorInfoSectionLabel">Backlinks</h3>
+								<div className="markdownEditorInfoLinkList">
+									{backlinks.map((item) => (
+										<button
+											key={item.id}
+											type="button"
+											className="wikiLink"
+											data-target={item.id}
+											onClick={() =>
+												dispatchWikiLinkClick({
+													raw: `[[${item.id}]]`,
+													target: item.id,
+													alias: null,
+													anchorKind: "none",
+													anchor: null,
+													unresolved: false,
+												})
+											}
+											title={item.id}
+										>
+											<span className="wikiLinkIcon" aria-hidden="true" />
+											{item.label}
+										</button>
+									))}
+								</div>
+							</section>
+						) : null}
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">File info</h3>
-					<div className="markdownEditorInfoRows">
-						<div className="markdownEditorInfoRow">
-							<span>Path</span>
-							<span className="markdownEditorInfoPathValue">{relPath}</span>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Modified</span>
-							<strong>
-								{formatMetadataDate(
-									lastSavedMtimeMs
-										? new Date(lastSavedMtimeMs).toISOString()
-										: (previewContext?.updated ?? null),
-								)}
-							</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Created</span>
-							<strong>{formatMetadataDate(previewContext?.created)}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Lines</span>
-							<strong>
-								{(previewContext?.line_count ?? lineCount).toLocaleString()}
-							</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Size</span>
-							<strong>{formatFileSize(utf8SizeBytes)}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Save status</span>
-							<strong>{saveLabel}</strong>
-						</div>
-					</div>
-				</section>
+						{relationshipGroups.length > 0 ? (
+							<section className="markdownEditorInfoSection">
+								<h3 className="markdownEditorInfoSectionLabel">
+									Relationships
+								</h3>
+								<div className="markdownEditorInfoRows">
+									{relationshipGroups.map((group) => (
+										<div
+											key={group.field_key}
+											className="markdownEditorInfoRelationshipGroup"
+										>
+											<span>{group.field_key}</span>
+											<div className="markdownEditorInfoLinkList">
+												{group.items.map((item) => {
+													const target = item.to_id ?? item.target_title;
+													if (!target) return null;
+													return (
+														<button
+															key={`${group.field_key}:${item.ordinal}:${target}`}
+															type="button"
+															className="wikiLink"
+															data-target={target}
+															onClick={() =>
+																dispatchWikiLinkClick({
+																	raw: `[[${target}]]`,
+																	target,
+																	alias: null,
+																	anchorKind: "none",
+																	anchor: null,
+																	unresolved: item.to_id === null,
+																})
+															}
+															title={target}
+														>
+															<span
+																className="wikiLinkIcon"
+																aria-hidden="true"
+															/>
+															{relationshipTargetLabel(item)}
+														</button>
+													);
+												})}
+											</div>
+										</div>
+									))}
+								</div>
+							</section>
+						) : null}
 
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Linked notes</h3>
+							{linkedNotes.length > 0 ? (
+								<div className="markdownEditorInfoLinkList">
+									{linkedNotes.map((item) => (
+										<button
+											key={`${item.kind}:${item.id}`}
+											type="button"
+											className="wikiLink"
+											data-target={item.kind === "wiki" ? item.id : undefined}
+											onClick={() => {
+												if (item.kind === "wiki") {
+													dispatchWikiLinkClick({
+														raw: `[[${item.id}]]`,
+														target: item.id,
+														alias: null,
+														anchorKind: "none",
+														anchor: null,
+														unresolved: false,
+													});
+													return;
+												}
+												dispatchMarkdownLinkClick({
+													href: item.id,
+													sourcePath: relPath,
+												});
+											}}
+											title={item.id}
+										>
+											<span className="wikiLinkIcon" aria-hidden="true" />
+											{item.label}
+										</button>
+									))}
+								</div>
+							) : (
+								<div className="markdownEditorInfoEmpty">No linked notes.</div>
+							)}
+						</section>
+
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">File info</h3>
+							<div className="markdownEditorInfoRows">
+								<div className="markdownEditorInfoRow">
+									<span>Path</span>
+									<span className="markdownEditorInfoPathValue">{relPath}</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Modified</span>
+									<strong>
+										{formatMetadataDate(
+											lastSavedMtimeMs
+												? new Date(lastSavedMtimeMs).toISOString()
+												: (previewContext?.updated ?? null),
+										)}
+									</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Created</span>
+									<strong>{formatMetadataDate(previewContext?.created)}</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Lines</span>
+									<strong>
+										{(previewContext?.line_count ?? lineCount).toLocaleString()}
+									</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Size</span>
+									<strong>{formatFileSize(utf8SizeBytes)}</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Save status</span>
+									<strong>{saveLabel}</strong>
+								</div>
+							</div>
+						</section>
 					</>
 				) : null}
 

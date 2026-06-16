@@ -462,13 +462,15 @@ export const MainContent = memo(function MainContent({
 	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
-	const currentMarkdownPath =
-		viewerPath?.toLowerCase().endsWith(".md") ? viewerPath : null;
+	const currentMarkdownPath = viewerPath?.toLowerCase().endsWith(".md")
+		? viewerPath
+		: null;
 	const activeGitDiff =
 		activeGitDiffState?.path === currentMarkdownPath
 			? activeGitDiffState.diff
 			: null;
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: clear the active git diff when the viewer path changes.
 	useEffect(() => {
 		setActiveGitDiffState(null);
 	}, [viewerPath]);
@@ -476,7 +478,9 @@ export const MainContent = memo(function MainContent({
 	const handleGitDiffChange = useCallback(
 		(diff: GitCommitDiff | null) => {
 			setActiveGitDiffState(
-				diff && currentMarkdownPath ? { path: currentMarkdownPath, diff } : null,
+				diff && currentMarkdownPath
+					? { path: currentMarkdownPath, diff }
+					: null,
 			);
 		},
 		[currentMarkdownPath],

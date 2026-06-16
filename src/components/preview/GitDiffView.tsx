@@ -76,7 +76,7 @@ export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
 					</span>
 				</div>
 			</header>
-			<div className="gitDiffBody" role="region" aria-label="Commit diff">
+			<section className="gitDiffBody" aria-label="Commit diff">
 				{lines.length ? (
 					lines.map((line, index) => {
 						const display = diffLineDisplay(line);
@@ -100,7 +100,7 @@ export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
 						This commit did not change the current note.
 					</div>
 				)}
-			</div>
+			</section>
 		</div>
 	);
 }

@@ -402,8 +402,7 @@
 .markdownEditorInfoTab[data-active="true"] {
 	color: var(--text-primary);
 	background: var(--bg-primary);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--border-light) 34%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
 .markdownEditorInfoTab:focus-visible {
