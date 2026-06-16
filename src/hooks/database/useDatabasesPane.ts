@@ -1,15 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
-import type {
-	WorkspaceDatabaseDocument,
-	WorkspaceDatabaseQueryResult,
-} from "../../lib/tauri";
+import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { ActiveCollection } from "./types";
 import { useCollectionWorkspace } from "./useCollectionWorkspace";
 import { useDatabaseDisplaySettings } from "./useDatabaseDisplaySettings";
 import { useDatabaseRowActions } from "./useDatabaseRowActions";
 import { useDatabaseRows } from "./useDatabaseRows";
 import { useDatabaseViewActions } from "./useDatabaseViewActions";
+
+const DATABASE_TABLE_ROW_PAGE_SIZE = 200;
+const DATABASE_BOARD_ROW_PAGE_SIZE = 48;
 
 export interface UseDatabasesPaneOptions {
 	onOpenFile: (relPath: string) => Promise<void>;
@@ -20,7 +20,6 @@ export interface UseDatabasesPaneOptions {
 	databasesOpenRequest: DatabasesOpenRequest;
 	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
-	initialRows?: WorkspaceDatabaseQueryResult | null;
 }
 
 export function useDatabasesPane({
@@ -28,7 +27,6 @@ export function useDatabasesPane({
 	databasesOpenRequest,
 	onConsumeOpenRequest,
 	initialDocument = null,
-	initialRows = null,
 }: UseDatabasesPaneOptions) {
 	const [error, setError] = useState("");
 	const clearError = useCallback(() => setError(""), []);
@@ -41,21 +39,25 @@ export function useDatabasesPane({
 		initialDocument,
 	});
 
-	const rows = useDatabaseRows({
-		selectedDatabaseId: workspace.selectedDatabaseId,
-		selectedViewId: workspace.selectedViewId,
-		document: workspace.document,
-		initialRows,
-		setError,
-		clearError,
-	});
-
 	const display = useDatabaseDisplaySettings();
 
 	const views = useDatabaseViewActions({
 		document: workspace.document,
 		selectedViewId: workspace.selectedViewId,
 		saveDatabase: workspace.saveDatabase,
+	});
+
+	const rowPageSize =
+		views.activeConfig?.view.layout === "board"
+			? DATABASE_BOARD_ROW_PAGE_SIZE
+			: DATABASE_TABLE_ROW_PAGE_SIZE;
+	const rows = useDatabaseRows({
+		selectedDatabaseId: workspace.selectedDatabaseId,
+		selectedViewId: workspace.selectedViewId,
+		document: workspace.document,
+		pageSize: rowPageSize,
+		setError,
+		clearError,
 	});
 
 	const activeCollection = useMemo((): ActiveCollection | null => {

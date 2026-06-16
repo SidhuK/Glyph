@@ -8,10 +8,7 @@ import {
 	EMPTY_BOARD_CARD_ORDER,
 	EMPTY_BOARD_LANE_ORDER,
 } from "../../lib/database/viewConfig";
-import type {
-	WorkspaceDatabaseDocument,
-	WorkspaceDatabaseQueryResult,
-} from "../../lib/tauri";
+import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { DatabaseBoard } from "../database/DatabaseBoard";
@@ -31,7 +28,6 @@ interface DatabasesPaneProps {
 	databasesOpenRequest: DatabasesOpenRequest;
 	onConsumeOpenRequest?: () => void;
 	initialDocument?: WorkspaceDatabaseDocument | null;
-	initialRows?: WorkspaceDatabaseQueryResult | null;
 }
 
 function DatabasesPaneContent({
@@ -40,7 +36,6 @@ function DatabasesPaneContent({
 	databasesOpenRequest,
 	onConsumeOpenRequest,
 	initialDocument = null,
-	initialRows = null,
 }: DatabasesPaneProps) {
 	const reduceMotion = useReducedMotion();
 	const {
@@ -59,7 +54,6 @@ function DatabasesPaneContent({
 		databasesOpenRequest,
 		onConsumeOpenRequest,
 		initialDocument,
-		initialRows,
 	});
 
 	if (doc.loading) {
@@ -112,11 +106,6 @@ function DatabasesPaneContent({
 					{ui.error ? (
 						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
 					) : null}
-					{rows.rowsTruncated ? (
-						<div className="databaseNotice">
-							Limited to the first 200 notes.
-						</div>
-					) : null}
 					{activeCollection.config.view.layout === "board" &&
 					views.boardHandlers ? (
 						<DatabaseBoard
@@ -152,6 +141,9 @@ function DatabasesPaneContent({
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}
 							onStatusColorChange={display.setStatusColor}
+							hasMoreRows={rows.hasMoreRows}
+							isLoadingMoreRows={rows.isLoadingMoreRows}
+							onLoadMoreRows={rows.loadMoreRows}
 							onSaveCell={actions.handleUpdateCell}
 						/>
 					) : (
@@ -172,6 +164,9 @@ function DatabasesPaneContent({
 							onSaveCell={actions.handleUpdateCell}
 							onRenameTitle={actions.handleRenameRowTitle}
 							onResizeColumn={views.handleResizeColumn}
+							hasMoreRows={rows.hasMoreRows}
+							isLoadingMoreRows={rows.isLoadingMoreRows}
+							onLoadMoreRows={rows.loadMoreRows}
 						/>
 					)}
 				</>

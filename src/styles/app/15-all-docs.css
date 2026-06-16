@@ -61,6 +61,21 @@
 	gap: 22px;
 }
 
+.allDocsSections.is-virtualized {
+	position: relative;
+	display: block;
+	flex: 0 0 auto;
+	min-height: 0;
+}
+
+.allDocsVirtualRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	will-change: transform;
+}
+
 .allDocsSection {
 	display: flex;
 	flex-direction: column;
