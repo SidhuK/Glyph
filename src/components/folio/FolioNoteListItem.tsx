@@ -2,6 +2,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import {
 	type CSSProperties,
 	type MouseEvent,
+	forwardRef,
 	memo,
 	useCallback,
 	useEffect,
@@ -46,6 +47,9 @@ interface FolioNoteListItemProps {
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
 	iconNameForTag: (tag: string) => string;
+	className?: string;
+	style?: CSSProperties;
+	virtualIndex?: number;
 }
 
 type FolioImageRef =
@@ -388,25 +392,32 @@ function FolioRenameInput({
 	);
 }
 
-export const FolioNoteListItem = memo(function FolioNoteListItem({
-	note,
-	selected,
-	onOpen,
-	onOpenInNewTab,
-	onPrefetch,
-	isPinned = false,
-	onRename,
-	onDelete,
-	onTogglePinned,
-	onFocus,
-	taskSummary = null,
-	isRenaming = false,
-	onCommitRename,
-	onCancelRename,
-	appearance = null,
-	onOpenAppearancePicker,
-	iconNameForTag,
-}: FolioNoteListItemProps) {
+export const FolioNoteListItem = memo(
+	forwardRef<HTMLLIElement, FolioNoteListItemProps>(function FolioNoteListItem(
+		{
+			note,
+			selected,
+			onOpen,
+			onOpenInNewTab,
+			onPrefetch,
+			isPinned = false,
+			onRename,
+			onDelete,
+			onTogglePinned,
+			onFocus,
+			taskSummary = null,
+			isRenaming = false,
+			onCommitRename,
+			onCancelRename,
+			appearance = null,
+			onOpenAppearancePicker,
+			iconNameForTag,
+			className,
+			style,
+			virtualIndex,
+		},
+		ref,
+	) {
 	const title = note.title.trim() || titleFromPath(note.note_path);
 	const isMarkdown = note.is_markdown;
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(
@@ -593,7 +604,12 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 	);
 
 	return (
-		<li className="folioNoteListItem">
+		<li
+			ref={ref}
+			className={`folioNoteListItem${className ? ` ${className}` : ""}`}
+			style={style}
+			data-index={virtualIndex}
+		>
 			{isRenaming ? (
 				<div
 					className="folioNoteRow"
@@ -665,4 +681,5 @@ export const FolioNoteListItem = memo(function FolioNoteListItem({
 			)}
 		</li>
 	);
-});
+	}),
+);

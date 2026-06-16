@@ -48,7 +48,16 @@ function filterNotesForScope(
 	notes: FolioItem[],
 	scope: FolioScope,
 ): FolioItem[] {
+	const folderPrefix =
+		scope.kind === "folder" ? normalizeFolioPath(scope.folderPrefix) : "";
 	switch (scope.kind) {
+		case "folder":
+			return notes.filter((note) => {
+				const notePath = normalizeRelPath(note.note_path);
+				return (
+					notePath === folderPrefix || notePath.startsWith(`${folderPrefix}/`)
+				);
+			});
 		case "tag":
 			return notes.filter(
 				(note) => note.is_markdown && tagMatches(note.tags, scope.tag),
