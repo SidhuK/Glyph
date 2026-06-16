@@ -27,7 +27,6 @@ import {
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { canShowGitHistory } from "../../lib/gitSyncUi";
 import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
@@ -37,8 +36,6 @@ import {
 import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
-	type GitCommitDiff,
-	type GitSyncStatus,
 	type NoteRelationship,
 	type TextFileDoc,
 	type WorkspaceDatabasePreviewContext,
@@ -56,7 +53,6 @@ import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,
 } from "../editor/types";
-import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
@@ -69,9 +65,6 @@ interface MarkdownEditorPaneProps {
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
 	onInfoSidebarOpenChange?: (open: boolean) => void;
-	gitDiff?: GitCommitDiff | null;
-	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
-	gitSyncStatus?: GitSyncStatus | null;
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
@@ -181,9 +174,6 @@ export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
 	onInfoSidebarOpenChange,
-	gitDiff = null,
-	onGitDiffChange,
-	gitSyncStatus = null,
 	initialDoc = null,
 	initialError = "",
 	extractToNoteActions,
@@ -232,12 +222,6 @@ export function MarkdownEditorPane({
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
-	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
-
-	useEffect(() => {
-		if (hasSupportedGit) return;
-		onGitDiffChange?.(null);
-	}, [hasSupportedGit, onGitDiffChange]);
 
 	const isDirty = text !== savedText;
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
@@ -912,31 +896,24 @@ export function MarkdownEditorPane({
 					className="filePreviewTextWrap markdownEditorContent"
 				>
 					<div className="markdownEditorCenter">
-						{gitDiff ? (
-							<GitDiffView
-								diff={gitDiff}
-								onBack={() => onGitDiffChange?.(null)}
-							/>
-						) : (
-							<NoteInlineEditor
-								markdown={text}
-								relPath={relPath}
-								mode={mode}
-								pasteMarkdownBehavior="smart-markdown"
-								onChange={(nextText) => {
-									hasUserEditsRef.current = true;
-									textRef.current = nextText;
-									setText(nextText);
-								}}
-								onFrontmatterCommit={runAutosave}
-								onEditorReady={setTocEditor}
-								extractToNoteActions={extractToNoteActions}
-							/>
-						)}
+						<NoteInlineEditor
+							markdown={text}
+							relPath={relPath}
+							mode={mode}
+							pasteMarkdownBehavior="smart-markdown"
+							onChange={(nextText) => {
+								hasUserEditsRef.current = true;
+								textRef.current = nextText;
+								setText(nextText);
+							}}
+							onFrontmatterCommit={runAutosave}
+							onEditorReady={setTocEditor}
+							extractToNoteActions={extractToNoteActions}
+						/>
 					</div>
 				</div>
 			) : null}
-			{showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain" ? (
+			{showToc && !infoPanelOpen && !error && mode !== "plain" ? (
 				<FloatingTOC
 					headings={tocHeadings}
 					activeId={tocActiveId}
@@ -964,9 +941,6 @@ export function MarkdownEditorPane({
 				lineCount={lineCount}
 				utf8SizeBytes={utf8SizeBytes}
 				saveLabel={saveLabel}
-				gitSyncStatus={gitSyncStatus}
-				selectedGitCommitHash={gitDiff?.commit.hash ?? null}
-				onSelectGitDiff={onGitDiffChange ?? undefined}
 				onClose={() => setInfoPanelOpen(false)}
 			/>
 			<LinkedNotePreviewSheet />

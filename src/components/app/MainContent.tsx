@@ -48,7 +48,7 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import type { FsEntry, GitCommitDiff, GitSyncStatus } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { cn } from "../../lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -89,11 +89,6 @@ const SpaceConnectionsView = lazy(() =>
 		default: module.SpaceConnectionsView,
 	})),
 );
-
-interface ActiveGitDiffState {
-	path: string;
-	diff: GitCommitDiff;
-}
 
 interface EmptyTip {
 	key: string;
@@ -297,7 +292,6 @@ interface MainContentProps {
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
-	gitSyncStatus?: GitSyncStatus | null;
 }
 
 function DailyNotesSetupToast({
@@ -402,7 +396,6 @@ export const MainContent = memo(function MainContent({
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
-	gitSyncStatus = null,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
@@ -418,8 +411,6 @@ export const MainContent = memo(function MainContent({
 		useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
-	const [activeGitDiffState, setActiveGitDiffState] =
-		useState<ActiveGitDiffState | null>(null);
 	const handledShowGettingStartedRequestRef = useRef(0);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
@@ -464,26 +455,6 @@ export const MainContent = memo(function MainContent({
 	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
-	const currentMarkdownPath =
-		viewerPath?.toLowerCase().endsWith(".md") ? viewerPath : null;
-	const activeGitDiff =
-		activeGitDiffState?.path === currentMarkdownPath
-			? activeGitDiffState.diff
-			: null;
-
-	useEffect(() => {
-		setActiveGitDiffState(null);
-	}, [viewerPath]);
-
-	const handleGitDiffChange = useCallback(
-		(diff: GitCommitDiff | null) => {
-			setActiveGitDiffState(
-				diff && currentMarkdownPath ? { path: currentMarkdownPath, diff } : null,
-			);
-		},
-		[currentMarkdownPath],
-	);
-
 	const openCommandPaletteShortcut = getBinding("open-command-palette");
 	const commandShortcutParts = useMemo(
 		() =>
@@ -659,9 +630,6 @@ export const MainContent = memo(function MainContent({
 					initialDoc={initialDoc}
 					extractToNoteActions={extractToNoteActions}
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
-					gitDiff={activeGitDiff}
-					onGitDiffChange={handleGitDiffChange}
-					gitSyncStatus={gitSyncStatus}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -681,9 +649,6 @@ export const MainContent = memo(function MainContent({
 		onConsumeDatabasesOpenRequest,
 		viewerPath,
 		setDirtyByPath,
-		activeGitDiff,
-		handleGitDiffChange,
-		gitSyncStatus,
 	]);
 
 	const handlePrefetchTab = useCallback(
