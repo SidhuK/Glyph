@@ -26,6 +26,7 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
+import { EditorRibbon } from "./EditorRibbon";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
@@ -44,7 +45,6 @@ import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
-import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
 import {
 	dispatchMarkdownLinkClick,
@@ -283,12 +283,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [deferHeavyFeatures, relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
-	const selectionRibbon = useSelectionRibbon({
-		canEdit,
-		editor,
-		hostRef: tiptapHostRef,
-		mode,
-	});
 	const selectedTable = useTableInlineControls({
 		canEdit,
 		editor,
@@ -903,6 +897,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
+				canEdit ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
@@ -952,18 +947,24 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						selectionRibbon={selectionRibbon}
-						onExtractSelectionToNote={
-							extractToNote.canExtractToNote
-								? extractToNote.openExtractDialog
-								: undefined
-						}
 						table={tableControls}
 						codeBlock={codeBlockControls}
 						backlinks={backlinkControls}
 					/>
 				) : null}
 			</div>
+			{canEdit && editor ? (
+				<EditorRibbon
+					editor={editor}
+					canEdit={canEdit}
+					className="rfNodeNoteEditorRibbonBottom"
+					onExtractSelectionToNote={
+						extractToNote.canExtractToNote
+							? extractToNote.openExtractDialog
+							: undefined
+					}
+				/>
+			) : null}
 			<ExtractToNoteDialog
 				state={extractToNote.dialogState}
 				onClose={extractToNote.closeExtractDialog}

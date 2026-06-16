@@ -32,9 +32,12 @@
 
 .rfNodeNoteEditorRibbonAnchor {
 	position: absolute;
-	top: 0;
-	left: 0;
+	right: 12px;
+	bottom: 12px;
+	left: 12px;
 	z-index: 20;
+	display: flex;
+	justify-content: center;
 	pointer-events: none;
 }
 
@@ -67,7 +70,7 @@
 	z-index: 1;
 }
 
-.rfNodeNoteEditorRibbonFloating {
+.rfNodeNoteEditorRibbonBottom {
 	transform-origin: center bottom;
 	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14), 0 2px 4px rgba(0, 0, 0, 0.08),
 		inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 84%, transparent);
@@ -139,6 +142,10 @@
 	flex-direction: column;
 	overscroll-behavior: contain;
 	background: var(--bg-primary);
+}
+
+.rfNodeNoteEditorHasRibbon .rfNodeNoteEditorBody {
+	padding-bottom: 62px;
 }
 
 .noteFindBar {

@@ -20,7 +20,6 @@ import { dispatchWikiLinkClick } from "./markdown/editorEvents";
 import type {
 	SelectedCodeBlockState,
 	SelectedTableState,
-	SelectionRibbonPosition,
 } from "./noteEditorOverlayTypes";
 
 interface NoteEditorSurfaceProps {
@@ -29,9 +28,6 @@ interface NoteEditorSurfaceProps {
 	colorfulHeadings: boolean;
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
-
-	selectionRibbon: SelectionRibbonPosition | null;
-	onExtractSelectionToNote?: () => void;
 
 	table: {
 		selected: SelectedTableState | null;
@@ -65,8 +61,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	colorfulHeadings,
 	canEdit,
 	hostRef,
-	selectionRibbon,
-	onExtractSelectionToNote,
 	table,
 	codeBlock,
 	backlinks,
@@ -84,10 +78,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	return (
 		<NoteSelectionOverlay
 			editor={editor}
-			canEdit={canEdit}
 			highlightEnabled={canEdit && mode === "rich"}
-			selectionRibbon={selectionRibbon}
-			onExtractSelectionToNote={onExtractSelectionToNote}
 			hostRef={hostRef}
 			className={hostClassName}
 			colorfulHeadings={mode === "rich" && colorfulHeadings}
