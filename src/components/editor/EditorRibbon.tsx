@@ -78,10 +78,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 	return (
 		<div className="rfNodeNoteEditorRibbonAnchor">
 			<m.div
-				className={[
-					"rfNodeNoteEditorRibbon nodrag nopan nowheel",
-					className,
-				]
+				className={["rfNodeNoteEditorRibbon nodrag nopan nowheel", className]
 					.filter(Boolean)
 					.join(" ")}
 				initial={{ opacity: 0, scale: 0.96, y: 4, filter: "blur(2px)" }}
