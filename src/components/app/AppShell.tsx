@@ -1246,8 +1246,6 @@ export function AppShell() {
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
-				onOpenCommandPalette={openCommandPalette}
-				onOpenCalendar={openCalendar}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}

@@ -1,11 +1,10 @@
 import {
+	Archive04Icon,
 	ArrowShrinkIcon,
 	ChartRelationshipIcon,
-	Archive04Icon,
 	ExpandParagraphIcon,
 	LibraryIcon,
 	NoteIcon,
-	SearchIcon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -23,7 +22,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
-import { Calendar, ChevronDown, ChevronRight } from "../Icons";
+import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
@@ -60,8 +59,6 @@ interface SidebarContentProps {
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
-	onOpenCommandPalette: () => void;
-	onOpenCalendar: () => void;
 	spacePath: string | null;
 	activeTopSection:
 		| "all-notes"
@@ -144,8 +141,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
-	onOpenCommandPalette,
-	onOpenCalendar,
 	spacePath,
 	activeTopSection,
 }: SidebarContentProps) {
@@ -172,7 +167,6 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const newNoteShortcut = getBinding("new-note");
-	const commandPaletteShortcut = getBinding("open-command-palette");
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
@@ -377,42 +371,6 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionContent">
-					<div className="sidebarCommandSearchRow">
-						<button
-							type="button"
-							className="sidebarCommandSearchButton"
-							onClick={onOpenCommandPalette}
-							aria-label="Open command palette"
-							title={`Open command palette${
-								commandPaletteShortcut
-									? ` (${formatShortcutForPlatform(commandPaletteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon
-								icon={SearchIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarCommandSearchPlaceholder">
-								Quick Actions
-							</span>
-							{commandPaletteShortcut ? (
-								<span className="sidebarCommandSearchShortcut">
-									{formatShortcutForPlatform(commandPaletteShortcut)}
-								</span>
-							) : null}
-						</button>
-						<button
-							type="button"
-							className="sidebarCalendarButton"
-							onClick={onOpenCalendar}
-							aria-label="Open calendar"
-							title="Open calendar"
-						>
-							<Calendar size="var(--icon-md)" />
-						</button>
-					</div>
 					<div className="sidebarNavRow">
 						<button
 							type="button"

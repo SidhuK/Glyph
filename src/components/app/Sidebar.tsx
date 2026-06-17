@@ -46,8 +46,6 @@ interface SidebarProps {
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
-	onOpenCommandPalette: () => void;
-	onOpenCalendar: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -77,8 +75,6 @@ export const Sidebar = memo(function Sidebar({
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
-	onOpenCommandPalette,
-	onOpenCalendar,
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -151,8 +147,6 @@ export const Sidebar = memo(function Sidebar({
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenPinnedDocs={onOpenPinnedDocs}
 									onOpenConnections={onOpenConnections}
-									onOpenCommandPalette={onOpenCommandPalette}
-									onOpenCalendar={onOpenCalendar}
 									spacePath={spacePath}
 									activeTopSection={activeTopSection}
 								/>
