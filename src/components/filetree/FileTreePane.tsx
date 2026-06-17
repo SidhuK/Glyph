@@ -3,8 +3,7 @@ import {
 	type DragEndEvent,
 	useDroppable,
 } from "@dnd-kit/react";
-import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
 import { m } from "motion/react";
 import {
 	type KeyboardEvent,
@@ -33,21 +32,14 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import {
-	isMarkdownPath,
-	normalizeRelPath,
-	parentDir,
-	basename as relBasename,
-} from "../../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
-import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 import { FILE_TREE_ENTRY_TYPE } from "./fileTreeDnd";
-import { rowVariants } from "./fileTreeItemHelpers";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -617,14 +609,8 @@ export const FileTreePane = memo(function FileTreePane({
 		if (focusedDirPath) {
 			collectEntries(childrenByDir[focusedDirPath]);
 		}
-		for (const pinnedPath of pinnedFiles) {
-			if (isMarkdownPath(pinnedPath)) {
-				paths.add(pinnedPath);
-			}
-		}
-
 		return [...paths].sort();
-	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
+	}, [childrenByDir, expandedDirs, focusedDirPath, rootEntries]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
 		Boolean(spacePath),
@@ -860,22 +846,6 @@ export const FileTreePane = memo(function FileTreePane({
 		spacePath,
 	]);
 
-	const pinnedFileItems = useMemo(
-		() =>
-			pinnedFiles.map((path) => {
-				const fileName = relBasename(path);
-				const displayName =
-					fileName.replace(/\.[^./]+$/, "") || fileName || path;
-				return {
-					path,
-					displayName,
-					parent: parentDir(path),
-					isMarkdown: isMarkdownPath(path),
-				};
-			}),
-		[pinnedFiles],
-	);
-
 	const handleArrowNavigate = useCallback(
 		(_path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
 			const pane = currentTarget.closest(".fileTreePane");
@@ -1007,97 +977,8 @@ export const FileTreePane = memo(function FileTreePane({
 							</m.div>
 						)}
 					</FileTreeRootDrop>
-				) : rootEntries.length || pinnedFileItems.length ? (
+				) : rootEntries.length ? (
 					<FileTreeRootDrop>
-						{pinnedFileItems.length > 0 ? (
-							<section className="fileTreePinnedSection">
-								<ul className="fileTreeList fileTreePinnedList">
-									{pinnedFileItems.map((file) => {
-										const isActive = file.path === activeFilePath;
-										return (
-											<li
-												key={file.path}
-												className={
-													isActive ? "fileTreeItem active" : "fileTreeItem"
-												}
-											>
-												<div className="fileTreeRowShell">
-													<m.div
-														className="fileTreeRow"
-														variants={rowVariants}
-														whileHover="hover"
-														whileTap="tap"
-														animate={isActive ? "active" : "idle"}
-														transition={springTransition}
-													>
-														<button
-															type="button"
-															aria-label={`Unpin ${file.displayName}`}
-															title="Unpin"
-															onClick={() => onTogglePinnedFile(file.path)}
-															className="fileTreePinToggle fileTreeIcon fileTreePinnedLeadingPin"
-														>
-															<HugeiconsIcon
-																icon={PinIcon}
-																size="var(--icon-md)"
-																strokeWidth={0.9}
-																className="fileTreePinIcon"
-																aria-hidden="true"
-															/>
-															<HugeiconsIcon
-																icon={PinOffIcon}
-																size="var(--icon-md)"
-																strokeWidth={0.9}
-																className="fileTreePinOffIcon"
-																aria-hidden="true"
-															/>
-														</button>
-														<button
-															type="button"
-															className="fileTreePinToggle fileTreePinnedRow"
-															onClick={() => onOpenFile(file.path)}
-															onKeyDown={(event) => {
-																if (
-																	event.key !== "ArrowDown" &&
-																	event.key !== "ArrowUp"
-																)
-																	return;
-																event.preventDefault();
-																handleArrowNavigate(
-																	file.path,
-																	event.key === "ArrowDown" ? 1 : -1,
-																	event.currentTarget,
-																);
-															}}
-															title={file.path}
-															data-file-tree-file="true"
-															data-file-tree-kind="file"
-															data-file-tree-path={file.path}
-														>
-															<span className="fileTreeName">
-																{file.displayName}
-															</span>
-															{(taskSummariesByPath[file.path]?.total_count ??
-																0) > 0 ? (
-																<TaskProgressIndicator
-																	summary={taskSummariesByPath[file.path]}
-																	className="fileTreeTaskProgress"
-																/>
-															) : null}
-															{file.parent ? (
-																<span className="fileTreePinnedPath">
-																	{file.parent}
-																</span>
-															) : null}
-														</button>
-													</m.div>
-												</div>
-											</li>
-										);
-									})}
-								</ul>
-							</section>
-						) : null}
 						{rootEntries.length ? (
 							<TreeEntries
 								entries={rootEntries}

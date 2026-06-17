@@ -238,6 +238,15 @@
 	color: var(--text-primary);
 }
 
+/* ── Pinned notes star: always filled gold ── */
+.sidebarNavBtn[data-kind="pinned-notes"] > svg {
+	color: #e8b830;
+}
+
+.sidebarNavBtn[data-kind="pinned-notes"] > svg path {
+	fill: currentColor;
+}
+
 .sidebarNavBtn .sidebarQuickActionLabel {
 	min-width: 0;
 	overflow: hidden;
