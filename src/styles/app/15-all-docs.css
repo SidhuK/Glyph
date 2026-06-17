@@ -3,7 +3,7 @@
 	--all-docs-card-min-height: 184px;
 	--all-docs-card-aspect: 1 / 1;
 	--all-docs-card-padding: 12px;
-	--all-docs-card-gap: 10px;
+	--all-docs-card-gap: 14px;
 	--all-docs-card-title-size: var(--text-base);
 	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
 	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
@@ -53,6 +53,7 @@
 		);
 	gap: var(--all-docs-card-gap);
 	align-content: start;
+	padding-bottom: var(--all-docs-card-gap);
 }
 
 .allDocsSections {
