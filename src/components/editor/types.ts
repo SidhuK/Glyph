@@ -25,7 +25,6 @@ export interface NoteInlineEditorProps {
 	onFrontmatterCommit?: () => void;
 	extractToNoteActions?: ExtractToNoteActions;
 	interactive?: boolean;
-	showBacklinks?: boolean;
 	deferHeavyFeatures?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onRegisterCalloutInserter?:

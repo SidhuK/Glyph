@@ -2,7 +2,7 @@ import { NoteAddIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
-import { type CSSProperties, memo } from "react";
+import { memo } from "react";
 import { springPresets } from "../ui/animations";
 import { RibbonColorPopover } from "./RibbonColorPopover";
 import { RibbonHighlightPopover } from "./RibbonHighlightPopover";
@@ -20,7 +20,6 @@ interface EditorRibbonProps {
 	canEdit: boolean;
 	className?: string;
 	onExtractSelectionToNote?: () => void;
-	style?: CSSProperties;
 }
 
 interface RibbonButtonListProps {
@@ -57,7 +56,6 @@ export const EditorRibbon = memo(function EditorRibbon({
 	canEdit,
 	className,
 	onExtractSelectionToNote,
-	style,
 }: EditorRibbonProps) {
 	const focusChain = () =>
 		editor.chain().focus(undefined, { scrollIntoView: false });
@@ -78,10 +76,10 @@ export const EditorRibbon = memo(function EditorRibbon({
 	};
 
 	return (
-		<div className="rfNodeNoteEditorRibbonAnchor" style={style}>
+		<div className="rfNodeNoteEditorRibbonAnchor">
 			<m.div
 				className={[
-					"rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonFloating nodrag nopan nowheel",
+					"rfNodeNoteEditorRibbon nodrag nopan nowheel",
 					className,
 				]
 					.filter(Boolean)

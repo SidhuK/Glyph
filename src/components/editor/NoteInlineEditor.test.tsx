@@ -274,7 +274,6 @@ describe("NoteInlineEditor table controls", () => {
 					mode={mode}
 					onChange={() => {}}
 					relPath=""
-					showBacklinks={false}
 				/>,
 			);
 		});

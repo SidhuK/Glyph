@@ -1,34 +1,3 @@
-.editorBacklinks {
-	width: min(
-		100%,
-		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter-compact))
-		)
-	);
-	margin: 0 auto var(--space-2);
-	padding: var(--space-3) var(--editor-readable-content-gutter-compact)
-		var(--space-5);
-	font-size: calc(var(--editor-font-size) * 0.8);
-	color: var(--text-tertiary);
-	box-sizing: border-box;
-}
-
-.editorBacklinksLabel {
-	text-transform: uppercase;
-	font-size: calc(var(--editor-font-size) * 0.8);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.06em;
-	flex: 0 0 auto;
-}
-
-.editorBacklinksRow {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 6px 8px;
-}
-
 .tiptapContentInline a {
 	color: var(--interactive-accent);
 	text-decoration: underline;

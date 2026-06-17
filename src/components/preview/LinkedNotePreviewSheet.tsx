@@ -338,7 +338,6 @@ export function LinkedNotePreviewSheet() {
 								mode="preview"
 								onChange={() => {}}
 								interactive={false}
-								showBacklinks={false}
 								deferHeavyFeatures
 							/>
 						) : (

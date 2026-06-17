@@ -904,10 +904,6 @@
 	padding-inline: clamp(8px, 1.4vw, 14px);
 }
 
-.markdownEditorPane .editorBacklinks {
-	width: var(--readable-content-outer-width);
-}
-
 @media (max-width: 760px) {
 	.notesInfoSidebarHost[data-open="true"] {
 		width: min(92vw, 340px);

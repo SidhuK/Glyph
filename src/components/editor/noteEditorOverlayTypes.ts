@@ -1,11 +1,3 @@
-type SelectionRibbonPlacement = "above" | "below";
-
-export interface SelectionRibbonPosition {
-	top: number;
-	left: number;
-	placement: SelectionRibbonPlacement;
-}
-
 export interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;

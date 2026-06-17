@@ -6,7 +6,12 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import type { MouseEvent, MutableRefObject, ReactNode } from "react";
+import type {
+	KeyboardEvent,
+	MouseEvent,
+	MutableRefObject,
+	ReactNode,
+} from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
@@ -255,44 +260,62 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								/>
 							)}
 							<span className="fileTreeName">{displayDirName}</span>
+							{onEnterDir ? (
+								<div className="fileTreeRowActions">
+									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
+									<span
+										role="button"
+										tabIndex={0}
+										className="fileTreeRowAction"
+										title={`Add file to ${displayDirName}`}
+										aria-label={`Add file to ${displayDirName}`}
+										onClick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											void onNewFileInDir(entry.rel_path);
+										}}
+										onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+											if (event.key === "Enter" || event.key === " ") {
+												event.preventDefault();
+												event.stopPropagation();
+												void onNewFileInDir(entry.rel_path);
+											}
+										}}
+									>
+										<Plus size="var(--icon-sm)" />
+									</span>
+									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
+									<span
+										role="button"
+										tabIndex={0}
+										className="fileTreeRowAction"
+										title={`Open ${displayDirName}`}
+										aria-label={`Open ${displayDirName}`}
+										onClick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											onEnterDir(entry.rel_path);
+										}}
+										onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+											if (event.key === "Enter" || event.key === " ") {
+												event.preventDefault();
+												event.stopPropagation();
+												onEnterDir(entry.rel_path);
+											}
+										}}
+									>
+										<HugeiconsIcon
+											icon={ArrowRight02Icon}
+											size="var(--icon-sm)"
+											strokeWidth={0.9}
+										/>
+									</span>
+								</div>
+							) : null}
 							{typeof fileCount === "number" ? (
 								<span className="fileTreeCounts">{fileCount}</span>
 							) : null}
 						</m.button>
-						{onEnterDir ? (
-							<div className="fileTreeRowActions">
-								<button
-									type="button"
-									className="fileTreeRowAction"
-									title={`Add file to ${displayDirName}`}
-									aria-label={`Add file to ${displayDirName}`}
-									onClick={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										void onNewFileInDir(entry.rel_path);
-									}}
-								>
-									<Plus size="var(--icon-sm)" />
-								</button>
-								<button
-									type="button"
-									className="fileTreeRowAction"
-									title={`Open ${displayDirName}`}
-									aria-label={`Open ${displayDirName}`}
-									onClick={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										onEnterDir(entry.rel_path);
-									}}
-								>
-									<HugeiconsIcon
-										icon={ArrowRight02Icon}
-										size="var(--icon-sm)"
-										strokeWidth={0.9}
-									/>
-								</button>
-							</div>
-						) : null}
 					</>
 				)}
 			</div>

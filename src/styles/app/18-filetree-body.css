@@ -189,21 +189,13 @@
 }
 
 .fileTreeRowActions {
-	position: absolute;
-	top: 50%;
-	right: 8px;
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
 	opacity: 0;
 	pointer-events: none;
-	transform: translateY(-50%);
 	transition: opacity var(--transition-fast);
-	z-index: 1;
-}
-
-.fileTreeRowShell:has(.fileTreeRowActions) .fileTreeRow {
-	padding-right: 58px;
+	flex-shrink: 0;
 }
 
 .fileTreeRowShell:hover .fileTreeRowActions,
@@ -313,7 +305,6 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	flex: 1;
 	min-width: 0;
 	max-width: 100%;
 }
@@ -358,6 +349,7 @@
 	text-align: right;
 	padding-right: 2px;
 	white-space: nowrap;
+	margin-left: auto;
 }
 
 .fileTreeExtBadge {
