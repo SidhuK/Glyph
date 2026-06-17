@@ -151,7 +151,7 @@
 .sidebarQuickActionBtn[data-kind="new-note"] {
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
-	margin-bottom: 6px;
+	margin-bottom: 2px;
 }
 
 .sidebarQuickActionBtn[data-kind="new-note"] > svg {
