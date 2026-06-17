@@ -123,7 +123,6 @@ export function ExternalMarkdownWindow() {
 			if (autosaveTimerRef.current !== null) {
 				window.clearTimeout(autosaveTimerRef.current);
 			}
-
 		};
 	}, []);
 
