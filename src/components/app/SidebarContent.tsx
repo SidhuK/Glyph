@@ -312,9 +312,6 @@ export const SidebarContent = memo(function SidebarContent({
 			onPrefetchAllDocs();
 		}
 	}, [folioMode, onOpenAllDocs, onPrefetchAllDocs, setFolioScope]);
-	const handlePinnedNotes = useCallback(() => {
-		onOpenPinnedDocs();
-	}, [onOpenPinnedDocs]);
 	const handleNotesHeaderClick = useCallback(() => {
 		setNotesExpanded((value) => !value);
 		if (!folioMode) return;
@@ -408,7 +405,7 @@ export const SidebarContent = memo(function SidebarContent({
 							aria-current={
 								activeTopSection === "pinned-notes" ? "page" : undefined
 							}
-							onClick={handlePinnedNotes}
+							onClick={onOpenPinnedDocs}
 							title="Open Pinned"
 						>
 							<HugeiconsIcon
@@ -478,9 +475,7 @@ export const SidebarContent = memo(function SidebarContent({
 							aria-current={
 								activeTopSection === "connections" ? "page" : undefined
 							}
-							onClick={() => {
-								onOpenConnections();
-							}}
+							onClick={onOpenConnections}
 							title="Open Connections"
 						>
 							<HugeiconsIcon
