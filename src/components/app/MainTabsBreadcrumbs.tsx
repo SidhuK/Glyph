@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
@@ -70,6 +71,7 @@ function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
 		path === DATABASES_TAB_ID ||
+		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);
 }

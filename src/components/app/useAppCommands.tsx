@@ -1,12 +1,13 @@
 import {
 	AiBrain04Icon,
+	Archive04Icon,
 	ArrowLeft,
 	ArrowRight,
+	Calendar03Icon,
 	CalendarAdd01Icon,
 	ChartRelationshipIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
-	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
 	FolderRemoveIcon,
@@ -94,6 +95,7 @@ interface UseAppCommandsDeps {
 	openBlankTab: () => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
+	openCalendar: () => void;
 	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
@@ -361,6 +363,7 @@ export function useAppCommands({
 	openBlankTab,
 	openDatabasesTab,
 	openGettingStarted,
+	openCalendar,
 	openConnectionsView,
 	openPalette,
 	openQuickNoteWindow,
@@ -754,7 +757,7 @@ export function useAppCommands({
 				label: "Open all notes",
 				icon: (
 					<HugeiconsIcon
-						icon={File01Icon}
+						icon={Archive04Icon}
 						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
@@ -790,6 +793,20 @@ export function useAppCommands({
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: () => openDatabasesTab(),
+			},
+			{
+				id: "open-calendar",
+				label: "Open calendar",
+				icon: (
+					<HugeiconsIcon
+						icon={Calendar03Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openCalendar,
 			},
 			{
 				id: "create-space",
@@ -1051,6 +1068,7 @@ export function useAppCommands({
 		openSearchPalette,
 		openDatabasesTab,
 		openGettingStarted,
+		openCalendar,
 		openConnectionsView,
 		openBlankTab,
 		openQuickNoteWindow,

@@ -50,6 +50,7 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
@@ -790,11 +791,12 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"all-notes" | "connections" | "databases" | null
+		"all-notes" | "connections" | "databases" | "pinned-notes" | null
 	>(() => {
 		if (activeTabPath === ALL_DOCS_TAB_ID) return "all-notes";
 		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
 		if (activeTabPath === DATABASES_TAB_ID) return "databases";
+		if (activeTabPath === PINNED_DOCS_TAB_ID) return "pinned-notes";
 		return null;
 	}, [activeTabPath]);
 	const openCommandPalette = useCallback(() => {
@@ -810,6 +812,9 @@ export function AppShell() {
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
 		openSpecialTab(ALL_DOCS_TAB_ID);
+	}, [openSpecialTab]);
+	const openPinnedDocsTab = useCallback(() => {
+		openSpecialTab(PINNED_DOCS_TAB_ID);
 	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
@@ -1051,6 +1056,7 @@ export function AppShell() {
 		openBlankTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openCalendar,
 		openConnectionsView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
@@ -1233,14 +1239,13 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
 				onOpenAllDocs={openAllDocsTab}
+				onOpenPinnedDocs={openPinnedDocsTab}
 				onOpenConnections={openConnectionsView}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
-				onOpenCommandPalette={openCommandPalette}
-				onOpenCalendar={openCalendar}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}

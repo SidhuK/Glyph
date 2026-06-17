@@ -10,6 +10,7 @@ import type { MouseEvent, MutableRefObject } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry } from "../../lib/tauri";
@@ -56,6 +57,7 @@ function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
 		path === DATABASES_TAB_ID ||
+		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
 	);
 }
@@ -101,6 +103,7 @@ export function TabBar({
 			if (tab.kind === "blank") return "New Tab";
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";
+			if (tab.target === PINNED_DOCS_TAB_ID) return "Pinned";
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";

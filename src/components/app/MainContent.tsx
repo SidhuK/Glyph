@@ -38,6 +38,7 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -74,6 +75,12 @@ import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { loadAllDocsPane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
+
+const PinnedDocsPane = lazy(() =>
+	import("./PinnedDocsPane").then((module) => ({
+		default: module.PinnedDocsPane,
+	})),
+);
 
 const DatabasesPane = lazy(loadDatabasesPane);
 const AllDocsPane = lazy(loadAllDocsPane);
@@ -604,6 +611,13 @@ export const MainContent = memo(function MainContent({
 			return (
 				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
+				</Suspense>
+			);
+		}
+		if (viewerPath === PINNED_DOCS_TAB_ID) {
+			return (
+				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
+					<PinnedDocsPane onOpenFile={onOpenFile} />
 				</Suspense>
 			);
 		}

@@ -415,7 +415,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	const columnCount = useMemo(() => {
 		const minCardWidth = paneWidth <= 640 ? 144 : paneWidth <= 900 ? 160 : 184;
-		const gap = 10;
+		const gap = 14;
 		return Math.max(1, Math.floor((paneWidth + gap) / (minCardWidth + gap)));
 	}, [paneWidth]);
 	const virtualRows = useMemo<VirtualAllDocsRow[]>(() => {
@@ -444,7 +444,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	}, [columnCount, sections]);
 	const cardEstimate = useMemo(() => {
 		if (paneWidth <= 0) return 200;
-		const gap = 10;
+		const gap = 14;
 		const width = (paneWidth - gap * (columnCount - 1)) / columnCount;
 		const minHeight = paneWidth <= 640 ? 176 : 184;
 		return Math.max(minHeight, width) + gap;

@@ -1,11 +1,11 @@
 import {
+	Archive04Icon,
 	ArrowShrinkIcon,
 	ChartRelationshipIcon,
-	CollectionsBookmarkIcon,
 	ExpandParagraphIcon,
 	LibraryIcon,
 	NoteIcon,
-	SearchIcon,
+	StarIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
@@ -22,7 +22,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
-import { Calendar, ChevronDown, ChevronRight } from "../Icons";
+import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
@@ -57,11 +57,15 @@ interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenAllDocs: () => void;
+	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
-	onOpenCommandPalette: () => void;
-	onOpenCalendar: () => void;
 	spacePath: string | null;
-	activeTopSection: "all-notes" | "connections" | "databases" | null;
+	activeTopSection:
+		| "all-notes"
+		| "connections"
+		| "databases"
+		| "pinned-notes"
+		| null;
 }
 
 function formatSpaceLabel(path: string): string {
@@ -109,6 +113,11 @@ function AllNotesCountBadge() {
 	return <span className="sidebarQuickActionCount">{label}</span>;
 }
 
+function PinnedNotesCountBadge({ count }: { count: number }) {
+	if (count === 0) return null;
+	return <span className="sidebarQuickActionCount">{count}</span>;
+}
+
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -130,9 +139,8 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenAllDocs,
+	onOpenPinnedDocs,
 	onOpenConnections,
-	onOpenCommandPalette,
-	onOpenCalendar,
 	spacePath,
 	activeTopSection,
 }: SidebarContentProps) {
@@ -159,7 +167,6 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const [notesExpanded, setNotesExpanded] = useState(true);
 	const newNoteShortcut = getBinding("new-note");
-	const commandPaletteShortcut = getBinding("open-command-palette");
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
@@ -361,42 +368,6 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionContent">
-					<div className="sidebarCommandSearchRow">
-						<button
-							type="button"
-							className="sidebarCommandSearchButton"
-							onClick={onOpenCommandPalette}
-							aria-label="Open command palette"
-							title={`Open command palette${
-								commandPaletteShortcut
-									? ` (${formatShortcutForPlatform(commandPaletteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon
-								icon={SearchIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarCommandSearchPlaceholder">
-								Quick Actions
-							</span>
-							{commandPaletteShortcut ? (
-								<span className="sidebarCommandSearchShortcut">
-									{formatShortcutForPlatform(commandPaletteShortcut)}
-								</span>
-							) : null}
-						</button>
-						<button
-							type="button"
-							className="sidebarCalendarButton"
-							onClick={onOpenCalendar}
-							aria-label="Open calendar"
-							title="Open calendar"
-						>
-							<Calendar size="var(--icon-md)" />
-						</button>
-					</div>
 					<div className="sidebarNavRow">
 						<button
 							type="button"
@@ -425,6 +396,52 @@ export const SidebarContent = memo(function SidebarContent({
 						<button
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="pinned-notes"
+							data-active={
+								activeTopSection === "pinned-notes" ? "true" : "false"
+							}
+							aria-label="Pinned"
+							aria-pressed={activeTopSection === "pinned-notes"}
+							aria-current={
+								activeTopSection === "pinned-notes" ? "page" : undefined
+							}
+							onClick={onOpenPinnedDocs}
+							title="Open Pinned"
+						>
+							<HugeiconsIcon
+								icon={StarIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+							<span className="sidebarQuickActionLabel">Pinned</span>
+							<PinnedNotesCountBadge count={pinnedFiles.length} />
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="all-notes"
+							data-active={activeTopSection === "all-notes" ? "true" : "false"}
+							aria-label="All Notes"
+							aria-pressed={activeTopSection === "all-notes"}
+							aria-current={
+								activeTopSection === "all-notes" ? "page" : undefined
+							}
+							onClick={handleOpenAllNotes}
+							onMouseEnter={onPrefetchAllDocs}
+							onFocus={onPrefetchAllDocs}
+							title="Open All Notes"
+						>
+							<HugeiconsIcon
+								icon={Archive04Icon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+							<span className="sidebarQuickActionLabel">All Notes</span>
+							<AllNotesCountBadge />
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="databases"
 							data-active={activeTopSection === "databases" ? "true" : "false"}
 							aria-label="Collections"
@@ -445,29 +462,6 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">Collections</span>
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="all-notes"
-							data-active={activeTopSection === "all-notes" ? "true" : "false"}
-							aria-label="All Notes"
-							aria-pressed={activeTopSection === "all-notes"}
-							aria-current={
-								activeTopSection === "all-notes" ? "page" : undefined
-							}
-							onClick={handleOpenAllNotes}
-							onMouseEnter={onPrefetchAllDocs}
-							onFocus={onPrefetchAllDocs}
-							title="Open All Notes"
-						>
-							<HugeiconsIcon
-								icon={CollectionsBookmarkIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">All Notes</span>
-							<AllNotesCountBadge />
 						</button>
 						<button
 							type="button"
