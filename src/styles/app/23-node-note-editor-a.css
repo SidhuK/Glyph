@@ -305,7 +305,7 @@
 	margin: 0 auto 6px;
 	border: none;
 	border-radius: 8px;
-	padding: 7px 10px;
+	padding: 5px 10px;
 	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
 	color: var(--text-secondary);
 	font-size: calc(var(--text-base) * 0.9);

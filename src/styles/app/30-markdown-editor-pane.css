@@ -658,7 +658,12 @@
 
 .markdownEditorInfoSectionFrontmatter {
 	padding-top: 2px;
-	padding-bottom: 14px;
+	padding-bottom: 8px;
+}
+
+.markdownEditorInfoSectionFile {
+	padding-top: 6px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
 }
 
 .markdownEditorInfoSectionLabel {
@@ -669,6 +674,22 @@
 	text-transform: uppercase;
 	color: var(--text-tertiary);
 	line-height: 1.15;
+}
+
+.markdownEditorInfoSectionLabelSubtle {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: var(--font-normal);
+	font-size: calc(var(--text-base) * 0.85);
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoValue {
+	font-weight: var(--font-normal);
+	color: var(--text-primary);
 }
 
 .markdownEditorInfoRows {
@@ -690,6 +711,10 @@
 .markdownEditorInfoRow strong {
 	font-weight: var(--font-medium);
 	color: var(--text-primary);
+}
+
+.markdownEditorInfoSectionFile .markdownEditorInfoRow {
+	font-size: calc(var(--text-base) * 0.88);
 }
 
 .markdownEditorInfoRow code {

@@ -24,7 +24,12 @@ import { Input } from "../../ui/shadcn/input";
 import { useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../textColors";
 import { WikiLinkedText } from "./WikiLinkedText";
-import { buildTagSuggestions, formatTagLabel } from "./utils";
+import {
+	buildTagSuggestions,
+	formatPropertyDate,
+	formatTagLabel,
+	tagHueFromName,
+} from "./utils";
 
 interface NotePropertyValueFieldProps {
 	rowId: string;
@@ -97,25 +102,68 @@ export function NotePropertyValueField({
 			);
 		}
 		if (property.kind === "tags") {
+			if (property.value_list.length === 0) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
 			return (
 				<div className="notePropertyPills">
-					{property.value_list.map((value, valueIndex) => (
-						<span
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
-							className="notePropertyPill"
-						>
-							{formatTagLabel(value)}
-						</span>
-					))}
+					{property.value_list.map((value, valueIndex) => {
+						const hue = tagHueFromName(value);
+						return (
+							<span
+								key={`${property.key || rowId}-${valueIndex}-${value}`}
+								className="notePropertyPill"
+								style={
+									{
+										"--tag-pill-hue": `${hue}`,
+									} as CSSProperties
+								}
+							>
+								{value.startsWith("#") ? value.slice(1) : value}
+							</span>
+						);
+					})}
 				</div>
 			);
 		}
 		if (property.kind === "checkbox") {
-			return property.value_bool ? "True" : "False";
+			return (
+				<span className="notePropertyEmptyValue">
+					{property.value_bool ? "Yes" : "No"}
+				</span>
+			);
+		}
+		if (property.kind === "date") {
+			const formatted = formatPropertyDate(property.value_text ?? "");
+			if (!formatted) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
+			return <span className="notePropertyDateValue">{formatted}</span>;
+		}
+		if (property.kind === "url") {
+			const url = property.value_text ?? "";
+			if (!url) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
+			return (
+				<a
+					href={url}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="notePropertyLinkValue"
+					onClick={(event) => event.stopPropagation()}
+				>
+					{url}
+				</a>
+			);
+		}
+		const text = property.value_text ?? "";
+		if (!text) {
+			return <span className="notePropertyEmptyValue">—</span>;
 		}
 		return (
-			<span style={{ color: "var(--text-primary)" }}>
-				<WikiLinkedText value={property.value_text ?? ""} />
+			<span className="notePropertyTextValue">
+				<WikiLinkedText value={text} />
 			</span>
 		);
 	}
@@ -269,19 +317,28 @@ export function NotePropertyValueField({
 						tagInputRef?.focus();
 					}}
 				>
-					{property.value_list.map((value, valueIndex) => (
-						<button
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
-							type="button"
-							className="notePropertyToken"
-							onClick={() => onRemoveTag(index, value)}
-							title={`Remove ${formatTagLabel(value)}`}
-							aria-label={`Remove ${formatTagLabel(value)}`}
-						>
-							<span>{formatTagLabel(value)}</span>
-							<X size="var(--icon-xs)" />
-						</button>
-					))}
+					{property.value_list.map((value, valueIndex) => {
+						const hue = tagHueFromName(value);
+						const label = value.startsWith("#") ? value.slice(1) : value;
+						return (
+							<button
+								key={`${property.key || rowId}-${valueIndex}-${value}`}
+								type="button"
+								className="notePropertyToken"
+								style={
+									{
+										"--tag-pill-hue": `${hue}`,
+									} as CSSProperties
+								}
+								onClick={() => onRemoveTag(index, value)}
+								title={`Remove ${label}`}
+								aria-label={`Remove ${label}`}
+							>
+								<span>{label}</span>
+								<X size="var(--icon-xs)" />
+							</button>
+						);
+					})}
 					<input
 						ref={(node) => onSetTagInputRef(rowId, node)}
 						type="text"
@@ -349,7 +406,7 @@ export function NotePropertyValueField({
 							: "text"
 				}
 				value={textDraft}
-				placeholder="Value"
+				placeholder={textDraft ? "" : "—"}
 				aria-label={`${property.key || "Property"} value`}
 				onChange={(event) => {
 					const nextValue = event.target.value;

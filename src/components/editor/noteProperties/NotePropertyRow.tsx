@@ -6,6 +6,7 @@ import { Input } from "../../ui/shadcn/input";
 import type { EditorTextColor } from "../textColors";
 import { NotePropertyValueField } from "./NotePropertyValueField";
 import { PropertyKindBadge } from "./PropertyKindBadge";
+import { humanizePropertyKey } from "./utils";
 
 interface NotePropertyRowProps {
 	rowId: string;
@@ -43,55 +44,32 @@ export function NotePropertyRow({
 	tagInputRef,
 }: NotePropertyRowProps) {
 	const [keyDraft, setKeyDraft] = useState(property.key);
+	const [editingKey, setEditingKey] = useState(false);
 
 	useEffect(() => {
 		setKeyDraft(property.key);
 	}, [property.key]);
 
 	const commitKeyDraft = () => {
+		setEditingKey(false);
 		if (keyDraft === property.key) return;
 		onUpdate(index, { key: keyDraft });
 	};
 
 	return (
 		<div className="notePropertyRow">
-			{readOnly ? (
-				<>
-					<div className="notePropertyIdentity">
-						<PropertyKindBadge kind={property.kind} />
-						<div className="notePropertyKeyStatic">{property.key}</div>
-					</div>
-					<div className="notePropertyValueStatic">
-						<NotePropertyValueField
-							rowId={rowId}
-							index={index}
-							property={property}
-							readOnly
-							availableTags={availableTags}
-							tagDraft={tagDraft}
-							statusColors={statusColors}
-							onSetTagDraft={onSetTagDraft}
-							onAddTag={onAddTag}
-							onRemoveTag={onRemoveTag}
-							onUpdate={onUpdate}
-							onStatusColorChange={onStatusColorChange}
-							onSetTagInputRef={onSetTagInputRef}
-							tagInputRef={tagInputRef}
-						/>
-					</div>
-				</>
-			) : (
-				<>
-					<div className="notePropertyIdentity">
-						<PropertyKindBadge
-							kind={property.kind}
-							interactive
-							onSelect={(kind) => onUpdate(index, { kind })}
-						/>
+			<div className="notePropertyIdentity">
+				<PropertyKindBadge
+					kind={property.kind}
+					interactive={!readOnly}
+					onSelect={(kind) => onUpdate(index, { kind })}
+				/>
+				<div className="notePropertyKeyWrap">
+					{editingKey && !readOnly ? (
 						<Input
 							value={keyDraft}
 							className="plainTextInput notePropertyKeyInput"
-							placeholder="Property"
+							placeholder="Key"
 							aria-label="Property name"
 							onChange={(event) => setKeyDraft(event.target.value)}
 							onBlur={commitKeyDraft}
@@ -100,38 +78,54 @@ export function NotePropertyRow({
 								event.preventDefault();
 								event.currentTarget.blur();
 							}}
+							autoFocus
 						/>
-					</div>
-					<div className="notePropertyValue">
-						<NotePropertyValueField
-							rowId={rowId}
-							index={index}
-							property={property}
-							readOnly={false}
-							availableTags={availableTags}
-							tagDraft={tagDraft}
-							statusColors={statusColors}
-							onSetTagDraft={onSetTagDraft}
-							onAddTag={onAddTag}
-							onRemoveTag={onRemoveTag}
-							onUpdate={onUpdate}
-							onStatusColorChange={onStatusColorChange}
-							onSetTagInputRef={onSetTagInputRef}
-							tagInputRef={tagInputRef}
-						/>
-					</div>
-					<Button
-						type="button"
-						size="icon-sm"
-						variant="ghost"
-						className="notePropertyRemoveButton"
-						onClick={() => onRemove(index)}
-						aria-label={`Remove ${property.key || "property"}`}
-					>
-						<X size="var(--icon-xs)" />
-					</Button>
-				</>
-			)}
+					) : (
+						<button
+							type="button"
+							className="notePropertyKeyLabel"
+							onClick={() => {
+								if (!readOnly) setEditingKey(true);
+							}}
+							disabled={readOnly}
+						>
+							{humanizePropertyKey(property.key) || (
+								<span className="notePropertyKeyPlaceholder">Property</span>
+							)}
+						</button>
+					)}
+				</div>
+			</div>
+			<div className="notePropertyValueWrap">
+				<NotePropertyValueField
+					rowId={rowId}
+					index={index}
+					property={property}
+					readOnly={readOnly}
+					availableTags={availableTags}
+					tagDraft={tagDraft}
+					statusColors={statusColors}
+					onSetTagDraft={onSetTagDraft}
+					onAddTag={onAddTag}
+					onRemoveTag={onRemoveTag}
+					onUpdate={onUpdate}
+					onStatusColorChange={onStatusColorChange}
+					onSetTagInputRef={onSetTagInputRef}
+					tagInputRef={tagInputRef}
+				/>
+			</div>
+			{!readOnly ? (
+				<Button
+					type="button"
+					size="icon-sm"
+					variant="ghost"
+					className="notePropertyRemoveButton"
+					onClick={() => onRemove(index)}
+					aria-label={`Remove ${property.key || "property"}`}
+				>
+					<X size="var(--icon-xs)" />
+				</Button>
+			) : null}
 		</div>
 	);
 }
