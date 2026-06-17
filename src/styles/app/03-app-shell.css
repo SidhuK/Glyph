@@ -70,7 +70,7 @@
 
 .sidebarCollapsedToggle {
 	position: absolute;
-	top: calc((var(--header-height) - 4px) / 2);
+	top: calc((var(--header-height) + 6px) / 2);
 	left: var(--window-control-toggle-offset);
 	transform: translateY(-50%);
 	z-index: 3;
