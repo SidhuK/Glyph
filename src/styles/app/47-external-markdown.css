@@ -53,15 +53,6 @@
 	-webkit-app-region: no-drag;
 }
 
-.externalMarkdownStatus {
-	min-width: 50px;
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1;
-	color: var(--text-secondary);
-	text-align: right;
-	white-space: nowrap;
-}
-
 .externalMarkdownModeSwitch {
 	display: inline-grid;
 	grid-template-columns: repeat(3, minmax(54px, auto));
@@ -94,30 +85,6 @@
 .externalMarkdownModeBtn[data-active="true"] {
 	background: var(--bg-tertiary);
 	color: var(--text-primary);
-}
-
-.externalMarkdownIconBtn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--icon-3xl);
-	height: var(--icon-3xl);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
-	background: var(--bg-primary);
-	color: var(--text-secondary);
-	transition: background-color var(--transition-base), color
-		var(--transition-base), border-color var(--transition-base);
-}
-
-.externalMarkdownIconBtn:hover:not(:disabled) {
-	background: var(--bg-tertiary);
-	color: var(--text-primary);
-}
-
-.externalMarkdownIconBtn:disabled {
-	opacity: 0.45;
-	cursor: default;
 }
 
 .externalMarkdownError {
@@ -175,10 +142,6 @@
 	.externalMarkdownHeader {
 		padding-left: 74px;
 		gap: 10px;
-	}
-
-	.externalMarkdownStatus {
-		display: none;
 	}
 
 	.externalMarkdownModeSwitch {
