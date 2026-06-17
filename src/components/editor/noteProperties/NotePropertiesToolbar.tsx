@@ -62,7 +62,7 @@ export function NotePropertiesToolbar({
 
 	return (
 		<div className="notePropertiesToolbar">
-			<div className="notePropertiesToolbarLabel">Frontmatter</div>
+			<div className="notePropertiesToolbarLabel">Properties</div>
 			<div
 				className="notePropertiesModeSwitch"
 				role="tablist"

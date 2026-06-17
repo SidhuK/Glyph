@@ -1,4 +1,8 @@
-import { BadgeInfoIcon, GitBranchIcon } from "@hugeicons/core-free-icons";
+import {
+	BadgeInfoIcon,
+	GitBranchIcon,
+	InformationCircleIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -388,40 +392,51 @@ export function NotesInfoSidebar({
 							)}
 						</section>
 
-						<section className="markdownEditorInfoSection">
-							<h3 className="markdownEditorInfoSectionLabel">File info</h3>
+						<section className="markdownEditorInfoSection markdownEditorInfoSectionFile">
+							<h3 className="markdownEditorInfoSectionLabel markdownEditorInfoSectionLabelSubtle">
+								<HugeiconsIcon
+									icon={InformationCircleIcon}
+									size="var(--icon-sm)"
+									strokeWidth={1}
+								/>
+								Info
+							</h3>
 							<div className="markdownEditorInfoRows">
 								<div className="markdownEditorInfoRow">
-									<span>Path</span>
-									<span className="markdownEditorInfoPathValue">{relPath}</span>
-								</div>
-								<div className="markdownEditorInfoRow">
 									<span>Modified</span>
-									<strong>
+									<span className="markdownEditorInfoValue">
 										{formatMetadataDate(
 											lastSavedMtimeMs
 												? new Date(lastSavedMtimeMs).toISOString()
 												: (previewContext?.updated ?? null),
 										)}
-									</strong>
+									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Created</span>
-									<strong>{formatMetadataDate(previewContext?.created)}</strong>
+									<span className="markdownEditorInfoValue">
+										{formatMetadataDate(previewContext?.created)}
+									</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Path</span>
+									<span className="markdownEditorInfoPathValue">{relPath}</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Lines</span>
-									<strong>
+									<span className="markdownEditorInfoValue">
 										{(previewContext?.line_count ?? lineCount).toLocaleString()}
-									</strong>
+									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Size</span>
-									<strong>{formatFileSize(utf8SizeBytes)}</strong>
+									<span className="markdownEditorInfoValue">
+										{formatFileSize(utf8SizeBytes)}
+									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Save status</span>
-									<strong>{saveLabel}</strong>
+									<span className="markdownEditorInfoValue">{saveLabel}</span>
 								</div>
 							</div>
 						</section>
