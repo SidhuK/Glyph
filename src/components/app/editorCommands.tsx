@@ -91,7 +91,9 @@ export function buildEditorCommands({
 		category: "Editor",
 		enabled,
 		allowInEditable: true,
-		action: () => setCurrentEditorMode(command.mode),
+		action: () => {
+			setCurrentEditorMode(command.mode);
+		},
 	}));
 
 	return [...formattingCommands, ...headingCommands, ...viewModeCommands];

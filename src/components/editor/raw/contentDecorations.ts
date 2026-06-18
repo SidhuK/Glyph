@@ -13,7 +13,7 @@ const FRONTMATTER_SCAN_LIMIT = 500;
 
 function isCodePosition(view: EditorView, position: number): boolean {
 	let node = syntaxTree(view.state).resolveInner(position, 1);
-	while (node) {
+	while (true) {
 		if (
 			node.name === "FencedCode" ||
 			node.name === "CodeBlock" ||
@@ -21,9 +21,10 @@ function isCodePosition(view: EditorView, position: number): boolean {
 		) {
 			return true;
 		}
-		node = node.parent;
+		const parent = node.parent;
+		if (!parent) return false;
+		node = parent;
 	}
-	return false;
 }
 
 function addPatternDecorations(

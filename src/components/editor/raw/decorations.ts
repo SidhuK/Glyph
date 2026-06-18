@@ -117,7 +117,9 @@ function decorateFrontmatter(
 function buildVisibleDecorations(view: EditorView): DecorationSet {
 	const ranges: Range<Decoration>[] = [];
 	const visibleFrom = view.visibleRanges[0]?.from ?? 0;
-	const visibleTo = view.visibleRanges.at(-1)?.to ?? view.state.doc.length;
+	const visibleTo =
+		view.visibleRanges[view.visibleRanges.length - 1]?.to ??
+		view.state.doc.length;
 	const decoratedTables = new Set<number>();
 	const frontmatterEnd = findFrontmatterEnd(view.state.doc);
 	const frontmatterTo = frontmatterEnd

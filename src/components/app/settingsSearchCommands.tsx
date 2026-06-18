@@ -29,7 +29,7 @@ function commandLabel({
 export function buildSettingsSearchCommands(
 	openSettings: (tab?: SettingsTab) => void,
 ): Command[] {
-	return SETTINGS_SEARCH_ENTRIES.map((entry) => {
+	return SETTINGS_SEARCH_ENTRIES.map((entry: SettingsSearchEntry) => {
 		const tabLabel = SETTINGS_TAB_LABELS[entry.tab];
 		return {
 			id: `settings-search:${entry.id}`,
