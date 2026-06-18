@@ -33,7 +33,6 @@
 	align-items: center;
 	gap: 6px;
 	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-semibold);
 	letter-spacing: 0.07em;
 	color: var(--text-tertiary);
 }
@@ -54,7 +53,6 @@ button.tagsHeaderTitle {
 	text-align: left;
 	font: inherit;
 	color: var(--text-tertiary);
-	font-weight: var(--font-semibold);
 	font-size: calc(var(--text-base) * 0.9);
 	letter-spacing: 0.07em;
 	transition: color var(--transition-fast);
