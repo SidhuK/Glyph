@@ -128,7 +128,7 @@
 	flex-shrink: 0;
 	margin-left: auto;
 	font-family: inherit;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: var(--text-sm);
 	line-height: 1.4;
 	color: var(--text-tertiary);
 	white-space: nowrap;
@@ -344,7 +344,7 @@
 
 .fileTreeCounts {
 	flex-shrink: 0;
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: calc(var(--text-base) * 0.85);
 	color: var(--text-tertiary);
 	min-width: 18px;
 	text-align: right;
@@ -367,6 +367,15 @@
 	margin-left: auto;
 	white-space: nowrap;
 	box-shadow: var(--pill-shadow);
+}
+
+.fileTreePinIcon {
+	flex-shrink: 0;
+	color: #e8b830;
+}
+
+.fileTreePinIcon path {
+	fill: currentcolor;
 }
 
 .fileTreeTaskProgress {

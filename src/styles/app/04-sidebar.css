@@ -228,10 +228,8 @@
 	text-align: left;
 	font: inherit;
 	color: var(--text-tertiary);
-	font-weight: var(--font-semibold);
-	font-size: calc(var(--text-base) * 0.72);
+	font-size: calc(var(--text-base) * 0.9);
 	letter-spacing: 0.07em;
-	text-transform: uppercase;
 	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;

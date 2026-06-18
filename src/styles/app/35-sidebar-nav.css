@@ -74,7 +74,7 @@
 	flex-direction: column;
 	gap: 2px;
 	width: 100%;
-	padding: 4px 8px 0;
+	padding: 10px 8px 0;
 }
 
 .sidebarQuickActionShortcut {
@@ -104,7 +104,7 @@
 	flex: 0 0 auto;
 	margin-left: auto;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: calc(var(--text-base) * 0.85);
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	line-height: 1;

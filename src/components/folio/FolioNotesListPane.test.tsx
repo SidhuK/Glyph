@@ -12,15 +12,11 @@ const {
 	prefetchNoteMock,
 	invokeMock,
 	scopeRef,
-	pinnedFilesRef,
-	togglePinnedFileMock,
 } = vi.hoisted(() => ({
 	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
 	invokeMock: vi.fn(),
 	scopeRef: { current: { kind: "all" } as FolioScope },
-	pinnedFilesRef: { current: [] as string[] },
-	togglePinnedFileMock: vi.fn(),
 }));
 
 vi.mock("../../contexts", () => ({
@@ -30,8 +26,8 @@ vi.mock("../../contexts", () => ({
 	useFileTreeContext: () => ({
 		itemAppearance: {},
 		setItemAppearance: vi.fn(),
-		pinnedFiles: pinnedFilesRef.current,
-		togglePinnedFile: togglePinnedFileMock,
+		tagAppearance: {},
+		beautifulTags: false,
 	}),
 }));
 
@@ -114,7 +110,6 @@ describe("FolioNotesListPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
-		pinnedFilesRef.current = [];
 
 		loadAllDocsMock.mockResolvedValue(notes);
 		invokeMock.mockResolvedValue([]);
@@ -167,7 +162,6 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
 		expect(container.querySelector(".folioNotesTitle")).toBeNull();
-		expect(loadAllDocsMock).toHaveBeenCalledWith(null);
 		expect(renderedNotePaths(container)).toEqual([
 			"Projects/Roadmap.md",
 			"Ideas/Sketch.md",
@@ -200,24 +194,6 @@ describe("FolioNotesListPane", () => {
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
-	});
-
-	it("keeps pinned notes at the top of the folio list", async () => {
-		pinnedFilesRef.current = ["Ideas/Sketch.md"];
-
-		await act(async () => renderPane());
-		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
-
-		expect(renderedNotePaths(container)).toEqual([
-			"Ideas/Sketch.md",
-			"Projects/Roadmap.md",
-		]);
-		expect(container.textContent).toContain("Pinned");
-		expect(
-			container
-				.querySelector('[data-folio-note-path="Ideas/Sketch.md"]')
-				?.getAttribute("data-pinned"),
-		).toBe("true");
 	});
 
 	it("sorts by edited time when selected", async () => {

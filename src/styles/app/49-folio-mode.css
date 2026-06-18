@@ -178,29 +178,6 @@
 	padding: 0;
 }
 
-.folioNotesPinnedHeading {
-	height: 25px;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 14px 4px;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-medium);
-	line-height: 1;
-}
-
-.folioNotesPinnedHeading svg {
-	flex: 0 0 auto;
-}
-
-.folioNotesPinnedDivider {
-	height: 8px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 44%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
-}
-
 .folioNoteRow {
 	position: relative;
 	width: 100%;
@@ -220,18 +197,6 @@
 	text-align: left;
 	cursor: default;
 	transition: background-color 120ms ease, box-shadow 120ms ease;
-}
-
-.folioNoteRow[data-pinned="true"] {
-	background: color-mix(in srgb, var(--interactive-accent) 3%, transparent);
-}
-
-.dark .folioNoteRow[data-pinned="true"] {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 3%,
-		var(--bg-secondary)
-	);
 }
 
 .folioNoteRow:hover,
