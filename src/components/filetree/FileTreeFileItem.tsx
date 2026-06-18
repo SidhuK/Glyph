@@ -1,4 +1,6 @@
 import { useDraggable } from "@dnd-kit/react";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -343,6 +345,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								<span className="fileTreeFilePreview">{previewText}</span>
 							) : null}
 						</span>
+						{isPinned ? (
+							<HugeiconsIcon
+								icon={StarIcon}
+								size="var(--icon-sm)"
+								strokeWidth={0.9}
+								className="fileTreePinIcon"
+							/>
+						) : null}
 						{taskSummary && taskSummary.total_count > 0 ? (
 							<TaskProgressIndicator
 								summary={taskSummary}

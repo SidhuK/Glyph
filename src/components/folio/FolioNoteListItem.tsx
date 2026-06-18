@@ -32,10 +32,8 @@ interface FolioNoteListItemProps {
 	onOpen: (path: string) => void;
 	onOpenInNewTab: (path: string) => void;
 	onPrefetch: (path: string) => void;
-	isPinned?: boolean;
 	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
-	onTogglePinned?: (path: string) => Promise<void> | void;
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
@@ -400,10 +398,8 @@ export const FolioNoteListItem = memo(
 			onOpen,
 			onOpenInNewTab,
 			onPrefetch,
-			isPinned = false,
 			onRename,
 			onDelete,
-			onTogglePinned,
 			onFocus,
 			taskSummary = null,
 			isRenaming = false,
@@ -483,14 +479,6 @@ export const FolioNoteListItem = memo(
 								},
 							]
 						: []),
-					...(onTogglePinned
-						? [
-								{
-									label: isPinned ? "Unpin file" : "Pin file",
-									action: () => void onTogglePinned(note.note_path),
-								},
-							]
-						: []),
 					fileTreeAppearanceNativeMenu(() =>
 						onOpenAppearancePicker(note.note_path),
 					),
@@ -505,14 +493,12 @@ export const FolioNoteListItem = memo(
 			},
 			[
 				handleRevealInFinder,
-				isPinned,
 				note.note_path,
 				onDelete,
 				onOpen,
 				onOpenAppearancePicker,
 				onOpenInNewTab,
 				onRename,
-				onTogglePinned,
 			],
 		);
 		const fileIcon = appearance?.icon ? (
@@ -615,7 +601,6 @@ export const FolioNoteListItem = memo(
 						className="folioNoteRow"
 						data-state={selected ? "selected" : "idle"}
 						data-kind={isMarkdown ? "markdown" : "file"}
-						data-pinned={isPinned ? "true" : undefined}
 						data-folio-note-path={note.note_path}
 						title={note.note_path}
 						style={rowStyle}
@@ -640,7 +625,6 @@ export const FolioNoteListItem = memo(
 						className="folioNoteRow"
 						data-state={selected ? "selected" : "idle"}
 						data-kind={isMarkdown ? "markdown" : "file"}
-						data-pinned={isPinned ? "true" : undefined}
 						data-folio-note-path={note.note_path}
 						aria-current={selected ? "page" : undefined}
 						onClick={(event) => {
