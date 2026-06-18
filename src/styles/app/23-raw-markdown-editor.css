@@ -1,0 +1,679 @@
+/* ─── Raw Markdown Editor: editorial source mode ─── */
+.rfNodeNoteEditorRaw {
+	width: 100%;
+	min-height: 100%;
+	flex: 1;
+	color: var(--text-primary);
+	background: transparent;
+}
+
+.rfNodeNoteEditorRaw .cm-editor {
+	min-height: 100%;
+	background: transparent;
+	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+	font-family: var(--font-sans);
+	font-size: var(--editor-raw-font-size);
+	font-variant-ligatures: common-ligatures;
+	line-height: 1.68;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+}
+
+.rfNodeNoteEditorRaw .cm-editor.cm-focused {
+	outline: none;
+}
+
+.rfNodeNoteEditorRaw .cm-scroller {
+	min-height: 100%;
+	overflow: visible;
+	font-family: inherit;
+	line-height: inherit;
+	overscroll-behavior: contain;
+}
+
+.rfNodeNoteEditorRaw .cm-content {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: var(--editor-readable-content-max-width);
+	min-height: 100%;
+	margin: 0 auto;
+	padding: 18px var(--editor-readable-content-gutter-compact) 96px;
+	caret-color: var(--interactive-accent);
+}
+
+.rfNodeNoteEditorRaw .cm-line {
+	min-height: 1.68em;
+	padding: 0;
+	text-wrap: pretty;
+}
+
+.rfNodeNoteEditorRaw .cm-cursor,
+.rfNodeNoteEditorRaw .cm-dropCursor {
+	border-left-color: var(--interactive-accent);
+}
+
+.rfNodeNoteEditorRaw .cm-selectionBackground,
+.rfNodeNoteEditorRaw .cm-focused .cm-selectionBackground,
+.rfNodeNoteEditorRaw .cm-content ::selection {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 20%,
+		var(--selection-bg-muted)
+	);
+}
+
+.rfNodeNoteEditorRaw .cm-panels,
+.rfNodeNoteEditorRaw .cm-tooltip {
+	font-family: var(--font-sans);
+}
+
+.rfNodeNoteEditorRaw .cm-tooltip-autocomplete {
+	min-width: min(360px, calc(100vw - 24px));
+	max-width: min(460px, calc(100vw - 24px));
+	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	box-shadow: 0 18px 46px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
+	overflow: hidden;
+}
+
+.rfNodeNoteEditorRaw .cm-tooltip-autocomplete > ul {
+	max-height: 280px;
+	padding: 5px;
+}
+
+.rfNodeNoteEditorRaw .cm-tooltip-autocomplete > ul > li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: var(--space-3);
+	min-height: 40px;
+	border-radius: var(--radius-md);
+	padding: 6px 9px;
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRaw .cm-tooltip-autocomplete > ul > li[aria-selected="true"] {
+	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRaw .cm-completionLabel {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: var(--font-medium);
+}
+
+.rfNodeNoteEditorRaw .cm-completionDetail {
+	overflow: hidden;
+	max-width: 180px;
+	text-overflow: ellipsis;
+	color: var(--text-tertiary);
+	font-family: var(--font-mono);
+	font-size: 0.78em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-syntax {
+	color: color-mix(in srgb, var(--text-tertiary) 74%, transparent);
+	font-family: var(--font-mono);
+	font-size: 0.88em;
+	font-weight: var(--font-normal);
+	font-style: normal;
+	text-decoration: none;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading {
+	padding-top: 0.78em;
+	padding-bottom: 0.22em;
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
+	letter-spacing: -0.018em;
+	text-wrap: balance;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading:first-child {
+	padding-top: 0;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-1,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-1 {
+	font-size: var(--editor-h1-font-size);
+	line-height: 1.26;
+	color: color-mix(in srgb, var(--text-primary) 90%, var(--interactive-accent));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-2,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-2 {
+	font-size: var(--editor-h2-font-size);
+	line-height: 1.3;
+	color: color-mix(in srgb, var(--text-primary) 94%, var(--interactive-accent));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-3,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-3 {
+	font-size: var(--editor-h3-font-size);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-4,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-4 {
+	font-size: var(--editor-h4-font-size);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-5,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-5,
+.rfNodeNoteEditorRaw .cm-raw-heading-6,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-6 {
+	font-size: var(--editor-h5-font-size);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-6,
+.rfNodeNoteEditorRaw .cm-raw-heading-token-6 {
+	color: var(--text-secondary);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-heading-mark {
+	margin-right: 0.18em;
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-tertiary));
+	vertical-align: 0.08em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-strong {
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-emphasis {
+	font-style: italic;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-strikethrough {
+	text-decoration: line-through;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(in srgb, currentcolor 62%, transparent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-link,
+.rfNodeNoteEditorRaw .cm-raw-markdown-link,
+.rfNodeNoteEditorRaw .cm-raw-url {
+	color: var(--interactive-accent);
+	text-decoration: underline;
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		transparent
+	);
+	text-underline-offset: 0.14em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-markdown-link,
+.rfNodeNoteEditorRaw .cm-raw-wiki-link,
+.rfNodeNoteEditorRaw .cm-raw-tag {
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms
+		ease;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-wiki-link {
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	padding: 0.04em 0.2em;
+	color: color-mix(in srgb, var(--interactive-accent) 84%, var(--text-primary));
+	font-weight: var(--font-medium);
+	text-decoration: none;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-wiki-link[data-embed="true"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 5%,
+		var(--bg-secondary)
+	);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 68%,
+		var(--text-secondary)
+	);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-wiki-link:hover,
+.rfNodeNoteEditorRaw .cm-raw-wiki-link:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 13%, transparent);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-tag {
+	border-radius: var(--radius-sm);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--bg-secondary)
+	);
+	padding: 0.03em 0.34em;
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	font-size: 0.9em;
+	font-weight: var(--font-semibold);
+	text-decoration: none;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-tag:hover,
+.rfNodeNoteEditorRaw .cm-raw-tag:focus-visible {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 15%,
+		var(--bg-secondary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 84%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-url {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 70%,
+		var(--text-secondary)
+	);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-bare-url {
+	font-family: var(--font-mono);
+	font-size: 0.88em;
+	text-decoration-style: dotted;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-monospace {
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 68%, transparent);
+	padding: 0.1em 0.3em;
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	font-variant-ligatures: none;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-highlight {
+	border-radius: 0.22em;
+	background: color-mix(in srgb, var(--callout-warning) 22%, transparent);
+	padding: 0.02em 0.08em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-comment {
+	color: color-mix(in srgb, var(--text-tertiary) 60%, transparent);
+	font-size: 0.88em;
+	font-style: italic;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-footnote,
+.rfNodeNoteEditorRaw .cm-raw-block-id {
+	color: color-mix(in srgb, var(--interactive-accent) 58%, var(--text-tertiary));
+	font-family: var(--font-mono);
+	font-size: 0.82em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-list-line {
+	font-variant-numeric: tabular-nums;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-list-mark {
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 66%,
+		var(--text-secondary)
+	);
+	font-weight: var(--font-semibold);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-task-checkbox {
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-tertiary) 42%, transparent);
+	padding: 0.03em 0.18em;
+	color: var(--text-secondary);
+	font-family: var(--font-mono);
+	font-size: 0.82em;
+	font-weight: var(--font-medium);
+	letter-spacing: -0.06em;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms
+		ease;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-task-checkbox:hover,
+.rfNodeNoteEditorRaw .cm-raw-task-checkbox:focus-visible {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+	color: var(--interactive-accent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-task-checkbox[data-checked="true"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 13%,
+		var(--bg-secondary)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	color: var(--interactive-accent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-task-content.is-checked {
+	color: color-mix(in srgb, var(--text-secondary) 78%, transparent);
+	text-decoration: line-through;
+	text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-quote-line {
+	padding-right: var(--space-3);
+	padding-left: var(--space-3);
+	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
+	box-shadow: inset 3px 0 0
+		color-mix(in srgb, var(--interactive-accent) 44%, var(--border-default));
+	color: var(--text-secondary);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout {
+	--raw-callout-accent: var(--interactive-accent);
+	background: color-mix(
+		in srgb,
+		var(--raw-callout-accent) 10%,
+		var(--bg-secondary)
+	);
+	box-shadow: inset 3px 0 0 var(--raw-callout-accent);
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout.is-title {
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	padding-top: var(--space-2);
+	font-weight: var(--font-semibold);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout.is-end {
+	border-radius: 0 0 var(--radius-md) var(--radius-md);
+	padding-bottom: var(--space-2);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout-info {
+	--raw-callout-accent: var(--callout-info);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout-tip,
+.rfNodeNoteEditorRaw .cm-raw-callout-success {
+	--raw-callout-accent: var(--callout-tip);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout-warning {
+	--raw-callout-accent: var(--callout-warning);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout-error {
+	--raw-callout-accent: var(--callout-error);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-callout-marker {
+	color: color-mix(in srgb, var(--raw-callout-accent) 78%, var(--text-primary));
+	font-family: var(--font-mono);
+	font-size: 0.86em;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.03em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line {
+	box-sizing: border-box;
+	width: min(100%, calc(var(--raw-table-width) + 20px));
+	max-width: 100%;
+	padding-right: 10px;
+	padding-left: 10px;
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	box-shadow: inset 1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent), inset -1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent), inset 0 -1px 0
+		color-mix(in srgb, var(--border-light) 40%, transparent);
+	font-variant-numeric: tabular-nums;
+	line-height: 1.66;
+	transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line.is-header {
+	margin-top: var(--space-2);
+	border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+	padding-top: 7px;
+	padding-bottom: 5px;
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--border-light) 78%, transparent), inset 1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent), inset -1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent), inset 0 -1px 0
+		color-mix(in srgb, var(--interactive-accent) 12%, var(--border-light));
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--text-primary) 94%, var(--interactive-accent));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line.is-separator {
+	min-height: 1.05em;
+	background: color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary));
+	color: color-mix(in srgb, var(--text-tertiary) 52%, transparent);
+	font-family: var(--font-mono);
+	font-size: 0.68em;
+	line-height: 1.2;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line.is-row:nth-child(even) {
+	background: color-mix(in srgb, var(--bg-secondary) 22%, var(--bg-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line.is-row:hover {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 5%,
+		var(--bg-primary)
+	);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-line.is-last {
+	margin-bottom: var(--space-2);
+	border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+	padding-bottom: 7px;
+	box-shadow: inset 0 -1px 0
+		color-mix(in srgb, var(--border-light) 78%, transparent), inset 1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent), inset -1px 0 0
+		color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-cell {
+	display: inline-block;
+	box-sizing: border-box;
+	width: var(--raw-table-cell-width);
+	vertical-align: top;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-cell.is-header {
+	letter-spacing: -0.006em;
+	text-wrap: nowrap;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-cell.is-separator {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-table-pipe {
+	color: color-mix(in srgb, var(--interactive-accent) 34%, var(--text-tertiary));
+	font-family: var(--font-mono);
+	font-size: 0.8em;
+	font-weight: var(--font-medium);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line {
+	--raw-code-comment: var(--text-tertiary);
+	--raw-code-keyword: var(--interactive-accent);
+	--raw-code-string: var(--color-green-500);
+	--raw-code-number: var(--color-yellow-500);
+	--raw-code-title: var(--color-blue-600);
+	--raw-code-meta: color-mix(
+		in srgb,
+		var(--text-secondary) 84%,
+		var(--interactive-accent)
+	);
+	--raw-code-variable: var(--color-red-500);
+
+	padding-right: var(--space-3);
+	padding-left: var(--space-3);
+	background: color-mix(in srgb, var(--bg-secondary) 78%, var(--bg-primary));
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	font-variant-ligatures: none;
+	line-height: 1.62;
+}
+
+:root.dark .rfNodeNoteEditorRaw .cm-raw-code-line {
+	--raw-code-string: var(--color-green-dark-400);
+	--raw-code-number: var(--color-yellow-dark-400);
+	--raw-code-title: var(--color-blue-dark-400);
+	--raw-code-variable: var(--color-red-dark-300);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-comment {
+	color: var(--raw-code-comment);
+	font-style: italic;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-keyword {
+	color: var(--raw-code-keyword);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-string {
+	color: var(--raw-code-string);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-number {
+	color: var(--raw-code-number);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-title {
+	color: var(--raw-code-title);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-meta {
+	color: var(--raw-code-meta);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-variable {
+	color: var(--raw-code-variable);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-monospace {
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+	font-size: inherit;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line .cm-raw-code-title.cm-raw-code-variable {
+	color: var(--raw-code-title);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line.is-opening {
+	margin-top: var(--space-2);
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	padding-top: var(--space-2);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-line.is-closing {
+	margin-bottom: var(--space-2);
+	border-radius: 0 0 var(--radius-md) var(--radius-md);
+	padding-bottom: var(--space-2);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-code-fence {
+	color: color-mix(in srgb, var(--text-tertiary) 76%, transparent);
+	font-size: 0.88em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-line {
+	padding-right: var(--space-2);
+	padding-left: var(--space-2);
+	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
+	color: var(--text-secondary);
+	font-family: var(--font-mono);
+	font-size: calc(var(--editor-raw-font-size) * 0.78);
+	line-height: 1.42;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-line:first-child {
+	margin-top: 2px;
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	padding-top: 3px;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-line.is-delimiter:not(:first-child) {
+	margin-bottom: var(--space-2);
+	border-radius: 0 0 var(--radius-md) var(--radius-md);
+	padding-bottom: 3px;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-key {
+	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
+	font-weight: var(--font-medium);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-value {
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-value.is-boolean,
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-value.is-number {
+	color: color-mix(in srgb, var(--callout-warning) 72%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-value.is-date {
+	color: color-mix(in srgb, var(--callout-tip) 70%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-list-mark {
+	color: color-mix(in srgb, var(--interactive-accent) 52%, var(--text-tertiary));
+	font-weight: var(--font-semibold);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-frontmatter-mark {
+	font-size: 0.82em;
+	letter-spacing: 0.12em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-horizontal-rule {
+	margin: var(--space-2) 0;
+	color: var(--text-tertiary);
+}
+
+.rfNodeNoteEditorRaw .cm-raw-horizontal-rule-mark,
+.rfNodeNoteEditorRaw .cm-raw-horizontal-rule-token {
+	color: color-mix(in srgb, var(--border-default) 88%, var(--text-tertiary));
+	font-family: var(--font-mono);
+	letter-spacing: 0.12em;
+}
+
+.rfNodeNoteEditorRaw .cm-raw-invalid {
+	text-decoration: underline wavy var(--callout-error);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
+}
+
+@media (max-width: 760px) {
+	.rfNodeNoteEditorRaw .cm-content {
+		padding-right: var(--editor-readable-content-gutter-compact);
+		padding-left: calc(var(--editor-readable-content-gutter-compact) + 12px);
+	}
+}

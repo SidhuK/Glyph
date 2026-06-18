@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/core";
+import type { EditorViewMode } from "../../lib/editorMode";
 
-export type NoteInlineEditorMode = "plain" | "rich" | "preview";
+export type NoteInlineEditorMode = EditorViewMode;
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
 export interface CreateMarkdownFileOptions {

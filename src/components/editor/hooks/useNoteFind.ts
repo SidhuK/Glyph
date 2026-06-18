@@ -13,6 +13,7 @@ import {
 	findNoteSearchRanges,
 	findPlainTextSearchRanges,
 } from "../extensions/noteSearch";
+import type { RawMarkdownEditorHandle } from "../raw/types";
 import type { NoteInlineEditorMode } from "../types";
 
 const MAX_SELECTION_QUERY_LENGTH = 120;
@@ -22,7 +23,7 @@ interface UseNoteFindOptions {
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
-	rawTextareaRef: RefObject<HTMLTextAreaElement | null>;
+	rawEditorRef: RefObject<RawMarkdownEditorHandle | null>;
 	tiptapHostRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -73,28 +74,12 @@ function centerEditorPosition(editor: Editor, pos: number) {
 	}
 }
 
-function centerTextareaRange(textarea: HTMLTextAreaElement, index: number) {
-	const textBeforeMatch = textarea.value.slice(0, index);
-	const lineIndex = textBeforeMatch.split("\n").length - 1;
-	const computed = window.getComputedStyle(textarea);
-	const parsedLineHeight = Number.parseFloat(computed.lineHeight);
-	const fontSize = Number.parseFloat(computed.fontSize);
-	const lineHeight = Number.isFinite(parsedLineHeight)
-		? parsedLineHeight
-		: fontSize * 1.5;
-	const matchTop = lineIndex * lineHeight;
-	textarea.scrollTo({
-		top: Math.max(matchTop - textarea.clientHeight / 2 + lineHeight, 0),
-		behavior: "smooth",
-	});
-}
-
 export function useNoteFind({
 	editor,
 	markdown,
 	mode,
 	relPath,
-	rawTextareaRef,
+	rawEditorRef,
 	tiptapHostRef,
 }: UseNoteFindOptions) {
 	const [findOpen, setFindOpen] = useState(false);
@@ -150,14 +135,12 @@ export function useNoteFind({
 
 	const selectPlainFindMatch = useCallback(
 		(index: number) => {
-			const textarea = rawTextareaRef.current;
+			const rawEditor = rawEditorRef.current;
 			const match = findMatches[index];
-			if (!textarea || !match) return;
-			textarea.focus();
-			textarea.setSelectionRange(match.from, match.to);
-			centerTextareaRange(textarea, match.from);
+			if (!rawEditor || !match) return;
+			rawEditor.selectRange(match.from, match.to);
 		},
-		[findMatches, rawTextareaRef],
+		[findMatches, rawEditorRef],
 	);
 
 	const selectFindMatch = useCallback(
@@ -185,12 +168,8 @@ export function useNoteFind({
 
 	const getSelectedSearchText = useCallback(() => {
 		if (mode === "plain") {
-			const textarea = rawTextareaRef.current;
-			if (!textarea || textarea.selectionStart === textarea.selectionEnd) {
-				return "";
-			}
 			return selectedTextForQuery(
-				textarea.value.slice(textarea.selectionStart, textarea.selectionEnd),
+				rawEditorRef.current?.getSelectedText() ?? "",
 			);
 		}
 		if (!editor || editor.state.selection.empty) return "";
@@ -200,7 +179,7 @@ export function useNoteFind({
 			" ",
 		);
 		return selectedTextForQuery(selected);
-	}, [editor, mode, rawTextareaRef]);
+	}, [editor, mode, rawEditorRef]);
 
 	const openFind = useCallback(() => {
 		const selected = getSelectedSearchText();
@@ -214,13 +193,13 @@ export function useNoteFind({
 	const closeFind = useCallback(() => {
 		setFindOpen(false);
 		if (mode === "plain") {
-			requestAnimationFrame(() => rawTextareaRef.current?.focus());
+			requestAnimationFrame(() => rawEditorRef.current?.focus());
 			return;
 		}
 		if (editor) {
 			requestAnimationFrame(() => editor.view.focus());
 		}
-	}, [editor, mode, rawTextareaRef]);
+	}, [editor, mode, rawEditorRef]);
 
 	const handleFindInputKeyDown = useCallback(
 		(event: ReactKeyboardEvent<HTMLInputElement>) => {

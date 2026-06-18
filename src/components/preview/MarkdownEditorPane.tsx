@@ -699,6 +699,7 @@ export function MarkdownEditorPane({
 			isDirty,
 			save: onSave,
 			getMarkdown: () => textRef.current,
+			setMode,
 		}),
 		[isDirty, onSave, relPath],
 	);

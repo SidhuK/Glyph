@@ -139,7 +139,8 @@ export function AppShell() {
 		closeSettings,
 	} = useUILayoutContext();
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
-	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
+	const { getCurrentMarkdown, saveCurrentEditor, setCurrentEditorMode } =
+		useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
 		"commands" | "search"
@@ -1068,6 +1069,7 @@ export function AppShell() {
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,
+		setCurrentEditorMode,
 		setAiPanelOpen,
 		setError,
 		setMovePickerSourcePath,

@@ -1,15 +1,12 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import { invoke } from "../../../lib/tauri";
+import {
+	type EditorLinkSuggestion,
+	suggestMarkdownLinks,
+} from "../../../lib/linkSuggestions";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
-
-interface LinkSuggestionItem {
-	path: string;
-	title: string;
-	insertText: string;
-}
 
 export const MarkdownLinkAutocomplete = Extension.create({
 	name: "markdown-link-autocomplete",
@@ -21,30 +18,20 @@ export const MarkdownLinkAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const getItems = async (query: string): Promise<LinkSuggestionItem[]> => {
+		const getItems = async (query: string): Promise<EditorLinkSuggestion[]> => {
 			const currentPath =
 				typeof this.options.getCurrentPath === "function"
 					? this.options.getCurrentPath()
 					: this.options.currentPath;
-			const results = await invoke("space_suggest_links", {
-				request: {
-					query,
-					source_path: currentPath || null,
-					markdown_only: false,
-					strip_markdown_ext: false,
-					relative_to_source: true,
-					limit: this.options.suggestionLimit,
-				},
+			return suggestMarkdownLinks({
+				query,
+				sourcePath: currentPath || null,
+				limit: this.options.suggestionLimit,
 			});
-			return results.map((item) => ({
-				path: item.path,
-				title: item.title,
-				insertText: item.insert_text,
-			}));
 		};
 
 		return [
-			Suggestion<LinkSuggestionItem>({
+			Suggestion<EditorLinkSuggestion>({
 				editor: this.editor,
 				pluginKey: MD_LINK_SUGGESTION_KEY,
 				char: "](",
@@ -83,9 +70,9 @@ export const MarkdownLinkAutocomplete = Extension.create({
 				render: () => {
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
-					let activeProps: SuggestionProps<LinkSuggestionItem> | null = null;
+					let activeProps: SuggestionProps<EditorLinkSuggestion> | null = null;
 
-					const updateMenu = (props: SuggestionProps<LinkSuggestionItem>) => {
+					const updateMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (!menu) return;
 						menu.replaceChildren();
 						for (const [index, item] of props.items.entries()) {
@@ -117,7 +104,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 					};
 
 					return {
-						onStart: (props: SuggestionProps<LinkSuggestionItem>) => {
+						onStart: (props: SuggestionProps<EditorLinkSuggestion>) => {
 							activeProps = props;
 							selectedIndex = 0;
 							menu = document.createElement("div");
@@ -125,7 +112,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 							document.body.append(menu);
 							updateMenu(props);
 						},
-						onUpdate: (props: SuggestionProps<LinkSuggestionItem>) => {
+						onUpdate: (props: SuggestionProps<EditorLinkSuggestion>) => {
 							activeProps = props;
 							updateMenu(props);
 						},

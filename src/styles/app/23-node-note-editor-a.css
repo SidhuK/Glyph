@@ -227,45 +227,6 @@
 	cursor: default;
 }
 
-.rfNodeNoteEditorRaw {
-	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
-	width: min(
-		100%,
-		calc(
-			var(--editor-readable-content-max-width)
-			+ (2 * var(--editor-readable-content-gutter-compact))
-		)
-	);
-	flex: 1;
-	min-height: 0;
-	margin: 0 auto;
-	border: 0;
-	background: transparent;
-	resize: none;
-	box-sizing: border-box;
-	padding: 12px var(--editor-readable-content-gutter-compact);
-	font-size: calc(var(--text-base) * 0.9);
-	line-height: 1.5;
-	color: var(--text-primary);
-	outline: none;
-	overscroll-behavior: contain;
-}
-
-.rfNodeNoteEditorRaw .cm-editor {
-	height: 100%;
-	background: transparent;
-}
-
-.rfNodeNoteEditorRaw .cm-scroller {
-	font-family: var(--font-mono);
-	font-size: var(--editor-raw-font-size);
-	line-height: 1.5;
-}
-
-.rfNodeNoteEditorRaw .cm-content {
-	padding: 0;
-}
-
 .tiptapContentInline {
 	min-height: 100%;
 	box-sizing: border-box;

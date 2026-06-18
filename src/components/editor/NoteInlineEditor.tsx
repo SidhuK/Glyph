@@ -38,6 +38,8 @@ import {
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
+import { RawMarkdownEditor } from "./raw/RawMarkdownEditor";
+import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {
@@ -161,7 +163,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
-	const rawTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
@@ -226,7 +228,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		markdown,
 		mode,
 		relPath,
-		rawTextareaRef,
+		rawEditorRef,
 		tiptapHostRef,
 	});
 
@@ -615,12 +617,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 				{mode === "plain" ? (
-					<textarea
-						ref={rawTextareaRef}
-						className="rfNodeNoteEditorRaw mono"
-						value={markdown}
-						onChange={(event) => onChange(event.target.value)}
-						spellCheck={false}
+					<RawMarkdownEditor
+						ref={rawEditorRef}
+						markdown={markdown}
+						relPath={relPath}
+						onChange={onChange}
 					/>
 				) : null}
 				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (

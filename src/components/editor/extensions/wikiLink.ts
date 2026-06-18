@@ -7,7 +7,11 @@ import {
 import type { MarkdownToken } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import { invoke } from "../../../lib/tauri";
+import {
+	type EditorLinkSuggestion,
+	isImageTarget,
+	suggestWikiLinks,
+} from "../../../lib/linkSuggestions";
 import {
 	parseWikiLink,
 	wikiLinkAttrsToMarkdown,
@@ -26,40 +30,8 @@ const WIKI_LINK_FILE_ICON = [
 	},
 ];
 
-interface WikiLinkSuggestionItem {
-	path: string;
-	title: string;
-	insertText: string;
-}
-
-function titleFromRelPath(path: string): string {
-	const parts = path.split("/").filter(Boolean);
-	const name = parts[parts.length - 1] ?? path;
-	return name.replace(/\.md$/i, "") || name;
-}
-
-function isImageTarget(target: string): boolean {
-	const lower = target.toLowerCase();
-	return (
-		lower.endsWith(".png") ||
-		lower.endsWith(".jpg") ||
-		lower.endsWith(".jpeg") ||
-		lower.endsWith(".webp") ||
-		lower.endsWith(".gif") ||
-		lower.endsWith(".svg") ||
-		lower.endsWith(".bmp") ||
-		lower.endsWith(".avif") ||
-		lower.endsWith(".tif") ||
-		lower.endsWith(".tiff")
-	);
-}
-
-export function isPdfTarget(target: string): boolean {
-	return target.toLowerCase().endsWith(".pdf");
-}
-
 function isEmbedSuggestionContext(
-	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
 	rangeFrom: number,
 ): boolean {
 	if (rangeFrom <= 1) return false;
@@ -85,7 +57,7 @@ function isEmbedSuggestionContext(
 }
 
 function getEmbedReplacementFrom(
-	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
 	rangeFrom: number,
 ): number {
 	if (!isEmbedSuggestionContext(editor, rangeFrom)) return rangeFrom;
@@ -93,7 +65,7 @@ function getEmbedReplacementFrom(
 }
 
 function isEmbedSuggestionContextFromQuery(
-	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	editor: SuggestionProps<EditorLinkSuggestion>["editor"],
 	query: string,
 ): boolean {
 	const cursor = editor.state.selection.from;
@@ -279,37 +251,16 @@ export const WikiLink = Node.create({
 		const getSuggestions = async (
 			query: string,
 			includeImagesOnly: boolean,
-		): Promise<WikiLinkSuggestionItem[]> => {
-			const requestLimit = includeImagesOnly
-				? Math.min(this.options.suggestionLimit * 4, 200)
-				: this.options.suggestionLimit;
-			const results = await invoke("space_suggest_links", {
-				request: {
-					query,
-					markdown_only: !includeImagesOnly,
-					include_pdf: !includeImagesOnly,
-					include_images: !includeImagesOnly,
-					strip_markdown_ext: !includeImagesOnly,
-					relative_to_source: false,
-					limit: requestLimit,
-				},
+		): Promise<EditorLinkSuggestion[]> => {
+			return suggestWikiLinks({
+				query,
+				embedOnly: includeImagesOnly,
+				limit: this.options.suggestionLimit,
 			});
-			const filtered = includeImagesOnly
-				? results.filter((item) => isImageTarget(item.path))
-				: results;
-			return filtered.slice(0, this.options.suggestionLimit).map((item) => ({
-				path: item.path,
-				title:
-					item.title ||
-					(isPdfTarget(item.path) || isImageTarget(item.path)
-						? item.path.split("/").pop() || item.path
-						: titleFromRelPath(item.path)),
-				insertText: item.insert_text,
-			}));
 		};
 
 		return [
-			Suggestion<WikiLinkSuggestionItem>({
+			Suggestion<EditorLinkSuggestion>({
 				editor: this.editor,
 				pluginKey: WIKI_LINK_SUGGESTION_KEY,
 				char: "[[",
@@ -361,11 +312,10 @@ export const WikiLink = Node.create({
 				render: () => {
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
-					let activeProps: SuggestionProps<WikiLinkSuggestionItem> | null =
-						null;
+					let activeProps: SuggestionProps<EditorLinkSuggestion> | null = null;
 					let unlockEditorScroll: (() => void) | null = null;
 
-					const updateSelection = (items: WikiLinkSuggestionItem[]) => {
+					const updateSelection = (items: EditorLinkSuggestion[]) => {
 						if (!menu) return;
 						const children = Array.from(menu.children);
 						children.forEach((child, index) => {
@@ -374,9 +324,7 @@ export const WikiLink = Node.create({
 						if (!items.length) selectedIndex = 0;
 					};
 
-					const updateMenu = (
-						props: SuggestionProps<WikiLinkSuggestionItem>,
-					) => {
+					const updateMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (!menu) return;
 						menu.replaceChildren();
 						if (!props.items.length) return;
@@ -420,9 +368,7 @@ export const WikiLink = Node.create({
 						}
 					};
 
-					const createMenu = (
-						props: SuggestionProps<WikiLinkSuggestionItem>,
-					) => {
+					const createMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (menu) menu.remove();
 						menu = document.createElement("div");
 						menu.className = "wikiLinkSuggestionMenu";
@@ -431,7 +377,7 @@ export const WikiLink = Node.create({
 					};
 
 					return {
-						onStart: (props: SuggestionProps<WikiLinkSuggestionItem>) => {
+						onStart: (props: SuggestionProps<EditorLinkSuggestion>) => {
 							activeProps = props;
 							selectedIndex = 0;
 							unlockEditorScroll?.();
@@ -441,7 +387,7 @@ export const WikiLink = Node.create({
 							);
 							createMenu(props);
 						},
-						onUpdate: (props: SuggestionProps<WikiLinkSuggestionItem>) => {
+						onUpdate: (props: SuggestionProps<EditorLinkSuggestion>) => {
 							activeProps = props;
 							if (!menu) createMenu(props);
 							updateMenu(props);

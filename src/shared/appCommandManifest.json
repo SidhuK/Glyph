@@ -1090,6 +1090,36 @@
 			"allowInEditable": true,
 			"commandPalette": true,
 			"menuId": "editor.underline"
+		},
+		"switch-to-edit": {
+			"id": "switch-to-edit",
+			"label": "Rich Mode",
+			"description": "Switch to the rich WYSIWYG editing mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"switch-to-preview": {
+			"id": "switch-to-preview",
+			"label": "Preview Mode",
+			"description": "Switch to the read-only preview mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"switch-to-raw": {
+			"id": "switch-to-raw",
+			"label": "Raw Mode",
+			"description": "Switch to the raw Markdown editing mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
 		}
 	}
 }
