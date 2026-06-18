@@ -7,17 +7,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
-const {
-	loadAllDocsMock,
-	prefetchNoteMock,
-	invokeMock,
-	scopeRef,
-} = vi.hoisted(() => ({
-	loadAllDocsMock: vi.fn(),
-	prefetchNoteMock: vi.fn(),
-	invokeMock: vi.fn(),
-	scopeRef: { current: { kind: "all" } as FolioScope },
-}));
+const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(
+	() => ({
+		loadAllDocsMock: vi.fn(),
+		prefetchNoteMock: vi.fn(),
+		invokeMock: vi.fn(),
+		scopeRef: { current: { kind: "all" } as FolioScope },
+	}),
+);
 
 vi.mock("../../contexts", () => ({
 	useUILayoutContext: () => ({
