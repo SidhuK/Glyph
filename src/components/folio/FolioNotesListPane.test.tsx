@@ -8,10 +8,12 @@ import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
 const {
+	loadAllDocsMock,
 	prefetchNoteMock,
 	invokeMock,
 	scopeRef,
 } = vi.hoisted(() => ({
+	loadAllDocsMock: vi.fn(),
 	prefetchNoteMock: vi.fn(),
 	invokeMock: vi.fn(),
 	scopeRef: { current: { kind: "all" } as FolioScope },
@@ -24,6 +26,8 @@ vi.mock("../../contexts", () => ({
 	useFileTreeContext: () => ({
 		itemAppearance: {},
 		setItemAppearance: vi.fn(),
+		tagAppearance: {},
+		beautifulTags: false,
 	}),
 }));
 
@@ -42,6 +46,7 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 	>("../../lib/navigationPrefetch");
 	return {
 		...actual,
+		loadAllDocs: loadAllDocsMock,
 		prefetchNote: prefetchNoteMock,
 	};
 });
@@ -106,6 +111,7 @@ describe("FolioNotesListPane", () => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
 
+		loadAllDocsMock.mockResolvedValue(notes);
 		invokeMock.mockResolvedValue([]);
 		queryClient = new QueryClient({
 			defaultOptions: { queries: { retry: false, gcTime: 0 } },
