@@ -1,14 +1,11 @@
 import type { KeyboardEvent, RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { invoke } from "../../../lib/tauri";
+import {
+	type EditorLinkSuggestion,
+	suggestWikiLinks,
+} from "../../../lib/linkSuggestions";
 
 const WIKI_LINK_SUGGESTION_LIMIT = 8;
-
-interface WikiLinkSuggestion {
-	path: string;
-	title: string;
-	insertText: string;
-}
 
 interface WikiLinkRange {
 	from: number;
@@ -21,7 +18,7 @@ interface UseWikiLinkAutocompleteOptions {
 	inputRef: RefObject<HTMLInputElement | null>;
 	value: string;
 	onChange: (value: string) => void;
-	onSelectItem?: (item: WikiLinkSuggestion) => void;
+	onSelectItem?: (item: EditorLinkSuggestion) => void;
 }
 
 function findActiveWikiLinkRange(
@@ -53,7 +50,7 @@ export function useWikiLinkAutocomplete({
 }: UseWikiLinkAutocompleteOptions) {
 	const requestIdRef = useRef(0);
 	const [range, setRange] = useState<WikiLinkRange | null>(null);
-	const [items, setItems] = useState<WikiLinkSuggestion[]>([]);
+	const [items, setItems] = useState<EditorLinkSuggestion[]>([]);
 	const [activeIndex, setActiveIndex] = useState(0);
 
 	const close = useCallback(() => {
@@ -82,26 +79,14 @@ export function useWikiLinkAutocomplete({
 			setActiveIndex(0);
 			setItems([]);
 
-			void invoke("space_suggest_links", {
-				request: {
-					query: nextRange.query,
-					markdown_only: true,
-					include_pdf: false,
-					include_images: false,
-					strip_markdown_ext: true,
-					relative_to_source: false,
-					limit: WIKI_LINK_SUGGESTION_LIMIT,
-				},
+			void suggestWikiLinks({
+				query: nextRange.query,
+				includeAttachments: false,
+				limit: WIKI_LINK_SUGGESTION_LIMIT,
 			})
 				.then((results) => {
 					if (requestIdRef.current !== requestId) return;
-					setItems(
-						results.map((item) => ({
-							path: item.path,
-							title: item.title || item.path,
-							insertText: item.insert_text,
-						})),
-					);
+					setItems(results);
 				})
 				.catch((error) => {
 					if (requestIdRef.current !== requestId) return;
@@ -119,7 +104,7 @@ export function useWikiLinkAutocomplete({
 	}, [inputRef, refresh, value]);
 
 	const select = useCallback(
-		(item: WikiLinkSuggestion) => {
+		(item: EditorLinkSuggestion) => {
 			if (onSelectItem) {
 				onSelectItem(item);
 				close();

@@ -6,6 +6,7 @@ import {
 	useEffect,
 	useRef,
 } from "react";
+import type { EditorViewMode } from "../lib/editorMode";
 
 /**
  * Interface for editor save functionality
@@ -19,6 +20,8 @@ export interface EditorSaveState {
 	save: () => Promise<void>;
 	/** Function to get the current editor content as markdown */
 	getMarkdown?: () => string | null;
+	/** Change the current editor's presentation mode. */
+	setMode?: (mode: EditorViewMode) => void;
 }
 
 /**
@@ -35,6 +38,8 @@ interface EditorContextValue {
 	hasUnsavedChanges: () => boolean;
 	/** Get the current editor content as markdown for a specific note */
 	getCurrentMarkdown: (relPath: string) => string | null;
+	/** Change the active editor's presentation mode. */
+	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -71,6 +76,13 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		return state.getMarkdown?.() ?? null;
 	}, []);
 
+	const setCurrentEditorMode = useCallback((mode: EditorViewMode) => {
+		const setMode = editorStateRef.current?.setMode;
+		if (!setMode) return false;
+		setMode(mode);
+		return true;
+	}, []);
+
 	return (
 		<EditorContext.Provider
 			value={{
@@ -79,6 +91,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				saveCurrentEditor,
 				hasUnsavedChanges,
 				getCurrentMarkdown,
+				setCurrentEditorMode,
 			}}
 		>
 			{children}

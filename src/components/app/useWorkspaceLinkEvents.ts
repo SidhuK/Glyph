@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from "react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
+import { isPdfTarget } from "../../lib/linkSuggestions";
 import { invoke } from "../../lib/tauri";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
-import { isPdfTarget } from "../editor/extensions/wikiLink";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,

@@ -145,9 +145,7 @@
 }
 
 .tiptapContentInline::selection,
-.tiptapContentInline *::selection,
-.rfNodeNoteEditorRaw::selection,
-.rfNodeNoteEditorRaw *::selection {
+.tiptapContentInline *::selection {
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 20%,
