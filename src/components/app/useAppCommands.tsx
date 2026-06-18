@@ -193,7 +193,7 @@ function resolveCommandShortcuts(
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: definition.label,
+					label: command.label ?? definition.label,
 					category: SHORTCUT_CATEGORY_LABELS[definition.category],
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
