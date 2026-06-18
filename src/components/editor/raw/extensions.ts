@@ -137,13 +137,13 @@ function tableCellStarts(text: string, lineFrom: number): number[] {
 	const starts: number[] = [];
 	let cellStart = 0;
 	if (text.startsWith("|")) cellStart = 1;
-	while (cellStart < text.length && text[cellStart] === " ") cellStart += 1;
+	if (cellStart < text.length && text[cellStart] === " ") cellStart += 1;
 	starts.push(lineFrom + cellStart);
 
 	for (let index = cellStart; index < text.length; index += 1) {
 		if (text[index] !== "|" || text[index - 1] === "\\") continue;
 		let nextStart = index + 1;
-		while (nextStart < text.length && text[nextStart] === " ") nextStart += 1;
+		if (nextStart < text.length && text[nextStart] === " ") nextStart += 1;
 		if (nextStart < text.length) starts.push(lineFrom + nextStart);
 	}
 	return starts;

@@ -18,10 +18,7 @@ export function buildMovePickerCommands({
 }: BuildMovePickerCommandsOptions): Command[] | null {
 	if (!movePickerSourcePath) return null;
 	const moveTo = async (directory: string) => {
-		const nextPath = await fileTree.onMovePath(
-			movePickerSourcePath,
-			directory,
-		);
+		const nextPath = await fileTree.onMovePath(movePickerSourcePath, directory);
 		if (nextPath) await openWorkspaceFile(nextPath);
 	};
 	return [

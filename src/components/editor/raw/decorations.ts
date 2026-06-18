@@ -168,10 +168,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 				}
 				return;
 			}
-			if (
-				name === "CodeMark" &&
-				node.node.parent?.name === "FencedCode"
-			) {
+			if (name === "CodeMark" && node.node.parent?.name === "FencedCode") {
 				ranges.push(
 					Decoration.mark({
 						class: "cm-raw-syntax cm-raw-code-fence",
@@ -182,9 +179,7 @@ function buildVisibleDecorations(view: EditorView): DecorationSet {
 			if (name === "Blockquote") {
 				const { first, last } = lineNumbersForRange(view, node.from, node.to);
 				const callout = view.state.doc.line(first).text.match(CALLOUT_PATTERN);
-				const kind = callout?.[1]
-					? normalizedCalloutKind(callout[1])
-					: null;
+				const kind = callout?.[1] ? normalizedCalloutKind(callout[1]) : null;
 				for (let lineNumber = first; lineNumber <= last; lineNumber += 1) {
 					const line = view.state.doc.line(lineNumber);
 					if (line.to < visibleFrom || line.from > visibleTo) continue;

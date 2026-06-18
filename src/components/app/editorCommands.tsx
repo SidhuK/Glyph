@@ -74,8 +74,7 @@ export function buildEditorCommands({
 			category: "Editor",
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
-			action: () =>
-				dispatchEditorMenuAction({ action: "expand_all_headings" }),
+			action: () => dispatchEditorMenuAction({ action: "expand_all_headings" }),
 		},
 	];
 

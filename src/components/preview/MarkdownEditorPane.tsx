@@ -701,7 +701,7 @@ export function MarkdownEditorPane({
 			getMarkdown: () => textRef.current,
 			setMode,
 		}),
-		[isDirty, onSave, relPath, setMode],
+		[isDirty, onSave, relPath],
 	);
 	useEditorRegistration(editorState);
 

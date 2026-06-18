@@ -312,8 +312,7 @@ export const WikiLink = Node.create({
 				render: () => {
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
-					let activeProps: SuggestionProps<EditorLinkSuggestion> | null =
-						null;
+					let activeProps: SuggestionProps<EditorLinkSuggestion> | null = null;
 					let unlockEditorScroll: (() => void) | null = null;
 
 					const updateSelection = (items: EditorLinkSuggestion[]) => {
@@ -325,9 +324,7 @@ export const WikiLink = Node.create({
 						if (!items.length) selectedIndex = 0;
 					};
 
-					const updateMenu = (
-						props: SuggestionProps<EditorLinkSuggestion>,
-					) => {
+					const updateMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (!menu) return;
 						menu.replaceChildren();
 						if (!props.items.length) return;
@@ -371,9 +368,7 @@ export const WikiLink = Node.create({
 						}
 					};
 
-					const createMenu = (
-						props: SuggestionProps<EditorLinkSuggestion>,
-					) => {
+					const createMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (menu) menu.remove();
 						menu = document.createElement("div");
 						menu.className = "wikiLinkSuggestionMenu";

@@ -18,9 +18,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const getItems = async (
-			query: string,
-		): Promise<EditorLinkSuggestion[]> => {
+		const getItems = async (query: string): Promise<EditorLinkSuggestion[]> => {
 			const currentPath =
 				typeof this.options.getCurrentPath === "function"
 					? this.options.getCurrentPath()
@@ -74,9 +72,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 					let selectedIndex = 0;
 					let activeProps: SuggestionProps<EditorLinkSuggestion> | null = null;
 
-					const updateMenu = (
-						props: SuggestionProps<EditorLinkSuggestion>,
-					) => {
+					const updateMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
 						if (!menu) return;
 						menu.replaceChildren();
 						for (const [index, item] of props.items.entries()) {

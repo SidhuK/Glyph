@@ -82,10 +82,7 @@ export function decorateRecognizedTable(
 			);
 		}
 		for (let position = 0; position < line.text.length; position += 1) {
-			if (
-				line.text[position] === "|" &&
-				line.text[position - 1] !== "\\"
-			) {
+			if (line.text[position] === "|" && line.text[position - 1] !== "\\") {
 				ranges.push(
 					Decoration.mark({ class: "cm-raw-table-pipe" }).range(
 						line.from + position,
