@@ -218,7 +218,13 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				/* the index is derived and will retry on the next open */
 			})
 			.finally(() => {
-				if (currentSpacePathRef.current === currentSpacePath) {
+				if (indexSyncRef.current?.promise === promise) {
+					indexSyncRef.current = null;
+				}
+				if (
+					currentSpacePathRef.current === currentSpacePath ||
+					currentSpacePathRef.current === null
+				) {
 					setIsIndexing(false);
 				}
 			});

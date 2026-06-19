@@ -1,11 +1,11 @@
 use notify::Watcher;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
 use tauri::Emitter;
 
-use crate::{index, utils};
+use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
 
@@ -51,11 +51,15 @@ pub fn create_notes_watcher(
                 }
             }
 
+            let mut events = Vec::new();
             for (rel_s, is_remove) in pending {
                 let result = if is_remove {
                     index::remove_note(&root_idx, &rel_s)
                 } else {
-                    let abs = root_idx.join(&rel_s);
+                    let abs = match paths::join_under(&root_idx, Path::new(&rel_s)) {
+                        Ok(abs) => abs,
+                        Err(_) => continue,
+                    };
                     if let Ok(markdown) = std::fs::read_to_string(&abs) {
                         index::index_note(&root_idx, &rel_s, &markdown)
                     } else {
@@ -63,16 +67,16 @@ pub fn create_notes_watcher(
                     }
                 };
                 if result.is_ok() {
-                    let _ = index_app.emit_to(
-                        &index_window_label,
-                        "notes:external_changed",
-                        ExternalChangeEvent {
-                            space_path: index_space_path.clone(),
-                            rel_path: rel_s,
-                            removed: is_remove,
-                        },
-                    );
+                    events.push(ExternalChangeEvent {
+                        space_path: index_space_path.clone(),
+                        rel_path: rel_s,
+                        removed: is_remove,
+                    });
                 }
+            }
+
+            for event in events {
+                let _ = index_app.emit_to(&index_window_label, "notes:external_changed", event);
             }
         }
     });

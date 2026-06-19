@@ -253,8 +253,8 @@ fn index_note_with_conn(
         .map_err(|e| e.to_string())?;
     }
 
+    record_file_fingerprint(&tx, note_id, file_path)?;
     tx.commit().map_err(|e| e.to_string())?;
-    record_file_fingerprint(conn, note_id, file_path)?;
     Ok(())
 }
 
