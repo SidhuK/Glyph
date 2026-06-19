@@ -192,7 +192,7 @@ function moveTableCell(direction: 1 | -1): Command {
 }
 
 export function createRawMarkdownExtensions(
-	onChange: (markdown: string) => void,
+	onChange: () => void,
 	getRelPath: () => string,
 ): Extension[] {
 	return [
@@ -233,7 +233,7 @@ export function createRawMarkdownExtensions(
 					transaction.annotation(externalRawMarkdownUpdate) === true,
 			);
 			if (update.docChanged && !isExternalUpdate) {
-				onChange(update.state.doc.toString());
+				onChange();
 			}
 		}),
 		keymap.of([

@@ -14,7 +14,7 @@
 }
 
 .mainTabsBar {
-	--main-tabs-right-reserve: 78px;
+	--main-tabs-right-reserve: 168px;
 	--main-tabs-left-reserve: var(--space-3);
 	--main-tabs-top-padding: 6px;
 

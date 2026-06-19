@@ -49,13 +49,156 @@
 	z-index: 24;
 	display: inline-flex;
 	align-items: center;
+	overflow: visible;
 	transition: opacity 180ms ease, transform 220ms ease;
 }
 
-.markdownEditorTopActions {
+.markdownEditorToolbar {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	height: 26px;
+	padding: 2px;
+	overflow: visible;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+}
+
+.markdownEditorToolbarDivider {
+	flex: 0 0 1px;
+	align-self: stretch;
+	margin: 3px 2px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.markdownEditorToolbarActions {
+	display: inline-flex;
+	align-items: center;
+}
+
+.markdownEditorToolbarBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: calc(var(--radius-md) - 2px);
+	background: transparent;
+	color: var(--text-tertiary);
+	line-height: 0;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markdownEditorToolbarBtn:hover {
+	color: var(--text-primary);
+}
+
+.markdownEditorToolbarBtn[data-active="true"] {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.markdownEditorToolbarBtn:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
+.markdownEditorModeSwitch {
+	display: inline-grid;
+	grid-template-columns: repeat(3, minmax(0, auto));
+	align-items: center;
+	overflow: visible;
+}
+
+.markdownEditorModeBtnWrap {
+	position: relative;
+	display: inline-flex;
+	overflow: visible;
+}
+
+.markdownEditorModeBtnWrap .markdownEditorModeBtn:disabled {
+	pointer-events: none;
+}
+
+.markdownEditorModeBtnHint {
+	position: absolute;
+	z-index: 30;
+	top: calc(100% + 6px);
+	left: 50%;
+	width: max-content;
+	max-width: 168px;
+	padding: 4px 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.66);
+	font-weight: var(--font-medium);
+	line-height: 1.25;
+	text-align: center;
+	text-wrap: balance;
+	box-shadow: var(--shadow-sm);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translateX(-50%) translateY(-2px);
+	transition: opacity 140ms ease, visibility 140ms ease, transform 140ms ease;
+}
+
+.markdownEditorModeBtnHint[data-warning="true"] {
+	border-color: color-mix(in srgb, var(--callout-warning) 34%, transparent);
+	background: color-mix(in srgb, var(--callout-warning) 14%, var(--bg-primary));
+	color: var(--status-warning-fg);
+}
+
+.markdownEditorModeBtnWrap:hover .markdownEditorModeBtnHint,
+.markdownEditorModeBtnWrap:focus-within .markdownEditorModeBtnHint {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(-50%) translateY(0);
+}
+
+.markdownEditorModeBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: calc(var(--radius-md) - 2px);
+	background: transparent;
+	color: var(--text-tertiary);
+	line-height: 0;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
+	color: color-mix(in srgb, var(--status-warning-fg) 72%, var(--text-tertiary));
+}
+
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn:hover {
+	color: var(--status-warning-fg);
+}
+
+.markdownEditorModeBtn:hover {
+	color: var(--text-primary);
+}
+
+.markdownEditorModeBtn[data-active="true"] {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.markdownEditorModeBtn:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
 }
 
 .markdownEditorTaskProgress {
@@ -97,39 +240,6 @@
 		);
 	border-radius: 50%;
 	transition: background 180ms ease;
-}
-
-.markdownEditorMenuTrigger {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	height: 20px;
-	padding: 0;
-	border: none;
-	background: transparent;
-	color: var(--text-secondary);
-	box-shadow: none;
-	outline: none;
-	appearance: none;
-	-webkit-appearance: none;
-	cursor: pointer;
-	transition: none;
-}
-
-.markdownEditorMenuTrigger:hover {
-	border: none;
-	background: transparent;
-	box-shadow: none;
-	outline: none;
-	color: var(--text-secondary);
-	transform: none;
-}
-
-.markdownEditorMenuTrigger:focus-visible {
-	outline: 2px solid var(--focus);
-	outline-offset: 2px;
 }
 
 .markdownEditorCenter {

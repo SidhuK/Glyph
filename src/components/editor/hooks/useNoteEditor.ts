@@ -412,12 +412,15 @@ export function useNoteEditor({
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, editorBody } = useMemo(() => {
+		if (mode === "plain") {
+			return { frontmatter: null, editorBody: "" };
+		}
 		const split = splitYamlFrontmatter(markdown);
 		return {
 			...split,
 			editorBody: preprocessMarkdownForEditor(split.body),
 		};
-	}, [markdown]);
+	}, [markdown, mode]);
 
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);
@@ -770,7 +773,6 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
-		if (markdown === lastEmittedMarkdownRef.current) return;
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;

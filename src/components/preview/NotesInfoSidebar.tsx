@@ -4,7 +4,7 @@ import {
 	InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
@@ -25,7 +25,6 @@ import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "../editor/markdown/editorEvents";
-import type { NoteInlineEditorMode } from "../editor/types";
 import { GitHistorySidebar } from "./GitHistorySidebar";
 
 type InfoSidebarTab = "info" | "history";
@@ -43,7 +42,6 @@ interface LinkedNoteItem {
 
 interface NotesInfoSidebarProps {
 	open: boolean;
-	mode: NoteInlineEditorMode;
 	hasError: boolean;
 	relPath: string;
 	frontmatter: string | null;
@@ -100,9 +98,8 @@ function formatFileSize(bytes: number): string {
 	})} ${units[unitIndex]}`;
 }
 
-export function NotesInfoSidebar({
+export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	open,
-	mode,
 	hasError,
 	relPath,
 	frontmatter,
@@ -150,7 +147,7 @@ export function NotesInfoSidebar({
 		}
 	}, [activeTab, hasGitHistoryTab, open]);
 
-	if (!open || mode === "plain" || hasError) return null;
+	if (!open || hasError) return null;
 
 	const sidebar = (
 		<aside className="notesInfoSidebarPanel" aria-label="Note info panel">
@@ -456,4 +453,4 @@ export function NotesInfoSidebar({
 	);
 
 	return host ? createPortal(sidebar, host) : sidebar;
-}
+});

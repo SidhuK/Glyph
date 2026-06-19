@@ -1,7 +1,7 @@
 import {
-	MessagePreview02Icon,
+	CodeIcon,
+	EyeIcon,
 	PencilEdit02Icon,
-	Raw02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
@@ -27,13 +27,13 @@ const VIEW_MODE_COMMANDS = [
 		id: "switch-to-preview",
 		label: "Preview Mode",
 		mode: "preview",
-		icon: MessagePreview02Icon,
+		icon: EyeIcon,
 	},
 	{
 		id: "switch-to-raw",
 		label: "Raw Mode",
 		mode: "plain",
-		icon: Raw02Icon,
+		icon: CodeIcon,
 	},
 ] as const;
 

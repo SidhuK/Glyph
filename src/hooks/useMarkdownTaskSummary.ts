@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	EMPTY_CHECKLIST_SUMMARY,
 	summarizeChecklistsFromMarkdown,
@@ -12,19 +12,6 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 	const timerRef = useRef<number | null>(null);
 	const requestTokenRef = useRef(0);
 	const mountedRef = useRef(true);
-
-	const fallbackTaskSummary = useMemo(
-		() =>
-			enabled
-				? summarizeChecklistsFromMarkdown(markdown)
-				: EMPTY_CHECKLIST_SUMMARY,
-		[enabled, markdown],
-	);
-	const visibleTaskSummary = enabled
-		? taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
-			? taskSummary
-			: fallbackTaskSummary
-		: EMPTY_CHECKLIST_SUMMARY;
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -43,7 +30,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 			return;
 		}
 
-		setTaskSummary(fallbackTaskSummary);
+		setTaskSummary(summarizeChecklistsFromMarkdown(markdown));
 
 		if (timerRef.current !== null) {
 			window.clearTimeout(timerRef.current);
@@ -60,17 +47,13 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 					if (!mountedRef.current || requestTokenRef.current !== requestToken) {
 						return;
 					}
-					setTaskSummary(
-						summary.total_count > 0 || fallbackTaskSummary.total_count === 0
-							? summary
-							: fallbackTaskSummary,
-					);
+					setTaskSummary(summary);
 				})
 				.catch(() => {
 					if (!mountedRef.current || requestTokenRef.current !== requestToken) {
 						return;
 					}
-					setTaskSummary(fallbackTaskSummary);
+					setTaskSummary(summarizeChecklistsFromMarkdown(markdown));
 				});
 		}, 90);
 
@@ -80,7 +63,7 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 				timerRef.current = null;
 			}
 		};
-	}, [enabled, fallbackTaskSummary, markdown]);
+	}, [enabled, markdown]);
 
-	return visibleTaskSummary;
+	return enabled ? taskSummary : EMPTY_CHECKLIST_SUMMARY;
 }

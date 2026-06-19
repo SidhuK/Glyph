@@ -27,6 +27,35 @@ const mermaidPreviewPluginKey = new PluginKey<MermaidPreviewPluginState>(
 type MermaidPreviewMeta = { type: "refresh" };
 
 const canvasDestroyCallbacks = new WeakMap<HTMLElement, () => void>();
+const MERMAID_HYDRATION_ROOT_MARGIN = "640px 0px";
+const mermaidHydrationCallbacks = new WeakMap<Element, () => void>();
+let mermaidHydrationObserver: IntersectionObserver | null = null;
+
+function observeMermaidHydration(element: HTMLElement, hydrate: () => void) {
+	if (typeof IntersectionObserver === "undefined") return false;
+	if (!mermaidHydrationObserver) {
+		mermaidHydrationObserver = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+					const callback = mermaidHydrationCallbacks.get(entry.target);
+					mermaidHydrationObserver?.unobserve(entry.target);
+					mermaidHydrationCallbacks.delete(entry.target);
+					callback?.();
+				}
+			},
+			{ rootMargin: MERMAID_HYDRATION_ROOT_MARGIN },
+		);
+	}
+	mermaidHydrationCallbacks.set(element, hydrate);
+	mermaidHydrationObserver.observe(element);
+	return true;
+}
+
+function unobserveMermaidHydration(element: HTMLElement) {
+	mermaidHydrationObserver?.unobserve(element);
+	mermaidHydrationCallbacks.delete(element);
+}
 
 function selectionTouchesNode(
 	selection: Selection,
@@ -114,6 +143,49 @@ function buildMermaidCanvasWidget({
 	return mount.element;
 }
 
+function createLazyMermaidCanvasWidget(
+	options: Parameters<typeof buildMermaidCanvasWidget>[0],
+): HTMLElement {
+	const placeholder = document.createElement("div");
+	placeholder.className = "mermaidCanvasWidget mermaidCanvasPlaceholder";
+	placeholder.setAttribute("aria-busy", "true");
+	const frame = document.createElement("div");
+	frame.className = "mermaidCanvasFrame";
+	frame.setAttribute("aria-hidden", "true");
+	placeholder.append(frame);
+
+	let hydrated = false;
+	let destroyed = false;
+	let destroyHydratedCanvas: (() => void) | null = null;
+
+	const hydrate = () => {
+		if (destroyed || hydrated) return;
+		hydrated = true;
+		unobserveMermaidHydration(placeholder);
+
+		const rendered = buildMermaidCanvasWidget(options);
+		destroyHydratedCanvas = canvasDestroyCallbacks.get(rendered) ?? null;
+		canvasDestroyCallbacks.delete(rendered);
+		for (const attribute of Array.from(rendered.attributes)) {
+			placeholder.setAttribute(attribute.name, attribute.value);
+		}
+		placeholder.removeAttribute("aria-busy");
+		placeholder.replaceChildren(...Array.from(rendered.childNodes));
+	};
+
+	if (!observeMermaidHydration(placeholder, hydrate)) {
+		hydrate();
+	}
+
+	canvasDestroyCallbacks.set(placeholder, () => {
+		destroyed = true;
+		unobserveMermaidHydration(placeholder);
+		destroyHydratedCanvas?.();
+		destroyHydratedCanvas = null;
+	});
+	return placeholder;
+}
+
 function buildMermaidPreviewDecorations(
 	doc: ProseMirrorNode,
 	selection: Selection,
@@ -146,7 +218,7 @@ function buildMermaidPreviewDecorations(
 			Decoration.widget(
 				to,
 				(view) =>
-					buildMermaidCanvasWidget({
+					createLazyMermaidCanvasWidget({
 						editable,
 						nodeSize: node.nodeSize,
 						pos,

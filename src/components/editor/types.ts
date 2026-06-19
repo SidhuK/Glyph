@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import type { EditorViewMode } from "../../lib/editorMode";
+import type { RawMarkdownEditorHandle } from "./raw/types";
 
 export type NoteInlineEditorMode = EditorViewMode;
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
@@ -32,4 +33,7 @@ export interface NoteInlineEditorProps {
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
 	onEditorReady?: ((editor: Editor | null) => void) | undefined;
+	onRawEditorReady?:
+		| ((editor: RawMarkdownEditorHandle | null) => void)
+		| undefined;
 }

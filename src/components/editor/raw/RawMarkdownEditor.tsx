@@ -12,6 +12,8 @@ import {
 } from "./extensions";
 import type { RawMarkdownEditorHandle } from "./types";
 
+const RAW_MARKDOWN_CHANGE_DEBOUNCE_MS = 120;
+
 interface RawMarkdownEditorProps {
 	markdown: string;
 	relPath?: string;
@@ -28,6 +30,9 @@ export const RawMarkdownEditor = forwardRef<
 	const initialMarkdownRef = useRef(markdown);
 	const previousRelPathRef = useRef(relPath);
 	const relPathRef = useRef(relPath);
+	const changeTimerRef = useRef<number | null>(null);
+	const hasPendingChangeRef = useRef(false);
+	const lastEmittedMarkdownRef = useRef(markdown);
 
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
@@ -35,14 +40,34 @@ export const RawMarkdownEditor = forwardRef<
 	useLayoutEffect(() => {
 		const host = hostRef.current;
 		if (!host) return;
+		const flushPendingChange = () => {
+			if (changeTimerRef.current !== null) {
+				window.clearTimeout(changeTimerRef.current);
+				changeTimerRef.current = null;
+			}
+			if (!hasPendingChangeRef.current) return;
+			hasPendingChangeRef.current = false;
+			const currentView = viewRef.current;
+			if (!currentView) return;
+			const nextMarkdown = currentView.state.doc.toString();
+			lastEmittedMarkdownRef.current = nextMarkdown;
+			onChangeRef.current(nextMarkdown);
+		};
 
 		const view = new EditorView({
 			parent: host,
 			state: EditorState.create({
 				doc: initialMarkdownRef.current,
 				extensions: createRawMarkdownExtensions(
-					(nextMarkdown) => {
-						onChangeRef.current(nextMarkdown);
+					() => {
+						hasPendingChangeRef.current = true;
+						if (changeTimerRef.current !== null) {
+							window.clearTimeout(changeTimerRef.current);
+						}
+						changeTimerRef.current = window.setTimeout(
+							flushPendingChange,
+							RAW_MARKDOWN_CHANGE_DEBOUNCE_MS,
+						);
 					},
 					() => relPathRef.current ?? "",
 				),
@@ -51,6 +76,7 @@ export const RawMarkdownEditor = forwardRef<
 		viewRef.current = view;
 
 		return () => {
+			flushPendingChange();
 			viewRef.current = null;
 			view.destroy();
 		};
@@ -59,11 +85,19 @@ export const RawMarkdownEditor = forwardRef<
 	useLayoutEffect(() => {
 		const view = viewRef.current;
 		if (!view) return;
-		const currentMarkdown = view.state.doc.toString();
 		const didChangeDocument = previousRelPathRef.current !== relPath;
 		previousRelPathRef.current = relPath;
 
-		if (currentMarkdown === markdown && !didChangeDocument) return;
+		if (markdown === lastEmittedMarkdownRef.current && !didChangeDocument) {
+			return;
+		}
+		const currentMarkdown = view.state.doc.toString();
+		lastEmittedMarkdownRef.current = markdown;
+		if (changeTimerRef.current !== null) {
+			window.clearTimeout(changeTimerRef.current);
+			changeTimerRef.current = null;
+		}
+		hasPendingChangeRef.current = false;
 
 		const currentSelection = view.state.selection.main;
 		const nextLength = markdown.length;

@@ -125,6 +125,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
 	onEditorReady,
+	onRawEditorReady,
 	onChange,
 	onFrontmatterCommit,
 	extractToNoteActions,
@@ -164,6 +165,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		null,
 	);
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
+	const handleRawEditorRef = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			rawEditorRef.current = editor;
+			onRawEditorReady?.(editor);
+		},
+		[onRawEditorReady],
+	);
 	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
@@ -618,7 +626,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				) : null}
 				{mode === "plain" ? (
 					<RawMarkdownEditor
-						ref={rawEditorRef}
+						key={relPath}
+						ref={handleRawEditorRef}
 						markdown={markdown}
 						relPath={relPath}
 						onChange={onChange}

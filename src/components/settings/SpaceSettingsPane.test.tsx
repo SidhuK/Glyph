@@ -20,6 +20,9 @@ const {
 	loadSettingsMock: vi.fn(() =>
 		Promise.resolve({
 			currentSpacePath: "/spaces/test",
+			dailyNotes: {
+				folder: null,
+			},
 			editor: {
 				attachmentStorageMode: "note-folder",
 				attachmentFolder: "assets",
@@ -75,6 +78,7 @@ vi.mock("@hugeicons/react", () => ({
 }));
 
 vi.mock("../Icons", () => ({
+	ChevronDown: () => null,
 	Trash2: () => null,
 }));
 

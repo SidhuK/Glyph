@@ -5,17 +5,12 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const {
-	noteInlineEditorMock,
-	localNoteConnectionsDialogMock,
-	invokeMock,
-	showNativePopupMenuMock,
-} = vi.hoisted(() => ({
-	noteInlineEditorMock: vi.fn(),
-	localNoteConnectionsDialogMock: vi.fn(),
-	invokeMock: vi.fn(),
-	showNativePopupMenuMock: vi.fn(),
-}));
+const { noteInlineEditorMock, localNoteConnectionsDialogMock, invokeMock } =
+	vi.hoisted(() => ({
+		noteInlineEditorMock: vi.fn(),
+		localNoteConnectionsDialogMock: vi.fn(),
+		invokeMock: vi.fn(),
+	}));
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -31,6 +26,7 @@ vi.mock("../../contexts", () => ({
 		setAiPanelOpen: vi.fn(),
 	}),
 	useEditorRegistration: () => {},
+	useGitSyncContext: () => ({ status: null }),
 	useSpace: () => ({ spacePath: "/spaces/test" }),
 	useUILayoutContext: () => ({
 		showToc: false,
@@ -39,10 +35,6 @@ vi.mock("../../contexts", () => ({
 
 vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
-}));
-
-vi.mock("../../lib/nativeContextMenu", () => ({
-	showNativePopupMenu: showNativePopupMenuMock,
 }));
 
 vi.mock("../../lib/tauriEvents", () => ({
@@ -115,32 +107,6 @@ vi.mock("@hugeicons/react", () => ({
 	HugeiconsIcon: () => null,
 }));
 
-type TestNativeMenuItem =
-	| {
-			label: string;
-			action: () => void;
-			checked?: boolean;
-			enabled?: boolean;
-	  }
-	| { type: "separator" };
-
-function getLastNativeMenuItems(): TestNativeMenuItem[] {
-	const lastCall =
-		showNativePopupMenuMock.mock.calls[
-			showNativePopupMenuMock.mock.calls.length - 1
-		];
-	return lastCall?.[1] ?? [];
-}
-
-function runNativeMenuAction(label: string) {
-	const item = getLastNativeMenuItems().find(
-		(item): item is Extract<TestNativeMenuItem, { label: string }> =>
-			"label" in item && item.label === label,
-	);
-	expect(item).toBeDefined();
-	item?.action();
-}
-
 describe("MarkdownEditorPane", () => {
 	let container: HTMLDivElement;
 	let root: Root;
@@ -162,6 +128,7 @@ describe("MarkdownEditorPane", () => {
 					command: "note_frontmatter_parse_properties",
 					params: { frontmatter?: string | null },
 			  ]
+			| [command: "task_summary", params: { markdown: string }]
 			| [command: "databases_preview_context", params: { note_path: string }]
 	) {
 		const [command, params] = args;
@@ -197,6 +164,9 @@ describe("MarkdownEditorPane", () => {
 		if (command === "note_frontmatter_parse_properties") {
 			return Promise.resolve([]);
 		}
+		if (command === "task_summary") {
+			return Promise.resolve({ total: 0, completed: 0 });
+		}
 		throw new Error(`Unexpected command: ${command satisfies never}`);
 	}
 
@@ -218,8 +188,6 @@ describe("MarkdownEditorPane", () => {
 		invokeMock.mockImplementation(mockInvoke);
 		noteInlineEditorMock.mockReset();
 		localNoteConnectionsDialogMock.mockReset();
-		showNativePopupMenuMock.mockReset();
-		showNativePopupMenuMock.mockResolvedValue(false);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -285,6 +253,29 @@ describe("MarkdownEditorPane", () => {
 		});
 	});
 
+	it("switches editor mode from the top toggle", async () => {
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/mode.md"
+					initialDoc={makeDoc("notes/mode.md", "seed text")}
+				/>,
+			);
+		});
+
+		const rawButton = container.querySelector('button[aria-label="Raw"]');
+		expect(rawButton).not.toBeNull();
+
+		await act(async () => {
+			rawButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(noteInlineEditorMock).toHaveBeenLastCalledWith({
+			mode: "plain",
+			pasteMarkdownBehavior: "smart-markdown",
+		});
+	});
+
 	it("renders save status in info sidebar through dirty, saving, and saved states", async () => {
 		let resolveWrite:
 			| ((value: { etag: string; mtime_ms: number }) => void)
@@ -322,6 +313,9 @@ describe("MarkdownEditorPane", () => {
 			if (command === "note_frontmatter_parse_properties") {
 				return Promise.resolve([]);
 			}
+			if (command === "task_summary") {
+				return Promise.resolve({ total: 0, completed: 0 });
+			}
 			throw new Error(`Unexpected command: ${command}`);
 		});
 
@@ -334,17 +328,12 @@ describe("MarkdownEditorPane", () => {
 			);
 		});
 
-		const actionsButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
+		const infoButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.getAttribute("aria-label") === "Open info",
 		);
-		expect(actionsButton).not.toBeNull();
+		expect(infoButton).not.toBeNull();
 		await act(async () => {
-			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-		expect(showNativePopupMenuMock).toHaveBeenCalled();
-
-		await act(async () => {
-			runNativeMenuAction("Info");
+			infoButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		});
 
 		expect(container.textContent).toContain("Save status");
@@ -373,41 +362,5 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(container.textContent).toContain("Saved");
-	});
-
-	it("opens local connections from the actions menu", async () => {
-		await act(async () => {
-			root.render(
-				<MarkdownEditorPane
-					relPath="notes/graph.md"
-					initialDoc={makeDoc("notes/graph.md", "seed text", 7)}
-				/>,
-			);
-		});
-
-		const actionsButton = Array.from(container.querySelectorAll("button")).find(
-			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
-		);
-		expect(actionsButton).not.toBeNull();
-
-		await act(async () => {
-			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-		});
-		expect(showNativePopupMenuMock).toHaveBeenCalled();
-
-		await act(async () => {
-			runNativeMenuAction("Local connections");
-		});
-
-		expect(
-			container.querySelector('[data-testid="local-note-connections"]'),
-		).toBeTruthy();
-		expect(localNoteConnectionsDialogMock).toHaveBeenLastCalledWith(
-			expect.objectContaining({
-				open: true,
-				noteId: "notes/graph.md",
-				connectionsRefreshKey: 7,
-			}),
-		);
 	});
 });
