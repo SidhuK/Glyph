@@ -93,6 +93,11 @@ export const RawMarkdownEditor = forwardRef<
 		}
 		const currentMarkdown = view.state.doc.toString();
 		lastEmittedMarkdownRef.current = markdown;
+		if (changeTimerRef.current !== null) {
+			window.clearTimeout(changeTimerRef.current);
+			changeTimerRef.current = null;
+		}
+		hasPendingChangeRef.current = false;
 
 		const currentSelection = view.state.selection.main;
 		const nextLength = markdown.length;

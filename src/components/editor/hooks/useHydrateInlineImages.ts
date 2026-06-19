@@ -317,6 +317,16 @@ export function useHydrateInlineImages(
 				resolverKind,
 			).then((dataUrl) => {
 				if (cancelled || !image.isConnected) return;
+				const currentOrigin =
+					image.getAttribute("data-glyph-origin-src")?.trim() ?? "";
+				const currentKey = currentOrigin
+					? getInlineImageCacheKey(
+							sourcePath,
+							currentOrigin,
+							getResolverKindForImage(image),
+						)
+					: "";
+				if (currentKey !== key) return;
 				if (!dataUrl) {
 					image.dataset.glyphHydrationState = "failed";
 					return;
