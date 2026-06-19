@@ -122,8 +122,12 @@ function noteLinkLabel(label: string | null | undefined, fallbackPath: string) {
 
 const LARGE_NOTE_RICH_EDITOR_LIMIT = 100_000;
 
+function requiresPlainEditorMode(markdown: string): boolean {
+	return markdown.length >= LARGE_NOTE_RICH_EDITOR_LIMIT;
+}
+
 function initialEditorMode(markdown: string): NoteInlineEditorMode {
-	return markdown.length >= LARGE_NOTE_RICH_EDITOR_LIMIT ? "plain" : "rich";
+	return requiresPlainEditorMode(markdown) ? "plain" : "rich";
 }
 
 function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
@@ -196,6 +200,7 @@ export function MarkdownEditorPane({
 	const [text, setText] = useState(() => initialText);
 	const [infoPanelText, setInfoPanelText] = useState("");
 	const [savedText, setSavedText] = useState(() => initialText);
+	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
 	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
 		initialEditorMode(initialText),
 	);
@@ -213,6 +218,26 @@ export function MarkdownEditorPane({
 
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
+	const resolveEditorModeForNote = useCallback(
+		(markdown: string): NoteInlineEditorMode => {
+			if (requiresPlainEditorMode(markdown)) return "plain";
+			return preferredEditorModeRef.current ?? initialEditorMode(markdown);
+		},
+		[],
+	);
+	const selectEditorMode = useCallback(
+		(nextMode: NoteInlineEditorMode) => {
+			if (
+				requiresPlainEditorMode(textRef.current) &&
+				nextMode !== "plain"
+			) {
+				return;
+			}
+			preferredEditorModeRef.current = nextMode;
+			setMode(nextMode);
+		},
+		[],
+	);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
 	const documentSessionRef = useRef(0);
 	const mountedRef = useRef(true);
@@ -393,7 +418,7 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		if (activeRelPathRef.current !== relPath) {
 			setInfoPanelOpen(false);
-			setMode(initialEditorMode(cached));
+			setMode(resolveEditorModeForNote(cached));
 		}
 		activeRelPathRef.current = relPath;
 		setLocalConnectionsOpen(false);
@@ -402,7 +427,7 @@ export function MarkdownEditorPane({
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
-	}, [initialDoc, initialError, relPath]);
+	}, [initialDoc, initialError, relPath, resolveEditorModeForNote]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -446,7 +471,7 @@ export function MarkdownEditorPane({
 				setPrefetchedNote(relPath, doc);
 				if (shouldReplaceText) {
 					if (shouldChooseInitialMode) {
-						setMode(initialEditorMode(doc.text));
+						setMode(resolveEditorModeForNote(doc.text));
 					}
 					textRef.current = doc.text;
 					setText(doc.text);
@@ -466,7 +491,7 @@ export function MarkdownEditorPane({
 				setError(extractErrorMessage(e));
 			}
 		},
-		[flashSyncPulse, isCurrentSession, relPath],
+		[flashSyncPulse, isCurrentSession, relPath, resolveEditorModeForNote],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
@@ -715,9 +740,9 @@ export function MarkdownEditorPane({
 			isDirty,
 			save: onSave,
 			getMarkdown: () => textRef.current,
-			setMode,
+			setMode: selectEditorMode,
 		}),
-		[isDirty, onSave, relPath],
+		[isDirty, onSave, relPath, selectEditorMode],
 	);
 	useEditorRegistration(editorState);
 
@@ -830,23 +855,23 @@ export function MarkdownEditorPane({
 				{
 					label: "Edit",
 					checked: mode === "rich",
-					action: () => setMode("rich"),
+					action: () => selectEditorMode("rich"),
 				},
 				{
 					label: "Preview",
 					checked: mode === "preview",
-					action: () => setMode("preview"),
+					action: () => selectEditorMode("preview"),
 				},
 				{
 					label: "Raw",
 					checked: mode === "plain",
-					action: () => setMode("plain"),
+					action: () => selectEditorMode("plain"),
 				},
 			]).catch((error: unknown) => {
 				console.error("Failed to show view mode menu", error);
 			});
 		},
-		[mode],
+		[mode, selectEditorMode],
 	);
 
 	return (
