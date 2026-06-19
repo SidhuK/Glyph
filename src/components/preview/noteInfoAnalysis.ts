@@ -54,29 +54,37 @@ export function analyzeNoteInfo(
 			while (wordPattern.exec(line)) {
 				words += 1;
 			}
-		}
 
-		const taskMatch = line.match(TASK_PATTERN);
-		if (taskMatch?.[1]) {
-			totalTasks += 1;
-			if (taskMatch[1].toLowerCase() === "x") completedTasks += 1;
-		}
-
-		if (includeHeadings && lineStart >= bodyStart) {
 			const fenceMatch = line.match(FENCE_PATTERN);
 			if (fenceMatch?.[1]) {
-				const marker = fenceMatch[1][0];
-				fenceMarker = fenceMarker === marker ? null : (fenceMarker ?? marker);
+				const marker = fenceMatch[1];
+				if (!fenceMarker) {
+					fenceMarker = marker;
+				} else if (
+					marker[0] === fenceMarker[0] &&
+					marker.length >= fenceMarker.length &&
+					line.slice(fenceMatch[0].length).trim().length === 0
+				) {
+					fenceMarker = null;
+				}
 			} else if (!fenceMarker) {
-				const headingMatch = line.match(HEADING_PATTERN);
-				const headingText = headingMatch?.[2]?.trim();
-				if (headingMatch?.[1] && headingText) {
-					headings.push({
-						id: `raw-toc-${lineStart}`,
-						level: headingMatch[1].length,
-						text: headingText,
-						pos: lineStart,
-					});
+				const taskMatch = line.match(TASK_PATTERN);
+				if (taskMatch?.[1]) {
+					totalTasks += 1;
+					if (taskMatch[1].toLowerCase() === "x") completedTasks += 1;
+				}
+
+				if (includeHeadings) {
+					const headingMatch = line.match(HEADING_PATTERN);
+					const headingText = headingMatch?.[2]?.trim();
+					if (headingMatch?.[1] && headingText) {
+						headings.push({
+							id: `raw-toc-${lineStart}`,
+							level: headingMatch[1].length,
+							text: headingText,
+							pos: lineStart,
+						});
+					}
 				}
 			}
 		}
