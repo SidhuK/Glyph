@@ -1,12 +1,10 @@
 import {
 	AiBrain04Icon,
 	LayoutAlignRightIcon,
-	SlidersHorizontalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
 import {
-	type MouseEvent as ReactMouseEvent,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -29,7 +27,6 @@ import {
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
-import { showNativePopupMenu } from "../../lib/nativeContextMenu";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
 	joinYamlFrontmatter,
@@ -48,6 +45,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
+import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
@@ -844,54 +842,17 @@ export function MarkdownEditorPane({
 		});
 	}, [setAiPanelOpen]);
 
-	const handleViewModeMenu = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			void showNativePopupMenu(event, [
-				{
-					label: "Local connections",
-					action: () => setLocalConnectionsOpen(true),
-				},
-				{ type: "separator" },
-				{
-					label: "Edit",
-					checked: mode === "rich",
-					action: () => selectEditorMode("rich"),
-				},
-				{
-					label: "Preview",
-					checked: mode === "preview",
-					action: () => selectEditorMode("preview"),
-				},
-				{
-					label: "Raw",
-					checked: mode === "plain",
-					action: () => selectEditorMode("plain"),
-				},
-			]).catch((error: unknown) => {
-				console.error("Failed to show view mode menu", error);
-			});
-		},
-		[mode, selectEditorMode],
-	);
+	const plainOnlyMode = requiresPlainEditorMode(text);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
 				<div className="markdownEditorTopActions">
-					<button
-						type="button"
-						className="markdownEditorMenuTrigger"
-						onClick={handleViewModeMenu}
-						aria-label="View mode options"
-						title="View mode options"
-						aria-haspopup="menu"
-					>
-						<HugeiconsIcon
-							icon={SlidersHorizontalIcon}
-							size="var(--icon-lg)"
-							strokeWidth={0.9}
-						/>
-					</button>
+					<EditorViewModeSwitch
+						mode={mode}
+						plainOnly={plainOnlyMode}
+						onModeChange={selectEditorMode}
+					/>
 					<button
 						type="button"
 						className="markdownEditorMenuTrigger markdownEditorAiTrigger"
