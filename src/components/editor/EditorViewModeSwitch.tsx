@@ -32,7 +32,7 @@ export function EditorViewModeSwitch({
 	return (
 		<div
 			className="markdownEditorModeSwitch"
-			role="group"
+			role="toolbar"
 			aria-label="Editor mode"
 		>
 			{VIEW_MODES.map((item) => {

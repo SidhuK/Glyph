@@ -4,13 +4,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -229,10 +223,7 @@ export function MarkdownEditorPane({
 	}, []);
 	const requestEditorMode = useCallback(
 		async (nextMode: NoteInlineEditorMode) => {
-			if (
-				nextMode !== "plain" &&
-				requiresPlainEditorMode(textRef.current)
-			) {
+			if (nextMode !== "plain" && requiresPlainEditorMode(textRef.current)) {
 				const modeLabel = nextMode === "rich" ? "Rich" : "Preview";
 				const { confirm } = await import("@tauri-apps/plugin-dialog");
 				const confirmed = await confirm(

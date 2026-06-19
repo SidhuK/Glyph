@@ -103,10 +103,7 @@
 	visibility: hidden;
 	pointer-events: none;
 	transform: translateX(-50%) translateY(-2px);
-	transition:
-		opacity 140ms ease,
-		visibility 140ms ease,
-		transform 140ms ease;
+	transition: opacity 140ms ease, visibility 140ms ease, transform 140ms ease;
 }
 
 .markdownEditorModeBtnHint[data-warning="true"] {
@@ -135,9 +132,7 @@
 	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: pointer;
-	transition:
-		background-color 120ms ease,
-		color 120ms ease;
+	transition: background-color 120ms ease, color 120ms ease;
 }
 
 .markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
