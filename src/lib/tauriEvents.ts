@@ -71,6 +71,7 @@ type TauriEventMap = {
 		rel_path: string;
 		removed: boolean;
 	};
+	"index:progress": import("./tauri").IndexProgress;
 	"settings:updated": {
 		spacePath?: string;
 		ui?: {

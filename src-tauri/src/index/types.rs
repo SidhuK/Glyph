@@ -13,6 +13,12 @@ pub struct IndexRebuildResult {
     pub indexed: usize,
 }
 
+#[derive(Clone, Serialize)]
+pub struct IndexProgress {
+    pub completed: usize,
+    pub total: usize,
+}
+
 #[derive(Serialize)]
 pub struct BacklinkItem {
     pub id: String,
