@@ -430,6 +430,7 @@ export function useNoteEditor({
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
+	const previousModeRef = useRef(mode);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -773,13 +774,23 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
+		const previousMode = previousModeRef.current;
+		previousModeRef.current = mode;
+		if (mode === "plain") return;
+		const isHydratingFromPlainMode = previousMode === "plain";
+		if (
+			!isHydratingFromPlainMode &&
+			markdown === lastEmittedMarkdownRef.current
+		) {
+			return;
+		}
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
-	}, [editor, editorBody, flushMarkdownSync, markdown, relPath]);
+	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
 
 	useEffect(() => {
 		return () => {
