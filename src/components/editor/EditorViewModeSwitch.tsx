@@ -6,7 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { EditorViewMode } from "../../lib/editorMode";
 
-const LARGE_NOTE_MODE_HINT = "Too large for Rich or Preview";
+const LARGE_NOTE_MODE_HINT = "May be slow on large notes";
 
 const VIEW_MODES = [
 	{ id: "plain" as const, label: "Raw", icon: CodeIcon },
@@ -21,39 +21,36 @@ const VIEW_MODES = [
 interface EditorViewModeSwitchProps {
 	mode: EditorViewMode;
 	onModeChange: (mode: EditorViewMode) => void;
-	plainOnly?: boolean;
+	largeNote?: boolean;
 }
 
 export function EditorViewModeSwitch({
 	mode,
 	onModeChange,
-	plainOnly = false,
+	largeNote = false,
 }: EditorViewModeSwitchProps) {
 	return (
 		<div
 			className="markdownEditorModeSwitch"
-			role="tablist"
+			role="group"
 			aria-label="Editor mode"
 		>
 			{VIEW_MODES.map((item) => {
-				const disabled = plainOnly && item.id !== "plain";
-				const hint = disabled ? LARGE_NOTE_MODE_HINT : item.label;
+				const showLargeNoteHint = largeNote && item.id !== "plain";
+				const hint = showLargeNoteHint ? LARGE_NOTE_MODE_HINT : item.label;
 
 				return (
 					<span
 						key={item.id}
 						className="markdownEditorModeBtnWrap"
-						data-disabled={disabled || undefined}
+						data-caution={showLargeNoteHint || undefined}
 					>
 						<button
 							type="button"
-							role="tab"
 							className="markdownEditorModeBtn"
-							aria-selected={mode === item.id}
 							aria-pressed={mode === item.id}
 							aria-label={item.label}
 							data-active={mode === item.id || undefined}
-							disabled={disabled}
 							onClick={() => onModeChange(item.id)}
 						>
 							<HugeiconsIcon
@@ -64,7 +61,7 @@ export function EditorViewModeSwitch({
 						</button>
 						<span
 							className="markdownEditorModeBtnHint"
-							data-warning={disabled || undefined}
+							data-warning={showLargeNoteHint || undefined}
 							role="tooltip"
 						>
 							{hint}

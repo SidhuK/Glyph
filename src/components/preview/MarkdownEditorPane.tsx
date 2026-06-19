@@ -223,18 +223,31 @@ export function MarkdownEditorPane({
 		},
 		[],
 	);
-	const selectEditorMode = useCallback(
-		(nextMode: NoteInlineEditorMode) => {
+	const applyEditorMode = useCallback((nextMode: NoteInlineEditorMode) => {
+		preferredEditorModeRef.current = nextMode;
+		setMode(nextMode);
+	}, []);
+	const requestEditorMode = useCallback(
+		async (nextMode: NoteInlineEditorMode) => {
 			if (
-				requiresPlainEditorMode(textRef.current) &&
-				nextMode !== "plain"
+				nextMode !== "plain" &&
+				requiresPlainEditorMode(textRef.current)
 			) {
-				return;
+				const modeLabel = nextMode === "rich" ? "Rich" : "Preview";
+				const { confirm } = await import("@tauri-apps/plugin-dialog");
+				const confirmed = await confirm(
+					`This note may take a while to open and feel slower in ${modeLabel} mode. Raw is the fastest way to edit.`,
+					{
+						title: "Large note",
+						okLabel: `Open in ${modeLabel}`,
+						cancelLabel: "Stay in Raw",
+					},
+				);
+				if (!confirmed) return;
 			}
-			preferredEditorModeRef.current = nextMode;
-			setMode(nextMode);
+			applyEditorMode(nextMode);
 		},
-		[],
+		[applyEditorMode],
 	);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
 	const documentSessionRef = useRef(0);
@@ -738,9 +751,9 @@ export function MarkdownEditorPane({
 			isDirty,
 			save: onSave,
 			getMarkdown: () => textRef.current,
-			setMode: selectEditorMode,
+			setMode: requestEditorMode,
 		}),
-		[isDirty, onSave, relPath, selectEditorMode],
+		[isDirty, onSave, relPath, requestEditorMode],
 	);
 	useEditorRegistration(editorState);
 
@@ -842,7 +855,7 @@ export function MarkdownEditorPane({
 		});
 	}, [setAiPanelOpen]);
 
-	const plainOnlyMode = requiresPlainEditorMode(text);
+	const isLargeNote = requiresPlainEditorMode(text);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
@@ -850,8 +863,8 @@ export function MarkdownEditorPane({
 				<div className="markdownEditorTopActions">
 					<EditorViewModeSwitch
 						mode={mode}
-						plainOnly={plainOnlyMode}
-						onModeChange={selectEditorMode}
+						largeNote={isLargeNote}
+						onModeChange={requestEditorMode}
 					/>
 					<button
 						type="button"

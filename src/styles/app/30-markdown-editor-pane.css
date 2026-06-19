@@ -140,7 +140,15 @@
 		color 120ms ease;
 }
 
-.markdownEditorModeBtn:hover:not(:disabled) {
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
+	color: color-mix(in srgb, var(--status-warning-fg) 72%, var(--text-tertiary));
+}
+
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn:hover {
+	color: var(--status-warning-fg);
+}
+
+.markdownEditorModeBtn:hover {
 	color: var(--text-primary);
 }
 
@@ -148,11 +156,6 @@
 	background: var(--bg-primary);
 	color: var(--text-primary);
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
-}
-
-.markdownEditorModeBtn:disabled {
-	opacity: 0.4;
-	cursor: default;
 }
 
 .markdownEditorModeBtn:focus-visible {

@@ -30,6 +30,8 @@ export function useMarkdownTaskSummary(markdown: string, enabled: boolean) {
 			return;
 		}
 
+		setTaskSummary(summarizeChecklistsFromMarkdown(markdown));
+
 		if (timerRef.current !== null) {
 			window.clearTimeout(timerRef.current);
 			timerRef.current = null;
