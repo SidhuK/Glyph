@@ -476,6 +476,11 @@ interface IndexRebuildResult {
 	indexed: number;
 }
 
+export interface IndexProgress {
+	completed: number;
+	total: number;
+}
+
 interface AiContextAttachment {
 	kind: "folder" | "file";
 	path: string;
@@ -953,6 +958,7 @@ interface TauriCommands {
 		Record<string, string>
 	>;
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
+	index_sync: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	search_advanced: CommandDef<
 		{ request: SearchAdvancedRequest },

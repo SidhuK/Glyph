@@ -42,6 +42,7 @@ interface SpaceContextValue {
 	settingsLoaded: boolean;
 	consumeOnboardingNotePath: () => void;
 	startIndexRebuild: () => Promise<void>;
+	startIndexSync: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
 	onOpenSpaceAtPath: (path: string) => Promise<void>;
 	onContinueLastSpace: () => Promise<void>;
@@ -94,6 +95,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
+	const currentSpacePathRef = useRef<string | null>(spacePath);
+	const indexSyncRef = useRef<{
+		spacePath: string;
+		promise: Promise<void>;
+	} | null>(null);
+	currentSpacePathRef.current = spacePath;
+	useEffect(() => {
+		if (!spacePath) indexSyncRef.current = null;
+	}, [spacePath]);
 
 	const syncRecentSpacesMenu = useCallback((spaces: string[]) => {
 		void invoke("set_recent_spaces_menu", {
@@ -192,6 +202,34 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		} finally {
 			setIsIndexing(false);
 		}
+	}, []);
+
+	const startIndexSync = useCallback((): Promise<void> => {
+		const currentSpacePath = currentSpacePathRef.current;
+		if (!currentSpacePath) return Promise.resolve();
+		if (indexSyncRef.current?.spacePath === currentSpacePath) {
+			return indexSyncRef.current.promise;
+		}
+
+		setIsIndexing(true);
+		const promise = invoke("index_sync")
+			.then(() => undefined)
+			.catch(() => {
+				/* the index is derived and will retry on the next open */
+			})
+			.finally(() => {
+				if (indexSyncRef.current?.promise === promise) {
+					indexSyncRef.current = null;
+				}
+				if (
+					currentSpacePathRef.current === currentSpacePath ||
+					currentSpacePathRef.current === null
+				) {
+					setIsIndexing(false);
+				}
+			});
+		indexSyncRef.current = { spacePath: currentSpacePath, promise };
+		return promise;
 	}, []);
 
 	const applySpaceSelection = useCallback(
@@ -298,6 +336,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			settingsLoaded,
 			consumeOnboardingNotePath,
 			startIndexRebuild,
+			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onContinueLastSpace,
@@ -316,6 +355,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			settingsLoaded,
 			consumeOnboardingNotePath,
 			startIndexRebuild,
+			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onContinueLastSpace,

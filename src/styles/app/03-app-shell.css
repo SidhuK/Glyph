@@ -29,6 +29,79 @@
 	position: relative;
 }
 
+.indexingNotice {
+	position: absolute;
+	top: 12px;
+	left: 50%;
+	z-index: 60;
+	width: min(360px, calc(100% - 32px));
+	transform: translateX(-50%);
+	padding: 10px 12px 9px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	box-shadow: var(--shadow-md);
+	backdrop-filter: blur(18px) saturate(1.2);
+	-webkit-backdrop-filter: blur(18px) saturate(1.2);
+	pointer-events: none;
+}
+
+.indexingNoticeCopy {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 12px;
+	line-height: 1.3;
+}
+
+.indexingNoticeCopy strong {
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.indexingNoticeCopy span {
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.indexingNoticeTrack {
+	height: 3px;
+	margin-top: 8px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+}
+
+.indexingNoticeBar {
+	height: 100%;
+	border-radius: inherit;
+	background: var(--accent-color);
+	transition: width 120ms ease-out;
+}
+
+.indexingNoticeBar.is-pending {
+	width: 35%;
+	animation: indexing-notice-pending 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes indexing-notice-pending {
+	from {
+		transform: translateX(-90%);
+	}
+	to {
+		transform: translateX(280%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.indexingNoticeBar,
+	.indexingNoticeBar.is-pending {
+		transition: none;
+		animation: none;
+	}
+}
+
 .drag,
 [data-tauri-drag-region] {
 	-webkit-app-region: drag;

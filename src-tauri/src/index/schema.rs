@@ -70,6 +70,12 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   body,
   tokenize = 'porter'
 );
+
+CREATE TABLE IF NOT EXISTS indexed_files (
+  path TEXT PRIMARY KEY,
+  modified_ns INTEGER NOT NULL,
+  size INTEGER NOT NULL
+);
 "#,
     )
     .map_err(|e| e.to_string())

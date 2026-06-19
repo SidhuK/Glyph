@@ -97,7 +97,7 @@ async function fetchAllPeople(): Promise<PersonCount[]> {
 }
 
 export function FileTreeProvider({ children }: { children: ReactNode }) {
-	const { spacePath, isIndexing, startIndexRebuild } = useSpace();
+	const { spacePath, startIndexSync } = useSpace();
 
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
@@ -251,13 +251,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 		const originSpace = spacePath;
 		let cancelled = false;
+		const indexSync = startIndexSync();
 		(async () => {
 			try {
 				const entries = await invoke("space_list_dir", {});
 				if (!cancelled) {
 					setRootEntries(entries);
-					void startIndexRebuild();
-					void refreshTags();
 				}
 			} catch {
 				/* ignore initial load errors */
@@ -293,14 +292,13 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				/* ignore pinned file load errors */
 			}
 		})();
+		void indexSync.then(() => {
+			if (!cancelled) void refreshTags();
+		});
 		return () => {
 			cancelled = true;
 		};
-	}, [spacePath, startIndexRebuild, refreshTags]);
-
-	useEffect(() => {
-		if (!isIndexing && spacePath) void refreshTags();
-	}, [isIndexing, spacePath, refreshTags]);
+	}, [spacePath, startIndexSync, refreshTags]);
 
 	const refreshPinnedFiles = useCallback(async () => {
 		if (!spacePath) {

@@ -67,11 +67,10 @@ describe("FileTreeProvider pinned files", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		currentSpacePath = "/space-a";
-		const startIndexRebuild = vi.fn();
+		const startIndexSync = vi.fn(() => Promise.resolve());
 		useSpaceMock.mockImplementation(() => ({
 			spacePath: currentSpacePath,
-			isIndexing: false,
-			startIndexRebuild,
+			startIndexSync,
 		}));
 		useTauriEventMock.mockImplementation(() => {});
 		invokeMock.mockImplementation((command: string) => {

@@ -66,6 +66,7 @@ import {
 	CalendarPaletteController,
 	preloadCalendarPalette,
 } from "./CalendarPaletteController";
+import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
@@ -101,6 +102,7 @@ export function AppShell() {
 		closeSpace,
 		onboardingNotePath,
 		consumeOnboardingNotePath,
+		isIndexing,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -1183,6 +1185,7 @@ export function AppShell() {
 				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
+			{isIndexing ? <IndexingNotice /> : null}
 			<div
 				aria-hidden="true"
 				className="windowDragStrip"

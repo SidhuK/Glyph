@@ -1564,6 +1564,7 @@ pub fn run() {
             pinned_files::commands::pinned_files_rename_path,
             pinned_files::commands::pinned_files_delete_path,
             index::commands::index_rebuild,
+            index::commands::index_sync,
             index::commands::search,
             index::commands::search_advanced,
             index::commands::search_parse_and_run,

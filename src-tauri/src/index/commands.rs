@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use serde::Serialize;
-use tauri::{State, WebviewWindow};
+use tauri::{Emitter, State, WebviewWindow};
 
 use crate::space::SpaceState;
 
@@ -10,13 +10,13 @@ use super::checklists::{
     query_note_checklist_summaries, summarize_tasks, NoteTaskSummary, NoteTaskSummaryItem,
 };
 use super::db::open_db;
-use super::indexer::rebuild;
+use super::indexer::{rebuild_with_progress, sync};
 use super::relationships::{query_note_relationships, NoteRelationship};
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
 use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::types::{
-    BacklinkItem, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode,
+    BacklinkItem, IndexProgress, IndexRebuildResult, LocalConnectionsEdge, LocalConnectionsNode,
     LocalConnectionsTagEdge, LocalConnectionsTagNode, LocalNoteConnections, PersonCount,
     SearchResult, SpaceConnectionKind, SpaceConnections, SpaceConnectionsEdge,
     SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount,
@@ -130,10 +130,35 @@ pub async fn index_rebuild(
     state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
     let root = state.root_for_window(&window)?;
-    let res = tauri::async_runtime::spawn_blocking(move || rebuild(&root))
-        .await
-        .map_err(|e| e.to_string())??;
+    let progress_window = window.clone();
+    let res = tauri::async_runtime::spawn_blocking(move || {
+        rebuild_with_progress(&root, |completed, total| {
+            if completed == 0 || completed == total || completed % 50 == 0 {
+                let _ = progress_window.emit("index:progress", IndexProgress { completed, total });
+            }
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())??;
     Ok(res)
+}
+
+#[tauri::command]
+pub async fn index_sync(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+) -> Result<IndexRebuildResult, String> {
+    let root = state.root_for_window(&window)?;
+    let progress_window = window.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        sync(&root, |completed, total| {
+            if completed == 0 || completed == total || completed % 50 == 0 {
+                let _ = progress_window.emit("index:progress", IndexProgress { completed, total });
+            }
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
