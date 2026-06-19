@@ -120,6 +120,12 @@ function noteLinkLabel(label: string | null | undefined, fallbackPath: string) {
 	return label?.trim() || noteLabelFromPath(fallbackPath);
 }
 
+const LARGE_NOTE_RICH_EDITOR_LIMIT = 100_000;
+
+function initialEditorMode(markdown: string): NoteInlineEditorMode {
+	return markdown.length >= LARGE_NOTE_RICH_EDITOR_LIMIT ? "plain" : "rich";
+}
+
 function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 	const out = new Map<string, LinkedNoteItem>();
 
@@ -188,9 +194,11 @@ export function MarkdownEditorPane({
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
-	const [infoPanelText, setInfoPanelText] = useState(() => initialText);
+	const [infoPanelText, setInfoPanelText] = useState("");
 	const [savedText, setSavedText] = useState(() => initialText);
-	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
+	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
+		initialEditorMode(initialText),
+	);
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
@@ -216,6 +224,7 @@ export function MarkdownEditorPane({
 	const syncPulseTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const activeRelPathRef = useRef(relPath);
+	const infoPanelOpenRef = useRef(infoPanelOpen);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
@@ -232,6 +241,7 @@ export function MarkdownEditorPane({
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
+	infoPanelOpenRef.current = infoPanelOpen;
 
 	useEffect(() => {
 		if (hasSupportedGit) return;
@@ -373,7 +383,7 @@ export function MarkdownEditorPane({
 		}
 		pendingExternalReloadRef.current = false;
 		setText(cached);
-		setInfoPanelText(cached);
+		setInfoPanelText("");
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSaving(false);
@@ -383,6 +393,7 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		if (activeRelPathRef.current !== relPath) {
 			setInfoPanelOpen(false);
+			setMode(initialEditorMode(cached));
 		}
 		activeRelPathRef.current = relPath;
 		setLocalConnectionsOpen(false);
@@ -430,11 +441,16 @@ export function MarkdownEditorPane({
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
+				const shouldChooseInitialMode =
+					textRef.current.length === 0 && savedTextRef.current.length === 0;
 				setPrefetchedNote(relPath, doc);
 				if (shouldReplaceText) {
+					if (shouldChooseInitialMode) {
+						setMode(initialEditorMode(doc.text));
+					}
 					textRef.current = doc.text;
 					setText(doc.text);
-					setInfoPanelText(doc.text);
+					if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
 				}
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
@@ -469,7 +485,7 @@ export function MarkdownEditorPane({
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
 			setText(doc.text);
-			setInfoPanelText(doc.text);
+			if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;

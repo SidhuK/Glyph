@@ -618,6 +618,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				) : null}
 				{mode === "plain" ? (
 					<RawMarkdownEditor
+						key={relPath}
 						ref={rawEditorRef}
 						markdown={markdown}
 						relPath={relPath}

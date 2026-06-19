@@ -170,6 +170,15 @@
 
 .mermaidCanvasWidget {
 	margin: 8px 0 14px;
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 480px;
+}
+
+.mermaidCanvasPlaceholder .mermaidCanvasFrame::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 }
 
 .mermaidCanvasFrame {
