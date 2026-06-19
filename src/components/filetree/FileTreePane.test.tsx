@@ -132,14 +132,27 @@ describe("FileTreePane", () => {
 		container.remove();
 	});
 
-	it("renders pinned files above the tree and toggles the section", async () => {
+	it("renders pinned files in the tree without duplicating a pinned section", async () => {
 		const onOpenFile = vi.fn();
 
 		await act(async () => {
 			root.render(
 				<QueryClientProvider client={queryClient}>
 					<FileTreePane
-						rootEntries={[]}
+						rootEntries={[
+							{
+								name: "alpha.md",
+								rel_path: "notes/alpha.md",
+								kind: "file",
+								is_markdown: true,
+							},
+							{
+								name: "beta.md",
+								rel_path: "docs/beta.md",
+								kind: "file",
+								is_markdown: true,
+							},
+						]}
 						childrenByDir={{}}
 						expandedDirs={new Set()}
 						activeFilePath="notes/alpha.md"
@@ -168,16 +181,16 @@ describe("FileTreePane", () => {
 		expect(container.textContent).toContain("alpha");
 		expect(container.textContent).toContain("beta");
 
-		const activeItem = container.querySelector(
-			".fileTreePinnedList .fileTreeItem.active",
-		);
+		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
+
+		const activeItem = container.querySelector(".fileTreeItem.active");
 		expect(activeItem?.textContent).toContain("alpha");
 
-		const pinnedButton = Array.from(
-			container.querySelectorAll(".fileTreePinnedRow"),
+		const alphaButton = Array.from(
+			container.querySelectorAll("[data-file-tree-file='true']"),
 		).find((node) => node.textContent?.includes("alpha"));
 		await act(async () => {
-			(pinnedButton as HTMLButtonElement | undefined)?.click();
+			(alphaButton as HTMLButtonElement | undefined)?.click();
 		});
 		expect(onOpenFile).toHaveBeenCalledWith("notes/alpha.md");
 	});

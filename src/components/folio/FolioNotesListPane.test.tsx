@@ -7,6 +7,45 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
+vi.mock("@tanstack/react-virtual", () => ({
+	useVirtualizer: ({
+		count,
+		estimateSize,
+		getItemKey,
+	}: {
+		count: number;
+		estimateSize: (index: number) => number;
+		getItemKey: (index: number) => string | number;
+	}) => {
+		const starts = Array.from({ length: count }, (_, index) =>
+			Array.from({ length: index }, (__, previousIndex) =>
+				estimateSize(previousIndex),
+			).reduce((total, size) => total + size, 0),
+		);
+		return {
+			getVirtualItems: () =>
+				starts.map((start, index) => ({
+					index,
+					key: getItemKey(index),
+					start,
+				})),
+			getTotalSize: () =>
+				Array.from({ length: count }, (_, index) => estimateSize(index)).reduce(
+					(total, size) => total + size,
+					0,
+				),
+			measureElement: () => {},
+			scrollToIndex: (index: number) => {
+				window.requestAnimationFrame(() => {
+					document
+						.querySelector<HTMLElement>(`[data-index="${index}"]`)
+						?.scrollIntoView({ block: "nearest" });
+				});
+			},
+		};
+	},
+}));
+
 const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(
 	() => ({
 		loadAllDocsMock: vi.fn(),

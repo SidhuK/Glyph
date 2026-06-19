@@ -12,7 +12,6 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
-import { useMarkdownTaskSummary } from "../../hooks/useMarkdownTaskSummary";
 import {
 	OPEN_LOCAL_CONNECTIONS_EVENT,
 	type OpenLocalConnectionsDetail,
@@ -36,7 +35,6 @@ import {
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
@@ -44,6 +42,7 @@ import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
+import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,
@@ -56,6 +55,7 @@ import {
 	getCachedMarkdownDoc,
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
+import { analyzeNoteInfo } from "./noteInfoAnalysis";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -84,23 +84,6 @@ interface SidebarBacklinkItem {
 
 const UTF8_ENCODER = new TextEncoder();
 const INFO_PANEL_DERIVATION_DEBOUNCE_MS = 700;
-
-const EMPTY_STATS = {
-	words: 0,
-	characters: 0,
-	readingTime: "0s",
-};
-
-function countLines(markdown: string): number {
-	if (markdown.length === 0) return 0;
-	let lines = 1;
-	for (let i = 0; i < markdown.length; i += 1) {
-		if (markdown.charCodeAt(i) === 10) {
-			lines += 1;
-		}
-	}
-	return lines;
-}
 
 function noteLabelFromPath(path: string): string {
 	const segments = path.split("/").filter(Boolean);
@@ -257,6 +240,13 @@ export function MarkdownEditorPane({
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
 	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
+	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
+	const handleRawEditorReady = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			rawEditorRef.current = editor;
+		},
+		[],
+	);
 	const {
 		headings: tocHeadings,
 		activeId: tocActiveId,
@@ -283,27 +273,13 @@ export function MarkdownEditorPane({
 				: { frontmatter: null, body: "" },
 		[infoPanelOpen, infoPanelText],
 	);
-	const stats = useMemo(() => {
-		if (!infoPanelOpen) return EMPTY_STATS;
-		const words = countWords(currentBody);
-		const characters = currentBody.length;
-		return {
-			words,
-			characters,
-			readingTime: formatReadingTime(words),
-		};
-	}, [currentBody, infoPanelOpen]);
-	const visibleTaskSummary = useMarkdownTaskSummary(
-		infoPanelText,
-		infoPanelOpen,
+	const infoAnalysis = useMemo(
+		() => analyzeNoteInfo(infoPanelText, currentBody, mode === "plain"),
+		[currentBody, infoPanelText, mode],
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
 		return UTF8_ENCODER.encode(infoPanelText).length;
-	}, [infoPanelOpen, infoPanelText]);
-	const lineCount = useMemo(() => {
-		if (!infoPanelOpen) return 0;
-		return countLines(infoPanelText);
 	}, [infoPanelOpen, infoPanelText]);
 	const linkedNotes = useMemo(() => {
 		if (!infoPanelOpen) return [];
@@ -340,6 +316,19 @@ export function MarkdownEditorPane({
 	const relationshipGroups = useMemo(
 		() => groupRelationshipsByField(relationships),
 		[relationships],
+	);
+	const visibleHeadings =
+		mode === "plain" ? infoAnalysis.headings : tocHeadings;
+	const visibleActiveHeadingId = mode === "plain" ? null : tocActiveId;
+	const selectVisibleHeading = useCallback(
+		(heading: (typeof visibleHeadings)[number]) => {
+			if (mode === "plain") {
+				rawEditorRef.current?.selectRange(heading.pos, heading.pos);
+				return;
+			}
+			scrollToHeading(heading);
+		},
+		[mode, scrollToHeading],
 	);
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
@@ -395,6 +384,14 @@ export function MarkdownEditorPane({
 	}, []);
 
 	useEffect(() => {
+		// `initialDoc` is a seed for the pane. Autosave also refreshes that cache,
+		// so do not treat the resulting object identity change as a new document.
+		if (
+			activeRelPathRef.current === relPath &&
+			initialDoc?.text === textRef.current
+		) {
+			return;
+		}
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
@@ -845,65 +842,71 @@ export function MarkdownEditorPane({
 			return nextOpen;
 		});
 	}, [setAiPanelOpen]);
+	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
 	const isLargeNote = requiresPlainEditorMode(text);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
-				<div className="markdownEditorTopActions">
+				<div className="markdownEditorToolbar">
 					<EditorViewModeSwitch
 						mode={mode}
 						largeNote={isLargeNote}
 						onModeChange={requestEditorMode}
 					/>
-					<button
-						type="button"
-						className="markdownEditorMenuTrigger markdownEditorAiTrigger"
-						onClick={() => {
-							if (!aiEnabled) {
-								openSettings("ai");
-								return;
+					<div className="markdownEditorToolbarDivider" aria-hidden="true" />
+					<div className="markdownEditorToolbarActions">
+						<button
+							type="button"
+							className="markdownEditorToolbarBtn"
+							data-active={aiEnabled && aiPanelOpen ? true : undefined}
+							onClick={() => {
+								if (!aiEnabled) {
+									openSettings("ai");
+									return;
+								}
+								setInfoPanelOpen(() => false);
+								setAiPanelOpen((open) => !open);
+							}}
+							aria-label={
+								aiEnabled
+									? aiPanelOpen
+										? "Close AI panel"
+										: "Open AI panel"
+									: "Open AI settings"
 							}
-							setInfoPanelOpen(() => false);
-							setAiPanelOpen((open) => !open);
-						}}
-						aria-label={
-							aiEnabled
-								? aiPanelOpen
-									? "Close AI panel"
-									: "Open AI panel"
-								: "Open AI settings"
-						}
-						title={
-							aiEnabled
-								? aiPanelOpen
-									? "Close AI panel"
-									: "Open AI panel"
-								: "Open AI settings"
-						}
-						aria-pressed={aiEnabled ? aiPanelOpen : undefined}
-					>
-						<HugeiconsIcon
-							icon={AiBrain04Icon}
-							size="var(--icon-lg)"
-							strokeWidth={0.9}
-						/>
-					</button>
-					<button
-						type="button"
-						className="markdownEditorMenuTrigger"
-						onClick={toggleInfoPanel}
-						aria-label={infoPanelOpen ? "Close info" : "Open info"}
-						title={infoPanelOpen ? "Close info" : "Open info"}
-						aria-pressed={infoPanelOpen}
-					>
-						<HugeiconsIcon
-							icon={LayoutAlignRightIcon}
-							size="var(--icon-lg)"
-							strokeWidth={0.9}
-						/>
-					</button>
+							title={
+								aiEnabled
+									? aiPanelOpen
+										? "Close AI panel"
+										: "Open AI panel"
+									: "Open AI settings"
+							}
+							aria-pressed={aiEnabled ? aiPanelOpen : undefined}
+						>
+							<HugeiconsIcon
+								icon={AiBrain04Icon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+						</button>
+						<button
+							type="button"
+							className="markdownEditorToolbarBtn"
+							data-active={infoPanelOpen || undefined}
+							onClick={toggleInfoPanel}
+							aria-label={infoPanelOpen ? "Close info" : "Open info"}
+							title={infoPanelOpen ? "Close info" : "Open info"}
+							aria-pressed={infoPanelOpen}
+						>
+							<HugeiconsIcon
+								icon={LayoutAlignRightIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+						</button>
+					</div>
 				</div>
 			</div>
 			{error ? (
@@ -936,6 +939,7 @@ export function MarkdownEditorPane({
 								}}
 								onFrontmatterCommit={runAutosave}
 								onEditorReady={setTocEditor}
+								onRawEditorReady={handleRawEditorReady}
 								extractToNoteActions={extractToNoteActions}
 							/>
 						)}
@@ -952,28 +956,27 @@ export function MarkdownEditorPane({
 
 			<NotesInfoSidebar
 				open={infoPanelOpen}
-				mode={mode}
 				hasError={Boolean(error)}
 				relPath={relPath}
 				frontmatter={currentFrontmatter}
 				onFrontmatterChange={handleInfoFrontmatterChange}
-				stats={stats}
-				taskSummary={visibleTaskSummary}
-				tocHeadings={tocHeadings}
-				tocActiveId={tocActiveId}
-				onSelectHeading={scrollToHeading}
+				stats={infoAnalysis.stats}
+				taskSummary={infoAnalysis.taskSummary}
+				tocHeadings={visibleHeadings}
+				tocActiveId={visibleActiveHeadingId}
+				onSelectHeading={selectVisibleHeading}
 				backlinks={sidebarBacklinks}
 				linkedNotes={linkedNotes}
 				relationshipGroups={relationshipGroups}
 				previewContext={previewContext}
 				lastSavedMtimeMs={lastSavedMtimeMs}
-				lineCount={lineCount}
+				lineCount={infoAnalysis.lineCount}
 				utf8SizeBytes={utf8SizeBytes}
 				saveLabel={saveLabel}
 				gitSyncStatus={gitSyncStatus}
 				selectedGitCommitHash={gitDiff?.commit.hash ?? null}
 				onSelectGitDiff={onGitDiffChange ?? undefined}
-				onClose={() => setInfoPanelOpen(false)}
+				onClose={closeInfoPanel}
 			/>
 			<LinkedNotePreviewSheet />
 
