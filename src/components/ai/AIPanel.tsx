@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
@@ -42,6 +43,7 @@ function stripChipMarkers(text: string): string {
 }
 
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
+	const { t } = useTranslation("ui");
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -343,9 +345,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						)}
 						aria-pressed={historyExpanded}
 						onClick={() => setHistoryExpanded((prev) => !prev)}
-						title="Recent chats"
+						title={t("ai.recentChats")}
 					>
-						Recent Chats
+						{t("ai.recentChats")}
 					</button>
 				</div>
 				<div className="aiPanelHeaderRight">
@@ -354,9 +356,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						variant="ghost"
 						size="icon-sm"
 						data-action="new-chat"
-						aria-label="New chat"
+						aria-label={t("ai.newChat")}
 						onClick={handleNewChat}
-						title="New chat"
+						title={t("ai.newChat")}
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
@@ -371,9 +373,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						variant="ghost"
 						size="icon-sm"
 						data-action="settings"
-						aria-label="Settings"
+						aria-label={t("ai.settings")}
 						onClick={() => openSettings("ai")}
-						title="Settings"
+						title={t("ai.settings")}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
 						<SettingsIcon size="var(--icon-sm)" />
@@ -383,9 +385,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						variant="ghost"
 						size="icon-sm"
 						data-action="minimize"
-						aria-label="Minimize"
+						aria-label={t("ai.minimize")}
 						onClick={onClose}
-						title="Minimize"
+						title={t("ai.minimize")}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
 						<HugeiconsIcon
@@ -427,7 +429,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 									"aiToolStatusError",
 							)}
 							aria-live="polite"
-							aria-label="Tool status"
+							aria-label={t("ai.toolStatus")}
 						>
 							<span className="aiToolStatusDot" />
 							<span>{toolEvents.toolStatusText}</span>
@@ -444,8 +446,8 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 							const el = threadRef.current;
 							if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
 						}}
-						aria-label="Scroll to bottom"
-						title="Scroll to latest"
+						aria-label={t("ai.scrollBottom")}
+						title={t("ai.scrollLatest")}
 					>
 						<ChevronDown size="var(--icon-md)" />
 					</Button>

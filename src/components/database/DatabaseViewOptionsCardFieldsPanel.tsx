@@ -1,16 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { Toggle } from "../base/toggle/toggle";
 
 interface CardFieldEntry {
 	id: string;
-	label: string;
+	labelKey: string;
 }
 
 const CARD_FIELDS: CardFieldEntry[] = [
-	{ id: "date", label: "Date" },
-	{ id: "task_progress", label: "Task progress" },
-	{ id: "status", label: "Status" },
-	{ id: "priority", label: "Priority" },
-	{ id: "tags", label: "Tags" },
+	{ id: "date", labelKey: "database.date" },
+	{ id: "task_progress", labelKey: "database.taskProgress" },
+	{ id: "status", labelKey: "database.status" },
+	{ id: "priority", labelKey: "database.priority" },
+	{ id: "tags", labelKey: "database.tags" },
 ];
 
 const CARD_FIELD_IDS = new Set(CARD_FIELDS.map((field) => field.id));
@@ -29,6 +30,7 @@ interface CardFieldsPanelProps {
 }
 
 export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
+	const { t } = useTranslation("ui");
 	const active = new Set(
 		fields && fields.length > 0
 			? fields.filter((field) => CARD_FIELD_IDS.has(field))
@@ -46,19 +48,27 @@ export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
 	};
 
 	return (
-		<section className="databaseViewOptionsPanel" aria-label="Card fields">
+		<section
+			className="databaseViewOptionsPanel"
+			aria-label={t("database.cardFields")}
+		>
 			<div className="databaseViewPanelHeader">
-				<span>Card fields</span>
+				<span>{t("database.cardFields")}</span>
 			</div>
 			<div className="databaseViewColumnsList">
 				{CARD_FIELDS.map((field) => (
 					<div key={field.id} className="databaseViewColumnRow">
-						<span className="databaseViewColumnLabel">{field.label}</span>
+						<span className="databaseViewColumnLabel">{t(field.labelKey)}</span>
 						<span className="databaseViewColumnToggle">
 							<Toggle
 								size="sm"
 								checked={active.has(field.id)}
-								ariaLabel={`${active.has(field.id) ? "Hide" : "Show"} ${field.label} on cards`}
+								ariaLabel={t(
+									active.has(field.id)
+										? "database.hideField"
+										: "database.showField",
+									{ label: t(field.labelKey) },
+								)}
 								onCheckedChange={(checked) => toggleField(field.id, checked)}
 							/>
 						</span>
@@ -71,7 +81,7 @@ export function CardFieldsPanel({ fields, onChange }: CardFieldsPanelProps) {
 				className="databaseViewColumnRow databaseViewColumnUtility"
 				onClick={() => onChange(CARD_FIELDS.map((field) => field.id))}
 			>
-				<span>Show all fields</span>
+				<span>{t("database.showAllFields")}</span>
 			</button>
 		</section>
 	);

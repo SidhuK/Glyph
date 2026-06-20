@@ -14,6 +14,7 @@ import type {
 	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
@@ -45,6 +46,7 @@ function DirectoryRenameInput({
 	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 }) {
+	const { t } = useTranslation("ui");
 	const [draftName, setDraftName] = useState(initialName);
 	const renameSubmittedRef = useRef(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -65,7 +67,7 @@ function DirectoryRenameInput({
 			ref={inputRef}
 			className="plainTextInput fileTreeRenameInput"
 			value={draftName}
-			placeholder="New Folder"
+			placeholder={t("fileTree.newFolder")}
 			onChange={(event) => setDraftName(event.target.value)}
 			onMouseDown={(event) => {
 				event.preventDefault();
@@ -142,12 +144,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	virtualRowIndex,
 }: FileTreeDirItemProps) {
 	const { spacePath } = useSpace();
+	const { t } = useTranslation("ui");
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
 			: null;
 	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
-	const displayDirName = entry.name.trim() || "New Folder";
+	const displayDirName = entry.name.trim() || t("fileTree.newFolder");
 	const {
 		ref: draggableRef,
 		handleRef,
@@ -176,28 +179,31 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
 				{
-					label: "Add file",
+					label: t("fileTree.addFile"),
 					action: () => void onNewFileInDir(entry.rel_path),
 				},
 				{
-					label: "Create from template",
+					label: t("fileTree.createFromTemplate"),
 					action: () => void onCreateFromTemplateInDir(entry.rel_path),
 				},
 				{
-					label: "Add folder",
+					label: t("fileTree.addFolder"),
 					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
 				{ type: "separator" },
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
-					label: "Rename",
+					label: t("fileTree.rename"),
 					action: onStartRename,
 				},
-				fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
+				fileTreeAppearanceNativeMenu(
+					onOpenAppearancePicker,
+					t("fileTree.appearance"),
+				),
 				{ type: "separator" },
 				{
-					label: "Delete folder",
+					label: t("fileTree.deleteFolder"),
 					action: () => onDeletePath(entry.rel_path, "dir"),
 				},
 			]).catch((error: unknown) => {
@@ -213,6 +219,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onRequestCreateFolder,
 			onStartRename,
 			spacePath,
+			t,
 		],
 	);
 
@@ -228,7 +235,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					<div className="fileTreeRow" style={rowStyle}>
 						<DirectoryRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
-							initialName={entry.name.trim() || "New Folder"}
+							initialName={entry.name.trim() || t("fileTree.newFolder")}
 							relPath={entry.rel_path}
 							onCommitRename={onCommitRename}
 							onCancelRename={onCancelRename}
@@ -252,7 +259,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							whileTap="tap"
 							animate={isActive ? "active" : "idle"}
 							transition={springTransition}
-							title={entry.rel_path || entry.name || "Folder"}
+							title={entry.rel_path || entry.name || t("fileTree.folder")}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
 							data-drop-target={isRowDropTarget ? "true" : undefined}

@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { i18n } from "../../i18n";
 import { ChevronDown } from "../Icons";
 import { AIMessageMarkdown } from "./AIMessageMarkdown";
 import { type ToolPhase, formatToolName } from "./aiPanelConstants";
@@ -30,11 +32,6 @@ interface AIToolTimelineProps {
 	streaming: boolean;
 }
 
-const DURATION_FORMATTER = new Intl.NumberFormat(undefined, {
-	minimumFractionDigits: 1,
-	maximumFractionDigits: 1,
-});
-
 function summarizePayload(payload: unknown): string {
 	if (!payload || typeof payload !== "object") return "";
 	const value = payload as Record<string, unknown>;
@@ -46,24 +43,30 @@ function summarizePayload(payload: unknown): string {
 	const relPath =
 		typeof value.rel_path === "string" ? (value.rel_path as string) : "";
 	const truncated = value.truncated === true;
-	if (query) return `Query "${query}"`;
-	if (path) return `Path "${path}"`;
-	if (dir) return `Dir "${dir}"`;
+	if (query) return i18n.t("ai.query", { ns: "ui", value: query });
+	if (path) return i18n.t("ai.pathValue", { ns: "ui", value: path });
+	if (dir) return i18n.t("ai.directoryValue", { ns: "ui", value: dir });
 	if (results != null)
-		return `Found ${results} result${results === 1 ? "" : "s"}`;
-	if (files != null) return `Listed ${files} item${files === 1 ? "" : "s"}`;
-	if (relPath) return `${truncated ? "Read (truncated)" : "Read"} "${relPath}"`;
+		return i18n.t("ai.foundResults", { ns: "ui", count: results });
+	if (files != null)
+		return i18n.t("ai.listedItems", { ns: "ui", count: files });
+	if (relPath) {
+		return i18n.t(truncated ? "ai.readPathTruncated" : "ai.readPath", {
+			ns: "ui",
+			path: relPath,
+		});
+	}
 	return "";
 }
 
 function formatPhaseLabel(phase: ToolPhase): string {
-	if (phase === "call") return "Started";
-	if (phase === "result") return "Done";
-	return "Failed";
+	if (phase === "call") return i18n.t("ai.started", { ns: "ui" });
+	if (phase === "result") return i18n.t("ai.done", { ns: "ui" });
+	return i18n.t("ai.failed", { ns: "ui" });
 }
 
 function formatTime(timestamp: number): string {
-	return new Date(timestamp).toLocaleTimeString([], {
+	return new Date(timestamp).toLocaleTimeString(i18n.resolvedLanguage, {
 		hour: "numeric",
 		minute: "2-digit",
 		second: "2-digit",
@@ -88,17 +91,17 @@ function detailTextForEvent(event: ToolTimelineToolEvent): string {
 	if (event.payload !== undefined) {
 		const payloadText = stringifyDetail(event.payload);
 		if (payloadText.trim()) {
-			lines.push("payload:");
+			lines.push(i18n.t("ai.payload", { ns: "ui" }));
 			lines.push(payloadText);
 		}
 	}
 	if (event.error?.trim()) {
-		lines.push("error:");
+		lines.push(i18n.t("ai.error", { ns: "ui" }));
 		lines.push(event.error.trim());
 	}
 	const detail = lines.join("\n").trim();
 	if (detail.length <= 4000) return detail;
-	return `${detail.slice(0, 4000)}\n…(truncated)`;
+	return `${detail.slice(0, 4000)}\n…(${i18n.t("ai.truncated", { ns: "ui" })})`;
 }
 
 type GroupedStep = {
@@ -159,13 +162,16 @@ function buildGroupedTimeline(
 function formatDuration(ms: number): string {
 	const seconds = ms / 1000;
 	if (seconds < 0.1) return "<0.1s";
-	return `${DURATION_FORMATTER.format(seconds)}s`;
+	return `${new Intl.NumberFormat(i18n.resolvedLanguage, {
+		minimumFractionDigits: 1,
+		maximumFractionDigits: 1,
+	}).format(seconds)}s`;
 }
 
 function statusLabel(status: "running" | "done" | "error"): string {
-	if (status === "running") return "Running";
-	if (status === "done") return "Done";
-	return "Failed";
+	if (status === "running") return i18n.t("ai.running", { ns: "ui" });
+	if (status === "done") return i18n.t("ai.done", { ns: "ui" });
+	return i18n.t("ai.failed", { ns: "ui" });
 }
 
 function GroupedStepCard({
@@ -244,6 +250,7 @@ function GroupedStepCard({
 }
 
 export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
+	useTranslation("ui");
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 	if (events.length === 0) return null;
 	const orderedEvents = [...events].sort((a, b) => a.at - b.at);
@@ -346,7 +353,10 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 				})}
 			</AnimatePresence>
 			{streaming ? (
-				<div className="aiToolInlineLive" aria-label="Tool call in progress">
+				<div
+					className="aiToolInlineLive"
+					aria-label={i18n.t("ai.toolInProgress", { ns: "ui" })}
+				>
 					<span className="aiToolLiveDot" />
 					Working with tools...
 				</div>

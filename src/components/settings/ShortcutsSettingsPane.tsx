@@ -271,8 +271,12 @@ export function ShortcutsSettingsPane() {
 							return (
 								<SettingsRow
 									key={action.id}
-									label={action.label}
-									description={action.description}
+									label={t(`commands:commands.${action.id}.label`, {
+										defaultValue: action.label,
+									})}
+									description={t(`commands:commands.${action.id}.description`, {
+										defaultValue: action.description,
+									})}
 									stacked
 								>
 									<div className="shortcutBindingRow">

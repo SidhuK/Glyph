@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import glyphIconUrl from "../../../src-tauri/icons/icon.png";
 
 interface WelcomeScreenProps {
@@ -6,6 +7,7 @@ interface WelcomeScreenProps {
 }
 
 export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
+	const { t } = useTranslation("ui");
 	const [isOpening, setIsOpening] = useState(false);
 	const isOpeningRef = useRef(false);
 
@@ -35,12 +37,10 @@ export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 				<h1 className="welcomeScreenTitle">
 					Glyph
 					<span className="welcomeScreenTitleSub">
-						Write. Reflect. Discover.
+						{t("onboarding.tagline")}
 					</span>
 				</h1>
-				<p className="welcomeScreenSub">
-					Open your current notes folder or create a new workspace.
-				</p>
+				<p className="welcomeScreenSub">{t("welcome.currentDescription")}</p>
 				<button
 					type="button"
 					className="welcomeScreenBtn"
@@ -48,9 +48,9 @@ export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 					disabled={isOpening}
 					aria-busy={isOpening}
 				>
-					{isOpening ? "Opening..." : "Open Folder"}
+					{isOpening ? t("welcome.opening") : t("welcome.openFolder")}
 				</button>
-				<p className="welcomeScreenKicker">Plain Markdown. Local files.</p>
+				<p className="welcomeScreenKicker">{t("welcome.kicker")}</p>
 			</div>
 		</div>
 	);

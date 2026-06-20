@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, memo, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { isMarkdownPath } from "../../utils/path";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
@@ -141,6 +142,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 	onSave,
 	onRetry,
 }: AIChatMessageBodyProps) {
+	const { t } = useTranslation("ui");
 	return (
 		<>
 			{isPendingAssistant ? (
@@ -158,7 +160,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 				>
 					<div className="aiPendingHeader">
 						<span className="aiPendingDot" />
-						<span>{phaseStatusText || "Preparing response..."}</span>
+						<span>{phaseStatusText || t("ai.preparing")}</span>
 					</div>
 					<div className="aiPendingSkeleton">
 						<span className="aiPendingLine aiPendingLine-1" />
@@ -181,14 +183,14 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 			{isFailedAssistant ? (
 				<div className="aiInlineError">
 					<span className="aiInlineErrorDot" />
-					<span className="aiInlineErrorText">Response failed</span>
+					<span className="aiInlineErrorText">{t("ai.responseFailed")}</span>
 					<button
 						type="button"
 						className="aiInlineRetryBtn"
 						onClick={() => onRetry(index)}
 					>
 						<RefreshCw size="var(--icon-xs)" />
-						<span>Retry</span>
+						<span>{t("ai.retry")}</span>
 					</button>
 				</div>
 			) : null}
@@ -200,8 +202,8 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onCopy(text)}
-						title="Copy response"
-						aria-label="Copy response"
+						title={t("ai.copyResponse")}
+						aria-label={t("ai.copyResponse")}
 					>
 						<Files size="var(--icon-sm)" />
 					</Button>
@@ -211,8 +213,8 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onSave(text)}
-						title="Save response to file"
-						aria-label="Save response to file"
+						title={t("ai.saveResponse")}
+						aria-label={t("ai.saveResponse")}
 					>
 						<Save size="var(--icon-sm)" />
 					</Button>
@@ -222,8 +224,8 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 						size="icon-sm"
 						className="aiAssistantActionBtn aiAssistantActionIconBtn"
 						onClick={() => onRetry(index)}
-						title="Retry this response"
-						aria-label="Retry response"
+						title={t("ai.retryThisResponse")}
+						aria-label={t("ai.retryResponse")}
 						disabled={chatStatus === "streaming"}
 					>
 						<RefreshCw size="var(--icon-sm)" />
@@ -245,6 +247,7 @@ export function AIChatThread({
 	onSave,
 	onRetry,
 }: AIChatThreadProps) {
+	const { t } = useTranslation("ui");
 	const shouldReduceMotion = useReducedMotion();
 	const citations = useMemo(
 		() => extractCitations(toolTimeline),
@@ -265,11 +268,8 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
-					<div className="aiChatEmptyTitle">Talk to your notes</div>
-					<div className="aiChatEmptyMeta">
-						Ask naturally, or use <code>@</code> to add notes and folders to the
-						conversation
-					</div>
+					<div className="aiChatEmptyTitle">{t("ai.talkToNotes")}</div>
+					<div className="aiChatEmptyMeta">{t("ai.emptyHint")}</div>
 				</div>
 			) : null}
 			{messages.map((msg, index) => {
@@ -321,7 +321,10 @@ export function AIChatThread({
 							!isChatMode &&
 							index === messages.length - 1 &&
 							citations.length > 0 ? (
-								<div className="aiFootnoteRefs" aria-label="Footnote citations">
+								<div
+									className="aiFootnoteRefs"
+									aria-label={t("ai.footnoteCitations")}
+								>
 									{citations.map((item, citationIndex) => (
 										<button
 											key={item.path}
@@ -345,14 +348,14 @@ export function AIChatThread({
 							!isChatMode &&
 							index === messages.length - 1 &&
 							citations.length > 0 ? (
-								<div className="aiCitations" aria-label="Citations">
+								<div className="aiCitations" aria-label={t("ai.citations")}>
 									<button
 										type="button"
 										className="aiCitationsToggle"
 										onClick={() => setCitationsOpen((prev) => !prev)}
 										aria-expanded={citationsOpen}
 									>
-										<span>Cited Notes</span>
+										<span>{t("ai.citedNotes")}</span>
 										<span
 											className={cn(
 												"aiCitationsChevron",

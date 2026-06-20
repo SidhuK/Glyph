@@ -1,0 +1,31 @@
+{
+	"common": {
+		"apply": "Anwenden",
+		"cancel": "Abbrechen",
+		"close": "Schließen",
+		"create": "Erstellen",
+		"creating": "Wird erstellt",
+		"remove": "Entfernen"
+	},
+	"errors": {
+		"title": "Etwas ist schiefgelaufen",
+		"restartWindow": "Bitte starte das App-Fenster neu."
+	},
+	"templates": {
+		"createFrom": "Aus Vorlage erstellen",
+		"search": "Vorlagen durchsuchen…",
+		"empty": "Keine Vorlagen gefunden.",
+		"settings": "Vorlageneinstellungen"
+	},
+	"editor": {
+		"extractToNote": "In Notiz extrahieren",
+		"title": "Titel",
+		"noteTitle": "Notiztitel",
+		"destination": "Ziel",
+		"spaceRoot": "Stammordner des Space",
+		"link": "Link",
+		"linkDescription": "Füge eine URL ein oder lasse das Feld leer, um den Link zu entfernen.",
+		"linkUrl": "Link-URL",
+		"openInNewTab": "In neuem Tab öffnen"
+	}
+}

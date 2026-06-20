@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Settings, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -30,6 +31,7 @@ export function TemplatePickerDialog({
 	onPick,
 	onOpenSettings,
 }: TemplatePickerDialogProps) {
+	const { t } = useTranslation("ui");
 	const [query, setQuery] = useState("");
 
 	useEffect(() => {
@@ -55,14 +57,14 @@ export function TemplatePickerDialog({
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
 			<DialogContent className="templatePickerDialog" showCloseButton={false}>
 				<DialogHeader className="templatePickerHeader">
-					<DialogTitle>Create From Template</DialogTitle>
+					<DialogTitle>{t("templates.createFrom")}</DialogTitle>
 				</DialogHeader>
 				<div className="templatePickerSearchWrap">
 					<Input
 						className="templatePickerSearchInput"
 						value={query}
 						onChange={(event) => setQuery(event.target.value)}
-						placeholder="Search templates…"
+						placeholder={t("templates.search")}
 					/>
 				</div>
 				<ScrollArea className="templatePickerListWrap">
@@ -81,7 +83,7 @@ export function TemplatePickerDialog({
 								</button>
 							))
 						) : (
-							<div className="templatePickerEmpty">No templates found.</div>
+							<div className="templatePickerEmpty">{t("templates.empty")}</div>
 						)}
 					</div>
 				</ScrollArea>
@@ -91,8 +93,8 @@ export function TemplatePickerDialog({
 						variant="ghost"
 						size="icon"
 						onClick={onOpenSettings}
-						title="Template settings"
-						aria-label="Template settings"
+						title={t("templates.settings")}
+						aria-label={t("templates.settings")}
 					>
 						<Settings size="var(--icon-lg)" />
 					</Button>
@@ -101,8 +103,8 @@ export function TemplatePickerDialog({
 						variant="ghost"
 						size="icon"
 						onClick={handleClose}
-						title="Cancel"
-						aria-label="Cancel"
+						title={t("common.cancel")}
+						aria-label={t("common.cancel")}
 					>
 						<X size="var(--icon-lg)" />
 					</Button>

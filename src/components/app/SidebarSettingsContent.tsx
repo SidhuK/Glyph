@@ -191,13 +191,13 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 			<div className="settingsSidebarFooter">
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-						<span className="settingsFeedbackBadge">Community build</span>
+						<span className="settingsFeedbackBadge">
+							{t("footer.community.eyebrow")}
+						</span>
 						<div className="settingsFeedbackTitle">
-							Thanks for building Glyph
+							{t("footer.community.title")}
 						</div>
-						<p className="settingsFeedbackBody">
-							Get automatic updates and the official build with a license.
-						</p>
+						<p className="settingsFeedbackBody">{t("footer.community.body")}</p>
 						<Button
 							type="button"
 							variant="ghost"
@@ -205,7 +205,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							className="settingsFeedbackAction settingsFeedbackActionCommunity"
 							onClick={() => void openUrl(licenseStatus.purchase_url)}
 						>
-							Buy official license
+							{t("footer.community.action")}
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
 								size="var(--icon-sm)"
@@ -215,11 +215,14 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 					</div>
 				) : (
 					<div className="settingsFeedbackCard">
-						<span className="settingsFeedbackBadge">Early access</span>
-						<div className="settingsFeedbackTitle">Help shape Glyph</div>
+						<span className="settingsFeedbackBadge">
+							{t("footer.earlyAccess.eyebrow")}
+						</span>
+						<div className="settingsFeedbackTitle">
+							{t("footer.earlyAccess.title")}
+						</div>
 						<p className="settingsFeedbackBody">
-							Glyph is actively evolving — you may hit rough edges. If something
-							feels off, I'd love to hear about it.
+							{t("footer.earlyAccess.body")}
 						</p>
 						<Button
 							type="button"
@@ -228,7 +231,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							className="settingsFeedbackAction"
 							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
-							Send feedback
+							{t("footer.earlyAccess.action")}
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
 								size="var(--icon-sm)"

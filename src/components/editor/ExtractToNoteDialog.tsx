@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { DatabaseFolderPicker } from "../database/DatabaseFolderPicker";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -26,6 +27,7 @@ export function ExtractToNoteDialog({
 	onTitleChange,
 	state,
 }: ExtractToNoteDialogProps) {
+	const { t } = useTranslation("ui");
 	const titleInputRef = useRef<HTMLInputElement | null>(null);
 
 	return (
@@ -46,7 +48,7 @@ export function ExtractToNoteDialog({
 				}}
 			>
 				<DialogHeader className="extractToNoteHeader">
-					<DialogTitle>Extract to Note</DialogTitle>
+					<DialogTitle>{t("editor.extractToNote")}</DialogTitle>
 				</DialogHeader>
 				<form
 					className="extractToNoteForm"
@@ -60,7 +62,7 @@ export function ExtractToNoteDialog({
 							className="extractToNoteLabel"
 							htmlFor="extract-to-note-title"
 						>
-							Title
+							{t("editor.title")}
 						</label>
 						<Input
 							ref={titleInputRef}
@@ -68,17 +70,17 @@ export function ExtractToNoteDialog({
 							className="extractToNoteInput extractToNoteTitleInput"
 							value={state?.title ?? ""}
 							onChange={(event) => onTitleChange(event.target.value)}
-							placeholder="Note title"
+							placeholder={t("editor.noteTitle")}
 							disabled={state?.loading}
 						/>
 					</div>
 					<div className="extractToNoteField">
-						<div className="extractToNoteLabel">Destination</div>
+						<div className="extractToNoteLabel">{t("editor.destination")}</div>
 						{state ? (
 							<DatabaseFolderPicker
 								value={state.destinationDir}
 								onChange={onDestinationDirChange}
-								placeholder="Space root"
+								placeholder={t("editor.spaceRoot")}
 								triggerClassName="extractToNoteFolderTrigger"
 							/>
 						) : null}
@@ -90,13 +92,13 @@ export function ExtractToNoteDialog({
 							onClick={onClose}
 							disabled={state?.loading}
 						>
-							Cancel
+							{t("common.cancel")}
 						</Button>
 						<Button
 							type="submit"
 							disabled={state?.loading || !state?.title.trim()}
 						>
-							{state?.loading ? "Creating" : "Create"}
+							{state?.loading ? t("common.creating") : t("common.create")}
 						</Button>
 					</DialogFooter>
 				</form>

@@ -1,0 +1,31 @@
+{
+	"common": {
+		"apply": "Aplicar",
+		"cancel": "Cancelar",
+		"close": "Fechar",
+		"create": "Criar",
+		"creating": "Criando",
+		"remove": "Remover"
+	},
+	"errors": {
+		"title": "Algo deu errado",
+		"restartWindow": "Reinicie a janela do aplicativo."
+	},
+	"templates": {
+		"createFrom": "Criar a partir de um modelo",
+		"search": "Buscar modelos…",
+		"empty": "Nenhum modelo encontrado.",
+		"settings": "Configurações de modelos"
+	},
+	"editor": {
+		"extractToNote": "Extrair para uma nota",
+		"title": "Título",
+		"noteTitle": "Título da nota",
+		"destination": "Destino",
+		"spaceRoot": "Raiz do espaço",
+		"link": "Link",
+		"linkDescription": "Cole uma URL ou deixe em branco para remover o link.",
+		"linkUrl": "URL do link",
+		"openInNewTab": "Abrir em uma nova aba"
+	}
+}

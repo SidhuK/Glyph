@@ -11,7 +11,7 @@ import {
 	useMemo,
 	useRef,
 } from "react";
-import { APP_TAGLINE } from "../../lib/copy";
+import { useTranslation } from "react-i18next";
 import { normalizeRelPath } from "../../utils/path";
 import { File, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -36,8 +36,12 @@ function makeChipMarker(kind: "file" | "folder", path: string): string {
 	return `${CHIP_OPEN}${kind}${path}${CHIP_CLOSE}`;
 }
 
-function chipLabelFor(kind: "file" | "folder", path: string): string {
-	return kind === "file" ? fileNameFromPath(path) : path || "Space";
+function chipLabelFor(
+	kind: "file" | "folder",
+	path: string,
+	spaceLabel: string,
+): string {
+	return kind === "file" ? fileNameFromPath(path) : path || spaceLabel;
 }
 
 interface AIComposerProps {
@@ -245,6 +249,7 @@ export function AIComposer({
 	onAddContext,
 	onRemoveContext,
 }: AIComposerProps) {
+	const { t } = useTranslation("ui");
 	const handleInsertMentionTrigger = useCallback(() => {
 		if (isAwaitingResponse) return;
 		setInput((prev) => {
@@ -296,7 +301,7 @@ export function AIComposer({
 				key: `${kind}:${path}`,
 				kind,
 				path,
-				label: chipLabelFor(kind, path),
+				label: chipLabelFor(kind, path, t("ai.space")),
 			});
 			cursor = match.index + match[0].length;
 		}
@@ -304,7 +309,7 @@ export function AIComposer({
 			segments.push({ type: "text", value: input.slice(cursor) });
 		}
 		return segments;
-	}, [input]);
+	}, [input, t]);
 
 	const lastInputRef = useRef(input);
 	const isUserInputRef = useRef(false);
@@ -345,7 +350,10 @@ export function AIComposer({
 				close.className = "aiComposerInlineChipClose";
 				close.contentEditable = "false";
 				close.setAttribute("role", "button");
-				close.setAttribute("aria-label", `Remove ${seg.label}`);
+				close.setAttribute(
+					"aria-label",
+					t("ai.removeItem", { name: seg.label }),
+				);
 				close.dataset.removeKind = seg.kind;
 				close.dataset.removePath = seg.path;
 				close.textContent = "\u00D7";
@@ -355,7 +363,7 @@ export function AIComposer({
 		}
 		if (caret !== null) setCaretOffset(el, caret);
 		scheduleComposerInputResize();
-	}, [input, renderSegments, composerInputRef, scheduleComposerInputResize]);
+	}, [input, renderSegments, composerInputRef, scheduleComposerInputResize, t]);
 
 	const handleInput = useCallback(() => {
 		const el = composerInputRef.current;
@@ -431,7 +439,7 @@ export function AIComposer({
 					<input
 						type="search"
 						className="aiAddPanelInput"
-						placeholder="Search files & folders…"
+						placeholder={t("ai.searchFiles")}
 						value={panelQuery}
 						onChange={(e) => {
 							if (!addPanelOpen) setAddPanelOpen(true);
@@ -450,14 +458,12 @@ export function AIComposer({
 									className="aiAddPanelItem"
 									onClick={() => onAddContext(item.kind, item.path)}
 								>
-									<span>{item.label || "Space"}</span>
+									<span>{item.label || t("ai.space")}</span>
 								</button>
 							))
 						) : (
 							<div className="aiAddPanelEmpty">
-								{panelQuery.trim()
-									? "No results"
-									: "Type to search files & folders"}
+								{panelQuery.trim() ? t("ai.noResults") : t("ai.typeToSearch")}
 							</div>
 						)}
 					</div>
@@ -473,13 +479,18 @@ export function AIComposer({
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
 					{showActiveFileSuggestion ? (
-						<div className="aiComposerSuggestionHint" aria-label="Active file">
+						<div
+							className="aiComposerSuggestionHint"
+							aria-label={t("ai.activeFile")}
+						>
 							<button
 								type="button"
 								className="aiComposerSuggestionButton"
 								onClick={() => onAddContext("file", suggestedFilePath)}
-								aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
-								title={`Add ${suggestedFilePath} to context`}
+								aria-label={t("ai.addToContext", {
+									name: fileNameFromPath(suggestedFilePath),
+								})}
+								title={t("ai.addToContext", { name: suggestedFilePath })}
 								disabled={isAwaitingResponse}
 							>
 								<span className="aiComposerSuggestionIcon">
@@ -499,8 +510,10 @@ export function AIComposer({
 						role="textbox"
 						tabIndex={0}
 						aria-multiline="true"
-						aria-label="Message"
-						data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
+						aria-label={t("ai.message")}
+						data-placeholder={
+							activeFilePath ? undefined : t("onboarding.tagline")
+						}
 						spellCheck
 						onInput={handleInput}
 						onPaste={handlePaste}
@@ -515,8 +528,8 @@ export function AIComposer({
 									variant="ghost"
 									size="icon-sm"
 									className="aiComposerMentionButton"
-									aria-label="Add note with @"
-									title="Add note with @"
+									aria-label={t("ai.addNote")}
+									title={t("ai.addNote")}
 									onClick={handleInsertMentionTrigger}
 									disabled={isAwaitingResponse}
 								>
@@ -542,8 +555,8 @@ export function AIComposer({
 								type="button"
 								className="aiComposerStop"
 								onClick={onStop}
-								aria-label="Stop"
-								title="Stop"
+								aria-label={t("ai.stop")}
+								title={t("ai.stop")}
 							>
 								<HugeiconsIcon
 									icon={StopIcon}
@@ -559,8 +572,8 @@ export function AIComposer({
 								className="aiComposerSend"
 								disabled={!canSend}
 								onClick={onSend}
-								aria-label="Send"
-								title="Send"
+								aria-label={t("ai.send")}
+								title={t("ai.send")}
 							>
 								<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
 							</Button>

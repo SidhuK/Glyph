@@ -1,0 +1,31 @@
+{
+	"common": {
+		"apply": "適用",
+		"cancel": "キャンセル",
+		"close": "閉じる",
+		"create": "作成",
+		"creating": "作成中",
+		"remove": "削除"
+	},
+	"errors": {
+		"title": "問題が発生しました",
+		"restartWindow": "アプリのウインドウを再起動してください。"
+	},
+	"templates": {
+		"createFrom": "テンプレートから作成",
+		"search": "テンプレートを検索…",
+		"empty": "テンプレートが見つかりません。",
+		"settings": "テンプレート設定"
+	},
+	"editor": {
+		"extractToNote": "ノートに抽出",
+		"title": "タイトル",
+		"noteTitle": "ノートのタイトル",
+		"destination": "保存先",
+		"spaceRoot": "スペースのルート",
+		"link": "リンク",
+		"linkDescription": "URLを貼り付けるか、リンクを削除する場合は空欄にします。",
+		"linkUrl": "リンクURL",
+		"openInNewTab": "新しいタブで開く"
+	}
+}

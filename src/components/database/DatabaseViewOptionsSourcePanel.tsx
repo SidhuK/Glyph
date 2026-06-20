@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { DatabaseConfig } from "../../lib/database/types";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseFolderPicker } from "./DatabaseFolderPicker";
@@ -9,17 +10,21 @@ interface SourcePanelProps {
 }
 
 export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
+	const { t } = useTranslation("ui");
 	return (
-		<section className="databaseViewOptionsPanel" aria-label="Source">
+		<section
+			className="databaseViewOptionsPanel"
+			aria-label={t("database.source")}
+		>
 			<div className="databaseViewPanelHeader">
-				<span>Source</span>
+				<span>{t("database.source")}</span>
 			</div>
 			<p className="databaseViewPanelHint">
 				Choose which notes appear in this view. Changes save automatically.
 			</p>
 			<div className="databaseViewPanelStack">
 				<label className="databaseViewField">
-					<span>Show notes from</span>
+					<span>{t("database.source")}</span>
 					<select
 						className="databaseNativeSelect"
 						value={config.source.kind}
@@ -33,19 +38,19 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 							})
 						}
 					>
-						<option value="all_notes">All notes</option>
-						<option value="folder">A folder</option>
-						<option value="tag">A tag</option>
-						<option value="search">A search query</option>
+						<option value="all_notes">{t("database.allNotes")}</option>
+						<option value="folder">{t("database.folder")}</option>
+						<option value="tag">{t("database.tag")}</option>
+						<option value="search">{t("database.search")}</option>
 					</select>
 				</label>
 				{config.source.kind === "folder" ? (
 					<>
 						<div className="databaseViewField">
-							<span>Folder</span>
+							<span>{t("database.folder")}</span>
 							<DatabaseFolderPicker
 								value={config.source.value}
-								placeholder="Choose a folder"
+								placeholder={t("database.chooseFolder")}
 								triggerClassName="databaseSourceInlinePicker"
 								onChange={(value) =>
 									void updateConfig({
@@ -69,16 +74,16 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 									})
 								}
 							/>
-							<span>Include subfolders</span>
+							<span>{t("database.includeSubfolders")}</span>
 						</label>
 					</>
 				) : null}
 				{config.source.kind === "tag" ? (
 					<DatabaseTagPicker
 						value={config.source.value}
-						label="Tag"
-						description="Only notes with this tag will appear."
-						placeholder="Choose a tag"
+						label={t("database.tag")}
+						description={t("database.chooseTagDescription")}
+						placeholder={t("database.chooseTag")}
 						onChange={(value) =>
 							void updateConfig({
 								...config,
@@ -92,7 +97,7 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						className="databaseViewField"
 						htmlFor="databaseViewSourceQuery"
 					>
-						<span>Search query</span>
+						<span>{t("database.query")}</span>
 						<Input
 							id="databaseViewSourceQuery"
 							value={config.source.value}
@@ -107,10 +112,10 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 					</label>
 				) : null}
 				<div className="databaseViewField">
-					<span>Save new notes in</span>
+					<span>{t("database.saveNewNotesIn")}</span>
 					<DatabaseFolderPicker
 						value={config.new_note.folder}
-						placeholder="Folder"
+						placeholder={t("database.folder")}
 						triggerClassName="databaseSourceInlinePicker"
 						onChange={(folder) =>
 							void updateConfig({

@@ -29,7 +29,6 @@ import {
 	type PathRemovedDetail,
 	type PathRenamedDetail,
 } from "../../lib/appEvents";
-import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
@@ -132,44 +131,46 @@ function ContextualEmptyState({
 	onOpenCommandPalette: () => void;
 	onOpenDailyNote: () => void;
 }) {
+	const { t } = useTranslation("ui");
 	const reduced = useReducedMotion() ?? false;
 
 	const tips = useMemo(() => {
-		const t: EmptyTip[] = [];
+		const nextTips: EmptyTip[] = [];
 		if (!onboarding.createdFirstNote) {
-			t.push({
+			nextTips.push({
 				key: "note",
 				icon: <FileText size="var(--icon-lg)" />,
-				text: "Create your first note",
-				action: "New note",
+				text: t("onboarding.firstNoteTitle"),
+				action: t("onboarding.newNote"),
 				onClick: onCreateNote,
 			});
 		}
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
-			t.push({
+			nextTips.push({
 				key: "daily",
 				icon: <Calendar size="var(--icon-lg)" />,
-				text: "Try a daily note — saved to your daily notes folder",
-				action: "Open daily note",
+				text: t("onboarding.dailyTip"),
+				action: t("onboarding.openDailyNote"),
 				onClick: onOpenDailyNote,
 			});
 		}
 		if (!onboarding.usedCommandPalette) {
-			t.push({
+			nextTips.push({
 				key: "palette",
 				icon: null,
-				text: "Open the command palette",
-				action: "Open",
+				text: t("onboarding.paletteTip"),
+				action: t("onboarding.open"),
 				onClick: onOpenCommandPalette,
 			});
 		}
-		return t;
+		return nextTips;
 	}, [
 		onboarding,
 		showDailyNoteAction,
 		onCreateNote,
 		onOpenDailyNote,
 		onOpenCommandPalette,
+		t,
 	]);
 
 	const [tipIndex, setTipIndex] = useState(0);
@@ -186,12 +187,12 @@ function ContextualEmptyState({
 		return (
 			<div className="mainEmptyBottomBlock">
 				<p className="mainEmptyPrompt">
-					Press{" "}
+					{t("onboarding.press")}{" "}
 					<button
 						type="button"
 						className="mainEmptyShortcutInline"
 						onClick={onOpenCommandPalette}
-						title="Open command palette"
+						title={t("onboarding.paletteTip")}
 					>
 						<kbd className="mainEmptyShortcutBadge">
 							<span className="mainEmptyShortcutCombo">
@@ -203,9 +204,9 @@ function ContextualEmptyState({
 							</span>
 						</kbd>
 					</button>{" "}
-					to get started
+					{t("onboarding.toGetStarted")}
 				</p>
-				<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+				<div className="mainEmptyTagline">{t("onboarding.tagline")}</div>
 			</div>
 		);
 	}
@@ -246,7 +247,9 @@ function ContextualEmptyState({
 					</button>
 				</m.div>
 			</AnimatePresence>
-			<div className="mainEmptyTagline mainEmptyTaglineEdge">{APP_TAGLINE}</div>
+			<div className="mainEmptyTagline mainEmptyTaglineEdge">
+				{t("onboarding.tagline")}
+			</div>
 			{tips.length > 1 && (
 				<div className="mainEmptyTipDots">
 					{tips.map((tip, i) => (
@@ -353,7 +356,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
-	const { t } = useTranslation("settings");
+	const { t } = useTranslation(["settings", "ui"]);
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
 	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
@@ -520,19 +523,19 @@ export const MainContent = memo(function MainContent({
 		}
 		if (!spacePath) return;
 		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
-		toast.info("Set a folder to use daily notes", {
+		toast.info(t("ui:onboarding.dailySetupTitle"), {
 			id: DAILY_NOTES_SETUP_TOAST_ID,
-			description: "Glyph will create each day's note there automatically.",
+			description: t("ui:onboarding.dailySetupDescription"),
 			duration: 7200,
 			action: {
-				label: "Open settings",
+				label: t("ui:onboarding.openSettings"),
 				onClick: () => {
 					toast.dismiss(DAILY_NOTES_SETUP_TOAST_ID);
 					onOpenDailyNotesSettings();
 				},
 			},
 		});
-	}, [dailyNoteSetupNoticeRequest, onOpenDailyNotesSettings, spacePath]);
+	}, [dailyNoteSetupNoticeRequest, onOpenDailyNotesSettings, spacePath, t]);
 
 	useEffect(() => {
 		if (spacePath) return;
