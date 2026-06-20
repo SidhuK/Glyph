@@ -1,6 +1,5 @@
 import type { JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import type { EditorView } from "@tiptap/pm/view";
 import { useEditor } from "@tiptap/react";
 import {
 	useCallback,
