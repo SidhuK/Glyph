@@ -1,7 +1,9 @@
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { TFunction } from "i18next";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { type ComponentType, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Calendar, Command, FileText, X } from "../Icons";
 import type { IconProps } from "../Icons/NavigationIcons";
 import { springPresets } from "../ui/animations";
@@ -28,28 +30,26 @@ const RING_STROKE = 3;
 const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-function buildSteps(showDailyNote: boolean): Step[] {
+function buildSteps(t: TFunction<"ui">, showDailyNote: boolean): Step[] {
 	const steps: Step[] = [
 		{
 			key: "note",
-			title: "Create your first note",
-			description:
-				"Start writing here, and when you're ready you can also point Glyph at an existing folder of Markdown notes. Your files stay as plain .md in your folder.",
+			title: t("onboarding.firstNoteTitle"),
+			description: t("onboarding.firstNoteDescription"),
 			icon: FileText,
 		},
 		{
 			key: "command",
-			title: "Try the command palette",
-			description: "Jump to commands, files, and actions from one place.",
+			title: t("onboarding.paletteTitle"),
+			description: t("onboarding.paletteDescription"),
 			icon: Command,
 		},
 	];
 	if (showDailyNote) {
 		steps.push({
 			key: "daily",
-			title: "Open today's daily note",
-			description:
-				"A dated note is created in your daily notes folder. Set the folder path in Settings → Daily Notes.",
+			title: t("onboarding.dailyTitle"),
+			description: t("onboarding.dailyDescription"),
 			icon: Calendar,
 		});
 	}
@@ -69,6 +69,7 @@ function ProgressRing({
 	complete: boolean;
 	reduced: boolean;
 }) {
+	const { t } = useTranslation("ui");
 	const transition = reduced
 		? { duration: 0 }
 		: { ...springPresets.gentle, duration: 0.6 };
@@ -77,7 +78,7 @@ function ProgressRing({
 		<div
 			className="starterProgressRing"
 			role="progressbar"
-			aria-label="Getting started progress"
+			aria-label={t("onboarding.progress")}
 			aria-valuemin={0}
 			aria-valuemax={totalValue}
 			aria-valuenow={currentValue}
@@ -88,7 +89,7 @@ function ProgressRing({
 				height={RING_SIZE}
 				viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
 			>
-				<title>Getting started progress ring</title>
+				<title>{t("onboarding.progressRing")}</title>
 				<circle
 					cx={RING_SIZE / 2}
 					cy={RING_SIZE / 2}
@@ -145,9 +146,10 @@ export function GettingStartedPane({
 	onOpenDailyNote,
 	onDismiss,
 }: GettingStartedPaneProps) {
+	const { t } = useTranslation("ui");
 	const steps = useMemo(
-		() => buildSteps(showDailyNoteAction),
-		[showDailyNoteAction],
+		() => buildSteps(t, showDailyNoteAction),
+		[showDailyNoteAction, t],
 	);
 	const [currentStep, setCurrentStep] = useState(0);
 	const reduced = useReducedMotion() ?? false;
@@ -177,7 +179,7 @@ export function GettingStartedPane({
 		<div className="starterPane">
 			<div className="starterPaneHeader">
 				<div>
-					<div className="starterPaneTitle">Getting started</div>
+					<div className="starterPaneTitle">{t("onboarding.title")}</div>
 				</div>
 				<div className="starterPaneHeaderRight">
 					<ProgressRing
@@ -191,7 +193,7 @@ export function GettingStartedPane({
 						type="button"
 						className="starterDismissButton"
 						onClick={onDismiss}
-						aria-label="Dismiss getting started"
+						aria-label={t("onboarding.dismiss")}
 					>
 						<X size="var(--icon-md)" />
 					</button>
@@ -207,11 +209,11 @@ export function GettingStartedPane({
 						animate={{ scale: 1, opacity: 1 }}
 						transition={reduced ? { duration: 0 } : springPresets.bouncy}
 					>
-						<p className="starterStepTitle">You're all set!</p>
+						<p className="starterStepTitle">{t("onboarding.completeTitle")}</p>
 						<p className="starterStepBody">
-							Your space is ready. Start writing and exploring.
+							{t("onboarding.completeDescription")}
 						</p>
-						<Button onClick={onDismiss}>Start writing</Button>
+						<Button onClick={onDismiss}>{t("onboarding.startWriting")}</Button>
 					</m.div>
 				) : (
 					<m.div
@@ -247,13 +249,13 @@ export function GettingStartedPane({
 								onClick={() => handleAction(steps[currentStep].key)}
 							>
 								{steps[currentStep].key === "note"
-									? "Create note"
+									? t("onboarding.createNote")
 									: steps[currentStep].key === "command"
-										? "Open palette"
-										: "Open daily note"}
+										? t("onboarding.openPalette")
+										: t("onboarding.openDailyNote")}
 							</Button>
 							<Button size="sm" variant="ghost" onClick={advance}>
-								Skip
+								{t("onboarding.skip")}
 							</Button>
 						</div>
 					</m.div>

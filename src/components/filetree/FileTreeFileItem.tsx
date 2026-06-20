@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { invoke } from "../../lib/tauri";
 import type {
@@ -47,6 +48,7 @@ function FileRenameInput({
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 }) {
+	const { t } = useTranslation("ui");
 	const [draftName, setDraftName] = useState(initialName);
 	const renameSubmittedRef = useRef(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -69,7 +71,7 @@ function FileRenameInput({
 			ref={inputRef}
 			className="plainTextInput fileTreeRenameInput"
 			value={draftName}
-			placeholder="Untitled"
+			placeholder={t("fileTree.untitled")}
 			onChange={(event) => setDraftName(event.target.value)}
 			onMouseDown={(event) => {
 				event.preventDefault();
@@ -152,6 +154,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	taskSummary = null,
 	previewText = null,
 }: FileTreeFileItemProps) {
+	const { t } = useTranslation("ui");
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -168,7 +171,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		basename(entry.rel_path)
 			.replace(/\.[^.]+$/, "")
 			.trim() ||
-		"Untitled";
+		t("fileTree.untitled");
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
 	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
 	const {
@@ -214,45 +217,46 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
 				{
-					label: "Open",
+					label: t("fileTree.open"),
 					action: () => void onOpenFile(entry.rel_path),
 				},
 				{
-					label: "Show in Finder",
+					label: t("fileTree.showInFinder"),
 					action: () => void handleRevealInFinder(),
 				},
 				{ type: "separator" },
 				{
-					label: "Rename",
+					label: t("fileTree.rename"),
 					action: onStartRename,
 				},
 				{
-					label: "Duplicate file",
+					label: t("fileTree.duplicateFile"),
 					action: () => void onDuplicateFile(entry.rel_path),
 				},
 				{
-					label: isPinned ? "Unpin file" : "Pin file",
+					label: isPinned ? t("fileTree.unpinFile") : t("fileTree.pinFile"),
 					action: () => void onTogglePinned(entry.rel_path),
 				},
 				fileTreeAppearanceNativeMenu(
 					onOpenAppearancePicker ?? (() => undefined),
+					t("fileTree.appearance"),
 				),
 				{ type: "separator" },
 				{
-					label: "Add file",
+					label: t("fileTree.addFile"),
 					action: () => void onNewFileInDir(parentDirPath),
 				},
 				{
-					label: "Create from template",
+					label: t("fileTree.createFromTemplate"),
 					action: () => void onCreateFromTemplateInDir(parentDirPath),
 				},
 				{
-					label: "Add folder",
+					label: t("fileTree.addFolder"),
 					action: () => void onNewFolderInDir(parentDirPath),
 				},
 				{ type: "separator" },
 				{
-					label: "Delete file",
+					label: t("fileTree.deleteFile"),
 					action: () => onDeletePath(entry.rel_path, "file"),
 				},
 			]).catch((error: unknown) => {
@@ -273,6 +277,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onStartRename,
 			onTogglePinned,
 			parentDirPath,
+			t,
 		],
 	);
 
@@ -288,7 +293,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 						<FileRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
-							initialName={fileStem || entry.name.trim() || "Untitled"}
+							initialName={
+								fileStem || entry.name.trim() || t("fileTree.untitled")
+							}
 							relPath={entry.rel_path}
 							fileStem={fileStem}
 							fileExt={fileExt}

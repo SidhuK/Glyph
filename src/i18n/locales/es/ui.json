@@ -1,0 +1,31 @@
+{
+	"common": {
+		"apply": "Aplicar",
+		"cancel": "Cancelar",
+		"close": "Cerrar",
+		"create": "Crear",
+		"creating": "Creando",
+		"remove": "Quitar"
+	},
+	"errors": {
+		"title": "Algo salió mal",
+		"restartWindow": "Reinicia la ventana de la aplicación."
+	},
+	"templates": {
+		"createFrom": "Crear desde una plantilla",
+		"search": "Buscar plantillas…",
+		"empty": "No se encontraron plantillas.",
+		"settings": "Ajustes de plantillas"
+	},
+	"editor": {
+		"extractToNote": "Extraer a una nota",
+		"title": "Título",
+		"noteTitle": "Título de la nota",
+		"destination": "Destino",
+		"spaceRoot": "Raíz del espacio",
+		"link": "Enlace",
+		"linkDescription": "Pega una URL o déjala en blanco para quitar el enlace.",
+		"linkUrl": "URL del enlace",
+		"openInNewTab": "Abrir en una pestaña nueva"
+	}
+}

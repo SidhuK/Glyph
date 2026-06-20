@@ -11,6 +11,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import type { AiModel, AiProviderKind } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 
@@ -38,6 +39,7 @@ export function ModelSelector({
 	onChange,
 	provider,
 }: ModelSelectorProps) {
+	const { t } = useTranslation("ui");
 	const [open, setOpen] = useState(false);
 	const [detailModelId, setDetailModelId] = useState<string | null>(null);
 	const [modelQuery, setModelQuery] = useState("");
@@ -106,7 +108,7 @@ export function ModelSelector({
 	}, [open, handleClose]);
 
 	const selectedModel = models?.find((m) => m.id === value);
-	const displayLabel = selectedModel?.name ?? value ?? "Model";
+	const displayLabel = selectedModel?.name ?? value ?? t("ai.model");
 	const detailModel = detailModelId
 		? (models?.find((m) => m.id === detailModelId) ?? null)
 		: null;
@@ -142,7 +144,7 @@ export function ModelSelector({
 		? (providerLogoMap[logoProvider]?.label ?? logoProvider)
 		: provider
 			? (providerLogoMap[provider]?.label ?? provider)
-			: "Model provider";
+			: t("ai.modelProvider");
 
 	return (
 		<>
@@ -151,7 +153,7 @@ export function ModelSelector({
 				type="button"
 				className={styles.trigger}
 				onClick={() => (open ? handleClose() : handleOpen())}
-				title={value || "Select model"}
+				title={value || t("ai.selectModel")}
 			>
 				{logoProvider && (
 					<span className={styles.triggerLogo} title={providerTitle}>
@@ -190,7 +192,7 @@ export function ModelSelector({
 									/>
 								</span>
 							)}
-							<span className={styles.dropdownTitle}>Models</span>
+							<span className={styles.dropdownTitle}>{t("ai.models")}</span>
 							{models && (
 								<span className={styles.dropdownCount}>{models.length}</span>
 							)}
@@ -206,20 +208,18 @@ export function ModelSelector({
 											className={styles.retryBtn}
 											onClick={handleRetry}
 										>
-											Retry
+											{t("ai.retry")}
 										</button>
 									</div>
 								)}
 								{!error && models?.length === 0 && (
-									<div className={styles.dropdownEmpty}>
-										No models available
-									</div>
+									<div className={styles.dropdownEmpty}>{t("ai.noModels")}</div>
 								)}
 								{!error && (models?.length ?? 0) > 0 && (
 									<input
 										type="search"
 										className={styles.modelSearch}
-										placeholder="Search models..."
+										placeholder={t("ai.searchModels")}
 										value={modelQuery}
 										onChange={(e) => setModelQuery(e.target.value)}
 									/>
@@ -229,7 +229,7 @@ export function ModelSelector({
 									models.length > 0 &&
 									filteredModels.length === 0 && (
 										<div className={styles.dropdownEmpty}>
-											No models match your search
+											{t("ai.noModelMatches")}
 										</div>
 									)}
 								{!error &&
@@ -255,8 +255,8 @@ export function ModelSelector({
 											handleInfoToggle();
 										};
 										const infoLabel = infoActive
-											? "Hide model details"
-											: "Show model details";
+											? t("ai.hideModelDetails")
+											: t("ai.showModelDetails");
 										return (
 											<div className={styles.modelItemRow} key={m.id}>
 												<button

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import type { DatabaseColumn } from "../../lib/database/types";
 import { RefreshCw } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
@@ -24,10 +25,14 @@ export function ColumnsPanel({
 	updateColumns,
 	onRestoreDefaultColumns,
 }: ColumnsPanelProps) {
+	const { t } = useTranslation("ui");
 	return (
-		<section className="databaseViewOptionsPanel" aria-label="Columns">
+		<section
+			className="databaseViewOptionsPanel"
+			aria-label={t("database.columns")}
+		>
 			<div className="databaseViewPanelHeader">
-				<span>Columns</span>
+				<span>{t("database.columns")}</span>
 			</div>
 			<div className="databaseViewColumnsList">
 				{columnMenuEntries.map((entry) => (
@@ -45,7 +50,10 @@ export function ColumnsPanel({
 							<Toggle
 								size="sm"
 								checked={entry.enabled}
-								ariaLabel={`${entry.enabled ? "Hide" : "Show"} ${entry.column.label} column`}
+								ariaLabel={t(
+									entry.enabled ? "database.hideColumn" : "database.showColumn",
+									{ label: entry.column.label },
+								)}
 								onCheckedChange={(checked) =>
 									void setColumnEnabled(entry.column, checked)
 								}
@@ -73,7 +81,7 @@ export function ColumnsPanel({
 					})
 				}
 			>
-				<span>Show all columns</span>
+				<span>{t("database.showAllColumns")}</span>
 			</button>
 			<button
 				type="button"
@@ -81,7 +89,7 @@ export function ColumnsPanel({
 				onClick={onRestoreDefaultColumns}
 			>
 				<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
-				Restore defaults
+				{t("database.restoreDefaults")}
 			</button>
 		</section>
 	);

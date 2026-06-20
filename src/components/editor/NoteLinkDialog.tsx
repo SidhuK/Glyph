@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -50,6 +51,7 @@ export function NoteLinkDialog({
 	state,
 	onStateChange,
 }: NoteLinkDialogProps) {
+	const { t } = useTranslation("ui");
 	const close = useCallback(() => onStateChange(null), [onStateChange]);
 
 	const apply = useCallback(() => {
@@ -105,10 +107,8 @@ export function NoteLinkDialog({
 				}}
 			>
 				<DialogHeader>
-					<DialogTitle>Link</DialogTitle>
-					<DialogDescription>
-						Paste a URL, or leave it blank to remove the link.
-					</DialogDescription>
+					<DialogTitle>{t("editor.link")}</DialogTitle>
+					<DialogDescription>{t("editor.linkDescription")}</DialogDescription>
 				</DialogHeader>
 				<form
 					className="editorLinkDialogForm"
@@ -126,7 +126,7 @@ export function NoteLinkDialog({
 							)
 						}
 						placeholder="https://example.com"
-						aria-label="Link URL"
+						aria-label={t("editor.linkUrl")}
 					/>
 					<label className="editorLinkDialogCheckbox">
 						<input
@@ -143,14 +143,14 @@ export function NoteLinkDialog({
 								)
 							}
 						/>
-						<span>Open in new tab</span>
+						<span>{t("editor.openInNewTab")}</span>
 					</label>
 					<DialogFooter className="editorLinkDialogActions">
 						<Button type="button" variant="ghost" onClick={remove}>
 							<X size="var(--icon-md)" />
-							Remove
+							{t("common.remove")}
 						</Button>
-						<Button type="submit">Apply</Button>
+						<Button type="submit">{t("common.apply")}</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

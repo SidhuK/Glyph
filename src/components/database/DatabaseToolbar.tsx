@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -34,6 +35,7 @@ export function DatabaseToolbar({
 	onViewOptionsOpenChange,
 	className,
 }: DatabaseToolbarProps) {
+	const { t } = useTranslation("ui");
 	const searchValue = config.view.search ?? "";
 	const searchInputId = useId();
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -87,8 +89,8 @@ export function DatabaseToolbar({
 							id={searchInputId}
 							className="databaseToolbarSearchInput"
 							value={searchDraft}
-							placeholder="Search view"
-							aria-label="Search this view"
+							placeholder={t("database.searchView")}
+							aria-label={t("database.searchThisView")}
 							onBlur={() => {
 								if (!searchDraft) setSearchExpanded(false);
 							}}
@@ -109,8 +111,8 @@ export function DatabaseToolbar({
 									setSearchDraft("");
 									setSearchExpanded(false);
 								}}
-								title="Clear search"
-								aria-label="Clear search"
+								title={t("database.clearSearch")}
+								aria-label={t("database.clearSearch")}
 							>
 								<X size="var(--icon-sm)" />
 							</button>
@@ -126,15 +128,17 @@ export function DatabaseToolbar({
 							justExpandedRef.current = true;
 							setSearchExpanded(true);
 						}}
-						title="Search view"
-						aria-label="Search view"
+						title={t("database.searchView")}
+						aria-label={t("database.searchView")}
 					>
 						<Search size="var(--icon-sm)" />
 					</Button>
 				)}
 				{groupColumns.length > 0 ? (
 					<label className="databaseToolbarGroupBy">
-						<span className="databaseToolbarGroupByLabel">Group by</span>
+						<span className="databaseToolbarGroupByLabel">
+							{t("database.groupBy")}
+						</span>
 						<select
 							className="databaseToolbarGroupBySelect"
 							value={selectedGroupColumnId}
@@ -142,7 +146,9 @@ export function DatabaseToolbar({
 								onGroupColumnIdChange(event.target.value || null)
 							}
 						>
-							{databaseView === "board" ? null : <option value="">None</option>}
+							{databaseView === "board" ? null : (
+								<option value="">{t("database.none")}</option>
+							)}
 							{groupColumns.map((column) => (
 								<option key={column.id} value={column.id}>
 									{column.label}

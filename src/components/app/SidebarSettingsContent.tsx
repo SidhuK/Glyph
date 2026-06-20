@@ -177,13 +177,13 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 			<div className="settingsSidebarFooter">
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-						<div className="settingsFeedbackEyebrow">{t("footer.community.eyebrow")}</div>
+						<div className="settingsFeedbackEyebrow">
+							{t("footer.community.eyebrow")}
+						</div>
 						<div className="settingsFeedbackTitle">
 							{t("footer.community.title")}
 						</div>
-						<p className="settingsFeedbackBody">
-							{t("footer.community.body")}
-						</p>
+						<p className="settingsFeedbackBody">{t("footer.community.body")}</p>
 						<Button
 							type="button"
 							className="settingsFeedbackButton settingsFeedbackButtonCommunity"
@@ -199,8 +199,12 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 					</div>
 				) : (
 					<div className="settingsFeedbackCard">
-						<div className="settingsFeedbackEyebrow">{t("footer.earlyAccess.eyebrow")}</div>
-						<div className="settingsFeedbackTitle">{t("footer.earlyAccess.title")}</div>
+						<div className="settingsFeedbackEyebrow">
+							{t("footer.earlyAccess.eyebrow")}
+						</div>
+						<div className="settingsFeedbackTitle">
+							{t("footer.earlyAccess.title")}
+						</div>
 						<p className="settingsFeedbackBody">
 							{t("footer.earlyAccess.body")}
 						</p>

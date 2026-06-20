@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { AiModel, ProviderSupportEntry } from "../../lib/tauri";
 import styles from "./ModelSelector.module.css";
 import { formatEndpointLabel } from "./modelSelectorConstants";
@@ -24,9 +25,9 @@ export function hasDetailData(
 	);
 }
 
-function formatPrice(perToken: string): string {
+function formatPrice(perToken: string, freeLabel: string): string {
 	const n = Number.parseFloat(perToken);
-	if (Number.isNaN(n) || n === 0) return "Free";
+	if (Number.isNaN(n) || n === 0) return freeLabel;
 	const perMillion = n * 1_000_000;
 	return `$${perMillion < 0.01 ? perMillion.toFixed(4) : perMillion.toFixed(2)}/M`;
 }
@@ -38,6 +39,8 @@ export function ModelDetail({
 	model: AiModel;
 	providerSupport?: ProviderSupportEntry | null;
 }) {
+	const { i18n, t } = useTranslation("ui");
+	const locale = i18n.resolvedLanguage ?? i18n.language;
 	const hasModalities =
 		model.input_modalities?.length || model.output_modalities?.length;
 	const hasParams = model.supported_parameters?.length;
@@ -55,17 +58,18 @@ export function ModelDetail({
 				<div className={styles.detailSection}>
 					{model.context_length != null && (
 						<div className={styles.detailRow}>
-							<span className={styles.detailLabel}>Context</span>
+							<span className={styles.detailLabel}>{t("ai.context")}</span>
 							<span className={styles.detailValue}>
-								{model.context_length.toLocaleString()} tokens
+								{model.context_length.toLocaleString(locale)} {t("ai.tokens")}
 							</span>
 						</div>
 					)}
 					{model.max_completion_tokens != null && (
 						<div className={styles.detailRow}>
-							<span className={styles.detailLabel}>Max output</span>
+							<span className={styles.detailLabel}>{t("ai.maxOutput")}</span>
 							<span className={styles.detailValue}>
-								{model.max_completion_tokens.toLocaleString()} tokens
+								{model.max_completion_tokens.toLocaleString(locale)}{" "}
+								{t("ai.tokens")}
 							</span>
 						</div>
 					)}
@@ -74,16 +78,18 @@ export function ModelDetail({
 
 			{(model.prompt_pricing || model.completion_pricing) && (
 				<div className={styles.detailSection}>
-					<span className={styles.detailSectionTitle}>Pricing</span>
+					<span className={styles.detailSectionTitle}>{t("ai.pricing")}</span>
 					<div className={styles.detailTags}>
 						{model.prompt_pricing && (
 							<span className={styles.detailTag}>
-								Input: {formatPrice(model.prompt_pricing)}
+								{t("ai.input")}:{" "}
+								{formatPrice(model.prompt_pricing, t("ai.free"))}
 							</span>
 						)}
 						{model.completion_pricing && (
 							<span className={styles.detailTag}>
-								Output: {formatPrice(model.completion_pricing)}
+								{t("ai.output")}:{" "}
+								{formatPrice(model.completion_pricing, t("ai.free"))}
 							</span>
 						)}
 					</div>
@@ -92,7 +98,9 @@ export function ModelDetail({
 
 			{hasModalities ? (
 				<div className={styles.detailSection}>
-					<span className={styles.detailSectionTitle}>Modalities</span>
+					<span className={styles.detailSectionTitle}>
+						{t("ai.modalities")}
+					</span>
 					<div className={styles.detailTags}>
 						{model.input_modalities?.map((m) => (
 							<span key={`in-${m}`} className={styles.detailTag}>
@@ -101,7 +109,7 @@ export function ModelDetail({
 						))}
 						{model.output_modalities?.map((m) => (
 							<span key={`out-${m}`} className={styles.detailTag}>
-								{m} (out)
+								{m} ({t("ai.outputSuffix")})
 							</span>
 						))}
 					</div>
@@ -110,14 +118,16 @@ export function ModelDetail({
 
 			{model.tokenizer && (
 				<div className={styles.detailRow}>
-					<span className={styles.detailLabel}>Tokenizer</span>
+					<span className={styles.detailLabel}>{t("ai.tokenizer")}</span>
 					<span className={styles.detailValue}>{model.tokenizer}</span>
 				</div>
 			)}
 
 			{hasParams ? (
 				<div className={styles.detailSection}>
-					<span className={styles.detailSectionTitle}>Capabilities</span>
+					<span className={styles.detailSectionTitle}>
+						{t("ai.capabilities")}
+					</span>
 					<div className={styles.detailTags}>
 						{model.supported_parameters?.map((p) => (
 							<span key={p} className={styles.detailTag}>
@@ -131,7 +141,9 @@ export function ModelDetail({
 			{providerSupport && supportedEndpointEntries.length > 0 && (
 				<div className={styles.detailSection}>
 					<span className={styles.detailSectionTitle}>
-						{providerSupport.display_name} support
+						{t("ai.providerSupport", {
+							provider: providerSupport.display_name,
+						})}
 					</span>
 					<div className={styles.detailTags}>
 						{supportedEndpointEntries.map(([endpoint]) => (
@@ -147,7 +159,9 @@ export function ModelDetail({
 							target="_blank"
 							rel="noreferrer"
 						>
-							View {providerSupport.display_name} docs
+							{t("ai.viewProviderDocs", {
+								provider: providerSupport.display_name,
+							})}
 						</a>
 					)}
 				</div>
@@ -161,9 +175,7 @@ export function ModelDetail({
 				!model.description &&
 				!hasModalities &&
 				!hasParams && (
-					<div className={styles.detailValue}>
-						No additional details available.
-					</div>
+					<div className={styles.detailValue}>{t("ai.noDetails")}</div>
 				)}
 		</div>
 	);

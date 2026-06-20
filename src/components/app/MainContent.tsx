@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -27,7 +28,6 @@ import {
 	type PathRemovedDetail,
 	type PathRenamedDetail,
 } from "../../lib/appEvents";
-import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
@@ -123,44 +123,46 @@ function ContextualEmptyState({
 	onOpenCommandPalette: () => void;
 	onOpenDailyNote: () => void;
 }) {
+	const { t } = useTranslation("ui");
 	const reduced = useReducedMotion() ?? false;
 
 	const tips = useMemo(() => {
-		const t: EmptyTip[] = [];
+		const nextTips: EmptyTip[] = [];
 		if (!onboarding.createdFirstNote) {
-			t.push({
+			nextTips.push({
 				key: "note",
 				icon: <FileText size="var(--icon-lg)" />,
-				text: "Create your first note",
-				action: "New note",
+				text: t("onboarding.firstNoteTitle"),
+				action: t("onboarding.newNote"),
 				onClick: onCreateNote,
 			});
 		}
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
-			t.push({
+			nextTips.push({
 				key: "daily",
 				icon: <Calendar size="var(--icon-lg)" />,
-				text: "Try a daily note — saved to your daily notes folder",
-				action: "Open daily note",
+				text: t("onboarding.dailyTip"),
+				action: t("onboarding.openDailyNote"),
 				onClick: onOpenDailyNote,
 			});
 		}
 		if (!onboarding.usedCommandPalette) {
-			t.push({
+			nextTips.push({
 				key: "palette",
 				icon: null,
-				text: "Open the command palette",
-				action: "Open",
+				text: t("onboarding.paletteTip"),
+				action: t("onboarding.open"),
 				onClick: onOpenCommandPalette,
 			});
 		}
-		return t;
+		return nextTips;
 	}, [
 		onboarding,
 		showDailyNoteAction,
 		onCreateNote,
 		onOpenDailyNote,
 		onOpenCommandPalette,
+		t,
 	]);
 
 	const [tipIndex, setTipIndex] = useState(0);
@@ -177,12 +179,12 @@ function ContextualEmptyState({
 		return (
 			<div className="mainEmptyBottomBlock">
 				<p className="mainEmptyPrompt">
-					Press{" "}
+					{t("onboarding.press")}{" "}
 					<button
 						type="button"
 						className="mainEmptyShortcutInline"
 						onClick={onOpenCommandPalette}
-						title="Open command palette"
+						title={t("onboarding.paletteTip")}
 					>
 						<kbd className="mainEmptyShortcutBadge">
 							<span className="mainEmptyShortcutCombo">
@@ -194,9 +196,9 @@ function ContextualEmptyState({
 							</span>
 						</kbd>
 					</button>{" "}
-					to get started
+					{t("onboarding.toGetStarted")}
 				</p>
-				<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+				<div className="mainEmptyTagline">{t("onboarding.tagline")}</div>
 			</div>
 		);
 	}
@@ -237,7 +239,9 @@ function ContextualEmptyState({
 					</button>
 				</m.div>
 			</AnimatePresence>
-			<div className="mainEmptyTagline mainEmptyTaglineEdge">{APP_TAGLINE}</div>
+			<div className="mainEmptyTagline mainEmptyTaglineEdge">
+				{t("onboarding.tagline")}
+			</div>
 			{tips.length > 1 && (
 				<div className="mainEmptyTipDots">
 					{tips.map((tip, i) => (
@@ -313,6 +317,7 @@ function DailyNotesSetupToast({
 	onOpenSettings: () => void;
 	onDismiss: () => void;
 }) {
+	const { t } = useTranslation("ui");
 	const reduced = useReducedMotion() ?? false;
 
 	return (
@@ -335,14 +340,16 @@ function DailyNotesSetupToast({
 								<Calendar size="var(--icon-lg)" />
 							</div>
 							<div className="dailyNotesSetupToastTitleBlock">
-								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
+								<div className="dailyNotesSetupToastEyebrow">
+									{t("onboarding.dailyNotes")}
+								</div>
 								<h2 className="dailyNotesSetupToastTitle">
-									Set a folder to use daily notes
+									{t("onboarding.dailySetupTitle")}
 								</h2>
 							</div>
 						</div>
 						<p className="dailyNotesSetupToastText">
-							Glyph will create each day&apos;s note there automatically.
+							{t("onboarding.dailySetupDescription")}
 						</p>
 						<div className="dailyNotesSetupToastActions">
 							<Button
@@ -352,7 +359,7 @@ function DailyNotesSetupToast({
 								className="dailyNotesSetupToastSecondary"
 								onClick={onDismiss}
 							>
-								Not now
+								{t("onboarding.notNow")}
 							</Button>
 							<Button
 								type="button"
@@ -361,7 +368,7 @@ function DailyNotesSetupToast({
 								onClick={onOpenSettings}
 							>
 								<Settings size="var(--icon-md)" />
-								<span>Open settings</span>
+								<span>{t("onboarding.openSettings")}</span>
 							</Button>
 						</div>
 					</output>
@@ -407,6 +414,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
+	const { t } = useTranslation("settings");
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
 	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
@@ -847,7 +855,7 @@ export const MainContent = memo(function MainContent({
 					<header className="settingsPanelHeader">
 						<div className="settingsPanelTitleRow">
 							<h2 className="settingsPanelTitle">
-								{activeSettingsTabMeta.label}
+								{t(activeSettingsTabMeta.labelKey)}
 							</h2>
 						</div>
 					</header>

@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link2, X } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -38,6 +39,7 @@ export function RibbonLinkPopover({
 	focusChain,
 	preventMouseDown,
 }: RibbonLinkPopoverProps) {
+	const { t } = useTranslation("ui");
 	const [linkOpen, setLinkOpen] = useState(false);
 	const [linkHref, setLinkHref] = useState("");
 	const [linkTarget, setLinkTarget] = useState<"_self" | "_blank">("_self");
@@ -84,8 +86,8 @@ export function RibbonLinkPopover({
 				<m.button
 					type="button"
 					className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
-					title="Link"
-					aria-label="Link"
+					title={t("editor.link")}
+					aria-label={t("editor.link")}
 					disabled={!canEdit}
 					onMouseDown={preventMouseDown}
 					onClick={() => canEdit && setLinkOpen(true)}
@@ -112,7 +114,7 @@ export function RibbonLinkPopover({
 							}
 						}}
 						placeholder="https://example.com"
-						aria-label="Link URL"
+						aria-label={t("editor.linkUrl")}
 					/>
 				</div>
 				<label className="editorLinkPopoverCheckbox">
@@ -123,15 +125,15 @@ export function RibbonLinkPopover({
 							setLinkTarget(event.target.checked ? "_blank" : "_self")
 						}
 					/>
-					<span>Open in new tab</span>
+					<span>{t("editor.openInNewTab")}</span>
 				</label>
 				<div className="editorLinkPopoverActions">
 					<Button type="button" variant="ghost" size="sm" onClick={removeLink}>
 						<X size="var(--icon-md)" />
-						Remove
+						{t("common.remove")}
 					</Button>
 					<Button type="button" size="sm" onClick={applyLink}>
-						Apply
+						{t("common.apply")}
 					</Button>
 				</div>
 			</PopoverContent>

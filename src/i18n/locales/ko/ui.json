@@ -1,0 +1,31 @@
+{
+	"common": {
+		"apply": "적용",
+		"cancel": "취소",
+		"close": "닫기",
+		"create": "만들기",
+		"creating": "만드는 중",
+		"remove": "제거"
+	},
+	"errors": {
+		"title": "문제가 발생했습니다",
+		"restartWindow": "앱 창을 다시 시작해 주세요."
+	},
+	"templates": {
+		"createFrom": "템플릿에서 만들기",
+		"search": "템플릿 검색…",
+		"empty": "템플릿을 찾을 수 없습니다.",
+		"settings": "템플릿 설정"
+	},
+	"editor": {
+		"extractToNote": "노트로 추출",
+		"title": "제목",
+		"noteTitle": "노트 제목",
+		"destination": "대상",
+		"spaceRoot": "스페이스 루트",
+		"link": "링크",
+		"linkDescription": "URL을 붙여넣거나 링크를 제거하려면 비워 두세요.",
+		"linkUrl": "링크 URL",
+		"openInNewTab": "새 탭에서 열기"
+	}
+}

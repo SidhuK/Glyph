@@ -6,6 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
@@ -69,11 +70,14 @@ interface NotesInfoSidebarProps {
 	onClose: () => void;
 }
 
-function formatMetadataDate(value: string | null | undefined): string {
+function formatMetadataDate(
+	value: string | null | undefined,
+	locale: string,
+): string {
 	if (!value) return "—";
 	const parsed = new Date(value);
 	if (Number.isNaN(parsed.getTime())) return value;
-	return parsed.toLocaleString(undefined, {
+	return parsed.toLocaleString(locale, {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
@@ -82,7 +86,7 @@ function formatMetadataDate(value: string | null | undefined): string {
 	});
 }
 
-function formatFileSize(bytes: number): string {
+function formatFileSize(bytes: number, locale: string): string {
 	if (!Number.isFinite(bytes) || bytes < 0) return "—";
 	const units = ["B", "KB", "MB", "GB", "TB"];
 	let size = bytes;
@@ -93,7 +97,7 @@ function formatFileSize(bytes: number): string {
 	}
 	const fractionDigits =
 		unitIndex === 0 ? 0 : size >= 100 ? 0 : size >= 10 ? 1 : 2;
-	return `${size.toLocaleString(undefined, {
+	return `${size.toLocaleString(locale, {
 		maximumFractionDigits: fractionDigits,
 	})} ${units[unitIndex]}`;
 }
@@ -122,6 +126,8 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
+	const { i18n, t } = useTranslation("ui");
+	const locale = i18n.resolvedLanguage ?? i18n.language;
 	const [host, setHost] = useState<HTMLElement | null>(null);
 	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
 	const hasGitHistoryTab =
@@ -150,7 +156,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	if (!open || hasError) return null;
 
 	const sidebar = (
-		<aside className="notesInfoSidebarPanel" aria-label="Note info panel">
+		<aside className="notesInfoSidebarPanel" aria-label={t("noteInfo.panel")}>
 			<div
 				className="markdownEditorInfoHeader drag"
 				data-tauri-drag-region
@@ -159,7 +165,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 				<div
 					className="markdownEditorInfoTabs"
 					role="tablist"
-					aria-label="Note sidebar"
+					aria-label={t("noteInfo.sidebar")}
 					data-window-drag-ignore
 				>
 					<button
@@ -175,7 +181,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 							size="var(--icon-sm)"
 							strokeWidth={1}
 						/>
-						Info
+						{t("noteInfo.info")}
 					</button>
 					{hasGitHistoryTab ? (
 						<button
@@ -191,7 +197,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								size="var(--icon-sm)"
 								strokeWidth={1}
 							/>
-							History
+							{t("noteInfo.history")}
 						</button>
 					) : null}
 				</div>
@@ -199,8 +205,8 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 					type="button"
 					className="markdownEditorInfoClose"
 					onClick={onClose}
-					aria-label="Close info panel"
-					title="Close info panel"
+					aria-label={t("noteInfo.close")}
+					title={t("noteInfo.close")}
 				>
 					<span aria-hidden>×</span>
 				</button>
@@ -216,36 +222,45 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						</section>
 
 						<section className="markdownEditorInfoSection">
-							<h3 className="markdownEditorInfoSectionLabel">Stats</h3>
+							<h3 className="markdownEditorInfoSectionLabel">
+								{t("noteInfo.stats")}
+							</h3>
 							<div className="markdownEditorInfoRows">
 								<div className="markdownEditorInfoRow">
-									<span>Words</span>
-									<strong>{stats.words.toLocaleString()}</strong>
+									<span>{t("noteInfo.words")}</span>
+									<strong>{stats.words.toLocaleString(locale)}</strong>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Characters</span>
-									<strong>{stats.characters.toLocaleString()}</strong>
+									<span>{t("noteInfo.characters")}</span>
+									<strong>{stats.characters.toLocaleString(locale)}</strong>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Reading time</span>
+									<span>{t("noteInfo.readingTime")}</span>
 									<strong>{stats.readingTime}</strong>
 								</div>
 							</div>
 						</section>
 
 						<section className="markdownEditorInfoSection">
-							<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
+							<h3 className="markdownEditorInfoSectionLabel">
+								{t("noteInfo.tasks")}
+							</h3>
 							<div className="markdownEditorInfoTaskSummary">
 								<TaskProgressIndicator summary={taskSummary} />
 								<span>
-									{taskSummary.completed_count.toLocaleString()} of{" "}
-									{taskSummary.total_count.toLocaleString()} done
+									{t("noteInfo.tasksDone", {
+										completed:
+											taskSummary.completed_count.toLocaleString(locale),
+										total: taskSummary.total_count.toLocaleString(locale),
+									})}
 								</span>
 							</div>
 						</section>
 
 						<section className="markdownEditorInfoSection">
-							<h3 className="markdownEditorInfoSectionLabel">Outline</h3>
+							<h3 className="markdownEditorInfoSectionLabel">
+								{t("noteInfo.outline")}
+							</h3>
 							{tocHeadings.length > 0 ? (
 								<div className="markdownEditorInfoOutline">
 									{tocHeadings.map((heading) => (
@@ -266,14 +281,16 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								</div>
 							) : (
 								<div className="markdownEditorInfoEmpty">
-									No headings in this note yet.
+									{t("noteInfo.noHeadings")}
 								</div>
 							)}
 						</section>
 
 						{backlinks.length > 0 ? (
 							<section className="markdownEditorInfoSection">
-								<h3 className="markdownEditorInfoSectionLabel">Backlinks</h3>
+								<h3 className="markdownEditorInfoSectionLabel">
+									{t("noteInfo.backlinks")}
+								</h3>
 								<div className="markdownEditorInfoLinkList">
 									{backlinks.map((item) => (
 										<button
@@ -304,7 +321,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						{relationshipGroups.length > 0 ? (
 							<section className="markdownEditorInfoSection">
 								<h3 className="markdownEditorInfoSectionLabel">
-									Relationships
+									{t("noteInfo.relationships")}
 								</h3>
 								<div className="markdownEditorInfoRows">
 									{relationshipGroups.map((group) => (
@@ -351,7 +368,9 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						) : null}
 
 						<section className="markdownEditorInfoSection">
-							<h3 className="markdownEditorInfoSectionLabel">Linked notes</h3>
+							<h3 className="markdownEditorInfoSectionLabel">
+								{t("noteInfo.linkedNotes")}
+							</h3>
 							{linkedNotes.length > 0 ? (
 								<div className="markdownEditorInfoLinkList">
 									{linkedNotes.map((item) => (
@@ -385,7 +404,9 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 									))}
 								</div>
 							) : (
-								<div className="markdownEditorInfoEmpty">No linked notes.</div>
+								<div className="markdownEditorInfoEmpty">
+									{t("noteInfo.noLinkedNotes")}
+								</div>
 							)}
 						</section>
 
@@ -396,43 +417,46 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 									size="var(--icon-sm)"
 									strokeWidth={1}
 								/>
-								Info
+								{t("noteInfo.info")}
 							</h3>
 							<div className="markdownEditorInfoRows">
 								<div className="markdownEditorInfoRow">
-									<span>Modified</span>
+									<span>{t("noteInfo.modified")}</span>
 									<span className="markdownEditorInfoValue">
 										{formatMetadataDate(
 											lastSavedMtimeMs
 												? new Date(lastSavedMtimeMs).toISOString()
 												: (previewContext?.updated ?? null),
+											locale,
 										)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Created</span>
+									<span>{t("noteInfo.created")}</span>
 									<span className="markdownEditorInfoValue">
-										{formatMetadataDate(previewContext?.created)}
+										{formatMetadataDate(previewContext?.created, locale)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Path</span>
+									<span>{t("noteInfo.path")}</span>
 									<span className="markdownEditorInfoPathValue">{relPath}</span>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Lines</span>
+									<span>{t("noteInfo.lines")}</span>
 									<span className="markdownEditorInfoValue">
-										{(previewContext?.line_count ?? lineCount).toLocaleString()}
+										{(previewContext?.line_count ?? lineCount).toLocaleString(
+											locale,
+										)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Size</span>
+									<span>{t("noteInfo.size")}</span>
 									<span className="markdownEditorInfoValue">
-										{formatFileSize(utf8SizeBytes)}
+										{formatFileSize(utf8SizeBytes, locale)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
-									<span>Save status</span>
+									<span>{t("noteInfo.saveStatus")}</span>
 									<span className="markdownEditorInfoValue">{saveLabel}</span>
 								</div>
 							</div>

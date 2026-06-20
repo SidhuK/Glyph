@@ -16,6 +16,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 
@@ -184,6 +185,7 @@ function FolderBreadcrumb({
 	onNavigate,
 	onExit,
 }: FolderBreadcrumbProps) {
+	const { t } = useTranslation("ui");
 	const parts = folderBreadcrumbParts(spacePath, dirPath);
 	const navRef = useRef<HTMLElement | null>(null);
 
@@ -199,7 +201,7 @@ function FolderBreadcrumb({
 			ref={navRef}
 			data-dir-path={dirPath}
 			className="fileTreeBreadcrumb"
-			aria-label="Folder breadcrumb"
+			aria-label={t("fileTree.folderBreadcrumb")}
 		>
 			{parts.map((part, index) => {
 				const isLast = index === parts.length - 1;
@@ -463,6 +465,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onTogglePinnedFile,
 	children,
 }: FileTreePaneProps) {
+	const { t } = useTranslation("ui");
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
@@ -652,16 +655,20 @@ export const FileTreePane = memo(function FileTreePane({
 	const handleDeletePath = useCallback(
 		async (path: string, kind: "dir" | "file") => {
 			const { confirm } = await import("@tauri-apps/plugin-dialog");
-			const noun = kind === "dir" ? "folder" : "file";
-			const confirmed = await confirm(`Delete this ${noun}?`, {
-				title: "Confirm delete",
-				okLabel: "Delete",
-				cancelLabel: "Cancel",
-			});
+			const noun =
+				kind === "dir" ? t("fileTree.folderLower") : t("fileTree.file");
+			const confirmed = await confirm(
+				t("fileTree.deletePrompt", { kind: noun }),
+				{
+					title: t("fileTree.confirmDelete"),
+					okLabel: t("fileTree.delete"),
+					cancelLabel: t("common.cancel"),
+				},
+			);
 			if (!confirmed) return;
 			await onDeletePath(path, kind);
 		},
-		[onDeletePath],
+		[onDeletePath, t],
 	);
 
 	const handleTreeKeyDown = useCallback(
@@ -700,12 +707,12 @@ export const FileTreePane = memo(function FileTreePane({
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
-				toast.error("Could not update file tree appearance", {
+				toast.error(t("fileTree.appearanceError"), {
 					description: message,
 				});
 			}
 		},
-		[setError, setItemAppearance],
+		[setError, setItemAppearance, t],
 	);
 
 	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
@@ -901,7 +908,7 @@ export const FileTreePane = memo(function FileTreePane({
 				onKeyDown={handleTreeKeyDown}
 			>
 				<AppearancePicker
-					title="Choose file tree appearance"
+					title={t("fileTree.chooseAppearance")}
 					open={appearancePickerTarget !== null}
 					onOpenChange={(open) => {
 						if (!open) setAppearancePickerTarget(null);
@@ -973,7 +980,7 @@ export const FileTreePane = memo(function FileTreePane({
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 							>
-								No files found.
+								{t("fileTree.empty")}
 							</m.div>
 						)}
 					</FileTreeRootDrop>
@@ -1022,7 +1029,7 @@ export const FileTreePane = memo(function FileTreePane({
 						animate={{ opacity: 1 }}
 						transition={{ delay: 0.2 }}
 					>
-						No files found.
+						{t("fileTree.empty")}
 					</m.div>
 				)}
 				{children}
