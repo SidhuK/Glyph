@@ -26,6 +26,20 @@ function normalizeAnchor(anchor: string): string {
 	return value.trim().toLowerCase();
 }
 
+/** Attach GitHub-style disambiguated anchor slugs to a heading list. */
+export function withHeadingSlugs(
+	headings: readonly TOCHeading[],
+): TOCHeading[] {
+	const counts = new Map<string, number>();
+	return headings.map((heading) => {
+		const base = slugifyHeading(heading.text);
+		const seen = counts.get(base) ?? 0;
+		counts.set(base, seen + 1);
+		const slug = seen === 0 ? base : `${base}-${seen}`;
+		return { ...heading, slug };
+	});
+}
+
 /**
  * Resolve an in-document anchor (e.g. "#heading-1") to the heading it targets.
  * Duplicate heading texts are disambiguated the same way GitHub does, by
@@ -39,19 +53,18 @@ export function resolveAnchorHeading(
 	const normalized = normalizeAnchor(anchor);
 	if (!normalized) return null;
 
-	const counts = new Map<string, number>();
-	let textMatch: TOCHeading | null = null;
+	const indexed =
+		headings.length > 0 && headings[0]?.slug !== undefined
+			? headings
+			: withHeadingSlugs(headings);
 
-	for (const heading of headings) {
-		const base = slugifyHeading(heading.text);
-		const seen = counts.get(base) ?? 0;
-		counts.set(base, seen + 1);
-		const slug = seen === 0 ? base : `${base}-${seen}`;
-		if (slug === normalized) return heading;
-		if (!textMatch && heading.text.trim().toLowerCase() === normalized) {
-			textMatch = heading;
-		}
+	for (const heading of indexed) {
+		if (heading.slug === normalized) return heading;
 	}
 
-	return textMatch;
+	return (
+		indexed.find(
+			(heading) => heading.text.trim().toLowerCase() === normalized,
+		) ?? null
+	);
 }

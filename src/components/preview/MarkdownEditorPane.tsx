@@ -41,11 +41,6 @@ import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
-import {
-	INTERNAL_ANCHOR_CLICK_EVENT,
-	type InternalAnchorClickDetail,
-} from "../editor/markdown/editorEvents";
-import { resolveAnchorHeading } from "../editor/markdown/headingAnchor";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type {
@@ -61,6 +56,7 @@ import {
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
+import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -336,29 +332,14 @@ export function MarkdownEditorPane({
 		[mode, scrollToHeading],
 	);
 
-	const tocHeadingsRef = useRef(tocHeadings);
-	tocHeadingsRef.current = tocHeadings;
-	useEffect(() => {
-		const onInternalAnchorClick = (event: Event) => {
-			const detail = (event as CustomEvent<InternalAnchorClickDetail>).detail;
-			if (!detail || detail.sourcePath !== relPath) return;
-			// In plain (raw) mode the live document lives in CodeMirror, so parse
-			// headings from the current text rather than the info-panel snapshot.
-			const headings =
-				mode === "plain"
-					? analyzeNoteInfo(textRef.current, textRef.current, true).headings
-					: tocHeadingsRef.current;
-			const heading = resolveAnchorHeading(headings, detail.anchor);
-			if (heading) selectVisibleHeading(heading);
-		};
-		window.addEventListener(INTERNAL_ANCHOR_CLICK_EVENT, onInternalAnchorClick);
-		return () => {
-			window.removeEventListener(
-				INTERNAL_ANCHOR_CLICK_EVENT,
-				onInternalAnchorClick,
-			);
-		};
-	}, [mode, relPath, selectVisibleHeading]);
+	const getPlainText = useCallback(() => textRef.current, []);
+	useInternalAnchorNavigation({
+		relPath,
+		mode,
+		getPlainText,
+		tocHeadings,
+		selectVisibleHeading,
+	});
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
 		if (syncPulseTimerRef.current !== null) {

@@ -7,12 +7,14 @@ import {
 	changedRangesFromTransactions,
 	mergeChangedRanges,
 } from "../extensions/changedRanges";
+import { withHeadingSlugs } from "../markdown/headingAnchor";
 
 export interface TOCHeading {
 	id: string;
 	level: number;
 	text: string;
 	pos: number;
+	slug?: string;
 }
 
 function getHeadingElement(
@@ -81,7 +83,7 @@ function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
 		const heading = headingFromNode(node, pos);
 		if (heading) headings.push(heading);
 	});
-	return headings;
+	return withHeadingSlugs(headings);
 }
 
 function expandRangesToTextblocks(
@@ -158,7 +160,7 @@ function updateHeadingsFromTransaction(
 
 	next.push(...extractHeadingsInRanges(transaction.doc, scanRanges));
 	next.sort((a, b) => a.pos - b.pos);
-	return next;
+	return withHeadingSlugs(next);
 }
 
 export function useTableOfContents(editor: Editor | null) {

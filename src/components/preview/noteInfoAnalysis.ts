@@ -1,4 +1,5 @@
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
+import { withHeadingSlugs } from "../editor/markdown/headingAnchor";
 
 interface NoteInfoAnalysis {
 	stats: {
@@ -104,7 +105,7 @@ export function analyzeNoteInfo(
 			completed_count: completedTasks,
 			open_count: totalTasks - completedTasks,
 		},
-		headings,
+		headings: includeHeadings ? withHeadingSlugs(headings) : headings,
 		lineCount,
 	};
 }
