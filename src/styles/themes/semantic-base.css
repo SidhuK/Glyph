@@ -36,7 +36,6 @@
 	--link-color: var(--color-blue-600);
 	--link-color-hover: var(--color-blue-700);
 
-	--selection-bg: rgba(55, 53, 47, 0.09);
 	--selection-bg-muted: rgba(55, 53, 47, 0.08);
 
 	--feedback-error-bg: var(--color-red-100);

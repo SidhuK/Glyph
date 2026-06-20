@@ -51,7 +51,6 @@
 	--accent-color: var(--glyph-user-accent, #e8e8e8);
 	--link-color: var(--color-blue-300);
 	--link-color-hover: var(--color-blue-200);
-	--selection-bg: rgba(255, 255, 255, 0.1);
 	--selection-bg-muted: rgba(255, 255, 255, 0.06);
 	--feedback-error-bg: rgba(224, 62, 62, 0.18);
 	--status-info-fg: var(--color-blue-300);
@@ -109,7 +108,6 @@
 	--accent-color: #268bd2;
 	--link-color: #268bd2;
 	--link-color-hover: #2aa198;
-	--selection-bg: rgba(38, 139, 210, 0.18);
 	--selection-bg-muted: rgba(38, 139, 210, 0.1);
 	--feedback-error-bg: rgba(220, 50, 47, 0.2);
 	--status-info-fg: #268bd2;
@@ -155,7 +153,6 @@
 	--accent-color: #2f81f7;
 	--link-color: #58a6ff;
 	--link-color-hover: #79c0ff;
-	--selection-bg: rgba(47, 129, 247, 0.18);
 	--selection-bg-muted: rgba(47, 129, 247, 0.1);
 	--feedback-error-bg: rgba(255, 123, 114, 0.18);
 	--status-info-fg: #58a6ff;
@@ -201,7 +198,6 @@
 	--accent-color: #88c0d0;
 	--link-color: #81a1c1;
 	--link-color-hover: #88c0d0;
-	--selection-bg: rgba(136, 192, 208, 0.18);
 	--selection-bg-muted: rgba(136, 192, 208, 0.1);
 	--feedback-error-bg: rgba(191, 97, 106, 0.18);
 	--status-info-fg: #88c0d0;
@@ -247,7 +243,6 @@
 	--accent-color: #7aa2f7;
 	--link-color: #7dcfff;
 	--link-color-hover: #9ece6a;
-	--selection-bg: rgba(122, 162, 247, 0.18);
 	--selection-bg-muted: rgba(122, 162, 247, 0.1);
 	--feedback-error-bg: rgba(247, 118, 142, 0.18);
 	--status-info-fg: #7dcfff;
@@ -293,7 +288,6 @@
 	--accent-color: #bd93f9;
 	--link-color: #8be9fd;
 	--link-color-hover: #50fa7b;
-	--selection-bg: rgba(189, 147, 249, 0.2);
 	--selection-bg-muted: rgba(189, 147, 249, 0.1);
 	--feedback-error-bg: rgba(255, 85, 85, 0.2);
 	--status-info-fg: #8be9fd;
@@ -338,7 +332,6 @@
 	--accent-color: #82aaff;
 	--link-color: #7fdbca;
 	--link-color-hover: #addb67;
-	--selection-bg: rgba(130, 170, 255, 0.2);
 	--selection-bg-muted: rgba(130, 170, 255, 0.1);
 	--status-info-fg: #82aaff;
 	--status-success-fg: #addb67;
@@ -373,7 +366,6 @@
 	--accent-color: #61afef;
 	--link-color: #61afef;
 	--link-color-hover: #56b6c2;
-	--selection-bg: rgba(97, 175, 239, 0.18);
 	--selection-bg-muted: rgba(97, 175, 239, 0.1);
 	--status-info-fg: #61afef;
 	--status-success-fg: #98c379;
@@ -408,7 +400,6 @@
 	--accent-color: #c4a7e7;
 	--link-color: #9ccfd8;
 	--link-color-hover: #3e8fb0;
-	--selection-bg: rgba(196, 167, 231, 0.18);
 	--selection-bg-muted: rgba(196, 167, 231, 0.1);
 	--status-info-fg: #9ccfd8;
 	--status-success-fg: #31748f;
@@ -444,7 +435,6 @@
 	--accent-color: #cba6f7;
 	--link-color: #89b4fa;
 	--link-color-hover: #74c7ec;
-	--selection-bg: rgba(137, 180, 250, 0.2);
 	--selection-bg-muted: rgba(203, 166, 247, 0.1);
 	--feedback-error-bg: rgba(243, 139, 168, 0.18);
 	--status-info-fg: #74c7ec;
@@ -522,7 +512,6 @@
 	--accent-color: #fe8019;
 	--link-color: #83a598;
 	--link-color-hover: #8ec07c;
-	--selection-bg: rgba(131, 165, 152, 0.18);
 	--selection-bg-muted: rgba(254, 128, 25, 0.1);
 	--feedback-error-bg: rgba(251, 73, 52, 0.18);
 	--status-info-fg: #83a598;
@@ -568,7 +557,6 @@
 	--accent-color: #f92672;
 	--link-color: #819aff;
 	--link-color-hover: #a6b6ff;
-	--selection-bg: rgba(135, 139, 145, 0.24);
 	--selection-bg-muted: rgba(117, 113, 94, 0.1);
 	--feedback-error-bg: rgba(249, 38, 114, 0.18);
 	--status-info-fg: #819aff;
@@ -614,7 +602,6 @@
 	--accent-color: #39bae6;
 	--link-color: #39bae6;
 	--link-color-hover: #59c8ee;
-	--selection-bg: rgba(51, 136, 255, 0.24);
 	--selection-bg-muted: rgba(230, 180, 80, 0.1);
 	--feedback-error-bg: rgba(217, 87, 87, 0.18);
 	--status-info-fg: #39bae6;
@@ -660,7 +647,6 @@
 	--accent-color: #ff7300;
 	--link-color: #ffc799;
 	--link-color-hover: #ffcfa8;
-	--selection-bg: rgba(255, 255, 255, 0.15);
 	--selection-bg-muted: rgba(255, 199, 153, 0.12);
 	--feedback-error-bg: rgba(255, 128, 128, 0.2);
 	--status-info-fg: #a0a0a0;
@@ -706,7 +692,6 @@
 	--accent-color: #ce5d97;
 	--link-color: #4385be;
 	--link-color-hover: #3aa99f;
-	--selection-bg: rgba(67, 133, 190, 0.18);
 	--selection-bg-muted: rgba(206, 93, 151, 0.1);
 	--feedback-error-bg: color-mix(in srgb, #d14d41 18%, transparent);
 	--status-info-fg: #4385be;
@@ -752,7 +737,6 @@
 	--accent-color: #a7c080;
 	--link-color: #7fbbb3;
 	--link-color-hover: #83c092;
-	--selection-bg: rgba(71, 82, 88, 0.8);
 	--selection-bg-muted: rgba(167, 192, 128, 0.1);
 	--feedback-error-bg: rgba(230, 126, 128, 0.18);
 	--status-info-fg: #7fbbb3;
