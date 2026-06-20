@@ -24,6 +24,7 @@ import {
 } from "./changedRanges";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
+import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
@@ -736,6 +737,7 @@ export function createEditorExtensions(
 			enableShortcutTransform: enableEditingExtensions,
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
+		FootnoteDecorations,
 		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

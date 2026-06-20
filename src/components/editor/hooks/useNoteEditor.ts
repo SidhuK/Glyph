@@ -307,6 +307,28 @@ function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
 	return previousText.endsWith("](") && nextText.startsWith(")");
 }
 
+function cssEscape(value: string): string {
+	if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+		return CSS.escape(value);
+	}
+	return value.replace(/["\\]/g, "\\$&");
+}
+
+// Clicking a footnote reference jumps to its definition, and clicking a
+// definition jumps back to the first reference that points at it.
+function scrollToFootnoteCounterpart(
+	view: EditorView,
+	source: HTMLElement,
+	id: string,
+): void {
+	const isDefinition = source.classList.contains("footnoteDef");
+	const targetClass = isDefinition ? "footnoteRef" : "footnoteDef";
+	const selector = `.${targetClass}[data-footnote-id="${cssEscape(id)}"]`;
+	const destination = view.dom.querySelector<HTMLElement>(selector);
+	if (!destination) return;
+	destination.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function handleEditorClick(
 	event: MouseEvent,
 	view: EditorView,
@@ -342,6 +364,17 @@ function handleEditorClick(
 		const normalized = rawHandle.trim().replace(/^@+/, "");
 		if (!normalized) return true;
 		dispatchPersonClick({ handle: `@${normalized}` });
+		return true;
+	}
+
+	const footnote = target?.closest(
+		".footnoteRef, .footnoteDef",
+	) as HTMLElement | null;
+	if (footnote) {
+		event.preventDefault();
+		if (!interactive) return true;
+		const id = footnote.getAttribute("data-footnote-id");
+		if (id) scrollToFootnoteCounterpart(view, footnote, id);
 		return true;
 	}
 
