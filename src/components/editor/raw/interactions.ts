@@ -1,6 +1,7 @@
 import { EditorView } from "@codemirror/view";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
+	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
 	dispatchTagClick,
 	dispatchWikiLinkClick,
@@ -64,6 +65,13 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			if (!href) return false;
 			if (href.startsWith("http://") || href.startsWith("https://")) {
 				void openUrl(href);
+				return true;
+			}
+			if (href.startsWith("#")) {
+				dispatchInternalAnchorClick({
+					anchor: href,
+					sourcePath: getRelPath(),
+				});
 				return true;
 			}
 			dispatchMarkdownLinkClick({ href, sourcePath: getRelPath() });

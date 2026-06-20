@@ -25,6 +25,7 @@ import { useTauriEvent } from "../../../lib/tauriEvents";
 import { parentDir } from "../../../utils/path";
 import { createEditorExtensions } from "../extensions";
 import {
+	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
 	dispatchPersonClick,
 	dispatchTagClick,
@@ -377,7 +378,11 @@ function handleEditorClick(
 		event.preventDefault();
 		return true;
 	}
-	if (href.startsWith("#")) return false;
+	if (href.startsWith("#")) {
+		event.preventDefault();
+		dispatchInternalAnchorClick({ anchor: href, sourcePath: relPath });
+		return true;
+	}
 	event.preventDefault();
 	if (
 		editable &&

@@ -33,6 +33,7 @@ import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import { useRibbonCommands } from "./hooks/useRibbonCommands";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
 import {
+	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
@@ -112,7 +113,10 @@ async function openFrontmatterHref(
 		await openUrl(href);
 		return;
 	}
-	if (href.startsWith("#")) return;
+	if (href.startsWith("#")) {
+		dispatchInternalAnchorClick({ anchor: href, sourcePath });
+		return;
+	}
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
