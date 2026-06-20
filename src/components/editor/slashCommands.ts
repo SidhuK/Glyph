@@ -376,21 +376,6 @@ export const SlashCommand = Extension.create({
 						return item.keywords.some((k) => k.includes(normalized));
 					}).slice(0, 20);
 				},
-				command: ({
-					editor,
-					range,
-					props,
-				}: {
-					editor: Editor;
-					range: { from: number; to: number };
-					props: SlashCommandItem;
-				}) => {
-					props.command({
-						editor,
-						range,
-						onMathEditRequest: this.options.onMathEditRequest ?? undefined,
-					});
-				},
 				render: () => {
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
@@ -523,10 +508,26 @@ export const SlashCommand = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		const { suggestion, onMathEditRequest } = this.options;
 		return [
 			Suggestion({
 				editor: this.editor,
-				...this.options.suggestion,
+				...suggestion,
+				command: ({
+					editor,
+					range,
+					props,
+				}: {
+					editor: Editor;
+					range: { from: number; to: number };
+					props: SlashCommandItem;
+				}) => {
+					props.command({
+						editor,
+						range,
+						onMathEditRequest: onMathEditRequest ?? undefined,
+					});
+				},
 			}),
 		];
 	},
