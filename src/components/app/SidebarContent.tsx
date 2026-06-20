@@ -22,6 +22,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
+import { cssEscape } from "../../utils/dom";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -229,10 +230,7 @@ export const SidebarContent = memo(function SidebarContent({
 		const tryCenterRenameTarget = () => {
 			if (cancelled) return;
 			attempts += 1;
-			const escapedPath =
-				typeof CSS !== "undefined" && typeof CSS.escape === "function"
-					? CSS.escape(renamingPath)
-					: renamingPath;
+			const escapedPath = cssEscape(renamingPath);
 			const target = document.querySelector<HTMLElement>(
 				`[data-file-tree-path="${escapedPath}"]`,
 			);

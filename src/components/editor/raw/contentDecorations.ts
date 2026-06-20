@@ -1,13 +1,13 @@
 import { syntaxTree } from "@codemirror/language";
 import type { Range, Text } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
+import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
 
 const WIKI_LINK_PATTERN = /!?\[\[[^\]\n]+\]\]/g;
 const TAG_PATTERN = /(^|[^\w/#])#([A-Za-z0-9_][\w/-]*)/g;
 const HIGHLIGHT_PATTERN = /==([^=\n]+)==/g;
 const COMMENT_PATTERN = /%%(?:[^%]|%(?!%))*%%/g;
-const FOOTNOTE_PATTERN = /\[\^[^\]\n]+\]/g;
 const BLOCK_ID_PATTERN = /(?:^|\s)(\^[A-Za-z0-9-]+)(?=\s*$)/;
 const FRONTMATTER_SCAN_LIMIT = 500;
 
@@ -110,14 +110,22 @@ export function addGlyphInlineDecorations(
 		COMMENT_PATTERN,
 		"cm-raw-comment",
 	);
-	addPatternDecorations(
-		ranges,
-		view,
-		lineFrom,
-		text,
-		FOOTNOTE_PATTERN,
-		"cm-raw-footnote",
-	);
+	FOOTNOTE_PATTERN.lastIndex = 0;
+	for (const match of text.matchAll(FOOTNOTE_PATTERN)) {
+		if (match.index === undefined || !match[1]) continue;
+		const from = lineFrom + match.index;
+		if (isCodePosition(view, from)) continue;
+		const kind = footnoteKindAt(text, match.index, match[0].length);
+		ranges.push(
+			Decoration.mark({
+				class: "cm-raw-footnote",
+				attributes: {
+					"data-footnote-id": match[1],
+					"data-footnote-kind": kind,
+				},
+			}).range(from, from + match[0].length),
+		);
+	}
 
 	const blockIdMatch = text.match(BLOCK_ID_PATTERN);
 	if (blockIdMatch?.[1]) {

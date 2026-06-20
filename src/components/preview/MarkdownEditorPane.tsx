@@ -56,6 +56,7 @@ import {
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
+import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -330,6 +331,15 @@ export function MarkdownEditorPane({
 		},
 		[mode, scrollToHeading],
 	);
+
+	const getPlainText = useCallback(() => textRef.current, []);
+	useInternalAnchorNavigation({
+		relPath,
+		mode,
+		getPlainText,
+		tocHeadings,
+		selectVisibleHeading,
+	});
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
 		if (syncPulseTimerRef.current !== null) {

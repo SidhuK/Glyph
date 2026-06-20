@@ -144,6 +144,7 @@ vi.mock("./hooks/useResetScrollOnChange", () => ({
 }));
 
 vi.mock("./markdown/editorEvents", () => ({
+	dispatchInternalAnchorClick: vi.fn(),
 	dispatchMarkdownLinkClick: vi.fn(),
 	dispatchWikiLinkClick: vi.fn(),
 }));

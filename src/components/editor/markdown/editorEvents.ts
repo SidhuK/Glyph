@@ -2,6 +2,7 @@ export const WIKI_LINK_CLICK_EVENT = "glyph:wikilink-click";
 export const MARKDOWN_LINK_CLICK_EVENT = "glyph:markdown-link-click";
 export const TAG_CLICK_EVENT = "glyph:tag-click";
 export const PERSON_CLICK_EVENT = "glyph:person-click";
+export const INTERNAL_ANCHOR_CLICK_EVENT = "glyph:internal-anchor-click";
 
 export interface WikiLinkClickDetail {
 	raw: string;
@@ -23,6 +24,11 @@ export interface PersonClickDetail {
 
 export interface MarkdownLinkClickDetail {
 	href: string;
+	sourcePath: string;
+}
+
+export interface InternalAnchorClickDetail {
+	anchor: string;
 	sourcePath: string;
 }
 
@@ -49,6 +55,16 @@ export function dispatchMarkdownLinkClick(
 ): void {
 	window.dispatchEvent(
 		new CustomEvent<MarkdownLinkClickDetail>(MARKDOWN_LINK_CLICK_EVENT, {
+			detail,
+		}),
+	);
+}
+
+export function dispatchInternalAnchorClick(
+	detail: InternalAnchorClickDetail,
+): void {
+	window.dispatchEvent(
+		new CustomEvent<InternalAnchorClickDetail>(INTERNAL_ANCHOR_CLICK_EVENT, {
 			detail,
 		}),
 	);

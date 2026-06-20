@@ -108,6 +108,34 @@
 	color: color-mix(in srgb, var(--interactive-accent) 80%, var(--text-primary));
 }
 
+.tiptapContentInline .footnoteRef {
+	color: var(--interactive-accent);
+	font-size: 0.75em;
+	font-weight: var(--font-semibold);
+	vertical-align: super;
+	line-height: 0;
+	cursor: pointer;
+	border-radius: 3px;
+	padding: 0 1px;
+	transition: background 120ms ease;
+}
+.tiptapContentInline .footnoteRef:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}
+
+.tiptapContentInline .footnoteDef {
+	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-tertiary));
+	font-family: var(--font-mono);
+	font-size: 0.85em;
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+	border-radius: 3px;
+	transition: background 120ms ease;
+}
+.tiptapContentInline .footnoteDef:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
 .tiptapContentInline .personToken {
 	display: inline-block;
 	color: var(--pill-contrast-fg);
