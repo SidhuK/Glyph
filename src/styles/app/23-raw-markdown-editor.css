@@ -52,16 +52,6 @@
 	border-left-color: var(--interactive-accent);
 }
 
-.rfNodeNoteEditorRaw .cm-selectionBackground,
-.rfNodeNoteEditorRaw .cm-focused .cm-selectionBackground,
-.rfNodeNoteEditorRaw .cm-content ::selection {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 20%,
-		var(--selection-bg-muted)
-	);
-}
-
 .rfNodeNoteEditorRaw .cm-panels,
 .rfNodeNoteEditorRaw .cm-tooltip {
 	font-family: var(--font-sans);

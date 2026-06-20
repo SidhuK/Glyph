@@ -60,10 +60,6 @@ body {
 	background-clip: padding-box;
 }
 
-::selection {
-	background: var(--selection-bg);
-}
-
 .mono {
 	font-family: var(--font-mono);
 	font-size: 0.85em;

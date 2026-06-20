@@ -10,7 +10,6 @@ import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { NoteSelectionOverlay } from "./NoteSelectionOverlay";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
@@ -67,12 +66,12 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 		.join(" ");
 
 	return (
-		<NoteSelectionOverlay
-			editor={editor}
-			highlightEnabled={canEdit && mode === "rich"}
-			hostRef={hostRef}
+		<div
+			ref={hostRef}
 			className={hostClassName}
-			colorfulHeadings={mode === "rich" && colorfulHeadings}
+			data-colorful-headings={
+				mode === "rich" && colorfulHeadings ? "true" : undefined
+			}
 		>
 			<EditorContent editor={editor} />
 			{canEdit && table.selected ? (
@@ -197,6 +196,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					/>
 				</button>
 			) : null}
-		</NoteSelectionOverlay>
+		</div>
 	);
 });
