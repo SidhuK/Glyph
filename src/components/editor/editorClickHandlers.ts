@@ -1,7 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
-import { cssEscape } from "../../../utils/dom";
+import { cssEscape } from "../../utils/dom";
 import {
 	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
