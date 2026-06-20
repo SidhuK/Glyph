@@ -9,7 +9,7 @@ export function slugifyHeading(text: string): string {
 	return text
 		.trim()
 		.toLowerCase()
-		.replace(/[^\w\s-]/g, "")
+		.replace(/[^\p{L}\p{N}_\s-]/gu, "")
 		.replace(/\s+/g, "-")
 		.replace(/-+/g, "-")
 		.replace(/^-+|-+$/g, "");

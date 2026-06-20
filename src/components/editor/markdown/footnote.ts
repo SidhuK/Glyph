@@ -9,7 +9,8 @@ export function isFootnoteDefinition(
 	matchIndex: number,
 	matchLength: number,
 ): boolean {
-	return matchIndex === 0 && text[matchIndex + matchLength] === ":";
+	const atLineStart = matchIndex === 0 || text[matchIndex - 1] === "\n";
+	return atLineStart && text[matchIndex + matchLength] === ":";
 }
 
 export function footnoteKindAt(

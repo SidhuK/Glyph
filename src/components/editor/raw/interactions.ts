@@ -49,6 +49,14 @@ function scrollToRawFootnoteCounterpart(
 	return true;
 }
 
+function placeCaretAtEvent(view: EditorView, event: MouseEvent): boolean {
+	const offset = view.posAtCoords({ x: event.clientX, y: event.clientY });
+	if (offset === null) return false;
+	view.dispatch({ selection: { anchor: offset } });
+	view.focus();
+	return true;
+}
+
 export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 	return {
 		mousedown: (event: MouseEvent) => {
@@ -70,10 +78,12 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			const footnote = target?.closest<HTMLElement>(".cm-raw-footnote");
 			if (footnote?.dataset.footnoteId) {
 				const kind = footnote.dataset.footnoteKind === "def" ? "def" : "ref";
-				return scrollToRawFootnoteCounterpart(
-					view,
-					footnote.dataset.footnoteId,
-					kind,
+				return (
+					scrollToRawFootnoteCounterpart(
+						view,
+						footnote.dataset.footnoteId,
+						kind,
+					) || placeCaretAtEvent(view, event)
 				);
 			}
 
