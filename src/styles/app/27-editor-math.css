@@ -31,7 +31,11 @@
 
 .tiptap-mathematics-render--editable:hover,
 .tiptap-mathematics-render--editable:focus-visible {
-	background: color-mix(in srgb, var(--interactive-accent) 9%, var(--bg-secondary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 9%,
+		var(--bg-secondary)
+	);
 	box-shadow: 0 0 0 2px
 		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
@@ -130,6 +134,7 @@
 }
 
 .mathNodeEditorError {
+	display: block;
 	max-height: 3.4em;
 	margin: var(--space-2) 0 0;
 	overflow: auto;

@@ -1,10 +1,10 @@
-import { IterMode, parseMixed } from "@lezer/common";
-import type { MarkdownExtension } from "@lezer/markdown";
-import type { EditorState } from "@codemirror/state";
-import type { Diagnostic } from "@codemirror/lint";
-import type { EditorView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
+import type { Diagnostic } from "@codemirror/lint";
+import type { EditorState } from "@codemirror/state";
+import type { EditorView } from "@codemirror/view";
+import { IterMode, parseMixed } from "@lezer/common";
 import { tags } from "@lezer/highlight";
+import type { MarkdownExtension } from "@lezer/markdown";
 import { latexLanguage } from "codemirror-lang-latex";
 
 const DOLLAR = "$".charCodeAt(0);
@@ -23,7 +23,8 @@ export const markdownMathExtension: MarkdownExtension = {
 			before: "Escape",
 			parse(context, next, pos) {
 				if (next !== DOLLAR || context.char(pos + 1) === DOLLAR) return -1;
-				if (pos > context.offset && context.char(pos - 1) === BACKSLASH) return -1;
+				if (pos > context.offset && context.char(pos - 1) === BACKSLASH)
+					return -1;
 				const first = context.char(pos + 1);
 				if (first < 0 || /\s/.test(String.fromCharCode(first))) return -1;
 				let cursor = pos + 1;
@@ -72,7 +73,9 @@ export const markdownMathExtension: MarkdownExtension = {
 							children.push(context.elt("MathContent", contentFrom, contentTo));
 						}
 						children.push(context.elt("MathMark", closeFrom, closeTo));
-						context.addElement(context.elt("BlockMath", from, closeTo, children));
+						context.addElement(
+							context.elt("BlockMath", from, closeTo, children),
+						);
 						return true;
 					}
 					const lineFrom = context.lineStart + line.basePos;
@@ -98,7 +101,10 @@ export const markdownMathExtension: MarkdownExtension = {
 	),
 };
 
-export function isPositionInMath(state: EditorState, position: number): boolean {
+export function isPositionInMath(
+	state: EditorState,
+	position: number,
+): boolean {
 	let node = syntaxTree(state).resolve(position, -1);
 	while (node) {
 		if (
@@ -117,19 +123,26 @@ export function isPositionInMath(state: EditorState, position: number): boolean 
 function validateFormula(source: string, offset: number): Diagnostic[] {
 	const diagnostics: Diagnostic[] = [];
 	const braces: number[] = [];
+	let consecutiveBackslashes = 0;
 	for (let index = 0; index < source.length; index += 1) {
-		if (source[index - 1] === "\\") continue;
-		if (source[index] === "{") braces.push(index);
-		if (source[index] !== "}") continue;
-		const opening = braces.pop();
-		if (opening === undefined) {
-			diagnostics.push({
-				from: offset + index,
-				to: offset + index + 1,
-				severity: "error",
-				message: "Unmatched closing brace",
-			});
+		const character = source[index];
+		const isEscaped = consecutiveBackslashes % 2 !== 0;
+		if (!isEscaped) {
+			if (character === "{") braces.push(index);
+			if (character === "}") {
+				const opening = braces.pop();
+				if (opening === undefined) {
+					diagnostics.push({
+						from: offset + index,
+						to: offset + index + 1,
+						severity: "error",
+						message: "Unmatched closing brace",
+					});
+				}
+			}
 		}
+		consecutiveBackslashes =
+			character === "\\" ? consecutiveBackslashes + 1 : 0;
 	}
 	for (const opening of braces) {
 		diagnostics.push({

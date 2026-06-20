@@ -42,8 +42,8 @@ import {
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
-import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import { loadMathExtensionFactory } from "./math/loadMathExtensions";
+import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
 
@@ -200,6 +200,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
 		onChange,
+		onMathEditRequest: mathNodeEditor.open,
 	});
 	mathNodeEditor.connect(editor, mode === "rich");
 
@@ -228,6 +229,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	);
 	const previousRelPathRef = useRef(relPath);
 	useLayoutEffect(() => {
+		// Mode and document identity define the lifetime of an edit request.
+		void mode;
+		void relPath;
 		mathNodeEditor.close();
 	}, [mathNodeEditor.close, mode, relPath]);
 

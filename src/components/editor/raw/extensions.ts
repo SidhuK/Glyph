@@ -19,12 +19,12 @@ import {
 	syntaxTree,
 } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
+import { linter } from "@codemirror/lint";
 import {
 	highlightSelectionMatches,
 	search,
 	searchKeymap,
 } from "@codemirror/search";
-import { linter } from "@codemirror/lint";
 import {
 	Annotation,
 	EditorSelection,
@@ -43,11 +43,11 @@ import {
 import { tags } from "@lezer/highlight";
 import { latexHoverTooltip } from "codemirror-lang-latex";
 import { createRawMarkdownDecorations } from "./decorations";
-import { createRawLinkCompletionSource } from "./linkCompletions";
 import {
 	embeddedLatexCompletionSource,
 	latexSnippetCompletionSource,
 } from "./latexCompletions";
+import { createRawLinkCompletionSource } from "./linkCompletions";
 import {
 	embeddedMathLinter,
 	markdownMathExtension,

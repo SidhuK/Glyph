@@ -1,9 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { useCallback, useRef, useState } from "react";
-import type {
-	MathEditRequest,
-	MathKind,
-} from "../extensions/math/mathOptions";
+import type { MathEditRequest, MathKind } from "../extensions/math/mathOptions";
 
 export function useMathNodeEditor() {
 	const [request, setRequest] = useState<MathEditRequest | null>(null);

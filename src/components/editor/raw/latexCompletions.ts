@@ -1,12 +1,10 @@
 import {
-	latexCompletionSource,
-} from "codemirror-lang-latex";
-import {
 	type CompletionContext,
 	type CompletionSource,
 	snippetCompletion,
 } from "@codemirror/autocomplete";
 import { syntaxTree } from "@codemirror/language";
+import { latexCompletionSource } from "codemirror-lang-latex";
 import { isPositionInMath } from "./markdownMathLanguage";
 
 const latexSource = latexCompletionSource(true);

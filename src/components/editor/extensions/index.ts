@@ -30,6 +30,7 @@ import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
@@ -659,6 +660,7 @@ interface CreateEditorExtensionsOptions {
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
 export function createEditorExtensions(
@@ -675,6 +677,7 @@ export function createEditorExtensions(
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
+		onMathEditRequest,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -735,7 +738,9 @@ export function createEditorExtensions(
 		...(enableEditingExtensions && enablePeopleMentions
 			? [PersonAutocomplete]
 			: []),
-		...(enableEditingExtensions && enableSlashCommand ? [SlashCommand] : []),
+		...(enableEditingExtensions && enableSlashCommand
+			? [SlashCommand.configure({ onMathEditRequest })]
+			: []),
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,
 		}),

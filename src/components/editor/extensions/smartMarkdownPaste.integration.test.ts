@@ -99,7 +99,9 @@ describe("smart Markdown paste integration", () => {
 		);
 		const editedInRaw = ` ${firstPass}`;
 		const secondPass = postprocessMarkdownFromEditor(
-			manager.serialize(manager.parse(preprocessMarkdownForEditor(editedInRaw))),
+			manager.serialize(
+				manager.parse(preprocessMarkdownForEditor(editedInRaw)),
+			),
 		);
 
 		expect(secondPass).toContain(formula);

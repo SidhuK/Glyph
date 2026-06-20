@@ -1,12 +1,12 @@
-import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
 import { InputRule, type MarkdownToken } from "@tiptap/core";
+import { BlockMath, InlineMath } from "@tiptap/extension-mathematics";
 import {
 	GLYPH_KATEX_OPTIONS,
+	type MathEditRequest,
 	blockMathMarkdown,
 	inlineMathMarkdown,
 	matchBlockMath,
 	matchInlineMath,
-	type MathEditRequest,
 } from "./mathOptions";
 
 interface CreateGlyphMathExtensionsOptions {

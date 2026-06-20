@@ -1,8 +1,8 @@
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { useLayoutEffect, useRef } from "react";
 import { latex } from "codemirror-lang-latex";
+import { useLayoutEffect, useRef } from "react";
 
 interface LatexSourceEditorProps {
 	autoFocus?: boolean;
@@ -22,6 +22,7 @@ export function LatexSourceEditor({
 	value,
 }: LatexSourceEditorProps) {
 	const hostRef = useRef<HTMLDivElement | null>(null);
+	const initialValueRef = useRef(value);
 	const onApplyRef = useRef(onApply);
 	const onCancelRef = useRef(onCancel);
 	const onChangeRef = useRef(onChange);
@@ -35,7 +36,7 @@ export function LatexSourceEditor({
 		const view = new EditorView({
 			parent: host,
 			state: EditorState.create({
-				doc: value,
+				doc: initialValueRef.current,
 				extensions: [
 					history(),
 					latex({
@@ -87,7 +88,7 @@ export function LatexSourceEditor({
 		});
 		if (autoFocus) window.requestAnimationFrame(() => view.focus());
 		return () => view.destroy();
-	}, [autoFocus, multiline, value]);
+	}, [autoFocus]);
 
 	return (
 		<div
