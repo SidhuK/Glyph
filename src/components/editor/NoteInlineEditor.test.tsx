@@ -139,6 +139,10 @@ vi.mock("./hooks/useNoteEditor", () => ({
 	useNoteEditor: useNoteEditorMock,
 }));
 
+vi.mock("./math/loadMathExtensions", () => ({
+	loadMathExtensionFactory: vi.fn(async () => () => []),
+}));
+
 vi.mock("./hooks/useResetScrollOnChange", () => ({
 	useResetScrollOnChange: () => {},
 }));

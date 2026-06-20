@@ -239,6 +239,7 @@ function shouldHandleSmartMarkdownPaste(
 }
 
 interface UseNoteEditorOptions {
+	additionalExtensions?: import("@tiptap/core").AnyExtension[];
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
@@ -258,6 +259,7 @@ interface PendingMarkdownSync {
 }
 
 export function useNoteEditor({
+	additionalExtensions = [],
 	markdown,
 	mode,
 	relPath = "",
@@ -301,6 +303,7 @@ export function useNoteEditor({
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
+				additionalExtensions,
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
@@ -309,6 +312,7 @@ export function useNoteEditor({
 				placeholder: "Start writing or press / for commands",
 			}),
 		[
+			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
 			peopleMentionsEnabled,
 			vimKeybindingsEnabled,
@@ -611,6 +615,7 @@ export function useNoteEditor({
 			},
 		},
 		[
+			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
 			vimKeybindingsEnabled,

@@ -285,6 +285,18 @@
 	font-variant-ligatures: none;
 }
 
+.rfNodeNoteEditorRaw .tok-special.tok-string,
+.rfNodeNoteEditorRaw .tok-processingInstruction {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-lintRange-error {
+	background-image: none;
+	text-decoration: underline wavy var(--status-danger-fg);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
+}
+
 .rfNodeNoteEditorRaw .cm-raw-highlight {
 	border-radius: 0.22em;
 	background: color-mix(in srgb, var(--callout-warning) 22%, transparent);

@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import {
 	Table,
@@ -649,6 +649,7 @@ const EditorLink = Link.extend({
 });
 
 interface CreateEditorExtensionsOptions {
+	additionalExtensions?: AnyExtension[];
 	enableEditingExtensions?: boolean;
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
@@ -664,6 +665,7 @@ export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
 	const {
+		additionalExtensions = [],
 		enableEditingExtensions = true,
 		enableSlashCommand = true,
 		enableWikiLinks = true,
@@ -705,6 +707,7 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		...additionalExtensions,
 		MermaidPreview,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({

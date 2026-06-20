@@ -8,6 +8,10 @@ import Suggestion, {
 import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
+import {
+	BLOCK_MATH_STARTER,
+	INLINE_MATH_STARTER,
+} from "./extensions/math/mathOptions";
 
 interface SlashCommandItem {
 	icon: string;
@@ -27,7 +31,55 @@ function clampSlashCommandIndex(index: number, itemCount: number) {
 	return index;
 }
 
+function insertMathAndOpen(
+	editor: Editor,
+	range: { from: number; to: number },
+	kind: "inline" | "block",
+) {
+	const type = kind === "inline" ? "inlineMath" : "blockMath";
+	const latex = kind === "inline" ? INLINE_MATH_STARTER : BLOCK_MATH_STARTER;
+	const inserted = editor
+		.chain()
+		.focus()
+		.deleteRange(range)
+		.insertContent({ type, attrs: { latex } })
+		.run();
+	if (!inserted) return;
+	window.requestAnimationFrame(() => {
+		const candidates: number[] = [];
+		editor.state.doc.descendants((node, pos) => {
+			if (node.type.name !== type) return;
+			candidates.push(pos);
+		});
+		const nearestPos = candidates.reduce<number | null>((nearest, pos) => {
+			if (nearest === null) return pos;
+			return Math.abs(pos - range.from) < Math.abs(nearest - range.from)
+				? pos
+				: nearest;
+		}, null);
+		if (nearestPos === null) return;
+		const dom = editor.view.nodeDOM(nearestPos);
+		if (dom instanceof HTMLElement) dom.click();
+	});
+}
+
 const SLASH_COMMANDS: SlashCommandItem[] = [
+	{
+		icon: "ƒx",
+		title: "Inline equation",
+		description: "Insert LaTeX within a line",
+		keywords: ["latex", "math", "formula", "equation", "inline"],
+		command: ({ editor, range }) =>
+			insertMathAndOpen(editor, range, "inline"),
+	},
+	{
+		icon: "∑",
+		title: "Display equation",
+		description: "Insert a centered LaTeX block",
+		keywords: ["latex", "math", "formula", "equation", "block", "display"],
+		command: ({ editor, range }) =>
+			insertMathAndOpen(editor, range, "block"),
+	},
 	{
 		icon: "H1",
 		title: "Heading 1",

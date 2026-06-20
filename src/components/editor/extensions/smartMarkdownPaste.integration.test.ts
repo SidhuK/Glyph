@@ -5,10 +5,14 @@ import {
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
 import { createEditorExtensions } from "./index";
+import { createGlyphMathExtensions } from "./math/markdownMath";
 
 function createMarkdownManager() {
 	return new MarkdownManager({
 		extensions: createEditorExtensions({
+			additionalExtensions: createGlyphMathExtensions({
+				onEditRequest: () => {},
+			}),
 			enableSlashCommand: false,
 			enableWikiLinks: true,
 		}),
@@ -51,5 +55,32 @@ describe("smart Markdown paste integration", () => {
 		expect(output).toContain("```ts");
 		expect(output).toContain("[[Roadmap]]");
 		expect(output).toContain("[docs](https://example.com/docs)");
+	});
+
+	it("round-trips inline and display LaTeX without consuming literal dollars", () => {
+		const manager = createMarkdownManager();
+		const input = [
+			"Energy is $E = mc^2$ and the price is $100$.",
+			"",
+			"$$",
+			String.raw`\begin{aligned}`,
+			String.raw`a &= \frac{b}{c} \\`,
+			String.raw`\end{aligned}`,
+			"$$",
+			"",
+			String.raw`Escaped \$x\$ stays literal.`,
+			"",
+			"`$notMath$`",
+		].join("\n");
+
+		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const output = postprocessMarkdownFromEditor(manager.serialize(json));
+
+		expect(output).toContain("$E = mc^2$");
+		expect(output).toContain("the price is $100$");
+		expect(output).toContain("$$\n\\begin{aligned}");
+		expect(output).toContain(String.raw`\frac{b}{c}`);
+		expect(output).toContain(String.raw`Escaped \$x\$ stays literal.`);
+		expect(output).toContain("`$notMath$`");
 	});
 });
