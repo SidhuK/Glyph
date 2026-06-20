@@ -34,7 +34,11 @@ export function CommandSearchFilters({
 					)
 				}
 			>
-				<HugeiconsIcon icon={Document} size={14} strokeWidth={0.9} />
+				<HugeiconsIcon
+					icon={Document}
+					size="var(--icon-md)"
+					strokeWidth={0.9}
+				/>
 				{t("commandPalette.filters.title")}
 			</button>
 			<button
@@ -46,7 +50,11 @@ export function CommandSearchFilters({
 					onChangeQuery(withUpdated(request, { tag_only: !request.tag_only }))
 				}
 			>
-				<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
+				<HugeiconsIcon
+					icon={Tag01Icon}
+					size="var(--icon-md)"
+					strokeWidth={0.9}
+				/>
 				{t("commandPalette.filters.tag")}
 			</button>
 		</div>

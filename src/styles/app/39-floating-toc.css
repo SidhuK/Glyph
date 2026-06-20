@@ -79,7 +79,7 @@
 	cursor: pointer;
 	display: block;
 	padding: 3px 6px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
 	color: var(--text-secondary);
 	border-radius: var(--radius-sm);

@@ -24,6 +24,7 @@ import {
 } from "../../lib/tagIcons";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
+import { useWikiLinkAutocomplete } from "../editor/hooks/useWikiLinkAutocomplete";
 import {
 	normalizeTagDraftPrefix,
 	normalizeTagToken,
@@ -40,6 +41,10 @@ import {
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import {
+	DatabaseNoteAppearanceIcon,
+	databaseNoteAppearanceStyle,
+} from "./DatabaseNoteAppearanceIcon";
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
@@ -84,7 +89,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 				<DatabaseColumnIcon
 					iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 					className="databaseTagPillIcon"
-					size={11}
+					size="var(--icon-xs)"
 					strokeWidth={1.2}
 				/>
 			) : null}
@@ -192,7 +197,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 							<DatabaseColumnIcon
 								iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 								className="databaseTagPillIcon"
-								size={11}
+								size="var(--icon-xs)"
 								strokeWidth={1.2}
 							/>
 						) : null}
@@ -225,9 +230,27 @@ function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 
 function isListLikeColumn(column: DatabaseColumn): boolean {
 	return (
+		column.type === "linked_notes" ||
 		column.property_kind === "relation" ||
 		column.property_kind === "multi_select"
 	);
+}
+
+function supportsWikiLinkAutocomplete(column: DatabaseColumn): boolean {
+	return (
+		column.type === "property" &&
+		(column.property_kind == null || column.property_kind === "text")
+	);
+}
+
+function normalizeLinkedNoteListValue(value: string): string {
+	const trimmed = value.trim();
+	const inner =
+		trimmed.startsWith("[[") && trimmed.endsWith("]]")
+			? trimmed.slice(2, -2)
+			: trimmed;
+	const target = inner.split("|")[0]?.split("#")[0]?.trim();
+	return target ?? "";
 }
 
 function uniqueValues(values: string[]): string[] {
@@ -279,6 +302,7 @@ function DatabaseCellEditor({
 	const tagInputRef = useRef<HTMLInputElement | null>(null);
 	const valueFieldRef = useRef<HTMLDivElement | null>(null);
 	const valueInputRef = useRef<HTMLInputElement | null>(null);
+	const textInputRef = useRef<HTMLInputElement | null>(null);
 	const focusTagInput = useCallback((element: HTMLInputElement | null) => {
 		tagInputRef.current = element;
 		if (element) {
@@ -292,6 +316,7 @@ function DatabaseCellEditor({
 		}
 	}, []);
 	const focusTextInput = useCallback((element: HTMLInputElement | null) => {
+		textInputRef.current = element;
 		if (element) {
 			element.focus();
 			element.select();
@@ -303,6 +328,7 @@ function DatabaseCellEditor({
 		column.type === "property" && column.property_kind === "status";
 	const isPriorityColumn =
 		column.type === "property" && column.property_kind === "priority";
+	const isLinkedNotesColumn = column.type === "linked_notes";
 	const isListLike = isListLikeColumn(column);
 	const toneStyleForValue = (value: string) =>
 		databaseValueToneStyleForColor(value, laneColors[value] ?? null);
@@ -383,6 +409,12 @@ function DatabaseCellEditor({
 			})
 			.slice(0, 6);
 	}, [column.type, draft, valueOptions]);
+	const wikiLinkAutocomplete = useWikiLinkAutocomplete({
+		enabled: supportsWikiLinkAutocomplete(column),
+		inputRef: textInputRef,
+		value: draft,
+		onChange: setDraft,
+	});
 
 	const handleSelectRow = () => {
 		onSelectRow?.(row.note_path);
@@ -432,7 +464,9 @@ function DatabaseCellEditor({
 	};
 
 	const addListValue = async (rawValue: string) => {
-		const next = rawValue.trim();
+		const next = isLinkedNotesColumn
+			? normalizeLinkedNoteListValue(rawValue)
+			: rawValue.trim();
 		if (!next) return;
 		const currentValues = uniqueValues(cellValue.value_list);
 		const lowerCurrent = new Set(
@@ -445,6 +479,15 @@ function DatabaseCellEditor({
 		setValueDraft("");
 		await saveListValues([...currentValues, next]);
 	};
+	const linkedNoteListAutocomplete = useWikiLinkAutocomplete({
+		enabled: isLinkedNotesColumn,
+		inputRef: valueInputRef,
+		value: valueDraft,
+		onChange: setValueDraft,
+		onSelectItem: (item) => {
+			void addListValue(item.insertText).catch(handleTagSaveError);
+		},
+	});
 
 	const removeListValue = async (valueToRemove: string) => {
 		const normalized = valueToRemove.trim().toLowerCase();
@@ -490,7 +533,11 @@ function DatabaseCellEditor({
 					kind: column.property_kind ?? cellValue.kind,
 					value_list: draft
 						.split(",")
-						.map((value) => value.trim())
+						.map((value) =>
+							isLinkedNotesColumn
+								? normalizeLinkedNoteListValue(value)
+								: value.trim(),
+						)
 						.filter(Boolean),
 				});
 				onClose();
@@ -536,11 +583,11 @@ function DatabaseCellEditor({
 							<DatabaseColumnIcon
 								iconName={iconNameForTag(value)}
 								className="databaseTagPillIcon"
-								size={11}
+								size="var(--icon-xs)"
 								strokeWidth={1.2}
 							/>
 							<span>{formatDatabaseTagLabel(value)}</span>
-							<X size={10} />
+							<X size="var(--icon-xs)" />
 						</button>
 					))}
 					<input
@@ -827,7 +874,7 @@ function DatabaseCellEditor({
 							title={`Remove ${value}`}
 						>
 							<span>{value}</span>
-							<X size={10} />
+							<X size="var(--icon-xs)" />
 						</button>
 					))}
 					<input
@@ -839,7 +886,14 @@ function DatabaseCellEditor({
 							cellValue.value_list.length > 0 ? "" : "Add or choose a value"
 						}
 						onFocus={handleSelectRow}
-						onChange={(event) => setValueDraft(event.target.value)}
+						onChange={(event) => {
+							const nextValue = event.target.value;
+							setValueDraft(nextValue);
+							linkedNoteListAutocomplete.refresh(
+								nextValue,
+								event.currentTarget.selectionStart,
+							);
+						}}
 						onBlur={(event) => {
 							const relatedTarget = event.relatedTarget as Node | null;
 							if (
@@ -864,8 +918,13 @@ function DatabaseCellEditor({
 						onClick={(event) => {
 							handleSelectRow();
 							event.stopPropagation();
+							linkedNoteListAutocomplete.refresh(
+								event.currentTarget.value,
+								event.currentTarget.selectionStart,
+							);
 						}}
 						onKeyDown={(event) => {
+							if (linkedNoteListAutocomplete.handleKeyDown(event)) return;
 							if (event.key === "Enter" || event.key === ",") {
 								event.preventDefault();
 								void addListValue(valueDraft).catch(handleTagSaveError);
@@ -887,7 +946,31 @@ function DatabaseCellEditor({
 						}}
 					/>
 				</div>
-				{valueSuggestions.length > 0 ? (
+				{linkedNoteListAutocomplete.items.length > 0 ? (
+					<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
+						{linkedNoteListAutocomplete.items.map((item, index) => (
+							<button
+								key={item.path}
+								type="button"
+								className={[
+									"wikiLinkSuggestionItem",
+									index === linkedNoteListAutocomplete.activeIndex
+										? "active"
+										: "",
+								]
+									.filter(Boolean)
+									.join(" ")}
+								onMouseDown={(event) => {
+									event.preventDefault();
+									linkedNoteListAutocomplete.select(item);
+								}}
+							>
+								<span className="wikiLinkSuggestionTitle">{item.title}</span>
+								<span className="wikiLinkSuggestionPath">{item.path}</span>
+							</button>
+						))}
+					</div>
+				) : valueSuggestions.length > 0 ? (
 					<div className="notePropertySuggestions databaseTagSuggestions">
 						<div className="notePropertySuggestionsLabel">Suggested values</div>
 						<div className="notePropertySuggestionList">
@@ -927,18 +1010,34 @@ function DatabaseCellEditor({
 							: "text"
 				}
 				value={draft}
-				onChange={(event) => setDraft(event.target.value)}
+				onChange={(event) => {
+					const nextValue = event.target.value;
+					setDraft(nextValue);
+					wikiLinkAutocomplete.refresh(
+						nextValue,
+						event.currentTarget.selectionStart,
+					);
+				}}
 				onBlur={() => void commitText()}
 				onFocus={(event) => {
 					handleSelectRow();
 					event.currentTarget.select();
+					wikiLinkAutocomplete.refresh(
+						event.currentTarget.value,
+						event.currentTarget.selectionStart,
+					);
 				}}
 				onClick={(event) => {
 					handleSelectRow();
 					event.stopPropagation();
+					wikiLinkAutocomplete.refresh(
+						event.currentTarget.value,
+						event.currentTarget.selectionStart,
+					);
 				}}
 				onDoubleClick={(event) => event.stopPropagation()}
 				onKeyDown={(event) => {
+					if (wikiLinkAutocomplete.handleKeyDown(event)) return;
 					if (event.key === "Enter") {
 						event.preventDefault();
 						void commitText();
@@ -949,7 +1048,29 @@ function DatabaseCellEditor({
 					}
 				}}
 			/>
-			{textSuggestions.length > 0 ? (
+			{wikiLinkAutocomplete.items.length > 0 ? (
+				<div className="wikiLinkSuggestionMenu databaseWikiLinkSuggestions">
+					{wikiLinkAutocomplete.items.map((item, index) => (
+						<button
+							key={item.path}
+							type="button"
+							className={[
+								"wikiLinkSuggestionItem",
+								index === wikiLinkAutocomplete.activeIndex ? "active" : "",
+							]
+								.filter(Boolean)
+								.join(" ")}
+							onMouseDown={(event) => {
+								event.preventDefault();
+								wikiLinkAutocomplete.select(item);
+							}}
+						>
+							<span className="wikiLinkSuggestionTitle">{item.title}</span>
+							<span className="wikiLinkSuggestionPath">{item.path}</span>
+						</button>
+					))}
+				</div>
+			) : textSuggestions.length > 0 ? (
 				<div className="notePropertySuggestions databaseTagSuggestions">
 					<div className="notePropertySuggestionsLabel">Suggested values</div>
 					<div className="notePropertySuggestionList">
@@ -987,11 +1108,16 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
-	const { beautifulTags, tagAppearance } = useFileTreeContext();
+	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
 		() => databaseCellValueFromRow(row, column),
 		[column, row],
+	);
+	const noteAppearance = itemAppearance[row.note_path] ?? null;
+	const noteAppearanceStyle = databaseNoteAppearanceStyle(
+		row.note_path,
+		noteAppearance,
 	);
 	const [editing, setEditing] = useState(false);
 	const displayText =
@@ -1300,6 +1426,7 @@ export function DatabaseCell({
 					<button
 						type="button"
 						className="databaseCellButton databaseTitleCellMain is-title"
+						style={noteAppearanceStyle}
 						onDoubleClick={() => {
 							if (editable) setEditing(true);
 						}}
@@ -1309,6 +1436,12 @@ export function DatabaseCell({
 						}}
 						title="Double-click to rename note"
 					>
+						<DatabaseNoteAppearanceIcon
+							notePath={row.note_path}
+							appearance={noteAppearance}
+							className="databaseTitleCellIcon"
+							size="var(--icon-md)"
+						/>
 						{displayText.trim() ? (
 							<span className="databaseCellText">{displayText}</span>
 						) : null}

@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { i18n } from "../../i18n";
-import {
-	type AppLanguage,
-	LANGUAGE_OPTIONS,
-	resolveSupportedLanguage,
-} from "../../i18n/locales";
+import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
 import { loadSettings, setLanguage } from "../../lib/settings";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 export function GeneralSettingsPane() {
 	const { t } = useTranslation(["settings", "common"]);
@@ -38,14 +34,6 @@ export function GeneralSettingsPane() {
 		setError("");
 		try {
 			await setLanguage(nextLanguage);
-			const systemLanguages = Array.from(
-				navigator.languages?.length
-					? navigator.languages
-					: [navigator.language],
-			).filter(Boolean);
-			await i18n.changeLanguage(
-				resolveSupportedLanguage(nextLanguage, systemLanguages),
-			);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : String(cause));
 		}
@@ -64,7 +52,7 @@ export function GeneralSettingsPane() {
 						}
 						htmlFor="settings-language-select"
 					>
-						<select
+						<SettingsSelect
 							id="settings-language-select"
 							value={language}
 							onChange={(event) =>
@@ -78,7 +66,7 @@ export function GeneralSettingsPane() {
 										: option.nativeLabel}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 						{error ? <p className="settingsHint">{error}</p> : null}
 					</SettingsRow>
 				</SettingsSection>

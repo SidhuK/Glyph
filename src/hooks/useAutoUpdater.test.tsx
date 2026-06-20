@@ -4,6 +4,10 @@ import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@tauri-apps/api/event", () => ({
+	listen: vi.fn().mockResolvedValue(vi.fn()),
+}));
+
 vi.mock("@tauri-apps/api/window", () => ({
 	getCurrentWindow: () => ({
 		label: "main",
@@ -14,14 +18,28 @@ vi.mock("@tauri-apps/plugin-process", () => ({
 	relaunch: vi.fn(),
 }));
 
-const checkMock = vi.fn();
 vi.mock("@tauri-apps/plugin-updater", () => ({
-	check: checkMock,
+	Update: class {
+		version: string;
+		download = vi.fn().mockResolvedValue(undefined);
+		install = vi.fn().mockResolvedValue(undefined);
+
+		constructor(metadata: { version: string }) {
+			this.version = metadata.version;
+		}
+	},
 }));
 
 const setAutoUpdateLastCheckedAtMock = vi.fn();
+const loadSettingsMock = vi.fn();
 vi.mock("../lib/settings", () => ({
+	loadSettings: loadSettingsMock,
 	setAutoUpdateLastCheckedAt: setAutoUpdateLastCheckedAtMock,
+}));
+
+const invokeMock = vi.fn();
+vi.mock("../lib/tauri", () => ({
+	invoke: invokeMock,
 }));
 
 (
@@ -58,7 +76,12 @@ describe("useAutoUpdater", () => {
 		vi.stubEnv("DEV", false);
 
 		setAutoUpdateLastCheckedAtMock.mockResolvedValue(undefined);
-		checkMock.mockResolvedValue(null);
+		loadSettingsMock.mockResolvedValue({
+			ui: {
+				releaseChannel: "stable",
+			},
+		});
+		invokeMock.mockResolvedValue(null);
 
 		({ useAutoUpdater } = await import("./useAutoUpdater"));
 
@@ -84,7 +107,7 @@ describe("useAutoUpdater", () => {
 			await Promise.resolve();
 		});
 
-		expect(checkMock).not.toHaveBeenCalled();
+		expect(invokeMock).not.toHaveBeenCalled();
 	});
 
 	it("checks for updates when enabled", async () => {
@@ -106,7 +129,33 @@ describe("useAutoUpdater", () => {
 			await new Promise((resolve) => window.setTimeout(resolve, 0));
 		});
 
-		expect(checkMock).toHaveBeenCalledTimes(1);
+		expect(invokeMock).toHaveBeenCalledTimes(1);
+		expect(invokeMock).toHaveBeenCalledWith("updater_check_release_channel", {
+			channel: "stable",
+		});
 		expect(states).toContain(false);
+	});
+
+	it("reports updateReady when an update is available", async () => {
+		const states: boolean[] = [];
+		invokeMock.mockResolvedValue({ version: "1.2.3" });
+
+		await act(async () => {
+			root.render(
+				<Harness
+					enabled
+					onReady={(ready) => {
+						states.push(ready);
+					}}
+				/>,
+			);
+		});
+
+		await act(async () => {
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+		});
+
+		expect(states).toContain(true);
 	});
 });

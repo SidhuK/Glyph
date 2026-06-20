@@ -193,3 +193,23 @@ impl Default for GitSyncStatus {
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GitHistoryCommit {
+    pub hash: String,
+    pub short_hash: String,
+    pub rel_path: String,
+    pub author_name: String,
+    pub author_email: String,
+    pub timestamp_ms: i64,
+    pub subject: String,
+    pub added_count: u32,
+    pub modified_count: u32,
+    pub deleted_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GitCommitDiff {
+    pub commit: GitHistoryCommit,
+    pub diff: String,
+}

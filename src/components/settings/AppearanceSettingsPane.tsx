@@ -7,6 +7,7 @@ import {
 	applyUiTypography,
 } from "../../lib/appearance";
 import {
+	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
 	type UiAccent,
 	type UiDarkThemeId,
@@ -41,8 +42,6 @@ import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
 	DEFAULT_FONT_FAMILY,
-	EDITOR_FONT_SIZE_OPTIONS,
-	UI_FONT_SIZE_OPTIONS,
 	loadAvailableFonts,
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
@@ -56,14 +55,16 @@ export function AppearanceSettingsPane() {
 	const [darkThemeId, setDarkThemeIdState] = useState<UiDarkThemeId>(
 		GLYPH_DEFAULT_DARK_THEME_ID,
 	);
-	const [accent, setAccentState] = useState<UiAccent>("cerulean");
+	const [accent, setAccentState] = useState<UiAccent>("neutral");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
 	const [monoFontFamily, setMonoFontFamilyState] =
 		useState<UiFontFamily>("JetBrains Mono");
 	const [uiFontSize, setUiFontSizeState] = useState<UiFontSize>(14);
 	const [editorFontSize, setEditorFontSizeState] = useState<UiFontSize>(16);
-	const [translucentApp, setTranslucentAppState] = useState(true);
+	const [translucentApp, setTranslucentAppState] = useState(
+		DEFAULT_UI_TRANSLUCENT_APP,
+	);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([
 		DEFAULT_FONT_FAMILY,
 	]);
@@ -301,8 +302,6 @@ export function AppearanceSettingsPane() {
 					editorFontSize={editorFontSize}
 					availableFonts={availableFonts}
 					availableMonospaceFonts={availableMonospaceFonts}
-					uiFontSizeOptions={UI_FONT_SIZE_OPTIONS}
-					editorFontSizeOptions={EDITOR_FONT_SIZE_OPTIONS}
 					onFontFamilyChange={onFontFamilyChange}
 					onMonoFontFamilyChange={onMonoFontFamilyChange}
 					onUiFontSizeChange={onUiFontSizeChange}

@@ -62,7 +62,7 @@ export function NotePropertiesToolbar({
 
 	return (
 		<div className="notePropertiesToolbar">
-			<div className="notePropertiesToolbarLabel">Frontmatter</div>
+			<div className="notePropertiesToolbarLabel">Properties</div>
 			<div
 				className="notePropertiesModeSwitch"
 				role="tablist"
@@ -92,7 +92,7 @@ export function NotePropertiesToolbar({
 							transition={springPresets.gentle}
 						/>
 					) : null}
-					<List size={14} className="notePropertiesModePillIcon" />
+					<List size="var(--icon-md)" className="notePropertiesModePillIcon" />
 				</m.button>
 				<m.button
 					ref={rawButtonRef}
@@ -117,7 +117,7 @@ export function NotePropertiesToolbar({
 							transition={springPresets.gentle}
 						/>
 					) : null}
-					<Code size={14} className="notePropertiesModePillIcon" />
+					<Code size="var(--icon-md)" className="notePropertiesModePillIcon" />
 				</m.button>
 			</div>
 		</div>

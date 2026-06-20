@@ -1,11 +1,12 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, Ordering},
 };
 
 use crate::utils::{self, file_timestamp_strings_if_exists};
 
+use super::checklists::checklist_counts;
 use super::db::{open_db, resolve_title_to_id};
 use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
@@ -20,7 +21,6 @@ use super::relationships::{
 use super::tags::{
     expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people,
 };
-use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
 
 static PEOPLE_MENTIONS_AS_TAGS_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -93,6 +93,32 @@ fn collect_markdown_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, S
     Ok(out)
 }
 
+fn file_fingerprint(path: &Path) -> Result<(i64, i64), String> {
+    let metadata = std::fs::metadata(path).map_err(|e| e.to_string())?;
+    let modified_ns = metadata
+        .modified()
+        .ok()
+        .and_then(|modified| modified.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|duration| duration.as_nanos().min(i64::MAX as u128) as i64)
+        .unwrap_or_default();
+    let size = metadata.len().min(i64::MAX as u64) as i64;
+    Ok((modified_ns, size))
+}
+
+fn record_file_fingerprint(
+    conn: &rusqlite::Connection,
+    note_id: &str,
+    file_path: &Path,
+) -> Result<(), String> {
+    let (modified_ns, size) = file_fingerprint(file_path)?;
+    conn.execute(
+        "INSERT OR REPLACE INTO indexed_files(path, modified_ns, size) VALUES(?, ?, ?)",
+        rusqlite::params![note_id, modified_ns, size],
+    )
+    .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn link_kind_for_id(to_id: &str) -> &'static str {
     if utils::is_markdown_path(Path::new(to_id)) {
         "note"
@@ -124,6 +150,7 @@ fn index_note_with_conn(
     if existing_etag.as_deref() == Some(etag.as_str()) {
         ensure_note_relationships_indexed(conn, note_id, markdown)?;
         refresh_indexed_timestamps_if_needed(conn, note_id, file_path)?;
+        record_file_fingerprint(conn, note_id, file_path)?;
         return Ok(());
     }
 
@@ -144,10 +171,21 @@ fn index_note_with_conn(
     let title_for_fts = title.clone();
     let preview = preview_from_markdown(note_id, markdown);
     let rel_path = note_id.to_string();
+    let (checklist_total, checklist_completed) = checklist_counts(markdown);
 
     tx.execute(
-        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
-        rusqlite::params![note_id, title, created, updated, rel_path, etag, preview],
+        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        rusqlite::params![
+            note_id,
+            title,
+            created,
+            updated,
+            rel_path,
+            etag,
+            preview,
+            checklist_total,
+            checklist_completed
+        ],
     )
     .map_err(|e| e.to_string())?;
 
@@ -190,7 +228,6 @@ fn index_note_with_conn(
         );
     }
     reindex_note_relationships(&tx, note_id, markdown)?;
-    reindex_note_tasks(&tx, note_id, &rel_path, &updated, &etag, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
@@ -216,6 +253,7 @@ fn index_note_with_conn(
         .map_err(|e| e.to_string())?;
     }
 
+    record_file_fingerprint(&tx, note_id, file_path)?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -251,11 +289,6 @@ fn refresh_indexed_timestamps_if_needed(
         rusqlite::params![created, updated, note_id],
     )
     .map_err(|e| e.to_string())?;
-    tx.execute(
-        "UPDATE tasks SET note_updated = ? WHERE note_id = ?",
-        rusqlite::params![updated, note_id],
-    )
-    .map_err(|e| e.to_string())?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -283,12 +316,19 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
         [note_id],
     )
     .map_err(|e| e.to_string())?;
-    delete_note_tasks(&tx, note_id)?;
+    tx.execute("DELETE FROM indexed_files WHERE path = ?", [note_id])
+        .map_err(|e| e.to_string())?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
 
-pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
+pub fn rebuild_with_progress<F>(
+    space_root: &Path,
+    mut on_progress: F,
+) -> Result<IndexRebuildResult, String>
+where
+    F: FnMut(usize, usize),
+{
     let mut conn = open_db(space_root)?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     let people_tags_enabled = people_mentions_as_tags_enabled();
@@ -305,9 +345,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM note_relationships", [])
         .map_err(|e| e.to_string())?;
-    tx.execute("DELETE FROM tasks", [])
-        .map_err(|e| e.to_string())?;
-    tx.execute("DELETE FROM tasks_fts", [])
+    tx.execute("DELETE FROM indexed_files", [])
         .map_err(|e| e.to_string())?;
 
     let note_paths = collect_markdown_files(space_root)?;
@@ -315,8 +353,9 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         Vec::with_capacity(note_paths.len());
     let mut relationship_data = Vec::with_capacity(note_paths.len());
     let count = note_paths.len();
+    on_progress(0, count);
 
-    for (rel, path) in &note_paths {
+    for (index, (rel, path)) in note_paths.iter().enumerate() {
         let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
 
         let (mut title, created, updated) =
@@ -333,10 +372,21 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         }
         let etag = sha256_hex(markdown.as_bytes());
         let preview = preview_from_markdown(rel, &markdown);
+        let (checklist_total, checklist_completed) = checklist_counts(&markdown);
 
         tx.execute(
-            "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
-            rusqlite::params![rel, title, created, updated, rel, etag, preview],
+            "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview, checklist_total, checklist_completed) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            rusqlite::params![
+                rel,
+                title,
+                created,
+                updated,
+                rel,
+                etag,
+                preview,
+                checklist_total,
+                checklist_completed
+            ],
         )
         .map_err(|e| e.to_string())?;
 
@@ -372,11 +422,18 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
                 "Skipping note property indexing during rebuild after frontmatter parse error"
             );
         }
-        reindex_note_tasks(&tx, rel, rel, &updated, &etag, &markdown)?;
-
         let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
         link_data.push((rel.clone(), to_ids, to_titles));
         relationship_data.push((rel.clone(), parse_frontmatter_relationships(&markdown)));
+        let (modified_ns, size) = file_fingerprint(path)?;
+        tx.execute(
+            "INSERT INTO indexed_files(path, modified_ns, size) VALUES(?, ?, ?)",
+            rusqlite::params![rel, modified_ns, size],
+        )
+        .map_err(|e| e.to_string())?;
+        if index + 1 < count {
+            on_progress(index + 1, count);
+        }
     }
 
     for (rel, to_ids, to_titles) in &link_data {
@@ -405,7 +462,68 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     }
 
     tx.commit().map_err(|e| e.to_string())?;
+    on_progress(count, count);
     Ok(IndexRebuildResult { indexed: count })
+}
+
+pub fn sync<F>(space_root: &Path, mut on_progress: F) -> Result<IndexRebuildResult, String>
+where
+    F: FnMut(usize, usize),
+{
+    let conn = open_db(space_root)?;
+    let tracked = {
+        let mut statement = conn
+            .prepare("SELECT path, modified_ns, size FROM indexed_files")
+            .map_err(|e| e.to_string())?;
+        let rows = statement
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    (row.get::<_, i64>(1)?, row.get::<_, i64>(2)?),
+                ))
+            })
+            .map_err(|e| e.to_string())?
+            .collect::<Result<HashMap<_, _>, _>>()
+            .map_err(|e| e.to_string())?;
+        rows
+    };
+    if tracked.is_empty() {
+        drop(conn);
+        return rebuild_with_progress(space_root, on_progress);
+    }
+
+    let note_paths = collect_markdown_files(space_root)?;
+    let disk_paths = note_paths
+        .iter()
+        .map(|(path, _)| path.as_str())
+        .collect::<HashSet<_>>();
+    let removed = tracked
+        .keys()
+        .filter(|path| !disk_paths.contains(path.as_str()))
+        .cloned()
+        .collect::<Vec<_>>();
+    let total = note_paths.len() + removed.len();
+    let mut indexed = 0;
+    on_progress(0, total);
+
+    for (position, (note_id, path)) in note_paths.iter().enumerate() {
+        let fingerprint = file_fingerprint(path)?;
+        if tracked.get(note_id) != Some(&fingerprint) {
+            let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+            index_note_with_conn(&conn, note_id, &markdown, path)?;
+            indexed += 1;
+        }
+        on_progress(position + 1, total);
+    }
+
+    drop(conn);
+    for (offset, note_id) in removed.iter().enumerate() {
+        remove_note(space_root, note_id)?;
+        indexed += 1;
+        on_progress(note_paths.len() + offset + 1, total);
+    }
+
+    Ok(IndexRebuildResult { indexed })
 }
 
 #[cfg(test)]
@@ -458,13 +576,11 @@ mod tests {
                 row.get(0)
             })
             .expect("note row should exist");
-        let first_indexed_at: String = conn
-            .query_row(
-                "SELECT indexed_at FROM tasks WHERE note_id = ? LIMIT 1",
-                [note_id],
-                |row| row.get(0),
-            )
-            .expect("task row should exist");
+        let first_etag: String = conn
+            .query_row("SELECT etag FROM notes WHERE id = ?", [note_id], |row| {
+                row.get(0)
+            })
+            .expect("note row should exist");
         drop(conn);
 
         thread::sleep(Duration::from_millis(1100));
@@ -477,23 +593,13 @@ mod tests {
                 row.get(0)
             })
             .expect("note row should still exist");
-        let second_indexed_at: String = conn
-            .query_row(
-                "SELECT indexed_at FROM tasks WHERE note_id = ? LIMIT 1",
-                [note_id],
-                |row| row.get(0),
-            )
-            .expect("task row should still exist");
+        let second_etag: String = conn
+            .query_row("SELECT etag FROM notes WHERE id = ?", [note_id], |row| {
+                row.get(0)
+            })
+            .expect("note row should still exist");
 
         assert_ne!(second_updated, first_updated);
-        assert_eq!(second_indexed_at, first_indexed_at);
-        let second_task_updated: String = conn
-            .query_row(
-                "SELECT note_updated FROM tasks WHERE note_id = ? LIMIT 1",
-                [note_id],
-                |row| row.get(0),
-            )
-            .expect("task row should still exist");
-        assert_eq!(second_task_updated, second_updated);
+        assert_eq!(second_etag, first_etag);
     }
 }

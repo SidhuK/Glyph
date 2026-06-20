@@ -28,6 +28,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 const VIM_KEYBINDING_HELP = [
 	{ key: "Esc", action: "Enter Vim command mode." },
@@ -68,7 +69,7 @@ function VimKeybindingsHelp() {
 				>
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size={14}
+						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
 				</button>
@@ -361,7 +362,7 @@ export function AdvancedSettingsPane() {
 						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
 						interactive={false}
 					>
-						<select
+						<SettingsSelect
 							aria-label="Editor width"
 							value={editorWidthMode}
 							disabled={isSavingEditorWidthMode}
@@ -386,7 +387,7 @@ export function AdvancedSettingsPane() {
 									{option.label}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
 						label="Collapsible headings"

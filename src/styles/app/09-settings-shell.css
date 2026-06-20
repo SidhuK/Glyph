@@ -4,11 +4,6 @@
 
 .settingsTabPanel {
 	--settings-surface: var(--bg-tertiary);
-	--settings-surface-muted: color-mix(
-		in srgb,
-		var(--bg-tertiary) 82%,
-		var(--bg-primary)
-	);
 	--settings-surface-soft: color-mix(
 		in srgb,
 		var(--bg-tertiary) 58%,
@@ -33,7 +28,7 @@
 .settingsBackButton {
 	gap: 6px;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 }
 
@@ -45,51 +40,48 @@
 	position: relative;
 	display: flex;
 	align-items: center;
-	margin: 0 8px 6px;
-	height: 30px;
-	color: var(--text-tertiary);
+	width: 100%;
+	padding: 8px 8px 8px;
+	color: var(--text-secondary);
 	-webkit-app-region: no-drag;
 }
 
 .settingsSidebarSearchIcon {
 	position: absolute;
-	left: 9px;
+	left: 16px;
 	pointer-events: none;
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .settingsSidebarSearchInput {
 	width: 100%;
-	height: 30px;
 	min-width: 0;
-	border: 1px solid var(--border-default);
-	border-radius: 8px;
-	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
-	color: var(--text-primary);
-	font-size: 12px;
+	min-height: 26px;
+	padding: 2px 30px 2px 30px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 	line-height: 1;
 	outline: none;
-	padding: 0 30px 0 30px;
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
+	cursor: text;
 }
 
 .settingsSidebarSearchInput::placeholder {
-	color: var(--text-tertiary);
+	color: var(--text-secondary);
 }
 
 .settingsSidebarSearchInput:focus {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 38%,
-		var(--border-default)
-	);
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--text-primary));
+	color: var(--text-primary);
 }
 
 .settingsSidebarSearchClear {
 	position: absolute;
-	right: 5px;
+	right: 12px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -155,7 +147,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	line-height: 17px;
 }
@@ -167,7 +159,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 14px;
 	color: var(--interactive-accent);
@@ -179,14 +171,14 @@
 	-webkit-line-clamp: 2;
 	overflow: hidden;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
 }
 
 .settingsSearchEmpty {
 	padding: 10px 8px;
 	color: var(--text-tertiary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
 }
 
@@ -203,8 +195,25 @@
 }
 
 .settingsSidebarTabs {
+	gap: 14px;
+	padding: 8px 8px 12px;
+}
+
+.settingsSidebarTabGroup {
+	display: flex;
+	flex-direction: column;
 	gap: 2px;
-	padding: 4px 8px 12px;
+	min-width: 0;
+}
+
+.settingsSidebarTabGroupHeading {
+	margin: 0;
+	padding: 0 8px 5px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	text-transform: uppercase;
 }
 
 .settingsFeedbackCard {
@@ -234,7 +243,7 @@
 }
 
 .settingsFeedbackEyebrow {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -242,7 +251,7 @@
 }
 
 .settingsFeedbackTitle {
-	font-size: 14px;
+	font-size: var(--text-base);
 	font-weight: var(--font-bold);
 	line-height: 1.2;
 	color: var(--text-primary);
@@ -250,7 +259,7 @@
 
 .settingsFeedbackBody {
 	margin: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.5;
 	color: var(--text-secondary);
 }
@@ -311,8 +320,8 @@
 }
 
 .settingsTabIcon {
-	height: 16px;
-	width: 16px;
+	height: var(--icon-lg);
+	width: var(--icon-lg);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -334,12 +343,12 @@
 	flex-wrap: wrap;
 }
 
-.settingsTabButton:hover {
+.sidebarQuickActionBtn.settingsTabButton:hover {
 	color: var(--text-primary);
 	background: var(--bg-hover);
 }
 
-.settingsTabButtonActive {
+.sidebarQuickActionBtn.settingsTabButtonActive {
 	color: var(--text-primary);
 	background: var(--bg-active);
 }
@@ -381,21 +390,18 @@
 	gap: 4px;
 	padding: 0 0 16px;
 	background: transparent;
+	width: 70%;
+	max-width: 644px;
+	margin: 0 auto;
 }
 
 .settingsPanelHeader::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	height: 1px;
-	background: var(--border-light);
+	display: none;
 }
 
 .settingsPanelTitle {
 	margin: 0;
-	font-size: 21px;
+	font-size: calc(var(--text-base) * 1.5);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.02em;
 	color: var(--text-primary);

@@ -1,4 +1,4 @@
-export type WikiLinkAnchorKind = "none" | "heading" | "block";
+type WikiLinkAnchorKind = "none" | "heading" | "block";
 
 export interface WikiLinkAttrs {
 	raw: string;

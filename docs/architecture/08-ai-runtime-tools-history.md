@@ -309,7 +309,7 @@ The per-run audit JSON includes:
 
 The chat history includes:
 
-- version
+- version: 1
 - stored job id, using the resolved history id
 - generated title
 - creation timestamp
@@ -317,6 +317,9 @@ The chat history includes:
 - profile details without secrets
 - messages with the assistant response appended when present
 - tool events
+
+The durable chat history schema currently uses version 1 to prevent migration
+drift.
 
 History commands:
 

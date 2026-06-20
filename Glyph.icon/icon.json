@@ -1,86 +1,59 @@
 {
 	"fill": {
-		"linear-gradient": [
-			"display-p3:1.00000,1.00000,1.00000,1.00000",
-			"display-p3:0.89100,0.89100,0.89100,1.00000"
-		],
-		"orientation": {
-			"start": {
-				"x": 0.5,
-				"y": 1
-			},
-			"stop": {
-				"x": 0.5,
-				"y": 0.3
-			}
-		}
+		"automatic-gradient": "extended-gray:1.00000,1.00000"
 	},
 	"groups": [
 		{
-			"blur-material": null,
 			"layers": [
 				{
-					"blend-mode": "normal",
-					"fill": {
-						"automatic-gradient": "extended-gray:0.75000,1.00000"
-					},
 					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "_-2.png",
+					"name": "_-2",
 					"position": {
 						"scale": 0.8,
-						"translation-in-points": [28, -9]
+						"translation-in-points": [0.39999999999997726, 192.3750000000001]
 					}
 				},
 				{
-					"blend-mode": "normal",
-					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.21961,0.23529,1.00000"
-					},
 					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "_-4.png",
+					"name": "_-4",
 					"position": {
-						"scale": 0.9,
-						"translation-in-points": [28, -9]
+						"scale": 0.8,
+						"translation-in-points": [255.4794996282542, 192.375]
 					}
 				},
 				{
-					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.55294,0.15686,1.00000"
-					},
 					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "_-3.png",
+					"name": "_-3",
 					"position": {
-						"scale": 1,
-						"translation-in-points": [28, -9]
+						"scale": 0.8,
+						"translation-in-points": [-244.59970642547694, 192.3750000000001]
 					}
 				},
 				{
-					"fill": {
-						"automatic-gradient": "extended-srgb:1.00000,0.80000,0.00000,1.00000"
-					},
 					"glass": false,
-					"hidden": false,
-					"image-name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM.png",
-					"name": "ChatGPT Image Mar 13, 2026, 09_10_20 AM",
+					"image-name": "Rectangle 2-2 2.png",
+					"name": "Rectangle 2-2 2",
 					"position": {
-						"scale": 1.1,
-						"translation-in-points": [28, -9]
+						"scale": 0.6,
+						"translation-in-points": [1.5, 199.0750000000005]
+					}
+				},
+				{
+					"glass": false,
+					"image-name": "Rectangle 3-2.svg",
+					"name": "Rectangle 3-2",
+					"position": {
+						"scale": 0.6,
+						"translation-in-points": [0, 198.07500000000027]
 					}
 				}
 			],
-			"position": {
-				"scale": 1,
-				"translation-in-points": [-27, 38]
-			},
 			"shadow": {
 				"kind": "neutral",
-				"opacity": 0.92
+				"opacity": 0.5
 			},
 			"translucency": {
 				"enabled": true,

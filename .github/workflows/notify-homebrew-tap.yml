@@ -7,6 +7,7 @@ on:
 
 jobs:
   dispatch:
+    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch tap sync

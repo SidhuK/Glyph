@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
 
 interface SettingsSectionProps {
@@ -64,6 +64,38 @@ export function SettingsRow({
 	const CopyTag = htmlFor ? "label" : "div";
 	const rowTitle = typeof label === "string" ? label : undefined;
 
+	const tryToggleRowCheckbox = (
+		target: EventTarget | null,
+		currentTarget: HTMLDivElement,
+	) => {
+		const el = target as HTMLElement | null;
+		if (!el) return false;
+		if (el.closest(".uiToggle")) return false;
+		if (el.closest("button, a, input, select, textarea")) return false;
+		if (el.closest("label")) return false;
+		const input = currentTarget.querySelector<HTMLInputElement>(
+			'input[type="checkbox"]',
+		);
+		if (input && !input.disabled) {
+			input.click();
+			return true;
+		}
+		return false;
+	};
+
+	const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
+		if (!interactive) return;
+		tryToggleRowCheckbox(event.target, event.currentTarget);
+	};
+
+	const handleRowKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+		if (!interactive) return;
+		if (event.key !== "Enter" && event.key !== " ") return;
+		if (tryToggleRowCheckbox(event.target, event.currentTarget)) {
+			event.preventDefault();
+		}
+	};
+
 	return (
 		<div
 			className={cn(
@@ -73,6 +105,10 @@ export function SettingsRow({
 				className,
 			)}
 			data-settings-row-title={rowTitle}
+			onClick={handleRowClick}
+			onKeyDown={handleRowKeyDown}
+			role={interactive ? "button" : undefined}
+			tabIndex={interactive ? 0 : undefined}
 		>
 			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
 				<div className="settingsLabel">{label}</div>

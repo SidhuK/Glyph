@@ -1,22 +1,33 @@
-import { useEffect, useState } from "react";
+import {
+	BadgeInfoIcon,
+	GitBranchIcon,
+	InformationCircleIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
 	relationshipTargetLabel,
 } from "../../lib/relationships";
 import type {
+	GitCommitDiff,
+	GitSyncStatus,
 	NoteTaskSummary,
 	WorkspaceDatabasePreviewContext,
 } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { NotePropertiesPanel } from "../editor/NotePropertiesPanel";
 import type { TOCHeading } from "../editor/hooks/useTableOfContents";
 import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "../editor/markdown/editorEvents";
-import type { NoteInlineEditorMode } from "../editor/types";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
+import { GitHistorySidebar } from "./GitHistorySidebar";
+
+type InfoSidebarTab = "info" | "history";
 
 interface SidebarBacklinkItem {
 	id: string;
@@ -31,7 +42,6 @@ interface LinkedNoteItem {
 
 interface NotesInfoSidebarProps {
 	open: boolean;
-	mode: NoteInlineEditorMode;
 	hasError: boolean;
 	relPath: string;
 	frontmatter: string | null;
@@ -53,6 +63,9 @@ interface NotesInfoSidebarProps {
 	lineCount: number;
 	utf8SizeBytes: number;
 	saveLabel: string;
+	gitSyncStatus?: GitSyncStatus | null;
+	selectedGitCommitHash?: string | null;
+	onSelectGitDiff?: (diff: GitCommitDiff) => void;
 	onClose: () => void;
 }
 
@@ -85,9 +98,8 @@ function formatFileSize(bytes: number): string {
 	})} ${units[unitIndex]}`;
 }
 
-export function NotesInfoSidebar({
+export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	open,
-	mode,
 	hasError,
 	relPath,
 	frontmatter,
@@ -105,16 +117,37 @@ export function NotesInfoSidebar({
 	lineCount,
 	utf8SizeBytes,
 	saveLabel,
+	gitSyncStatus = null,
+	selectedGitCommitHash = null,
+	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
 	const [host, setHost] = useState<HTMLElement | null>(null);
+	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
+	const hasGitHistoryTab =
+		canShowGitHistory(gitSyncStatus) && Boolean(onSelectGitDiff);
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;
 		setHost(document.getElementById("notes-info-sidebar-root"));
 	}, []);
 
-	if (!open || mode === "plain" || hasError) return null;
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset to the info tab when the active note path changes.
+	useEffect(() => {
+		setActiveTab("info");
+	}, [relPath]);
+
+	useEffect(() => {
+		if (!open) {
+			setActiveTab("info");
+			return;
+		}
+		if (!hasGitHistoryTab && activeTab === "history") {
+			setActiveTab("info");
+		}
+	}, [activeTab, hasGitHistoryTab, open]);
+
+	if (!open || hasError) return null;
 
 	const sidebar = (
 		<aside className="notesInfoSidebarPanel" aria-label="Note info panel">
@@ -123,6 +156,45 @@ export function NotesInfoSidebar({
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			>
+				<div
+					className="markdownEditorInfoTabs"
+					role="tablist"
+					aria-label="Note sidebar"
+					data-window-drag-ignore
+				>
+					<button
+						type="button"
+						className="markdownEditorInfoTab"
+						role="tab"
+						aria-selected={activeTab === "info"}
+						data-active={activeTab === "info" ? "true" : undefined}
+						onClick={() => setActiveTab("info")}
+					>
+						<HugeiconsIcon
+							icon={BadgeInfoIcon}
+							size="var(--icon-sm)"
+							strokeWidth={1}
+						/>
+						Info
+					</button>
+					{hasGitHistoryTab ? (
+						<button
+							type="button"
+							className="markdownEditorInfoTab"
+							role="tab"
+							aria-selected={activeTab === "history"}
+							data-active={activeTab === "history" ? "true" : undefined}
+							onClick={() => setActiveTab("history")}
+						>
+							<HugeiconsIcon
+								icon={GitBranchIcon}
+								size="var(--icon-sm)"
+								strokeWidth={1}
+							/>
+							History
+						</button>
+					) : null}
+				</div>
 				<button
 					type="button"
 					className="markdownEditorInfoClose"
@@ -134,220 +206,251 @@ export function NotesInfoSidebar({
 				</button>
 			</div>
 			<div className="markdownEditorInfoBody">
-				<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
-					<NotePropertiesPanel
-						frontmatter={frontmatter}
-						onChange={onFrontmatterChange}
-					/>
-				</section>
+				{activeTab === "info" ? (
+					<>
+						<section className="markdownEditorInfoSection markdownEditorInfoSectionFrontmatter">
+							<NotePropertiesPanel
+								frontmatter={frontmatter}
+								onChange={onFrontmatterChange}
+							/>
+						</section>
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Stats</h3>
-					<div className="markdownEditorInfoRows">
-						<div className="markdownEditorInfoRow">
-							<span>Words</span>
-							<strong>{stats.words.toLocaleString()}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Characters</span>
-							<strong>{stats.characters.toLocaleString()}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Reading time</span>
-							<strong>{stats.readingTime}</strong>
-						</div>
-					</div>
-				</section>
-
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
-					<div className="markdownEditorInfoTaskSummary">
-						<TaskProgressIndicator summary={taskSummary} />
-						<span>
-							{taskSummary.completed_count.toLocaleString()} of{" "}
-							{taskSummary.total_count.toLocaleString()} done
-						</span>
-					</div>
-				</section>
-
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Outline</h3>
-					{tocHeadings.length > 0 ? (
-						<div className="markdownEditorInfoOutline">
-							{tocHeadings.map((heading) => (
-								<button
-									key={heading.id}
-									type="button"
-									className="markdownEditorInfoOutlineItem"
-									data-active={tocActiveId === heading.id ? "true" : undefined}
-									data-level={heading.level}
-									onClick={() => onSelectHeading(heading)}
-									title={heading.text}
-								>
-									{heading.text}
-								</button>
-							))}
-						</div>
-					) : (
-						<div className="markdownEditorInfoEmpty">
-							No headings in this note yet.
-						</div>
-					)}
-				</section>
-
-				{backlinks.length > 0 ? (
-					<section className="markdownEditorInfoSection">
-						<h3 className="markdownEditorInfoSectionLabel">Backlinks</h3>
-						<div className="markdownEditorInfoLinkList">
-							{backlinks.map((item) => (
-								<button
-									key={item.id}
-									type="button"
-									className="wikiLink"
-									data-target={item.id}
-									onClick={() =>
-										dispatchWikiLinkClick({
-											raw: `[[${item.id}]]`,
-											target: item.id,
-											alias: null,
-											anchorKind: "none",
-											anchor: null,
-											unresolved: false,
-										})
-									}
-									title={item.id}
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.label}
-								</button>
-							))}
-						</div>
-					</section>
-				) : null}
-
-				{relationshipGroups.length > 0 ? (
-					<section className="markdownEditorInfoSection">
-						<h3 className="markdownEditorInfoSectionLabel">Relationships</h3>
-						<div className="markdownEditorInfoRows">
-							{relationshipGroups.map((group) => (
-								<div
-									key={group.field_key}
-									className="markdownEditorInfoRelationshipGroup"
-								>
-									<span>{group.field_key}</span>
-									<div className="markdownEditorInfoLinkList">
-										{group.items.map((item) => {
-											const target = item.to_id ?? item.target_title;
-											if (!target) return null;
-											return (
-												<button
-													key={`${group.field_key}:${item.ordinal}:${target}`}
-													type="button"
-													className="wikiLink"
-													data-target={target}
-													onClick={() =>
-														dispatchWikiLinkClick({
-															raw: `[[${target}]]`,
-															target,
-															alias: null,
-															anchorKind: "none",
-															anchor: null,
-															unresolved: item.to_id === null,
-														})
-													}
-													title={target}
-												>
-													<span className="wikiLinkIcon" aria-hidden="true" />
-													{relationshipTargetLabel(item)}
-												</button>
-											);
-										})}
-									</div>
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Stats</h3>
+							<div className="markdownEditorInfoRows">
+								<div className="markdownEditorInfoRow">
+									<span>Words</span>
+									<strong>{stats.words.toLocaleString()}</strong>
 								</div>
-							))}
-						</div>
-					</section>
+								<div className="markdownEditorInfoRow">
+									<span>Characters</span>
+									<strong>{stats.characters.toLocaleString()}</strong>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Reading time</span>
+									<strong>{stats.readingTime}</strong>
+								</div>
+							</div>
+						</section>
+
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Tasks</h3>
+							<div className="markdownEditorInfoTaskSummary">
+								<TaskProgressIndicator summary={taskSummary} />
+								<span>
+									{taskSummary.completed_count.toLocaleString()} of{" "}
+									{taskSummary.total_count.toLocaleString()} done
+								</span>
+							</div>
+						</section>
+
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Outline</h3>
+							{tocHeadings.length > 0 ? (
+								<div className="markdownEditorInfoOutline">
+									{tocHeadings.map((heading) => (
+										<button
+											key={heading.id}
+											type="button"
+											className="markdownEditorInfoOutlineItem"
+											data-active={
+												tocActiveId === heading.id ? "true" : undefined
+											}
+											data-level={heading.level}
+											onClick={() => onSelectHeading(heading)}
+											title={heading.text}
+										>
+											{heading.text}
+										</button>
+									))}
+								</div>
+							) : (
+								<div className="markdownEditorInfoEmpty">
+									No headings in this note yet.
+								</div>
+							)}
+						</section>
+
+						{backlinks.length > 0 ? (
+							<section className="markdownEditorInfoSection">
+								<h3 className="markdownEditorInfoSectionLabel">Backlinks</h3>
+								<div className="markdownEditorInfoLinkList">
+									{backlinks.map((item) => (
+										<button
+											key={item.id}
+											type="button"
+											className="wikiLink"
+											data-target={item.id}
+											onClick={() =>
+												dispatchWikiLinkClick({
+													raw: `[[${item.id}]]`,
+													target: item.id,
+													alias: null,
+													anchorKind: "none",
+													anchor: null,
+													unresolved: false,
+												})
+											}
+											title={item.id}
+										>
+											<span className="wikiLinkIcon" aria-hidden="true" />
+											{item.label}
+										</button>
+									))}
+								</div>
+							</section>
+						) : null}
+
+						{relationshipGroups.length > 0 ? (
+							<section className="markdownEditorInfoSection">
+								<h3 className="markdownEditorInfoSectionLabel">
+									Relationships
+								</h3>
+								<div className="markdownEditorInfoRows">
+									{relationshipGroups.map((group) => (
+										<div
+											key={group.field_key}
+											className="markdownEditorInfoRelationshipGroup"
+										>
+											<span>{group.field_key}</span>
+											<div className="markdownEditorInfoLinkList">
+												{group.items.map((item) => {
+													const target = item.to_id ?? item.target_title;
+													if (!target) return null;
+													return (
+														<button
+															key={`${group.field_key}:${item.ordinal}:${target}`}
+															type="button"
+															className="wikiLink"
+															data-target={target}
+															onClick={() =>
+																dispatchWikiLinkClick({
+																	raw: `[[${target}]]`,
+																	target,
+																	alias: null,
+																	anchorKind: "none",
+																	anchor: null,
+																	unresolved: item.to_id === null,
+																})
+															}
+															title={target}
+														>
+															<span
+																className="wikiLinkIcon"
+																aria-hidden="true"
+															/>
+															{relationshipTargetLabel(item)}
+														</button>
+													);
+												})}
+											</div>
+										</div>
+									))}
+								</div>
+							</section>
+						) : null}
+
+						<section className="markdownEditorInfoSection">
+							<h3 className="markdownEditorInfoSectionLabel">Linked notes</h3>
+							{linkedNotes.length > 0 ? (
+								<div className="markdownEditorInfoLinkList">
+									{linkedNotes.map((item) => (
+										<button
+											key={`${item.kind}:${item.id}`}
+											type="button"
+											className="wikiLink"
+											data-target={item.kind === "wiki" ? item.id : undefined}
+											onClick={() => {
+												if (item.kind === "wiki") {
+													dispatchWikiLinkClick({
+														raw: `[[${item.id}]]`,
+														target: item.id,
+														alias: null,
+														anchorKind: "none",
+														anchor: null,
+														unresolved: false,
+													});
+													return;
+												}
+												dispatchMarkdownLinkClick({
+													href: item.id,
+													sourcePath: relPath,
+												});
+											}}
+											title={item.id}
+										>
+											<span className="wikiLinkIcon" aria-hidden="true" />
+											{item.label}
+										</button>
+									))}
+								</div>
+							) : (
+								<div className="markdownEditorInfoEmpty">No linked notes.</div>
+							)}
+						</section>
+
+						<section className="markdownEditorInfoSection markdownEditorInfoSectionFile">
+							<h3 className="markdownEditorInfoSectionLabel markdownEditorInfoSectionLabelSubtle">
+								<HugeiconsIcon
+									icon={InformationCircleIcon}
+									size="var(--icon-sm)"
+									strokeWidth={1}
+								/>
+								Info
+							</h3>
+							<div className="markdownEditorInfoRows">
+								<div className="markdownEditorInfoRow">
+									<span>Modified</span>
+									<span className="markdownEditorInfoValue">
+										{formatMetadataDate(
+											lastSavedMtimeMs
+												? new Date(lastSavedMtimeMs).toISOString()
+												: (previewContext?.updated ?? null),
+										)}
+									</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Created</span>
+									<span className="markdownEditorInfoValue">
+										{formatMetadataDate(previewContext?.created)}
+									</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Path</span>
+									<span className="markdownEditorInfoPathValue">{relPath}</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Lines</span>
+									<span className="markdownEditorInfoValue">
+										{(previewContext?.line_count ?? lineCount).toLocaleString()}
+									</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Size</span>
+									<span className="markdownEditorInfoValue">
+										{formatFileSize(utf8SizeBytes)}
+									</span>
+								</div>
+								<div className="markdownEditorInfoRow">
+									<span>Save status</span>
+									<span className="markdownEditorInfoValue">{saveLabel}</span>
+								</div>
+							</div>
+						</section>
+					</>
 				) : null}
 
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">Linked notes</h3>
-					{linkedNotes.length > 0 ? (
-						<div className="markdownEditorInfoLinkList">
-							{linkedNotes.map((item) => (
-								<button
-									key={`${item.kind}:${item.id}`}
-									type="button"
-									className="wikiLink"
-									data-target={item.kind === "wiki" ? item.id : undefined}
-									onClick={() => {
-										if (item.kind === "wiki") {
-											dispatchWikiLinkClick({
-												raw: `[[${item.id}]]`,
-												target: item.id,
-												alias: null,
-												anchorKind: "none",
-												anchor: null,
-												unresolved: false,
-											});
-											return;
-										}
-										dispatchMarkdownLinkClick({
-											href: item.id,
-											sourcePath: relPath,
-										});
-									}}
-									title={item.id}
-								>
-									<span className="wikiLinkIcon" aria-hidden="true" />
-									{item.label}
-								</button>
-							))}
-						</div>
-					) : (
-						<div className="markdownEditorInfoEmpty">No linked notes.</div>
-					)}
-				</section>
-
-				<section className="markdownEditorInfoSection">
-					<h3 className="markdownEditorInfoSectionLabel">File info</h3>
-					<div className="markdownEditorInfoRows">
-						<div className="markdownEditorInfoRow">
-							<span>Path</span>
-							<span className="markdownEditorInfoPathValue">{relPath}</span>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Modified</span>
-							<strong>
-								{formatMetadataDate(
-									lastSavedMtimeMs
-										? new Date(lastSavedMtimeMs).toISOString()
-										: (previewContext?.updated ?? null),
-								)}
-							</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Created</span>
-							<strong>{formatMetadataDate(previewContext?.created)}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Lines</span>
-							<strong>
-								{(previewContext?.line_count ?? lineCount).toLocaleString()}
-							</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Size</span>
-							<strong>{formatFileSize(utf8SizeBytes)}</strong>
-						</div>
-						<div className="markdownEditorInfoRow">
-							<span>Save status</span>
-							<strong>{saveLabel}</strong>
-						</div>
-					</div>
-				</section>
+				{activeTab === "history" && hasGitHistoryTab && onSelectGitDiff ? (
+					<GitHistorySidebar
+						open={open}
+						relPath={relPath}
+						selectedCommitHash={selectedGitCommitHash}
+						onSelectDiff={onSelectGitDiff}
+					/>
+				) : null}
 			</div>
 		</aside>
 	);
 
 	return host ? createPortal(sidebar, host) : sidebar;
-}
+});

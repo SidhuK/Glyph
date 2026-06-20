@@ -3,15 +3,8 @@
 	--color-white: #ffffff;
 	--color-gray-50: #f7f6f3;
 	--color-gray-100: #f1f1ef;
-	--color-gray-200: #e3e2e0;
-	--color-gray-300: #d3d2cf;
-	--color-gray-400: #9b9a97;
-	--color-gray-500: #787774;
-	--color-gray-600: #5f5e5b;
-	--color-gray-700: #454441;
 	--color-gray-800: #37352f;
 	--color-gray-900: #1f1f1f;
-	--color-gray-950: #191919;
 
 	--color-blue-100: #d3ebfa;
 	--color-blue-200: #a8d8f5;
@@ -38,23 +31,26 @@
 	--font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 	--font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-	--text-xs: 11px;
-	--text-sm: 12px;
-	--text-base: 14px;
-	--text-md: 16px;
-	--text-lg: 18px;
-	--text-xl: 20px;
-	--text-2xl: 24px;
-	--text-3xl: 30px;
-	--editor-font-size: 16px;
-	--editor-inline-font-size: 13px;
-	--editor-raw-font-size: 12px;
-	--editor-h1-font-size: 25.28px;
-	--editor-h2-font-size: 20.48px;
-	--editor-h3-font-size: 17.28px;
-	--editor-h4-font-size: 16px;
-	--editor-h5-font-size: 14.8px;
-	--editor-h6-font-size: 13.6px;
+	--text-base: 0.875rem;
+	--text-xs: calc(var(--text-base) * 0.9);
+	--text-sm: var(--text-base);
+	--text-md: calc(var(--text-base) * 1.1);
+	--editor-font-size: calc(var(--text-base) * 1.1);
+	--editor-inline-font-size: var(--editor-font-size);
+	--editor-raw-font-size: var(--editor-font-size);
+	--editor-h1-font-size: calc(var(--editor-font-size) * 1.6);
+	--editor-h2-font-size: calc(var(--editor-font-size) * 1.3);
+	--editor-h3-font-size: calc(var(--editor-font-size) * 1.1);
+	--editor-h4-font-size: var(--editor-font-size);
+	--editor-h5-font-size: calc(var(--editor-font-size) * 0.9);
+	--editor-h6-font-size: calc(var(--editor-font-size) * 0.9);
+	--icon-xs: calc(var(--text-base) * 0.8);
+	--icon-sm: calc(var(--text-base) * 0.9);
+	--icon-md: var(--text-base);
+	--icon-lg: calc(var(--text-base) * 1.1);
+	--icon-xl: calc(var(--text-base) * 1.3);
+	--icon-2xl: calc(var(--text-base) * 1.7);
+	--icon-3xl: calc(var(--text-base) * 2.3);
 
 	--leading-snug: 1.35;
 	--leading-normal: 1.5;
@@ -65,7 +61,6 @@
 	--font-semibold: 600;
 	--font-bold: 700;
 
-	--space-0: 0;
 	--space-1: 4px;
 	--space-2: 8px;
 	--space-3: 12px;
@@ -77,14 +72,10 @@
 	--radius-2: 2px;
 	--radius-3: 3px;
 	--radius-4: 4px;
-	--radius-5: 5px;
 	--radius-6: 6px;
 	--radius-7: 7px;
-	--radius-8: 8px;
 	--radius-10: 10px;
-	--radius-12: 12px;
 	--radius-14: 14px;
-	--radius-15: 15px;
 	--radius-18: 18px;
 	--radius-24: 24px;
 	--radius-round: 9999px;
@@ -100,15 +91,12 @@
 	--radius-full: var(--radius-round);
 
 	--shadow-sm: none;
-	--shadow-md: none;
 	--shadow-lg: none;
 	--shadow-xl: none;
 	--shadow-float: none;
 
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
 	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
 	--glyph-user-accent: initial;
 	--glyph-user-accent-hover: initial;

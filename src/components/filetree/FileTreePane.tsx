@@ -3,8 +3,7 @@ import {
 	type DragEndEvent,
 	useDroppable,
 } from "@dnd-kit/react";
-import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
 import { m } from "motion/react";
 import {
 	type KeyboardEvent,
@@ -19,7 +18,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
@@ -33,21 +32,14 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import {
-	isMarkdownPath,
-	normalizeRelPath,
-	parentDir,
-	basename as relBasename,
-} from "../../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 import { FILE_TREE_ENTRY_TYPE } from "./fileTreeDnd";
-import { rowVariants } from "./fileTreeItemHelpers";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -236,7 +228,7 @@ function FolderBreadcrumb({
 						</button>
 						{!isLast ? (
 							<ChevronRight
-								size={11}
+								size="var(--icon-xs)"
 								className="fileTreeBreadcrumbSeparator"
 								aria-hidden="true"
 							/>
@@ -286,8 +278,7 @@ interface TreeEntriesProps {
 		direction: -1 | 1,
 		currentTarget: HTMLElement,
 	) => void;
-	showTaskProgressIndicator: boolean;
-	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
@@ -323,8 +314,7 @@ function TreeEntries({
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
 	onArrowNavigate,
-	showTaskProgressIndicator,
-	taskSummariesByPath,
+	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
 }: TreeEntriesProps) {
@@ -401,7 +391,6 @@ function TreeEntries({
 									onTogglePinnedFile={onTogglePinnedFile}
 									onMoveClickSuppressRef={onMoveClickSuppressRef}
 									onArrowNavigate={onArrowNavigate}
-									showTaskProgressIndicator={showTaskProgressIndicator}
 									taskSummariesByPath={taskSummariesByPath}
 									showFilePreviews={showFilePreviews}
 									filePreviewsByPath={filePreviewsByPath}
@@ -435,11 +424,7 @@ function TreeEntries({
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
 						onArrowNavigate={onArrowNavigate}
-						taskSummary={
-							showTaskProgressIndicator
-								? (taskSummariesByPath[e.rel_path] ?? null)
-								: null
-						}
+						taskSummary={taskSummariesByPath[e.rel_path] ?? null}
 						previewText={
 							showFilePreviews && e.is_markdown
 								? (filePreviewsByPath[e.rel_path] ?? null)
@@ -481,7 +466,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
@@ -624,17 +609,11 @@ export const FileTreePane = memo(function FileTreePane({
 		if (focusedDirPath) {
 			collectEntries(childrenByDir[focusedDirPath]);
 		}
-		for (const pinnedPath of pinnedFiles) {
-			if (isMarkdownPath(pinnedPath)) {
-				paths.add(pinnedPath);
-			}
-		}
-
 		return [...paths].sort();
-	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
+	}, [childrenByDir, expandedDirs, focusedDirPath, rootEntries]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		Boolean(spacePath) && showTaskProgressIndicator,
+		Boolean(spacePath),
 		taskSummaryRefreshKey,
 	);
 
@@ -784,7 +763,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
 		: null;
-	const focusedEntriesLoading = Boolean(focusedDirPath && !focusedEntries);
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -867,22 +845,6 @@ export const FileTreePane = memo(function FileTreePane({
 		focusedDirPath,
 		spacePath,
 	]);
-
-	const pinnedFileItems = useMemo(
-		() =>
-			pinnedFiles.map((path) => {
-				const fileName = relBasename(path);
-				const displayName =
-					fileName.replace(/\.[^./]+$/, "") || fileName || path;
-				return {
-					path,
-					displayName,
-					parent: parentDir(path),
-					isMarkdown: isMarkdownPath(path),
-				};
-			}),
-		[pinnedFiles],
-	);
 
 	const handleArrowNavigate = useCallback(
 		(_path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
@@ -969,15 +931,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onNavigate={handleEnterDir}
 							onExit={handleExitFocusedDir}
 						/>
-						{focusedEntriesLoading ? (
-							<m.div
-								className="fileTreeEmpty"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-							>
-								Loading folder...
-							</m.div>
-						) : focusedEntries?.length ? (
+						{focusedEntries === null ? null : focusedEntries.length ? (
 							<TreeEntries
 								entries={focusedEntries}
 								parentDepth={-1}
@@ -1009,7 +963,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
@@ -1024,98 +977,8 @@ export const FileTreePane = memo(function FileTreePane({
 							</m.div>
 						)}
 					</FileTreeRootDrop>
-				) : rootEntries.length || pinnedFileItems.length ? (
+				) : rootEntries.length ? (
 					<FileTreeRootDrop>
-						{pinnedFileItems.length > 0 ? (
-							<section className="fileTreePinnedSection">
-								<ul className="fileTreeList fileTreePinnedList">
-									{pinnedFileItems.map((file) => {
-										const isActive = file.path === activeFilePath;
-										return (
-											<li
-												key={file.path}
-												className={
-													isActive ? "fileTreeItem active" : "fileTreeItem"
-												}
-											>
-												<div className="fileTreeRowShell">
-													<m.div
-														className="fileTreeRow"
-														variants={rowVariants}
-														whileHover="hover"
-														whileTap="tap"
-														animate={isActive ? "active" : "idle"}
-														transition={springTransition}
-													>
-														<button
-															type="button"
-															aria-label={`Unpin ${file.displayName}`}
-															title="Unpin"
-															onClick={() => onTogglePinnedFile(file.path)}
-															className="fileTreePinToggle fileTreeIcon fileTreePinnedLeadingPin"
-														>
-															<HugeiconsIcon
-																icon={PinIcon}
-																size={14}
-																strokeWidth={0.9}
-																className="fileTreePinIcon"
-																aria-hidden="true"
-															/>
-															<HugeiconsIcon
-																icon={PinOffIcon}
-																size={14}
-																strokeWidth={0.9}
-																className="fileTreePinOffIcon"
-																aria-hidden="true"
-															/>
-														</button>
-														<button
-															type="button"
-															className="fileTreePinToggle fileTreePinnedRow"
-															onClick={() => onOpenFile(file.path)}
-															onKeyDown={(event) => {
-																if (
-																	event.key !== "ArrowDown" &&
-																	event.key !== "ArrowUp"
-																)
-																	return;
-																event.preventDefault();
-																handleArrowNavigate(
-																	file.path,
-																	event.key === "ArrowDown" ? 1 : -1,
-																	event.currentTarget,
-																);
-															}}
-															title={file.path}
-															data-file-tree-file="true"
-															data-file-tree-kind="file"
-															data-file-tree-path={file.path}
-														>
-															<span className="fileTreeName">
-																{file.displayName}
-															</span>
-															{showTaskProgressIndicator &&
-															(taskSummariesByPath[file.path]?.total_count ??
-																0) > 0 ? (
-																<TaskProgressIndicator
-																	summary={taskSummariesByPath[file.path]}
-																	className="fileTreeTaskProgress"
-																/>
-															) : null}
-															{file.parent ? (
-																<span className="fileTreePinnedPath">
-																	{file.parent}
-																</span>
-															) : null}
-														</button>
-													</m.div>
-												</div>
-											</li>
-										);
-									})}
-								</ul>
-							</section>
-						) : null}
 						{rootEntries.length ? (
 							<TreeEntries
 								entries={rootEntries}
@@ -1148,7 +1011,6 @@ export const FileTreePane = memo(function FileTreePane({
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 							/>
 						) : null}

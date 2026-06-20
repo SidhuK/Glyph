@@ -52,7 +52,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-normal);
 	backdrop-filter: blur(4px);
 	z-index: 15;
@@ -88,7 +88,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	backdrop-filter: blur(4px);
 	cursor: pointer;
@@ -112,7 +112,7 @@
 
 .codeBlockLanguagePopoverHeader {
 	padding: 2px 4px 8px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -136,6 +136,15 @@
 
 .mermaidCanvasWidget {
 	margin: 8px 0 14px;
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 480px;
+}
+
+.mermaidCanvasPlaceholder .mermaidCanvasFrame::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 }
 
 .mermaidCanvasFrame {
@@ -209,7 +218,7 @@
 	height: 28px;
 	border: none;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	cursor: pointer;
@@ -230,16 +239,6 @@
 	outline: none;
 }
 
-.mermaidCanvasLoading {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 12px;
-	color: var(--text-secondary);
-}
-
 .mermaidCanvasError {
 	position: absolute;
 	inset: 0;
@@ -248,29 +247,49 @@
 	justify-content: center;
 	padding: 24px;
 	text-align: center;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: var(--status-danger-fg, var(--text-primary));
 }
 .editorColorDropdown {
+	--editor-ribbon-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='48'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.65' numOctaves='1' stitchTiles='stitch' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 .58'/%3E%3C/filter%3E%3Crect width='192' height='48' fill='white' filter='url(%23g)'/%3E%3C/svg%3E");
+
 	min-width: auto;
-	padding: 6px;
+	padding: 7px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background-color: color-mix(
+		in srgb,
+		var(--bg-primary) 94%,
+		var(--bg-secondary)
+	);
+	background-image: linear-gradient(
+			105deg,
+			color-mix(in srgb, var(--bg-primary) 96%, var(--interactive-accent)) 0%,
+			color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary)) 62%,
+			color-mix(in srgb, var(--bg-primary) 92%, var(--interactive-accent)) 100%
+		), var(--editor-ribbon-grain);
+	background-size: 100% 100%, 192px 48px;
+	background-position: 0 0, -19px -11px;
+	background-blend-mode: normal, soft-light;
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.13), inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
 .editorColorGrid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 4px;
+	gap: 5px;
 }
 
 .editorColorSwatchButton {
 	appearance: none;
 	-webkit-appearance: none;
-	width: 28px;
-	height: 28px;
+	width: 29px;
+	height: 29px;
 	padding: 0;
 	border: 1px solid transparent;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-sm);
 	background: transparent;
 	display: inline-flex;
 	align-items: center;
@@ -284,15 +303,22 @@
 }
 
 .editorColorSwatchButton:hover {
-	background: var(--interactive-hover);
+	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
 	color: var(--text-primary);
 }
 
 .editorColorSwatchButton.active {
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: linear-gradient(
+			105deg,
+			color-mix(in srgb, var(--interactive-accent) 18%, transparent) 0%,
+			color-mix(in srgb, var(--interactive-accent) 10%, transparent) 72%,
+			color-mix(in srgb, var(--interactive-accent) 24%, transparent) 100%
+		), var(--editor-ribbon-grain);
+	background-size: 100% 100%, 192px 48px;
+	background-position: 0 0, -37px -13px;
 	border-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 44%,
+		var(--interactive-accent) 34%,
 		var(--border-default)
 	);
 	color: var(--interactive-accent);
@@ -308,51 +334,17 @@
 }
 
 .editorColorSwatch {
-	width: 14px;
-	height: 14px;
-	border-radius: var(--radius-round);
+	width: 15px;
+	height: 15px;
+	border-radius: var(--radius-3);
 	border: 1px solid color-mix(in srgb, currentcolor 18%, var(--border-default));
 	flex: 0 0 auto;
+	transform: skewX(-8deg);
 }
 
 .editorColorClearButton {
 	border-color: var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
-}
-
-.taskInlineDateBtn {
-	position: absolute;
-	left: calc(
-		var(--editor-readable-content-gutter-compact) +
-		var(--heading-toggle-rail-width) +
-		var(--heading-rail-gap) -
-		1px
-	);
-	z-index: 15;
-	width: 18px;
-	height: 18px;
-	border: none;
-	background: transparent;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-	border-radius: var(--radius-sm);
-	transform: translateY(-1px);
-}
-
-.taskInlineDateBtn:hover {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
-}
-
-.taskInlineDatePopover {
-	width: 286px;
-}
-
-.taskInlineDateActions {
-	margin-top: 0;
 }
 
 .slashCommandMenu {
@@ -361,6 +353,7 @@
 	max-width: 280px;
 	max-height: min(212px, 60vh);
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	scrollbar-width: thin;
 	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent)
 		transparent;
@@ -406,12 +399,12 @@
 }
 
 .slashCommandIcon {
-	width: 18px;
+	width: var(--icon-xl);
 	flex: 0 0 18px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	color: var(--text-tertiary);
 }
@@ -426,6 +419,7 @@
 	width: 280px;
 	max-height: 260px;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
@@ -472,8 +466,28 @@
 }
 
 .editorLinkPopover {
+	--editor-ribbon-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='48'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.65' numOctaves='1' stitchTiles='stitch' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 .58'/%3E%3C/filter%3E%3Crect width='192' height='48' fill='white' filter='url(%23g)'/%3E%3C/svg%3E");
+
 	width: 320px;
 	padding: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background-color: color-mix(
+		in srgb,
+		var(--bg-primary) 94%,
+		var(--bg-secondary)
+	);
+	background-image: linear-gradient(
+			105deg,
+			color-mix(in srgb, var(--bg-primary) 96%, var(--interactive-accent)) 0%,
+			color-mix(in srgb, var(--bg-primary) 89%, var(--bg-secondary)) 62%,
+			color-mix(in srgb, var(--bg-primary) 92%, var(--interactive-accent)) 100%
+		), var(--editor-ribbon-grain);
+	background-size: 100% 100%, 192px 48px;
+	background-position: 0 0, -23px -7px;
+	background-blend-mode: normal, soft-light;
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.13), inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 82%, transparent);
 }
 
 .editorLinkPopoverRow {
@@ -487,7 +501,7 @@
 	align-items: center;
 	gap: 8px;
 	margin-top: 8px;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -511,7 +525,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -547,7 +561,7 @@
 }
 
 .extractToNoteLabel {
-	font-size: 0.75rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
 }

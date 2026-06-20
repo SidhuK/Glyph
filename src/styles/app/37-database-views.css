@@ -1,0 +1,617 @@
+.databasesViewBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 6px 18px 8px;
+	min-width: 0;
+}
+
+.databasesViewTabsCluster {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	min-width: 0;
+	max-width: min(500px, 50vw);
+	flex: 0 1 auto;
+	padding: 3px;
+	border-radius: var(--database-radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	border: none;
+}
+
+.databasesViewTabs {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	min-width: 0;
+	flex: 1 1 auto;
+	padding-block: 1px;
+	overflow-x: auto;
+	overflow-y: visible;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.databasesViewTabs::-webkit-scrollbar {
+	display: none;
+}
+
+button.databasesViewTab {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 32px;
+	padding: 0 12px;
+	border: none;
+	border-radius: var(--database-radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.84);
+	font-weight: var(--font-medium);
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color 140ms ease, background-color 140ms ease;
+	flex: 0 0 auto;
+}
+
+button.databasesViewTab:hover:not(.is-active) {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
+}
+
+button.databasesViewTab.is-active,
+button.databasesViewTab.is-active:hover,
+button.databasesViewTab.is-active:active {
+	color: var(--text-primary);
+	font-weight: var(--font-semibold);
+	background: transparent;
+}
+
+button.databasesViewTab:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+	z-index: 1;
+}
+
+.databasesViewTabBg {
+	position: absolute;
+	inset: 0;
+	box-sizing: border-box;
+	border-radius: inherit;
+	border: 1px solid var(--border-default);
+	background: var(--bg-primary);
+	box-shadow: 0 1px 2px color-mix(in srgb, black 7%, transparent);
+}
+
+button.databasesViewTab > *:not(.databasesViewTabBg) {
+	position: relative;
+	z-index: 1;
+}
+
+.databasesViewTabIcon {
+	flex: 0 0 var(--icon-sm);
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	opacity: 0.62;
+	transition: opacity 140ms ease;
+}
+
+button.databasesViewTab:hover:not(.is-active) .databasesViewTabIcon {
+	opacity: 0.78;
+}
+
+button.databasesViewTab.is-active .databasesViewTabIcon {
+	opacity: 1;
+}
+
+.databasesViewTabLabel {
+	display: block;
+	line-height: 1.25;
+	max-width: 132px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databasesViewTabsActions {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	flex: 0 0 auto;
+	padding-left: 3px;
+	margin-left: 3px;
+}
+
+.databasesViewTabsActions .databaseToolbarChip {
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-tertiary);
+}
+
+.databasesViewTabsActions .databaseToolbarChip:hover {
+	border: none;
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	color: var(--text-primary);
+	box-shadow: none;
+}
+
+.databasesViewTabMenu,
+.databasesViewTabCreate {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0;
+	flex: 0 0 auto;
+	border-radius: var(--database-radius-md);
+}
+
+.databasesViewTabMenuIcon {
+	display: block;
+	width: var(--icon-md);
+	height: var(--icon-md);
+	min-width: var(--icon-md);
+	min-height: var(--icon-md);
+	flex: 0 0 var(--icon-md);
+}
+
+.databasesViewTabRenameInput {
+	box-sizing: border-box;
+	width: auto;
+	min-width: 72px;
+	max-width: 140px;
+	height: 32px;
+	margin: 0;
+	padding: 0 12px;
+	border: 1px solid var(--border-default);
+	border-radius: var(--database-radius-md);
+	background: var(--bg-primary);
+	font-size: calc(var(--text-base) * 0.84);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+	box-shadow: 0 1px 2px color-mix(in srgb, black 7%, transparent);
+	flex: 0 0 auto;
+}
+
+.databasesViewTabMenuContent {
+	min-width: 0;
+	width: max-content;
+	padding: var(--database-dropdown-padding);
+	border-radius: var(--database-dropdown-radius);
+}
+
+.databasesViewTabMenuLabel {
+	padding: 4px 10px 3px;
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.databasesViewTabMenuContent .databasesViewTabMenuItem {
+	gap: 8px;
+	min-height: 32px;
+	padding: 0 10px;
+	font-size: calc(var(--text-base) * 0.9);
+	border-radius: var(--database-control-radius);
+}
+
+.databasesViewTabMenuContent .databasesViewTabMenuItem svg {
+	opacity: 0.6;
+}
+
+.databasesViewTabMenuSeparator {
+	margin: 3px 6px;
+}
+
+.databaseViewOptionsTrigger {
+	position: relative;
+}
+
+.databaseViewOptionsPopover {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	width: auto;
+	max-width: min(calc(100vw - 28px), 880px);
+	padding: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	overflow: visible;
+}
+
+.databaseViewOptionsMenu,
+.databaseViewOptionsPanel {
+	border-radius: var(--database-dropdown-radius);
+	border: 1px solid var(--database-dropdown-border);
+	background: var(--database-dropdown-background);
+	box-shadow: var(--database-dropdown-shadow);
+}
+
+.databaseViewOptionsMenu {
+	width: min(300px, calc(100vw - 28px));
+	padding: 8px;
+}
+
+.databaseViewOptionsPanel {
+	width: min(300px, calc(100vw - 28px));
+	max-height: min(520px, calc(100vh - 96px));
+	padding: 8px;
+	overflow-y: auto;
+}
+
+.databaseViewOptionsPanel.is-wide {
+	width: min(500px, calc(100vw - 28px));
+}
+
+.databaseViewOptionsPanel.is-sort {
+	width: min(400px, calc(100vw - 28px));
+}
+
+.databaseViewPanelStack,
+.databaseViewFilterList,
+.databaseViewColumnsList {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.databaseViewOptionsRow,
+.databaseViewColumnRow,
+.databaseViewSortRow,
+.databaseViewFilterRow,
+.databaseViewEmptyAction {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	border: 0;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.9);
+}
+
+.databaseViewOptionsRow,
+.databaseViewColumnRow,
+.databaseViewEmptyAction {
+	width: 100%;
+	min-height: 32px;
+	gap: 8px;
+	padding: 0 8px;
+	border-radius: var(--database-control-radius);
+	background: transparent;
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 140ms ease, color 140ms ease, border-color 140ms
+		ease;
+}
+
+.databaseViewOptionsRow:hover,
+.databaseViewEmptyAction:hover,
+.databaseViewOptionsRow.is-active,
+.databaseViewColumnUtility:hover {
+	background: var(--database-dropdown-hover);
+}
+
+.databaseViewOptionsRow.is-danger,
+.databaseViewRestoreButton {
+	color: var(--text-error);
+}
+
+.databaseViewOptionsRowIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.databaseViewOptionsRowIcon {
+	width: var(--icon-xl);
+}
+
+.databaseViewOptionsRowLabel,
+.databaseViewColumnLabel {
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseViewOptionsPill {
+	flex: 0 1 auto;
+	max-width: 128px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border-radius: 6px;
+	padding: 2px 6px;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
+	);
+	color: var(--interactive-accent);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+}
+
+.databaseViewIconButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
+	border: 0;
+	border-radius: var(--database-radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.databaseViewIconButton:hover {
+	background: var(--database-dropdown-hover);
+	color: var(--text-primary);
+}
+
+.databaseViewPanelDivider {
+	height: 1px;
+	margin: 8px 4px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.databaseViewPanelHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 2px 8px 10px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+}
+
+.databaseViewPanelReset {
+	border: 0;
+	background: transparent;
+	color: var(--interactive-accent);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.databaseViewPanelHint {
+	margin: -4px 8px 10px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.9);
+	line-height: 1.35;
+}
+
+.databaseViewPresetGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: -2px 4px 10px;
+	padding: 8px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
+}
+
+.databaseViewPresetLabel {
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+}
+
+.databaseViewPresetChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.databaseViewPresetChip {
+	min-height: 28px;
+	max-width: 100%;
+	padding: 0 9px;
+	border: 1px solid var(--database-control-border);
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-primary) 76%, var(--bg-secondary));
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.databaseViewPresetChip:hover:not(:disabled),
+.databaseViewPresetChip[data-active="true"] {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--database-control-border)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+	color: var(--interactive-accent);
+}
+
+.databaseViewPresetChip:disabled {
+	cursor: default;
+	opacity: 0.55;
+}
+
+.databaseViewPanelError {
+	margin: 0 8px 8px;
+	color: var(--text-error);
+	font-size: calc(var(--text-base) * 0.9);
+}
+
+.databaseViewRestoreButton {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-height: 38px;
+	gap: 8px;
+	padding: 0 8px;
+	border: 0;
+	border-radius: var(--database-control-radius);
+	background: transparent;
+	font-size: calc(var(--text-base) * 0.9);
+	text-align: left;
+	cursor: pointer;
+}
+
+.databaseViewRestoreButton:hover {
+	background: color-mix(in srgb, var(--text-error) 8%, transparent);
+}
+
+.databaseViewField {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 0 4px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+}
+
+.databaseViewCheckRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 2px 4px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.9);
+}
+
+.databaseViewCheckRow input {
+	accent-color: var(--interactive-accent);
+}
+
+.databaseViewColumnRow {
+	min-height: 32px;
+	justify-content: space-between;
+	cursor: default;
+}
+
+.databaseViewColumnRow.is-enabled {
+	color: var(--text-primary);
+}
+
+.databaseViewColumnRow:not(.is-enabled) {
+	color: var(--text-secondary);
+}
+
+.databaseViewColumnToggle {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+}
+
+.databaseViewColumnUtility {
+	margin-top: 2px;
+	justify-content: flex-start;
+	color: var(--text-secondary);
+	cursor: pointer;
+}
+
+.databaseViewColumnUtility:hover {
+	color: var(--text-primary);
+}
+
+.databaseViewFilterRow,
+.databaseViewSortRow {
+	gap: 6px;
+	min-height: 42px;
+	padding: 6px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+}
+
+.databaseViewFilterRow {
+	flex-wrap: wrap;
+}
+
+.databaseViewSortRow {
+	justify-content: flex-start;
+	flex-wrap: nowrap;
+}
+
+.databaseViewSortRow .databaseViewFilterColumn {
+	flex: 0 1 190px;
+}
+
+.databaseViewSortRow > .databaseViewInlineSelect {
+	flex: 0 0 164px;
+	max-width: 164px;
+}
+
+.databaseViewOptionJoiner,
+.databaseViewFilterColumn {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 1 auto;
+	min-width: 0;
+	gap: 6px;
+	height: 30px;
+	border-radius: var(--database-control-radius);
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
+	color: var(--text-secondary);
+}
+
+.databaseViewOptionJoiner {
+	padding: 0 9px;
+}
+
+.databaseViewFilterColumn {
+	padding: 0 8px;
+}
+
+.databaseViewInlineSelect {
+	max-width: 190px;
+	min-width: 0;
+	height: 30px;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.9);
+	outline: none;
+	cursor: pointer;
+}
+
+.databaseViewInlineSelect:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: var(--radius-sm);
+}
+
+.databaseViewFilterValue {
+	width: 116px;
+	height: 30px;
+	border: 0;
+	background: color-mix(in srgb, var(--bg-primary) 72%, var(--bg-secondary));
+	font-size: calc(var(--text-base) * 0.9);
+}
+
+@media (max-width: 760px) {
+	.databaseViewOptionsPopover {
+		flex-direction: column-reverse;
+	}
+
+	.databaseViewOptionsPanel,
+	.databaseViewOptionsPanel.is-wide,
+	.databaseViewOptionsMenu {
+		width: min(340px, calc(100vw - 28px));
+	}
+}

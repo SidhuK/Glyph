@@ -1,6 +1,6 @@
-# SQLite Index, Search, Graph, and Tasks
+# SQLite Index, Search, Graph, and Checklists
 
-Glyph keeps Markdown files as the durable source of truth. The SQLite database under `.glyph/glyph.sqlite` is a derived index. It accelerates search, tags, backlinks, relationships, calendar activity, database rows, and tasks.
+Glyph keeps Markdown files as the durable source of truth. The SQLite database under `.glyph/glyph.sqlite` is a derived index. It accelerates search, tags, backlinks, relationships, database rows, and checklist progress summaries.
 
 If the index is wrong, rebuild it from Markdown. Do not treat SQLite rows as the authoritative note content.
 
@@ -11,7 +11,7 @@ Backend:
 - `src-tauri/src/index/schema.rs`: table and FTS schema
 - `src-tauri/src/index/db.rs`: database path, WAL setup, schema cache, migrations
 - `src-tauri/src/index/indexer.rs`: note indexing, removal, rebuild
-- `src-tauri/src/index/commands.rs`: Tauri commands for search, all docs, calendar, tags, tasks, graph
+- `src-tauri/src/index/commands.rs`: Tauri commands for search, all docs, tags, checklist summaries, graph
 - `src-tauri/src/index/frontmatter.rs`: frontmatter title and preview parsing
 - `src-tauri/src/index/links.rs`: outgoing link parsing
 - `src-tauri/src/index/tags.rs`: tag and people mention parsing
@@ -19,14 +19,13 @@ Backend:
 - `src-tauri/src/index/relationships.rs`: relationship indexing and query
 - `src-tauri/src/index/search_advanced.rs`: structured search
 - `src-tauri/src/index/search_hybrid.rs`: FTS plus local semantic-ish ranking
-- `src-tauri/src/index/tasks/`: task parsing, mutation, summaries
+- `src-tauri/src/index/checklists/`: markdown checklist parsing and summary queries
 
 Frontend consumers:
 
 - `src/components/app/AllDocsPane.tsx`
-- `src/components/calendar/CalendarPane.tsx`
+- `src/components/checklists/TaskProgressIndicator.tsx`
 - `src/components/TagsPane.tsx`
-- `src/components/tasks/`
 - `src/components/graph/LocalNoteGraphDialog.tsx`
 - `src/components/database/`
 - `src/components/app/CommandSearchResults.tsx`
@@ -49,7 +48,7 @@ Opening or closing a space calls `reset_schema_cache()` so a different space get
 
 `db.rs` sets:
 
-- `INDEX_DB_VERSION = 6`
+- `INDEX_DB_VERSION = 7`
 - `journal_mode = WAL`
 - `journal_size_limit = 1_048_576`
 - `SQLITE_FCNTL_PERSIST_WAL`
@@ -60,6 +59,7 @@ Migrations are hard-coded by `user_version`:
 - version 3: normalize unknown frontmatter property kinds
 - version 5: infer status property kinds
 - version 6: infer priority property kinds
+- version 7: add `checklist_total` and `checklist_completed` on `notes`, backfill from markdown files
 
 Schema creation still uses `CREATE TABLE IF NOT EXISTS`. Migrations fix existing databases that already have older tables.
 
@@ -78,8 +78,10 @@ Stores one row per markdown note:
 - `path`
 - `etag`
 - `preview`
+- `checklist_total`
+- `checklist_completed`
 
-`id` and `path` are currently the note path. The index uses paths as stable identifiers.
+`id` and `path` are currently the note path. The index uses paths as stable identifiers. Checklist columns store aggregate counts for progress rings; they are not per-task rows.
 
 ### `links`
 
@@ -134,26 +136,6 @@ Stores frontmatter properties:
 
 FTS5 virtual table for note title/body search.
 
-### `tasks`
-
-Stores parsed Markdown tasks:
-
-- `task_id`
-- `note_id`
-- `note_path`
-- line range
-- list path
-- raw and normalized text
-- checked/status/priority
-- date fields
-- tags, project, section
-- source hash
-- note etag and timestamps
-
-### `tasks_fts`
-
-FTS5 virtual table for task text.
-
 ## Indexing a Note
 
 `index_note(space_root, note_id, markdown)` opens SQLite and calls `index_note_with_conn()`.
@@ -171,13 +153,13 @@ The indexer:
 9. Parses tags and optional people mentions.
 10. Reindexes frontmatter properties.
 11. Reindexes relationships.
-12. Reindexes tasks.
+12. Stores checklist total/completed counts on the `notes` row.
 13. Parses outgoing links.
 14. Resolves wiki titles to note ids when the title is unique.
 15. Inserts link rows.
 16. Commits the transaction.
 
-The etag short path matters. If content did not change, tasks keep their original indexed timestamp while note updated time can refresh.
+The etag short path matters. If content did not change, derived rows are skipped while note updated time can refresh.
 
 ## Removing a Note
 
@@ -189,7 +171,6 @@ The etag short path matters. If content did not change, tasks keep their origina
 - tags
 - note properties
 - note relationships from this note
-- tasks
 
 It also converts relationships from other notes that pointed at this note back to unresolved title form.
 
@@ -201,7 +182,7 @@ Delete and rename commands call this function when markdown paths disappear or m
 
 1. Deletes all derived rows.
 2. Walks visible Markdown files under the space.
-3. Indexes notes, FTS, tags, properties, tasks.
+3. Indexes notes, FTS, tags, properties, and checklist counts.
 4. Collects link and relationship data.
 5. Resolves links after all notes exist.
 6. Inserts relationships after all note titles can resolve.
@@ -270,53 +251,16 @@ When link resolution feels wrong, inspect:
 - rename link rewriting in `space_fs/link_rewrite.rs`
 - `space_fs/link_ops.rs` for click-time resolution
 
-## Calendar
+## Checklist summaries
 
-`calendar_query_range` returns:
+The checklist subsystem parses markdown task-list lines (`- [ ]`, `- [x]`) and stores aggregate counts on each `notes` row during indexing.
 
-- day summaries
-- selected day note activity
-- daily note path info
-- task groups
+Commands:
 
-It uses:
+- `task_summary`: parse markdown and return total/completed/open counts (used by the open-note sidebar)
+- `task_summaries_for_paths`: batch lookup from indexed `checklist_total` / `checklist_completed` columns
 
-- note created/updated timestamps
-- task scheduled/due dates
-- daily note folder setting passed from the frontend
-
-Date comparisons convert RFC3339 timestamps to local dates where needed.
-
-## Tasks
-
-The tasks subsystem parses Markdown task list items and stores derived task rows.
-
-Commands include:
-
-- `task_set_checked`
-- `task_set_dates`
-- `task_dates_by_ordinal`
-- `task_update_by_ordinal`
-- `task_summary`
-- `task_summaries_for_paths`
-
-Task mutations write back to the Markdown file, then reindex. This preserves the rule that Markdown is the source of truth.
-
-Task row fields support:
-
-- checked state
-- status
-- priority
-- due date
-- scheduled date
-- start date
-- completed timestamp
-- recurrence
-- tags
-- project
-- section
-
-Frontend inline date controls use ordinal-based helpers when operating on the current editor text.
+Markdown remains the source of truth. The index only caches counts for progress rings in navigation surfaces (file tree, All Notes, Folio, database board cards, note info sidebar).
 
 ## All Docs
 
@@ -335,12 +279,11 @@ The index feeds:
 - tags and people sidebars
 - backlinks
 - local graph
-- calendar
-- task panes and progress indicators
+- checklist progress indicators
 - database source rows
 - AI tools when search can use FTS
 
-Changes to schema or indexing can affect many surfaces. Run focused manual checks across at least search, tags, backlinks, databases, and tasks after broad index changes.
+Changes to schema or indexing can affect many surfaces. Run focused manual checks across at least search, tags, backlinks, databases, and checklist progress rings after broad index changes.
 
 ## Change Checklist
 
@@ -354,7 +297,7 @@ When changing the index:
 6. Update `remove_note()` for any new per-note derived rows.
 7. Update frontend result types in `src/lib/tauri.ts` when command outputs change.
 8. Rebuild the index after parser behavior changes.
-9. Check downstream consumers, especially databases and calendar.
+9. Check downstream consumers, especially databases and checklist progress UI.
 
 ## Debugging Map
 
@@ -362,5 +305,3 @@ When changing the index:
 - Tag count wrong: inspect explicit vs derived tag rows.
 - Backlink wrong after rename: inspect link rewrite and `remove_note()`.
 - Database row missing: inspect `source_ids()` in `databases/query.rs` and `notes` rows.
-- Task checkbox writes wrong line: inspect task ordinal parsing and task source hashes.
-- Rebuild slow: inspect full space walk and per-note parser work.

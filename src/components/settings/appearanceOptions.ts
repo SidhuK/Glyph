@@ -1,20 +1,6 @@
-import {
-	MAX_EDITOR_FONT_SIZE,
-	MAX_UI_FONT_SIZE,
-	MIN_EDITOR_FONT_SIZE,
-	MIN_UI_FONT_SIZE,
-} from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 
 export const DEFAULT_FONT_FAMILY = "Geist";
-export const UI_FONT_SIZE_OPTIONS = Array.from(
-	{ length: MAX_UI_FONT_SIZE - MIN_UI_FONT_SIZE + 1 },
-	(_, idx) => MIN_UI_FONT_SIZE + idx,
-);
-export const EDITOR_FONT_SIZE_OPTIONS = Array.from(
-	{ length: MAX_EDITOR_FONT_SIZE - MIN_EDITOR_FONT_SIZE + 1 },
-	(_, idx) => MIN_EDITOR_FONT_SIZE + idx,
-);
 
 export async function loadAvailableFonts(): Promise<string[]> {
 	const curatedFonts = new Set<string>([DEFAULT_FONT_FAMILY]);

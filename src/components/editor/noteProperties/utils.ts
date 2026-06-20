@@ -1,5 +1,29 @@
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 
+export function humanizePropertyKey(key: string): string {
+	if (!key) return "";
+	return key.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+export function tagHueFromName(name: string): number {
+	let hash = 0;
+	for (let i = 0; i < name.length; i++) {
+		hash = name.charCodeAt(i) + ((hash << 5) - hash);
+	}
+	return Math.abs(hash) % 360;
+}
+
+export function formatPropertyDate(value: string): string {
+	if (!value) return "";
+	const parsed = new Date(value);
+	if (Number.isNaN(parsed.getTime())) return value;
+	return parsed.toLocaleDateString(undefined, {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+
 export function emptyProperty(): NoteProperty {
 	return {
 		key: "",

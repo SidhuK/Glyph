@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type ReactNode,
 	createContext,
@@ -13,14 +14,22 @@ import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHy
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
 import {
-	clearCurrentSpacePath,
 	loadSettings,
 	setCurrentSpacePath,
 	updateOnboardingSettings,
 } from "../lib/settings";
 import { type AppInfo, invoke } from "../lib/tauri";
+import { SPACE_WINDOW_PREFIX } from "../lib/windowLabels";
 
-export interface SpaceContextValue {
+function isSpaceWindow(): boolean {
+	try {
+		return getCurrentWindow().label.startsWith(SPACE_WINDOW_PREFIX);
+	} catch {
+		return false;
+	}
+}
+
+interface SpaceContextValue {
 	info: AppInfo | null;
 	error: string;
 	setError: (error: string) => void;
@@ -33,6 +42,7 @@ export interface SpaceContextValue {
 	settingsLoaded: boolean;
 	consumeOnboardingNotePath: () => void;
 	startIndexRebuild: () => Promise<void>;
+	startIndexSync: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
 	onOpenSpaceAtPath: (path: string) => Promise<void>;
 	onContinueLastSpace: () => Promise<void>;
@@ -85,6 +95,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
+	const currentSpacePathRef = useRef<string | null>(spacePath);
+	const indexSyncRef = useRef<{
+		spacePath: string;
+		promise: Promise<void>;
+	} | null>(null);
+	currentSpacePathRef.current = spacePath;
+	useEffect(() => {
+		if (!spacePath) indexSyncRef.current = null;
+	}, [spacePath]);
 
 	const syncRecentSpacesMenu = useCallback((spaces: string[]) => {
 		void invoke("set_recent_spaces_menu", {
@@ -139,7 +158,17 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					);
 				}
 
-				if (settings.currentSpacePath) {
+				const currentWindowSpaceInfo = await invoke("space_get_current_info");
+				if (currentWindowSpaceInfo) {
+					if (!cancelled) {
+						setSpacePath(currentWindowSpaceInfo.root);
+						setLastSpacePath(currentWindowSpaceInfo.root);
+						setSpaceSchemaVersion(currentWindowSpaceInfo.schema_version);
+						setOnboardingNotePath(
+							currentWindowSpaceInfo.onboarding_note_path ?? null,
+						);
+					}
+				} else if (settings.currentSpacePath && !isSpaceWindow()) {
 					try {
 						const spaceInfo = await invoke("space_open", {
 							path: settings.currentSpacePath,
@@ -175,24 +204,47 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		}
 	}, []);
 
+	const startIndexSync = useCallback((): Promise<void> => {
+		const currentSpacePath = currentSpacePathRef.current;
+		if (!currentSpacePath) return Promise.resolve();
+		if (indexSyncRef.current?.spacePath === currentSpacePath) {
+			return indexSyncRef.current.promise;
+		}
+
+		setIsIndexing(true);
+		const promise = invoke("index_sync")
+			.then(() => undefined)
+			.catch(() => {
+				/* the index is derived and will retry on the next open */
+			})
+			.finally(() => {
+				if (indexSyncRef.current?.promise === promise) {
+					indexSyncRef.current = null;
+				}
+				if (
+					currentSpacePathRef.current === currentSpacePath ||
+					currentSpacePathRef.current === null
+				) {
+					setIsIndexing(false);
+				}
+			});
+		indexSyncRef.current = { spacePath: currentSpacePath, promise };
+		return promise;
+	}, []);
+
 	const applySpaceSelection = useCallback(
 		async (path: string, mode: "open" | "create") => {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
 			setError("");
 			try {
-				if (spacePath) {
-					await invoke("space_close");
-					await clearCurrentSpacePath();
-					clearAiPanelCaches();
-					clearInlineImageHydrationCache();
-					invalidateNavigationPrefetch();
-					setSpacePath(null);
-					setSpaceSchemaVersion(null);
-					setOnboardingNotePath(null);
-				}
-				const spaceInfo =
-					mode === "create"
+				const sessionSpacePath = await invoke("space_get_current");
+				const spaceInfo = sessionSpacePath
+					? await invoke("space_open_window", {
+							path,
+							create: mode === "create",
+						})
+					: mode === "create"
 						? await invoke("space_create", { path })
 						: await invoke("space_open", { path });
 				await setCurrentSpacePath(spaceInfo.root);
@@ -204,23 +256,24 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				);
 				void updateOnboardingSettings({ launcherSeen: true });
 				setLastSpacePath(spaceInfo.root);
-				setSpacePath(spaceInfo.root);
-				setSpaceSchemaVersion(spaceInfo.schema_version);
-				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+				if (!sessionSpacePath) {
+					setSpacePath(spaceInfo.root);
+					setSpaceSchemaVersion(spaceInfo.schema_version);
+					setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+				}
 			} catch (err) {
 				setError(extractErrorMessage(err));
 			} finally {
 				isOpeningSpaceRef.current = false;
 			}
 		},
-		[spacePath],
+		[],
 	);
 
 	const closeSpace = useCallback(async () => {
 		setError("");
 		try {
 			await invoke("space_close");
-			await clearCurrentSpacePath();
 			clearAiPanelCaches();
 			clearInlineImageHydrationCache();
 			invalidateNavigationPrefetch();
@@ -283,6 +336,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			settingsLoaded,
 			consumeOnboardingNotePath,
 			startIndexRebuild,
+			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onContinueLastSpace,
@@ -301,6 +355,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			settingsLoaded,
 			consumeOnboardingNotePath,
 			startIndexRebuild,
+			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
 			onContinueLastSpace,

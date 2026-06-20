@@ -5,9 +5,20 @@ import Suggestion, {
 	type SuggestionKeyDownProps,
 	type SuggestionProps,
 } from "@tiptap/suggestion";
+import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
-import type { SlashCommandItem } from "./types";
+
+interface SlashCommandItem {
+	icon: string;
+	title: string;
+	description: string;
+	keywords: string[];
+	command: (ctx: {
+		editor: Editor;
+		range: { from: number; to: number };
+	}) => void;
+}
 
 function clampSlashCommandIndex(index: number, itemCount: number) {
 	if (itemCount <= 0) return 0;
@@ -327,6 +338,7 @@ export const SlashCommand = Extension.create({
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
 					let currentProps: SuggestionProps<SlashCommandItem> | null = null;
+					let unlockEditorScroll: (() => void) | null = null;
 
 					const updateSelection = (items: SlashCommandItem[]) => {
 						if (!menu) return;
@@ -401,6 +413,11 @@ export const SlashCommand = Extension.create({
 						onStart: (props: SuggestionProps<SlashCommandItem>) => {
 							selectedIndex = 0;
 							currentProps = props;
+							unlockEditorScroll?.();
+							unlockEditorScroll = lockEditorScrollDuringSuggestion(
+								props.editor,
+								() => menu,
+							);
 							createMenu(props);
 						},
 						onUpdate: (props: SuggestionProps<SlashCommandItem>) => {
@@ -437,6 +454,8 @@ export const SlashCommand = Extension.create({
 							return false;
 						},
 						onExit: () => {
+							unlockEditorScroll?.();
+							unlockEditorScroll = null;
 							if (menu) menu.remove();
 							menu = null;
 							currentProps = null;

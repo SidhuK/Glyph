@@ -45,10 +45,8 @@ export function AIHistoryPanel({
 							) : null}
 						</button>
 					))
-				) : (
-					<div className="aiHistoryEmpty">
-						{history.listLoading ? "Loading chats…" : "No chat history yet"}
-					</div>
+				) : history.listLoading ? null : (
+					<div className="aiHistoryEmpty">No chat history yet</div>
 				)}
 			</div>
 		</div>

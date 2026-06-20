@@ -37,12 +37,3 @@ export function getCommandDefinition(id: string): AppCommandDefinition | null {
 export function listCommandDefinitions(): AppCommandDefinition[] {
 	return Object.values(APP_COMMANDS);
 }
-
-export function getCommandDefinitionByMenuId(
-	menuId: string,
-): AppCommandDefinition | null {
-	return (
-		listCommandDefinitions().find((command) => command.menuId === menuId) ??
-		null
-	);
-}

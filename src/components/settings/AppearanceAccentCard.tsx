@@ -15,9 +15,6 @@ export function AppearanceAccentCard({
 	description,
 	onAccentChange,
 }: AppearanceAccentCardProps) {
-	const selectedAccent =
-		ACCENT_OPTIONS.find((option) => option.id === accent) ?? ACCENT_OPTIONS[0];
-
 	return (
 		<SettingsSection title="Accent" description={description}>
 			<SettingsRow
@@ -25,13 +22,6 @@ export function AppearanceAccentCard({
 				description="Preview and select the accent that feels best for your workspace."
 			>
 				<div className="settingsAccentPicker">
-					<div className="settingsAccentCurrent" aria-hidden="true">
-						<span
-							className="settingsAccentSwatch"
-							style={{ background: selectedAccent.color }}
-						/>
-						<span className="settingsAccentName">{selectedAccent.label}</span>
-					</div>
 					<div
 						className="settingsAccentOptions"
 						role="radiogroup"

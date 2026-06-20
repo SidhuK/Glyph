@@ -1,36 +1,35 @@
 use notify::Watcher;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
 use tauri::Emitter;
 
-use crate::{index, utils};
+use crate::{index, paths, utils};
 
-use super::state::{has_recent_local_change, SpaceState};
+use super::state::{has_recent_local_change, RecentLocalChanges};
 
 #[derive(Serialize, Clone)]
 struct ExternalChangeEvent {
+    space_path: String,
     rel_path: String,
     removed: bool,
 }
 
 const DEBOUNCE_MS: u64 = 100;
 
-pub fn set_notes_watcher(
-    state: &SpaceState,
+pub fn create_notes_watcher(
     app: tauri::AppHandle,
     root: PathBuf,
-) -> Result<(), String> {
-    let mut guard = state
-        .notes_watcher
-        .lock()
-        .map_err(|_| "space watcher state poisoned".to_string())?;
-    *guard = None;
-
+    window_label: String,
+    recent_local_changes: RecentLocalChanges,
+) -> Result<notify::RecommendedWatcher, String> {
     let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool)>();
 
     let root_idx = root.clone();
+    let index_app = app.clone();
+    let index_window_label = window_label.clone();
+    let index_space_path = root.to_string_lossy().to_string();
     std::thread::spawn(move || {
         let debounce = std::time::Duration::from_millis(DEBOUNCE_MS);
         while let Ok(first) = idx_rx.recv() {
@@ -52,22 +51,39 @@ pub fn set_notes_watcher(
                 }
             }
 
+            let mut events = Vec::new();
             for (rel_s, is_remove) in pending {
-                if is_remove {
-                    let _ = index::remove_note(&root_idx, &rel_s);
+                let result = if is_remove {
+                    index::remove_note(&root_idx, &rel_s)
                 } else {
-                    let abs = root_idx.join(&rel_s);
+                    let abs = match paths::join_under(&root_idx, Path::new(&rel_s)) {
+                        Ok(abs) => abs,
+                        Err(_) => continue,
+                    };
                     if let Ok(markdown) = std::fs::read_to_string(&abs) {
-                        let _ = index::index_note(&root_idx, &rel_s, &markdown);
+                        index::index_note(&root_idx, &rel_s, &markdown)
+                    } else {
+                        continue;
                     }
+                };
+                if result.is_ok() {
+                    events.push(ExternalChangeEvent {
+                        space_path: index_space_path.clone(),
+                        rel_path: rel_s,
+                        removed: is_remove,
+                    });
                 }
+            }
+
+            for event in events {
+                let _ = index_app.emit_to(&index_window_label, "notes:external_changed", event);
             }
         }
     });
 
     let app2 = app.clone();
     let root2 = root.clone();
-    let recent_local_changes = state.recent_local_changes();
+    let space_path = root.to_string_lossy().to_string();
 
     let watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
         let event = match res {
@@ -104,18 +120,13 @@ pub fn set_notes_watcher(
             {
                 let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-                let _ = app2.emit(
-                    "notes:external_changed",
-                    ExternalChangeEvent {
-                        rel_path: rel_s.clone(),
-                        removed: is_remove,
-                    },
-                );
             }
 
-            let _ = app2.emit(
+            let _ = app2.emit_to(
+                &window_label,
                 "space:fs_changed",
                 ExternalChangeEvent {
+                    space_path: space_path.clone(),
                     rel_path: rel_s,
                     removed: is_remove,
                 },
@@ -129,6 +140,5 @@ pub fn set_notes_watcher(
         .watch(&root, notify::RecursiveMode::Recursive)
         .map_err(|e: notify::Error| e.to_string())?;
 
-    *guard = Some(watcher);
-    Ok(())
+    Ok(watcher)
 }

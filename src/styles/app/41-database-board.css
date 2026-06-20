@@ -31,9 +31,16 @@
 	padding: 10px 6px 12px;
 }
 
+.databaseBoardLoadMoreSentinel {
+	width: 100%;
+	height: 1px;
+	flex: 0 0 auto;
+	pointer-events: none;
+}
+
 .databaseBoardError,
 .databaseBoardEmptyText {
-	font-size: 0.82rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -43,7 +50,7 @@
 }
 
 .databaseCellError {
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.35;
 }
 
@@ -76,12 +83,15 @@
 	background: transparent;
 }
 
-.databaseBoardLane[data-workflow-state="done"] {
+.databaseBoardLane[data-show-column-color="true"][data-workflow-state="done"] {
 	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
 }
 
 .databaseBoardLane[data-workflow-state="archived"] {
 	opacity: 0.82;
+}
+
+.databaseBoardLane[data-show-column-color="true"][data-workflow-state="archived"] {
 	background: color-mix(in srgb, var(--text-tertiary) 7%, var(--bg-secondary));
 }
 
@@ -138,15 +148,15 @@
 
 .databaseBoardLaneHandleDots {
 	display: inline-block;
-	width: 10px;
-	height: 10px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	background-image: radial-gradient(currentcolor 1.2px, transparent 1.2px);
 	background-size: 5px 5px;
 	background-position: 0 0;
 }
 
 .databaseBoardLaneTitle {
-	font-size: 0.7rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	color: color-mix(in srgb, white 92%, var(--text-primary));
 	letter-spacing: 0.045em;
@@ -202,7 +212,7 @@
 	border-radius: var(--database-radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 52%, transparent);
 	color: var(--text-tertiary);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	cursor: pointer;
 }
@@ -251,6 +261,18 @@
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 
+.dark .databaseBoardCard {
+	background: var(--bg-tertiary);
+}
+
+.dark .databaseBoardCard[data-state="selected"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-tertiary)
+	);
+}
+
 .databaseBoardCard[data-state="selected"] {
 	background: color-mix(
 		in srgb,
@@ -263,15 +285,23 @@
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: 0.93rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	line-height: 1.24;
-	color: var(--text-primary);
+	color: var(--database-note-appearance-color, var(--text-primary));
 	overflow: hidden;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	white-space: normal;
+}
+
+.databaseBoardCardTitleIcon {
+	display: inline-flex;
+	width: var(--icon-md);
+	margin-right: 6px;
+	color: var(--database-note-appearance-color, var(--text-accent));
+	vertical-align: -2px;
 }
 
 .databaseBoardCardHead {
@@ -300,9 +330,11 @@
 }
 
 .databaseBoardCardTaskProgress {
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex: 0 0 auto;
-	width: 24px;
-	height: 12px;
 	opacity: 0.9;
 }
 
@@ -344,15 +376,14 @@
 .databaseBoardCardStatus.propertyValueText {
 	flex: 0 0 auto;
 	height: auto;
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
-	white-space: nowrap;
 }
 
 .databaseBoardCardStatus .propertyValueTextIcon {
-	width: 11px;
-	height: 11px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	flex-basis: 11px;
 }
 
@@ -368,7 +399,7 @@
 	border: 0;
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
-	font-size: 0.66rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-primary));
@@ -379,6 +410,7 @@
 .databaseBoardTag.is-muted {
 	color: var(--text-tertiary);
 	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+	font-variant-numeric: tabular-nums;
 }
 
 .databaseTagPillIcon {
@@ -394,35 +426,13 @@
 	display: block;
 }
 
-.databaseBoardCardFooter {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-top: auto;
-	min-width: 0;
-	padding-top: 2px;
-}
-
-.databaseBoardCardPath {
-	min-width: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	font-size: 0.62rem;
-	line-height: 1.2;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
 .databaseBoardCardTimestamp {
 	min-width: 0;
 	flex: 0 1 auto;
 	display: inline-flex;
 	align-items: center;
 	gap: 3px;
-	font-size: 0.62rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.2;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -457,7 +467,7 @@
 }
 
 .databaseBoardEmptyTitle {
-	font-size: 0.94rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
@@ -488,4 +498,47 @@
 	min-width: 100%;
 	table-layout: fixed;
 	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized {
+	display: grid;
+}
+
+.databaseTable.is-virtualized [data-slot="table-header"] {
+	position: sticky;
+	top: 0;
+	z-index: 8;
+	display: grid;
+	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized [data-slot="table-body"] {
+	position: relative;
+	display: grid;
+}
+
+.databaseTable.is-virtualized [data-slot="table-body"] [data-slot="table-row"],
+.databaseTable.is-virtualized .databaseGroupHeaderRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: flex;
+	width: max-content;
+	min-width: 100%;
+	background: var(--bg-primary);
+}
+
+.databaseTable.is-virtualized .databaseHeaderRow {
+	display: flex;
+	width: max-content;
+	min-width: 100%;
+}
+
+.databaseTable.is-virtualized .databaseGroupCell {
+	width: 100%;
+}
+
+.databaseTable.is-virtualized .databaseBodyCell {
+	display: flex;
+	align-items: center;
 }

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+	Cards01Icon,
 	FilterMailIcon,
 	GridViewIcon,
 	SlidersVerticalIcon,
@@ -28,6 +29,10 @@ import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
+	CardFieldsPanel,
+	visibleCardFieldCount,
+} from "./DatabaseViewOptionsCardFieldsPanel";
+import {
 	type ColumnMenuEntry,
 	ColumnsPanel,
 } from "./DatabaseViewOptionsColumnsPanel";
@@ -40,7 +45,14 @@ import {
 	ensurePresetColumn,
 } from "./databaseViewPresets";
 
-type OptionsPanel = "source" | "columns" | "filters" | "sort";
+type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields";
+
+function cardFieldsLabel(fields: string[] | undefined): string {
+	const fieldCount = visibleCardFieldCount(fields);
+	if (fieldCount === null) return "All shown";
+	if (fieldCount === 0) return "Title only";
+	return `${fieldCount} shown`;
+}
 
 interface DatabaseViewOptionsPopoverProps {
 	config: DatabaseConfig;
@@ -55,23 +67,15 @@ interface FilterKeyEntry {
 	signature: string;
 }
 
-const RESERVED_PROPERTY_KEYS = new Set([
-	"created",
-	"folder",
-	"glyph",
-	"linked_notes",
-	"path",
-	"tags",
-	"title",
-	"updated",
-]);
-
-const defaultColumns: DatabaseColumn[] = [
+const RESTORE_DEFAULT_COLUMNS: DatabaseColumn[] = [
 	{
 		id: "title",
 		type: "title",
 		label: "Title",
-		icon: defaultDatabaseColumnIconName({ type: "title", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "title",
+			property_kind: null,
+		}),
 		width: 320,
 		visible: true,
 	},
@@ -79,7 +83,10 @@ const defaultColumns: DatabaseColumn[] = [
 		id: "tags",
 		type: "tags",
 		label: "Tags",
-		icon: defaultDatabaseColumnIconName({ type: "tags", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "tags",
+			property_kind: null,
+		}),
 		width: 220,
 		visible: true,
 	},
@@ -96,8 +103,19 @@ const defaultColumns: DatabaseColumn[] = [
 	},
 ];
 
+const RESERVED_PROPERTY_KEYS = new Set([
+	"created",
+	"folder",
+	"glyph",
+	"linked_notes",
+	"path",
+	"tags",
+	"title",
+	"updated",
+]);
+
 const builtInColumns: DatabaseColumn[] = [
-	...defaultColumns,
+	...RESTORE_DEFAULT_COLUMNS,
 	{
 		id: "folder",
 		type: "folder",
@@ -123,10 +141,11 @@ const builtInColumns: DatabaseColumn[] = [
 		label: "Linked Notes",
 		icon: defaultDatabaseColumnIconName({
 			type: "linked_notes",
-			property_kind: null,
+			property_kind: "relation",
 		}),
 		width: 220,
 		visible: false,
+		property_kind: "relation",
 	},
 	{
 		id: "created",
@@ -206,7 +225,7 @@ function OptionMenuRow({
 			<span className="databaseViewOptionsRowIcon">{icon}</span>
 			<span className="databaseViewOptionsRowLabel">{label}</span>
 			{value ? <span className="databaseViewOptionsPill">{value}</span> : null}
-			<ChevronRight size={15} aria-hidden="true" />
+			<ChevronRight size="var(--icon-lg)" aria-hidden="true" />
 		</button>
 	);
 }
@@ -454,8 +473,9 @@ export function DatabaseViewOptionsPopover({
 				...config.view,
 				search: "",
 				board_group_by: null,
+				board_card_fields: undefined,
 			},
-			columns: defaultColumns,
+			columns: RESTORE_DEFAULT_COLUMNS,
 			sorts: [],
 			filters: [],
 		});
@@ -484,7 +504,7 @@ export function DatabaseViewOptionsPopover({
 				>
 					<HugeiconsIcon
 						icon={SlidersVerticalIcon}
-						size={14}
+						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
 				</Button>
@@ -505,7 +525,10 @@ export function DatabaseViewOptionsPopover({
 						setColumnEnabled={setColumnEnabled}
 						updateColumns={updateColumns}
 						onRestoreDefaultColumns={() =>
-							void updateConfig({ ...config, columns: defaultColumns })
+							void updateConfig({
+								...config,
+								columns: RESTORE_DEFAULT_COLUMNS,
+							})
 						}
 					/>
 				) : null}
@@ -533,12 +556,26 @@ export function DatabaseViewOptionsPopover({
 						updateConfig={updateConfig}
 					/>
 				) : null}
+				{activePanel === "card_fields" ? (
+					<CardFieldsPanel
+						fields={config.view.board_card_fields}
+						onChange={(fields) =>
+							void onChangeConfig({
+								...config,
+								view: {
+									...config.view,
+									board_card_fields: fields,
+								},
+							})
+						}
+					/>
+				) : null}
 				<section className="databaseViewOptionsMenu" aria-label="View settings">
 					{configError ? (
 						<div className="databaseViewPanelError">{configError}</div>
 					) : null}
 					<OptionMenuRow
-						icon={<Search size={16} />}
+						icon={<Search size="var(--icon-lg)" />}
 						label="Source"
 						value={sourceLabel(config)}
 						active={activePanel === "source"}
@@ -546,7 +583,11 @@ export function DatabaseViewOptionsPopover({
 					/>
 					<OptionMenuRow
 						icon={
-							<HugeiconsIcon icon={GridViewIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={GridViewIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						}
 						label="Columns"
 						value={`${visibleCount} selected`}
@@ -557,7 +598,7 @@ export function DatabaseViewOptionsPopover({
 						icon={
 							<HugeiconsIcon
 								icon={FilterMailIcon}
-								size={16}
+								size="var(--icon-lg)"
 								strokeWidth={0.9}
 							/>
 						}
@@ -572,19 +613,38 @@ export function DatabaseViewOptionsPopover({
 					/>
 					<OptionMenuRow
 						icon={
-							<HugeiconsIcon icon={TextFontIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={TextFontIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						}
 						label="Sort by"
 						value={sortLabel(activeSort ?? undefined, config.columns)}
 						active={activePanel === "sort"}
 						onClick={() => togglePanel("sort")}
 					/>
+					{config.view.layout === "board" ? (
+						<OptionMenuRow
+							icon={
+								<HugeiconsIcon
+									icon={Cards01Icon}
+									size="var(--icon-lg)"
+									strokeWidth={0.9}
+								/>
+							}
+							label="Card fields"
+							value={cardFieldsLabel(config.view.board_card_fields)}
+							active={activePanel === "card_fields"}
+							onClick={() => togglePanel("card_fields")}
+						/>
+					) : null}
 					<button
 						type="button"
 						className="databaseViewRestoreButton"
 						onClick={resetViewOptions}
 					>
-						<RefreshCw size={16} aria-hidden="true" />
+						<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 						Restore defaults
 					</button>
 				</section>

@@ -1,6 +1,8 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
 import {
 	type CSSProperties,
 	type MouseEvent,
+	forwardRef,
 	memo,
 	useCallback,
 	useEffect,
@@ -13,6 +15,7 @@ import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, parentDir, splitEditableFileName } from "../../utils/path";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import {
@@ -21,7 +24,6 @@ import {
 } from "../editor/textColors";
 import { fileTreeAppearanceNativeMenu } from "../filetree/fileTreeNativeContextMenu";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import type { FolioItem } from "./useFolioNotes";
 
 interface FolioNoteListItemProps {
@@ -30,10 +32,8 @@ interface FolioNoteListItemProps {
 	onOpen: (path: string) => void;
 	onOpenInNewTab: (path: string) => void;
 	onPrefetch: (path: string) => void;
-	isPinned?: boolean;
 	onRename?: (path: string) => void;
 	onDelete: (path: string) => void;
-	onTogglePinned?: (path: string) => Promise<void> | void;
 	onFocus: () => void;
 	taskSummary?: NoteTaskSummary | null;
 	isRenaming?: boolean;
@@ -44,6 +44,10 @@ interface FolioNoteListItemProps {
 	onCancelRename: () => void;
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: (path: string) => void;
+	iconNameForTag: (tag: string) => string;
+	className?: string;
+	style?: CSSProperties;
+	virtualIndex?: number;
 }
 
 type FolioImageRef =
@@ -53,8 +57,13 @@ type FolioImageRef =
 
 const FOLIO_THUMBNAIL_MAX_BYTES = 4 * 1024 * 1024;
 const FOLIO_NOTE_IMAGE_SCAN_MAX_BYTES = 2 * 1024 * 1024;
+const FOLIO_NOTE_URL_SCAN_MAX_BYTES = 256 * 1024;
+const FOLIO_NOTE_URL_READ_CONCURRENCY = 4;
 const IMAGE_EXT_RE = /\.(?:png|jpe?g|webp|gif|svg|bmp|avif|tiff?)(?:[#?].*)?$/i;
 const DIRECT_IMAGE_SRC_RE = /^(?:https?:|data:|blob:)/i;
+const URL_RE = /https?:\/\/[^\s<>"'`\]}]+/i;
+let activeFolioUrlReads = 0;
+const queuedFolioUrlReads: Array<() => void> = [];
 
 interface FolioImageCandidate {
 	index: number;
@@ -104,6 +113,45 @@ function previewText(preview: string, title: string): string {
 	}
 
 	return previewLines.join(" ") || "No preview";
+}
+
+function cleanUrl(rawUrl: string): string {
+	return rawUrl.replace(/[.,;:!?)]+$/g, "");
+}
+
+function extractFirstUrl(text: string): string {
+	const match = text.match(URL_RE);
+	return match?.[0] ? cleanUrl(match[0]) : "";
+}
+
+function runLimitedFolioUrlRead<T>(read: () => Promise<T>): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const run = () => {
+			activeFolioUrlReads += 1;
+			read()
+				.then(resolve, reject)
+				.finally(() => {
+					activeFolioUrlReads = Math.max(0, activeFolioUrlReads - 1);
+					queuedFolioUrlReads.shift()?.();
+				});
+		};
+
+		if (activeFolioUrlReads < FOLIO_NOTE_URL_READ_CONCURRENCY) {
+			run();
+			return;
+		}
+
+		queuedFolioUrlReads.push(run);
+	});
+}
+
+function urlLabel(url: string): string {
+	try {
+		const parsed = new URL(url);
+		return parsed.hostname.replace(/^www\./i, "") || url;
+	} catch {
+		return url.replace(/^https?:\/\//i, "");
+	}
 }
 
 function markdownImageHref(rawHref: string): string {
@@ -247,6 +295,40 @@ function useFolioThumbnail(note: FolioItem): string {
 	return src;
 }
 
+function useFolioFirstUrl(note: FolioItem): string {
+	const previewUrl = useMemo(
+		() => extractFirstUrl(note.preview),
+		[note.preview],
+	);
+	const [url, setUrl] = useState(previewUrl);
+
+	useEffect(() => {
+		let cancelled = false;
+		setUrl(previewUrl);
+		if (!note.is_markdown) return;
+		void (async () => {
+			try {
+				const doc = await runLimitedFolioUrlRead(async () => {
+					if (cancelled) return null;
+					return await invoke("space_read_text_preview", {
+						path: note.note_path,
+						max_bytes: FOLIO_NOTE_URL_SCAN_MAX_BYTES,
+					});
+				});
+				if (cancelled || !doc) return;
+				setUrl(extractFirstUrl(doc.text));
+			} catch {
+				if (!cancelled) setUrl(previewUrl);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [note.is_markdown, note.note_path, previewUrl]);
+
+	return url;
+}
+
 function FolioRenameInput({
 	initialName,
 	relPath,
@@ -308,252 +390,280 @@ function FolioRenameInput({
 	);
 }
 
-export const FolioNoteListItem = memo(function FolioNoteListItem({
-	note,
-	selected,
-	onOpen,
-	onOpenInNewTab,
-	onPrefetch,
-	isPinned = false,
-	onRename,
-	onDelete,
-	onTogglePinned,
-	onFocus,
-	taskSummary = null,
-	isRenaming = false,
-	onCommitRename,
-	onCancelRename,
-	appearance = null,
-	onOpenAppearancePicker,
-}: FolioNoteListItemProps) {
-	const title = note.title.trim() || titleFromPath(note.note_path);
-	const isMarkdown = note.is_markdown;
-	const { stem: fileStem, ext: fileExt } = splitEditableFileName(
-		basename(note.note_path),
-	);
-	const { Icon, color } = getFileTypeInfo(note.note_path, isMarkdown);
-	const customColor =
-		appearance?.color && isEditorTextColor(appearance.color)
-			? appearance.color
-			: null;
-	const rowStyle = customColor
-		? ({
-				"--folio-file-color": `var(${getEditorTextColorOption(customColor).cssVar})`,
-			} as CSSProperties)
-		: undefined;
-	const iconColor = customColor ? "var(--folio-file-color)" : color;
-	const extBadge = !isMarkdown && fileExt ? fileExt.slice(1) : "";
-	const preview = useMemo(() => {
-		return previewText(note.preview, title);
-	}, [note.preview, title]);
-	const updated = isMarkdown ? dateLabel(note.updated) : "";
-	const visibleTags = note.tags.slice(0, 2);
-	const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
-	const folder = parentDir(note.note_path);
-	const thumbnailSrc = useFolioThumbnail(note);
-	const taskProgress =
-		taskSummary && taskSummary.total_count > 0 ? (
-			<TaskProgressIndicator
-				summary={taskSummary}
-				className="folioNoteTaskProgress"
-			/>
-		) : null;
-	const handleRevealInFinder = useCallback(async () => {
-		try {
-			await invoke("space_reveal_path", { path: note.note_path });
-		} catch (error) {
-			console.error("Failed to show file in Finder", error);
-		}
-	}, [note.note_path]);
-	const handleContextMenu = useCallback(
-		(event: MouseEvent) => {
-			void showNativeContextMenu(event, [
-				{
-					label: "Open",
-					action: () => onOpen(note.note_path),
-				},
-				{
-					label: "Open in New Tab",
-					action: () => onOpenInNewTab(note.note_path),
-				},
-				{
-					label: "Show in Finder",
-					action: () => void handleRevealInFinder(),
-				},
-				{ type: "separator" },
-				...(onRename
-					? [
-							{
-								label: "Rename",
-								action: () => onRename(note.note_path),
-							},
-						]
-					: []),
-				...(onTogglePinned
-					? [
-							{
-								label: isPinned ? "Unpin file" : "Pin file",
-								action: () => void onTogglePinned(note.note_path),
-							},
-						]
-					: []),
-				fileTreeAppearanceNativeMenu(() =>
-					onOpenAppearancePicker(note.note_path),
-				),
-				{ type: "separator" },
-				{
-					label: "Delete",
-					action: () => onDelete(note.note_path),
-				},
-			]).catch((error: unknown) => {
-				console.error("Failed to show folio context menu", error);
-			});
-		},
-		[
-			handleRevealInFinder,
-			isPinned,
-			note.note_path,
-			onDelete,
+export const FolioNoteListItem = memo(
+	forwardRef<HTMLLIElement, FolioNoteListItemProps>(function FolioNoteListItem(
+		{
+			note,
+			selected,
 			onOpen,
-			onOpenAppearancePicker,
 			onOpenInNewTab,
+			onPrefetch,
 			onRename,
-			onTogglePinned,
-		],
-	);
-	const fileIcon = appearance?.icon ? (
-		<DatabaseColumnIcon
-			iconName={appearance.icon}
-			size={15}
-			className="folioNoteFileIcon"
-		/>
-	) : (
-		<Icon
-			size={15}
-			className="folioNoteFileIcon"
-			style={{ color: iconColor }}
-			aria-hidden="true"
-		/>
-	);
-	const noteTitleIcon = (
-		<span className="folioNoteTitleIcon" aria-hidden="true">
-			{fileIcon}
-		</span>
-	);
-	const rowDetails = (
-		<div className="folioNoteBody">
-			<span className="folioNoteCopy">
-				<span className="folioNotePreview">{preview}</span>
+			onDelete,
+			onFocus,
+			taskSummary = null,
+			isRenaming = false,
+			onCommitRename,
+			onCancelRename,
+			appearance = null,
+			onOpenAppearancePicker,
+			iconNameForTag,
+			className,
+			style,
+			virtualIndex,
+		},
+		ref,
+	) {
+		const title = note.title.trim() || titleFromPath(note.note_path);
+		const isMarkdown = note.is_markdown;
+		const { stem: fileStem, ext: fileExt } = splitEditableFileName(
+			basename(note.note_path),
+		);
+		const { Icon, color } = getFileTypeInfo(note.note_path, isMarkdown);
+		const customColor =
+			appearance?.color && isEditorTextColor(appearance.color)
+				? appearance.color
+				: null;
+		const rowStyle = customColor
+			? ({
+					"--folio-file-color": `var(${getEditorTextColorOption(customColor).cssVar})`,
+				} as CSSProperties)
+			: undefined;
+		const iconColor = customColor ? "var(--folio-file-color)" : color;
+		const extBadge = !isMarkdown && fileExt ? fileExt.slice(1) : "";
+		const preview = useMemo(() => {
+			return previewText(note.preview, title);
+		}, [note.preview, title]);
+		const updated = isMarkdown ? dateLabel(note.updated) : "";
+		const visibleTags = note.tags.slice(0, 2);
+		const hiddenTagCount = Math.max(0, note.tags.length - visibleTags.length);
+		const folder = parentDir(note.note_path);
+		const thumbnailSrc = useFolioThumbnail(note);
+		const firstUrl = useFolioFirstUrl(note);
+		const firstUrlLabel = firstUrl ? urlLabel(firstUrl) : "";
+		const taskProgress =
+			taskSummary && taskSummary.total_count > 0 ? (
+				<TaskProgressIndicator
+					summary={taskSummary}
+					className="folioNoteTaskProgress"
+				/>
+			) : null;
+		const handleRevealInFinder = useCallback(async () => {
+			try {
+				await invoke("space_reveal_path", { path: note.note_path });
+			} catch (error) {
+				console.error("Failed to show file in Finder", error);
+			}
+		}, [note.note_path]);
+		const handleContextMenu = useCallback(
+			(event: MouseEvent) => {
+				void showNativeContextMenu(event, [
+					{
+						label: "Open",
+						action: () => onOpen(note.note_path),
+					},
+					{
+						label: "Open in New Tab",
+						action: () => onOpenInNewTab(note.note_path),
+					},
+					{
+						label: "Show in Finder",
+						action: () => void handleRevealInFinder(),
+					},
+					{ type: "separator" },
+					...(onRename
+						? [
+								{
+									label: "Rename",
+									action: () => onRename(note.note_path),
+								},
+							]
+						: []),
+					fileTreeAppearanceNativeMenu(() =>
+						onOpenAppearancePicker(note.note_path),
+					),
+					{ type: "separator" },
+					{
+						label: "Delete",
+						action: () => onDelete(note.note_path),
+					},
+				]).catch((error: unknown) => {
+					console.error("Failed to show folio context menu", error);
+				});
+			},
+			[
+				handleRevealInFinder,
+				note.note_path,
+				onDelete,
+				onOpen,
+				onOpenAppearancePicker,
+				onOpenInNewTab,
+				onRename,
+			],
+		);
+		const fileIcon = appearance?.icon ? (
+			<DatabaseColumnIcon
+				iconName={appearance.icon}
+				size="var(--icon-lg)"
+				className="folioNoteFileIcon"
+			/>
+		) : (
+			<Icon
+				size="var(--icon-lg)"
+				className="folioNoteFileIcon"
+				style={{ color: iconColor }}
+				aria-hidden="true"
+			/>
+		);
+		const noteTitleIcon = (
+			<span className="folioNoteTitleIcon" aria-hidden="true">
+				{fileIcon}
 			</span>
-			{thumbnailSrc ? (
-				<span className="folioNoteThumbnail" aria-hidden="true">
-					<img src={thumbnailSrc} alt="" />
+		);
+		const rowDetails = (
+			<div className="folioNoteBody">
+				<span className="folioNoteCopy">
+					<span className="folioNotePreview">{preview}</span>
 				</span>
-			) : null}
-			<span className="folioNoteFooter">
-				<span className="folioNoteTags">
-					{visibleTags.length > 0 ? (
-						visibleTags.map((tag) => (
-							<span
-								key={tag}
-								className="databaseCellPill folioNoteTag"
-								title={formatDatabaseTagLabel(tag)}
-							>
-								{formatDatabaseTagLabel(tag)}
-							</span>
-						))
-					) : (
-						<span className="folioNoteFolder">{folder || "No folder"}</span>
-					)}
-					{hiddenTagCount > 0 ? (
-						<span className="databaseCellPill databaseCellPillMore folioNoteTag">
-							+{hiddenTagCount}
-						</span>
-					) : null}
-				</span>
-				<span className="folioNoteDates">{updated}</span>
-			</span>
-		</div>
-	);
-	const fileDetails = (
-		<span className="folioFileLine">
-			{fileIcon}
-			<span className="folioFileName">{fileStem || title}</span>
-			{extBadge ? <span className="fileTreeExtBadge">{extBadge}</span> : null}
-		</span>
-	);
-
-	return (
-		<li className="folioNoteListItem">
-			{isRenaming ? (
-				<div
-					className="folioNoteRow"
-					data-state={selected ? "selected" : "idle"}
-					data-kind={isMarkdown ? "markdown" : "file"}
-					data-pinned={isPinned ? "true" : undefined}
-					data-folio-note-path={note.note_path}
-					title={note.note_path}
-					style={rowStyle}
-				>
-					<span className="folioNoteRowTop">
-						<FolioRenameInput
-							key={`${note.note_path}:${fileStem}`}
-							initialName={fileStem || titleFromPath(note.note_path)}
-							relPath={note.note_path}
-							fileStem={fileStem}
-							fileExt={fileExt}
-							onCommitRename={onCommitRename}
-							onCancelRename={onCancelRename}
-						/>
-						{taskProgress}
+				{thumbnailSrc ? (
+					<span className="folioNoteThumbnail" aria-hidden="true">
+						<img src={thumbnailSrc} alt="" />
 					</span>
-					{isMarkdown ? rowDetails : fileDetails}
-				</div>
-			) : (
-				<button
-					type="button"
-					className="folioNoteRow"
-					data-state={selected ? "selected" : "idle"}
-					data-kind={isMarkdown ? "markdown" : "file"}
-					data-pinned={isPinned ? "true" : undefined}
-					data-folio-note-path={note.note_path}
-					aria-current={selected ? "page" : undefined}
-					onClick={(event) => {
-						if (event.metaKey || event.ctrlKey) {
-							onOpenInNewTab(note.note_path);
-							return;
-						}
-						onOpen(note.note_path);
-					}}
-					onContextMenu={handleContextMenu}
-					onDoubleClick={() => onOpenInNewTab(note.note_path)}
-					onAuxClick={(event) => {
-						if (event.button === 1) onOpenInNewTab(note.note_path);
-					}}
-					onMouseEnter={() => {
-						if (isMarkdown) onPrefetch(note.note_path);
-					}}
-					onFocus={() => {
-						onFocus();
-						if (isMarkdown) onPrefetch(note.note_path);
-					}}
-					title={note.note_path}
-					style={rowStyle}
-				>
-					{isMarkdown ? (
-						<>
-							<span className="folioNoteRowTop">
-								<span className="folioNoteTitle">{title}</span>
-								{taskProgress}
-								{noteTitleIcon}
+				) : null}
+				<span className="folioNoteFooter">
+					<span className="folioNoteTags">
+						{firstUrl ? (
+							<a
+								href={firstUrl}
+								className="databaseCellPill folioNoteTag folioNoteUrl"
+								title={firstUrl}
+								onClick={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+									void openUrl(firstUrl);
+								}}
+							>
+								<DatabaseColumnIcon
+									iconName="link"
+									className="folioNoteUrlIcon"
+									size="var(--icon-xs)"
+									strokeWidth={1.2}
+								/>
+								{firstUrlLabel}
+							</a>
+						) : null}
+						{visibleTags.length > 0 ? (
+							visibleTags.map((tag) => (
+								<span
+									key={tag}
+									className="databaseCellPill folioNoteTag"
+									title={formatDatabaseTagLabel(tag)}
+								>
+									<DatabaseColumnIcon
+										iconName={iconNameForTag(tag)}
+										className="folioNoteTagIcon"
+										size="var(--icon-xs)"
+										strokeWidth={1.2}
+									/>
+									{formatDatabaseTagLabel(tag)}
+								</span>
+							))
+						) : firstUrl ? null : (
+							<span className="folioNoteFolder">{folder || "No folder"}</span>
+						)}
+						{hiddenTagCount > 0 ? (
+							<span className="databaseCellPill databaseCellPillMore folioNoteTag">
+								+{hiddenTagCount}
 							</span>
-							{rowDetails}
-						</>
-					) : (
-						fileDetails
-					)}
-				</button>
-			)}
-		</li>
-	);
-});
+						) : null}
+					</span>
+					<span className="folioNoteDates">{updated}</span>
+				</span>
+			</div>
+		);
+		const fileDetails = (
+			<span className="folioFileLine">
+				{fileIcon}
+				<span className="folioFileName">{fileStem || title}</span>
+				{extBadge ? <span className="fileTreeExtBadge">{extBadge}</span> : null}
+			</span>
+		);
+
+		return (
+			<li
+				ref={ref}
+				className={`folioNoteListItem${className ? ` ${className}` : ""}`}
+				style={style}
+				data-index={virtualIndex}
+			>
+				{isRenaming ? (
+					<div
+						className="folioNoteRow"
+						data-state={selected ? "selected" : "idle"}
+						data-kind={isMarkdown ? "markdown" : "file"}
+						data-folio-note-path={note.note_path}
+						title={note.note_path}
+						style={rowStyle}
+					>
+						<span className="folioNoteRowTop">
+							<FolioRenameInput
+								key={`${note.note_path}:${fileStem}`}
+								initialName={fileStem || titleFromPath(note.note_path)}
+								relPath={note.note_path}
+								fileStem={fileStem}
+								fileExt={fileExt}
+								onCommitRename={onCommitRename}
+								onCancelRename={onCancelRename}
+							/>
+							{taskProgress}
+						</span>
+						{isMarkdown ? rowDetails : fileDetails}
+					</div>
+				) : (
+					<button
+						type="button"
+						className="folioNoteRow"
+						data-state={selected ? "selected" : "idle"}
+						data-kind={isMarkdown ? "markdown" : "file"}
+						data-folio-note-path={note.note_path}
+						aria-current={selected ? "page" : undefined}
+						onClick={(event) => {
+							if (event.metaKey || event.ctrlKey) {
+								onOpenInNewTab(note.note_path);
+								return;
+							}
+							onOpen(note.note_path);
+						}}
+						onContextMenu={handleContextMenu}
+						onDoubleClick={() => onOpenInNewTab(note.note_path)}
+						onAuxClick={(event) => {
+							if (event.button === 1) onOpenInNewTab(note.note_path);
+						}}
+						onMouseEnter={() => {
+							if (isMarkdown) onPrefetch(note.note_path);
+						}}
+						onFocus={() => {
+							onFocus();
+							if (isMarkdown) onPrefetch(note.note_path);
+						}}
+						title={note.note_path}
+						style={rowStyle}
+					>
+						{isMarkdown ? (
+							<>
+								<span className="folioNoteRowTop">
+									<span className="folioNoteTitle">{title}</span>
+									{taskProgress}
+									{noteTitleIcon}
+								</span>
+								{rowDetails}
+							</>
+						) : (
+							fileDetails
+						)}
+					</button>
+				)}
+			</li>
+		);
+	}),
+);

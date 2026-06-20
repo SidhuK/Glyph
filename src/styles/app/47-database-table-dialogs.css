@@ -26,7 +26,7 @@
 	text-align: left;
 	padding-right: 10px;
 	border-bottom: 1px solid var(--border-light);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 }
 
@@ -116,6 +116,19 @@
 	transition: color 140ms ease;
 }
 
+.databaseHeaderControls {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: 100%;
+	min-width: 0;
+}
+
+.databaseHeaderControls .databaseHeaderButton {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
 .databaseHeaderButton:hover {
 	color: var(--text-primary);
 }
@@ -128,9 +141,18 @@
 	min-width: 0;
 }
 
-.databaseHeaderIcon {
+.databaseHeaderIconPicker {
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	color: var(--text-tertiary);
-	flex: 0 0 auto;
+}
+
+.databaseHeaderIconPicker:hover,
+.databaseHeaderIconPicker:active,
+.databaseHeaderIconPicker:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
+	box-shadow: none;
 }
 
 .databaseHeaderText {
@@ -151,7 +173,8 @@
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
-.databaseBodyCell:has(.databaseTagSuggestions) {
+.databaseBodyCell:has(.databaseTagSuggestions),
+.databaseBodyCell:has(.databaseWikiLinkSuggestions) {
 	z-index: 4;
 }
 
@@ -278,7 +301,7 @@
 
 .databaseTagEditor .databaseTagSuggestions .notePropertySuggestionsLabel {
 	padding: 0 4px 2px;
-	font-size: 0.64rem;
+	font-size: calc(var(--text-base) * 0.8);
 	letter-spacing: 0.08em;
 }
 
@@ -302,6 +325,16 @@
 	border-color: transparent;
 }
 
+.databaseTagEditor .databaseWikiLinkSuggestions {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: auto;
+	right: 0;
+	width: 280px;
+	max-width: min(280px, calc(100vw - 40px));
+	z-index: 30;
+}
+
 .databaseCellPill {
 	--database-tone: var(--interactive-accent);
 
@@ -312,7 +345,7 @@
 	border: 0;
 	border-radius: 4px;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
 	box-shadow: none;
@@ -359,6 +392,18 @@
 	font-weight: var(--font-semibold);
 }
 
+.databaseTitleCellMain.is-title {
+	gap: 6px;
+	color: var(--database-note-appearance-color, inherit);
+}
+
+.databaseTitleCellIcon {
+	display: inline-flex;
+	width: var(--icon-md);
+	flex: 0 0 auto;
+	color: var(--database-note-appearance-color, var(--text-accent));
+}
+
 .databaseTitleCell {
 	display: flex;
 	align-items: center;
@@ -379,7 +424,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
 	color: var(--text-secondary);
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	font-weight: var(--font-semibold);
 	transition: border-color 120ms ease, color 120ms ease, background-color 120ms
@@ -397,8 +442,7 @@
 	);
 }
 
-.databaseCellText,
-.databaseFooterPath {
+.databaseCellText {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -412,7 +456,8 @@
 	transition: background-color 120ms ease;
 }
 
-.databaseRow:has(.databaseTagSuggestions) {
+.databaseRow:has(.databaseTagSuggestions),
+.databaseRow:has(.databaseWikiLinkSuggestions) {
 	z-index: 4;
 }
 
@@ -486,7 +531,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--text-primary);
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: 750;
 	letter-spacing: 0.06em;
 	line-height: 1.15;
@@ -513,15 +558,6 @@
 .databaseNoticeError {
 	color: var(--text-error);
 	background: color-mix(in srgb, #f6d8d1 20%, var(--bg-primary));
-}
-
-.databaseNoticeInfo {
-	color: var(--text-secondary);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 7%,
-		var(--bg-primary)
-	);
 }
 
 .databaseEmptyCell {
@@ -651,16 +687,218 @@
 }
 
 .databasesEmptyTitle {
-	font-size: 1rem;
+	font-size: calc(var(--text-base) * 1.1);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
 .databasesEmptyText {
-	font-size: 0.84rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 	max-width: 340px;
 	line-height: 1.5;
+}
+
+.createCollectionDialog {
+	width: min(460px, calc(100vw - 32px));
+	gap: 0;
+	padding: 0;
+	overflow: hidden;
+	border-radius: var(--radius-2xl);
+	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-float);
+}
+
+.createCollectionDialog [data-slot="dialog-close"] {
+	top: 16px;
+	right: 16px;
+	opacity: 0.55;
+}
+
+.createCollectionDialog [data-slot="dialog-close"]:hover {
+	opacity: 0.9;
+}
+
+.createCollectionHero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 24px 22px 18px;
+	text-align: center;
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 80%, transparent);
+}
+
+.createCollectionIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	color: var(--interactive-accent);
+}
+
+.createCollectionHeader {
+	align-items: center;
+	gap: 4px;
+	padding: 0;
+	text-align: center;
+}
+
+.createCollectionEyebrow {
+	margin: 0 0 2px;
+	font-size: calc(var(--text-base) * 0.78);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.createCollectionDialog [data-slot="dialog-title"] {
+	font-size: calc(var(--text-base) * 1.22);
+	line-height: 1.2;
+	letter-spacing: -0.015em;
+	color: var(--text-primary);
+}
+
+.createCollectionDescription {
+	margin-top: 2px;
+	font-size: calc(var(--text-base) * 0.92);
+	line-height: 1.45;
+	color: var(--text-secondary);
+}
+
+.createCollectionForm {
+	display: grid;
+	gap: 16px;
+	padding: 18px 22px 22px;
+}
+
+.createCollectionFields {
+	display: grid;
+	gap: 14px;
+}
+
+.createCollectionField {
+	display: grid;
+	gap: 7px;
+}
+
+.createCollectionLabel {
+	font-size: calc(var(--text-base) * 0.86);
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+}
+
+.createCollectionInput {
+	height: 40px;
+	border-radius: var(--radius-lg);
+	border-color: color-mix(in srgb, var(--border-default) 84%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	box-shadow: none;
+	transition: border-color var(--transition-fast), background-color
+		var(--transition-fast);
+}
+
+.createCollectionInput:hover {
+	border-color: var(--border-strong);
+}
+
+.createCollectionInput:focus-visible {
+	border-color: var(--border-focus);
+}
+
+.createCollectionDialog .createCollectionFolderTrigger {
+	width: 100%;
+	max-width: none;
+	align-self: stretch;
+	min-height: 40px;
+	border-radius: var(--radius-lg);
+	background: var(--bg-tertiary);
+	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+}
+
+.createCollectionDialog .createCollectionFolderTrigger:hover {
+	background: color-mix(in srgb, var(--bg-tertiary) 86%, var(--bg-hover));
+	border-color: var(--border-default);
+}
+
+.createCollectionTips {
+	padding: 12px 14px;
+	border-radius: var(--radius-lg);
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	text-align: center;
+}
+
+.createCollectionTipsList {
+	display: grid;
+	justify-items: center;
+	gap: 9px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.createCollectionTip {
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 10px;
+	width: fit-content;
+	max-width: 100%;
+	font-size: calc(var(--text-base) * 0.84);
+	line-height: 1.45;
+	color: var(--text-secondary);
+	text-align: center;
+}
+
+.createCollectionTip::before {
+	content: "";
+	width: 5px;
+	height: 5px;
+	margin-top: 0.55em;
+	flex: 0 0 auto;
+	border-radius: 999px;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 55%,
+		var(--text-tertiary)
+	);
+}
+
+.createCollectionTip:has(.createCollectionTipIcons)::before {
+	display: none;
+}
+
+.createCollectionTipIcons {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 1px;
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.createCollectionActions {
+	margin: 0;
+	padding-top: 2px;
+	gap: 8px;
+}
+
+.createCollectionCta[data-slot="button"] {
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.createCollectionCta[data-slot="button"]:hover:not(:disabled) {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 .databaseHeaderRow {

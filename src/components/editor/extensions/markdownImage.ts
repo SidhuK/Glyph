@@ -12,7 +12,7 @@ function getTokenField(
 	return typeof attributeValue === "string" ? attributeValue : null;
 }
 
-function encodeMarkdownImageSrc(src: string): string {
+export function encodeMarkdownImageSrc(src: string): string {
 	const trimmed = src.trim();
 	if (!trimmed) return "";
 	try {

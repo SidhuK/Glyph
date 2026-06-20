@@ -5,6 +5,7 @@ import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
+	ReleaseChannel,
 	UiAccent,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
@@ -32,6 +33,7 @@ type TauriEventMap = {
 	"menu:open_ai_settings": undefined;
 	"menu:editor_action": { action: string };
 	"quick-note:open_note": { path: string };
+	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
@@ -60,12 +62,23 @@ type TauriEventMap = {
 		payload?: unknown;
 		error?: string;
 	};
-	"notes:external_changed": { rel_path: string; removed: boolean };
-	"space:fs_changed": { rel_path: string; removed: boolean };
+	"notes:external_changed": {
+		space_path?: string;
+		rel_path: string;
+		removed: boolean;
+	};
+	"space:fs_changed": {
+		space_path?: string;
+		rel_path: string;
+		removed: boolean;
+	};
+	"index:progress": import("./tauri").IndexProgress;
 	"settings:updated": {
+		spacePath?: string;
 		ui?: {
 			theme?: string;
 			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
+			releaseChannel?: ReleaseChannel;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
 			accent?: UiAccent;
@@ -90,9 +103,6 @@ type TauriEventMap = {
 		templates?: {
 			folder?: string | null;
 			dailyNoteTemplate?: string | null;
-		};
-		tasks?: {
-			source?: { mode?: "space" | "folders"; folders?: string[] };
 		};
 		database?: {
 			showColumnColor?: boolean;

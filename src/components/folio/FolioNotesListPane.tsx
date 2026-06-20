@@ -1,20 +1,27 @@
-import { PinIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+	type CSSProperties,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { prefetchNote } from "../../lib/navigationPrefetch";
 import {
-	loadAllDocs,
-	navigationQueryKeys,
-	prefetchNote,
-} from "../../lib/navigationPrefetch";
-import type { AllDocsItem, FileTreeAppearance } from "../../lib/tauri";
+	DEFAULT_TAG_ICON_NAME,
+	resolveTagIconName,
+	tagIconOverridesFromAppearance,
+} from "../../lib/tagIcons";
+import type { FileTreeAppearance } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import { basename, isMarkdownPath } from "../../utils/path";
+import { basename } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { FolioNoteListItem } from "./FolioNoteListItem";
@@ -31,6 +38,13 @@ interface FolioNotesListPaneProps {
 }
 
 const FOLIO_SORT_MODE_STORAGE_KEY = "glyph.folio.sortMode";
+const FOLIO_NOTE_ROW_ESTIMATE = 104;
+const FOLIO_FILE_ROW_ESTIMATE = 42;
+type FolioVirtualRow = {
+	id: string;
+	kind: "note";
+	note: FolioItem;
+};
 
 function isFolioNotesSortMode(value: unknown): value is FolioNotesSortMode {
 	return value === "alphabetical" || value === "edited" || value === "created";
@@ -61,41 +75,6 @@ function noteTitle(note: FolioItem): string {
 		note.title.trim() ||
 		(note.is_markdown ? fallback.replace(/\.md$/i, "") : fallback)
 	);
-}
-
-function normalizePinnedPath(path: string): string {
-	return path
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-}
-
-function titleFromPinnedPath(path: string): string {
-	const name = basename(path);
-	return isMarkdownPath(path) ? name.replace(/\.md$/i, "") : name;
-}
-
-function allDocsItemToFolioItem(item: AllDocsItem): FolioItem {
-	return {
-		...item,
-		note_path: normalizePinnedPath(item.note_path),
-		created: item.created || null,
-		updated: item.updated || null,
-		is_markdown: true,
-	};
-}
-
-function fallbackPinnedItem(path: string): FolioItem {
-	return {
-		note_path: path,
-		title: titleFromPinnedPath(path),
-		preview: "",
-		created: null,
-		updated: null,
-		tags: [],
-		people: [],
-		is_markdown: isMarkdownPath(path),
-	};
 }
 
 function noteMatchesFilter(note: FolioItem, query: string): boolean {
@@ -171,33 +150,10 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	onDeleteFile,
 }: FolioNotesListPaneProps) {
 	const { folioScope } = useUILayoutContext();
-	const { itemAppearance, setItemAppearance, pinnedFiles, togglePinnedFile } =
+	const { beautifulTags, itemAppearance, setItemAppearance, tagAppearance } =
 		useFileTreeContext();
-	const queryClient = useQueryClient();
-	const {
-		notes,
-		filesTruncated,
-		isLoading,
-		error,
-		nonMarkdownFileLimit,
-		missingFolder,
-	} = useFolioNotes(folioScope);
-	const normalizedPinnedFiles = useMemo(
-		() =>
-			pinnedFiles
-				.map(normalizePinnedPath)
-				.filter((path, index, paths) => path && paths.indexOf(path) === index),
-		[pinnedFiles],
-	);
-	const hasPinnedMarkdownFiles = useMemo(
-		() => normalizedPinnedFiles.some(isMarkdownPath),
-		[normalizedPinnedFiles],
-	);
-	const pinnedMarkdownQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(null),
-		queryFn: () => loadAllDocs(null),
-		enabled: hasPinnedMarkdownFiles,
-	});
+	const { notes, filesTruncated, error, nonMarkdownFileLimit } =
+		useFolioNotes(folioScope);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortMode, setSortMode] = useState<FolioNotesSortMode>(
 		readStoredFolioSortMode,
@@ -208,58 +164,23 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
-	const pinnedPathSet = useMemo(
-		() => new Set(normalizedPinnedFiles),
-		[normalizedPinnedFiles],
-	);
-	const notesByPath = useMemo(
-		() =>
-			new Map(
-				notes.map(
-					(note) => [normalizePinnedPath(note.note_path), note] as const,
-				),
-			),
-		[notes],
-	);
-	const allDocsByPath = useMemo(
-		() =>
-			new Map(
-				(pinnedMarkdownQuery.data ?? []).map(
-					(note) =>
-						[
-							normalizePinnedPath(note.note_path),
-							allDocsItemToFolioItem(note),
-						] as const,
-				),
-			),
-		[pinnedMarkdownQuery.data],
-	);
-	const visiblePinnedNotes = useMemo(
-		() =>
-			normalizedPinnedFiles
-				.map(
-					(path) =>
-						notesByPath.get(path) ??
-						allDocsByPath.get(path) ??
-						fallbackPinnedItem(path),
-				)
-				.filter((note) => noteMatchesFilter(note, searchQuery)),
-		[allDocsByPath, normalizedPinnedFiles, notesByPath, searchQuery],
-	);
-	const visibleRegularNotes = useMemo(
+	const listRef = useRef<HTMLUListElement | null>(null);
+	const visibleNotes = useMemo(
 		() =>
 			notes
-				.filter(
-					(note) => !pinnedPathSet.has(normalizePinnedPath(note.note_path)),
-				)
 				.filter((note) => noteMatchesFilter(note, searchQuery))
 				.slice()
 				.sort((left, right) => compareNotes(left, right, sortMode)),
-		[notes, pinnedPathSet, searchQuery, sortMode],
+		[notes, searchQuery, sortMode],
 	);
-	const visibleNotes = useMemo(
-		() => [...visiblePinnedNotes, ...visibleRegularNotes],
-		[visiblePinnedNotes, visibleRegularNotes],
+	const virtualRows = useMemo<FolioVirtualRow[]>(
+		() =>
+			visibleNotes.map((note) => ({
+				id: `note:${note.note_path}`,
+				kind: "note",
+				note,
+			})),
+		[visibleNotes],
 	);
 	const selectedIndex = useMemo(
 		() =>
@@ -268,7 +189,13 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				: -1,
 		[activeTabPath, visibleNotes],
 	);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+	const selectedVirtualIndex = useMemo(
+		() =>
+			activeTabPath
+				? virtualRows.findIndex((row) => row.note.note_path === activeTabPath)
+				: -1,
+		[activeTabPath, virtualRows],
+	);
 	const taskSummaryPaths = useMemo(
 		() =>
 			visibleNotes
@@ -278,25 +205,37 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		showTaskProgressIndicator,
+		true,
 		taskSummaryRefreshKey,
 	);
+	const tagIconOverrides = useMemo(
+		() => tagIconOverridesFromAppearance(tagAppearance),
+		[tagAppearance],
+	);
+	const iconNameForTag = useCallback(
+		(tag: string) =>
+			beautifulTags
+				? resolveTagIconName(tag, tagIconOverrides, beautifulTags)
+				: DEFAULT_TAG_ICON_NAME,
+		[beautifulTags, tagIconOverrides],
+	);
+	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
+		count: virtualRows.length,
+		estimateSize: (index) => {
+			const row = virtualRows[index];
+			if (row && !row.note.is_markdown) return FOLIO_FILE_ROW_ESTIMATE;
+			return FOLIO_NOTE_ROW_ESTIMATE;
+		},
+		getScrollElement: () => listRef.current,
+		getItemKey: (index) => virtualRows[index]?.id ?? index,
+		overscan: 8,
+	});
+	const virtualItems = rowVirtualizer.getVirtualItems();
 
 	useTauriEvent("notes:external_changed", (payload) => {
-		if (hasPinnedMarkdownFiles) {
-			void queryClient.invalidateQueries({
-				queryKey: navigationQueryKeys.allDocsList(null),
-			});
-		}
 		if (!payload.rel_path || !taskSummaryPaths.includes(payload.rel_path))
 			return;
 		setTaskSummaryRefreshKey((key) => key + 1);
-	});
-	useTauriEvent("space:fs_changed", () => {
-		if (!hasPinnedMarkdownFiles) return;
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(null),
-		});
 	});
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() =>
@@ -307,19 +246,14 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		setSortMode(nextSortMode);
 		writeStoredFolioSortMode(nextSortMode);
 	}, []);
-	const scrollNoteIntoView = useCallback((path: string) => {
-		requestAnimationFrame(() => {
-			const rows =
-				paneRef.current?.querySelectorAll<HTMLElement>(
-					"[data-folio-note-path]",
-				) ?? [];
-			for (const row of rows) {
-				if (row.dataset.folioNotePath !== path) continue;
-				row.scrollIntoView?.({ block: "nearest" });
-				return;
-			}
-		});
-	}, []);
+	const scrollNoteIntoView = useCallback(
+		(path: string) => {
+			const index = virtualRows.findIndex((row) => row.note.note_path === path);
+			if (index < 0) return;
+			rowVirtualizer.scrollToIndex(index, { align: "auto" });
+		},
+		[rowVirtualizer, virtualRows],
+	);
 	const openNote = useCallback(
 		(path: string) => {
 			void onOpenFile(path);
@@ -363,16 +297,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 			await onDeleteFile(path);
 		},
 		[onDeleteFile],
-	);
-	const togglePinnedNote = useCallback(
-		async (path: string) => {
-			try {
-				await togglePinnedFile(path);
-			} catch (error) {
-				console.error("Failed to toggle pinned folio file", error);
-			}
-		},
-		[togglePinnedFile],
 	);
 	const changeAppearance = useCallback(
 		async (path: string, appearance: FileTreeAppearance) => {
@@ -420,20 +344,11 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 
 	useEffect(() => {
 		if (!activeTabPath) return;
-		scrollNoteIntoView(activeTabPath);
-	}, [activeTabPath, scrollNoteIntoView]);
+		if (selectedVirtualIndex < 0) return;
+		rowVirtualizer.scrollToIndex(selectedVirtualIndex, { align: "auto" });
+	}, [activeTabPath, rowVirtualizer, selectedVirtualIndex]);
 
 	const body = (() => {
-		if (missingFolder) {
-			return (
-				<div className="folioNotesState">
-					Set a folder in Settings to browse this scope.
-				</div>
-			);
-		}
-		if (isLoading) {
-			return <div className="folioNotesState">Loading notes…</div>;
-		}
 		if (error) {
 			return (
 				<div className="folioNotesState">
@@ -456,70 +371,52 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 						Showing the first {nonMarkdownFileLimit.toLocaleString()} files.
 					</div>
 				) : null}
-				<ul className="folioNotesList">
-					{visiblePinnedNotes.length > 0 ? (
-						<li className="folioNotesPinnedHeading">
-							<HugeiconsIcon icon={PinIcon} size={12} strokeWidth={1} />
-							<span>Pinned</span>
-						</li>
-					) : null}
-					{visiblePinnedNotes.map((note) => (
-						<FolioNoteListItem
-							key={note.note_path}
-							note={note}
-							selected={activeTabPath === note.note_path}
-							isPinned
-							onOpen={openNote}
-							onOpenInNewTab={openNoteInNewTab}
-							onPrefetch={prefetchNote}
-							onRename={onRenameFile ? renameNote : undefined}
-							onDelete={deleteNote}
-							onTogglePinned={togglePinnedNote}
-							onFocus={focusPane}
-							isRenaming={
-								Boolean(onRenameFile) && renamingPath === note.note_path
-							}
-							onCommitRename={commitRename}
-							onCancelRename={cancelRename}
-							appearance={itemAppearance[note.note_path] ?? null}
-							onOpenAppearancePicker={setAppearancePickerPath}
-							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
-									? (taskSummariesByPath[note.note_path] ?? null)
-									: null
-							}
-						/>
-					))}
-					{visiblePinnedNotes.length > 0 && visibleRegularNotes.length > 0 ? (
-						<li className="folioNotesPinnedDivider" aria-hidden="true" />
-					) : null}
-					{visibleRegularNotes.map((note) => (
-						<FolioNoteListItem
-							key={note.note_path}
-							note={note}
-							selected={activeTabPath === note.note_path}
-							isPinned={false}
-							onOpen={openNote}
-							onOpenInNewTab={openNoteInNewTab}
-							onPrefetch={prefetchNote}
-							onRename={onRenameFile ? renameNote : undefined}
-							onDelete={deleteNote}
-							onTogglePinned={togglePinnedNote}
-							onFocus={focusPane}
-							isRenaming={
-								Boolean(onRenameFile) && renamingPath === note.note_path
-							}
-							onCommitRename={commitRename}
-							onCancelRename={cancelRename}
-							appearance={itemAppearance[note.note_path] ?? null}
-							onOpenAppearancePicker={setAppearancePickerPath}
-							taskSummary={
-								showTaskProgressIndicator && note.is_markdown
-									? (taskSummariesByPath[note.note_path] ?? null)
-									: null
-							}
-						/>
-					))}
+				<ul
+					ref={listRef}
+					className="folioNotesList is-virtualized"
+					style={
+						{
+							"--folio-virtual-height": `${rowVirtualizer.getTotalSize()}px`,
+						} as CSSProperties
+					}
+				>
+					{virtualItems.map((virtualRow) => {
+						const row = virtualRows[virtualRow.index];
+						if (!row) return null;
+						const virtualStyle = {
+							transform: `translateY(${virtualRow.start}px)`,
+						};
+						return (
+							<FolioNoteListItem
+								key={virtualRow.key}
+								virtualIndex={virtualRow.index}
+								ref={(node) => rowVirtualizer.measureElement(node)}
+								className="folioNotesVirtualRow"
+								style={virtualStyle}
+								note={row.note}
+								selected={activeTabPath === row.note.note_path}
+								onOpen={openNote}
+								onOpenInNewTab={openNoteInNewTab}
+								onPrefetch={prefetchNote}
+								onRename={onRenameFile ? renameNote : undefined}
+								onDelete={deleteNote}
+								onFocus={focusPane}
+								isRenaming={
+									Boolean(onRenameFile) && renamingPath === row.note.note_path
+								}
+								onCommitRename={commitRename}
+								onCancelRename={cancelRename}
+								appearance={itemAppearance[row.note.note_path] ?? null}
+								onOpenAppearancePicker={setAppearancePickerPath}
+								iconNameForTag={iconNameForTag}
+								taskSummary={
+									row.note.is_markdown
+										? (taskSummariesByPath?.[row.note.note_path] ?? null)
+										: null
+								}
+							/>
+						);
+					})}
 				</ul>
 			</>
 		);

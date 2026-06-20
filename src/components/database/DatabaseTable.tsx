@@ -1,10 +1,13 @@
 import {
 	type ColumnDef,
+	type Row,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { createDatabaseRowGroups } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
 import type {
@@ -23,7 +26,7 @@ import {
 	TableRow,
 } from "../ui/shadcn/table";
 import { DatabaseCell } from "./DatabaseCell";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -37,6 +40,7 @@ interface DatabaseTableProps {
 		initialValue?: { column: DatabaseColumn; laneId: string } | null,
 	) => void | Promise<void>;
 	onToggleSort: (column: DatabaseColumn) => void;
+	onChangeColumnIcon: (columnId: string, iconName: string | null) => void;
 	laneColors?: Record<string, string>;
 	statusColors?: Record<string, EditorTextColor>;
 	onStatusColorChange?: (status: string, color: EditorTextColor | null) => void;
@@ -52,9 +56,27 @@ interface DatabaseTableProps {
 	) => Promise<void>;
 	onRenameTitle: (notePath: string, nextTitle: string) => Promise<boolean>;
 	onResizeColumn: (columnId: string, width: number) => void;
+	hasMoreRows?: boolean;
+	isLoadingMoreRows?: boolean;
+	onLoadMoreRows?: () => undefined | Promise<unknown>;
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
+const DATABASE_TABLE_ROW_HEIGHT = 38;
+const DATABASE_TABLE_GROUP_ROW_HEIGHT = 34;
+
+type DatabaseTableGroup = ReturnType<typeof createDatabaseRowGroups>[number];
+type DatabaseDisplayItem =
+	| {
+			id: string;
+			kind: "group";
+			group: DatabaseTableGroup;
+	  }
+	| {
+			id: string;
+			kind: "row";
+			row: Row<DatabaseRow>;
+	  };
 
 function uniqueOptionValues(values: string[]): string[] {
 	const counts = new Map<string, { value: string; count: number }>();
@@ -80,6 +102,38 @@ function uniqueOptionValues(values: string[]): string[] {
 		.map((entry) => entry.value);
 }
 
+function createDatabaseDisplayItems(
+	displayRows: Row<DatabaseRow>[],
+	rowGroups: DatabaseTableGroup[],
+	hasGroups: boolean,
+): DatabaseDisplayItem[] {
+	if (!hasGroups) {
+		return displayRows.map((row) => ({
+			id: row.id,
+			kind: "row",
+			row,
+		}));
+	}
+	const rowsByPath = new Map(
+		displayRows.map((row) => [row.original.note_path, row]),
+	);
+	return rowGroups.flatMap((group) => [
+		{
+			id: group.id,
+			kind: "group" as const,
+			group,
+		},
+		...group.rows
+			.map((row) => rowsByPath.get(row.note_path))
+			.filter((row): row is Row<DatabaseRow> => row != null)
+			.map((row) => ({
+				id: `${group.id}:${row.id}`,
+				kind: "row" as const,
+				row,
+			})),
+	]);
+}
+
 function SortIndicator({
 	activeSort,
 	columnId,
@@ -88,9 +142,9 @@ function SortIndicator({
 	return (
 		<span className="databaseHeaderSortIcon" aria-hidden="true">
 			{activeSort.direction === "desc" ? (
-				<ChevronDown size={12} />
+				<ChevronDown size="var(--icon-sm)" />
 			) : (
-				<ChevronUp size={12} />
+				<ChevronUp size="var(--icon-sm)" />
 			)}
 		</span>
 	);
@@ -106,14 +160,19 @@ export function DatabaseTable({
 	onOpenRow,
 	onCreateRow,
 	onToggleSort,
+	onChangeColumnIcon,
 	laneColors = EMPTY_LANE_COLORS,
 	statusColors,
 	onStatusColorChange,
 	onSaveCell,
 	onRenameTitle,
 	onResizeColumn,
+	hasMoreRows = false,
+	isLoadingMoreRows = false,
+	onLoadMoreRows,
 }: DatabaseTableProps) {
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
+	const tableContainerRef = useRef<HTMLDivElement>(null);
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
 		const next: Record<string, EditorTextColor> = {};
 		for (const [laneId, color] of Object.entries(laneColors)) {
@@ -145,21 +204,23 @@ export function DatabaseTable({
 			columns.map((column) => ({
 				id: column.id,
 				header: () => (
-					<button
-						type="button"
-						className="databaseHeaderButton"
-						onClick={() => onToggleSort(column)}
-					>
-						<span className="databaseHeaderLabel">
-							<DatabaseColumnIcon
-								column={column}
-								size={13}
-								className="databaseHeaderIcon"
-							/>
-							<span className="databaseHeaderText">{column.label}</span>
-							<SortIndicator activeSort={activeSort} columnId={column.id} />
-						</span>
-					</button>
+					<div className="databaseHeaderControls">
+						<DatabaseColumnIconPicker
+							column={column}
+							className="databaseHeaderIconPicker"
+							onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
+						/>
+						<button
+							type="button"
+							className="databaseHeaderButton"
+							onClick={() => onToggleSort(column)}
+						>
+							<span className="databaseHeaderLabel">
+								<span className="databaseHeaderText">{column.label}</span>
+								<SortIndicator activeSort={activeSort} columnId={column.id} />
+							</span>
+						</button>
+					</div>
 				),
 				cell: ({ row }) => (
 					<DatabaseCell
@@ -182,6 +243,7 @@ export function DatabaseTable({
 			activeSort,
 			columnValueOptions,
 			columns,
+			onChangeColumnIcon,
 			onOpenRow,
 			onRenameTitle,
 			onSaveCell,
@@ -223,35 +285,31 @@ export function DatabaseTable({
 	);
 	const displayRows = table.getRowModel().rows;
 	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
-	const rowsByPath = useMemo(
-		() => new Map(displayRows.map((row) => [row.original.note_path, row])),
-		[displayRows],
-	);
 	const hasGroups = groupColumn != null && rowGroups.length > 0;
 	const canCreateInGroup = groupColumn != null && onCreateRow != null;
-	const renderRow = (row: (typeof displayRows)[number], keyPrefix = "") => (
-		<TableRow
-			key={`${keyPrefix}${row.id}`}
-			data-state={
-				row.original.note_path === selectedRowPath ? "selected" : undefined
-			}
-			className="databaseRow"
-			onClick={() => onSelectRow(row.original.note_path)}
-		>
-			{row.getVisibleCells().map((cell) => (
-				<TableCell
-					key={cell.id}
-					style={{
-						width: cell.column.getSize(),
-						minWidth: cell.column.getSize(),
-					}}
-					className="databaseBodyCell"
-				>
-					{flexRender(cell.column.columnDef.cell, cell.getContext())}
-				</TableCell>
-			))}
-		</TableRow>
+	const displayItems = useMemo(
+		() => createDatabaseDisplayItems(displayRows, rowGroups, hasGroups),
+		[displayRows, hasGroups, rowGroups],
 	);
+	const rowVirtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+		count: displayItems.length,
+		estimateSize: (index) =>
+			displayItems[index]?.kind === "group"
+				? DATABASE_TABLE_GROUP_ROW_HEIGHT
+				: DATABASE_TABLE_ROW_HEIGHT,
+		getScrollElement: () => tableContainerRef.current,
+		getItemKey: (index) => displayItems[index]?.id ?? index,
+		overscan: 8,
+	});
+	const virtualItems = rowVirtualizer.getVirtualItems();
+	useVirtualLoadMore({
+		hasMore: hasMoreRows,
+		isLoading: isLoadingMoreRows,
+		onLoadMore: onLoadMoreRows,
+		virtualItems,
+		totalItems: displayItems.length,
+		remainingItems: 12,
+	});
 
 	useEffect(() => {
 		if (!resizingColumnId) return;
@@ -262,9 +320,10 @@ export function DatabaseTable({
 
 	return (
 		<div
+			ref={tableContainerRef}
 			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}`}
 		>
-			<Table className="databaseTable">
+			<Table className="databaseTable is-virtualized">
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id} className="databaseHeaderRow">
@@ -310,12 +369,30 @@ export function DatabaseTable({
 						</TableRow>
 					))}
 				</TableHeader>
-				<TableBody>
-					{displayRows.length > 0 ? (
-						hasGroups ? (
-							rowGroups.map((group) => (
-								<Fragment key={group.id}>
-									<tr className="databaseGroupHeaderRow">
+				<TableBody
+					style={{
+						height:
+							displayItems.length > 0
+								? `${rowVirtualizer.getTotalSize()}px`
+								: undefined,
+					}}
+				>
+					{displayItems.length > 0 ? (
+						virtualItems.map((virtualRow) => {
+							const item = displayItems[virtualRow.index];
+							if (!item) return null;
+							const transform = `translateY(${virtualRow.start}px)`;
+							if (item.kind === "group") {
+								const { group } = item;
+								return (
+									<tr
+										key={virtualRow.key}
+										className="databaseGroupHeaderRow"
+										style={{
+											height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
+											transform,
+										}}
+									>
 										<td
 											colSpan={visibleColumnCount}
 											className="databaseGroupCell"
@@ -335,7 +412,7 @@ export function DatabaseTable({
 													aria-label={`Add note to ${group.label}`}
 												>
 													<Plus
-														size={13}
+														size="var(--icon-sm)"
 														strokeWidth={1.6}
 														aria-hidden="true"
 													/>
@@ -343,17 +420,42 @@ export function DatabaseTable({
 											) : null}
 										</td>
 									</tr>
-									{group.rows
-										.map((row) => rowsByPath.get(row.note_path))
-										.filter(
-											(row): row is (typeof displayRows)[number] => row != null,
-										)
-										.map((row) => renderRow(row, `${group.id}:`))}
-								</Fragment>
-							))
-						) : (
-							displayRows.map((row) => renderRow(row))
-						)
+								);
+							}
+							const { row } = item;
+							return (
+								<TableRow
+									key={virtualRow.key}
+									data-state={
+										row.original.note_path === selectedRowPath
+											? "selected"
+											: undefined
+									}
+									className="databaseRow"
+									style={{
+										height: `${DATABASE_TABLE_ROW_HEIGHT}px`,
+										transform,
+									}}
+									onClick={() => onSelectRow(row.original.note_path)}
+								>
+									{row.getVisibleCells().map((cell) => (
+										<TableCell
+											key={cell.id}
+											style={{
+												width: cell.column.getSize(),
+												minWidth: cell.column.getSize(),
+											}}
+											className="databaseBodyCell"
+										>
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext(),
+											)}
+										</TableCell>
+									))}
+								</TableRow>
+							);
+						})
 					) : (
 						<TableRow>
 							<TableCell

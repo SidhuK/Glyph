@@ -100,7 +100,7 @@ export function DatabaseTagPicker({
 					className="databasePickerTrigger"
 				>
 					<span className="databasePickerTriggerIcon">
-						<Hash size={13} />
+						<Hash size="var(--icon-sm)" />
 					</span>
 					<span className="databasePickerTriggerText">
 						<span className="databasePickerTriggerLabel">{selectedLabel}</span>
@@ -113,14 +113,14 @@ export function DatabaseTagPicker({
 			<PopoverContent className="databasePickerPopover" align="start">
 				<PopoverHeader className="databasePickerHeader">
 					<div className="databasePickerEyebrow">
-						<Tags size={13} />
+						<Tags size="var(--icon-sm)" />
 						<span>Tag Source</span>
 					</div>
 					<PopoverTitle>{label}</PopoverTitle>
 					<PopoverDescription>{description}</PopoverDescription>
 				</PopoverHeader>
 				<div className="databasePickerSearch">
-					<Search size={13} />
+					<Search size="var(--icon-sm)" />
 					<Input
 						value={query}
 						placeholder="Search tags"

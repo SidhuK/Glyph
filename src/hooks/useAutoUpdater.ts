@@ -1,13 +1,20 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { type Update, check } from "@tauri-apps/plugin-updater";
-import { useCallback, useEffect, useState } from "react";
-import { setAutoUpdateLastCheckedAt } from "../lib/settings";
+import { Update } from "@tauri-apps/plugin-updater";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	type ReleaseChannel,
+	loadSettings,
+	setAutoUpdateLastCheckedAt,
+} from "../lib/settings";
+import { invoke } from "../lib/tauri";
+import { useTauriEvent } from "../lib/tauriEvents";
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-let cachedUpdate: Update | null = null;
+let cachedUpdate: { channel: ReleaseChannel; update: Update } | null = null;
 let inFlightUpdateCheck: Promise<Update | null> | null = null;
-let launchCheckStarted = false;
+let inFlightChannel: ReleaseChannel | null = null;
+const launchCheckStarted = new Set<ReleaseChannel>();
 
 async function isMainWindow(): Promise<boolean> {
 	let windowLabel = "";
@@ -19,25 +26,39 @@ async function isMainWindow(): Promise<boolean> {
 	return windowLabel === "main";
 }
 
-async function downloadUpdate(): Promise<Update | null> {
-	if (import.meta.env.DEV || cachedUpdate) return cachedUpdate;
-	if (!(await isMainWindow())) return null;
-	if (inFlightUpdateCheck) return inFlightUpdateCheck;
+async function checkReleaseChannel(
+	channel: ReleaseChannel,
+): Promise<Update | null> {
+	const metadata = await invoke("updater_check_release_channel", { channel });
+	return metadata ? new Update(metadata) : null;
+}
 
+async function downloadUpdate(channel: ReleaseChannel): Promise<Update | null> {
+	if (import.meta.env.DEV) return null;
+	if (cachedUpdate?.channel === channel) return cachedUpdate.update;
+	if (!(await isMainWindow())) return null;
+	if (inFlightUpdateCheck && inFlightChannel === channel) {
+		return inFlightUpdateCheck;
+	}
+
+	inFlightChannel = channel;
 	inFlightUpdateCheck = (async () => {
 		try {
-			const update = await check();
+			const update = await checkReleaseChannel(channel);
 			await setAutoUpdateLastCheckedAt(Date.now());
 			if (!update) return null;
 
 			await update.download();
-			cachedUpdate = update;
+			cachedUpdate = { channel, update };
 			return update;
 		} catch (error) {
 			console.warn("Auto-update check/download failed", error);
 			return null;
 		} finally {
-			inFlightUpdateCheck = null;
+			if (inFlightChannel === channel) {
+				inFlightUpdateCheck = null;
+				inFlightChannel = null;
+			}
 		}
 	})();
 
@@ -53,36 +74,72 @@ export interface AutoUpdaterState {
 }
 
 export function useAutoUpdater(enabled = true): AutoUpdaterState {
-	const [update, setUpdate] = useState<Update | null>(cachedUpdate);
+	const [releaseChannel, setReleaseChannelState] =
+		useState<ReleaseChannel>("stable");
+	const releaseChannelRef = useRef(releaseChannel);
+	const [releaseChannelLoaded, setReleaseChannelLoaded] = useState(false);
+	const [update, setUpdate] = useState<Update | null>(null);
 	const [isChecking, setIsChecking] = useState(false);
 
 	const checkForUpdates = useCallback(async () => {
-		if (!enabled) return null;
+		if (!enabled || !releaseChannelLoaded) return null;
+		const requestedChannel = releaseChannel;
 		setIsChecking(true);
 		try {
-			const nextUpdate = await downloadUpdate();
-			setUpdate(nextUpdate);
+			const nextUpdate = await downloadUpdate(requestedChannel);
+			if (releaseChannelRef.current === requestedChannel) {
+				setUpdate(nextUpdate);
+			}
 			return nextUpdate;
 		} finally {
 			setIsChecking(false);
 		}
-	}, [enabled]);
+	}, [enabled, releaseChannel, releaseChannelLoaded]);
 
 	useEffect(() => {
-		if (!enabled) {
+		releaseChannelRef.current = releaseChannel;
+	}, [releaseChannel]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled) setReleaseChannelState(settings.ui.releaseChannel);
+			})
+			.catch(() => undefined)
+			.finally(() => {
+				if (!cancelled) setReleaseChannelLoaded(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		const nextChannel = payload.ui?.releaseChannel;
+		if (!nextChannel) return;
+		setReleaseChannelState(nextChannel);
+		setReleaseChannelLoaded(true);
+		setUpdate(
+			cachedUpdate?.channel === nextChannel ? cachedUpdate.update : null,
+		);
+	});
+
+	useEffect(() => {
+		if (!enabled || !releaseChannelLoaded) {
 			setUpdate(null);
 			return;
 		}
-		if (cachedUpdate) {
-			setUpdate(cachedUpdate);
+		if (cachedUpdate?.channel === releaseChannel) {
+			setUpdate(cachedUpdate.update);
 		}
 
 		const runCheck = async () => {
 			await checkForUpdates();
 		};
 
-		if (!launchCheckStarted) {
-			launchCheckStarted = true;
+		if (!launchCheckStarted.has(releaseChannel)) {
+			launchCheckStarted.add(releaseChannel);
 			void runCheck();
 		}
 
@@ -93,7 +150,7 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		return () => {
 			window.clearInterval(intervalId);
 		};
-	}, [checkForUpdates, enabled]);
+	}, [checkForUpdates, enabled, releaseChannel, releaseChannelLoaded]);
 
 	const installAndRelaunch = useCallback(() => {
 		if (!update) return;

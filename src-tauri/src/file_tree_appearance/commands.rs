@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
@@ -11,9 +11,10 @@ use super::types::FileTreeAppearance;
 
 #[tauri::command]
 pub async fn file_tree_appearance_list(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<BTreeMap<String, FileTreeAppearance>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         Ok(load_store(&root)?.entries)
     })
@@ -23,12 +24,13 @@ pub async fn file_tree_appearance_list(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn file_tree_appearance_set(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     color: Option<String>,
     icon: Option<String>,
 ) -> Result<Option<FileTreeAppearance>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let appearance_mutex = state.file_tree_appearance_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let rel = PathBuf::from(&path);
@@ -58,11 +60,12 @@ pub async fn file_tree_appearance_set(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn file_tree_appearance_rename_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let appearance_mutex = state.file_tree_appearance_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let from_rel = PathBuf::from(&from_path);
@@ -94,10 +97,11 @@ pub async fn file_tree_appearance_rename_path(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn file_tree_appearance_delete_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let appearance_mutex = state.file_tree_appearance_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);

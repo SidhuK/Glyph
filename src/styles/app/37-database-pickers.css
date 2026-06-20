@@ -38,8 +38,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
-	height: 28px;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
 	color: var(--text-secondary);
@@ -47,8 +47,8 @@
 }
 
 .databaseDialogCompact .databasePickerTriggerIcon {
-	width: 22px;
-	height: 22px;
+	width: var(--icon-2xl);
+	height: var(--icon-2xl);
 	background: transparent;
 }
 
@@ -65,7 +65,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.88rem;
+	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
@@ -75,7 +75,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-tertiary);
 }
 
@@ -125,15 +125,15 @@
 }
 
 .databaseSourceInlinePicker .databasePickerTriggerIcon {
-	width: 20px;
-	height: 20px;
+	width: var(--icon-2xl);
+	height: var(--icon-2xl);
 	border-radius: var(--radius-sm);
 	background: transparent;
 	color: currentcolor;
 }
 
 .databaseSourceInlinePicker .databasePickerTriggerLabel {
-	font-size: 0.78rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: currentcolor;
 }
@@ -167,7 +167,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 0.68rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-bold);
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
@@ -250,7 +250,7 @@
 }
 
 .databasePickerOptionLabel {
-	font-size: 0.84rem;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-primary);
 }
 
@@ -260,7 +260,7 @@
 
 .databasePickerOptionMeta,
 .databasePickerEmpty {
-	font-size: 0.76rem;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-tertiary);
 }
@@ -285,7 +285,7 @@
 		var(--interactive-accent) 7%,
 		var(--bg-secondary)
 	);
-	font-size: 0.72rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
 	color: color-mix(
 		in srgb,
@@ -306,19 +306,19 @@
 	padding: 4px 8px;
 	gap: 6px;
 	border-radius: var(--database-control-radius);
-	font-size: 0.8rem;
+	font-size: calc(var(--text-base) * 0.9);
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu
 	.databasePickerTriggerIcon {
-	width: 18px;
-	height: 18px;
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	background: transparent;
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu
 	.databasePickerTriggerLabel {
-	font-size: 0.8rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 }
 
@@ -330,7 +330,7 @@
 [data-slot="dropdown-menu-content"].databasePickerMenu .databaseNativeSelect {
 	min-height: 30px;
 	padding: 0 28px 0 8px;
-	font-size: 0.8rem;
+	font-size: calc(var(--text-base) * 0.9);
 	border-radius: var(--database-control-radius);
 	background-position: calc(100% - 11px) 11px, calc(100% - 6px) 11px;
 	background-size: 5px 5px, 5px 5px;
@@ -342,7 +342,7 @@
 	border-color: var(--database-control-border);
 	background: var(--database-control-background);
 	padding-inline: 10px;
-	font-size: 0.8rem;
+	font-size: calc(var(--text-base) * 0.9);
 	box-shadow: none;
 }
 
@@ -378,7 +378,7 @@
 /* Subtler section headings */
 [data-slot="dropdown-menu-content"].databasePickerMenu
 	[data-slot="dropdown-menu-label"] {
-	font-size: 0.7rem;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: 500;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;

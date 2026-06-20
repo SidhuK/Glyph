@@ -1,0 +1,451 @@
+.calendarPalette {
+	width: min(400px, calc(100vw - 48px));
+	height: min(600px, 82vh);
+	overflow: hidden;
+	border-radius: var(--radius-2xl);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-float);
+	display: flex;
+	flex-direction: column;
+}
+
+.calendarPaletteCalendar {
+	flex-shrink: 0;
+	width: 100%;
+	max-width: 100%;
+	padding: 16px 16px 14px;
+	border-bottom: 1px solid var(--border-light);
+	--cell-size: 2.5rem;
+}
+
+.calendarPaletteCalendar .calendarPaletteMonth,
+.calendarPaletteCalendar [data-slot="calendar"] {
+	width: 100%;
+	max-width: 100%;
+}
+
+.calendarPaletteMonths {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.calendarPaletteMonth {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	gap: 10px;
+}
+
+.calendarPaletteNav {
+	position: absolute;
+	inset-inline: 0;
+	top: 0;
+	z-index: 1;
+	display: flex;
+	width: 100%;
+	height: var(--cell-size);
+	align-items: center;
+	justify-content: flex-end;
+	gap: 2px;
+	pointer-events: none;
+}
+
+.calendarPaletteNav .calendarPaletteNavButton {
+	pointer-events: auto;
+}
+
+.calendarPaletteMonthCaption {
+	display: flex;
+	width: 100%;
+	height: var(--cell-size);
+	align-items: center;
+	justify-content: flex-start;
+	padding-inline: 2px;
+}
+
+.calendarPaletteCaptionLabel {
+	font-size: var(--text-md);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+}
+
+.calendarPaletteCaptionButton {
+	padding: 2px 6px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	letter-spacing: inherit;
+	line-height: inherit;
+}
+
+.calendarPaletteCaptionButton:hover {
+	color: var(--interactive-accent);
+}
+
+.calendarPaletteCaptionButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 3px;
+}
+
+.calendarPaletteCalendar .calendarPaletteNavButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.85rem;
+	height: 1.85rem;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	box-shadow: none;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.calendarPaletteCalendar .calendarPaletteNavButton:hover:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.calendarPaletteCalendar .calendarPaletteNavButton:disabled {
+	opacity: 0.4;
+}
+
+.calendarPaletteCalendar .calendarPaletteNavButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 1px;
+}
+
+.calendarPaletteWeekdays {
+	gap: 0;
+}
+
+.calendarPaletteWeekday {
+	flex: 1;
+	padding-bottom: 4px;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-align: center;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.calendarPaletteMonthGrid,
+.calendarPaletteWeekdays,
+.calendarPaletteWeeks {
+	width: 100%;
+}
+
+.calendarPaletteWeek {
+	margin-top: 2px;
+	width: 100%;
+}
+
+.calendarPaletteDayCell {
+	position: relative;
+	flex: 1;
+	padding: 1px;
+	text-align: center;
+}
+
+.calendarPaletteDayButton {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cell-size);
+	height: var(--cell-size);
+	margin: 0 auto;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+.calendarPaletteDayButton[data-outside="true"] {
+	color: var(--text-tertiary);
+	font-weight: 400;
+}
+
+.calendarPaletteDayButton[data-today="true"]:not([data-selected="true"]) {
+	color: var(--interactive-accent);
+	font-weight: 600;
+	box-shadow: inset 0 0 0 1.5px
+		color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+}
+
+.calendarPaletteDayButton:hover:not([data-selected="true"]):not(:disabled) {
+	background: var(--bg-hover);
+}
+
+.calendarPaletteDayButton[data-selected="true"] {
+	background: var(--interactive-accent);
+	color: var(--bg-primary);
+	font-weight: 600;
+}
+
+.calendarPaletteDayButton[data-selected="true"]:hover:not(:disabled) {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 90%,
+		var(--text-primary)
+	);
+}
+
+.calendarPaletteDayButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 1px;
+}
+
+.calendarPaletteNoteDot {
+	position: absolute;
+	bottom: 5px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 4px;
+	height: 4px;
+	border-radius: var(--radius-full);
+	background: transparent;
+}
+
+.calendarPaletteNoteDot[data-active="true"] {
+	background: var(--interactive-accent);
+}
+
+.calendarPaletteDayButton[data-today="true"]:not([data-selected="true"])
+	.calendarPaletteNoteDot[data-active="true"] {
+	bottom: 4px;
+}
+
+.calendarPaletteDayButton[data-selected="true"]
+	.calendarPaletteNoteDot[data-active="true"] {
+	background: var(--bg-primary);
+}
+
+.calendarPaletteNotesPanel {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
+}
+
+.calendarPaletteNotesHeader {
+	position: relative;
+	z-index: 2;
+	flex-shrink: 0;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 14px 10px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
+	backdrop-filter: blur(12px) saturate(1.01);
+	-webkit-backdrop-filter: blur(12px) saturate(1.01);
+}
+
+.calendarPaletteNotesHeader::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -18px;
+	height: 18px;
+	pointer-events: none;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in srgb, var(--bg-primary) 72%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 28%, transparent) 52%,
+		transparent 100%
+	);
+}
+
+.calendarPaletteNotesHeading {
+	min-width: 0;
+	flex: 1;
+}
+
+.calendarPaletteNotesTitle {
+	margin: 0;
+	font-size: var(--text-md);
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+	text-wrap: balance;
+}
+
+.calendarPaletteNotesWeekday {
+	margin: 2px 0 0;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.calendarPaletteDailyNoteButton {
+	flex-shrink: 0;
+	height: 28px;
+	padding: 0 12px;
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 22%, var(--border-light));
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	font-size: 11px;
+	font-weight: var(--font-medium);
+	color: var(--interactive-accent);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.calendarPaletteDailyNoteButton:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 40%,
+		var(--border-light)
+	);
+}
+
+.calendarPaletteDailyNoteButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.calendarPaletteNotesList {
+	position: relative;
+	z-index: 1;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	padding: 14px 8px 10px;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent)
+		transparent;
+}
+
+.calendarPaletteNotesItems {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.calendarPaletteNoteItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-width: 0;
+	min-height: 40px;
+	padding: 6px 10px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-lg);
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
+}
+
+.calendarPaletteNoteItem:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 80%, transparent);
+}
+
+.calendarPaletteNoteItem:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 1px;
+}
+
+.calendarPaletteNoteIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.calendarPaletteNoteCopy {
+	min-width: 0;
+	flex: 1;
+	overflow: hidden;
+}
+
+.calendarPaletteNoteTitle {
+	display: block;
+	font-size: var(--text-sm);
+	font-weight: 500;
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.calendarPaletteNotePath {
+	display: block;
+	margin-top: 1px;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.calendarPaletteNotesStatus {
+	margin: 0;
+	padding: 8px 10px;
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+}
+
+.calendarPaletteNotesEmpty {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 16px;
+	text-align: center;
+}
+
+.calendarPaletteNotesEmptyIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-tertiary);
+}
+
+.calendarPaletteNotesEmptyTitle {
+	margin: 0;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+}

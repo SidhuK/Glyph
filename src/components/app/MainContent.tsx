@@ -13,7 +13,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -28,21 +27,18 @@ import {
 	type PathRemovedDetail,
 	type PathRenamedDetail,
 } from "../../lib/appEvents";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
-import { readStoredSelectedViewId } from "../../lib/database/selectedViewStorage";
+import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	getPrefetchedAllDocs,
-	getPrefetchedCalendarData,
 	getPrefetchedDatabaseDocument,
-	getPrefetchedDatabaseRows,
 	getPrefetchedNote,
 	prefetchAllDocs,
-	prefetchCalendarData,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -50,10 +46,9 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
-import { todayIsoDateLocal } from "../../lib/tasks";
-import type { FsEntry } from "../../lib/tauri";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { cn } from "../../lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { Calendar, FileText, Settings } from "../Icons";
@@ -74,32 +69,35 @@ import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
+import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
-import {
-	loadAllDocsPane,
-	loadCalendarPane,
-	loadDatabasesPane,
-} from "./prefetchablePanes";
+import { loadAllDocsPane, loadDatabasesPane } from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
+const PinnedDocsPane = lazy(() =>
+	import("./PinnedDocsPane").then((module) => ({
+		default: module.PinnedDocsPane,
+	})),
+);
+
 const DatabasesPane = lazy(loadDatabasesPane);
-const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
 	})),
 );
+const SpaceConnectionsView = lazy(() =>
+	import("../connections/SpaceConnectionsView").then((module) => ({
+		default: module.SpaceConnectionsView,
+	})),
+);
 
-function readStorage(key: string): string | null {
-	if (typeof window === "undefined") return null;
-	try {
-		return window.localStorage.getItem(key);
-	} catch {
-		return null;
-	}
+interface ActiveGitDiffState {
+	path: string;
+	diff: GitCommitDiff;
 }
 
 interface EmptyTip {
@@ -132,7 +130,7 @@ function ContextualEmptyState({
 		if (!onboarding.createdFirstNote) {
 			t.push({
 				key: "note",
-				icon: <FileText size={16} />,
+				icon: <FileText size="var(--icon-lg)" />,
 				text: "Create your first note",
 				action: "New note",
 				onClick: onCreateNote,
@@ -141,7 +139,7 @@ function ContextualEmptyState({
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
 			t.push({
 				key: "daily",
-				icon: <Calendar size={16} />,
+				icon: <Calendar size="var(--icon-lg)" />,
 				text: "Try a daily note — saved to your daily notes folder",
 				action: "Open daily note",
 				onClick: onOpenDailyNote,
@@ -299,7 +297,8 @@ interface MainContentProps {
 	onGoBack: () => void;
 	onGoForward: () => void;
 	showGettingStartedRequest: number;
-	openDatabasesId: string | null;
+	databasesOpenRequest: DatabasesOpenRequest;
+	onConsumeDatabasesOpenRequest?: () => void;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 	onRightSidebarOpenChange?: (open: boolean) => void;
@@ -333,7 +332,7 @@ function DailyNotesSetupToast({
 					<output className="dailyNotesSetupToast" aria-live="polite">
 						<div className="dailyNotesSetupToastHeader">
 							<div className="dailyNotesSetupToastIcon">
-								<Calendar size={16} />
+								<Calendar size="var(--icon-lg)" />
 							</div>
 							<div className="dailyNotesSetupToastTitleBlock">
 								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
@@ -361,7 +360,7 @@ function DailyNotesSetupToast({
 								className="dailyNotesSetupToastPrimary"
 								onClick={onOpenSettings}
 							>
-								<Settings size={14} />
+								<Settings size="var(--icon-md)" />
 								<span>Open settings</span>
 							</Button>
 						</div>
@@ -402,21 +401,16 @@ export const MainContent = memo(function MainContent({
 	onGoBack,
 	onGoForward,
 	showGettingStartedRequest,
-	openDatabasesId,
+	databasesOpenRequest,
+	onConsumeDatabasesOpenRequest,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 	onRightSidebarOpenChange,
 }: MainContentProps) {
-	const { t } = useTranslation("settings");
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const { getBinding } = useShortcutBindings();
-	const {
-		dailyNotesFolder,
-		templateFolder,
-		folioMode,
-		settingsMode,
-		settingsTab,
-	} = useUILayoutContext();
+	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
+		useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -427,6 +421,8 @@ export const MainContent = memo(function MainContent({
 		useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
+	const [activeGitDiffState, setActiveGitDiffState] =
+		useState<ActiveGitDiffState | null>(null);
 	const handledShowGettingStartedRequestRef = useRef(0);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
@@ -471,6 +467,30 @@ export const MainContent = memo(function MainContent({
 	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
+	const currentMarkdownPath = viewerPath?.toLowerCase().endsWith(".md")
+		? viewerPath
+		: null;
+	const activeGitDiff =
+		activeGitDiffState?.path === currentMarkdownPath
+			? activeGitDiffState.diff
+			: null;
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: clear the active git diff when the viewer path changes.
+	useEffect(() => {
+		setActiveGitDiffState(null);
+	}, [viewerPath]);
+
+	const handleGitDiffChange = useCallback(
+		(diff: GitCommitDiff | null) => {
+			setActiveGitDiffState(
+				diff && currentMarkdownPath
+					? { path: currentMarkdownPath, diff }
+					: null,
+			);
+		},
+		[currentMarkdownPath],
+	);
+
 	const openCommandPaletteShortcut = getBinding("open-command-palette");
 	const commandShortcutParts = useMemo(
 		() =>
@@ -558,21 +578,9 @@ export const MainContent = memo(function MainContent({
 		let cancelled = false;
 		const run = () => {
 			if (cancelled) return;
-			void loadCalendarPane();
 			void loadDatabasesPane();
 			void loadAllDocsPane();
-			void prefetchAllDocs(null);
-			if (templateFolder) {
-				void prefetchAllDocs(templateFolder);
-			}
-			void prefetchCalendarData({
-				anchorDate:
-					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-				selectedDate:
-					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-				dailyNotesFolder,
-			});
-			void prefetchDatabasesLanding(openDatabasesId);
+			void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
 		};
 		if (typeof window.requestIdleCallback === "function") {
 			const idleId = window.requestIdleCallback(run, { timeout: 900 });
@@ -586,7 +594,7 @@ export const MainContent = memo(function MainContent({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [dailyNotesFolder, openDatabasesId, spacePath, templateFolder]);
+	}, [databasesOpenRequest.databaseId, spacePath]);
 
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
@@ -601,92 +609,41 @@ export const MainContent = memo(function MainContent({
 		if (viewerPath === ALL_DOCS_TAB_ID) {
 			const initialNotes = getPrefetchedAllDocs(null);
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading all notes…</div>
-					}
-				>
+				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
 				</Suspense>
 			);
 		}
-		if (viewerPath === TEMPLATES_TAB_ID) {
-			const initialNotes = getPrefetchedAllDocs(templateFolder);
+		if (viewerPath === PINNED_DOCS_TAB_ID) {
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading templates…</div>
-					}
-				>
-					<AllDocsPane
-						title="Templates"
-						folderPrefix={templateFolder}
-						emptyMessage={
-							templateFolder
-								? "No notes found in the template folder yet."
-								: "Set a template folder in Settings to browse templates here."
-						}
-						initialNotes={initialNotes}
-						onOpenFile={onOpenFile}
-					/>
-				</Suspense>
-			);
-		}
-		if (viewerPath === CALENDAR_TAB_ID) {
-			const initialCalendarData = getPrefetchedCalendarData({
-				anchorDate:
-					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-				selectedDate:
-					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-				dailyNotesFolder,
-			});
-			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading calendar…</div>
-					}
-				>
-					<CalendarPane
-						initialData={initialCalendarData}
-						onOpenFile={onOpenFile}
-						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
-					/>
+				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
+					<PinnedDocsPane onOpenFile={onOpenFile} />
 				</Suspense>
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
-			const initialDatabaseId = openDatabasesId ?? null;
+			const initialDatabaseId = databasesOpenRequest.databaseId;
 			const initialDocument = initialDatabaseId
 				? getPrefetchedDatabaseDocument(initialDatabaseId)
 				: null;
-			const initialViewId =
-				initialDatabaseId && initialDocument
-					? (readStoredSelectedViewId(
-							initialDatabaseId,
-							initialDocument.database.views.map((view) => view.id),
-						) ??
-						initialDocument.database.views[0]?.id ??
-						null)
-					: null;
-			const initialRows =
-				initialViewId && initialDatabaseId
-					? getPrefetchedDatabaseRows(initialDatabaseId, initialViewId)
-					: null;
 			return (
-				<Suspense
-					fallback={
-						<div className="databaseLoadingState">Loading collections…</div>
-					}
-				>
+				<Suspense fallback={<CanvasPaneAwait variant="databases" />}>
 					<DatabasesPane
 						onOpenFile={onOpenFile}
 						onRenameNotePath={(notePath, nextName) =>
 							fileTree.onRenameDir(notePath, nextName, "file")
 						}
-						initialDatabaseId={initialDatabaseId}
+						databasesOpenRequest={databasesOpenRequest}
+						onConsumeOpenRequest={onConsumeDatabasesOpenRequest}
 						initialDocument={initialDocument}
-						initialRows={initialRows}
 					/>
+				</Suspense>
+			);
+		}
+		if (viewerPath === SPACE_CONNECTIONS_TAB_ID) {
+			return (
+				<Suspense fallback={<CanvasPaneAwait variant="connections" />}>
+					<SpaceConnectionsView />
 				</Suspense>
 			);
 		}
@@ -703,6 +660,8 @@ export const MainContent = memo(function MainContent({
 					initialDoc={initialDoc}
 					extractToNoteActions={extractToNoteActions}
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
+					gitDiff={activeGitDiff}
+					onGitDiffChange={handleGitDiffChange}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -718,12 +677,12 @@ export const MainContent = memo(function MainContent({
 		fileTree,
 		onOpenFile,
 		onOpenFileInNewTab,
-		onOpenDailyNotesSettings,
-		openDatabasesId,
-		dailyNotesFolder,
-		templateFolder,
+		databasesOpenRequest,
+		onConsumeDatabasesOpenRequest,
 		viewerPath,
 		setDirtyByPath,
+		activeGitDiff,
+		handleGitDiffChange,
 	]);
 
 	const handlePrefetchTab = useCallback(
@@ -738,39 +697,23 @@ export const MainContent = memo(function MainContent({
 				void prefetchAllDocs(null);
 				return;
 			}
-			if (target === TEMPLATES_TAB_ID) {
-				void loadAllDocsPane();
-				void prefetchAllDocs(templateFolder);
-				return;
-			}
-			if (target === CALENDAR_TAB_ID) {
-				void loadCalendarPane();
-				void prefetchCalendarData({
-					anchorDate:
-						readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
-					selectedDate:
-						readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
-					dailyNotesFolder,
-				});
-				return;
-			}
 			if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
-				void prefetchDatabasesLanding(openDatabasesId);
+				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
+				return;
+			}
+			if (target === SPACE_CONNECTIONS_TAB_ID) {
+				return;
 			}
 		},
-		[dailyNotesFolder, openDatabasesId, templateFolder],
+		[databasesOpenRequest.databaseId],
 	);
 
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
 		general: <GeneralSettingsPane />,
 		appearance: <AppearanceSettingsPane />,
 		shortcuts: (
-			<Suspense
-				fallback={
-					<div className="databaseLoadingState">Loading shortcuts…</div>
-				}
-			>
+			<Suspense fallback={null}>
 				<ShortcutsSettingsPane />
 			</Suspense>
 		),
@@ -786,9 +729,16 @@ export const MainContent = memo(function MainContent({
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const activeSettingsTabLabel = t(activeSettingsTabMeta.labelKey);
+	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
+	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
+	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
 	const editorCanvas = (
-		<div className="canvasPaneHost">
+		<div
+			className="canvasPaneHost"
+			data-space-connections={isSpaceConnectionsTab ? "true" : undefined}
+			data-all-docs={isAllDocsTab ? "true" : undefined}
+			data-databases={isDatabasesTab ? "true" : undefined}
+		>
 			<DailyNotesSetupToast
 				visible={dailyNoteSetupToastVisible}
 				onDismiss={() => setDailyNoteSetupToastVisible(false)}
@@ -896,7 +846,9 @@ export const MainContent = memo(function MainContent({
 				<div className="settingsTabPanel">
 					<header className="settingsPanelHeader">
 						<div className="settingsPanelTitleRow">
-							<h2 className="settingsPanelTitle">{activeSettingsTabLabel}</h2>
+							<h2 className="settingsPanelTitle">
+								{activeSettingsTabMeta.label}
+							</h2>
 						</div>
 					</header>
 					{settingsTabContentByTab[settingsTab]}

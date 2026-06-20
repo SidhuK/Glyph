@@ -1,0 +1,408 @@
+.localNoteConnectionsDialog {
+	width: clamp(620px, 68vw, 1040px);
+	max-width: calc(100vw - 2rem);
+	padding: 0;
+	gap: 0;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--border-default) 76%, transparent);
+	box-shadow: 0 26px 70px
+		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent);
+}
+
+.localNoteConnectionsBody {
+	height: clamp(460px, 66vh, 760px);
+	min-height: min(420px, calc(100vh - 7rem));
+	max-height: calc(100vh - 5.5rem);
+	position: relative;
+}
+
+.localNoteConnectionsClose {
+	appearance: none;
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 1.3);
+	line-height: 1;
+	cursor: pointer;
+	outline: none;
+	box-shadow: none;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s
+		ease;
+}
+
+.localNoteConnectionsClose:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 42%, transparent);
+}
+
+.localNoteConnectionsClose:focus {
+	color: var(--text-primary);
+	outline: none;
+	box-shadow: none;
+}
+
+.localNoteConnectionsClose:focus-visible {
+	color: var(--text-primary);
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.localNoteConnectionsState {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
+.localNoteConnectionsStage {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.localNoteConnectionsViewport {
+	--local-connections-border: var(--border-default);
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-secondary) 18%,
+		transparent
+	);
+	--local-connections-edge: color-mix(
+		in srgb,
+		var(--text-primary) 58%,
+		transparent
+	);
+	--local-connections-edge-incoming: var(--text-primary);
+	--local-connections-note-bg: var(--bg-primary);
+	--local-connections-tag-node: var(--interactive-accent);
+	--local-connections-text: var(--text-primary);
+	--local-connections-text-inverse: var(--text-inverse);
+	--local-connections-surface: color-mix(
+		in srgb,
+		var(--bg-secondary) 88%,
+		var(--bg-primary)
+	);
+
+	width: 100%;
+	height: 100%;
+	cursor: grab;
+	background-color: var(--local-connections-surface);
+	background-image: radial-gradient(
+			circle at center,
+			var(--local-connections-dot) 0.75px,
+			transparent 1.4px
+		),
+		radial-gradient(
+			ellipse 120% 90% at 50% 38%,
+			transparent 58%,
+			color-mix(in srgb, var(--bg-primary) 26%, transparent) 100%
+		);
+	background-position: 0 0, center;
+	background-size: 24px 24px, cover;
+}
+
+.localNoteConnectionsStage .localNoteConnectionsViewport {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.localNoteConnectionsViewport:active {
+	cursor: grabbing;
+}
+
+.spaceConnectionsBetaBadge {
+	position: absolute;
+	bottom: 16px;
+	left: 16px;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-width: 220px;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 6%, transparent);
+	pointer-events: none;
+}
+
+.spaceConnectionsBetaBadgeLabel {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.spaceConnectionsBetaBadgeCopy {
+	margin: 0;
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: 400;
+	font-family: var(--font-sans);
+	line-height: 1.35;
+}
+
+.spaceConnectionsLoadFullButton {
+	min-height: 0;
+	height: 22px;
+	padding: 0 7px;
+	border-radius: calc(var(--radius-md) * 0.75);
+	font-size: 11px;
+	line-height: 1;
+}
+
+.spaceConnectionsProgressOverlay {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, var(--bg-primary) 36%, transparent);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+.spaceConnectionsProgressCard {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: min(300px, calc(100vw - 3rem));
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	box-shadow: 0 12px 30px
+		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
+}
+
+.spaceConnectionsProgressHeader {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	min-width: 0;
+}
+
+.spaceConnectionsProgressSpinner {
+	flex: 0 0 auto;
+	margin-top: 1px;
+	color: var(--interactive-accent);
+}
+
+.spaceConnectionsProgressMessage {
+	min-width: 0;
+	flex: 1;
+	margin: 0;
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+	font-size: calc(var(--text-base) * 0.85);
+	line-height: 1.35;
+	text-wrap: pretty;
+}
+
+.spaceConnectionsProgressBarRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.spaceConnectionsProgressTrack {
+	appearance: none;
+	-webkit-appearance: none;
+	display: block;
+	flex: 1;
+	height: 3px;
+	overflow: hidden;
+	border: 0;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 55%, transparent);
+}
+
+.spaceConnectionsProgressTrack::-webkit-progress-bar {
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 55%, transparent);
+}
+
+.spaceConnectionsProgressTrack::-webkit-progress-value {
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	transition: width 180ms ease;
+}
+
+.spaceConnectionsProgressTrack::-moz-progress-bar {
+	border-radius: 999px;
+	background: var(--interactive-accent);
+}
+
+.spaceConnectionsProgressPercent {
+	flex: 0 0 auto;
+	min-width: 2.75ch;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	text-align: right;
+}
+
+.localNoteConnectionsLegend {
+	position: absolute;
+	left: 14px;
+	bottom: 14px;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(92px, max-content));
+	gap: 7px 12px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+	font-size: calc(var(--text-base) * 0.8);
+	line-height: 1;
+	pointer-events: none;
+	box-shadow: 0 12px 30px
+		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
+}
+
+.localNoteConnectionsLegendItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	white-space: nowrap;
+}
+
+.localNoteConnectionsLegendItem:last-child {
+	grid-column: 1 / -1;
+}
+
+.localNoteConnectionsLegendNode {
+	display: inline-block;
+	width: 28px;
+	height: 10px;
+	border: 1px solid var(--border-default);
+	border-radius: 4px;
+	background: var(--bg-primary);
+}
+
+.localNoteConnectionsLegendNode.is-current {
+	border-color: var(--interactive-accent);
+	background: var(--interactive-accent);
+}
+
+.localNoteConnectionsLegendNode.is-note {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 52%,
+		var(--border-default)
+	);
+}
+
+.localNoteConnectionsLegendNode.is-tag {
+	border-style: dashed;
+	border-color: var(--interactive-accent);
+	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+}
+
+.localNoteConnectionsLegendEdge {
+	position: relative;
+	display: inline-block;
+	width: 28px;
+	height: 1px;
+	background: color-mix(in srgb, var(--text-secondary) 68%, transparent);
+}
+
+.localNoteConnectionsLegendEdge::after {
+	position: absolute;
+	top: 50%;
+	right: -1px;
+	width: 0;
+	height: 0;
+	border-top: 3px solid transparent;
+	border-bottom: 3px solid transparent;
+	border-left: 5px solid currentcolor;
+	color: inherit;
+	content: "";
+	transform: translateY(-50%);
+}
+
+.localNoteConnectionsLegendEdge.is-link {
+	height: 2px;
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+	background: currentcolor;
+}
+
+.localNoteConnectionsLegendEdge.is-tag-link {
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		var(--text-secondary)
+	);
+	background: repeating-linear-gradient(
+		90deg,
+		currentcolor 0 2px,
+		transparent 2px 5px
+	);
+}
+
+@media (max-width: 900px) {
+	.localNoteConnectionsDialog {
+		width: min(92vw, 760px);
+		max-width: calc(100vw - 1rem);
+	}
+
+	.localNoteConnectionsBody {
+		height: min(60vh, calc(100vh - 7rem));
+		min-height: 360px;
+	}
+
+	.localNoteConnectionsLegend {
+		grid-template-columns: repeat(2, minmax(88px, max-content));
+		gap: 6px 10px;
+	}
+}
+
+@media (max-width: 640px) {
+	.localNoteConnectionsDialog {
+		width: calc(100vw - 0.5rem);
+		max-width: calc(100vw - 0.5rem);
+	}
+
+	.localNoteConnectionsBody {
+		height: min(58vh, calc(100vh - 6rem));
+		min-height: 320px;
+		max-height: calc(100vh - 6rem);
+	}
+
+	.localNoteConnectionsLegend {
+		right: 10px;
+		bottom: 10px;
+		left: 10px;
+		grid-template-columns: repeat(2, minmax(88px, max-content));
+		gap: 6px 8px;
+		justify-content: center;
+	}
+}

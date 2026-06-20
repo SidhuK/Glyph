@@ -41,7 +41,7 @@
 	margin: 0 0 9px;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	line-height: 1.25;
 	text-overflow: ellipsis;
@@ -145,38 +145,37 @@
 .folioNotesList {
 	flex: 1;
 	min-height: 0;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	list-style: none;
 	margin: 0;
-	padding: 3px 0 8px;
+	padding: 2px 6px 8px;
+}
+
+.folioNotesList.is-virtualized {
+	position: relative;
+	display: block;
+}
+
+.folioNotesList.is-virtualized::before {
+	content: "";
+	display: block;
+	height: var(--folio-virtual-height, 0px);
+	pointer-events: none;
+}
+
+.folioNotesVirtualRow {
+	position: absolute;
+	top: 0;
+	left: 6px;
+	right: 6px;
+	width: auto;
+	will-change: transform;
 }
 
 .folioNoteListItem {
-	margin: 0;
+	margin: 1px 0;
 	padding: 0;
-}
-
-.folioNotesPinnedHeading {
-	height: 25px;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 14px 4px;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
-	font-size: 10px;
-	font-weight: var(--font-medium);
-	line-height: 1;
-}
-
-.folioNotesPinnedHeading svg {
-	flex: 0 0 auto;
-}
-
-.folioNotesPinnedDivider {
-	height: 8px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 44%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
 }
 
 .folioNoteRow {
@@ -197,11 +196,7 @@
 	color: var(--text-primary);
 	text-align: left;
 	cursor: default;
-	transition: background-color 120ms ease;
-}
-
-.folioNoteRow[data-pinned="true"] {
-	background: color-mix(in srgb, var(--interactive-accent) 3%, transparent);
+	transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
 .folioNoteRow:hover,
@@ -210,28 +205,37 @@
 	outline: none;
 }
 
-.folioNoteRow[data-state="selected"] {
-	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+.dark .folioNoteRow:hover,
+.dark .folioNoteRow:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 76%, var(--bg-secondary));
 }
 
-.folioNoteRow[data-state="selected"]::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	width: 2px;
+.folioNoteRow[data-state="selected"] {
+	border-radius: 8px;
+	border-bottom-color: transparent;
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.dark .folioNoteRow[data-state="selected"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 68%,
-		var(--text-secondary)
+		var(--interactive-accent) 10%,
+		var(--bg-tertiary)
 	);
-	opacity: 0.82;
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }
 
 .folioNoteRow[data-state="selected"]:hover,
 .folioNoteRow[data-state="selected"]:focus-visible {
-	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-hover));
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+}
+
+.dark .folioNoteRow[data-state="selected"]:hover,
+.dark .folioNoteRow[data-state="selected"]:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 }
 
 .folioNoteRow[data-kind="file"] {
@@ -261,8 +265,8 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--folio-file-color, var(--text-primary));
-	font-size: 13px;
-	font-weight: var(--font-semibold);
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
 	line-height: 1.32;
 }
 
@@ -271,8 +275,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 	color: var(--folio-file-color, var(--text-tertiary));
 	opacity: 0.72;
 }
@@ -287,22 +291,17 @@
 }
 
 .folioNoteTaskProgress {
+	--task-progress-width: var(--icon-lg);
+	--task-progress-height: var(--icon-lg);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
 	flex: 0 0 auto;
-	width: 16px;
-	height: 16px;
 	margin-left: auto;
 	opacity: 0.9;
 }
 
 .folioNoteTaskProgress .markdownEditorTaskProgressRing {
-	width: 14px;
-	height: 14px;
 	border-width: 2px;
-}
-
-.folioNoteTaskProgress .markdownEditorTaskProgressPie {
-	width: 7px;
-	height: 7px;
 }
 
 .folioNoteRow:hover .folioNoteTaskProgress,
@@ -334,7 +333,7 @@
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-secondary) 82%, transparent);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.42;
 	white-space: normal;
 	overflow-wrap: anywhere;
@@ -386,18 +385,40 @@
 	padding: 1px 6px;
 	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
 	color: color-mix(in srgb, var(--text-secondary) 76%, var(--text-tertiary));
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.2;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
+.folioNoteTagIcon {
+	flex: 0 0 auto;
+	color: currentcolor;
+}
+
+.folioNoteUrl {
+	cursor: pointer;
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.folioNoteUrl:hover,
+.folioNoteUrl:focus-visible {
+	color: var(--link-color-hover);
+}
+
+.folioNoteUrlIcon {
+	flex: 0 0 auto;
+	margin-right: 3px;
+	color: currentcolor;
+}
+
 .folioNoteFolder {
 	min-width: 0;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 16px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -409,7 +430,7 @@
 	align-items: center;
 	gap: 8px;
 	color: color-mix(in srgb, var(--text-tertiary) 82%, transparent);
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 16px;
 	white-space: nowrap;
 }
@@ -435,7 +456,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--folio-file-color, var(--text-primary));
-	font-size: 13px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 }

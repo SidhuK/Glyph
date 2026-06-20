@@ -1,6 +1,6 @@
 use serde::Serialize;
-use std::{ffi::OsStr, io::Write, path::PathBuf};
-use tauri::{Emitter, State};
+use std::{ffi::OsStr, path::PathBuf};
+use tauri::{Emitter, State, WebviewWindow};
 
 use crate::space::state::mark_recent_local_change;
 use crate::{index, io_atomic, paths, space::SpaceState};
@@ -12,16 +12,18 @@ use super::super::types::{
 
 #[derive(Serialize, Clone)]
 struct NoteChangeEvent {
+    space_path: String,
     rel_path: String,
     removed: bool,
 }
 
 #[tauri::command]
 pub async fn space_read_text(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<TextFileDoc, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<TextFileDoc, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -42,10 +44,11 @@ pub async fn space_read_text(
 
 #[tauri::command]
 pub async fn space_read_texts_batch(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     paths: Vec<String>,
 ) -> Result<Vec<TextFileDocBatch>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TextFileDocBatch>, String> {
         let mut results = Vec::with_capacity(paths.len());
         for path in paths {
@@ -84,13 +87,16 @@ pub async fn space_read_texts_batch(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_write_text(
     app: tauri::AppHandle,
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     text: String,
     base_mtime_ms: Option<u64>,
 ) -> Result<TextFileWriteResult, String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
     let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
     let result =
@@ -132,9 +138,11 @@ pub async fn space_write_text(
     if should_emit_note_change {
         // Local writes are filtered out by the filesystem watcher, so publish the
         // same note-change event here after the note has been indexed.
-        let _ = app.emit(
+        let _ = app.emit_to(
+            window_label,
             "notes:external_changed",
             NoteChangeEvent {
+                space_path,
                 rel_path: event_rel_path,
                 removed: false,
             },
@@ -146,11 +154,12 @@ pub async fn space_write_text(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_open_or_create_text(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     text: String,
 ) -> Result<OpenOrCreateTextResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<OpenOrCreateTextResult, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -166,21 +175,11 @@ pub async fn space_open_or_create_text(
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        match std::fs::OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&abs)
-        {
-            Ok(mut file) => {
-                file.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
-                return Ok(OpenOrCreateTextResult {
-                    created: false,
-                    mtime_ms: file_mtime_ms(&abs),
-                });
-            }
-            Err(error) => return Err(error.to_string()),
+        if !io_atomic::write_atomic_create_new(&abs, text.as_bytes()).map_err(|e| e.to_string())? {
+            return Ok(OpenOrCreateTextResult {
+                created: false,
+                mtime_ms: file_mtime_ms(&abs),
+            });
         }
         Ok(OpenOrCreateTextResult {
             created: true,

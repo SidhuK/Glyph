@@ -1,4 +1,6 @@
 import { useDraggable } from "@dnd-kit/react";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -10,9 +12,9 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
@@ -326,12 +328,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{appearance?.icon ? (
 							<DatabaseColumnIcon
 								iconName={appearance.icon}
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 							/>
 						) : (
 							<Icon
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 								style={{ color: iconColor }}
 								aria-hidden="true"
@@ -343,6 +345,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								<span className="fileTreeFilePreview">{previewText}</span>
 							) : null}
 						</span>
+						{isPinned ? (
+							<HugeiconsIcon
+								icon={StarIcon}
+								size="var(--icon-sm)"
+								strokeWidth={0.9}
+								className="fileTreePinIcon"
+							/>
+						) : null}
 						{taskSummary && taskSummary.total_count > 0 ? (
 							<TaskProgressIndicator
 								summary={taskSummary}

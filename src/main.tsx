@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import { i18n, initI18n } from "./i18n";
@@ -21,7 +22,11 @@ import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
-import { MAIN_WINDOW_LABEL, QUICK_NOTE_WINDOW_LABEL } from "./lib/windowLabels";
+import {
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
+	MAIN_WINDOW_LABEL,
+	QUICK_NOTE_WINDOW_LABEL,
+} from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
@@ -208,9 +213,7 @@ function ThemeAndTypographyBridge() {
 function I18nBridge() {
 	const applyLanguage = React.useCallback(async (withReload: boolean) => {
 		try {
-			if (withReload) {
-				await reloadFromDisk();
-			}
+			if (withReload) await reloadFromDisk();
 			const settings = await loadSettings();
 			const systemLanguages = Array.from(
 				navigator.languages?.length
@@ -226,22 +229,40 @@ function I18nBridge() {
 			}
 			await syncNativeMenuLabels();
 		} catch {
-			// best-effort language hydration
+			// Language hydration is best effort in non-Tauri contexts.
 		}
 	}, []);
 
 	React.useEffect(() => {
 		void applyLanguage(false);
-		void syncNativeMenuLabels().catch(() => {});
 	}, [applyLanguage]);
 
 	useTauriEvent("settings:updated", (payload) => {
-		if (payload.ui?.language) {
-			void applyLanguage(true);
-		}
+		if (payload.ui?.language) void applyLanguage(true);
 	});
 
 	return null;
+}
+
+if (import.meta.env.PROD) {
+	document.addEventListener("contextmenu", (e) => {
+		const target = e.target;
+		if (
+			target instanceof Element &&
+			target.closest(
+				'input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]',
+			)
+		) {
+			return;
+		}
+		e.preventDefault();
+	});
+	document.addEventListener("keydown", (e) => {
+		const key = e.key.toLowerCase();
+		if (key === "f5" || ((e.ctrlKey || e.metaKey) && key === "r")) {
+			e.preventDefault();
+		}
+	});
 }
 
 const rootEl = document.getElementById("root");
@@ -255,7 +276,11 @@ function currentWindowLabel(): string {
 	}
 }
 
-const isQuickNoteWindow = currentWindowLabel() === QUICK_NOTE_WINDOW_LABEL;
+const windowLabel = currentWindowLabel();
+const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
+const isExternalMarkdownWindow = windowLabel.startsWith(
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
+);
 
 void initI18n().finally(() => {
 	ReactDOM.createRoot(rootEl).render(
@@ -263,7 +288,13 @@ void initI18n().finally(() => {
 			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 				<I18nBridge />
 				<ThemeAndTypographyBridge />
-				{isQuickNoteWindow ? <QuickNoteWindow /> : <App />}
+				{isQuickNoteWindow ? (
+					<QuickNoteWindow />
+				) : isExternalMarkdownWindow ? (
+					<ExternalMarkdownWindow />
+				) : (
+					<App />
+				)}
 				<Toaster />
 			</ThemeProvider>
 		</React.StrictMode>,

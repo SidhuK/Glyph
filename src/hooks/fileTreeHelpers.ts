@@ -1,8 +1,6 @@
 import type { FsEntry } from "../lib/tauri";
 import { normalizeRelPath } from "../utils/path";
 
-export { normalizeRelPath };
-
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;
 	if (a.kind === "file" && b.kind === "dir") return 1;
@@ -12,12 +10,6 @@ export function compareEntries(a: FsEntry, b: FsEntry): number {
 function entryNameFromRelPath(relPath: string): string {
 	const parts = relPath.split("/").filter(Boolean);
 	return parts[parts.length - 1] ?? "";
-}
-
-export function fileTitleFromRelPath(relPath: string): string {
-	const name = entryNameFromRelPath(relPath);
-	if (!name) return "Untitled";
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
 }
 
 export function normalizeEntry(entry: FsEntry): FsEntry | null {

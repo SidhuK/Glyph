@@ -11,7 +11,7 @@ import { useUILayoutContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
-import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
+import { SETTINGS_TAB_GROUPS } from "../settings/settingsConfig";
 import {
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
@@ -19,7 +19,7 @@ import {
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
-	const { t } = useTranslation(["settings", "app"]);
+	const { t } = useTranslation("settings");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
@@ -30,10 +30,6 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	);
 	const hasSearchQuery =
 		settingsSearchActive && settingsSearchQuery.trim().length > 0;
-
-	const selectSettingsTab = (tab: SettingsTab) => {
-		setSettingsTab(tab);
-	};
 
 	const selectSearchResult = (
 		result: (typeof settingsSearchResults)[number],
@@ -58,15 +54,17 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						className="sidebarQuickActionBtn settingsBackButton"
 						onClick={closeSettings}
 					>
-						<HugeiconsIcon icon={ArrowLeft02Icon} size={14} strokeWidth={0.9} />
-						<span className="sidebarQuickActionLabel">
-							{t("app:commands.goBack", { defaultValue: "Back" })}
-						</span>
+						<HugeiconsIcon
+							icon={ArrowLeft02Icon}
+							size="var(--icon-md)"
+							strokeWidth={0.9}
+						/>
+						<span className="sidebarQuickActionLabel">{t("actions.back")}</span>
 					</button>
 				</div>
 
 				<div className="settingsSidebarSearch">
-					<Search size={14} className="settingsSidebarSearchIcon" />
+					<Search size="var(--icon-md)" className="settingsSidebarSearchIcon" />
 					<input
 						type="search"
 						className="settingsSidebarSearchInput"
@@ -86,23 +84,17 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								clearSettingsSearch();
 							}
 						}}
-						placeholder={t("settings:search.placeholder", {
-							defaultValue: "Search settings",
-						})}
-						aria-label={t("settings:search.placeholder", {
-							defaultValue: "Search settings",
-						})}
+						placeholder={t("search.placeholder")}
+						aria-label={t("search.placeholder")}
 					/>
 					{hasSearchQuery ? (
 						<button
 							type="button"
 							className="settingsSidebarSearchClear"
 							onClick={clearSettingsSearch}
-							aria-label={t("settings:search.clear", {
-								defaultValue: "Clear settings search",
-							})}
+							aria-label={t("search.clear")}
 						>
-							<X size={13} />
+							<X size="var(--icon-sm)" />
 						</button>
 					) : null}
 				</div>
@@ -138,35 +130,45 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								</button>
 							))
 						) : (
-							<div className="settingsSearchEmpty">
-								{t("settings:search.empty", {
-									defaultValue: "No matching settings",
-								})}
-							</div>
+							<div className="settingsSearchEmpty">{t("search.empty")}</div>
 						)}
 					</div>
 				) : (
 					<div className="sidebarQuickActions settingsSidebarTabs">
-						{SETTINGS_TABS.map((tab) => (
-							<button
-								key={tab.id}
-								type="button"
-								data-tab={tab.id}
-								className={cn(
-									"sidebarQuickActionBtn settingsTabButton",
-									settingsTab === tab.id && "settingsTabButtonActive",
-								)}
-								onClick={() => selectSettingsTab(tab.id)}
-								aria-pressed={settingsTab === tab.id}
-								aria-current={settingsTab === tab.id ? "page" : undefined}
+						{SETTINGS_TAB_GROUPS.map((group) => (
+							<section
+								key={group.id}
+								className="settingsSidebarTabGroup"
+								aria-labelledby={`settings-sidebar-group-${group.id}`}
 							>
-								<span className="settingsTabIcon" aria-hidden="true">
-									{tab.renderIcon()}
-								</span>
-								<span className="sidebarQuickActionLabel settingsTabLabel">
-									{t(`settings:${tab.labelKey}`)}
-								</span>
-							</button>
+								<h3
+									id={`settings-sidebar-group-${group.id}`}
+									className="settingsSidebarTabGroupHeading"
+								>
+									{t(group.labelKey)}
+								</h3>
+								{group.tabs.map((tab) => (
+									<button
+										key={tab.id}
+										type="button"
+										data-tab={tab.id}
+										className={cn(
+											"sidebarQuickActionBtn settingsTabButton",
+											settingsTab === tab.id && "settingsTabButtonActive",
+										)}
+										onClick={() => setSettingsTab(tab.id)}
+										aria-pressed={settingsTab === tab.id}
+										aria-current={settingsTab === tab.id ? "page" : undefined}
+									>
+										<span className="settingsTabIcon" aria-hidden="true">
+											{tab.renderIcon()}
+										</span>
+										<span className="sidebarQuickActionLabel settingsTabLabel">
+											{t(tab.labelKey)}
+										</span>
+									</button>
+								))}
+							</section>
 						))}
 					</div>
 				)}
@@ -175,35 +177,32 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 			<div className="settingsSidebarFooter">
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-						<div className="settingsFeedbackEyebrow">Community Build</div>
+						<div className="settingsFeedbackEyebrow">{t("footer.community.eyebrow")}</div>
 						<div className="settingsFeedbackTitle">
-							Thanks for downloading and building Glyph yourself.
+							{t("footer.community.title")}
 						</div>
 						<p className="settingsFeedbackBody">
-							Support the project with the official license to get automatic
-							updates and the official build.
+							{t("footer.community.body")}
 						</p>
 						<Button
 							type="button"
 							className="settingsFeedbackButton settingsFeedbackButtonCommunity"
 							onClick={() => void openUrl(licenseStatus.purchase_url)}
 						>
-							Buy Official License
+							{t("footer.community.action")}
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size={14}
+								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
 						</Button>
 					</div>
 				) : (
 					<div className="settingsFeedbackCard">
-						<div className="settingsFeedbackEyebrow">Still in Early Access</div>
-						<div className="settingsFeedbackTitle">Help shape Glyph</div>
+						<div className="settingsFeedbackEyebrow">{t("footer.earlyAccess.eyebrow")}</div>
+						<div className="settingsFeedbackTitle">{t("footer.earlyAccess.title")}</div>
 						<p className="settingsFeedbackBody">
-							Glyph is actively evolving and changing, so you may run into rough
-							edges here and there. If something feels off, I'd really love to
-							hear about it.
+							{t("footer.earlyAccess.body")}
 						</p>
 						<Button
 							type="button"
@@ -212,13 +211,13 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						>
 							<HugeiconsIcon
 								icon={BubbleChatQuestionIcon}
-								size={15}
+								size="var(--icon-lg)"
 								strokeWidth={0.9}
 							/>
-							Send Feedback
+							{t("footer.earlyAccess.action")}
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size={14}
+								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
 						</Button>

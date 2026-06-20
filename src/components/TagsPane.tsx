@@ -125,9 +125,9 @@ export const TagsPane = memo(function TagsPane({
 				>
 					<span>Tags</span>
 					{sectionExpanded ? (
-						<ChevronDown size={10} className="tagsHeaderChevron" />
+						<ChevronDown size="var(--icon-xs)" className="tagsHeaderChevron" />
 					) : (
-						<ChevronRight size={10} className="tagsHeaderChevron" />
+						<ChevronRight size="var(--icon-xs)" className="tagsHeaderChevron" />
 					)}
 				</button>
 			</div>
@@ -281,7 +281,7 @@ function TagRowIcon({
 		<HugeiconsIcon
 			icon={Tag01Icon}
 			className="tagsIcon"
-			size={12}
+			size="var(--icon-sm)"
 			strokeWidth={0.9}
 		/>
 	);

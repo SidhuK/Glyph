@@ -81,7 +81,7 @@ export function DatabaseToolbar({
 			<div className="databaseToolbarActions">
 				{searchExpanded || searchDraft ? (
 					<label className="databaseToolbarSearch" htmlFor={searchInputId}>
-						<Search size={13} aria-hidden="true" />
+						<Search size="var(--icon-sm)" aria-hidden="true" />
 						<Input
 							ref={searchInputRef}
 							id={searchInputId}
@@ -112,7 +112,7 @@ export function DatabaseToolbar({
 								title="Clear search"
 								aria-label="Clear search"
 							>
-								<X size={12} />
+								<X size="var(--icon-sm)" />
 							</button>
 						) : null}
 					</label>
@@ -129,7 +129,7 @@ export function DatabaseToolbar({
 						title="Search view"
 						aria-label="Search view"
 					>
-						<Search size={13} />
+						<Search size="var(--icon-sm)" />
 					</Button>
 				)}
 				{groupColumns.length > 0 ? (

@@ -1,8 +1,7 @@
 export const PATH_REMOVED_EVENT = "glyph:path-removed";
 export const FILE_TREE_START_RENAME_EVENT = "glyph:file-tree-start-rename";
 export const PATH_RENAMED_EVENT = "glyph:path-renamed";
-export const FORCE_NOTE_EDIT_MODE_EVENT = "glyph:force-note-edit-mode";
-export const OPEN_LOCAL_GRAPH_EVENT = "glyph:open-local-graph";
+export const OPEN_LOCAL_CONNECTIONS_EVENT = "glyph:open-local-connections";
 export const EDITOR_MENU_ACTION_EVENT = "glyph:editor-menu-action";
 export const TOGGLE_NOTE_INFO_SIDEBAR_EVENT = "glyph:toggle-note-info-sidebar";
 
@@ -21,11 +20,7 @@ export interface PathRenamedDetail {
 	recursive: boolean;
 }
 
-export interface ForceNoteEditModeDetail {
-	path: string;
-}
-
-export interface OpenLocalGraphDetail {
+export interface OpenLocalConnectionsDetail {
 	path: string;
 }
 
@@ -57,9 +52,13 @@ export function dispatchPathRenamed(detail: PathRenamedDetail) {
 	);
 }
 
-export function dispatchOpenLocalGraph(detail: OpenLocalGraphDetail) {
+export function dispatchOpenLocalConnections(
+	detail: OpenLocalConnectionsDetail,
+) {
 	window.dispatchEvent(
-		new CustomEvent<OpenLocalGraphDetail>(OPEN_LOCAL_GRAPH_EVENT, { detail }),
+		new CustomEvent<OpenLocalConnectionsDetail>(OPEN_LOCAL_CONNECTIONS_EVENT, {
+			detail,
+		}),
 	);
 }
 

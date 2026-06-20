@@ -2,13 +2,16 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { emitMock, storeState } = vi.hoisted(() => ({
+const { emitMock, listenMock, storeState } = vi.hoisted(() => ({
 	emitMock: vi.fn(() => Promise.resolve()),
+	listenMock: vi.fn(() => Promise.resolve(() => {})),
 	storeState: new Map<string, unknown>(),
 }));
 
 vi.mock("@tauri-apps/api/event", () => ({
 	emit: emitMock,
+	emitTo: emitMock,
+	listen: listenMock,
 }));
 
 vi.mock("@tauri-apps/plugin-store", () => ({
@@ -19,6 +22,12 @@ vi.mock("@tauri-apps/plugin-store", () => ({
 
 		get<T>(key: string) {
 			return Promise.resolve((storeState.get(key) as T | undefined) ?? null);
+		}
+
+		entries<T>() {
+			return Promise.resolve(
+				Array.from(storeState.entries()) as Array<[string, T]>,
+			);
 		}
 
 		set(key: string, value: unknown) {
@@ -143,6 +152,49 @@ describe("settings Folio Mode", () => {
 	});
 });
 
+describe("settings app translucency", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults app translucency to false", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.translucentApp).toBe(false);
+	});
+
+	it("loads app translucency from the store", async () => {
+		storeState.set("ui.translucentApp", true);
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.translucentApp).toBe(true);
+	});
+
+	it("persists and emits app translucency changes", async () => {
+		const { setUiTranslucentApp } = await import("./settings");
+
+		await setUiTranslucentApp(true);
+
+		expect(storeState.get("ui.translucentApp")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: true },
+		});
+
+		await setUiTranslucentApp(false);
+
+		expect(storeState.get("ui.translucentApp")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { translucentApp: false },
+		});
+	});
+});
+
 describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();
@@ -251,6 +303,62 @@ describe("attachment storage settings", () => {
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			editor: { attachmentFolder: "assets/uploads" },
 		});
+	});
+});
+
+describe("space-scoped settings", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("does not inherit legacy global space settings for a fresh space", async () => {
+		storeState.set("dailyNotes.folder", "Old Daily");
+		storeState.set("quickNotes.folder", "Old Quick");
+		storeState.set("templates.folder", "Old Templates");
+		storeState.set("templates.dailyNoteTemplate", "Old Templates/Daily.md");
+		storeState.set("editor.attachmentStorageMode", "specific-folder");
+		storeState.set("editor.attachmentFolder", "old-assets");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings({ spacePath: "/spaces/fresh" });
+
+		expect(settings.dailyNotes.folder).toBeNull();
+		expect(settings.quickNotes.folder).toBe("Quick Notes");
+		expect(settings.templates.folder).toBeNull();
+		expect(settings.templates.dailyNoteTemplate).toBeNull();
+		expect(settings.editor.attachmentStorageMode).toBe("note-folder");
+		expect(settings.editor.attachmentFolder).toBe("assets");
+	});
+
+	it("persists folder settings under the explicit space path", async () => {
+		const {
+			setDailyNotesFolder,
+			setEditorAttachmentStorageMode,
+			setQuickNotesFolder,
+			setTemplatesFolder,
+		} = await import("./settings");
+
+		await setDailyNotesFolder("Daily", { spacePath: "/spaces/work" });
+		await setQuickNotesFolder("Inbox", { spacePath: "/spaces/work" });
+		await setTemplatesFolder("Templates", { spacePath: "/spaces/work" });
+		await setEditorAttachmentStorageMode("specific-folder", {
+			spacePath: "/spaces/work",
+		});
+
+		expect(storeState.get("space.scopedSettings")).toEqual({
+			"/spaces/work": {
+				dailyNotesFolder: "Daily",
+				quickNotesFolder: "Inbox",
+				templatesFolder: "Templates",
+				attachmentStorageMode: "specific-folder",
+			},
+		});
+		expect(storeState.has("dailyNotes.folder")).toBe(false);
+		expect(storeState.has("quickNotes.folder")).toBe(false);
+		expect(storeState.has("templates.folder")).toBe(false);
+		expect(storeState.has("editor.attachmentStorageMode")).toBe(false);
 	});
 });
 

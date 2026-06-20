@@ -87,8 +87,8 @@
 }
 
 .fileTreeBreadcrumbSeparator {
-	width: 11px;
-	height: 11px;
+	width: var(--icon-xs);
+	height: var(--icon-xs);
 	color: var(--text-quaternary);
 	flex-shrink: 0;
 }
@@ -128,7 +128,7 @@
 	flex-shrink: 0;
 	margin-left: auto;
 	font-family: inherit;
-	font-size: 10px;
+	font-size: var(--text-sm);
 	line-height: 1.4;
 	color: var(--text-tertiary);
 	white-space: nowrap;
@@ -164,15 +164,6 @@
 	border-radius: 6px;
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-}
-
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
-	color: var(--text-primary);
-}
-
 .fileTreeRowShell {
 	display: flex;
 	align-items: center;
@@ -185,6 +176,7 @@
 	flex: 1;
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 6px;
 	min-width: 0;
 	min-height: 24px;
@@ -192,25 +184,19 @@
 	text-align: left;
 	border-radius: 6px;
 	margin: 0;
-	border-left: none;
+	border: 1px solid transparent;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .fileTreeRowActions {
-	position: absolute;
-	top: 50%;
-	right: 8px;
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
 	opacity: 0;
 	pointer-events: none;
-	transform: translateY(-50%);
 	transition: opacity var(--transition-fast);
-	z-index: 1;
-}
-
-.fileTreeRowShell:has(.fileTreeRowActions) .fileTreeRow {
-	padding-right: 58px;
+	flex-shrink: 0;
 }
 
 .fileTreeRowShell:hover .fileTreeRowActions,
@@ -277,8 +263,8 @@
 
 .fileTreeChevron {
 	display: inline-flex;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	justify-content: center;
 	align-items: center;
 	color: var(--text-primary);
@@ -294,13 +280,13 @@
 	flex-shrink: 0;
 }
 
-.fileTreeChevron:hover {
+.fileTreeChevron:hover:not(.fileTreeFolderIcon) {
 	background: var(--bg-active);
 }
 
 .fileTreeIcon {
 	display: inline-flex;
-	width: 14px;
+	width: var(--icon-md);
 	justify-content: center;
 	color: var(--text-primary);
 	flex-shrink: 0;
@@ -320,7 +306,6 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	flex: 1;
 	min-width: 0;
 	max-width: 100%;
 }
@@ -336,7 +321,7 @@
 .fileTreeFileText .fileTreeName {
 	flex: none;
 	display: block;
-	font-weight: var(--font-medium);
+	font-weight: var(--font-normal);
 	line-height: 1.25;
 }
 
@@ -346,7 +331,7 @@
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	color: color-mix(in srgb, var(--text-tertiary) 82%, transparent);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.2;
 	white-space: normal;
 	word-break: normal;
@@ -359,17 +344,18 @@
 
 .fileTreeCounts {
 	flex-shrink: 0;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.85);
 	color: var(--text-tertiary);
 	min-width: 18px;
 	text-align: right;
 	padding-right: 2px;
 	white-space: nowrap;
+	margin-left: auto;
 }
 
 .fileTreeExtBadge {
 	flex-shrink: 0;
-	font-size: 9px;
+	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1;
 	padding: 2px 5px;
 	border: 0;
@@ -383,21 +369,25 @@
 	box-shadow: var(--pill-shadow);
 }
 
-.fileTreeTaskProgress {
+.fileTreePinIcon {
 	flex-shrink: 0;
-	width: 12px;
-	height: 12px;
+	color: #e8b830;
+}
+
+.fileTreePinIcon path {
+	fill: currentcolor;
+}
+
+.fileTreeTaskProgress {
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
+	flex-shrink: 0;
 }
 
 .fileTreeTaskProgress .markdownEditorTaskProgressRing {
-	width: 14px;
-	height: 14px;
 	border-width: 2px;
-}
-
-.fileTreeTaskProgress .markdownEditorTaskProgressPie {
-	width: 7px;
-	height: 7px;
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
@@ -420,9 +410,8 @@
 	outline-offset: 2px;
 }
 
-/* Directory names slightly bolder */
 .fileTreeItem .fileTreeChevron + .fileTreeName {
-	font-weight: var(--font-medium);
+	font-weight: var(--font-normal);
 }
 
 .fileTreeEmpty {

@@ -45,14 +45,13 @@
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-right: 1px solid transparent;
+	/* border intentionally removed */
 }
 
 :root[data-translucent-sidebar="false"] .sidebarContentRoot {
 	background: var(--bg-sidebar);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-right-color: var(--border-light);
 }
 
 .sidebarHeader {
@@ -72,8 +71,8 @@
 	align-items: center;
 	gap: 6px;
 	position: absolute;
-	top: 8px;
-	left: var(--window-control-toggle-offset, 90px);
+	top: 14px;
+	right: 8px;
 	transform: none;
 	z-index: 30;
 }
@@ -115,23 +114,22 @@
 }
 
 .windowChromeSidebarToggle svg {
-	width: 16px;
-	height: 16px;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
 }
 
 .windowChromeUpdateButton {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
-	height: 24px;
-	padding: 0 8px 0 7px;
+	height: 20px;
+	padding: 0 6px 0 5px;
 	border: none;
-	border-radius: var(--radius-full);
-	background: var(--color-blue-dark-400);
+	border-radius: 8px;
+	background: rgb(0 112 249);
 	box-shadow: inset 0 0 0 0.5px color-mix(in srgb, white 28%, transparent);
 	color: white;
-	font-size: 10px;
-	font-weight: var(--font-bold);
+	font-size: calc(var(--text-base) * 0.85);
+	font-weight: var(--font-normal);
 	letter-spacing: 0.08em;
 	line-height: 1;
 	white-space: nowrap;
@@ -140,18 +138,12 @@
 }
 
 .windowChromeUpdateButton:hover {
-	background: color-mix(in srgb, var(--color-blue-dark-400) 82%, white);
+	background: color-mix(in srgb, rgb(0 112 249) 82%, white);
 }
 
 .windowChromeUpdateButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--color-blue-dark-400) 40%, white 60%);
+	outline: 2px solid color-mix(in srgb, rgb(0 112 249) 40%, white 60%);
 	outline-offset: 2px;
-}
-
-.windowChromeUpdateButton svg {
-	width: 12px;
-	height: 12px;
 }
 
 .sidebarSection {
@@ -214,12 +206,8 @@
 	align-items: center;
 	gap: 6px;
 	min-height: 22px;
-	padding: 6px 16px 1px;
+	padding: 10px 16px 4px;
 	justify-content: space-between;
-	color: var(--text-primary);
-	font-size: var(--text-sm);
-	font-weight: var(--font-normal);
-	letter-spacing: 0;
 	flex-shrink: 0;
 }
 
@@ -239,9 +227,10 @@
 	cursor: pointer;
 	text-align: left;
 	font: inherit;
-	color: var(--text-primary);
-	font-weight: var(--font-normal);
-	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.9);
+	letter-spacing: 0.07em;
+	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -253,7 +242,7 @@
 .sidebarStackHeaderToggle:active {
 	background: transparent;
 	box-shadow: none;
-	color: var(--text-primary);
+	color: var(--text-secondary);
 	outline: none;
 }
 
@@ -289,7 +278,7 @@
 }
 
 .sidebarStackHeaderChevron {
-	color: var(--text-tertiary);
+	color: inherit;
 	flex-shrink: 0;
 }
 
@@ -341,8 +330,9 @@
 }
 
 :root[data-translucent-app-frame="false"] .sidebarResizeHandle {
-	margin-left: -4px;
-	margin-right: -4px;
+	margin-left: 0;
+	margin-right: 0;
+	background: var(--bg-sidebar);
 }
 
 .sidebarResizeHandle::before {

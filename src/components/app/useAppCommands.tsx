@@ -1,16 +1,16 @@
 import {
+	AiBrain04Icon,
+	Archive04Icon,
 	ArrowLeft,
 	ArrowRight,
+	Calendar03Icon,
 	CalendarAdd01Icon,
+	ChartRelationshipIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
-	DocumentCodeIcon,
-	File01Icon,
-	FlowConnectionIcon,
 	Folder01Icon,
 	FolderOpenIcon,
 	FolderRemoveIcon,
-	Home01Icon,
 	InformationCircleIcon,
 	LibraryIcon,
 	Link01Icon,
@@ -22,23 +22,20 @@ import {
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
-	SparklesIcon,
 	SquareLock02Icon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { TFunction } from "i18next";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
-	dispatchEditorMenuAction,
-	dispatchOpenLocalGraph,
+	dispatchOpenLocalConnections,
 	dispatchToggleNoteInfoSidebar,
 } from "../../lib/appEvents";
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
+import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
@@ -47,15 +44,11 @@ import {
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
 import { isMarkdownPath, parentDir } from "../../utils/path";
-import { ChevronDown, ChevronUp } from "../Icons";
-import { EDITOR_ACTIONS } from "../editor/editorActions";
 import type { SettingsTab } from "../settings/settingsConfig";
-import {
-	SETTINGS_SEARCH_ENTRIES,
-	type SettingsSearchEntry,
-	scrollToSettingsSearchEntry,
-} from "../settings/settingsSearch";
 import type { Command } from "./CommandPalette";
+import { buildEditorCommands } from "./editorCommands";
+import { buildMovePickerCommands } from "./movePickerCommands";
+import { buildSettingsSearchCommands } from "./settingsSearchCommands";
 
 interface GitSyncCommandActions {
 	syncNow: () => Promise<unknown>;
@@ -76,7 +69,7 @@ interface UseAppCommandsDeps {
 	closeActiveTab: () => void;
 	closeAllTabs: () => void;
 	closeSpace: () => void;
-	createDatabaseAndOpen: () => Promise<string | null>;
+	createDatabaseAndOpen: () => void;
 	createNoteInSelectedFolder: () => Promise<string | null>;
 	fileTree: UseFileTreeResult;
 	getBinding: (actionId: ShortcutActionId) => EffectiveShortcutBindings[string];
@@ -96,20 +89,21 @@ interface UseAppCommandsDeps {
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
 	openBlankTab: () => void;
-	openCalendarTab: () => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
+	openCalendar: () => void;
+	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
 	openQuickNoteWindow: () => void;
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
-	openTemplatesTab: () => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	showWelcomeNote: () => Promise<void>;
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
 	saveCurrentEditor: () => Promise<unknown>;
+	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
@@ -120,103 +114,6 @@ interface UseAppCommandsDeps {
 	tabsLength: number;
 	togglePinnedFile: (path: string) => Promise<void>;
 	refreshMoveTargetDirs: (sourcePath: string) => Promise<void>;
-}
-
-function buildMovePickerCommands({
-	fileTree,
-	movePickerSourcePath,
-	moveTargetDirs,
-	openWorkspaceFile,
-}: Pick<
-	UseAppCommandsDeps,
-	"fileTree" | "movePickerSourcePath" | "moveTargetDirs" | "openWorkspaceFile"
->): Command[] | null {
-	if (!movePickerSourcePath) return null;
-	return [
-		{
-			id: "move-picker-root",
-			label: "/",
-			icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
-			category: "Move Destination",
-			action: async () => {
-				const n = await fileTree.onMovePath(movePickerSourcePath, "");
-				if (n) await openWorkspaceFile(n);
-			},
-		},
-		...moveTargetDirs.map((dir) => ({
-			id: `move-picker:${dir}`,
-			label: `/${dir}`,
-			icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
-			category: "Move Destination",
-			action: async () => {
-				const n = await fileTree.onMovePath(movePickerSourcePath, dir);
-				if (n) await openWorkspaceFile(n);
-			},
-		})),
-	];
-}
-
-function buildEditorCommands({
-	activeMarkdownTabPath,
-}: Pick<UseAppCommandsDeps, "activeMarkdownTabPath">): Command[] {
-	return EDITOR_ACTIONS.filter(
-		(action) =>
-			action.id !== "collapse_all_headings" &&
-			action.id !== "expand_all_headings",
-	).map((action) => ({
-		id: action.id,
-		label: action.label,
-		category: "Editor",
-		enabled: Boolean(activeMarkdownTabPath),
-		allowInEditable: true,
-		action: () => {
-			dispatchEditorMenuAction({ action: action.id });
-		},
-	}));
-}
-
-const SETTINGS_TAB_LABELS = {
-	general: "General",
-	appearance: "Appearance",
-	shortcuts: "Shortcuts",
-	ai: "Glyph AI",
-	space: "Space",
-	git: "Git",
-	advanced: "Advanced",
-	about: "About",
-} as const satisfies Record<SettingsTab, string>;
-
-function settingsSearchCommandLabel({
-	section,
-	title,
-}: Pick<SettingsSearchEntry, "section" | "title">) {
-	return section && section !== title ? `${section}: ${title}` : title;
-}
-
-function buildSettingsSearchCommands(
-	openSettings: UseAppCommandsDeps["openSettings"],
-): Command[] {
-	return SETTINGS_SEARCH_ENTRIES.map((entry: SettingsSearchEntry) => {
-		const tabLabel = SETTINGS_TAB_LABELS[entry.tab];
-		return {
-			id: `settings-search:${entry.id}`,
-			label: settingsSearchCommandLabel(entry),
-			icon: <HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />,
-			category: `Settings > ${tabLabel}`,
-			searchTerms: [
-				"settings",
-				tabLabel,
-				entry.section ?? "",
-				entry.description ?? "",
-				...(entry.keywords ?? []),
-			],
-			hideWhenQueryEmpty: true,
-			action: () => {
-				openSettings(entry.tab);
-				scrollToSettingsSearchEntry(entry);
-			},
-		};
-	});
 }
 
 function buildAiCommands({
@@ -242,7 +139,13 @@ function buildAiCommands({
 		{
 			id: "toggle-ai",
 			label: "Toggle AI",
-			icon: <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={0.9} />,
+			icon: (
+				<HugeiconsIcon
+					icon={AiBrain04Icon}
+					size="var(--icon-lg)"
+					strokeWidth={0.9}
+				/>
+			),
 			category: "AI",
 			shortcut: { meta: true, shift: true, key: "a" },
 			enabled: Boolean(spacePath),
@@ -251,7 +154,13 @@ function buildAiCommands({
 		{
 			id: "ai-attach-current-note",
 			label: "AI: Attach current note",
-			icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
+			icon: (
+				<HugeiconsIcon
+					icon={Link01Icon}
+					size="var(--icon-lg)"
+					strokeWidth={0.9}
+				/>
+			),
 			category: "AI",
 			shortcut: { meta: true, alt: true, key: "a" },
 			enabled: Boolean(activeMarkdownTabPath),
@@ -260,7 +169,13 @@ function buildAiCommands({
 		{
 			id: "ai-attach-all-open-notes",
 			label: "AI: Attach all open notes",
-			icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
+			icon: (
+				<HugeiconsIcon
+					icon={Link01Icon}
+					size="var(--icon-lg)"
+					strokeWidth={0.9}
+				/>
+			),
 			category: "AI",
 			shortcut: { meta: true, alt: true, shift: true, key: "a" },
 			enabled: openMarkdownTabsLength > 0,
@@ -272,19 +187,14 @@ function buildAiCommands({
 function resolveCommandShortcuts(
 	commands: Command[],
 	getBinding: UseAppCommandsDeps["getBinding"],
-	t: TFunction,
 ): Command[] {
 	return commands.map((command) => {
 		const definition = getCommandDefinition(command.id);
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: t(`commands:commands.${definition.id}.label`, {
-						defaultValue: definition.label,
-					}),
-					category: t(`commands:categories.${definition.category}`, {
-						defaultValue: SHORTCUT_CATEGORY_LABELS[definition.category],
-					}),
+					label: command.label ?? definition.label,
+					category: SHORTCUT_CATEGORY_LABELS[definition.category],
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
 				}
@@ -333,20 +243,21 @@ export function useAppCommands({
 	onOpenSpace,
 	openAllDocsTab,
 	openBlankTab,
-	openCalendarTab,
 	openDatabasesTab,
 	openGettingStarted,
+	openCalendar,
+	openConnectionsView,
 	openPalette,
 	openQuickNoteWindow,
 	openSearchPalette,
 	openSettings,
-	openTemplatesTab,
 	openWorkspaceFile,
 	showWelcomeNote,
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
 	saveCurrentEditor,
+	setCurrentEditorMode,
 	setAiPanelOpen,
 	setError,
 	setMovePickerSourcePath,
@@ -358,7 +269,6 @@ export function useAppCommands({
 	togglePinnedFile,
 	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
-	const { t } = useTranslation(["commands", "app", "settings"]);
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -376,7 +286,11 @@ export function useAppCommands({
 			setAiPanelOpen,
 			spacePath,
 		});
-		const editorCommands = buildEditorCommands({ activeMarkdownTabPath });
+		const editorCommands = buildEditorCommands({
+			activeMarkdownTabPath,
+			setCurrentEditorMode,
+			showCollapsibleHeadings,
+		});
 		const settingsSearchCommands = buildSettingsSearchCommands(openSettings);
 
 		const baseCommands: Command[] = [
@@ -384,7 +298,11 @@ export function useAppCommands({
 				id: "new-note",
 				label: "New note",
 				icon: (
-					<HugeiconsIcon icon={PencilEdit02Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={PencilEdit02Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
@@ -394,7 +312,13 @@ export function useAppCommands({
 			{
 				id: "open-quick-note",
 				label: "Open quick note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={NoteIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				enabled: true,
 				allowInEditable: true,
@@ -403,7 +327,13 @@ export function useAppCommands({
 			{
 				id: "create-from-template",
 				label: "Create from template",
-				icon: <HugeiconsIcon icon={ColorsIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={ColorsIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "m" },
 				enabled: Boolean(spacePath),
@@ -415,7 +345,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={CursorInWindowIcon}
-						size={16}
+						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
@@ -456,15 +386,27 @@ export function useAppCommands({
 			{
 				id: "new-database",
 				label: "New collection",
-				icon: <HugeiconsIcon icon={TableIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={TableIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: () => void createDatabaseAndOpen(),
+				action: createDatabaseAndOpen,
 			},
 			{
 				id: "new-folder",
 				label: "New folder",
-				icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={Folder01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
 				action: async () => {
@@ -478,7 +420,7 @@ export function useAppCommands({
 							error instanceof Error ? error.message : String(error);
 						console.error("Failed to create folder", error);
 						setError(message);
-						toast.error(t("app:commands.createFolderErrorTitle"), {
+						toast.error("Could not create folder", {
 							description: message,
 						});
 					}
@@ -487,7 +429,13 @@ export function useAppCommands({
 			{
 				id: "duplicate-current-note",
 				label: "Duplicate current note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={NoteIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				enabled:
 					activeMarkdownTabPath !== null &&
@@ -498,7 +446,11 @@ export function useAppCommands({
 				id: "open-daily-note",
 				label: "Open daily note (today)",
 				icon: (
-					<HugeiconsIcon icon={CalendarAdd01Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={CalendarAdd01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "d" },
@@ -509,8 +461,8 @@ export function useAppCommands({
 				id: "toggle-pin-active-file",
 				label:
 					activeFilePath && pinnedFiles.includes(activeFilePath)
-						? t("app:commands.unpinCurrentFile")
-						: t("app:commands.pinCurrentFile"),
+						? "Unpin current file"
+						: "Pin current file",
 				icon: (
 					<HugeiconsIcon
 						icon={
@@ -518,7 +470,7 @@ export function useAppCommands({
 								? PinOffIcon
 								: PinIcon
 						}
-						size={16}
+						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
@@ -533,7 +485,13 @@ export function useAppCommands({
 			{
 				id: "save-note",
 				label: "Save",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={NoteIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				shortcut: { meta: true, key: "s" },
 				enabled: Boolean(spacePath),
@@ -541,32 +499,12 @@ export function useAppCommands({
 				action: () => void saveCurrentEditor(),
 			},
 			{
-				id: "collapse_all_headings",
-				label: "Collapse all headings",
-				icon: <ChevronUp size={16} />,
-				category: "Editor",
-				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
-				allowInEditable: true,
-				action: () =>
-					dispatchEditorMenuAction({ action: "collapse_all_headings" }),
-			},
-			{
-				id: "expand_all_headings",
-				label: "Expand all headings",
-				icon: <ChevronDown size={16} />,
-				category: "Editor",
-				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
-				allowInEditable: true,
-				action: () =>
-					dispatchEditorMenuAction({ action: "expand_all_headings" }),
-			},
-			{
-				id: "open-local-graph",
-				label: "Open local graph",
+				id: "open-local-connections",
+				label: "Open local connections",
 				icon: (
 					<HugeiconsIcon
-						icon={FlowConnectionIcon}
-						size={16}
+						icon={ChartRelationshipIcon}
+						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
@@ -576,7 +514,7 @@ export function useAppCommands({
 				allowInEditable: true,
 				action: () => {
 					if (!activeMarkdownTabPath) return;
-					dispatchOpenLocalGraph({ path: activeMarkdownTabPath });
+					dispatchOpenLocalConnections({ path: activeMarkdownTabPath });
 				},
 			},
 			{
@@ -585,7 +523,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size={16}
+						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
@@ -601,7 +539,13 @@ export function useAppCommands({
 			{
 				id: "copy-note-markdown",
 				label: "Copy note as Markdown",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={NoteIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "c" },
 				enabled: Boolean(activeMarkdownTabPath),
@@ -611,7 +555,13 @@ export function useAppCommands({
 			{
 				id: "move-active-file",
 				label: "Move to…",
-				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={MoveIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "File Operations",
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
 				action: () => {
@@ -624,7 +574,13 @@ export function useAppCommands({
 			{
 				id: "go-back-note",
 				label: "Go back",
-				icon: <HugeiconsIcon icon={ArrowLeft} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={ArrowLeft}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Navigation",
 				shortcut: { meta: true, key: "[" },
 				enabled: canGoBack,
@@ -634,7 +590,13 @@ export function useAppCommands({
 			{
 				id: "go-forward-note",
 				label: "Go forward",
-				icon: <HugeiconsIcon icon={ArrowRight} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={ArrowRight}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Navigation",
 				shortcut: { meta: true, key: "]" },
 				enabled: canGoForward,
@@ -644,7 +606,13 @@ export function useAppCommands({
 			{
 				id: "quick-open",
 				label: "Quick open",
-				icon: <HugeiconsIcon icon={SearchIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={SearchIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Navigation",
 				shortcut: { meta: true, key: "p" },
 				enabled: Boolean(spacePath),
@@ -654,52 +622,82 @@ export function useAppCommands({
 			{
 				id: "open-all-docs",
 				label: "Open all notes",
-				icon: <HugeiconsIcon icon={File01Icon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={Archive04Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: openAllDocsTab,
 			},
 			{
-				id: "open-templates",
-				label: "Open templates",
+				id: "open-connections",
+				label: "Open Connections",
 				icon: (
-					<HugeiconsIcon icon={DocumentCodeIcon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={ChartRelationshipIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Navigation",
 				enabled: Boolean(spacePath),
-				action: openTemplatesTab,
-			},
-			{
-				id: "open-dashboard",
-				label: "Open home",
-				icon: <HugeiconsIcon icon={Home01Icon} size={16} strokeWidth={0.9} />,
-				category: "Navigation",
-				enabled: Boolean(spacePath),
-				action: openCalendarTab,
+				action: openConnectionsView,
 			},
 			{
 				id: "open-databases",
 				label: "Open collections",
-				icon: <HugeiconsIcon icon={LibraryIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={LibraryIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: () => openDatabasesTab(),
 			},
 			{
+				id: "open-calendar",
+				label: "Open calendar",
+				icon: (
+					<HugeiconsIcon
+						icon={Calendar03Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openCalendar,
+			},
+			{
 				id: "create-space",
 				label: "Create space",
-				icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={Folder01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Workspace",
 				shortcut: { meta: true, shift: true, key: "n" },
 				action: onCreateSpace,
 			},
 			{
 				id: "open-space",
-				label: spacePath
-					? t("app:commands.openAnotherSpace")
-					: t("app:commands.openSpace"),
+				label: spacePath ? "Open another space" : "Open space",
 				icon: (
-					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={FolderOpenIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
@@ -709,7 +707,11 @@ export function useAppCommands({
 				id: "reveal-space",
 				label: "Reveal space",
 				icon: (
-					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={FolderOpenIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				enabled: Boolean(spacePath),
@@ -719,7 +721,11 @@ export function useAppCommands({
 				id: "close-space",
 				label: "Close current space",
 				icon: (
-					<HugeiconsIcon icon={FolderRemoveIcon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={FolderRemoveIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				enabled: Boolean(spacePath),
@@ -728,7 +734,13 @@ export function useAppCommands({
 			{
 				id: "git-sync-now",
 				label: "Sync now",
-				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Workspace",
 				enabled: Boolean(spacePath),
 				action: async () => {
@@ -743,7 +755,11 @@ export function useAppCommands({
 				id: "toggle-sidebar",
 				label: "Toggle sidebar",
 				icon: (
-					<HugeiconsIcon icon={SidebarLeftIcon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={SidebarLeftIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				shortcut: { meta: true, shift: true, key: "b" },
@@ -753,7 +769,11 @@ export function useAppCommands({
 				id: "buy-glyph-license",
 				label: "Buy Glyph license",
 				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={SquareLock02Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				action: async () => {
@@ -762,11 +782,11 @@ export function useAppCommands({
 						await openUrl(status.purchase_url);
 					} catch (error) {
 						console.error("Failed to open Gumroad purchase page", error);
-						toast.error(t("app:commands.licensePageErrorTitle"), {
+						toast.error("Could not open the license page", {
 							description:
 								error instanceof Error
 									? error.message
-									: t("app:commands.tryAgain"),
+									: "Try again in a moment.",
 						});
 					}
 				},
@@ -775,7 +795,11 @@ export function useAppCommands({
 				id: "open-settings",
 				label: "Settings",
 				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={Settings01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				shortcut: { meta: true, key: "," },
@@ -785,7 +809,11 @@ export function useAppCommands({
 				id: "open-space-settings",
 				label: "Space settings",
 				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={Settings01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				enabled: Boolean(spacePath),
@@ -795,7 +823,11 @@ export function useAppCommands({
 				id: "open-license-settings",
 				label: "Manage license",
 				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={SquareLock02Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				action: () => openSettings("general"),
@@ -804,7 +836,11 @@ export function useAppCommands({
 				id: "open-git-sync-settings",
 				label: "Git Sync settings",
 				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={Settings01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				enabled: Boolean(spacePath),
@@ -814,7 +850,11 @@ export function useAppCommands({
 				id: "open-ai-settings",
 				label: "AI settings",
 				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+					<HugeiconsIcon
+						icon={Settings01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
 				),
 				category: "Workspace",
 				action: handleOpenAiSettings,
@@ -825,7 +865,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size={16}
+						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
@@ -836,7 +876,13 @@ export function useAppCommands({
 			{
 				id: "show-welcome-note",
 				label: "Show welcome note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} strokeWidth={0.9} />,
+				icon: (
+					<HugeiconsIcon
+						icon={NoteIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				category: "Help",
 				enabled: Boolean(spacePath),
 				action: () => void showWelcomeNote(),
@@ -850,7 +896,6 @@ export function useAppCommands({
 				...editorCommands,
 			],
 			getBinding,
-			t,
 		);
 	}, [
 		activeMarkdownTabPath,
@@ -879,6 +924,7 @@ export function useAppCommands({
 		createNoteInSelectedFolder,
 		requestOpenDailyNote,
 		saveCurrentEditor,
+		setCurrentEditorMode,
 		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		togglePinnedFile,
@@ -887,11 +933,11 @@ export function useAppCommands({
 		showCollapsibleHeadings,
 		spacePath,
 		openAllDocsTab,
-		openTemplatesTab,
 		openSearchPalette,
-		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openCalendar,
+		openConnectionsView,
 		openBlankTab,
 		openQuickNoteWindow,
 		openWorkspaceFile,
@@ -910,6 +956,5 @@ export function useAppCommands({
 		canGoForward,
 		goBack,
 		goForward,
-		t,
 	]);
 }

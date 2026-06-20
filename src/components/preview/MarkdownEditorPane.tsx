@@ -1,35 +1,25 @@
 import {
-	SlidersHorizontalIcon,
-	SparklesIcon,
+	AiBrain04Icon,
+	LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
-import {
-	type MouseEvent as ReactMouseEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
+	useGitSyncContext,
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
-import { useMarkdownTaskSummary } from "../../hooks/useMarkdownTaskSummary";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
 import {
-	FORCE_NOTE_EDIT_MODE_EVENT,
-	type ForceNoteEditModeDetail,
-	OPEN_LOCAL_GRAPH_EVENT,
-	type OpenLocalGraphDetail,
+	OPEN_LOCAL_CONNECTIONS_EVENT,
+	type OpenLocalConnectionsDetail,
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { showNativePopupMenu } from "../../lib/nativeContextMenu";
+import { canShowGitHistory } from "../../lib/gitSyncUi";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
 	joinYamlFrontmatter,
@@ -38,23 +28,26 @@ import {
 import { groupRelationshipsByField } from "../../lib/relationships";
 import {
 	type BacklinkItem,
+	type GitCommitDiff,
 	type NoteRelationship,
 	type TextFileDoc,
 	type WorkspaceDatabasePreviewContext,
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
+import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
+import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
+import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,
 } from "../editor/types";
-import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
+import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
@@ -62,11 +55,14 @@ import {
 	getCachedMarkdownDoc,
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
+import { analyzeNoteInfo } from "./noteInfoAnalysis";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
 	onInfoSidebarOpenChange?: (open: boolean) => void;
+	gitDiff?: GitCommitDiff | null;
+	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
@@ -87,17 +83,7 @@ interface SidebarBacklinkItem {
 }
 
 const UTF8_ENCODER = new TextEncoder();
-
-function countLines(markdown: string): number {
-	if (markdown.length === 0) return 0;
-	let lines = 1;
-	for (let i = 0; i < markdown.length; i += 1) {
-		if (markdown.charCodeAt(i) === 10) {
-			lines += 1;
-		}
-	}
-	return lines;
-}
+const INFO_PANEL_DERIVATION_DEBOUNCE_MS = 700;
 
 function noteLabelFromPath(path: string): string {
 	const segments = path.split("/").filter(Boolean);
@@ -107,6 +93,16 @@ function noteLabelFromPath(path: string): string {
 
 function noteLinkLabel(label: string | null | undefined, fallbackPath: string) {
 	return label?.trim() || noteLabelFromPath(fallbackPath);
+}
+
+const LARGE_NOTE_RICH_EDITOR_LIMIT = 100_000;
+
+function requiresPlainEditorMode(markdown: string): boolean {
+	return markdown.length >= LARGE_NOTE_RICH_EDITOR_LIMIT;
+}
+
+function initialEditorMode(markdown: string): NoteInlineEditorMode {
+	return requiresPlainEditorMode(markdown) ? "plain" : "rich";
 }
 
 function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
@@ -169,28 +165,64 @@ export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
 	onInfoSidebarOpenChange,
+	gitDiff = null,
+	onGitDiffChange,
 	initialDoc = null,
 	initialError = "",
 	extractToNoteActions,
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
+	const [infoPanelText, setInfoPanelText] = useState("");
 	const [savedText, setSavedText] = useState(() => initialText);
-	const [mode, setMode] = useState<NoteInlineEditorMode>("rich");
+	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
+	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
+		initialEditorMode(initialText),
+	);
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
 	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
-	const [localGraphOpen, setLocalGraphOpen] = useState(false);
+	const [localConnectionsOpen, setLocalConnectionsOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
 	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
+	const resolveEditorModeForNote = useCallback(
+		(markdown: string): NoteInlineEditorMode => {
+			if (requiresPlainEditorMode(markdown)) return "plain";
+			return preferredEditorModeRef.current ?? initialEditorMode(markdown);
+		},
+		[],
+	);
+	const applyEditorMode = useCallback((nextMode: NoteInlineEditorMode) => {
+		preferredEditorModeRef.current = nextMode;
+		setMode(nextMode);
+	}, []);
+	const requestEditorMode = useCallback(
+		async (nextMode: NoteInlineEditorMode) => {
+			if (nextMode !== "plain" && requiresPlainEditorMode(textRef.current)) {
+				const modeLabel = nextMode === "rich" ? "Rich" : "Preview";
+				const { confirm } = await import("@tauri-apps/plugin-dialog");
+				const confirmed = await confirm(
+					`This note may take a while to open and feel slower in ${modeLabel} mode. Raw is the fastest way to edit.`,
+					{
+						title: "Large note",
+						okLabel: `Open in ${modeLabel}`,
+						cancelLabel: "Stay in Raw",
+					},
+				);
+				if (!confirmed) return;
+			}
+			applyEditorMode(nextMode);
+		},
+		[applyEditorMode],
+	);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
 	const documentSessionRef = useRef(0);
 	const mountedRef = useRef(true);
@@ -202,11 +234,19 @@ export function MarkdownEditorPane({
 	const syncPulseTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const activeRelPathRef = useRef(relPath);
+	const infoPanelOpenRef = useRef(infoPanelOpen);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
 	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
+	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
+	const handleRawEditorReady = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			rawEditorRef.current = editor;
+		},
+		[],
+	);
 	const {
 		headings: tocHeadings,
 		activeId: tocActiveId,
@@ -216,41 +256,40 @@ export function MarkdownEditorPane({
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
+	const { status: gitSyncStatus } = useGitSyncContext();
+	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
+	infoPanelOpenRef.current = infoPanelOpen;
+
+	useEffect(() => {
+		if (hasSupportedGit) return;
+		onGitDiffChange?.(null);
+	}, [hasSupportedGit, onGitDiffChange]);
 
 	const isDirty = text !== savedText;
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
-		() => splitYamlFrontmatter(text),
-		[text],
+		() =>
+			infoPanelOpen
+				? splitYamlFrontmatter(infoPanelText)
+				: { frontmatter: null, body: "" },
+		[infoPanelOpen, infoPanelText],
 	);
-	const stats = useMemo(() => {
-		const words = countWords(currentBody);
-		const characters = currentBody.length;
-		return {
-			words,
-			characters,
-			readingTime: formatReadingTime(words),
-		};
-	}, [currentBody]);
-	const visibleTaskSummary = useMarkdownTaskSummary(
-		text,
-		showTaskProgressIndicator === true,
+	const infoAnalysis = useMemo(
+		() => analyzeNoteInfo(infoPanelText, currentBody, mode === "plain"),
+		[currentBody, infoPanelText, mode],
 	);
 	const utf8SizeBytes = useMemo(() => {
 		if (!infoPanelOpen) return 0;
-		return UTF8_ENCODER.encode(text).length;
-	}, [infoPanelOpen, text]);
-	const lineCount = useMemo(() => {
-		if (!infoPanelOpen) return 0;
-		return countLines(text);
-	}, [infoPanelOpen, text]);
+		return UTF8_ENCODER.encode(infoPanelText).length;
+	}, [infoPanelOpen, infoPanelText]);
 	const linkedNotes = useMemo(() => {
+		if (!infoPanelOpen) return [];
 		const current = normalizeRelPath(relPath);
-		return extractLinkedNotes(text).filter((item) => {
+		return extractLinkedNotes(infoPanelText).filter((item) => {
 			const normalized = normalizeRelPath(item.id);
 			if (!normalized) return false;
 			return normalized !== current;
 		});
-	}, [relPath, text]);
+	}, [infoPanelOpen, relPath, infoPanelText]);
 	const sidebarBacklinks = useMemo(() => {
 		const merged = new Map<string, SidebarBacklinkItem>();
 
@@ -277,6 +316,19 @@ export function MarkdownEditorPane({
 	const relationshipGroups = useMemo(
 		() => groupRelationshipsByField(relationships),
 		[relationships],
+	);
+	const visibleHeadings =
+		mode === "plain" ? infoAnalysis.headings : tocHeadings;
+	const visibleActiveHeadingId = mode === "plain" ? null : tocActiveId;
+	const selectVisibleHeading = useCallback(
+		(heading: (typeof visibleHeadings)[number]) => {
+			if (mode === "plain") {
+				rawEditorRef.current?.selectRange(heading.pos, heading.pos);
+				return;
+			}
+			scrollToHeading(heading);
+		},
+		[mode, scrollToHeading],
 	);
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
@@ -314,11 +366,32 @@ export function MarkdownEditorPane({
 		};
 	}, []);
 
+	useEffect(() => {
+		if (!infoPanelOpen) return;
+		setInfoPanelText(textRef.current);
+	}, [infoPanelOpen]);
+
+	useEffect(() => {
+		if (!infoPanelOpen) return;
+		const timer = window.setTimeout(() => {
+			setInfoPanelText(text);
+		}, INFO_PANEL_DERIVATION_DEBOUNCE_MS);
+		return () => window.clearTimeout(timer);
+	}, [infoPanelOpen, text]);
+
 	const isCurrentSession = useCallback((sessionId: number) => {
 		return mountedRef.current && documentSessionRef.current === sessionId;
 	}, []);
 
 	useEffect(() => {
+		// `initialDoc` is a seed for the pane. Autosave also refreshes that cache,
+		// so do not treat the resulting object identity change as a new document.
+		if (
+			activeRelPathRef.current === relPath &&
+			initialDoc?.text === textRef.current
+		) {
+			return;
+		}
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
@@ -334,6 +407,7 @@ export function MarkdownEditorPane({
 		}
 		pendingExternalReloadRef.current = false;
 		setText(cached);
+		setInfoPanelText("");
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSaving(false);
@@ -343,15 +417,16 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		if (activeRelPathRef.current !== relPath) {
 			setInfoPanelOpen(false);
+			setMode(resolveEditorModeForNote(cached));
 		}
 		activeRelPathRef.current = relPath;
-		setLocalGraphOpen(false);
+		setLocalConnectionsOpen(false);
 		setPreviewContext(null);
 		setLinkedMentions([]);
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
-	}, [initialDoc, initialError, relPath]);
+	}, [initialDoc, initialError, relPath, resolveEditorModeForNote]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -370,6 +445,7 @@ export function MarkdownEditorPane({
 		autosaveQueuedRef.current = false;
 		hasUserEditsRef.current = false;
 		setText("");
+		setInfoPanelText("");
 		setSavedText("");
 		setLastSavedMtimeMs(null);
 		setSaving(false);
@@ -389,10 +465,16 @@ export function MarkdownEditorPane({
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
+				const shouldChooseInitialMode =
+					textRef.current.length === 0 && savedTextRef.current.length === 0;
 				setPrefetchedNote(relPath, doc);
 				if (shouldReplaceText) {
+					if (shouldChooseInitialMode) {
+						setMode(resolveEditorModeForNote(doc.text));
+					}
 					textRef.current = doc.text;
 					setText(doc.text);
+					if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
 				}
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
@@ -408,7 +490,7 @@ export function MarkdownEditorPane({
 				setError(extractErrorMessage(e));
 			}
 		},
-		[flashSyncPulse, isCurrentSession, relPath],
+		[flashSyncPulse, isCurrentSession, relPath, resolveEditorModeForNote],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
@@ -427,6 +509,7 @@ export function MarkdownEditorPane({
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
 			setText(doc.text);
+			if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
@@ -591,37 +674,34 @@ export function MarkdownEditorPane({
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
 	useEffect(() => {
-		const handleForceEditMode = (event: Event) => {
-			const detail = (event as CustomEvent<ForceNoteEditModeDetail>).detail;
+		const handleOpenLocalConnections = (event: Event) => {
+			const detail = (event as CustomEvent<OpenLocalConnectionsDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
-			setMode("rich");
-		};
-		const handleOpenLocalGraph = (event: Event) => {
-			const detail = (event as CustomEvent<OpenLocalGraphDetail>).detail;
-			if (!detail?.path || detail.path !== relPath) return;
-			setLocalGraphOpen(true);
+			setLocalConnectionsOpen(true);
 		};
 		const handleToggleInfoSidebar = (event: Event) => {
 			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
 			if (!detail?.path || detail.path !== relPath) return;
+			setAiPanelOpen(() => false);
 			setInfoPanelOpen((open) => {
 				const nextOpen = !open;
-				if (nextOpen) setAiPanelOpen(false);
+				if (nextOpen) setInfoPanelText(textRef.current);
 				return nextOpen;
 			});
 		};
-		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
-		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
+		window.addEventListener(
+			OPEN_LOCAL_CONNECTIONS_EVENT,
+			handleOpenLocalConnections,
+		);
 		window.addEventListener(
 			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 			handleToggleInfoSidebar,
 		);
 		return () => {
 			window.removeEventListener(
-				FORCE_NOTE_EDIT_MODE_EVENT,
-				handleForceEditMode,
+				OPEN_LOCAL_CONNECTIONS_EVENT,
+				handleOpenLocalConnections,
 			);
-			window.removeEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
 			window.removeEventListener(
 				TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 				handleToggleInfoSidebar,
@@ -659,8 +739,9 @@ export function MarkdownEditorPane({
 			isDirty,
 			save: onSave,
 			getMarkdown: () => textRef.current,
+			setMode: requestEditorMode,
 		}),
-		[isDirty, onSave, relPath],
+		[isDirty, onSave, relPath, requestEditorMode],
 	);
 	useEditorRegistration(editorState);
 
@@ -739,114 +820,93 @@ export function MarkdownEditorPane({
 			const normalizedFrontmatter = nextFrontmatter?.trim().length
 				? nextFrontmatter
 				: null;
-			const nextMarkdown = joinYamlFrontmatter(
-				normalizedFrontmatter,
-				currentBody,
-			);
+			const { body } = splitYamlFrontmatter(textRef.current);
+			const nextMarkdown = joinYamlFrontmatter(normalizedFrontmatter, body);
 			if (nextMarkdown === textRef.current) return;
 			hasUserEditsRef.current = true;
 			textRef.current = nextMarkdown;
 			setText(nextMarkdown);
+			setInfoPanelText(nextMarkdown);
 			// Property edits are discrete commits — save immediately so the
 			// indexer picks up the change and databases/backlinks update.
 			void runAutosave();
 		},
-		[currentBody, runAutosave],
+		[runAutosave],
 	);
 
 	const toggleInfoPanel = useCallback(() => {
+		setAiPanelOpen(() => false);
 		setInfoPanelOpen((open) => {
 			const nextOpen = !open;
-			if (nextOpen) setAiPanelOpen(false);
+			if (nextOpen) setInfoPanelText(textRef.current);
 			return nextOpen;
 		});
 	}, [setAiPanelOpen]);
+	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
-	const handleEditorActionsMenu = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			void showNativePopupMenu(event, [
-				{
-					label: "Info",
-					checked: infoPanelOpen,
-					action: toggleInfoPanel,
-				},
-				{
-					label: "Local graph",
-					action: () => setLocalGraphOpen(true),
-				},
-				{ type: "separator" },
-				{
-					label: "Edit",
-					checked: mode === "rich",
-					action: () => setMode("rich"),
-				},
-				{
-					label: "Preview",
-					checked: mode === "preview",
-					action: () => setMode("preview"),
-				},
-				{
-					label: "Raw",
-					checked: mode === "plain",
-					action: () => setMode("plain"),
-				},
-			]).catch((error: unknown) => {
-				console.error("Failed to show editor actions menu", error);
-			});
-		},
-		[infoPanelOpen, mode, toggleInfoPanel],
-	);
+	const isLargeNote = requiresPlainEditorMode(text);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
-				<div className="markdownEditorTopActions">
-					<button
-						type="button"
-						className="markdownEditorMenuTrigger markdownEditorAiTrigger"
-						onClick={() => {
-							if (!aiEnabled) {
-								openSettings("ai");
-								return;
+				<div className="markdownEditorToolbar">
+					<EditorViewModeSwitch
+						mode={mode}
+						largeNote={isLargeNote}
+						onModeChange={requestEditorMode}
+					/>
+					<div className="markdownEditorToolbarDivider" aria-hidden="true" />
+					<div className="markdownEditorToolbarActions">
+						<button
+							type="button"
+							className="markdownEditorToolbarBtn"
+							data-active={aiEnabled && aiPanelOpen ? true : undefined}
+							onClick={() => {
+								if (!aiEnabled) {
+									openSettings("ai");
+									return;
+								}
+								setInfoPanelOpen(() => false);
+								setAiPanelOpen((open) => !open);
+							}}
+							aria-label={
+								aiEnabled
+									? aiPanelOpen
+										? "Close AI panel"
+										: "Open AI panel"
+									: "Open AI settings"
 							}
-							setAiPanelOpen((open) => {
-								const nextOpen = !open;
-								if (nextOpen) setInfoPanelOpen(false);
-								return nextOpen;
-							});
-						}}
-						aria-label={
-							aiEnabled
-								? aiPanelOpen
-									? "Close AI panel"
-									: "Open AI panel"
-								: "Open AI settings"
-						}
-						title={
-							aiEnabled
-								? aiPanelOpen
-									? "Close AI panel"
-									: "Open AI panel"
-								: "Open AI settings"
-						}
-						aria-pressed={aiEnabled ? aiPanelOpen : undefined}
-					>
-						<HugeiconsIcon icon={SparklesIcon} size={15} strokeWidth={0.9} />
-					</button>
-					<button
-						type="button"
-						className="markdownEditorMenuTrigger"
-						onClick={handleEditorActionsMenu}
-						aria-label="Open editor actions"
-						title="Open editor actions"
-						aria-haspopup="menu"
-					>
-						<HugeiconsIcon
-							icon={SlidersHorizontalIcon}
-							size={15}
-							strokeWidth={0.9}
-						/>
-					</button>
+							title={
+								aiEnabled
+									? aiPanelOpen
+										? "Close AI panel"
+										: "Open AI panel"
+									: "Open AI settings"
+							}
+							aria-pressed={aiEnabled ? aiPanelOpen : undefined}
+						>
+							<HugeiconsIcon
+								icon={AiBrain04Icon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+						</button>
+						<button
+							type="button"
+							className="markdownEditorToolbarBtn"
+							data-active={infoPanelOpen || undefined}
+							onClick={toggleInfoPanel}
+							aria-label={infoPanelOpen ? "Close info" : "Open info"}
+							title={infoPanelOpen ? "Close info" : "Open info"}
+							aria-pressed={infoPanelOpen}
+						>
+							<HugeiconsIcon
+								icon={LayoutAlignRightIcon}
+								size="var(--icon-md)"
+								strokeWidth={0.9}
+							/>
+						</button>
+					</div>
 				</div>
 			</div>
 			{error ? (
@@ -861,24 +921,32 @@ export function MarkdownEditorPane({
 					className="filePreviewTextWrap markdownEditorContent"
 				>
 					<div className="markdownEditorCenter">
-						<NoteInlineEditor
-							markdown={text}
-							relPath={relPath}
-							mode={mode}
-							pasteMarkdownBehavior="smart-markdown"
-							onChange={(nextText) => {
-								hasUserEditsRef.current = true;
-								textRef.current = nextText;
-								setText(nextText);
-							}}
-							onFrontmatterCommit={runAutosave}
-							onEditorReady={setTocEditor}
-							extractToNoteActions={extractToNoteActions}
-						/>
+						{gitDiff ? (
+							<GitDiffView
+								diff={gitDiff}
+								onBack={() => onGitDiffChange?.(null)}
+							/>
+						) : (
+							<NoteInlineEditor
+								markdown={text}
+								relPath={relPath}
+								mode={mode}
+								pasteMarkdownBehavior="smart-markdown"
+								onChange={(nextText) => {
+									hasUserEditsRef.current = true;
+									textRef.current = nextText;
+									setText(nextText);
+								}}
+								onFrontmatterCommit={runAutosave}
+								onEditorReady={setTocEditor}
+								onRawEditorReady={handleRawEditorReady}
+								extractToNoteActions={extractToNoteActions}
+							/>
+						)}
 					</div>
 				</div>
 			) : null}
-			{showToc && !infoPanelOpen && !error && mode !== "plain" ? (
+			{showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain" ? (
 				<FloatingTOC
 					headings={tocHeadings}
 					activeId={tocActiveId}
@@ -888,33 +956,35 @@ export function MarkdownEditorPane({
 
 			<NotesInfoSidebar
 				open={infoPanelOpen}
-				mode={mode}
 				hasError={Boolean(error)}
 				relPath={relPath}
 				frontmatter={currentFrontmatter}
 				onFrontmatterChange={handleInfoFrontmatterChange}
-				stats={stats}
-				taskSummary={visibleTaskSummary}
-				tocHeadings={tocHeadings}
-				tocActiveId={tocActiveId}
-				onSelectHeading={scrollToHeading}
+				stats={infoAnalysis.stats}
+				taskSummary={infoAnalysis.taskSummary}
+				tocHeadings={visibleHeadings}
+				tocActiveId={visibleActiveHeadingId}
+				onSelectHeading={selectVisibleHeading}
 				backlinks={sidebarBacklinks}
 				linkedNotes={linkedNotes}
 				relationshipGroups={relationshipGroups}
 				previewContext={previewContext}
 				lastSavedMtimeMs={lastSavedMtimeMs}
-				lineCount={lineCount}
+				lineCount={infoAnalysis.lineCount}
 				utf8SizeBytes={utf8SizeBytes}
 				saveLabel={saveLabel}
-				onClose={() => setInfoPanelOpen(false)}
+				gitSyncStatus={gitSyncStatus}
+				selectedGitCommitHash={gitDiff?.commit.hash ?? null}
+				onSelectGitDiff={onGitDiffChange ?? undefined}
+				onClose={closeInfoPanel}
 			/>
 			<LinkedNotePreviewSheet />
 
-			<LocalNoteGraphDialog
-				open={localGraphOpen}
-				onOpenChange={setLocalGraphOpen}
+			<LocalNoteConnectionsDialog
+				open={localConnectionsOpen}
+				onOpenChange={setLocalConnectionsOpen}
 				noteId={relPath}
-				graphRefreshKey={lastSavedMtimeMs ?? 0}
+				connectionsRefreshKey={lastSavedMtimeMs ?? 0}
 			/>
 		</section>
 	);
