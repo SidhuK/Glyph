@@ -83,4 +83,25 @@ describe("smart Markdown paste integration", () => {
 		expect(output).toContain(String.raw`Escaped \$x\$ stays literal.`);
 		expect(output).toContain("`$notMath$`");
 	});
+
+	it("preserves multiline inline LaTeX after a Raw-mode text edit", () => {
+		const manager = createMarkdownManager();
+		const formula = [
+			String.raw`$\begin{aligned}`,
+			"  a &= b + c",
+			String.raw`  x &= \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}`,
+			String.raw`\end{aligned}$`,
+		].join("\n");
+		const initial = `Equation: ${formula}`;
+
+		const firstPass = postprocessMarkdownFromEditor(
+			manager.serialize(manager.parse(preprocessMarkdownForEditor(initial))),
+		);
+		const editedInRaw = ` ${firstPass}`;
+		const secondPass = postprocessMarkdownFromEditor(
+			manager.serialize(manager.parse(preprocessMarkdownForEditor(editedInRaw))),
+		);
+
+		expect(secondPass).toContain(formula);
+	});
 });

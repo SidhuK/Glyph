@@ -459,12 +459,25 @@ export function useNoteEditor({
 		return () => {
 			flushMarkdownSync(relPath);
 		};
-	}, [flushMarkdownSync, relPath]);
+	}, [
+		flushMarkdownSync,
+		relPath,
+		additionalExtensions,
+		peopleMentionsEnabled,
+		enableMarkdownLinkAutocomplete,
+		vimKeybindingsEnabled,
+	]);
+
+	const pendingSync = pendingMarkdownSyncRef.current;
+	const editorContent =
+		pendingSync?.relPath === relPath
+			? pendingSync.instance.getMarkdown()
+			: editorBody;
 
 	const editor = useEditor(
 		{
 			extensions,
-			content: editorBody,
+			content: editorContent,
 			contentType: "markdown",
 			editorProps: {
 				attributes: {

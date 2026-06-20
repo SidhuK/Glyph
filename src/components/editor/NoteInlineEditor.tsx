@@ -8,6 +8,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -226,7 +227,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[onRawEditorReady],
 	);
 	const previousRelPathRef = useRef(relPath);
-	useEffect(() => {
+	useLayoutEffect(() => {
 		mathNodeEditor.close();
 	}, [mathNodeEditor.close, mode, relPath]);
 

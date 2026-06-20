@@ -24,7 +24,7 @@ export function useMathNodeEditor() {
 
 	const resolveNode = useCallback((kind: MathKind, pos: number) => {
 		const editor = editorRef.current;
-		if (!editor) return null;
+		if (!editor || editor.isDestroyed) return null;
 		const node = editor.state.doc.nodeAt(pos);
 		const expectedName = kind === "inline" ? "inlineMath" : "blockMath";
 		return node?.type.name === expectedName ? { editor, node } : null;
@@ -69,7 +69,9 @@ export function useMathNodeEditor() {
 
 	const getAnchorRect = useCallback(() => {
 		if (!request) return null;
-		const node = editorRef.current?.view.nodeDOM(request.pos);
+		const editor = editorRef.current;
+		if (!editor || editor.isDestroyed) return null;
+		const node = editor.view.nodeDOM(request.pos);
 		return node instanceof HTMLElement ? node.getBoundingClientRect() : null;
 	}, [request]);
 

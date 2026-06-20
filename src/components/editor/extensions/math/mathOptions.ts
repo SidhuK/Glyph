@@ -22,7 +22,9 @@ export const GLYPH_KATEX_OPTIONS = {
 	trust: false,
 } as const satisfies KatexOptions;
 
-const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\\n])+?)(?<!\s)\$(?!\$)/;
+// TipTap math attributes may contain soft line breaks. They remain inline
+// Markdown until a blank line, so retain them across Edit -> Raw -> Edit.
+const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\])+?)(?<!\s)\$(?!\$)/;
 const BLOCK_MATH_RE = /^\$\$[\t ]*\n([\s\S]*?)\n\$\$(?:[\t ]*(?:\n|$))/;
 
 export function matchInlineMath(source: string): RegExpMatchArray | null {
