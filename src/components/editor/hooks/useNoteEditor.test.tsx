@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { Extension, type Extensions } from "@tiptap/core";
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -208,12 +209,14 @@ vi.mock("./useHydrateInlineImages", () => ({
 }));
 
 function Harness({
+	additionalExtensions = [],
 	markdown = "keep this line\nremove this line",
 	onChange,
 	onState,
 	pasteMarkdownBehavior = "plain-text",
 	relPath = "notes/test.md",
 }: {
+	additionalExtensions?: Extensions;
 	markdown?: string;
 	onChange: (nextMarkdown: string) => void;
 	onState?: (state: {
@@ -224,6 +227,7 @@ function Harness({
 	relPath?: string;
 }) {
 	const state = useNoteEditor({
+		additionalExtensions,
 		markdown,
 		mode: "rich",
 		relPath,
@@ -498,6 +502,46 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(newOnChange).not.toHaveBeenCalled();
+	});
+
+	it("seeds a recreated editor from the pending same-note document", async () => {
+		const onChange = vi.fn();
+		const firstExtension = Extension.create({ name: "first-extension" });
+		const secondExtension = Extension.create({ name: "second-extension" });
+		mockEditor.getMarkdown.mockReturnValue("latest pending body");
+
+		await act(async () => {
+			root.render(
+				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
+			);
+		});
+
+		const initialOptions = getEditorOptions() as {
+			onTransaction?: (payload: {
+				editor: typeof mockEditor;
+				transaction: { docChanged: boolean };
+			}) => void;
+		} | null;
+
+		await act(async () => {
+			initialOptions?.onTransaction?.({
+				editor: mockEditor,
+				transaction: { docChanged: true },
+			});
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness
+					additionalExtensions={[secondExtension]}
+					onChange={onChange}
+				/>,
+			);
+		});
+
+		const recreatedOptions = getEditorOptions() as { content?: string } | null;
+		expect(recreatedOptions?.content).toBe("latest pending body");
+		expect(onChange).toHaveBeenCalledWith("latest pending body");
 	});
 
 	it("tracks colorful headings from settings and live updates", async () => {

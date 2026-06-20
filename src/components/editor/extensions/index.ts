@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import {
 	Table,
@@ -30,6 +30,7 @@ import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
@@ -649,6 +650,7 @@ const EditorLink = Link.extend({
 });
 
 interface CreateEditorExtensionsOptions {
+	additionalExtensions?: AnyExtension[];
 	enableEditingExtensions?: boolean;
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
@@ -658,12 +660,14 @@ interface CreateEditorExtensionsOptions {
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
 export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
 	const {
+		additionalExtensions = [],
 		enableEditingExtensions = true,
 		enableSlashCommand = true,
 		enableWikiLinks = true,
@@ -673,6 +677,7 @@ export function createEditorExtensions(
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
+		onMathEditRequest,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -705,6 +710,7 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		...additionalExtensions,
 		MermaidPreview,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({
@@ -732,7 +738,9 @@ export function createEditorExtensions(
 		...(enableEditingExtensions && enablePeopleMentions
 			? [PersonAutocomplete]
 			: []),
-		...(enableEditingExtensions && enableSlashCommand ? [SlashCommand] : []),
+		...(enableEditingExtensions && enableSlashCommand
+			? [SlashCommand.configure({ onMathEditRequest })]
+			: []),
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,
 		}),

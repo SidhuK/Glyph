@@ -1,4 +1,4 @@
-import type { JSONContent } from "@tiptap/core";
+import type { AnyExtension, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
 import {
@@ -22,6 +22,7 @@ import { useTauriEvent } from "../../../lib/tauriEvents";
 import { parentDir } from "../../../utils/path";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
+import type { MathEditRequest } from "../extensions/math/mathOptions";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
@@ -33,6 +34,7 @@ import { useHydrateInlineImages } from "./useHydrateInlineImages";
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
+const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -239,6 +241,7 @@ function shouldHandleSmartMarkdownPaste(
 }
 
 interface UseNoteEditorOptions {
+	additionalExtensions?: AnyExtension[];
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
@@ -247,6 +250,7 @@ interface UseNoteEditorOptions {
 	enableMarkdownLinkAutocomplete?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onChange: (nextMarkdown: string) => void;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
 interface PendingMarkdownSync {
@@ -258,6 +262,7 @@ interface PendingMarkdownSync {
 }
 
 export function useNoteEditor({
+	additionalExtensions = EMPTY_ADDITIONAL_EXTENSIONS,
 	markdown,
 	mode,
 	relPath = "",
@@ -266,6 +271,7 @@ export function useNoteEditor({
 	enableMarkdownLinkAutocomplete = true,
 	pasteMarkdownBehavior = "plain-text",
 	onChange,
+	onMathEditRequest,
 }: UseNoteEditorOptions) {
 	const { frontmatter, editorBody } = useMemo(() => {
 		if (mode === "plain") {
@@ -301,16 +307,20 @@ export function useNoteEditor({
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
+				additionalExtensions,
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
+				onMathEditRequest,
 				placeholder: "Start writing or press / for commands",
 			}),
 		[
+			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
 			peopleMentionsEnabled,
+			onMathEditRequest,
 			vimKeybindingsEnabled,
 		],
 	);
@@ -452,15 +462,34 @@ export function useNoteEditor({
 	);
 
 	useLayoutEffect(() => {
+		// These values mirror useEditor's recreation dependencies below. Flush
+		// before TipTap destroys an instance so its debounced edits are retained.
+		void additionalExtensions;
+		void peopleMentionsEnabled;
+		void enableMarkdownLinkAutocomplete;
+		void vimKeybindingsEnabled;
 		return () => {
 			flushMarkdownSync(relPath);
 		};
-	}, [flushMarkdownSync, relPath]);
+	}, [
+		flushMarkdownSync,
+		relPath,
+		additionalExtensions,
+		peopleMentionsEnabled,
+		enableMarkdownLinkAutocomplete,
+		vimKeybindingsEnabled,
+	]);
+
+	const pendingSync = pendingMarkdownSyncRef.current;
+	const editorContent =
+		pendingSync?.relPath === relPath
+			? pendingSync.instance.getMarkdown()
+			: editorBody;
 
 	const editor = useEditor(
 		{
 			extensions,
-			content: editorBody,
+			content: editorContent,
 			contentType: "markdown",
 			editorProps: {
 				attributes: {
@@ -611,6 +640,7 @@ export function useNoteEditor({
 			},
 		},
 		[
+			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
 			vimKeybindingsEnabled,

@@ -1,0 +1,172 @@
+/* LaTeX mathematics: TipTap rendering and the isolated source editor. */
+.tiptap-mathematics-render {
+	max-width: 100%;
+	color: var(--text-primary);
+}
+
+.tiptap-mathematics-render[data-type="inline-math"] {
+	display: inline-flex;
+	align-items: baseline;
+	margin-inline: 0.08em;
+	border-radius: var(--radius-sm);
+	vertical-align: -0.08em;
+}
+
+.tiptap-mathematics-render[data-type="block-math"] {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	margin-block: var(--space-4);
+	padding: var(--space-3) var(--space-4);
+	overflow-x: auto;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+	overscroll-behavior-inline: contain;
+}
+
+.tiptap-mathematics-render--editable {
+	cursor: pointer;
+	transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.tiptap-mathematics-render--editable:hover,
+.tiptap-mathematics-render--editable:focus-visible {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 9%,
+		var(--bg-secondary)
+	);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.tiptapHostInline.is-preview .tiptap-mathematics-render {
+	cursor: default;
+}
+
+.tiptapHostInline.is-preview .tiptap-mathematics-render:hover,
+.tiptapHostInline.is-preview .tiptap-mathematics-render:focus-visible {
+	background: transparent;
+	box-shadow: none;
+}
+
+.inline-math-error,
+.block-math-error {
+	color: var(--status-danger-fg);
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+}
+
+.tiptap-mathematics-render .katex-error {
+	color: var(--status-danger-fg) !important;
+}
+
+.mathNodeEditorAnchor {
+	position: fixed;
+	pointer-events: none;
+}
+
+.mathNodeEditorPopover {
+	width: min(520px, calc(100vw - 24px));
+	padding: var(--space-4);
+	border-color: color-mix(in srgb, var(--border-default) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 98%, var(--bg-secondary));
+	box-shadow: var(--shadow-lg);
+}
+
+.latexSourceEditor {
+	margin-top: var(--space-3);
+	overflow: hidden;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	background: var(--bg-secondary);
+}
+
+.latexSourceEditor .cm-editor {
+	min-height: 44px;
+	max-height: 180px;
+	background: transparent;
+	color: var(--text-primary);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+}
+
+.latexSourceEditor[data-multiline="true"] .cm-editor {
+	min-height: 108px;
+}
+
+.latexSourceEditor .cm-focused {
+	outline: 2px solid var(--focus);
+	outline-offset: -2px;
+}
+
+.latexSourceEditor .cm-scroller {
+	overflow: auto;
+	font-family: inherit;
+}
+
+.latexSourceEditor .cm-content {
+	padding: 10px 12px;
+	caret-color: var(--interactive-accent);
+}
+
+.latexSourceEditor .cm-gutters {
+	display: none;
+}
+
+.mathNodeEditorPreview {
+	min-height: 52px;
+	margin-top: var(--space-3);
+	padding: var(--space-3);
+	overflow-x: auto;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-primary);
+	text-align: center;
+}
+
+.mathNodeEditorPreview[data-error="true"] {
+	color: var(--status-danger-fg);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+	text-align: left;
+	white-space: pre-wrap;
+}
+
+.mathNodeEditorError {
+	display: block;
+	max-height: 3.4em;
+	margin: var(--space-2) 0 0;
+	overflow: auto;
+	color: var(--status-danger-fg);
+	font-size: var(--text-xs);
+	line-height: 1.4;
+}
+
+.mathNodeEditorActions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin-top: var(--space-4);
+}
+
+.mathNodeEditorActionsSpacer {
+	flex: 1;
+}
+
+.rfNodeNoteEditorLoading {
+	min-height: 96px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tiptap-mathematics-render--editable {
+		transition: none;
+	}
+}
+
+@media print {
+	.tiptap-mathematics-render[data-type="block-math"] {
+		overflow: visible;
+		background: transparent;
+	}
+}

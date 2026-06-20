@@ -3,9 +3,12 @@ import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
+	Suspense,
+	lazy,
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -27,6 +30,7 @@ import {
 	getOffsetWithinAncestor,
 } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
+import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
@@ -38,10 +42,22 @@ import {
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
-import { RawMarkdownEditor } from "./raw/RawMarkdownEditor";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
+
+const RawMarkdownEditor = lazy(() =>
+	import("./raw/RawMarkdownEditor").then((module) => ({
+		default: module.RawMarkdownEditor,
+	})),
+);
+
+const MathNodeEditor = lazy(() =>
+	import("./math/MathNodeEditor").then((module) => ({
+		default: module.MathNodeEditor,
+	})),
+);
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -134,6 +150,38 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onFrontmatterCommit,
 	extractToNoteActions,
 }: NoteInlineEditorProps) {
+	const mathNodeEditor = useMathNodeEditor();
+	const [mathExtensions, setMathExtensions] = useState<
+		import("@tiptap/core").AnyExtension[]
+	>([]);
+	const [mathExtensionsReady, setMathExtensionsReady] = useState(
+		mode === "plain",
+	);
+	useEffect(() => {
+		if (mode === "plain" || mathExtensions.length > 0) {
+			setMathExtensionsReady(true);
+			return;
+		}
+		let cancelled = false;
+		setMathExtensionsReady(false);
+		void loadMathExtensionFactory()
+			.then((createExtensions) => {
+				if (cancelled) return;
+				setMathExtensions(
+					createExtensions({ onEditRequest: mathNodeEditor.open }),
+				);
+				setMathExtensionsReady(true);
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.error("Failed to load equation support.", error);
+				setMathExtensionsReady(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [mathExtensions.length, mathNodeEditor.open, mode]);
+
 	const {
 		editor,
 		frontmatter,
@@ -143,6 +191,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		colorfulHeadings,
 		showFrontmatterInEditor,
 	} = useNoteEditor({
+		additionalExtensions: mathExtensions,
 		markdown,
 		mode,
 		relPath,
@@ -151,7 +200,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
 		onChange,
+		onMathEditRequest: mathNodeEditor.open,
 	});
+	mathNodeEditor.connect(editor, mode === "rich");
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
@@ -177,6 +228,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[onRawEditorReady],
 	);
 	const previousRelPathRef = useRef(relPath);
+	useLayoutEffect(() => {
+		// Mode and document identity define the lifetime of an edit request.
+		void mode;
+		void relPath;
+		mathNodeEditor.close();
+	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
 		onEditorReady?.(editor ?? null);
@@ -629,13 +686,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 				{mode === "plain" ? (
-					<RawMarkdownEditor
-						key={relPath}
-						ref={handleRawEditorRef}
-						markdown={markdown}
-						relPath={relPath}
-						onChange={onChange}
-					/>
+					<Suspense fallback={<div className="rfNodeNoteEditorLoading" />}>
+						<RawMarkdownEditor
+							key={relPath}
+							ref={handleRawEditorRef}
+							markdown={markdown}
+							relPath={relPath}
+							onChange={onChange}
+						/>
+					</Suspense>
 				) : null}
 				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
@@ -649,7 +708,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" ? (
+				{mode !== "plain" &&
+				(mathExtensionsReady || !markdown.includes("$")) ? (
 					<NoteEditorSurface
 						editor={editor}
 						mode={mode}
@@ -688,6 +748,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				state={linkDialog}
 				onStateChange={setLinkDialog}
 			/>
+			{mathNodeEditor.request ? (
+				<Suspense fallback={null}>
+					<MathNodeEditor
+						key={`${mathNodeEditor.request.kind}:${mathNodeEditor.request.pos}`}
+						request={mathNodeEditor.request}
+						anchorRect={mathNodeEditor.getAnchorRect()}
+						onApply={mathNodeEditor.apply}
+						onCancel={mathNodeEditor.close}
+						onDelete={mathNodeEditor.remove}
+					/>
+				</Suspense>
+			) : null}
 		</div>
 	);
 });
