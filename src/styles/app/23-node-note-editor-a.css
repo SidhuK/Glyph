@@ -123,10 +123,10 @@
 
 .rfNodeNoteEditorRibbon .ribbonBtn.active {
 	background: color-mix(in srgb, var(--editor-body-color) 10%, var(--bg-hover));
-	color: var(--editor-body-color);
+	color: var(--interactive-accent);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--editor-body-color) 14%, transparent), inset 0 -1px 0
-		color-mix(in srgb, var(--bg-primary) 54%, transparent);
+		color-mix(in srgb, var(--editor-body-color) 14%, transparent), inset 0 -1px
+		0 color-mix(in srgb, var(--bg-primary) 54%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:disabled {
