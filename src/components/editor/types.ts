@@ -32,7 +32,9 @@ export interface NoteInlineEditorProps {
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
-	onEditorReady?: ((editor: Editor | null) => void) | undefined;
+	onEditorReady?:
+		| ((editor: Editor | null, contentRoot: HTMLElement | null) => void)
+		| undefined;
 	onRawEditorReady?:
 		| ((editor: RawMarkdownEditorHandle | null) => void)
 		| undefined;

@@ -240,7 +240,16 @@ export function MarkdownEditorPane({
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
-	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
+	const [tocSource, setTocSource] = useState<{
+		editor: Editor;
+		contentRoot: HTMLElement;
+	} | null>(null);
+	const handleEditorReady = useCallback(
+		(editor: Editor | null, contentRoot: HTMLElement | null) => {
+			setTocSource(editor && contentRoot ? { editor, contentRoot } : null);
+		},
+		[],
+	);
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
 	const handleRawEditorReady = useCallback(
 		(editor: RawMarkdownEditorHandle | null) => {
@@ -252,7 +261,10 @@ export function MarkdownEditorPane({
 		headings: tocHeadings,
 		activeId: tocActiveId,
 		scrollToHeading,
-	} = useTableOfContents(tocEditor);
+	} = useTableOfContents(
+		tocSource?.editor ?? null,
+		tocSource?.contentRoot ?? null,
+	);
 	const [previewContext, setPreviewContext] =
 		useState<WorkspaceDatabasePreviewContext | null>(null);
 	const { openSettings, showToc } = useUILayoutContext();
@@ -948,7 +960,7 @@ export function MarkdownEditorPane({
 									setText(nextText);
 								}}
 								onFrontmatterCommit={runAutosave}
-								onEditorReady={setTocEditor}
+								onEditorReady={handleEditorReady}
 								onRawEditorReady={handleRawEditorReady}
 								extractToNoteActions={extractToNoteActions}
 							/>

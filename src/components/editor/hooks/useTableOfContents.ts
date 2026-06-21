@@ -163,7 +163,10 @@ function updateHeadingsFromTransaction(
 	return withHeadingSlugs(next);
 }
 
-export function useTableOfContents(editor: Editor | null) {
+export function useTableOfContents(
+	editor: Editor | null,
+	contentRoot: HTMLElement | null,
+) {
 	const [headings, setHeadings] = useState<TOCHeading[]>([]);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const activeFrameRef = useRef<number | null>(null);
@@ -210,12 +213,12 @@ export function useTableOfContents(editor: Editor | null) {
 	}, [editor, publishHeadings]);
 
 	useEffect(() => {
-		if (!editor || headings.length === 0) {
+		if (!editor || !contentRoot || headings.length === 0) {
 			setActiveId(null);
 			return;
 		}
 
-		const scrollContainer = findScrollParent(editor.view.dom as HTMLElement);
+		const scrollContainer = findScrollParent(contentRoot);
 		if (!scrollContainer) {
 			setActiveId(headings[0]?.id ?? null);
 			return;
@@ -262,7 +265,7 @@ export function useTableOfContents(editor: Editor | null) {
 				activeFrameRef.current = null;
 			}
 		};
-	}, [editor, headings]);
+	}, [contentRoot, editor, headings]);
 
 	const scrollToHeading = useCallback(
 		(heading: TOCHeading) => {
