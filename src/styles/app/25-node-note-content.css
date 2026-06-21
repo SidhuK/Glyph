@@ -640,8 +640,10 @@
 }
 
 .tiptapContentInline table {
-	width: max-content;
-	min-width: 100%;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	table-layout: fixed;
 	border-collapse: separate;
 	border-spacing: 0;
 	margin: 12px 0;
@@ -656,7 +658,8 @@
 	border: 1px solid var(--border-light);
 	padding: 8px 10px;
 	vertical-align: top;
-	min-width: 132px;
+	min-width: 0;
+	overflow-wrap: anywhere;
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	transition: background-color var(--transition-fast), box-shadow
 		var(--transition-fast), border-color var(--transition-fast);
@@ -672,6 +675,7 @@
 .tiptapContentInline td > p {
 	margin: 0;
 	min-height: 1.2em;
+	overflow-wrap: anywhere;
 }
 
 .tiptapContentInline td:focus-within,
