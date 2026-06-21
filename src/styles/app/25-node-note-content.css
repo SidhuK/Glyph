@@ -182,7 +182,7 @@
 .tiptapContentInline {
 	letter-spacing: 0;
 	line-height: 1.68;
-	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+	color: var(--editor-body-color);
 	text-rendering: optimizeLegibility;
 }
 

@@ -10,6 +10,11 @@
 
 	--text-primary: var(--color-gray-800);
 	--text-secondary: rgba(55, 53, 47, 0.65);
+	--editor-body-color: color-mix(
+		in srgb,
+		var(--text-primary) 96%,
+		var(--text-secondary)
+	);
 	--text-tertiary: rgba(55, 53, 47, 0.45);
 	--text-placeholder: rgba(55, 53, 47, 0.35);
 	--text-inverse: var(--color-white);
