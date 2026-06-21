@@ -208,7 +208,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						<Button
 							type="button"
 							className="settingsFeedbackButton"
-							onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
+							onClick={() => void openUrl("https://discord.gg/cNqrBfFx7D")}
 						>
 							<HugeiconsIcon
 								icon={BubbleChatQuestionIcon}

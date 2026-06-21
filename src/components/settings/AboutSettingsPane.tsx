@@ -144,7 +144,7 @@ export function AboutSettingsPane() {
 							size="sm"
 							variant="outline"
 							className="aboutLinkButton"
-							onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
+							onClick={() => void openUrl("https://discord.gg/cNqrBfFx7D")}
 						>
 							<HugeiconsIcon
 								icon={DiscordIcon}
