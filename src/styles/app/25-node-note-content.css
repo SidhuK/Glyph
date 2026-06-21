@@ -558,35 +558,35 @@
 }
 
 .tiptapContentInline span[data-glyph-color="gray"] {
-	color: var(--glyph-inline-color-gray, #5f5e5b);
+	color: var(--glyph-inline-color-gray);
 }
 
 .tiptapContentInline span[data-glyph-color="brown"] {
-	color: var(--glyph-inline-color-brown, #8b5e3c);
+	color: var(--glyph-inline-color-brown);
 }
 
 .tiptapContentInline span[data-glyph-color="orange"] {
-	color: var(--glyph-inline-color-orange, #c76b1a);
+	color: var(--glyph-inline-color-orange);
 }
 
 .tiptapContentInline span[data-glyph-color="yellow"] {
-	color: var(--glyph-inline-color-yellow, #a26a00);
+	color: var(--glyph-inline-color-yellow);
 }
 
 .tiptapContentInline span[data-glyph-color="green"] {
-	color: var(--glyph-inline-color-green, #0f7b0f);
+	color: var(--glyph-inline-color-green);
 }
 
 .tiptapContentInline span[data-glyph-color="blue"] {
-	color: var(--glyph-inline-color-blue, #1a6ba4);
+	color: var(--glyph-inline-color-blue);
 }
 
 .tiptapContentInline span[data-glyph-color="purple"] {
-	color: var(--glyph-inline-color-purple, #7a4bc2);
+	color: var(--glyph-inline-color-purple);
 }
 
 .tiptapContentInline span[data-glyph-color="red"] {
-	color: var(--glyph-inline-color-red, #c73838);
+	color: var(--glyph-inline-color-red);
 }
 
 .tiptapContentInline pre {

@@ -26,25 +26,25 @@ export const EDITOR_TEXT_COLORS = [
 		id: "brown",
 		label: "Brown",
 		cssVar: "--glyph-inline-color-brown",
-		fallbackHex: "#9a6c3f",
+		fallbackHex: "#9f6b53",
 	},
 	{
 		id: "orange",
 		label: "Orange",
 		cssVar: "--glyph-inline-color-orange",
-		fallbackHex: "#c25100",
+		fallbackHex: "#d9730d",
 	},
 	{
 		id: "yellow",
 		label: "Yellow",
 		cssVar: "--glyph-inline-color-yellow",
-		fallbackHex: "#8f6b00",
+		fallbackHex: "#cb912f",
 	},
 	{
 		id: "green",
 		label: "Green",
 		cssVar: "--glyph-inline-color-green",
-		fallbackHex: "#216e4e",
+		fallbackHex: "#448361",
 	},
 	{
 		id: "blue",
@@ -62,7 +62,7 @@ export const EDITOR_TEXT_COLORS = [
 		id: "red",
 		label: "Red",
 		cssVar: "--glyph-inline-color-red",
-		fallbackHex: "#c9372c",
+		fallbackHex: "#e03e3e",
 	},
 ] as const satisfies readonly EditorTextColorOption[];
 

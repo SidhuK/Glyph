@@ -12,13 +12,13 @@ const DATABASE_TONES = [
 
 const DATABASE_TONE_BY_COLOR: Record<EditorTextColor, string> = {
 	gray: "var(--glyph-inline-color-gray, #626f86)",
-	brown: "var(--glyph-inline-color-brown, #9a6c3f)",
-	orange: "var(--glyph-inline-color-orange, #c25100)",
-	yellow: "var(--glyph-inline-color-yellow, #8f6b00)",
-	green: "var(--glyph-inline-color-green, #216e4e)",
+	brown: "var(--glyph-inline-color-brown, #9f6b53)",
+	orange: "var(--glyph-inline-color-orange, #d9730d)",
+	yellow: "var(--glyph-inline-color-yellow, #cb912f)",
+	green: "var(--glyph-inline-color-green, #448361)",
 	blue: "var(--glyph-inline-color-blue, #0c66e4)",
 	purple: "var(--glyph-inline-color-purple, #7e5bef)",
-	red: "var(--glyph-inline-color-red, #c9372c)",
+	red: "var(--glyph-inline-color-red, #e03e3e)",
 };
 
 function hashSeed(seed: string): number {
