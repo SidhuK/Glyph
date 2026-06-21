@@ -27,15 +27,18 @@ interface UseNoteFindOptions {
 	tiptapHostRef: RefObject<HTMLDivElement | null>;
 }
 
+// This function is used to check if the primary find shortcut is pressed
 function isPrimaryFindShortcut(event: ReactKeyboardEvent | KeyboardEvent) {
 	return (
-		(event.metaKey || event.ctrlKey) &&
+		event.metaKey &&
+		!event.ctrlKey &&
 		!event.altKey &&
 		!event.shiftKey &&
 		event.key.toLowerCase() === "f"
 	);
 }
 
+// This function is used to get the selected text for the query
 function selectedTextForQuery(text: string): string {
 	const normalized = text.replace(/\s+/g, " ").trim();
 	if (!normalized || normalized.length > MAX_SELECTION_QUERY_LENGTH) return "";

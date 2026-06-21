@@ -182,7 +182,7 @@
 .tiptapContentInline {
 	letter-spacing: 0;
 	line-height: 1.68;
-	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+	color: var(--editor-body-color);
 	text-rendering: optimizeLegibility;
 }
 
@@ -558,35 +558,35 @@
 }
 
 .tiptapContentInline span[data-glyph-color="gray"] {
-	color: var(--glyph-inline-color-gray, #5f5e5b);
+	color: var(--glyph-inline-color-gray);
 }
 
 .tiptapContentInline span[data-glyph-color="brown"] {
-	color: var(--glyph-inline-color-brown, #8b5e3c);
+	color: var(--glyph-inline-color-brown);
 }
 
 .tiptapContentInline span[data-glyph-color="orange"] {
-	color: var(--glyph-inline-color-orange, #c76b1a);
+	color: var(--glyph-inline-color-orange);
 }
 
 .tiptapContentInline span[data-glyph-color="yellow"] {
-	color: var(--glyph-inline-color-yellow, #a26a00);
+	color: var(--glyph-inline-color-yellow);
 }
 
 .tiptapContentInline span[data-glyph-color="green"] {
-	color: var(--glyph-inline-color-green, #0f7b0f);
+	color: var(--glyph-inline-color-green);
 }
 
 .tiptapContentInline span[data-glyph-color="blue"] {
-	color: var(--glyph-inline-color-blue, #1a6ba4);
+	color: var(--glyph-inline-color-blue);
 }
 
 .tiptapContentInline span[data-glyph-color="purple"] {
-	color: var(--glyph-inline-color-purple, #7a4bc2);
+	color: var(--glyph-inline-color-purple);
 }
 
 .tiptapContentInline span[data-glyph-color="red"] {
-	color: var(--glyph-inline-color-red, #c73838);
+	color: var(--glyph-inline-color-red);
 }
 
 .tiptapContentInline pre {
@@ -640,8 +640,10 @@
 }
 
 .tiptapContentInline table {
-	width: max-content;
-	min-width: 100%;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	table-layout: fixed;
 	border-collapse: separate;
 	border-spacing: 0;
 	margin: 12px 0;
@@ -656,7 +658,8 @@
 	border: 1px solid var(--border-light);
 	padding: 8px 10px;
 	vertical-align: top;
-	min-width: 132px;
+	min-width: 0;
+	overflow-wrap: anywhere;
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	transition: background-color var(--transition-fast), box-shadow
 		var(--transition-fast), border-color var(--transition-fast);
@@ -672,6 +675,7 @@
 .tiptapContentInline td > p {
 	margin: 0;
 	min-height: 1.2em;
+	overflow-wrap: anywhere;
 }
 
 .tiptapContentInline td:focus-within,

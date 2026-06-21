@@ -55,7 +55,7 @@
 		var(--bg-primary) 94%,
 		var(--bg-secondary)
 	);
-	color: var(--text-secondary);
+	color: var(--editor-body-color);
 	flex-shrink: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -107,7 +107,7 @@
 	height: 26px;
 	padding: 0;
 	border-radius: var(--radius-sm);
-	color: var(--text-secondary);
+	color: var(--editor-body-color);
 	flex: 0 0 auto;
 	transition: background-color var(--transition-base), color
 		var(--transition-base), box-shadow var(--transition-base), transform
@@ -115,18 +115,18 @@
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:hover {
-	background: color-mix(in srgb, var(--text-primary) 6%, transparent);
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--editor-body-color) 6%, transparent);
+	color: var(--editor-body-color);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 8%, transparent);
+		color-mix(in srgb, var(--editor-body-color) 10%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn.active {
-	background: color-mix(in srgb, var(--text-primary) 10%, transparent);
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--editor-body-color) 10%, var(--bg-hover));
+	color: var(--interactive-accent);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 12%, transparent), inset 0 -1px 0
-		color-mix(in srgb, var(--bg-primary) 54%, transparent);
+		color-mix(in srgb, var(--editor-body-color) 14%, transparent), inset 0 -1px
+		0 color-mix(in srgb, var(--bg-primary) 54%, transparent);
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:disabled {
@@ -236,7 +236,7 @@
 	padding: 12px var(--editor-readable-content-gutter-compact);
 	font-size: var(--editor-inline-font-size);
 	line-height: 1.5;
-	color: var(--text-primary);
+	color: var(--editor-body-color);
 }
 
 .tiptapHostInline {

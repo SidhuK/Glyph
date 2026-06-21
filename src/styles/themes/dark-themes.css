@@ -1,12 +1,12 @@
 :root.dark {
 	--glyph-inline-color-gray: #b6c2cf;
-	--glyph-inline-color-brown: #c6a27e;
-	--glyph-inline-color-orange: #fca700;
-	--glyph-inline-color-yellow: #d3b000;
+	--glyph-inline-color-brown: #d4a574;
+	--glyph-inline-color-orange: #fba034;
+	--glyph-inline-color-yellow: #e8c547;
 	--glyph-inline-color-green: #4bce97;
 	--glyph-inline-color-blue: #85b8ff;
 	--glyph-inline-color-purple: #b8acf6;
-	--glyph-inline-color-red: #ff9c8f;
+	--glyph-inline-color-red: #ff6b6b;
 	--pill-contrast-fg: color-mix(
 		in srgb,
 		var(--text-primary, #f3f5f8) 94%,
