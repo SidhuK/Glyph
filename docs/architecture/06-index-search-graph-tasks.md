@@ -26,7 +26,11 @@ Frontend consumers:
 - `src/components/app/AllDocsPane.tsx`
 - `src/components/checklists/TaskProgressIndicator.tsx`
 - `src/components/TagsPane.tsx`
-- `src/components/graph/LocalNoteGraphDialog.tsx`
+- `src/components/connections/SpaceConnectionsView.tsx`
+- `src/components/connections/LocalNoteConnectionsDialog.tsx`
+- `src/components/connections/connectionsGraph.ts`
+- `src/components/connections/useSigmaConnections.ts`
+- `src/components/connections/connectionsTheme.ts`
 - `src/components/database/`
 - `src/components/app/CommandSearchResults.tsx`
 - `src/hooks/useMarkdownTaskSummary.ts`
@@ -242,7 +246,16 @@ The graph distinguishes:
 - note-to-tag edges
 - relationship edges
 
-Frontend renders local graph data in `LocalNoteGraphDialog`.
+`note_local_connections` keeps its existing capped neighborhood expansion for the local dialog. `space_connections` returns every indexed note, explicit non-people tag, and valid note/tag edge without caps.
+
+Frontend rendering uses Sigma.js v3 + Graphology:
+
+- `connectionsGraph.ts` converts IPC payloads into typed mixed multi-graphs and assigns deterministic hash-random seed positions
+- `useSigmaConnections.ts` owns Sigma creation, reducers, dragging, theme observation, and cleanup
+- `SpaceConnectionsView.tsx` renders the full-space graph
+- `LocalNoteConnectionsDialog.tsx` renders the per-note neighborhood graph
+
+Layouts are never persisted. Reopening a graph recomputes hash-random positions from node ids; Sigma renders them without force-directed layout.
 
 When link resolution feels wrong, inspect:
 

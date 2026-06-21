@@ -71,7 +71,7 @@ pub struct SpaceConnectionsNode {
     pub is_isolated: bool,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SpaceConnectionKind {
     Link,
@@ -105,10 +105,6 @@ pub struct SpaceConnections {
     pub edges: Vec<SpaceConnectionsEdge>,
     pub tags: Vec<SpaceConnectionsTagNode>,
     pub tag_edges: Vec<SpaceConnectionsTagEdge>,
-    pub truncated: bool,
-    pub truncated_tags: bool,
-    pub total_notes: u32,
-    pub total_tags: u32,
 }
 
 #[derive(Serialize)]
