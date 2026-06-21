@@ -1,15 +1,15 @@
 {
-  "version": "0.8.3-alpha.3",
-  "notes": "## What's Changed\n* LaTeX math integration in the markdown editor (#193) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/193\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.3-alpha.2...v0.8.3-alpha.3",
-  "pub_date": "2026-06-20T12:45:51.113Z",
+  "version": "0.8.3-alpha.4",
+  "notes": "## What's Changed\n* 0.8.3-alpha.4: editor cleanups from review comments (#197) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/197\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.3-alpha.3...v0.8.3-alpha.4",
+  "pub_date": "2026-06-21T04:45:47.144Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtJNHI0b241andqL0xENy9DaS9JcnJyRHZCRGJPWk5YMUlwclVvR0pDdWxQSTUydmhqRVlEdCtRakliU0pRVWJWVjg2czQ4UjVLWnlKb0NvNU1nMFEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxOTU5NTQ1CWZpbGU6R2x5cGguYXBwLnRhci5negpvMy80RXI2QkpRVk9SRDZkTnBlNjAzQUdoQVF1anFRbzYxVHFTN2pPQ2ZvMUJxQlNyQi9qSXJseE8wclQvZHU5di9WTU1EcFpUbUl6bC85Z3M5TE9BZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDk2ekNUVGoydkc1UldTVWpUZUNxT2haWXloTHBHSXFkZE5DY1BlTTFFT3dkSjhmNFpxSURnWlM2UnFqamhWbEliZ1FCVnhpRW9QTHgwa0lmZVVBWUFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMDE3MTQxCWZpbGU6R2x5cGguYXBwLnRhci5negpPa3VDWmtBN28rWUh1a1RVdU1hQWYzQytob0FuZFIrYm01Vi9WY2FUUll4dlZCcGRvb0RyK3A0c3ptT3VZWGZ0Nm9aUG1MQTNKczRiTkowNjU0NHlEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCtJNHI0b241andqL0xENy9DaS9JcnJyRHZCRGJPWk5YMUlwclVvR0pDdWxQSTUydmhqRVlEdCtRakliU0pRVWJWVjg2czQ4UjVLWnlKb0NvNU1nMFEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgxOTU5NTQ1CWZpbGU6R2x5cGguYXBwLnRhci5negpvMy80RXI2QkpRVk9SRDZkTnBlNjAzQUdoQVF1anFRbzYxVHFTN2pPQ2ZvMUJxQlNyQi9qSXJseE8wclQvZHU5di9WTU1EcFpUbUl6bC85Z3M5TE9BZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDk2ekNUVGoydkc1UldTVWpUZUNxT2haWXloTHBHSXFkZE5DY1BlTTFFT3dkSjhmNFpxSURnWlM2UnFqamhWbEliZ1FCVnhpRW9QTHgwa0lmZVVBWUFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMDE3MTQxCWZpbGU6R2x5cGguYXBwLnRhci5negpPa3VDWmtBN28rWUh1a1RVdU1hQWYzQytob0FuZFIrYm01Vi9WY2FUUll4dlZCcGRvb0RyK3A0c3ptT3VZWGZ0Nm9aUG1MQTNKczRiTkowNjU0NHlEdz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
