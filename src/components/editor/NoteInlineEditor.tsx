@@ -236,11 +236,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
-		onEditorReady?.(editor ?? null);
-		return () => onEditorReady?.(null);
-	}, [editor, onEditorReady]);
-
-	useEffect(() => {
 		const host = tiptapHostRef.current;
 		const blurHostSelection = (host: HTMLDivElement | null) => {
 			if (!host) return;
@@ -592,6 +587,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
+	useEffect(() => {
+		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
+		const mountedEditor =
+			editor && !editor.isDestroyed && contentRoot ? editor : null;
+		onEditorReady?.(mountedEditor, mountedEditor ? contentRoot : null);
+		return () => onEditorReady?.(null, null);
+	}, [editor, onEditorReady, tiptapHostNode]);
 
 	const copySelectedCodeBlock = useCallback(() => {
 		if (!selectedCodeBlock) return;
