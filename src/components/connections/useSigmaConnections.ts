@@ -26,7 +26,7 @@ interface UseSigmaConnectionsOptions {
 	variant: ConnectionsGraphVariant;
 	enabled: boolean;
 	onNoteOpen?: (nodeId: string) => void;
-	onTagSelect?: (tagId: string | null) => void;
+	onTagActivate?: (tagId: string, label: string) => void;
 }
 
 function neighborIdsForNode(graph: ConnectionsGraph, nodeId: string | null) {
@@ -68,12 +68,12 @@ export function useSigmaConnections({
 	variant,
 	enabled,
 	onNoteOpen,
-	onTagSelect,
+	onTagActivate,
 }: UseSigmaConnectionsOptions) {
 	const focusRef = useRef<ConnectionsFocusState>({
 		hoveredNode: null,
 		neighborIds: null,
-		selectedTagId: null,
+		selectedNodeId: null,
 	});
 	const paletteRef = useRef<ConnectionsPalette | null>(null);
 	const refreshScheduledRef = useRef(false);
@@ -100,7 +100,7 @@ export function useSigmaConnections({
 			renderer?.kill();
 			focusRef.current.hoveredNode = null;
 			focusRef.current.neighborIds = null;
-			focusRef.current.selectedTagId = null;
+			focusRef.current.selectedNodeId = null;
 		};
 
 		const setup = () => {
@@ -141,10 +141,10 @@ export function useSigmaConnections({
 				if (next.hoveredNode !== undefined) {
 					focusState.hoveredNode = next.hoveredNode;
 				}
-				if (next.selectedTagId !== undefined) {
-					focusState.selectedTagId = next.selectedTagId;
+				if (next.selectedNodeId !== undefined) {
+					focusState.selectedNodeId = next.selectedNodeId;
 				}
-				const focusId = focusState.selectedTagId ?? focusState.hoveredNode;
+				const focusId = focusState.selectedNodeId ?? focusState.hoveredNode;
 				focusState.neighborIds = neighborIdsForNode(graph, focusId);
 				scheduleRefresh(activeRenderer);
 			};
@@ -203,7 +203,7 @@ export function useSigmaConnections({
 						() => focusState,
 						(sourceId, targetId) =>
 							isEdgeConnectedToFocus(
-								focusState.selectedTagId ?? focusState.hoveredNode,
+								focusState.selectedNodeId ?? focusState.hoveredNode,
 								sourceId,
 								targetId,
 							),
@@ -224,25 +224,27 @@ export function useSigmaConnections({
 				setFocus(activeRenderer, { hoveredNode: node });
 			});
 			activeRenderer.on("leaveNode", () => {
-				if (focusState.selectedTagId) return;
+				if (focusState.selectedNodeId) return;
 				setFocus(activeRenderer, { hoveredNode: null });
 			});
 			activeRenderer.on("clickNode", ({ node }) => {
+				if (focusState.selectedNodeId !== node) {
+					setFocus(activeRenderer, {
+						selectedNodeId: node,
+						hoveredNode: node,
+					});
+					return;
+				}
+
 				const kind = graph.getNodeAttribute(node, "kind");
 				if (kind === "tag") {
-					const nextSelected = focusState.selectedTagId === node ? null : node;
-					onTagSelect?.(nextSelected);
-					setFocus(activeRenderer, {
-						selectedTagId: nextSelected,
-						hoveredNode: nextSelected,
-					});
+					onTagActivate?.(node, graph.getNodeAttribute(node, "label"));
 					return;
 				}
 				onNoteOpen?.(node);
 			});
 			activeRenderer.on("clickStage", () => {
-				onTagSelect?.(null);
-				setFocus(activeRenderer, { hoveredNode: null, selectedTagId: null });
+				setFocus(activeRenderer, { hoveredNode: null, selectedNodeId: null });
 			});
 
 			activeRenderer.on("downNode", ({ node }) => {
@@ -296,5 +298,5 @@ export function useSigmaConnections({
 		setup();
 
 		return cleanup;
-	}, [containerRef, enabled, graph, onNoteOpen, onTagSelect, variant]);
+	}, [containerRef, enabled, graph, onNoteOpen, onTagActivate, variant]);
 }

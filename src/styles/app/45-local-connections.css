@@ -338,6 +338,35 @@
 	);
 }
 
+.spaceConnectionsControls {
+	position: absolute;
+	top: calc(var(--header-height) + 12px);
+	right: 14px;
+	z-index: 2;
+	pointer-events: auto;
+	display: flex;
+	align-items: center;
+	min-height: 40px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 64%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	box-shadow: 0 8px 24px
+		color-mix(in srgb, var(--shadow-color, #000) 9%, transparent);
+}
+
+.spaceConnectionsControls .uiToggle--withCopy {
+	align-items: center;
+}
+
+.spaceConnectionsControls .uiToggleLabel {
+	font-size: var(--text-xs);
+}
+
+.spaceConnectionsControls .uiToggle--withCopy .uiToggleControl {
+	margin-top: 0;
+}
+
 .localNoteConnectionsLegend {
 	position: absolute;
 	right: 14px;
@@ -405,19 +434,6 @@
 	);
 }
 
-.localNoteConnectionsLegendNode.is-isolated {
-	width: 9px;
-	height: 9px;
-	border-color: color-mix(in srgb, var(--text-tertiary) 42%, transparent);
-	background: color-mix(in srgb, var(--text-tertiary) 24%, var(--bg-primary));
-}
-
-.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-isolated {
-	border-color: color-mix(in srgb, var(--text-secondary) 64%, transparent);
-	background: color-mix(in srgb, var(--text-secondary) 52%, var(--bg-primary));
-}
-
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-note {
 	border-color: color-mix(
 		in srgb,
@@ -454,13 +470,6 @@
 		var(--interactive-accent) 82%,
 		var(--bg-primary)
 	);
-}
-
-:root.dark
-	.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-isolated {
-	border-color: color-mix(in srgb, var(--text-secondary) 74%, transparent);
-	background: color-mix(in srgb, var(--text-secondary) 64%, var(--bg-primary));
 }
 
 .localNoteConnectionsLegendEdge {

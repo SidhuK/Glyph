@@ -28,7 +28,7 @@ export interface ConnectionsPalette {
 export interface ConnectionsFocusState {
 	hoveredNode: string | null;
 	neighborIds: Set<string> | null;
-	selectedTagId: string | null;
+	selectedNodeId: string | null;
 }
 
 function sigmaCompatibleColor(value: string, fallback: string) {
@@ -161,8 +161,8 @@ export function buildNodeReducer(
 		nodeKey: string,
 		data: ConnectionsNodeAttributes,
 	): Partial<NodeDisplayData> => {
-		const { hoveredNode, neighborIds, selectedTagId } = getFocusState();
-		const activeFocusId = selectedTagId ?? hoveredNode;
+		const { hoveredNode, neighborIds, selectedNodeId } = getFocusState();
+		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const activeNeighbors = neighborIds;
 		const isFocus = activeFocusId === nodeKey;
 		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
@@ -188,6 +188,8 @@ export function buildNodeReducer(
 			if (data.isCenter && variant === "local") {
 				color = palette.center;
 			}
+		} else if (activeFocusId && isNeighbor) {
+			forceLabel = true;
 		} else if (data.isCenter) {
 			forceLabel = true;
 		}
@@ -233,8 +235,8 @@ export function buildEdgeReducer(
 		source: string,
 		target: string,
 	): Partial<EdgeDisplayData> => {
-		const { hoveredNode, selectedTagId } = getFocusState();
-		const activeFocusId = selectedTagId ?? hoveredNode;
+		const { hoveredNode, selectedNodeId } = getFocusState();
+		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const isHighlighted = isEdgeInFocus(source, target);
 		const isFaded = Boolean(activeFocusId) && !isHighlighted;
 		const baseColor = edgeColorForRole(data.colorRole, palette);

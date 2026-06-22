@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { dispatchOpenSearch } from "../../lib/appEvents";
 import type { LocalNoteConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
@@ -45,6 +46,13 @@ export function LocalNoteConnectionsDialog({
 		},
 		[onOpenChange],
 	);
+	const openTagSearch = useCallback(
+		(_tagId: string, label: string) => {
+			onOpenChange(false);
+			dispatchOpenSearch({ query: `${label} tag:only` });
+		},
+		[onOpenChange],
+	);
 
 	useEffect(() => {
 		if (!open || !noteId) return;
@@ -80,6 +88,7 @@ export function LocalNoteConnectionsDialog({
 		variant: "local",
 		enabled: Boolean(open && graph && !error),
 		onNoteOpen: openNode,
+		onTagActivate: openTagSearch,
 	});
 
 	return (
@@ -120,7 +129,7 @@ export function LocalNoteConnectionsDialog({
 										className="localNoteConnectionsLegendNode is-current"
 										aria-hidden="true"
 									/>
-									Open note
+									Selected note
 								</span>
 								<span className="localNoteConnectionsLegendItem">
 									<span
@@ -149,13 +158,6 @@ export function LocalNoteConnectionsDialog({
 										aria-hidden="true"
 									/>
 									Shares tag
-								</span>
-								<span className="localNoteConnectionsLegendItem">
-									<span
-										className="localNoteConnectionsLegendNode is-isolated"
-										aria-hidden="true"
-									/>
-									No connections
 								</span>
 							</div>
 						</div>

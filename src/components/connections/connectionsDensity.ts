@@ -106,7 +106,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		minNodes: 0,
 		labelDensity: 0.75,
 		labelGridCellSize: 120,
-		labelRenderedSizeThreshold: 7,
+		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
 		minEdgeThickness: 0.38,
 		minCameraRatio: 0.18,
