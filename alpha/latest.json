@@ -1,15 +1,15 @@
 {
-  "version": "0.8.3-alpha.5",
-  "notes": "## What's Changed\n* Fix TOC crash when editor view is not yet mounted (#198) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/198\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.3-alpha.4...v0.8.3-alpha.5",
-  "pub_date": "2026-06-21T05:35:49.933Z",
+  "version": "0.8.3-alpha.6",
+  "notes": "## What's Changed\n* Rework connections graph with Sigma.js and deterministic community layout by @SidhuK in https://github.com/SidhuK/Glyph/pull/199\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.3-alpha.5...v0.8.3-alpha.6",
+  "pub_date": "2026-06-22T05:39:46.719Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9zR0pTeWxnMFh6WEdrVndaeVJFUmw4a2kwVVRqOS96VXZnbFV5QUMwY1BCWDB5U3F1cEZWYkQ4MnN3M2p4VHpSUGo1dE55QVBrSWZUaVFONTFYbVFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMDIwMTQ0CWZpbGU6R2x5cGguYXBwLnRhci5negpwY1RpLytRNGRzMjRMTVpoTGtTeUxOdEhIMEN6OVJRcmZ3NFRhS05WbmhhdWt4M2RpZjNLeDVoRVJwNGtVV2V4SnhDTGphRlEyUmVscWhIOUxHNHVCdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDRwRlM5QkVzeklNNERmTS9Qb2E1MGNGM0NjZmhxM1AxNExpdXU5aEZzZ0JSNmNXSk4xQkltWXBRK09QUFBhN0w4NGdHZTNpTjFHZWtJcVdvNi9MSWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMTA2NzgwCWZpbGU6R2x5cGguYXBwLnRhci5negpXY3RPNnVJSWNiREU0L2VjSTVMVUxFV0dIWVFMYXVaWnhFNXdjZVQ1Z3hrd2M0bVJZSldJMHdXeGIwdHl1eU9oSTk3QVJmLy9rR0FzamlrYk12bWlDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.6/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNC9zR0pTeWxnMFh6WEdrVndaeVJFUmw4a2kwVVRqOS96VXZnbFV5QUMwY1BCWDB5U3F1cEZWYkQ4MnN3M2p4VHpSUGo1dE55QVBrSWZUaVFONTFYbVFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMDIwMTQ0CWZpbGU6R2x5cGguYXBwLnRhci5negpwY1RpLytRNGRzMjRMTVpoTGtTeUxOdEhIMEN6OVJRcmZ3NFRhS05WbmhhdWt4M2RpZjNLeDVoRVJwNGtVV2V4SnhDTGphRlEyUmVscWhIOUxHNHVCdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDRwRlM5QkVzeklNNERmTS9Qb2E1MGNGM0NjZmhxM1AxNExpdXU5aEZzZ0JSNmNXSk4xQkltWXBRK09QUFBhN0w4NGdHZTNpTjFHZWtJcVdvNi9MSWc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMTA2NzgwCWZpbGU6R2x5cGguYXBwLnRhci5negpXY3RPNnVJSWNiREU0L2VjSTVMVUxFV0dIWVFMYXVaWnhFNXdjZVQ1Z3hrd2M0bVJZSldJMHdXeGIwdHl1eU9oSTk3QVJmLy9rR0FzamlrYk12bWlDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.3-alpha.6/Glyph_aarch64.app.tar.gz"
     }
   }
 }
