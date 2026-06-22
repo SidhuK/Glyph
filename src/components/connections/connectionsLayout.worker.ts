@@ -12,13 +12,13 @@ interface ConnectionsWorkerScope {
 const workerScope = self as unknown as ConnectionsWorkerScope;
 
 workerScope.onmessage = (event) => {
-	const { requestId, ids } = event.data;
+	const { requestId, graph } = event.data;
 	let response: ConnectionsLayoutResponse;
 
 	try {
 		response = {
 			requestId,
-			positions: computeSpaceConnectionsLayout(ids),
+			positions: computeSpaceConnectionsLayout(graph),
 		};
 	} catch (cause) {
 		response = {

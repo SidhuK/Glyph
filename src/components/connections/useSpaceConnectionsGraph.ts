@@ -72,10 +72,22 @@ export function useSpaceConnectionsGraph(
 		);
 		const request: ConnectionsLayoutRequest = {
 			requestId,
-			ids: [
-				...filteredPayload.nodes.map((node) => node.id),
-				...filteredPayload.tags.map((tag) => tag.id),
-			],
+			graph: {
+				nodeIds: filteredPayload.nodes.map((node) => node.id),
+				tags: filteredPayload.tags.map((tag) => ({
+					id: tag.id,
+					noteCount: tag.note_count,
+				})),
+				edges: filteredPayload.edges.map((edge) => ({
+					source: edge.from_id,
+					target: edge.to_id,
+					kind: edge.kind,
+				})),
+				tagEdges: filteredPayload.tag_edges.map((edge) => ({
+					tagId: edge.tag_id,
+					noteId: edge.note_id,
+				})),
+			},
 		};
 
 		worker.onmessage = (event: MessageEvent<ConnectionsLayoutResponse>) => {

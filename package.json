@@ -61,6 +61,7 @@
 		"date-fns": "^4.1.0",
 		"dompurify": "^3.4.1",
 		"graphology": "^0.26.0",
+		"graphology-communities-louvain": "^2.0.2",
 		"highlight.js": "^11.11.1",
 		"katex": "0.16.22",
 		"lowlight": "^3.3.0",
