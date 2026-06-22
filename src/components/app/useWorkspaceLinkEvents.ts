@@ -195,10 +195,8 @@ export function useWorkspaceLinkEvents({
 		const onTagClick = (event: Event) => {
 			const detail = (event as CustomEvent<TagClickDetail>).detail;
 			if (!detail?.tag) return;
-			openPalette(
-				"search",
-				detail.tag.startsWith("#") ? detail.tag : `#${detail.tag}`,
-			);
+			const tag = detail.tag.startsWith("#") ? detail.tag : `#${detail.tag}`;
+			openPalette("search", detail.tagOnly ? `${tag} tag:only` : tag);
 		};
 		const onPersonClick = (event: Event) => {
 			const detail = (event as CustomEvent<PersonClickDetail>).detail;

@@ -1,50 +1,53 @@
-import cytoscape, { type Core, type StylesheetJson } from "cytoscape";
-import fcose from "cytoscape-fcose";
+import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import { LOCAL_FOCUS_NODE_SIZE } from "./connectionsDensity";
+import type {
+	ConnectionsEdgeAttributes,
+	ConnectionsGraphVariant,
+	ConnectionsNodeAttributes,
+} from "./connectionsGraph";
 
-interface ConnectionsTheme {
+export interface ConnectionsPalette {
 	accent: string;
-	background: string;
-	border: string;
-	edge: string;
-	edgeIncoming: string;
-	edgeInternal: string;
-	node: string;
-	nodeActive: string;
-	nodeActiveBorder: string;
-	tagNode: string;
 	text: string;
-	textInverse: string;
-	textMuted: string;
+	note: string;
+	noteMuted: string;
+	tag: string;
+	tagMuted: string;
+	center: string;
+	edgeDefault: string;
+	edgeAccent: string;
+	edgeInternal: string;
+	edgeTag: string;
+	faded: string;
+	labelBackground: string;
+	labelBorder: string;
+	hoverHalo: string;
+	hoverHaloSoft: string;
 }
 
-let fcoseRegistered = false;
-
-export function registerFcose() {
-	if (fcoseRegistered) return;
-	try {
-		cytoscape.use(fcose);
-	} catch (error) {
-		if (!(error instanceof Error) || !error.message.includes("already")) {
-			throw error;
-		}
-	}
-	fcoseRegistered = true;
+export interface ConnectionsFocusState {
+	hoveredNode: string | null;
+	neighborIds: Set<string> | null;
+	selectedNodeId: string | null;
 }
 
-function normalizeCssColor(value: string) {
-	const context = document.createElement("canvas").getContext("2d");
-	if (!context) return value;
+const sigmaColorContext = document.createElement("canvas").getContext("2d");
 
-	context.fillStyle = "#123456";
-	context.fillStyle = value;
-	const normalized = context.fillStyle;
-	context.fillStyle = "#abcdef";
-	context.fillStyle = value;
-	const normalizedFromSecondSentinel = context.fillStyle;
+function sigmaCompatibleColor(value: string, fallback: string) {
+	const context = sigmaColorContext;
+	if (!context) return fallback;
 
-	return normalized === "#123456" && normalizedFromSecondSentinel === "#abcdef"
-		? value
-		: normalized;
+	context.canvas.width = 1;
+	context.canvas.height = 1;
+	context.clearRect(0, 0, 1, 1);
+	context.fillStyle = fallback;
+	context.fillStyle = value;
+	context.fillRect(0, 0, 1, 1);
+
+	const [red, green, blue, alphaByte] = context.getImageData(0, 0, 1, 1).data;
+	if (alphaByte === 255) return `rgb(${red}, ${green}, ${blue})`;
+	const alpha = Math.round((alphaByte / 255) * 1000) / 1000;
+	return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 function cssColor(element: HTMLElement, name: string, fallback: string) {
@@ -53,671 +56,211 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 	element.appendChild(probe);
 	const color = getComputedStyle(probe).color.trim();
 	probe.remove();
-
-	return normalizeCssColor(color || fallback);
+	return sigmaCompatibleColor(color || fallback, fallback);
 }
 
-function connectionsThemeFor(element: HTMLElement): ConnectionsTheme {
-	const accent = cssColor(element, "--interactive-accent", "#5b8def");
-	const background = cssColor(element, "--bg-secondary", "#f6f6f4");
-	const node = cssColor(element, "--bg-primary", "#ffffff");
-	const text = cssColor(element, "--text-primary", "#1f2328");
-	const textInverse = cssColor(
-		element,
-		"--local-connections-text-inverse",
-		"#ffffff",
-	);
-	const textMuted = cssColor(element, "--text-secondary", "#667085");
-	const border = cssColor(element, "--local-connections-border", "#d7d7d2");
-	const edgeIncoming = cssColor(
-		element,
-		"--local-connections-edge-incoming",
-		"#1f2328",
-	);
-	const tagNode = cssColor(element, "--local-connections-tag-node", accent);
-
-	return {
-		accent,
-		background,
-		border,
-		edge: textMuted,
-		edgeIncoming,
-		edgeInternal: border,
-		node,
-		nodeActive: node,
-		nodeActiveBorder: accent,
-		tagNode,
-		text,
-		textInverse,
-		textMuted,
-	};
-}
-
-function connectionsStyles(theme: ConnectionsTheme): StylesheetJson {
-	return [
-		{
-			selector: "core",
-			style: {
-				"active-bg-color": theme.accent,
-				"active-bg-opacity": 0.08,
-				"active-bg-size": 18,
-				"outside-texture-bg-color": theme.background,
-				"outside-texture-bg-opacity": 0,
-				"selection-box-border-color": theme.accent,
-				"selection-box-border-width": 1,
-				"selection-box-color": theme.accent,
-				"selection-box-opacity": 0.12,
-			},
-		},
-		{
-			selector: "node",
-			style: {
-				"background-color": theme.accent,
-				"background-opacity": 0.28,
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 1,
-				color: theme.text,
-				"font-family": "var(--font-ui)",
-				"font-size": 10,
-				"font-weight": 400,
-				height: "data(size)",
-				label: "",
-				"line-height": 1.3,
-				"overlay-opacity": 0,
-				shape: "ellipse",
-				"text-events": "yes",
-				"text-halign": "center",
-				"text-margin-y": -10,
-				"text-max-width": "150px",
-				"text-opacity": 0,
-				"text-outline-color": theme.background,
-				"text-outline-opacity": 0,
-				"text-outline-width": 0,
-				"text-wrap": "ellipsis",
-				"text-valign": "top",
-				"transition-duration": 180,
-				"transition-property": "background-color, border-color, opacity",
-				width: "data(size)",
-			},
-		},
-		{
-			selector: "node.show-label",
-			style: {
-				color: theme.textMuted,
-				"font-size": 9.5,
-				"font-weight": 400,
-				label: "data(label)",
-				"text-opacity": 1,
-				"z-compound-depth": "top",
-				"z-index": 20,
-			},
-		},
-		{
-			selector: "node.connected",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 1.35,
-			},
-		},
-		{
-			selector: "node.hub",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 1.7,
-				"font-size": 12,
-				"font-weight": 580,
-			},
-		},
-		{
-			selector: "node.hub-strong",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 2,
-				"font-size": 12.5,
-				"font-weight": 620,
-			},
-		},
-		{
-			selector: "node.isolated",
-			style: {
-				"background-color": theme.border,
-				"background-opacity": 0.32,
-				"border-color": theme.textMuted,
-				"border-style": "dashed",
-				opacity: 0.64,
-			},
-		},
-		{
-			selector: "node.tag",
-			style: {
-				"background-color": theme.tagNode,
-				"background-opacity": 0.42,
-				"border-color": theme.tagNode,
-				"border-style": "dashed",
-				"border-width": 1.4,
-				color: theme.text,
-				"font-size": 12,
-				"font-weight": 600,
-				"text-max-width": "150px",
-			},
-		},
-		{
-			selector: "node.tag-strong",
-			style: {
-				"border-width": 1.8,
-				"font-size": 12.5,
-			},
-		},
-		{
-			selector: "node.hover-label",
-			style: {
-				color: theme.text,
-				"font-size": 10,
-				"font-weight": 400,
-				"text-outline-opacity": 0,
-				"text-outline-width": 0,
-			},
-		},
-		{
-			selector: "node.is-focus",
-			style: {
-				"background-color": theme.nodeActive,
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 2,
-				height: 24,
-				label: "data(label)",
-				"text-opacity": 1,
-				width: 24,
-				"z-compound-depth": "top",
-				"z-index": 30,
-			},
-		},
-		{
-			selector: "node.is-neighbor",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-			},
-		},
-		{
-			selector: "edge",
-			style: {
-				"arrow-scale": 0.8,
-				"curve-style": "bezier",
-				"line-cap": "round",
-				"line-color": theme.edge,
-				opacity: 0.28,
-				"source-arrow-shape": "none",
-				"target-arrow-color": theme.edge,
-				"target-arrow-shape": "triangle-backcurve",
-				"target-distance-from-node": 4,
-				"target-endpoint": "outside-to-node",
-				"transition-duration": 180,
-				"transition-property": "line-color, opacity, target-arrow-color, width",
-				width: 1.35,
-			},
-		},
-		{
-			selector: "edge.relationship",
-			style: {
-				"line-color": theme.edgeIncoming,
-				"target-arrow-color": theme.edgeIncoming,
-				opacity: 0.36,
-				width: 1.55,
-			},
-		},
-		{
-			selector: "edge.tag-link",
-			style: {
-				"arrow-scale": 0.62,
-				"curve-style": "bezier",
-				"line-cap": "round",
-				"line-color": theme.accent,
-				"line-dash-pattern": [1, 5],
-				"line-style": "dashed",
-				opacity: 0.26,
-				"source-arrow-shape": "none",
-				"target-arrow-color": theme.accent,
-				"target-arrow-shape": "triangle-backcurve",
-				"target-distance-from-node": 4,
-				"target-endpoint": "outside-to-node",
-				width: 1.35,
-			},
-		},
-		{
-			selector: "edge.is-highlight",
-			style: {
-				opacity: 0.9,
-				width: 2.2,
-			},
-		},
-		{
-			selector: ".is-faded",
-			style: {
-				opacity: 0.12,
-			},
-		},
-	];
-}
-
-export function connectionsLayoutSpacing(cy: Core) {
-	const nodeCount = cy.nodes().length;
-	const density = Math.min(nodeCount / 1000, 1);
-	const idealEdgeLength = Math.round(130 + density * 80);
-
-	return {
-		idealEdgeLength,
-		nodeRepulsion: Math.round(10_000 + nodeCount * 220),
-		nodeSeparation: Math.round(90 + density * 70),
-		padding: Math.round(70 + density * 35),
-		tilePadding: Math.round(16 + density * 18),
-	};
-}
-
-interface RunConnectionsLayoutOptions {
-	mode: "fcose" | "preset" | "random";
-	afterLayout?: () => void;
-}
-
-export function runConnectionsLayout(
-	cy: Core,
-	options: RunConnectionsLayoutOptions,
-) {
-	const spacing = connectionsLayoutSpacing(cy);
-	if (options.mode === "preset") {
-		const layout = cy.layout({
-			name: "preset",
-			fit: true,
-			padding: spacing.padding,
-		});
-		layout.one("layoutstop", () => {
-			options.afterLayout?.();
-			cy.fit(undefined, spacing.padding);
-		});
-		layout.run();
-		return;
-	}
-	if (options.mode === "random") {
-		const layout = cy.layout({
-			name: "random",
-			animate: false,
-			fit: true,
-			padding: spacing.padding,
-		});
-		layout.one("layoutstop", () => {
-			options.afterLayout?.();
-			cy.fit(undefined, spacing.padding);
-		});
-		layout.run();
-		return;
-	}
-
-	const layout = cy.layout({
-		name: "fcose",
-		animate: false,
-		fit: true,
-		idealEdgeLength: (edge: cytoscape.EdgeSingular) =>
-			edge.hasClass("tag-link")
-				? spacing.idealEdgeLength + 36
-				: spacing.idealEdgeLength,
-		nodeDimensionsIncludeLabels: true,
-		nodeRepulsion: spacing.nodeRepulsion,
-		nodeSeparation: spacing.nodeSeparation,
-		numIter: 2200,
-		padding: spacing.padding,
-		packComponents: false,
-		quality: "default",
-		randomize: true,
-		tile: false,
-		tilingPaddingHorizontal: spacing.tilePadding,
-		tilingPaddingVertical: spacing.tilePadding,
-	} as cytoscape.LayoutOptions);
-	layout.one("layoutstop", () => {
-		options.afterLayout?.();
-		cy.fit(undefined, spacing.padding);
-	});
-	layout.run();
-}
-
-export function highlightNeighborhood(cy: Core, nodeId: string | null) {
-	const elements = cy.elements();
-	elements.removeClass("is-faded is-focus is-neighbor is-highlight");
-	if (!nodeId) return;
-
-	const node = cy.getElementById(nodeId);
-	if (node.empty()) return;
-
-	const neighborhood = node.closedNeighborhood();
-	elements.not(neighborhood).addClass("is-faded");
-	node.addClass("is-focus");
-	node.neighborhood("node").addClass("is-neighbor");
-	node.connectedEdges().addClass("is-highlight");
-}
-
-export function applyConnectionsTheme(cy: Core, container: HTMLElement) {
-	cy.style(connectionsStyles(connectionsThemeFor(container)));
-}
-
-export function connectionsStylesForContainer(container: HTMLElement) {
-	return connectionsStyles(connectionsThemeFor(container));
-}
-
-interface LocalNoteConnectionsTheme extends ConnectionsTheme {
-	nodeCenter: string;
-}
-
-function localNoteConnectionsThemeFor(
-	element: HTMLElement,
-): LocalNoteConnectionsTheme {
-	const accent = cssColor(element, "--interactive-accent", "#5b8def");
-	const background = cssColor(element, "--bg-secondary", "#f6f6f4");
-	const node = cssColor(element, "--local-connections-note-bg", "#ffffff");
-	const text = cssColor(element, "--local-connections-text", "#1f2328");
-	const textInverse = cssColor(
-		element,
-		"--local-connections-text-inverse",
-		"#ffffff",
-	);
-	const textMuted = cssColor(element, "--local-connections-edge", "#667085");
-	const border = cssColor(element, "--local-connections-border", "#d7d7d2");
-	const edgeIncoming = cssColor(
-		element,
-		"--local-connections-edge-incoming",
-		"#1f2328",
-	);
-
-	return {
-		accent,
-		background,
-		border,
-		edge: textMuted,
-		edgeIncoming,
-		edgeInternal: border,
-		nodeActiveBorder: accent,
-		node,
-		nodeActive: node,
-		tagNode: accent,
-		nodeCenter: accent,
-		text,
-		textInverse,
-		textMuted,
-	};
-}
-
-function localNoteConnectionsStyles(
-	theme: LocalNoteConnectionsTheme,
-): StylesheetJson {
-	return [
-		{
-			selector: "core",
-			style: {
-				"active-bg-color": theme.accent,
-				"active-bg-opacity": 0.08,
-				"active-bg-size": 18,
-				"outside-texture-bg-color": theme.background,
-				"outside-texture-bg-opacity": 0,
-				"selection-box-border-width": 1,
-				"selection-box-border-color": theme.accent,
-				"selection-box-color": theme.accent,
-				"selection-box-opacity": 0.12,
-			},
-		},
-		{
-			selector: "node",
-			style: {
-				"background-color": theme.node,
-				"border-color": theme.border,
-				"border-width": 1,
-				"corner-radius": "10px",
-				color: theme.text,
-				"font-family": "var(--font-ui)",
-				"font-size": 13,
-				"font-weight": 500,
-				height: "label",
-				label: "data(label)",
-				"line-height": 1.3,
-				"min-height": "30px",
-				"min-width": "54px",
-				"overlay-opacity": 0,
-				padding: "9px 12px",
-				shape: "round-rectangle",
-				"text-events": "yes",
-				"text-halign": "center",
-				"text-max-width": "190px",
-				"text-wrap": "ellipsis",
-				"text-valign": "center",
-				"transition-duration": 180,
-				"transition-property":
-					"background-color, border-color, border-width, opacity",
-				width: "label",
-			},
-		},
-		{
-			selector: "node.connected",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 1.35,
-			},
-		},
-		{
-			selector: "node.hub",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 1.7,
-				"font-size": 13.5,
-				"font-weight": 580,
-				"min-height": "34px",
-				"min-width": "64px",
-				padding: "10px 12px",
-			},
-		},
-		{
-			selector: "node.hub-strong",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 2,
-				"font-size": 14,
-				"font-weight": 620,
-				"min-height": "38px",
-				"min-width": "74px",
-				padding: "12px 14px",
-			},
-		},
-		{
-			selector: "node.center",
-			style: {
-				"background-color": theme.nodeCenter,
-				"border-color": theme.accent,
-				"border-width": 2,
-				color: theme.textInverse,
-				"font-size": 14,
-				"font-weight": 650,
-				"min-height": "38px",
-				"min-width": "74px",
-				padding: "12px 14px",
-			},
-		},
-		{
-			selector: "node.tag",
-			style: {
-				"background-color": theme.background,
-				"border-color": theme.nodeActiveBorder,
-				"border-style": "dashed",
-				"border-width": 1.4,
-				color: theme.accent,
-				"font-size": 12,
-				"font-weight": 600,
-				"min-height": "26px",
-				"min-width": "44px",
-				padding: "7px 9px",
-				"text-max-width": "150px",
-			},
-		},
-		{
-			selector: "node.tag-strong",
-			style: {
-				"border-width": 1.8,
-				"font-size": 12.5,
-				"min-height": "30px",
-				"min-width": "52px",
-				padding: "8px 10px",
-			},
-		},
-		{
-			selector: "node.is-focus",
-			style: {
-				"background-color": theme.nodeActive,
-				"border-color": theme.nodeActiveBorder,
-				"border-width": 2,
-			},
-		},
-		{
-			selector: "node.center.is-focus",
-			style: {
-				"background-color": theme.nodeCenter,
-				color: theme.textInverse,
-			},
-		},
-		{
-			selector: "node.is-neighbor",
-			style: {
-				"border-color": theme.nodeActiveBorder,
-			},
-		},
-		{
-			selector: "edge",
-			style: {
-				"curve-style": "bezier",
-				"line-cap": "round",
-				"line-color": theme.edge,
-				"source-arrow-shape": "none",
-				"target-arrow-color": theme.edge,
-				"target-arrow-shape": "triangle-backcurve",
-				"target-distance-from-node": 4,
-				"target-endpoint": "outside-to-node",
-				"arrow-scale": 0.95,
-				opacity: 0.32,
-				"transition-duration": 180,
-				"transition-property": "line-color, opacity, target-arrow-color, width",
-				width: 1.6,
-			},
-		},
-		{
-			selector: "edge.tag-link",
-			style: {
-				"curve-style": "bezier",
-				"line-cap": "round",
-				"line-color": theme.accent,
-				"line-style": "dashed",
-				"line-dash-pattern": [1, 5],
-				"source-arrow-shape": "none",
-				"target-arrow-color": theme.accent,
-				"target-arrow-shape": "triangle-backcurve",
-				"target-distance-from-node": 4,
-				"target-endpoint": "outside-to-node",
-				"arrow-scale": 0.72,
-				opacity: 0.3,
-				width: 1.5,
-			},
-		},
-		{
-			selector: "edge.from-center",
-			style: {
-				"line-color": theme.accent,
-				"target-arrow-color": theme.accent,
-				opacity: 0.62,
-				width: 2.2,
-			},
-		},
-		{
-			selector: "edge.to-center",
-			style: {
-				"line-color": theme.edgeIncoming,
-				"target-arrow-color": theme.edgeIncoming,
-				opacity: 0.46,
-				width: 1.9,
-			},
-		},
-		{
-			selector: "edge.internal",
-			style: {
-				"line-color": theme.edgeInternal,
-				"target-arrow-color": theme.edgeInternal,
-				opacity: 0.4,
-				width: 1.6,
-			},
-		},
-		{
-			selector: "edge.reciprocal",
-			style: {
-				"control-point-distance": 34,
-				"control-point-weight": 0.5,
-				"curve-style": "unbundled-bezier",
-			},
-		},
-		{
-			selector: "edge.is-highlight",
-			style: {
-				opacity: 0.9,
-				width: 2.2,
-			},
-		},
-		{
-			selector: ".is-faded",
-			style: {
-				opacity: 0.12,
-			},
-		},
-	];
-}
-
-export function localNoteConnectionsLayoutSpacing(cy: Core) {
-	const nodeCount = cy.nodes().length;
-	const density = Math.min(nodeCount / 52, 1);
-	const idealEdgeLength = Math.round(150 + density * 70);
-
-	return {
-		idealEdgeLength,
-		nodeRepulsion: Math.round(12_000 + nodeCount * 650),
-		nodeSeparation: Math.round(105 + density * 65),
-		padding: Math.round(72 + density * 28),
-		tilePadding: Math.round(18 + density * 16),
-	};
-}
-
-export function runLocalNoteConnectionsLayout(cy: Core) {
-	const spacing = localNoteConnectionsLayoutSpacing(cy);
-	const layout = cy.layout({
-		name: "fcose",
-		animate: false,
-		fit: true,
-		idealEdgeLength: (edge: cytoscape.EdgeSingular) =>
-			edge.hasClass("tag-link")
-				? spacing.idealEdgeLength + 36
-				: spacing.idealEdgeLength,
-		nodeDimensionsIncludeLabels: true,
-		nodeRepulsion: spacing.nodeRepulsion,
-		nodeSeparation: spacing.nodeSeparation,
-		numIter: 3200,
-		padding: spacing.padding,
-		quality: "proof",
-		randomize: true,
-		tile: true,
-		tilingPaddingHorizontal: spacing.tilePadding,
-		tilingPaddingVertical: spacing.tilePadding,
-	} as cytoscape.LayoutOptions);
-	layout.one("layoutstop", () => {
-		cy.fit(undefined, spacing.padding);
-	});
-	layout.run();
-}
-
-export function localNoteConnectionsStylesForContainer(container: HTMLElement) {
-	return localNoteConnectionsStyles(localNoteConnectionsThemeFor(container));
-}
-
-export function applyLocalNoteConnectionsTheme(
-	cy: Core,
+export function resolveConnectionsPalette(
 	container: HTMLElement,
+): ConnectionsPalette {
+	const accent = cssColor(container, "--interactive-accent", "#888888");
+	const text = cssColor(container, "--local-connections-text", "#1f2328");
+	const note = cssColor(container, "--local-connections-note-bg", "#b8bcc4");
+	const noteMuted = cssColor(
+		container,
+		"--local-connections-note-muted",
+		"#d7d7d2",
+	);
+	const tag = cssColor(container, "--local-connections-tag-node", accent);
+	const tagMuted = cssColor(
+		container,
+		"--local-connections-tag-muted",
+		noteMuted,
+	);
+	const edgeDefault = cssColor(
+		container,
+		"--local-connections-edge",
+		"#a8b0bc",
+	);
+	const edgeAccent = cssColor(
+		container,
+		"--local-connections-edge-active",
+		accent,
+	);
+	const edgeTag = cssColor(
+		container,
+		"--local-connections-edge-tag",
+		edgeDefault,
+	);
+	const edgeMuted = cssColor(
+		container,
+		"--local-connections-edge-muted",
+		"#c8cdd4",
+	);
+	const faded = cssColor(
+		container,
+		"--local-connections-node-faded",
+		noteMuted,
+	);
+	const labelBackground = cssColor(
+		container,
+		"--local-connections-label-bg",
+		"rgba(255, 255, 255, 0.86)",
+	);
+	const labelBorder = cssColor(
+		container,
+		"--local-connections-label-border",
+		"rgba(148, 163, 184, 0.38)",
+	);
+	const hoverHalo = cssColor(
+		container,
+		"--local-connections-hover-halo",
+		"rgba(136, 136, 136, 0.28)",
+	);
+	const hoverHaloSoft = cssColor(
+		container,
+		"--local-connections-hover-halo-soft",
+		"rgba(136, 136, 136, 0.12)",
+	);
+
+	return {
+		accent,
+		text,
+		note,
+		noteMuted,
+		tag,
+		tagMuted,
+		center: accent,
+		edgeDefault,
+		edgeAccent,
+		edgeInternal: edgeMuted,
+		edgeTag,
+		faded,
+		labelBackground,
+		labelBorder,
+		hoverHalo,
+		hoverHaloSoft,
+	};
+}
+
+function nodeColorForAttributes(
+	attrs: ConnectionsNodeAttributes,
+	palette: ConnectionsPalette,
 ) {
-	cy.style(localNoteConnectionsStyles(localNoteConnectionsThemeFor(container)));
+	if (attrs.isCenter) return palette.center;
+	if (attrs.isIsolated) {
+		return attrs.kind === "tag" ? palette.tagMuted : palette.noteMuted;
+	}
+	if (attrs.kind === "tag") return palette.tag;
+	return palette.note;
+}
+
+export function buildNodeReducer(
+	getPalette: () => ConnectionsPalette,
+	variant: ConnectionsGraphVariant,
+	getFocusState: () => ConnectionsFocusState,
+) {
+	return (
+		nodeKey: string,
+		data: ConnectionsNodeAttributes,
+	): Partial<NodeDisplayData> => {
+		const palette = getPalette();
+		const { hoveredNode, neighborIds, selectedNodeId } = getFocusState();
+		const activeFocusId = selectedNodeId ?? hoveredNode;
+		const activeNeighbors = neighborIds;
+		const isFocus = activeFocusId === nodeKey;
+		const isNeighbor = activeNeighbors?.has(nodeKey) ?? false;
+		const isFaded = Boolean(activeFocusId) && !isFocus && !isNeighbor;
+
+		let color = nodeColorForAttributes(data, palette);
+		let label = data.label;
+		let size = data.size;
+		let zIndex = isFocus ? 30 : isNeighbor ? 20 : 0;
+		let forceLabel: boolean | undefined;
+
+		if (isFaded) {
+			color = palette.faded;
+			label = "";
+			zIndex = 0;
+		} else if (isFocus) {
+			forceLabel = true;
+			size = Math.max(
+				data.size,
+				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : data.size * 1.15,
+			);
+			zIndex = 30;
+			if (data.isCenter && variant === "local") {
+				color = palette.center;
+			}
+		} else if (activeFocusId && isNeighbor) {
+			forceLabel = true;
+		} else if (data.isCenter) {
+			forceLabel = true;
+		}
+
+		return {
+			x: data.x,
+			y: data.y,
+			size,
+			label,
+			color,
+			zIndex,
+			highlighted: isFocus,
+			...(forceLabel ? { forceLabel } : {}),
+		};
+	};
+}
+
+function edgeColorForRole(
+	role: ConnectionsEdgeAttributes["colorRole"],
+	palette: ConnectionsPalette,
+) {
+	switch (role) {
+		case "accent":
+			return palette.edgeAccent;
+		case "internal":
+			return palette.edgeInternal;
+		case "tag":
+			return palette.edgeTag;
+		default:
+			return palette.edgeDefault;
+	}
+}
+
+export function buildEdgeReducer(
+	getPalette: () => ConnectionsPalette,
+	variant: ConnectionsGraphVariant,
+	getFocusState: () => ConnectionsFocusState,
+	isEdgeInFocus: (source: string, target: string) => boolean,
+) {
+	return (
+		_edgeKey: string,
+		data: ConnectionsEdgeAttributes,
+		source: string,
+		target: string,
+	): Partial<EdgeDisplayData> => {
+		const palette = getPalette();
+		const { hoveredNode, selectedNodeId } = getFocusState();
+		const activeFocusId = selectedNodeId ?? hoveredNode;
+		const isHighlighted = isEdgeInFocus(source, target);
+		const isFaded = Boolean(activeFocusId) && !isHighlighted;
+		const baseColor = edgeColorForRole(data.colorRole, palette);
+
+		let color = baseColor;
+		let size = data.size;
+
+		if (isHighlighted) {
+			color = palette.edgeAccent;
+			size = Math.max(data.size, variant === "local" ? 1.5 : 1.35);
+		}
+
+		if (isFaded) {
+			color = palette.edgeInternal;
+			size = Math.max(0.28, data.size * 0.6);
+		}
+
+		return {
+			color,
+			size,
+		};
+	};
 }

@@ -42,9 +42,7 @@ pub struct LocalConnectionsEdge {
 #[derive(Clone, Serialize)]
 pub struct LocalConnectionsTagNode {
     pub id: String,
-    pub tag: String,
     pub title: String,
-    pub note_count: u32,
 }
 
 #[derive(Serialize)]
@@ -66,12 +64,10 @@ pub struct LocalNoteConnections {
 pub struct SpaceConnectionsNode {
     pub id: String,
     pub title: String,
-    pub link_count: u32,
-    pub tag_count: u32,
     pub is_isolated: bool,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SpaceConnectionKind {
     Link,
@@ -88,7 +84,6 @@ pub struct SpaceConnectionsEdge {
 #[derive(Serialize)]
 pub struct SpaceConnectionsTagNode {
     pub id: String,
-    pub tag: String,
     pub title: String,
     pub note_count: u32,
 }
@@ -105,10 +100,6 @@ pub struct SpaceConnections {
     pub edges: Vec<SpaceConnectionsEdge>,
     pub tags: Vec<SpaceConnectionsTagNode>,
     pub tag_edges: Vec<SpaceConnectionsTagEdge>,
-    pub truncated: bool,
-    pub truncated_tags: bool,
-    pub total_notes: u32,
-    pub total_tags: u32,
 }
 
 #[derive(Serialize)]
