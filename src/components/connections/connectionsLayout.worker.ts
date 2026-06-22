@@ -1,7 +1,7 @@
 import {
-	computeSpaceConnectionsLayout,
 	type ConnectionsLayoutRequest,
 	type ConnectionsLayoutResponse,
+	computeSpaceConnectionsLayout,
 } from "./connectionsLayout";
 
 interface ConnectionsWorkerScope {
@@ -29,5 +29,3 @@ workerScope.onmessage = (event) => {
 
 	workerScope.postMessage(response);
 };
-
-export {};

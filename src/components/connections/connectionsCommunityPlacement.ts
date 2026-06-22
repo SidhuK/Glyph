@@ -1,10 +1,13 @@
-import { spaceConnectionsDensityProfile } from "./connectionsDensity";
 import {
-	communityBridgeKey,
 	type ConnectionsCommunity,
 	type ConnectionsCommunityModel,
+	communityBridgeKey,
 } from "./connectionsCommunities";
-import type { GraphPosition, SerializedGraphPosition } from "./connectionsLayout";
+import { spaceConnectionsDensityProfile } from "./connectionsDensity";
+import type {
+	GraphPosition,
+	SerializedGraphPosition,
+} from "./connectionsLayout";
 import { hashString, randomUnit } from "./connectionsRandom";
 
 const COMMUNITY_GAP = 340;
@@ -60,7 +63,9 @@ function placeCommunityCenters(model: ConnectionsCommunityModel) {
 				if (!existingCenter) continue;
 				clearance = Math.min(
 					clearance,
-					distance(candidate, existingCenter) - community.radius - existing.radius,
+					distance(candidate, existingCenter) -
+						community.radius -
+						existing.radius,
 				);
 			}
 			let bridgeDistanceCost = 0;
@@ -183,9 +188,9 @@ function placeCommunityMembers(
 				y:
 					center.y +
 					Math.sin(angle) *
-					community.radius *
-					radiusFactor *
-					(0.72 + randomUnit(seed, index * 3 + 2) * 0.36),
+						community.radius *
+						radiusFactor *
+						(0.72 + randomUnit(seed, index * 3 + 2) * 0.36),
 			};
 			const candidateDistance = nearestDistance(candidate);
 			if (candidateDistance > bestDistance) {
@@ -209,8 +214,10 @@ export function placeConnectionsCommunities(
 	nodeCount: number,
 ): SerializedGraphPosition[] {
 	const centers = placeCommunityCenters(model);
-	const candidateCount =
-		spaceConnectionsDensityProfile(nodeCount, 0).layoutCandidateCount;
+	const candidateCount = spaceConnectionsDensityProfile(
+		nodeCount,
+		0,
+	).layoutCandidateCount;
 	const positions: SerializedGraphPosition[] = [];
 	for (const community of model.communities) {
 		const center = centers.get(community.id);

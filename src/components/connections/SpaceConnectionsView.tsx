@@ -62,6 +62,25 @@ function SpaceConnectionsControls({
 				label="Show unconnected notes"
 				size="sm"
 			/>
+			<div
+				className="localNoteConnectionsLegend is-space"
+				aria-label="Connections legend"
+			>
+				<span className="localNoteConnectionsLegendItem">
+					<span
+						className="localNoteConnectionsLegendNode is-note"
+						aria-hidden="true"
+					/>
+					Note
+				</span>
+				<span className="localNoteConnectionsLegendItem">
+					<span
+						className="localNoteConnectionsLegendNode is-tag"
+						aria-hidden="true"
+					/>
+					Tag
+				</span>
+			</div>
 		</div>
 	);
 }
@@ -74,37 +93,50 @@ export function SpaceConnectionsView() {
 	const [showUnconnectedNotes, setShowUnconnectedNotes] = useState(false);
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const activeSpacePathRef = useRef(spacePath);
+	const requestIdRef = useRef(0);
 	activeSpacePathRef.current = spacePath;
 
 	const loadConnections = useCallback(() => {
 		const requestSpacePath = spacePath;
-		let cancelled = false;
+		const requestId = ++requestIdRef.current;
 		setDataLoading(true);
 		setError("");
 
 		void invoke("space_connections")
 			.then(async (nextGraph) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
 					return;
 				await warnAboutLargeGraph(nextGraph);
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
 					return;
 				setPayload(nextGraph);
 			})
 			.catch((cause) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
 					return;
 				setPayload(null);
 				setError(cause instanceof Error ? cause.message : String(cause));
 			})
 			.finally(() => {
-				if (!cancelled && activeSpacePathRef.current === requestSpacePath) {
+				if (
+					requestId === requestIdRef.current &&
+					activeSpacePathRef.current === requestSpacePath
+				) {
 					setDataLoading(false);
 				}
 			});
 
 		return () => {
-			cancelled = true;
+			requestIdRef.current += 1;
 		};
 	}, [spacePath]);
 
@@ -232,25 +264,6 @@ export function SpaceConnectionsView() {
 				showUnconnectedNotes={showUnconnectedNotes}
 				onShowUnconnectedNotesChange={setShowUnconnectedNotes}
 			/>
-			<div
-				className="localNoteConnectionsLegend is-space"
-				aria-label="Connections legend"
-			>
-				<span className="localNoteConnectionsLegendItem">
-					<span
-						className="localNoteConnectionsLegendNode is-note"
-						aria-hidden="true"
-					/>
-					Note
-				</span>
-				<span className="localNoteConnectionsLegendItem">
-					<span
-						className="localNoteConnectionsLegendNode is-tag"
-						aria-hidden="true"
-					/>
-					Tag
-				</span>
-			</div>
 		</section>
 	);
 }

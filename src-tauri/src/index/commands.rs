@@ -990,12 +990,13 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let tag_query = "SELECT tag, COUNT(DISTINCT note_id) AS note_count
-         FROM tags
-         WHERE is_explicit = 1
-           AND tag NOT LIKE ?1
-         GROUP BY tag
-         ORDER BY tag COLLATE NOCASE ASC";
+    let tag_query = "SELECT t.tag, COUNT(DISTINCT t.note_id) AS note_count
+         FROM tags t
+         JOIN notes n ON n.id = t.note_id
+         WHERE t.is_explicit = 1
+           AND t.tag NOT LIKE ?1
+         GROUP BY t.tag
+         ORDER BY t.tag COLLATE NOCASE ASC";
     let mut tag_stmt = conn.prepare(tag_query).map_err(|e| e.to_string())?;
     let mut tag_rows = tag_stmt
         .query([&people_tag_like])
@@ -1010,14 +1011,13 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let tag_edge_query = "SELECT note_id, tag
-         FROM tags
-         WHERE is_explicit = 1
-           AND tag NOT LIKE ?1
-         ORDER BY tag COLLATE NOCASE ASC, note_id COLLATE NOCASE ASC";
-    let mut tag_edge_stmt = conn
-        .prepare(tag_edge_query)
-        .map_err(|e| e.to_string())?;
+    let tag_edge_query = "SELECT t.note_id, t.tag
+         FROM tags t
+         JOIN notes n ON n.id = t.note_id
+         WHERE t.is_explicit = 1
+           AND t.tag NOT LIKE ?1
+         ORDER BY t.tag COLLATE NOCASE ASC, t.note_id COLLATE NOCASE ASC";
+    let mut tag_edge_stmt = conn.prepare(tag_edge_query).map_err(|e| e.to_string())?;
     let mut tag_edge_rows = tag_edge_stmt
         .query([&people_tag_like])
         .map_err(|e| e.to_string())?;

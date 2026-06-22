@@ -117,6 +117,7 @@ function seedLocalPositions(graph: LocalNoteConnections) {
 		ring.push(node.id);
 	}
 	for (const tag of graph.tags) ring.push(tag.id);
+	ring.sort();
 
 	// Phyllotaxis (golden-angle) spread fills a disc evenly, so neighbours keep
 	// consistent spacing instead of the clumping a uniform-random layout caused.

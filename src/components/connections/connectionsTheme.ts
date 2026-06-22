@@ -31,8 +31,10 @@ export interface ConnectionsFocusState {
 	selectedNodeId: string | null;
 }
 
+const sigmaColorContext = document.createElement("canvas").getContext("2d");
+
 function sigmaCompatibleColor(value: string, fallback: string) {
-	const context = document.createElement("canvas").getContext("2d");
+	const context = sigmaColorContext;
 	if (!context) return fallback;
 
 	context.canvas.width = 1;

@@ -77,8 +77,10 @@ function buildWeightedGraph(layoutGraph: ConnectionsLayoutGraph) {
 		if (!graph.hasNode(left) || !graph.hasNode(right) || left === right) return;
 		const existingEdge = graph.edge(left, right);
 		if (existingEdge) {
-			graph.updateEdgeAttribute(existingEdge, "weight", (current) =>
-				current + weight,
+			graph.updateEdgeAttribute(
+				existingEdge,
+				"weight",
+				(current = 0) => current + weight,
 			);
 		} else {
 			graph.addUndirectedEdge(left, right, { weight });
@@ -145,7 +147,7 @@ function splitDisconnectedCommunities(
 		}
 	}
 
-	if (isolated.length > 0) components.push(isolated);
+	for (const nodeId of isolated) components.push([nodeId]);
 	return components;
 }
 
@@ -204,7 +206,10 @@ export function detectConnectionsCommunities(
 		for (const [neighbor, weight] of neighbors) {
 			if (nodeId >= neighbor) continue;
 			const targetCommunity = nodeCommunity.get(neighbor);
-			if (targetCommunity === undefined || sourceCommunity === targetCommunity) {
+			if (
+				targetCommunity === undefined ||
+				sourceCommunity === targetCommunity
+			) {
 				continue;
 			}
 			const key = communityPairKey(sourceCommunity, targetCommunity);

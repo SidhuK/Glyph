@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SpaceConnections } from "../../lib/tauri";
 import {
-	buildSpaceConnectionsGraph,
 	type ConnectionsGraph,
+	buildSpaceConnectionsGraph,
 } from "./connectionsGraph";
 import type {
 	ConnectionsLayoutRequest,
@@ -49,16 +49,14 @@ export function useSpaceConnectionsGraph(
 	});
 	const filteredPayload = useMemo(
 		() =>
-			payload
-				? filterSpaceConnections(payload, showUnconnectedNotes)
-				: null,
+			payload ? filterSpaceConnections(payload, showUnconnectedNotes) : null,
 		[payload, showUnconnectedNotes],
 	);
 
 	useEffect(() => {
-		if (!filteredPayload || filteredPayload.nodes.length === 0) {
+		if (!payload || payload.nodes.length === 0) {
 			setLayoutResult({
-				source: filteredPayload,
+				source: payload,
 				positions: new Map(),
 				error: "",
 			});
@@ -73,17 +71,17 @@ export function useSpaceConnectionsGraph(
 		const request: ConnectionsLayoutRequest = {
 			requestId,
 			graph: {
-				nodeIds: filteredPayload.nodes.map((node) => node.id),
-				tags: filteredPayload.tags.map((tag) => ({
+				nodeIds: payload.nodes.map((node) => node.id),
+				tags: payload.tags.map((tag) => ({
 					id: tag.id,
 					noteCount: tag.note_count,
 				})),
-				edges: filteredPayload.edges.map((edge) => ({
+				edges: payload.edges.map((edge) => ({
 					source: edge.from_id,
 					target: edge.to_id,
 					kind: edge.kind,
 				})),
-				tagEdges: filteredPayload.tag_edges.map((edge) => ({
+				tagEdges: payload.tag_edges.map((edge) => ({
 					tagId: edge.tag_id,
 					noteId: edge.note_id,
 				})),
@@ -96,7 +94,7 @@ export function useSpaceConnectionsGraph(
 			worker.terminate();
 			if ("error" in response) {
 				setLayoutResult({
-					source: filteredPayload,
+					source: payload,
 					positions: new Map(),
 					error: response.error,
 				});
@@ -104,11 +102,9 @@ export function useSpaceConnectionsGraph(
 			}
 
 			setLayoutResult({
-				source: filteredPayload,
+				source: payload,
 				positions: new Map(
-					response.positions.map(
-						([id, x, y]) => [id, { x, y }] as const,
-					),
+					response.positions.map(([id, x, y]) => [id, { x, y }] as const),
 				),
 				error: "",
 			});
@@ -116,7 +112,7 @@ export function useSpaceConnectionsGraph(
 		worker.onerror = (event) => {
 			worker.terminate();
 			setLayoutResult({
-				source: filteredPayload,
+				source: payload,
 				positions: new Map(),
 				error: event.message || "Could not lay out connections",
 			});
@@ -124,29 +120,26 @@ export function useSpaceConnectionsGraph(
 		worker.postMessage(request);
 
 		return () => worker.terminate();
-	}, [filteredPayload]);
+	}, [payload]);
 
 	const graph = useMemo<ConnectionsGraph | null>(() => {
 		if (
 			!filteredPayload ||
 			filteredPayload.nodes.length === 0 ||
-			layoutResult.source !== filteredPayload ||
+			layoutResult.source !== payload ||
 			layoutResult.error
 		) {
 			return null;
 		}
 		return buildSpaceConnectionsGraph(filteredPayload, layoutResult.positions);
-	}, [filteredPayload, layoutResult]);
+	}, [filteredPayload, layoutResult, payload]);
 
 	return {
 		filteredPayload,
 		graph,
-		layoutError:
-			layoutResult.source === filteredPayload ? layoutResult.error : "",
+		layoutError: layoutResult.source === payload ? layoutResult.error : "",
 		layoutLoading: Boolean(
-			filteredPayload &&
-				filteredPayload.nodes.length > 0 &&
-				layoutResult.source !== filteredPayload,
+			payload && payload.nodes.length > 0 && layoutResult.source !== payload,
 		),
 	};
 }
