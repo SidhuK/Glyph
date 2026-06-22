@@ -75,7 +75,6 @@
 }
 
 .localNoteConnectionsViewport {
-	--local-connections-border: var(--border-default);
 	--local-connections-surface: color-mix(
 		in srgb,
 		var(--bg-canvas, var(--bg-secondary)) 92%,

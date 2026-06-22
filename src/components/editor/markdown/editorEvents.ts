@@ -16,6 +16,7 @@ export interface WikiLinkClickDetail {
 
 export interface TagClickDetail {
 	tag: string;
+	tagOnly?: boolean;
 }
 
 export interface PersonClickDetail {

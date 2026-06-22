@@ -1,6 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
 import Sigma from "sigma";
-import { EdgeLineProgram } from "sigma/rendering";
 import {
 	drawConnectionsNodeHover,
 	drawConnectionsNodeLabel,
@@ -155,6 +154,22 @@ export function useSigmaConnections({
 				graph.order,
 			);
 			const labelFont = getComputedStyle(container).fontFamily;
+			const nodeReducer = buildNodeReducer(
+				() => paletteRef.current ?? palette,
+				variant,
+				() => focusState,
+			);
+			const edgeReducer = buildEdgeReducer(
+				() => paletteRef.current ?? palette,
+				variant,
+				() => focusState,
+				(source, target) =>
+					isEdgeConnectedToFocus(
+						focusState.selectedNodeId ?? focusState.hoveredNode,
+						source,
+						target,
+					),
+			);
 
 			const activeRenderer = new Sigma<
 				ConnectionsNodeAttributes,
@@ -180,16 +195,8 @@ export function useSigmaConnections({
 						paletteRef.current ?? palette,
 						variant,
 					),
-				edgeProgramClasses: {
-					line: EdgeLineProgram,
-					"tag-line": EdgeLineProgram,
-				},
 				nodeReducer: (node, data) =>
-					buildNodeReducer(
-						paletteRef.current ?? palette,
-						variant,
-						() => focusState,
-					)(node, {
+					nodeReducer(node, {
 						...data,
 						x: graph.getNodeAttribute(node, "x"),
 						y: graph.getNodeAttribute(node, "y"),
@@ -197,17 +204,7 @@ export function useSigmaConnections({
 				edgeReducer: (edge, data) => {
 					const source = graph.source(edge);
 					const target = graph.target(edge);
-					return buildEdgeReducer(
-						paletteRef.current ?? palette,
-						variant,
-						() => focusState,
-						(sourceId, targetId) =>
-							isEdgeConnectedToFocus(
-								focusState.selectedNodeId ?? focusState.hoveredNode,
-								sourceId,
-								targetId,
-							),
-					)(edge, data, source, target);
+					return edgeReducer(edge, data, source, target);
 				},
 			});
 			renderer = activeRenderer;

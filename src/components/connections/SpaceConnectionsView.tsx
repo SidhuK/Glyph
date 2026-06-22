@@ -2,14 +2,33 @@ import { LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
-import { dispatchOpenSearch } from "../../lib/appEvents";
 import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Toggle } from "../base/toggle/toggle";
-import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
+import {
+	dispatchTagClick,
+	dispatchWikiLinkClick,
+} from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { useSigmaConnections } from "./useSigmaConnections";
 import { useSpaceConnectionsGraph } from "./useSpaceConnectionsGraph";
+
+const LARGE_GRAPH_NOTE_THRESHOLD = 5_000;
+
+async function warnAboutLargeGraph(payload: SpaceConnections) {
+	const noteCount = payload.nodes.length;
+	if (noteCount <= LARGE_GRAPH_NOTE_THRESHOLD) return;
+
+	const { message } = await import("@tauri-apps/plugin-dialog");
+	await message(
+		`This space contains ${noteCount.toLocaleString()} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.`,
+		{
+			title: "Large connections graph",
+			kind: "warning",
+			okLabel: "Continue",
+		},
+	);
+}
 
 function openNote(nodeId: string) {
 	dispatchWikiLinkClick({
@@ -23,7 +42,7 @@ function openNote(nodeId: string) {
 }
 
 function openTagSearch(_tagId: string, label: string) {
-	dispatchOpenSearch({ query: `${label} tag:only` });
+	dispatchTagClick({ tag: label, tagOnly: true });
 }
 
 interface SpaceConnectionsControlsProps {
@@ -64,7 +83,10 @@ export function SpaceConnectionsView() {
 		setError("");
 
 		void invoke("space_connections")
-			.then((nextGraph) => {
+			.then(async (nextGraph) => {
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
+				await warnAboutLargeGraph(nextGraph);
 				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
 					return;
 				setPayload(nextGraph);

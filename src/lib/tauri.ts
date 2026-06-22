@@ -386,9 +386,7 @@ interface LocalConnectionsEdge {
 
 interface LocalConnectionsTagNode {
 	id: string;
-	tag: string;
 	title: string;
-	note_count: number;
 }
 
 interface LocalConnectionsTagEdge {
@@ -407,8 +405,6 @@ export interface LocalNoteConnections {
 export interface SpaceConnectionsNode {
 	id: string;
 	title: string;
-	link_count: number;
-	tag_count: number;
 	is_isolated: boolean;
 }
 
@@ -420,7 +416,6 @@ export interface SpaceConnectionsEdge {
 
 export interface SpaceConnectionsTagNode {
 	id: string;
-	tag: string;
 	title: string;
 	note_count: number;
 }

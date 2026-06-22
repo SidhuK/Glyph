@@ -2,7 +2,6 @@ export const PATH_REMOVED_EVENT = "glyph:path-removed";
 export const FILE_TREE_START_RENAME_EVENT = "glyph:file-tree-start-rename";
 export const PATH_RENAMED_EVENT = "glyph:path-renamed";
 export const OPEN_LOCAL_CONNECTIONS_EVENT = "glyph:open-local-connections";
-export const OPEN_SEARCH_EVENT = "glyph:open-search";
 export const EDITOR_MENU_ACTION_EVENT = "glyph:editor-menu-action";
 export const TOGGLE_NOTE_INFO_SIDEBAR_EVENT = "glyph:toggle-note-info-sidebar";
 
@@ -23,10 +22,6 @@ export interface PathRenamedDetail {
 
 export interface OpenLocalConnectionsDetail {
 	path: string;
-}
-
-export interface OpenSearchDetail {
-	query: string;
 }
 
 export interface EditorMenuActionDetail {
@@ -64,12 +59,6 @@ export function dispatchOpenLocalConnections(
 		new CustomEvent<OpenLocalConnectionsDetail>(OPEN_LOCAL_CONNECTIONS_EVENT, {
 			detail,
 		}),
-	);
-}
-
-export function dispatchOpenSearch(detail: OpenSearchDetail) {
-	window.dispatchEvent(
-		new CustomEvent<OpenSearchDetail>(OPEN_SEARCH_EVENT, { detail }),
 	);
 }
 

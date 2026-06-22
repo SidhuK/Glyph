@@ -1,5 +1,6 @@
 import Graph from "graphology";
 import louvain from "graphology-communities-louvain";
+import { hashString, seededRandom } from "./connectionsRandom";
 
 const NOTE_LINK_WEIGHT = 2.5;
 const RELATIONSHIP_WEIGHT = 4;
@@ -37,25 +38,6 @@ export interface ConnectionsCommunityModel {
 	adjacency: ReadonlyMap<string, ReadonlyMap<string, number>>;
 	communities: ConnectionsCommunity[];
 	communityBridges: ReadonlyMap<string, number>;
-}
-
-function hashString(value: string) {
-	let hash = 2166136261;
-	for (let index = 0; index < value.length; index += 1) {
-		hash ^= value.charCodeAt(index);
-		hash = Math.imul(hash, 16777619);
-	}
-	return hash >>> 0;
-}
-
-function seededRandom(seed: number) {
-	let state = seed || 1;
-	return () => {
-		state ^= state << 13;
-		state ^= state >>> 17;
-		state ^= state << 5;
-		return (state >>> 0) / 0x100000000;
-	};
 }
 
 function communityPairKey(left: number, right: number) {

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { dispatchOpenSearch } from "../../lib/appEvents";
 import type { LocalNoteConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
+import {
+	dispatchTagClick,
+	dispatchWikiLinkClick,
+} from "../editor/markdown/editorEvents";
 import {
 	Dialog,
 	DialogClose,
@@ -49,7 +51,7 @@ export function LocalNoteConnectionsDialog({
 	const openTagSearch = useCallback(
 		(_tagId: string, label: string) => {
 			onOpenChange(false);
-			dispatchOpenSearch({ query: `${label} tag:only` });
+			dispatchTagClick({ tag: label, tagOnly: true });
 		},
 		[onOpenChange],
 	);

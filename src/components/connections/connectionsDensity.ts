@@ -137,27 +137,17 @@ function tierForEdgeCount(count: number) {
 	return SPACE_EDGE_SCALE_TIERS.find((tier) => count >= tier.minEdges) ?? null;
 }
 
-export interface ConnectionsDensityProfile {
+interface ConnectionsDensityProfile {
 	noteSizeRange: SpaceNodeSizeRange;
 	tagSizeRange: SpaceNodeSizeRange;
 	edgeScale: number;
 	layoutCandidateCount: number;
 }
 
-export function connectionsDensityProfile(
-	variant: ConnectionsGraphVariant,
+export function spaceConnectionsDensityProfile(
 	nodeCount: number,
 	edgeCount: number,
 ): ConnectionsDensityProfile {
-	if (variant === "local") {
-		return {
-			noteSizeRange: [7, 13],
-			tagSizeRange: [6, 13],
-			edgeScale: 1,
-			layoutCandidateCount: 8,
-		};
-	}
-
 	const nodeTier = tierForCount(SPACE_NODE_DENSITY_TIERS, nodeCount);
 	const edgeTier = tierForEdgeCount(edgeCount);
 	let edgeScale = 1;

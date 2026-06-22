@@ -875,14 +875,12 @@ fn local_connections_tag_expansion_for_seed_nodes(
 
     let tags = tag_names
         .into_iter()
-        .filter_map(|tag| {
-            let note_count = note_count_by_tag.get(&tag).copied()?;
-            Some(LocalConnectionsTagNode {
+        .filter(|tag| note_count_by_tag.contains_key(tag))
+        .map(|tag| {
+            LocalConnectionsTagNode {
                 id: local_connections_tag_id(&tag),
                 title: format!("#{tag}"),
-                tag,
-                note_count,
-            })
+            }
         })
         .collect::<Vec<_>>();
 
@@ -946,8 +944,6 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         nodes.push(SpaceConnectionsNode {
             id: row.get(0).map_err(|e| e.to_string())?,
             title: row.get(1).map_err(|e| e.to_string())?,
-            link_count,
-            tag_count,
             is_isolated: link_count == 0 && tag_count == 0,
         });
     }
@@ -1010,7 +1006,6 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         tags.push(SpaceConnectionsTagNode {
             id: local_connections_tag_id(&tag),
             title: format!("#{tag}"),
-            tag,
             note_count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
         });
     }
@@ -1215,8 +1210,7 @@ mod local_connections_tests {
             .iter()
             .any(|node| node.id == "notes/common-10.md"));
         assert_eq!(graph.tags.len(), 1);
-        assert_eq!(graph.tags[0].tag, "project");
-        assert_eq!(graph.tags[0].note_count, 12);
+        assert_eq!(graph.tags[0].title, "#project");
     }
 
     #[test]
@@ -1261,7 +1255,7 @@ mod local_connections_tests {
         assert_eq!(tagged_nodes.len(), 5);
         assert_eq!(tag_edges.len(), 5);
         assert_eq!(tags.len(), 1);
-        assert_eq!(tags[0].note_count, 5);
+        assert_eq!(tags[0].title, "#project");
     }
 }
 
@@ -1399,7 +1393,6 @@ mod space_connections_tests {
 
         let graph = space_connections_for_conn(&conn).unwrap();
         assert!(graph.edges.is_empty());
-        assert_eq!(graph.nodes[0].link_count, 0);
         assert!(graph.nodes[0].is_isolated);
     }
 
@@ -1423,7 +1416,7 @@ mod space_connections_tests {
 
         let graph = space_connections_for_conn(&conn).unwrap();
         assert_eq!(graph.tags.len(), 1);
-        assert_eq!(graph.tags[0].tag, "work");
+        assert_eq!(graph.tags[0].title, "#work");
         assert_eq!(graph.tag_edges.len(), 1);
     }
 

@@ -153,7 +153,7 @@ function nodeColorForAttributes(
 }
 
 export function buildNodeReducer(
-	palette: ConnectionsPalette,
+	getPalette: () => ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 ) {
@@ -161,6 +161,7 @@ export function buildNodeReducer(
 		nodeKey: string,
 		data: ConnectionsNodeAttributes,
 	): Partial<NodeDisplayData> => {
+		const palette = getPalette();
 		const { hoveredNode, neighborIds, selectedNodeId } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const activeNeighbors = neighborIds;
@@ -224,7 +225,7 @@ function edgeColorForRole(
 }
 
 export function buildEdgeReducer(
-	palette: ConnectionsPalette,
+	getPalette: () => ConnectionsPalette,
 	variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
@@ -235,6 +236,7 @@ export function buildEdgeReducer(
 		source: string,
 		target: string,
 	): Partial<EdgeDisplayData> => {
+		const palette = getPalette();
 		const { hoveredNode, selectedNodeId } = getFocusState();
 		const activeFocusId = selectedNodeId ?? hoveredNode;
 		const isHighlighted = isEdgeInFocus(source, target);
@@ -257,7 +259,6 @@ export function buildEdgeReducer(
 		return {
 			color,
 			size,
-			type: data.type,
 		};
 	};
 }

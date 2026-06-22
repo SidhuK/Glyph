@@ -2,18 +2,17 @@ import Graph from "graphology";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
 import {
 	LOCAL_CENTER_NODE_SIZE,
-	connectionsDensityProfile,
+	spaceConnectionsDensityProfile,
 } from "./connectionsDensity";
 import type { GraphPosition } from "./connectionsLayout";
+import { hashString, randomUnit } from "./connectionsRandom";
 
 export type ConnectionsNodeKind = "note" | "tag";
 export type ConnectionsEdgeColorRole =
 	| "default"
 	| "accent"
-	| "incoming"
 	| "internal"
-	| "tag"
-	| "relationship";
+	| "tag";
 
 export type ConnectionsGraphVariant = "space" | "local";
 
@@ -29,7 +28,6 @@ export interface ConnectionsNodeAttributes {
 }
 
 export interface ConnectionsEdgeAttributes {
-	type: "line" | "tag-line";
 	colorRole: ConnectionsEdgeColorRole;
 	color: string;
 	size: number;
@@ -99,22 +97,6 @@ function localConnectionCounts(payload: LocalNoteConnections) {
 	return counts;
 }
 
-function hashString(value: string) {
-	let hash = 2166136261;
-	for (let index = 0; index < value.length; index += 1) {
-		hash ^= value.charCodeAt(index);
-		hash = Math.imul(hash, 16777619);
-	}
-	return hash >>> 0;
-}
-
-function randomUnit(seed: number, salt: number) {
-	let value = seed ^ Math.imul(salt + 1, 0x9e3779b1);
-	value = Math.imul(value ^ (value >>> 16), 0x21f0aaad);
-	value = Math.imul(value ^ (value >>> 15), 0x735a2d97);
-	return ((value ^ (value >>> 15)) >>> 0) / 0xffffffff;
-}
-
 function nodeSizeFromRange(
 	weight: number,
 	maxWeight: number,
@@ -170,7 +152,7 @@ export function buildSpaceConnectionsGraph(
 	const graph = createGraph();
 	const nodeCount = payload.nodes.length + payload.tags.length;
 	const edgeCount = payload.edges.length + payload.tag_edges.length;
-	const density = connectionsDensityProfile("space", nodeCount, edgeCount);
+	const density = spaceConnectionsDensityProfile(nodeCount, edgeCount);
 	const connectionCounts = spaceConnectionCounts(payload);
 	const maxConnections = maxConnectionCount(connectionCounts);
 
@@ -218,8 +200,7 @@ export function buildSpaceConnectionsGraph(
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
 		const isRelationship = edge.kind === "relationship";
 		graph.addEdgeWithKey(edgeId, edge.from_id, edge.to_id, {
-			type: "line",
-			colorRole: isRelationship ? "relationship" : "default",
+			colorRole: "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: (isRelationship ? 0.85 : 0.55) * edgeScale,
 		});
@@ -228,7 +209,6 @@ export function buildSpaceConnectionsGraph(
 	for (const [index, edge] of payload.tag_edges.entries()) {
 		const edgeId = `tag:${edge.tag_id}->${edge.note_id}:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			type: "tag-line",
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: 0.5 * edgeScale,
@@ -293,14 +273,13 @@ export function buildLocalConnectionsGraph(
 			colorRole = "accent";
 			size = 1.1;
 		} else if (isToCenter) {
-			colorRole = "incoming";
+			colorRole = "default";
 			size = 0.9;
 		} else if (isInternal) {
 			colorRole = "internal";
 		}
 
 		graph.addEdgeWithKey(edgeId, edge.source, edge.target, {
-			type: "line",
 			colorRole,
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size,
@@ -310,7 +289,6 @@ export function buildLocalConnectionsGraph(
 	for (const [index, edge] of payload.tag_edges.entries()) {
 		const edgeId = `${edge.tag_id}->${edge.note_id}:tag:${index}`;
 		graph.addEdgeWithKey(edgeId, edge.tag_id, edge.note_id, {
-			type: "tag-line",
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
 			size: 0.6,

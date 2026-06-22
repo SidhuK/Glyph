@@ -42,9 +42,7 @@ pub struct LocalConnectionsEdge {
 #[derive(Clone, Serialize)]
 pub struct LocalConnectionsTagNode {
     pub id: String,
-    pub tag: String,
     pub title: String,
-    pub note_count: u32,
 }
 
 #[derive(Serialize)]
@@ -66,8 +64,6 @@ pub struct LocalNoteConnections {
 pub struct SpaceConnectionsNode {
     pub id: String,
     pub title: String,
-    pub link_count: u32,
-    pub tag_count: u32,
     pub is_isolated: bool,
 }
 
@@ -88,7 +84,6 @@ pub struct SpaceConnectionsEdge {
 #[derive(Serialize)]
 pub struct SpaceConnectionsTagNode {
     pub id: String,
-    pub tag: String,
     pub title: String,
     pub note_count: u32,
 }

@@ -250,12 +250,19 @@ The graph distinguishes:
 
 Frontend rendering uses Sigma.js v3 + Graphology:
 
-- `connectionsGraph.ts` converts IPC payloads into typed mixed multi-graphs and assigns deterministic hash-random seed positions
+- `connectionsGraph.ts` converts IPC payloads into typed mixed multi-graphs; local-note graphs receive deterministic phyllotaxis seed positions there
+- `connectionsLayout.worker.ts` computes full-space layouts off the UI thread
+- `connectionsCommunities.ts` builds a weighted graph and uses deterministic Louvain community detection, with relationship and tag frequency weighting
+- `connectionsCommunityPlacement.ts` places communities and their members with deterministic seeded candidates
+- `connectionsDensity.ts` scales node sizes, edge widths, label density, and layout work for the full graph size
 - `useSigmaConnections.ts` owns Sigma creation, reducers, dragging, theme observation, and cleanup
+- `useSpaceConnectionsGraph.ts` filters optional isolated notes, coordinates the layout worker, and builds the render graph from returned positions
 - `SpaceConnectionsView.tsx` renders the full-space graph
 - `LocalNoteConnectionsDialog.tsx` renders the per-note neighborhood graph
 
-Layouts are never persisted. Reopening a graph recomputes hash-random positions from node ids; Sigma renders them without force-directed layout.
+Layouts are never persisted. Reopening a full-space graph reruns deterministic community detection and placement in the worker, while reopening a local graph recomputes its deterministic phyllotaxis positions from node ids. Sigma renders the returned positions without running an additional force-directed layout.
+
+Before laying out a graph for a space with more than 5,000 notes, the frontend displays a native warning that the full graph may take time and temporarily reduce responsiveness. Tags and edges do not contribute to this threshold. Acknowledging the warning continues with the complete, intentionally uncapped graph.
 
 When link resolution feels wrong, inspect:
 

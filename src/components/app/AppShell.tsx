@@ -30,11 +30,9 @@ import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
-	OPEN_SEARCH_EVENT,
 	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
-	type OpenSearchDetail,
 } from "../../lib/appEvents";
 import { invalidateCalendarPrefetch } from "../../lib/calendarActivity";
 import {
@@ -602,15 +600,6 @@ export function AppShell() {
 		},
 		[setPaletteOpen],
 	);
-	useEffect(() => {
-		const handleOpenSearch = (event: Event) => {
-			const { query } = (event as CustomEvent<OpenSearchDetail>).detail;
-			openPalette("search", query);
-		};
-		window.addEventListener(OPEN_SEARCH_EVENT, handleOpenSearch);
-		return () =>
-			window.removeEventListener(OPEN_SEARCH_EVENT, handleOpenSearch);
-	}, [openPalette]);
 	const closePalette = useCallback(() => {
 		moveTargetDirsRequestIdRef.current += 1;
 		setPaletteOpen(false);
