@@ -274,12 +274,12 @@
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--text-secondary) 40%,
+		var(--text-secondary) 75%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 30%,
+		var(--text-secondary) 75%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
@@ -289,8 +289,8 @@
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--interactive-accent) 12%,
-		color-mix(in srgb, var(--text-secondary) 30%, var(--bg-primary))
+		var(--interactive-accent) 24%,
+		color-mix(in srgb, var(--text-secondary) 40%, var(--bg-primary))
 	);
 }
 
@@ -461,7 +461,7 @@
 		var(--text-secondary) 60%,
 		var(--border-default)
 	);
-	background: color-mix(in srgb, var(--text-secondary) 46%, var(--bg-primary));
+	background: color-mix(in srgb, var(--text-secondary) 75%, var(--bg-primary));
 }
 
 .localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-tag {
