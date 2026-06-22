@@ -1,10 +1,11 @@
 import { type RefObject, useEffect, useRef } from "react";
-import { EdgeLineProgram } from "sigma/rendering";
 import Sigma from "sigma";
+import { EdgeLineProgram } from "sigma/rendering";
 import {
 	drawConnectionsNodeHover,
 	drawConnectionsNodeLabel,
 } from "./connectionsCanvas";
+import { sigmaSettingsForVariant } from "./connectionsDensity";
 import type {
 	ConnectionsEdgeAttributes,
 	ConnectionsGraph,
@@ -12,12 +13,11 @@ import type {
 	ConnectionsNodeAttributes,
 } from "./connectionsGraph";
 import {
+	type ConnectionsFocusState,
+	type ConnectionsPalette,
 	buildEdgeReducer,
 	buildNodeReducer,
 	resolveConnectionsPalette,
-	sigmaSettingsForVariant,
-	type ConnectionsFocusState,
-	type ConnectionsPalette,
 } from "./connectionsTheme";
 
 interface UseSigmaConnectionsOptions {
@@ -156,14 +156,14 @@ export function useSigmaConnections({
 			);
 			const labelFont = getComputedStyle(container).fontFamily;
 
-			renderer = new Sigma<
+			const activeRenderer = new Sigma<
 				ConnectionsNodeAttributes,
 				ConnectionsEdgeAttributes
 			>(graph, container, {
 				...sigmaSettings,
 				labelColor: { color: palette.text },
 				labelFont,
-				labelSize: variant === "local" ? 12 : 11,
+				labelSize: variant === "local" ? 11.5 : 10.5,
 				labelWeight: "500",
 				defaultDrawNodeLabel: (context, data, labelSettings) =>
 					drawConnectionsNodeLabel(
@@ -199,6 +199,7 @@ export function useSigmaConnections({
 					const target = graph.target(edge);
 					return buildEdgeReducer(
 						paletteRef.current ?? palette,
+						variant,
 						() => focusState,
 						(sourceId, targetId) =>
 							isEdgeConnectedToFocus(
@@ -209,29 +210,29 @@ export function useSigmaConnections({
 					)(edge, data, source, target);
 				},
 			});
+			renderer = activeRenderer;
 
 			const fitToView = () => {
-				if (disposed || !renderer) return;
-				fitGraphToViewport(renderer);
+				if (disposed) return;
+				fitGraphToViewport(activeRenderer);
 			};
 
 			fitToView();
 			fitFrame = window.requestAnimationFrame(fitToView);
 
-			renderer.on("enterNode", ({ node }) => {
-				setFocus(renderer!, { hoveredNode: node });
+			activeRenderer.on("enterNode", ({ node }) => {
+				setFocus(activeRenderer, { hoveredNode: node });
 			});
-			renderer.on("leaveNode", () => {
+			activeRenderer.on("leaveNode", () => {
 				if (focusState.selectedTagId) return;
-				setFocus(renderer!, { hoveredNode: null });
+				setFocus(activeRenderer, { hoveredNode: null });
 			});
-			renderer.on("clickNode", ({ node }) => {
+			activeRenderer.on("clickNode", ({ node }) => {
 				const kind = graph.getNodeAttribute(node, "kind");
 				if (kind === "tag") {
-					const nextSelected =
-						focusState.selectedTagId === node ? null : node;
+					const nextSelected = focusState.selectedTagId === node ? null : node;
 					onTagSelect?.(nextSelected);
-					setFocus(renderer!, {
+					setFocus(activeRenderer, {
 						selectedTagId: nextSelected,
 						hoveredNode: nextSelected,
 					});
@@ -239,35 +240,35 @@ export function useSigmaConnections({
 				}
 				onNoteOpen?.(node);
 			});
-			renderer.on("clickStage", () => {
+			activeRenderer.on("clickStage", () => {
 				onTagSelect?.(null);
-				setFocus(renderer!, { hoveredNode: null, selectedTagId: null });
+				setFocus(activeRenderer, { hoveredNode: null, selectedTagId: null });
 			});
 
-			renderer.on("downNode", ({ node }) => {
+			activeRenderer.on("downNode", ({ node }) => {
 				if (graph.getNodeAttribute(node, "isCenter")) return;
 				draggedNode = node;
-				renderer!.getCamera().disable();
+				activeRenderer.getCamera().disable();
 			});
 
-			const mouseCaptor = renderer.getMouseCaptor();
+			const mouseCaptor = activeRenderer.getMouseCaptor();
 			const handleMouseMove = (coords: { x: number; y: number }) => {
 				if (!draggedNode) return;
-				const position = renderer!.viewportToGraph(coords);
+				const position = activeRenderer.viewportToGraph(coords);
 				graph.setNodeAttribute(draggedNode, "x", position.x);
 				graph.setNodeAttribute(draggedNode, "y", position.y);
 			};
 			const handleMouseUp = () => {
 				if (!draggedNode) return;
 				draggedNode = null;
-				renderer!.getCamera().enable();
+				activeRenderer.getCamera().enable();
 			};
 
 			mouseCaptor.on("mousemovebody", handleMouseMove);
 			mouseCaptor.on("mouseup", handleMouseUp);
 
 			resizeObserver = new ResizeObserver(() => {
-				renderer?.resize();
+				activeRenderer.resize();
 				fitToView();
 			});
 			resizeObserver.observe(container);
@@ -275,13 +276,11 @@ export function useSigmaConnections({
 			themeObserver = new MutationObserver(() => {
 				const nextPalette = resolveConnectionsPalette(container);
 				paletteRef.current = nextPalette;
-				if (renderer) {
-					renderer.setSettings({
-						labelColor: { color: nextPalette.text },
-						labelFont: getComputedStyle(container).fontFamily,
-					});
-					scheduleRefresh(renderer);
-				}
+				activeRenderer.setSettings({
+					labelColor: { color: nextPalette.text },
+					labelFont: getComputedStyle(container).fontFamily,
+				});
+				scheduleRefresh(activeRenderer);
 			});
 			themeObserver.observe(document.documentElement, {
 				attributeFilter: [

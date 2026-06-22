@@ -1,4 +1,5 @@
 import type { EdgeDisplayData, NodeDisplayData } from "sigma/types";
+import { LOCAL_FOCUS_NODE_SIZE } from "./connectionsDensity";
 import type {
 	ConnectionsEdgeAttributes,
 	ConnectionsGraphVariant,
@@ -14,9 +15,7 @@ export interface ConnectionsPalette {
 	tagMuted: string;
 	center: string;
 	edgeDefault: string;
-	edgeRelationship: string;
 	edgeAccent: string;
-	edgeIncoming: string;
 	edgeInternal: string;
 	edgeTag: string;
 	faded: string;
@@ -61,13 +60,9 @@ function cssColor(element: HTMLElement, name: string, fallback: string) {
 export function resolveConnectionsPalette(
 	container: HTMLElement,
 ): ConnectionsPalette {
-	const accent = cssColor(container, "--interactive-accent", "#5b8def");
-	const text = cssColor(
-		container,
-		"--local-connections-text",
-		"#1f2328",
-	);
-	const note = cssColor(container, "--local-connections-note-bg", "#dce6f8");
+	const accent = cssColor(container, "--interactive-accent", "#888888");
+	const text = cssColor(container, "--local-connections-text", "#1f2328");
+	const note = cssColor(container, "--local-connections-note-bg", "#b8bcc4");
 	const noteMuted = cssColor(
 		container,
 		"--local-connections-note-muted",
@@ -82,7 +77,7 @@ export function resolveConnectionsPalette(
 	const edgeDefault = cssColor(
 		container,
 		"--local-connections-edge",
-		"rgba(102, 112, 133, 0.3)",
+		"#a8b0bc",
 	);
 	const edgeAccent = cssColor(
 		container,
@@ -94,15 +89,10 @@ export function resolveConnectionsPalette(
 		"--local-connections-edge-tag",
 		edgeDefault,
 	);
-	const edgeIncoming = cssColor(
-		container,
-		"--local-connections-edge-incoming",
-		text,
-	);
 	const edgeMuted = cssColor(
 		container,
 		"--local-connections-edge-muted",
-		"rgba(102, 112, 133, 0.12)",
+		"#c8cdd4",
 	);
 	const faded = cssColor(
 		container,
@@ -122,12 +112,12 @@ export function resolveConnectionsPalette(
 	const hoverHalo = cssColor(
 		container,
 		"--local-connections-hover-halo",
-		accent,
+		"rgba(136, 136, 136, 0.28)",
 	);
 	const hoverHaloSoft = cssColor(
 		container,
 		"--local-connections-hover-halo-soft",
-		"rgba(91, 141, 239, 0.16)",
+		"rgba(136, 136, 136, 0.12)",
 	);
 
 	return {
@@ -139,9 +129,7 @@ export function resolveConnectionsPalette(
 		tagMuted,
 		center: accent,
 		edgeDefault,
-		edgeRelationship: edgeIncoming,
 		edgeAccent,
-		edgeIncoming,
 		edgeInternal: edgeMuted,
 		edgeTag,
 		faded,
@@ -149,74 +137,6 @@ export function resolveConnectionsPalette(
 		labelBorder,
 		hoverHalo,
 		hoverHaloSoft,
-	};
-}
-
-export function sigmaSettingsForVariant(
-	variant: ConnectionsGraphVariant,
-	edgeCount: number,
-	nodeCount = 0,
-) {
-	const isLocal = variant === "local";
-	const hugeSpace = !isLocal && nodeCount >= 5000;
-	const largeSpace = !isLocal && nodeCount >= 1000;
-	const mediumSpace = !isLocal && nodeCount >= 150;
-	return {
-		renderLabels: true,
-		renderEdgeLabels: false,
-		enableEdgeEvents: false,
-		hideLabelsOnMove: true,
-		hideEdgesOnMove: edgeCount > 5000,
-		labelDensity: isLocal
-			? 1.2
-			: hugeSpace
-				? 0.1
-				: largeSpace
-					? 0.28
-					: mediumSpace
-						? 0.2
-						: 0.9,
-		labelGridCellSize: isLocal
-			? 90
-			: hugeSpace
-				? 260
-				: largeSpace
-					? 180
-					: mediumSpace
-						? 150
-						: 110,
-		labelRenderedSizeThreshold: isLocal
-			? 0
-			: hugeSpace
-				? 16
-				: largeSpace
-					? 12
-					: mediumSpace
-						? 10
-						: 6,
-		defaultNodeType: "circle",
-		defaultEdgeType: "line",
-		minCameraRatio: isLocal ? 0.35 : hugeSpace ? 0.05 : 0.18,
-		maxCameraRatio: isLocal ? 2.2 : 2.1,
-		stagePadding: isLocal
-			? 72
-			: hugeSpace
-				? 36
-				: largeSpace
-					? 40
-					: mediumSpace
-						? 48
-						: 56,
-		zoomingRatio: isLocal ? 1.7 : 1.6,
-		minEdgeThickness: isLocal
-			? 0.5
-			: hugeSpace
-				? 0.45
-				: largeSpace
-					? 0.55
-					: 0.65,
-		zIndex: true,
-		allowInvalidContainer: false,
 	};
 }
 
@@ -260,7 +180,10 @@ export function buildNodeReducer(
 			zIndex = 0;
 		} else if (isFocus) {
 			forceLabel = true;
-			size = Math.max(data.size, variant === "local" ? 24 : data.size);
+			size = Math.max(
+				data.size,
+				variant === "local" ? LOCAL_FOCUS_NODE_SIZE : data.size * 1.15,
+			);
 			zIndex = 30;
 			if (data.isCenter && variant === "local") {
 				color = palette.center;
@@ -289,14 +212,10 @@ function edgeColorForRole(
 	switch (role) {
 		case "accent":
 			return palette.edgeAccent;
-		case "incoming":
-			return palette.edgeIncoming;
 		case "internal":
 			return palette.edgeInternal;
 		case "tag":
 			return palette.edgeTag;
-		case "relationship":
-			return palette.edgeRelationship;
 		default:
 			return palette.edgeDefault;
 	}
@@ -304,6 +223,7 @@ function edgeColorForRole(
 
 export function buildEdgeReducer(
 	palette: ConnectionsPalette,
+	variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
 ) {
@@ -324,12 +244,12 @@ export function buildEdgeReducer(
 
 		if (isHighlighted) {
 			color = palette.edgeAccent;
-			size = Math.max(data.size, 1.8);
+			size = Math.max(data.size, variant === "local" ? 1.5 : 1.35);
 		}
 
 		if (isFaded) {
 			color = palette.edgeInternal;
-			size = Math.max(0.5, data.size * 0.65);
+			size = Math.max(0.28, data.size * 0.6);
 		}
 
 		return {

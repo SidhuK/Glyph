@@ -55,8 +55,8 @@ export function drawConnectionsNodeHover(
 	variant: ConnectionsGraphVariant,
 ) {
 	const size = data.size ?? 1;
-	const glowRadius = size + (variant === "local" ? 20 : 12);
-	const ringRadius = size + (variant === "local" ? 5 : 3);
+	const glowRadius = size + (variant === "local" ? 16 : 9);
+	const ringRadius = size + (variant === "local" ? 4 : 2.5);
 
 	context.save();
 
@@ -76,7 +76,7 @@ export function drawConnectionsNodeHover(
 	context.fill();
 
 	context.strokeStyle = palette.hoverHalo;
-	context.lineWidth = variant === "local" ? 1.4 : 1;
+	context.lineWidth = variant === "local" ? 1.2 : 0.85;
 	context.beginPath();
 	context.arc(data.x, data.y, ringRadius, 0, Math.PI * 2);
 	context.stroke();
@@ -109,7 +109,7 @@ export function drawConnectionsNodeLabel(
 	context.textBaseline = "alphabetic";
 
 	const textWidth = context.measureText(label).width;
-	const offsetX = variant === "local" ? 9 : 7;
+	const offsetX = variant === "local" ? 8 : 6;
 	const textX = Math.round(data.x + size + offsetX);
 	const textY = Math.round(data.y + fontSize / 3);
 

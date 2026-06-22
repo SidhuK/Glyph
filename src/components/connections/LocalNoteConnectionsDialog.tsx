@@ -9,8 +9,8 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import {
-	buildLocalConnectionsGraph,
 	type ConnectionsGraph,
+	buildLocalConnectionsGraph,
 } from "./connectionsGraph";
 import { useSigmaConnections } from "./useSigmaConnections";
 

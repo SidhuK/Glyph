@@ -76,86 +76,85 @@
 
 .localNoteConnectionsViewport {
 	--local-connections-border: var(--border-default);
-	--local-connections-dot: color-mix(
-		in srgb,
-		var(--text-tertiary) 12%,
-		transparent
-	);
-	--local-connections-edge: color-mix(
-		in srgb,
-		var(--text-secondary) 52%,
-		transparent
-	);
-	--local-connections-edge-active: color-mix(
-		in srgb,
-		var(--interactive-accent) 82%,
-		transparent
-	);
-	--local-connections-edge-tag: color-mix(
-		in srgb,
-		var(--interactive-accent) 50%,
-		transparent
-	);
-	--local-connections-edge-incoming: color-mix(
-		in srgb,
-		var(--text-primary) 50%,
-		transparent
-	);
-	--local-connections-edge-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 18%,
-		transparent
-	);
-	--local-connections-note-bg: color-mix(
-		in srgb,
-		var(--interactive-accent) 52%,
-		var(--bg-primary)
-	);
-	--local-connections-note-muted: color-mix(
-		in srgb,
-		var(--text-secondary) 34%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-node: color-mix(
-		in srgb,
-		var(--interactive-accent) 78%,
-		var(--bg-primary)
-	);
-	--local-connections-tag-muted: color-mix(
-		in srgb,
-		var(--interactive-accent) 22%,
-		color-mix(in srgb, var(--text-secondary) 32%, var(--bg-primary))
-	);
-	--local-connections-node-faded: color-mix(
-		in srgb,
-		var(--text-tertiary) 28%,
-		var(--bg-primary)
-	);
-	--local-connections-text: var(--text-primary);
-	--local-connections-label-bg: color-mix(
-		in srgb,
-		var(--bg-secondary) 92%,
-		var(--bg-primary)
-	);
-	--local-connections-label-border: color-mix(
-		in srgb,
-		var(--border-strong) 60%,
-		transparent
-	);
-	--local-connections-hover-halo: color-mix(
-		in srgb,
-		var(--interactive-accent) 34%,
-		transparent
-	);
-	--local-connections-hover-halo-soft: color-mix(
-		in srgb,
-		var(--interactive-accent) 16%,
-		transparent
-	);
 	--local-connections-surface: color-mix(
 		in srgb,
 		var(--bg-canvas, var(--bg-secondary)) 92%,
 		var(--bg-primary)
+	);
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-tertiary) 9%,
+		transparent
+	);
+	--local-connections-edge: color-mix(
+		in srgb,
+		var(--text-secondary) 34%,
+		var(--local-connections-surface)
+	);
+	--local-connections-edge-active: color-mix(
+		in srgb,
+		var(--interactive-accent) 52%,
+		var(--local-connections-surface)
+	);
+	--local-connections-edge-tag: color-mix(
+		in srgb,
+		var(--interactive-accent) 38%,
+		var(--local-connections-surface)
+	);
+	--local-connections-edge-muted: color-mix(
+		in srgb,
+		var(--text-tertiary) 22%,
+		var(--local-connections-surface)
+	);
+	--local-connections-note-bg: color-mix(
+		in srgb,
+		var(--text-secondary) 44%,
+		var(--bg-primary)
+	);
+	--local-connections-note-muted: color-mix(
+		in srgb,
+		var(--text-secondary) 28%,
+		var(--bg-primary)
+	);
+	--local-connections-tag-node: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		var(--bg-primary)
+	);
+	--local-connections-tag-muted: color-mix(
+		in srgb,
+		var(--interactive-accent) 18%,
+		color-mix(in srgb, var(--text-secondary) 26%, var(--bg-primary))
+	);
+	--local-connections-node-faded: color-mix(
+		in srgb,
+		var(--text-tertiary) 22%,
+		var(--bg-primary)
+	);
+	--local-connections-text: color-mix(
+		in srgb,
+		var(--text-primary) 88%,
+		var(--text-secondary)
+	);
+	--local-connections-label-bg: color-mix(
+		in srgb,
+		var(--bg-secondary) 88%,
+		var(--bg-primary)
+	);
+	--local-connections-label-border: color-mix(
+		in srgb,
+		var(--border-strong) 48%,
+		transparent
+	);
+	--local-connections-hover-halo: color-mix(
+		in srgb,
+		var(--interactive-accent) 28%,
+		transparent
+	);
+	--local-connections-hover-halo-soft: color-mix(
+		in srgb,
+		var(--interactive-accent) 12%,
+		transparent
 	);
 
 	width: 100%;
@@ -183,62 +182,72 @@
 :root.dark .localNoteConnectionsViewport {
 	--local-connections-dot: color-mix(
 		in srgb,
-		var(--text-secondary) 11%,
+		var(--text-secondary) 8%,
 		transparent
 	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		color-mix(in srgb, var(--text-secondary) 80%, var(--link-color)) 24%,
-		transparent
+		var(--text-secondary) 26%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 66%,
-		transparent
+		var(--interactive-accent) 46%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--link-color) 36%,
-		transparent
-	);
-	--local-connections-edge-incoming: color-mix(
-		in srgb,
-		color-mix(in srgb, var(--text-primary) 74%, var(--link-color)) 30%,
-		transparent
+		var(--interactive-accent) 34%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 12%,
-		transparent
+		var(--text-secondary) 16%,
+		var(--local-connections-surface)
+	);
+	--local-connections-note-bg: color-mix(
+		in srgb,
+		var(--text-secondary) 38%,
+		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 24%,
+		var(--text-secondary) 20%,
+		var(--bg-primary)
+	);
+	--local-connections-tag-node: color-mix(
+		in srgb,
+		var(--interactive-accent) 58%,
 		var(--bg-primary)
 	);
 	--local-connections-node-faded: color-mix(
 		in srgb,
-		var(--text-secondary) 16%,
+		var(--text-secondary) 12%,
 		var(--bg-primary)
+	);
+	--local-connections-text: color-mix(
+		in srgb,
+		var(--text-primary) 82%,
+		var(--text-secondary)
 	);
 	--local-connections-label-bg: color-mix(
 		in srgb,
-		var(--bg-primary) 74%,
-		transparent
+		var(--bg-primary) 82%,
+		var(--bg-secondary)
 	);
 	--local-connections-label-border: color-mix(
 		in srgb,
-		var(--border-default) 38%,
+		var(--border-default) 32%,
 		transparent
 	);
 	--local-connections-hover-halo: color-mix(
 		in srgb,
-		var(--interactive-accent) 42%,
+		var(--interactive-accent) 36%,
 		transparent
 	);
 	--local-connections-hover-halo-soft: color-mix(
 		in srgb,
-		var(--interactive-accent) 22%,
+		var(--interactive-accent) 18%,
 		transparent
 	);
 }
@@ -246,96 +255,86 @@
 .spaceConnectionsHost .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 42%,
-		transparent
+		var(--text-tertiary) 28%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 85%,
-		transparent
+		var(--interactive-accent) 50%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--link-color) 46%,
-		transparent
-	);
-	--local-connections-edge-incoming: color-mix(
-		in srgb,
-		var(--text-primary) 44%,
-		transparent
+		var(--interactive-accent) 32%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 16%,
-		transparent
+		var(--text-tertiary) 18%,
+		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--interactive-accent) 48%,
+		var(--text-secondary) 40%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 38%,
+		var(--text-secondary) 30%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--link-color) 76%,
+		var(--interactive-accent) 58%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--link-color) 14%,
-		color-mix(in srgb, var(--text-secondary) 38%, var(--bg-primary))
+		var(--interactive-accent) 12%,
+		color-mix(in srgb, var(--text-secondary) 30%, var(--bg-primary))
 	);
 }
 
 :root.dark .spaceConnectionsHost .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		color-mix(in srgb, var(--text-secondary) 80%, var(--link-color)) 15%,
-		transparent
+		var(--text-secondary) 20%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 72%,
-		transparent
+		var(--interactive-accent) 44%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--link-color) 30%,
-		transparent
-	);
-	--local-connections-edge-incoming: color-mix(
-		in srgb,
-		color-mix(in srgb, var(--text-primary) 74%, var(--link-color)) 19%,
-		transparent
+		var(--interactive-accent) 28%,
+		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 8%,
-		transparent
+		var(--text-secondary) 12%,
+		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--interactive-accent) 66%,
+		var(--text-secondary) 34%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 36%,
+		var(--text-secondary) 28%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--link-color) 84%,
+		var(--interactive-accent) 62%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--link-color) 18%,
-		color-mix(in srgb, var(--text-secondary) 36%, var(--bg-primary))
+		var(--interactive-accent) 14%,
+		color-mix(in srgb, var(--text-secondary) 30%, var(--bg-primary))
 	);
 }
 
@@ -390,20 +389,20 @@
 .localNoteConnectionsLegendNode.is-note {
 	border-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 72%,
+		var(--text-secondary) 56%,
 		var(--border-default)
 	);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 28%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--text-secondary) 34%, var(--bg-primary));
 }
 
 .localNoteConnectionsLegendNode.is-tag {
 	border-style: solid;
 	border-color: var(--interactive-accent);
-	background: color-mix(in srgb, var(--interactive-accent) 42%, var(--bg-primary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--bg-primary)
+	);
 }
 
 .localNoteConnectionsLegendNode.is-isolated {
@@ -416,58 +415,52 @@
 .localNoteConnectionsLegend.is-space
 	.localNoteConnectionsLegendNode.is-isolated {
 	border-color: color-mix(in srgb, var(--text-secondary) 64%, transparent);
-	background: color-mix(
-		in srgb,
-		var(--text-secondary) 52%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--text-secondary) 52%, var(--bg-primary));
 }
 
-.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-note {
+.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-note {
 	border-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 72%,
+		var(--text-secondary) 60%,
+		var(--border-default)
+	);
+	background: color-mix(in srgb, var(--text-secondary) 46%, var(--bg-primary));
+}
+
+.localNoteConnectionsLegend.is-space .localNoteConnectionsLegendNode.is-tag {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 82%,
 		var(--border-default)
 	);
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 46%,
+		var(--interactive-accent) 74%,
 		var(--bg-primary)
 	);
-}
-
-.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendNode.is-tag {
-	border-color: color-mix(in srgb, var(--link-color) 82%, var(--border-default));
-	background: color-mix(in srgb, var(--link-color) 74%, var(--bg-primary));
 }
 
 :root.dark
 	.localNoteConnectionsLegend.is-space
 	.localNoteConnectionsLegendNode.is-note {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 58%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--text-secondary) 52%, var(--bg-primary));
 }
 
 :root.dark
 	.localNoteConnectionsLegend.is-space
 	.localNoteConnectionsLegendNode.is-tag {
-	background: color-mix(in srgb, var(--link-color) 82%, var(--bg-primary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 82%,
+		var(--bg-primary)
+	);
 }
 
 :root.dark
 	.localNoteConnectionsLegend.is-space
 	.localNoteConnectionsLegendNode.is-isolated {
 	border-color: color-mix(in srgb, var(--text-secondary) 74%, transparent);
-	background: color-mix(
-		in srgb,
-		var(--text-secondary) 64%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--text-secondary) 64%, var(--bg-primary));
 }
 
 .localNoteConnectionsLegendEdge {

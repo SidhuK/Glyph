@@ -7,8 +7,8 @@ import { invoke } from "../../lib/tauri";
 import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import {
-	buildSpaceConnectionsGraph,
 	type ConnectionsGraph,
+	buildSpaceConnectionsGraph,
 } from "./connectionsGraph";
 import { useSigmaConnections } from "./useSigmaConnections";
 
@@ -40,11 +40,13 @@ export function SpaceConnectionsView() {
 
 		void invoke("space_connections")
 			.then((nextGraph) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setPayload(nextGraph);
 			})
 			.catch((cause) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath) return;
+				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+					return;
 				setPayload(null);
 				setError(cause instanceof Error ? cause.message : String(cause));
 			})

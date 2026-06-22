@@ -1,5 +1,9 @@
 import Graph from "graphology";
 import type { LocalNoteConnections, SpaceConnections } from "../../lib/tauri";
+import {
+	LOCAL_CENTER_NODE_SIZE,
+	connectionsDensityProfile,
+} from "./connectionsDensity";
 
 export type ConnectionsNodeKind = "note" | "tag";
 export type ConnectionsEdgeColorRole =
@@ -35,8 +39,8 @@ export type ConnectionsGraph = Graph<
 	ConnectionsEdgeAttributes
 >;
 
-const MIN_TAG_NODE_SIZE = 8;
-const MAX_TAG_NODE_SIZE = 17;
+const MIN_TAG_NODE_SIZE = 6;
+const MAX_TAG_NODE_SIZE = 13;
 const REDUCER_COLOR_PLACEHOLDER = "#000000";
 
 interface GraphPosition {
@@ -123,7 +127,11 @@ function seedSpacePositions(graph: SpaceConnections) {
 	const nodeCount = ids.length;
 	const extent = Math.max(1200, Math.sqrt(nodeCount) * 180);
 	const cellSize = Math.max(80, (extent / Math.sqrt(nodeCount)) * 0.78);
-	const candidateCount = nodeCount >= 10000 ? 5 : 8;
+	const { layoutCandidateCount: candidateCount } = connectionsDensityProfile(
+		"space",
+		nodeCount,
+		0,
+	);
 	const clusterCount = Math.min(
 		12,
 		Math.max(4, Math.round(Math.sqrt(nodeCount) / 12)),
@@ -216,22 +224,12 @@ function seedSpacePositions(graph: SpaceConnections) {
 	return positions;
 }
 
-function spaceNoteSize(weight: number, maxWeight: number, nodeCount: number) {
-	if (nodeCount >= 10000) return scaledNodeSize(weight, 0.5, 2, maxWeight);
-	if (nodeCount >= 5000) return scaledNodeSize(weight, 0.7, 2.5, maxWeight);
-	if (nodeCount >= 2000) return scaledNodeSize(weight, 1, 3.4, maxWeight);
-	if (nodeCount >= 1000) return scaledNodeSize(weight, 1.5, 4.5, maxWeight);
-	if (nodeCount >= 400) return scaledNodeSize(weight, 2, 6.5, maxWeight);
-	return scaledNodeSize(weight, 4, 12, maxWeight);
-}
-
-function spaceTagSize(weight: number, maxWeight: number, nodeCount: number) {
-	if (nodeCount >= 10000) return scaledNodeSize(weight, 0.8, 2.8, maxWeight);
-	if (nodeCount >= 5000) return scaledNodeSize(weight, 1, 3.4, maxWeight);
-	if (nodeCount >= 2000) return scaledNodeSize(weight, 1.4, 4.5, maxWeight);
-	if (nodeCount >= 1000) return scaledNodeSize(weight, 2, 6, maxWeight);
-	if (nodeCount >= 400) return scaledNodeSize(weight, 2.8, 8, maxWeight);
-	return scaledNodeSize(weight, 5, 13, maxWeight);
+function nodeSizeFromRange(
+	weight: number,
+	maxWeight: number,
+	range: readonly [number, number],
+) {
+	return scaledNodeSize(weight, range[0], range[1], maxWeight);
 }
 
 function seedLocalPositions(graph: LocalNoteConnections) {
@@ -280,6 +278,8 @@ export function buildSpaceConnectionsGraph(
 	const graph = createGraph();
 	const positions = seedSpacePositions(payload);
 	const nodeCount = payload.nodes.length + payload.tags.length;
+	const edgeCount = payload.edges.length + payload.tag_edges.length;
+	const density = connectionsDensityProfile("space", nodeCount, edgeCount);
 	const connectionCounts = spaceConnectionCounts(payload);
 	const maxConnections = maxConnectionCount(connectionCounts);
 
@@ -290,7 +290,11 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: node.title || node.id,
-			size: spaceNoteSize(connectionCount, maxConnections, nodeCount),
+			size: nodeSizeFromRange(
+				connectionCount,
+				maxConnections,
+				density.noteSizeRange,
+			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: false,
@@ -305,13 +309,19 @@ export function buildSpaceConnectionsGraph(
 			x: position.x,
 			y: position.y,
 			label: tag.title,
-			size: spaceTagSize(connectionCount, maxConnections, nodeCount),
+			size: nodeSizeFromRange(
+				connectionCount,
+				maxConnections,
+				density.tagSizeRange,
+			),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "tag",
 			isCenter: false,
 			isIsolated: connectionCount === 0,
 		});
 	}
+
+	const edgeScale = density.edgeScale;
 
 	for (const [index, edge] of payload.edges.entries()) {
 		const edgeId = `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`;
@@ -320,7 +330,7 @@ export function buildSpaceConnectionsGraph(
 			type: "line",
 			colorRole: isRelationship ? "relationship" : "default",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: isRelationship ? 1 : 0.75,
+			size: (isRelationship ? 0.85 : 0.55) * edgeScale,
 		});
 	}
 
@@ -330,7 +340,7 @@ export function buildSpaceConnectionsGraph(
 			type: "tag-line",
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.7,
+			size: 0.5 * edgeScale,
 		});
 	}
 
@@ -352,8 +362,8 @@ export function buildLocalConnectionsGraph(
 			y: position.y,
 			label: node.title || node.id,
 			size: node.is_center
-				? 18
-				: scaledNodeSize(connectionCount, 9, 17, maxConnections),
+				? LOCAL_CENTER_NODE_SIZE
+				: scaledNodeSize(connectionCount, 7, 13, maxConnections),
 			color: REDUCER_COLOR_PLACEHOLDER,
 			kind: "note",
 			isCenter: node.is_center,
@@ -387,13 +397,13 @@ export function buildLocalConnectionsGraph(
 		const isToCenter = edge.target === payload.center.id;
 		const isInternal = !isFromCenter && !isToCenter;
 		let colorRole: ConnectionsEdgeColorRole = "default";
-		let size = 0.9;
+		let size = 0.7;
 		if (isFromCenter) {
 			colorRole = "accent";
-			size = 1.4;
+			size = 1.1;
 		} else if (isToCenter) {
 			colorRole = "incoming";
-			size = 1.15;
+			size = 0.9;
 		} else if (isInternal) {
 			colorRole = "internal";
 		}
@@ -412,7 +422,7 @@ export function buildLocalConnectionsGraph(
 			type: "tag-line",
 			colorRole: "tag",
 			color: REDUCER_COLOR_PLACEHOLDER,
-			size: 0.75,
+			size: 0.6,
 		});
 	}
 
