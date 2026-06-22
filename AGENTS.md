@@ -89,6 +89,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 ## Migration Policy
 
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
+- Unless a core functionality is broken, never suggest adding backward compatibility.
 
 ## Version Control
 
