@@ -1,6 +1,7 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { RowSelectionState } from "@tanstack/react-table";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
@@ -63,6 +64,8 @@ interface DatabaseBoardProps {
 	groupColumnId?: string | null;
 	showColumnColor?: boolean;
 	selectedRowPath: string | null;
+	rowSelection: RowSelectionState;
+	onToggleRowSelection: (notePath: string) => void;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onCreateRow?: (
@@ -181,6 +184,8 @@ export function DatabaseBoard({
 	groupColumnId: persistedGroupColumnId,
 	showColumnColor = true,
 	selectedRowPath,
+	rowSelection,
+	onToggleRowSelection,
 	onSelectRow,
 	onOpenRow,
 	onCreateRow,
@@ -600,8 +605,10 @@ export function DatabaseBoard({
 													row={row}
 													laneId={lane.id}
 													selected={row.note_path === selectedRowPath}
+													multiSelected={Boolean(rowSelection[row.note_path])}
 													suppressClickRef={suppressClickRef}
 													onSelectRow={onSelectRow}
+													onToggleRowSelection={onToggleRowSelection}
 													onOpenRow={onOpenRow}
 													onContextMenu={(event) => {
 														void showNativeContextMenu(event, [

@@ -1,6 +1,8 @@
 import {
 	type ColumnDef,
 	type Row,
+	type RowSelectionState,
+	type Updater,
 	flexRender,
 	getCoreRowModel,
 	useReactTable,
@@ -32,6 +34,8 @@ interface DatabaseTableProps {
 	rows: DatabaseRow[];
 	columns: DatabaseColumn[];
 	selectedRowPath: string | null;
+	rowSelection: RowSelectionState;
+	onRowSelectionChange: (updater: Updater<RowSelectionState>) => void;
 	activeSort: DatabaseSort | null;
 	groupColumn?: DatabaseColumn | null;
 	onSelectRow: (notePath: string) => void;
@@ -62,6 +66,7 @@ interface DatabaseTableProps {
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
+const DATABASE_TABLE_SELECT_COLUMN_WIDTH = 36;
 const DATABASE_TABLE_ROW_HEIGHT = 38;
 const DATABASE_TABLE_GROUP_ROW_HEIGHT = 34;
 
@@ -154,6 +159,8 @@ export function DatabaseTable({
 	rows,
 	columns,
 	selectedRowPath,
+	rowSelection,
+	onRowSelectionChange,
 	activeSort,
 	groupColumn = null,
 	onSelectRow,
@@ -200,45 +207,82 @@ export function DatabaseTable({
 	}, [columns, rows]);
 
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
-		() =>
-			columns.map((column) => ({
-				id: column.id,
-				header: () => (
-					<div className="databaseHeaderControls">
-						<DatabaseColumnIconPicker
-							column={column}
-							className="databaseHeaderIconPicker"
-							onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
-						/>
-						<button
-							type="button"
-							className="databaseHeaderButton"
-							onClick={() => onToggleSort(column)}
-						>
-							<span className="databaseHeaderLabel">
-								<span className="databaseHeaderText">{column.label}</span>
-								<SortIndicator activeSort={activeSort} columnId={column.id} />
-							</span>
-						</button>
-					</div>
-				),
-				cell: ({ row }) => (
-					<DatabaseCell
-						row={row.original}
-						column={column}
-						isRowSelected={row.original.note_path === selectedRowPath}
-						laneColors={safeLaneColors}
-						statusColors={statusColors}
-						onOpenNote={onOpenRow}
-						onSelectRow={onSelectRow}
-						onSave={onSaveCell}
-						onStatusColorChange={onStatusColorChange}
-						onRenameTitle={onRenameTitle}
-						valueOptions={columnValueOptions[column.id] ?? []}
+		() => [
+			{
+				id: "__select",
+				size: DATABASE_TABLE_SELECT_COLUMN_WIDTH,
+				minSize: DATABASE_TABLE_SELECT_COLUMN_WIDTH,
+				maxSize: DATABASE_TABLE_SELECT_COLUMN_WIDTH,
+				enableResizing: false,
+				header: ({ table: tableInstance }) => (
+					<input
+						type="checkbox"
+						className="databaseRowSelectCheckbox"
+						aria-label="Select all rows"
+						checked={tableInstance.getIsAllPageRowsSelected()}
+						ref={(input) => {
+							if (!input) return;
+							input.indeterminate =
+								tableInstance.getIsSomePageRowsSelected() &&
+								!tableInstance.getIsAllPageRowsSelected();
+						}}
+						onChange={tableInstance.getToggleAllPageRowsSelectedHandler()}
+						onClick={(event) => event.stopPropagation()}
 					/>
 				),
-				size: column.width ?? 180,
-			})),
+				cell: ({ row }) => (
+					<input
+						type="checkbox"
+						className="databaseRowSelectCheckbox"
+						aria-label={`Select ${row.original.title || row.original.note_path}`}
+						checked={row.getIsSelected()}
+						disabled={!row.getCanSelect()}
+						onChange={row.getToggleSelectedHandler()}
+						onClick={(event) => event.stopPropagation()}
+					/>
+				),
+			},
+			...columns.map(
+				(column): ColumnDef<DatabaseRow> => ({
+					id: column.id,
+					header: () => (
+						<div className="databaseHeaderControls">
+							<DatabaseColumnIconPicker
+								column={column}
+								className="databaseHeaderIconPicker"
+								onChange={(iconName) => onChangeColumnIcon(column.id, iconName)}
+							/>
+							<button
+								type="button"
+								className="databaseHeaderButton"
+								onClick={() => onToggleSort(column)}
+							>
+								<span className="databaseHeaderLabel">
+									<span className="databaseHeaderText">{column.label}</span>
+									<SortIndicator activeSort={activeSort} columnId={column.id} />
+								</span>
+							</button>
+						</div>
+					),
+					cell: ({ row }) => (
+						<DatabaseCell
+							row={row.original}
+							column={column}
+							isRowSelected={row.original.note_path === selectedRowPath}
+							laneColors={safeLaneColors}
+							statusColors={statusColors}
+							onOpenNote={onOpenRow}
+							onSelectRow={onSelectRow}
+							onSave={onSaveCell}
+							onStatusColorChange={onStatusColorChange}
+							onRenameTitle={onRenameTitle}
+							valueOptions={columnValueOptions[column.id] ?? []}
+						/>
+					),
+					size: column.width ?? 180,
+				}),
+			),
+		],
 		[
 			activeSort,
 			columnValueOptions,
@@ -260,6 +304,13 @@ export function DatabaseTable({
 		data: rows,
 		columns: tableColumns,
 		getCoreRowModel: getCoreRowModel(),
+		getRowId: (row) => row.note_path,
+		enableRowSelection: true,
+		enableMultiRowSelection: true,
+		onRowSelectionChange,
+		state: {
+			rowSelection,
+		},
 		enableColumnResizing: true,
 		columnResizeMode: "onChange",
 		defaultColumn: {
@@ -334,7 +385,11 @@ export function DatabaseTable({
 										width: header.getSize(),
 										minWidth: header.getSize(),
 									}}
-									className="databaseHeadCell"
+									className={
+										header.column.id === "__select"
+											? "databaseHeadCell databaseSelectHead"
+											: "databaseHeadCell"
+									}
 									aria-sort={
 										activeSort?.column_id === header.column.id
 											? activeSort.direction === "desc"
@@ -423,14 +478,14 @@ export function DatabaseTable({
 								);
 							}
 							const { row } = item;
+							const isRowSelected =
+								row.getIsSelected() ||
+								row.original.note_path === selectedRowPath;
 							return (
 								<TableRow
 									key={virtualRow.key}
-									data-state={
-										row.original.note_path === selectedRowPath
-											? "selected"
-											: undefined
-									}
+									data-state={isRowSelected ? "selected" : undefined}
+									data-multi-selected={row.getIsSelected() ? "true" : undefined}
 									className="databaseRow"
 									style={{
 										height: `${DATABASE_TABLE_ROW_HEIGHT}px`,
@@ -445,7 +500,11 @@ export function DatabaseTable({
 												width: cell.column.getSize(),
 												minWidth: cell.column.getSize(),
 											}}
-											className="databaseBodyCell"
+											className={
+												cell.column.id === "__select"
+													? "databaseBodyCell databaseSelectCell"
+													: "databaseBodyCell"
+											}
 										>
 											{flexRender(
 												cell.column.columnDef.cell,

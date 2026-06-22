@@ -3,6 +3,7 @@ import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesReque
 import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
 import type { ActiveCollection } from "./types";
 import { useCollectionWorkspace } from "./useCollectionWorkspace";
+import { useDatabaseBulkActions } from "./useDatabaseBulkActions";
 import { useDatabaseDisplaySettings } from "./useDatabaseDisplaySettings";
 import { useDatabaseRowActions } from "./useDatabaseRowActions";
 import { useDatabaseRows } from "./useDatabaseRows";
@@ -79,6 +80,16 @@ export function useDatabasesPane({
 		clearError,
 	});
 
+	const bulkActions = useDatabaseBulkActions({
+		rows: rows.rows,
+		columns: activeCollection?.config.columns ?? [],
+		selectedRowPaths: rows.selectedRowPaths,
+		clearRowSelection: rows.clearRowSelection,
+		handleUpdateCell: rowActions.handleUpdateCell,
+		setError,
+		clearError,
+	});
+
 	return {
 		selection: {
 			summaries: workspace.summaries,
@@ -109,6 +120,7 @@ export function useDatabasesPane({
 		},
 		activeCollection,
 		actions: rowActions,
+		bulkActions,
 		ui: { error, setError, clearError },
 	};
 }

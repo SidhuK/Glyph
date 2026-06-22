@@ -3,6 +3,7 @@ import {
 	useInfiniteQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
+import type { RowSelectionState, Updater } from "@tanstack/react-table";
 import {
 	type Dispatch,
 	type SetStateAction,
@@ -89,6 +90,7 @@ export function useDatabaseRows({
 }: UseDatabaseRowsOptions) {
 	const queryClient = useQueryClient();
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
+	const [rowSelection, setRowSelectionState] = useState<RowSelectionState>({});
 	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const previousSelectionRef = useRef<{
 		databaseId: string | null;
@@ -151,7 +153,37 @@ export function useDatabaseRows({
 
 	const clearRows = useCallback(() => {
 		setSelectedRowPath(null);
+		setRowSelectionState({});
 	}, []);
+
+	const setRowSelection = useCallback((updater: Updater<RowSelectionState>) => {
+		setRowSelectionState((current) =>
+			typeof updater === "function" ? updater(current) : updater,
+		);
+	}, []);
+
+	const clearRowSelection = useCallback(() => {
+		setRowSelectionState({});
+	}, []);
+
+	const toggleRowSelection = useCallback((notePath: string) => {
+		setRowSelectionState((current) => {
+			if (current[notePath]) {
+				const next = { ...current };
+				delete next[notePath];
+				return next;
+			}
+			return { ...current, [notePath]: true };
+		});
+	}, []);
+
+	const selectedRowPaths = useMemo(
+		() =>
+			Object.entries(rowSelection)
+				.filter(([, selected]) => selected)
+				.map(([notePath]) => notePath),
+		[rowSelection],
+	);
 
 	useEffect(() => {
 		const previous = previousSelectionRef.current;
@@ -168,11 +200,13 @@ export function useDatabaseRows({
 			pageSize,
 		};
 		setSelectedRowPath(null);
+		setRowSelectionState({});
 	}, [pageSize, selectedDatabaseId, selectedViewId]);
 
 	const loadRows = useCallback(async () => {
 		if (!canLoadRows) {
 			setSelectedRowPath(null);
+			setRowSelectionState({});
 			return;
 		}
 		await rowsQuery.refetch();
@@ -223,6 +257,11 @@ export function useDatabaseRows({
 		loadMoreRows: rowsQuery.fetchNextPage,
 		selectedRowPath,
 		setSelectedRowPath,
+		rowSelection,
+		setRowSelection,
+		selectedRowPaths,
+		clearRowSelection,
+		toggleRowSelection,
 		loadRows,
 		clearRows,
 	};

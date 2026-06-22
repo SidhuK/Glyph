@@ -282,6 +282,12 @@
 	outline-color: color-mix(in srgb, var(--interactive-accent) 46%, transparent);
 }
 
+.databaseBoardCard[data-multi-selected="true"] {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	outline-offset: -2px;
+}
+
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;

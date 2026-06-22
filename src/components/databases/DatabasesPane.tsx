@@ -12,6 +12,7 @@ import type { WorkspaceDatabaseDocument } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { CanvasPaneAwait } from "../app/CanvasPaneAwait";
 import { DatabaseBoard } from "../database/DatabaseBoard";
+import { DatabaseBulkActionsBar } from "../database/DatabaseBulkActionsBar";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
@@ -47,6 +48,7 @@ function DatabasesPaneContent({
 		viewSelection,
 		activeCollection,
 		actions,
+		bulkActions,
 		ui,
 	} = useDatabasesPane({
 		onOpenFile,
@@ -106,6 +108,20 @@ function DatabasesPaneContent({
 					{ui.error ? (
 						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
 					) : null}
+					<DatabaseBulkActionsBar
+						selectedCount={rows.selectedRowPaths.length}
+						selectedRowPaths={rows.selectedRowPaths}
+						rows={rows.rows}
+						bulkEligible={bulkActions.bulkEligible}
+						statusColors={display.statusColors}
+						isApplying={bulkActions.isApplying}
+						onClearSelection={rows.clearRowSelection}
+						onSetStatus={bulkActions.bulkSetStatus}
+						onSetPriority={bulkActions.bulkSetPriority}
+						onSetCheckbox={bulkActions.bulkSetCheckbox}
+						onAddTags={bulkActions.bulkAddTags}
+						onRemoveTags={bulkActions.bulkRemoveTags}
+					/>
 					{activeCollection.config.view.layout === "board" &&
 					views.boardHandlers ? (
 						<DatabaseBoard
@@ -126,6 +142,8 @@ function DatabasesPaneContent({
 							statusColors={display.statusColors}
 							showColumnColor={display.showDatabaseColumnColor}
 							selectedRowPath={rows.selectedRowPath}
+							rowSelection={rows.rowSelection}
+							onToggleRowSelection={rows.toggleRowSelection}
 							onSelectRow={rows.setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onCreateRow={actions.handleCreateRow}
@@ -154,6 +172,8 @@ function DatabasesPaneContent({
 							statusColors={display.statusColors}
 							onStatusColorChange={display.setStatusColor}
 							selectedRowPath={rows.selectedRowPath}
+							rowSelection={rows.rowSelection}
+							onRowSelectionChange={rows.setRowSelection}
 							activeSort={activeCollection.config.sorts[0] ?? null}
 							groupColumn={views.activeGroupColumn}
 							onSelectRow={rows.setSelectedRowPath}

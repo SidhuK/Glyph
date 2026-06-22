@@ -477,6 +477,27 @@
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 }
 
+.databaseRow[data-multi-selected="true"] {
+	box-shadow: inset 2px 0 0 var(--interactive-accent);
+}
+
+.databaseSelectHead,
+.databaseSelectCell {
+	width: 36px;
+	min-width: 36px;
+	max-width: 36px;
+	padding-inline: 8px;
+	text-align: center;
+}
+
+.databaseRowSelectCheckbox {
+	width: 14px;
+	height: 14px;
+	margin: 0;
+	accent-color: var(--interactive-accent);
+	cursor: pointer;
+}
+
 .databaseGroupHeaderRow {
 	position: relative;
 	z-index: 0;

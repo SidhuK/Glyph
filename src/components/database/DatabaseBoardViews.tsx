@@ -281,8 +281,10 @@ interface DatabaseBoardCardViewProps {
 	row: DatabaseRow;
 	laneId: string;
 	selected: boolean;
+	multiSelected: boolean;
 	suppressClickRef: MutableRefObject<boolean>;
 	onSelectRow: (notePath: string) => void;
+	onToggleRowSelection: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onContextMenu: (event: MouseEvent<HTMLButtonElement>) => void;
 	children: ReactNode;
@@ -292,8 +294,10 @@ export function DatabaseBoardCardView({
 	row,
 	laneId,
 	selected,
+	multiSelected,
 	suppressClickRef,
 	onSelectRow,
+	onToggleRowSelection,
 	onOpenRow,
 	onContextMenu,
 	children,
@@ -331,10 +335,15 @@ export function DatabaseBoardCardView({
 			type="button"
 			className="databaseBoardCard"
 			data-state={selected ? "selected" : undefined}
+			data-multi-selected={multiSelected ? "true" : undefined}
 			data-dragging={isDragging ? "true" : undefined}
 			data-drop-target={isDropTarget ? "true" : undefined}
-			onClick={() => {
+			onClick={(event) => {
 				if (suppressClickRef.current) return;
+				if (event.metaKey || event.ctrlKey) {
+					onToggleRowSelection(row.note_path);
+					return;
+				}
 				onSelectRow(row.note_path);
 			}}
 			onContextMenu={onContextMenu}
@@ -348,7 +357,7 @@ export function DatabaseBoardCardView({
 					onSelectRow(row.note_path);
 				}
 			}}
-			title="Double-click to open note"
+			title="Double-click to open note. Cmd-click to multi-select."
 		>
 			{children}
 		</button>
