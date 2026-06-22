@@ -78,60 +78,80 @@
 	--local-connections-border: var(--border-default);
 	--local-connections-dot: color-mix(
 		in srgb,
-		var(--text-secondary) 13%,
+		var(--text-tertiary) 12%,
 		transparent
 	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 30%,
+		var(--text-secondary) 52%,
 		transparent
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 68%,
+		var(--interactive-accent) 82%,
 		transparent
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 24%,
+		var(--interactive-accent) 50%,
 		transparent
 	);
 	--local-connections-edge-incoming: color-mix(
 		in srgb,
-		var(--text-primary) 46%,
+		var(--text-primary) 50%,
 		transparent
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 12%,
+		var(--text-secondary) 18%,
 		transparent
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--interactive-accent) 18%,
+		var(--interactive-accent) 52%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-tertiary) 24%,
+		var(--text-secondary) 34%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--interactive-accent) 58%,
+		var(--interactive-accent) 78%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--interactive-accent) 8%,
-		color-mix(in srgb, var(--text-tertiary) 28%, var(--bg-primary))
+		var(--interactive-accent) 22%,
+		color-mix(in srgb, var(--text-secondary) 32%, var(--bg-primary))
 	);
 	--local-connections-node-faded: color-mix(
 		in srgb,
-		var(--text-tertiary) 18%,
+		var(--text-tertiary) 28%,
 		var(--bg-primary)
 	);
 	--local-connections-text: var(--text-primary);
+	--local-connections-label-bg: color-mix(
+		in srgb,
+		var(--bg-secondary) 92%,
+		var(--bg-primary)
+	);
+	--local-connections-label-border: color-mix(
+		in srgb,
+		var(--border-strong) 60%,
+		transparent
+	);
+	--local-connections-hover-halo: color-mix(
+		in srgb,
+		var(--interactive-accent) 34%,
+		transparent
+	);
+	--local-connections-hover-halo-soft: color-mix(
+		in srgb,
+		var(--interactive-accent) 16%,
+		transparent
+	);
 	--local-connections-surface: color-mix(
 		in srgb,
 		var(--bg-canvas, var(--bg-secondary)) 92%,
@@ -143,10 +163,10 @@
 	cursor: grab;
 	background-color: var(--local-connections-surface);
 	background-image: radial-gradient(
-			circle at center,
-			var(--local-connections-dot) 0.65px,
-			transparent 1.2px
-		);
+		circle at center,
+		var(--local-connections-dot) 0.6px,
+		transparent 1.15px
+	);
 	background-position: 0 0;
 	background-size: 24px 24px;
 }
@@ -160,101 +180,175 @@
 	cursor: grabbing;
 }
 
-.spaceConnectionsHost .localNoteConnectionsViewport {
+:root.dark .localNoteConnectionsViewport {
+	--local-connections-dot: color-mix(
+		in srgb,
+		var(--text-secondary) 11%,
+		transparent
+	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 68%,
+		color-mix(in srgb, var(--text-secondary) 80%, var(--link-color)) 24%,
+		transparent
+	);
+	--local-connections-edge-active: color-mix(
+		in srgb,
+		var(--interactive-accent) 66%,
 		transparent
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		color-mix(in srgb, var(--link-color) 52%, var(--text-primary)) 72%,
+		var(--link-color) 36%,
 		transparent
 	);
 	--local-connections-edge-incoming: color-mix(
 		in srgb,
-		var(--text-primary) 72%,
+		color-mix(in srgb, var(--text-primary) 74%, var(--link-color)) 30%,
 		transparent
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 32%,
+		var(--text-secondary) 12%,
+		transparent
+	);
+	--local-connections-note-muted: color-mix(
+		in srgb,
+		var(--text-secondary) 24%,
+		var(--bg-primary)
+	);
+	--local-connections-node-faded: color-mix(
+		in srgb,
+		var(--text-secondary) 16%,
+		var(--bg-primary)
+	);
+	--local-connections-label-bg: color-mix(
+		in srgb,
+		var(--bg-primary) 74%,
+		transparent
+	);
+	--local-connections-label-border: color-mix(
+		in srgb,
+		var(--border-default) 38%,
+		transparent
+	);
+	--local-connections-hover-halo: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		transparent
+	);
+	--local-connections-hover-halo-soft: color-mix(
+		in srgb,
+		var(--interactive-accent) 22%,
+		transparent
+	);
+}
+
+.spaceConnectionsHost .localNoteConnectionsViewport {
+	--local-connections-edge: color-mix(
+		in srgb,
+		var(--text-secondary) 42%,
+		transparent
+	);
+	--local-connections-edge-active: color-mix(
+		in srgb,
+		var(--interactive-accent) 85%,
+		transparent
+	);
+	--local-connections-edge-tag: color-mix(
+		in srgb,
+		var(--link-color) 46%,
+		transparent
+	);
+	--local-connections-edge-incoming: color-mix(
+		in srgb,
+		var(--text-primary) 44%,
+		transparent
+	);
+	--local-connections-edge-muted: color-mix(
+		in srgb,
+		var(--text-secondary) 16%,
 		transparent
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--interactive-accent) 46%,
+		var(--interactive-accent) 48%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 52%,
+		var(--text-secondary) 38%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--link-color) 74%,
+		var(--link-color) 76%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--link-color) 12%,
-		color-mix(in srgb, var(--text-secondary) 48%, var(--bg-primary))
+		var(--link-color) 14%,
+		color-mix(in srgb, var(--text-secondary) 38%, var(--bg-primary))
 	);
 }
 
 :root.dark .spaceConnectionsHost .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 58%,
+		color-mix(in srgb, var(--text-secondary) 80%, var(--link-color)) 15%,
+		transparent
+	);
+	--local-connections-edge-active: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
 		transparent
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--link-color) 48%,
+		var(--link-color) 30%,
 		transparent
 	);
 	--local-connections-edge-incoming: color-mix(
 		in srgb,
-		var(--text-primary) 68%,
+		color-mix(in srgb, var(--text-primary) 74%, var(--link-color)) 19%,
 		transparent
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 28%,
+		var(--text-secondary) 8%,
 		transparent
 	);
 	--local-connections-note-bg: color-mix(
 		in srgb,
-		var(--interactive-accent) 58%,
+		var(--interactive-accent) 66%,
 		var(--bg-primary)
 	);
 	--local-connections-note-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 64%,
+		var(--text-secondary) 36%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-node: color-mix(
 		in srgb,
-		var(--link-color) 82%,
+		var(--link-color) 84%,
 		var(--bg-primary)
 	);
 	--local-connections-tag-muted: color-mix(
 		in srgb,
-		var(--link-color) 16%,
-		color-mix(in srgb, var(--text-secondary) 58%, var(--bg-primary))
+		var(--link-color) 18%,
+		color-mix(in srgb, var(--text-secondary) 36%, var(--bg-primary))
 	);
 }
 
 .localNoteConnectionsLegend {
 	position: absolute;
-	left: 14px;
+	right: 14px;
 	bottom: 14px;
 	z-index: 2;
 	display: grid;
-	grid-template-columns: repeat(2, minmax(92px, max-content));
-	gap: 7px 12px;
-	padding: 8px 10px;
+	grid-template-columns: max-content;
+	justify-items: start;
+	gap: 7px;
+	padding: 9px 12px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
@@ -275,17 +369,8 @@
 	white-space: nowrap;
 }
 
-.localNoteConnectionsLegendItem:last-child {
-	grid-column: 1 / -1;
-}
-
 .localNoteConnectionsLegend.is-space {
-	grid-template-columns: repeat(3, minmax(0, max-content));
-}
-
-.localNoteConnectionsLegend.is-space
-	.localNoteConnectionsLegendItem:last-child {
-	grid-column: auto;
+	grid-template-columns: max-content;
 }
 
 .localNoteConnectionsLegendNode {
@@ -438,8 +523,7 @@
 	}
 
 	.localNoteConnectionsLegend {
-		grid-template-columns: repeat(2, minmax(88px, max-content));
-		gap: 6px 10px;
+		gap: 6px;
 	}
 }
 
@@ -458,19 +542,6 @@
 	.localNoteConnectionsLegend {
 		right: 10px;
 		bottom: 10px;
-		left: 10px;
-		grid-template-columns: repeat(2, minmax(88px, max-content));
-		gap: 6px 8px;
-		justify-content: center;
-	}
-
-	.localNoteConnectionsLegend.is-space {
-		grid-template-columns: repeat(2, minmax(88px, max-content));
-		justify-content: start;
-	}
-
-	.localNoteConnectionsLegend.is-space
-		.localNoteConnectionsLegendItem:last-child {
-		grid-column: 1 / -1;
+		gap: 6px;
 	}
 }

@@ -1,6 +1,10 @@
 import { type RefObject, useEffect, useRef } from "react";
 import { EdgeLineProgram } from "sigma/rendering";
 import Sigma from "sigma";
+import {
+	drawConnectionsNodeHover,
+	drawConnectionsNodeLabel,
+} from "./connectionsCanvas";
 import type {
 	ConnectionsEdgeAttributes,
 	ConnectionsGraph,
@@ -161,7 +165,21 @@ export function useSigmaConnections({
 				labelFont,
 				labelSize: variant === "local" ? 12 : 11,
 				labelWeight: "500",
-				defaultDrawNodeHover: () => {},
+				defaultDrawNodeLabel: (context, data, labelSettings) =>
+					drawConnectionsNodeLabel(
+						context,
+						data,
+						labelSettings,
+						paletteRef.current ?? palette,
+						variant,
+					),
+				defaultDrawNodeHover: (context, data) =>
+					drawConnectionsNodeHover(
+						context,
+						data,
+						paletteRef.current ?? palette,
+						variant,
+					),
 				edgeProgramClasses: {
 					line: EdgeLineProgram,
 					"tag-line": EdgeLineProgram,

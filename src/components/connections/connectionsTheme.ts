@@ -20,6 +20,10 @@ export interface ConnectionsPalette {
 	edgeInternal: string;
 	edgeTag: string;
 	faded: string;
+	labelBackground: string;
+	labelBorder: string;
+	hoverHalo: string;
+	hoverHaloSoft: string;
 }
 
 export interface ConnectionsFocusState {
@@ -105,6 +109,26 @@ export function resolveConnectionsPalette(
 		"--local-connections-node-faded",
 		noteMuted,
 	);
+	const labelBackground = cssColor(
+		container,
+		"--local-connections-label-bg",
+		"rgba(255, 255, 255, 0.86)",
+	);
+	const labelBorder = cssColor(
+		container,
+		"--local-connections-label-border",
+		"rgba(148, 163, 184, 0.38)",
+	);
+	const hoverHalo = cssColor(
+		container,
+		"--local-connections-hover-halo",
+		accent,
+	);
+	const hoverHaloSoft = cssColor(
+		container,
+		"--local-connections-hover-halo-soft",
+		"rgba(91, 141, 239, 0.16)",
+	);
 
 	return {
 		accent,
@@ -121,6 +145,10 @@ export function resolveConnectionsPalette(
 		edgeInternal: edgeMuted,
 		edgeTag,
 		faded,
+		labelBackground,
+		labelBorder,
+		hoverHalo,
+		hoverHaloSoft,
 	};
 }
 
@@ -248,6 +276,7 @@ export function buildNodeReducer(
 			label,
 			color,
 			zIndex,
+			highlighted: isFocus,
 			...(forceLabel ? { forceLabel } : {}),
 		};
 	};

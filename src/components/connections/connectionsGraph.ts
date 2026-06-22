@@ -115,14 +115,6 @@ function randomUnit(seed: number, salt: number) {
 	return ((value ^ (value >>> 15)) >>> 0) / 0xffffffff;
 }
 
-function randomPosition(nodeCount: number) {
-	const extent = Math.max(1200, Math.sqrt(nodeCount) * 180);
-	return {
-		x: (Math.random() * 2 - 1) * extent,
-		y: (Math.random() * 2 - 1) * extent,
-	};
-}
-
 function seedSpacePositions(graph: SpaceConnections) {
 	const ids = [
 		...graph.nodes.map((node) => node.id),
@@ -140,7 +132,7 @@ function seedSpacePositions(graph: SpaceConnections) {
 	const clusterCenters = Array.from({ length: clusterCount }, (_, index) => ({
 		x: (randomUnit(layoutSeed, index * 3) * 2 - 1) * extent * 0.82,
 		y: (randomUnit(layoutSeed, index * 3 + 1) * 2 - 1) * extent * 0.62,
-		spread: extent * (0.1 + randomUnit(layoutSeed, index * 3 + 2) * 0.08),
+		spread: extent * (0.17 + randomUnit(layoutSeed, index * 3 + 2) * 0.11),
 	}));
 	const positions = new Map<string, GraphPosition>();
 	const spatialGrid = new Map<string, GraphPosition[]>();
@@ -243,19 +235,34 @@ function spaceTagSize(weight: number, maxWeight: number, nodeCount: number) {
 }
 
 function seedLocalPositions(graph: LocalNoteConnections) {
-	const nodeCount = graph.nodes.length + graph.tags.length;
 	const positions = new Map<string, { x: number; y: number }>();
+	const ring: string[] = [];
 
 	for (const node of graph.nodes) {
 		if (node.is_center) {
 			positions.set(node.id, { x: 0, y: 0 });
 			continue;
 		}
-		positions.set(node.id, randomPosition(nodeCount));
+		ring.push(node.id);
 	}
-	for (const tag of graph.tags) {
-		positions.set(tag.id, randomPosition(nodeCount));
-	}
+	for (const tag of graph.tags) ring.push(tag.id);
+
+	// Phyllotaxis (golden-angle) spread fills a disc evenly, so neighbours keep
+	// consistent spacing instead of the clumping a uniform-random layout caused.
+	// Sigma normalizes coordinates to the viewport, so only the relative pattern
+	// matters; the radial step just needs to grow as sqrt(index).
+	const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+	const radialStep = 260;
+	ring.forEach((id, index) => {
+		const seed = hashString(id);
+		const radius = radialStep * Math.sqrt(index + 1);
+		const angle = index * goldenAngle;
+		const jitter = radialStep * 0.16;
+		positions.set(id, {
+			x: Math.cos(angle) * radius + (randomUnit(seed, 1) * 2 - 1) * jitter,
+			y: Math.sin(angle) * radius + (randomUnit(seed, 2) * 2 - 1) * jitter,
+		});
+	});
 
 	return positions;
 }
