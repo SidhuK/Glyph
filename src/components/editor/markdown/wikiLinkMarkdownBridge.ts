@@ -11,6 +11,10 @@ import {
 	isEditorTextHighlight,
 } from "../textHighlights";
 import {
+	postprocessInlineTocMarkers,
+	preprocessInlineTocMarkers,
+} from "./inlineTocMarkdown";
+import {
 	findWikiLinkSpans,
 	parseWikiLink,
 	wikiLinkAttrsToMarkdown,
@@ -153,15 +157,19 @@ function postprocessWhitespaceLines(input: string): string {
 export function preprocessMarkdownForEditor(markdown: string): string {
 	return preprocessColoredText(
 		preprocessHighlightedText(
-			encodeMarkdownImageDestinations(canonicalizeWikiLinks(markdown)),
+			encodeMarkdownImageDestinations(
+				canonicalizeWikiLinks(preprocessInlineTocMarkers(markdown)),
+			),
 		),
 	);
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {
-	return postprocessWhitespaceLines(
-		postprocessHighlightedText(
-			postprocessColoredText(canonicalizeWikiLinks(markdown)),
+	return postprocessInlineTocMarkers(
+		postprocessWhitespaceLines(
+			postprocessHighlightedText(
+				postprocessColoredText(canonicalizeWikiLinks(markdown)),
+			),
 		),
 	);
 }

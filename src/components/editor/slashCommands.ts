@@ -10,6 +10,7 @@ import {
 	INLINE_MATH_STARTER,
 	type MathEditRequest,
 } from "./extensions/math/mathOptions";
+import { INLINE_TOC_EDITOR_MARKER } from "./markdown/inlineTocMarkdown";
 import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
@@ -31,6 +32,19 @@ function clampSlashCommandIndex(index: number, itemCount: number) {
 	if (index < 0) return itemCount - 1;
 	if (index >= itemCount) return 0;
 	return index;
+}
+
+function slashCommandSearchText(item: SlashCommandItem) {
+	return [item.title, item.description, ...item.keywords]
+		.join(" ")
+		.toLowerCase();
+}
+
+function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
+	const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+	if (!terms.length) return true;
+	const searchText = slashCommandSearchText(item);
+	return terms.every((term) => searchText.includes(term));
 }
 
 function insertMathAndOpen(
@@ -192,6 +206,25 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.focus()
 				.deleteRange(range)
 				.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+				.run(),
+	},
+	{
+		icon: "☰",
+		title: "Table of contents",
+		description: "Insert a live outline for this note",
+		keywords: ["toc", "outline", "contents", "headings", "navigation"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent([
+					{
+						type: "paragraph",
+						content: [{ type: "text", text: INLINE_TOC_EDITOR_MARKER }],
+					},
+					{ type: "paragraph" },
+				])
 				.run(),
 	},
 	{
@@ -364,17 +397,15 @@ export const SlashCommand = Extension.create({
 			suggestion: {
 				char: "/",
 				startOfLine: false,
+				allowSpaces: true,
 				allow: ({ state }: { state: EditorState }) => {
 					const { $from } = state.selection;
 					return $from.parent.type.name === "paragraph";
 				},
 				items: ({ query }: { query: string }) => {
-					const normalized = query.toLowerCase();
-					return SLASH_COMMANDS.filter((item) => {
-						if (!normalized) return true;
-						if (item.title.toLowerCase().includes(normalized)) return true;
-						return item.keywords.some((k) => k.includes(normalized));
-					}).slice(0, 20);
+					return SLASH_COMMANDS.filter((item) =>
+						slashCommandMatchesQuery(item, query),
+					).slice(0, 20);
 				},
 				render: () => {
 					let menu: HTMLDivElement | null = null;

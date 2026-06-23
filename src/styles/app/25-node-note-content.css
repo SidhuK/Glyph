@@ -410,6 +410,116 @@
 	color: var(--editor-heading-h6-color);
 }
 
+.tiptapContentInline .inlineTocMarker {
+	display: none;
+}
+
+.inlineTocWidget {
+	margin: var(--space-3) 0 var(--space-4);
+	padding: var(--space-3);
+	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, var(--bg-primary));
+}
+
+.inlineTocHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-2);
+	gap: var(--space-2);
+}
+
+.inlineTocTitle {
+	color: var(--text-secondary);
+	font-size: calc(var(--editor-font-size) * 0.78);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.inlineTocRemoveBtn {
+	appearance: none;
+	-webkit-appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.95);
+	line-height: 1;
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
+}
+
+.inlineTocRemoveBtn:hover,
+.inlineTocRemoveBtn:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.inlineTocItems {
+	display: grid;
+	gap: 2px;
+}
+
+.inlineTocItem {
+	appearance: none;
+	-webkit-appearance: none;
+	display: block;
+	width: 100%;
+	min-width: 0;
+	padding: 4px 6px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.9);
+	line-height: 1.35;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
+}
+
+.inlineTocItem:hover,
+.inlineTocItem:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.inlineTocItem[data-level="2"] {
+	padding-left: calc(var(--space-3) + 6px);
+}
+
+.inlineTocItem[data-level="3"] {
+	padding-left: calc(var(--space-5) + 2px);
+}
+
+.inlineTocItem[data-level="4"],
+.inlineTocItem[data-level="5"],
+.inlineTocItem[data-level="6"] {
+	padding-left: calc(var(--space-6) + 6px);
+}
+
+.inlineTocEmpty {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.9);
+}
+
 .tiptapContentInline .headingCollapseHeading {
 	position: relative;
 }

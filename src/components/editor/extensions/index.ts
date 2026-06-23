@@ -27,6 +27,7 @@ import { ColoredText } from "./coloredText";
 import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
+import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
@@ -712,6 +713,7 @@ export function createEditorExtensions(
 		}),
 		...additionalExtensions,
 		MermaidPreview,
+		InlineTableOfContents,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({
 			markedOptions: {
