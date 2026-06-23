@@ -22,7 +22,7 @@ pnpm tauri dev      # Full Tauri app in dev mode
 GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing UI
 ```
 
-**Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check`
+**Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
 
 **Never run a dev server (Vite, `pnpm dev`, `pnpm tauri dev`, or otherwise) — the user handles dev.**
 
