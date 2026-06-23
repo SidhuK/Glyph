@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
