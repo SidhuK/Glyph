@@ -181,7 +181,23 @@ function calloutScanRanges(tr: Transaction): ChangedRange[] {
 	const ranges = changedRangesFromTransactions([tr], tr.doc.content.size);
 	if (!ranges.length) return [];
 	const expanded: ChangedRange[] = [];
+
+	const addContainingBlockquote = (pos: number) => {
+		const resolvedPos = tr.doc.resolve(
+			Math.max(0, Math.min(pos, tr.doc.content.size)),
+		);
+		for (let depth = resolvedPos.depth; depth > 0; depth -= 1) {
+			const node = resolvedPos.node(depth);
+			if (node.type.name !== "blockquote") continue;
+			const from = resolvedPos.before(depth);
+			expanded.push({ from, to: from + node.nodeSize });
+			return;
+		}
+	};
+
 	for (const range of ranges) {
+		addContainingBlockquote(range.from);
+		addContainingBlockquote(Math.max(range.from, range.to - 1));
 		tr.doc.nodesBetween(range.from, range.to, (node, pos) => {
 			if (node.type.name !== "blockquote") return;
 			expanded.push({ from: pos, to: pos + node.nodeSize });
