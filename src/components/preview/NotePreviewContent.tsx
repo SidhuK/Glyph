@@ -1,24 +1,20 @@
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NotePreviewData } from "./notePreviewShared";
 
-export function NotePreviewContent({
-	relPath,
-	content,
-	error,
-}: NotePreviewData) {
-	if (error) {
-		return <div className="markdownEditorInfoEmpty">{error}</div>;
+export function NotePreviewContent(data: NotePreviewData) {
+	if (data.status === "error") {
+		return <div className="markdownEditorInfoEmpty">{data.message}</div>;
 	}
 
-	if (!content.trim()) {
+	if (!data.content.trim()) {
 		return <div className="markdownEditorInfoEmpty">Empty note</div>;
 	}
 
 	return (
 		<div className="linkedNotePreviewText">
 			<NoteInlineEditor
-				markdown={content}
-				relPath={relPath}
+				markdown={data.content}
+				relPath={data.relPath}
 				mode="preview"
 				onChange={() => {}}
 				interactive={false}

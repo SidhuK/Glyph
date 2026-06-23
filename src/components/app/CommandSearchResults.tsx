@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import type { ReactNode } from "react";
 import type { RecentFile } from "../../lib/settings";
 import type { SearchResult } from "../../lib/tauri";
+import { displayFolderFromPath, displayNameFromPath } from "../../utils/path";
 import { FileText } from "../Icons";
 
 function HighlightedSnippet({ snippet }: { snippet: string }) {
@@ -24,19 +25,6 @@ function HighlightedSnippet({ snippet }: { snippet: string }) {
 		cursor += p.length;
 	}
 	return <>{out}</>;
-}
-
-function displayNameFromPath(relPath: string): string {
-	const fileName = relPath.split("/").pop() ?? relPath;
-	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
-	const withoutExt = fileName.replace(/\.[^./]+$/, "");
-	return withoutExt || fileName;
-}
-
-function displayFolderFromPath(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
-	return parts.slice(0, -1).join(" / ");
 }
 
 interface SearchRowProps {

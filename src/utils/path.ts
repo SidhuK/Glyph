@@ -27,6 +27,29 @@ export function isMarkdownPath(relPath: string): boolean {
 	return relPath.toLowerCase().endsWith(".md");
 }
 
+export function isPreviewableNotePath(path: string): boolean {
+	const normalized = normalizeRelPath(path.split("#", 1)[0] ?? path);
+	const filename = basename(normalized);
+	if (!filename) return false;
+	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
+		return false;
+	}
+	return true;
+}
+
+export function displayNameFromPath(relPath: string): string {
+	const fileName = basename(relPath);
+	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
+	const withoutExt = fileName.replace(/\.[^./]+$/, "");
+	return withoutExt || fileName;
+}
+
+export function displayFolderFromPath(relPath: string): string {
+	const parts = relPath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return parts.slice(0, -1).join(" / ");
+}
+
 export function normalizeRelPath(path: string): string {
 	return path
 		.trim()

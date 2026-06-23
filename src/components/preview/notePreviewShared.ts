@@ -1,25 +1,15 @@
 import { parseNotePreview } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
-import { normalizeRelPath } from "../../utils/path";
+import { isPreviewableNotePath, normalizeRelPath } from "../../utils/path";
+
+export { isPreviewableNotePath } from "../../utils/path";
 
 export const NOTE_PREVIEW_MAX_BYTES = 96 * 1024;
 export const NOTE_PREVIEW_OPEN_DELAY_MS = 280;
 
-export interface NotePreviewData {
-	relPath: string;
-	content: string;
-	error: string;
-}
-
-export function isPreviewableNotePath(path: string): boolean {
-	const normalized = normalizeRelPath(path.split("#", 1)[0] ?? path);
-	const filename = normalized.split("/").pop() ?? normalized;
-	if (!filename) return false;
-	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
-		return false;
-	}
-	return true;
-}
+export type NotePreviewData =
+	| { status: "ok"; relPath: string; content: string }
+	| { status: "error"; relPath: string; message: string };
 
 export function wikiTargetFromLink(element: HTMLElement): string | null {
 	if (element.getAttribute("data-wikilink-embed") === "true") return null;
@@ -38,7 +28,7 @@ export async function loadNotePreviewFromPath(
 		max_bytes: NOTE_PREVIEW_MAX_BYTES,
 	});
 	const { content } = parseNotePreview(relPath, doc.text);
-	return { relPath, content, error: "" };
+	return { status: "ok", relPath, content };
 }
 
 export async function loadNotePreviewFromWikiTarget(

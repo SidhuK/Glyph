@@ -4,18 +4,23 @@ import {
 	loadNotePreviewFromPath,
 } from "./notePreviewShared";
 
+export type NotePreviewLoader = (key: string) => Promise<NotePreviewData>;
+
 interface UseNotePreviewOptions {
 	delayMs?: number;
+	load?: NotePreviewLoader;
 }
 
 export function useNotePreview(
 	path: string | null,
 	options: UseNotePreviewOptions = {},
 ) {
-	const { delayMs = 0 } = options;
+	const { delayMs = 0, load = loadNotePreviewFromPath } = options;
 	const [preview, setPreview] = useState<NotePreviewData | null>(null);
 	const requestIdRef = useRef(0);
 	const openTimerRef = useRef<number | null>(null);
+	const loadRef = useRef(load);
+	loadRef.current = load;
 
 	useEffect(() => {
 		if (openTimerRef.current !== null) {
@@ -35,15 +40,15 @@ export function useNotePreview(
 		openTimerRef.current = window.setTimeout(() => {
 			void (async () => {
 				try {
-					const data = await loadNotePreviewFromPath(path);
+					const data = await loadRef.current(path);
 					if (requestIdRef.current !== requestId) return;
 					setPreview(data);
 				} catch (error) {
 					if (requestIdRef.current !== requestId) return;
 					setPreview({
+						status: "error",
 						relPath: path,
-						content: "",
-						error: error instanceof Error ? error.message : String(error),
+						message: error instanceof Error ? error.message : String(error),
 					});
 				}
 			})();

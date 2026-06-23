@@ -228,7 +228,7 @@ function edgeColorForRole(
 
 export function buildEdgeReducer(
 	getPalette: () => ConnectionsPalette,
-	variant: ConnectionsGraphVariant,
+	_variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
 ) {
