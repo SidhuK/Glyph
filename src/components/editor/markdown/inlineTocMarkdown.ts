@@ -6,10 +6,11 @@ function replaceMarkerLines(
 	fromMarker: string,
 	toMarker: string,
 ) {
+	const normalizedFromMarker = fromMarker.toLowerCase();
 	return input
 		.split("\n")
 		.map((line) => {
-			if (line.trim().toLowerCase() !== fromMarker) return line;
+			if (line.trim().toLowerCase() !== normalizedFromMarker) return line;
 			const leadingWhitespace = line.match(/^\s*/)?.[0] ?? "";
 			return `${leadingWhitespace}${toMarker}`;
 		})

@@ -191,7 +191,6 @@ function calloutScanRanges(tr: Transaction): ChangedRange[] {
 			if (node.type.name !== "blockquote") continue;
 			const from = resolvedPos.before(depth);
 			expanded.push({ from, to: from + node.nodeSize });
-			return;
 		}
 	};
 

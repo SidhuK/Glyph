@@ -35,9 +35,7 @@ function clampSlashCommandIndex(index: number, itemCount: number) {
 }
 
 function slashCommandSearchText(item: SlashCommandItem) {
-	return [item.title, item.description, ...item.keywords]
-		.join(" ")
-		.toLowerCase();
+	return [item.title, ...item.keywords].join(" ").toLowerCase();
 }
 
 function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {

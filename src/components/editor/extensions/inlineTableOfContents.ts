@@ -67,11 +67,23 @@ function scrollToHeading(editor: Editor, heading: TOCHeading) {
 	});
 }
 
+function findInlineTocMarkerRange(doc: ProseMirrorNode, preferredPos: number) {
+	let closestRange: { from: number; to: number } | null = null;
+	let closestDistance = Number.POSITIVE_INFINITY;
+	doc.descendants((node, pos) => {
+		if (!isInlineTocNode(node)) return;
+		const distance = Math.abs(pos - preferredPos);
+		if (distance >= closestDistance) return;
+		closestDistance = distance;
+		closestRange = { from: pos, to: pos + node.nodeSize };
+	});
+	return closestRange;
+}
+
 function createInlineTocWidget(
 	editor: Editor,
 	headings: readonly TOCHeading[],
 	markerPos: number,
-	markerSize: number,
 ) {
 	const root = document.createElement("nav");
 	root.className = "inlineTocWidget";
@@ -120,11 +132,18 @@ function createInlineTocWidget(
 			removeButton.disabled = false;
 		}
 		if (!confirmed) return;
-		editor
-			.chain()
-			.focus()
-			.deleteRange({ from: markerPos, to: markerPos + markerSize })
-			.run();
+		let currentWidgetPos = markerPos;
+		try {
+			currentWidgetPos = editor.view.posAtDOM(root, 0);
+		} catch {
+			currentWidgetPos = markerPos;
+		}
+		const markerRange = findInlineTocMarkerRange(
+			editor.state.doc,
+			currentWidgetPos,
+		);
+		if (!markerRange) return;
+		editor.chain().focus().deleteRange(markerRange).run();
 	});
 
 	header.append(title, removeButton);
@@ -177,12 +196,12 @@ function buildInlineTocDecorations(
 			}),
 			Decoration.widget(
 				pos + node.nodeSize,
-				() => createInlineTocWidget(editor, headings, pos, node.nodeSize),
+				() => createInlineTocWidget(editor, headings, pos),
 				{
 					side: 1,
 					ignoreSelection: true,
 					key: `inline-toc-${pos}-${headings
-						.map((h) => `${h.pos}:${h.text}`)
+						.map((h) => `${h.pos}:${h.level}:${h.text}`)
 						.join("|")}`,
 					stopEvent: (event) =>
 						event.target instanceof Element &&
