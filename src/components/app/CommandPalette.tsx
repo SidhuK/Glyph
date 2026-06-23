@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Search } from "../Icons";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
@@ -228,7 +229,10 @@ export function CommandPalette({
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				className="commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none"
+				className={cn(
+					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
+					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+				)}
 				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
 			>

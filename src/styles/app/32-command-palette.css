@@ -14,7 +14,7 @@
 }
 
 .commandPalette[data-search-tab="true"] {
-	width: min(920px, calc(100vw - 48px));
+	width: min(840px, calc(100vw - 48px));
 	height: min(560px, 72vh);
 	max-height: min(560px, 72vh);
 }
