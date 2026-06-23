@@ -10,6 +10,7 @@ import {
 	INLINE_MATH_STARTER,
 	type MathEditRequest,
 } from "./extensions/math/mathOptions";
+import { INLINE_TOC_EDITOR_MARKER } from "./markdown/inlineTocMarkdown";
 import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
@@ -31,6 +32,17 @@ function clampSlashCommandIndex(index: number, itemCount: number) {
 	if (index < 0) return itemCount - 1;
 	if (index >= itemCount) return 0;
 	return index;
+}
+
+function slashCommandSearchText(item: SlashCommandItem) {
+	return [item.title, ...item.keywords].join(" ").toLowerCase();
+}
+
+function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
+	const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+	if (!terms.length) return true;
+	const searchText = slashCommandSearchText(item);
+	return terms.every((term) => searchText.includes(term));
 }
 
 function insertMathAndOpen(
@@ -64,22 +76,6 @@ function insertMathAndOpen(
 }
 
 const SLASH_COMMANDS: SlashCommandItem[] = [
-	{
-		icon: "ƒx",
-		title: "Inline equation",
-		description: "Insert LaTeX within a line",
-		keywords: ["latex", "math", "formula", "equation", "inline"],
-		command: ({ editor, range, onMathEditRequest }) =>
-			insertMathAndOpen(editor, range, "inline", onMathEditRequest),
-	},
-	{
-		icon: "∑",
-		title: "Display equation",
-		description: "Insert a centered LaTeX block",
-		keywords: ["latex", "math", "formula", "equation", "block", "display"],
-		command: ({ editor, range, onMathEditRequest }) =>
-			insertMathAndOpen(editor, range, "block", onMathEditRequest),
-	},
 	{
 		icon: "H1",
 		title: "Heading 1",
@@ -160,6 +156,46 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
 	},
 	{
+		icon: "—",
+		title: "Divider",
+		description: "Insert a horizontal rule",
+		keywords: ["hr", "divider", "rule"],
+		command: ({ editor, range }) =>
+			editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
+	},
+	{
+		icon: "▦",
+		title: "Table",
+		description: "Insert a markdown table",
+		keywords: ["table", "columns", "rows", "grid"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+				.run(),
+	},
+	{
+		icon: "☰",
+		title: "Table of contents",
+		description: "Insert a live outline for this note",
+		keywords: ["toc", "outline", "contents", "headings", "navigation"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent([
+					{
+						type: "paragraph",
+						content: [{ type: "text", text: INLINE_TOC_EDITOR_MARKER }],
+					},
+					{ type: "paragraph" },
+				])
+				.run(),
+	},
+	{
 		icon: "M",
 		title: "Mermaid chart",
 		description: "Insert a Mermaid diagram block",
@@ -182,27 +218,6 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
-		icon: "▦",
-		title: "Table",
-		description: "Insert a markdown table",
-		keywords: ["table", "columns", "rows", "grid"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-				.run(),
-	},
-	{
-		icon: "—",
-		title: "Divider",
-		description: "Insert a horizontal rule",
-		keywords: ["hr", "divider", "rule"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
-	},
-	{
 		icon: "i",
 		title: "Info callout",
 		description: "Insert an info callout",
@@ -218,6 +233,50 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 						{
 							type: "paragraph",
 							content: [{ type: "text", text: "[!info]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "?",
+		title: "Tip callout",
+		description: "Insert a tip callout",
+		keywords: ["callout", "tip", "hint", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!tip]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "+",
+		title: "Success callout",
+		description: "Insert a success callout",
+		keywords: ["callout", "success", "done", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!success]" }],
 						},
 						{ type: "paragraph" },
 					],
@@ -269,48 +328,20 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
-		icon: "+",
-		title: "Success callout",
-		description: "Insert a success callout",
-		keywords: ["callout", "success", "done", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!success]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
+		icon: "ƒx",
+		title: "Inline equation",
+		description: "Insert LaTeX within a line",
+		keywords: ["latex", "math", "formula", "equation", "inline"],
+		command: ({ editor, range, onMathEditRequest }) =>
+			insertMathAndOpen(editor, range, "inline", onMathEditRequest),
 	},
 	{
-		icon: "?",
-		title: "Tip callout",
-		description: "Insert a tip callout",
-		keywords: ["callout", "tip", "hint", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!tip]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
+		icon: "∑",
+		title: "Display equation",
+		description: "Insert a centered LaTeX block",
+		keywords: ["latex", "math", "formula", "equation", "block", "display"],
+		command: ({ editor, range, onMathEditRequest }) =>
+			insertMathAndOpen(editor, range, "block", onMathEditRequest),
 	},
 	...EDITOR_TEXT_COLORS.map<SlashCommandItem>((color) => ({
 		icon: "A",
@@ -364,17 +395,15 @@ export const SlashCommand = Extension.create({
 			suggestion: {
 				char: "/",
 				startOfLine: false,
+				allowSpaces: true,
 				allow: ({ state }: { state: EditorState }) => {
 					const { $from } = state.selection;
 					return $from.parent.type.name === "paragraph";
 				},
 				items: ({ query }: { query: string }) => {
-					const normalized = query.toLowerCase();
-					return SLASH_COMMANDS.filter((item) => {
-						if (!normalized) return true;
-						if (item.title.toLowerCase().includes(normalized)) return true;
-						return item.keywords.some((k) => k.includes(normalized));
-					}).slice(0, 20);
+					return SLASH_COMMANDS.filter((item) =>
+						slashCommandMatchesQuery(item, query),
+					);
 				},
 				render: () => {
 					let menu: HTMLDivElement | null = null;
