@@ -2,14 +2,18 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { parseNotePreview } from "../../lib/notePreview";
-import { invoke } from "../../lib/tauri";
-import { normalizeRelPath } from "../../utils/path";
-import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { NotePreviewContent } from "./NotePreviewContent";
+import {
+	NOTE_PREVIEW_OPEN_DELAY_MS,
+	loadNotePreviewFromWikiTarget,
+	wikiTargetFromLink,
+} from "./notePreviewShared";
+import { useNotePreview } from "./useNotePreview";
 
 interface Position {
 	left: number;
@@ -18,34 +22,22 @@ interface Position {
 
 type PointerPosition = Position;
 
-interface PreviewState {
+interface HoverTarget {
 	target: string;
-	relPath: string;
-	content: string;
-	error: string;
+	anchor: DOMRect;
+}
+
+interface SheetPreview {
+	target: string;
 	anchor: DOMRect;
 	position: Position;
 }
 
-const PREVIEW_MAX_BYTES = 96 * 1024;
-const OPEN_DELAY_MS = 280;
 const CLOSE_DELAY_MS = 700;
 const SHEET_WIDTH = 360;
 const SHEET_GAP = 10;
 const VIEWPORT_PADDING = 12;
 const ESTIMATED_SHEET_HEIGHT = 260;
-
-function targetFromLink(element: HTMLElement): string | null {
-	if (element.getAttribute("data-wikilink-embed") === "true") return null;
-	if (element.getAttribute("data-unresolved") === "true") return null;
-	const target = element.getAttribute("data-target") ?? "";
-	const normalized = normalizeRelPath(target.split("#", 1)[0] ?? target);
-	const filename = normalized.split("/").pop() ?? normalized;
-	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
-		return null;
-	}
-	return normalized || null;
-}
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(Math.max(value, min), max);
@@ -113,7 +105,7 @@ function pointInRect(point: PointerPosition, rect: DOMRect): boolean {
 
 function pointInPreviewSafeArea(
 	point: PointerPosition,
-	preview: PreviewState,
+	preview: SheetPreview,
 	sheet: HTMLElement | null,
 ): boolean {
 	if (!sheet) return false;
@@ -135,19 +127,27 @@ function pointInPreviewSafeArea(
 }
 
 export function LinkedNotePreviewSheet() {
-	const [preview, setPreview] = useState<PreviewState | null>(null);
+	const [hover, setHover] = useState<HoverTarget | null>(null);
+	const [position, setPosition] = useState<Position | null>(null);
+	const previewData = useNotePreview(hover?.target ?? null, {
+		delayMs: NOTE_PREVIEW_OPEN_DELAY_MS,
+		load: loadNotePreviewFromWikiTarget,
+	});
 	const sheetRef = useRef<HTMLElement | null>(null);
-	const previewRef = useRef<PreviewState | null>(null);
+	const previewRef = useRef<SheetPreview | null>(null);
 	const pointerRef = useRef<PointerPosition | null>(null);
-	const openTimerRef = useRef<number | null>(null);
 	const closeTimerRef = useRef<number | null>(null);
-	const requestIdRef = useRef(0);
 
-	const clearOpenTimer = useCallback(() => {
-		if (openTimerRef.current === null) return;
-		window.clearTimeout(openTimerRef.current);
-		openTimerRef.current = null;
-	}, []);
+	const preview = useMemo((): SheetPreview | null => {
+		if (!hover || !previewData) return null;
+		return {
+			target: hover.target,
+			anchor: hover.anchor,
+			position:
+				position ??
+				positionSheet(hover.anchor, SHEET_WIDTH, ESTIMATED_SHEET_HEIGHT),
+		};
+	}, [hover, position, previewData]);
 
 	const clearCloseTimer = useCallback(() => {
 		if (closeTimerRef.current === null) return;
@@ -156,14 +156,12 @@ export function LinkedNotePreviewSheet() {
 	}, []);
 
 	const closePreview = useCallback(() => {
-		clearOpenTimer();
 		clearCloseTimer();
-		requestIdRef.current += 1;
-		setPreview(null);
-	}, [clearCloseTimer, clearOpenTimer]);
+		setHover(null);
+		setPosition(null);
+	}, [clearCloseTimer]);
 
 	const scheduleClose = useCallback(() => {
-		clearOpenTimer();
 		clearCloseTimer();
 		closeTimerRef.current = window.setTimeout(() => {
 			const point = pointerRef.current;
@@ -177,69 +175,29 @@ export function LinkedNotePreviewSheet() {
 			}
 			closePreview();
 		}, CLOSE_DELAY_MS);
-	}, [clearCloseTimer, clearOpenTimer, closePreview]);
+	}, [clearCloseTimer, closePreview]);
 
 	const showPreview = useCallback(
 		(link: HTMLElement, target: string) => {
-			clearOpenTimer();
 			clearCloseTimer();
-			requestIdRef.current += 1;
-			const requestId = requestIdRef.current;
-			const anchor = link.getBoundingClientRect();
-			const position = positionSheet(
-				anchor,
-				SHEET_WIDTH,
-				ESTIMATED_SHEET_HEIGHT,
-			);
-
-			openTimerRef.current = window.setTimeout(() => {
-				if (requestIdRef.current !== requestId) return;
-
-				void (async () => {
-					try {
-						const relPath = await invoke("space_resolve_wikilink", { target });
-						if (!relPath) {
-							throw new Error("Note not found");
-						}
-						const doc = await invoke("space_read_text_preview", {
-							path: relPath,
-							max_bytes: PREVIEW_MAX_BYTES,
-						});
-						const { content } = parseNotePreview(relPath, doc.text);
-						if (requestIdRef.current !== requestId) return;
-						setPreview({
-							target,
-							relPath,
-							content,
-							error: "",
-							anchor,
-							position,
-						});
-					} catch (e) {
-						if (requestIdRef.current !== requestId) return;
-						setPreview({
-							target,
-							relPath: "",
-							content: "",
-							error: e instanceof Error ? e.message : String(e),
-							anchor,
-							position,
-						});
-					}
-				})();
-			}, OPEN_DELAY_MS);
+			setPosition(null);
+			setHover({ target, anchor: link.getBoundingClientRect() });
 		},
-		[clearCloseTimer, clearOpenTimer],
+		[clearCloseTimer],
 	);
+
+	useEffect(() => {
+		if (!hover) {
+			setPosition(null);
+		}
+	}, [hover]);
 
 	useLayoutEffect(() => {
 		if (!preview || !sheetRef.current) return;
 		const rect = sheetRef.current.getBoundingClientRect();
-		const position = positionSheet(preview.anchor, rect.width, rect.height);
-		if (isSamePosition(position, preview.position)) return;
-		setPreview((current) =>
-			current?.target === preview.target ? { ...current, position } : current,
-		);
+		const nextPosition = positionSheet(preview.anchor, rect.width, rect.height);
+		if (isSamePosition(nextPosition, preview.position)) return;
+		setPosition(nextPosition);
 	}, [preview]);
 
 	useEffect(() => {
@@ -268,7 +226,7 @@ export function LinkedNotePreviewSheet() {
 			if (!link) return;
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
-			const noteTarget = targetFromLink(link);
+			const noteTarget = wikiTargetFromLink(link);
 			if (noteTarget) showPreview(link, noteTarget);
 		};
 
@@ -301,18 +259,11 @@ export function LinkedNotePreviewSheet() {
 			document.removeEventListener("pointerout", onPointerOut);
 			window.removeEventListener("scroll", onScroll, true);
 			window.removeEventListener("resize", closePreview);
-			clearOpenTimer();
 			clearCloseTimer();
 		};
-	}, [
-		clearCloseTimer,
-		clearOpenTimer,
-		closePreview,
-		scheduleClose,
-		showPreview,
-	]);
+	}, [clearCloseTimer, closePreview, scheduleClose, showPreview]);
 
-	if (!preview) return null;
+	if (!preview || !previewData) return null;
 
 	return createPortal(
 		<aside
@@ -327,24 +278,7 @@ export function LinkedNotePreviewSheet() {
 			aria-label="Linked note preview"
 		>
 			<div className="linkedNotePreviewBody">
-				{preview.error ? (
-					<div className="markdownEditorInfoEmpty">{preview.error}</div>
-				) : (
-					<div className="linkedNotePreviewText">
-						{preview.content.trim() ? (
-							<NoteInlineEditor
-								markdown={preview.content}
-								relPath={preview.relPath || preview.target}
-								mode="preview"
-								onChange={() => {}}
-								interactive={false}
-								deferHeavyFeatures
-							/>
-						) : (
-							<div className="markdownEditorInfoEmpty">Empty note</div>
-						)}
-					</div>
-				)}
+				<NotePreviewContent {...previewData} />
 			</div>
 		</aside>,
 		document.body,

@@ -976,6 +976,13 @@
 	padding: 10px;
 }
 
+.commandPalettePreview > .linkedNotePreviewBody {
+	flex: 1 1 0;
+	min-height: 0;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+}
+
 .linkedNotePreviewText {
 	margin: 0;
 	font: inherit;
@@ -989,11 +996,13 @@
 	border-radius: 0;
 	background: transparent;
 	box-shadow: none;
+	min-height: 0;
 }
 
 .linkedNotePreviewText .rfNodeNoteEditorBody {
 	padding: 0;
 	background: transparent;
+	min-height: 0;
 }
 
 .linkedNotePreviewText .tiptapContentInline {
@@ -1001,6 +1010,7 @@
 	margin: 0;
 	padding: 0;
 	background: transparent;
+	min-height: 0;
 }
 
 .linkedNotePreviewText .ProseMirror {

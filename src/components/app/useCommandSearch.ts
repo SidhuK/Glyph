@@ -4,8 +4,13 @@ import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import type { SearchResult } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { isMarkdownPath } from "../../utils/path";
+import { isPreviewableNotePath } from "../../utils/path";
 import { type Tab, parseSearchQueryWithPeople } from "./commandPaletteHelpers";
+
+export interface CommandSearchItem {
+	id: string;
+	previewable: boolean;
+}
 
 export function useCommandSearch(
 	activeTab: Tab,
@@ -18,8 +23,8 @@ export function useCommandSearch(
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const requestIdRef = useRef(0);
 	const { recentFiles } = useRecentFiles(spacePath, 8);
-	const recentMarkdownFiles = useMemo(
-		() => recentFiles.filter((file) => isMarkdownPath(file.path)),
+	const recentPreviewableFiles = useMemo(
+		() => recentFiles.filter((file) => isPreviewableNotePath(file.path)),
 		[recentFiles],
 	);
 
@@ -130,6 +135,20 @@ export function useCommandSearch(
 		return { titleMatches: title, contentMatches: content };
 	}, [searchResults, query, activeTab, peopleMentionsEnabled]);
 
+	const searchItems = useMemo((): CommandSearchItem[] => {
+		if (activeTab !== "search") return [];
+		if (!query.trim()) {
+			return recentPreviewableFiles.map((file) => ({
+				id: file.path,
+				previewable: true,
+			}));
+		}
+		return [...titleMatches, ...contentMatches].map((result) => ({
+			id: result.id,
+			previewable: isPreviewableNotePath(result.id),
+		}));
+	}, [activeTab, contentMatches, query, recentPreviewableFiles, titleMatches]);
+
 	const reset = useCallback(() => {
 		requestIdRef.current += 1;
 		setSearchResults([]);
@@ -137,10 +156,11 @@ export function useCommandSearch(
 	}, []);
 
 	return {
-		recentFiles: recentMarkdownFiles,
+		recentFiles: recentPreviewableFiles,
 		isSearching,
 		titleMatches,
 		contentMatches,
+		searchItems,
 		reset,
 	};
 }
