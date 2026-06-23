@@ -16,7 +16,10 @@ export function useNotePreview(
 	options: UseNotePreviewOptions = {},
 ) {
 	const { delayMs = 0, load = loadNotePreviewFromPath } = options;
-	const [preview, setPreview] = useState<NotePreviewData | null>(null);
+	const [preview, setPreview] = useState<{
+		key: string;
+		data: NotePreviewData;
+	} | null>(null);
 	const requestIdRef = useRef(0);
 	const openTimerRef = useRef<number | null>(null);
 	const loadRef = useRef(load);
@@ -42,13 +45,16 @@ export function useNotePreview(
 				try {
 					const data = await loadRef.current(path);
 					if (requestIdRef.current !== requestId) return;
-					setPreview(data);
+					setPreview({ key: path, data });
 				} catch (error) {
 					if (requestIdRef.current !== requestId) return;
 					setPreview({
-						status: "error",
-						relPath: path,
-						message: error instanceof Error ? error.message : String(error),
+						key: path,
+						data: {
+							status: "error",
+							relPath: path,
+							message: error instanceof Error ? error.message : String(error),
+						},
 					});
 				}
 			})();
@@ -62,5 +68,5 @@ export function useNotePreview(
 		};
 	}, [delayMs, path]);
 
-	return preview;
+	return preview && preview.key === path ? preview.data : null;
 }
