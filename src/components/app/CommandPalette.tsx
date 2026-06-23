@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
+import { isPreviewableNotePath } from "../preview/notePreviewShared";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
 import { CommandPaletteFooter } from "./CommandPaletteFooter";
+import { CommandPaletteNotePreview } from "./CommandPaletteNotePreview";
 import { CommandSearchFilters } from "./CommandSearchFilters";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
@@ -129,6 +131,24 @@ export function CommandPalette({
 			: Math.min(selectedIndex, searchEntries.length - 1);
 	}, [activeTab, itemCount, searchEntries, selectedIndex, state.selectedId]);
 
+	const isSearchTab = activeTab === "search";
+
+	const selectedPreviewPath = useMemo(() => {
+		if (activeTab !== "search") return null;
+		const resultId = query.trim()
+			? [...titleMatches, ...contentMatches][resolvedSelectedIndex]?.id
+			: recentFiles[resolvedSelectedIndex]?.path;
+		if (!resultId || !isPreviewableNotePath(resultId)) return null;
+		return resultId;
+	}, [
+		activeTab,
+		contentMatches,
+		query,
+		recentFiles,
+		resolvedSelectedIndex,
+		titleMatches,
+	]);
+
 	useEffect(() => {
 		if (!listRef.current) return;
 		const selected =
@@ -236,8 +256,9 @@ export function CommandPalette({
 			<DialogContent
 				className={[
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					"sm:max-w-[560px]",
+					isSearchTab ? "sm:max-w-[920px]" : "sm:max-w-[560px]",
 				].join(" ")}
+				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
 			>
 				<DialogTitle className="sr-only">Command Palette</DialogTitle>
@@ -285,8 +306,15 @@ export function CommandPalette({
 					) : null}
 				</div>
 
-				<div className="commandPaletteBody">
-					<div className="commandPaletteList" ref={listRef}>
+				<div
+					className="commandPaletteBody"
+					data-with-preview={isSearchTab ? "true" : "false"}
+				>
+					<div
+						className="commandPaletteList"
+						data-with-preview={isSearchTab ? "true" : "false"}
+						ref={listRef}
+					>
 						{activeTab === "commands" ? (
 							<CommandList
 								filtered={filtered}
@@ -331,6 +359,9 @@ export function CommandPalette({
 							</>
 						)}
 					</div>
+					{isSearchTab ? (
+						<CommandPaletteNotePreview path={selectedPreviewPath} />
+					) : null}
 				</div>
 				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
 			</DialogContent>

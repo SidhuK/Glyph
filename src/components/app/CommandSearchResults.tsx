@@ -26,57 +26,107 @@ function HighlightedSnippet({ snippet }: { snippet: string }) {
 	return <>{out}</>;
 }
 
-interface SearchResultItemProps {
-	result: SearchResult;
+function displayNameFromPath(relPath: string): string {
+	const fileName = relPath.split("/").pop() ?? relPath;
+	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
+	const withoutExt = fileName.replace(/\.[^./]+$/, "");
+	return withoutExt || fileName;
+}
+
+function displayFolderFromPath(relPath: string): string {
+	const parts = relPath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return parts.slice(0, -1).join(" / ");
+}
+
+interface SearchRowProps {
+	title: string;
+	path: string;
+	snippet?: string;
 	index: number;
 	isSelected: boolean;
 	onMouseEnter: () => void;
 	onSelect: () => void;
 }
 
-function resultDisplayFolder(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	if (parts.length <= 1) return relPath;
-	return `${parts.slice(0, -1).join("/")}/`;
-}
-
-function SearchResultItem({
-	result,
+function SearchRow({
+	title,
+	path,
+	snippet,
 	index,
 	isSelected,
 	onMouseEnter,
 	onSelect,
-}: SearchResultItemProps) {
-	const resultFolder = resultDisplayFolder(result.id);
+}: SearchRowProps) {
+	const hasSnippet = Boolean(snippet?.trim());
 
 	return (
 		<button
 			type="button"
-			className="commandPaletteItem commandPaletteResultItem"
+			className="commandPaletteItem commandPaletteSearchRow"
 			data-search-index={index}
 			data-selected={isSelected}
+			data-has-snippet={hasSnippet ? "true" : "false"}
 			onMouseEnter={onMouseEnter}
 			onMouseDown={(e) => {
 				e.preventDefault();
 				onSelect();
 			}}
 		>
-			<div className="commandPaletteResultContent">
-				<div className="commandPaletteResultHeader">
-					<div className="commandPaletteResultTitle">
-						{result.title || "Untitled"}
-					</div>
-					{resultFolder ? (
-						<div className="commandPaletteResultPath mono" title={resultFolder}>
-							{resultFolder}
-						</div>
+			<span className="commandPaletteSearchRowIcon" aria-hidden="true">
+				<FileText size="var(--icon-md)" />
+			</span>
+			<span className="commandPaletteSearchRowContent">
+				<span className="commandPaletteResultLine">
+					<span className="commandPaletteResultTitle">{title}</span>
+					{path ? (
+						<>
+							<span className="commandPaletteResultLineSep" aria-hidden="true">
+								—
+							</span>
+							<span className="commandPaletteResultPath" title={path}>
+								{path}
+							</span>
+						</>
 					) : null}
-				</div>
-				<div className="commandPaletteResultSnippet">
-					<HighlightedSnippet snippet={result.snippet} />
-				</div>
-			</div>
+				</span>
+				{hasSnippet ? (
+					<span className="commandPaletteResultSnippet">
+						<HighlightedSnippet snippet={snippet ?? ""} />
+					</span>
+				) : null}
+			</span>
 		</button>
+	);
+}
+
+interface SearchResultItemProps {
+	result: SearchResult;
+	index: number;
+	isSelected: boolean;
+	showSnippet?: boolean;
+	onMouseEnter: () => void;
+	onSelect: () => void;
+}
+
+function SearchResultItem({
+	result,
+	index,
+	isSelected,
+	showSnippet = true,
+	onMouseEnter,
+	onSelect,
+}: SearchResultItemProps) {
+	return (
+		<SearchRow
+			title={result.title || displayNameFromPath(result.id)}
+			path={displayFolderFromPath(result.id)}
+			snippet={showSnippet ? result.snippet : undefined}
+			index={index}
+			isSelected={isSelected}
+			onMouseEnter={onMouseEnter}
+			onSelect={onSelect}
+		/>
 	);
 }
 
@@ -89,19 +139,6 @@ interface SearchResultsListProps {
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
 	onSelectResult: (index: number) => void;
-}
-
-function recentDisplayName(relPath: string): string {
-	const fileName = relPath.split("/").pop() ?? relPath;
-	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
-	const withoutExt = fileName.replace(/\.[^./]+$/, "");
-	return withoutExt || fileName;
-}
-
-function recentDisplayFolder(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
-	return `${parts.slice(0, -1).join("/")}/`;
 }
 
 export function SearchResultsList({
@@ -122,32 +159,15 @@ export function SearchResultsList({
 				<>
 					<div className="commandPaletteGroupLabel">Recently opened</div>
 					{recentFiles.map((file, index) => (
-						<button
+						<SearchRow
 							key={`${file.spacePath}:${file.path}`}
-							type="button"
-							className="commandPaletteItem commandPaletteRecentItem"
-							data-search-index={index}
-							data-selected={index === selectedIndex}
+							title={displayNameFromPath(file.path)}
+							path={displayFolderFromPath(file.path)}
+							index={index}
+							isSelected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
-							onMouseDown={(e) => {
-								e.preventDefault();
-								onSelectResult(index);
-							}}
-						>
-							<div className="commandPaletteRecentIcon">
-								<FileText size="var(--icon-md)" />
-							</div>
-							<div className="commandPaletteRecentContent">
-								<span className="commandPaletteResultTitle">
-									{recentDisplayName(file.path)}
-								</span>
-								<span className="commandPaletteRecentMeta">
-									<span className="commandPaletteRecentPath mono">
-										{recentDisplayFolder(file.path) || file.path}
-									</span>
-								</span>
-							</div>
-						</button>
+							onSelect={() => onSelectResult(index)}
+						/>
 					))}
 				</>
 			);
@@ -170,6 +190,7 @@ export function SearchResultsList({
 							result={r}
 							index={index}
 							isSelected={index === selectedIndex}
+							showSnippet={false}
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onSelect={() => onSelectResult(index)}
 						/>

@@ -6,10 +6,13 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { parseNotePreview } from "../../lib/notePreview";
-import { invoke } from "../../lib/tauri";
-import { normalizeRelPath } from "../../utils/path";
-import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { NotePreviewContent } from "./NotePreviewContent";
+import {
+	NOTE_PREVIEW_OPEN_DELAY_MS,
+	type NotePreviewData,
+	loadNotePreviewFromWikiTarget,
+	wikiTargetFromLink,
+} from "./notePreviewShared";
 
 interface Position {
 	left: number;
@@ -18,34 +21,17 @@ interface Position {
 
 type PointerPosition = Position;
 
-interface PreviewState {
+interface PreviewState extends NotePreviewData {
 	target: string;
-	relPath: string;
-	content: string;
-	error: string;
 	anchor: DOMRect;
 	position: Position;
 }
 
-const PREVIEW_MAX_BYTES = 96 * 1024;
-const OPEN_DELAY_MS = 280;
 const CLOSE_DELAY_MS = 700;
 const SHEET_WIDTH = 360;
 const SHEET_GAP = 10;
 const VIEWPORT_PADDING = 12;
 const ESTIMATED_SHEET_HEIGHT = 260;
-
-function targetFromLink(element: HTMLElement): string | null {
-	if (element.getAttribute("data-wikilink-embed") === "true") return null;
-	if (element.getAttribute("data-unresolved") === "true") return null;
-	const target = element.getAttribute("data-target") ?? "";
-	const normalized = normalizeRelPath(target.split("#", 1)[0] ?? target);
-	const filename = normalized.split("/").pop() ?? normalized;
-	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
-		return null;
-	}
-	return normalized || null;
-}
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(Math.max(value, min), max);
@@ -197,37 +183,27 @@ export function LinkedNotePreviewSheet() {
 
 				void (async () => {
 					try {
-						const relPath = await invoke("space_resolve_wikilink", { target });
-						if (!relPath) {
-							throw new Error("Note not found");
-						}
-						const doc = await invoke("space_read_text_preview", {
-							path: relPath,
-							max_bytes: PREVIEW_MAX_BYTES,
-						});
-						const { content } = parseNotePreview(relPath, doc.text);
+						const data = await loadNotePreviewFromWikiTarget(target);
 						if (requestIdRef.current !== requestId) return;
 						setPreview({
 							target,
-							relPath,
-							content,
-							error: "",
+							...data,
 							anchor,
 							position,
 						});
-					} catch (e) {
+					} catch (error) {
 						if (requestIdRef.current !== requestId) return;
 						setPreview({
 							target,
 							relPath: "",
 							content: "",
-							error: e instanceof Error ? e.message : String(e),
+							error: error instanceof Error ? error.message : String(error),
 							anchor,
 							position,
 						});
 					}
 				})();
-			}, OPEN_DELAY_MS);
+			}, NOTE_PREVIEW_OPEN_DELAY_MS);
 		},
 		[clearCloseTimer, clearOpenTimer],
 	);
@@ -268,7 +244,7 @@ export function LinkedNotePreviewSheet() {
 			if (!link) return;
 			const related = event.relatedTarget;
 			if (related instanceof Node && link.contains(related)) return;
-			const noteTarget = targetFromLink(link);
+			const noteTarget = wikiTargetFromLink(link);
 			if (noteTarget) showPreview(link, noteTarget);
 		};
 
@@ -327,24 +303,11 @@ export function LinkedNotePreviewSheet() {
 			aria-label="Linked note preview"
 		>
 			<div className="linkedNotePreviewBody">
-				{preview.error ? (
-					<div className="markdownEditorInfoEmpty">{preview.error}</div>
-				) : (
-					<div className="linkedNotePreviewText">
-						{preview.content.trim() ? (
-							<NoteInlineEditor
-								markdown={preview.content}
-								relPath={preview.relPath || preview.target}
-								mode="preview"
-								onChange={() => {}}
-								interactive={false}
-								deferHeavyFeatures
-							/>
-						) : (
-							<div className="markdownEditorInfoEmpty">Empty note</div>
-						)}
-					</div>
-				)}
+				<NotePreviewContent
+					relPath={preview.relPath || preview.target}
+					content={preview.content}
+					error={preview.error}
+				/>
 			</div>
 		</aside>,
 		document.body,
