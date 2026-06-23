@@ -87,22 +87,22 @@
 	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 34%,
+		var(--text-secondary) 72%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 52%,
+		var(--interactive-accent) 84%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 38%,
+		var(--interactive-accent) 76%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-tertiary) 22%,
+		var(--text-tertiary) 48%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
@@ -186,22 +186,22 @@
 	);
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 26%,
+		var(--text-secondary) 64%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 46%,
+		var(--interactive-accent) 80%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 34%,
+		var(--interactive-accent) 70%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 16%,
+		var(--text-secondary) 42%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
@@ -254,22 +254,22 @@
 .spaceConnectionsHost .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-tertiary) 28%,
+		var(--text-secondary) 68%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 50%,
+		var(--interactive-accent) 82%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 32%,
+		var(--interactive-accent) 72%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-tertiary) 18%,
+		var(--text-tertiary) 44%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(
@@ -297,22 +297,22 @@
 :root.dark .spaceConnectionsHost .localNoteConnectionsViewport {
 	--local-connections-edge: color-mix(
 		in srgb,
-		var(--text-secondary) 20%,
+		var(--text-secondary) 60%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-active: color-mix(
 		in srgb,
-		var(--interactive-accent) 44%,
+		var(--interactive-accent) 78%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-tag: color-mix(
 		in srgb,
-		var(--interactive-accent) 28%,
+		var(--interactive-accent) 66%,
 		var(--local-connections-surface)
 	);
 	--local-connections-edge-muted: color-mix(
 		in srgb,
-		var(--text-secondary) 12%,
+		var(--text-secondary) 38%,
 		var(--local-connections-surface)
 	);
 	--local-connections-note-bg: color-mix(

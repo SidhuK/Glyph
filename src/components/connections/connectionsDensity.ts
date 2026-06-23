@@ -57,11 +57,11 @@ interface SpaceEdgeScaleTier {
 }
 
 const SPACE_EDGE_SCALE_TIERS: readonly SpaceEdgeScaleTier[] = [
-	{ minEdges: 10_000, scale: 0.32 },
-	{ minEdges: 5_000, scale: 0.42 },
-	{ minEdges: 2_000, scale: 0.52 },
-	{ minEdges: 1_000, scale: 0.62 },
-	{ minEdges: 400, scale: 0.72 },
+	{ minEdges: 10_000, scale: 0.37 },
+	{ minEdges: 5_000, scale: 0.48 },
+	{ minEdges: 2_000, scale: 0.6 },
+	{ minEdges: 1_000, scale: 0.72 },
+	{ minEdges: 400, scale: 0.84 },
 ];
 
 interface SpaceSigmaTier {
@@ -81,7 +81,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 280,
 		labelRenderedSizeThreshold: 18,
 		stagePadding: 36,
-		minEdgeThickness: 0.28,
+		minEdgeThickness: 0.32,
 		minCameraRatio: 0.05,
 	},
 	{
@@ -90,7 +90,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 200,
 		labelRenderedSizeThreshold: 14,
 		stagePadding: 40,
-		minEdgeThickness: 0.32,
+		minEdgeThickness: 0.37,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -99,7 +99,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 165,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 48,
-		minEdgeThickness: 0.38,
+		minEdgeThickness: 0.44,
 		minCameraRatio: 0.18,
 	},
 	{
@@ -108,7 +108,7 @@ const SPACE_SIGMA_TIERS: readonly SpaceSigmaTier[] = [
 		labelGridCellSize: 120,
 		labelRenderedSizeThreshold: 11,
 		stagePadding: 56,
-		minEdgeThickness: 0.38,
+		minEdgeThickness: 0.44,
 		minCameraRatio: 0.18,
 	},
 ];
@@ -118,7 +118,7 @@ const LOCAL_SIGMA = {
 	labelGridCellSize: 88,
 	labelRenderedSizeThreshold: 0,
 	stagePadding: 72,
-	minEdgeThickness: 0.45,
+	minEdgeThickness: 0.52,
 	minCameraRatio: 0.35,
 	maxCameraRatio: 2.2,
 	zoomingRatio: 1.7,
@@ -154,7 +154,7 @@ export function spaceConnectionsDensityProfile(
 	if (edgeTier) {
 		edgeScale = edgeTier.scale;
 	} else if (nodeCount >= 150) {
-		edgeScale = 0.82;
+		edgeScale = 0.94;
 	}
 
 	return {
@@ -186,7 +186,7 @@ export function sigmaSettingsForVariant(
 			maxCameraRatio: LOCAL_SIGMA.maxCameraRatio,
 			stagePadding: LOCAL_SIGMA.stagePadding,
 			zoomingRatio: LOCAL_SIGMA.zoomingRatio,
-			minEdgeThickness: LOCAL_SIGMA.minEdgeThickness,
+			minEdgeThickness: 0.52,
 			zIndex: true,
 			allowInvalidContainer: false,
 		};
