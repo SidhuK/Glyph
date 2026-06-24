@@ -50,7 +50,6 @@ tauri-plugin-global-shortcut = "2"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-text = "20"
-objc2-app-kit = "0.3"
 
 [profile.release]
 strip = "symbols"

@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
@@ -94,6 +95,7 @@ export function ExternalMarkdownWindow() {
 				setPath(windowPath);
 				const nextTitle = displayNameFromPath(windowPath);
 				setTitle(nextTitle);
+				await getCurrentWindow().setTitle(`${nextTitle} - Glyph`);
 
 				const doc = await invoke("external_markdown_read", {
 					path: windowPath,
