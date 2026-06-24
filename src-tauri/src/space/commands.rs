@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
 
 use crate::{
+    glyph_traffic_light_position, reapply_glyph_traffic_light_position,
     index::{self, db::reset_schema_cache},
     paths, utils,
 };
@@ -209,6 +210,7 @@ pub async fn space_open_window(
     .min_inner_size(680.0, 460.0)
     .decorations(true)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
+    .traffic_light_position(glyph_traffic_light_position())
     .hidden_title(true)
     .transparent(true)
     .shadow(true)
@@ -221,6 +223,9 @@ pub async fn space_open_window(
             return Err(error.to_string());
         }
     };
+
+    #[cfg(target_os = "macos")]
+    reapply_glyph_traffic_light_position(&window)?;
 
     focus_window(&window)?;
     update_close_space_menu(&app, &state);

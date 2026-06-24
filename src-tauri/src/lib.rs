@@ -39,10 +39,12 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
+use objc2_app_kit::{NSView, NSWindow, NSWindowButton};
+#[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
+    LogicalPosition, PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
     WebviewWindowBuilder,
 };
 
@@ -51,6 +53,71 @@ static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
+
+pub(crate) fn glyph_traffic_light_position() -> LogicalPosition<f64> {
+    LogicalPosition::new(12.0, 28.0)
+}
+
+#[cfg(target_os = "macos")]
+unsafe fn inset_native_traffic_lights(window: &NSWindow, x: f64, y: f64) -> Result<(), String> {
+    let close = window
+        .standardWindowButton(NSWindowButton::CloseButton)
+        .ok_or_else(|| "close traffic light button not found".to_string())?;
+    let miniaturize = window
+        .standardWindowButton(NSWindowButton::MiniaturizeButton)
+        .ok_or_else(|| "miniaturize traffic light button not found".to_string())?;
+    let zoom = window.standardWindowButton(NSWindowButton::ZoomButton);
+    let button_container = close
+        .superview()
+        .ok_or_else(|| "traffic light button container not found".to_string())?;
+    let title_bar_container = button_container
+        .superview()
+        .ok_or_else(|| "title bar container not found".to_string())?;
+
+    let close_rect = NSView::frame(&close);
+    let title_bar_frame_height = close_rect.size.height + y;
+    let mut title_bar_rect = NSView::frame(&title_bar_container);
+    title_bar_rect.size.height = title_bar_frame_height;
+    title_bar_rect.origin.y = window.frame().size.height - title_bar_frame_height;
+    title_bar_container.setFrame(title_bar_rect);
+
+    let space_between = NSView::frame(&miniaturize).origin.x - close_rect.origin.x;
+    let mut buttons = vec![close, miniaturize];
+    if let Some(zoom) = zoom {
+        buttons.push(zoom);
+    }
+
+    for (index, button) in buttons.into_iter().enumerate() {
+        let mut rect = NSView::frame(&button);
+        rect.origin.x = x + (index as f64 * space_between);
+        button.setFrameOrigin(rect.origin);
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub(crate) fn reapply_glyph_traffic_light_position(
+    window: &tauri::WebviewWindow,
+) -> Result<(), String> {
+    let ns_window = window.ns_window().map_err(|error| error.to_string())?;
+    if ns_window.is_null() {
+        return Err("native window handle is null".to_string());
+    }
+
+    let position = glyph_traffic_light_position();
+    unsafe {
+        inset_native_traffic_lights(&*ns_window.cast::<NSWindow>(), position.x, position.y)?;
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn reapply_glyph_traffic_light_position(
+    _window: &tauri::WebviewWindow,
+) -> Result<(), String> {
+    Ok(())
+}
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -973,6 +1040,7 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     .resizable(false)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
+    .traffic_light_position(glyph_traffic_light_position())
     .hidden_title(true)
     .transparent(true)
     .always_on_top(true)
@@ -986,6 +1054,8 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
 
     #[cfg(target_os = "macos")]
     apply_main_window_vibrancy(&window, None)?;
+    #[cfg(target_os = "macos")]
+    reapply_glyph_traffic_light_position(&window)?;
 
     Ok(window)
 }
@@ -1427,6 +1497,9 @@ pub fn run() {
                 if let Some(window) = app.get_webview_window("main") {
                     if let Err(e) = apply_main_window_vibrancy(&window, None) {
                         warn!("Failed to apply vibrancy to main window: {e}");
+                    }
+                    if let Err(e) = reapply_glyph_traffic_light_position(&window) {
+                        warn!("Failed to apply main window traffic light position: {e}");
                     }
                 } else {
                     warn!("Main window not found during setup");

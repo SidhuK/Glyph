@@ -6,7 +6,9 @@ use std::{
 };
 use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
 
-use crate::{io_atomic, utils};
+use crate::{
+    glyph_traffic_light_position, io_atomic, reapply_glyph_traffic_light_position, utils,
+};
 
 const EXTERNAL_MARKDOWN_LABEL_PREFIX: &str = "external-markdown-";
 const EXTERNAL_MARKDOWN_EXTENSIONS: &[&str] = &["md", "markdown", "mdown"];
@@ -110,12 +112,16 @@ pub fn open_external_markdown_window(
     .resizable(true)
     .decorations(true)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
+    .traffic_light_position(glyph_traffic_light_position())
     .hidden_title(true)
     .transparent(false)
     .shadow(true)
     .center()
     .build()
     .map_err(|error| error.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    reapply_glyph_traffic_light_position(&window)?;
 
     window.set_focus().map_err(|error| error.to_string())
 }
