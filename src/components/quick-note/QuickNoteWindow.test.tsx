@@ -51,7 +51,10 @@ const {
 		),
 		editorReadyCallbackRef: {
 			current: null as
-				| ((editor: typeof mockEditor | null, contentRoot: HTMLElement | null) => void)
+				| ((
+						editor: typeof mockEditor | null,
+						contentRoot: HTMLElement | null,
+				  ) => void)
 				| null,
 		},
 		additionalExtensionsRef: {

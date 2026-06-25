@@ -1,14 +1,14 @@
-import type { Editor } from "@tiptap/core";
 import { emit } from "@tauri-apps/api/event";
+import type { Editor } from "@tiptap/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, reloadFromDisk } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename, parentDir } from "../../utils/path";
-import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
-import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { FileText, Save } from "../Icons";
+import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
 import {
 	QUICK_NOTE_TARGET_VALUE,
 	type QuickNoteTarget,

@@ -5,7 +5,10 @@ import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { createEditorShortcutsExtension } from "./editorShortcuts";
 
-function createEditor(handlers: { onEscape?: () => void; onSave?: () => void }) {
+function createEditor(handlers: {
+	onEscape?: () => void;
+	onSave?: () => void;
+}) {
 	const element = document.createElement("div");
 	document.body.append(element);
 	const handlersRef = { current: handlers };
@@ -31,7 +34,11 @@ function isMacPlatform() {
 	return /Mac/.test(navigator.platform);
 }
 
-function press(editor: Editor, key: string, modifiers: Partial<KeyboardEventInit> = {}) {
+function press(
+	editor: Editor,
+	key: string,
+	modifiers: Partial<KeyboardEventInit> = {},
+) {
 	const event = new KeyboardEvent("keydown", {
 		bubbles: true,
 		cancelable: true,

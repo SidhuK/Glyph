@@ -1,5 +1,5 @@
-import type { AnyExtension } from "@tiptap/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { AnyExtension } from "@tiptap/core";
 import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
