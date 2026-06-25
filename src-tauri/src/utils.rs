@@ -68,7 +68,7 @@ pub fn has_explicit_file_extension(path: &str) -> bool {
 }
 
 pub fn is_markdown_extension(ext: &str) -> bool {
-    ext.eq_ignore_ascii_case("md")
+    ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown")
 }
 
 pub fn is_pdf_extension(ext: &str) -> bool {
