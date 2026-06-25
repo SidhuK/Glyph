@@ -969,8 +969,8 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
         WebviewUrl::App(format!("index.html?window={QUICK_NOTE_WINDOW_LABEL}").into()),
     )
     .title("Quick Note")
-    .inner_size(640.0, 360.0)
-    .resizable(false)
+    .inner_size(680.0, 440.0)
+    .resizable(true)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
     .hidden_title(true)

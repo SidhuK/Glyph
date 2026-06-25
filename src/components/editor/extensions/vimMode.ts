@@ -1,6 +1,7 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import { Plugin, Selection } from "@tiptap/pm/state";
+import { isEditorOverlayOpen } from "../editorOverlays";
 
 type VimInputMode = "insert" | "normal";
 
@@ -33,12 +34,6 @@ declare module "@tiptap/core" {
 			enterVimNormalMode: () => ReturnType;
 		};
 	}
-}
-
-function hasOpenSuggestionMenu() {
-	return Boolean(
-		document.querySelector(".slashCommandMenu, .wikiLinkSuggestionMenu"),
-	);
 }
 
 function syncVimModeAttribute(editor: Editor, mode: VimInputMode | null) {
@@ -305,7 +300,7 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 		const swallow = () => swallowNormalModeKey(this.storage, this.editor);
 		const shortcuts: Record<string, () => boolean> = {
 			Escape: () => {
-				if (!this.editor.isEditable || hasOpenSuggestionMenu()) return false;
+				if (!this.editor.isEditable || isEditorOverlayOpen()) return false;
 				return this.editor.commands.enterVimNormalMode();
 			},
 			"Control-r": normal(() => this.editor.commands.redo()),
