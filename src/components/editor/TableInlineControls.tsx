@@ -132,7 +132,7 @@ const TableAxisControl = memo(function TableAxisControl({
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>{triggerButton}</DropdownMenuTrigger>
-			<DropdownMenuContent align="start">
+			<DropdownMenuContent className="tableInlineControlsMenu" align="start">
 				{menuItems.map((item) => {
 					if (item.type === "separator") {
 						return <DropdownMenuSeparator key="separator" />;

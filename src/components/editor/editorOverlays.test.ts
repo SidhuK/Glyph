@@ -27,6 +27,14 @@ describe("isEditorOverlayOpen", () => {
 		expect(isEditorOverlayOpen()).toBe(true);
 	});
 
+	it("detects an open table inline controls menu", () => {
+		const menu = document.createElement("div");
+		menu.className = "tableInlineControlsMenu";
+		menu.setAttribute("data-state", "open");
+		document.body.append(menu);
+		expect(isEditorOverlayOpen()).toBe(true);
+	});
+
 	it("ignores unrelated open radix menus", () => {
 		const menu = document.createElement("div");
 		menu.setAttribute("role", "menu");
