@@ -288,7 +288,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		relPath,
 	]);
 
-	const selectedTable = useTableInlineControls({
+	const tableControls = useTableInlineControls({
 		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
@@ -550,30 +550,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		},
 		[editor],
 	);
-	const preventCodeBlockPickerMouseDown = useCallback(
+	const preventOverlayMouseDown = useCallback(
 		(event: ReactMouseEvent<HTMLElement>) => {
 			event.preventDefault();
 		},
 		[],
 	);
-	const preventTableControlMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
-	const addRowToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
-	}, [editor]);
-	const addColumnToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.addColumnAfter()
-			.run();
-	}, [editor]);
 	useEffect(() => {
 		if (!editor) return;
 		if (mode === "rich" || mode === "preview") {
@@ -635,21 +617,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			});
 	}, [selectedCodeBlock]);
 
-	const tableControls = useMemo(
-		() => ({
-			selected: selectedTable,
-			onControlMouseDown: preventTableControlMouseDown,
-			onAddRow: addRowToSelectedTable,
-			onAddColumn: addColumnToSelectedTable,
-		}),
-		[
-			addColumnToSelectedTable,
-			addRowToSelectedTable,
-			preventTableControlMouseDown,
-			selectedTable,
-		],
-	);
-
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
@@ -658,7 +625,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
-			onPickerMouseDown: preventCodeBlockPickerMouseDown,
+			onPickerMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
 		}),
@@ -667,7 +634,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
-			preventCodeBlockPickerMouseDown,
+			preventOverlayMouseDown,
 			selectedCodeBlock,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
@@ -734,7 +701,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						table={tableControls}
+						tableControls={tableControls}
 						codeBlock={codeBlockControls}
 					/>
 				) : null}
