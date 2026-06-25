@@ -890,16 +890,67 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let help_menu = Submenu::with_id_and_items(
+    let help_getting_started = menu_item_with_shortcut(
         app,
-        HELP_SUBMENU_ID,
-        "Help",
-        true,
-        &[
-            #[cfg(not(target_os = "macos"))]
-            &PredefinedMenuItem::about(app, None, None)?,
-        ],
+        menu_shortcuts,
+        "help.getting_started",
+        "Getting Started",
+        space_open,
+        None,
     )?;
+    let help_welcome_note = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "help.welcome_note",
+        "Welcome Note",
+        space_open,
+        None,
+    )?;
+    let help_shortcuts = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "help.shortcuts",
+        "Keyboard Shortcuts…",
+        true,
+        None,
+    )?;
+    const HELP_LINK_GROUPS: &[&[(&str, &str)]] = &[
+        &[
+            ("help.website", "Glyph Website"),
+            ("help.changelog", "Changelog"),
+            ("help.privacy", "Privacy Policy"),
+            ("help.terms", "Terms of Service"),
+        ],
+        &[
+            ("help.discord", "Discord"),
+            ("help.github", "GitHub"),
+            ("help.x", "Follow on X"),
+        ],
+    ];
+    let help_menu = {
+        let builder = SubmenuBuilder::with_id(app, HELP_SUBMENU_ID, "Help");
+        #[cfg(not(target_os = "macos"))]
+        let builder = builder
+            .item(&PredefinedMenuItem::about(app, None, None)?)
+            .separator();
+        let builder = builder
+            .item(&help_getting_started)
+            .item(&help_welcome_note)
+            .separator()
+            .item(&help_shortcuts)
+            .separator();
+        let mut builder = builder;
+        for (group_index, group) in HELP_LINK_GROUPS.iter().enumerate() {
+            if group_index > 0 {
+                builder = builder.separator();
+            }
+            for (id, label) in *group {
+                let item = menu_item_with_shortcut(app, menu_shortcuts, id, label, true, None)?;
+                builder = builder.item(&item);
+            }
+        }
+        builder.build()?
+    };
 
     if show_markdown_menu {
         Menu::with_items(

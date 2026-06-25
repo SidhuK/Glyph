@@ -4,7 +4,7 @@ import type { SearchAdvancedRequest } from "../../lib/tauri";
 
 export interface Command {
 	id: string;
-	label: string;
+	label?: string;
 	icon?: ReactNode;
 	category?: string;
 	searchTerms?: readonly string[];

@@ -1021,6 +1021,8 @@ export function AppShell() {
 		onEditorAction: (action) => {
 			dispatchEditorMenuAction({ action });
 		},
+		openGettingStarted,
+		showWelcomeNote,
 	});
 
 	const commands = useAppCommands({
