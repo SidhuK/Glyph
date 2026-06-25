@@ -23,7 +23,11 @@ const {
 	let frontmatter: string | null = null;
 	const chainCommands = {
 		addColumnAfter: vi.fn(() => chainCommands),
+		addColumnBefore: vi.fn(() => chainCommands),
 		addRowAfter: vi.fn(() => chainCommands),
+		addRowBefore: vi.fn(() => chainCommands),
+		deleteColumn: vi.fn(() => chainCommands),
+		deleteRow: vi.fn(() => chainCommands),
 		focus: vi.fn(() => chainCommands),
 		run: vi.fn(() => true),
 		updateAttributes: vi.fn(() => chainCommands),
@@ -31,6 +35,10 @@ const {
 	const mockEditor = {
 		isEditable: true,
 		chain: vi.fn(() => chainCommands),
+		can: vi.fn(() => ({
+			deleteRow: () => true,
+			deleteColumn: () => true,
+		})),
 		commands: {
 			refreshMermaidPreviews: vi.fn(),
 			setNoteSearch: vi.fn(),
@@ -210,6 +218,42 @@ vi.mock("../ui/shadcn/popover", () => ({
 	),
 }));
 
+vi.mock("../ui/shadcn/dropdown-menu", () => ({
+	DropdownMenu: ({ children }: { children: React.ReactNode }) => (
+		<div data-testid="dropdown-menu">{children}</div>
+	),
+	DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	DropdownMenuContent: ({ children }: { children: React.ReactNode }) => (
+		<div role="menu" data-slot="dropdown-menu-content">
+			{children}
+		</div>
+	),
+	DropdownMenuItem: ({
+		children,
+		onSelect,
+		disabled,
+	}: {
+		children: React.ReactNode;
+		onSelect?: () => void;
+		disabled?: boolean;
+	}) => (
+		<button
+			type="button"
+			role="menuitem"
+			data-slot="dropdown-menu-item"
+			disabled={disabled}
+			onClick={() => {
+				if (!disabled) onSelect?.();
+			}}
+		>
+			{children}
+		</button>
+	),
+	DropdownMenuSeparator: () => <hr />,
+}));
+
 describe("NoteInlineEditor table controls", () => {
 	let container: HTMLDivElement;
 	let root: Root;
@@ -361,23 +405,23 @@ describe("NoteInlineEditor table controls", () => {
 		expect(host?.getAttribute("data-colorful-headings")).toBeNull();
 	});
 
-	it("runs the correct TipTap commands when the inline icons are clicked", async () => {
+	it("runs the correct TipTap commands when the inline menu items are selected", async () => {
 		render("rich");
 
 		await syncSelection("Ada");
 
-		const rowButton = container.querySelector(
-			'[data-axis="row"]',
-		) as HTMLButtonElement | null;
-		const columnButton = container.querySelector(
-			'[data-axis="column"]',
-		) as HTMLButtonElement | null;
-		expect(rowButton).toBeTruthy();
-		expect(columnButton).toBeTruthy();
+		const rowMenu = container
+			.querySelector('[data-axis="row"]')
+			?.closest('[data-testid="dropdown-menu"]');
+		const addRowBelow = Array.from(
+			rowMenu?.querySelectorAll('[data-slot="dropdown-menu-item"]') ?? [],
+		).find((element) => element.textContent === "Add row below") as
+			| HTMLButtonElement
+			| undefined;
+		expect(addRowBelow).toBeTruthy();
 
 		await act(async () => {
-			rowButton?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-			rowButton?.click();
+			addRowBelow?.click();
 		});
 		expect(chainCommands.focus).toHaveBeenCalledWith(null, {
 			scrollIntoView: false,
@@ -388,11 +432,18 @@ describe("NoteInlineEditor table controls", () => {
 		chainCommands.focus.mockClear();
 		chainCommands.run.mockClear();
 
+		const columnMenu = container
+			.querySelector('[data-axis="column"]')
+			?.closest('[data-testid="dropdown-menu"]');
+		const addColumnRight = Array.from(
+			columnMenu?.querySelectorAll('[data-slot="dropdown-menu-item"]') ?? [],
+		).find((element) => element.textContent === "Add column right") as
+			| HTMLButtonElement
+			| undefined;
+		expect(addColumnRight).toBeTruthy();
+
 		await act(async () => {
-			columnButton?.dispatchEvent(
-				new MouseEvent("mousedown", { bubbles: true }),
-			);
-			columnButton?.click();
+			addColumnRight?.click();
 		});
 		expect(chainCommands.focus).toHaveBeenCalledWith(null, {
 			scrollIntoView: false,
