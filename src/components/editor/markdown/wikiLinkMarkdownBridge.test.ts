@@ -71,4 +71,18 @@ describe("wikiLinkMarkdownBridge", () => {
 			"alpha\n \nbeta",
 		);
 	});
+
+	it("preserves escaped dollar signs through editor bridge round-trip", () => {
+		const md = String.raw`Price is \$5 and math is $x^2$.`;
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
+			md,
+		);
+	});
+
+	it("preserves literal placeholder sentinels through editor bridge round-trip", () => {
+		const md = "Marker \uE000 and escape \uE001 here";
+		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
+			md,
+		);
+	});
 });

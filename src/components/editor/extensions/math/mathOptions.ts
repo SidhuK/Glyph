@@ -13,6 +13,26 @@ export const BLOCK_MATH_STARTER = String.raw`\begin{aligned}
   a &= b + c
 \end{aligned}`;
 
+const ESCAPED_DOLLAR_PLACEHOLDER = "\uE000";
+const LITERAL_PLACEHOLDER_ESCAPE = "\uE001";
+const LITERAL_ESCAPE_ESCAPE = "\uE002";
+
+/** Swap escaped dollar signs for a placeholder before math parsing. */
+export function preprocessEscapedDollars(markdown: string): string {
+	return markdown
+		.replace(/\uE001/g, LITERAL_ESCAPE_ESCAPE)
+		.replace(/\uE000/g, LITERAL_PLACEHOLDER_ESCAPE)
+		.replace(/\\\$/g, ESCAPED_DOLLAR_PLACEHOLDER);
+}
+
+/** Restore escaped dollar signs after math parsing. */
+export function postprocessEscapedDollars(markdown: string): string {
+	return markdown
+		.replace(new RegExp(ESCAPED_DOLLAR_PLACEHOLDER, "g"), String.raw`\$`)
+		.replace(/\uE001/g, "\uE000")
+		.replace(/\uE002/g, "\uE001");
+}
+
 export const GLYPH_KATEX_OPTIONS = {
 	maxExpand: 1000,
 	maxSize: 20,
