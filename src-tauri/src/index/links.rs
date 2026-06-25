@@ -125,9 +125,7 @@ fn is_file_wikilink_target(target: &str) -> bool {
 }
 
 fn should_append_markdown_extension(target: &str) -> bool {
-    target.contains('/')
-        && !utils::has_wikilink_file_extension(target)
-        && !utils::has_explicit_file_extension(target)
+    target.contains('/') && !utils::has_explicit_file_extension(target)
 }
 
 fn is_linkable_file_target(target: &str) -> bool {

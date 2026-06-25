@@ -58,13 +58,8 @@ pub fn path_extension_lower(path: &str) -> Option<String> {
 }
 
 pub fn has_explicit_file_extension(path: &str) -> bool {
-    path_extension_lower(path).is_some_and(|ext| {
-        !ext.is_empty()
-            && ext.len() <= 10
-            && ext
-                .chars()
-                .all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '-')
-    })
+    path_extension_lower(path)
+        .is_some_and(|ext| !ext.is_empty() && !ext.chars().any(char::is_whitespace))
 }
 
 pub fn is_markdown_extension(ext: &str) -> bool {

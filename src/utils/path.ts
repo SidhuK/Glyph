@@ -24,7 +24,8 @@ export function splitEditableFileName(name: string): {
 }
 
 export function isMarkdownPath(relPath: string): boolean {
-	return relPath.toLowerCase().endsWith(".md");
+	const ext = fileExtension(relPath);
+	return ext === "md" || ext === "markdown";
 }
 
 const IMAGE_EXTENSIONS = new Set([
@@ -49,7 +50,7 @@ export function fileExtension(path: string): string {
 
 export function hasExplicitFileExtension(path: string): boolean {
 	const ext = fileExtension(path);
-	return /^[a-z0-9_-]{1,10}$/.test(ext);
+	return ext.length > 0 && !/\s/.test(ext);
 }
 
 export function isImagePath(path: string): boolean {
@@ -62,7 +63,7 @@ export function isPdfPath(path: string): boolean {
 
 export function isMarkdownCreatablePath(path: string): boolean {
 	const ext = fileExtension(path);
-	return ext === "md" || !hasExplicitFileExtension(path);
+	return ext === "md" || ext === "markdown" || !hasExplicitFileExtension(path);
 }
 
 export function isPreviewableNotePath(path: string): boolean {

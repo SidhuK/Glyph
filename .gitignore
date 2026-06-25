@@ -23,4 +23,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.amp/plugins/emdash-hook.ts
+.amp/
+.pi/

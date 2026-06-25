@@ -456,8 +456,8 @@ mod tests {
     use rusqlite::Connection;
 
     use crate::index::schema::ensure_schema;
-    use crate::index::set_people_mentions_as_tags_enabled;
     use crate::index::tags::{expand_indexed_people, expand_indexed_tags};
+    use crate::index::{people_mentions_as_tags_test_lock, set_people_mentions_as_tags_enabled};
 
     use super::{list_people, list_tags};
 
@@ -507,6 +507,7 @@ mod tests {
 
     #[test]
     fn list_tags_excludes_people_namespace_and_people_list_strips_prefix() {
+        let _lock = people_mentions_as_tags_test_lock();
         set_people_mentions_as_tags_enabled(true);
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
