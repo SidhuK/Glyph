@@ -249,6 +249,7 @@ interface UseNoteEditorOptions {
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
+	placeholder?: string;
 	onChange: (nextMarkdown: string) => void;
 	onMathEditRequest?: (request: MathEditRequest) => void;
 }
@@ -270,6 +271,7 @@ export function useNoteEditor({
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
 	pasteMarkdownBehavior = "plain-text",
+	placeholder = "Start writing or press / for commands",
 	onChange,
 	onMathEditRequest,
 }: UseNoteEditorOptions) {
@@ -314,13 +316,14 @@ export function useNoteEditor({
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
 				onMathEditRequest,
-				placeholder: "Start writing or press / for commands",
+				placeholder,
 			}),
 		[
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
-			peopleMentionsEnabled,
 			onMathEditRequest,
+			peopleMentionsEnabled,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
@@ -467,6 +470,7 @@ export function useNoteEditor({
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
+		void placeholder;
 		void vimKeybindingsEnabled;
 		return () => {
 			flushMarkdownSync(relPath);
@@ -477,6 +481,7 @@ export function useNoteEditor({
 		additionalExtensions,
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
+		placeholder,
 		vimKeybindingsEnabled,
 	]);
 
@@ -643,6 +648,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
