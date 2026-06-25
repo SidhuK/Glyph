@@ -88,7 +88,7 @@ function focusEditor(editor: Editor | null) {
 }
 
 function editorHasText(editor: Editor | null): boolean {
-	return Boolean(editor?.getText().trim());
+	return Boolean(editor?.getMarkdown().trim());
 }
 
 function clearDraft(editor: Editor | null) {

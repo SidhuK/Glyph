@@ -470,6 +470,7 @@ export function useNoteEditor({
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
+		void placeholder;
 		void vimKeybindingsEnabled;
 		return () => {
 			flushMarkdownSync(relPath);
@@ -480,6 +481,7 @@ export function useNoteEditor({
 		additionalExtensions,
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
+		placeholder,
 		vimKeybindingsEnabled,
 	]);
 
@@ -646,6 +648,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
