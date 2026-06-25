@@ -27,14 +27,49 @@ export function isMarkdownPath(relPath: string): boolean {
 	return relPath.toLowerCase().endsWith(".md");
 }
 
+const IMAGE_EXTENSIONS = new Set([
+	"avif",
+	"bmp",
+	"gif",
+	"jpeg",
+	"jpg",
+	"png",
+	"svg",
+	"tif",
+	"tiff",
+	"webp",
+]);
+
+export function fileExtension(path: string): string {
+	const name = basename(path);
+	const dotIndex = name.lastIndexOf(".");
+	if (dotIndex <= 0 || dotIndex === name.length - 1) return "";
+	return name.slice(dotIndex + 1).toLowerCase();
+}
+
+export function hasExplicitFileExtension(path: string): boolean {
+	const ext = fileExtension(path);
+	return /^[a-z0-9_-]{1,10}$/.test(ext);
+}
+
+export function isImagePath(path: string): boolean {
+	return IMAGE_EXTENSIONS.has(fileExtension(path));
+}
+
+export function isPdfPath(path: string): boolean {
+	return fileExtension(path) === "pdf";
+}
+
+export function isMarkdownCreatablePath(path: string): boolean {
+	const ext = fileExtension(path);
+	return ext === "md" || !hasExplicitFileExtension(path);
+}
+
 export function isPreviewableNotePath(path: string): boolean {
 	const normalized = normalizeRelPath(path.split("#", 1)[0] ?? path);
 	const filename = basename(normalized);
 	if (!filename) return false;
-	if (filename.includes(".") && !filename.toLowerCase().endsWith(".md")) {
-		return false;
-	}
-	return true;
+	return isMarkdownCreatablePath(filename);
 }
 
 export function displayNameFromPath(relPath: string): string {

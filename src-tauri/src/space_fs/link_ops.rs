@@ -149,21 +149,11 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
 }
 
 fn is_image_rel_path(path: &str) -> bool {
-    let lower = path.to_ascii_lowercase();
-    lower.ends_with(".png")
-        || lower.ends_with(".jpg")
-        || lower.ends_with(".jpeg")
-        || lower.ends_with(".webp")
-        || lower.ends_with(".gif")
-        || lower.ends_with(".svg")
-        || lower.ends_with(".bmp")
-        || lower.ends_with(".avif")
-        || lower.ends_with(".tif")
-        || lower.ends_with(".tiff")
+    utils::is_image_path(path)
 }
 
 fn is_pdf_rel_path(path: &str) -> bool {
-    path.to_ascii_lowercase().ends_with(".pdf")
+    utils::is_pdf_path(path)
 }
 
 fn is_standard_wikilink_rel_path(entry: &FileEntry) -> bool {
@@ -175,13 +165,6 @@ fn choose_unambiguous_match(matches: Vec<String>) -> Option<String> {
         1 => matches.into_iter().next(),
         _ => None,
     }
-}
-
-fn has_explicit_extension(path: &str) -> bool {
-    Path::new(path)
-        .file_name()
-        .and_then(|name| Path::new(name).extension())
-        .is_some()
 }
 
 fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
@@ -236,7 +219,7 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         return choose_unambiguous_match(exact_name_matches);
     }
 
-    if has_explicit_extension(file_name_query) {
+    if utils::has_explicit_file_extension(file_name_query) {
         return None;
     }
 
@@ -284,7 +267,7 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
         {
             return Some(hit.rel_path.clone());
         }
-        if !has_explicit_extension(&path_query) {
+        if !utils::has_explicit_file_extension(&path_query) {
             let markdown_query = format!("{path_query}.md");
             return link_entries
                 .iter()
@@ -295,7 +278,7 @@ fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Opti
     }
 
     let file_name_query = normalized.trim_start_matches('/');
-    if has_explicit_extension(file_name_query) {
+    if utils::has_explicit_file_extension(file_name_query) {
         let matches = link_entries
             .iter()
             .filter(|entry| basename(&entry.rel_path).eq_ignore_ascii_case(file_name_query))
@@ -497,6 +480,42 @@ mod tests {
             Some("docs/spec.pdf".to_string())
         );
         assert_eq!(resolve_standard_wikilink_target(&entries, "logo.png"), None);
+    }
+
+    #[test]
+    fn standard_wikilink_resolves_dotted_markdown_title_without_extension() {
+        let entries = vec![entry("0.5.6 project hail mary.md"), entry("docs/note.md")];
+
+        let resolved = resolve_standard_wikilink_target(&entries, "0.5.6 project hail mary");
+
+        assert_eq!(resolved, Some("0.5.6 project hail mary.md".to_string()));
+    }
+
+    #[test]
+    fn standard_wikilink_resolves_dotted_nested_markdown_path_without_extension() {
+        let entries = vec![
+            entry("projects/0.5.6 project hail mary.md"),
+            entry("docs/note.md"),
+        ];
+
+        let resolved =
+            resolve_standard_wikilink_target(&entries, "projects/0.5.6 project hail mary");
+
+        assert_eq!(
+            resolved,
+            Some("projects/0.5.6 project hail mary.md".to_string())
+        );
+    }
+
+    #[test]
+    fn standard_wikilink_does_not_resolve_unsupported_extension_as_markdown_stem() {
+        let entries = vec![entry("assets/archive.zip.md"), entry("data.csv.md")];
+
+        assert_eq!(
+            resolve_standard_wikilink_target(&entries, "assets/archive.zip"),
+            None
+        );
+        assert_eq!(resolve_standard_wikilink_target(&entries, "data.csv"), None);
     }
 
     #[test]
