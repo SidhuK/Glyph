@@ -2,7 +2,9 @@
 	"files": {
 		"ignore": [
 			".agents",
+			".amp",
 			".claude",
+			".pi",
 			".pnpm-store",
 			"dist",
 			"src-tauri/gen",

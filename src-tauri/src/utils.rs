@@ -49,6 +49,50 @@ pub fn is_markdown_path(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+pub fn path_extension_lower(path: &str) -> Option<String> {
+    Path::new(path)
+        .file_name()
+        .and_then(|name| Path::new(name).extension())
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.to_ascii_lowercase())
+}
+
+pub fn has_explicit_file_extension(path: &str) -> bool {
+    path_extension_lower(path)
+        .is_some_and(|ext| !ext.is_empty() && !ext.chars().any(char::is_whitespace))
+}
+
+pub fn is_markdown_extension(ext: &str) -> bool {
+    ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown")
+}
+
+pub fn is_pdf_extension(ext: &str) -> bool {
+    ext.eq_ignore_ascii_case("pdf")
+}
+
+pub fn is_image_extension(ext: &str) -> bool {
+    matches!(
+        ext.to_ascii_lowercase().as_str(),
+        "png" | "jpg" | "jpeg" | "webp" | "gif" | "svg" | "bmp" | "avif" | "tif" | "tiff"
+    )
+}
+
+pub fn is_wikilink_file_extension(ext: &str) -> bool {
+    is_markdown_extension(ext) || is_pdf_extension(ext) || is_image_extension(ext)
+}
+
+pub fn has_wikilink_file_extension(path: &str) -> bool {
+    path_extension_lower(path).is_some_and(|ext| is_wikilink_file_extension(&ext))
+}
+
+pub fn is_image_path(path: &str) -> bool {
+    path_extension_lower(path).is_some_and(|ext| is_image_extension(&ext))
+}
+
+pub fn is_pdf_path(path: &str) -> bool {
+    path_extension_lower(path).is_some_and(|ext| is_pdf_extension(&ext))
+}
+
 pub fn should_hide(name: &str) -> bool {
     name.starts_with('.')
 }
