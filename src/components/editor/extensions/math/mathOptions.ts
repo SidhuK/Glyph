@@ -13,6 +13,16 @@ export const BLOCK_MATH_STARTER = String.raw`\begin{aligned}
   a &= b + c
 \end{aligned}`;
 
+const ESCAPED_DOLLAR_PLACEHOLDER = "\uE000";
+
+export function preprocessEscapedDollars(markdown: string): string {
+	return markdown.replace(/\\\$/g, ESCAPED_DOLLAR_PLACEHOLDER);
+}
+
+export function postprocessEscapedDollars(markdown: string): string {
+	return markdown.replaceAll(ESCAPED_DOLLAR_PLACEHOLDER, String.raw`\$`);
+}
+
 export const GLYPH_KATEX_OPTIONS = {
 	maxExpand: 1000,
 	maxSize: 20,

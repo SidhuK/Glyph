@@ -1,4 +1,8 @@
 import {
+	postprocessEscapedDollars,
+	preprocessEscapedDollars,
+} from "../extensions/math/mathOptions";
+import {
 	EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN,
 	getEditorTextColorBridgeOpenToken,
 	getEditorTextColorMarkdownOpenTag,
@@ -155,20 +159,24 @@ function postprocessWhitespaceLines(input: string): string {
 }
 
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessColoredText(
-		preprocessHighlightedText(
-			encodeMarkdownImageDestinations(
-				canonicalizeWikiLinks(preprocessInlineTocMarkers(markdown)),
+	return preprocessEscapedDollars(
+		preprocessColoredText(
+			preprocessHighlightedText(
+				encodeMarkdownImageDestinations(
+					canonicalizeWikiLinks(preprocessInlineTocMarkers(markdown)),
+				),
 			),
 		),
 	);
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {
-	return postprocessInlineTocMarkers(
-		postprocessWhitespaceLines(
-			postprocessHighlightedText(
-				postprocessColoredText(canonicalizeWikiLinks(markdown)),
+	return postprocessEscapedDollars(
+		postprocessInlineTocMarkers(
+			postprocessWhitespaceLines(
+				postprocessHighlightedText(
+					postprocessColoredText(canonicalizeWikiLinks(markdown)),
+				),
 			),
 		),
 	);
