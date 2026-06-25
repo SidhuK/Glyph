@@ -1,7 +1,7 @@
 import {
 	type AppCommandDefinition,
 	type CommandCategory,
-	listCommandDefinitions,
+	listShortcutConfigurableCommands,
 } from "../commands/commandManifest";
 
 export type ShortcutActionId = string;
@@ -12,7 +12,7 @@ export interface ShortcutActionDefinition extends AppCommandDefinition {
 }
 
 export const SHORTCUT_ACTIONS: ShortcutActionDefinition[] =
-	listCommandDefinitions();
+	listShortcutConfigurableCommands();
 
 if (import.meta.env.DEV) {
 	const seen = new Set<string>();

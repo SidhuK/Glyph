@@ -976,23 +976,113 @@
 		},
 		"show-getting-started": {
 			"id": "show-getting-started",
-			"label": "Show Getting Started",
+			"label": "Getting Started",
 			"description": "Open the getting started flow.",
 			"category": "settings",
 			"context": "space",
 			"defaultBinding": null,
 			"allowInEditable": false,
-			"commandPalette": true
+			"commandPalette": true,
+			"menuId": "help.getting_started"
 		},
 		"show-welcome-note": {
 			"id": "show-welcome-note",
-			"label": "Show Welcome Note",
+			"label": "Welcome Note",
 			"description": "Create or open the welcome note in the root of the current space.",
 			"category": "settings",
 			"context": "space",
 			"defaultBinding": null,
 			"allowInEditable": false,
-			"commandPalette": true
+			"commandPalette": true,
+			"menuId": "help.welcome_note"
+		},
+		"open-shortcuts-settings": {
+			"id": "open-shortcuts-settings",
+			"label": "Keyboard Shortcuts\u2026",
+			"description": "Open the keyboard shortcuts section in settings.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "help.shortcuts"
+		},
+		"open-glyph-website": {
+			"id": "open-glyph-website",
+			"label": "Glyph Website",
+			"description": "Open the Glyph website.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.website"
+		},
+		"open-glyph-changelog": {
+			"id": "open-glyph-changelog",
+			"label": "Changelog",
+			"description": "Open the published Glyph changelog.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.changelog"
+		},
+		"open-glyph-privacy": {
+			"id": "open-glyph-privacy",
+			"label": "Privacy Policy",
+			"description": "Open the Glyph privacy policy.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.privacy"
+		},
+		"open-glyph-terms": {
+			"id": "open-glyph-terms",
+			"label": "Terms of Service",
+			"description": "Open the Glyph terms of service.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.terms"
+		},
+		"open-glyph-discord": {
+			"id": "open-glyph-discord",
+			"label": "Discord",
+			"description": "Open the Glyph community Discord.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.discord"
+		},
+		"open-glyph-github": {
+			"id": "open-glyph-github",
+			"label": "GitHub",
+			"description": "Open the Glyph repository on GitHub.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.github"
+		},
+		"open-glyph-x": {
+			"id": "open-glyph-x",
+			"label": "Follow on X",
+			"description": "Open Karat Sidhu on X.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.x"
 		},
 		"strikethrough": {
 			"id": "strikethrough",

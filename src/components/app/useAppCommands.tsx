@@ -193,7 +193,7 @@ function resolveCommandShortcuts(
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: command.label ?? definition.label,
+					label: command.label ?? definition.label ?? command.id,
 					category: SHORTCUT_CATEGORY_LABELS[definition.category],
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
@@ -861,7 +861,6 @@ export function useAppCommands({
 			},
 			{
 				id: "show-getting-started",
-				label: "Show getting started",
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
@@ -869,13 +868,11 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
 				action: openGettingStarted,
 			},
 			{
 				id: "show-welcome-note",
-				label: "Show welcome note",
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
@@ -883,9 +880,8 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
-				action: () => void showWelcomeNote(),
+				action: showWelcomeNote,
 			},
 		];
 		return resolveCommandShortcuts(

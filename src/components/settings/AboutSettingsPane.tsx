@@ -9,6 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
+import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
 import {
 	type ReleaseChannel,
@@ -119,7 +120,7 @@ export function AboutSettingsPane() {
 						<button
 							type="button"
 							className="settingsInlineLink"
-							onClick={() => void openUrl("https://x.com/karat_sidhu")}
+							onClick={() => void openUrl(GLYPH_LINKS.x)}
 						>
 							Karat Sidhu
 						</button>
@@ -130,7 +131,7 @@ export function AboutSettingsPane() {
 							size="sm"
 							variant="outline"
 							className="aboutLinkButton"
-							onClick={() => void openUrl("https://glyphformac.com")}
+							onClick={() => void openUrl(GLYPH_LINKS.website)}
 						>
 							<HugeiconsIcon
 								icon={GlobeIcon}
@@ -144,7 +145,7 @@ export function AboutSettingsPane() {
 							size="sm"
 							variant="outline"
 							className="aboutLinkButton"
-							onClick={() => void openUrl("https://discord.gg/cNqrBfFx7D")}
+							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
 							<HugeiconsIcon
 								icon={DiscordIcon}
@@ -158,7 +159,7 @@ export function AboutSettingsPane() {
 							size="sm"
 							variant="outline"
 							className="aboutLinkButton"
-							onClick={() => void openUrl("https://glyphformac.com/terms")}
+							onClick={() => void openUrl(GLYPH_LINKS.terms)}
 						>
 							<HugeiconsIcon
 								icon={File01Icon}
@@ -172,7 +173,7 @@ export function AboutSettingsPane() {
 							size="sm"
 							variant="outline"
 							className="aboutLinkButton"
-							onClick={() => void openUrl("https://glyphformac.com/privacy")}
+							onClick={() => void openUrl(GLYPH_LINKS.privacy)}
 						>
 							<HugeiconsIcon
 								icon={Shield01Icon}
@@ -305,9 +306,7 @@ export function AboutSettingsPane() {
 								type="button"
 								size="sm"
 								variant="outline"
-								onClick={() =>
-									void openUrl("https://glyphformac.com/changelog")
-								}
+								onClick={() => void openUrl(GLYPH_LINKS.changelog)}
 							>
 								<HugeiconsIcon
 									icon={ListViewIcon}
