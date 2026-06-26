@@ -19,10 +19,10 @@ const DetailsWithPersistedFirstToggle = Details.extend({
 				if (!this.options.persist || !props.editor.isEditable) return;
 				if (typeof props.getPos !== "function") return;
 				const pos = props.getPos();
-				if (pos === undefined) return;
+				if (pos !== 0) return;
 				const node = props.editor.state.doc.nodeAt(pos);
-				const open = dom.classList.contains(this.options.openClassName);
-				if (node?.type !== this.type || node.attrs.open === open) return;
+				if (node?.type !== this.type) return;
+				const open = !node.attrs.open;
 				props.editor
 					.chain()
 					.command(({ tr }) => {
