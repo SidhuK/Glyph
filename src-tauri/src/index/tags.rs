@@ -167,6 +167,76 @@ fn collect_tags_from_string(raw: &str, out: &mut Vec<String>) {
     }
 }
 
+fn looks_like_html_tag_start(bytes: &[u8], index: usize) -> bool {
+    let Some(next) = bytes.get(index + 1).copied() else {
+        return false;
+    };
+    if next.is_ascii_alphabetic() || next == b'!' || next == b'?' {
+        return true;
+    }
+    next == b'/'
+        && bytes
+            .get(index + 2)
+            .is_some_and(|candidate| candidate.is_ascii_alphabetic())
+}
+
+fn strip_html_tags_for_metadata_scan(line: &str) -> String {
+    let bytes = line.as_bytes();
+    let mut cleaned = String::with_capacity(line.len());
+    let mut i = 0;
+
+    while i < bytes.len() {
+        if bytes[i] == b'<' && looks_like_html_tag_start(bytes, i) {
+            let tag_start = i;
+            i += 1;
+            let mut quote: Option<u8> = None;
+            let mut closed = false;
+
+            while i < bytes.len() {
+                let current = bytes[i];
+                if let Some(active_quote) = quote {
+                    if current == active_quote {
+                        quote = None;
+                    }
+                    i += 1;
+                    continue;
+                }
+                if current == b'\'' || current == b'"' {
+                    quote = Some(current);
+                    i += 1;
+                    continue;
+                }
+                if current == b'>' {
+                    i += 1;
+                    closed = true;
+                    break;
+                }
+                i += 1;
+            }
+
+            if closed {
+                cleaned.push(' ');
+                continue;
+            }
+
+            cleaned.push_str(&line[tag_start..]);
+            break;
+        }
+
+        let Some(ch) = line[i..].chars().next() else {
+            break;
+        };
+        cleaned.push(ch);
+        i += ch.len_utf8();
+    }
+
+    cleaned
+}
+
+fn is_css_hex_color_literal(candidate: &str) -> bool {
+    matches!(candidate.len(), 6 | 8) && candidate.chars().all(|c| c.is_ascii_hexdigit())
+}
+
 pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut in_fence = false;
@@ -190,6 +260,7 @@ pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
                 cleaned.push(ch);
             }
         }
+        let cleaned = strip_html_tags_for_metadata_scan(&cleaned);
 
         let bytes = cleaned.as_bytes();
         let mut i = 0;
@@ -213,6 +284,10 @@ pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
                 }
                 if j > i + 1 {
                     let candidate = &cleaned[i + 1..j];
+                    if is_css_hex_color_literal(candidate) {
+                        i = j;
+                        continue;
+                    }
                     if let Some(t) = normalize_tag(candidate) {
                         out.push(t);
                     }
@@ -251,6 +326,7 @@ pub fn parse_inline_people(markdown: &str) -> Vec<String> {
                 cleaned.push(ch);
             }
         }
+        let cleaned = strip_html_tags_for_metadata_scan(&cleaned);
 
         let bytes = cleaned.as_bytes();
         let mut i = 0;
@@ -309,8 +385,8 @@ pub fn parse_all_tags(markdown: &str) -> Vec<String> {
 mod tests {
     use super::{
         expand_indexed_people, expand_indexed_tags, normalize_person_handle, normalize_tag,
-        parse_all_tags, parse_inline_people, people_tag_to_handle, person_handle_to_tag, tag_depth,
-        tag_matches_hierarchy,
+        parse_all_tags, parse_inline_people, parse_inline_tags, people_tag_to_handle,
+        person_handle_to_tag, tag_depth, tag_matches_hierarchy,
     };
 
     #[test]
@@ -374,6 +450,26 @@ mod tests {
     }
 
     #[test]
+    fn skips_tags_inside_inline_html_attributes() {
+        let markdown = r##"
+## <span style="background-color: #00C6BD;" title="#not-a-tag">Styled heading</span>
+Body <span data-label="#also-not-a-tag">#actual-tag</span>
+"##;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual-tag".to_string()]);
+    }
+
+    #[test]
+    fn skips_css_hex_color_literals_outside_html() {
+        let markdown = "Use #00C6BD and #ff00aa80 colors, but keep #project and #00C6BD/design.";
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec!["00c6bd/design".to_string(), "project".to_string()]
+        );
+    }
+
+    #[test]
     fn normalizes_person_handles() {
         assert_eq!(
             normalize_person_handle("@Alice-Jones"),
@@ -408,6 +504,7 @@ const value = "@fenced";
 ```
 Ignore foo@bar too.
 Ignore /@pathlike too.
+Ignore <span data-owner="@inline_html_attribute">html attrs</span> too.
 "#;
         assert_eq!(
             parse_inline_people(markdown),
