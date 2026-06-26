@@ -39,7 +39,10 @@ import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
-import { FILE_TREE_ENTRY_TYPE } from "./fileTreeDnd";
+import {
+	FILE_TREE_ENTRY_TYPE,
+	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
+} from "./fileTreeDnd";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -149,6 +152,7 @@ function FileTreeRootDrop({
 		id: targetDirPath ? `file-tree-focused:${targetDirPath}` : "file-tree-root",
 		data: { targetDirPath },
 		accept: FILE_TREE_ENTRY_TYPE,
+		collisionPriority: FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 	});
 
 	return (
@@ -330,7 +334,8 @@ function TreeEntries({
 
 				if (isDir) {
 					const isExpanded = expandedDirs.has(e.rel_path);
-					const children = childrenByDir[e.rel_path];
+					const childEntries = childrenByDir[e.rel_path];
+					const childEntriesLoaded = childEntries !== undefined;
 
 					return (
 						<FileTreeDirItem
@@ -359,9 +364,9 @@ function TreeEntries({
 							onCancelRename={onCancelRename}
 							onMoveClickSuppressRef={onMoveClickSuppressRef}
 						>
-							{children && (
+							{childEntriesLoaded ? (
 								<TreeEntries
-									entries={children}
+									entries={childEntries ?? []}
 									parentDepth={depth}
 									childrenByDir={childrenByDir}
 									expandedDirs={expandedDirs}
@@ -395,7 +400,7 @@ function TreeEntries({
 									showFilePreviews={showFilePreviews}
 									filePreviewsByPath={filePreviewsByPath}
 								/>
-							)}
+							) : null}
 						</FileTreeDirItem>
 					);
 				}

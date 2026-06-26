@@ -1,4 +1,4 @@
-import { useDraggable, useDroppable } from "@dnd-kit/react";
+import { useDraggable } from "@dnd-kit/react";
 import {
 	ArrowRight02Icon,
 	Folder01Icon,
@@ -22,6 +22,7 @@ import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
 	fileTreeEntryDragId,
+	useFileTreeDirDropTargets,
 } from "./fileTreeDnd";
 import {
 	buildRowStyle,
@@ -152,18 +153,22 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			kind: "dir",
 		},
 	});
-	const { ref: droppableRef, isDropTarget } = useDroppable({
-		id: `file-tree-dir:${entry.rel_path}`,
-		data: { targetDirPath: entry.rel_path },
-		accept: FILE_TREE_ENTRY_TYPE,
+	const {
+		rowDroppableRef,
+		isRowDropTarget,
+		childrenDroppableRef,
+		isChildrenDropTarget,
+	} = useFileTreeDirDropTargets({
+		relPath: entry.rel_path,
+		isExpanded,
 	});
-	const setRowRef = useCallback(
+	const setDragHandleRef = useCallback(
 		(element: HTMLButtonElement | null) => {
 			draggableRef(element);
-			droppableRef(element);
 			handleRef(element);
+			rowDroppableRef(element);
 		},
-		[draggableRef, droppableRef, handleRef],
+		[draggableRef, handleRef, rowDroppableRef],
 	);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
@@ -222,7 +227,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : (
 					<>
 						<m.button
-							ref={setRowRef}
+							ref={setDragHandleRef}
 							type="button"
 							className="fileTreeRow"
 							onClick={() => {
@@ -240,7 +245,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							title={entry.rel_path || entry.name || "Folder"}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
-							data-drop-target={isDropTarget ? "true" : undefined}
+							data-drop-target={isRowDropTarget ? "true" : undefined}
 							data-has-custom-color={customColor ? "true" : "false"}
 							data-file-tree-kind="dir"
 							data-file-tree-path={entry.rel_path}
@@ -320,13 +325,16 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				)}
 			</div>
 			<AnimatePresence>
-				{isExpanded && children ? (
+				{isExpanded ? (
 					<m.div
+						ref={childrenDroppableRef}
+						className="fileTreeChildren"
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
 						transition={springTransition}
 						style={{ overflow: "hidden" }}
+						data-drop-target={isChildrenDropTarget ? "true" : undefined}
 					>
 						{children}
 					</m.div>
