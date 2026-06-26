@@ -63,7 +63,13 @@ export function createTipTapSuggestionMenu<T>({
 		});
 		const activeItem = children[selectedIndex];
 		if (activeItem instanceof HTMLElement) {
-			activeItem.scrollIntoView({ block: "nearest" });
+			const menuRect = menu.getBoundingClientRect();
+			const itemRect = activeItem.getBoundingClientRect();
+			if (itemRect.top < menuRect.top) {
+				menu.scrollTop -= menuRect.top - itemRect.top;
+			} else if (itemRect.bottom > menuRect.bottom) {
+				menu.scrollTop += itemRect.bottom - menuRect.bottom;
+			}
 		}
 	};
 
@@ -118,8 +124,12 @@ export function createTipTapSuggestionMenu<T>({
 			const current = activeProps;
 			const items = current?.items ?? [];
 			if (event.key === "Escape") {
-				if (!onEscape) return false;
-				onEscape(view);
+				event.preventDefault();
+				if (onEscape) {
+					onEscape(view);
+				} else {
+					exitSuggestion(view);
+				}
 				return true;
 			}
 			if (!items.length) return false;

@@ -988,7 +988,7 @@ interface TauriCommands {
 		CalendarDateNote[]
 	>;
 	tags_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
+		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]
 	>;
 	people_list: CommandDef<

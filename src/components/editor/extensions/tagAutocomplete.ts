@@ -10,24 +10,11 @@ import {
 import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const TAG_SUGGESTION_KEY = new PluginKey("tag-suggestion");
-const TAG_METADATA_PAGE_SIZE = 500;
 
 interface TagSuggestionItem {
 	tag: string;
 	count: number;
 	isNew?: boolean;
-}
-
-async function fetchAllTags(): Promise<TagCount[]> {
-	const tags: TagCount[] = [];
-	for (let offset = 0; ; offset += TAG_METADATA_PAGE_SIZE) {
-		const page = await invoke("tags_list", {
-			limit: TAG_METADATA_PAGE_SIZE,
-			offset,
-		});
-		tags.push(...page);
-		if (page.length < TAG_METADATA_PAGE_SIZE) return tags;
-	}
 }
 
 function rankInlineTag(
@@ -54,7 +41,10 @@ export const TagAutocomplete = Extension.create({
 			if (!normalizedQuery) return [];
 			let tags: TagCount[] = [];
 			try {
-				tags = await fetchAllTags();
+				tags = await invoke("tags_list", {
+					limit: this.options.suggestionLimit,
+					query: normalizedQuery,
+				});
 			} catch (error) {
 				console.warn("Failed to load tag suggestions", error);
 				return [];

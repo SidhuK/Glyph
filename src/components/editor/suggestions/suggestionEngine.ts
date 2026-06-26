@@ -145,6 +145,11 @@ export function useInputSuggestionEngine<T>({
 
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent<HTMLInputElement>) => {
+			if (event.key === "Escape" && range) {
+				event.preventDefault();
+				close();
+				return true;
+			}
 			if (!items.length) return false;
 			if (event.key === "ArrowDown") {
 				event.preventDefault();
@@ -165,14 +170,9 @@ export function useInputSuggestionEngine<T>({
 				select(items[activeIndex] ?? items[0]);
 				return true;
 			}
-			if (event.key === "Escape") {
-				event.preventDefault();
-				close();
-				return true;
-			}
 			return false;
 		},
-		[activeIndex, close, items, select],
+		[activeIndex, close, items, range, select],
 	);
 
 	return {
