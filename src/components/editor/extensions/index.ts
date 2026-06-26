@@ -24,6 +24,7 @@ import {
 } from "./changedRanges";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
+import { glyphDetailsExtensions } from "./detailsBlock";
 import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
@@ -727,6 +728,7 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		...glyphDetailsExtensions,
 		...additionalExtensions,
 		MermaidPreview,
 		InlineTableOfContents,
