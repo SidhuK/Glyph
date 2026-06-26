@@ -40,6 +40,11 @@ export function fileTreeDirDropData(relPath: string): {
 	return { targetDirPath: relPath };
 }
 
+function fileTreeDirChildrenCollisionPriority(relPath: string): number {
+	const depth = relPath.split("/").filter(Boolean).length;
+	return FILE_TREE_DIR_CHILDREN_COLLISION_PRIORITY + depth / (depth + 1);
+}
+
 export function useFileTreeDirDropTargets({
 	relPath,
 	isExpanded,
@@ -58,7 +63,7 @@ export function useFileTreeDirDropTargets({
 			id: fileTreeDirChildrenDropId(relPath),
 			data: fileTreeDirDropData(relPath),
 			accept: FILE_TREE_ENTRY_TYPE,
-			collisionPriority: FILE_TREE_DIR_CHILDREN_COLLISION_PRIORITY,
+			collisionPriority: fileTreeDirChildrenCollisionPriority(relPath),
 			disabled: !isExpanded,
 		});
 
