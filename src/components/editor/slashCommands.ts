@@ -1,17 +1,16 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
-import Suggestion, {
-	exitSuggestion,
-	type SuggestionKeyDownProps,
-	type SuggestionProps,
-} from "@tiptap/suggestion";
+import Suggestion from "@tiptap/suggestion";
 import {
 	BLOCK_MATH_STARTER,
 	INLINE_MATH_STARTER,
 	type MathEditRequest,
 } from "./extensions/math/mathOptions";
 import { INLINE_TOC_EDITOR_MARKER } from "./markdown/inlineTocMarkdown";
-import { lockEditorScrollDuringSuggestion } from "./suggestionScroll";
+import {
+	createTipTapSuggestionMenu,
+	exitTipTapSuggestion,
+} from "./suggestions/tiptapSuggestionMenu";
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
 
@@ -27,21 +26,10 @@ interface SlashCommandItem {
 	}) => void;
 }
 
-function clampSlashCommandIndex(index: number, itemCount: number) {
-	if (itemCount <= 0) return 0;
-	if (index < 0) return itemCount - 1;
-	if (index >= itemCount) return 0;
-	return index;
-}
-
-function slashCommandSearchText(item: SlashCommandItem) {
-	return [item.title, ...item.keywords].join(" ").toLowerCase();
-}
-
 function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
 	const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
 	if (!terms.length) return true;
-	const searchText = slashCommandSearchText(item);
+	const searchText = [item.title, ...item.keywords].join(" ").toLowerCase();
 	return terms.every((term) => searchText.includes(term));
 }
 
@@ -405,46 +393,15 @@ export const SlashCommand = Extension.create({
 						slashCommandMatchesQuery(item, query),
 					);
 				},
-				render: () => {
-					let menu: HTMLDivElement | null = null;
-					let selectedIndex = 0;
-					let currentProps: SuggestionProps<SlashCommandItem> | null = null;
-					let unlockEditorScroll: (() => void) | null = null;
-
-					const updateSelection = (items: SlashCommandItem[]) => {
-						if (!menu) return;
-						selectedIndex = clampSlashCommandIndex(selectedIndex, items.length);
-						const children = Array.from(menu.children);
-						children.forEach((child, index) => {
-							child.classList.toggle("active", index === selectedIndex);
-						});
-						const activeItem = children[selectedIndex];
-						if (activeItem instanceof HTMLElement) {
-							activeItem.scrollIntoView({ block: "nearest" });
-						}
-					};
-
-					const createMenu = (props: SuggestionProps<SlashCommandItem>) => {
-						if (menu) menu.remove();
-						menu = document.createElement("div");
-						menu.className = "slashCommandMenu";
-						document.body.append(menu);
-						updateMenu(props);
-					};
-
-					const updateMenu = (props: SuggestionProps<SlashCommandItem>) => {
-						if (!menu) return;
-						currentProps = props;
-						selectedIndex = clampSlashCommandIndex(
-							selectedIndex,
-							props.items.length,
-						);
-						menu.replaceChildren();
-						if (!props.items.length) return;
-						for (const [index, item] of props.items.entries()) {
+				render: () =>
+					createTipTapSuggestionMenu<SlashCommandItem>({
+						menuClassName: "slashCommandMenu",
+						onEscape: exitTipTapSuggestion,
+						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "slashCommandItem";
+							button.classList.toggle("active", isActive);
 							const icon = document.createElement("span");
 							icon.className = "slashCommandIcon";
 							icon.textContent = item.icon;
@@ -454,85 +411,11 @@ export const SlashCommand = Extension.create({
 							button.append(icon, title);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
-								props.command(item);
+								select(item);
 							});
-							if (index === selectedIndex) {
-								button.classList.add("active");
-							}
-							menu?.append(button);
-						}
-						const rect = props.clientRect?.();
-						if (rect && menu) {
-							const pad = 8;
-							const gap = 6;
-							const menuRect = menu.getBoundingClientRect();
-							const placeBelowTop = rect.bottom + gap;
-							const placeAboveTop = rect.top - menuRect.height - gap;
-							const maxLeft = window.innerWidth - menuRect.width - pad;
-							const maxTop = window.innerHeight - menuRect.height - pad;
-							const nextLeft = Math.max(pad, Math.min(rect.left, maxLeft));
-							const nextTop =
-								placeBelowTop <= maxTop
-									? placeBelowTop
-									: Math.max(pad, Math.min(placeAboveTop, maxTop));
-							menu.style.left = `${nextLeft}px`;
-							menu.style.top = `${nextTop}px`;
-						}
-					};
-
-					return {
-						onStart: (props: SuggestionProps<SlashCommandItem>) => {
-							selectedIndex = 0;
-							currentProps = props;
-							unlockEditorScroll?.();
-							unlockEditorScroll = lockEditorScrollDuringSuggestion(
-								props.editor,
-								() => menu,
-							);
-							createMenu(props);
+							return button;
 						},
-						onUpdate: (props: SuggestionProps<SlashCommandItem>) => {
-							if (!menu) createMenu(props);
-							updateMenu(props);
-						},
-						onKeyDown: (props: SuggestionKeyDownProps) => {
-							const items = currentProps?.items ?? [];
-							if (!items.length) return false;
-							if (props.event.key === "ArrowDown") {
-								selectedIndex = clampSlashCommandIndex(
-									selectedIndex + 1,
-									items.length,
-								);
-								updateSelection(items);
-								return true;
-							}
-							if (props.event.key === "ArrowUp") {
-								selectedIndex = clampSlashCommandIndex(
-									selectedIndex - 1,
-									items.length,
-								);
-								updateSelection(items);
-								return true;
-							}
-							if (props.event.key === "Enter" || props.event.key === "Tab") {
-								currentProps?.command(items[selectedIndex]);
-								return true;
-							}
-							if (props.event.key === "Escape") {
-								exitSuggestion(props.view);
-								return true;
-							}
-							return false;
-						},
-						onExit: () => {
-							unlockEditorScroll?.();
-							unlockEditorScroll = null;
-							if (menu) menu.remove();
-							menu = null;
-							currentProps = null;
-						},
-					};
-				},
+					}),
 			},
 		};
 	},

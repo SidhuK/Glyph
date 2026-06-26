@@ -7,6 +7,14 @@ import {
 
 const TAG_PATTERN = /(^|[^\w/])#([A-Za-z0-9_][\w/-]*)/g;
 const PERSON_PATTERN = /(^|[^A-Za-z0-9_.-])@([A-Za-z0-9_][A-Za-z0-9_-]*)/g;
+const TOKEN_SELECTOR = ".tagToken, .personToken";
+
+export function handleTagDecorationMouseDown(event: MouseEvent): boolean {
+	const target = event.target instanceof Element ? event.target : null;
+	if (!target?.closest(TOKEN_SELECTOR)) return false;
+	event.preventDefault();
+	return true;
+}
 
 function collectTagDecorations(
 	{ node, pos }: TextNodeDecorationContext,

@@ -347,13 +347,17 @@ pub async fn tags_list(
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
+    query: Option<String>,
 ) -> Result<Vec<TagCount>, String> {
     let root = state.root_for_window(&window)?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
+    let query = query
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
         let conn = open_db(&root)?;
-        list_tags(&conn, limit, offset)
+        list_tags(&conn, limit, offset, query.as_deref())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -363,22 +367,48 @@ fn list_tags(
     conn: &rusqlite::Connection,
     limit: i64,
     offset: i64,
+    query: Option<&str>,
 ) -> Result<Vec<TagCount>, String> {
-    let mut stmt = conn
-        .prepare(
-            "SELECT tag,
-                    SUM(CASE WHEN is_explicit = 1 THEN 1 ELSE 0 END) AS direct_count,
-                    COUNT(*) AS total_count,
-                    MAX(is_explicit) AS is_explicit
-             FROM tags
-             WHERE tag NOT LIKE 'people/%'
-             GROUP BY tag
-             ORDER BY tag ASC
-             LIMIT ? OFFSET ?",
-        )
-        .map_err(|e| e.to_string())?;
+    let mut sql = String::from(
+        "SELECT tag,
+                SUM(CASE WHEN is_explicit = 1 THEN 1 ELSE 0 END) AS direct_count,
+                COUNT(*) AS total_count,
+                MAX(is_explicit) AS is_explicit
+         FROM tags
+         WHERE tag NOT LIKE 'people/%'",
+    );
+    let mut params: Vec<rusqlite::types::Value> = Vec::new();
+    let mut order_by = String::from("tag ASC");
+    if let Some(query) = query {
+        let escaped = escape_like(query);
+        let prefix = format!("{escaped}%");
+        let contains = format!("%{escaped}%");
+        sql.push_str(" AND (tag LIKE ? ESCAPE '\\' OR tag LIKE ? ESCAPE '\\')");
+        params.push(rusqlite::types::Value::from(prefix.clone()));
+        params.push(rusqlite::types::Value::from(contains));
+        sql.push_str(" GROUP BY tag HAVING MAX(is_explicit) = 1");
+        order_by = String::from(
+            "CASE
+                WHEN tag = ? THEN 0
+                WHEN tag LIKE ? ESCAPE '\\' THEN 1
+                ELSE 2
+             END,
+             tag ASC",
+        );
+        params.push(rusqlite::types::Value::from(query.to_string()));
+        params.push(rusqlite::types::Value::from(prefix));
+    } else {
+        sql.push_str(" GROUP BY tag");
+    }
+    sql.push_str(" ORDER BY ");
+    sql.push_str(&order_by);
+    sql.push_str(" LIMIT ? OFFSET ?");
+    params.push(rusqlite::types::Value::from(limit));
+    params.push(rusqlite::types::Value::from(offset));
+
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut rows = stmt
-        .query(rusqlite::params![limit, offset])
+        .query(rusqlite::params_from_iter(params.iter()))
         .map_err(|e| e.to_string())?;
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -489,7 +519,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0).unwrap();
+        let tags = list_tags(&conn, 50, 0, None).unwrap();
         assert_eq!(tags.len(), 3);
 
         let root = tags.iter().find(|tag| tag.tag == "work").unwrap();
@@ -535,7 +565,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0).unwrap();
+        let tags = list_tags(&conn, 50, 0, None).unwrap();
         assert_eq!(
             tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(),
             vec!["work"]

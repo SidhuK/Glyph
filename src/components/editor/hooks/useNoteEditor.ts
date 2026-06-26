@@ -23,6 +23,7 @@ import { parentDir } from "../../../utils/path";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
+import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
@@ -502,6 +503,10 @@ export function useNoteEditor({
 					spellcheck: "true",
 				},
 				handleDOMEvents: {
+					mousedown: (_view, event): boolean => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleTagDecorationMouseDown(event);
+					},
 					click: (view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;
 						return handleEditorClick(
