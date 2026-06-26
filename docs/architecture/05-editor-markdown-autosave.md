@@ -128,6 +128,7 @@ Use the bridge helpers rather than ad hoc string replacement when changing wiki-
 - Vim mode
 - wiki links
 - callout decorations
+- details/toggle blocks
 - task list shortcuts
 - markdown image shortcuts
 
@@ -139,6 +140,17 @@ Feature settings can enable or disable parts of this list:
 - collapsible headings
 
 The extension list should stay centralized. Adding extensions from a component creates inconsistent editor behavior across rich editor surfaces.
+
+Details blocks use TipTap's official `@tiptap/extension-details` package with `persist: true`, so open/closed state is stored on the `<details open>` attribute in the markdown file. The bridge in `src/components/editor/markdown/detailsMarkdown.ts` converts between TipTap's internal `:::details` fence syntax and standard HTML on disk. Only top-level `<details>` blocks are converted for editing; nested `<details>` stay as HTML inside the parent content. Fence sections close on a bare `:::` line, so user content with a standalone `:::` line can truncate a section on round-trip. Serialization format:
+
+```html
+<details open>
+<summary>Toggle title</summary>
+
+Toggle content.
+
+</details>
+```
 
 ## Editor Transaction Flow
 

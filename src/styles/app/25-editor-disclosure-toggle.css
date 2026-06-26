@@ -1,0 +1,76 @@
+.tiptapContentInline .headingCollapseToggle,
+.tiptapContentInline div[data-type="details"].detailsBlock > button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--heading-toggle-rail-width);
+	height: var(--heading-toggle-rail-width);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: color-mix(in srgb, var(--text-tertiary) 84%, transparent);
+	cursor: pointer;
+	transition: color 140ms ease, background-color 140ms ease;
+}
+
+.tiptapContentInline .headingCollapseToggle:hover,
+.tiptapContentInline div[data-type="details"].detailsBlock > button:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	color: var(--text-secondary);
+}
+
+.tiptapContentInline .headingCollapseToggle:focus-visible,
+.tiptapContentInline
+	div[data-type="details"].detailsBlock
+	> button:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 1px;
+}
+
+.tiptapContentInline .headingCollapseChevron,
+.tiptapContentInline div[data-type="details"].detailsBlock > button::before {
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-right: 1.35px solid currentcolor;
+	border-bottom: 1.35px solid currentcolor;
+	transition: transform 140ms ease;
+}
+
+.tiptapContentInline .headingCollapseChevron {
+	transform: rotate(45deg) translateY(-1px);
+	transform-origin: 50% 50%;
+}
+
+.tiptapContentInline
+	.headingCollapseHeading[data-heading-collapsed="true"]
+	.headingCollapseChevron {
+	transform: rotate(-45deg) translate(-1px, 1px);
+}
+
+.tiptapContentInline .headingCollapseToggle {
+	position: absolute;
+	top: 50%;
+	left: calc(-1 * var(--space-5));
+	transform: translateY(-50%);
+	transition: color 140ms ease, background-color 140ms ease, transform 140ms
+		ease;
+}
+
+.tiptapContentInline div[data-type="details"].detailsBlock > button {
+	flex-shrink: 0;
+	margin-top: calc(2px + (1.68em - var(--heading-toggle-rail-width)) / 2);
+}
+
+.tiptapContentInline div[data-type="details"].detailsBlock > button::before {
+	content: "";
+	transform: rotate(-45deg) translate(-1px, 1px);
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock.is-open
+	> button::before {
+	transform: rotate(45deg) translateY(-1px);
+}

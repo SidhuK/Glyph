@@ -585,6 +585,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         menu_item_with_shortcut(app, menu_shortcuts, "editor.table", "Table", true, None)?;
     let editor_divider =
         menu_item_with_shortcut(app, menu_shortcuts, "editor.divider", "Divider", true, None)?;
+    let editor_details_block = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.details_block",
+        "Details Block",
+        true,
+        None,
+    )?;
     let editor_callout_info = menu_item_with_shortcut(
         app,
         menu_shortcuts,
@@ -830,6 +838,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &editor_mermaid_chart,
             &editor_table,
             &editor_divider,
+            &editor_details_block,
             &PredefinedMenuItem::separator(app)?,
             &editor_callout_info,
             &editor_callout_warning,

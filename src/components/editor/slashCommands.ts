@@ -1,6 +1,7 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
+import { createDetailsBlockContent } from "./extensions/detailsBlock";
 import {
 	BLOCK_MATH_STARTER,
 	INLINE_MATH_STARTER,
@@ -203,6 +204,19 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 						},
 					],
 				})
+				.run(),
+	},
+	{
+		icon: "▸",
+		title: "Details block",
+		description: "Insert a collapsible toggle section",
+		keywords: ["details", "toggle", "collapse", "accordion", "summary"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent(createDetailsBlockContent())
 				.run(),
 	},
 	{
