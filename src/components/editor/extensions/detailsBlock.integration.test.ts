@@ -11,6 +11,7 @@ import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
+import { createDetailsBlockContent } from "./detailsBlock";
 import { createEditorExtensions } from "./index";
 
 function createMarkdownManager() {
@@ -81,6 +82,57 @@ Body text.
 
 </details>`,
 		);
+	});
+
+	it("preserves bare ::: lines inside summary and content sections", () => {
+		const fences = [
+			":::details {open}",
+			"",
+			":::detailsSummary",
+			"",
+			"Before",
+			":::",
+			"After summary",
+			"",
+			":::",
+			"",
+			":::detailsContent",
+			"",
+			"Body",
+			":::",
+			"More body",
+			"",
+			":::",
+			"",
+			":::",
+		].join("\n");
+
+		expect(postprocessDetailsMarkdown(fences)).toBe(
+			`<details open>
+<summary>Before
+:::
+After summary</summary>
+
+Body
+:::
+More body
+
+</details>`,
+		);
+	});
+
+	it("leaves :::details examples inside markdown code fences untouched", () => {
+		const input = [
+			"```markdown",
+			":::details",
+			":::detailsSummary",
+			"Example",
+			":::",
+			":::",
+			"```",
+		].join("\n");
+
+		expect(postprocessDetailsMarkdown(input)).toBe(input);
 	});
 
 	it("keeps nested details html inside top-level content on round-trip", () => {
@@ -160,7 +212,7 @@ Second paragraph.
 		expect(output).toBe(input);
 	});
 
-	it("inserts a details block from the editor command surface", () => {
+	it("inserts a details block via the details_block action content path", () => {
 		const editor = new Editor({
 			extensions: createEditorExtensions({
 				enableSlashCommand: false,
@@ -172,20 +224,12 @@ Second paragraph.
 			element: document.createElement("div"),
 		});
 
-		editor.commands.insertContent({
-			type: "details",
-			attrs: { open: true },
-			content: [
-				{
-					type: "detailsSummary",
-					content: [{ type: "text", text: "Toggle title" }],
-				},
-				{
-					type: "detailsContent",
-					content: [{ type: "paragraph" }],
-				},
-			],
-		});
+		const inserted = editor
+			.chain()
+			.focus()
+			.insertContent(createDetailsBlockContent())
+			.run();
+		expect(inserted).toBe(true);
 
 		const output = postprocessMarkdownFromEditor(editor.getMarkdown());
 		expect(output).toContain("<details open>");

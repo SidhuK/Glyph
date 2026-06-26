@@ -20,15 +20,43 @@ function htmlFragmentToPlainText(html: string): string {
 	return doc.body.textContent?.trim() ?? html.trim();
 }
 
+function nextNonBlankLine(lines: string[], startIndex: number): string | null {
+	let index = startIndex;
+	while (index < lines.length) {
+		const line = lines[index] ?? "";
+		if (line.trim() !== "") return line;
+		index += 1;
+	}
+	return null;
+}
+
+function isDetailsSectionEnd(
+	lines: string[],
+	index: number,
+	section: "summary" | "content",
+): boolean {
+	if (!DETAILS_BLOCK_END_RE.test(lines[index] ?? "")) return false;
+	const next = nextNonBlankLine(lines, index + 1);
+	if (section === "summary") {
+		return next === null || DETAILS_CONTENT_START_RE.test(next);
+	}
+	return (
+		next === null ||
+		DETAILS_BLOCK_END_RE.test(next) ||
+		/^:::details(?:\s+\{open\})?\s*$/.test(next)
+	);
+}
+
 function readFencedSection(
 	lines: string[],
 	startIndex: number,
+	section: "summary" | "content",
 ): { content: string; endIndex: number } {
 	const contentLines: string[] = [];
 	let index = startIndex + 1;
 
 	while (index < lines.length) {
-		if (DETAILS_BLOCK_END_RE.test(lines[index] ?? "")) {
+		if (isDetailsSectionEnd(lines, index, section)) {
 			return { content: contentLines.join("\n").trim(), endIndex: index };
 		}
 		contentLines.push(lines[index] ?? "");
@@ -36,6 +64,10 @@ function readFencedSection(
 	}
 
 	return { content: contentLines.join("\n").trim(), endIndex: index };
+}
+
+function isMarkdownCodeFenceToggle(line: string): boolean {
+	return /^(`{3,}|~{3,})/.test(line.trim());
 }
 
 function detailsFencesToHtml(
@@ -79,8 +111,6 @@ function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
 	].join("\n");
 }
 
-// TipTap serializes details blocks as :::details fences closed by a bare `:::` line.
-// User content containing a standalone `:::` line can truncate a section on round-trip.
 function findTopLevelDetailsBlocks(input: string) {
 	const blocks: Array<{
 		start: number;
@@ -134,10 +164,18 @@ function postprocessDetailsFences(input: string): string {
 	const lines = input.split("\n");
 	const output: string[] = [];
 	let index = 0;
+	let inCodeFence = false;
 
 	while (index < lines.length) {
 		const line = lines[index] ?? "";
-		if (!/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
+		if (isMarkdownCodeFenceToggle(line)) {
+			inCodeFence = !inCodeFence;
+			output.push(line);
+			index += 1;
+			continue;
+		}
+
+		if (inCodeFence || !/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
 			output.push(line);
 			index += 1;
 			continue;
@@ -151,17 +189,24 @@ function postprocessDetailsFences(input: string): string {
 		while (index < lines.length) {
 			const sectionLine = lines[index] ?? "";
 			if (DETAILS_BLOCK_END_RE.test(sectionLine)) {
-				index += 1;
-				break;
+				const next = nextNonBlankLine(lines, index + 1);
+				if (
+					next === null ||
+					DETAILS_BLOCK_END_RE.test(next) ||
+					/^:::details(?:\s+\{open\})?\s*$/.test(next)
+				) {
+					index += 1;
+					break;
+				}
 			}
 			if (DETAILS_SUMMARY_START_RE.test(sectionLine)) {
-				const section = readFencedSection(lines, index);
+				const section = readFencedSection(lines, index, "summary");
 				summary = section.content;
 				index = section.endIndex + 1;
 				continue;
 			}
 			if (DETAILS_CONTENT_START_RE.test(sectionLine)) {
-				const section = readFencedSection(lines, index);
+				const section = readFencedSection(lines, index, "content");
 				content = section.content;
 				index = section.endIndex + 1;
 				continue;

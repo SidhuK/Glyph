@@ -31,6 +31,7 @@
 
 .tiptapContentInline .headingCollapseChevron,
 .tiptapContentInline div[data-type="details"].detailsBlock > button::before {
+	display: inline-block;
 	width: 6px;
 	height: 6px;
 	border-right: 1.35px solid currentcolor;
