@@ -519,7 +519,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0).unwrap();
+        let tags = list_tags(&conn, 50, 0, None).unwrap();
         assert_eq!(tags.len(), 3);
 
         let root = tags.iter().find(|tag| tag.tag == "work").unwrap();
@@ -565,7 +565,7 @@ mod tests {
             .unwrap();
         }
 
-        let tags = list_tags(&conn, 50, 0).unwrap();
+        let tags = list_tags(&conn, 50, 0, None).unwrap();
         assert_eq!(
             tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(),
             vec!["work"]
