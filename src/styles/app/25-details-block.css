@@ -1,0 +1,53 @@
+.tiptapContentInline div[data-type="details"].detailsBlock {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-1);
+	margin: var(--space-3) 0;
+	padding: var(--space-2) var(--space-3);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, var(--bg-primary));
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock
+	> div:not([data-type]) {
+	flex: 1;
+	min-width: 0;
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock
+	summary.detailsSummary {
+	display: block;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	cursor: pointer;
+	list-style: none;
+	padding: 2px 0;
+	margin-bottom: 0;
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock
+	summary.detailsSummary::-webkit-details-marker {
+	display: none;
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock:not(.is-open)
+	summary.detailsSummary {
+	margin-bottom: 0;
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock.is-open
+	summary.detailsSummary {
+	margin-bottom: var(--space-2);
+}
+
+.tiptapContentInline
+	div[data-type="details"].detailsBlock
+	div[data-type="detailsContent"].detailsContent {
+	color: var(--text-secondary);
+}

@@ -106,6 +106,7 @@ export function useMenuListeners({
 				mermaid_chart: () => onEditorAction("mermaid_chart"),
 				table: () => onEditorAction("table"),
 				divider: () => onEditorAction("divider"),
+				details_block: () => onEditorAction("details_block"),
 				callout_info: () => onEditorAction("callout_info"),
 				callout_warning: () => onEditorAction("callout_warning"),
 				callout_error: () => onEditorAction("callout_error"),

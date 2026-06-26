@@ -448,6 +448,17 @@
 			"commandPalette": true,
 			"menuId": "space.create"
 		},
+		"details_block": {
+			"id": "details_block",
+			"label": "Details Block",
+			"description": "Insert a collapsible toggle section.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.details_block"
+		},
 		"divider": {
 			"id": "divider",
 			"label": "Divider",

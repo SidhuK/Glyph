@@ -28,6 +28,8 @@
 @import "./styles/app/23-raw-markdown-editor.css";
 @import "./styles/app/24-node-note-properties.css";
 @import "./styles/app/25-node-note-content.css";
+@import "./styles/app/25-editor-disclosure-toggle.css";
+@import "./styles/app/25-details-block.css";
 @import "./styles/app/26-node-note-overlays.css";
 @import "./styles/app/27-editor-math.css";
 @import "./styles/app/30-markdown-editor-pane.css";

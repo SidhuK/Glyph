@@ -1,6 +1,24 @@
 const DETAILS_BLOCK_END_RE = /^:::\s*$/;
 const DETAILS_SUMMARY_START_RE = /^:::detailsSummary\s*$/;
 const DETAILS_CONTENT_START_RE = /^:::detailsContent\s*$/;
+const DETAILS_TAG_RE = /<\/?details\b[^>]*>/gi;
+
+function escapeHtmlText(text: string): string {
+	return text
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+function htmlFragmentToPlainText(html: string): string {
+	if (!html.trim() || typeof DOMParser === "undefined") return html.trim();
+	const doc = new DOMParser().parseFromString(
+		`<div>${html}</div>`,
+		"text/html",
+	);
+	return doc.body.textContent?.trim() ?? html.trim();
+}
 
 function readFencedSection(
 	lines: string[],
@@ -20,6 +38,98 @@ function readFencedSection(
 	return { content: contentLines.join("\n").trim(), endIndex: index };
 }
 
+function detailsFencesToHtml(
+	isOpen: boolean,
+	summary: string,
+	content: string,
+) {
+	const openAttr = isOpen ? " open" : "";
+	const blocks = [
+		`<details${openAttr}>`,
+		`<summary>${escapeHtmlText(summary)}</summary>`,
+	];
+	if (content) blocks.push("", content);
+	blocks.push("", "</details>");
+	return blocks.join("\n");
+}
+
+function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
+	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
+	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
+	const content = inner
+		.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, "")
+		.trim();
+	const openLine = isOpen ? ":::details {open}" : ":::details";
+	return [
+		openLine,
+		"",
+		":::detailsSummary",
+		"",
+		summary,
+		"",
+		":::",
+		"",
+		":::detailsContent",
+		"",
+		content,
+		"",
+		":::",
+		"",
+		":::",
+	].join("\n");
+}
+
+// TipTap serializes details blocks as :::details fences closed by a bare `:::` line.
+// User content containing a standalone `:::` line can truncate a section on round-trip.
+function findTopLevelDetailsBlocks(input: string) {
+	const blocks: Array<{
+		start: number;
+		end: number;
+		isOpen: boolean;
+		inner: string;
+	}> = [];
+	let depth = 0;
+	let openStart = -1;
+	let openHasOpenAttr = false;
+	DETAILS_TAG_RE.lastIndex = 0;
+	let match = DETAILS_TAG_RE.exec(input);
+	while (match !== null) {
+		const isClose = match[0].startsWith("</");
+		if (!isClose) {
+			if (depth === 0) {
+				openStart = match.index;
+				openHasOpenAttr = /\bopen\b/i.test(match[0]);
+			}
+			depth += 1;
+			match = DETAILS_TAG_RE.exec(input);
+			continue;
+		}
+
+		depth -= 1;
+		if (depth !== 0 || openStart === -1) {
+			match = DETAILS_TAG_RE.exec(input);
+			continue;
+		}
+
+		const openTagEnd = input.indexOf(">", openStart);
+		if (openTagEnd === -1) {
+			match = DETAILS_TAG_RE.exec(input);
+			continue;
+		}
+
+		blocks.push({
+			start: openStart,
+			end: match.index + match[0].length,
+			isOpen: openHasOpenAttr,
+			inner: input.slice(openTagEnd + 1, match.index),
+		});
+		openStart = -1;
+		match = DETAILS_TAG_RE.exec(input);
+	}
+
+	return blocks;
+}
+
 function postprocessDetailsFences(input: string): string {
 	const lines = input.split("\n");
 	const output: string[] = [];
@@ -27,14 +137,13 @@ function postprocessDetailsFences(input: string): string {
 
 	while (index < lines.length) {
 		const line = lines[index] ?? "";
-		const startMatch = line.match(/^:::details(?:\s+\{open\})?\s*$/);
-		if (!startMatch) {
+		if (!/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
 			output.push(line);
 			index += 1;
 			continue;
 		}
 
-		const isOpen = /:::details\s+\{open\}/.test(line);
+		const isOpen = /\{open\}/.test(line);
 		let summary = "";
 		let content = "";
 		index += 1;
@@ -60,43 +169,27 @@ function postprocessDetailsFences(input: string): string {
 			index += 1;
 		}
 
-		const openAttr = isOpen ? " open" : "";
-		const blocks = [`<details${openAttr}>`, `<summary>${summary}</summary>`];
-		if (content) blocks.push("", content);
-		blocks.push("", "</details>");
-		output.push(...blocks);
+		output.push(detailsFencesToHtml(isOpen, summary, content));
 	}
 
 	return output.join("\n");
 }
 
-const HTML_DETAILS_RE = /<details(\s+open)?\s*>([\s\S]*?)<\/details>/gi;
-
 function preprocessHtmlDetails(input: string): string {
 	if (!/<details\b/i.test(input)) return input;
 
-	return input.replace(
-		HTML_DETAILS_RE,
-		(_match, openAttr: string | undefined, inner: string) => {
-			const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
-			const summary = (summaryMatch?.[1] ?? "").trim();
-			const content = inner
-				.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, "")
-				.trim();
-			const openLine = openAttr ? ":::details {open}" : ":::details";
-			const blocks = [
-				openLine,
-				"",
-				":::detailsSummary",
-				"",
-				summary,
-				"",
-				":::",
-			];
-			blocks.push("", ":::detailsContent", "", content, "", ":::", "", ":::");
-			return blocks.join("\n");
-		},
-	);
+	const blocks = findTopLevelDetailsBlocks(input);
+	if (!blocks.length) return input;
+
+	let result = input;
+	for (let index = blocks.length - 1; index >= 0; index -= 1) {
+		const block = blocks[index];
+		result =
+			result.slice(0, block.start) +
+			detailsInnerHtmlToFences(block.isOpen, block.inner) +
+			result.slice(block.end);
+	}
+	return result;
 }
 
 export function preprocessDetailsMarkdown(markdown: string): string {
