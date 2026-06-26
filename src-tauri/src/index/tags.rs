@@ -233,8 +233,54 @@ fn strip_html_tags_for_metadata_scan(line: &str) -> String {
     cleaned
 }
 
-fn is_css_hex_color_literal(candidate: &str) -> bool {
-    matches!(candidate.len(), 6 | 8) && candidate.chars().all(|c| c.is_ascii_hexdigit())
+fn is_css_color_property(property: &str) -> bool {
+    property == "color"
+        || property.ends_with("-color")
+        || property.starts_with("--")
+        || matches!(
+            property,
+            "background"
+                | "border"
+                | "border-block"
+                | "border-block-end"
+                | "border-block-start"
+                | "border-bottom"
+                | "border-inline"
+                | "border-inline-end"
+                | "border-inline-start"
+                | "border-left"
+                | "border-right"
+                | "border-top"
+                | "box-shadow"
+                | "fill"
+                | "outline"
+                | "stroke"
+                | "text-shadow"
+        )
+}
+
+fn is_css_hex_color_literal(line: &str, hash_index: usize, candidate: &str) -> bool {
+    if !matches!(candidate.len(), 3 | 4 | 6 | 8)
+        || !candidate.chars().all(|c| c.is_ascii_hexdigit())
+    {
+        return false;
+    }
+
+    let declaration_start = line[..hash_index]
+        .rfind([';', '{', '}'])
+        .map_or(0, |index| index + 1);
+    let declaration_prefix = line[declaration_start..hash_index].trim();
+    let Some((property, _value_prefix)) = declaration_prefix.split_once(':') else {
+        return false;
+    };
+    let property = property.trim().to_ascii_lowercase();
+    let property = property.as_str();
+
+    !property.is_empty()
+        && property
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-')
+        && is_css_color_property(property)
 }
 
 pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
@@ -284,7 +330,7 @@ pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
                 }
                 if j > i + 1 {
                     let candidate = &cleaned[i + 1..j];
-                    if is_css_hex_color_literal(candidate) {
+                    if is_css_hex_color_literal(&cleaned, i, candidate) {
                         i = j;
                         continue;
                     }
@@ -460,12 +506,35 @@ Body <span data-label="#also-not-a-tag">#actual-tag</span>
     }
 
     #[test]
-    fn skips_css_hex_color_literals_outside_html() {
-        let markdown = "Use #00C6BD and #ff00aa80 colors, but keep #project and #00C6BD/design.";
+    fn skips_css_hex_color_literals_in_css_declarations() {
+        let markdown = r##"
+.swatch { color: #fff; background: #00C6BD; border-color: #abcd; box-shadow: 0 0 #ff00aa80; }
+Keep #project and #00C6BD/design.
+"##;
 
         assert_eq!(
             parse_inline_tags(markdown),
             vec!["00c6bd/design".to_string(), "project".to_string()]
+        );
+    }
+
+    #[test]
+    fn preserves_standalone_hex_shaped_inline_tags() {
+        let markdown =
+            "Keep #fff #abcd #202406 #20240626 #decade #facade #deface. Note: #deadbeef.";
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec![
+                "202406".to_string(),
+                "20240626".to_string(),
+                "abcd".to_string(),
+                "deadbeef".to_string(),
+                "decade".to_string(),
+                "deface".to_string(),
+                "facade".to_string(),
+                "fff".to_string()
+            ]
         );
     }
 
