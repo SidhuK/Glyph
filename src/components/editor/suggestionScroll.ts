@@ -16,7 +16,6 @@ export function lockEditorScrollDuringSuggestion(
 
 	const scrollTop = host.scrollTop;
 	const scrollLeft = host.scrollLeft;
-	const overflow = host.style.overflow;
 
 	const restoreScroll = () => {
 		host.scrollTop = scrollTop;
@@ -29,7 +28,6 @@ export function lockEditorScrollDuringSuggestion(
 		event.preventDefault();
 	};
 
-	host.style.overflow = "hidden";
 	host.addEventListener("scroll", restoreScroll);
 	document.addEventListener("wheel", preventDocumentScroll, {
 		capture: true,
@@ -42,7 +40,6 @@ export function lockEditorScrollDuringSuggestion(
 	restoreScroll();
 
 	return () => {
-		host.style.overflow = overflow;
 		host.removeEventListener("scroll", restoreScroll);
 		document.removeEventListener("wheel", preventDocumentScroll, {
 			capture: true,

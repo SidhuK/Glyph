@@ -35,6 +35,7 @@ import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
+import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
@@ -755,6 +756,7 @@ export function createEditorExtensions(
 		...(enableEditingExtensions && enablePeopleMentions
 			? [PersonAutocomplete]
 			: []),
+		...(enableEditingExtensions ? [TagAutocomplete] : []),
 		...(enableEditingExtensions && enableSlashCommand
 			? [SlashCommand.configure({ onMathEditRequest })]
 			: []),
