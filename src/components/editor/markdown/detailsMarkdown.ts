@@ -223,9 +223,33 @@ function postprocessDetailsFences(input: string): string {
 function preprocessHtmlDetails(input: string): string {
 	if (!/<details\b/i.test(input)) return input;
 
-	const blocks = findTopLevelDetailsBlocks(input);
-	if (!blocks.length) return input;
+	const lines = input.split("\n");
+	const output: string[] = [];
+	let chunk: string[] = [];
+	let inCodeFence = false;
 
+	for (const line of lines) {
+		if (isMarkdownCodeFenceToggle(line)) {
+			if (chunk.length) {
+				output.push(preprocessHtmlDetailsChunk(chunk.join("\n")));
+				chunk = [];
+			}
+			inCodeFence = !inCodeFence;
+			output.push(line);
+			continue;
+		}
+		if (inCodeFence) {
+			output.push(line);
+			continue;
+		}
+		chunk.push(line);
+	}
+	if (chunk.length) output.push(preprocessHtmlDetailsChunk(chunk.join("\n")));
+	return output.join("\n");
+}
+
+function preprocessHtmlDetailsChunk(input: string): string {
+	const blocks = findTopLevelDetailsBlocks(input);
 	let result = input;
 	for (let index = blocks.length - 1; index >= 0; index -= 1) {
 		const block = blocks[index];

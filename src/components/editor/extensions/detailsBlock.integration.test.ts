@@ -135,6 +135,19 @@ More body
 		expect(postprocessDetailsMarkdown(input)).toBe(input);
 	});
 
+	it("leaves html details examples inside markdown code fences untouched", () => {
+		const input = [
+			"```html",
+			"<details>",
+			"<summary>Example</summary>",
+			"Body",
+			"</details>",
+			"```",
+		].join("\n");
+
+		expect(preprocessDetailsMarkdown(input)).toBe(input);
+	});
+
 	it("keeps nested details html inside top-level content on round-trip", () => {
 		const input = `<details open>
 <summary>Outer</summary>
@@ -234,6 +247,32 @@ Second paragraph.
 		const output = postprocessMarkdownFromEditor(editor.getMarkdown());
 		expect(output).toContain("<details open>");
 		expect(output).toContain("<summary>Toggle title</summary>");
+
+		editor.destroy();
+	});
+
+	it("persists toggle changes for a details block at document start", async () => {
+		const editor = new Editor({
+			extensions: createEditorExtensions({
+				enableSlashCommand: false,
+				enableWikiLinks: false,
+				enableMarkdownLinkAutocomplete: false,
+			}),
+			content: "",
+			contentType: "markdown",
+			element: document.createElement("div"),
+		});
+
+		editor.chain().focus().insertContent(createDetailsBlockContent()).run();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		const toggle = editor.view.dom.querySelector("button");
+		expect(toggle).toBeInstanceOf(HTMLButtonElement);
+		(toggle as HTMLButtonElement).click();
+
+		expect(editor.getJSON().content?.[0]?.attrs?.open).toBe(false);
+		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toContain(
+			"<details>",
+		);
 
 		editor.destroy();
 	});
