@@ -30,7 +30,7 @@ GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing UI
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.
 
-Repo extras: internal product and engineering docs live in `docs/`.
+Repo extras: internal product and engineering docs live in `docs/`. 
 
 ## Frontend Overview (`src/`)
 
