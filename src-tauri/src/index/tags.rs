@@ -281,13 +281,22 @@ fn skip_line(markdown: &str, start: usize, out: &mut String) -> usize {
     start + offset + 1
 }
 
+fn count_backticks(bytes: &[u8], mut index: usize) -> usize {
+    let start = index;
+    while bytes.get(index) == Some(&b'`') {
+        index += 1;
+    }
+    index - start
+}
+
 fn metadata_scan_text(markdown: &str) -> String {
     let bytes = markdown.as_bytes();
     let mut cleaned = String::with_capacity(markdown.len());
     let mut i = 0;
     let mut line_start = true;
     let mut in_fence = false;
-    let mut in_code = false;
+    let mut fence_backticks = 0;
+    let mut code_backticks = 0;
 
     while i < bytes.len() {
         if line_start {
@@ -295,17 +304,20 @@ fn metadata_scan_text(markdown: &str) -> String {
                 .iter()
                 .position(|byte| *byte == b'\n')
                 .map_or(bytes.len(), |offset| i + offset);
-            if markdown[i..line_end].trim_start().starts_with("```") {
+            let line_content = markdown[i..line_end].trim_start();
+            let backticks = count_backticks(line_content.as_bytes(), 0);
+            if backticks >= 3 && (!in_fence || backticks >= fence_backticks) {
                 in_fence = !in_fence;
+                fence_backticks = if in_fence { backticks } else { 0 };
                 i = skip_line(markdown, i, &mut cleaned);
                 line_start = true;
-                in_code = false;
+                code_backticks = 0;
                 continue;
             }
             if in_fence {
                 i = skip_line(markdown, i, &mut cleaned);
                 line_start = true;
-                in_code = false;
+                code_backticks = 0;
                 continue;
             }
             line_start = false;
@@ -315,15 +327,20 @@ fn metadata_scan_text(markdown: &str) -> String {
             cleaned.push('\n');
             i += 1;
             line_start = true;
-            in_code = false;
+            code_backticks = 0;
             continue;
         }
         if bytes[i] == b'`' {
-            in_code = !in_code;
-            i += 1;
+            let backticks = count_backticks(bytes, i);
+            if code_backticks == 0 {
+                code_backticks = backticks;
+            } else if backticks == code_backticks {
+                code_backticks = 0;
+            }
+            i += backticks;
             continue;
         }
-        if in_code {
+        if code_backticks > 0 {
             let Some(ch) = markdown[i..].chars().next() else {
                 break;
             };
@@ -572,6 +589,27 @@ mod tests {
                 "work/today/further".to_string()
             ]
         );
+    }
+
+    #[test]
+    fn skips_tags_inside_matching_length_inline_code_spans() {
+        let markdown = "Keep ``code with ` #not-a-tag`` and #actual.";
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual".to_string()]);
+    }
+
+    #[test]
+    fn skips_tags_inside_longer_backtick_fences() {
+        let markdown = r#"
+````md
+``` #not-a-tag
+still #not-a-tag
+```
+````
+Keep #actual.
+"#;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual".to_string()]);
     }
 
     #[test]
