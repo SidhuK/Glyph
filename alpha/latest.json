@@ -1,15 +1,15 @@
 {
-  "version": "0.8.5-alpha.1",
-  "notes": "## What's Changed\n* Add PR CI checks and fix escaped dollar markdown round-trip by @SidhuK in https://github.com/SidhuK/Glyph/pull/203\n* Upgrade Quick Note with TipTap editor, add overlay/shortcut utilities by @SidhuK in https://github.com/SidhuK/Glyph/pull/204\n* Extract table inline controls context menus delete support (#205) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/205\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.4...v0.8.5-alpha.1",
-  "pub_date": "2026-06-25T07:39:23.313Z",
+  "version": "0.8.5-alpha.2",
+  "notes": "## What's Changed\n* Enhance Help menu with links, commands, and unified event handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/206\n* Wikilink improvements and hardening: dot-in-filename support, extension detection refactor by @SidhuK in https://github.com/SidhuK/Glyph/pull/207\n* Improve file tree drag-and-drop into expanded folders by @SidhuK in https://github.com/SidhuK/Glyph/pull/224\n* [codex] unify editor suggestion engine by @SidhuK in https://github.com/SidhuK/Glyph/pull/228\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.5-alpha.1...v0.8.5-alpha.2",
+  "pub_date": "2026-06-26T07:11:47.947Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDVCWDExUGRzbnhjMWVOWVltUW9nZFpPUEtEa0FRdGEwZXp0Yk1WZzZ6bHVXN2ltNmg2VWM5RnhONVVNK2F4ZFoxc2pCSEMxUHlPQy95Smk2aUZWT3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMzczMTU4CWZpbGU6R2x5cGguYXBwLnRhci5negpHam5WbWV6VldqM1Z0Ukp5Q1ZLRlhtdDhjY2NvcFVRYVB5QWY1cFZVc3Q5cUtVaDJKSDVXWkZrNHJqeG9kSFZDa00wSGpLLzFNUUVOV3lhTExZRnRCZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdVcW8xajZuSE54VklDVmVKVnhCWkxVdXZoa0huU202azlScVBhWVZjNUZkS2JsVmNmcU5qWGt4WVN1VHNJa0hLVEJJNytyRzRhWTBRbER3S21sakFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDU3OTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkc3RuTEVpN1d0aUhWamRhek9rS0wrZGlwdGM3QVFvUEFDS2Y1Y0w2dnpnU3hYU2l0VWd1N0pSZGd6dFlGU2ZSOUtJT3pmNXBGaEU1SXo4UnNFMXREQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.2/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDVCWDExUGRzbnhjMWVOWVltUW9nZFpPUEtEa0FRdGEwZXp0Yk1WZzZ6bHVXN2ltNmg2VWM5RnhONVVNK2F4ZFoxc2pCSEMxUHlPQy95Smk2aUZWT3dBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyMzczMTU4CWZpbGU6R2x5cGguYXBwLnRhci5negpHam5WbWV6VldqM1Z0Ukp5Q1ZLRlhtdDhjY2NvcFVRYVB5QWY1cFZVc3Q5cUtVaDJKSDVXWkZrNHJqeG9kSFZDa00wSGpLLzFNUUVOV3lhTExZRnRCZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdVcW8xajZuSE54VklDVmVKVnhCWkxVdXZoa0huU202azlScVBhWVZjNUZkS2JsVmNmcU5qWGt4WVN1VHNJa0hLVEJJNytyRzRhWTBRbER3S21sakFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDU3OTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkc3RuTEVpN1d0aUhWamRhek9rS0wrZGlwdGM3QVFvUEFDS2Y1Y0w2dnpnU3hYU2l0VWd1N0pSZGd6dFlGU2ZSOUtJT3pmNXBGaEU1SXo4UnNFMXREQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.2/Glyph_aarch64.app.tar.gz"
     }
   }
 }
