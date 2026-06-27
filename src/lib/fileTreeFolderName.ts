@@ -27,7 +27,7 @@ export function validateFolderName(
 	const lower = trimmed.toLowerCase();
 	for (const sibling of siblingNames) {
 		if (sibling.toLowerCase() === lower) {
-			return "A folder with this name already exists here";
+			return "An item with this name already exists here";
 		}
 	}
 	return null;

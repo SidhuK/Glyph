@@ -27,9 +27,7 @@ export async function promptCreateFolderName(options: {
 		"space_list_dir",
 		normalizedParentDir ? { dir: normalizedParentDir } : {},
 	);
-	const siblingNames = siblings
-		.filter((entry) => entry.kind === "dir")
-		.map((entry) => entry.name);
+	const siblingNames = siblings.map((entry) => entry.name);
 
 	while (true) {
 		const { message: showMessage, save } = await import(
