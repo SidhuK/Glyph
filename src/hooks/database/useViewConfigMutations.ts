@@ -182,6 +182,24 @@ export function useViewConfigMutations({
 		[handleSaveConfig],
 	);
 
+	const handleGroupColumnIdChange = useCallback(
+		(groupColumnId: string | null, groupColumn: DatabaseColumn | null) => {
+			void handleSaveConfig((config) => {
+				const nextColumns =
+					groupColumnId && groupColumn
+						? config.columns.some((column) => column.id === groupColumn.id)
+							? config.columns
+							: [...config.columns, { ...groupColumn, visible: false }]
+						: config.columns;
+				return patchViewState(
+					{ ...config, columns: nextColumns },
+					{ board_group_by: groupColumnId },
+				);
+			});
+		},
+		[handleSaveConfig],
+	);
+
 	return {
 		viewOptionsOpen,
 		setViewOptionsOpen,
@@ -191,5 +209,6 @@ export function useViewConfigMutations({
 		handleResizeColumn,
 		handleChangeColumnIcon,
 		handleToggleSort,
+		handleGroupColumnIdChange,
 	};
 }

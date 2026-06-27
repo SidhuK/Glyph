@@ -40,7 +40,10 @@ fn parent_dir(path: &str) -> String {
 }
 
 fn relative_path(from_dir: &str, to_path: &str) -> String {
-    let from: Vec<&str> = from_dir.split('/').filter(|part| !part.is_empty()).collect();
+    let from: Vec<&str> = from_dir
+        .split('/')
+        .filter(|part| !part.is_empty())
+        .collect();
     let to: Vec<&str> = to_path.split('/').filter(|part| !part.is_empty()).collect();
     let mut common = 0;
     while common < from.len() && common < to.len() && from[common] == to[common] {

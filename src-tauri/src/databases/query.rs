@@ -1,16 +1,15 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 
-use chrono::Datelike;
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use crate::index::commands::parse_raw_search_query;
 use crate::index::open_db;
 use crate::index::search_advanced::run_search_advanced;
-use crate::index::tags::{normalize_tag, tag_matches_hierarchy};
 use crate::paths;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
+use super::filter::row_matches_filters;
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument,
     DatabasePropertyOption, DatabaseQueryResult, DatabaseRow, DatabaseViewDefinition,
@@ -123,12 +122,8 @@ fn field_catalog(
     out
 }
 
-fn normalize_text(value: &str) -> String {
+pub(super) fn normalize_text(value: &str) -> String {
     value.trim().to_lowercase()
-}
-
-fn normalize_tag_text(value: &str) -> Option<String> {
-    normalize_tag(value)
 }
 
 fn parent_dir(path: &str) -> String {
@@ -139,7 +134,7 @@ fn parent_dir(path: &str) -> String {
         .unwrap_or_else(|| "/".to_string())
 }
 
-fn cell_value_from_row(row: &DatabaseRow, column: &DatabaseColumn) -> DatabaseCellValue {
+pub(super) fn cell_value_from_row(row: &DatabaseRow, column: &DatabaseColumn) -> DatabaseCellValue {
     match column.column_type.as_str() {
         "title" => DatabaseCellValue {
             kind: "text".to_string(),
@@ -205,7 +200,7 @@ fn cell_value_from_row(row: &DatabaseRow, column: &DatabaseColumn) -> DatabaseCe
     }
 }
 
-fn cell_text_values(cell: &DatabaseCellValue) -> Vec<String> {
+pub(super) fn cell_text_values(cell: &DatabaseCellValue) -> Vec<String> {
     let mut values = Vec::new();
     if let Some(value) = &cell.value_text {
         let normalized = normalize_text(value);
@@ -223,247 +218,6 @@ fn cell_text_values(cell: &DatabaseCellValue) -> Vec<String> {
         values.push(if value { "true" } else { "false" }.to_string());
     }
     values
-}
-
-fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
-    let date = match chrono::DateTime::parse_from_rfc3339(value) {
-        Ok(parsed) => parsed.with_timezone(&chrono::Local).date_naive(),
-        Err(_) => match chrono::NaiveDate::parse_from_str(value.trim(), "%Y-%m-%d") {
-            Ok(parsed) => parsed,
-            Err(_) => return false,
-        },
-    };
-    let today = chrono::Local::now().date_naive();
-    match normalize_text(shortcut).as_str() {
-        "today" => date == today,
-        "yesterday" => date == today - chrono::Days::new(1),
-        "overdue" => date < today,
-        "this week" => {
-            let days_until_sunday = 6 - today.weekday().num_days_from_monday();
-            let week_end = today + chrono::Days::new(days_until_sunday as u64);
-            date >= today && date <= week_end
-        }
-        "last 7 days" => date >= today - chrono::Days::new(6) && date <= today,
-        "last 30 days" => date >= today - chrono::Days::new(29) && date <= today,
-        _ => false,
-    }
-}
-
-fn parse_filter_number(value: &str) -> Option<f64> {
-    let normalized = value.trim().replace(['$', ',', '%'], "");
-    let parsed = normalized.parse::<f64>().ok()?;
-    parsed.is_finite().then_some(parsed)
-}
-
-fn row_matches_filters(
-    row: &DatabaseRow,
-    columns: &[DatabaseColumn],
-    filters: &[super::types::DatabaseFilter],
-) -> bool {
-    filters.iter().all(|filter| {
-        if filter.operator == "within_last_7_days" {
-            let Some(column) = columns.iter().find(|entry| entry.id == filter.column_id) else {
-                return true;
-            };
-            let cell = cell_value_from_row(row, column);
-            let Some(value) = cell.value_text.as_deref() else {
-                return false;
-            };
-            return date_matches_shortcut(
-                value,
-                filter.value_text.as_deref().unwrap_or("Last 7 Days"),
-            );
-        }
-        let Some(column) = columns.iter().find(|entry| entry.id == filter.column_id) else {
-            return true;
-        };
-        let cell = cell_value_from_row(row, column);
-        let is_tags_column =
-            column.column_type == "tags" || column.property_kind.as_deref() == Some("tags");
-        let raw_filter_text = filter.value_text.as_deref().unwrap_or_default();
-        let filter_text = if is_tags_column {
-            String::new()
-        } else {
-            normalize_text(raw_filter_text)
-        };
-        let normalized_filter_tag = if is_tags_column {
-            normalize_tag_text(raw_filter_text)
-        } else {
-            None
-        };
-        let text_values: Vec<String> = if is_tags_column {
-            cell.value_list
-                .iter()
-                .filter_map(|v| normalize_tag_text(v))
-                .collect()
-        } else {
-            cell_text_values(&cell)
-        };
-        match filter.operator.as_str() {
-            "equals" => {
-                if is_tags_column {
-                    normalized_filter_tag
-                        .as_ref()
-                        .is_some_and(|tag| text_values.iter().any(|value| value == tag))
-                } else {
-                    !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
-                }
-            }
-            "not_equals" => {
-                if is_tags_column {
-                    normalized_filter_tag
-                        .as_ref()
-                        .is_some_and(|tag| text_values.iter().all(|value| value != tag))
-                } else {
-                    filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text)
-                }
-            }
-            "contains" => {
-                if is_tags_column {
-                    false
-                } else {
-                    filter_text.is_empty()
-                        || text_values.iter().any(|value| value.contains(&filter_text))
-                }
-            }
-            "not_contains" => {
-                if is_tags_column {
-                    false
-                } else {
-                    filter_text.is_empty()
-                        || text_values
-                            .iter()
-                            .all(|value| !value.contains(&filter_text))
-                }
-            }
-            "starts_with" => {
-                if is_tags_column {
-                    false
-                } else {
-                    filter_text.is_empty()
-                        || text_values
-                            .iter()
-                            .any(|value| value.starts_with(&filter_text))
-                }
-            }
-            "ends_with" => {
-                if is_tags_column {
-                    false
-                } else {
-                    filter_text.is_empty()
-                        || text_values
-                            .iter()
-                            .any(|value| value.ends_with(&filter_text))
-                }
-            }
-            "greater_than" | "less_than" => {
-                if is_tags_column {
-                    false
-                } else {
-                    let Some(filter_number) = parse_filter_number(raw_filter_text) else {
-                        return true;
-                    };
-                    text_values
-                        .iter()
-                        .filter_map(|value| parse_filter_number(value))
-                        .any(|value| {
-                            if filter.operator == "greater_than" {
-                                value > filter_number
-                            } else {
-                                value < filter_number
-                            }
-                        })
-                }
-            }
-            "tags_contains" => normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
-                text_values
-                    .iter()
-                    .any(|tag| tag_matches_hierarchy(filter_tag, tag))
-            }),
-            "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
-            "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
-            "is_true" => cell.value_bool == Some(true),
-            "is_false" => cell.value_bool == Some(false),
-            "any_of" => {
-                let filter_values = if filter.value_list.is_empty() {
-                    filter
-                        .value_text
-                        .clone()
-                        .map(|value| vec![value])
-                        .unwrap_or_default()
-                } else {
-                    filter.value_list.clone()
-                };
-                if filter_values.is_empty() {
-                    return true;
-                }
-                let normalized_tag_filters = if is_tags_column {
-                    let filters = filter_values
-                        .iter()
-                        .map(|value| normalize_tag_text(value))
-                        .collect::<Option<Vec<_>>>();
-                    let Some(filters) = filters else {
-                        return false;
-                    };
-                    Some(filters)
-                } else {
-                    None
-                };
-                if let Some(filters) = normalized_tag_filters {
-                    filters.iter().any(|normalized| {
-                        text_values
-                            .iter()
-                            .any(|cell_value| tag_matches_hierarchy(normalized, cell_value))
-                    })
-                } else {
-                    filter_values.iter().any(|value| {
-                        let normalized = normalize_text(value);
-                        text_values
-                            .iter()
-                            .any(|cell_value| cell_value == &normalized)
-                    })
-                }
-            }
-            "none_of" => {
-                let filter_values = if filter.value_list.is_empty() {
-                    filter
-                        .value_text
-                        .clone()
-                        .map(|value| vec![value])
-                        .unwrap_or_default()
-                } else {
-                    filter.value_list.clone()
-                };
-                let normalized_tag_filters = if is_tags_column {
-                    let filters = filter_values
-                        .iter()
-                        .map(|value| normalize_tag_text(value))
-                        .collect::<Option<Vec<_>>>();
-                    let Some(filters) = filters else {
-                        return false;
-                    };
-                    Some(filters)
-                } else {
-                    None
-                };
-                if let Some(filters) = normalized_tag_filters {
-                    filters.iter().all(|normalized| {
-                        text_values
-                            .iter()
-                            .all(|cell_value| !tag_matches_hierarchy(normalized, cell_value))
-                    })
-                } else {
-                    filter_values.iter().all(|value| {
-                        let normalized = normalize_text(value);
-                        text_values
-                            .iter()
-                            .all(|cell_value| cell_value != &normalized)
-                    })
-                }
-            }
-            _ => true,
-        }
-    })
 }
 
 fn string_cell(cell: &DatabaseCellValue) -> String {
@@ -967,21 +721,8 @@ mod tests {
 
     use crate::index::schema::ensure_schema;
 
-    use super::super::types::{DatabaseCellValue, DatabaseColumn, DatabaseFilter, DatabaseRow};
-    use super::{row_matches_filters, row_matches_search, tag_source_ids};
-
-    fn tags_column() -> DatabaseColumn {
-        DatabaseColumn {
-            id: "tags".to_string(),
-            column_type: "tags".to_string(),
-            label: "Tags".to_string(),
-            icon: None,
-            width: None,
-            visible: true,
-            property_key: None,
-            property_kind: None,
-        }
-    }
+    use super::super::types::{DatabaseCellValue, DatabaseRow};
+    use super::{row_matches_search, tag_source_ids};
 
     fn sample_row(tags: Vec<&str>) -> DatabaseRow {
         DatabaseRow {
@@ -1035,60 +776,6 @@ mod tests {
         );
 
         assert!(row_matches_search(&row, "review product"));
-    }
-
-    #[test]
-    fn tag_filters_match_descendant_explicit_tags() {
-        let columns = vec![tags_column()];
-        let row = sample_row(vec!["work/today/further"]);
-        let filters = vec![DatabaseFilter {
-            column_id: "tags".to_string(),
-            operator: "tags_contains".to_string(),
-            value_text: Some("#work".to_string()),
-            value_bool: None,
-            value_list: Vec::new(),
-        }];
-
-        assert!(row_matches_filters(&row, &columns, &filters));
-
-        let non_matching_filters = vec![DatabaseFilter {
-            column_id: "tags".to_string(),
-            operator: "tags_contains".to_string(),
-            value_text: Some("#personal".to_string()),
-            value_bool: None,
-            value_list: Vec::new(),
-        }];
-        assert!(!row_matches_filters(&row, &columns, &non_matching_filters));
-    }
-
-    #[test]
-    fn malformed_tag_filters_fail_closed() {
-        let columns = vec![tags_column()];
-        let row = sample_row(vec!["work/today/further"]);
-        let filters = vec![DatabaseFilter {
-            column_id: "tags".to_string(),
-            operator: "tags_contains".to_string(),
-            value_text: Some("#work//today".to_string()),
-            value_bool: None,
-            value_list: Vec::new(),
-        }];
-
-        assert!(!row_matches_filters(&row, &columns, &filters));
-    }
-
-    #[test]
-    fn unsupported_string_operators_fail_closed_for_tag_columns() {
-        let columns = vec![tags_column()];
-        let row = sample_row(vec!["work/today/further"]);
-        let filters = vec![DatabaseFilter {
-            column_id: "tags".to_string(),
-            operator: "contains".to_string(),
-            value_text: Some("work".to_string()),
-            value_bool: None,
-            value_list: Vec::new(),
-        }];
-
-        assert!(!row_matches_filters(&row, &columns, &filters));
     }
 
     #[test]

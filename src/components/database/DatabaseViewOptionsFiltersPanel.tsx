@@ -16,12 +16,14 @@ import {
 
 interface FiltersPanelProps {
 	config: DatabaseConfig;
+	columns: DatabaseColumn[];
 	availableProperties: DatabasePropertyOption[];
 	filterError: string;
 	filterUiKeys: string[];
 	filterKeyCounterRef: MutableRefObject<number>;
 	defaultFilterColumn: DatabaseColumn | null;
 	onApplyFilterPreset: (preset: DatabaseFilterPreset) => void;
+	onChangeFilterColumn: (index: number, column: DatabaseColumn | null) => void;
 	updateFilters: (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
 		keyUpdater?: (keys: string[]) => string[],
@@ -156,7 +158,7 @@ function operatorOptions(
 	return normalized.map((value) => ({ value, label: operatorLabel(value) }));
 }
 
-function nextFilterForColumn(
+export function nextFilterForColumn(
 	filter: DatabaseFilter,
 	column: DatabaseColumn | null,
 ): DatabaseFilter {
@@ -209,12 +211,14 @@ function filterValueListsEqual(
 
 export function FiltersPanel({
 	config,
+	columns,
 	availableProperties,
 	filterError,
 	filterUiKeys,
 	filterKeyCounterRef,
 	defaultFilterColumn,
 	onApplyFilterPreset,
+	onChangeFilterColumn,
 	updateFilters,
 }: FiltersPanelProps) {
 	const presets = databaseFilterPresets(config, availableProperties);
@@ -241,8 +245,8 @@ export function FiltersPanel({
 				) : null}
 			</div>
 			<p className="databaseViewPanelHint">
-				Filters use database columns, tags, and note properties. To find words
-				in note text, use Search or this view's search box.
+				Narrow this view by column values. To search note text, use the search
+				box in the toolbar.
 			</p>
 			<div className="databaseViewPresetGroup" aria-label="Filter presets">
 				<span className="databaseViewPresetLabel">Presets</span>
@@ -286,8 +290,7 @@ export function FiltersPanel({
 				<div className="databaseViewFilterList">
 					{config.filters.map((filter, index) => {
 						const selectedColumn =
-							config.columns.find((column) => column.id === filter.column_id) ??
-							null;
+							columns.find((column) => column.id === filter.column_id) ?? null;
 						const availableOperators = operatorOptions(
 							selectedColumn,
 							filter.operator,
@@ -312,20 +315,15 @@ export function FiltersPanel({
 										className="databaseViewInlineSelect"
 										value={filter.column_id}
 										aria-label={`Filter ${index + 1} field`}
-										onChange={(event) =>
-											void updateFilters((filters) =>
-												filters.map((entry, i) => {
-													if (i !== index) return entry;
-													const nextColumn =
-														config.columns.find(
-															(column) => column.id === event.target.value,
-														) ?? null;
-													return nextFilterForColumn(entry, nextColumn);
-												}),
-											)
-										}
+										onChange={(event) => {
+											const nextColumn =
+												columns.find(
+													(column) => column.id === event.target.value,
+												) ?? null;
+											onChangeFilterColumn(index, nextColumn);
+										}}
 									>
-										{config.columns.map((column) => (
+										{columns.map((column) => (
 											<option key={column.id} value={column.id}>
 												{column.label}
 											</option>

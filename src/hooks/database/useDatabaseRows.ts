@@ -14,7 +14,7 @@ import {
 } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
-	invalidateDatabaseRowsPrefetch,
+	invalidateDatabasePrefetch,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type {
@@ -23,7 +23,7 @@ import type {
 	WorkspaceDatabaseQueryResult,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
+import { useDebouncedNoteChange } from "../useDebouncedNoteChange";
 import type { PaneErrorHandlers } from "./types";
 
 export interface UseDatabaseRowsOptions extends PaneErrorHandlers {
@@ -89,7 +89,6 @@ export function useDatabaseRows({
 }: UseDatabaseRowsOptions) {
 	const queryClient = useQueryClient();
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const previousSelectionRef = useRef<{
 		databaseId: string | null;
 		viewId: string | null;
@@ -184,36 +183,15 @@ export function useDatabaseRows({
 		}
 	}, [rowsQuery.error, setError]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: clear pending background reloads when the row loader changes.
-	useEffect(
-		() => () => {
-			if (fsRowsRefreshTimerRef.current !== null) {
-				window.clearTimeout(fsRowsRefreshTimerRef.current);
-				fsRowsRefreshTimerRef.current = null;
+	useDebouncedNoteChange({
+		delayMs: 150,
+		onChange: () => {
+			if (selectedDatabaseId) {
+				invalidateDatabasePrefetch(selectedDatabaseId);
 			}
+			void loadRows();
 		},
-		[loadRows],
-	);
-
-	const scheduleRowsRefreshForNoteChange = useCallback(
-		(payload: { rel_path: string; removed: boolean }) => {
-			if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
-			if (fsRowsRefreshTimerRef.current !== null) {
-				window.clearTimeout(fsRowsRefreshTimerRef.current);
-			}
-			fsRowsRefreshTimerRef.current = window.setTimeout(() => {
-				fsRowsRefreshTimerRef.current = null;
-				if (selectedDatabaseId) {
-					invalidateDatabaseRowsPrefetch(selectedDatabaseId);
-				}
-				void loadRows();
-			}, 150);
-		},
-		[loadRows, selectedDatabaseId],
-	);
-
-	useTauriEvent("space:fs_changed", scheduleRowsRefreshForNoteChange);
-	useTauriEvent("notes:external_changed", scheduleRowsRefreshForNoteChange);
+	});
 
 	return {
 		rows,

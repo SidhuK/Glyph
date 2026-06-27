@@ -440,8 +440,10 @@ export function DatabaseBoard({
 						</DialogTitle>
 						<DialogDescription>
 							{groupColumn
-								? `Set the ${groupColumn.label} value for this board lane.`
-								: "Set the board lane value."}
+								? laneEdit?.mode === "rename"
+									? `Rename this ${groupColumn.label.toLowerCase()} lane. Cards here keep that value.`
+									: `Cards you add or move here will get this ${groupColumn.label.toLowerCase()}.`
+								: "Set the value for this board lane."}
 						</DialogDescription>
 					</DialogHeader>
 					<form
@@ -498,11 +500,12 @@ export function DatabaseBoard({
 					}
 				>
 					<div className="databaseBoardEmptyTitle">
-						Board view needs a grouping field
+						Add a field to create board lanes
 					</div>
 					<div className="databaseBoardEmptyText">
-						Choose how the board should group cards by adding a single-value
-						property like status, stage, or done.
+						Board view groups notes into lanes. Add a status, priority,
+						checkbox, tag, or similar field to your notes, then pick it in the
+						toolbar above.
 					</div>
 					<div className="databaseBoardEmptyActions">
 						<Button
@@ -511,7 +514,7 @@ export function DatabaseBoard({
 							size="sm"
 							onClick={onOpenColumns}
 						>
-							Open columns
+							Open view settings
 						</Button>
 					</div>
 				</m.div>
@@ -746,10 +749,12 @@ export function DatabaseBoard({
 									) : (
 										<div className="databaseBoardLaneEmptyCard">
 											{lane.workflowState === "archived"
-												? "Archive notes here"
+												? "Archived notes go here"
 												: lane.workflowState === "done"
-													? "Completed notes land here"
-													: "Drop notes here"}
+													? "Done notes land here"
+													: lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+														? "Notes without a value appear here"
+														: "Drop notes here or add one below"}
 										</div>
 									)}
 									{onCreateRow ? (
