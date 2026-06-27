@@ -21,6 +21,7 @@ import { useFileTreeContext, useSpace } from "../../contexts";
 
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { loadSettings } from "../../lib/settings";
 import type {
@@ -43,6 +44,7 @@ import {
 	FILE_TREE_ENTRY_TYPE,
 	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 } from "./fileTreeDnd";
+import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -57,7 +59,7 @@ interface FileTreePaneProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	renamingPath: string | null;
@@ -83,16 +85,9 @@ interface AppearancePickerTarget {
 	entry: FsEntry;
 }
 
-function spaceLabelFromPath(path: string | null): string {
-	if (!path) return "Glyph";
-	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
-	const parts = normalized.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? path;
-}
-
 function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 	const parts = [
-		{ label: spaceLabelFromPath(spacePath), path: "" },
+		{ label: spaceLabelFromAbsPath(spacePath), path: "" },
 		...dirPath
 			.split("/")
 			.filter(Boolean)
@@ -259,7 +254,7 @@ interface TreeEntriesProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => void;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
 	onStartRename: (path: string) => void;
@@ -302,7 +297,7 @@ function TreeEntries({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
 	onStartRename,
@@ -350,7 +345,7 @@ function TreeEntries({
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-							onNewFolderInDir={onNewFolderInDir}
+							onRequestCreateFolder={onRequestCreateFolder}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[e.rel_path] ?? null}
 							fileCount={
@@ -380,7 +375,7 @@ function TreeEntries({
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewFolderInDir={onNewFolderInDir}
+									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}
 									onStartRename={onStartRename}
@@ -415,7 +410,7 @@ function TreeEntries({
 						onPrefetchFile={onPrefetchFile}
 						onNewFileInDir={onNewFileInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-						onNewFolderInDir={onNewFolderInDir}
+						onRequestCreateFolder={onRequestCreateFolder}
 						onDuplicateFile={onDuplicateFile}
 						isRenaming={renamingPath === e.rel_path}
 						onStartRename={() => onStartRename(e.rel_path)}
@@ -455,7 +450,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
 	renamingPath,
@@ -643,15 +638,8 @@ export const FileTreePane = memo(function FileTreePane({
 		setTaskSummaryRefreshKey((key) => key + 1);
 	});
 
-	const handleCreateFolder = useCallback(
-		async (dirPath: string) => {
-			const created = await onNewFolderInDir(dirPath);
-			if (created) {
-				onStartRename(created);
-			}
-			return created;
-		},
-		[onNewFolderInDir, onStartRename],
+	const handleRequestCreateFolder = useFileTreeCreateFolderScroll(
+		onRequestCreateFolder,
 	);
 
 	const handleDeletePath = useCallback(
@@ -952,7 +940,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewFolderInDir={handleCreateFolder}
+								onRequestCreateFolder={handleRequestCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
 								onStartRename={onStartRename}
@@ -1000,7 +988,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewFolderInDir={handleCreateFolder}
+								onRequestCreateFolder={handleRequestCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
 								onStartRename={onStartRename}

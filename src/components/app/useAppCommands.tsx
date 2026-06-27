@@ -105,7 +105,6 @@ interface UseAppCommandsDeps {
 	saveCurrentEditor: () => Promise<unknown>;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
-	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
@@ -259,7 +258,6 @@ export function useAppCommands({
 	saveCurrentEditor,
 	setCurrentEditorMode,
 	setAiPanelOpen,
-	setError,
 	setMovePickerSourcePath,
 	setSidebarCollapsed,
 	showCollapsibleHeadings,
@@ -409,21 +407,10 @@ export function useAppCommands({
 				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						await fileTree.onNewFolderInDir(dir);
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create folder", error);
-						setError(message);
-						toast.error("Could not create folder", {
-							description: message,
-						});
-					}
+				action: () => {
+					const dir =
+						activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+					void fileTree.requestCreateFolder(dir);
 				},
 			},
 			{
@@ -942,7 +929,6 @@ export function useAppCommands({
 		getBinding,
 		moveTargetDirs,
 		movePickerSourcePath,
-		setError,
 		openSettings,
 		refreshMoveTargetDirs,
 		openPalette,
