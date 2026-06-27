@@ -286,8 +286,5 @@
 .databaseToolbarGroupByHint {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	white-space: nowrap;
 	max-width: min(280px, 36vw);
-	overflow: hidden;
-	text-overflow: ellipsis;
 }

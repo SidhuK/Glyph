@@ -38,6 +38,33 @@ const DATE_SHORTCUT_OPTIONS = [
 	"Last 30 Days",
 ];
 
+const SUPPORTED_FILTER_OPERATORS = [
+	"equals",
+	"not_equals",
+	"contains",
+	"not_contains",
+	"starts_with",
+	"ends_with",
+	"greater_than",
+	"less_than",
+	"is_empty",
+	"is_not_empty",
+	"is_true",
+	"is_false",
+	"tags_contains",
+	"any_of",
+	"none_of",
+	"within_last_7_days",
+] as const satisfies readonly DatabaseFilter["operator"][];
+
+function isSupportedFilterOperator(
+	operator: string,
+): operator is DatabaseFilter["operator"] {
+	return SUPPORTED_FILTER_OPERATORS.includes(
+		operator as DatabaseFilter["operator"],
+	);
+}
+
 function isTagFilterColumn(column?: DatabaseColumn | null): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
 }
@@ -77,7 +104,8 @@ function emptyFilter(column?: DatabaseColumn | null): DatabaseFilter {
 	};
 }
 
-function operatorNeedsValue(operator: DatabaseFilter["operator"]): boolean {
+function operatorNeedsValue(operator: string): boolean {
+	if (!isSupportedFilterOperator(operator)) return false;
 	return ![
 		"is_empty",
 		"is_not_empty",
@@ -87,7 +115,7 @@ function operatorNeedsValue(operator: DatabaseFilter["operator"]): boolean {
 	].includes(operator);
 }
 
-function operatorLabel(operator: DatabaseFilter["operator"]): string {
+function operatorLabel(operator: string): string {
 	switch (operator) {
 		case "equals":
 			return "is";
@@ -120,13 +148,15 @@ function operatorLabel(operator: DatabaseFilter["operator"]): string {
 			return "is none of";
 		case "within_last_7_days":
 			return "is";
+		default:
+			return `Unsupported: ${operator}`;
 	}
 }
 
 function operatorOptions(
 	column: DatabaseColumn | null,
-	currentOperator: DatabaseFilter["operator"],
-): Array<{ value: DatabaseFilter["operator"]; label: string }> {
+	currentOperator: string,
+): Array<{ value: string; label: string; disabled?: boolean }> {
 	const options: DatabaseFilter["operator"][] = isBooleanColumn(column)
 		? ["is_true", "is_false", "is_empty", "is_not_empty"]
 		: isDateColumn(column)
@@ -152,10 +182,22 @@ function operatorOptions(
 							"is_empty",
 							"is_not_empty",
 						];
-	const normalized = options.includes(currentOperator)
-		? options
-		: [...options, currentOperator];
-	return normalized.map((value) => ({ value, label: operatorLabel(value) }));
+	const normalized = options.map((operator) => ({
+		value: operator,
+		label: operatorLabel(operator),
+		disabled: false,
+	}));
+	if (options.some((operator) => operator === currentOperator))
+		return normalized;
+
+	const currentOption = {
+		value: currentOperator,
+		label: operatorLabel(currentOperator),
+		disabled: !isSupportedFilterOperator(currentOperator),
+	};
+	return currentOption.disabled
+		? [currentOption, ...normalized]
+		: [...normalized, currentOption];
 }
 
 export function nextFilterForColumn(
@@ -222,6 +264,13 @@ export function FiltersPanel({
 	updateFilters,
 }: FiltersPanelProps) {
 	const presets = databaseFilterPresets(config, availableProperties);
+	const invalidOperatorIndex = config.filters.findIndex(
+		(filter) => !isSupportedFilterOperator(filter.operator),
+	);
+	const invalidOperatorError =
+		invalidOperatorIndex >= 0
+			? `Filter ${invalidOperatorIndex + 1} uses an unsupported operator. Choose a supported operator to restore results.`
+			: "";
 	return (
 		<section
 			className="databaseViewOptionsPanel is-wide"
@@ -269,8 +318,10 @@ export function FiltersPanel({
 					})}
 				</div>
 			</div>
-			{filterError ? (
-				<div className="databaseViewPanelError">{filterError}</div>
+			{filterError || invalidOperatorError ? (
+				<div className="databaseViewPanelError">
+					{filterError || invalidOperatorError}
+				</div>
 			) : null}
 			{config.filters.length === 0 ? (
 				<button
@@ -353,7 +404,11 @@ export function FiltersPanel({
 									}
 								>
 									{availableOperators.map((option) => (
-										<option key={option.value} value={option.value}>
+										<option
+											key={option.value}
+											value={option.value}
+											disabled={option.disabled}
+										>
 											{option.label}
 										</option>
 									))}

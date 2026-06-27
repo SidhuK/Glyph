@@ -36,7 +36,7 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						<option value="all_notes">All notes</option>
 						<option value="folder">A folder</option>
 						<option value="tag">A tag</option>
-						<option value="search">A saved search</option>
+						<option value="search">A search query</option>
 					</select>
 				</label>
 				{config.source.kind === "folder" ? (
