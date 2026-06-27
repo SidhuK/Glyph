@@ -351,6 +351,7 @@ describe("useNoteEditor", () => {
 				return mockEditor.state.tr;
 			},
 		);
+		mockEditor.state.tr.setNodeMarkup.mockReset();
 		mockEditor.view.dispatch.mockReset();
 		mockEditor.view.focus.mockReset();
 		mockEditor.view.hasFocus.mockReset();
@@ -367,7 +368,10 @@ describe("useNoteEditor", () => {
 		canCommands.insertContentAt.mockReturnValue(true);
 		openUrlMock.mockReset();
 		invokeMock.mockReset();
-		invokeMock.mockResolvedValue({ href: "assets/image.png" });
+		invokeMock.mockResolvedValue({
+			asset_rel_path: "assets/image.png",
+			href: "/assets/image.png",
+		});
 		loadSettingsMock.mockReset();
 		loadSettingsMock.mockResolvedValue({
 			editor: {
@@ -1002,6 +1006,37 @@ describe("useNoteEditor", () => {
 		const event = createClipboardEvent({
 			items: [{ type: "image/png", getAsFile: () => file }],
 		});
+		mockEditor.state.doc.descendants.mockImplementation(
+			(
+				visit: (
+					node: { type: { name: string }; attrs: Record<string, unknown> },
+					pos: number,
+				) => void,
+			) => {
+				const lastInsertCall =
+					chainCommands.insertContentAt.mock.calls[
+						chainCommands.insertContentAt.mock.calls.length - 1
+					];
+				const insertedNodes = lastInsertCall?.[1] as
+					| Array<{ attrs?: { uploadId?: string } }>
+					| undefined;
+				const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
+				if (!uploadId) return;
+				visit(
+					{
+						type: { name: "image" },
+						attrs: {
+							src: "blob:preview",
+							alt: "paste.png",
+							title: "",
+							originSrc: "",
+							uploadId,
+						},
+					},
+					6,
+				);
+			},
+		);
 
 		await act(async () => {
 			expect(paste?.({}, event)).toBe(true);
@@ -1014,6 +1049,17 @@ describe("useNoteEditor", () => {
 			data_url: "data:image/png;base64,abc",
 			alt: "paste.png",
 		});
+		expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
+			6,
+			undefined,
+			expect.objectContaining({
+				src: "data:image/png;base64,abc",
+				alt: "paste.png",
+				title: "",
+				originSrc: "/assets/image.png",
+				uploadId: null,
+			}),
+		);
 	});
 
 	it("saves pasted images to the space root when that mode is selected", async () => {
@@ -1154,7 +1200,10 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 		invokeMock
 			.mockRejectedValueOnce(new Error("first upload failed"))
-			.mockResolvedValueOnce({ href: "assets/image-2.png" });
+			.mockResolvedValueOnce({
+				asset_rel_path: "assets/image-2.png",
+				href: "/assets/image-2.png",
+			});
 
 		await act(async () => {
 			root.render(

@@ -111,7 +111,6 @@ interface BinaryFilePreviewDoc {
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
-	markdown: string;
 }
 
 export interface NoteProperty {

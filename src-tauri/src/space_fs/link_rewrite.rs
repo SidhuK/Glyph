@@ -675,6 +675,20 @@ mod tests {
     }
 
     #[test]
+    fn rewrites_pasted_image_markdown_links_using_space_root_paths() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/paste.png".to_string();
+        plan.to_rel_path = "assets/images/paste.png".to_string();
+        plan.from_basename_is_unique = false;
+
+        let input = "![paste.png](/assets/paste.png)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "notes/source.md");
+
+        assert_eq!(output.markdown, "![paste.png](/assets/images/paste.png)");
+        assert_eq!(output.changed_links, 1);
+    }
+
+    #[test]
     fn does_not_rewrite_ambiguous_attachment_basename() {
         let mut plan = plan();
         plan.from_rel_path = "assets/logo.png".to_string();
