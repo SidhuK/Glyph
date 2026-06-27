@@ -1,11 +1,6 @@
 import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
-import {
-	Table,
-	TableCell,
-	TableHeader,
-	TableRow,
-} from "@tiptap/extension-table";
+import { TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
@@ -36,6 +31,7 @@ import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
+import { GlyphTable } from "./tableMarkdown";
 import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
@@ -562,56 +558,6 @@ const TaskDetailShortcut = Extension.create({
 	},
 });
 
-const TableEnterNavigation = Extension.create({
-	name: "table-enter-navigation",
-	addKeyboardShortcuts() {
-		return {
-			Enter: () => {
-				const { editor } = this;
-				if (!editor.isEditable || !editor.isActive("table")) return false;
-
-				const { $from } = editor.state.selection;
-				let cellDepth = -1;
-				let rowDepth = -1;
-				let tableDepth = -1;
-
-				for (let depth = $from.depth; depth > 0; depth -= 1) {
-					const node = $from.node(depth);
-					if (
-						cellDepth === -1 &&
-						(node.type.name === "tableCell" || node.type.name === "tableHeader")
-					) {
-						cellDepth = depth;
-					}
-					if (rowDepth === -1 && node.type.name === "tableRow") {
-						rowDepth = depth;
-					}
-					if (node.type.name === "table") {
-						tableDepth = depth;
-						break;
-					}
-				}
-
-				if (cellDepth === -1 || rowDepth === -1 || tableDepth === -1)
-					return false;
-
-				const rowNode = $from.node(rowDepth);
-				const tableNode = $from.node(tableDepth);
-				const isLastCellInRow =
-					$from.index(rowDepth) === rowNode.childCount - 1;
-				const isLastRowInTable =
-					$from.index(tableDepth) === tableNode.childCount - 1;
-
-				if (isLastCellInRow && isLastRowInTable) {
-					return editor.chain().focus().addRowAfter().goToNextCell().run();
-				}
-
-				return editor.commands.goToNextCell();
-			},
-		};
-	},
-});
-
 interface EditorPlaceholderOptions {
 	placeholder: string;
 }
@@ -718,10 +664,9 @@ export function createEditorExtensions(
 					MarkdownLinkSyntaxCollapse,
 					MarkdownImageLivePreview,
 					NoteSearch,
-					TableEnterNavigation,
 				]
 			: []),
-		Table.configure({ resizable: enableEditingExtensions }),
+		GlyphTable.configure({ resizable: enableEditingExtensions }),
 		TableRow,
 		TableHeader,
 		TableCell,

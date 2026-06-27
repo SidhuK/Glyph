@@ -55,6 +55,32 @@ function findFirstTableCellPos(editor: Editor) {
 	return match;
 }
 
+function press(editor: Editor, key: string) {
+	const event = new KeyboardEvent("keydown", {
+		bubbles: true,
+		cancelable: true,
+		key,
+		code: key,
+	});
+	editor.commands.focus();
+	editor.view.dom.dispatchEvent(event);
+	return event.defaultPrevented;
+}
+
+function firstCellContent(editor: Editor) {
+	const cellPos = findFirstTableCellPos(editor);
+	expect(cellPos).toBeGreaterThan(-1);
+	return editor.state.doc.nodeAt(cellPos)?.content.toJSON();
+}
+
+function firstTableCellContent(markdown: string) {
+	const manager = createMarkdownManager();
+	const json = manager.parse(markdown);
+	const table = json.content?.find((node) => node.type === "table");
+	const firstCell = table?.content?.[0]?.content?.[0];
+	return firstCell?.content;
+}
+
 function tableShape(markdown: string) {
 	const manager = createMarkdownManager();
 	const json = manager.parse(markdown);
@@ -85,6 +111,107 @@ describe("Table markdown integration", () => {
 		expect(output).toContain("| Name");
 		expect(output).toContain("| Ada");
 		expect(output).toContain("| Lin");
+	});
+
+	it("lets Enter create a new paragraph inside a table cell", () => {
+		const input = [
+			"| Name | Role |",
+			"| --- | --- |",
+			"| Ada | Engineer |",
+		].join("\n");
+		const harness = createEditor(input);
+
+		try {
+			const cellPos = findFirstTableCellPos(harness.editor);
+			expect(cellPos).toBeGreaterThan(-1);
+
+			harness.editor.commands.setTextSelection(cellPos + 5);
+			expect(press(harness.editor, "Enter")).toBe(true);
+
+			expect(firstCellContent(harness.editor)).toEqual([
+				{
+					type: "paragraph",
+					content: [{ type: "text", text: "Nam" }],
+				},
+				{
+					type: "paragraph",
+					content: [{ type: "text", text: "e" }],
+				},
+			]);
+			expect(firstTableCellContent(harness.editor.getMarkdown())).toEqual([
+				{
+					type: "paragraph",
+					content: [{ type: "text", text: "Nam" }],
+				},
+				{
+					type: "paragraph",
+					content: [{ type: "text", text: "e" }],
+				},
+			]);
+		} finally {
+			harness.destroy();
+		}
+	});
+
+	it("lets Enter create another bullet item inside a table cell", () => {
+		const input = [
+			"| Name | Role |",
+			"| --- | --- |",
+			"| Ada | Engineer |",
+		].join("\n");
+		const harness = createEditor(input);
+
+		try {
+			const cellPos = findFirstTableCellPos(harness.editor);
+			expect(cellPos).toBeGreaterThan(-1);
+
+			harness.editor.commands.setTextSelection(cellPos + 6);
+			expect(harness.editor.commands.toggleBulletList()).toBe(true);
+			expect(press(harness.editor, "Enter")).toBe(true);
+
+			expect(firstCellContent(harness.editor)).toEqual([
+				{
+					type: "bulletList",
+					content: [
+						{
+							type: "listItem",
+							content: [
+								{
+									type: "paragraph",
+									content: [{ type: "text", text: "Name" }],
+								},
+							],
+						},
+						{
+							type: "listItem",
+							content: [{ type: "paragraph" }],
+						},
+					],
+				},
+			]);
+			expect(firstTableCellContent(harness.editor.getMarkdown())).toEqual([
+				{
+					type: "bulletList",
+					content: [
+						{
+							type: "listItem",
+							content: [
+								{
+									type: "paragraph",
+									content: [{ type: "text", text: "Name" }],
+								},
+							],
+						},
+						{
+							type: "listItem",
+							content: [{ type: "paragraph" }],
+						},
+					],
+				},
+			]);
+		} finally {
+			harness.destroy();
+		}
 	});
 
 	it("round-trips markdown after inserting a row", () => {
