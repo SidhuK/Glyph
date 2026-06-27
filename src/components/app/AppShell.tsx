@@ -1075,7 +1075,6 @@ export function AppShell() {
 		saveCurrentEditor,
 		setCurrentEditorMode,
 		setAiPanelOpen,
-		setError,
 		setMovePickerSourcePath,
 		setSidebarCollapsed,
 		showCollapsibleHeadings,
@@ -1230,7 +1229,9 @@ export function AppShell() {
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
+				onRequestCreateFolder={(dirPath) =>
+					fileTree.requestCreateFolder(dirPath)
+				}
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}

@@ -15,6 +15,7 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import {
 	formatAllDocsCountLabel,
 	loadAllDocsCount,
@@ -22,7 +23,6 @@ import {
 } from "../../lib/navigationPrefetch";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
-import { cssEscape } from "../../utils/dom";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -38,7 +38,7 @@ interface SidebarContentProps {
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
 		dirPath: string,
@@ -128,7 +128,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onRenameDir,
 	onDeletePath,
@@ -221,43 +221,9 @@ export const SidebarContent = memo(function SidebarContent({
 
 	useEffect(() => {
 		if (!renamingPath) return;
-		let cancelled = false;
-		let retryTimer: number | null = null;
-		let firstFrame: number | null = null;
-		let secondFrame: number | null = null;
-		let attempts = 0;
-
-		const tryCenterRenameTarget = () => {
-			if (cancelled) return;
-			attempts += 1;
-			const escapedPath = cssEscape(renamingPath);
-			const target = document.querySelector<HTMLElement>(
-				`[data-file-tree-path="${escapedPath}"]`,
-			);
-			if (target) {
-				target.scrollIntoView({
-					block: "center",
-					inline: "nearest",
-					behavior: "auto",
-				});
-				return;
-			}
-			if (attempts >= 10) return;
-			retryTimer = window.setTimeout(tryCenterRenameTarget, 45);
-		};
-
-		firstFrame = window.requestAnimationFrame(() => {
-			secondFrame = window.requestAnimationFrame(() => {
-				tryCenterRenameTarget();
-			});
+		return scheduleScrollFileTreePathIntoView(renamingPath, {
+			warmupFrames: 2,
 		});
-
-		return () => {
-			cancelled = true;
-			if (firstFrame !== null) window.cancelAnimationFrame(firstFrame);
-			if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
-			if (retryTimer !== null) window.clearTimeout(retryTimer);
-		};
 	}, [renamingPath]);
 
 	const handleCancelRename = useCallback(() => {
@@ -556,7 +522,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewFolderInDir={onNewFolderInDir}
+									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}
 									renamingPath={renamingPath}

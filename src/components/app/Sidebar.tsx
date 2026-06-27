@@ -16,7 +16,7 @@ interface SidebarProps {
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
 		dirPath: string,
@@ -58,7 +58,7 @@ export const Sidebar = memo(function Sidebar({
 	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onRenameDir,
 	onDeletePath,
@@ -134,7 +134,7 @@ export const Sidebar = memo(function Sidebar({
 									onNewNote={onNewNote}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewFolderInDir={onNewFolderInDir}
+									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onRenameDir={onRenameDir}
 									onDeletePath={onDeletePath}
