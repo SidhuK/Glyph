@@ -4,8 +4,14 @@ import {
 	statusLabel,
 	statusOptionFromValue,
 } from "../statusProperties";
+import { resolveDatabaseColumns } from "./columns";
 import { databaseCellValueFromRow } from "./config";
-import type { DatabaseCellValue, DatabaseColumn, DatabaseRow } from "./types";
+import type {
+	DatabaseCellValue,
+	DatabaseColumn,
+	DatabasePropertyOption,
+	DatabaseRow,
+} from "./types";
 
 export const DATABASE_BOARD_EMPTY_LANE_ID = "__empty__";
 
@@ -44,10 +50,51 @@ function isBoardGroupColumn(column: DatabaseColumn): boolean {
 	);
 }
 
+function isDatabaseGroupColumn(column: DatabaseColumn): boolean {
+	return column.type === "tags" || column.type === "property";
+}
+
 export function getBoardGroupColumns(
 	columns: DatabaseColumn[],
 ): DatabaseColumn[] {
 	return columns.filter(isBoardGroupColumn);
+}
+
+export function getDatabaseGroupColumns(
+	columns: DatabaseColumn[],
+): DatabaseColumn[] {
+	return columns.filter(isDatabaseGroupColumn);
+}
+
+export function resolveDatabaseGroupColumns(
+	columns: DatabaseColumn[],
+	availableProperties: DatabasePropertyOption[] = [],
+): DatabaseColumn[] {
+	return getDatabaseGroupColumns(
+		resolveDatabaseColumns(columns, availableProperties),
+	);
+}
+
+export function resolveBoardGroupColumns(
+	columns: DatabaseColumn[],
+	availableProperties: DatabasePropertyOption[] = [],
+): DatabaseColumn[] {
+	return getBoardGroupColumns(
+		resolveDatabaseColumns(columns, availableProperties),
+	);
+}
+
+export function emptyBoardLaneLabel(column: DatabaseColumn | null): string {
+	if (!column) return "No value yet";
+	if (column.type === "tags" || column.property_kind === "tags") {
+		return "No tags yet";
+	}
+	if (column.property_kind === "status") return "No status yet";
+	if (column.property_kind === "priority") return "No priority yet";
+	if (column.property_kind === "checkbox") return "Not set yet";
+	const label = column.label.trim();
+	if (label) return `No ${label.toLowerCase()} yet`;
+	return "No value yet";
 }
 
 export function defaultBoardGroupColumnId(
@@ -57,7 +104,7 @@ export function defaultBoardGroupColumnId(
 }
 
 function checkboxLaneLabel(value: boolean | null): string {
-	if (value == null) return "No value";
+	if (value == null) return "Not set yet";
 	return value ? "Checked" : "Unchecked";
 }
 
@@ -78,7 +125,8 @@ function laneWorkflowState(
 }
 
 function boardLaneLabel(column: DatabaseColumn, laneId: string): string {
-	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) return "No value";
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID)
+		return emptyBoardLaneLabel(column);
 	if (column.property_kind === "checkbox") {
 		return checkboxLaneLabel(laneId === "true");
 	}
@@ -287,13 +335,10 @@ export function createBoardLanes(
 	}
 
 	if (!lanes.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
-		lanes.set(DATABASE_BOARD_EMPTY_LANE_ID, {
-			id: DATABASE_BOARD_EMPTY_LANE_ID,
-			label: "No value",
-			cardCount: 0,
-			rows: [],
-			workflowState: "open",
-		});
+		lanes.set(
+			DATABASE_BOARD_EMPTY_LANE_ID,
+			createEmptyLane(column, DATABASE_BOARD_EMPTY_LANE_ID),
+		);
 	}
 
 	const orderedLanes = [...lanes.values()].map((lane) => ({

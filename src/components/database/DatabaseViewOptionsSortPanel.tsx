@@ -13,6 +13,7 @@ import {
 
 interface SortPanelProps {
 	config: DatabaseConfig;
+	columns: DatabaseColumn[];
 	availableProperties: DatabasePropertyOption[];
 	activeSort: DatabaseSort | null;
 	sortColumn: DatabaseColumn | null;
@@ -57,6 +58,7 @@ function directionLabel(
 
 export function SortPanel({
 	config,
+	columns,
 	availableProperties,
 	activeSort,
 	sortColumn,
@@ -124,7 +126,7 @@ export function SortPanel({
 							aria-label="Sort field"
 							onChange={(event) => setSort({ column_id: event.target.value })}
 						>
-							{config.columns.map((column) => (
+							{columns.map((column) => (
 								<option key={column.id} value={column.id}>
 									{column.label}
 								</option>

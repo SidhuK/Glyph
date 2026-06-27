@@ -95,9 +95,7 @@ function DatabasesPaneContent({
 							availableProperties={
 								activeCollection.document.available_properties
 							}
-							onGroupColumnIdChange={(groupColumnId) =>
-								views.patchActiveView({ board_group_by: groupColumnId })
-							}
+							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onChangeConfig={views.handleSaveConfig}
 							viewOptionsOpen={views.viewOptionsOpen}
 							onViewOptionsOpenChange={views.setViewOptionsOpen}
@@ -110,7 +108,7 @@ function DatabasesPaneContent({
 					views.boardHandlers ? (
 						<DatabaseBoard
 							rows={rows.rows}
-							columns={activeCollection.config.columns}
+							columns={views.resolvedColumns ?? activeCollection.config.columns}
 							groupColumnId={
 								activeCollection.config.view.board_group_by ?? null
 							}
@@ -134,9 +132,7 @@ function DatabasesPaneContent({
 								activeCollection.config.view.board_card_fields ??
 								EMPTY_BOARD_CARD_FIELDS
 							}
-							onGroupColumnIdChange={(groupColumnId) =>
-								views.patchActiveView({ board_group_by: groupColumnId })
-							}
+							onGroupColumnIdChange={views.handleGroupColumnIdChange}
 							onLaneOrderChange={views.boardHandlers.onLaneOrderChange}
 							onCardOrderChange={views.boardHandlers.onCardOrderChange}
 							onLaneColorChange={views.boardHandlers.onLaneColorChange}
@@ -187,19 +183,34 @@ function DatabasesPaneContent({
 					</div>
 					<div className="databasesEmptyText">
 						{selection.summaries.length === 0
-							? "A collection is just a group of notes in a folder. Create your first one to get started."
+							? "Collections help you see notes from a folder as a table or Kanban board."
 							: "Use Switch collection above to get started."}
 					</div>
 					{selection.summaries.length === 0 ? (
-						<Button
-							type="button"
-							size="sm"
-							className="createCollectionCta"
-							onClick={selection.openCreateCollectionDialog}
-						>
-							<Plus size="var(--icon-sm)" />
-							Create Collection
-						</Button>
+						<>
+							<ol className="databasesOnboardingSteps">
+								<li>
+									<strong>Choose notes</strong> — pick a folder, tag, or search.
+								</li>
+								<li>
+									<strong>Shape the view</strong> — show columns, filters, and
+									sorting.
+								</li>
+								<li>
+									<strong>Track work</strong> — switch to board view and group
+									by status, tags, or another field.
+								</li>
+							</ol>
+							<Button
+								type="button"
+								size="sm"
+								className="createCollectionCta"
+								onClick={selection.openCreateCollectionDialog}
+							>
+								<Plus size="var(--icon-sm)" />
+								Create Collection
+							</Button>
+						</>
 					) : null}
 				</div>
 			)}

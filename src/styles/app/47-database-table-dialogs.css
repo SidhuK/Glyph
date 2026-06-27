@@ -699,6 +699,25 @@
 	line-height: 1.5;
 }
 
+.databasesOnboardingSteps {
+	margin: 8px 0 4px;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 380px;
+	text-align: left;
+	font-size: calc(var(--text-base) * 0.9);
+	color: var(--text-secondary);
+	line-height: 1.45;
+}
+
+.databasesOnboardingSteps strong {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
 .createCollectionDialog {
 	width: min(460px, calc(100vw - 32px));
 	gap: 0;

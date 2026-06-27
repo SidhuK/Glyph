@@ -49,6 +49,10 @@ const COLLECTION_TIPS = [
 		),
 	},
 	{
+		id: "grouping",
+		text: "Group the board by status, tags, or other fields on your notes.",
+	},
+	{
 		id: "notes",
 		text: "Notes you create here stay in the same folder.",
 	},
