@@ -640,7 +640,7 @@ export function useNoteEditor({
 											source_path: sourcePath,
 											target_dir: targetDir,
 											data_url: dataUrl,
-											alt: item.file.name || null,
+											original_filename: item.file.name || null,
 										});
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,

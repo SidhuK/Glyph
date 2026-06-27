@@ -848,7 +848,7 @@ interface TauriCommands {
 			source_path: string;
 			target_dir: string;
 			data_url: string;
-			alt?: string | null;
+			original_filename?: string | null;
 		},
 		SavedPastedImage
 	>;

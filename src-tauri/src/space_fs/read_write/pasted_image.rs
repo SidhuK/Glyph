@@ -30,22 +30,23 @@ fn extension_matches_mime(mime: &str, ext: &str) -> bool {
     }
 }
 
-fn basename_from_alt(alt: Option<&str>) -> Result<Option<String>, String> {
-    let Some(raw) = alt else {
+fn basename_from_original_filename(
+    original_filename: Option<&str>,
+) -> Result<Option<String>, String> {
+    let Some(raw) = original_filename else {
         return Ok(None);
     };
-    let normalized = raw.trim().replace('\\', "/");
-    if normalized.is_empty() {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
         return Ok(None);
     }
-    let basename = normalized.rsplit('/').next().unwrap_or("").trim();
-    if basename.is_empty() || basename == "." || basename == ".." {
-        return Ok(None);
+    if trimmed.contains('/') || trimmed.contains('\\') || trimmed == "." || trimmed == ".." {
+        return Err("pasted image filename must not contain path components".to_string());
     }
-    if basename.starts_with('.') {
+    if trimmed.starts_with('.') {
         return Err("pasted image filename cannot be hidden".to_string());
     }
-    Ok(Some(basename.to_string()))
+    Ok(Some(trimmed.to_string()))
 }
 
 fn is_safe_filename_char(ch: char) -> bool {
@@ -78,8 +79,12 @@ fn sanitize_filename_stem(stem: &str) -> Option<String> {
     }
 }
 
-pub fn filename_for_mime(alt: Option<&str>, mime: &str, ext: &str) -> Result<String, String> {
-    let Some(basename) = basename_from_alt(alt)? else {
+pub fn filename_for_mime(
+    original_filename: Option<&str>,
+    mime: &str,
+    ext: &str,
+) -> Result<String, String> {
+    let Some(basename) = basename_from_original_filename(original_filename)? else {
         return Ok(format!("image.{ext}"));
     };
     let (raw_stem, ext_with_dot) = split_stem_extension(&basename);
@@ -187,11 +192,7 @@ mod tests {
     }
 
     #[test]
-    fn filename_for_mime_uses_sanitized_alt_name() {
-        assert_eq!(
-            filename_for_mime(Some("../picture new.png"), "image/png", "png").unwrap(),
-            "picture new.png"
-        );
+    fn filename_for_mime_uses_sanitized_original_filename() {
         assert_eq!(
             filename_for_mime(Some("screen:shot?.png"), "image/png", "png").unwrap(),
             "screen-shot.png"
@@ -199,7 +200,16 @@ mod tests {
     }
 
     #[test]
-    fn filename_for_mime_rejects_hidden_names() {
+    fn filename_for_mime_rejects_path_bearing_original_filenames() {
+        assert!(filename_for_mime(Some("../picture new.png"), "image/png", "png").is_err());
+        assert!(filename_for_mime(Some("folder/picture.png"), "image/png", "png").is_err());
+        assert!(filename_for_mime(Some("folder\\picture.png"), "image/png", "png").is_err());
+        assert!(filename_for_mime(Some("."), "image/png", "png").is_err());
+        assert!(filename_for_mime(Some(".."), "image/png", "png").is_err());
+    }
+
+    #[test]
+    fn filename_for_mime_rejects_hidden_original_filenames() {
         assert!(filename_for_mime(Some(".secret.png"), "image/png", "png").is_err());
     }
 

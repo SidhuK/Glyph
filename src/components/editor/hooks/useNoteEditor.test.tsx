@@ -370,7 +370,7 @@ describe("useNoteEditor", () => {
 		invokeMock.mockReset();
 		invokeMock.mockResolvedValue({
 			asset_rel_path: "assets/image.png",
-			href: "/assets/image.png",
+			href: "../assets/image.png",
 		});
 		loadSettingsMock.mockReset();
 		loadSettingsMock.mockResolvedValue({
@@ -1013,10 +1013,10 @@ describe("useNoteEditor", () => {
 					pos: number,
 				) => void,
 			) => {
+				const insertContentAtCalls = chainCommands.insertContentAt.mock
+					.calls as unknown as Array<[unknown, unknown]>;
 				const lastInsertCall =
-					chainCommands.insertContentAt.mock.calls[
-						chainCommands.insertContentAt.mock.calls.length - 1
-					];
+					insertContentAtCalls[insertContentAtCalls.length - 1];
 				const insertedNodes = lastInsertCall?.[1] as
 					| Array<{ attrs?: { uploadId?: string } }>
 					| undefined;
@@ -1047,7 +1047,7 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "assets/uploads",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
 		expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
 			6,
@@ -1056,7 +1056,7 @@ describe("useNoteEditor", () => {
 				src: "data:image/png;base64,abc",
 				alt: "paste.png",
 				title: "",
-				originSrc: "/assets/image.png",
+				originSrc: "../assets/image.png",
 				uploadId: null,
 			}),
 		);
@@ -1097,7 +1097,7 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
 	});
 
@@ -1136,7 +1136,7 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "notes",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
 	});
 
@@ -1202,7 +1202,7 @@ describe("useNoteEditor", () => {
 			.mockRejectedValueOnce(new Error("first upload failed"))
 			.mockResolvedValueOnce({
 				asset_rel_path: "assets/image-2.png",
-				href: "/assets/image-2.png",
+				href: "../assets/image-2.png",
 			});
 
 		await act(async () => {
