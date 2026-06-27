@@ -35,7 +35,10 @@ export async function copyPathToClipboard(
 }
 
 export async function copyRelativePath(relPath: string): Promise<void> {
-	await copyPathToClipboard(relativePathLabel(relPath));
+	await copyPathToClipboard(
+		relativePathLabel(relPath),
+		"Copied relative path.",
+	);
 }
 
 export async function copyAbsolutePath(
@@ -43,7 +46,10 @@ export async function copyAbsolutePath(
 	relPath: string,
 ): Promise<void> {
 	try {
-		await copyPathToClipboard(await absoluteSpacePath(spacePath, relPath));
+		await copyPathToClipboard(
+			await absoluteSpacePath(spacePath, relPath),
+			"Copied absolute path.",
+		);
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Could not copy path.";
