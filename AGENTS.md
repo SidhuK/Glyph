@@ -93,3 +93,13 @@ Repo extras: internal product and engineering docs live in `docs/`.
 ## Version Control
 
 - Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
+
+## Cursor Cloud specific instructions
+
+The Cloud VM is **Linux**, but Glyph is a **macOS-only Tauri app**. This constrains what can run here:
+
+- **Rust backend / full native app do NOT build on Linux.** `cd src-tauri && cargo check` (and `cargo clippy`, `pnpm tauri dev`) fail because `src-tauri/src/lib.rs` calls macOS-only Tauri APIs that are not `cfg`-gated (e.g. `WebviewWindowBuilder::title_bar_style`, `RunEvent::Opened`). Verify Rust changes on macOS; do not attempt to make the backend compile on Linux (cross-platform changes are out of scope per `CONTRIBUTING.md`).
+- **The frontend cannot be exercised in a plain browser.** `pnpm dev` serves on `http://localhost:1420`, but the app immediately hits its error boundary ("Something went wrong") because `window.__TAURI__` is undefined and nearly every flow calls `invoke()`. There is no browser fallback, so GUI/manual testing of app features is not possible on the Linux VM.
+- **Supported verification on Linux:** `pnpm check` (Biome), `pnpm test` (Vitest — mocks Tauri IPC and covers core editor/markdown/database/settings logic), and `pnpm build`. These are the canonical signals to rely on here.
+- `pnpm build` is `tsc && vite build`, and `tsc` type-checks **all** of `src`, including `*.test.tsx`. A type error in any committed test fails the whole build. To verify bundling independently of test typings, run `pnpm exec vite build`.
+- Rust toolchain on the VM is stable ≥ 1.85 (edition2024 transitive deps require it); the Tauri Linux system libs are preinstalled in the snapshot. Neither belongs in the startup update script.
