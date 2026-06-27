@@ -265,6 +265,55 @@ interface PendingMarkdownSync {
 	relPath: string;
 }
 
+interface SelectionSnapshot {
+	from: number;
+	relPath: string;
+	to: number;
+}
+
+function clampSelectionPosition(pos: number, docSize: number): number {
+	return Math.min(Math.max(pos, 0), docSize);
+}
+
+function snapshotFocusedSelection(
+	editor: NonNullable<ReturnType<typeof useEditor>> | null,
+	relPath: string,
+): SelectionSnapshot | null {
+	if (!editor?.view.hasFocus()) return null;
+	const { from, to } = editor.state.selection;
+	return { from, relPath, to };
+}
+
+function restoreSelectionSnapshot(
+	editor: NonNullable<ReturnType<typeof useEditor>>,
+	snapshot: SelectionSnapshot,
+	relPath: string,
+): boolean {
+	if (snapshot.relPath !== relPath) return false;
+	const docSize = editor.state.doc.content.size;
+	const from = clampSelectionPosition(snapshot.from, docSize);
+	const to = clampSelectionPosition(snapshot.to, docSize);
+	const range = from <= to ? { from, to } : { from: to, to: from };
+	try {
+		if (editor.commands.setTextSelection(range)) {
+			editor.view.focus();
+			return true;
+		}
+	} catch {
+		// Fall back to a collapsed selection below.
+	}
+	try {
+		if (editor.commands.setTextSelection(range.from)) {
+			editor.view.focus();
+			return true;
+		}
+	} catch {
+		// If neither selection can be represented in the new document, leave the
+		// editor unfocused instead of letting the browser choose an end position.
+	}
+	return false;
+}
+
 export function useNoteEditor({
 	additionalExtensions = EMPTY_ADDITIONAL_EXTENSIONS,
 	markdown,
@@ -301,7 +350,10 @@ export function useNoteEditor({
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
+	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
+	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
@@ -476,6 +528,11 @@ export function useNoteEditor({
 		void placeholder;
 		void vimKeybindingsEnabled;
 		return () => {
+			const snapshot = snapshotFocusedSelection(
+				committedEditorRef.current,
+				relPath,
+			);
+			if (snapshot) pendingSelectionRestoreRef.current = snapshot;
 			flushMarkdownSync(relPath);
 		};
 	}, [
@@ -661,6 +718,18 @@ export function useNoteEditor({
 	);
 	editorRef.current = editor;
 
+	useLayoutEffect(() => {
+		if (!editor) return;
+		const snapshot = pendingSelectionRestoreRef.current;
+		if (!snapshot) return;
+		pendingSelectionRestoreRef.current = null;
+		restoreSelectionSnapshot(editor, snapshot, relPath);
+	}, [editor, relPath]);
+
+	useLayoutEffect(() => {
+		committedEditorRef.current = editor;
+	}, [editor]);
+
 	useEffect(() => {
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
@@ -686,7 +755,13 @@ export function useNoteEditor({
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
+		const snapshot = snapshotFocusedSelection(
+			editor,
+			editorContentRelPathRef.current,
+		);
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
+		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
+		editorContentRelPathRef.current = relPath;
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
