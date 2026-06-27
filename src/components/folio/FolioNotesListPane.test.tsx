@@ -56,6 +56,7 @@ const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(
 );
 
 vi.mock("../../contexts", () => ({
+	useSpace: () => ({ spacePath: "/space" }),
 	useUILayoutContext: () => ({
 		folioScope: scopeRef.current,
 	}),

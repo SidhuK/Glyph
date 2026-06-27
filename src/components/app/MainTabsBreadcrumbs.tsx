@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
+import { useSpace } from "../../contexts";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { type FsEntry, invoke } from "../../lib/tauri";
@@ -206,22 +208,9 @@ export function MainTabsBreadcrumbs({
 	const [openBreadcrumbMenuKey, setOpenBreadcrumbMenuKey] = useState<
 		string | null
 	>(null);
+	const { spacePath } = useSpace();
 	const breadcrumbParts = breadcrumbPartsForPath(activeTabPath);
 	const breadcrumbDisplay = breadcrumbDisplayItems(breadcrumbParts);
-	const handleCopyBreadcrumbPath = useCallback(async (part: BreadcrumbPart) => {
-		try {
-			const clipboard = navigator.clipboard;
-			if (!clipboard?.writeText) {
-				throw new Error("Clipboard is not available.");
-			}
-			await clipboard.writeText(part.path || "/");
-			toast.success("Copied path.");
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Could not copy path.";
-			toast.error("Could not copy path", { description: message });
-		}
-	}, []);
 	const handleRevealBreadcrumbPart = useCallback(
 		async (part: BreadcrumbPart) => {
 			if (part.kind === "folder") {
@@ -256,10 +245,7 @@ export function MainTabsBreadcrumbs({
 	const handleBreadcrumbContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>, part: BreadcrumbPart) => {
 			void showNativeContextMenu(event, [
-				{
-					label: "Copy Path",
-					action: () => void handleCopyBreadcrumbPath(part),
-				},
+				...buildPathCopyMenuItems(spacePath, part.path),
 				{
 					label: "Reveal in File Tree",
 					action: () => void handleRevealBreadcrumbPart(part),
@@ -283,10 +269,10 @@ export function MainTabsBreadcrumbs({
 			});
 		},
 		[
-			handleCopyBreadcrumbPath,
 			handleOpenBreadcrumbContainer,
 			handleRevealBreadcrumbPart,
 			handleRevealInFinder,
+			spacePath,
 		],
 	);
 

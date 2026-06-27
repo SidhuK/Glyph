@@ -37,6 +37,7 @@ import {
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
+import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	SHORTCUT_CATEGORY_LABELS,
@@ -538,6 +539,44 @@ export function useAppCommands({
 				enabled: Boolean(activeMarkdownTabPath),
 				allowInEditable: true,
 				action: () => void handleCopyOpenNoteAsMarkdown(),
+			},
+			{
+				id: "copy-active-file-relative-path",
+				label: "Copy current file relative path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "relative path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyRelativePath(activeFilePath);
+				},
+			},
+			{
+				id: "copy-active-file-absolute-path",
+				label: "Copy current file absolute path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "absolute path", "full path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyAbsolutePath(spacePath, activeFilePath);
+				},
 			},
 			{
 				id: "move-active-file",
