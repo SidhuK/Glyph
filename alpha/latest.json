@@ -1,15 +1,15 @@
 {
-  "version": "0.8.5-alpha.2",
-  "notes": "## What's Changed\n* Enhance Help menu with links, commands, and unified event handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/206\n* Wikilink improvements and hardening: dot-in-filename support, extension detection refactor by @SidhuK in https://github.com/SidhuK/Glyph/pull/207\n* Improve file tree drag-and-drop into expanded folders by @SidhuK in https://github.com/SidhuK/Glyph/pull/224\n* [codex] unify editor suggestion engine by @SidhuK in https://github.com/SidhuK/Glyph/pull/228\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.5-alpha.1...v0.8.5-alpha.2",
-  "pub_date": "2026-06-26T07:11:47.947Z",
+  "version": "0.8.5-alpha.3",
+  "notes": "## What's Changed\n* fix: inline HTML attributes and hex color values no longer parsed as tags by @SidhuK in https://github.com/SidhuK/Glyph/pull/234\n* Add details and toggle blocks to the TipTap editor by @SidhuK in https://github.com/SidhuK/Glyph/pull/235\n* Polish the in-app create folder flow by @SidhuK in https://github.com/SidhuK/Glyph/pull/236\n* Add \"Copy File Path\" to file context menus and command palette by @SidhuK in https://github.com/SidhuK/Glyph/pull/242\n* Preserve rich editor caret across resets by @SidhuK in https://github.com/SidhuK/Glyph/pull/243\n* Save pasted images using original name (#244) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/244\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.5-alpha.2...v0.8.5-alpha.3",
+  "pub_date": "2026-06-27T07:36:54.615Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdVcW8xajZuSE54VklDVmVKVnhCWkxVdXZoa0huU202azlScVBhWVZjNUZkS2JsVmNmcU5qWGt4WVN1VHNJa0hLVEJJNytyRzRhWTBRbER3S21sakFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDU3OTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkc3RuTEVpN1d0aUhWamRhek9rS0wrZGlwdGM3QVFvUEFDS2Y1Y0w2dnpnU3hYU2l0VWd1N0pSZGd6dFlGU2ZSOUtJT3pmNXBGaEU1SXo4UnNFMXREQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCt0SVVDYjBmU1pHbjQ5NHRDL1kxcktnLytaOGw5SXlpUlkxd2NNa2I1aWRlbnd2dTlwV3RJdHRsZlFuL3ljR1RYaFcvSXVLd0pDOElxdi9WZ0tFbXdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNTQ1ODA4CWZpbGU6R2x5cGguYXBwLnRhci5negpkZ0JKMzVkV0p0ZFdKUzRUOHBaWFg0QVlWb2s2V01OYmM0c1B1ZVVaZ1pCYnBYNUVHVnM1WEM0RVNXeDV4RXlKeFFzYnJDRjVNNzZYMnNyN3gzMVRDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.3/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdVcW8xajZuSE54VklDVmVKVnhCWkxVdXZoa0huU202azlScVBhWVZjNUZkS2JsVmNmcU5qWGt4WVN1VHNJa0hLVEJJNytyRzRhWTBRbER3S21sakFVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNDU3OTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkc3RuTEVpN1d0aUhWamRhek9rS0wrZGlwdGM3QVFvUEFDS2Y1Y0w2dnpnU3hYU2l0VWd1N0pSZGd6dFlGU2ZSOUtJT3pmNXBGaEU1SXo4UnNFMXREQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCt0SVVDYjBmU1pHbjQ5NHRDL1kxcktnLytaOGw5SXlpUlkxd2NNa2I1aWRlbnd2dTlwV3RJdHRsZlFuL3ljR1RYaFcvSXVLd0pDOElxdi9WZ0tFbXdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgyNTQ1ODA4CWZpbGU6R2x5cGguYXBwLnRhci5negpkZ0JKMzVkV0p0ZFdKUzRUOHBaWFg0QVlWb2s2V01OYmM0c1B1ZVVaZ1pCYnBYNUVHVnM1WEM0RVNXeDV4RXlKeFFzYnJDRjVNNzZYMnNyN3gzMVRDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.5-alpha.3/Glyph_aarch64.app.tar.gz"
     }
   }
 }
