@@ -13,7 +13,9 @@ import type {
 	ReactNode,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
@@ -134,6 +136,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	fileCount,
 	onMoveClickSuppressRef,
 }: FileTreeDirItemProps) {
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -186,6 +189,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
 				{ type: "separator" },
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
+				{ type: "separator" },
 				{
 					label: "Rename",
 					action: onStartRename,
@@ -208,6 +213,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onNewFileInDir,
 			onRequestCreateFolder,
 			onStartRename,
+			spacePath,
 		],
 	);
 

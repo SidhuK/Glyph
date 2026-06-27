@@ -10,8 +10,10 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useSpace } from "../../contexts";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, parentDir, splitEditableFileName } from "../../utils/path";
@@ -416,6 +418,7 @@ export const FolioNoteListItem = memo(
 	) {
 		const title = note.title.trim() || titleFromPath(note.note_path);
 		const isMarkdown = note.is_markdown;
+		const { spacePath } = useSpace();
 		const { stem: fileStem, ext: fileExt } = splitEditableFileName(
 			basename(note.note_path),
 		);
@@ -470,6 +473,7 @@ export const FolioNoteListItem = memo(
 						label: "Show in Finder",
 						action: () => void handleRevealInFinder(),
 					},
+					...buildPathCopyMenuItems(spacePath, note.note_path),
 					{ type: "separator" },
 					...(onRename
 						? [
@@ -499,6 +503,7 @@ export const FolioNoteListItem = memo(
 				onOpenAppearancePicker,
 				onOpenInNewTab,
 				onRename,
+				spacePath,
 			],
 		);
 		const fileIcon = appearance?.icon ? (

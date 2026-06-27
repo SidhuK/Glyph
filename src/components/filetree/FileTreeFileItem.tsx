@@ -4,7 +4,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
 import type {
 	FileTreeAppearance,
@@ -152,6 +154,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	taskSummary = null,
 	previewText = null,
 }: FileTreeFileItemProps) {
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -221,6 +224,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: "Show in Finder",
 					action: () => void handleRevealInFinder(),
 				},
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
 					label: "Rename",
@@ -273,6 +277,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onStartRename,
 			onTogglePinned,
 			parentDirPath,
+			spacePath,
 		],
 	);
 

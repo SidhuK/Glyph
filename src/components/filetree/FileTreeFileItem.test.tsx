@@ -12,6 +12,10 @@ vi.mock("../../lib/nativeContextMenu", () => ({
 	showNativeContextMenu: showNativeContextMenuMock,
 }));
 
+vi.mock("../../contexts", () => ({
+	useSpace: () => ({ spacePath: "/space" }),
+}));
+
 vi.mock("motion/react", async () => {
 	const React = await vi.importActual<typeof import("react")>("react");
 	const stripMotionProps = (
