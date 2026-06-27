@@ -353,6 +353,7 @@ export function useNoteEditor({
 	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
 	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
+	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
@@ -754,9 +755,13 @@ export function useNoteEditor({
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
-		const snapshot = snapshotFocusedSelection(editor, relPath);
+		const snapshot = snapshotFocusedSelection(
+			editor,
+			editorContentRelPathRef.current,
+		);
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
+		editorContentRelPathRef.current = relPath;
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
