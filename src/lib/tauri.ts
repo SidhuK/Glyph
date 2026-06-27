@@ -111,7 +111,6 @@ interface BinaryFilePreviewDoc {
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
-	markdown: string;
 }
 
 export interface NoteProperty {
@@ -849,7 +848,7 @@ interface TauriCommands {
 			source_path: string;
 			target_dir: string;
 			data_url: string;
-			alt?: string | null;
+			original_filename?: string | null;
 		},
 		SavedPastedImage
 	>;

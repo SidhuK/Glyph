@@ -1,21 +1,18 @@
 use base64::Engine;
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use tauri::{State, WebviewWindow};
 
-use crate::io_atomic;
-use crate::paths;
 use crate::space::SpaceState;
 
 use super::super::helpers::deny_hidden_rel_path;
+use super::pasted_image::{extension_for_mime, filename_for_mime, write_or_reuse_asset};
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
 pub struct SavedPastedImage {
     pub asset_rel_path: String,
     pub href: String,
-    pub markdown: String,
 }
 
 fn normalize_rel_path(path: &str) -> String {
@@ -35,39 +32,27 @@ fn normalize_rel_path(path: &str) -> String {
 }
 
 fn parent_dir(path: &str) -> String {
-    match normalize_rel_path(path).rsplit_once('/') {
-        Some((left, _)) => left.to_string(),
+    let normalized = normalize_rel_path(path);
+    match normalized.rsplit_once('/') {
+        Some((parent, _)) => parent.to_string(),
         None => String::new(),
     }
 }
 
 fn relative_path(from_dir: &str, to_path: &str) -> String {
-    let from: Vec<&str> = from_dir.split('/').filter(|s| !s.is_empty()).collect();
-    let to: Vec<&str> = to_path.split('/').filter(|s| !s.is_empty()).collect();
-    let mut i = 0;
-    while i < from.len() && i < to.len() && from[i] == to[i] {
-        i += 1;
+    let from: Vec<&str> = from_dir.split('/').filter(|part| !part.is_empty()).collect();
+    let to: Vec<&str> = to_path.split('/').filter(|part| !part.is_empty()).collect();
+    let mut common = 0;
+    while common < from.len() && common < to.len() && from[common] == to[common] {
+        common += 1;
     }
-    let mut out: Vec<String> = vec!["..".to_string(); from.len().saturating_sub(i)];
-    out.extend(to[i..].iter().map(|s| s.to_string()));
-    if out.is_empty() {
+
+    let mut parts: Vec<String> = vec!["..".to_string(); from.len().saturating_sub(common)];
+    parts.extend(to[common..].iter().map(|part| (*part).to_string()));
+    if parts.is_empty() {
         ".".to_string()
     } else {
-        out.join("/")
-    }
-}
-
-fn extension_for_mime(mime: &str) -> Option<&'static str> {
-    match mime.trim().to_ascii_lowercase().as_str() {
-        "image/png" => Some("png"),
-        "image/jpeg" => Some("jpg"),
-        "image/gif" => Some("gif"),
-        "image/webp" => Some("webp"),
-        "image/svg+xml" => Some("svg"),
-        "image/bmp" => Some("bmp"),
-        "image/avif" => Some("avif"),
-        "image/tiff" => Some("tiff"),
-        _ => None,
+        parts.join("/")
     }
 }
 
@@ -99,7 +84,7 @@ pub async fn space_save_pasted_image(
     source_path: String,
     target_dir: String,
     data_url: String,
-    alt: Option<String>,
+    original_filename: Option<String>,
 ) -> Result<SavedPastedImage, String> {
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<SavedPastedImage, String> {
@@ -112,31 +97,16 @@ pub async fn space_save_pasted_image(
         let ext = extension_for_mime(&mime)
             .ok_or_else(|| format!("unsupported pasted image type: {mime}"))?;
 
-        let hash = hex::encode(Sha256::digest(&bytes));
-        let file_name = format!("{hash}.{ext}");
-        let asset_rel = if target_rel.as_os_str().is_empty() {
-            PathBuf::from(&file_name)
-        } else {
-            target_rel.join(&file_name)
-        };
-        deny_hidden_rel_path(&asset_rel)?;
-
-        let asset_abs = paths::join_under(&root, &asset_rel)?;
-        if let Some(parent) = asset_abs.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        let _ =
-            io_atomic::write_atomic_create_new(&asset_abs, &bytes).map_err(|e| e.to_string())?;
+        let asset_file_name = filename_for_mime(original_filename.as_deref(), &mime, ext)?;
+        let asset_rel = write_or_reuse_asset(&root, &target_rel, &asset_file_name, &bytes)?;
 
         let asset_rel_string = asset_rel.to_string_lossy().replace('\\', "/");
         let source_dir = parent_dir(&source_rel.to_string_lossy());
         let href = relative_path(&source_dir, &asset_rel_string);
-        let alt_text = alt.unwrap_or_default().trim().to_string();
 
         Ok(SavedPastedImage {
             asset_rel_path: asset_rel_string,
-            href: href.clone(),
-            markdown: format!("![{alt_text}]({href})"),
+            href,
         })
     })
     .await
