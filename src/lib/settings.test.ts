@@ -212,6 +212,18 @@ describe("settings editor font family", () => {
 		expect(storeState.get("ui.editorFontFamily")).toBe("Atkinson Hyperlegible");
 	});
 
+	it("preserves an existing editor font instead of deriving it from the UI font", async () => {
+		storeState.set("ui.fontFamily", "Atkinson Hyperlegible");
+		storeState.set("ui.editorFontFamily", "Literata");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.fontFamily).toBe("Atkinson Hyperlegible");
+		expect(settings.ui.editorFontFamily).toBe("Literata");
+		expect(storeState.get("ui.editorFontFamily")).toBe("Literata");
+	});
+
 	it("persists and emits editor font changes", async () => {
 		const { setUiEditorFontFamily } = await import("./settings");
 
