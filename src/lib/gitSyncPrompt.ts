@@ -1,6 +1,22 @@
 import type { GitSyncStatus } from "./tauri";
 import { invoke } from "./tauri";
 
+function redactRemoteUrl(remote: string): string {
+	try {
+		if (remote.startsWith("git@")) {
+			return remote;
+		}
+		const url = new URL(remote);
+		if (url.username || url.password) {
+			url.username = "";
+			url.password = "";
+		}
+		return url.toString();
+	} catch {
+		return remote.replace(/^([^:]+):\/\/[^@/]+@/, "$1://");
+	}
+}
+
 export function shouldPromptForAutoSync(
 	status: GitSyncStatus | null,
 ): status is GitSyncStatus {
@@ -16,7 +32,9 @@ export async function promptForAutoSync(
 ): Promise<boolean> {
 	const remote = status.remote_url ?? status.detected_remote_url;
 	const branch = status.branch ?? status.detected_branch ?? "main";
-	const remoteLabel = remote ? `${remote} (${branch})` : "its remote";
+	const remoteLabel = remote
+		? `${redactRemoteUrl(remote)} (${branch})`
+		: "its remote";
 
 	const { confirm } = await import("@tauri-apps/plugin-dialog");
 	return confirm(

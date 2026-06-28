@@ -165,13 +165,14 @@ export function useGitSync({
 		void (async () => {
 			try {
 				const enable = await promptForAutoSync(status);
-				await completeAutoSyncPrompt(enable);
 				if (
 					activeSpacePathRef.current !== spacePath ||
 					statusSpaceRef.current !== spacePath
 				) {
+					autoSyncPromptSpaceRef.current = null;
 					return;
 				}
+				await completeAutoSyncPrompt(enable);
 				setStatus((current) =>
 					current
 						? {
