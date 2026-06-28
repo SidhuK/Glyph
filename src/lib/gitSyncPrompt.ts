@@ -5,10 +5,9 @@ export function shouldPromptForAutoSync(
 	status: GitSyncStatus | null,
 ): status is GitSyncStatus {
 	return (
-		status !== null &&
-		status.configured &&
-		status.repo_mode === "adopted_existing_repo" &&
-		!status.auto_sync_prompted
+		status?.configured === true &&
+		status?.repo_mode === "adopted_existing_repo" &&
+		status?.auto_sync_prompted === false
 	);
 }
 
@@ -30,9 +29,7 @@ export async function promptForAutoSync(
 	);
 }
 
-export async function completeAutoSyncPrompt(
-	enable: boolean,
-): Promise<void> {
+export async function completeAutoSyncPrompt(enable: boolean): Promise<void> {
 	await invoke("git_sync_config_update", {
 		patch: {
 			enabled: enable,
