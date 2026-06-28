@@ -540,6 +540,7 @@ export interface GitSyncConfig {
 	last_error: string | null;
 	consecutive_auto_sync_failures: number;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 }
 
 export interface GitSyncStatus {
@@ -553,6 +554,7 @@ export interface GitSyncStatus {
 	branch: string | null;
 	enabled: boolean;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 	phase: GitSyncPhase;
 	is_syncing: boolean;
 	interval_minutes: number;
@@ -607,6 +609,7 @@ interface GitSyncConfigPatch {
 	interval_minutes?: number;
 	inclusions?: GitSyncInclusionSettings;
 	paused?: boolean;
+	auto_sync_prompted?: boolean;
 }
 
 type LicenseMode =

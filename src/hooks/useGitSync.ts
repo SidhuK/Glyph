@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUILayoutContext } from "../contexts";
+import {
+	completeAutoSyncPrompt,
+	promptForAutoSync,
+	shouldPromptForAutoSync,
+} from "../lib/gitSyncPrompt";
 import { loadSettings } from "../lib/settings";
 import type { GitSyncRunMode, GitSyncStatus } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -41,6 +46,7 @@ export function useGitSync({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const initialAutoRunSpaceRef = useRef<string | null>(null);
+	const autoSyncPromptSpaceRef = useRef<string | null>(null);
 
 	const refreshStatus = useCallback(async () => {
 		if (!spacePath) {
@@ -104,6 +110,7 @@ export function useGitSync({
 			setStatus(null);
 			setError("");
 			initialAutoRunSpaceRef.current = null;
+			autoSyncPromptSpaceRef.current = null;
 			return;
 		}
 		void refreshStatus();
@@ -120,17 +127,49 @@ export function useGitSync({
 	const statusIntervalMinutes = status?.interval_minutes ?? 10;
 
 	useEffect(() => {
-		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused)
+		if (!spacePath || !shouldPromptForAutoSync(status)) return;
+		if (autoSyncPromptSpaceRef.current === spacePath) return;
+		autoSyncPromptSpaceRef.current = spacePath;
+
+		void (async () => {
+			try {
+				const enable = await promptForAutoSync(status);
+				await completeAutoSyncPrompt(enable);
+			} catch (cause) {
+				autoSyncPromptSpaceRef.current = null;
+				setError(
+					cause instanceof Error
+						? cause.message
+						: "Failed to configure Git Sync",
+				);
+			}
+		})();
+	}, [spacePath, status]);
+
+	useEffect(() => {
+		if (
+			!spacePath ||
+			!statusConfigured ||
+			!statusEnabled ||
+			statusPaused ||
+			shouldPromptForAutoSync(status)
+		)
 			return;
 		if (initialAutoRunSpaceRef.current === spacePath) return;
 		initialAutoRunSpaceRef.current = spacePath;
 		void runSync("auto").catch((cause) => {
 			setError(cause instanceof Error ? cause.message : "Git Sync failed");
 		});
-	}, [runSync, spacePath, statusConfigured, statusEnabled, statusPaused]);
+	}, [runSync, spacePath, status, statusConfigured, statusEnabled, statusPaused]);
 
 	useEffect(() => {
-		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused) {
+		if (
+			!spacePath ||
+			!statusConfigured ||
+			!statusEnabled ||
+			statusPaused ||
+			shouldPromptForAutoSync(status)
+		) {
 			return;
 		}
 		const intervalMinutes = Math.max(1, statusIntervalMinutes || 10);
@@ -146,6 +185,7 @@ export function useGitSync({
 	}, [
 		runSync,
 		spacePath,
+		status,
 		statusConfigured,
 		statusEnabled,
 		statusPaused,
