@@ -124,6 +124,13 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["font", "code", "mono"],
 	},
 	{
+		id: "appearance-editor-font",
+		tab: "appearance",
+		section: "Typography",
+		title: "Editor font",
+		keywords: ["font", "editor", "notes", "prose"],
+	},
+	{
 		id: "appearance-ui-font-size",
 		tab: "appearance",
 		section: "Typography",

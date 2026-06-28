@@ -195,6 +195,35 @@ describe("settings app translucency", () => {
 	});
 });
 
+describe("settings editor font family", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("materializes the editor font from the UI font for existing settings", async () => {
+		storeState.set("ui.fontFamily", "Atkinson Hyperlegible");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.editorFontFamily).toBe("Atkinson Hyperlegible");
+		expect(storeState.get("ui.editorFontFamily")).toBe("Atkinson Hyperlegible");
+	});
+
+	it("persists and emits editor font changes", async () => {
+		const { setUiEditorFontFamily } = await import("./settings");
+
+		await setUiEditorFontFamily("Literata");
+
+		expect(storeState.get("ui.editorFontFamily")).toBe("Literata");
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { editorFontFamily: "Literata" },
+		});
+	});
+});
+
 describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();
