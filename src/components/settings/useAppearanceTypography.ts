@@ -109,6 +109,7 @@ export function useAppearanceTypography({
 
 	useEffect(() => {
 		let cancelled = false;
+		const hydrationMutationId = typographyMutationRef.current;
 		void (async () => {
 			try {
 				const [settings, fonts, monoFonts] = await Promise.all([
@@ -118,17 +119,24 @@ export function useAppearanceTypography({
 				]);
 				if (cancelled) return;
 				const typography = getTypographyFromSettings(settings);
-				applyTypographyState(typography);
+				const canApplyHydratedTypography =
+					typographyMutationRef.current === hydrationMutationId;
+				const currentTypography = canApplyHydratedTypography
+					? typography
+					: typographyRef.current;
+				if (canApplyHydratedTypography) {
+					applyTypographyState(typography);
+				}
 				setAvailableFonts(
 					includeSelectedFonts(fonts, [
-						settings.ui.fontFamily,
-						settings.ui.editorFontFamily,
+						currentTypography.fontFamily,
+						currentTypography.editorFontFamily,
 					]),
 				);
 				setAvailableMonospaceFonts(
-					monoFonts.includes(settings.ui.monoFontFamily)
+					monoFonts.includes(currentTypography.monoFontFamily)
 						? monoFonts
-						: [settings.ui.monoFontFamily, ...monoFonts],
+						: [currentTypography.monoFontFamily, ...monoFonts],
 				);
 			} catch (e) {
 				if (!cancelled) {
