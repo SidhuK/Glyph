@@ -29,6 +29,7 @@
 	--color-red-dark-400: #ff7a74;
 
 	--font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-editor: var(--font-sans);
 	--font-mono: "JetBrains Mono", ui-monospace, monospace;
 
 	--text-base: 0.875rem;

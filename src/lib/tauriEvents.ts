@@ -63,6 +63,7 @@ type TauriEventMap = {
 			darkThemeId?: UiDarkThemeId;
 			accent?: UiAccent;
 			fontFamily?: string;
+			editorFontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;
 			editorFontSize?: number;
