@@ -2,7 +2,8 @@ import type { GitSyncStatus } from "./tauri";
 import { invoke } from "./tauri";
 
 function redactRemoteUrl(remote: string): string {
-	const removeQueryAndFragment = (value: string) => value.replace(/[?#].*$/, "");
+	const removeQueryAndFragment = (value: string) =>
+		value.replace(/[?#].*$/, "");
 	try {
 		if (remote.startsWith("git@")) {
 			return removeQueryAndFragment(remote);
