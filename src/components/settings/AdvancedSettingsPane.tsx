@@ -8,6 +8,7 @@ import {
 	type EditorWidthMode,
 	loadSettings,
 	setAiAssistantMode,
+	setClassicAllNotesByDefault,
 	setDatabaseShowColumnColor,
 	setEditorBeautifulTags,
 	setEditorColorfulHeadings,
@@ -118,6 +119,8 @@ export function AdvancedSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
 	const [folioMode, setFolioModeState] = useState(false);
+	const [classicAllNotesByDefault, setClassicAllNotesByDefaultState] =
+		useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -138,6 +141,10 @@ export function AdvancedSettingsPane() {
 	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
+	const [
+		isSavingClassicAllNotesByDefault,
+		setIsSavingClassicAllNotesByDefault,
+	] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -160,6 +167,7 @@ export function AdvancedSettingsPane() {
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setFolioModeState(settings.ui.folioMode);
+			setClassicAllNotesByDefaultState(settings.ui.classicAllNotesByDefault);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 		} catch (cause) {
@@ -208,6 +216,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.folioMode === "boolean") {
 			setFolioModeState(payload.ui.folioMode);
+		}
+		if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
+			setClassicAllNotesByDefaultState(payload.ui.classicAllNotesByDefault);
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
@@ -497,6 +508,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingFolioMode(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Classic All Notes grid"
+						description="Open All Notes as the simple grid instead of the activity timeline."
+					>
+						<SettingsToggle
+							checked={classicAllNotesByDefault}
+							disabled={isSavingClassicAllNotesByDefault}
+							ariaLabel="Classic All Notes grid"
+							onCheckedChange={(checked) => {
+								const previous = classicAllNotesByDefault;
+								setError("");
+								setClassicAllNotesByDefaultState(checked);
+								setIsSavingClassicAllNotesByDefault(true);
+								void setClassicAllNotesByDefault(checked)
+									.catch((cause) => {
+										setClassicAllNotesByDefaultState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingClassicAllNotesByDefault(false);
 									});
 							}}
 						/>

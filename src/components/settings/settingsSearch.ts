@@ -491,6 +491,13 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["layout", "reading"],
 	},
 	{
+		id: "advanced-classic-all-notes",
+		tab: "advanced",
+		section: "App",
+		title: "Classic All Notes grid",
+		keywords: ["all notes", "activity", "timeline", "grid"],
+	},
+	{
 		id: "advanced-folder-counts",
 		tab: "advanced",
 		section: "App",

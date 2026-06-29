@@ -376,6 +376,7 @@ async function emitSettingsUpdated(payload: {
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		folioMode?: boolean;
+		classicAllNotesByDefault?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 	};
@@ -447,6 +448,7 @@ interface AppSettings {
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		folioMode: boolean;
+		classicAllNotesByDefault: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -515,6 +517,7 @@ const KEYS = {
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	folioMode: "ui.folioMode",
+	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
@@ -836,6 +839,10 @@ export async function loadSettings(
 		KEYS.showFileTreeFolderCounts,
 	);
 	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
+	const rawClassicAllNotesByDefault = getSettingValue<boolean | null>(
+		entries,
+		KEYS.classicAllNotesByDefault,
+	);
 	const dailyNotesFolderRaw = getSettingValue<string | null>(
 		entries,
 		KEYS.dailyNotesFolder,
@@ -964,6 +971,10 @@ export async function loadSettings(
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
+	const classicAllNotesByDefault =
+		typeof rawClassicAllNotesByDefault === "boolean"
+			? rawClassicAllNotesByDefault
+			: false;
 	const dailyNotesFolder = hasActiveSpace
 		? (activeScopedSettings?.dailyNotesFolder ?? null)
 		: typeof dailyNotesFolderRaw === "string"
@@ -1055,6 +1066,7 @@ export async function loadSettings(
 			showToc,
 			showFileTreeFolderCounts,
 			folioMode,
+			classicAllNotesByDefault,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -1313,6 +1325,15 @@ export async function setFolioMode(enabled: boolean): Promise<void> {
 	await store.set(KEYS.folioMode, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { folioMode: enabled } });
+}
+
+export async function setClassicAllNotesByDefault(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.classicAllNotesByDefault, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { classicAllNotesByDefault: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(

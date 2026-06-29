@@ -79,11 +79,12 @@ export const navigationQueryKeys = {
 			...navigationQueryKeys.allDocs(),
 			normalizeAllDocsFolder(folderPrefix),
 		] as const,
-	allDocsPages: (folderPrefix?: string | null) =>
+	allDocsPages: (folderPrefix?: string | null, pageSize = ALL_DOCS_PAGE_SIZE) =>
 		[
 			...navigationQueryKeys.allDocs(),
 			"pages",
 			normalizeAllDocsFolder(folderPrefix),
+			pageSize,
 		] as const,
 	allDocsCount: (folderPrefix?: string | null) =>
 		[
@@ -212,6 +213,7 @@ export async function prefetchDatabasesLanding(
 
 export const ALL_DOCS_LIST_LIMIT = 2000;
 export const ALL_DOCS_PAGE_SIZE = 48;
+export const ACTIVITY_DOCS_PAGE_SIZE = 40;
 
 export function formatAllDocsCountLabel(count: number): string | null {
 	if (count <= 0) return null;
@@ -268,12 +270,15 @@ export async function loadAllDocs(folderPrefix?: string | null) {
 	return pages;
 }
 
-export function prefetchAllDocs(folderPrefix?: string | null) {
+export function prefetchAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
 	return queryClient.prefetchInfiniteQuery({
-		queryKey: navigationQueryKeys.allDocsPages(folderPrefix),
+		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
 		queryFn: ({ pageParam }) => {
 			const offset = typeof pageParam === "number" ? pageParam : 0;
-			return loadAllDocsPage(folderPrefix, offset);
+			return loadAllDocsPage(folderPrefix, offset, pageSize);
 		},
 		initialPageParam: 0,
 		getNextPageParam: (lastPage: AllDocsPage) =>
@@ -281,9 +286,19 @@ export function prefetchAllDocs(folderPrefix?: string | null) {
 	});
 }
 
-export function getPrefetchedAllDocs(folderPrefix?: string | null) {
+export function prefetchAllDocsList(folderPrefix?: string | null) {
+	return queryClient.prefetchQuery({
+		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix),
+	});
+}
+
+export function getPrefetchedAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
 	const pages = queryClient.getQueryData<AllDocsPagesData>(
-		navigationQueryKeys.allDocsPages(folderPrefix),
+		navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
 	);
 	if (pages) return pages.pages.flatMap((page) => page.items);
 	return (
@@ -296,6 +311,7 @@ export function getPrefetchedAllDocs(folderPrefix?: string | null) {
 function rebuildAllDocsPages(
 	current: AllDocsPagesData,
 	items: AllDocsItem[],
+	pageSize: number,
 ): AllDocsPagesData {
 	if (current.pages.length === 0 && items.length === 0) {
 		return {
@@ -305,9 +321,9 @@ function rebuildAllDocsPages(
 	}
 	const hadMore = current.pages[current.pages.length - 1]?.nextOffset != null;
 	const pages: AllDocsPage[] = [];
-	for (let offset = 0; offset < items.length; offset += ALL_DOCS_PAGE_SIZE) {
-		const pageItems = items.slice(offset, offset + ALL_DOCS_PAGE_SIZE);
-		const hasLocalNext = offset + ALL_DOCS_PAGE_SIZE < items.length;
+	for (let offset = 0; offset < items.length; offset += pageSize) {
+		const pageItems = items.slice(offset, offset + pageSize);
+		const hasLocalNext = offset + pageSize < items.length;
 		pages.push({
 			items: pageItems,
 			nextOffset: hasLocalNext || hadMore ? offset + pageItems.length : null,
@@ -321,7 +337,7 @@ function rebuildAllDocsPages(
 	}
 	return {
 		pages,
-		pageParams: pages.map((_, index) => index * ALL_DOCS_PAGE_SIZE),
+		pageParams: pages.map((_, index) => index * pageSize),
 	};
 }
 
@@ -345,10 +361,15 @@ function updateAllDocsCaches(
 			);
 			continue;
 		}
-		if (query.queryKey.length !== 4 || query.queryKey[2] !== "pages") {
+		if (query.queryKey.length !== 5 || query.queryKey[2] !== "pages") {
 			continue;
 		}
 		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
+		const rawPageSize = query.queryKey[4];
+		const pageSize =
+			typeof rawPageSize === "number" && rawPageSize > 0
+				? rawPageSize
+				: ALL_DOCS_PAGE_SIZE;
 		const current = queryClient.getQueryData<AllDocsPagesData>(query.queryKey);
 		if (!current) continue;
 		const nextItems = updater(
@@ -357,7 +378,7 @@ function updateAllDocsCaches(
 		);
 		queryClient.setQueryData<AllDocsPagesData>(
 			query.queryKey,
-			rebuildAllDocsPages(current, nextItems),
+			rebuildAllDocsPages(current, nextItems, pageSize),
 		);
 	}
 }
@@ -374,7 +395,7 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 		const current =
 			query.queryKey.length === 3
 				? queryClient.getQueryData<AllDocsItem[]>(query.queryKey)
-				: query.queryKey.length === 4 && query.queryKey[2] === "pages"
+				: query.queryKey.length === 5 && query.queryKey[2] === "pages"
 					? queryClient
 							.getQueryData<AllDocsPagesData>(query.queryKey)
 							?.pages.flatMap((page) => page.items)
@@ -489,7 +510,11 @@ export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
 			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsPages(folderPrefix),
+			queryKey: [
+				...navigationQueryKeys.allDocs(),
+				"pages",
+				normalizeAllDocsFolder(folderPrefix),
+			],
 		});
 		return;
 	}
