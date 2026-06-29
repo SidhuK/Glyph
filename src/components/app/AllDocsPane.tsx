@@ -1,3 +1,5 @@
+import { TimelineEventIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -7,126 +9,29 @@ import {
 	startOfToday,
 	subDays,
 } from "date-fns";
-import { m, useReducedMotion } from "motion/react";
-import {
-	type KeyboardEvent,
-	memo,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useReducedMotion } from "motion/react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
 
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
-import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
 	ALL_DOCS_PAGE_SIZE,
 	loadAllDocsPage,
 	navigationQueryKeys,
-	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import type {
-	AllDocsItem,
-	FileTreeAppearance,
-	NoteTaskSummary,
-} from "../../lib/tauri";
+import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
-import {
-	DatabaseNoteAppearanceIcon,
-	databaseNoteAppearanceStyle,
-} from "../database/DatabaseNoteAppearanceIcon";
 import { springPresets } from "../ui/animations";
+import { AllDocsCard, prepareAllDocsCardProps } from "./AllDocsCard";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
+	onOpenActivity: () => void;
+	onPrefetchActivity: () => void;
 	initialNotes?: AllDocsItem[] | null;
-}
-
-function titleFromPath(notePath: string): string {
-	const fileName = notePath.split("/").pop() ?? notePath;
-	return fileName.replace(/\.md$/i, "");
-}
-
-type PreviewLineKind = "heading" | "quote" | "task" | "list" | "code" | "body";
-
-type PreviewLine = {
-	key: string;
-	kind: PreviewLineKind;
-	text: string;
-};
-
-function pushPreviewLine(
-	parsed: PreviewLine[],
-	kind: PreviewLineKind,
-	text: string,
-) {
-	parsed.push({ key: `${kind}:${parsed.length}:${text}`, kind, text });
-}
-
-function previewLines(preview: string, title: string): PreviewLine[] {
-	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
-	const parsed: PreviewLine[] = [];
-	let inFence = false;
-
-	for (const raw of lines) {
-		const line = raw.trim();
-		if (!line) continue;
-		if (/^```/.test(line)) {
-			inFence = !inFence;
-			continue;
-		}
-
-		if (inFence) {
-			const text = normalizeInlineMarkdown(line);
-			if (text) pushPreviewLine(parsed, "code", text);
-			continue;
-		}
-
-		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
-		if (headingMatch?.[1]) {
-			const text = normalizeInlineMarkdown(headingMatch[1]);
-			if (text) pushPreviewLine(parsed, "heading", text);
-			continue;
-		}
-
-		const quoteMatch = line.match(/^>\s?(.*)$/);
-		if (quoteMatch?.[1]) {
-			const text = normalizeInlineMarkdown(quoteMatch[1]);
-			if (text) pushPreviewLine(parsed, "quote", text);
-			continue;
-		}
-
-		const taskMatch = line.match(
-			/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/,
-		);
-		if (taskMatch?.[1]) {
-			const text = normalizeInlineMarkdown(taskMatch[1]);
-			if (text) pushPreviewLine(parsed, "task", text);
-			continue;
-		}
-
-		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
-		if (listMatch?.[1]) {
-			const text = normalizeInlineMarkdown(listMatch[1]);
-			if (text) pushPreviewLine(parsed, "list", text);
-			continue;
-		}
-
-		const text = normalizeInlineMarkdown(line);
-		if (text) pushPreviewLine(parsed, "body", text);
-	}
-
-	const filtered = parsed.filter((line) => {
-		const lower = line.text.toLowerCase();
-		const lowerTitle = title.trim().toLowerCase();
-		return !(lowerTitle && lower.startsWith(lowerTitle));
-	});
-
-	return filtered;
 }
 
 type AllDocsSection = {
@@ -174,168 +79,10 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 	{ id: "earlier", label: "Earlier" },
 ];
 
-interface AllDocsCardProps {
-	notePath: string;
-	noteAppearance?: FileTreeAppearance | null;
-	title: string;
-	preview: PreviewLine[];
-	taskSummary: NoteTaskSummary | undefined;
-	taskCount: number;
-	selected: boolean;
-	animationIndex: number;
-	shouldReduceMotion: boolean;
-	springPreset: typeof springPresets.snappy;
-	TaskProgressComponent: typeof TaskProgressIndicator;
-	onSelect: () => void;
-	onPrefetch: () => void;
-	onOpen: () => void;
-}
-
-type PreparedAllDocsCardProps = Omit<
-	AllDocsCardProps,
-	"shouldReduceMotion" | "springPreset" | "TaskProgressComponent"
->;
-
-interface PrepareAllDocsCardPropsArgs {
-	note: AllDocsItem;
-	index: number;
-	sectionIndex: number;
-	selectedNotePath: string | null;
-	taskSummariesByPath?: Record<string, NoteTaskSummary>;
-	selectNote: (notePath: string) => void;
-	onOpenFile: AllDocsPaneProps["onOpenFile"];
-}
-
-function prepareAllDocsCardProps({
-	note,
-	index,
-	sectionIndex,
-	selectedNotePath,
-	taskSummariesByPath = {},
-	selectNote,
-	onOpenFile,
-}: PrepareAllDocsCardPropsArgs): PreparedAllDocsCardProps {
-	const noteTitle = note.title.trim() || titleFromPath(note.note_path);
-	const taskSummary = taskSummariesByPath[note.note_path] ?? undefined;
-	return {
-		notePath: note.note_path,
-		title: noteTitle,
-		preview: previewLines(note.preview, noteTitle),
-		taskSummary,
-		taskCount: taskSummary?.total_count ?? 0,
-		selected: selectedNotePath === note.note_path,
-		animationIndex: sectionIndex * 12 + index,
-		onSelect: () => selectNote(note.note_path),
-		onPrefetch: () => prefetchNote(note.note_path),
-		onOpen: () => void onOpenFile(note.note_path),
-	};
-}
-
-function AllDocsCard({
-	notePath,
-	noteAppearance = null,
-	title,
-	preview,
-	taskSummary,
-	taskCount,
-	selected,
-	animationIndex,
-	shouldReduceMotion,
-	springPreset,
-	TaskProgressComponent,
-	onSelect,
-	onPrefetch,
-	onOpen,
-}: AllDocsCardProps) {
-	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-		if (event.key === "Enter") {
-			event.preventDefault();
-			onOpen();
-			return;
-		}
-		if (event.key === " ") {
-			event.preventDefault();
-			onSelect();
-		}
-	};
-	const noteAppearanceStyle = databaseNoteAppearanceStyle(
-		notePath,
-		noteAppearance,
-	);
-
-	return (
-		<m.button
-			type="button"
-			className="allDocsCard"
-			data-state={selected ? "selected" : undefined}
-			aria-label={`Open ${title}`}
-			onClick={onSelect}
-			onMouseEnter={onPrefetch}
-			onFocus={onPrefetch}
-			onDoubleClick={onOpen}
-			onKeyDown={handleKeyDown}
-			initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-			animate={{ opacity: 1, y: 0 }}
-			transition={
-				shouldReduceMotion
-					? { duration: 0 }
-					: {
-							...springPreset,
-							delay: Math.min(animationIndex * 0.02, 0.18),
-						}
-			}
-			title="Double-click to open note"
-		>
-			<div className="allDocsCardSurface">
-				<div className="allDocsCardTop">
-					<span
-						className="allDocsCardTitle"
-						title={title}
-						style={noteAppearanceStyle}
-					>
-						<DatabaseNoteAppearanceIcon
-							notePath={notePath}
-							appearance={noteAppearance}
-							className="allDocsCardTitleIcon"
-							size="var(--icon-md)"
-						/>
-						{title}
-					</span>
-					{taskSummary && taskCount > 0 ? (
-						<span className="allDocsCardTaskSummary is-top">
-							<TaskProgressComponent
-								summary={taskSummary}
-								className="allDocsCardTaskProgress"
-							/>
-							<span className="allDocsCardTaskText">
-								{taskSummary.completed_count}/{taskCount}
-							</span>
-						</span>
-					) : null}
-				</div>
-				{preview.length > 0 ? (
-					<div className="allDocsCardPreview">
-						{preview.map((line) => (
-							<div
-								key={`${notePath}:preview:${line.key}`}
-								className={`allDocsCardPreviewLine is-${line.kind}`}
-							>
-								{line.text}
-							</div>
-						))}
-					</div>
-				) : (
-					<div className="allDocsCardPreview is-placeholder">
-						No preview yet
-					</div>
-				)}
-			</div>
-		</m.button>
-	);
-}
-
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
+	onOpenActivity,
+	onPrefetchActivity,
 	initialNotes = null,
 }: AllDocsPaneProps) {
 	const { itemAppearance } = useFileTreeContext();
@@ -487,6 +234,22 @@ export const AllDocsPane = memo(function AllDocsPane({
 				<div className="allDocsHeadingGroup">
 					<h1 className="allDocsTitle">All Notes</h1>
 				</div>
+				<button
+					type="button"
+					className="allDocsHeaderAction"
+					onClick={onOpenActivity}
+					onMouseEnter={onPrefetchActivity}
+					onFocus={onPrefetchActivity}
+					title="Show activity"
+					aria-label="Show activity"
+				>
+					<HugeiconsIcon
+						icon={TimelineEventIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
+					<span>Show activity</span>
+				</button>
 			</header>
 			<div
 				className="allDocsSections is-virtualized"

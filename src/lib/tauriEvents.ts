@@ -71,6 +71,7 @@ type TauriEventMap = {
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
 			folioMode?: boolean;
+			classicAllNotesByDefault?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 		};
