@@ -49,6 +49,7 @@ import {
 	invalidatePrefetchedNote,
 	invalidateTaskSummariesPrefetchForNote,
 	prefetchAllDocs,
+	prefetchAllDocsList,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -172,8 +173,9 @@ export function AppShell() {
 		TemplatePickerItem[]
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [classicAllNotesByDefault, setClassicAllNotesByDefault] =
-		useState(false);
+	const [classicAllNotesByDefault, setClassicAllNotesByDefault] = useState<
+		boolean | null
+	>(null);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 	const autoUpdater = useUpdaterContext();
@@ -249,6 +251,7 @@ export function AppShell() {
 			})
 			.catch((error) => {
 				console.error("Failed to load workspace display settings", error);
+				if (!cancelled) setClassicAllNotesByDefault(false);
 			});
 		return () => {
 			cancelled = true;
@@ -833,6 +836,7 @@ export function AppShell() {
 		openPalette("search");
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
+		if (classicAllNotesByDefault === null) return;
 		openSpecialTab(
 			classicAllNotesByDefault ? ALL_DOCS_TAB_ID : ACTIVITY_TIMELINE_TAB_ID,
 		);
@@ -875,17 +879,20 @@ export function AppShell() {
 		void prefetchDatabasesLanding(databaseId);
 	}, []);
 	const prefetchAllDocsTab = useCallback(() => {
+		if (classicAllNotesByDefault === null) return;
 		if (classicAllNotesByDefault) {
 			void loadAllDocsPane();
 			void prefetchAllDocs(null);
 		} else {
 			void loadActivityTimelinePane();
 			void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+			void prefetchAllDocsList(null);
 		}
 	}, [classicAllNotesByDefault]);
 	const prefetchActivityTab = useCallback(() => {
 		void loadActivityTimelinePane();
 		void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+		void prefetchAllDocsList(null);
 	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);

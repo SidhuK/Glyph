@@ -38,6 +38,7 @@ function pushPreviewLine(
 export function previewLines(preview: string, title: string): PreviewLine[] {
 	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
 	const parsed: PreviewLine[] = [];
+	const normalizedTitle = normalizeInlineMarkdown(title).trim().toLowerCase();
 	let inFence = false;
 
 	for (const raw of lines) {
@@ -89,9 +90,10 @@ export function previewLines(preview: string, title: string): PreviewLine[] {
 	}
 
 	const filtered = parsed.filter((line) => {
-		const lower = line.text.toLowerCase();
-		const lowerTitle = title.trim().toLowerCase();
-		return !(lowerTitle && lower.startsWith(lowerTitle));
+		const normalizedLine = normalizeInlineMarkdown(line.text)
+			.trim()
+			.toLowerCase();
+		return !(normalizedTitle && normalizedLine === normalizedTitle);
 	});
 
 	return filtered;
@@ -191,7 +193,8 @@ export function AllDocsCard({
 			type="button"
 			className="allDocsCard"
 			data-state={selected ? "selected" : undefined}
-			aria-label={`Open ${title}`}
+			aria-label={`Select ${title}`}
+			aria-pressed={selected}
 			onClick={onSelect}
 			onMouseEnter={onPrefetch}
 			onFocus={onPrefetch}

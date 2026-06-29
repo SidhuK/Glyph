@@ -5,7 +5,11 @@ import {
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+	type VirtualItem,
+	type Virtualizer,
+	useVirtualizer,
+} from "@tanstack/react-virtual";
 import {
 	addDays,
 	format,
@@ -16,7 +20,14 @@ import {
 	subDays,
 } from "date-fns";
 import { useReducedMotion } from "motion/react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type RefObject,
+	memo,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -27,7 +38,11 @@ import {
 	loadAllDocsPage,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
-import type { AllDocsItem } from "../../lib/tauri";
+import type {
+	AllDocsItem,
+	FileTreeAppearance,
+	NoteTaskSummary,
+} from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
@@ -216,15 +231,17 @@ function monthVisibilityCounts(days: ActivityDay[]): Map<string, number> {
 	return counts;
 }
 
-export const ActivityTimelinePane = memo(function ActivityTimelinePane({
-	onOpenFile,
-}: ActivityTimelinePaneProps) {
-	const { itemAppearance } = useFileTreeContext();
-	const { dailyNotesFolder } = useUILayoutContext();
-	const shouldReduceMotion = useReducedMotion() ?? false;
-	const paneRef = useRef<HTMLElement>(null);
-	const [paneWidth, setPaneWidth] = useState(0);
-	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+function countUniqueNotes(days: ActivityDay[]): number {
+	const notePaths = new Set<string>();
+	for (const day of days) {
+		for (const notePath of day.notes.keys()) {
+			notePaths.add(notePath);
+		}
+	}
+	return notePaths.size;
+}
+
+function useActivityTimelineData(dailyNotesFolder: string | null) {
 	const queryClient = useQueryClient();
 	const notesQuery = useInfiniteQuery({
 		queryKey: navigationQueryKeys.allDocsPages(null, ACTIVITY_DOCS_PAGE_SIZE),
@@ -282,7 +299,30 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		() => feedActivityDays.filter((day) => day.notes.size > 0).reverse(),
 		[feedActivityDays],
 	);
-	const virtualRows = useMemo<ActivityVirtualRow[]>(() => {
+	const recentNotesCount = useMemo(
+		() => countUniqueNotes(recentActivityDays),
+		[recentActivityDays],
+	);
+
+	useTauriEvent("notes:external_changed", () => {
+		void queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocs(),
+		});
+	});
+
+	return {
+		notesQuery,
+		taskSummariesByPath,
+		columns,
+		visibleMonthCounts,
+		maxCount,
+		feedDays,
+		recentNotesCount,
+	};
+}
+
+function useActivityRows(feedDays: ActivityDay[]): ActivityVirtualRow[] {
+	return useMemo<ActivityVirtualRow[]>(() => {
 		const rows: ActivityVirtualRow[] = [];
 		for (const [dayIndex, day] of feedDays.entries()) {
 			rows.push({
@@ -310,10 +350,13 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		}
 		return rows;
 	}, [feedDays]);
-	const recentNotesCount = useMemo(
-		() => recentActivityDays.reduce((count, day) => count + day.notes.size, 0),
-		[recentActivityDays],
-	);
+}
+
+function useActivityVirtualization(
+	paneRef: RefObject<HTMLElement | null>,
+	virtualRows: ActivityVirtualRow[],
+) {
+	const [paneWidth, setPaneWidth] = useState(0);
 	const columnCount = useMemo(() => {
 		const contentWidth =
 			paneWidth <= 0 ? ACTIVITY_CONTENT_MAX_WIDTH : Math.min(paneWidth, 860);
@@ -345,15 +388,6 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 
-	useVirtualLoadMore({
-		hasMore: notesQuery.hasNextPage,
-		isLoading: notesQuery.isFetchingNextPage,
-		onLoadMore: notesQuery.fetchNextPage,
-		virtualItems,
-		totalItems: virtualRows.length,
-		remainingItems: 6,
-	});
-
 	useEffect(() => {
 		const pane = paneRef.current;
 		if (!pane) return;
@@ -365,12 +399,234 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 		observer.observe(pane);
 		setPaneWidth(pane.clientWidth);
 		return () => observer.disconnect();
-	}, []);
+	}, [paneRef.current]);
 
-	useTauriEvent("notes:external_changed", () => {
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocs(),
-		});
+	return { rowVirtualizer, virtualItems };
+}
+
+interface ActivityHeatmapProps {
+	columns: ActivityDay[][];
+	visibleMonthCounts: Map<string, number>;
+	maxCount: number;
+}
+
+function ActivityHeatmap({
+	columns,
+	visibleMonthCounts,
+	maxCount,
+}: ActivityHeatmapProps) {
+	return (
+		<div className="activityHeatmapBlock" aria-label="Recent note activity">
+			<div className="activityHeatmapMonths" aria-hidden="true">
+				{columns.map((column, index) => {
+					const first = column[0];
+					const previous = columns[index - 1]?.[0];
+					const monthKey = first ? format(first.date, "yyyy-MM") : "";
+					const show =
+						first &&
+						(!previous || first.date.getMonth() !== previous.date.getMonth()) &&
+						(visibleMonthCounts.get(monthKey) ?? 0) >= 15;
+					return (
+						<span key={first?.dateKey ?? index}>
+							{show && first ? monthLabel(first.date) : ""}
+						</span>
+					);
+				})}
+			</div>
+			<div className="activityHeatmapGrid">
+				{columns.map((column) => (
+					<div key={column[0]?.dateKey} className="activityHeatmapColumn">
+						{column.map((day) => {
+							const level = intensity(day, maxCount);
+							const tooltip = heatmapTooltip(day);
+							return (
+								<span
+									key={day.dateKey}
+									className="activityHeatmapCell"
+									data-level={level}
+									data-tooltip={tooltip}
+									title={tooltip}
+									aria-label={tooltip}
+									role="img"
+								/>
+							);
+						})}
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
+interface ActivityFeedProps {
+	feedDays: ActivityDay[];
+	virtualRows: ActivityVirtualRow[];
+	virtualItems: VirtualItem[];
+	rowVirtualizer: Virtualizer<HTMLElement, HTMLDivElement>;
+	itemAppearance: Record<string, FileTreeAppearance>;
+	selectedNotePath: string | null;
+	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	shouldReduceMotion: boolean;
+	onSelectNote: (notePath: string) => void;
+	onOpenFile: (relPath: string) => Promise<void>;
+}
+
+function ActivityFeed({
+	feedDays,
+	virtualRows,
+	virtualItems,
+	rowVirtualizer,
+	itemAppearance,
+	selectedNotePath,
+	taskSummariesByPath,
+	shouldReduceMotion,
+	onSelectNote,
+	onOpenFile,
+}: ActivityFeedProps) {
+	if (feedDays.length === 0) {
+		return (
+			<div className="activityFeed">
+				<div className="databaseLoadingState">
+					No activity yet. Create or edit a note to start the timeline.
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			className="activityFeed is-virtualized"
+			style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+		>
+			{virtualItems.map((virtualRow) => {
+				const row = virtualRows[virtualRow.index];
+				if (!row) return null;
+				return (
+					<div
+						key={row.id}
+						data-index={virtualRow.index}
+						ref={(node) => rowVirtualizer.measureElement(node)}
+						className="activityVirtualRow"
+						style={{ transform: `translateY(${virtualRow.start}px)` }}
+					>
+						{row.kind === "header" ? (
+							<ActivityDayHeaderRow day={row.day} />
+						) : (
+							<ActivityCardsRow
+								row={row}
+								itemAppearance={itemAppearance}
+								selectedNotePath={selectedNotePath}
+								taskSummariesByPath={taskSummariesByPath}
+								shouldReduceMotion={shouldReduceMotion}
+								onSelectNote={onSelectNote}
+								onOpenFile={onOpenFile}
+							/>
+						)}
+					</div>
+				);
+			})}
+		</div>
+	);
+}
+
+function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
+	return (
+		<section className="activityDayGroup activityDayHeaderRow">
+			<div className="activityDayRail" aria-hidden="true" />
+			<header className="activityDayHeader">
+				<div>
+					<h2>{dayLabel(day.date)}</h2>
+				</div>
+				<div className="activityDayCounts">
+					<span>
+						{day.notes.size} {day.notes.size === 1 ? "note" : "notes"}
+					</span>
+				</div>
+			</header>
+		</section>
+	);
+}
+
+interface ActivityCardsRowProps {
+	row: Extract<ActivityVirtualRow, { kind: "cards" }>;
+	itemAppearance: Record<string, FileTreeAppearance>;
+	selectedNotePath: string | null;
+	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	shouldReduceMotion: boolean;
+	onSelectNote: (notePath: string) => void;
+	onOpenFile: (relPath: string) => Promise<void>;
+}
+
+function ActivityCardsRow({
+	row,
+	itemAppearance,
+	selectedNotePath,
+	taskSummariesByPath,
+	shouldReduceMotion,
+	onSelectNote,
+	onOpenFile,
+}: ActivityCardsRowProps) {
+	return (
+		<section className="activityDayGroup activityDayCardsRow">
+			<div className="activityDayRail" aria-hidden="true" />
+			<div className="activityNoteGrid allDocsGrid">
+				{row.notes.map((item, noteIndex) => {
+					const absoluteNoteIndex = row.startIndex + noteIndex;
+					const cardProps = prepareAllDocsCardProps({
+						note: item.note,
+						index: absoluteNoteIndex,
+						sectionIndex: row.dayIndex,
+						selectedNotePath,
+						taskSummariesByPath,
+						selectNote: onSelectNote,
+						onOpenFile,
+					});
+					return (
+						<AllDocsCard
+							key={item.note.note_path}
+							{...cardProps}
+							noteAppearance={itemAppearance[item.note.note_path] ?? null}
+							shouldReduceMotion={shouldReduceMotion}
+							springPreset={springPresets.snappy}
+							TaskProgressComponent={TaskProgressIndicator}
+						/>
+					);
+				})}
+			</div>
+		</section>
+	);
+}
+
+export const ActivityTimelinePane = memo(function ActivityTimelinePane({
+	onOpenFile,
+}: ActivityTimelinePaneProps) {
+	const { itemAppearance } = useFileTreeContext();
+	const { dailyNotesFolder } = useUILayoutContext();
+	const shouldReduceMotion = useReducedMotion() ?? false;
+	const paneRef = useRef<HTMLElement>(null);
+	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const {
+		notesQuery,
+		taskSummariesByPath,
+		columns,
+		visibleMonthCounts,
+		maxCount,
+		feedDays,
+		recentNotesCount,
+	} = useActivityTimelineData(dailyNotesFolder);
+	const virtualRows = useActivityRows(feedDays);
+	const { rowVirtualizer, virtualItems } = useActivityVirtualization(
+		paneRef,
+		virtualRows,
+	);
+
+	useVirtualLoadMore({
+		hasMore: notesQuery.hasNextPage,
+		isLoading: notesQuery.isFetchingNextPage,
+		onLoadMore: notesQuery.fetchNextPage,
+		virtualItems,
+		totalItems: virtualRows.length,
+		remainingItems: 6,
 	});
 
 	if (notesQuery.isLoading) {
@@ -421,116 +677,23 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 					</div>
 				</div>
 			</header>
-			<div className="activityHeatmapBlock" aria-label="Recent note activity">
-				<div className="activityHeatmapMonths" aria-hidden="true">
-					{columns.map((column, index) => {
-						const first = column[0];
-						const previous = columns[index - 1]?.[0];
-						const monthKey = first ? format(first.date, "yyyy-MM") : "";
-						const show =
-							first &&
-							(!previous ||
-								first.date.getMonth() !== previous.date.getMonth()) &&
-							(visibleMonthCounts.get(monthKey) ?? 0) >= 15;
-						return (
-							<span key={first?.dateKey ?? index}>
-								{show && first ? monthLabel(first.date) : ""}
-							</span>
-						);
-					})}
-				</div>
-				<div className="activityHeatmapGrid">
-					{columns.map((column) => (
-						<div key={column[0]?.dateKey} className="activityHeatmapColumn">
-							{column.map((day) => {
-								const level = intensity(day, maxCount);
-								const tooltip = heatmapTooltip(day);
-								return (
-									<span
-										key={day.dateKey}
-										className="activityHeatmapCell"
-										data-level={level}
-										data-tooltip={tooltip}
-										title={tooltip}
-										aria-label={tooltip}
-										role="img"
-									/>
-								);
-							})}
-						</div>
-					))}
-				</div>
-			</div>
-			<div
-				className="activityFeed is-virtualized"
-				style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-			>
-				{feedDays.length === 0 ? (
-					<div className="databaseLoadingState">
-						No activity yet. Create or edit a note to start the timeline.
-					</div>
-				) : null}
-				{virtualItems.map((virtualRow) => {
-					const row = virtualRows[virtualRow.index];
-					if (!row) return null;
-					return (
-						<div
-							key={row.id}
-							data-index={virtualRow.index}
-							ref={(node) => rowVirtualizer.measureElement(node)}
-							className="activityVirtualRow"
-							style={{ transform: `translateY(${virtualRow.start}px)` }}
-						>
-							{row.kind === "header" ? (
-								<section className="activityDayGroup activityDayHeaderRow">
-									<div className="activityDayRail" aria-hidden="true" />
-									<header className="activityDayHeader">
-										<div>
-											<h2>{dayLabel(row.day.date)}</h2>
-										</div>
-										<div className="activityDayCounts">
-											<span>
-												{row.day.notes.size}{" "}
-												{row.day.notes.size === 1 ? "note" : "notes"}
-											</span>
-										</div>
-									</header>
-								</section>
-							) : (
-								<section className="activityDayGroup activityDayCardsRow">
-									<div className="activityDayRail" aria-hidden="true" />
-									<div className="activityNoteGrid allDocsGrid">
-										{row.notes.map((item, noteIndex) => {
-											const absoluteNoteIndex = row.startIndex + noteIndex;
-											const cardProps = prepareAllDocsCardProps({
-												note: item.note,
-												index: absoluteNoteIndex,
-												sectionIndex: row.dayIndex,
-												selectedNotePath,
-												taskSummariesByPath,
-												selectNote: setSelectedNotePath,
-												onOpenFile,
-											});
-											return (
-												<AllDocsCard
-													key={item.note.note_path}
-													{...cardProps}
-													noteAppearance={
-														itemAppearance[item.note.note_path] ?? null
-													}
-													shouldReduceMotion={shouldReduceMotion}
-													springPreset={springPresets.snappy}
-													TaskProgressComponent={TaskProgressIndicator}
-												/>
-											);
-										})}
-									</div>
-								</section>
-							)}
-						</div>
-					);
-				})}
-			</div>
+			<ActivityHeatmap
+				columns={columns}
+				visibleMonthCounts={visibleMonthCounts}
+				maxCount={maxCount}
+			/>
+			<ActivityFeed
+				feedDays={feedDays}
+				virtualRows={virtualRows}
+				virtualItems={virtualItems}
+				rowVirtualizer={rowVirtualizer}
+				itemAppearance={itemAppearance}
+				selectedNotePath={selectedNotePath}
+				taskSummariesByPath={taskSummariesByPath}
+				shouldReduceMotion={shouldReduceMotion}
+				onSelectNote={setSelectedNotePath}
+				onOpenFile={onOpenFile}
+			/>
 			{notesQuery.hasNextPage ? (
 				<button
 					type="button"

@@ -286,6 +286,13 @@ export function prefetchAllDocs(
 	});
 }
 
+export function prefetchAllDocsList(folderPrefix?: string | null) {
+	return queryClient.prefetchQuery({
+		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix),
+	});
+}
+
 export function getPrefetchedAllDocs(
 	folderPrefix?: string | null,
 	pageSize = ALL_DOCS_PAGE_SIZE,

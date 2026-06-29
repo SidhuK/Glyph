@@ -2,7 +2,7 @@
 	--activity-content-width: min(100%, 860px);
 	--activity-heatmap-content-width: min(100%, 1040px);
 	--activity-heatmap-cell: 14px;
-	--activity-heatmap-gap: 5px;
+	--activity-heatmap-gap: clamp(2px, 0.42vw, 5px);
 	--all-docs-card-min-width: 184px;
 	--all-docs-card-min-height: 184px;
 	--all-docs-card-aspect: 1 / 1;
@@ -67,9 +67,11 @@
 .activityHeatmapBlock {
 	display: flex;
 	width: var(--activity-heatmap-content-width);
+	max-width: 100%;
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
+	overflow: visible;
 	padding: 16px 0 20px;
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-light) 72%, transparent);
@@ -78,10 +80,9 @@
 .activityHeatmapMonths {
 	display: grid;
 	grid-auto-flow: column;
-	grid-template-columns: repeat(53, var(--activity-heatmap-cell));
+	grid-template-columns: repeat(53, minmax(0, 1fr));
 	gap: var(--activity-heatmap-gap);
-	width: max-content;
-	max-width: 100%;
+	width: 100%;
 	padding-left: 1px;
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.72);
@@ -97,18 +98,18 @@
 	position: relative;
 	display: grid;
 	grid-auto-flow: column;
-	grid-template-columns: repeat(53, var(--activity-heatmap-cell));
+	grid-template-columns: repeat(53, minmax(0, 1fr));
 	gap: var(--activity-heatmap-gap);
-	width: max-content;
-	max-width: 100%;
+	width: 100%;
 	overflow: visible;
 	padding: 1px 0 2px;
 }
 
 .activityHeatmapColumn {
 	display: grid;
-	grid-template-rows: repeat(7, var(--activity-heatmap-cell));
+	grid-template-rows: repeat(7, minmax(0, 1fr));
 	gap: var(--activity-heatmap-gap);
+	min-width: 0;
 }
 
 .activityHeatmapCell,
@@ -127,8 +128,9 @@
 .activityHeatmapCell {
 	position: relative;
 	display: block;
-	width: var(--activity-heatmap-cell);
-	height: var(--activity-heatmap-cell);
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1;
 	padding: 0;
 	cursor: help;
 	transition: background-color 120ms ease, border-color 120ms ease;
