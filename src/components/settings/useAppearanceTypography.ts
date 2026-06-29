@@ -3,6 +3,7 @@ import {
 	type SetStateAction,
 	useCallback,
 	useEffect,
+	useRef,
 	useState,
 } from "react";
 import {
@@ -19,6 +20,7 @@ import {
 	setUiFontSize,
 	setUiMonoFontFamily,
 } from "../../lib/settings";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	DEFAULT_FONT_FAMILY,
 	loadAvailableFonts,
@@ -51,6 +53,18 @@ function applyAndSetTypography(
 	applyUiTypography(next);
 }
 
+function getTypographyFromSettings(
+	settings: Awaited<ReturnType<typeof loadSettings>>,
+) {
+	return {
+		fontFamily: settings.ui.fontFamily,
+		editorFontFamily: settings.ui.editorFontFamily,
+		monoFontFamily: settings.ui.monoFontFamily,
+		uiFontSize: settings.ui.fontSize,
+		editorFontSize: settings.ui.editorFontSize,
+	};
+}
+
 interface UseAppearanceTypographyOptions {
 	setError: Dispatch<SetStateAction<string>>;
 }
@@ -72,6 +86,26 @@ export function useAppearanceTypography({
 	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useState<
 		string[]
 	>(["JetBrains Mono"]);
+	const typographyMutationRef = useRef(0);
+	const typographyRef = useRef<UiTypographyPreferences>({
+		fontFamily: DEFAULT_FONT_FAMILY,
+		editorFontFamily: DEFAULT_FONT_FAMILY,
+		monoFontFamily: "JetBrains Mono",
+		uiFontSize: 14,
+		editorFontSize: 16,
+	});
+
+	const applyTypographyState = useCallback((next: UiTypographyPreferences) => {
+		typographyRef.current = next;
+		applyAndSetTypography(
+			next,
+			setFontFamilyState,
+			setEditorFontFamilyState,
+			setMonoFontFamilyState,
+			setUiFontSizeState,
+			setEditorFontSizeState,
+		);
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -83,21 +117,8 @@ export function useAppearanceTypography({
 					loadAvailableMonospaceFonts(),
 				]);
 				if (cancelled) return;
-				const typography = {
-					fontFamily: settings.ui.fontFamily,
-					editorFontFamily: settings.ui.editorFontFamily,
-					monoFontFamily: settings.ui.monoFontFamily,
-					uiFontSize: settings.ui.fontSize,
-					editorFontSize: settings.ui.editorFontSize,
-				};
-				applyAndSetTypography(
-					typography,
-					setFontFamilyState,
-					setEditorFontFamilyState,
-					setMonoFontFamilyState,
-					setUiFontSizeState,
-					setEditorFontSizeState,
-				);
+				const typography = getTypographyFromSettings(settings);
+				applyTypographyState(typography);
 				setAvailableFonts(
 					includeSelectedFonts(fonts, [
 						settings.ui.fontFamily,
@@ -118,167 +139,140 @@ export function useAppearanceTypography({
 		return () => {
 			cancelled = true;
 		};
-	}, [setError]);
+	}, [applyTypographyState, setError]);
 
-	const restoreTypography = useCallback((previous: UiTypographyPreferences) => {
-		applyAndSetTypography(
-			previous,
-			setFontFamilyState,
-			setEditorFontFamilyState,
-			setMonoFontFamilyState,
-			setUiFontSizeState,
-			setEditorFontSizeState,
+	useTauriEvent("settings:updated", (payload) => {
+		const ui = payload.ui;
+		if (!ui) return;
+		const previous = typographyRef.current;
+		const next = {
+			fontFamily:
+				typeof ui.fontFamily === "string" ? ui.fontFamily : previous.fontFamily,
+			editorFontFamily:
+				typeof ui.editorFontFamily === "string"
+					? ui.editorFontFamily
+					: previous.editorFontFamily,
+			monoFontFamily:
+				typeof ui.monoFontFamily === "string"
+					? ui.monoFontFamily
+					: previous.monoFontFamily,
+			uiFontSize:
+				typeof ui.fontSize === "number" && Number.isFinite(ui.fontSize)
+					? ui.fontSize
+					: previous.uiFontSize,
+			editorFontSize:
+				typeof ui.editorFontSize === "number" &&
+				Number.isFinite(ui.editorFontSize)
+					? ui.editorFontSize
+					: previous.editorFontSize,
+		};
+		if (
+			next.fontFamily === previous.fontFamily &&
+			next.editorFontFamily === previous.editorFontFamily &&
+			next.monoFontFamily === previous.monoFontFamily &&
+			next.uiFontSize === previous.uiFontSize &&
+			next.editorFontSize === previous.editorFontSize
+		) {
+			return;
+		}
+		typographyMutationRef.current += 1;
+		applyTypographyState(next);
+		setAvailableFonts((fonts) =>
+			includeSelectedFonts(fonts, [next.fontFamily, next.editorFontFamily]),
 		);
-	}, []);
+		setAvailableMonospaceFonts((fonts) =>
+			fonts.includes(next.monoFontFamily)
+				? fonts
+				: [next.monoFontFamily, ...fonts],
+		);
+	});
 
-	const onFontFamilyChange = useCallback(
-		async (next: UiFontFamily) => {
+	const restoreTypography = useCallback(
+		(previous: UiTypographyPreferences) => {
+			applyTypographyState(previous);
+		},
+		[applyTypographyState],
+	);
+
+	const persistTypographyChange = useCallback(
+		async (
+			previous: UiTypographyPreferences,
+			next: UiTypographyPreferences,
+			persist: () => Promise<void>,
+		) => {
+			const mutationId = typographyMutationRef.current + 1;
+			typographyMutationRef.current = mutationId;
 			setError("");
-			const previous = {
-				fontFamily,
-				editorFontFamily,
-				monoFontFamily,
-				uiFontSize,
-				editorFontSize,
-			};
-			setFontFamilyState(next);
-			applyUiTypography({ ...previous, fontFamily: next });
+			applyTypographyState(next);
 			try {
-				await setUiFontFamily(next);
+				await persist();
 			} catch (e) {
+				if (typographyMutationRef.current !== mutationId) return;
 				restoreTypography(previous);
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[
-			editorFontFamily,
-			editorFontSize,
-			fontFamily,
-			monoFontFamily,
-			restoreTypography,
-			setError,
-			uiFontSize,
-		],
+		[applyTypographyState, restoreTypography, setError],
+	);
+
+	const onFontFamilyChange = useCallback(
+		async (next: UiFontFamily) => {
+			const previous = typographyRef.current;
+			await persistTypographyChange(
+				previous,
+				{ ...previous, fontFamily: next },
+				() => setUiFontFamily(next),
+			);
+		},
+		[persistTypographyChange],
 	);
 
 	const onEditorFontFamilyChange = useCallback(
 		async (next: UiFontFamily) => {
-			setError("");
-			const previous = {
-				fontFamily,
-				editorFontFamily,
-				monoFontFamily,
-				uiFontSize,
-				editorFontSize,
-			};
-			setEditorFontFamilyState(next);
-			applyUiTypography({ ...previous, editorFontFamily: next });
-			try {
-				await setUiEditorFontFamily(next);
-			} catch (e) {
-				restoreTypography(previous);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			const previous = typographyRef.current;
+			await persistTypographyChange(
+				previous,
+				{ ...previous, editorFontFamily: next },
+				() => setUiEditorFontFamily(next),
+			);
 		},
-		[
-			editorFontFamily,
-			editorFontSize,
-			fontFamily,
-			monoFontFamily,
-			restoreTypography,
-			setError,
-			uiFontSize,
-		],
+		[persistTypographyChange],
 	);
 
 	const onMonoFontFamilyChange = useCallback(
 		async (next: UiFontFamily) => {
-			setError("");
-			const previous = {
-				fontFamily,
-				editorFontFamily,
-				monoFontFamily,
-				uiFontSize,
-				editorFontSize,
-			};
-			setMonoFontFamilyState(next);
-			applyUiTypography({ ...previous, monoFontFamily: next });
-			try {
-				await setUiMonoFontFamily(next);
-			} catch (e) {
-				restoreTypography(previous);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			const previous = typographyRef.current;
+			await persistTypographyChange(
+				previous,
+				{ ...previous, monoFontFamily: next },
+				() => setUiMonoFontFamily(next),
+			);
 		},
-		[
-			editorFontFamily,
-			editorFontSize,
-			fontFamily,
-			monoFontFamily,
-			restoreTypography,
-			setError,
-			uiFontSize,
-		],
+		[persistTypographyChange],
 	);
 
 	const onUiFontSizeChange = useCallback(
 		async (next: UiFontSize) => {
-			setError("");
-			const previous = {
-				fontFamily,
-				editorFontFamily,
-				monoFontFamily,
-				uiFontSize,
-				editorFontSize,
-			};
-			setUiFontSizeState(next);
-			applyUiTypography({ ...previous, uiFontSize: next });
-			try {
-				await setUiFontSize(next);
-			} catch (e) {
-				restoreTypography(previous);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			const previous = typographyRef.current;
+			await persistTypographyChange(
+				previous,
+				{ ...previous, uiFontSize: next },
+				() => setUiFontSize(next),
+			);
 		},
-		[
-			editorFontFamily,
-			editorFontSize,
-			fontFamily,
-			monoFontFamily,
-			restoreTypography,
-			setError,
-			uiFontSize,
-		],
+		[persistTypographyChange],
 	);
 
 	const onEditorFontSizeChange = useCallback(
 		async (next: UiFontSize) => {
-			setError("");
-			const previous = {
-				fontFamily,
-				editorFontFamily,
-				monoFontFamily,
-				uiFontSize,
-				editorFontSize,
-			};
-			setEditorFontSizeState(next);
-			applyUiTypography({ ...previous, editorFontSize: next });
-			try {
-				await setUiEditorFontSize(next);
-			} catch (e) {
-				restoreTypography(previous);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			const previous = typographyRef.current;
+			await persistTypographyChange(
+				previous,
+				{ ...previous, editorFontSize: next },
+				() => setUiEditorFontSize(next),
+			);
 		},
-		[
-			editorFontFamily,
-			editorFontSize,
-			fontFamily,
-			monoFontFamily,
-			restoreTypography,
-			setError,
-			uiFontSize,
-		],
+		[persistTypographyChange],
 	);
 
 	return {
