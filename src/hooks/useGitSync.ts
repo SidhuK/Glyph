@@ -163,18 +163,27 @@ export function useGitSync({
 		autoSyncPromptSpaceRef.current = spacePath;
 
 		void (async () => {
+			const isCurrentPromptSpace = () =>
+				activeSpacePathRef.current === spacePath &&
+				statusSpaceRef.current === spacePath;
+			const resetPromptForSpace = () => {
+				if (autoSyncPromptSpaceRef.current === spacePath) {
+					autoSyncPromptSpaceRef.current = null;
+				}
+			};
 			try {
 				const enable = await promptForAutoSync(status);
-				if (
-					activeSpacePathRef.current !== spacePath ||
-					statusSpaceRef.current !== spacePath
-				) {
-					autoSyncPromptSpaceRef.current = null;
+				if (!isCurrentPromptSpace()) {
+					resetPromptForSpace();
 					return;
 				}
 				await completeAutoSyncPrompt(enable);
+				if (!isCurrentPromptSpace()) {
+					resetPromptForSpace();
+					return;
+				}
 				setStatus((current) =>
-					current
+					statusSpaceRef.current === spacePath && current
 						? {
 								...current,
 								enabled: enable,
@@ -183,7 +192,10 @@ export function useGitSync({
 						: current,
 				);
 			} catch (cause) {
-				autoSyncPromptSpaceRef.current = null;
+				resetPromptForSpace();
+				if (!isCurrentPromptSpace()) {
+					return;
+				}
 				setError(
 					cause instanceof Error
 						? cause.message

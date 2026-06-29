@@ -2,18 +2,23 @@ import type { GitSyncStatus } from "./tauri";
 import { invoke } from "./tauri";
 
 function redactRemoteUrl(remote: string): string {
+	const removeQueryAndFragment = (value: string) => value.replace(/[?#].*$/, "");
 	try {
 		if (remote.startsWith("git@")) {
-			return remote;
+			return removeQueryAndFragment(remote);
 		}
 		const url = new URL(remote);
 		if (url.username || url.password) {
 			url.username = "";
 			url.password = "";
 		}
+		url.search = "";
+		url.hash = "";
 		return url.toString();
 	} catch {
-		return remote.replace(/^([^:]+):\/\/[^@/]+@/, "$1://");
+		return removeQueryAndFragment(
+			remote.replace(/^([^:]+):\/\/[^@/]+@/, "$1://"),
+		);
 	}
 }
 
