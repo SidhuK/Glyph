@@ -20,14 +20,7 @@ import {
 	subDays,
 } from "date-fns";
 import { useReducedMotion } from "motion/react";
-import {
-	type RefObject,
-	memo,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -353,7 +346,7 @@ function useActivityRows(feedDays: ActivityDay[]): ActivityVirtualRow[] {
 }
 
 function useActivityVirtualization(
-	paneRef: RefObject<HTMLElement | null>,
+	paneElement: HTMLElement | null,
 	virtualRows: ActivityVirtualRow[],
 ) {
 	const [paneWidth, setPaneWidth] = useState(0);
@@ -383,23 +376,22 @@ function useActivityVirtualization(
 			const cardRows = Math.max(1, Math.ceil(noteCount / columnCount));
 			return cardRows * cardEstimate + 24;
 		},
-		getScrollElement: () => paneRef.current,
+		getScrollElement: () => paneElement,
 		overscan: 3,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 
 	useEffect(() => {
-		const pane = paneRef.current;
-		if (!pane) return;
+		if (!paneElement) return;
 		const observer = new ResizeObserver((entries) => {
 			const entry = entries[0];
 			if (!entry) return;
 			setPaneWidth(entry.contentRect.width);
 		});
-		observer.observe(pane);
-		setPaneWidth(pane.clientWidth);
+		observer.observe(paneElement);
+		setPaneWidth(paneElement.clientWidth);
 		return () => observer.disconnect();
-	}, [paneRef.current]);
+	}, [paneElement]);
 
 	return { rowVirtualizer, virtualItems };
 }
@@ -603,8 +595,11 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	const { itemAppearance } = useFileTreeContext();
 	const { dailyNotesFolder } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
-	const paneRef = useRef<HTMLElement>(null);
+	const [paneElement, setPaneElement] = useState<HTMLElement | null>(null);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const paneRef = useCallback((node: HTMLElement | null) => {
+		setPaneElement(node);
+	}, []);
 	const {
 		notesQuery,
 		taskSummariesByPath,
@@ -616,7 +611,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	} = useActivityTimelineData(dailyNotesFolder);
 	const virtualRows = useActivityRows(feedDays);
 	const { rowVirtualizer, virtualItems } = useActivityVirtualization(
-		paneRef,
+		paneElement,
 		virtualRows,
 	);
 

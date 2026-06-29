@@ -193,7 +193,7 @@ export function AllDocsCard({
 			type="button"
 			className="allDocsCard"
 			data-state={selected ? "selected" : undefined}
-			aria-label={`Select ${title}`}
+			aria-label={`Select ${title}. Press Enter to open.`}
 			aria-pressed={selected}
 			onClick={onSelect}
 			onMouseEnter={onPrefetch}
