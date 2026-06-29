@@ -14,6 +14,7 @@ function makeStatus(overrides: Partial<GitSyncStatus> = {}): GitSyncStatus {
 		branch: "main",
 		enabled: true,
 		paused: false,
+		auto_sync_prompted: true,
 		phase: "idle",
 		is_syncing: false,
 		interval_minutes: 10,
