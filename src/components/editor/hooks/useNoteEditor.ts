@@ -279,9 +279,14 @@ function snapshotFocusedSelection(
 	editor: NonNullable<ReturnType<typeof useEditor>> | null,
 	relPath: string,
 ): SelectionSnapshot | null {
-	if (!editor?.view.hasFocus()) return null;
-	const { from, to } = editor.state.selection;
-	return { from, relPath, to };
+	if (!editor || editor.isDestroyed) return null;
+	try {
+		if (!editor.view.hasFocus()) return null;
+		const { from, to } = editor.state.selection;
+		return { from, relPath, to };
+	} catch {
+		return null;
+	}
 }
 
 function restoreSelectionSnapshot(
