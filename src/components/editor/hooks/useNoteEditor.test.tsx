@@ -649,6 +649,60 @@ describe("useNoteEditor", () => {
 		expect(mockEditor.view.focus).toHaveBeenCalled();
 	});
 
+	it("does not crash when the editor view is unavailable during content replacement", async () => {
+		const onChange = vi.fn();
+		const editorWithoutMountedView = { ...mockEditor };
+		Object.defineProperty(editorWithoutMountedView, "view", {
+			get: () => {
+				throw new Error("view unavailable");
+			},
+		});
+		setActiveEditor(editorWithoutMountedView as typeof mockEditor);
+
+		await act(async () => {
+			root.render(<Harness markdown="first body" onChange={onChange} />);
+		});
+
+		await act(async () => {
+			root.render(<Harness markdown="changed body" onChange={onChange} />);
+		});
+
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
+			"changed body",
+			{
+				contentType: "markdown",
+			},
+		);
+	});
+
+	it("does not crash when the editor view is unavailable during cleanup", async () => {
+		const onChange = vi.fn();
+		const firstExtension = Extension.create({ name: "first-extension" });
+		const secondExtension = Extension.create({ name: "second-extension" });
+		const editorWithoutMountedView = { ...mockEditor };
+		Object.defineProperty(editorWithoutMountedView, "view", {
+			get: () => {
+				throw new Error("view unavailable");
+			},
+		});
+		setActiveEditor(editorWithoutMountedView as typeof mockEditor);
+
+		await act(async () => {
+			root.render(
+				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
+			);
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness
+					additionalExtensions={[secondExtension]}
+					onChange={onChange}
+				/>,
+			);
+		});
+	});
+
 	it("tracks colorful headings from settings and live updates", async () => {
 		const onChange = vi.fn();
 		const onState = vi.fn();
