@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { i18n } from "../../i18n";
 import {
 	type NotePreviewData,
 	loadNotePreviewFromPath,
@@ -53,7 +54,7 @@ export function useNotePreview(
 						data: {
 							status: "error",
 							relPath: path,
-							message: error instanceof Error ? error.message : String(error),
+							message: i18n.t("preview.loadError", { ns: "ui" }),
 						},
 					});
 				}

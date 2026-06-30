@@ -1,44 +1,46 @@
 {
 	"commandPalette": {
-		"title": "Paleta de comandos",
-		"searchCommands": "Buscar comandos",
-		"searchNotes": "Buscar notas...",
-		"noCommands": "Nenhum comando",
-		"general": "Geral",
-		"results": "{{count}} resultados",
-		"searching": "Buscando...",
-		"recentlyOpened": "Abertos recentemente",
-		"typeToSearch": "Digite para buscar suas notas...",
-		"taggedNotes": "Notas com etiquetas",
-		"notes": "Notas",
 		"content": "Conteúdo",
-		"noResults": "Nenhum resultado",
+		"filters": {
+			"tag": "Etiqueta",
+			"title": "Título"
+		},
 		"footer": {
+			"close": "Fechar",
+			"commands": "Comandos",
 			"navigate": "Navegar",
 			"openNote": "Abrir nota",
 			"runCommand": "Executar comando",
-			"commands": "Comandos",
-			"search": "Buscar",
-			"close": "Fechar"
+			"search": "Buscar"
 		},
-		"filters": {
-			"title": "Título",
-			"tag": "Etiqueta"
-		},
+		"general": "Geral",
+		"noCommands": "Nenhum comando",
+		"noResults": "Nenhum resultado",
+		"notes": "Notas",
+		"recentlyOpened": "Abertos recentemente",
 		"results_one": "{{count}} resultado",
+		"results_many": "{{count}} resultados",
 		"results_other": "{{count}} resultados",
-		"results_many": "{{count}} resultados"
+		"searchCommands": "Buscar comandos",
+		"searching": "Buscando...",
+		"searchNotes": "Buscar notas...",
+		"taggedNotes": "Notas com etiquetas",
+		"title": "Paleta de comandos",
+		"typeToSearch": "Digite para buscar suas notas..."
 	},
 	"commands": {
-		"moveDestination": "Destino da movimentação",
-		"settingsCategory": "Configurações > {{tab}}",
 		"openAnotherSpace": "Abrir outro espaço",
 		"openSpace": "Abrir espaço",
 		"pinCurrentFile": "Fixar arquivo atual",
-		"unpinCurrentFile": "Desafixar arquivo atual",
-		"goBack": "Voltar",
-		"createFolderErrorTitle": "Não foi possível criar a pasta",
-		"licensePageErrorTitle": "Não foi possível abrir a página de licença",
-		"tryAgain": "Tente novamente em instantes."
+		"unpinCurrentFile": "Desafixar arquivo atual"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "Este espaço está vinculado a um repositório Git em {{remoteLabel}}. Ativar a sincronização automática para confirmar e enviar alterações em um cronograma?",
+			"cancelLabel": "Agora não",
+			"okLabel": "Ativar sincronização automática",
+			"remoteFallback": "seu remoto",
+			"title": "Ativar sincronização Git?"
+		}
 	}
 }

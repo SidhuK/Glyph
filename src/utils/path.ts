@@ -74,7 +74,7 @@ export function isPreviewableNotePath(path: string): boolean {
 }
 
 export function displayNameFromPath(relPath: string): string {
-	const fileName = basename(relPath);
+	const fileName = basename(normalizeRelPath(relPath));
 	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
 	const withoutExt = fileName.replace(/\.[^./]+$/, "");
 	return withoutExt || fileName;

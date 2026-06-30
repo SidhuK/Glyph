@@ -9,7 +9,7 @@ import {
 } from "../markdown/detailsMarkdown";
 import {
 	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "../markdown/wikiLinkMarkdownBridge";
 import { createDetailsBlockContent } from "./detailsBlock";
 import { createEditorExtensions } from "./index";
@@ -180,7 +180,7 @@ Toggle content.
 
 </details>`;
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const detailsNode = json.content?.[0];
 
 		expect(detailsNode?.type).toBe("details");
@@ -199,7 +199,7 @@ Hidden paragraph.
 
 </details>`;
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const detailsNode = json.content?.[0];
 
 		expect(detailsNode?.type).toBe("details");
@@ -220,7 +220,7 @@ Second paragraph.
 
 </details>`;
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 		expect(output).toBe(input);
 	});
@@ -240,7 +240,7 @@ Second paragraph.
 		const inserted = editor
 			.chain()
 			.focus()
-			.insertContent(createDetailsBlockContent())
+			.insertContent(createDetailsBlockContent("Toggle title"))
 			.run();
 		expect(inserted).toBe(true);
 

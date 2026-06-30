@@ -30,12 +30,16 @@ function normalizeAnchor(anchor: string): string {
 export function withHeadingSlugs(
 	headings: readonly TOCHeading[],
 ): TOCHeading[] {
-	const counts = new Map<string, number>();
+	const usedSlugs = new Set<string>();
 	return headings.map((heading) => {
 		const base = slugifyHeading(heading.text);
-		const seen = counts.get(base) ?? 0;
-		counts.set(base, seen + 1);
-		const slug = seen === 0 ? base : `${base}-${seen}`;
+		let slug = base;
+		let suffix = 0;
+		while (usedSlugs.has(slug)) {
+			suffix += 1;
+			slug = `${base}-${suffix}`;
+		}
+		usedSlugs.add(slug);
 		return { ...heading, slug };
 	});
 }

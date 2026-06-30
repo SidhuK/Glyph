@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use serde::Serialize;
@@ -920,9 +920,34 @@ fn local_connections_tag_expansion_for_seed_nodes(
     ))
 }
 
-fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnections, String> {
+struct SpaceConnectionsNodeSeed {
+    id: String,
+    title: String,
+    link_count: u32,
+    tag_count: u32,
+}
+
+fn space_connections_for_conn(
+    conn: &rusqlite::Connection,
+    max_nodes: usize,
+    max_tags: usize,
+) -> Result<SpaceConnections, String> {
+    let total_notes = conn
+        .query_row("SELECT COUNT(*) FROM notes", [], |row| row.get::<_, i64>(0))
+        .map(|count| count as u32)
+        .map_err(|e| e.to_string())?;
+    let _truncated = total_notes as usize > max_nodes;
     let people_tag_like = format!("{PEOPLE_TAG_NAMESPACE}%");
-    let node_query = "WITH edge_counts AS (
+    let node_limit = max_nodes.max(1);
+    let node_order = if truncated {
+        "(COALESCE(edge_counts.link_count, 0) + COALESCE(tag_counts.tag_count, 0)) DESC,
+         n.title COLLATE NOCASE ASC,
+         n.id ASC"
+    } else {
+        "n.title COLLATE NOCASE ASC, n.id ASC"
+    };
+    let node_query = format!(
+        "WITH edge_counts AS (
             SELECT note_id, COUNT(*) AS link_count
             FROM (
                 SELECT l.from_id AS note_id
@@ -961,23 +986,24 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
          FROM notes n
          LEFT JOIN edge_counts ON edge_counts.note_id = n.id
          LEFT JOIN tag_counts ON tag_counts.note_id = n.id
-         ORDER BY n.title COLLATE NOCASE ASC, n.id ASC";
-    let mut node_stmt = conn.prepare(node_query).map_err(|e| e.to_string())?;
+         ORDER BY {node_order}
+         LIMIT ?2"
+    );
+    let mut node_stmt = conn.prepare(&node_query).map_err(|e| e.to_string())?;
     let mut node_rows = node_stmt
-        .query([&people_tag_like])
+        .query(rusqlite::params![people_tag_like, node_limit as i64])
         .map_err(|e| e.to_string())?;
-    let mut nodes = Vec::new();
+    let mut node_seeds = Vec::new();
     while let Some(row) = node_rows.next().map_err(|e| e.to_string())? {
-        let link_count = row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32;
-        let tag_count = row.get::<_, i64>(3).map_err(|e| e.to_string())? as u32;
-        nodes.push(SpaceConnectionsNode {
+        node_seeds.push(SpaceConnectionsNodeSeed {
             id: row.get(0).map_err(|e| e.to_string())?,
             title: row.get(1).map_err(|e| e.to_string())?,
-            is_isolated: link_count == 0 && tag_count == 0,
+            link_count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
+            tag_count: row.get::<_, i64>(3).map_err(|e| e.to_string())? as u32,
         });
     }
 
-    if nodes.is_empty() {
+    if node_seeds.is_empty() {
         return Ok(SpaceConnections {
             nodes: Vec::new(),
             edges: Vec::new(),
@@ -986,7 +1012,18 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let edge_query = "SELECT DISTINCT from_id, to_id, kind
+    let selected_ids = node_seeds
+        .iter()
+        .map(|node| node.id.as_str())
+        .collect::<Vec<_>>();
+    let selected_id_values = std::iter::repeat("(?)")
+        .take(selected_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let edge_query = format!(
+        "WITH selected_ids(id) AS (VALUES {selected_id_values})
+         SELECT DISTINCT from_id, to_id, kind
          FROM (
             SELECT l.from_id, l.to_id, 'link' AS kind
             FROM links l
@@ -1000,9 +1037,15 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
             JOIN notes target ON target.id = r.to_id
             WHERE r.to_id IS NOT NULL AND r.from_id <> r.to_id
          )
-         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC";
-    let mut edge_stmt = conn.prepare(edge_query).map_err(|e| e.to_string())?;
-    let mut edge_rows = edge_stmt.query([]).map_err(|e| e.to_string())?;
+         WHERE from_id <> to_id
+           AND from_id IN (SELECT id FROM selected_ids)
+           AND to_id IN (SELECT id FROM selected_ids)
+         ORDER BY from_id COLLATE NOCASE ASC, to_id COLLATE NOCASE ASC, kind ASC"
+    );
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    let mut edge_rows = edge_stmt
+        .query(rusqlite::params_from_iter(selected_ids.iter().copied()))
+        .map_err(|e| e.to_string())?;
     let mut edges = Vec::new();
     while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
         let from_id: String = row.get(0).map_err(|e| e.to_string())?;
@@ -1019,46 +1062,107 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
         });
     }
 
-    let tag_query = "SELECT t.tag, COUNT(DISTINCT t.note_id) AS note_count
-         FROM tags t
-         JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1
-           AND t.tag NOT LIKE ?1
-         GROUP BY t.tag
-         ORDER BY t.tag COLLATE NOCASE ASC";
-    let mut tag_stmt = conn.prepare(tag_query).map_err(|e| e.to_string())?;
+    let tag_query = format!(
+        "WITH selected_ids(id) AS (VALUES {selected_id_values})
+         SELECT note_id, tag
+         FROM tags
+         WHERE is_explicit = 1
+           AND tag NOT LIKE ?
+           AND note_id IN (SELECT id FROM selected_ids)
+         ORDER BY tag COLLATE NOCASE ASC, note_id COLLATE NOCASE ASC"
+    );
+    let mut tag_stmt = conn.prepare(&tag_query).map_err(|e| e.to_string())?;
+    let tag_params = selected_ids
+        .iter()
+        .map(|id| (*id).to_string())
+        .chain(std::iter::once(people_tag_like.clone()));
     let mut tag_rows = tag_stmt
-        .query([&people_tag_like])
+        .query(rusqlite::params_from_iter(tag_params))
         .map_err(|e| e.to_string())?;
-    let mut tags = Vec::new();
+    let mut note_ids_by_tag = HashMap::<String, HashSet<String>>::new();
     while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
-        let tag: String = row.get(0).map_err(|e| e.to_string())?;
-        tags.push(SpaceConnectionsTagNode {
-            id: local_connections_tag_id(&tag),
-            title: format!("#{tag}"),
-            note_count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
-        });
-    }
-
-    let tag_edge_query = "SELECT t.note_id, t.tag
-         FROM tags t
-         JOIN notes n ON n.id = t.note_id
-         WHERE t.is_explicit = 1
-           AND t.tag NOT LIKE ?1
-         ORDER BY t.tag COLLATE NOCASE ASC, t.note_id COLLATE NOCASE ASC";
-    let mut tag_edge_stmt = conn.prepare(tag_edge_query).map_err(|e| e.to_string())?;
-    let mut tag_edge_rows = tag_edge_stmt
-        .query([&people_tag_like])
-        .map_err(|e| e.to_string())?;
-    let mut tag_edges = Vec::new();
-    while let Some(row) = tag_edge_rows.next().map_err(|e| e.to_string())? {
         let note_id: String = row.get(0).map_err(|e| e.to_string())?;
         let tag: String = row.get(1).map_err(|e| e.to_string())?;
-        tag_edges.push(SpaceConnectionsTagEdge {
-            tag_id: local_connections_tag_id(&tag),
-            note_id,
-        });
+        note_ids_by_tag.entry(tag).or_default().insert(note_id);
     }
+
+    let mut tags = Vec::new();
+    let mut tag_edges = Vec::new();
+    if max_tags > 0 && !note_ids_by_tag.is_empty() {
+        let mut selected_tags = note_ids_by_tag
+            .iter()
+            .map(|(tag, note_ids)| (tag.clone(), note_ids.len() as u32))
+            .collect::<Vec<_>>();
+        selected_tags.sort_by(|(left_tag, left_count), (right_tag, right_count)| {
+            right_count
+                .cmp(left_count)
+                .then_with(|| {
+                    left_tag
+                        .to_ascii_lowercase()
+                        .cmp(&right_tag.to_ascii_lowercase())
+                })
+                .then_with(|| left_tag.cmp(right_tag))
+        });
+        selected_tags.truncate(max_tags);
+
+        for (tag, note_count) in &selected_tags {
+            tags.push(SpaceConnectionsTagNode {
+                id: local_connections_tag_id(tag),
+                title: format!("#{tag}"),
+                note_count: *note_count,
+            });
+        }
+
+        if !selected_tags.is_empty() {
+            let mut selected_tag_edges = selected_tags
+                .iter()
+                .flat_map(|(tag, _)| {
+                    note_ids_by_tag[tag]
+                        .iter()
+                        .map(|note_id| (tag.clone(), note_id.clone()))
+                })
+                .collect::<Vec<_>>();
+            selected_tag_edges.sort_by(|(left_tag, left_note_id), (right_tag, right_note_id)| {
+                left_tag
+                    .to_ascii_lowercase()
+                    .cmp(&right_tag.to_ascii_lowercase())
+                    .then_with(|| left_tag.cmp(right_tag))
+                    .then_with(|| {
+                        left_note_id
+                            .to_ascii_lowercase()
+                            .cmp(&right_note_id.to_ascii_lowercase())
+                    })
+                    .then_with(|| left_note_id.cmp(right_note_id))
+            });
+            for (tag, note_id) in selected_tag_edges {
+                tag_edges.push(SpaceConnectionsTagEdge {
+                    tag_id: local_connections_tag_id(&tag),
+                    note_id,
+                });
+            }
+        }
+    }
+
+    let mut returned_tag_edge_count_by_note = HashMap::<String, u32>::new();
+    for edge in &tag_edges {
+        *returned_tag_edge_count_by_note
+            .entry(edge.note_id.clone())
+            .or_insert(0) += 1;
+    }
+    let nodes = node_seeds
+        .into_iter()
+        .map(|node| {
+            let returned_tag_edge_count = returned_tag_edge_count_by_note
+                .get(&node.id)
+                .copied()
+                .unwrap_or(0);
+            SpaceConnectionsNode {
+                id: node.id,
+                title: node.title,
+                is_isolated: node.link_count == 0 && returned_tag_edge_count == 0,
+            }
+        })
+        .collect::<Vec<_>>();
 
     Ok(SpaceConnections {
         nodes,
@@ -1087,11 +1191,15 @@ pub async fn note_local_connections(
 pub async fn space_connections(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
+    max_nodes: Option<u32>,
+    max_tags: Option<u32>,
 ) -> Result<SpaceConnections, String> {
     let root = state.root_for_window(&window)?;
+    let max_nodes = max_nodes.unwrap_or(1000).clamp(1, 10_000) as usize;
+    let max_tags = max_tags.unwrap_or(250).clamp(0, 1000) as usize;
     tauri::async_runtime::spawn_blocking(move || -> Result<SpaceConnections, String> {
         let conn = open_db(&root)?;
-        space_connections_for_conn(&conn)
+        space_connections_for_conn(&conn, max_nodes, max_tags)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -1335,7 +1443,7 @@ mod space_connections_tests {
             .unwrap();
         }
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.nodes.len(), 4);
         assert_eq!(graph.edges.len(), 1);
         assert_eq!(graph.edges[0].kind, SpaceConnectionKind::Link);
@@ -1389,7 +1497,7 @@ mod space_connections_tests {
             .unwrap();
         }
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         let node_ids = graph
             .nodes
             .iter()
@@ -1409,7 +1517,48 @@ mod space_connections_tests {
     }
 
     #[test]
-    fn space_connections_excludes_edges_with_missing_endpoints() {
+    fn space_connections_truncates_to_highest_degree_nodes() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/high.md", "High"),
+            ("notes/medium.md", "Medium"),
+            ("notes/low.md", "Low"),
+            ("notes/zero.md", "Zero"),
+        ] {
+            insert_note(&conn, id, title);
+        }
+        for (from_id, to_id) in [
+            ("notes/high.md", "notes/medium.md"),
+            ("notes/high.md", "notes/low.md"),
+            ("notes/medium.md", "notes/high.md"),
+        ] {
+            conn.execute(
+                "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+                rusqlite::params![from_id, to_id],
+            )
+            .unwrap();
+        }
+        for tag in ["one", "two"] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES('notes/high.md', ?, 1)",
+                [tag],
+            )
+            .unwrap();
+        }
+
+        let graph = space_connections_for_conn(&conn, 2, 10).unwrap();
+        let node_ids = graph
+            .nodes
+            .iter()
+            .map(|node| node.id.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(node_ids, vec!["notes/high.md", "notes/medium.md"]);
+        assert!(!node_ids.contains(&"notes/zero.md"));
+    }
+
+    #[test]
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/source.md", "Source");
@@ -1420,7 +1569,7 @@ mod space_connections_tests {
         )
         .unwrap();
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert!(graph.edges.is_empty());
         assert!(graph.nodes[0].is_isolated);
     }
@@ -1443,7 +1592,7 @@ mod space_connections_tests {
             .unwrap();
         }
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.tags.len(), 1);
         assert_eq!(graph.tags[0].title, "#work");
         assert_eq!(graph.tag_edges.len(), 1);
@@ -1463,7 +1612,7 @@ mod space_connections_tests {
             .unwrap();
         }
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.tags.len(), 2);
         assert_eq!(graph.tag_edges.len(), 2);
     }
@@ -1482,7 +1631,7 @@ mod space_connections_tests {
         )
         .unwrap();
 
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 10, 10).unwrap();
         assert_eq!(graph.edges.len(), 1);
         assert_eq!(graph.edges[0].kind, SpaceConnectionKind::Relationship);
         assert_eq!(graph.edges[0].from_id, "notes/source.md");
@@ -1534,7 +1683,7 @@ mod space_connections_tests {
         tx.commit().unwrap();
 
         let started = Instant::now();
-        let graph = space_connections_for_conn(&conn).unwrap();
+        let graph = space_connections_for_conn(&conn, 2_000, 500).unwrap();
         let elapsed = started.elapsed();
         println!("space_connections synthetic scale duration: {elapsed:?}");
 

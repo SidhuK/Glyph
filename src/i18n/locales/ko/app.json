@@ -1,42 +1,52 @@
 {
 	"commandPalette": {
-		"title": "명령 팔레트",
-		"searchCommands": "명령 검색",
-		"searchNotes": "노트 검색...",
-		"noCommands": "명령 없음",
-		"general": "일반",
-		"results": "결과 {{count}}개",
-		"searching": "검색 중...",
-		"recentlyOpened": "최근 열림",
-		"typeToSearch": "노트를 검색하려면 입력하세요...",
-		"taggedNotes": "태그된 노트",
-		"notes": "노트",
 		"content": "내용",
-		"noResults": "결과 없음",
+		"filters": {
+			"tag": "태그",
+			"title": "제목"
+		},
 		"footer": {
+			"close": "닫기",
+			"commands": "명령",
 			"navigate": "탐색",
 			"openNote": "노트 열기",
 			"runCommand": "명령 실행",
-			"commands": "명령",
-			"search": "검색",
-			"close": "닫기"
+			"search": "검색"
 		},
-		"filters": {
-			"title": "제목",
-			"tag": "태그"
-		},
-		"results_other": "결과 {{count}}개"
+		"general": "일반",
+		"noCommands": "명령 없음",
+		"noResults": "결과 없음",
+		"notes": "노트",
+		"recentlyOpened": "최근 열림",
+		"results": "결과 {{count}}개",
+		"results_one": "{{count}}개 결과",
+		"results_other": "결과 {{count}}개",
+		"searchCommands": "명령 검색",
+		"searchNotes": "노트 검색...",
+		"searching": "검색 중...",
+		"taggedNotes": "태그된 노트",
+		"title": "명령 팔레트",
+		"typeToSearch": "노트를 검색하려면 입력하세요..."
 	},
 	"commands": {
+		"createFolderErrorTitle": "폴더를 만들 수 없음",
+		"goBack": "뒤로",
+		"licensePageErrorTitle": "라이선스 페이지를 열 수 없음",
 		"moveDestination": "이동 대상",
-		"settingsCategory": "설정 > {{tab}}",
 		"openAnotherSpace": "다른 스페이스 열기",
 		"openSpace": "스페이스 열기",
 		"pinCurrentFile": "현재 파일 고정",
-		"unpinCurrentFile": "현재 파일 고정 해제",
-		"goBack": "뒤로",
-		"createFolderErrorTitle": "폴더를 만들 수 없음",
-		"licensePageErrorTitle": "라이선스 페이지를 열 수 없음",
-		"tryAgain": "잠시 후 다시 시도하세요."
+		"settingsCategory": "설정 > {{tab}}",
+		"tryAgain": "잠시 후 다시 시도하세요.",
+		"unpinCurrentFile": "현재 파일 고정 해제"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "이 스페이스는 {{remoteLabel}}의 Git 저장소에 연결되어 있습니다. 일정에 따라 변경 사항을 커밋하고 푸시하는 자동 동기화를 사용하시겠습니까?",
+			"cancelLabel": "나중에",
+			"okLabel": "자동 동기화 사용",
+			"remoteFallback": "원격",
+			"title": "Git 동기화를 사용하시겠습니까?"
+		}
 	}
 }

@@ -1,23 +1,13 @@
 {
 	"actions": {
-		"close": "닫기",
 		"disable": "비활성화",
-		"reset": "재설정",
-		"resetAll": "모두 재설정"
+		"reset": "재설정"
 	},
 	"language": {
-		"system": "시스템",
-		"en": "영어",
-		"es": "스페인어",
-		"de": "독일어",
-		"fr": "프랑스어",
-		"pt-BR": "포르투갈어(브라질)",
-		"ja": "일본어",
-		"ko": "한국어"
+		"system": "시스템"
 	},
 	"status": {
-		"disabled": "비활성화됨",
-		"loading": "로딩 중..."
+		"disabled": "비활성화됨"
 	},
 	"untitled": "제목 없음"
 }

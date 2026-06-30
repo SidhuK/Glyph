@@ -703,9 +703,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onKeyDownCapture={
-				showEditorChrome ? noteFind.handleEditorKeyDownCapture : undefined
-			}
+			onKeyDownCapture={noteFind.handleEditorKeyDownCapture}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{showEditorChrome && noteFind.findOpen ? (

@@ -1,4 +1,5 @@
 import { join } from "@tauri-apps/api/path";
+import { i18n } from "../i18n";
 import type { NativeContextMenuItem } from "./nativeContextMenu";
 import { toast } from "./toast";
 
@@ -11,33 +12,39 @@ async function absoluteSpacePath(
 	relPath: string,
 ): Promise<string> {
 	if (!spacePath) {
-		throw new Error("No space is open.");
+		throw new Error(i18n.t("pathClipboard.noSpaceOpen", { ns: "ui" }));
 	}
 	return relPath ? await join(spacePath, relPath) : spacePath;
 }
 
 export async function copyPathToClipboard(
 	path: string,
-	successMessage = "Copied path.",
+	successMessage = i18n.t("pathClipboard.copiedPath", { ns: "ui" }),
 ): Promise<void> {
 	try {
 		const clipboard = navigator.clipboard;
 		if (!clipboard?.writeText) {
-			throw new Error("Clipboard is not available.");
+			throw new Error(
+				i18n.t("pathClipboard.clipboardUnavailable", { ns: "ui" }),
+			);
 		}
 		await clipboard.writeText(path);
 		toast.success(successMessage);
 	} catch (error) {
 		const message =
-			error instanceof Error ? error.message : "Could not copy path.";
-		toast.error("Could not copy path", { description: message });
+			error instanceof Error
+				? error.message
+				: i18n.t("pathClipboard.copyFailedDescription", { ns: "ui" });
+		toast.error(i18n.t("pathClipboard.copyFailedTitle", { ns: "ui" }), {
+			description: message,
+		});
 	}
 }
 
 export async function copyRelativePath(relPath: string): Promise<void> {
 	await copyPathToClipboard(
 		relativePathLabel(relPath),
-		"Copied relative path.",
+		i18n.t("pathClipboard.copiedRelativePath", { ns: "ui" }),
 	);
 }
 
@@ -48,12 +55,16 @@ export async function copyAbsolutePath(
 	try {
 		await copyPathToClipboard(
 			await absoluteSpacePath(spacePath, relPath),
-			"Copied absolute path.",
+			i18n.t("pathClipboard.copiedAbsolutePath", { ns: "ui" }),
 		);
 	} catch (error) {
 		const message =
-			error instanceof Error ? error.message : "Could not copy path.";
-		toast.error("Could not copy path", { description: message });
+			error instanceof Error
+				? error.message
+				: i18n.t("pathClipboard.copyFailedDescription", { ns: "ui" });
+		toast.error(i18n.t("pathClipboard.copyFailedTitle", { ns: "ui" }), {
+			description: message,
+		});
 	}
 }
 
@@ -63,11 +74,11 @@ export function buildPathCopyMenuItems(
 ): NativeContextMenuItem[] {
 	return [
 		{
-			label: "Copy Relative Path",
+			label: i18n.t("pathClipboard.copyRelativePath", { ns: "ui" }),
 			action: () => void copyRelativePath(relPath),
 		},
 		{
-			label: "Copy Absolute Path",
+			label: i18n.t("pathClipboard.copyAbsolutePath", { ns: "ui" }),
 			action: () => void copyAbsolutePath(spacePath, relPath),
 		},
 	];

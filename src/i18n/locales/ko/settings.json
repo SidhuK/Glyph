@@ -1,47 +1,224 @@
 {
-	"tabs": {
-		"general": "일반",
-		"appearance": "모양",
-		"shortcuts": "단축키",
-		"ai": "Glyph AI",
-		"space": "스페이스",
-		"git": "Git",
-		"advanced": "고급",
-		"about": "정보"
+	"about": {
+		"discord": "Discord",
+		"links": "정보 링크",
+		"madeBy": "제작",
+		"privacy": "개인정보",
+		"taglineLine1": "당신의 생각에는",
+		"taglineLine2": "서버가 아닌 집이 필요합니다.",
+		"terms": "약관",
+		"updates": {
+			"alphaReleases": "알파 릴리스",
+			"alphaReleasesDescription": "알파 빌드에 조기 액세스합니다. 불안정할 수 있으므로 미완성 릴리스 테스트에 문제가 없을 때만 켜세요.",
+			"appUpdates": "앱 업데이트",
+			"appUpdatesDescription": "즉시 확인하고 최신 공개 버전을 백그라운드에서 다운로드합니다. 설치는 선택할 때만 진행됩니다.",
+			"buyOfficialLicense": "공식 라이선스 구매",
+			"canAutoUpdate": "Glyph를 종료하지 않고 새 릴리스를 확인하고 설치합니다.",
+			"changelog": "변경 로그",
+			"changelogDescription": "게시된 Glyph 변경 로그를 브라우저에서 엽니다.",
+			"checkFailed": "업데이트 확인 실패",
+			"checkForUpdates": "업데이트 확인",
+			"checking": "확인 중…",
+			"checkingLicense": "이 빌드가 자동 업데이트를 사용할 수 있는지 확인 중입니다.",
+			"communityBuild": "커뮤니티 빌드는 수동으로 업데이트합니다.",
+			"communityBuildDescription": "Glyph 커뮤니티 및 오픈 소스 버전을 사용 중입니다. 공식 라이선스를 구매해 Glyph 개발을 지원하고 최신 업데이트를 자동으로 받으세요.",
+			"communityBuildLabel": "커뮤니티 빌드",
+			"installUpdate": "업데이트 설치",
+			"installVersion": "{{version}} 설치",
+			"latestVersion": "이미 최신 버전입니다.",
+			"licenseStatus": "라이선스 상태",
+			"licenseStatusDescription": "Glyph가 이 창에서 현재 라이선스 상태를 확인하지 못해 지금은 업데이트 작업을 사용할 수 없습니다.",
+			"licenseUnknown": "Glyph가 이 빌드의 자동 업데이트 사용 가능 여부를 확인하지 못했습니다.",
+			"saveReleaseChannelFailed": "릴리스 채널 저장 실패",
+			"statusDescription": "이 창의 최신 업데이터 활동.",
+			"statusLabel": "상태",
+			"title": "업데이트",
+			"unknownLicenseStatus": "알 수 없는 라이선스 상태",
+			"updateReady": "v{{version}} 다운로드가 완료되어 설치할 준비가 되었습니다. 업데이트 버튼을 클릭해 설치하세요.",
+			"viewChangelog": "변경 로그 보기"
+		},
+		"website": "웹사이트"
 	},
-	"groups": {
-		"workspace": "작업 공간",
-		"features": "기능",
-		"system": "시스템"
+	"actions": {
+		"back": "뒤로"
 	},
-	"search": {
-		"placeholder": "설정 검색",
-		"clear": "설정 검색 지우기",
-		"empty": "일치하는 설정 없음"
-	},
-	"general": {
-		"language": {
-			"title": "언어",
-			"label": "앱 언어",
-			"description": "Glyph 인터페이스에 사용할 언어를 선택합니다.",
-			"systemDescription": "Glyph가 지원하면 운영체제 언어를 사용하고, 아니면 영어를 사용합니다."
+	"advanced": {
+		"ai": {
+			"description": "AI 어시스턴트의 기본 동작을 제어합니다.",
+			"title": "AI",
+			"toolsAccess": "AI 채팅이 도구에 접근 가능",
+			"toolsAccessDescription": "켜면 AI가 도구로 생성 및 작업을 수행할 수 있습니다. 끄면 채팅 전용 모드입니다."
+		},
+		"app": {
+			"classicAllNotes": "클래식 모든 노트 그리드",
+			"classicAllNotesDescription": "모든 노트를 활동 타임라인 대신 간단한 그리드로 엽니다.",
+			"description": "사이드바와 작업 공간 UI에 대한 전역 앱 수준 제어입니다.",
+			"folderFileCounts": "폴더 파일 수 표시",
+			"folderFileCountsDescription": "파일 트리의 각 폴더 행 끝에 재귀적 파일 합계를 표시합니다.",
+			"folioMode": "Folio 모드",
+			"folioModeDescription": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",
+			"title": "앱"
+		},
+		"database": {
+			"columnColor": "데이터베이스 열 색상 표시",
+			"columnColorDescription": "전체 열 색조를 전환하면서 레인 필과 태그 색상을 유지합니다.",
+			"description": "Glyph 전체에서 데이터베이스 표시 방식을 제어합니다.",
+			"title": "데이터베이스"
+		},
+		"editor": {
+			"beautifulTags": "Beautiful Tags",
+			"beautifulTagsDescription": "태그용 실험적 Beautiful Tags 표시를 활성화합니다.",
+			"collapsibleHeadings": "접을 수 있는 제목",
+			"collapsibleHeadingsDescription": "편집기와 미리보기에서 노트 제목에 접기 토글을 표시합니다.",
+			"colorfulHeadings": "컬러 제목",
+			"colorfulHeadingsDescription": "노트 편집 시 H1–H6에 서로 다른 내장 색을 사용합니다.",
+			"description": "Glyph 내 편집 동작과 노트 구조를 제어합니다.",
+			"editorWidth": "편집기 너비",
+			"editorWidthDescription": "컴팩트는 줄을 짧게, 편안함은 조금 더 넓게, 넓게는 편집기 전체 너비를 사용합니다.",
+			"editorWidthModes": {
+				"comfortable": "편안함",
+				"compact": "컴팩트",
+				"wide": "넓게"
+			},
+			"peopleMentionsAsTags": "사람 멘션을 태그로 표시",
+			"peopleMentionsAsTagsDescription": "활성화하면 독립 @멘션이 인덱싱되어 사이드바와 검색에서 사람으로 표시됩니다.",
+			"showFrontmatter": "편집기에서 frontmatter 표시",
+			"showFrontmatterDescription": "편집 중 노트 상단에 YAML frontmatter를 표시합니다. 끄면 frontmatter는 인덱싱과 데이터베이스에서 계속 사용할 수 있습니다.",
+			"tableOfContents": "목차",
+			"tableOfContentsDescription": "각 노트에 떠 있는 목차를 표시합니다.",
+			"title": "편집기",
+			"vimHelp": {
+				"ariaLabel": "Vim 키 바인딩 도움말",
+				"insertMode": "insert는 일반 입력 모드입니다. 입력하면 텍스트가 나타납니다.",
+				"normalMode": "normal은 명령 모드입니다. 키로 이동하거나 편집하며 글자를 입력하지 않습니다.",
+				"title": "Vim 키 바인딩"
+			},
+			"vimMode": "Vim 모드",
+			"vimModeDescription": "의미를 모르면 절대 켜지 마세요."
 		}
 	},
-	"shortcuts": {
-		"title": "단축키 사용자화",
-		"searchPlaceholder": "동작, 카테고리 또는 단축키 검색",
-		"help": "단축키를 클릭한 뒤 사용할 키를 누르세요. 단축키는 자동 저장되며 Cmd, Ctrl 또는 Option과 다른 키가 필요합니다.",
-		"tipsLabel": "단축키 팁",
-		"escapeCancels": "Esc로 취소",
-		"resetRestoresDefault": "재설정하면 기본값 복원",
-		"pressShortcut": "단축키 입력...",
-		"errors": {
-			"disable": "단축키를 비활성화하지 못했습니다.",
-			"reset": "단축키를 재설정하지 못했습니다.",
-			"resetAll": "단축키를 재설정하지 못했습니다.",
-			"save": "단축키를 저장하지 못했습니다.",
-			"invalid": "잘못된 단축키입니다.",
-			"conflict": "{{shortcut}}은(는) 이미 {{action}}에서 사용 중입니다."
+	"ai": {
+		"apiKey": {
+			"active": "활성",
+			"description": "Glyph가 사용하는 보안 비밀 저장소에 로컬로 저장됩니다.",
+			"keyDescription": "공급자 키를 붙여넣어 로컬에 저장하거나 현재 저장된 비밀을 지웁니다.",
+			"missing": "없음",
+			"placeholder": "키 붙여넣기...",
+			"saved": "API 키 저장됨",
+			"setKey": "키 설정",
+			"title": "API 키",
+			"unknown": "알 수 없음",
+			"updateKey": "키 업데이트"
+		},
+		"availability": {
+			"configuration": "구성",
+			"configurationDescription": "AI를 다시 켜서 공급자, 모델, 계정 액세스를 관리합니다.",
+			"description": "Glyph 전체에서 AI 도구를 켜거나 끕니다.",
+			"features": "AI 기능",
+			"featuresDescription": "끄면 AI 패널과 명령 팔레트 AI 동작이 숨겨집니다.",
+			"hiddenUntilEnabled": "AI 기능이 활성화될 때까지 AI 구성은 숨겨집니다.",
+			"title": "사용 가능 여부"
+		},
+		"codex": {
+			"authentication": "인증",
+			"authenticationDescription": "이 ChatGPT 세션의 현재 인증 방식.",
+			"description": "연결 상태를 확인하고, 로그인하고, Codex 사용 한도를 검토합니다.",
+			"disconnect": "연결 해제",
+			"identity": "ID",
+			"identityDescription": "Glyph가 현재 Codex에 사용 중인 연결된 계정.",
+			"notConnected": "연결되지 않음",
+			"rateLimits": "사용 한도",
+			"rateLimitsDescription": "이 카운터는 연결된 계정의 남은 용량을 보여줍니다.",
+			"remaining": "남음",
+			"remainingPercent": "{{label}} 남음",
+			"resetsIn": "재설정까지",
+			"signIn": "ChatGPT로 로그인",
+			"title": "ChatGPT 계정",
+			"weekly": "주간",
+			"window": "기간"
+		},
+		"modelCombobox": {
+			"connecting": "연결 중...",
+			"models_one": "모델 {{count}}개",
+			"models_other": "모델 {{count}}개",
+			"noModels": "사용 가능한 모델 없음",
+			"retry": "다시 시도",
+			"saveApiKeyHint": "이 공급자의 모델을 불러오려면 API 키를 저장하세요.",
+			"selectModel": "모델 선택..."
+		},
+		"provider": {
+			"allowLocalNetwork": "로컬 네트워크 허용",
+			"allowLocalNetworkCompat": "localhost 또는 사설 네트워크의 http:// 엔드포인트를 사용하려면 활성화하세요(예: LM Studio, vLLM).",
+			"allowLocalNetworkLlama": "localhost 또는 사설 네트워크 llama.cpp 엔드포인트를 사용하려면 활성화하세요.",
+			"baseUrl": "기본 URL",
+			"baseUrlCompat": "사용자 지정 OpenAI 호환 공급자에만 필요합니다.",
+			"baseUrlLlama": "로컬 llama.cpp 서버의 기본값은 http://localhost:8080/v1 입니다.",
+			"description": "서비스, 모델, 고급 연결 필드를 선택합니다. 공급자 변경 시 해당 공급자의 저장된 설정으로 전환되며 다른 편집은 자동 저장됩니다.",
+			"model": "모델",
+			"modelDescription": "자격 증명이 허용하면 Glyph가 선택한 공급자의 사용 가능한 모델을 가져옵니다.",
+			"providers": {
+				"amp": "Amp",
+				"anthropic": "Anthropic",
+				"claude_code": "Claude Code",
+				"codex_chatgpt": "Codex",
+				"gemini": "Google",
+				"llama_cpp": "llama.cpp",
+				"ollama": "Ollama",
+				"openai": "OpenAI",
+				"openai_compat": "OpenAI compatible",
+				"opencode": "OpenCode",
+				"openrouter": "OpenRouter",
+				"pi": "PI"
+			},
+			"reasoningLevel": "추론 수준",
+			"reasoningLevelDescription": "현재 모델이 effort 수준을 제공할 때 사용 가능합니다.",
+			"reasoningManualHint": "이 모델은 추론 옵션을 게시하지 않았습니다. effort를 수동으로 입력하세요.",
+			"reasoningPlaceholder": "예: low, medium, high",
+			"service": "서비스",
+			"serviceDescription": "공급자 구성 간 전환.",
+			"title": "공급자"
+		}
+	},
+	"appearance": {
+		"accent": {
+			"accentColor": "강조색",
+			"descriptionBoth": "기본 밝은 테마와 어두운 테마에서 강조, 포커스 링, 강조 표시에 사용할 색을 선택합니다.",
+			"descriptionDark": "기본 어두운 테마에서 강조, 포커스 링, 강조 표시에 사용할 색을 선택합니다.",
+			"descriptionLight": "기본 밝은 테마에서 강조, 포커스 링, 강조 표시에 사용할 색을 선택합니다.",
+			"palette": "팔레트",
+			"paletteDescription": "작업 공간에 가장 잘 맞는 강조색을 미리 보고 선택합니다.",
+			"title": "강조색"
+		},
+		"theme": {
+			"darkTheme": "어두운 테마",
+			"description": "밝은 테마와 어두운 테마 패밀리를 조합합니다.",
+			"lightTheme": "밝은 테마",
+			"modes": {
+				"dark": "어둡게",
+				"light": "밝게",
+				"system": "시스템"
+			},
+			"pickPaletteDark": "어두운 모드에서 Glyph가 사용할 팔레트를 선택합니다.",
+			"pickPaletteLight": "밝은 모드에서 Glyph가 사용할 팔레트를 선택합니다.",
+			"selectTheme": "테마 선택",
+			"themeMode": "테마 모드",
+			"title": "테마",
+			"translucentApp": "반투명 앱"
+		},
+		"typography": {
+			"description": "인터페이스 글꼴, 코드 스타일, 읽기 크기를 각각 조정합니다.",
+			"editorFont": "편집기 글꼴",
+			"editorFontDescription": "인라인 코드와 코드 블록 외 일반 노트 텍스트에 사용됩니다.",
+			"editorFontSize": "편집기 글꼴 크기",
+			"editorFontSizeDescription": "노트 편집기, Markdown 미리보기, 원시 텍스트 편집의 읽기 크기를 조정합니다.",
+			"fontSizeValue": "{{label}} 값",
+			"interfaceFont": "인터페이스 글꼴",
+			"interfaceFontDescription": "Glyph의 탐색, 설정 및 대부분의 UI 텍스트에 사용됩니다.",
+			"monospaceFont": "고정폭 글꼴",
+			"monospaceFontDescription": "Markdown 소스, 인라인 코드, 개발자용 화면에 사용됩니다.",
+			"title": "타이포그래피",
+			"uiFontSize": "UI 글꼴 크기",
+			"uiFontSizeDescription": "메뉴, 패널, 컨트롤, 설정에 사용되는 기본 크기를 조정합니다."
 		}
 	},
 	"categories": {
@@ -53,5 +230,223 @@
 		"ai": "AI",
 		"editor": "편집기",
 		"settings": "설정"
+	},
+	"common": {
+		"browse": "찾아보기",
+		"clear": "지우기",
+		"folder": "폴더",
+		"none": "없음",
+		"notConfigured": "구성되지 않음",
+		"save": "저장",
+		"status": "상태"
+	},
+	"errors": {
+		"loadAppInfo": "앱 정보를 불러오지 못했습니다",
+		"loadSettings": "설정을 불러오지 못했습니다",
+		"saveSettings": "설정을 저장하지 못했습니다"
+	},
+	"footer": {
+		"community": {
+			"action": "공식 라이선스 구매",
+			"body": "공식 라이선스로 프로젝트를 지원하면 자동 업데이트와 공식 빌드를 받을 수 있습니다.",
+			"eyebrow": "커뮤니티 빌드",
+			"title": "Glyph를 직접 다운로드하고 빌드해 주셔서 감사합니다."
+		},
+		"earlyAccess": {
+			"action": "피드백 보내기",
+			"body": "Glyph는 활발히 발전하고 있어 여기저기 거친 부분이 있을 수 있습니다. 이상한 점이 있으면 꼭 알려 주세요.",
+			"eyebrow": "아직 얼리 액세스 중",
+			"title": "Glyph를 함께 만들어 주세요"
+		}
+	},
+	"general": {
+		"language": {
+			"description": "Glyph 인터페이스에 사용할 언어를 선택합니다.",
+			"label": "앱 언어",
+			"systemDescription": "Glyph가 지원하면 운영체제 언어를 사용하고, 아니면 영어를 사용합니다.",
+			"title": "언어"
+		}
+	},
+	"git": {
+		"conflicts": {
+			"description": "로컬과 원격 편집이 충돌할 때 Glyph가 우선할 쪽을 선택합니다.",
+			"localWins": "로컬 우선",
+			"policy": "정책",
+			"policyAriaLabel": "충돌 정책",
+			"policyDescription": "Glyph는 충돌을 자동으로 해결합니다.",
+			"remoteWins": "원격 우선",
+			"title": "충돌 해결"
+		},
+		"connection": {
+			"availability": "Git 사용 가능 여부",
+			"availabilityDescription": "Glyph는 시스템 git 바이너리와 기존 Git 자격 증명을 사용합니다.",
+			"branch": "브랜치",
+			"branchDescription": "Glyph는 스페이스당 하나의 브랜치를 동기화합니다.",
+			"description": "열린 스페이스가 이미 저장소일 때 Glyph는 Git을 자동으로 사용합니다.",
+			"howItWorks": "작동 방식",
+			"installed": "설치됨",
+			"missing": "없음",
+			"openGitFolder": "Git이 이미 초기화된 폴더를 엽니다.",
+			"repoState": "저장소 상태",
+			"repoStateDescription": "Glyph는 현재 스페이스를 정확히 루트로 하는 저장소만 지원합니다.",
+			"title": "연결"
+		},
+		"connectionHelp": {
+			"configured": "Glyph는 이 스페이스 루트에서 찾은 Git 저장소를 자동으로 사용합니다.",
+			"default": "열린 스페이스 루트에 .git 저장소가 이미 있으면 Git Sync를 자동으로 사용할 수 있습니다.",
+			"installGit": "저장소 기반 스페이스에서 Git Sync를 사용하려면 Git을 설치하세요.",
+			"needsRemote": "Glyph가 여기서 저장소를 찾았지만 동기화를 시작하려면 origin 원격이 아직 필요합니다.",
+			"nestedRepo": "이 스페이스는 더 큰 Git 저장소 안에 있습니다. Glyph는 열린 스페이스를 정확히 루트로 하는 저장소만 지원합니다."
+		},
+		"content": {
+			"description": "동기화 커밋에 Glyph가 포함할 스페이스 콘텐츠를 선택합니다.",
+			"includeAttachments": "첨부 파일 포함",
+			"includeAttachmentsOther": "첨부 파일만 필터링하는 기능은 첨부 파일이 특정 폴더를 사용할 때만 작동합니다. 다른 모드에서는 첨부 파일이 더 넓은 비 Markdown 파일 설정을 따릅니다.",
+			"includeAttachmentsSpecific": "구성된 첨부 파일 폴더의 파일을 동기화합니다.",
+			"includeNonMarkdown": "비 Markdown 파일 포함",
+			"includeNonMarkdownDescription": "끄면 Glyph는 Markdown과 명시적으로 포함된 폴더로 동기화를 제한합니다.",
+			"includeTemplates": "템플릿 포함",
+			"includeTemplatesDescription": "현재 템플릿 폴더와 내용을 동기화합니다.",
+			"title": "콘텐츠"
+		},
+		"presentation": {
+			"attentionHeadline": "Git Sync에 주의 필요",
+			"installGitHeadline": "동기화를 사용하려면 Git 설치",
+			"manualHeadline": "수동 동기화만",
+			"pausedHeadline": "자동 동기화 일시 중지됨",
+			"readyHeadline": "Git Sync 준비 완료",
+			"repoFoundHeadline": "저장소 감지됨, 아직 동기화 준비 안 됨",
+			"unavailable": "Git Sync 사용 불가",
+			"unsupportedHeadline": "이 스페이스는 다른 저장소 안에 있습니다"
+		},
+		"repoState": {
+			"gitNotInstalled": "Git 미설치",
+			"nestedUnsupported": "중첩 저장소 미지원",
+			"noRepoAtRoot": "스페이스 루트에 저장소 없음",
+			"repoDetected": "Git 저장소 감지됨"
+		},
+		"sync": {
+			"actions": "작업",
+			"actionsDescription": "설정에서 동기화를 실행하고 여기서 최신 동기화 상태를 확인합니다.",
+			"automatic": "자동 동기화",
+			"automaticDescription": "스페이스를 열 때와 선택한 간격으로 실행됩니다.",
+			"description": "자동 동기화를 제어하고 언제든 수동 동기화를 실행합니다.",
+			"interval": "간격",
+			"intervalAriaLabel": "Git 동기화 간격",
+			"intervalDescription": "Glyph가 예약 동기화를 실행하는 빈도.",
+			"intervals": {
+				"5": "5분",
+				"10": "10분",
+				"30": "30분",
+				"60": "60분"
+			},
+			"resumeAutoSync": "자동 동기화 재개",
+			"syncNow": "지금 동기화",
+			"title": "동기화"
+		}
+	},
+	"groups": {
+		"workspace": "작업 공간",
+		"features": "기능",
+		"system": "시스템"
+	},
+	"search": {
+		"clear": "설정 검색 지우기",
+		"empty": "일치하는 설정 없음",
+		"placeholder": "설정 검색"
+	},
+	"shortcuts": {
+		"errors": {
+			"conflict": "{{shortcut}}은(는) 이미 {{action}}에서 사용 중입니다.",
+			"disable": "단축키를 비활성화하지 못했습니다.",
+			"invalid": "잘못된 단축키입니다.",
+			"reset": "단축키를 재설정하지 못했습니다.",
+			"resetAll": "단축키를 재설정하지 못했습니다.",
+			"save": "단축키를 저장하지 못했습니다."
+		},
+		"escapeCancels": "Esc로 취소",
+		"help": "단축키를 클릭한 뒤 사용할 키를 누르세요. 단축키는 자동 저장되며 Cmd, Ctrl 또는 Option과 다른 키가 필요합니다.",
+		"pressShortcut": "단축키 입력...",
+		"resetRestoresDefault": "재설정하면 기본값 복원",
+		"searchPlaceholder": "동작, 카테고리 또는 단축키 검색",
+		"tipsLabel": "단축키 팁",
+		"title": "단축키 사용자화"
+	},
+	"space": {
+		"attachments": {
+			"description": "현재 스페이스 내에서 노트 첨부 파일 저장 위치를 선택합니다.",
+			"helpNoteFolder": "첨부된 노트 옆에 저장됩니다.",
+			"helpSpaceRoot": "스페이스 최상위에 저장됩니다.",
+			"helpSpecificFolder": "모든 첨부 파일은 하나의 폴더에 들어갑니다.",
+			"location": "위치",
+			"locationAriaLabel": "첨부 파일 위치",
+			"locationDescription": "노트에 붙여넣은 이미지와 파일을 저장할 위치.",
+			"modes": {
+				"noteFolder": "노트와 같은 폴더",
+				"spaceRoot": "메인 스페이스 폴더",
+				"specificFolder": "특정 폴더"
+			},
+			"resetFolder": "첨부 파일 폴더 재설정",
+			"title": "첨부 파일"
+		},
+		"dailyNotes": {
+			"clearFolder": "데일리 노트 폴더 지우기",
+			"description": "현재 스페이스 내에서 새 데일리 노트를 만들 위치를 선택합니다.",
+			"folderDescription": "Glyph는 데일리 노트를 활성 스페이스 기준으로 저장합니다.",
+			"title": "데일리 노트"
+		},
+		"errors": {
+			"clearFolder": "폴더를 지우지 못했습니다",
+			"folderInsideSpace": "선택한 폴더는 현재 스페이스 안에 있어야 합니다.",
+			"noSpaceOpen": "현재 열린 스페이스가 없습니다.",
+			"resetFolder": "폴더를 재설정하지 못했습니다",
+			"resetQuickNotesFolder": "빠른 노트 폴더를 재설정하지 못했습니다",
+			"selectFolder": "폴더를 선택하지 못했습니다",
+			"selectQuickNotesFolder": "빠른 노트 폴더를 선택하지 못했습니다",
+			"updateSetting": "설정을 업데이트하지 못했습니다"
+		},
+		"quickNotes": {
+			"folderDescription": "새 빠른 노트는 이 폴더의 오늘 노트에 추가됩니다.",
+			"resetFolder": "빠른 노트 폴더 재설정",
+			"title": "빠른 노트"
+		},
+		"searchIndex": {
+			"description": "검색 결과가 불완전하거나 오래되었거나 누락된 경우 인덱스를 다시 구축합니다.",
+			"noSpace": "선택된 스페이스가 없습니다.",
+			"openSpaceFirst": "인덱스를 다시 구축하려면 먼저 스페이스를 여세요.",
+			"ready": "인덱스가 준비되었습니다.",
+			"rebuild": "재구축",
+			"rebuildComplete": "인덱스 재구축이 완료되었습니다.",
+			"rebuilding": "재구축 중...",
+			"statusDescription": "노트나 파일을 크게 변경한 뒤 검색 결과가 오래된 것 같을 때 사용하세요.",
+			"title": "검색 인덱스"
+		}
+	},
+	"tabs": {
+		"general": "일반",
+		"appearance": "모양",
+		"shortcuts": "단축키",
+		"ai": "Glyph AI",
+		"space": "스페이스",
+		"git": "Git",
+		"advanced": "고급",
+		"about": "정보"
+	},
+	"templates": {
+		"clearFolder": "템플릿 폴더 지우기",
+		"defaultDailyTemplate": "기본 데일리 노트 템플릿",
+		"errors": {
+			"clearDailyTemplate": "데일리 노트 템플릿을 지우지 못했습니다",
+			"clearFolder": "템플릿 폴더를 지우지 못했습니다",
+			"loadSettings": "템플릿 설정을 불러오지 못했습니다",
+			"loadTemplates": "템플릿을 불러오지 못했습니다",
+			"selectFolder": "템플릿 폴더를 선택하지 못했습니다",
+			"updateDailyTemplate": "데일리 노트 템플릿을 업데이트하지 못했습니다"
+		},
+		"summary_one": "템플릿 {{count}}개 발견",
+		"summary_other": "템플릿 {{count}}개 발견",
+		"templateFolder": "템플릿 폴더",
+		"templateFolderDescription": "Markdown 템플릿이 있는 현재 스페이스 내 폴더를 선택합니다.",
+		"title": "템플릿"
 	}
 }

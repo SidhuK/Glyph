@@ -12,11 +12,15 @@ export function useFileTreeCreateFolderScroll(
 		};
 	}, []);
 
+	const requestTokenRef = useRef(0);
+
 	return useCallback(
 		async (dirPath: string) => {
+			const requestToken = ++requestTokenRef.current;
 			cancelScrollRef.current?.();
 			cancelScrollRef.current = null;
 			const createdPath = await onRequestCreateFolder(dirPath);
+			if (requestTokenRef.current !== requestToken) return null;
 			if (!createdPath) return null;
 			cancelScrollRef.current = scheduleScrollFileTreePathIntoView(
 				createdPath,

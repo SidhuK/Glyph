@@ -381,6 +381,14 @@
 		"underline": {
 			"label": "Sublinhado",
 			"description": "Alterna sublinhado na seleção atual."
+		},
+		"copy-active-file-relative-path": {
+			"label": "Copiar caminho relativo do arquivo atual",
+			"description": "Copia o caminho relativo do arquivo atual."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "Copiar caminho absoluto do arquivo atual",
+			"description": "Copia o caminho absoluto do arquivo atual."
 		}
 	}
 }

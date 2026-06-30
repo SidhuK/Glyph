@@ -381,6 +381,14 @@
 		"underline": {
 			"label": "밑줄",
 			"description": "현재 선택 영역의 밑줄 서식을 전환합니다."
+		},
+		"copy-active-file-relative-path": {
+			"label": "현재 파일의 상대 경로 복사",
+			"description": "현재 파일의 상대 경로를 복사합니다."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "현재 파일의 절대 경로 복사",
+			"description": "현재 파일의 절대 경로를 복사합니다."
 		}
 	}
 }

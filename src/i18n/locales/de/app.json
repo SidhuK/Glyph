@@ -1,43 +1,45 @@
 {
 	"commandPalette": {
-		"title": "Befehlspalette",
-		"searchCommands": "Befehle suchen",
-		"searchNotes": "Notizen suchen...",
-		"noCommands": "Keine Befehle",
-		"general": "Allgemein",
-		"results": "{{count}} Ergebnisse",
-		"searching": "Sucht...",
-		"recentlyOpened": "Zuletzt geöffnet",
-		"typeToSearch": "Tippen, um Ihre Notizen zu durchsuchen...",
-		"taggedNotes": "Notizen mit Schlagwort",
-		"notes": "Notizen",
 		"content": "Inhalt",
-		"noResults": "Keine Ergebnisse",
+		"filters": {
+			"tag": "Schlagwort",
+			"title": "Titel"
+		},
 		"footer": {
+			"close": "Schließen",
+			"commands": "Befehle",
 			"navigate": "Navigieren",
 			"openNote": "Notiz öffnen",
 			"runCommand": "Befehl ausführen",
-			"commands": "Befehle",
-			"search": "Suche",
-			"close": "Schließen"
+			"search": "Suche"
 		},
-		"filters": {
-			"title": "Titel",
-			"tag": "Schlagwort"
-		},
+		"general": "Allgemein",
+		"noCommands": "Keine Befehle",
+		"noResults": "Keine Ergebnisse",
+		"notes": "Notizen",
+		"recentlyOpened": "Zuletzt geöffnet",
 		"results_one": "{{count}} Ergebnis",
-		"results_other": "{{count}} Ergebnisse"
+		"results_other": "{{count}} Ergebnisse",
+		"searchCommands": "Befehle suchen",
+		"searching": "Sucht...",
+		"searchNotes": "Notizen suchen...",
+		"taggedNotes": "Notizen mit Schlagwort",
+		"title": "Befehlspalette",
+		"typeToSearch": "Tippen, um Ihre Notizen zu durchsuchen..."
 	},
 	"commands": {
-		"moveDestination": "Zielordner",
-		"settingsCategory": "Einstellungen > {{tab}}",
 		"openAnotherSpace": "Anderen Space öffnen",
 		"openSpace": "Space öffnen",
 		"pinCurrentFile": "Aktuelle Datei anheften",
-		"unpinCurrentFile": "Aktuelle Datei lösen",
-		"goBack": "Zurück",
-		"createFolderErrorTitle": "Ordner konnte nicht erstellt werden",
-		"licensePageErrorTitle": "Lizenzseite konnte nicht geöffnet werden",
-		"tryAgain": "Versuchen Sie es gleich erneut."
+		"unpinCurrentFile": "Aktuelle Datei lösen"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "Dieser Space ist mit einem Git-Repository unter {{remoteLabel}} verknüpft. Automatische Synchronisation aktivieren, um Änderungen nach einem Zeitplan zu committen und zu pushen?",
+			"cancelLabel": "Nicht jetzt",
+			"okLabel": "Automatische Synchronisation aktivieren",
+			"remoteFallback": "dem Remote",
+			"title": "Git-Sync aktivieren?"
+		}
 	}
 }

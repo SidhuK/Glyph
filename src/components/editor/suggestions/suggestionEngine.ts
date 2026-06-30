@@ -130,6 +130,14 @@ export function useInputSuggestionEngine<T>({
 
 	useEffect(() => {
 		const input = inputRef.current;
+		if (!input) return;
+		const handleBlur = () => close();
+		input.addEventListener("blur", handleBlur);
+		return () => input.removeEventListener("blur", handleBlur);
+	}, [close, inputRef]);
+
+	useEffect(() => {
+		const input = inputRef.current;
 		if (!input || document.activeElement !== input) return;
 		refresh(value, input.selectionStart);
 	}, [inputRef, refresh, value]);

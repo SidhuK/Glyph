@@ -69,7 +69,7 @@ export function DatabaseTagPicker({
 	label,
 	description,
 	placeholder = "Choose a tag",
-	emptyLabel = "No matching tags found.",
+	emptyLabel,
 }: DatabaseTagPickerProps) {
 	const { tags } = useFileTreeContext();
 	const [open, setOpen] = useState(false);

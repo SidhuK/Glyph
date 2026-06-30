@@ -418,6 +418,26 @@
 			"allowInEditable": true,
 			"commandPalette": true
 		},
+		"copy-active-file-relative-path": {
+			"id": "copy-active-file-relative-path",
+			"label": "Copy current file relative path",
+			"description": "Copy the relative path of the current file.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"copy-active-file-absolute-path": {
+			"id": "copy-active-file-absolute-path",
+			"label": "Copy current file absolute path",
+			"description": "Copy the absolute path of the current file.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"create-from-template": {
 			"id": "create-from-template",
 			"label": "Create From Template",

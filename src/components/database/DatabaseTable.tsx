@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { createDatabaseRowGroups } from "../../lib/database/board";
 import { databaseCellValueFromRow } from "../../lib/database/config";
@@ -27,6 +28,7 @@ import {
 } from "../ui/shadcn/table";
 import { DatabaseCell } from "./DatabaseCell";
 import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
+import { localizeBoardLaneLabel } from "./databaseViewI18n";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -171,6 +173,7 @@ export function DatabaseTable({
 	isLoadingMoreRows = false,
 	onLoadMoreRows,
 }: DatabaseTableProps) {
+	const { t } = useTranslation("ui");
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const tableContainerRef = useRef<HTMLDivElement>(null);
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
@@ -280,8 +283,14 @@ export function DatabaseTable({
 	const resizingInfo = table.getState().columnSizingInfo;
 	const activeResizingColumnId = resizingInfo.isResizingColumn;
 	const rowGroups = useMemo(
-		() => createDatabaseRowGroups(rows, groupColumn),
-		[rows, groupColumn],
+		() =>
+			createDatabaseRowGroups(rows, groupColumn).map((group) => ({
+				...group,
+				label: groupColumn
+					? localizeBoardLaneLabel(groupColumn, group.id, t)
+					: group.label,
+			})),
+		[rows, groupColumn, t],
 	);
 	const displayRows = table.getRowModel().rows;
 	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;

@@ -2,7 +2,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { describe, expect, it } from "vitest";
 import {
 	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "../markdown/wikiLinkMarkdownBridge";
 import { createEditorExtensions } from "./index";
 import { createGlyphMathExtensions } from "./math/markdownMath";
@@ -44,7 +44,7 @@ describe("smart Markdown paste integration", () => {
 			"See [[Roadmap]] and [docs](https://example.com/docs).",
 		].join("\n");
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 
 		expect(output).toContain("- [x] Ship smart paste");
@@ -73,7 +73,7 @@ describe("smart Markdown paste integration", () => {
 			"`$notMath$`",
 		].join("\n");
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 
 		expect(output).toContain("$E = mc^2$");
@@ -95,12 +95,12 @@ describe("smart Markdown paste integration", () => {
 		const initial = `Equation: ${formula}`;
 
 		const firstPass = postprocessMarkdownFromEditor(
-			manager.serialize(manager.parse(preprocessMarkdownForEditor(initial))),
+			manager.serialize(manager.parse(preprocessMarkdownForParsing(initial))),
 		);
 		const editedInRaw = ` ${firstPass}`;
 		const secondPass = postprocessMarkdownFromEditor(
 			manager.serialize(
-				manager.parse(preprocessMarkdownForEditor(editedInRaw)),
+				manager.parse(preprocessMarkdownForParsing(editedInRaw)),
 			),
 		);
 

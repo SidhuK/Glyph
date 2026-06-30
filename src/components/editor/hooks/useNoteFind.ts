@@ -30,8 +30,7 @@ interface UseNoteFindOptions {
 // This function is used to check if the primary find shortcut is pressed
 function isPrimaryFindShortcut(event: ReactKeyboardEvent | KeyboardEvent) {
 	return (
-		event.metaKey &&
-		!event.ctrlKey &&
+		(event.metaKey || event.ctrlKey) &&
 		!event.altKey &&
 		!event.shiftKey &&
 		event.key.toLowerCase() === "f"

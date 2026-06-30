@@ -7,7 +7,7 @@ import { useLayoutEffect, useRef } from "react";
 interface LatexSourceEditorProps {
 	autoFocus?: boolean;
 	multiline: boolean;
-	onApply: () => void;
+	onApply: (value: string) => void;
 	onCancel: () => void;
 	onChange: (value: string) => void;
 	value: string;
@@ -22,6 +22,7 @@ export function LatexSourceEditor({
 	value,
 }: LatexSourceEditorProps) {
 	const hostRef = useRef<HTMLDivElement | null>(null);
+	const viewRef = useRef<EditorView | null>(null);
 	const initialValueRef = useRef(value);
 	const onApplyRef = useRef(onApply);
 	const onCancelRef = useRef(onCancel);
@@ -69,7 +70,7 @@ export function LatexSourceEditor({
 						{
 							key: "Mod-Enter",
 							run: () => {
-								onApplyRef.current();
+								onApplyRef.current(viewRef.current?.state.doc.toString() ?? "");
 								return true;
 							},
 						},
@@ -86,8 +87,12 @@ export function LatexSourceEditor({
 				],
 			}),
 		});
+		viewRef.current = view;
 		if (autoFocus) window.requestAnimationFrame(() => view.focus());
-		return () => view.destroy();
+		return () => {
+			viewRef.current = null;
+			view.destroy();
+		};
 	}, [autoFocus]);
 
 	return (

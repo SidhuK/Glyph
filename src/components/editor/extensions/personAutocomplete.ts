@@ -100,6 +100,7 @@ export const PersonAutocomplete = Extension.create({
 						menuClassName: "wikiLinkSuggestionMenu",
 						lockEditorScroll: false,
 						resetSelectionOnUpdate: true,
+						pluginKey: PERSON_SUGGESTION_KEY,
 						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";

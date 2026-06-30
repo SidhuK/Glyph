@@ -1,42 +1,52 @@
 {
 	"commandPalette": {
-		"title": "コマンドパレット",
-		"searchCommands": "コマンドを検索",
-		"searchNotes": "ノートを検索...",
-		"noCommands": "コマンドがありません",
-		"general": "一般",
-		"results": "{{count}} 件の結果",
-		"searching": "検索中...",
-		"recentlyOpened": "最近開いた項目",
-		"typeToSearch": "入力してノートを検索...",
-		"taggedNotes": "タグ付きノート",
-		"notes": "ノート",
 		"content": "内容",
-		"noResults": "結果がありません",
+		"filters": {
+			"tag": "タグ",
+			"title": "タイトル"
+		},
 		"footer": {
+			"close": "閉じる",
+			"commands": "コマンド",
 			"navigate": "移動",
 			"openNote": "ノートを開く",
 			"runCommand": "コマンドを実行",
-			"commands": "コマンド",
-			"search": "検索",
-			"close": "閉じる"
+			"search": "検索"
 		},
-		"filters": {
-			"title": "タイトル",
-			"tag": "タグ"
-		},
-		"results_other": "{{count}} 件の結果"
+		"general": "一般",
+		"noCommands": "コマンドがありません",
+		"noResults": "結果がありません",
+		"notes": "ノート",
+		"recentlyOpened": "最近開いた項目",
+		"results": "{{count}} 件の結果",
+		"results_one": "{{count}} 件の結果",
+		"results_other": "{{count}} 件の結果",
+		"searchCommands": "コマンドを検索",
+		"searchNotes": "ノートを検索...",
+		"searching": "検索中...",
+		"taggedNotes": "タグ付きノート",
+		"title": "コマンドパレット",
+		"typeToSearch": "入力してノートを検索..."
 	},
 	"commands": {
+		"createFolderErrorTitle": "フォルダを作成できませんでした",
+		"goBack": "戻る",
+		"licensePageErrorTitle": "ライセンスページを開けませんでした",
 		"moveDestination": "移動先",
-		"settingsCategory": "設定 > {{tab}}",
 		"openAnotherSpace": "別のスペースを開く",
 		"openSpace": "スペースを開く",
 		"pinCurrentFile": "現在のファイルをピン留め",
-		"unpinCurrentFile": "現在のファイルのピン留めを解除",
-		"goBack": "戻る",
-		"createFolderErrorTitle": "フォルダを作成できませんでした",
-		"licensePageErrorTitle": "ライセンスページを開けませんでした",
-		"tryAgain": "少ししてから再試行してください。"
+		"settingsCategory": "設定 > {{tab}}",
+		"tryAgain": "少ししてから再試行してください。",
+		"unpinCurrentFile": "現在のファイルのピン留めを解除"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "このスペースは {{remoteLabel}} の Git リポジトリにリンクされています。スケジュールに従って変更をコミットしてプッシュする自動同期を有効にしますか？",
+			"cancelLabel": "後で",
+			"okLabel": "自動同期を有効にする",
+			"remoteFallback": "リモート",
+			"title": "Git 同期を有効にしますか？"
+		}
 	}
 }

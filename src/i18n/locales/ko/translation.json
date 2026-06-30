@@ -1,0 +1,14 @@
+{
+	"connections": {
+		"showUnconnectedNotes": "연결되지 않은 노트 표시",
+		"legendAriaLabel": "연결 범례",
+		"note": "노트",
+		"tag": "태그"
+	},
+	"activity": {
+		"heatmapAriaLabel": "최근 노트 활동",
+		"emptyFeed": "아직 활동이 없습니다. 노트를 만들거나 편집하여 타임라인을 시작하세요.",
+		"noteCount_one": "노트 {{count}}개",
+		"noteCount_other": "노트 {{count}}개"
+	}
+}

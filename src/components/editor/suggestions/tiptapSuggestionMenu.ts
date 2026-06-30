@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import type { PluginKey } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import {
 	type SuggestionKeyDownProps,
@@ -21,6 +22,7 @@ interface TipTapSuggestionMenuOptions<T> {
 	renderItem: (options: RenderTipTapSuggestionItemOptions<T>) => HTMLElement;
 	lockEditorScroll?: boolean;
 	resetSelectionOnUpdate?: boolean;
+	pluginKey?: PluginKey;
 	onEscape?: (view: EditorView) => void;
 }
 
@@ -47,6 +49,7 @@ export function createTipTapSuggestionMenu<T>({
 	renderItem,
 	lockEditorScroll = true,
 	resetSelectionOnUpdate = false,
+	pluginKey,
 	onEscape,
 }: TipTapSuggestionMenuOptions<T>) {
 	let menu: HTMLDivElement | null = null;
@@ -128,7 +131,7 @@ export function createTipTapSuggestionMenu<T>({
 				if (onEscape) {
 					onEscape(view);
 				} else {
-					exitSuggestion(view);
+					exitSuggestion(view, pluginKey);
 				}
 				return true;
 			}
@@ -160,6 +163,9 @@ export function createTipTapSuggestionMenu<T>({
 	};
 }
 
-export function exitTipTapSuggestion(view: EditorView): void {
-	exitSuggestion(view);
+export function exitTipTapSuggestion(
+	view: EditorView,
+	pluginKey?: PluginKey,
+): void {
+	exitSuggestion(view, pluginKey);
 }

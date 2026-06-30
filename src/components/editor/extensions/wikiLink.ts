@@ -312,6 +312,7 @@ export const WikiLink = Node.create({
 				render: () =>
 					createTipTapSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
+						pluginKey: WIKI_LINK_SUGGESTION_KEY,
 						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";

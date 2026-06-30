@@ -1,43 +1,45 @@
 {
 	"commandPalette": {
-		"title": "Command Palette",
-		"searchCommands": "Search Commands",
-		"searchNotes": "Search notes...",
-		"noCommands": "No commands",
-		"general": "General",
-		"results": "{{count}} results",
-		"searching": "Searching...",
-		"recentlyOpened": "Recently opened",
-		"typeToSearch": "Type to search your notes...",
-		"taggedNotes": "Tagged Notes",
-		"notes": "Notes",
 		"content": "Content",
-		"noResults": "No results",
+		"filters": {
+			"tag": "Tag",
+			"title": "Title"
+		},
 		"footer": {
+			"close": "Close",
+			"commands": "Commands",
 			"navigate": "Navigate",
 			"openNote": "Open note",
 			"runCommand": "Run command",
-			"commands": "Commands",
-			"search": "Search",
-			"close": "Close"
+			"search": "Search"
 		},
-		"filters": {
-			"title": "Title",
-			"tag": "Tag"
-		},
+		"general": "General",
+		"noCommands": "No commands",
+		"noResults": "No results",
+		"notes": "Notes",
+		"recentlyOpened": "Recently opened",
 		"results_one": "{{count}} result",
-		"results_other": "{{count}} results"
+		"results_other": "{{count}} results",
+		"searchCommands": "Search Commands",
+		"searching": "Searching...",
+		"searchNotes": "Search notes...",
+		"taggedNotes": "Tagged Notes",
+		"title": "Command Palette",
+		"typeToSearch": "Type to search your notes..."
 	},
 	"commands": {
-		"moveDestination": "Move Destination",
-		"settingsCategory": "Settings > {{tab}}",
 		"openAnotherSpace": "Open another space",
 		"openSpace": "Open space",
 		"pinCurrentFile": "Pin current file",
-		"unpinCurrentFile": "Unpin current file",
-		"goBack": "Back",
-		"createFolderErrorTitle": "Could not create folder",
-		"licensePageErrorTitle": "Could not open the license page",
-		"tryAgain": "Try again in a moment."
+		"unpinCurrentFile": "Unpin current file"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "This space is linked to a Git repository at {{remoteLabel}}. Enable automatic sync to commit and push changes on a schedule?",
+			"cancelLabel": "Not Now",
+			"okLabel": "Enable Automatic Sync",
+			"remoteFallback": "its remote",
+			"title": "Enable Git Sync?"
+		}
 	}
 }

@@ -1,23 +1,13 @@
 {
 	"actions": {
-		"close": "Close",
 		"disable": "Disable",
-		"reset": "Reset",
-		"resetAll": "Reset All"
+		"reset": "Reset"
 	},
 	"language": {
-		"system": "System",
-		"en": "English",
-		"es": "Spanish",
-		"de": "German",
-		"fr": "French",
-		"pt-BR": "Portuguese (Brazil)",
-		"ja": "Japanese",
-		"ko": "Korean"
+		"system": "System"
 	},
 	"status": {
-		"disabled": "Disabled",
-		"loading": "Loading..."
+		"disabled": "Disabled"
 	},
 	"untitled": "Untitled"
 }

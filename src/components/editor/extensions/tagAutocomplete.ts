@@ -1,6 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
+import { i18n } from "../../../i18n";
 import type { TagCount } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
 import {
@@ -117,6 +118,7 @@ export const TagAutocomplete = Extension.create({
 				render: () =>
 					createTipTapSuggestionMenu<TagSuggestionItem>({
 						menuClassName: "wikiLinkSuggestionMenu",
+						pluginKey: TAG_SUGGESTION_KEY,
 						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";
@@ -130,8 +132,11 @@ export const TagAutocomplete = Extension.create({
 							const path = document.createElement("span");
 							path.className = "wikiLinkSuggestionPath";
 							path.textContent = item.isNew
-								? "Create tag"
-								: `${item.count} note${item.count === 1 ? "" : "s"}`;
+								? i18n.t("editor.tags.createTag", { ns: "ui" })
+								: i18n.t("editor.tags.noteCount", {
+										ns: "ui",
+										count: item.count,
+									});
 
 							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {

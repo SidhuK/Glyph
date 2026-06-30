@@ -381,6 +381,14 @@
 		"underline": {
 			"label": "Subrayado",
 			"description": "Activa o desactiva el subrayado en la selección."
+		},
+		"copy-active-file-relative-path": {
+			"label": "Copiar ruta relativa del archivo actual",
+			"description": "Copia la ruta relativa del archivo actual."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "Copiar ruta absoluta del archivo actual",
+			"description": "Copia la ruta absoluta del archivo actual."
 		}
 	}
 }

@@ -1,44 +1,46 @@
 {
 	"commandPalette": {
-		"title": "Palette de commandes",
-		"searchCommands": "Rechercher des commandes",
-		"searchNotes": "Rechercher des notes...",
-		"noCommands": "Aucune commande",
-		"general": "Général",
-		"results": "{{count}} résultats",
-		"searching": "Recherche...",
-		"recentlyOpened": "Ouvert récemment",
-		"typeToSearch": "Tapez pour rechercher dans vos notes...",
-		"taggedNotes": "Notes étiquetées",
-		"notes": "Notes",
 		"content": "Contenu",
-		"noResults": "Aucun résultat",
+		"filters": {
+			"tag": "Étiquette",
+			"title": "Titre"
+		},
 		"footer": {
+			"close": "Fermer",
+			"commands": "Commandes",
 			"navigate": "Naviguer",
 			"openNote": "Ouvrir la note",
 			"runCommand": "Exécuter la commande",
-			"commands": "Commandes",
-			"search": "Recherche",
-			"close": "Fermer"
+			"search": "Recherche"
 		},
-		"filters": {
-			"title": "Titre",
-			"tag": "Étiquette"
-		},
+		"general": "Général",
+		"noCommands": "Aucune commande",
+		"noResults": "Aucun résultat",
+		"notes": "Notes",
+		"recentlyOpened": "Ouvert récemment",
 		"results_one": "{{count}} résultat",
+		"results_many": "{{count}} résultats",
 		"results_other": "{{count}} résultats",
-		"results_many": "{{count}} résultats"
+		"searchCommands": "Rechercher des commandes",
+		"searching": "Recherche...",
+		"searchNotes": "Rechercher des notes...",
+		"taggedNotes": "Notes étiquetées",
+		"title": "Palette de commandes",
+		"typeToSearch": "Tapez pour rechercher dans vos notes..."
 	},
 	"commands": {
-		"moveDestination": "Destination du déplacement",
-		"settingsCategory": "Réglages > {{tab}}",
 		"openAnotherSpace": "Ouvrir un autre espace",
 		"openSpace": "Ouvrir un espace",
 		"pinCurrentFile": "Épingler le fichier actuel",
-		"unpinCurrentFile": "Désépingler le fichier actuel",
-		"goBack": "Retour",
-		"createFolderErrorTitle": "Impossible de créer le dossier",
-		"licensePageErrorTitle": "Impossible d'ouvrir la page de licence",
-		"tryAgain": "Réessayez dans un instant."
+		"unpinCurrentFile": "Désépingler le fichier actuel"
+	},
+	"gitSync": {
+		"autoSync": {
+			"body": "Cet espace est lié à un dépôt Git sur {{remoteLabel}}. Activer la synchronisation automatique pour valider et pousser les modifications selon un calendrier ?",
+			"cancelLabel": "Pas maintenant",
+			"okLabel": "Activer la synchronisation automatique",
+			"remoteFallback": "son remote",
+			"title": "Activer la synchronisation Git ?"
+		}
 	}
 }

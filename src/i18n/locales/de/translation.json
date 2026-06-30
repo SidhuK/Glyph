@@ -1,0 +1,14 @@
+{
+	"connections": {
+		"showUnconnectedNotes": "Unverbundene Notizen anzeigen",
+		"legendAriaLabel": "Verbindungslegende",
+		"note": "Notiz",
+		"tag": "Tag"
+	},
+	"activity": {
+		"heatmapAriaLabel": "Aktuelle Notizaktivität",
+		"emptyFeed": "Noch keine Aktivität. Erstelle oder bearbeite eine Notiz, um die Zeitleiste zu starten.",
+		"noteCount_one": "{{count}} Notiz",
+		"noteCount_other": "{{count}} Notizen"
+	}
+}

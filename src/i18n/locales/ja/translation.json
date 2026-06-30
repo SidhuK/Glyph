@@ -1,0 +1,14 @@
+{
+	"connections": {
+		"showUnconnectedNotes": "未接続のノートを表示",
+		"legendAriaLabel": "接続の凡例",
+		"note": "ノート",
+		"tag": "タグ"
+	},
+	"activity": {
+		"heatmapAriaLabel": "最近のノート活動",
+		"emptyFeed": "まだアクティビティがありません。ノートを作成または編集してタイムラインを始めましょう。",
+		"noteCount_one": "{{count}} 件のノート",
+		"noteCount_other": "{{count}} 件のノート"
+	}
+}

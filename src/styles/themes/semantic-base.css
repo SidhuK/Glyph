@@ -72,12 +72,12 @@
 	--callout-error: #f97066;
 	--glyph-inline-color-gray: #626f86;
 	--glyph-inline-color-brown: #9f6b53;
-	--glyph-inline-color-orange: #d9730d;
-	--glyph-inline-color-yellow: #cb912f;
+	--glyph-inline-color-orange: #b45309;
+	--glyph-inline-color-yellow: #a16207;
 	--glyph-inline-color-green: #448361;
 	--glyph-inline-color-blue: #0c66e4;
 	--glyph-inline-color-purple: #7e5bef;
-	--glyph-inline-color-red: #e03e3e;
+	--glyph-inline-color-red: #c53030;
 	--glyph-inline-highlight-yellow: color-mix(
 		in srgb,
 		var(--status-warning-fg) 24%,
