@@ -1,4 +1,8 @@
 import {
+	postprocessEscapedDollars,
+	preprocessEscapedDollars,
+} from "../extensions/math/mathOptions";
+import {
 	EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN,
 	getEditorTextColorBridgeOpenToken,
 	getEditorTextColorMarkdownOpenTag,
@@ -10,6 +14,14 @@ import {
 	getEditorTextHighlightMarkdownOpenTag,
 	isEditorTextHighlight,
 } from "../textHighlights";
+import {
+	postprocessDetailsMarkdown,
+	preprocessDetailsMarkdown,
+} from "./detailsMarkdown";
+import {
+	postprocessInlineTocMarkers,
+	preprocessInlineTocMarkers,
+} from "./inlineTocMarkdown";
 import {
 	findWikiLinkSpans,
 	parseWikiLink,
@@ -151,17 +163,29 @@ function postprocessWhitespaceLines(input: string): string {
 }
 
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessColoredText(
-		preprocessHighlightedText(
-			encodeMarkdownImageDestinations(canonicalizeWikiLinks(markdown)),
+	return preprocessEscapedDollars(
+		preprocessColoredText(
+			preprocessHighlightedText(
+				encodeMarkdownImageDestinations(
+					canonicalizeWikiLinks(
+						preprocessDetailsMarkdown(preprocessInlineTocMarkers(markdown)),
+					),
+				),
+			),
 		),
 	);
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {
-	return postprocessWhitespaceLines(
-		postprocessHighlightedText(
-			postprocessColoredText(canonicalizeWikiLinks(markdown)),
+	return postprocessEscapedDollars(
+		postprocessInlineTocMarkers(
+			postprocessWhitespaceLines(
+				postprocessHighlightedText(
+					postprocessColoredText(
+						postprocessDetailsMarkdown(canonicalizeWikiLinks(markdown)),
+					),
+				),
+			),
 		),
 	);
 }

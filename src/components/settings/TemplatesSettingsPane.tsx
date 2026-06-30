@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
@@ -63,6 +64,7 @@ function requireSpacePath(spacePath: string | null): string {
 }
 
 export function TemplateSettingsSections() {
+	const { t } = useTranslation("settings");
 	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
 		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
@@ -102,14 +104,14 @@ export function TemplateSettingsSections() {
 					error:
 						cause instanceof Error
 							? cause.message
-							: "Failed to load templates settings",
+							: t("templates.errors.loadSettings"),
 				}));
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [t]);
 
 	useEffect(() => {
 		if (templatesFolder === null) {
@@ -191,7 +193,7 @@ export function TemplateSettingsSections() {
 								error:
 									cause instanceof Error
 										? cause.message
-										: "Failed to clear daily note template",
+										: t("templates.errors.clearDailyTemplate"),
 							}));
 						});
 				}
@@ -201,7 +203,9 @@ export function TemplateSettingsSections() {
 				setTemplateLibraryState({
 					templates: [],
 					error:
-						cause instanceof Error ? cause.message : "Failed to load templates",
+						cause instanceof Error
+							? cause.message
+							: t("templates.errors.loadTemplates"),
 				});
 			});
 		return () => {
@@ -211,6 +215,7 @@ export function TemplateSettingsSections() {
 		beginDailyTemplateWrite,
 		currentSpacePath,
 		dailyNoteTemplatePath,
+		t,
 		templatesFolder,
 	]);
 
@@ -228,7 +233,7 @@ export function TemplateSettingsSections() {
 			if (!currentSpacePath) {
 				setSettingsState((current) => ({
 					...current,
-					error: "No space is currently open.",
+					error: t("space.errors.noSpaceOpen"),
 				}));
 				return;
 			}
@@ -238,7 +243,7 @@ export function TemplateSettingsSections() {
 			if (normSelected !== normSpace && !normSelected.startsWith(spacePrefix)) {
 				setSettingsState((current) => ({
 					...current,
-					error: "Selected folder must be inside the current space.",
+					error: t("space.errors.folderInsideSpace"),
 				}));
 				return;
 			}
@@ -267,10 +272,10 @@ export function TemplateSettingsSections() {
 				error:
 					cause instanceof Error
 						? cause.message
-						: "Failed to select template folder",
+						: t("templates.errors.selectFolder"),
 			}));
 		}
-	}, [beginDailyTemplateWrite]);
+	}, [beginDailyTemplateWrite, t]);
 
 	const handleClearFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
@@ -288,10 +293,10 @@ export function TemplateSettingsSections() {
 				error:
 					cause instanceof Error
 						? cause.message
-						: "Failed to clear template folder",
+						: t("templates.errors.clearFolder"),
 			}));
 		}
-	}, [currentSpacePath]);
+	}, [currentSpacePath, t]);
 
 	const handleDailyTemplateChange = useCallback(
 		async (value: string) => {
@@ -313,26 +318,26 @@ export function TemplateSettingsSections() {
 					error:
 						cause instanceof Error
 							? cause.message
-							: "Failed to update daily note template",
+							: t("templates.errors.updateDailyTemplate"),
 				}));
 			}
 		},
-		[beginDailyTemplateWrite, currentSpacePath],
+		[beginDailyTemplateWrite, currentSpacePath, t],
 	);
 
 	const summary = useMemo(() => {
-		if (templatesFolder === null) return "Not configured";
-		return `${templates.length} template${templates.length === 1 ? "" : "s"} found`;
-	}, [templates.length, templatesFolder]);
+		if (templatesFolder === null) return t("common.notConfigured");
+		return t("templates.summary", { count: templates.length });
+	}, [t, templates.length, templatesFolder]);
 
 	return (
 		<>
 			{error ? <div className="settingsError">{error}</div> : null}
 
-			<SettingsSection title="Templates">
+			<SettingsSection title={t("templates.title")}>
 				<SettingsRow
-					label="Template folder"
-					description="Choose a folder inside the current space that contains your markdown templates."
+					label={t("templates.templateFolder")}
+					description={t("templates.templateFolderDescription")}
 					stacked
 					interactive={false}
 				>
@@ -340,7 +345,7 @@ export function TemplateSettingsSections() {
 						<div className="dailyNotesFolderRow">
 							<div className="dailyNotesFolderPath">
 								{templatesFolder === null
-									? "Not configured"
+									? t("common.notConfigured")
 									: templatesFolder || "/"}
 							</div>
 							<div className="settingsActions dailyNotesActions">
@@ -352,7 +357,7 @@ export function TemplateSettingsSections() {
 									onClick={handleBrowseFolder}
 								>
 									<FolderOpen size="var(--icon-md)" />
-									Browse
+									{t("common.browse")}
 								</Button>
 								{templatesFolder !== null ? (
 									<Button
@@ -361,8 +366,8 @@ export function TemplateSettingsSections() {
 										size="icon-sm"
 										className="rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleClearFolder}
-										aria-label="Clear template folder"
-										title="Clear template folder"
+										aria-label={t("templates.clearFolder")}
+										title={t("templates.clearFolder")}
 									>
 										<Trash2 size="var(--icon-md)" />
 									</Button>
@@ -378,7 +383,7 @@ export function TemplateSettingsSections() {
 					</div>
 				</SettingsRow>
 
-				<SettingsRow label="Default daily note template">
+				<SettingsRow label={t("templates.defaultDailyTemplate")}>
 					<SettingsSelect
 						value={dailyNoteTemplatePath ?? ""}
 						onChange={(event) =>
@@ -386,7 +391,7 @@ export function TemplateSettingsSections() {
 						}
 						disabled={templatesFolder === null || !templates.length}
 					>
-						<option value="">None</option>
+						<option value="">{t("common.none")}</option>
 						{templates.map((template) => (
 							<option key={template.value} value={template.value}>
 								{template.label}

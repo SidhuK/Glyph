@@ -25,7 +25,8 @@
 			"title": "タイトル",
 			"tag": "タグ"
 		},
-		"results_other": "{{count}} 件の結果"
+		"results_other": "{{count}} 件の結果",
+		"results_one": "{{count}} 件の結果"
 	},
 	"commands": {
 		"moveDestination": "移動先",

@@ -1,5 +1,7 @@
 use std::{collections::HashSet, path::Path};
 
+use crate::utils;
+
 pub fn normalize_rel_path(raw: &str) -> Option<String> {
     let raw = raw.replace('\\', "/");
     let raw = raw.trim().trim_matches('/');
@@ -118,39 +120,16 @@ pub fn parse_outgoing_links(
 }
 
 fn is_file_wikilink_target(target: &str) -> bool {
-    target.contains('/') || is_linkable_file_target(target)
+    is_linkable_file_target(target)
+        || (target.contains('/') && !utils::has_explicit_file_extension(target))
 }
 
 fn should_append_markdown_extension(target: &str) -> bool {
-    target.contains('/') && !has_extension(target)
-}
-
-fn has_extension(target: &str) -> bool {
-    Path::new(target).extension().is_some()
+    target.contains('/') && !utils::has_explicit_file_extension(target)
 }
 
 fn is_linkable_file_target(target: &str) -> bool {
-    let Some(ext) = Path::new(target)
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.to_ascii_lowercase())
-    else {
-        return false;
-    };
-    matches!(
-        ext.as_str(),
-        "md" | "pdf"
-            | "png"
-            | "jpg"
-            | "jpeg"
-            | "webp"
-            | "gif"
-            | "svg"
-            | "bmp"
-            | "avif"
-            | "tif"
-            | "tiff"
-    )
+    utils::has_wikilink_file_extension(target)
 }
 
 #[cfg(test)]
@@ -180,5 +159,26 @@ mod tests {
         assert!(paths.contains("assets/logo.png"));
         assert!(paths.contains("notes/peer.md"));
         assert!(titles.is_empty());
+    }
+
+    #[test]
+    fn parses_nested_dotted_wikilink_as_markdown_path() {
+        let (paths, titles) =
+            parse_outgoing_links("notes/source.md", "[[projects/0.5.6 project hail mary]]");
+
+        assert!(paths.contains("projects/0.5.6 project hail mary.md"));
+        assert!(titles.is_empty());
+    }
+
+    #[test]
+    fn does_not_rewrite_unsupported_explicit_wikilink_extensions_as_markdown() {
+        let (paths, titles) =
+            parse_outgoing_links("notes/source.md", "[[assets/archive.zip]] [[data.csv]]");
+
+        assert!(!paths.contains("assets/archive.zip"));
+        assert!(!paths.contains("assets/archive.zip.md"));
+        assert!(!paths.contains("data.csv.md"));
+        assert!(titles.contains("assets/archive.zip"));
+        assert!(titles.contains("data.csv"));
     }
 }

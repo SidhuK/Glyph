@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
 	defaultDatabaseColumnIconName,
 	resolveDatabaseColumnIconName,
@@ -19,12 +20,13 @@ export function DatabaseColumnIconPicker({
 	className,
 	onChange,
 }: DatabaseColumnIconPickerProps) {
+	const { t } = useTranslation("ui");
 	const defaultIconName = defaultDatabaseColumnIconName(column);
 	const displayIconName = resolveDatabaseColumnIconName(column);
 
 	return (
 		<AppearancePicker
-			title="Choose column icon"
+			title={t("database.chooseColumnIcon")}
 			iconValue={column.icon ?? null}
 			defaultIconName={defaultIconName}
 			showDefaultIcon
@@ -33,7 +35,7 @@ export function DatabaseColumnIconPicker({
 				<AppearancePickerIconTrigger
 					iconName={displayIconName}
 					className={className}
-					label={`Choose icon for ${column.label}`}
+					label={t("database.cell.chooseIconFor", { label: column.label })}
 					onClick={openPicker}
 				/>
 			)}

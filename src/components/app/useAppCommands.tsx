@@ -27,7 +27,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { TFunction } from "i18next";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
@@ -37,6 +39,7 @@ import {
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
+import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	SHORTCUT_CATEGORY_LABELS,
@@ -105,7 +108,6 @@ interface UseAppCommandsDeps {
 	saveCurrentEditor: () => Promise<unknown>;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
-	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
@@ -184,21 +186,49 @@ function buildAiCommands({
 	];
 }
 
+function resolveCommandLabel(
+	command: Command,
+	definitionLabel: string | undefined,
+	t: TFunction<["commands", "app"]>,
+): string {
+	if (command.id === "toggle-pin-active-file") {
+		return command.label?.includes("Unpin")
+			? t("app:commands.unpinCurrentFile")
+			: t("app:commands.pinCurrentFile");
+	}
+	if (command.id === "open-space") {
+		return command.label?.includes("another")
+			? t("app:commands.openAnotherSpace")
+			: t("app:commands.openSpace");
+	}
+	return t(`commands.${command.id}.label`, {
+		ns: "commands",
+		defaultValue: command.label ?? definitionLabel ?? command.id,
+	});
+}
+
 function resolveCommandShortcuts(
 	commands: Command[],
 	getBinding: UseAppCommandsDeps["getBinding"],
+	t: TFunction<["commands", "app"]>,
 ): Command[] {
 	return commands.map((command) => {
 		const definition = getCommandDefinition(command.id);
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: command.label ?? definition.label,
-					category: SHORTCUT_CATEGORY_LABELS[definition.category],
+					label: resolveCommandLabel(command, definition.label, t),
+					category: t(`categories.${definition.category}`, {
+						ns: "commands",
+						defaultValue: SHORTCUT_CATEGORY_LABELS[definition.category],
+					}),
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
 				}
-			: command;
+			: {
+					...command,
+					label: resolveCommandLabel(command, undefined, t),
+				};
 
 		return isShortcutActionId(command.id)
 			? {
@@ -259,7 +289,6 @@ export function useAppCommands({
 	saveCurrentEditor,
 	setCurrentEditorMode,
 	setAiPanelOpen,
-	setError,
 	setMovePickerSourcePath,
 	setSidebarCollapsed,
 	showCollapsibleHeadings,
@@ -269,6 +298,7 @@ export function useAppCommands({
 	togglePinnedFile,
 	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
+	const { t } = useTranslation(["commands", "app"]);
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -409,21 +439,10 @@ export function useAppCommands({
 				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						await fileTree.onNewFolderInDir(dir);
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create folder", error);
-						setError(message);
-						toast.error("Could not create folder", {
-							description: message,
-						});
-					}
+				action: () => {
+					const dir =
+						activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+					void fileTree.requestCreateFolder(dir);
 				},
 			},
 			{
@@ -551,6 +570,44 @@ export function useAppCommands({
 				enabled: Boolean(activeMarkdownTabPath),
 				allowInEditable: true,
 				action: () => void handleCopyOpenNoteAsMarkdown(),
+			},
+			{
+				id: "copy-active-file-relative-path",
+				label: "Copy current file relative path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "relative path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyRelativePath(activeFilePath);
+				},
+			},
+			{
+				id: "copy-active-file-absolute-path",
+				label: "Copy current file absolute path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "absolute path", "full path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyAbsolutePath(spacePath, activeFilePath);
+				},
 			},
 			{
 				id: "move-active-file",
@@ -861,7 +918,6 @@ export function useAppCommands({
 			},
 			{
 				id: "show-getting-started",
-				label: "Show getting started",
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
@@ -869,13 +925,11 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
 				action: openGettingStarted,
 			},
 			{
 				id: "show-welcome-note",
-				label: "Show welcome note",
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
@@ -883,9 +937,8 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
-				action: () => void showWelcomeNote(),
+				action: showWelcomeNote,
 			},
 		];
 		return resolveCommandShortcuts(
@@ -896,6 +949,7 @@ export function useAppCommands({
 				...editorCommands,
 			],
 			getBinding,
+			t,
 		);
 	}, [
 		activeMarkdownTabPath,
@@ -946,7 +1000,6 @@ export function useAppCommands({
 		getBinding,
 		moveTargetDirs,
 		movePickerSourcePath,
-		setError,
 		openSettings,
 		refreshMoveTargetDirs,
 		openPalette,
@@ -956,5 +1009,6 @@ export function useAppCommands({
 		canGoForward,
 		goBack,
 		goForward,
+		t,
 	]);
 }

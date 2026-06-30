@@ -7,7 +7,9 @@ import {
 import { useSortable } from "@dnd-kit/react/sortable";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
+import { useTranslation } from "react-i18next";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
@@ -56,6 +58,7 @@ const MAIN_TAB_SENSORS = [
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
+		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
@@ -84,6 +87,7 @@ export function TabBar({
 	onStartRenamePath,
 	onReorder,
 }: TabBarProps) {
+	const { t } = useTranslation(["ui", "common"]);
 	const { getBinding } = useShortcutBindings();
 	const suppressClickRef = useRef(false);
 	const stripFileExtension = useCallback((name: string) => {
@@ -100,16 +104,18 @@ export function TabBar({
 
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
-			if (tab.kind === "blank") return "New Tab";
-			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
-			if (tab.target === DATABASES_TAB_ID) return "Collections";
-			if (tab.target === PINNED_DOCS_TAB_ID) return "Pinned";
-			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";
+			if (tab.kind === "blank") return t("tabs.newTab");
+			if (tab.target === ALL_DOCS_TAB_ID) return t("tabs.allNotes");
+			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
+			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
+			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");
+			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return t("tabs.connections");
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
-			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
+			const rawName =
+				parts[parts.length - 1] ?? tab.target ?? t("common:untitled");
 			return compactLabel(stripFileExtension(rawName));
 		},
-		[compactLabel, stripFileExtension],
+		[compactLabel, stripFileExtension, t],
 	);
 
 	const showTabs = tabs.length > 1;
@@ -156,8 +162,8 @@ export function TabBar({
 						className="mainTabNavBtn"
 						onClick={onGoBack}
 						disabled={!canGoBack}
-						title="Go back"
-						aria-label="Go back"
+						title={t("tabs.goBack")}
+						aria-label={t("tabs.goBack")}
 					>
 						←
 					</button>
@@ -166,8 +172,8 @@ export function TabBar({
 						className="mainTabNavBtn"
 						onClick={onGoForward}
 						disabled={!canGoForward}
-						title="Go forward"
-						aria-label="Go forward"
+						title={t("tabs.goForward")}
+						aria-label={t("tabs.goForward")}
 					>
 						→
 					</button>
@@ -199,12 +205,12 @@ export function TabBar({
 								type="button"
 								className="mainTabAdd"
 								onClick={onOpenBlankTab}
-								title={`Open blank tab${
+								title={`${t("tabs.openBlankTab")}${
 									newTabShortcut
 										? ` (${formatShortcutForPlatform(newTabShortcut)})`
 										: ""
 								}`}
-								aria-label="Open blank tab"
+								aria-label={t("tabs.openBlankTab")}
 							>
 								+
 							</button>
@@ -245,6 +251,7 @@ const TabItem = memo(function TabItem({
 	onCloseTab: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
 }) {
+	const { t } = useTranslation(["ui", "common"]);
 	const { ref, handleRef, isDragging, isDropTarget } = useSortable({
 		id: tab.id,
 		index,
@@ -290,7 +297,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className="mainTabClose"
 				onClick={handleClose}
-				aria-label={`Close ${label}`}
+				aria-label={t("tabs.closeTab", { label })}
 			>
 				<span className="mainTabCloseGlyph" aria-hidden>
 					×

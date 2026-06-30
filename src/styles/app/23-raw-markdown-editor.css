@@ -11,7 +11,7 @@
 	min-height: 100%;
 	background: transparent;
 	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
-	font-family: var(--font-sans);
+	font-family: var(--font-editor);
 	font-size: var(--editor-raw-font-size);
 	font-variant-ligatures: common-ligatures;
 	line-height: 1.68;
@@ -283,6 +283,18 @@
 	font-family: var(--font-mono);
 	font-size: 0.9em;
 	font-variant-ligatures: none;
+}
+
+.rfNodeNoteEditorRaw .tok-special.tok-string,
+.rfNodeNoteEditorRaw .tok-processingInstruction {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+}
+
+.rfNodeNoteEditorRaw .cm-lintRange-error {
+	background-image: none;
+	text-decoration: underline wavy var(--status-danger-fg);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
 }
 
 .rfNodeNoteEditorRaw .cm-raw-highlight {

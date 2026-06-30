@@ -19,6 +19,7 @@ import {
 	syntaxTree,
 } from "@codemirror/language";
 import { languages } from "@codemirror/language-data";
+import { linter } from "@codemirror/lint";
 import {
 	highlightSelectionMatches,
 	search,
@@ -40,8 +41,17 @@ import {
 	rectangularSelection,
 } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
+import { latexHoverTooltip } from "codemirror-lang-latex";
 import { createRawMarkdownDecorations } from "./decorations";
+import {
+	embeddedLatexCompletionSource,
+	latexSnippetCompletionSource,
+} from "./latexCompletions";
 import { createRawLinkCompletionSource } from "./linkCompletions";
+import {
+	embeddedMathLinter,
+	markdownMathExtension,
+} from "./markdownMathLanguage";
 
 const markdownHighlightStyle = HighlightStyle.define([
 	{ tag: tags.heading1, class: "cm-raw-heading-token-1" },
@@ -203,9 +213,14 @@ export function createRawMarkdownExtensions(
 		EditorState.allowMultipleSelections.of(true),
 		indentOnInput(),
 		bracketMatching(),
+		latexHoverTooltip,
 		closeBrackets(),
 		autocompletion({
-			override: [createRawLinkCompletionSource(getRelPath)],
+			override: [
+				latexSnippetCompletionSource,
+				embeddedLatexCompletionSource,
+				createRawLinkCompletionSource(getRelPath),
+			],
 			defaultKeymap: false,
 			icons: false,
 			maxRenderedOptions: 8,
@@ -216,9 +231,11 @@ export function createRawMarkdownExtensions(
 		markdown({
 			base: markdownLanguage,
 			codeLanguages: languages,
+			extensions: [markdownMathExtension],
 			pasteURLAsLink: true,
 		}),
 		syntaxHighlighting(markdownHighlightStyle),
+		linter(embeddedMathLinter, { delay: 300 }),
 		createRawMarkdownDecorations(getRelPath),
 		EditorView.lineWrapping,
 		EditorView.contentAttributes.of({
@@ -241,6 +258,7 @@ export function createRawMarkdownExtensions(
 			{ key: "Mod-b", run: wrapSelection("**") },
 			{ key: "Mod-i", run: wrapSelection("*") },
 			{ key: "Mod-Shift-x", run: wrapSelection("~~") },
+			{ key: "Mod-Shift-m", run: wrapSelection("$") },
 			{ key: "Mod-Enter", run: toggleTaskAtCursor },
 			{ key: "Tab", run: moveTableCell(1) },
 			{ key: "Shift-Tab", run: moveTableCell(-1) },

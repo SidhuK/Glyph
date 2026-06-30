@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { UiAccent } from "../../lib/settings";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { ACCENT_OPTIONS } from "./accentOptions";
@@ -15,41 +16,52 @@ export function AppearanceAccentCard({
 	description,
 	onAccentChange,
 }: AppearanceAccentCardProps) {
+	const { t } = useTranslation("settings");
 	return (
-		<SettingsSection title="Accent" description={description}>
+		<SettingsSection
+			title={t("appearance.accent.title")}
+			description={description}
+		>
 			<SettingsRow
-				label="Palette"
-				description="Preview and select the accent that feels best for your workspace."
+				label={t("appearance.accent.palette")}
+				description={t("appearance.accent.paletteDescription")}
 			>
 				<div className="settingsAccentPicker">
 					<div
 						className="settingsAccentOptions"
 						role="radiogroup"
-						aria-label="Accent color"
+						aria-label={t("appearance.accent.accentColor")}
 					>
-						{ACCENT_OPTIONS.map((option) => (
-							<label
-								key={option.id}
-								className={cn(
-									"settingsAccentDot",
-									accent === option.id && "is-active",
-								)}
-								title={option.label}
-								style={
-									{ "--settings-accent-swatch": option.color } as CSSProperties
-								}
-							>
-								<input
-									type="radio"
-									name="settings-accent"
-									checked={accent === option.id}
-									onChange={() => void onAccentChange(option.id)}
-									className="settingsAccentInput"
-									aria-label={option.label}
-								/>
-								<span className="settingsAccentDotInner" aria-hidden="true" />
-							</label>
-						))}
+						{ACCENT_OPTIONS.map((option) => {
+							const accentLabel = t(`appearance.accents.${option.id}`, {
+								defaultValue: option.label,
+							});
+							return (
+								<label
+									key={option.id}
+									className={cn(
+										"settingsAccentDot",
+										accent === option.id && "is-active",
+									)}
+									title={accentLabel}
+									style={
+										{
+											"--settings-accent-swatch": option.color,
+										} as CSSProperties
+									}
+								>
+									<input
+										type="radio"
+										name="settings-accent"
+										checked={accent === option.id}
+										onChange={() => void onAccentChange(option.id)}
+										className="settingsAccentInput"
+										aria-label={accentLabel}
+									/>
+									<span className="settingsAccentDotInner" aria-hidden="true" />
+								</label>
+							);
+						})}
 					</div>
 				</div>
 			</SettingsRow>

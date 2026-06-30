@@ -10,6 +10,11 @@
 
 	--text-primary: var(--color-gray-800);
 	--text-secondary: rgba(55, 53, 47, 0.65);
+	--editor-body-color: color-mix(
+		in srgb,
+		var(--text-primary) 96%,
+		var(--text-secondary)
+	);
 	--text-tertiary: rgba(55, 53, 47, 0.45);
 	--text-placeholder: rgba(55, 53, 47, 0.35);
 	--text-inverse: var(--color-white);
@@ -66,13 +71,13 @@
 	--callout-warning: #f0b429;
 	--callout-error: #f97066;
 	--glyph-inline-color-gray: #626f86;
-	--glyph-inline-color-brown: #9a6c3f;
-	--glyph-inline-color-orange: #c25100;
-	--glyph-inline-color-yellow: #8f6b00;
-	--glyph-inline-color-green: #216e4e;
+	--glyph-inline-color-brown: #9f6b53;
+	--glyph-inline-color-orange: #d9730d;
+	--glyph-inline-color-yellow: #cb912f;
+	--glyph-inline-color-green: #448361;
 	--glyph-inline-color-blue: #0c66e4;
 	--glyph-inline-color-purple: #7e5bef;
-	--glyph-inline-color-red: #c9372c;
+	--glyph-inline-color-red: #e03e3e;
 	--glyph-inline-highlight-yellow: color-mix(
 		in srgb,
 		var(--status-warning-fg) 24%,

@@ -1,6 +1,7 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -8,6 +9,7 @@ import {
 	type EditorWidthMode,
 	loadSettings,
 	setAiAssistantMode,
+	setClassicAllNotesByDefault,
 	setDatabaseShowColumnColor,
 	setEditorBeautifulTags,
 	setEditorColorfulHeadings,
@@ -52,20 +54,21 @@ const VIM_KEYBINDING_HELP = [
 	{ key: "Control-r", action: "Redo." },
 ] as const;
 
-const EDITOR_WIDTH_OPTIONS = [
-	{ label: "Compact", value: "compact" },
-	{ label: "Comfortable", value: "comfortable" },
-	{ label: "Wide", value: "wide" },
-] as const satisfies readonly { label: string; value: EditorWidthMode }[];
+const EDITOR_WIDTH_VALUES = [
+	"compact",
+	"comfortable",
+	"wide",
+] as const satisfies readonly EditorWidthMode[];
 
 function VimKeybindingsHelp() {
+	const { t } = useTranslation("settings");
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
 					className="vimKeybindingsInfoButton"
-					aria-label="Vim keybindings help"
+					aria-label={t("advanced.editor.vimHelp.ariaLabel")}
 				>
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
@@ -80,15 +83,15 @@ function VimKeybindingsHelp() {
 				sideOffset={8}
 				className="vimKeybindingsPopover"
 			>
-				<div className="vimKeybindingsPopoverTitle">Vim keybindings</div>
+				<div className="vimKeybindingsPopoverTitle">
+					{t("advanced.editor.vimHelp.title")}
+				</div>
 				<div className="vimKeybindingsModes">
 					<div>
-						<strong>insert</strong> means normal typing mode. You type and text
-						appears, like the editor already does.
+						<strong>insert</strong> {t("advanced.editor.vimHelp.insertMode")}
 					</div>
 					<div>
-						<strong>normal</strong> means command mode. Your keys move around or
-						edit text instead of typing letters.
+						<strong>normal</strong> {t("advanced.editor.vimHelp.normalMode")}
 					</div>
 				</div>
 				<div className="vimKeybindingsList">
@@ -105,6 +108,7 @@ function VimKeybindingsHelp() {
 }
 
 export function AdvancedSettingsPane() {
+	const { t } = useTranslation("settings");
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
@@ -118,6 +122,8 @@ export function AdvancedSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
 	const [folioMode, setFolioModeState] = useState(false);
+	const [classicAllNotesByDefault, setClassicAllNotesByDefaultState] =
+		useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -138,6 +144,10 @@ export function AdvancedSettingsPane() {
 	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
+	const [
+		isSavingClassicAllNotesByDefault,
+		setIsSavingClassicAllNotesByDefault,
+	] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -160,6 +170,7 @@ export function AdvancedSettingsPane() {
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setFolioModeState(settings.ui.folioMode);
+			setClassicAllNotesByDefaultState(settings.ui.classicAllNotesByDefault);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 		} catch (cause) {
@@ -209,6 +220,9 @@ export function AdvancedSettingsPane() {
 		if (typeof payload.ui?.folioMode === "boolean") {
 			setFolioModeState(payload.ui.folioMode);
 		}
+		if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
+			setClassicAllNotesByDefaultState(payload.ui.classicAllNotesByDefault);
+		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
 		}
@@ -223,17 +237,17 @@ export function AdvancedSettingsPane() {
 
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Editor"
-					description="Controls for editing behavior and note structure inside Glyph."
+					title={t("advanced.editor.title")}
+					description={t("advanced.editor.description")}
 				>
 					<SettingsRow
-						label="Table of contents"
-						description="Show a floating table of contents for each note."
+						label={t("advanced.editor.tableOfContents")}
+						description={t("advanced.editor.tableOfContentsDescription")}
 					>
 						<SettingsToggle
 							checked={showToc}
 							disabled={isSavingShowToc}
-							ariaLabel="Table of contents"
+							ariaLabel={t("advanced.editor.tableOfContents")}
 							onCheckedChange={(checked) => {
 								const previous = showToc;
 								setError("");
@@ -251,13 +265,13 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="People mentions as tags"
-						description="When enabled, standalone @mentions are indexed and shown as people in the sidebar and search."
+						label={t("advanced.editor.peopleMentionsAsTags")}
+						description={t("advanced.editor.peopleMentionsAsTagsDescription")}
 					>
 						<SettingsToggle
 							checked={enablePeopleMentionsAsTags}
 							disabled={isSavingEnablePeopleMentionsAsTags}
-							ariaLabel="People mentions as tags"
+							ariaLabel={t("advanced.editor.peopleMentionsAsTags")}
 							onCheckedChange={(checked) => {
 								const previous = enablePeopleMentionsAsTags;
 								setError("");
@@ -286,13 +300,13 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Show frontmatter in editor"
-						description="Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases."
+						label={t("advanced.editor.showFrontmatter")}
+						description={t("advanced.editor.showFrontmatterDescription")}
 					>
 						<SettingsToggle
 							checked={showFrontmatterInEditor}
 							disabled={isSavingShowFrontmatterInEditor}
-							ariaLabel="Show frontmatter in editor"
+							ariaLabel={t("advanced.editor.showFrontmatter")}
 							onCheckedChange={(checked) => {
 								const previous = showFrontmatterInEditor;
 								setError("");
@@ -310,13 +324,13 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Colorful headings"
-						description="Use distinct built-in colors for H1-H6 while editing notes."
+						label={t("advanced.editor.colorfulHeadings")}
+						description={t("advanced.editor.colorfulHeadingsDescription")}
 					>
 						<SettingsToggle
 							checked={colorfulHeadings}
 							disabled={isSavingColorfulHeadings}
-							ariaLabel="Colorful headings"
+							ariaLabel={t("advanced.editor.colorfulHeadings")}
 							onCheckedChange={(checked) => {
 								const previous = colorfulHeadings;
 								setError("");
@@ -334,13 +348,13 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Beautiful Tags"
-						description="Enable the experimental Beautiful Tags presentation for tags."
+						label={t("advanced.editor.beautifulTags")}
+						description={t("advanced.editor.beautifulTagsDescription")}
 					>
 						<SettingsToggle
 							checked={beautifulTags}
 							disabled={isSavingBeautifulTags}
-							ariaLabel="Beautiful Tags"
+							ariaLabel={t("advanced.editor.beautifulTags")}
 							onCheckedChange={(checked) => {
 								const previous = beautifulTags;
 								setError("");
@@ -358,12 +372,12 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Editor width"
-						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
+						label={t("advanced.editor.editorWidth")}
+						description={t("advanced.editor.editorWidthDescription")}
 						interactive={false}
 					>
 						<SettingsSelect
-							aria-label="Editor width"
+							aria-label={t("advanced.editor.editorWidth")}
 							value={editorWidthMode}
 							disabled={isSavingEditorWidthMode}
 							onChange={(event) => {
@@ -382,21 +396,21 @@ export function AdvancedSettingsPane() {
 									});
 							}}
 						>
-							{EDITOR_WIDTH_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
+							{EDITOR_WIDTH_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`advanced.editor.editorWidthModes.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
-						label="Collapsible headings"
-						description="Show collapse toggles on note headings in editor and preview."
+						label={t("advanced.editor.collapsibleHeadings")}
+						description={t("advanced.editor.collapsibleHeadingsDescription")}
 					>
 						<SettingsToggle
 							checked={showCollapsibleHeadings}
 							disabled={isSavingShowCollapsibleHeadings}
-							ariaLabel="Collapsible headings"
+							ariaLabel={t("advanced.editor.collapsibleHeadings")}
 							onCheckedChange={(checked) => {
 								const previous = showCollapsibleHeadings;
 								setError("");
@@ -416,16 +430,16 @@ export function AdvancedSettingsPane() {
 					<SettingsRow
 						label={
 							<span className="settingsLabelWithHelp">
-								Vim Mode
+								{t("advanced.editor.vimMode")}
 								<VimKeybindingsHelp />
 							</span>
 						}
-						description="Do NOT Turn this ON if you don't know what it means."
+						description={t("advanced.editor.vimModeDescription")}
 					>
 						<SettingsToggle
 							checked={vimKeybindings}
 							disabled={isSavingVimKeybindings}
-							ariaLabel="Vim Mode"
+							ariaLabel={t("advanced.editor.vimMode")}
 							onCheckedChange={(checked) => {
 								const previous = vimKeybindings;
 								setError("");
@@ -444,17 +458,17 @@ export function AdvancedSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="AI"
-					description="Controls for how the AI assistant behaves by default."
+					title={t("advanced.ai.title")}
+					description={t("advanced.ai.description")}
 				>
 					<SettingsRow
-						label="AI chat has access to tools"
-						description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
+						label={t("advanced.ai.toolsAccess")}
+						description={t("advanced.ai.toolsAccessDescription")}
 					>
 						<SettingsToggle
 							checked={aiAssistantMode === "create"}
 							disabled={isSavingAiAssistantMode}
-							ariaLabel="AI chat has access to tools"
+							ariaLabel={t("advanced.ai.toolsAccess")}
 							onCheckedChange={(checked) => {
 								const previous = aiAssistantMode;
 								const nextMode: AiAssistantMode = checked ? "create" : "chat";
@@ -474,17 +488,17 @@ export function AdvancedSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="App"
-					description="Global app-level controls for the sidebar and workspace UI."
+					title={t("advanced.app.title")}
+					description={t("advanced.app.description")}
 				>
 					<SettingsRow
-						label="Folio Mode"
-						description="Show navigation, notes, and editor in a three-column workspace."
+						label={t("advanced.app.folioMode")}
+						description={t("advanced.app.folioModeDescription")}
 					>
 						<SettingsToggle
 							checked={folioMode}
 							disabled={isSavingFolioMode}
-							ariaLabel="Folio Mode"
+							ariaLabel={t("advanced.app.folioMode")}
 							onCheckedChange={(checked) => {
 								const previous = folioMode;
 								setError("");
@@ -502,13 +516,37 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Show folder file counts"
-						description="Show a recursive file total at the end of each folder row in the file tree."
+						label={t("advanced.app.classicAllNotes")}
+						description={t("advanced.app.classicAllNotesDescription")}
+					>
+						<SettingsToggle
+							checked={classicAllNotesByDefault}
+							disabled={isSavingClassicAllNotesByDefault}
+							ariaLabel={t("advanced.app.classicAllNotes")}
+							onCheckedChange={(checked) => {
+								const previous = classicAllNotesByDefault;
+								setError("");
+								setClassicAllNotesByDefaultState(checked);
+								setIsSavingClassicAllNotesByDefault(true);
+								void setClassicAllNotesByDefault(checked)
+									.catch((cause) => {
+										setClassicAllNotesByDefaultState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingClassicAllNotesByDefault(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("advanced.app.folderFileCounts")}
+						description={t("advanced.app.folderFileCountsDescription")}
 					>
 						<SettingsToggle
 							checked={showFileTreeFolderCounts}
 							disabled={isSavingShowFileTreeFolderCounts}
-							ariaLabel="Show folder file counts"
+							ariaLabel={t("advanced.app.folderFileCounts")}
 							onCheckedChange={(checked) => {
 								const previous = showFileTreeFolderCounts;
 								setError("");
@@ -527,17 +565,17 @@ export function AdvancedSettingsPane() {
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="Database"
-					description="Global controls for how databases are presented across Glyph."
+					title={t("advanced.database.title")}
+					description={t("advanced.database.description")}
 				>
 					<SettingsRow
-						label="Show database column color"
-						description="Keep the lane pill and tag colors while toggling the full column tint."
+						label={t("advanced.database.columnColor")}
+						description={t("advanced.database.columnColorDescription")}
 					>
 						<SettingsToggle
 							checked={showDatabaseColumnColor}
 							disabled={isSavingDatabaseColumnColor}
-							ariaLabel="Show database column color"
+							ariaLabel={t("advanced.database.columnColor")}
 							onCheckedChange={(checked) => {
 								const previous = showDatabaseColumnColor;
 								setError("");

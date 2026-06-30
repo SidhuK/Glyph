@@ -3,16 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { displayNameFromPath } from "../../utils/path";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import type { NoteInlineEditorMode } from "../editor/types";
 
 const AUTOSAVE_DELAY_MS = 700;
-
-function displayNameFromPath(path: string): string {
-	const normalized = path.replace(/\\/g, "/");
-	const parts = normalized.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? path;
-}
 
 export function ExternalMarkdownWindow() {
 	const [path, setPath] = useState("");

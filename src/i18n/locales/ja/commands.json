@@ -158,6 +158,10 @@
 			"label": "区切り線",
 			"description": "水平の区切り線を挿入します。"
 		},
+		"details_block": {
+			"label": "詳細ブロック",
+			"description": "折りたたみ可能なトグルセクションを挿入します。"
+		},
 		"duplicate-current-note": {
 			"label": "現在のノートを複製",
 			"description": "現在のノートを複製します。"
@@ -290,9 +294,41 @@
 			"label": "Git Sync 設定を開く",
 			"description": "設定の Git Sync セクションを開きます。"
 		},
+		"open-glyph-changelog": {
+			"label": "変更履歴",
+			"description": "Glyphの変更履歴を開きます。"
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph Discordコミュニティを開きます。"
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Glyph GitHubリポジトリを開きます。"
+		},
+		"open-glyph-privacy": {
+			"label": "プライバシーポリシー",
+			"description": "プライバシーポリシーを開きます。"
+		},
+		"open-glyph-terms": {
+			"label": "利用規約",
+			"description": "利用規約を開きます。"
+		},
+		"open-glyph-website": {
+			"label": "Glyphウェブサイト",
+			"description": "Glyphウェブサイトを開きます。"
+		},
+		"open-glyph-x": {
+			"label": "Xでフォロー",
+			"description": "XでGlyphを開きます。"
+		},
 		"open-license-settings": {
 			"label": "ライセンス設定を開く",
 			"description": "設定のライセンスセクションを開きます。"
+		},
+		"open-local-connections": {
+			"label": "ローカル接続を開く",
+			"description": "ローカル接続グラフビューを開きます。"
 		},
 		"open-local-graph": {
 			"label": "ローカルグラフを開く",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "設定を開く",
 			"description": "設定ビューを開きます。"
+		},
+		"open-shortcuts-settings": {
+			"label": "キーボードショートカット…",
+			"description": "設定のキーボードショートカットセクションを開きます。"
 		},
 		"open-space": {
 			"label": "スペースを開く",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "取り消し線",
 			"description": "現在の選択範囲の取り消し線を切り替えます。"
+		},
+		"switch-to-edit": {
+			"label": "リッチモード",
+			"description": "エディターをリッチ編集モードに切り替えます。"
+		},
+		"switch-to-preview": {
+			"label": "プレビューモード",
+			"description": "エディターをプレビューモードに切り替えます。"
+		},
+		"switch-to-raw": {
+			"label": "Rawモード",
+			"description": "エディターをRaw Markdownモードに切り替えます。"
 		},
 		"table": {
 			"label": "表",

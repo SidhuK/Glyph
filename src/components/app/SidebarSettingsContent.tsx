@@ -8,6 +8,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
+import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
@@ -211,7 +212,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						<Button
 							type="button"
 							className="settingsFeedbackButton"
-							onClick={() => void openUrl("https://discord.gg/fasY8gAQR")}
+							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
 							<HugeiconsIcon
 								icon={BubbleChatQuestionIcon}

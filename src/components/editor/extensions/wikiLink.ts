@@ -17,7 +17,7 @@ import {
 	wikiLinkAttrsToMarkdown,
 } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
-import { lockEditorScrollDuringSuggestion } from "../suggestionScroll";
+import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -309,29 +309,14 @@ export const WikiLink = Node.create({
 						.insertContent(" ")
 						.run();
 				},
-				render: () => {
-					let menu: HTMLDivElement | null = null;
-					let selectedIndex = 0;
-					let activeProps: SuggestionProps<EditorLinkSuggestion> | null = null;
-					let unlockEditorScroll: (() => void) | null = null;
-
-					const updateSelection = (items: EditorLinkSuggestion[]) => {
-						if (!menu) return;
-						const children = Array.from(menu.children);
-						children.forEach((child, index) => {
-							child.classList.toggle("active", index === selectedIndex);
-						});
-						if (!items.length) selectedIndex = 0;
-					};
-
-					const updateMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
-						if (!menu) return;
-						menu.replaceChildren();
-						if (!props.items.length) return;
-						for (const [index, item] of props.items.entries()) {
+				render: () =>
+					createTipTapSuggestionMenu<EditorLinkSuggestion>({
+						menuClassName: "wikiLinkSuggestionMenu",
+						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
+							button.classList.toggle("active", isActive);
 
 							const title = document.createElement("span");
 							title.className = "wikiLinkSuggestionTitle";
@@ -344,86 +329,11 @@ export const WikiLink = Node.create({
 							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
-								props.command(item);
+								select(item);
 							});
-							if (index === selectedIndex) button.classList.add("active");
-							menu.append(button);
-						}
-						const rect = props.clientRect?.();
-						if (rect && menu) {
-							const pad = 8;
-							const gap = 6;
-							const menuRect = menu.getBoundingClientRect();
-							const placeBelowTop = rect.bottom + gap;
-							const placeAboveTop = rect.top - menuRect.height - gap;
-							const maxLeft = window.innerWidth - menuRect.width - pad;
-							const maxTop = window.innerHeight - menuRect.height - pad;
-							const nextLeft = Math.max(pad, Math.min(rect.left, maxLeft));
-							const nextTop =
-								placeBelowTop <= maxTop
-									? placeBelowTop
-									: Math.max(pad, Math.min(placeAboveTop, maxTop));
-							menu.style.left = `${nextLeft}px`;
-							menu.style.top = `${nextTop}px`;
-						}
-					};
-
-					const createMenu = (props: SuggestionProps<EditorLinkSuggestion>) => {
-						if (menu) menu.remove();
-						menu = document.createElement("div");
-						menu.className = "wikiLinkSuggestionMenu";
-						document.body.append(menu);
-						updateMenu(props);
-					};
-
-					return {
-						onStart: (props: SuggestionProps<EditorLinkSuggestion>) => {
-							activeProps = props;
-							selectedIndex = 0;
-							unlockEditorScroll?.();
-							unlockEditorScroll = lockEditorScrollDuringSuggestion(
-								props.editor,
-								() => menu,
-							);
-							createMenu(props);
+							return button;
 						},
-						onUpdate: (props: SuggestionProps<EditorLinkSuggestion>) => {
-							activeProps = props;
-							if (!menu) createMenu(props);
-							updateMenu(props);
-						},
-						onKeyDown: ({ event }) => {
-							const current = activeProps;
-							if (!current?.items.length) return false;
-							if (event.key === "ArrowDown") {
-								selectedIndex = (selectedIndex + 1) % current.items.length;
-								updateSelection(current.items);
-								return true;
-							}
-							if (event.key === "ArrowUp") {
-								selectedIndex =
-									(selectedIndex - 1 + current.items.length) %
-									current.items.length;
-								updateSelection(current.items);
-								return true;
-							}
-							if (event.key === "Enter" || event.key === "Tab") {
-								event.preventDefault();
-								current.command(current.items[selectedIndex]);
-								return true;
-							}
-							if (event.key === "Escape") return true;
-							return false;
-						},
-						onExit: () => {
-							unlockEditorScroll?.();
-							unlockEditorScroll = null;
-							if (menu) menu.remove();
-							menu = null;
-							activeProps = null;
-						},
-					};
-				},
+					}),
 			}),
 		];
 	},

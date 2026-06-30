@@ -1,6 +1,5 @@
 import {
 	Copy01Icon,
-	LocationAdd01Icon,
 	SourceCodeIcon,
 	Tick02Icon,
 } from "@hugeicons/core-free-icons";
@@ -10,13 +9,14 @@ import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { TableInlineControls } from "./TableInlineControls";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
 import type {
 	SelectedCodeBlockState,
-	SelectedTableState,
+	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
 
 interface NoteEditorSurfaceProps {
@@ -26,12 +26,7 @@ interface NoteEditorSurfaceProps {
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
 
-	table: {
-		selected: SelectedTableState | null;
-		onControlMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => void;
-		onAddRow: () => void;
-		onAddColumn: () => void;
-	};
+	tableControls: TableInlineControlsProps | null;
 
 	codeBlock: {
 		selected: SelectedCodeBlockState | null;
@@ -52,7 +47,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	colorfulHeadings,
 	canEdit,
 	hostRef,
-	table,
+	tableControls,
 	codeBlock,
 }: NoteEditorSurfaceProps) {
 	const hostClassName = [
@@ -74,47 +69,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			}
 		>
 			<EditorContent editor={editor} />
-			{canEdit && table.selected ? (
-				<>
-					<button
-						type="button"
-						className="tableInlineAddBtn is-row"
-						data-axis="row"
-						aria-label="Add row"
-						title="Add row"
-						style={{
-							left: `${table.selected.rowControlLeft}px`,
-							top: `${table.selected.rowControlTop}px`,
-						}}
-						onMouseDown={table.onControlMouseDown}
-						onClick={table.onAddRow}
-					>
-						<HugeiconsIcon
-							icon={LocationAdd01Icon}
-							size="var(--icon-md)"
-							strokeWidth={0.9}
-						/>
-					</button>
-					<button
-						type="button"
-						className="tableInlineAddBtn is-column"
-						data-axis="column"
-						aria-label="Add column"
-						title="Add column"
-						style={{
-							left: `${table.selected.columnControlLeft}px`,
-							top: `${table.selected.columnControlTop}px`,
-						}}
-						onMouseDown={table.onControlMouseDown}
-						onClick={table.onAddColumn}
-					>
-						<HugeiconsIcon
-							icon={LocationAdd01Icon}
-							size="var(--icon-md)"
-							strokeWidth={0.9}
-						/>
-					</button>
-				</>
+			{canEdit && tableControls ? (
+				<TableInlineControls {...tableControls} />
 			) : null}
 			{canEdit && codeBlock.selected ? (
 				<div

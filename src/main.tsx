@@ -38,6 +38,9 @@ function ThemeAndTypographyBridge() {
 		null,
 	);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
+	const [editorFontFamily, setEditorFontFamily] = React.useState<string | null>(
+		null,
+	);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
 		null,
 	);
@@ -64,6 +67,7 @@ function ThemeAndTypographyBridge() {
 				setDarkThemeId(settings.ui.darkThemeId);
 				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
+				setEditorFontFamily(settings.ui.editorFontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
@@ -121,6 +125,9 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.fontFamily === "string") {
 			setFontFamily(payload.ui.fontFamily);
 		}
+		if (typeof payload.ui?.editorFontFamily === "string") {
+			setEditorFontFamily(payload.ui.editorFontFamily);
+		}
 		if (typeof payload.ui?.monoFontFamily === "string") {
 			setMonoFontFamily(payload.ui.monoFontFamily);
 		}
@@ -156,6 +163,7 @@ function ThemeAndTypographyBridge() {
 	React.useEffect(() => {
 		if (
 			!fontFamily ||
+			!editorFontFamily ||
 			!monoFontFamily ||
 			typeof uiFontSize !== "number" ||
 			typeof editorFontSize !== "number"
@@ -163,14 +171,26 @@ function ThemeAndTypographyBridge() {
 			return;
 		}
 		const applyTypography = () => {
-			applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
+			applyUiTypography({
+				fontFamily,
+				editorFontFamily,
+				monoFontFamily,
+				uiFontSize,
+				editorFontSize,
+			});
 		};
 		applyTypography();
 		window.addEventListener("resize", applyTypography);
 		return () => {
 			window.removeEventListener("resize", applyTypography);
 		};
-	}, [editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
+	}, [
+		editorFontFamily,
+		editorFontSize,
+		fontFamily,
+		monoFontFamily,
+		uiFontSize,
+	]);
 
 	React.useEffect(() => {
 		if (!accent) return;

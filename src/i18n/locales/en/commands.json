@@ -158,6 +158,10 @@
 			"label": "Divider",
 			"description": "Insert a horizontal divider."
 		},
+		"details_block": {
+			"label": "Details Block",
+			"description": "Insert a collapsible toggle section."
+		},
 		"duplicate-current-note": {
 			"label": "Duplicate Current Note",
 			"description": "Duplicate the current note."
@@ -290,9 +294,41 @@
 			"label": "Open Git Sync Settings",
 			"description": "Open the Git Sync section in settings."
 		},
+		"open-glyph-changelog": {
+			"label": "Changelog",
+			"description": "Open the Glyph changelog."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Open the Glyph Discord community."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Open the Glyph GitHub repository."
+		},
+		"open-glyph-privacy": {
+			"label": "Privacy Policy",
+			"description": "Open the privacy policy."
+		},
+		"open-glyph-terms": {
+			"label": "Terms of Service",
+			"description": "Open the terms of service."
+		},
+		"open-glyph-website": {
+			"label": "Glyph Website",
+			"description": "Open the Glyph website."
+		},
+		"open-glyph-x": {
+			"label": "Follow on X",
+			"description": "Open Glyph on X."
+		},
 		"open-license-settings": {
 			"label": "Open License Settings",
 			"description": "Open the license section in settings."
+		},
+		"open-local-connections": {
+			"label": "Open Local Connections",
+			"description": "Open the local connections graph view."
 		},
 		"open-local-graph": {
 			"label": "Open Local Graph",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "Open Settings",
 			"description": "Open the settings view."
+		},
+		"open-shortcuts-settings": {
+			"label": "Keyboard Shortcuts…",
+			"description": "Open the keyboard shortcuts section in settings."
 		},
 		"open-space": {
 			"label": "Open Space",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "Strikethrough",
 			"description": "Toggle strikethrough formatting for the current selection."
+		},
+		"switch-to-edit": {
+			"label": "Rich Mode",
+			"description": "Switch the editor to rich editing mode."
+		},
+		"switch-to-preview": {
+			"label": "Preview Mode",
+			"description": "Switch the editor to preview mode."
+		},
+		"switch-to-raw": {
+			"label": "Raw Mode",
+			"description": "Switch the editor to raw markdown mode."
 		},
 		"table": {
 			"label": "Table",

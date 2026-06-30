@@ -23,6 +23,16 @@ interface DatabaseToolbarProps {
 	className?: string;
 }
 
+function groupColumnOptionLabel(column: DatabaseColumn): string {
+	if (column.type === "tags" || column.property_kind === "tags") {
+		return `${column.label} (multi-lane)`;
+	}
+	if (column.property_kind === "multi_select") {
+		return `${column.label} (multi-lane)`;
+	}
+	return column.label;
+}
+
 export function DatabaseToolbar({
 	databaseView,
 	groupColumns,
@@ -47,10 +57,17 @@ export function DatabaseToolbar({
 	const hasSelectedGroupColumn =
 		groupColumnId != null &&
 		groupColumns.some((column) => column.id === groupColumnId);
+	const selectedGroupColumn =
+		(hasSelectedGroupColumn
+			? groupColumns.find((column) => column.id === groupColumnId)
+			: null) ??
+		(databaseView === "board" ? groupColumns[0] : null) ??
+		null;
 	const selectedGroupColumnId =
-		(hasSelectedGroupColumn ? groupColumnId : null) ??
+		selectedGroupColumn?.id ??
 		(databaseView === "board" ? groupColumns[0]?.id : "") ??
 		"";
+	const groupByLabel = t("database.groupedBy");
 
 	useEffect(() => {
 		setSearchDraft(searchValue);
@@ -89,7 +106,7 @@ export function DatabaseToolbar({
 							id={searchInputId}
 							className="databaseToolbarSearchInput"
 							value={searchDraft}
-							placeholder={t("database.searchView")}
+							placeholder={t("database.searchThisView")}
 							aria-label={t("database.searchThisView")}
 							onBlur={() => {
 								if (!searchDraft) setSearchExpanded(false);
@@ -136,26 +153,36 @@ export function DatabaseToolbar({
 				)}
 				{groupColumns.length > 0 ? (
 					<label className="databaseToolbarGroupBy">
-						<span className="databaseToolbarGroupByLabel">
-							{t("database.groupBy")}
-						</span>
+						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>
 						<select
 							className="databaseToolbarGroupBySelect"
 							value={selectedGroupColumnId}
+							title={
+								selectedGroupColumn
+									? t("database.groupingBy", {
+											label: selectedGroupColumn.label,
+										})
+									: t("database.chooseGroupField")
+							}
+							aria-label={groupByLabel}
 							onChange={(event) =>
 								onGroupColumnIdChange(event.target.value || null)
 							}
 						>
 							{databaseView === "board" ? null : (
-								<option value="">{t("database.none")}</option>
+								<option value="">{t("database.noGrouping")}</option>
 							)}
 							{groupColumns.map((column) => (
 								<option key={column.id} value={column.id}>
-									{column.label}
+									{groupColumnOptionLabel(column)}
 								</option>
 							))}
 						</select>
 					</label>
+				) : databaseView === "board" ? (
+					<span className="databaseToolbarGroupByHint">
+						{t("database.boardGroupHint")}
+					</span>
 				) : null}
 				<DatabaseViewOptionsPopover
 					open={viewOptionsOpen}

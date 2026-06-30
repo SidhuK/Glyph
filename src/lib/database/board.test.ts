@@ -13,8 +13,14 @@ import {
 	moveBoardCardToLane,
 	moveBoardLaneToIndex,
 	orderBoardLanes,
+	resolveBoardGroupColumns,
+	resolveDatabaseGroupColumns,
 } from "./board";
-import type { DatabaseColumn, DatabaseRow } from "./types";
+import type {
+	DatabaseColumn,
+	DatabasePropertyOption,
+	DatabaseRow,
+} from "./types";
 
 const statusColumn: DatabaseColumn = {
 	id: "property:status",
@@ -40,6 +46,12 @@ const tagsColumn: DatabaseColumn = {
 	label: "Tags",
 	visible: true,
 };
+
+const availableProperties: DatabasePropertyOption[] = [
+	{ key: "status", kind: "status", count: 2 },
+	{ key: "published", kind: "date", count: 1 },
+	{ key: "source", kind: "url", count: 1 },
+];
 
 const rows: DatabaseRow[] = [
 	{
@@ -114,12 +126,33 @@ describe("database board helpers", () => {
 		).toBe("property:status");
 	});
 
+	it("includes YAML properties as table grouping columns without visible columns", () => {
+		expect(
+			resolveDatabaseGroupColumns([tagsColumn], availableProperties).map(
+				(column) => [column.id, column.visible],
+			),
+		).toEqual([
+			["tags", true],
+			["property:status", false],
+			["property:published", false],
+			["property:source", false],
+		]);
+	});
+
+	it("includes only lane-friendly YAML properties as board grouping columns", () => {
+		expect(
+			resolveBoardGroupColumns([tagsColumn], availableProperties).map(
+				(column) => column.id,
+			),
+		).toEqual(["tags", "property:status"]);
+	});
+
 	it("creates lanes from the current property values", () => {
 		const lanes = createBoardLanes(rows, statusColumn);
 		expect(lanes.map((lane) => lane.label)).toEqual([
 			"Backlog",
 			"In progress",
-			"No value",
+			"No status yet",
 		]);
 		expect(lanes[0]?.rows[0]?.title).toBe("One");
 		expect(lanes[2]?.id).toBe(DATABASE_BOARD_EMPTY_LANE_ID);
@@ -153,7 +186,7 @@ describe("database board helpers", () => {
 		expect(tagLanes.map((lane) => lane.label)).toEqual([
 			"swift",
 			"ios",
-			"No value",
+			"No tags yet",
 		]);
 		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual(["swift", "ios"]);
 		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("swift");
@@ -168,7 +201,7 @@ describe("database board helpers", () => {
 		expect(groups.map((group) => group.label)).toEqual([
 			"Backlog",
 			"In progress",
-			"No value",
+			"No status yet",
 		]);
 		expect(groups[0]?.rows.map((row) => row.title)).toEqual(["One"]);
 		expect(groups[2]?.rows.map((row) => row.title)).toEqual(["Three"]);
@@ -186,7 +219,7 @@ describe("database board helpers", () => {
 		expect(lanes.map((lane) => lane.label)).toEqual([
 			"Unchecked",
 			"Checked",
-			"No value",
+			"Not set yet",
 		]);
 		expect(lanes[1]?.rows[0]?.title).toBe("Two");
 	});

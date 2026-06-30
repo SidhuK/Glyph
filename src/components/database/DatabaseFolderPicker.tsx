@@ -1,7 +1,9 @@
 import { Folder03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { join } from "@tauri-apps/api/path";
+import type { TFunction } from "i18next";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { cn } from "../../lib/utils";
@@ -18,16 +20,16 @@ function folderParts(path: string): string[] {
 	return path.split("/").filter(Boolean);
 }
 
-function folderName(path: string): string {
-	if (!path) return "Space root";
+function folderName(path: string, t: TFunction<"ui">): string {
+	if (!path) return t("database.picker.spaceRoot");
 	const parts = folderParts(path);
 	return parts[parts.length - 1] ?? path;
 }
 
-function folderBreadcrumb(path: string): string {
-	if (!path) return "Top level";
+function folderBreadcrumb(path: string, t: TFunction<"ui">): string {
+	if (!path) return t("database.picker.topLevel");
 	const parts = folderParts(path);
-	return parts.slice(0, -1).join(" / ") || "Top level";
+	return parts.slice(0, -1).join(" / ") || t("database.picker.topLevel");
 }
 
 function normalizeRelativeFolder(path: string): string {
@@ -40,11 +42,13 @@ export function DatabaseFolderPicker({
 	placeholder = "Choose a folder",
 	triggerClassName,
 }: DatabaseFolderPickerProps) {
+	const { t } = useTranslation("ui");
 	const [isPicking, setIsPicking] = useState(false);
 	const [error, setError] = useState("");
 	const hasError = Boolean(error);
-	const selectedLabel = value ? folderName(value) : placeholder;
-	const selectedMeta = error || folderBreadcrumb(value);
+	const resolvedPlaceholder = placeholder || t("database.chooseFolder");
+	const selectedLabel = value ? folderName(value, t) : resolvedPlaceholder;
+	const selectedMeta = error || folderBreadcrumb(value, t);
 
 	const handlePickFolder = async () => {
 		setError("");
@@ -88,7 +92,7 @@ export function DatabaseFolderPicker({
 			)}
 			disabled={isPicking}
 			aria-invalid={hasError || undefined}
-			title={error || value || placeholder}
+			title={error || value || resolvedPlaceholder}
 			onClick={() => {
 				void handlePickFolder();
 			}}

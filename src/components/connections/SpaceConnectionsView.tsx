@@ -1,263 +1,33 @@
 import { LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
-import type { SpaceConnections, SpaceConnectionsNode } from "../../lib/tauri";
+import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { dispatchWikiLinkClick } from "../editor/markdown/editorEvents";
-import { Button } from "../ui/shadcn/button";
+import { Toggle } from "../base/toggle/toggle";
 import {
-	applyConnectionsTheme,
-	connectionsLayoutSpacing,
-	connectionsStylesForContainer,
-	highlightNeighborhood,
-	registerFcose,
-	runConnectionsLayout,
-} from "./connectionsTheme";
+	dispatchTagClick,
+	dispatchWikiLinkClick,
+} from "../editor/markdown/editorEvents";
+import { Button } from "../ui/shadcn/button";
+import { useSigmaConnections } from "./useSigmaConnections";
+import { useSpaceConnectionsGraph } from "./useSpaceConnectionsGraph";
 
-const DEFAULT_SPACE_CONNECTIONS_NODES = 1000;
-const FULL_SPACE_CONNECTIONS_NODES = 10_000;
-const MAX_SPACE_CONNECTIONS_TAGS = 250;
-const LARGE_CONNECTIONS_LAYOUT_THRESHOLD = 2400;
-const SATELLITE_GAP = 130;
-const SATELLITE_SPACING = 44;
-const CONNECTIONS_LAYOUT_CACHE_PREFIX = "glyph.spaceConnections.layout:";
-const CONNECTIONS_LAYOUT_CACHE_VERSION = 1;
-const CONNECTIONS_LAYOUT_ALGORITHM = "organic-cloud-v2";
-const MIN_NOTE_NODE_SIZE = 10;
-const MAX_NOTE_NODE_SIZE = 34;
-const MIN_TAG_NODE_SIZE = 14;
-const MAX_TAG_NODE_SIZE = 30;
+const LARGE_GRAPH_NOTE_THRESHOLD = 5_000;
 
-interface ConnectionsPosition {
-	x: number;
-	y: number;
-}
+async function warnAboutLargeGraph(payload: SpaceConnections) {
+	const noteCount = payload.nodes.length;
+	if (noteCount <= LARGE_GRAPH_NOTE_THRESHOLD) return;
 
-interface CachedConnectionsLayout {
-	version: number;
-	signature: string;
-	positions: Record<string, ConnectionsPosition>;
-}
-
-function noteNodeClasses(node: SpaceConnectionsNode) {
-	const weight = node.link_count + node.tag_count;
-	const classes = [];
-	if (node.is_isolated) {
-		classes.push("isolated");
-	} else if (weight >= 10) {
-		classes.push("hub-strong");
-	} else if (weight >= 5) {
-		classes.push("hub");
-	} else if (weight >= 2) {
-		classes.push("connected");
-	}
-	return classes.join(" ");
-}
-
-function scaledNodeSize(weight: number, minSize: number, maxSize: number) {
-	if (weight <= 0) return minSize;
-	const normalized = Math.min(Math.log1p(weight) / Math.log1p(40), 1);
-	return Math.round(minSize + normalized * (maxSize - minSize));
-}
-
-function connectionElements(
-	graph: SpaceConnections,
-	positions?: Record<string, ConnectionsPosition>,
-): ElementDefinition[] {
-	return [
-		...graph.nodes.map((node) => {
-			const position = positions?.[node.id];
-			return {
-				data: {
-					id: node.id,
-					label: node.title || node.id,
-					linkCount: node.link_count,
-					size: scaledNodeSize(
-						node.link_count * 2 + node.tag_count,
-						MIN_NOTE_NODE_SIZE,
-						MAX_NOTE_NODE_SIZE,
-					),
-					tagCount: node.tag_count,
-				},
-				...(position ? { position } : {}),
-				classes: noteNodeClasses(node),
-				grabbable: true,
-			};
-		}),
-		...graph.tags.map((tag) => {
-			const position = positions?.[tag.id];
-			return {
-				data: {
-					id: tag.id,
-					label: tag.title,
-					noteCount: tag.note_count,
-					size: scaledNodeSize(
-						tag.note_count,
-						MIN_TAG_NODE_SIZE,
-						MAX_TAG_NODE_SIZE,
-					),
-					tag: tag.tag,
-				},
-				...(position ? { position } : {}),
-				classes: tag.note_count >= 8 ? "tag tag-strong" : "tag",
-				grabbable: true,
-			};
-		}),
-		...graph.edges.map((edge, index) => ({
-			data: {
-				id: `${edge.kind}:${edge.from_id}->${edge.to_id}:${index}`,
-				source: edge.from_id,
-				target: edge.to_id,
-			},
-			classes: edge.kind,
-		})),
-		...graph.tag_edges.map((edge, index) => ({
-			data: {
-				id: `tag:${edge.tag_id}->${edge.note_id}:${index}`,
-				source: edge.tag_id,
-				target: edge.note_id,
-			},
-			classes: "tag-link",
-		})),
-	];
-}
-
-function hashString(value: string) {
-	let hash = 5381;
-	for (const char of value) {
-		hash = (hash * 33) ^ char.charCodeAt(0);
-	}
-	return (hash >>> 0).toString(36);
-}
-
-function connectionsSignature(graph: SpaceConnections) {
-	const source = [
-		graph.total_notes,
-		CONNECTIONS_LAYOUT_ALGORITHM,
-		graph.nodes.length,
-		graph.tags.length,
-		graph.edges.length,
-		graph.tag_edges.length,
-		...graph.nodes.map((node) => node.id),
-		...graph.tags.map((tag) => tag.id),
-		...graph.edges.map((edge) => `${edge.kind}:${edge.from_id}->${edge.to_id}`),
-		...graph.tag_edges.map((edge) => `${edge.tag_id}->${edge.note_id}`),
-	].join("\n");
-	return hashString(source);
-}
-
-function connectionsLayoutCacheKey(spacePath: string | null) {
-	return `${CONNECTIONS_LAYOUT_CACHE_PREFIX}${spacePath ?? "no-space"}`;
-}
-
-function isConnectionsPosition(value: unknown): value is ConnectionsPosition {
-	if (!value || typeof value !== "object") return false;
-	const record = value as Record<PropertyKey, unknown>;
-	return typeof record.x === "number" && typeof record.y === "number";
-}
-
-function readConnectionsLayoutCache(
-	spacePath: string | null,
-	signature: string,
-): CachedConnectionsLayout | null {
-	try {
-		const raw = window.sessionStorage.getItem(
-			connectionsLayoutCacheKey(spacePath),
-		);
-		if (!raw) return null;
-		const parsed: unknown = JSON.parse(raw);
-		if (!parsed || typeof parsed !== "object") return null;
-		const record = parsed as Record<PropertyKey, unknown>;
-		if (
-			record.version !== CONNECTIONS_LAYOUT_CACHE_VERSION ||
-			record.signature !== signature ||
-			!record.positions
-		) {
-			return null;
-		}
-		if (typeof record.positions !== "object") return null;
-
-		const positions: Record<string, ConnectionsPosition> = {};
-		for (const [id, position] of Object.entries(record.positions)) {
-			if (isConnectionsPosition(position)) {
-				positions[id] = { x: position.x, y: position.y };
-			}
-		}
-		if (Object.keys(positions).length === 0) return null;
-		return { version: CONNECTIONS_LAYOUT_CACHE_VERSION, signature, positions };
-	} catch {
-		return null;
-	}
-}
-
-function clearPersistentConnectionsLayoutCaches() {
-	try {
-		const keys: string[] = [];
-		for (let index = 0; index < window.localStorage.length; index += 1) {
-			const key = window.localStorage.key(index);
-			if (!key) continue;
-			if (key.startsWith(CONNECTIONS_LAYOUT_CACHE_PREFIX)) {
-				keys.push(key);
-			}
-		}
-		for (const key of keys) {
-			window.localStorage.removeItem(key);
-		}
-	} catch {
-		// Old persistent cache cleanup is best-effort.
-	}
-}
-
-function writeConnectionsLayoutCache(
-	spacePath: string | null,
-	signature: string,
-	positions: Record<string, ConnectionsPosition>,
-) {
-	try {
-		const cachedPositions: Record<string, ConnectionsPosition> = {};
-		const raw = window.sessionStorage.getItem(
-			connectionsLayoutCacheKey(spacePath),
-		);
-		if (raw) {
-			const parsed: unknown = JSON.parse(raw);
-			if (parsed && typeof parsed === "object") {
-				const record = parsed as Record<PropertyKey, unknown>;
-				if (
-					record.version === CONNECTIONS_LAYOUT_CACHE_VERSION &&
-					record.signature === signature &&
-					record.positions &&
-					typeof record.positions === "object"
-				) {
-					for (const [id, position] of Object.entries(record.positions)) {
-						if (isConnectionsPosition(position)) {
-							cachedPositions[id] = { x: position.x, y: position.y };
-						}
-					}
-				}
-			}
-		}
-		window.sessionStorage.setItem(
-			connectionsLayoutCacheKey(spacePath),
-			JSON.stringify({
-				version: CONNECTIONS_LAYOUT_CACHE_VERSION,
-				signature,
-				positions: { ...cachedPositions, ...positions },
-			} satisfies CachedConnectionsLayout),
-		);
-	} catch {
-		// Cache writes are best-effort; rendering should never depend on storage.
-	}
-}
-
-function positionsForNodes(cy: Core): Record<string, ConnectionsPosition> {
-	const positions: Record<string, ConnectionsPosition> = {};
-	for (const node of cy.nodes()) {
-		const position = node.position();
-		positions[node.id()] = { x: position.x, y: position.y };
-	}
-	return positions;
+	const { message } = await import("@tauri-apps/plugin-dialog");
+	await message(
+		`This space contains ${noteCount.toLocaleString()} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.`,
+		{
+			title: "Large connections graph",
+			kind: "warning",
+			okLabel: "Continue",
+		},
+	);
 }
 
 function openNote(nodeId: string) {
@@ -271,425 +41,177 @@ function openNote(nodeId: string) {
 	});
 }
 
-function scatterSatelliteNodes(cy: Core) {
-	const satelliteNodes = cy.nodes(".isolated, .tag");
-	if (satelliteNodes.length === 0) return;
-
-	const anchoredNodes = cy.nodes().not(".isolated, .tag");
-	const bounds = (
-		anchoredNodes.length > 0 ? anchoredNodes : cy.nodes()
-	).boundingBox();
-	const center = {
-		x: bounds.x1 + bounds.w / 2,
-		y: bounds.y1 + bounds.h / 2,
-	};
-	const baseRadius = Math.max(bounds.w, bounds.h) / 2 + SATELLITE_GAP;
-	const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-
-	satelliteNodes.forEach((node, index) => {
-		const radius =
-			baseRadius + Math.sqrt(index) * SATELLITE_SPACING + (index % 5) * 7;
-		const angle = index * goldenAngle + (node.hasClass("tag") ? 0.45 : 0);
-		const xJitter = ((index * 37) % 29) - 14;
-		const yJitter = ((index * 53) % 31) - 15;
-
-		node.position({
-			x: center.x + Math.cos(angle) * radius + xJitter,
-			y: center.y + Math.sin(angle) * radius + yJitter,
-		});
-	});
+function openTagSearch(_tagId: string, label: string) {
+	dispatchTagClick({ tag: label, tagOnly: true });
 }
 
-function organicizeNoteCloud(cy: Core) {
-	const noteNodes = cy.nodes().not(".isolated, .tag");
-	if (noteNodes.length === 0) return;
-
-	const bounds = noteNodes.boundingBox();
-	const center = {
-		x: bounds.x1 + bounds.w / 2,
-		y: bounds.y1 + bounds.h / 2,
-	};
-	const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-	const sortedNodes = [...noteNodes].sort((left, right) => {
-		const leftWeight =
-			Number(left.data("linkCount") ?? 0) + Number(left.data("tagCount") ?? 0);
-		const rightWeight =
-			Number(right.data("linkCount") ?? 0) +
-			Number(right.data("tagCount") ?? 0);
-		return rightWeight - leftWeight || left.id().localeCompare(right.id());
-	});
-	const maxRadius = Math.max(360, Math.sqrt(sortedNodes.length) * 34);
-	const xScale = 1.22;
-	const yScale = 0.86;
-
-	for (const [index, node] of sortedNodes.entries()) {
-		const seed = Number.parseInt(hashString(node.id()), 36);
-		const progress =
-			sortedNodes.length <= 1 ? 0 : index / (sortedNodes.length - 1);
-		const angle = index * goldenAngle + (seed % 23) * 0.021;
-		const radius =
-			Math.sqrt(progress) * maxRadius +
-			Math.sin(index * 0.19 + (seed % 13)) * 22;
-		const xJitter = ((seed * 37) % 61) - 30;
-		const yJitter = ((seed * 53) % 57) - 28;
-
-		node.position({
-			x: center.x + Math.cos(angle) * radius * xScale + xJitter,
-			y: center.y + Math.sin(angle) * radius * yScale + yJitter,
-		});
-	}
+interface SpaceConnectionsControlsProps {
+	showUnconnectedNotes: boolean;
+	onShowUnconnectedNotesChange: (checked: boolean) => void;
 }
 
-function connectionsProgressMessage(
-	graph: SpaceConnections | null,
-	loading: boolean,
-) {
-	if (loading) return "Loading notes and links…";
-	if (!graph) return "Laying out connections…";
-	if (graph.truncated) {
-		return `Laying out top ${graph.nodes.length} of ${graph.total_notes} notes…`;
-	}
-	return "Laying out connections…";
-}
-
-function ConnectionsProgressOverlay({
-	graph,
-	loading,
-	progress,
-	usingCachedLayout,
-}: {
-	graph: SpaceConnections | null;
-	loading: boolean;
-	progress: number;
-	usingCachedLayout: boolean;
-}) {
-	const clampedProgress = Math.max(0, Math.min(100, Math.round(progress)));
-	const message = usingCachedLayout
-		? "Restoring cached layout…"
-		: connectionsProgressMessage(graph, loading);
-
+function SpaceConnectionsControls({
+	showUnconnectedNotes,
+	onShowUnconnectedNotesChange,
+}: SpaceConnectionsControlsProps) {
 	return (
-		<div
-			className="spaceConnectionsProgressOverlay"
-			aria-live="polite"
-			aria-busy="true"
-		>
-			<div className="spaceConnectionsProgressCard">
-				<div className="spaceConnectionsProgressHeader">
-					<HugeiconsIcon
-						icon={LoaderCircle}
-						className="spaceConnectionsProgressSpinner animate-spin"
-						size="var(--icon-sm)"
-						strokeWidth={0.9}
+		<div className="spaceConnectionsControls">
+			<Toggle
+				checked={showUnconnectedNotes}
+				onCheckedChange={onShowUnconnectedNotesChange}
+				label="Show unconnected notes"
+				size="sm"
+			/>
+			<div
+				className="localNoteConnectionsLegend is-space"
+				aria-label="Connections legend"
+			>
+				<span className="localNoteConnectionsLegendItem">
+					<span
+						className="localNoteConnectionsLegendNode is-note"
+						aria-hidden="true"
 					/>
-					<p className="spaceConnectionsProgressMessage">{message}</p>
-				</div>
-				<div className="spaceConnectionsProgressBarRow">
-					<progress
-						className="spaceConnectionsProgressTrack"
-						aria-label="Connections generation progress"
-						max={100}
-						value={clampedProgress}
+					Note
+				</span>
+				<span className="localNoteConnectionsLegendItem">
+					<span
+						className="localNoteConnectionsLegendNode is-tag"
+						aria-hidden="true"
 					/>
-					<span className="spaceConnectionsProgressPercent">
-						{clampedProgress}%
-					</span>
-				</div>
+					Tag
+				</span>
 			</div>
 		</div>
 	);
 }
 
-function SpaceConnectionsBetaBadge() {
-	return (
-		<output className="spaceConnectionsBetaBadge" aria-live="polite">
-			<span className="spaceConnectionsBetaBadgeLabel">Beta</span>
-			<p className="spaceConnectionsBetaBadgeCopy">
-				Early access. Larger spaces may feel sluggish or unfinished while I keep
-				refining this view.
-			</p>
-		</output>
-	);
-}
-
-function fullConnectionsNoteCountLabel(totalNotes: number) {
-	if (totalNotes > FULL_SPACE_CONNECTIONS_NODES) {
-		return `the top ${FULL_SPACE_CONNECTIONS_NODES.toLocaleString()} of ${totalNotes.toLocaleString()} notes`;
-	}
-	return `${totalNotes.toLocaleString()} notes`;
-}
-
 export function SpaceConnectionsView() {
 	const { spacePath } = useSpace();
-	const [graph, setGraph] = useState<SpaceConnections | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [generating, setGenerating] = useState(false);
-	const [generationProgress, setGenerationProgress] = useState(0);
+	const [payload, setPayload] = useState<SpaceConnections | null>(null);
+	const [dataLoading, setDataLoading] = useState(true);
 	const [error, setError] = useState("");
-	const [maxNodes, setMaxNodes] = useState(DEFAULT_SPACE_CONNECTIONS_NODES);
+	const [showUnconnectedNotes, setShowUnconnectedNotes] = useState(false);
 	const containerRef = useRef<HTMLDivElement | null>(null);
-	const cyRef = useRef<Core | null>(null);
-	const loadConnectionsCleanupRef = useRef<(() => void) | null>(null);
 	const activeSpacePathRef = useRef(spacePath);
-	const previousSpacePathRef = useRef(spacePath);
+	const requestIdRef = useRef(0);
 	activeSpacePathRef.current = spacePath;
-	const signature = useMemo(
-		() => (graph ? connectionsSignature(graph) : ""),
-		[graph],
-	);
-	const cachedLayout = useMemo(
-		() => (signature ? readConnectionsLayoutCache(spacePath, signature) : null),
-		[signature, spacePath],
-	);
-	const usingCachedLayout = Boolean(cachedLayout);
-
-	useEffect(() => {
-		clearPersistentConnectionsLayoutCaches();
-	}, []);
-
-	useEffect(() => {
-		if (previousSpacePathRef.current === spacePath) return;
-		previousSpacePathRef.current = spacePath;
-		setMaxNodes(DEFAULT_SPACE_CONNECTIONS_NODES);
-	}, [spacePath]);
 
 	const loadConnections = useCallback(() => {
 		const requestSpacePath = spacePath;
-		loadConnectionsCleanupRef.current?.();
-		let cancelled = false;
-		setLoading(true);
-		setGenerating(false);
-		setGenerationProgress(8);
+		const requestId = ++requestIdRef.current;
+		setDataLoading(true);
 		setError("");
-		const cleanup = () => {
-			cancelled = true;
-		};
-		loadConnectionsCleanupRef.current = cleanup;
-		void invoke("space_connections", {
-			max_nodes: maxNodes,
-			max_tags: MAX_SPACE_CONNECTIONS_TAGS,
-		})
-			.then((nextGraph) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+
+		void invoke("space_connections")
+			.then(async (nextGraph) => {
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
 					return;
-				setGraph(nextGraph);
-				setGenerationProgress(nextGraph.nodes.length > 0 ? 40 : 100);
-				setGenerating(nextGraph.nodes.length > 0);
+				await warnAboutLargeGraph(nextGraph);
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
+					return;
+				setPayload(nextGraph);
 			})
 			.catch((cause) => {
-				if (cancelled || activeSpacePathRef.current !== requestSpacePath)
+				if (
+					requestId !== requestIdRef.current ||
+					activeSpacePathRef.current !== requestSpacePath
+				)
 					return;
-				setGraph(null);
-				setGenerating(false);
-				setGenerationProgress(0);
+				setPayload(null);
 				setError(cause instanceof Error ? cause.message : String(cause));
 			})
 			.finally(() => {
-				if (!cancelled && activeSpacePathRef.current === requestSpacePath) {
-					setLoading(false);
-				}
-				if (loadConnectionsCleanupRef.current === cleanup) {
-					loadConnectionsCleanupRef.current = null;
+				if (
+					requestId === requestIdRef.current &&
+					activeSpacePathRef.current === requestSpacePath
+				) {
+					setDataLoading(false);
 				}
 			});
-		return cleanup;
-	}, [maxNodes, spacePath]);
+
+		return () => {
+			requestIdRef.current += 1;
+		};
+	}, [spacePath]);
 
 	useEffect(() => loadConnections(), [loadConnections]);
 
-	const handleLoadFullConnections = useCallback(async () => {
-		if (!graph) return;
-		const { confirm } = await import("@tauri-apps/plugin-dialog");
-		const noteCountLabel = fullConnectionsNoteCountLabel(graph.total_notes);
-		const confirmed = await confirm(
-			`This will render ${noteCountLabel} at once. Large connection maps can use a lot of memory and may make Glyph slow or temporarily unresponsive.`,
-			{
-				title: "Load all connections?",
-				okLabel: "Load all connections",
-				cancelLabel: "Cancel",
-			},
-		);
-		if (!confirmed) return;
-		setMaxNodes(FULL_SPACE_CONNECTIONS_NODES);
-	}, [graph]);
+	const { filteredPayload, graph, layoutError, layoutLoading } =
+		useSpaceConnectionsGraph(payload, showUnconnectedNotes);
+	const loading = dataLoading || layoutLoading;
+	const visibleError = error || layoutError;
 
-	useEffect(() => {
-		if (!loading && !generating) return;
-		const ceiling = loading ? 35 : 92;
-		const interval = window.setInterval(() => {
-			setGenerationProgress((current) => {
-				if (current >= ceiling) return current;
-				const increment = loading ? 3 : 1;
-				return Math.min(ceiling, current + increment);
-			});
-		}, 180);
-		return () => window.clearInterval(interval);
-	}, [generating, loading]);
+	useSigmaConnections({
+		graph,
+		containerRef,
+		variant: "space",
+		enabled: Boolean(graph && !loading && !visibleError),
+		onNoteOpen: openNote,
+		onTagActivate: openTagSearch,
+	});
 
-	useEffect(() => {
-		if (!graph || loading || error || graph.nodes.length === 0) return;
-		const container = containerRef.current;
-		if (!container) return;
-		let disposed = false;
-		let completeTimer: number | null = null;
-		let cacheWriteTimer: number | null = null;
-		let pendingCachePositions: Record<string, ConnectionsPosition> = {};
-		const scheduleLayoutCacheWrite = (
-			positions: Record<string, ConnectionsPosition>,
-		) => {
-			pendingCachePositions = { ...pendingCachePositions, ...positions };
-			if (cacheWriteTimer !== null) return;
-			cacheWriteTimer = window.setTimeout(() => {
-				cacheWriteTimer = null;
-				const nextPositions = pendingCachePositions;
-				pendingCachePositions = {};
-				writeConnectionsLayoutCache(spacePath, signature, nextPositions);
-			}, 120);
-		};
-		const visibleNodeCount = graph.nodes.length + graph.tags.length;
-		const layoutMode = cachedLayout
-			? "preset"
-			: visibleNodeCount >= LARGE_CONNECTIONS_LAYOUT_THRESHOLD
-				? "random"
-				: "fcose";
-
-		if (layoutMode === "fcose") {
-			registerFcose();
-		}
-		setGenerating(true);
-		setGenerationProgress((current) =>
-			Math.max(current, cachedLayout ? 88 : 55),
-		);
-
-		const cy = cytoscape({
-			boxSelectionEnabled: false,
-			container,
-			elements: connectionElements(graph, cachedLayout?.positions),
-			layout: { name: "preset" },
-			maxZoom: 2.1,
-			minZoom: 0.18,
-			style: connectionsStylesForContainer(container),
-			userZoomingEnabled: true,
-			wheelSensitivity: 0.16,
-		});
-		cyRef.current = cy;
-		runConnectionsLayout(cy, {
-			mode: layoutMode,
-			afterLayout: () => {
-				if (!cachedLayout) {
-					organicizeNoteCloud(cy);
-					scatterSatelliteNodes(cy);
-				}
-				writeConnectionsLayoutCache(
-					spacePath,
-					signature,
-					positionsForNodes(cy),
-				);
-				if (!disposed) {
-					setGenerationProgress(100);
-					completeTimer = window.setTimeout(() => {
-						if (!disposed) setGenerating(false);
-					}, 160);
-				}
-			},
-		});
-
-		cy.on("mouseover", "node", (event) => {
-			event.target.addClass("hover-label show-label");
-			highlightNeighborhood(cy, event.target.id());
-		});
-		cy.on("mouseout", "node", (event) => {
-			event.target.removeClass("hover-label");
-			if (!event.target.hasClass("zoom-label")) {
-				event.target.removeClass("show-label");
-			}
-			highlightNeighborhood(cy, null);
-		});
-		cy.on("dragfree", "node", (event) => {
-			const position = event.target.position();
-			scheduleLayoutCacheWrite({
-				[event.target.id()]: { x: position.x, y: position.y },
-			});
-		});
-		cy.on("tap", "node", (event) => {
-			if (event.target.hasClass("tag")) {
-				highlightNeighborhood(cy, event.target.id());
-				return;
-			}
-			openNote(event.target.id());
-		});
-		cy.on("tap", (event) => {
-			if (event.target === cy) {
-				highlightNeighborhood(cy, null);
-			}
-		});
-
-		const observer = new ResizeObserver(() => {
-			cy.resize();
-			cy.fit(undefined, connectionsLayoutSpacing(cy).padding);
-		});
-		observer.observe(container);
-
-		const themeObserver = new MutationObserver(() => {
-			applyConnectionsTheme(cy, container);
-		});
-		themeObserver.observe(document.documentElement, {
-			attributeFilter: [
-				"class",
-				"data-light-theme",
-				"data-dark-theme",
-				"style",
-			],
-			attributes: true,
-		});
-
-		return () => {
-			disposed = true;
-			if (completeTimer !== null) {
-				window.clearTimeout(completeTimer);
-			}
-			if (cacheWriteTimer !== null) {
-				window.clearTimeout(cacheWriteTimer);
-			}
-			themeObserver.disconnect();
-			observer.disconnect();
-			cy.destroy();
-			cyRef.current = null;
-		};
-	}, [cachedLayout, error, graph, loading, signature, spacePath]);
-
-	if (loading) {
+	if (dataLoading) {
 		return (
 			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
 				<div
 					className="localNoteConnectionsViewport absolute inset-0"
 					aria-hidden="true"
 				/>
-				<SpaceConnectionsBetaBadge />
-				<ConnectionsProgressOverlay
-					graph={graph}
-					loading={loading}
-					progress={generationProgress}
-					usingCachedLayout={usingCachedLayout}
-				/>
+				<div className="absolute inset-0 flex items-center justify-center">
+					<div className="flex items-center gap-2 text-sm text-muted-foreground">
+						<HugeiconsIcon
+							icon={LoaderCircle}
+							className="animate-spin"
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
+						Loading notes and links…
+					</div>
+				</div>
 			</section>
 		);
 	}
 
-	if (error) {
+	if (layoutLoading) {
+		return (
+			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
+				<div
+					className="localNoteConnectionsViewport absolute inset-0"
+					aria-hidden="true"
+				/>
+				<SpaceConnectionsControls
+					showUnconnectedNotes={showUnconnectedNotes}
+					onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+				/>
+				<div className="absolute inset-0 flex items-center justify-center">
+					<div className="flex items-center gap-2 text-sm text-muted-foreground">
+						<HugeiconsIcon
+							icon={LoaderCircle}
+							className="animate-spin"
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
+						Arranging connections…
+					</div>
+				</div>
+			</section>
+		);
+	}
+
+	if (visibleError) {
 		return (
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
 				<div className="flex max-w-md flex-col items-center gap-3 text-center">
 					<p className="text-sm text-muted-foreground">
-						Could not load connections: {error}
+						Could not load connections: {visibleError}
 					</p>
-					<Button
-						type="button"
-						size="sm"
-						onClick={() => {
-							loadConnections();
-						}}
-					>
+					<Button type="button" size="sm" onClick={loadConnections}>
 						<HugeiconsIcon
 							icon={Refresh01Icon}
 							data-icon="inline-start"
@@ -703,13 +225,31 @@ export function SpaceConnectionsView() {
 		);
 	}
 
-	if (!graph || graph.nodes.length === 0) {
+	if (!payload || payload.nodes.length === 0) {
 		return (
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
 				<p className="text-sm text-muted-foreground">
 					No notes in this space yet.
 				</p>
 			</div>
+		);
+	}
+
+	if (!filteredPayload || filteredPayload.nodes.length === 0) {
+		return (
+			<section className="spaceConnectionsHost relative h-full min-h-0 flex-1 overflow-hidden">
+				<div
+					className="localNoteConnectionsViewport absolute inset-0"
+					aria-hidden="true"
+				/>
+				<SpaceConnectionsControls
+					showUnconnectedNotes={showUnconnectedNotes}
+					onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+				/>
+				<p className="relative z-1 flex h-full items-center justify-center text-sm text-muted-foreground">
+					No connected notes in this space.
+				</p>
+			</section>
 		);
 	}
 
@@ -720,34 +260,10 @@ export function SpaceConnectionsView() {
 				className="localNoteConnectionsViewport absolute inset-0"
 				aria-label="Space connections"
 			/>
-			<SpaceConnectionsBetaBadge />
-			{graph.truncated && maxNodes < FULL_SPACE_CONNECTIONS_NODES ? (
-				<div className="absolute right-4 bottom-4">
-					<Button
-						type="button"
-						className="spaceConnectionsLoadFullButton"
-						size="xs"
-						onClick={() => {
-							void handleLoadFullConnections();
-						}}
-					>
-						Load all connections
-					</Button>
-				</div>
-			) : null}
-			{graph.truncated && maxNodes >= FULL_SPACE_CONNECTIONS_NODES ? (
-				<div className="absolute right-4 top-4 rounded-md border border-border bg-background/95 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
-					Showing top {graph.nodes.length} of {graph.total_notes} notes
-				</div>
-			) : null}
-			{generating ? (
-				<ConnectionsProgressOverlay
-					graph={graph}
-					loading={loading}
-					progress={generationProgress}
-					usingCachedLayout={usingCachedLayout}
-				/>
-			) : null}
+			<SpaceConnectionsControls
+				showUnconnectedNotes={showUnconnectedNotes}
+				onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+			/>
 		</section>
 	);
 }

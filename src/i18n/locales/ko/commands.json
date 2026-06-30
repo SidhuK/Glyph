@@ -158,6 +158,10 @@
 			"label": "구분선",
 			"description": "가로 구분선을 삽입합니다."
 		},
+		"details_block": {
+			"label": "세부 정보 블록",
+			"description": "접을 수 있는 토글 섹션을 삽입합니다."
+		},
 		"duplicate-current-note": {
 			"label": "현재 노트 복제",
 			"description": "현재 노트를 복제합니다."
@@ -290,9 +294,41 @@
 			"label": "Git Sync 설정 열기",
 			"description": "설정에서 Git Sync 섹션을 엽니다."
 		},
+		"open-glyph-changelog": {
+			"label": "변경 로그",
+			"description": "Glyph 변경 로그를 엽니다."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph Discord 커뮤니티를 엽니다."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Glyph GitHub 저장소를 엽니다."
+		},
+		"open-glyph-privacy": {
+			"label": "개인정보 처리방침",
+			"description": "개인정보 처리방침을 엽니다."
+		},
+		"open-glyph-terms": {
+			"label": "서비스 약관",
+			"description": "서비스 약관을 엽니다."
+		},
+		"open-glyph-website": {
+			"label": "Glyph 웹사이트",
+			"description": "Glyph 웹사이트를 엽니다."
+		},
+		"open-glyph-x": {
+			"label": "X에서 팔로우",
+			"description": "X에서 Glyph를 엽니다."
+		},
 		"open-license-settings": {
 			"label": "라이선스 설정 열기",
 			"description": "설정에서 라이선스 섹션을 엽니다."
+		},
+		"open-local-connections": {
+			"label": "로컬 연결 열기",
+			"description": "로컬 연결 그래프 보기를 엽니다."
 		},
 		"open-local-graph": {
 			"label": "로컬 그래프 열기",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "설정 열기",
 			"description": "설정 보기를 엽니다."
+		},
+		"open-shortcuts-settings": {
+			"label": "키보드 단축키…",
+			"description": "설정의 키보드 단축키 섹션을 엽니다."
 		},
 		"open-space": {
 			"label": "스페이스 열기",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "취소선",
 			"description": "현재 선택 영역의 취소선 서식을 전환합니다."
+		},
+		"switch-to-edit": {
+			"label": "리치 모드",
+			"description": "편집기를 리치 편집 모드로 전환합니다."
+		},
+		"switch-to-preview": {
+			"label": "미리보기 모드",
+			"description": "편집기를 미리보기 모드로 전환합니다."
+		},
+		"switch-to-raw": {
+			"label": "Raw 모드",
+			"description": "편집기를 Raw Markdown 모드로 전환합니다."
 		},
 		"table": {
 			"label": "표",

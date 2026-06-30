@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
 	ThemeMode,
 	UiAccent,
@@ -32,11 +33,11 @@ interface AppearanceThemeCardProps {
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
 
-const THEME_MODE_OPTIONS = [
-	{ label: "System", value: "system" },
-	{ label: "Light", value: "light" },
-	{ label: "Dark", value: "dark" },
-] as const satisfies readonly { label: string; value: ThemeMode }[];
+const THEME_MODE_VALUES = [
+	"system",
+	"light",
+	"dark",
+] as const satisfies readonly ThemeMode[];
 
 function resolvePreview<T extends string>(
 	option: UiThemeOption<T>,
@@ -98,6 +99,7 @@ function ThemeSelector<T extends string>({
 	accent: UiAccent;
 	onSelect: (themeId: T) => Promise<void>;
 }) {
+	const { t } = useTranslation("settings");
 	const [open, setOpen] = useState(false);
 	const resolvedSelected = useMemo(
 		() => ({
@@ -151,8 +153,8 @@ function ThemeSelector<T extends string>({
 						<div className="appearanceThemeDropdownHeaderTitle">{label}</div>
 						<div className="appearanceThemeDropdownHeaderHint">
 							{mode === "light"
-								? "Pick the palette Glyph uses in light mode."
-								: "Pick the palette Glyph uses in dark mode."}
+								? t("appearance.theme.pickPaletteLight")
+								: t("appearance.theme.pickPaletteDark")}
 						</div>
 					</div>
 					<div className="appearanceThemeDropdownList">
@@ -211,29 +213,33 @@ export function AppearanceThemeCard({
 	onDarkThemeChange,
 	onTranslucentAppChange,
 }: AppearanceThemeCardProps) {
+	const { t } = useTranslation("settings");
 	return (
 		<SettingsSection
-			title="Theme"
-			description="Mix and match light and dark theme families."
+			title={t("appearance.theme.title")}
+			description={t("appearance.theme.description")}
 		>
-			<SettingsRow label="Select Theme" interactive={false}>
+			<SettingsRow
+				label={t("appearance.theme.selectTheme")}
+				interactive={false}
+			>
 				<SettingsSelect
-					aria-label="Theme mode"
+					aria-label={t("appearance.theme.themeMode")}
 					value={themeMode}
 					onChange={(event) =>
 						void onThemeModeChange(event.currentTarget.value as ThemeMode)
 					}
 				>
-					{THEME_MODE_OPTIONS.map((option) => (
-						<option key={option.value} value={option.value}>
-							{option.label}
+					{THEME_MODE_VALUES.map((value) => (
+						<option key={value} value={value}>
+							{t(`appearance.theme.modes.${value}`)}
 						</option>
 					))}
 				</SettingsSelect>
 			</SettingsRow>
 
 			<ThemeSelector
-				label="Light theme"
+				label={t("appearance.theme.lightTheme")}
 				mode="light"
 				selected={lightTheme}
 				options={lightOptions}
@@ -242,7 +248,7 @@ export function AppearanceThemeCard({
 			/>
 
 			<ThemeSelector
-				label="Dark theme"
+				label={t("appearance.theme.darkTheme")}
 				mode="dark"
 				selected={darkTheme}
 				options={darkOptions}
@@ -250,9 +256,9 @@ export function AppearanceThemeCard({
 				onSelect={onDarkThemeChange}
 			/>
 
-			<SettingsRow label="Translucent app">
+			<SettingsRow label={t("appearance.theme.translucentApp")}>
 				<SettingsToggle
-					ariaLabel="Translucent app"
+					ariaLabel={t("appearance.theme.translucentApp")}
 					checked={translucentApp}
 					onCheckedChange={(checked) => void onTranslucentAppChange(checked)}
 				/>

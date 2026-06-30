@@ -33,7 +33,8 @@
 
 .canvasPaneHost[data-space-connections="true"]
 	:is(.spaceConnectionsHost, .canvasPaneAwait),
-.canvasPaneHost[data-all-docs="true"] :is(.allDocsPane, .canvasPaneAwait),
+.canvasPaneHost[data-all-docs="true"]
+	:is(.allDocsPane, .activityTimelinePane, .canvasPaneAwait),
 .canvasPaneHost[data-databases="true"]
 	:is(.databaseHostPane, .canvasPaneAwait) {
 	position: absolute;

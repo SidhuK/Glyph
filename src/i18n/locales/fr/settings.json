@@ -3,38 +3,56 @@
 		"general": "Général",
 		"appearance": "Apparence",
 		"shortcuts": "Raccourcis",
-		"ai": "Glyph IA",
+		"ai": "Glyph AI",
 		"space": "Espace",
 		"git": "Git",
 		"advanced": "Avancé",
 		"about": "À propos"
 	},
 	"groups": {
+		"application": "Application",
 		"workspace": "Espace de travail",
-		"features": "Fonctions",
+		"features": "Fonctionnalités",
 		"system": "Système"
+	},
+	"actions": {
+		"back": "Retour"
+	},
+	"footer": {
+		"community": {
+			"eyebrow": "Build communautaire",
+			"title": "Merci d'avoir téléchargé et compilé Glyph vous-même.",
+			"body": "Soutenez le projet avec la licence officielle pour obtenir les mises à jour automatiques et le build officiel.",
+			"action": "Acheter la licence officielle"
+		},
+		"earlyAccess": {
+			"eyebrow": "Toujours en accès anticipé",
+			"title": "Aidez à façonner Glyph",
+			"body": "Glyph évolue activement, vous pourriez donc rencontrer quelques aspérités. Si quelque chose vous semble incorrect, j'aimerais vraiment en entendre parler.",
+			"action": "Envoyer un retour"
+		}
 	},
 	"search": {
 		"placeholder": "Rechercher dans les réglages",
-		"clear": "Effacer la recherche des réglages",
-		"empty": "Aucun réglage trouvé"
+		"clear": "Effacer la recherche de réglages",
+		"empty": "Aucun réglage correspondant"
 	},
 	"general": {
 		"language": {
 			"title": "Langue",
 			"label": "Langue de l'app",
 			"description": "Choisissez la langue de l'interface de Glyph.",
-			"systemDescription": "Utilise la langue de votre système si Glyph la prend en charge, sinon l'anglais."
+			"systemDescription": "Utilise la langue de votre système d'exploitation si Glyph la prend en charge, sinon l'anglais."
 		}
 	},
 	"shortcuts": {
 		"title": "Personnaliser les raccourcis",
-		"searchPlaceholder": "Rechercher actions, catégories ou raccourcis",
-		"help": "Cliquez sur un raccourci, puis appuyez sur les touches à utiliser. Les raccourcis sont enregistrés automatiquement et nécessitent Cmd, Ctrl ou Option plus une autre touche.",
-		"tipsLabel": "Astuces de raccourcis",
+		"searchPlaceholder": "Rechercher des actions, catégories ou raccourcis",
+		"help": "Cliquez sur un raccourci, puis appuyez sur les touches souhaitées. Les raccourcis s'enregistrent automatiquement et nécessitent Cmd, Ctrl ou Option plus une autre touche.",
+		"tipsLabel": "Conseils sur les raccourcis",
 		"escapeCancels": "Échap annule",
 		"resetRestoresDefault": "Réinitialiser restaure la valeur par défaut",
-		"pressShortcut": "Appuyez sur le raccourci...",
+		"pressShortcut": "Appuyez sur un raccourci...",
 		"errors": {
 			"disable": "Impossible de désactiver le raccourci.",
 			"reset": "Impossible de réinitialiser le raccourci.",
@@ -53,5 +71,408 @@
 		"ai": "IA",
 		"editor": "Éditeur",
 		"settings": "Réglages"
+	},
+	"errors": {
+		"loadSettings": "Impossible de charger les réglages",
+		"saveSettings": "Impossible d'enregistrer les réglages",
+		"loadAppInfo": "Impossible de charger les informations de l'app"
+	},
+	"common": {
+		"browse": "Parcourir",
+		"cancel": "Annuler",
+		"none": "Aucun",
+		"notConfigured": "Non configuré",
+		"rename": "Renommer",
+		"add": "Ajouter",
+		"save": "Enregistrer",
+		"clear": "Effacer",
+		"status": "Statut",
+		"folder": "Dossier"
+	},
+	"appearance": {
+		"theme": {
+			"title": "Thème",
+			"description": "Combinez les familles de thèmes clairs et sombres.",
+			"selectTheme": "Sélectionner un thème",
+			"themeMode": "Mode de thème",
+			"lightTheme": "Thème clair",
+			"darkTheme": "Thème sombre",
+			"translucentApp": "App translucide",
+			"pickPaletteLight": "Choisissez la palette utilisée par Glyph en mode clair.",
+			"pickPaletteDark": "Choisissez la palette utilisée par Glyph en mode sombre.",
+			"modes": {
+				"system": "Système",
+				"light": "Clair",
+				"dark": "Sombre"
+			}
+		},
+		"accent": {
+			"title": "Accent",
+			"palette": "Palette",
+			"paletteDescription": "Prévisualisez et sélectionnez l'accent qui convient le mieux à votre espace de travail.",
+			"accentColor": "Couleur d'accent",
+			"descriptionBoth": "Choisissez l'accent utilisé pour les surlignages, les anneaux de focus et l'emphase dans les thèmes clair et sombre par défaut.",
+			"descriptionLight": "Choisissez l'accent utilisé pour les surlignages, les anneaux de focus et l'emphase dans le thème clair par défaut.",
+			"descriptionDark": "Choisissez l'accent utilisé pour les surlignages, les anneaux de focus et l'emphase dans le thème sombre par défaut."
+		},
+		"accents": {
+			"neutral": "Neutre",
+			"glyph-orange": "Orange",
+			"glyph-red": "Glyph Red",
+			"cerulean": "Cerulean",
+			"tropical-teal": "Tropical Teal"
+		},
+		"typography": {
+			"title": "Typographie",
+			"description": "Ajustez indépendamment la police de l'interface, le style du code et l'échelle de lecture.",
+			"interfaceFont": "Police de l'interface",
+			"interfaceFontDescription": "Utilisée pour la navigation, les réglages et la plupart des textes de l'interface Glyph.",
+			"editorFont": "Police de l'éditeur",
+			"editorFontDescription": "Utilisée pour le texte normal des notes, en dehors du code en ligne et des blocs de code.",
+			"monospaceFont": "Police monospace",
+			"monospaceFontDescription": "Utilisée pour la source Markdown, le code en ligne et les surfaces orientées développeur.",
+			"uiFontSize": "Taille de police de l'interface",
+			"uiFontSizeDescription": "Ajustez la taille de base utilisée par les menus, panneaux, contrôles et réglages.",
+			"editorFontSize": "Taille de police de l'éditeur",
+			"editorFontSizeDescription": "Ajustez la taille de lecture pour l'éditeur de notes, l'aperçu Markdown et l'édition de texte brut.",
+			"fontSizeValue": "Valeur {{label}}"
+		}
+	},
+	"advanced": {
+		"editor": {
+			"title": "Éditeur",
+			"description": "Contrôles du comportement d'édition et de la structure des notes dans Glyph.",
+			"tableOfContents": "Table des matières",
+			"tableOfContentsDescription": "Affiche une table des matières flottante pour chaque note.",
+			"peopleMentionsAsTags": "Mentions de personnes en tags",
+			"peopleMentionsAsTagsDescription": "Lorsque activé, les @mentions autonomes sont indexées et affichées comme des personnes dans la barre latérale et la recherche.",
+			"showFrontmatter": "Afficher le frontmatter dans l'éditeur",
+			"showFrontmatterDescription": "Affiche le frontmatter YAML en haut des notes pendant l'édition. Désactiver cette option conserve le frontmatter disponible pour l'indexation et les bases de données.",
+			"colorfulHeadings": "Titres colorés",
+			"colorfulHeadingsDescription": "Utilise des couleurs intégrées distinctes pour H1 à H6 lors de l'édition des notes.",
+			"beautifulTags": "Beautiful Tags",
+			"beautifulTagsDescription": "Active la présentation expérimentale Beautiful Tags pour les tags.",
+			"editorWidth": "Largeur de l'éditeur",
+			"editorWidthDescription": "Compact garde des lignes plus courtes, Confortable offre un peu plus d'espace, et Large utilise toute la largeur de l'éditeur.",
+			"editorWidthModes": {
+				"compact": "Compact",
+				"comfortable": "Confortable",
+				"wide": "Large"
+			},
+			"collapsibleHeadings": "Titres repliables",
+			"collapsibleHeadingsDescription": "Affiche des bascules de repli sur les titres des notes dans l'éditeur et l'aperçu.",
+			"vimMode": "Mode Vim",
+			"vimModeDescription": "N'activez PAS ceci si vous ne savez pas ce que cela signifie.",
+			"vimHelp": {
+				"ariaLabel": "Aide aux raccourcis Vim",
+				"title": "Raccourcis Vim",
+				"insertMode": "insert signifie le mode de saisie normal. Vous tapez et le texte apparaît, comme l'éditeur le fait déjà.",
+				"normalMode": "normal signifie le mode commande. Vos touches se déplacent ou modifient le texte au lieu de saisir des lettres."
+			}
+		},
+		"ai": {
+			"title": "IA",
+			"description": "Contrôles du comportement par défaut de l'assistant IA.",
+			"toolsAccess": "Le chat IA a accès aux outils",
+			"toolsAccessDescription": "Lorsque activé, l'IA peut utiliser des outils pour créer et effectuer des actions. Lorsque désactivé, elle reste en mode chat uniquement."
+		},
+		"app": {
+			"title": "App",
+			"description": "Contrôles globaux au niveau de l'app pour la barre latérale et l'interface de l'espace de travail.",
+			"folioMode": "Mode Folio",
+			"folioModeDescription": "Affiche la navigation, les notes et l'éditeur dans un espace de travail à trois colonnes.",
+			"classicAllNotes": "Grille classique Toutes les notes",
+			"classicAllNotesDescription": "Ouvre Toutes les notes sous forme de grille simple au lieu de la chronologie d'activité.",
+			"folderFileCounts": "Afficher le nombre de fichiers par dossier",
+			"folderFileCountsDescription": "Affiche un total récursif de fichiers à la fin de chaque ligne de dossier dans l'arborescence."
+		},
+		"database": {
+			"title": "Base de données",
+			"description": "Contrôles globaux de la présentation des bases de données dans Glyph.",
+			"columnColor": "Afficher la couleur des colonnes de base de données",
+			"columnColorDescription": "Conserve les couleurs des pastilles de voie et des tags tout en basculant la teinte complète de la colonne."
+		}
+	},
+	"about": {
+		"taglineLine1": "Vos pensées méritent un chez-soi,",
+		"taglineLine2": "pas un serveur.",
+		"madeBy": "Créé par",
+		"links": "Liens À propos",
+		"website": "Site web",
+		"discord": "Discord",
+		"terms": "Conditions",
+		"privacy": "Confidentialité",
+		"updates": {
+			"title": "Mises à jour",
+			"checkingLicense": "Vérification de la possibilité d'utiliser les mises à jour automatiques pour ce build.",
+			"licenseUnknown": "Glyph n'a pas pu déterminer si ce build peut utiliser les mises à jour automatiques.",
+			"canAutoUpdate": "Recherchez les nouvelles versions et installez-les sans quitter Glyph.",
+			"communityBuild": "Les builds communautaires sont mis à jour manuellement.",
+			"licenseStatus": "Statut de la licence",
+			"licenseStatusDescription": "Glyph n'a pas pu vérifier l'état actuel de la licence dans cette fenêtre, les actions de mise à jour sont donc indisponibles pour le moment.",
+			"unknownLicenseStatus": "Statut de licence inconnu",
+			"appUpdates": "Mises à jour de l'app",
+			"appUpdatesDescription": "Vérifie immédiatement et télécharge la dernière version publiée en arrière-plan. L'installation n'a lieu que lorsque vous le choisissez.",
+			"checking": "Vérification…",
+			"checkForUpdates": "Rechercher des mises à jour",
+			"installUpdate": "Installer la mise à jour",
+			"installVersion": "Installer {{version}}",
+			"alphaReleases": "Versions alpha",
+			"alphaReleasesDescription": "Accédez en avant-première aux builds alpha. Ils peuvent être instables — activez cette option uniquement si vous acceptez de tester des versions inachevées.",
+			"communityBuildLabel": "Build communautaire",
+			"communityBuildDescription": "Vous utilisez la version communautaire et open source de Glyph. Achetez une licence officielle pour soutenir le développement de Glyph et recevoir automatiquement les dernières mises à jour.",
+			"buyOfficialLicense": "Acheter la licence officielle",
+			"statusLabel": "Statut",
+			"statusDescription": "Dernière activité du gestionnaire de mises à jour dans cette fenêtre.",
+			"latestVersion": "Vous utilisez déjà la dernière version.",
+			"updateReady": "v{{version}} est téléchargée et prête. Cliquez sur le bouton de mise à jour pour l'installer.",
+			"checkFailed": "Échec de la recherche de mises à jour",
+			"saveReleaseChannelFailed": "Impossible d'enregistrer le canal de publication",
+			"changelog": "Journal des modifications",
+			"changelogDescription": "Ouvrez le journal des modifications Glyph publié dans votre navigateur.",
+			"viewChangelog": "Voir le journal des modifications"
+		}
+	},
+	"space": {
+		"dailyNotes": {
+			"title": "Notes quotidiennes",
+			"description": "Choisissez où les nouvelles notes quotidiennes doivent être créées dans l'espace actuel.",
+			"folderDescription": "Glyph stocke les notes quotidiennes par rapport à l'espace actif.",
+			"clearFolder": "Effacer le dossier des notes quotidiennes"
+		},
+		"quickNotes": {
+			"title": "Notes rapides",
+			"folderDescription": "Les nouvelles notes rapides sont ajoutées à la note du jour dans ce dossier.",
+			"resetFolder": "Réinitialiser le dossier des notes rapides"
+		},
+		"attachments": {
+			"title": "Pièces jointes",
+			"description": "Choisissez où les pièces jointes des notes sont stockées dans l'espace actuel.",
+			"location": "Emplacement",
+			"locationDescription": "Où enregistrer les images et fichiers que vous collez dans les notes.",
+			"locationAriaLabel": "Emplacement des pièces jointes",
+			"modes": {
+				"spaceRoot": "Dossier principal de l'espace",
+				"specificFolder": "Dossier spécifique",
+				"noteFolder": "Même dossier que la note"
+			},
+			"helpSpaceRoot": "Enregistrées au niveau supérieur de votre espace.",
+			"helpNoteFolder": "Enregistrées à côté de la note à laquelle elles sont attachées.",
+			"helpSpecificFolder": "Toutes les pièces jointes vont dans un seul dossier.",
+			"resetFolder": "Réinitialiser le dossier des pièces jointes"
+		},
+		"searchIndex": {
+			"title": "Index de recherche",
+			"description": "Reconstruisez l'index si les résultats de recherche sont incomplets, obsolètes ou manquants.",
+			"statusDescription": "Utilisez ceci lorsque les résultats de recherche semblent obsolètes après de grands changements de notes ou de fichiers.",
+			"noSpace": "Aucun espace sélectionné.",
+			"ready": "L'index est prêt.",
+			"openSpaceFirst": "Ouvrez d'abord un espace pour reconstruire l'index.",
+			"rebuildComplete": "Reconstruction de l'index terminée.",
+			"rebuilding": "Reconstruction...",
+			"rebuild": "Reconstruire"
+		},
+		"errors": {
+			"noSpaceOpen": "Aucun espace n'est actuellement ouvert.",
+			"folderInsideSpace": "Le dossier sélectionné doit se trouver dans l'espace actuel.",
+			"selectFolder": "Impossible de sélectionner le dossier",
+			"clearFolder": "Impossible d'effacer le dossier",
+			"updateSetting": "Impossible de mettre à jour le réglage",
+			"resetFolder": "Impossible de réinitialiser le dossier",
+			"selectQuickNotesFolder": "Impossible de sélectionner le dossier des notes rapides",
+			"resetQuickNotesFolder": "Impossible de réinitialiser le dossier des notes rapides"
+		}
+	},
+	"templates": {
+		"title": "Modèles",
+		"templateFolder": "Dossier de modèles",
+		"templateFolderDescription": "Choisissez un dossier dans l'espace actuel contenant vos modèles Markdown.",
+		"clearFolder": "Effacer le dossier de modèles",
+		"defaultDailyTemplate": "Modèle par défaut de note quotidienne",
+		"summary_one": "{{count}} modèle trouvé",
+		"summary_other": "{{count}} modèles trouvés",
+		"errors": {
+			"loadSettings": "Impossible de charger les réglages des modèles",
+			"clearDailyTemplate": "Impossible d'effacer le modèle de note quotidienne",
+			"loadTemplates": "Impossible de charger les modèles",
+			"selectFolder": "Impossible de sélectionner le dossier de modèles",
+			"clearFolder": "Impossible d'effacer le dossier de modèles",
+			"updateDailyTemplate": "Impossible de mettre à jour le modèle de note quotidienne"
+		}
+	},
+	"git": {
+		"connection": {
+			"title": "Connexion",
+			"description": "Glyph utilise Git automatiquement lorsque l'espace ouvert est déjà un dépôt.",
+			"availability": "Disponibilité de Git",
+			"availabilityDescription": "Glyph utilise le binaire git système et vos identifiants Git existants.",
+			"installed": "Installé",
+			"missing": "Manquant",
+			"repoState": "État du dépôt",
+			"repoStateDescription": "Glyph ne prend en charge que les dépôts dont la racine se trouve exactement dans l'espace actuel.",
+			"howItWorks": "Comment ça marche",
+			"openGitFolder": "Ouvrez un dossier où Git est déjà initialisé.",
+			"branch": "Branche",
+			"branchDescription": "Glyph synchronise une seule branche par espace."
+		},
+		"repoState": {
+			"gitNotInstalled": "Git non installé",
+			"nestedUnsupported": "Dépôt imbriqué non pris en charge",
+			"repoDetected": "Dépôt Git détecté",
+			"noRepoAtRoot": "Aucun dépôt à la racine de l'espace"
+		},
+		"connectionHelp": {
+			"installGit": "Installez Git pour utiliser Git Sync dans les espaces basés sur un dépôt.",
+			"nestedRepo": "Cet espace se trouve dans un dépôt Git plus large. Glyph ne prend en charge que les dépôts dont la racine se trouve exactement dans l'espace ouvert.",
+			"configured": "Glyph utilise automatiquement le dépôt Git trouvé à la racine de cet espace.",
+			"needsRemote": "Glyph a trouvé un dépôt ici, mais il a encore besoin d'un remote origin avant que la synchronisation puisse démarrer.",
+			"default": "Git Sync devient disponible automatiquement lorsque l'espace ouvert contient déjà un dépôt .git à sa racine."
+		},
+		"sync": {
+			"title": "Synchronisation",
+			"description": "Contrôlez les synchronisations automatiques et déclenchez une synchronisation manuelle à tout moment.",
+			"automatic": "Synchronisation automatique",
+			"automaticDescription": "S'exécute à l'ouverture de l'espace, puis selon l'intervalle sélectionné.",
+			"interval": "Intervalle",
+			"intervalDescription": "Fréquence à laquelle Glyph doit exécuter les synchronisations planifiées.",
+			"intervalAriaLabel": "Intervalle de synchronisation Git",
+			"intervals": {
+				"5": "5 min",
+				"10": "10 min",
+				"30": "30 min",
+				"60": "60 min"
+			},
+			"actions": "Actions",
+			"actionsDescription": "Lancez une synchronisation depuis les réglages et consultez ici le dernier état de synchronisation.",
+			"syncNow": "Synchroniser maintenant",
+			"resumeAutoSync": "Reprendre la synchronisation auto"
+		},
+		"conflicts": {
+			"title": "Résolution des conflits",
+			"description": "Choisissez quel côté Glyph doit favoriser lorsque les modifications locales et distantes entrent en conflit.",
+			"policy": "Politique",
+			"policyDescription": "Glyph résout les conflits automatiquement.",
+			"policyAriaLabel": "Politique de conflit",
+			"localWins": "Local gagne",
+			"remoteWins": "Distant gagne"
+		},
+		"content": {
+			"title": "Contenu",
+			"description": "Choisissez quel contenu de l'espace Glyph doit inclure dans les commits de synchronisation.",
+			"includeTemplates": "Inclure les modèles",
+			"includeTemplatesDescription": "Synchronise le dossier de modèles actuel et son contenu.",
+			"includeAttachments": "Inclure les pièces jointes",
+			"includeAttachmentsSpecific": "Synchronise les fichiers du dossier de pièces jointes configuré.",
+			"includeAttachmentsOther": "Le filtrage des pièces jointes uniquement fonctionne lorsque les pièces jointes utilisent Dossier spécifique. Dans les autres modes, les fichiers joints suivent le réglage plus large des fichiers non Markdown.",
+			"includeNonMarkdown": "Inclure les fichiers non Markdown",
+			"includeNonMarkdownDescription": "Lorsque désactivé, Glyph limite la synchronisation au Markdown plus les dossiers explicitement inclus."
+		},
+		"presentation": {
+			"unavailable": "Git Sync indisponible",
+			"openRepoSpace": "Ouvrez un espace basé sur un dépôt pour synchroniser cet espace de travail.",
+			"installGitHeadline": "Installez Git pour activer la synchronisation",
+			"installGitCopy": "Glyph utilise votre installation Git système et vos identifiants existants.",
+			"unsupportedHeadline": "Cet espace se trouve dans un autre dépôt",
+			"unsupportedCopy": "Glyph ne prend en charge que les dépôts dont la racine se trouve exactement dans l'espace ouvert.",
+			"syncingHeadline": "Synchronisation de cet espace",
+			"syncingCopy": "Glyph exécute Git en arrière-plan. Vous pouvez continuer à travailler pendant qu'il termine.",
+			"pausedHeadline": "La synchronisation auto est en pause",
+			"pausedCopy": "La synchronisation manuelle fonctionne toujours, et vous pouvez reprendre les exécutions automatiques quand vous le souhaitez.",
+			"attentionHeadline": "Git Sync nécessite votre attention",
+			"attentionCopy": "Glyph a trouvé quelque chose qui doit être résolu avant la prochaine synchronisation sécurisée.",
+			"readyHeadline": "Git Sync est prêt",
+			"manualHeadline": "Synchronisation manuelle uniquement",
+			"readyCopy": "Cet espace est connecté et prêt à sauvegarder les modifications.",
+			"manualCopy": "La synchronisation automatique est désactivée. Déclenchez une synchronisation quand vous voulez enregistrer un instantané.",
+			"repoFoundHeadline": "Dépôt détecté, mais pas prêt à synchroniser",
+			"repoFoundCopy": "Ajoutez un remote origin à ce dépôt et Glyph commencera à le suivre automatiquement."
+		}
+	},
+	"ai": {
+		"availability": {
+			"title": "Disponibilité",
+			"description": "Activez ou désactivez les outils IA dans Glyph.",
+			"features": "Fonctionnalités IA",
+			"featuresDescription": "Lorsque désactivé, les panneaux IA et les actions IA de la palette de commandes restent masqués.",
+			"configuration": "Configuration",
+			"configurationDescription": "Réactivez l'IA pour gérer les fournisseurs, modèles et l'accès aux comptes.",
+			"hiddenUntilEnabled": "La configuration IA reste masquée tant que les fonctionnalités IA ne sont pas activées."
+		},
+		"provider": {
+			"title": "Fournisseur",
+			"description": "Choisissez le service, le modèle et les champs de connexion avancés. Les changements de fournisseur basculent vers la configuration enregistrée de ce fournisseur ; les autres modifications s'enregistrent automatiquement.",
+			"service": "Service",
+			"serviceDescription": "Basculez entre les configurations de fournisseur.",
+			"model": "Modèle",
+			"modelDescription": "Glyph récupère les modèles disponibles pour le fournisseur sélectionné lorsque les identifiants le permettent.",
+			"reasoningLevel": "Niveau de raisonnement",
+			"reasoningLevelDescription": "Disponible lorsque le modèle actuel expose des niveaux d'effort.",
+			"reasoningPlaceholder": "p. ex. faible, moyen, élevé",
+			"reasoningManualHint": "Ce modèle n'a pas publié d'options de raisonnement ; saisissez l'effort manuellement.",
+			"baseUrl": "URL de base",
+			"baseUrlLlama": "La valeur par défaut est http://localhost:8080/v1 pour un serveur llama.cpp local.",
+			"baseUrlCompat": "Nécessaire uniquement pour les fournisseurs compatibles OpenAI personnalisés.",
+			"allowLocalNetwork": "Autoriser le réseau local",
+			"allowLocalNetworkLlama": "Activez pour utiliser des endpoints llama.cpp sur localhost ou un réseau privé.",
+			"allowLocalNetworkCompat": "Activez pour utiliser des endpoints http:// sur localhost ou des réseaux privés (p. ex. LM Studio, vLLM).",
+			"groups": {
+				"agents": "Agents",
+				"api": "API",
+				"local": "Local"
+			},
+			"providers": {
+				"codex_chatgpt": "Codex",
+				"opencode": "OpenCode",
+				"amp": "Amp",
+				"claude_code": "Claude Code",
+				"pi": "PI",
+				"openai": "OpenAI",
+				"anthropic": "Anthropic",
+				"gemini": "Google",
+				"openrouter": "OpenRouter",
+				"openai_compat": "OpenAI compatible",
+				"llama_cpp": "llama.cpp",
+				"ollama": "Ollama"
+			}
+		},
+		"modelCombobox": {
+			"connecting": "Connexion...",
+			"models_one": "{{count}} modèle",
+			"models_other": "{{count}} modèles",
+			"selectModel": "Sélectionnez un modèle...",
+			"saveApiKeyHint": "Enregistrez une clé API pour charger les modèles de ce fournisseur.",
+			"retry": "Réessayer",
+			"noModels": "Aucun modèle disponible"
+		},
+		"apiKey": {
+			"title": "Clé API",
+			"description": "Stockée localement dans le coffre-fort de secrets sécurisé utilisé par Glyph.",
+			"unknown": "Inconnu",
+			"active": "Active",
+			"missing": "Manquante",
+			"updateKey": "Mettre à jour la clé",
+			"setKey": "Définir la clé",
+			"keyDescription": "Collez une clé de fournisseur, enregistrez-la localement ou effacez le secret actuellement stocké.",
+			"placeholder": "Coller la clé...",
+			"saved": "Clé API enregistrée"
+		},
+		"codex": {
+			"title": "Compte ChatGPT",
+			"description": "Vérifiez l'état de connexion, connectez-vous et consultez les limites d'utilisation de Codex.",
+			"identity": "Identité",
+			"identityDescription": "Le compte connecté que Glyph utilise actuellement pour Codex.",
+			"notConnected": "Non connecté",
+			"disconnect": "Déconnecter",
+			"signIn": "Se connecter avec ChatGPT",
+			"authentication": "Authentification",
+			"authenticationDescription": "Comment cette session ChatGPT est actuellement authentifiée.",
+			"rateLimits": "Limites d'utilisation",
+			"rateLimitsDescription": "Ces compteurs affichent la capacité restante du compte connecté.",
+			"window": "Fenêtre",
+			"remaining": "Restant",
+			"resetsIn": "Réinitialisation dans",
+			"weekly": "Hebdomadaire",
+			"remainingPercent": "{{label}} restant"
+		}
 	}
 }

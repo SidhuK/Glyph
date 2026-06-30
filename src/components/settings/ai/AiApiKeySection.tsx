@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/shadcn/button";
 import { Input } from "../../ui/shadcn/input";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
@@ -20,39 +21,42 @@ export function AiApiKeySection({
 	onSaveKey,
 	onClearKey,
 }: AiApiKeySectionProps) {
+	const { t } = useTranslation(["settings", "common"]);
 	return (
 		<SettingsSection
-			title="API Key"
-			description="Stored locally in the secure secret store used by Glyph."
+			title={t("ai.apiKey.title")}
+			description={t("ai.apiKey.description")}
 			aside={
 				<div
 					className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}
 				>
 					{secretConfigured == null
-						? "Unknown"
+						? t("ai.apiKey.unknown")
 						: secretConfigured
-							? "Active"
-							: "Missing"}
+							? t("ai.apiKey.active")
+							: t("ai.apiKey.missing")}
 				</div>
 			}
 		>
 			<SettingsRow
-				label={secretConfigured ? "Update key" : "Set key"}
+				label={
+					secretConfigured ? t("ai.apiKey.updateKey") : t("ai.apiKey.setKey")
+				}
 				htmlFor="aiApiKeyInput"
-				description="Paste a provider key, save it locally, or clear the current stored secret."
+				description={t("ai.apiKey.keyDescription")}
 				stacked
 			>
 				<div className="settingsInline settingsInlineWide">
 					<Input
 						id="aiApiKeyInput"
 						type="password"
-						placeholder="Paste key..."
+						placeholder={t("ai.apiKey.placeholder")}
 						value={apiKeyDraft}
 						onChange={(event) => onApiKeyDraftChange(event.target.value)}
 					/>
 					<div className="settingsActions">
 						<Button type="button" size="sm" onClick={() => void onSaveKey()}>
-							Save
+							{t("settings:common.save")}
 						</Button>
 						{secretConfigured ? (
 							<Button
@@ -61,14 +65,14 @@ export function AiApiKeySection({
 								size="sm"
 								onClick={() => void onClearKey()}
 							>
-								Clear
+								{t("settings:common.clear")}
 							</Button>
 						) : null}
 					</div>
 				</div>
 				{keySaved ? (
 					<output className="settingsKeySaved" aria-live="polite">
-						API key saved
+						{t("ai.apiKey.saved")}
 					</output>
 				) : null}
 			</SettingsRow>

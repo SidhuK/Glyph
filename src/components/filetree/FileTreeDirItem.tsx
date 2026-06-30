@@ -1,4 +1,4 @@
-import { useDraggable, useDroppable } from "@dnd-kit/react";
+import { useDraggable } from "@dnd-kit/react";
 import {
 	ArrowRight02Icon,
 	Folder01Icon,
@@ -14,7 +14,9 @@ import type {
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
@@ -23,6 +25,7 @@ import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
 	fileTreeEntryDragId,
+	useFileTreeDirDropTargets,
 } from "./fileTreeDnd";
 import {
 	buildRowStyle,
@@ -104,7 +107,7 @@ interface FileTreeDirItemProps {
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewFolderInDir: (dirPath: string) => unknown;
+	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
@@ -127,7 +130,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCancelRename,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDeletePath,
 	onEnterDir,
 	appearance,
@@ -136,6 +139,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onMoveClickSuppressRef,
 }: FileTreeDirItemProps) {
 	const { t } = useTranslation("ui");
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -155,18 +159,22 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			kind: "dir",
 		},
 	});
-	const { ref: droppableRef, isDropTarget } = useDroppable({
-		id: `file-tree-dir:${entry.rel_path}`,
-		data: { targetDirPath: entry.rel_path },
-		accept: FILE_TREE_ENTRY_TYPE,
+	const {
+		rowDroppableRef,
+		isRowDropTarget,
+		childrenDroppableRef,
+		isChildrenDropTarget,
+	} = useFileTreeDirDropTargets({
+		relPath: entry.rel_path,
+		isExpanded,
 	});
-	const setRowRef = useCallback(
+	const setDragHandleRef = useCallback(
 		(element: HTMLButtonElement | null) => {
 			draggableRef(element);
-			droppableRef(element);
 			handleRef(element);
+			rowDroppableRef(element);
 		},
-		[draggableRef, droppableRef, handleRef],
+		[draggableRef, handleRef, rowDroppableRef],
 	);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
@@ -181,8 +189,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				},
 				{
 					label: t("fileTree.addFolder"),
-					action: () => void onNewFolderInDir(entry.rel_path),
+					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
+				{ type: "separator" },
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
 					label: t("fileTree.rename"),
@@ -207,8 +217,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onNewFileInDir,
-			onNewFolderInDir,
+			onRequestCreateFolder,
 			onStartRename,
+			spacePath,
 			t,
 		],
 	);
@@ -229,7 +240,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : (
 					<>
 						<m.button
-							ref={setRowRef}
+							ref={setDragHandleRef}
 							type="button"
 							className="fileTreeRow"
 							onClick={() => {
@@ -247,7 +258,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							title={entry.rel_path || entry.name || t("fileTree.folder")}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
-							data-drop-target={isDropTarget ? "true" : undefined}
+							data-drop-target={isRowDropTarget ? "true" : undefined}
 							data-has-custom-color={customColor ? "true" : "false"}
 							data-file-tree-kind="dir"
 							data-file-tree-path={entry.rel_path}
@@ -274,8 +285,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 										role="button"
 										tabIndex={0}
 										className="fileTreeRowAction"
-										title={`Add file to ${displayDirName}`}
-										aria-label={`Add file to ${displayDirName}`}
+										title={t("fileTree.addFileTo", { name: displayDirName })}
+										aria-label={t("fileTree.addFileTo", {
+											name: displayDirName,
+										})}
 										onClick={(event) => {
 											event.preventDefault();
 											event.stopPropagation();
@@ -296,8 +309,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 										role="button"
 										tabIndex={0}
 										className="fileTreeRowAction"
-										title={`Open ${displayDirName}`}
-										aria-label={`Open ${displayDirName}`}
+										title={t("fileTree.openNamed", { name: displayDirName })}
+										aria-label={t("fileTree.openNamed", {
+											name: displayDirName,
+										})}
 										onClick={(event) => {
 											event.preventDefault();
 											event.stopPropagation();
@@ -327,13 +342,16 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				)}
 			</div>
 			<AnimatePresence>
-				{isExpanded && children ? (
+				{isExpanded ? (
 					<m.div
+						ref={childrenDroppableRef}
+						className="fileTreeChildren"
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
 						transition={springTransition}
 						style={{ overflow: "hidden" }}
+						data-drop-target={isChildrenDropTarget ? "true" : undefined}
 					>
 						{children}
 					</m.div>

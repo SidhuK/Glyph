@@ -1,8 +1,9 @@
 export function getMountedEditorContentRoot(
 	host: HTMLElement | null,
 ): HTMLElement | null {
-	if (!host) return null;
-	return host.querySelector<HTMLElement>(".ProseMirror");
+	if (!host?.isConnected) return null;
+	const contentRoot = host.querySelector<HTMLElement>(".ProseMirror");
+	return contentRoot?.isConnected ? contentRoot : null;
 }
 
 export function getOffsetWithinAncestor(

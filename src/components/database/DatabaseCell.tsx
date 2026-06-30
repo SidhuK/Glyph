@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
@@ -283,6 +284,7 @@ function DatabaseCellEditor({
 	onSave,
 	onClose,
 }: DatabaseCellEditorProps) {
+	const { t } = useTranslation("ui");
 	const {
 		tags: availableTags,
 		beautifulTags,
@@ -596,7 +598,9 @@ function DatabaseCellEditor({
 						className="notePropertyTagInput"
 						value={tagDraft}
 						placeholder={
-							cellValue.value_list.length > 0 ? "" : "Add or choose a tag"
+							cellValue.value_list.length > 0
+								? ""
+								: t("database.cell.addOrChooseTag")
 						}
 						onFocus={handleSelectRow}
 						onChange={(event) => setTagDraft(event.target.value)}
@@ -770,7 +774,7 @@ function DatabaseCellEditor({
 										type="button"
 										className="databaseBoardColorRibbonClear"
 										onClick={() => onStatusColorChange(currentValue, null)}
-										title="Clear color"
+										title={t("database.clearColor")}
 										aria-label={`Clear color for ${currentValue}`}
 									>
 										<span />
@@ -883,7 +887,9 @@ function DatabaseCellEditor({
 						className="notePropertyTagInput"
 						value={valueDraft}
 						placeholder={
-							cellValue.value_list.length > 0 ? "" : "Add or choose a value"
+							cellValue.value_list.length > 0
+								? ""
+								: t("database.cell.addOrChooseValue")
 						}
 						onFocus={handleSelectRow}
 						onChange={(event) => {
@@ -1108,6 +1114,7 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
+	const { t } = useTranslation("ui");
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
@@ -1204,7 +1211,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={fullValue || "Double-click to edit tags"}
+					title={fullValue || t("database.cell.editTags")}
 				>
 					<ResponsivePillList items={tagPillItems} />
 				</button>
@@ -1223,7 +1230,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={fullValue || "Double-click to edit"}
+					title={fullValue || t("database.cell.editValue")}
 				>
 					<ResponsivePillList items={listPillItems} />
 				</button>
@@ -1247,7 +1254,7 @@ export function DatabaseCell({
 									handleSelectRow();
 									event.stopPropagation();
 								}}
-								title={displayText || "Change status"}
+								title={displayText || t("database.cell.changeStatus")}
 							>
 								<StatusPropertyPill
 									value={currentValue || "not_started"}
@@ -1315,7 +1322,7 @@ export function DatabaseCell({
 											type="button"
 											className="databaseBoardColorRibbonClear"
 											onClick={() => onStatusColorChange(currentValue, null)}
-											title="Clear color"
+											title={t("database.clearColor")}
 											aria-label={`Clear color for ${currentValue}`}
 										>
 											<span />
@@ -1335,7 +1342,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={displayText || "Status"}
+					title={displayText || t("database.cell.status")}
 				>
 					<StatusPropertyPill
 						value={currentValue || "not_started"}
@@ -1362,7 +1369,7 @@ export function DatabaseCell({
 									handleSelectRow();
 									event.stopPropagation();
 								}}
-								title={displayText || "Change priority"}
+								title={displayText || t("database.cell.changePriority")}
 							>
 								<PriorityPropertyPill value={currentValue || "no"} />
 							</button>
@@ -1414,7 +1421,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title={displayText || "Priority"}
+					title={displayText || t("database.cell.priority")}
 				>
 					<PriorityPropertyPill value={currentValue || "no"} />
 				</button>
@@ -1434,7 +1441,7 @@ export function DatabaseCell({
 							handleSelectRow();
 							event.stopPropagation();
 						}}
-						title="Double-click to rename note"
+						title={t("database.renameNoteHint")}
 					>
 						<DatabaseNoteAppearanceIcon
 							notePath={row.note_path}
@@ -1455,7 +1462,7 @@ export function DatabaseCell({
 								event.stopPropagation();
 								onOpenNote?.(row.note_path);
 							}}
-							title="Open note"
+							title={t("database.openNote")}
 						>
 							Open
 						</button>
@@ -1476,7 +1483,7 @@ export function DatabaseCell({
 					handleSelectRow();
 					event.stopPropagation();
 				}}
-				title={editable ? "Double-click to edit" : undefined}
+				title={editable ? t("database.cell.edit") : undefined}
 			>
 				{displayText.trim() ? (
 					<span className="databaseCellText">{displayText}</span>

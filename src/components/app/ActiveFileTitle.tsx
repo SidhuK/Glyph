@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { basename, splitEditableFileName } from "../../utils/path";
 
 interface ActiveFileTitleProps {
@@ -8,6 +9,7 @@ interface ActiveFileTitleProps {
 }
 
 export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
+	const { t } = useTranslation(["ui", "common"]);
 	const fileName = path ? basename(path) : "";
 	const editableName = splitEditableFileName(fileName);
 	const activeTitleKey = path ?? "";
@@ -31,7 +33,7 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 	const commitRename = useCallback(async () => {
 		if (!path || submittedRef.current) return;
 		submittedRef.current = true;
-		const fallbackName = editableName.stem || "Untitled";
+		const fallbackName = editableName.stem || t("common:untitled");
 		const nextStem = draftName.trim() || fallbackName;
 		const nextName = `${nextStem}${editableName.ext || ".md"}`;
 		if (nextName === fileName) {
@@ -50,6 +52,7 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 		fileName,
 		onRenameFile,
 		path,
+		t,
 	]);
 
 	const cancelRename = useCallback(() => {
@@ -66,8 +69,8 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 				ref={inputRef}
 				className="plainTextInput mainTabActiveTitleInput"
 				value={draftName}
-				placeholder="Untitled"
-				aria-label="Rename current file"
+				placeholder={t("common:untitled")}
+				aria-label={t("tabs.renameFile")}
 				onChange={(event) => {
 					submittedRef.current = false;
 					setDraftName(event.target.value);
@@ -92,8 +95,8 @@ export function ActiveFileTitle({ path, onRenameFile }: ActiveFileTitleProps) {
 		<button
 			type="button"
 			className="mainTabActiveTitle"
-			title={`Rename ${fileName}`}
-			aria-label={`Rename ${fileName}`}
+			title={t("tabs.renameNamed", { name: fileName })}
+			aria-label={t("tabs.renameNamed", { name: fileName })}
 			onClick={() => {
 				submittedRef.current = false;
 				setDraftName(editableName.stem);

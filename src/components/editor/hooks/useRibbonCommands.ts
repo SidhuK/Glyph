@@ -4,6 +4,7 @@ import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../../lib/appEvents";
+import { createDetailsBlockContent } from "../extensions/detailsBlock";
 import { isEditorTextColor } from "../textColors";
 import { isEditorTextHighlight } from "../textHighlights";
 import { isVisibleEditorHost } from "./editorDomUtils";
@@ -135,6 +136,8 @@ export function useRibbonCommands({
 							.run();
 					case "divider":
 						return chain.setHorizontalRule().run();
+					case "details_block":
+						return chain.insertContent(createDetailsBlockContent()).run();
 					case "extract_selection_to_note":
 						onTriggerExtractToNote?.();
 						return true;

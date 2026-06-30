@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { DatabaseConfig } from "../../lib/database/types";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseFolderPicker } from "./DatabaseFolderPicker";
@@ -18,9 +19,10 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 			<div className="databaseViewPanelHeader">
 				<span>{t("database.source")}</span>
 			</div>
+			<p className="databaseViewPanelHint">{t("database.sourceHint")}</p>
 			<div className="databaseViewPanelStack">
 				<label className="databaseViewField">
-					<span>{t("database.source")}</span>
+					<span>{t("database.showNotesFrom")}</span>
 					<select
 						className="databaseNativeSelect"
 						value={config.source.kind}
@@ -35,9 +37,9 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						}
 					>
 						<option value="all_notes">{t("database.allNotes")}</option>
-						<option value="folder">{t("database.folder")}</option>
-						<option value="tag">{t("database.tag")}</option>
-						<option value="search">{t("database.search")}</option>
+						<option value="folder">{t("database.folderOption")}</option>
+						<option value="tag">{t("database.tagOption")}</option>
+						<option value="search">{t("database.searchQueryOption")}</option>
 					</select>
 				</label>
 				{config.source.kind === "folder" ? (
@@ -77,8 +79,8 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 				{config.source.kind === "tag" ? (
 					<DatabaseTagPicker
 						value={config.source.value}
-						label={t("database.databaseTag")}
-						description={t("database.chooseTagDescription")}
+						label={t("database.tag")}
+						description={t("database.tagFilterDescription")}
 						placeholder={t("database.chooseTag")}
 						onChange={(value) =>
 							void updateConfig({
@@ -93,7 +95,7 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						className="databaseViewField"
 						htmlFor="databaseViewSourceQuery"
 					>
-						<span>{t("database.query")}</span>
+						<span>{t("database.searchQuery")}</span>
 						<Input
 							id="databaseViewSourceQuery"
 							value={config.source.value}
@@ -125,4 +127,3 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 		</section>
 	);
 }
-import { useTranslation } from "react-i18next";

@@ -7,36 +7,54 @@
 		"space": "スペース",
 		"git": "Git",
 		"advanced": "詳細",
-		"about": "情報"
+		"about": "このアプリについて"
 	},
 	"groups": {
+		"application": "アプリケーション",
 		"workspace": "ワークスペース",
 		"features": "機能",
 		"system": "システム"
 	},
+	"actions": {
+		"back": "戻る"
+	},
+	"footer": {
+		"community": {
+			"eyebrow": "コミュニティビルド",
+			"title": "Glyph をダウンロードして自分でビルドしていただき、ありがとうございます。",
+			"body": "公式ライセンスでプロジェクトを支援すると、自動更新と公式ビルドを利用できます。",
+			"action": "公式ライセンスを購入"
+		},
+		"earlyAccess": {
+			"eyebrow": "現在もアーリーアクセス中",
+			"title": "Glyph の改善にご協力ください",
+			"body": "Glyph は活発に進化しているため、至る所で未完成の部分に出会うかもしれません。違和感があれば、ぜひお知らせください。",
+			"action": "フィードバックを送る"
+		}
+	},
 	"search": {
 		"placeholder": "設定を検索",
-		"clear": "設定検索をクリア",
+		"clear": "設定の検索をクリア",
 		"empty": "一致する設定がありません"
 	},
 	"general": {
 		"language": {
 			"title": "言語",
 			"label": "アプリの言語",
-			"description": "Glyph の画面で使う言語を選択します。",
+			"description": "Glyph のインターフェースで使用する言語を選択します。",
 			"systemDescription": "Glyph が対応している場合は OS の言語を使用し、それ以外は英語を使用します。"
 		}
 	},
 	"shortcuts": {
 		"title": "ショートカットをカスタマイズ",
-		"searchPlaceholder": "操作、カテゴリ、ショートカットを検索",
-		"help": "ショートカットをクリックして、使いたいキーを押します。ショートカットは自動保存され、Cmd、Ctrl、Option のいずれかと別のキーが必要です。",
+		"searchPlaceholder": "アクション、カテゴリ、ショートカットを検索",
+		"help": "ショートカットをクリックしてから、使いたいキーを押してください。ショートカットは自動保存され、Cmd、Ctrl、Option のいずれかと別のキーの組み合わせが必要です。",
 		"tipsLabel": "ショートカットのヒント",
 		"escapeCancels": "Esc でキャンセル",
-		"resetRestoresDefault": "リセットで既定に戻す",
-		"pressShortcut": "ショートカットを入力...",
+		"resetRestoresDefault": "リセットで既定値に戻る",
+		"pressShortcut": "ショートカットを押してください...",
 		"errors": {
-			"disable": "ショートカットを無効化できませんでした。",
+			"disable": "ショートカットを無効にできませんでした。",
 			"reset": "ショートカットをリセットできませんでした。",
 			"resetAll": "ショートカットをリセットできませんでした。",
 			"save": "ショートカットを保存できませんでした。",
@@ -51,7 +69,410 @@
 		"file": "ファイル操作",
 		"tabs": "タブ",
 		"ai": "AI",
-		"editor": "エディタ",
+		"editor": "エディター",
 		"settings": "設定"
+	},
+	"errors": {
+		"loadSettings": "設定を読み込めませんでした",
+		"saveSettings": "設定を保存できませんでした",
+		"loadAppInfo": "アプリ情報を読み込めませんでした"
+	},
+	"common": {
+		"browse": "参照",
+		"cancel": "キャンセル",
+		"none": "なし",
+		"notConfigured": "未設定",
+		"rename": "名前を変更",
+		"add": "追加",
+		"save": "保存",
+		"clear": "クリア",
+		"status": "ステータス",
+		"folder": "フォルダ"
+	},
+	"appearance": {
+		"theme": {
+			"title": "テーマ",
+			"description": "ライトとダークのテーマファミリーを組み合わせます。",
+			"selectTheme": "テーマを選択",
+			"themeMode": "テーマモード",
+			"lightTheme": "ライトテーマ",
+			"darkTheme": "ダークテーマ",
+			"translucentApp": "半透明のアプリ",
+			"pickPaletteLight": "ライトモードで Glyph が使用するパレットを選びます。",
+			"pickPaletteDark": "ダークモードで Glyph が使用するパレットを選びます。",
+			"modes": {
+				"system": "システム",
+				"light": "ライト",
+				"dark": "ダーク"
+			}
+		},
+		"accent": {
+			"title": "アクセント",
+			"palette": "パレット",
+			"paletteDescription": "ワークスペースに最適なアクセントをプレビューして選択します。",
+			"accentColor": "アクセントカラー",
+			"descriptionBoth": "既定のライトテーマとダークテーマで、ハイライト、フォーカスリング、強調に使用するアクセントを選びます。",
+			"descriptionLight": "既定のライトテーマで、ハイライト、フォーカスリング、強調に使用するアクセントを選びます。",
+			"descriptionDark": "既定のダークテーマで、ハイライト、フォーカスリング、強調に使用するアクセントを選びます。"
+		},
+		"accents": {
+			"neutral": "Neutral",
+			"glyph-orange": "Orange",
+			"glyph-red": "Glyph Red",
+			"cerulean": "Cerulean",
+			"tropical-teal": "Tropical Teal"
+		},
+		"typography": {
+			"title": "タイポグラフィ",
+			"description": "インターフェースの書体、コードスタイル、読み取りサイズを個別に調整します。",
+			"interfaceFont": "インターフェースフォント",
+			"interfaceFontDescription": "Glyph のナビゲーション、設定、ほとんどの UI テキストに使用されます。",
+			"editorFont": "エディターフォント",
+			"editorFontDescription": "インラインコードやコードブロック以外の通常のノートテキストに使用されます。",
+			"monospaceFont": "等幅フォント",
+			"monospaceFontDescription": "Markdown ソース、インラインコード、開発者向けの画面に使用されます。",
+			"uiFontSize": "UI フォントサイズ",
+			"uiFontSizeDescription": "メニュー、ペイン、コントロール、設定で使用する基本サイズを調整します。",
+			"editorFontSize": "エディターフォントサイズ",
+			"editorFontSizeDescription": "ノートエディター、Markdown プレビュー、生テキスト編集の読み取りサイズを調整します。",
+			"fontSizeValue": "{{label}} の値"
+		}
+	},
+	"advanced": {
+		"editor": {
+			"title": "エディター",
+			"description": "Glyph 内での編集動作とノート構造を制御します。",
+			"tableOfContents": "目次",
+			"tableOfContentsDescription": "各ノートにフローティング目次を表示します。",
+			"peopleMentionsAsTags": "人物メンションをタグとして扱う",
+			"peopleMentionsAsTagsDescription": "有効にすると、単独の @メンションがインデックスされ、サイドバーと検索で人物として表示されます。",
+			"showFrontmatter": "エディターで frontmatter を表示",
+			"showFrontmatterDescription": "編集中にノート上部に YAML frontmatter を表示します。オフにしても frontmatter はインデックスとデータベースで利用できます。",
+			"colorfulHeadings": "カラフルな見出し",
+			"colorfulHeadingsDescription": "ノート編集時に H1〜H6 に組み込みの異なる色を使用します。",
+			"beautifulTags": "Beautiful Tags",
+			"beautifulTagsDescription": "タグ向けの実験的な Beautiful Tags 表示を有効にします。",
+			"editorWidth": "エディター幅",
+			"editorWidthDescription": "コンパクトは行を短く、快適は少し余裕を、ワイドはエディター幅いっぱいを使います。",
+			"editorWidthModes": {
+				"compact": "コンパクト",
+				"comfortable": "快適",
+				"wide": "ワイド"
+			},
+			"collapsibleHeadings": "折りたたみ可能な見出し",
+			"collapsibleHeadingsDescription": "エディターとプレビューでノート見出しに折りたたみトグルを表示します。",
+			"vimMode": "Vim モード",
+			"vimModeDescription": "意味が分からない場合は絶対にオンにしないでください。",
+			"vimHelp": {
+				"ariaLabel": "Vim キーバインドのヘルプ",
+				"title": "Vim キーバインド",
+				"insertMode": "insert は通常の入力モードです。文字を打つとそのまま表示されます。",
+				"normalMode": "normal はコマンドモードです。キーで移動や編集を行い、文字入力はしません。"
+			}
+		},
+		"ai": {
+			"title": "AI",
+			"description": "AI アシスタントの既定の動作を制御します。",
+			"toolsAccess": "AI チャットがツールにアクセスできる",
+			"toolsAccessDescription": "オンにすると、AI はツールを使って作成や操作ができます。オフの場合はチャットのみになります。"
+		},
+		"app": {
+			"title": "アプリ",
+			"description": "サイドバーとワークスペース UI のグローバル制御です。",
+			"folioMode": "Folio モード",
+			"folioModeDescription": "ナビゲーション、ノート、エディターを 3 列のワークスペースで表示します。",
+			"classicAllNotes": "クラシックなすべてのノートグリッド",
+			"classicAllNotesDescription": "すべてのノートをアクティビティタイムラインではなくシンプルなグリッドで開きます。",
+			"folderFileCounts": "フォルダのファイル数を表示",
+			"folderFileCountsDescription": "ファイルツリーの各フォルダ行の末尾に再帰的なファイル合計を表示します。"
+		},
+		"database": {
+			"title": "データベース",
+			"description": "Glyph 全体でのデータベース表示を制御します。",
+			"columnColor": "データベース列の色を表示",
+			"columnColorDescription": "列全体の色合いを切り替えながら、レーンピルとタグの色を維持します。"
+		}
+	},
+	"about": {
+		"taglineLine1": "あなたの思考には、",
+		"taglineLine2": "サーバーではなく居場所が必要です。",
+		"madeBy": "開発",
+		"links": "このアプリについてのリンク",
+		"website": "ウェブサイト",
+		"discord": "Discord",
+		"terms": "利用規約",
+		"privacy": "プライバシー",
+		"updates": {
+			"title": "アップデート",
+			"checkingLicense": "このビルドが自動更新を利用できるか確認しています。",
+			"licenseUnknown": "Glyph はこのビルドが自動更新を利用できるか判断できませんでした。",
+			"canAutoUpdate": "Glyph を終了せずに新しいリリースを確認してインストールできます。",
+			"communityBuild": "コミュニティビルドは手動で更新します。",
+			"licenseStatus": "ライセンス状態",
+			"licenseStatusDescription": "Glyph はこのウィンドウで現在のライセンス状態を確認できなかったため、更新操作は現在利用できません。",
+			"unknownLicenseStatus": "不明なライセンス状態",
+			"appUpdates": "アプリの更新",
+			"appUpdatesDescription": "すぐに確認し、最新の公開バージョンをバックグラウンドでダウンロードします。インストールは選択したときのみ行われます。",
+			"checking": "確認中…",
+			"checkForUpdates": "アップデートを確認",
+			"installUpdate": "アップデートをインストール",
+			"installVersion": "{{version}} をインストール",
+			"alphaReleases": "アルファ版",
+			"alphaReleasesDescription": "アルファビルドに早期アクセスできます。不安定な場合があるため、未完成版のテストに問題がない場合のみ有効にしてください。",
+			"communityBuildLabel": "コミュニティビルド",
+			"communityBuildDescription": "Glyph のコミュニティ版およびオープンソース版を使用しています。公式ライセンスを購入して Glyph の開発を支援し、最新の更新を自動で受け取ってください。",
+			"buyOfficialLicense": "公式ライセンスを購入",
+			"statusLabel": "ステータス",
+			"statusDescription": "このウィンドウでの最新のアップデーター活動。",
+			"latestVersion": "すでに最新バージョンです。",
+			"updateReady": "v{{version}} のダウンロードが完了し、インストール可能です。更新ボタンをクリックしてインストールしてください。",
+			"checkFailed": "アップデートの確認に失敗しました",
+			"saveReleaseChannelFailed": "リリースチャネルの保存に失敗しました",
+			"changelog": "変更履歴",
+			"changelogDescription": "公開されている Glyph の変更履歴をブラウザで開きます。",
+			"viewChangelog": "変更履歴を表示"
+		}
+	},
+	"space": {
+		"dailyNotes": {
+			"title": "デイリーノート",
+			"description": "現在のスペース内で新しいデイリーノートを作成する場所を選びます。",
+			"folderDescription": "Glyph はデイリーノートをアクティブなスペースに対して相対的に保存します。",
+			"clearFolder": "デイリーノートフォルダをクリア"
+		},
+		"quickNotes": {
+			"title": "クイックノート",
+			"folderDescription": "新しいクイックノートはこのフォルダ内の今日のノートに追加されます。",
+			"resetFolder": "クイックノートフォルダをリセット"
+		},
+		"attachments": {
+			"title": "添付ファイル",
+			"description": "現在のスペース内でノートの添付ファイルを保存する場所を選びます。",
+			"location": "場所",
+			"locationDescription": "ノートに貼り付けた画像やファイルの保存先。",
+			"locationAriaLabel": "添付ファイルの場所",
+			"modes": {
+				"spaceRoot": "メインスペースフォルダ",
+				"specificFolder": "特定のフォルダ",
+				"noteFolder": "ノートと同じフォルダ"
+			},
+			"helpSpaceRoot": "スペースの最上位に保存されます。",
+			"helpNoteFolder": "添付先のノートの隣に保存されます。",
+			"helpSpecificFolder": "すべての添付ファイルは 1 つのフォルダに入ります。",
+			"resetFolder": "添付ファイルフォルダをリセット"
+		},
+		"searchIndex": {
+			"title": "検索インデックス",
+			"description": "検索結果が不完全、古い、または欠けている場合はインデックスを再構築します。",
+			"statusDescription": "ノートやファイルの大きな変更後に検索結果が古く見える場合に使用します。",
+			"noSpace": "スペースが選択されていません。",
+			"ready": "インデックスは準備完了です。",
+			"openSpaceFirst": "インデックスを再構築するには、まずスペースを開いてください。",
+			"rebuildComplete": "インデックスの再構築が完了しました。",
+			"rebuilding": "再構築中...",
+			"rebuild": "再構築"
+		},
+		"errors": {
+			"noSpaceOpen": "現在開いているスペースがありません。",
+			"folderInsideSpace": "選択したフォルダは現在のスペース内にある必要があります。",
+			"selectFolder": "フォルダを選択できませんでした",
+			"clearFolder": "フォルダをクリアできませんでした",
+			"updateSetting": "設定を更新できませんでした",
+			"resetFolder": "フォルダをリセットできませんでした",
+			"selectQuickNotesFolder": "クイックノートフォルダを選択できませんでした",
+			"resetQuickNotesFolder": "クイックノートフォルダをリセットできませんでした"
+		}
+	},
+	"templates": {
+		"title": "テンプレート",
+		"templateFolder": "テンプレートフォルダ",
+		"templateFolderDescription": "Markdown テンプレートを含む、現在のスペース内のフォルダを選びます。",
+		"clearFolder": "テンプレートフォルダをクリア",
+		"defaultDailyTemplate": "既定のデイリーノートテンプレート",
+		"summary_one": "テンプレート {{count}} 件",
+		"summary_other": "テンプレート {{count}} 件",
+		"errors": {
+			"loadSettings": "テンプレート設定を読み込めませんでした",
+			"clearDailyTemplate": "デイリーノートテンプレートをクリアできませんでした",
+			"loadTemplates": "テンプレートを読み込めませんでした",
+			"selectFolder": "テンプレートフォルダを選択できませんでした",
+			"clearFolder": "テンプレートフォルダをクリアできませんでした",
+			"updateDailyTemplate": "デイリーノートテンプレートを更新できませんでした"
+		}
+	},
+	"git": {
+		"connection": {
+			"title": "接続",
+			"description": "開いているスペースがすでにリポジトリの場合、Glyph は Git を自動的に使用します。",
+			"availability": "Git の利用可否",
+			"availabilityDescription": "Glyph はシステムの git バイナリと既存の Git 認証情報を使用します。",
+			"installed": "インストール済み",
+			"missing": "未インストール",
+			"repoState": "リポジトリの状態",
+			"repoStateDescription": "Glyph は現在のスペースをルートとするリポジトリのみをサポートします。",
+			"howItWorks": "仕組み",
+			"openGitFolder": "Git が初期化済みのフォルダを開きます。",
+			"branch": "ブランチ",
+			"branchDescription": "Glyph はスペースごとに 1 つのブランチを同期します。"
+		},
+		"repoState": {
+			"gitNotInstalled": "Git がインストールされていません",
+			"nestedUnsupported": "ネストされたリポジトリは非対応",
+			"repoDetected": "Git リポジトリを検出",
+			"noRepoAtRoot": "スペースルートにリポジトリなし"
+		},
+		"connectionHelp": {
+			"installGit": "リポジトリ対応スペースで Git Sync を使うには Git をインストールしてください。",
+			"nestedRepo": "このスペースはより大きな Git リポジトリ内にあります。Glyph は開いたスペースをルートとするリポジトリのみをサポートします。",
+			"configured": "Glyph はこのスペースルートで見つかった Git リポジトリを自動的に使用します。",
+			"needsRemote": "Glyph はここでリポジトリを見つけましたが、同期を開始するには origin リモートがまだ必要です。",
+			"default": "開いたスペースのルートに .git リポジトリがすでにある場合、Git Sync は自動的に利用可能になります。"
+		},
+		"sync": {
+			"title": "同期",
+			"description": "自動同期を制御し、いつでも手動同期を実行できます。",
+			"automatic": "自動同期",
+			"automaticDescription": "スペースを開いたときと、選択した間隔で実行されます。",
+			"interval": "間隔",
+			"intervalDescription": "Glyph がスケジュール同期を実行する頻度。",
+			"intervalAriaLabel": "Git 同期間隔",
+			"intervals": {
+				"5": "5 分",
+				"10": "10 分",
+				"30": "30 分",
+				"60": "60 分"
+			},
+			"actions": "アクション",
+			"actionsDescription": "設定から同期を実行し、最新の同期状態をここで確認します。",
+			"syncNow": "今すぐ同期",
+			"resumeAutoSync": "自動同期を再開"
+		},
+		"conflicts": {
+			"title": "競合の解決",
+			"description": "ローカルとリモートの編集が競合したとき、Glyph が優先する側を選びます。",
+			"policy": "ポリシー",
+			"policyDescription": "Glyph は競合を自動的に解決します。",
+			"policyAriaLabel": "競合ポリシー",
+			"localWins": "ローカルを優先",
+			"remoteWins": "リモートを優先"
+		},
+		"content": {
+			"title": "コンテンツ",
+			"description": "同期コミットに Glyph が含めるスペースコンテンツを選びます。",
+			"includeTemplates": "テンプレートを含める",
+			"includeTemplatesDescription": "現在のテンプレートフォルダとその内容を同期します。",
+			"includeAttachments": "添付ファイルを含める",
+			"includeAttachmentsSpecific": "設定した添付ファイルフォルダからファイルを同期します。",
+			"includeAttachmentsOther": "添付ファイルのみのフィルタリングは、添付ファイルが「特定のフォルダ」を使用している場合のみ機能します。それ以外のモードでは、添付ファイルはより広い非 Markdown ファイル設定に従います。",
+			"includeNonMarkdown": "非 Markdown ファイルを含める",
+			"includeNonMarkdownDescription": "オフの場合、Glyph は Markdown と明示的に含めたフォルダに同期を限定します。"
+		},
+		"presentation": {
+			"unavailable": "Git Sync は利用できません",
+			"openRepoSpace": "このワークスペースを同期するには、リポジトリ対応のスペースを開いてください。",
+			"installGitHeadline": "同期を有効にするには Git をインストール",
+			"installGitCopy": "Glyph はシステムの Git インストールと既存の認証情報を使用します。",
+			"unsupportedHeadline": "このスペースは別のリポジトリ内にあります",
+			"unsupportedCopy": "Glyph は開いたスペースをルートとするリポジトリのみをサポートします。",
+			"syncingHeadline": "このスペースを同期中",
+			"syncingCopy": "Glyph はバックグラウンドで Git を実行しています。完了するまで作業を続けられます。",
+			"pausedHeadline": "自動同期は一時停止中",
+			"pausedCopy": "手動同期は引き続き利用でき、準備ができたら自動実行を再開できます。",
+			"attentionHeadline": "Git Sync に対応が必要です",
+			"attentionCopy": "次の安全な同期の前に解決が必要な問題が見つかりました。",
+			"readyHeadline": "Git Sync の準備完了",
+			"manualHeadline": "手動同期のみ",
+			"readyCopy": "このスペースは接続済みで、変更のバックアップ準備ができています。",
+			"manualCopy": "自動同期はオフです。スナップショットを保存したいときにいつでも同期を実行してください。",
+			"repoFoundHeadline": "リポジトリを検出しましたが、同期の準備ができていません",
+			"repoFoundCopy": "このリポジトリに origin リモートを追加すると、Glyph が自動的に追跡を開始します。"
+		}
+	},
+	"ai": {
+		"availability": {
+			"title": "利用可否",
+			"description": "Glyph 全体で AI ツールをオンまたはオフにします。",
+			"features": "AI 機能",
+			"featuresDescription": "オフの場合、AI パネルとコマンドパレットの AI アクションは非表示のままです。",
+			"configuration": "設定",
+			"configurationDescription": "AI を再度オンにして、プロバイダー、モデル、アカウントアクセスを管理します。",
+			"hiddenUntilEnabled": "AI 機能が有効になるまで AI 設定は非表示のままです。"
+		},
+		"provider": {
+			"title": "プロバイダー",
+			"description": "サービス、モデル、詳細な接続フィールドを選びます。プロバイダーの変更はそのプロバイダーの保存済み設定に切り替わり、その他の編集は自動保存されます。",
+			"service": "サービス",
+			"serviceDescription": "プロバイダー設定を切り替えます。",
+			"model": "モデル",
+			"modelDescription": "認証情報が許可する場合、Glyph は選択したプロバイダーの利用可能なモデルを取得します。",
+			"reasoningLevel": "推論レベル",
+			"reasoningLevelDescription": "現在のモデルが effort レベルを公開している場合に利用できます。",
+			"reasoningPlaceholder": "例: low, medium, high",
+			"reasoningManualHint": "このモデルは推論オプションを公開していません。effort を手動で入力してください。",
+			"baseUrl": "ベース URL",
+			"baseUrlLlama": "ローカルの llama.cpp サーバーの既定値は http://localhost:8080/v1 です。",
+			"baseUrlCompat": "カスタムの OpenAI 互換プロバイダーでのみ必要です。",
+			"allowLocalNetwork": "ローカルネットワークを許可",
+			"allowLocalNetworkLlama": "localhost またはプライベートネットワークの llama.cpp エンドポイントを使うには有効にしてください。",
+			"allowLocalNetworkCompat": "localhost またはプライベートネットワーク上の http:// エンドポイントを使うには有効にしてください（例: LM Studio、vLLM）。",
+			"groups": {
+				"agents": "エージェント",
+				"api": "API",
+				"local": "ローカル"
+			},
+			"providers": {
+				"codex_chatgpt": "Codex",
+				"opencode": "OpenCode",
+				"amp": "Amp",
+				"claude_code": "Claude Code",
+				"pi": "PI",
+				"openai": "OpenAI",
+				"anthropic": "Anthropic",
+				"gemini": "Google",
+				"openrouter": "OpenRouter",
+				"openai_compat": "OpenAI compatible",
+				"llama_cpp": "llama.cpp",
+				"ollama": "Ollama"
+			}
+		},
+		"modelCombobox": {
+			"connecting": "接続中...",
+			"models_one": "モデル {{count}} 件",
+			"models_other": "モデル {{count}} 件",
+			"selectModel": "モデルを選択...",
+			"saveApiKeyHint": "このプロバイダーのモデルを読み込むには API キーを保存してください。",
+			"retry": "再試行",
+			"noModels": "利用可能なモデルがありません"
+		},
+		"apiKey": {
+			"title": "API キー",
+			"description": "Glyph が使用する安全なシークレットストアにローカル保存されます。",
+			"unknown": "不明",
+			"active": "有効",
+			"missing": "未設定",
+			"updateKey": "キーを更新",
+			"setKey": "キーを設定",
+			"keyDescription": "プロバイダーキーを貼り付けてローカルに保存するか、現在保存されているシークレットをクリアします。",
+			"placeholder": "キーを貼り付け...",
+			"saved": "API キーを保存しました"
+		},
+		"codex": {
+			"title": "ChatGPT アカウント",
+			"description": "接続状態を確認し、サインインして Codex の使用制限を確認します。",
+			"identity": "ID",
+			"identityDescription": "Glyph が現在 Codex に使用している接続済みアカウント。",
+			"notConnected": "未接続",
+			"disconnect": "切断",
+			"signIn": "ChatGPT でサインイン",
+			"authentication": "認証",
+			"authenticationDescription": "この ChatGPT セッションの現在の認証方法。",
+			"rateLimits": "レート制限",
+			"rateLimitsDescription": "これらのカウンターは接続済みアカウントの残り容量を示します。",
+			"window": "ウィンドウ",
+			"remaining": "残り",
+			"resetsIn": "リセットまで",
+			"weekly": "週次",
+			"remainingPercent": "{{label}} 残り"
+		}
 	}
 }

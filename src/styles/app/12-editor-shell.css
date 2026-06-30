@@ -19,24 +19,20 @@ button.ribbonBtn {
 	height: 32px;
 	padding: 0;
 	border-radius: var(--radius-md);
-	color: var(--text-secondary);
+	color: var(--editor-body-color);
 	transition: background-color var(--transition-base), color
 		var(--transition-base), box-shadow var(--transition-base);
 }
 
 button.ribbonBtn:hover {
 	transform: none;
-	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--editor-body-color) 6%, transparent);
+	color: var(--editor-body-color);
 }
 
 button.ribbonBtn.active {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--selection-bg-muted)
-	);
+	background: color-mix(in srgb, var(--editor-body-color) 10%, var(--bg-hover));
 	color: var(--interactive-accent);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+		color-mix(in srgb, var(--editor-body-color) 14%, transparent);
 }

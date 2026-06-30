@@ -158,6 +158,10 @@
 			"label": "Séparateur",
 			"description": "Insérer un séparateur horizontal."
 		},
+		"details_block": {
+			"label": "Bloc détails",
+			"description": "Insérer une section repliable."
+		},
 		"duplicate-current-note": {
 			"label": "Dupliquer la note actuelle",
 			"description": "Dupliquer la note actuelle."
@@ -290,9 +294,41 @@
 			"label": "Ouvrir les réglages de synchronisation Git",
 			"description": "Ouvrir la section de synchronisation Git des réglages."
 		},
+		"open-glyph-changelog": {
+			"label": "Journal des modifications",
+			"description": "Ouvrir le journal des modifications Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Ouvrir la communauté Discord Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Ouvrir le dépôt GitHub Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Politique de confidentialité",
+			"description": "Ouvrir la politique de confidentialité."
+		},
+		"open-glyph-terms": {
+			"label": "Conditions d'utilisation",
+			"description": "Ouvrir les conditions d'utilisation."
+		},
+		"open-glyph-website": {
+			"label": "Site web Glyph",
+			"description": "Ouvrir le site web Glyph."
+		},
+		"open-glyph-x": {
+			"label": "Suivre sur X",
+			"description": "Ouvrir Glyph sur X."
+		},
 		"open-license-settings": {
 			"label": "Ouvrir les réglages de licence",
 			"description": "Ouvrir la section Licence des réglages."
+		},
+		"open-local-connections": {
+			"label": "Ouvrir les connexions locales",
+			"description": "Ouvrir la vue graphe des connexions locales."
 		},
 		"open-local-graph": {
 			"label": "Ouvrir le graphe local",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "Ouvrir les réglages",
 			"description": "Ouvrir la vue des réglages."
+		},
+		"open-shortcuts-settings": {
+			"label": "Raccourcis clavier…",
+			"description": "Ouvrir la section raccourcis clavier dans les réglages."
 		},
 		"open-space": {
 			"label": "Ouvrir un espace",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "Barré",
 			"description": "Activer ou désactiver le barré pour la sélection."
+		},
+		"switch-to-edit": {
+			"label": "Mode enrichi",
+			"description": "Passer l'éditeur en mode édition enrichie."
+		},
+		"switch-to-preview": {
+			"label": "Mode aperçu",
+			"description": "Passer l'éditeur en mode aperçu."
+		},
+		"switch-to-raw": {
+			"label": "Mode brut",
+			"description": "Passer l'éditeur en mode Markdown brut."
 		},
 		"table": {
 			"label": "Tableau",

@@ -1,5 +1,6 @@
 import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
@@ -46,6 +47,7 @@ async function setActiveProfileWithRetry(id: string | null) {
 }
 
 export function AiSettingsPane() {
+	const { t } = useTranslation("settings");
 	const [aiEnabled, setAiEnabledState] = useState(true);
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
@@ -174,28 +176,28 @@ export function AiSettingsPane() {
 
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Availability"
-					description="Turn AI tools on or off across Glyph."
+					title={t("ai.availability.title")}
+					description={t("ai.availability.description")}
 				>
 					<SettingsRow
-						label="AI features"
-						description="When off, AI panels and AI command-palette actions stay hidden."
+						label={t("ai.availability.features")}
+						description={t("ai.availability.featuresDescription")}
 					>
 						<SettingsToggle
-							ariaLabel="AI features"
+							ariaLabel={t("ai.availability.features")}
 							checked={aiEnabled}
 							onCheckedChange={(checked) => void updateAiEnabled(checked)}
 						/>
 					</SettingsRow>
 					{!aiEnabled ? (
 						<SettingsRow
-							label="Configuration"
-							description="Turn AI back on to manage providers, models, and account access."
+							label={t("ai.availability.configuration")}
+							description={t("ai.availability.configurationDescription")}
 							stacked
 							interactive={false}
 						>
 							<div className="settingsEmpty">
-								AI configuration stays hidden until AI features are enabled.
+								{t("ai.availability.hiddenUntilEnabled")}
 							</div>
 						</SettingsRow>
 					) : null}

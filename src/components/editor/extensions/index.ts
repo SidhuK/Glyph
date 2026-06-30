@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import {
 	Table,
@@ -24,14 +24,19 @@ import {
 } from "./changedRanges";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
+import { glyphDetailsExtensions } from "./detailsBlock";
+import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
+import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
+import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
@@ -178,7 +183,22 @@ function calloutScanRanges(tr: Transaction): ChangedRange[] {
 	const ranges = changedRangesFromTransactions([tr], tr.doc.content.size);
 	if (!ranges.length) return [];
 	const expanded: ChangedRange[] = [];
+
+	const addContainingBlockquote = (pos: number) => {
+		const resolvedPos = tr.doc.resolve(
+			Math.max(0, Math.min(pos, tr.doc.content.size)),
+		);
+		for (let depth = resolvedPos.depth; depth > 0; depth -= 1) {
+			const node = resolvedPos.node(depth);
+			if (node.type.name !== "blockquote") continue;
+			const from = resolvedPos.before(depth);
+			expanded.push({ from, to: from + node.nodeSize });
+		}
+	};
+
 	for (const range of ranges) {
+		addContainingBlockquote(range.from);
+		addContainingBlockquote(Math.max(range.from, range.to - 1));
 		tr.doc.nodesBetween(range.from, range.to, (node, pos) => {
 			if (node.type.name !== "blockquote") return;
 			expanded.push({ from: pos, to: pos + node.nodeSize });
@@ -648,6 +668,7 @@ const EditorLink = Link.extend({
 });
 
 interface CreateEditorExtensionsOptions {
+	additionalExtensions?: AnyExtension[];
 	enableEditingExtensions?: boolean;
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
@@ -657,12 +678,14 @@ interface CreateEditorExtensionsOptions {
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
 export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
 	const {
+		additionalExtensions = [],
 		enableEditingExtensions = true,
 		enableSlashCommand = true,
 		enableWikiLinks = true,
@@ -672,6 +695,7 @@ export function createEditorExtensions(
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
+		onMathEditRequest,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -704,7 +728,10 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		...glyphDetailsExtensions,
+		...additionalExtensions,
 		MermaidPreview,
+		InlineTableOfContents,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({
 			markedOptions: {
@@ -731,11 +758,15 @@ export function createEditorExtensions(
 		...(enableEditingExtensions && enablePeopleMentions
 			? [PersonAutocomplete]
 			: []),
-		...(enableEditingExtensions && enableSlashCommand ? [SlashCommand] : []),
+		...(enableEditingExtensions ? [TagAutocomplete] : []),
+		...(enableEditingExtensions && enableSlashCommand
+			? [SlashCommand.configure({ onMathEditRequest })]
+			: []),
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
+		FootnoteDecorations,
 		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

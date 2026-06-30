@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { Extension, type Extensions } from "@tiptap/core";
 import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,12 +11,14 @@ const {
 	canCommands,
 	chainCommands,
 	emitSettingsUpdated,
+	getActiveEditor,
 	getEditorOptions,
 	invokeMock,
 	loadSettingsMock,
 	mockEditor,
 	openUrlMock,
 	parseMock,
+	setActiveEditor,
 	setEditorOptions,
 	setSettingsUpdatedHandler,
 } = vi.hoisted(() => {
@@ -50,6 +53,7 @@ const {
 		commands: {
 			setContent: vi.fn(),
 			setHeadingCollapseEnabled: vi.fn(),
+			setTextSelection: vi.fn(() => true),
 		},
 		state: {
 			selection: {
@@ -71,6 +75,9 @@ const {
 				setNodeMarkup: vi.fn(),
 			},
 			doc: {
+				content: {
+					size: 42,
+				},
 				descendants: vi.fn(),
 				resolve: vi.fn((pos: number) => ({ pos })),
 			},
@@ -86,11 +93,13 @@ const {
 		view: {
 			dispatch: vi.fn(),
 			focus: vi.fn(),
+			hasFocus: vi.fn(() => false),
 			posAtDOM: vi.fn(),
 			state: undefined as unknown,
 		},
 	};
 	mockEditor.view.state = mockEditor.state;
+	let activeEditor = mockEditor;
 	const parseMock = vi.fn(() => ({
 		content: [
 			{
@@ -136,9 +145,13 @@ const {
 		mockEditor,
 		openUrlMock: vi.fn(),
 		parseMock,
+		setActiveEditor: (editor: typeof mockEditor) => {
+			activeEditor = editor;
+		},
 		setEditorOptions: (options: Record<string, unknown>) => {
 			editorOptions = options;
 		},
+		getActiveEditor: () => activeEditor,
 		setSettingsUpdatedHandler: (handler: typeof settingsUpdatedHandler) => {
 			settingsUpdatedHandler = handler;
 		},
@@ -167,7 +180,7 @@ vi.mock("@tiptap/markdown", () => ({
 vi.mock("@tiptap/react", () => ({
 	useEditor: (options: Record<string, unknown>) => {
 		setEditorOptions(options);
-		return mockEditor;
+		return getActiveEditor();
 	},
 }));
 
@@ -208,12 +221,14 @@ vi.mock("./useHydrateInlineImages", () => ({
 }));
 
 function Harness({
+	additionalExtensions = [],
 	markdown = "keep this line\nremove this line",
 	onChange,
 	onState,
 	pasteMarkdownBehavior = "plain-text",
 	relPath = "notes/test.md",
 }: {
+	additionalExtensions?: Extensions;
 	markdown?: string;
 	onChange: (nextMarkdown: string) => void;
 	onState?: (state: {
@@ -224,6 +239,7 @@ function Harness({
 	relPath?: string;
 }) {
 	const state = useNoteEditor({
+		additionalExtensions,
 		markdown,
 		mode: "rich",
 		relPath,
@@ -300,6 +316,7 @@ describe("useNoteEditor", () => {
 
 	beforeEach(() => {
 		setSettingsUpdatedHandler(null);
+		setActiveEditor(mockEditor);
 		mockEditor.isEditable = true;
 		mockEditor.isActive.mockReset();
 		mockEditor.isActive.mockReturnValue(false);
@@ -309,6 +326,11 @@ describe("useNoteEditor", () => {
 		mockEditor.can.mockClear();
 		mockEditor.commands.setContent.mockReset();
 		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
+		mockEditor.commands.setTextSelection.mockReset();
+		mockEditor.commands.setTextSelection.mockReturnValue(true);
+		mockEditor.state.doc.content.size = 42;
+		mockEditor.state.selection.from = 2;
+		mockEditor.state.selection.to = 4;
 		mockEditor.state.doc.descendants.mockReset();
 		mockEditor.state.doc.descendants.mockImplementation(() => {});
 		mockEditor.state.doc.resolve.mockReset();
@@ -329,8 +351,11 @@ describe("useNoteEditor", () => {
 				return mockEditor.state.tr;
 			},
 		);
+		mockEditor.state.tr.setNodeMarkup.mockReset();
 		mockEditor.view.dispatch.mockReset();
 		mockEditor.view.focus.mockReset();
+		mockEditor.view.hasFocus.mockReset();
+		mockEditor.view.hasFocus.mockReturnValue(false);
 		mockEditor.view.posAtDOM.mockReset();
 		mockEditor.view.posAtDOM.mockImplementation(
 			(_node: Node, offset: number) => (offset === 0 ? 5 : 14),
@@ -343,7 +368,10 @@ describe("useNoteEditor", () => {
 		canCommands.insertContentAt.mockReturnValue(true);
 		openUrlMock.mockReset();
 		invokeMock.mockReset();
-		invokeMock.mockResolvedValue({ href: "assets/image.png" });
+		invokeMock.mockResolvedValue({
+			asset_rel_path: "assets/image.png",
+			href: "../assets/image.png",
+		});
 		loadSettingsMock.mockReset();
 		loadSettingsMock.mockResolvedValue({
 			editor: {
@@ -498,6 +526,127 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(newOnChange).not.toHaveBeenCalled();
+	});
+
+	it("seeds a recreated editor from the pending same-note document", async () => {
+		const onChange = vi.fn();
+		const firstExtension = Extension.create({ name: "first-extension" });
+		const secondExtension = Extension.create({ name: "second-extension" });
+		mockEditor.getMarkdown.mockReturnValue("latest pending body");
+
+		await act(async () => {
+			root.render(
+				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
+			);
+		});
+
+		const initialOptions = getEditorOptions() as {
+			onTransaction?: (payload: {
+				editor: typeof mockEditor;
+				transaction: { docChanged: boolean };
+			}) => void;
+		} | null;
+
+		await act(async () => {
+			initialOptions?.onTransaction?.({
+				editor: mockEditor,
+				transaction: { docChanged: true },
+			});
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness
+					additionalExtensions={[secondExtension]}
+					onChange={onChange}
+				/>,
+			);
+		});
+
+		const recreatedOptions = getEditorOptions() as { content?: string } | null;
+		expect(recreatedOptions?.content).toBe("latest pending body");
+		expect(onChange).toHaveBeenCalledWith("latest pending body");
+	});
+
+	it("restores the focused selection after recreating the editor", async () => {
+		const onChange = vi.fn();
+		const firstExtension = Extension.create({ name: "first-extension" });
+		const secondExtension = Extension.create({ name: "second-extension" });
+		const nextEditor = {
+			...mockEditor,
+			commands: {
+				...mockEditor.commands,
+				setTextSelection: vi.fn(() => true),
+			},
+			state: {
+				...mockEditor.state,
+				doc: {
+					...mockEditor.state.doc,
+					content: { size: 5 },
+				},
+			},
+			view: {
+				...mockEditor.view,
+				focus: vi.fn(),
+				hasFocus: vi.fn(() => false),
+			},
+		};
+		nextEditor.view.state = nextEditor.state;
+
+		await act(async () => {
+			root.render(
+				<Harness additionalExtensions={[firstExtension]} onChange={onChange} />,
+			);
+		});
+
+		mockEditor.state.selection.from = 12;
+		mockEditor.state.selection.to = 12;
+		mockEditor.view.hasFocus.mockReturnValue(true);
+		setActiveEditor(nextEditor as typeof mockEditor);
+
+		await act(async () => {
+			root.render(
+				<Harness
+					additionalExtensions={[secondExtension]}
+					onChange={onChange}
+				/>,
+			);
+		});
+
+		expect(nextEditor.commands.setTextSelection).toHaveBeenCalledWith({
+			from: 5,
+			to: 5,
+		});
+		expect(nextEditor.view.focus).toHaveBeenCalled();
+	});
+
+	it("restores the focused selection after replacing editor content", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness markdown="first body" onChange={onChange} />);
+		});
+
+		mockEditor.state.doc.content.size = 8;
+		mockEditor.state.selection.from = 3;
+		mockEditor.state.selection.to = 3;
+		mockEditor.view.hasFocus.mockReturnValue(true);
+
+		await act(async () => {
+			root.render(<Harness markdown="changed body" onChange={onChange} />);
+		});
+
+		expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
+			"changed body",
+			{
+				contentType: "markdown",
+			},
+		);
+		expect(mockEditor.commands.setTextSelection).toHaveBeenCalledWith({
+			from: 3,
+			to: 3,
+		});
+		expect(mockEditor.view.focus).toHaveBeenCalled();
 	});
 
 	it("tracks colorful headings from settings and live updates", async () => {
@@ -857,6 +1006,37 @@ describe("useNoteEditor", () => {
 		const event = createClipboardEvent({
 			items: [{ type: "image/png", getAsFile: () => file }],
 		});
+		mockEditor.state.doc.descendants.mockImplementation(
+			(
+				visit: (
+					node: { type: { name: string }; attrs: Record<string, unknown> },
+					pos: number,
+				) => void,
+			) => {
+				const insertContentAtCalls = chainCommands.insertContentAt.mock
+					.calls as unknown as Array<[unknown, unknown]>;
+				const lastInsertCall =
+					insertContentAtCalls[insertContentAtCalls.length - 1];
+				const insertedNodes = lastInsertCall?.[1] as
+					| Array<{ attrs?: { uploadId?: string } }>
+					| undefined;
+				const uploadId = insertedNodes?.[0]?.attrs?.uploadId;
+				if (!uploadId) return;
+				visit(
+					{
+						type: { name: "image" },
+						attrs: {
+							src: "blob:preview",
+							alt: "paste.png",
+							title: "",
+							originSrc: "",
+							uploadId,
+						},
+					},
+					6,
+				);
+			},
+		);
 
 		await act(async () => {
 			expect(paste?.({}, event)).toBe(true);
@@ -867,8 +1047,19 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "assets/uploads",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
+		expect(mockEditor.state.tr.setNodeMarkup).toHaveBeenCalledWith(
+			6,
+			undefined,
+			expect.objectContaining({
+				src: "data:image/png;base64,abc",
+				alt: "paste.png",
+				title: "",
+				originSrc: "../assets/image.png",
+				uploadId: null,
+			}),
+		);
 	});
 
 	it("saves pasted images to the space root when that mode is selected", async () => {
@@ -906,7 +1097,7 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
 	});
 
@@ -945,7 +1136,7 @@ describe("useNoteEditor", () => {
 			source_path: "notes/test.md",
 			target_dir: "notes",
 			data_url: "data:image/png;base64,abc",
-			alt: "paste.png",
+			original_filename: "paste.png",
 		});
 	});
 
@@ -1009,7 +1200,10 @@ describe("useNoteEditor", () => {
 		const onChange = vi.fn();
 		invokeMock
 			.mockRejectedValueOnce(new Error("first upload failed"))
-			.mockResolvedValueOnce({ href: "assets/image-2.png" });
+			.mockResolvedValueOnce({
+				asset_rel_path: "assets/image-2.png",
+				href: "../assets/image-2.png",
+			});
 
 		await act(async () => {
 			root.render(

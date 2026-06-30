@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
-import type { EditorTextColor } from "../../components/editor/textColors";
+import {
+	type EditorTextColor,
+	getEditorTextColorOption,
+} from "../../components/editor/textColors";
 
 const DATABASE_TONES = [
 	"var(--color-blue-500)",
@@ -9,17 +12,6 @@ const DATABASE_TONES = [
 	"var(--color-yellow-500)",
 	"var(--color-red-500)",
 ] as const;
-
-const DATABASE_TONE_BY_COLOR: Record<EditorTextColor, string> = {
-	gray: "var(--glyph-inline-color-gray, #626f86)",
-	brown: "var(--glyph-inline-color-brown, #9a6c3f)",
-	orange: "var(--glyph-inline-color-orange, #c25100)",
-	yellow: "var(--glyph-inline-color-yellow, #8f6b00)",
-	green: "var(--glyph-inline-color-green, #216e4e)",
-	blue: "var(--glyph-inline-color-blue, #0c66e4)",
-	purple: "var(--glyph-inline-color-purple, #7e5bef)",
-	red: "var(--glyph-inline-color-red, #c9372c)",
-};
 
 function hashSeed(seed: string): number {
 	let hash = 0;
@@ -46,8 +38,9 @@ function databaseToneStyleForColor(
 	seed: string,
 ): CSSProperties {
 	if (color) {
+		const { cssVar, fallbackHex } = getEditorTextColorOption(color);
 		return {
-			"--database-tone": DATABASE_TONE_BY_COLOR[color],
+			"--database-tone": `var(${cssVar}, ${fallbackHex})`,
 		} as CSSProperties;
 	}
 	return databaseToneStyle(seed);

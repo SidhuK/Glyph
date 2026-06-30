@@ -10,8 +10,6 @@ pnpm build          # TypeScript check + Vite build
 pnpm check          # Biome lint + format check
 pnpm format         # Auto-format with Biome
 pnpm test           # Run all tests (vitest)
-pnpm test -- src/lib/diff.test.ts          # Single test file
-pnpm test -- -t "test name"               # Single test by name
 cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
@@ -21,9 +19,10 @@ cd src-tauri && cargo clippy   # Lint Rust
 ```bash
 pnpm dev            # Vite dev server (frontend only)
 pnpm tauri dev      # Full Tauri app in dev mode
+GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing
 ```
 
-**Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check`
+**Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
 
 **Never run a dev server (Vite, `pnpm dev`, `pnpm tauri dev`, or otherwise) — the user handles dev.**
 
@@ -31,7 +30,7 @@ pnpm tauri dev      # Full Tauri app in dev mode
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.
 
-Repo extras: internal product and engineering docs live in `docs/`.
+Repo extras: internal product and engineering docs live in `docs/`. 
 
 ## Frontend Overview (`src/`)
 
@@ -89,6 +88,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 ## Migration Policy
 
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
+- Unless a core functionality is broken, never suggest adding backward compatibility.
 
 ## Version Control
 

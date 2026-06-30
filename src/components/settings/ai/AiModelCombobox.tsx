@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
 import { SettingsSelect } from "../SettingsSelect";
 
@@ -33,6 +34,7 @@ export function AiModelCombobox({
 	onChange,
 	onModelsChange,
 }: AiModelComboboxProps) {
+	const { t } = useTranslation("settings");
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
 	const modelsQuery = useQuery({
@@ -64,9 +66,9 @@ export function AiModelCombobox({
 	}, [canFetchModels, modelsQuery, onModelsChange]);
 
 	const statusLabel = loading
-		? "Connecting..."
+		? t("ai.modelCombobox.connecting")
 		: models
-			? `${models.length} models`
+			? t("ai.modelCombobox.models", { count: models.length })
 			: null;
 
 	return (
@@ -78,7 +80,7 @@ export function AiModelCombobox({
 					onChange={(e) => onChange(e.target.value)}
 					disabled={loading || !models || !canFetchModels}
 				>
-					<option value="">Select a model...</option>
+					<option value="">{t("ai.modelCombobox.selectModel")}</option>
 					{models?.map((m) => (
 						<option key={m.id} value={m.id}>
 							{m.name}
@@ -95,7 +97,7 @@ export function AiModelCombobox({
 			</div>
 			{!canFetchModels ? (
 				<div className="modelComboboxStatus">
-					Save an API key to load models for this provider.
+					{t("ai.modelCombobox.saveApiKeyHint")}
 				</div>
 			) : null}
 			{error ? (
@@ -106,12 +108,14 @@ export function AiModelCombobox({
 						className="modelComboboxRetry"
 						onClick={handleRetry}
 					>
-						Retry
+						{t("ai.modelCombobox.retry")}
 					</button>
 				</div>
 			) : null}
 			{!loading && !error && models?.length === 0 ? (
-				<div className="modelComboboxStatus">No models available</div>
+				<div className="modelComboboxStatus">
+					{t("ai.modelCombobox.noModels")}
+				</div>
 			) : null}
 		</div>
 	);

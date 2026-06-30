@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/fasY8gAQR"><strong>Join us on Discord →</strong></a>
+  <a href="https://discord.gg/cNqrBfFx7D"><strong>Join us on Discord →</strong></a>
 </p>
 
 Offline-first desktop note-taking application. Tauri 2 shell with a React 19 / TypeScript / Vite 8 frontend and a Rust backend. Data lives entirely on-disk in a per-space `.glyph/` directory backed by SQLite and the local filesystem. No cloud sync, no server.

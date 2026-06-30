@@ -111,7 +111,6 @@ interface BinaryFilePreviewDoc {
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
-	markdown: string;
 }
 
 export interface NoteProperty {
@@ -386,9 +385,7 @@ interface LocalConnectionsEdge {
 
 interface LocalConnectionsTagNode {
 	id: string;
-	tag: string;
 	title: string;
-	note_count: number;
 }
 
 interface LocalConnectionsTagEdge {
@@ -407,8 +404,6 @@ export interface LocalNoteConnections {
 export interface SpaceConnectionsNode {
 	id: string;
 	title: string;
-	link_count: number;
-	tag_count: number;
 	is_isolated: boolean;
 }
 
@@ -420,7 +415,6 @@ export interface SpaceConnectionsEdge {
 
 export interface SpaceConnectionsTagNode {
 	id: string;
-	tag: string;
 	title: string;
 	note_count: number;
 }
@@ -435,10 +429,6 @@ export interface SpaceConnections {
 	edges: SpaceConnectionsEdge[];
 	tags: SpaceConnectionsTagNode[];
 	tag_edges: SpaceConnectionsTagEdge[];
-	truncated: boolean;
-	truncated_tags: boolean;
-	total_notes: number;
-	total_tags: number;
 }
 
 export interface TagCount {
@@ -550,6 +540,7 @@ export interface GitSyncConfig {
 	last_error: string | null;
 	consecutive_auto_sync_failures: number;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 }
 
 export interface GitSyncStatus {
@@ -563,6 +554,7 @@ export interface GitSyncStatus {
 	branch: string | null;
 	enabled: boolean;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 	phase: GitSyncPhase;
 	is_syncing: boolean;
 	interval_minutes: number;
@@ -617,6 +609,7 @@ interface GitSyncConfigPatch {
 	interval_minutes?: number;
 	inclusions?: GitSyncInclusionSettings;
 	paused?: boolean;
+	auto_sync_prompted?: boolean;
 }
 
 type LicenseMode =
@@ -859,7 +852,7 @@ interface TauriCommands {
 			source_path: string;
 			target_dir: string;
 			data_url: string;
-			alt?: string | null;
+			original_filename?: string | null;
 		},
 		SavedPastedImage
 	>;
@@ -998,7 +991,7 @@ interface TauriCommands {
 		CalendarDateNote[]
 	>;
 	tags_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
+		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]
 	>;
 	people_list: CommandDef<
@@ -1016,10 +1009,7 @@ interface TauriCommands {
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
-	space_connections: CommandDef<
-		{ max_nodes?: number; max_tags?: number },
-		SpaceConnections
-	>;
+	space_connections: CommandDef<void, SpaceConnections>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<

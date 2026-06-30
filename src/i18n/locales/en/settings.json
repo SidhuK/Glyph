@@ -71,5 +71,408 @@
 		"ai": "AI",
 		"editor": "Editor",
 		"settings": "Settings"
+	},
+	"errors": {
+		"loadSettings": "Failed to load settings",
+		"saveSettings": "Failed to save settings",
+		"loadAppInfo": "Failed to load app info"
+	},
+	"common": {
+		"browse": "Browse",
+		"cancel": "Cancel",
+		"none": "None",
+		"notConfigured": "Not configured",
+		"rename": "Rename",
+		"add": "Add",
+		"save": "Save",
+		"clear": "Clear",
+		"status": "Status",
+		"folder": "Folder"
+	},
+	"appearance": {
+		"theme": {
+			"title": "Theme",
+			"description": "Mix and match light and dark theme families.",
+			"selectTheme": "Select Theme",
+			"themeMode": "Theme mode",
+			"lightTheme": "Light theme",
+			"darkTheme": "Dark theme",
+			"translucentApp": "Translucent app",
+			"pickPaletteLight": "Pick the palette Glyph uses in light mode.",
+			"pickPaletteDark": "Pick the palette Glyph uses in dark mode.",
+			"modes": {
+				"system": "System",
+				"light": "Light",
+				"dark": "Dark"
+			}
+		},
+		"accent": {
+			"title": "Accent",
+			"palette": "Palette",
+			"paletteDescription": "Preview and select the accent that feels best for your workspace.",
+			"accentColor": "Accent color",
+			"descriptionBoth": "Choose the accent used for highlights, focus rings, and emphasis in the default light and dark themes.",
+			"descriptionLight": "Choose the accent used for highlights, focus rings, and emphasis in the default light theme.",
+			"descriptionDark": "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme."
+		},
+		"accents": {
+			"neutral": "Neutral",
+			"glyph-orange": "Orange",
+			"glyph-red": "Glyph Red",
+			"cerulean": "Cerulean",
+			"tropical-teal": "Tropical Teal"
+		},
+		"typography": {
+			"title": "Typography",
+			"description": "Tune interface type, code styling, and reading scale independently.",
+			"interfaceFont": "Interface font",
+			"interfaceFontDescription": "Used for navigation, settings, and most UI copy across Glyph.",
+			"editorFont": "Editor font",
+			"editorFontDescription": "Used for regular note text outside inline code and code blocks.",
+			"monospaceFont": "Monospace font",
+			"monospaceFontDescription": "Used for markdown source, inline code, and developer-oriented surfaces.",
+			"uiFontSize": "UI font size",
+			"uiFontSizeDescription": "Adjust the base size used by menus, panes, controls, and settings.",
+			"editorFontSize": "Editor font size",
+			"editorFontSizeDescription": "Adjust the reading size for the note editor, markdown preview, and raw text editing.",
+			"fontSizeValue": "{{label}} value"
+		}
+	},
+	"advanced": {
+		"editor": {
+			"title": "Editor",
+			"description": "Controls for editing behavior and note structure inside Glyph.",
+			"tableOfContents": "Table of contents",
+			"tableOfContentsDescription": "Show a floating table of contents for each note.",
+			"peopleMentionsAsTags": "People mentions as tags",
+			"peopleMentionsAsTagsDescription": "When enabled, standalone @mentions are indexed and shown as people in the sidebar and search.",
+			"showFrontmatter": "Show frontmatter in editor",
+			"showFrontmatterDescription": "Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases.",
+			"colorfulHeadings": "Colorful headings",
+			"colorfulHeadingsDescription": "Use distinct built-in colors for H1-H6 while editing notes.",
+			"beautifulTags": "Beautiful Tags",
+			"beautifulTagsDescription": "Enable the experimental Beautiful Tags presentation for tags.",
+			"editorWidth": "Editor width",
+			"editorWidthDescription": "Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width.",
+			"editorWidthModes": {
+				"compact": "Compact",
+				"comfortable": "Comfortable",
+				"wide": "Wide"
+			},
+			"collapsibleHeadings": "Collapsible headings",
+			"collapsibleHeadingsDescription": "Show collapse toggles on note headings in editor and preview.",
+			"vimMode": "Vim Mode",
+			"vimModeDescription": "Do NOT Turn this ON if you don't know what it means.",
+			"vimHelp": {
+				"ariaLabel": "Vim keybindings help",
+				"title": "Vim keybindings",
+				"insertMode": "insert means normal typing mode. You type and text appears, like the editor already does.",
+				"normalMode": "normal means command mode. Your keys move around or edit text instead of typing letters."
+			}
+		},
+		"ai": {
+			"title": "AI",
+			"description": "Controls for how the AI assistant behaves by default.",
+			"toolsAccess": "AI chat has access to tools",
+			"toolsAccessDescription": "When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
+		},
+		"app": {
+			"title": "App",
+			"description": "Global app-level controls for the sidebar and workspace UI.",
+			"folioMode": "Folio Mode",
+			"folioModeDescription": "Show navigation, notes, and editor in a three-column workspace.",
+			"classicAllNotes": "Classic All Notes grid",
+			"classicAllNotesDescription": "Open All Notes as the simple grid instead of the activity timeline.",
+			"folderFileCounts": "Show folder file counts",
+			"folderFileCountsDescription": "Show a recursive file total at the end of each folder row in the file tree."
+		},
+		"database": {
+			"title": "Database",
+			"description": "Global controls for how databases are presented across Glyph.",
+			"columnColor": "Show database column color",
+			"columnColorDescription": "Keep the lane pill and tag colors while toggling the full column tint."
+		}
+	},
+	"about": {
+		"taglineLine1": "Your thoughts deserve a home,",
+		"taglineLine2": "not a server.",
+		"madeBy": "Made by",
+		"links": "About links",
+		"website": "Website",
+		"discord": "Discord",
+		"terms": "Terms",
+		"privacy": "Privacy",
+		"updates": {
+			"title": "Updates",
+			"checkingLicense": "Checking whether this build can use automatic updates.",
+			"licenseUnknown": "Glyph could not determine whether this build can use automatic updates.",
+			"canAutoUpdate": "Check for new releases and install them without leaving Glyph.",
+			"communityBuild": "Community builds are updated manually.",
+			"licenseStatus": "License status",
+			"licenseStatusDescription": "Glyph could not verify the current license state in this window, so update actions are unavailable right now.",
+			"unknownLicenseStatus": "Unknown license status",
+			"appUpdates": "App updates",
+			"appUpdatesDescription": "Checks immediately and downloads the latest published version in the background. Installation only happens when you choose it.",
+			"checking": "Checking…",
+			"checkForUpdates": "Check for Updates",
+			"installUpdate": "Install Update",
+			"installVersion": "Install {{version}}",
+			"alphaReleases": "Alpha releases",
+			"alphaReleasesDescription": "Get early access to alpha builds. These may be unstable, so only turn this on if you're comfortable testing unfinished releases.",
+			"communityBuildLabel": "Community build",
+			"communityBuildDescription": "You're using the Community and Open Source version of Glyph. Purchase an official license to support Glyph's development and receive the latest updates automatically.",
+			"buyOfficialLicense": "Buy Official License",
+			"statusLabel": "Status",
+			"statusDescription": "Latest updater activity from this window.",
+			"latestVersion": "You're already on the latest version.",
+			"updateReady": "v{{version}} is downloaded and ready. Click the update button to install it.",
+			"checkFailed": "Failed to check for updates",
+			"saveReleaseChannelFailed": "Failed to save release channel",
+			"changelog": "Changelog",
+			"changelogDescription": "Open the published Glyph changelog in your browser.",
+			"viewChangelog": "View Changelog"
+		}
+	},
+	"space": {
+		"dailyNotes": {
+			"title": "Daily Notes",
+			"description": "Choose where new daily notes should be created within the current space.",
+			"folderDescription": "Glyph stores daily notes relative to the active space.",
+			"clearFolder": "Clear daily notes folder"
+		},
+		"quickNotes": {
+			"title": "Quick Notes",
+			"folderDescription": "New quick notes are added to today's note in this folder.",
+			"resetFolder": "Reset quick notes folder"
+		},
+		"attachments": {
+			"title": "Attachments",
+			"description": "Choose where note attachments are stored within the current space.",
+			"location": "Location",
+			"locationDescription": "Where to save images and files you paste into notes.",
+			"locationAriaLabel": "Attachment location",
+			"modes": {
+				"spaceRoot": "Main space folder",
+				"specificFolder": "Specific folder",
+				"noteFolder": "Same folder as note"
+			},
+			"helpSpaceRoot": "Saved at the top level of your space.",
+			"helpNoteFolder": "Saved next to the note they are attached to.",
+			"helpSpecificFolder": "All attachments go in one folder.",
+			"resetFolder": "Reset attachments folder"
+		},
+		"searchIndex": {
+			"title": "Search Index",
+			"description": "Rebuild the index if search results are incomplete, stale, or missing.",
+			"statusDescription": "Use this when search results look outdated after large note or file changes.",
+			"noSpace": "No space selected.",
+			"ready": "Index is ready.",
+			"openSpaceFirst": "Open a space first to rebuild the index.",
+			"rebuildComplete": "Index rebuild completed.",
+			"rebuilding": "Rebuilding...",
+			"rebuild": "Rebuild"
+		},
+		"errors": {
+			"noSpaceOpen": "No space is currently open.",
+			"folderInsideSpace": "Selected folder must be inside the current space.",
+			"selectFolder": "Failed to select folder",
+			"clearFolder": "Failed to clear folder",
+			"updateSetting": "Failed to update setting",
+			"resetFolder": "Failed to reset folder",
+			"selectQuickNotesFolder": "Failed to select quick notes folder",
+			"resetQuickNotesFolder": "Failed to reset quick notes folder"
+		}
+	},
+	"templates": {
+		"title": "Templates",
+		"templateFolder": "Template folder",
+		"templateFolderDescription": "Choose a folder inside the current space that contains your markdown templates.",
+		"clearFolder": "Clear template folder",
+		"defaultDailyTemplate": "Default daily note template",
+		"summary_one": "{{count}} template found",
+		"summary_other": "{{count}} templates found",
+		"errors": {
+			"loadSettings": "Failed to load templates settings",
+			"clearDailyTemplate": "Failed to clear daily note template",
+			"loadTemplates": "Failed to load templates",
+			"selectFolder": "Failed to select template folder",
+			"clearFolder": "Failed to clear template folder",
+			"updateDailyTemplate": "Failed to update daily note template"
+		}
+	},
+	"git": {
+		"connection": {
+			"title": "Connection",
+			"description": "Glyph uses Git automatically when the opened space is already a repository.",
+			"availability": "Git availability",
+			"availabilityDescription": "Glyph uses the system git binary and your existing Git credentials.",
+			"installed": "Installed",
+			"missing": "Missing",
+			"repoState": "Repository state",
+			"repoStateDescription": "Glyph only supports repositories rooted exactly at the current space.",
+			"howItWorks": "How it works",
+			"openGitFolder": "Open a folder that already has Git initialized.",
+			"branch": "Branch",
+			"branchDescription": "Glyph syncs a single branch per space."
+		},
+		"repoState": {
+			"gitNotInstalled": "Git not installed",
+			"nestedUnsupported": "Nested repo unsupported",
+			"repoDetected": "Git repo detected",
+			"noRepoAtRoot": "No repo at space root"
+		},
+		"connectionHelp": {
+			"installGit": "Install Git to use Git Sync in repo-backed spaces.",
+			"nestedRepo": "This space is inside a larger Git repository. Glyph only supports repos rooted exactly at the opened space.",
+			"configured": "Glyph automatically uses the Git repository found at this space root.",
+			"needsRemote": "Glyph found a repository here, but it still needs an origin remote before sync can start.",
+			"default": "Git Sync becomes available automatically when the opened space already contains a .git repository at its root."
+		},
+		"sync": {
+			"title": "Sync",
+			"description": "Control automatic syncs and trigger a manual sync at any time.",
+			"automatic": "Automatic sync",
+			"automaticDescription": "Runs on space open and then on the selected interval.",
+			"interval": "Interval",
+			"intervalDescription": "How often Glyph should run scheduled syncs.",
+			"intervalAriaLabel": "Git sync interval",
+			"intervals": {
+				"5": "5 min",
+				"10": "10 min",
+				"30": "30 min",
+				"60": "60 min"
+			},
+			"actions": "Actions",
+			"actionsDescription": "Run a sync from settings and review the latest sync state here.",
+			"syncNow": "Sync Now",
+			"resumeAutoSync": "Resume Auto Sync"
+		},
+		"conflicts": {
+			"title": "Conflict Resolution",
+			"description": "Choose which side Glyph should favor when local and remote edits conflict.",
+			"policy": "Policy",
+			"policyDescription": "Glyph resolves conflicts automatically.",
+			"policyAriaLabel": "Conflict policy",
+			"localWins": "Local wins",
+			"remoteWins": "Remote wins"
+		},
+		"content": {
+			"title": "Content",
+			"description": "Choose which space content Glyph should include in sync commits.",
+			"includeTemplates": "Include templates",
+			"includeTemplatesDescription": "Sync the current templates folder and its contents.",
+			"includeAttachments": "Include attachments",
+			"includeAttachmentsSpecific": "Sync files from the configured attachments folder.",
+			"includeAttachmentsOther": "Attachment-only filtering works only when attachments use Specific folder. In other modes, attachment files follow the broader non-markdown files setting.",
+			"includeNonMarkdown": "Include non-markdown files",
+			"includeNonMarkdownDescription": "When off, Glyph limits sync to markdown plus explicitly included folders."
+		},
+		"presentation": {
+			"unavailable": "Git Sync unavailable",
+			"openRepoSpace": "Open a repo-backed space to sync this workspace.",
+			"installGitHeadline": "Install Git to enable sync",
+			"installGitCopy": "Glyph uses your system Git install and existing credentials.",
+			"unsupportedHeadline": "This space sits inside another repo",
+			"unsupportedCopy": "Glyph only supports repositories rooted exactly at the opened space.",
+			"syncingHeadline": "Syncing this space",
+			"syncingCopy": "Glyph is running Git in the background. You can keep working while it finishes.",
+			"pausedHeadline": "Auto sync is paused",
+			"pausedCopy": "Manual sync still works, and you can resume automatic runs when you're ready.",
+			"attentionHeadline": "Git Sync needs attention",
+			"attentionCopy": "Glyph found something that needs to be resolved before the next safe sync.",
+			"readyHeadline": "Git Sync is ready",
+			"manualHeadline": "Manual sync only",
+			"readyCopy": "This space is connected and ready to back up changes.",
+			"manualCopy": "Automatic sync is off. Trigger a sync whenever you want to save a snapshot.",
+			"repoFoundHeadline": "Repository detected, but not ready to sync",
+			"repoFoundCopy": "Add an origin remote to this repo and Glyph will start tracking it automatically."
+		}
+	},
+	"ai": {
+		"availability": {
+			"title": "Availability",
+			"description": "Turn AI tools on or off across Glyph.",
+			"features": "AI features",
+			"featuresDescription": "When off, AI panels and AI command-palette actions stay hidden.",
+			"configuration": "Configuration",
+			"configurationDescription": "Turn AI back on to manage providers, models, and account access.",
+			"hiddenUntilEnabled": "AI configuration stays hidden until AI features are enabled."
+		},
+		"provider": {
+			"title": "Provider",
+			"description": "Choose the service, model, and advanced connection fields. Provider changes switch to that provider's saved setup; other edits save automatically.",
+			"service": "Service",
+			"serviceDescription": "Switch between provider configurations.",
+			"model": "Model",
+			"modelDescription": "Glyph fetches available models for the selected provider when credentials allow it.",
+			"reasoningLevel": "Reasoning level",
+			"reasoningLevelDescription": "Available when the current model exposes effort levels.",
+			"reasoningPlaceholder": "e.g. low, medium, high",
+			"reasoningManualHint": "This model did not publish reasoning options; enter effort manually.",
+			"baseUrl": "Base URL",
+			"baseUrlLlama": "Default is http://localhost:8080/v1 for a local llama.cpp server.",
+			"baseUrlCompat": "Only needed for custom OpenAI-compatible providers.",
+			"allowLocalNetwork": "Allow local network",
+			"allowLocalNetworkLlama": "Enable to use localhost or private-network llama.cpp endpoints.",
+			"allowLocalNetworkCompat": "Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM).",
+			"groups": {
+				"agents": "Agents",
+				"api": "API",
+				"local": "Local"
+			},
+			"providers": {
+				"codex_chatgpt": "Codex",
+				"opencode": "OpenCode",
+				"amp": "Amp",
+				"claude_code": "Claude Code",
+				"pi": "PI",
+				"openai": "OpenAI",
+				"anthropic": "Anthropic",
+				"gemini": "Google",
+				"openrouter": "OpenRouter",
+				"openai_compat": "OpenAI compatible",
+				"llama_cpp": "llama.cpp",
+				"ollama": "Ollama"
+			}
+		},
+		"modelCombobox": {
+			"connecting": "Connecting...",
+			"models_one": "{{count}} model",
+			"models_other": "{{count}} models",
+			"selectModel": "Select a model...",
+			"saveApiKeyHint": "Save an API key to load models for this provider.",
+			"retry": "Retry",
+			"noModels": "No models available"
+		},
+		"apiKey": {
+			"title": "API Key",
+			"description": "Stored locally in the secure secret store used by Glyph.",
+			"unknown": "Unknown",
+			"active": "Active",
+			"missing": "Missing",
+			"updateKey": "Update key",
+			"setKey": "Set key",
+			"keyDescription": "Paste a provider key, save it locally, or clear the current stored secret.",
+			"placeholder": "Paste key...",
+			"saved": "API key saved"
+		},
+		"codex": {
+			"title": "ChatGPT Account",
+			"description": "Check connection status, sign in, and review Codex usage limits.",
+			"identity": "Identity",
+			"identityDescription": "The connected account Glyph is currently using for Codex.",
+			"notConnected": "Not connected",
+			"disconnect": "Disconnect",
+			"signIn": "Sign In with ChatGPT",
+			"authentication": "Authentication",
+			"authenticationDescription": "How this ChatGPT session is currently authenticated.",
+			"rateLimits": "Rate limits",
+			"rateLimitsDescription": "These counters show the remaining capacity for the connected account.",
+			"window": "Window",
+			"remaining": "Remaining",
+			"resetsIn": "Resets in",
+			"weekly": "Weekly",
+			"remainingPercent": "{{label}} remaining"
+		}
 	}
 }

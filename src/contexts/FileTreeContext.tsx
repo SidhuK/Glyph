@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useDebouncedNoteChange } from "../hooks/useDebouncedNoteChange";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { loadSettings } from "../lib/settings";
 import { normalizeTagIconKey } from "../lib/tagIcons";
@@ -316,6 +317,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			}
 		}
 	}, [spacePath]);
+
+	useDebouncedNoteChange({
+		delayMs: 200,
+		enabled: Boolean(spacePath),
+		onChange: () => void refreshTags(),
+	});
 
 	useTauriEvent("space:fs_changed", (payload) => {
 		if (!spacePath) return;

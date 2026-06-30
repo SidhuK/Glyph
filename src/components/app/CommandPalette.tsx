@@ -1,6 +1,10 @@
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "../Icons";
+import { NotePreviewContent } from "../preview/NotePreviewContent";
+import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
+import { useNotePreview } from "../preview/useNotePreview";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
 import { CommandPaletteFooter } from "./CommandPaletteFooter";
@@ -73,8 +77,14 @@ export function CommandPalette({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
 
-	const { recentFiles, isSearching, titleMatches, contentMatches, reset } =
-		useCommandSearch(activeTab, query, spacePath);
+	const {
+		recentFiles,
+		isSearching,
+		titleMatches,
+		contentMatches,
+		searchItems,
+		reset,
+	} = useCommandSearch(activeTab, query, spacePath);
 
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
@@ -84,23 +94,8 @@ export function CommandPalette({
 	}, [commands, query, activeTab]);
 
 	const itemCount =
-		activeTab === "commands"
-			? filtered.length
-			: query.trim()
-				? titleMatches.length + contentMatches.length
-				: recentFiles.length;
+		activeTab === "commands" ? filtered.length : searchItems.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
-	const searchEntries = useMemo(
-		() =>
-			query.trim()
-				? [...titleMatches, ...contentMatches].map((result) => ({
-						id: result.id,
-					}))
-				: recentFiles.map((file) => ({
-						id: file.path,
-					})),
-		[contentMatches, query, recentFiles, titleMatches],
-	);
 
 	const switchTab = useCallback(
 		(tab: Tab) => {
@@ -121,15 +116,24 @@ export function CommandPalette({
 		if (activeTab !== "search") {
 			return Math.min(selectedIndex, Math.max(itemCount - 1, 0));
 		}
-		if (searchEntries.length === 0) return 0;
+		if (searchItems.length === 0) return 0;
 		const preservedIndex =
 			state.selectedId === null
 				? -1
-				: searchEntries.findIndex((entry) => entry.id === state.selectedId);
+				: searchItems.findIndex((item) => item.id === state.selectedId);
 		return preservedIndex >= 0
 			? preservedIndex
-			: Math.min(selectedIndex, searchEntries.length - 1);
-	}, [activeTab, itemCount, searchEntries, selectedIndex, state.selectedId]);
+			: Math.min(selectedIndex, searchItems.length - 1);
+	}, [activeTab, itemCount, searchItems, selectedIndex, state.selectedId]);
+
+	const isSearchTab = activeTab === "search";
+	const selectedItem = searchItems[resolvedSelectedIndex];
+	const selectedPreviewPath =
+		isSearchTab && selectedItem?.previewable ? selectedItem.id : null;
+	const showPreviewColumn = selectedPreviewPath !== null;
+	const notePreview = useNotePreview(selectedPreviewPath, {
+		delayMs: NOTE_PREVIEW_OPEN_DELAY_MS,
+	});
 
 	useEffect(() => {
 		if (!listRef.current) return;
@@ -152,21 +156,12 @@ export function CommandPalette({
 
 	const selectSearchResult = useCallback(
 		(index: number) => {
-			const resultId = query.trim()
-				? [...titleMatches, ...contentMatches][index]?.id
-				: recentFiles[index]?.path;
+			const resultId = searchItems[index]?.id;
 			if (!resultId) return;
 			onClose();
 			onSelectSearchResult(resultId);
 		},
-		[
-			titleMatches,
-			contentMatches,
-			recentFiles,
-			query,
-			onClose,
-			onSelectSearchResult,
-		],
+		[searchItems, onClose, onSelectSearchResult],
 	);
 
 	const handleSelect = useCallback(
@@ -181,34 +176,34 @@ export function CommandPalette({
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
-				setState((curr) => ({
-					...curr,
-					selectedIndex: itemCount
+				setState((curr) => {
+					const nextIndex = itemCount
 						? Math.min(curr.selectedIndex + 1, itemCount - 1)
-						: 0,
-					selectedId:
-						activeTab === "search"
-							? (searchEntries[
-									itemCount
-										? Math.min(curr.selectedIndex + 1, itemCount - 1)
-										: 0
-								]?.id ?? null)
-							: null,
-				}));
+						: 0;
+					return {
+						...curr,
+						selectedIndex: nextIndex,
+						selectedId:
+							activeTab === "search"
+								? (searchItems[nextIndex]?.id ?? null)
+								: null,
+					};
+				});
 				return;
 			}
 			if (e.key === "ArrowUp") {
 				e.preventDefault();
-				setState((curr) => ({
-					...curr,
-					selectedIndex: curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0,
-					selectedId:
-						activeTab === "search"
-							? (searchEntries[
-									curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0
-								]?.id ?? null)
-							: null,
-				}));
+				setState((curr) => {
+					const nextIndex = curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0;
+					return {
+						...curr,
+						selectedIndex: nextIndex,
+						selectedId:
+							activeTab === "search"
+								? (searchItems[nextIndex]?.id ?? null)
+								: null,
+					};
+				});
 				return;
 			}
 			if (e.key === "Enter") {
@@ -229,17 +224,18 @@ export function CommandPalette({
 			activeTab,
 			switchTab,
 			canSearch,
-			searchEntries,
+			searchItems,
 		],
 	);
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				className={[
+				className={cn(
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					"sm:max-w-[560px]",
-				].join(" ")}
+					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+				)}
+				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
 			>
 				<DialogTitle className="sr-only">
@@ -291,8 +287,15 @@ export function CommandPalette({
 					) : null}
 				</div>
 
-				<div className="commandPaletteBody">
-					<div className="commandPaletteList" ref={listRef}>
+				<div
+					className="commandPaletteBody"
+					data-with-preview={showPreviewColumn ? "true" : "false"}
+				>
+					<div
+						className="commandPaletteList"
+						data-with-preview={showPreviewColumn ? "true" : "false"}
+						ref={listRef}
+					>
 						{activeTab === "commands" ? (
 							<CommandList
 								filtered={filtered}
@@ -331,7 +334,7 @@ export function CommandPalette({
 										setState((curr) => ({
 											...curr,
 											selectedIndex: index,
-											selectedId: searchEntries[index]?.id ?? null,
+											selectedId: searchItems[index]?.id ?? null,
 										}))
 									}
 									onSelectResult={selectSearchResult}
@@ -339,6 +342,13 @@ export function CommandPalette({
 							</>
 						)}
 					</div>
+					{showPreviewColumn ? (
+						<aside className="commandPalettePreview" aria-label="Note preview">
+							<div className="linkedNotePreviewBody">
+								{notePreview ? <NotePreviewContent {...notePreview} /> : null}
+							</div>
+						</aside>
+					) : null}
 				</div>
 				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
 			</DialogContent>

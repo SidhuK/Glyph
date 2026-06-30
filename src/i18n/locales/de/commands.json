@@ -158,6 +158,10 @@
 			"label": "Trennlinie",
 			"description": "Horizontale Trennlinie einfügen."
 		},
+		"details_block": {
+			"label": "Details-Block",
+			"description": "Einklappbaren Umschaltbereich einfügen."
+		},
 		"duplicate-current-note": {
 			"label": "Aktuelle Notiz duplizieren",
 			"description": "Aktuelle Notiz duplizieren."
@@ -290,9 +294,41 @@
 			"label": "Git-Sync-Einstellungen öffnen",
 			"description": "Git-Sync-Bereich in den Einstellungen öffnen."
 		},
+		"open-glyph-changelog": {
+			"label": "Änderungsprotokoll",
+			"description": "Glyph-Änderungsprotokoll öffnen."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph-Discord-Community öffnen."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Glyph-GitHub-Repository öffnen."
+		},
+		"open-glyph-privacy": {
+			"label": "Datenschutzrichtlinie",
+			"description": "Datenschutzrichtlinie öffnen."
+		},
+		"open-glyph-terms": {
+			"label": "Nutzungsbedingungen",
+			"description": "Nutzungsbedingungen öffnen."
+		},
+		"open-glyph-website": {
+			"label": "Glyph-Website",
+			"description": "Glyph-Website öffnen."
+		},
+		"open-glyph-x": {
+			"label": "Auf X folgen",
+			"description": "Glyph auf X öffnen."
+		},
 		"open-license-settings": {
 			"label": "Lizenz-Einstellungen öffnen",
 			"description": "Lizenzbereich in den Einstellungen öffnen."
+		},
+		"open-local-connections": {
+			"label": "Lokale Verbindungen öffnen",
+			"description": "Graph-Ansicht der lokalen Verbindungen öffnen."
 		},
 		"open-local-graph": {
 			"label": "Lokalen Graph öffnen",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "Einstellungen öffnen",
 			"description": "Einstellungsansicht öffnen."
+		},
+		"open-shortcuts-settings": {
+			"label": "Tastenkürzel…",
+			"description": "Tastenkürzel-Bereich in den Einstellungen öffnen."
 		},
 		"open-space": {
 			"label": "Space öffnen",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "Durchgestrichen",
 			"description": "Durchstreichung für die aktuelle Auswahl umschalten."
+		},
+		"switch-to-edit": {
+			"label": "Rich-Modus",
+			"description": "Editor in den Rich-Bearbeitungsmodus umschalten."
+		},
+		"switch-to-preview": {
+			"label": "Vorschau-Modus",
+			"description": "Editor in den Vorschau-Modus umschalten."
+		},
+		"switch-to-raw": {
+			"label": "Raw-Modus",
+			"description": "Editor in den Raw-Markdown-Modus umschalten."
 		},
 		"table": {
 			"label": "Tabelle",

@@ -5,7 +5,9 @@ import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
 import type {
 	FileTreeAppearance,
@@ -107,7 +109,7 @@ interface FileTreeFileItemProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewFolderInDir: (dirPath: string) => unknown;
+	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
 	onStartRename: () => void;
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
@@ -138,7 +140,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onStartRename,
 	onCommitRename,
@@ -155,6 +157,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	previewText = null,
 }: FileTreeFileItemProps) {
 	const { t } = useTranslation("ui");
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -224,6 +227,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: t("fileTree.showInFinder"),
 					action: () => void handleRevealInFinder(),
 				},
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
 					label: t("fileTree.rename"),
@@ -252,7 +256,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				},
 				{
 					label: t("fileTree.addFolder"),
-					action: () => void onNewFolderInDir(parentDirPath),
+					action: () => void onRequestCreateFolder(parentDirPath),
 				},
 				{ type: "separator" },
 				{
@@ -272,11 +276,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onDeletePath,
 			onDuplicateFile,
 			onNewFileInDir,
-			onNewFolderInDir,
+			onRequestCreateFolder,
 			onOpenFile,
 			onStartRename,
 			onTogglePinned,
 			parentDirPath,
+			spacePath,
 			t,
 		],
 	);

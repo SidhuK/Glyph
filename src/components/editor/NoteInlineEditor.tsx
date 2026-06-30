@@ -1,11 +1,15 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { AnyExtension } from "@tiptap/core";
 import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
+	Suspense,
+	lazy,
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -27,20 +31,36 @@ import {
 	getOffsetWithinAncestor,
 } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
+import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import { useRibbonCommands } from "./hooks/useRibbonCommands";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
 import {
+	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
-import { RawMarkdownEditor } from "./raw/RawMarkdownEditor";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
+
+const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
+
+const RawMarkdownEditor = lazy(() =>
+	import("./raw/RawMarkdownEditor").then((module) => ({
+		default: module.RawMarkdownEditor,
+	})),
+);
+
+const MathNodeEditor = lazy(() =>
+	import("./math/MathNodeEditor").then((module) => ({
+		default: module.MathNodeEditor,
+	})),
+);
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -112,7 +132,10 @@ async function openFrontmatterHref(
 		await openUrl(href);
 		return;
 	}
-	if (href.startsWith("#")) return;
+	if (href.startsWith("#")) {
+		dispatchInternalAnchorClick({ anchor: href, sourcePath });
+		return;
+	}
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
@@ -122,6 +145,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	mode,
 	interactive = true,
 	deferHeavyFeatures = false,
+	chrome = "full",
+	additionalExtensions: additionalExtensionsProp = EMPTY_ADDITIONAL_EXTENSIONS,
+	placeholder,
 	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
 	onEditorReady,
@@ -130,6 +156,44 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onFrontmatterCommit,
 	extractToNoteActions,
 }: NoteInlineEditorProps) {
+	const chromeMinimal = chrome === "minimal";
+	const mathNodeEditor = useMathNodeEditor();
+	const [mathExtensions, setMathExtensions] = useState<
+		import("@tiptap/core").AnyExtension[]
+	>([]);
+	const [mathExtensionsReady, setMathExtensionsReady] = useState(
+		mode === "plain",
+	);
+	useEffect(() => {
+		if (chromeMinimal || mode === "plain" || mathExtensions.length > 0) {
+			setMathExtensionsReady(true);
+			return;
+		}
+		let cancelled = false;
+		setMathExtensionsReady(false);
+		void loadMathExtensionFactory()
+			.then((createExtensions) => {
+				if (cancelled) return;
+				setMathExtensions(
+					createExtensions({ onEditRequest: mathNodeEditor.open }),
+				);
+				setMathExtensionsReady(true);
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.error("Failed to load equation support.", error);
+				setMathExtensionsReady(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [chromeMinimal, mathExtensions.length, mathNodeEditor.open, mode]);
+
+	const mergedAdditionalExtensions = useMemo(
+		() => [...mathExtensions, ...additionalExtensionsProp],
+		[additionalExtensionsProp, mathExtensions],
+	);
+
 	const {
 		editor,
 		frontmatter,
@@ -139,6 +203,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		colorfulHeadings,
 		showFrontmatterInEditor,
 	} = useNoteEditor({
+		additionalExtensions: mergedAdditionalExtensions,
 		markdown,
 		mode,
 		relPath,
@@ -146,9 +211,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableHydrateInlineImages: !deferHeavyFeatures,
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
+		placeholder,
 		onChange,
+		onMathEditRequest: mathNodeEditor.open,
 	});
+	mathNodeEditor.connect(editor, mode === "rich" && !chromeMinimal);
 
+	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+	const showEditorChrome = canEdit && !chromeMinimal;
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
@@ -173,11 +243,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[onRawEditorReady],
 	);
 	const previousRelPathRef = useRef(relPath);
-
-	useEffect(() => {
-		onEditorReady?.(editor ?? null);
-		return () => onEditorReady?.(null);
-	}, [editor, onEditorReady]);
+	useLayoutEffect(() => {
+		// Mode and document identity define the lifetime of an edit request.
+		void mode;
+		void relPath;
+		mathNodeEditor.close();
+	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
 		const host = tiptapHostRef.current;
@@ -217,16 +288,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		relPath,
 	]);
 
-	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
-	const selectedTable = useTableInlineControls({
-		canEdit,
+	const tableControls = useTableInlineControls({
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		mode,
 	});
 	const extractToNote = useExtractSelectionToNote({
 		actions: extractToNoteActions,
-		canEdit,
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		relPath,
@@ -242,7 +312,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	useRibbonCommands({
 		editor,
-		canEdit,
+		canEdit: showEditorChrome,
 		mode,
 		tiptapHostRef,
 		tiptapHostNode,
@@ -333,7 +403,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich") {
+		if (!editor || mode !== "rich" || chromeMinimal) {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -456,7 +526,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			editor.off("selectionUpdate", scheduleSelectedCodeBlockSync);
 			editor.off("transaction", scheduleSelectedCodeBlockSync);
 		};
-	}, [editor, mode]);
+	}, [chromeMinimal, editor, mode]);
 
 	const selectedCodeBlockLanguage = useMemo(
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
@@ -480,30 +550,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		},
 		[editor],
 	);
-	const preventCodeBlockPickerMouseDown = useCallback(
+	const preventOverlayMouseDown = useCallback(
 		(event: ReactMouseEvent<HTMLElement>) => {
 			event.preventDefault();
 		},
 		[],
 	);
-	const preventTableControlMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
-	const addRowToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
-	}, [editor]);
-	const addColumnToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.addColumnAfter()
-			.run();
-	}, [editor]);
 	useEffect(() => {
 		if (!editor) return;
 		if (mode === "rich" || mode === "preview") {
@@ -531,6 +583,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
+	useEffect(() => {
+		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
+		const mountedEditor =
+			editor && !editor.isDestroyed && contentRoot ? editor : null;
+		onEditorReady?.(mountedEditor, mountedEditor ? contentRoot : null);
+		return () => onEditorReady?.(null, null);
+	}, [editor, onEditorReady, tiptapHostNode]);
 
 	const copySelectedCodeBlock = useCallback(() => {
 		if (!selectedCodeBlock) return;
@@ -558,21 +617,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			});
 	}, [selectedCodeBlock]);
 
-	const tableControls = useMemo(
-		() => ({
-			selected: selectedTable,
-			onControlMouseDown: preventTableControlMouseDown,
-			onAddRow: addRowToSelectedTable,
-			onAddColumn: addColumnToSelectedTable,
-		}),
-		[
-			addColumnToSelectedTable,
-			addRowToSelectedTable,
-			preventTableControlMouseDown,
-			selectedTable,
-		],
-	);
-
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
@@ -581,7 +625,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
-			onPickerMouseDown: preventCodeBlockPickerMouseDown,
+			onPickerMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
 		}),
@@ -590,7 +634,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
-			preventCodeBlockPickerMouseDown,
+			preventOverlayMouseDown,
 			selectedCodeBlock,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
@@ -602,16 +646,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
-				canEdit ? "rfNodeNoteEditorHasRibbon" : "",
+				showEditorChrome ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onKeyDownCapture={noteFind.handleEditorKeyDownCapture}
+			onKeyDownCapture={
+				showEditorChrome ? noteFind.handleEditorKeyDownCapture : undefined
+			}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{noteFind.findOpen ? (
+				{showEditorChrome && noteFind.findOpen ? (
 					<NoteFindBar
 						countLabel={noteFind.findCountLabel}
 						inputRef={noteFind.findInputRef}
@@ -625,13 +671,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 				{mode === "plain" ? (
-					<RawMarkdownEditor
-						key={relPath}
-						ref={handleRawEditorRef}
-						markdown={markdown}
-						relPath={relPath}
-						onChange={onChange}
-					/>
+					<Suspense fallback={<div className="rfNodeNoteEditorLoading" />}>
+						<RawMarkdownEditor
+							key={relPath}
+							ref={handleRawEditorRef}
+							markdown={markdown}
+							relPath={relPath}
+							onChange={onChange}
+						/>
+					</Suspense>
 				) : null}
 				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
@@ -645,20 +693,21 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" ? (
+				{mode !== "plain" &&
+				(mathExtensionsReady || !markdown.includes("$")) ? (
 					<NoteEditorSurface
 						editor={editor}
 						mode={mode}
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						table={tableControls}
+						tableControls={tableControls}
 						codeBlock={codeBlockControls}
 					/>
 				) : null}
 			</div>
 			<AnimatePresence>
-				{canEdit && editor ? (
+				{showEditorChrome && editor ? (
 					<EditorRibbon
 						editor={editor}
 						canEdit={canEdit}
@@ -671,19 +720,35 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</AnimatePresence>
-			<ExtractToNoteDialog
-				state={extractToNote.dialogState}
-				onClose={extractToNote.closeExtractDialog}
-				onSubmit={extractToNote.submitExtractDialog}
-				onTitleChange={extractToNote.setExtractTitle}
-				onDestinationDirChange={extractToNote.setExtractDestinationDir}
-			/>
-			<NoteLinkDialog
-				editor={editor}
-				canEdit={canEdit}
-				state={linkDialog}
-				onStateChange={setLinkDialog}
-			/>
+			{showEditorChrome ? (
+				<ExtractToNoteDialog
+					state={extractToNote.dialogState}
+					onClose={extractToNote.closeExtractDialog}
+					onSubmit={extractToNote.submitExtractDialog}
+					onTitleChange={extractToNote.setExtractTitle}
+					onDestinationDirChange={extractToNote.setExtractDestinationDir}
+				/>
+			) : null}
+			{showEditorChrome ? (
+				<NoteLinkDialog
+					editor={editor}
+					canEdit={canEdit}
+					state={linkDialog}
+					onStateChange={setLinkDialog}
+				/>
+			) : null}
+			{showEditorChrome && mathNodeEditor.request ? (
+				<Suspense fallback={null}>
+					<MathNodeEditor
+						key={`${mathNodeEditor.request.kind}:${mathNodeEditor.request.pos}`}
+						request={mathNodeEditor.request}
+						anchorRect={mathNodeEditor.getAnchorRect()}
+						onApply={mathNodeEditor.apply}
+						onCancel={mathNodeEditor.close}
+						onDelete={mathNodeEditor.remove}
+					/>
+				</Suspense>
+			) : null}
 		</div>
 	);
 });

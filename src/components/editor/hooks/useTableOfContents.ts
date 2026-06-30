@@ -7,15 +7,17 @@ import {
 	changedRangesFromTransactions,
 	mergeChangedRanges,
 } from "../extensions/changedRanges";
+import { withHeadingSlugs } from "../markdown/headingAnchor";
 
 export interface TOCHeading {
 	id: string;
 	level: number;
 	text: string;
 	pos: number;
+	slug?: string;
 }
 
-function getHeadingElement(
+export function getHeadingElement(
 	editor: Editor,
 	heading: TOCHeading,
 ): HTMLElement | null {
@@ -27,7 +29,7 @@ function getHeadingElement(
 	}
 }
 
-function findScrollParent(el: HTMLElement): HTMLElement | null {
+export function findScrollParent(el: HTMLElement): HTMLElement | null {
 	let current = el.parentElement;
 	while (current) {
 		const style = getComputedStyle(current);
@@ -44,7 +46,7 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 	return null;
 }
 
-function isSameHeadingList(
+export function isSameHeadingList(
 	prev: readonly TOCHeading[],
 	next: readonly TOCHeading[],
 ) {
@@ -75,13 +77,13 @@ function headingFromNode(
 	};
 }
 
-function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
+export function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
 	const headings: TOCHeading[] = [];
 	doc.descendants((node, pos) => {
 		const heading = headingFromNode(node, pos);
 		if (heading) headings.push(heading);
 	});
-	return headings;
+	return withHeadingSlugs(headings);
 }
 
 function expandRangesToTextblocks(
@@ -123,7 +125,7 @@ function rangeTouchesHeading(
 	return heading.pos >= range.from && heading.pos <= range.to;
 }
 
-function updateHeadingsFromTransaction(
+export function updateHeadingsFromTransaction(
 	current: readonly TOCHeading[],
 	transaction: Transaction,
 ): TOCHeading[] {
@@ -158,10 +160,13 @@ function updateHeadingsFromTransaction(
 
 	next.push(...extractHeadingsInRanges(transaction.doc, scanRanges));
 	next.sort((a, b) => a.pos - b.pos);
-	return next;
+	return withHeadingSlugs(next);
 }
 
-export function useTableOfContents(editor: Editor | null) {
+export function useTableOfContents(
+	editor: Editor | null,
+	contentRoot: HTMLElement | null,
+) {
 	const [headings, setHeadings] = useState<TOCHeading[]>([]);
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const activeFrameRef = useRef<number | null>(null);
@@ -208,12 +213,12 @@ export function useTableOfContents(editor: Editor | null) {
 	}, [editor, publishHeadings]);
 
 	useEffect(() => {
-		if (!editor || headings.length === 0) {
+		if (!editor || !contentRoot || headings.length === 0) {
 			setActiveId(null);
 			return;
 		}
 
-		const scrollContainer = findScrollParent(editor.view.dom as HTMLElement);
+		const scrollContainer = findScrollParent(contentRoot);
 		if (!scrollContainer) {
 			setActiveId(headings[0]?.id ?? null);
 			return;
@@ -260,7 +265,7 @@ export function useTableOfContents(editor: Editor | null) {
 				activeFrameRef.current = null;
 			}
 		};
-	}, [editor, headings]);
+	}, [contentRoot, editor, headings]);
 
 	const scrollToHeading = useCallback(
 		(heading: TOCHeading) => {

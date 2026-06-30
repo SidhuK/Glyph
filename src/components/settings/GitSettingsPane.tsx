@@ -6,12 +6,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	getGitSyncConnectionHelp,
-	getGitSyncPresentation,
-	getGitSyncRepoStateLabel,
-} from "../../lib/gitSyncUi";
+import { getGitSyncPresentation } from "../../lib/gitSyncUi";
 import { type AttachmentStorageMode, loadSettings } from "../../lib/settings";
 import type {
 	GitSyncConfig,
@@ -36,22 +33,14 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_non_markdown_files: false,
 };
 
-const GIT_SYNC_INTERVAL_OPTIONS = [
-	{ label: "5 min", value: "5" },
-	{ label: "10 min", value: "10" },
-	{ label: "30 min", value: "30" },
-	{ label: "60 min", value: "60" },
-] as const;
-
-const CONFLICT_POLICY_OPTIONS = [
-	{ label: "Local wins", value: "local_wins" },
-	{ label: "Remote wins", value: "remote_wins" },
-] as const satisfies readonly {
-	label: string;
-	value: GitSyncConflictPolicy;
-}[];
+const GIT_SYNC_INTERVAL_VALUES = ["5", "10", "30", "60"] as const;
+const CONFLICT_POLICY_VALUES = [
+	"local_wins",
+	"remote_wins",
+] as const satisfies readonly GitSyncConflictPolicy[];
 
 export function GitSettingsPane() {
+	const { t } = useTranslation("settings");
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
 	const [config, setConfig] = useState<GitSyncConfig | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageMode] =
@@ -143,31 +132,57 @@ export function GitSettingsPane() {
 		Boolean(config) &&
 		!status?.unsupported_parent_repo &&
 		status?.repo_detected;
-	const repoStateLabel = useMemo(
-		() => getGitSyncRepoStateLabel(status),
-		[status],
-	);
-	const connectionHelp = useMemo(
-		() => getGitSyncConnectionHelp(status, Boolean(config)),
-		[config, status],
-	);
+	const repoStateLabel = useMemo(() => {
+		if (!status?.git_installed) return t("git.repoState.gitNotInstalled");
+		if (status.unsupported_parent_repo)
+			return t("git.repoState.nestedUnsupported");
+		if (status.configured || status.repo_detected)
+			return t("git.repoState.repoDetected");
+		return t("git.repoState.noRepoAtRoot");
+	}, [status, t]);
+	const connectionHelp = useMemo(() => {
+		if (!status?.git_installed) return t("git.connectionHelp.installGit");
+		if (status.unsupported_parent_repo)
+			return t("git.connectionHelp.nestedRepo");
+		if (config) return t("git.connectionHelp.configured");
+		if (status.repo_detected) return t("git.connectionHelp.needsRemote");
+		return t("git.connectionHelp.default");
+	}, [config, status, t]);
 	const presentation = useMemo(() => getGitSyncPresentation(status), [status]);
+	const syncHeadline = useMemo(() => {
+		if (presentation.tone === "syncing" && status?.message)
+			return status.message;
+		const headlineKeyByText: Record<string, string> = {
+			"Git Sync unavailable": "git.presentation.unavailable",
+			"Install Git to enable sync": "git.presentation.installGitHeadline",
+			"This space sits inside another repo":
+				"git.presentation.unsupportedHeadline",
+			"Auto sync is paused": "git.presentation.pausedHeadline",
+			"Git Sync needs attention": "git.presentation.attentionHeadline",
+			"Git Sync is ready": "git.presentation.readyHeadline",
+			"Manual sync only": "git.presentation.manualHeadline",
+			"Repository detected, but not ready to sync":
+				"git.presentation.repoFoundHeadline",
+		};
+		const key = headlineKeyByText[presentation.headline];
+		return key ? t(key) : presentation.headline;
+	}, [presentation.headline, presentation.tone, status?.message, t]);
 	const attachmentFilteringHelp =
 		attachmentStorageMode === "specific-folder"
-			? "Sync files from the configured attachments folder."
-			: "Attachment-only filtering works only when attachments use Specific folder. In other modes, attachment files follow the broader non-markdown files setting.";
+			? t("git.content.includeAttachmentsSpecific")
+			: t("git.content.includeAttachmentsOther");
 
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Connection"
-					description="Glyph uses Git automatically when the opened space is already a repository."
+					title={t("git.connection.title")}
+					description={t("git.connection.description")}
 				>
 					<SettingsRow
-						label="Git availability"
-						description="Glyph uses the system git binary and your existing Git credentials."
+						label={t("git.connection.availability")}
+						description={t("git.connection.availabilityDescription")}
 						stacked
 						interactive={false}
 					>
@@ -179,12 +194,16 @@ export function GitSettingsPane() {
 									strokeWidth={0.9}
 								/>
 							}
-							value={status?.git_installed ? "Installed" : "Missing"}
+							value={
+								status?.git_installed
+									? t("git.connection.installed")
+									: t("git.connection.missing")
+							}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Repository state"
-						description="Glyph only supports repositories rooted exactly at the current space."
+						label={t("git.connection.repoState")}
+						description={t("git.connection.repoStateDescription")}
 						stacked
 						interactive={false}
 					>
@@ -200,7 +219,7 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="How it works"
+						label={t("git.connection.howItWorks")}
 						description={connectionHelp}
 						stacked
 						interactive={false}
@@ -213,17 +232,14 @@ export function GitSettingsPane() {
 									strokeWidth={0.9}
 								/>
 							}
-							value={
-								config?.remote_url ??
-								"Open a folder that already has Git initialized."
-							}
+							value={config?.remote_url ?? t("git.connection.openGitFolder")}
 							mono={Boolean(config?.remote_url)}
 						/>
 					</SettingsRow>
 					{config ? (
 						<SettingsRow
-							label="Branch"
-							description="Glyph syncs a single branch per space."
+							label={t("git.connection.branch")}
+							description={t("git.connection.branchDescription")}
 							stacked
 							interactive={false}
 						>
@@ -243,16 +259,16 @@ export function GitSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection
-					title="Sync"
-					description="Control automatic syncs and trigger a manual sync at any time."
+					title={t("git.sync.title")}
+					description={t("git.sync.description")}
 					className={!gitEnabledForSpace ? "settingsSectionMuted" : undefined}
 				>
 					<SettingsRow
-						label="Automatic sync"
-						description="Runs on space open and then on the selected interval."
+						label={t("git.sync.automatic")}
+						description={t("git.sync.automaticDescription")}
 					>
 						<SettingsToggle
-							ariaLabel="Automatic sync"
+							ariaLabel={t("git.sync.automatic")}
 							checked={config?.enabled ?? false}
 							disabled={!gitEnabledForSpace || busy}
 							onCheckedChange={(checked) => {
@@ -261,11 +277,11 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Interval"
-						description="How often Glyph should run scheduled syncs."
+						label={t("git.sync.interval")}
+						description={t("git.sync.intervalDescription")}
 					>
 						<SettingsSelect
-							aria-label="Git sync interval"
+							aria-label={t("git.sync.intervalAriaLabel")}
 							value={String(config?.interval_minutes ?? 10)}
 							disabled={!gitEnabledForSpace || busy}
 							onChange={(event) => {
@@ -274,16 +290,16 @@ export function GitSettingsPane() {
 								});
 							}}
 						>
-							{GIT_SYNC_INTERVAL_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
+							{GIT_SYNC_INTERVAL_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`git.sync.intervals.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
-						label="Actions"
-						description="Run a sync from settings and review the latest sync state here."
+						label={t("git.sync.actions")}
+						description={t("git.sync.actionsDescription")}
 						stacked
 					>
 						<div className="gitSettingsActionRow">
@@ -296,10 +312,10 @@ export function GitSettingsPane() {
 									!gitEnabledForSpace || busy || !presentation.canSyncNow
 								}
 							>
-								Sync Now
+								{t("git.sync.syncNow")}
 							</Button>
 							<div className="settingsHelp gitSettingsInlineStatus">
-								{presentation.headline}
+								{syncHeadline}
 							</div>
 							{presentation.showResume ? (
 								<Button
@@ -311,7 +327,7 @@ export function GitSettingsPane() {
 									}}
 									disabled={busy}
 								>
-									Resume Auto Sync
+									{t("git.sync.resumeAutoSync")}
 								</Button>
 							) : null}
 						</div>
@@ -322,16 +338,16 @@ export function GitSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection
-					title="Conflict Resolution"
-					description="Choose which side Glyph should favor when local and remote edits conflict."
+					title={t("git.conflicts.title")}
+					description={t("git.conflicts.description")}
 					className={!gitEnabledForSpace ? "settingsSectionMuted" : undefined}
 				>
 					<SettingsRow
-						label="Policy"
-						description="Glyph resolves conflicts automatically."
+						label={t("git.conflicts.policy")}
+						description={t("git.conflicts.policyDescription")}
 					>
 						<SettingsSelect
-							aria-label="Conflict policy"
+							aria-label={t("git.conflicts.policyAriaLabel")}
 							value={config?.conflict_policy ?? "local_wins"}
 							disabled={!gitEnabledForSpace || busy}
 							onChange={(event) => {
@@ -341,9 +357,11 @@ export function GitSettingsPane() {
 								});
 							}}
 						>
-							{CONFLICT_POLICY_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
+							{CONFLICT_POLICY_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(
+										`git.conflicts.${value === "local_wins" ? "localWins" : "remoteWins"}`,
+									)}
 								</option>
 							))}
 						</SettingsSelect>
@@ -351,16 +369,16 @@ export function GitSettingsPane() {
 				</SettingsSection>
 
 				<SettingsSection
-					title="Content"
-					description="Choose which space content Glyph should include in sync commits."
+					title={t("git.content.title")}
+					description={t("git.content.description")}
 					className={!gitEnabledForSpace ? "settingsSectionMuted" : undefined}
 				>
 					<SettingsRow
-						label="Include templates"
-						description="Sync the current templates folder and its contents."
+						label={t("git.content.includeTemplates")}
+						description={t("git.content.includeTemplatesDescription")}
 					>
 						<SettingsToggle
-							ariaLabel="Include templates"
+							ariaLabel={t("git.content.includeTemplates")}
 							checked={inclusions.include_templates}
 							disabled={!gitEnabledForSpace || busy}
 							onCheckedChange={(checked) => {
@@ -371,11 +389,11 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Include attachments"
+						label={t("git.content.includeAttachments")}
 						description={attachmentFilteringHelp}
 					>
 						<SettingsToggle
-							ariaLabel="Include attachments"
+							ariaLabel={t("git.content.includeAttachments")}
 							checked={inclusions.include_attachments}
 							disabled={!gitEnabledForSpace || busy}
 							onCheckedChange={(checked) => {
@@ -386,11 +404,11 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Include non-markdown files"
-						description="When off, Glyph limits sync to markdown plus explicitly included folders."
+						label={t("git.content.includeNonMarkdown")}
+						description={t("git.content.includeNonMarkdownDescription")}
 					>
 						<SettingsToggle
-							ariaLabel="Include non-markdown files"
+							ariaLabel={t("git.content.includeNonMarkdown")}
 							checked={inclusions.include_non_markdown_files}
 							disabled={!gitEnabledForSpace || busy}
 							onCheckedChange={(checked) => {

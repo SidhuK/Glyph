@@ -158,6 +158,10 @@
 			"label": "Divisor",
 			"description": "Insere um divisor horizontal."
 		},
+		"details_block": {
+			"label": "Bloco de detalhes",
+			"description": "Insere uma seção recolhível."
+		},
 		"duplicate-current-note": {
 			"label": "Duplicar nota atual",
 			"description": "Duplica a nota atual."
@@ -290,9 +294,41 @@
 			"label": "Abrir configurações do Git Sync",
 			"description": "Abre a seção Git Sync nas configurações."
 		},
+		"open-glyph-changelog": {
+			"label": "Registro de alterações",
+			"description": "Abre o registro de alterações do Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Abre a comunidade Discord do Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Abre o repositório GitHub do Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Política de privacidade",
+			"description": "Abre a política de privacidade."
+		},
+		"open-glyph-terms": {
+			"label": "Termos de serviço",
+			"description": "Abre os termos de serviço."
+		},
+		"open-glyph-website": {
+			"label": "Site do Glyph",
+			"description": "Abre o site do Glyph."
+		},
+		"open-glyph-x": {
+			"label": "Seguir no X",
+			"description": "Abre o Glyph no X."
+		},
 		"open-license-settings": {
 			"label": "Abrir configurações de licença",
 			"description": "Abre a seção de licença nas configurações."
+		},
+		"open-local-connections": {
+			"label": "Abrir conexões locais",
+			"description": "Abre a visualização do grafo de conexões locais."
 		},
 		"open-local-graph": {
 			"label": "Abrir grafo local",
@@ -309,6 +345,10 @@
 		"open-settings": {
 			"label": "Abrir configurações",
 			"description": "Abre a visualização de configurações."
+		},
+		"open-shortcuts-settings": {
+			"label": "Atalhos de teclado…",
+			"description": "Abre a seção de atalhos de teclado nas configurações."
 		},
 		"open-space": {
 			"label": "Abrir espaço",
@@ -353,6 +393,18 @@
 		"strikethrough": {
 			"label": "Tachado",
 			"description": "Alterna tachado na seleção atual."
+		},
+		"switch-to-edit": {
+			"label": "Modo rico",
+			"description": "Alterna o editor para o modo de edição rica."
+		},
+		"switch-to-preview": {
+			"label": "Modo de visualização",
+			"description": "Alterna o editor para o modo de visualização."
+		},
+		"switch-to-raw": {
+			"label": "Modo bruto",
+			"description": "Alterna o editor para o modo Markdown bruto."
 		},
 		"table": {
 			"label": "Tabela",

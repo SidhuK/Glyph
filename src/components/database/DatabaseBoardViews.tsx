@@ -15,6 +15,7 @@ import {
 	useCallback,
 	useMemo,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
@@ -100,6 +101,7 @@ export function DatabaseBoardLaneView({
 	moveLaneToIndex,
 	children,
 }: DatabaseBoardLaneViewProps) {
+	const { t } = useTranslation("ui");
 	const { ref, isDropTarget } = useDroppable({
 		id: lane.id,
 		data: { laneId: lane.id },
@@ -110,7 +112,7 @@ export function DatabaseBoardLaneView({
 			...(onRenameLane
 				? [
 						{
-							label: `Rename ${lane.label}`,
+							label: t("database.board.renameLaneMenu", { label: lane.label }),
 							action: () => onRenameLane(lane),
 						},
 					]
@@ -118,19 +120,22 @@ export function DatabaseBoardLaneView({
 			...(onAddLane
 				? [
 						{
-							label: "Add lane",
+							label: t("database.board.addLane"),
 							action: onAddLane,
 						},
 					]
 				: []),
 			...(onRenameLane || onAddLane ? [{ type: "separator" as const }] : []),
 			...reorderableLanes.map((targetLane, index) => ({
-				label: `Position ${index + 1}: ${targetLane.label}`,
+				label: t("database.board.positionLane", {
+					index: index + 1,
+					label: targetLane.label,
+				}),
 				enabled: targetLane.id !== lane.id,
 				action: () => moveLaneToIndex(lane.id, index),
 			})),
 		],
-		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes],
+		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes, t],
 	);
 	const handleLaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -212,8 +217,10 @@ export function DatabaseBoardLaneView({
 							<button
 								type="button"
 								className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-								aria-label={`Set color for ${lane.label}`}
-								title={`Set color for ${lane.label}`}
+								aria-label={t("database.board.setColorFor", {
+									label: lane.label,
+								})}
+								title={t("database.board.setColorFor", { label: lane.label })}
 							>
 								{laneTitleContent}
 							</button>
@@ -231,15 +238,20 @@ export function DatabaseBoardLaneView({
 										style={databaseValueToneStyleForColor(color.id, color.id)}
 										onClick={() => onLaneColorChange(lane.id, color.id)}
 										title={color.label}
-										aria-label={`Set ${lane.label} color to ${color.label}`}
+										aria-label={t("database.board.setColorTo", {
+											lane: lane.label,
+											color: color.label,
+										})}
 									/>
 								))}
 								<button
 									type="button"
 									className="databaseBoardColorRibbonClear"
 									onClick={() => onLaneColorChange(lane.id, null)}
-									title="Clear color"
-									aria-label={`Clear color for ${lane.label}`}
+									title={t("database.clearColor")}
+									aria-label={t("database.board.clearColorFor", {
+										label: lane.label,
+									})}
 								>
 									<span />
 								</button>
@@ -256,13 +268,13 @@ export function DatabaseBoardLaneView({
 						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
 						aria-label={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "No value stays last"
-								: `Open ${lane.label} lane options`
+								? t("database.board.unassignedLaneLast")
+								: t("database.board.openLaneOptions", { label: lane.label })
 						}
 						title={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "No value stays last"
-								: `Open ${lane.label} lane options`
+								? t("database.board.unassignedLaneLast")
+								: t("database.board.openLaneOptions", { label: lane.label })
 						}
 						aria-haspopup="menu"
 						onClick={handleLaneMenuClick}
@@ -298,6 +310,7 @@ export function DatabaseBoardCardView({
 	onContextMenu,
 	children,
 }: DatabaseBoardCardViewProps) {
+	const { t } = useTranslation("ui");
 	const dragId = boardCardDragId(row.note_path, laneId);
 	const { ref: droppableRef, isDropTarget } = useDroppable({
 		id: `card:${dragId}`,
@@ -348,7 +361,7 @@ export function DatabaseBoardCardView({
 					onSelectRow(row.note_path);
 				}
 			}}
-			title="Double-click to open note"
+			title={t("database.openNoteHint")}
 		>
 			{children}
 		</button>

@@ -1,6 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
+import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
 import { useTauriEvent } from "../lib/tauriEvents";
 
 interface UseMenuListenersProps {
@@ -22,6 +23,8 @@ interface UseMenuListenersProps {
 	onAttachAllOpenNotesToAi: () => void;
 	onOpenAiSettings: () => void;
 	onEditorAction: (action: string) => void;
+	openGettingStarted: () => void;
+	showWelcomeNote: () => void | Promise<void>;
 }
 
 export function useMenuListeners({
@@ -43,73 +46,24 @@ export function useMenuListeners({
 	onAttachAllOpenNotesToAi,
 	onOpenAiSettings,
 	onEditorAction,
+	openGettingStarted,
+	showWelcomeNote,
 }: UseMenuListenersProps): void {
 	const { openSettings } = useUILayoutContext();
-	const handleNewNote = useCallback(() => {
-		onNewNote();
-	}, [onNewNote]);
-	const handleCreateFromTemplate = useCallback(() => {
-		onCreateFromTemplate();
-	}, [onCreateFromTemplate]);
-	const handleOpenDailyNote = useCallback(() => {
-		onOpenDailyNote();
-	}, [onOpenDailyNote]);
-	const handleSaveNote = useCallback(() => {
-		onSaveNote();
-	}, [onSaveNote]);
-	const handleCloseTab = useCallback(() => {
-		onCloseTab();
-	}, [onCloseTab]);
-	const handleOpenSpace = useCallback(() => {
-		void onOpenSpace();
-	}, [onOpenSpace]);
+	const helpMenuCommandHandlers = useMemo(
+		() =>
+			buildHelpMenuCommandHandlers(
+				openGettingStarted,
+				showWelcomeNote,
+				openSettings,
+			),
+		[openGettingStarted, openSettings, showWelcomeNote],
+	);
 	const handleOpenRecentSpace = useCallback(
 		(payload: { path: string }) => {
 			void onOpenRecentSpaceAtPath(payload.path);
 		},
 		[onOpenRecentSpaceAtPath],
-	);
-	const handleCreateSpace = useCallback(() => {
-		void onCreateSpace();
-	}, [onCreateSpace]);
-	const handleCloseSpace = useCallback(() => {
-		void closeSpace();
-	}, [closeSpace]);
-	const handleRevealSpace = useCallback(() => {
-		onRevealSpace();
-	}, [onRevealSpace]);
-	const handleOpenSpaceSettings = useCallback(() => {
-		onOpenSpaceSettings();
-	}, [onOpenSpaceSettings]);
-	const handleGitSyncNow = useCallback(() => {
-		onGitSyncNow();
-	}, [onGitSyncNow]);
-	const handleOpenGitSettings = useCallback(() => {
-		onOpenGitSettings();
-	}, [onOpenGitSettings]);
-	const handleOpenAbout = useCallback(() => {
-		openSettings("about");
-	}, [openSettings]);
-	const handleOpenSettings = useCallback(() => {
-		openSettings();
-	}, [openSettings]);
-	const handleToggleAi = useCallback(() => {
-		onToggleAiPane();
-	}, [onToggleAiPane]);
-	const handleAttachCurrentNote = useCallback(() => {
-		onAttachCurrentNoteToAi();
-	}, [onAttachCurrentNoteToAi]);
-	const handleAttachAllOpenNotes = useCallback(() => {
-		onAttachAllOpenNotesToAi();
-	}, [onAttachAllOpenNotesToAi]);
-	const handleOpenAiSettings = useCallback(() => {
-		onOpenAiSettings();
-	}, [onOpenAiSettings]);
-	const handleEditorAction = useCallback(
-		(payload: { action: string }) => {
-			onEditorAction(payload.action);
-		},
-		[onEditorAction],
 	);
 	const handleAppCommand = useCallback(
 		(payload: { command_id: string }) => {
@@ -128,6 +82,7 @@ export function useMenuListeners({
 				"open-git-sync-settings": onOpenGitSettings,
 				"open-about": () => openSettings("about"),
 				"open-settings": () => openSettings(),
+				...helpMenuCommandHandlers,
 				"toggle-ai": onToggleAiPane,
 				"ai-attach-current-note": onAttachCurrentNoteToAi,
 				"ai-attach-all-open-notes": onAttachAllOpenNotesToAi,
@@ -151,6 +106,7 @@ export function useMenuListeners({
 				mermaid_chart: () => onEditorAction("mermaid_chart"),
 				table: () => onEditorAction("table"),
 				divider: () => onEditorAction("divider"),
+				details_block: () => onEditorAction("details_block"),
 				callout_info: () => onEditorAction("callout_info"),
 				callout_warning: () => onEditorAction("callout_warning"),
 				callout_error: () => onEditorAction("callout_error"),
@@ -187,6 +143,7 @@ export function useMenuListeners({
 		},
 		[
 			closeSpace,
+			helpMenuCommandHandlers,
 			onAttachAllOpenNotesToAi,
 			onAttachCurrentNoteToAi,
 			onCloseTab,
@@ -208,24 +165,5 @@ export function useMenuListeners({
 	);
 
 	useTauriEvent("menu:app_command", handleAppCommand);
-	useTauriEvent("menu:new_note", handleNewNote);
-	useTauriEvent("menu:create_from_template", handleCreateFromTemplate);
-	useTauriEvent("menu:open_daily_note", handleOpenDailyNote);
-	useTauriEvent("menu:save_note", handleSaveNote);
-	useTauriEvent("menu:close_tab", handleCloseTab);
-	useTauriEvent("menu:open_space", handleOpenSpace);
 	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
-	useTauriEvent("menu:create_space", handleCreateSpace);
-	useTauriEvent("menu:close_space", handleCloseSpace);
-	useTauriEvent("menu:reveal_space", handleRevealSpace);
-	useTauriEvent("menu:open_space_settings", handleOpenSpaceSettings);
-	useTauriEvent("menu:git_sync_now", handleGitSyncNow);
-	useTauriEvent("menu:open_git_settings", handleOpenGitSettings);
-	useTauriEvent("menu:open_about", handleOpenAbout);
-	useTauriEvent("menu:open_settings", handleOpenSettings);
-	useTauriEvent("menu:toggle_ai", handleToggleAi);
-	useTauriEvent("menu:ai_attach_current_note", handleAttachCurrentNote);
-	useTauriEvent("menu:ai_attach_all_open_notes", handleAttachAllOpenNotes);
-	useTauriEvent("menu:open_ai_settings", handleOpenAiSettings);
-	useTauriEvent("menu:editor_action", handleEditorAction);
 }

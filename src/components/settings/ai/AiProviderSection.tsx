@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { ProviderLogo } from "../../ai/modelSelectorConstants";
 import { Input } from "../../ui/shadcn/input";
@@ -9,53 +10,26 @@ import {
 import { SettingsSelect } from "../SettingsSelect";
 import { AiModelCombobox } from "./AiModelCombobox";
 
-interface AiProviderOption {
-	value: AiProviderKind;
-	label: string;
-}
-
-interface AiProviderOptionGroup {
-	label: string;
-	options: AiProviderOption[];
-}
-
-const aiProviderGroups: AiProviderOptionGroup[] = [
+const aiProviderGroupKeys = [
 	{
-		label: "Agents",
-		options: [
-			{ value: "codex_chatgpt", label: "Codex" },
-			{ value: "opencode", label: "OpenCode" },
-			{ value: "amp", label: "Amp" },
-			{ value: "claude_code", label: "Claude Code" },
-			{ value: "pi", label: "PI" },
-		],
+		labelKey: "ai.provider.groups.agents",
+		values: ["codex_chatgpt", "opencode", "amp", "claude_code", "pi"] as const,
 	},
 	{
-		label: "API",
-		options: [
-			{ value: "openai", label: "OpenAI" },
-			{ value: "anthropic", label: "Anthropic" },
-			{ value: "gemini", label: "Google" },
-			{ value: "openrouter", label: "OpenRouter" },
-			{ value: "openai_compat", label: "OpenAI compatible" },
-		],
+		labelKey: "ai.provider.groups.api",
+		values: [
+			"openai",
+			"anthropic",
+			"gemini",
+			"openrouter",
+			"openai_compat",
+		] as const,
 	},
 	{
-		label: "Local",
-		options: [
-			{ value: "llama_cpp", label: "llama.cpp" },
-			{ value: "ollama", label: "Ollama" },
-		],
+		labelKey: "ai.provider.groups.local",
+		values: ["llama_cpp", "ollama"] as const,
 	},
-];
-
-function findProviderOption(provider: AiProviderKind): AiProviderOption {
-	for (const group of aiProviderGroups) {
-		const option = group.options.find((entry) => entry.value === provider);
-		if (option) return option;
-	}
-	return { value: provider, label: provider };
-}
+] as const;
 
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
@@ -76,6 +50,9 @@ export function AiProviderSection({
 	onUpdateDraft,
 	onPersistDraft,
 }: AiProviderSectionProps) {
+	const { t } = useTranslation("settings");
+	const providerLabel = (provider: AiProviderKind) =>
+		t(`ai.provider.providers.${provider}`, { defaultValue: provider });
 	const selectedModel =
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
@@ -85,26 +62,26 @@ export function AiProviderSection({
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
 			: "https://api.example.com/v1";
-	const selectedProvider = findProviderOption(profileDraft.provider);
+	const selectedProvider = profileDraft.provider;
 
 	return (
 		<SettingsSection
-			title="Provider"
-			description="Choose the service, model, and advanced connection fields. Provider changes switch to that provider's saved setup; other edits save automatically."
+			title={t("ai.provider.title")}
+			description={t("ai.provider.description")}
 		>
 			<SettingsRow
-				label="Service"
+				label={t("ai.provider.service")}
 				htmlFor="aiProvider"
-				description="Switch between provider configurations."
+				description={t("ai.provider.serviceDescription")}
 			>
 				<div className="settingsInline settingsInlineWide">
 					<div
 						className="settingsProviderNativeLogo"
 						aria-hidden="true"
-						data-provider={selectedProvider.value}
+						data-provider={selectedProvider}
 					>
 						<ProviderLogo
-							provider={selectedProvider.value}
+							provider={selectedProvider}
 							className="settingsProviderNativeLogoImage"
 						/>
 					</div>
@@ -116,11 +93,11 @@ export function AiProviderSection({
 							void onProviderChange(event.target.value as AiProviderKind)
 						}
 					>
-						{aiProviderGroups.map((group) => (
-							<optgroup key={group.label} label={group.label}>
-								{group.options.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
+						{aiProviderGroupKeys.map((group) => (
+							<optgroup key={group.labelKey} label={t(group.labelKey)}>
+								{group.values.map((value) => (
+									<option key={value} value={value}>
+										{providerLabel(value)}
 									</option>
 								))}
 							</optgroup>
@@ -130,9 +107,9 @@ export function AiProviderSection({
 			</SettingsRow>
 
 			<SettingsRow
-				label="Model"
+				label={t("ai.provider.model")}
 				htmlFor="aiModel"
-				description="Glyph fetches available models for the selected provider when credentials allow it."
+				description={t("ai.provider.modelDescription")}
 			>
 				<AiModelCombobox
 					key={`${profileDraft.id}:${profileDraft.provider}`}
@@ -166,9 +143,9 @@ export function AiProviderSection({
 
 			{shouldShowReasoningSelect ? (
 				<SettingsRow
-					label="Reasoning level"
+					label={t("ai.provider.reasoningLevel")}
 					htmlFor="aiReasoningEffort"
-					description="Available when the current model exposes effort levels."
+					description={t("ai.provider.reasoningLevelDescription")}
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<SettingsSelect
@@ -199,7 +176,7 @@ export function AiProviderSection({
 							<Input
 								id="aiReasoningEffort"
 								value={profileDraft.reasoning_effort ?? ""}
-								placeholder="e.g. low, medium, high"
+								placeholder={t("ai.provider.reasoningPlaceholder")}
 								onBlur={(event) =>
 									void onPersistDraft({
 										...profileDraft,
@@ -214,8 +191,7 @@ export function AiProviderSection({
 								}
 							/>
 							<div className="settingsHint">
-								This model did not publish reasoning options; enter effort
-								manually.
+								{t("ai.provider.reasoningManualHint")}
 							</div>
 						</div>
 					)}
@@ -225,12 +201,12 @@ export function AiProviderSection({
 			{profileDraft.provider === "openai_compat" ||
 			profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
-					label="Base URL"
+					label={t("ai.provider.baseUrl")}
 					htmlFor="aiBaseUrl"
 					description={
 						profileDraft.provider === "llama_cpp"
-							? "Default is http://localhost:8080/v1 for a local llama.cpp server."
-							: "Only needed for custom OpenAI-compatible providers."
+							? t("ai.provider.baseUrlLlama")
+							: t("ai.provider.baseUrlCompat")
 					}
 				>
 					<Input
@@ -256,15 +232,15 @@ export function AiProviderSection({
 			{profileDraft.provider === "openai_compat" ||
 			profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
-					label="Allow local network"
+					label={t("ai.provider.allowLocalNetwork")}
 					description={
 						profileDraft.provider === "llama_cpp"
-							? "Enable to use localhost or private-network llama.cpp endpoints."
-							: "Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
+							? t("ai.provider.allowLocalNetworkLlama")
+							: t("ai.provider.allowLocalNetworkCompat")
 					}
 				>
 					<SettingsToggle
-						ariaLabel="Allow local network"
+						ariaLabel={t("ai.provider.allowLocalNetwork")}
 						checked={profileDraft.allow_private_hosts}
 						onCheckedChange={(checked) =>
 							void onPersistDraft({

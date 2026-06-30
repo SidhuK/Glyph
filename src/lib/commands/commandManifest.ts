@@ -37,3 +37,11 @@ export function getCommandDefinition(id: string): AppCommandDefinition | null {
 export function listCommandDefinitions(): AppCommandDefinition[] {
 	return Object.values(APP_COMMANDS);
 }
+
+export function isShortcutConfigurable(command: AppCommandDefinition): boolean {
+	return command.category !== "settings" || command.id === "open-settings";
+}
+
+export function listShortcutConfigurableCommands(): AppCommandDefinition[] {
+	return listCommandDefinitions().filter(isShortcutConfigurable);
+}

@@ -3,6 +3,7 @@ import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { useSentinelLoadMore } from "../../hooks/useLoadMoreTriggers";
@@ -200,6 +201,7 @@ export function DatabaseBoard({
 	onLoadMoreRows,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const { t } = useTranslation("ui");
 	const isCardFieldVisible = useCallback(
 		(fieldId: string) => {
 			if (!boardCardFields || boardCardFields.length === 0) return true;
@@ -436,12 +438,20 @@ export function DatabaseBoard({
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>
-							{laneEdit?.mode === "rename" ? "Rename lane" : "Add lane"}
+							{laneEdit?.mode === "rename"
+								? t("database.board.renameLane")
+								: t("database.board.addLane")}
 						</DialogTitle>
 						<DialogDescription>
 							{groupColumn
-								? `Set the ${groupColumn.label} value for this board lane.`
-								: "Set the board lane value."}
+								? laneEdit?.mode === "rename"
+									? t("database.board.renameLaneDescription", {
+											field: groupColumn.label.toLowerCase(),
+										})
+									: t("database.board.addLaneDescription", {
+											field: groupColumn.label.toLowerCase(),
+										})
+								: t("database.board.laneDescriptionDefault")}
 						</DialogDescription>
 					</DialogHeader>
 					<form
@@ -454,7 +464,7 @@ export function DatabaseBoard({
 						<Input
 							autoFocus
 							value={laneEdit?.value ?? ""}
-							aria-label="Lane name"
+							aria-label={t("database.board.laneName")}
 							onChange={(event) =>
 								setLaneEdit((current) =>
 									current ? { ...current, value: event.target.value } : current,
@@ -467,10 +477,12 @@ export function DatabaseBoard({
 								variant="outline"
 								onClick={() => setLaneEdit(null)}
 							>
-								Cancel
+								{t("common.cancel")}
 							</Button>
 							<Button type="submit">
-								{laneEdit?.mode === "rename" ? "Rename" : "Add"}
+								{laneEdit?.mode === "rename"
+									? t("common.rename")
+									: t("common.add")}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -498,11 +510,10 @@ export function DatabaseBoard({
 					}
 				>
 					<div className="databaseBoardEmptyTitle">
-						Board view needs a grouping field
+						{t("database.board.emptyTitle")}
 					</div>
 					<div className="databaseBoardEmptyText">
-						Choose how the board should group cards by adding a single-value
-						property like status, stage, or done.
+						{t("database.board.emptyText")}
 					</div>
 					<div className="databaseBoardEmptyActions">
 						<Button
@@ -511,7 +522,7 @@ export function DatabaseBoard({
 							size="sm"
 							onClick={onOpenColumns}
 						>
-							Open columns
+							{t("database.board.openViewSettings")}
 						</Button>
 					</div>
 				</m.div>
@@ -606,14 +617,16 @@ export function DatabaseBoard({
 													onContextMenu={(event) => {
 														void showNativeContextMenu(event, [
 															{
-																label: "Open note",
+																label: t("database.board.openNote"),
 																action: () => onOpenRow(row.note_path),
 															},
 															...(otherLanes.length > 0
 																? [
 																		{ type: "separator" as const },
 																		...otherLanes.map((targetLane) => ({
-																			label: `Move to ${targetLane.label}`,
+																			label: t("database.board.moveTo", {
+																				label: targetLane.label,
+																			}),
 																			action: () =>
 																				void handleLaneDrop(
 																					row.note_path,
@@ -649,7 +662,9 @@ export function DatabaseBoard({
 																<div className="databaseBoardCardTitleMeta">
 																	<span
 																		className="databaseBoardCardTimestamp"
-																		title={`Updated ${updatedLabel}`}
+																		title={t("database.board.updatedAt", {
+																			label: updatedLabel,
+																		})}
 																	>
 																		<HugeiconsIcon
 																			icon={Calendar03Icon}
@@ -746,10 +761,12 @@ export function DatabaseBoard({
 									) : (
 										<div className="databaseBoardLaneEmptyCard">
 											{lane.workflowState === "archived"
-												? "Archive notes here"
+												? t("database.board.archivedEmpty")
 												: lane.workflowState === "done"
-													? "Completed notes land here"
-													: "Drop notes here"}
+													? t("database.board.doneEmpty")
+													: lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+														? t("database.board.unassignedEmpty")
+														: t("database.board.dropOrAdd")}
 										</div>
 									)}
 									{onCreateRow ? (
@@ -757,11 +774,15 @@ export function DatabaseBoard({
 											type="button"
 											className="databaseBoardAddCardButton"
 											onClick={() => handleCreateRowInLane(lane.id)}
-											title={`Add note to ${lane.label}`}
-											aria-label={`Add note to ${lane.label}`}
+											title={t("database.board.addNoteTo", {
+												label: lane.label,
+											})}
+											aria-label={t("database.board.addNoteTo", {
+												label: lane.label,
+											})}
 										>
 											<Plus size="var(--icon-sm)" aria-hidden="true" />
-											<span>New</span>
+											<span>{t("database.new")}</span>
 										</button>
 									) : null}
 								</DatabaseBoardLaneView>
@@ -771,8 +792,8 @@ export function DatabaseBoard({
 									type="button"
 									className="databaseBoardAddLaneButton"
 									onClick={handleAddLane}
-									title="Add lane"
-									aria-label="Add board lane"
+									title={t("database.addBoardLane")}
+									aria-label={t("database.addBoardLane")}
 								>
 									<Plus size="var(--icon-md)" aria-hidden="true" />
 								</button>

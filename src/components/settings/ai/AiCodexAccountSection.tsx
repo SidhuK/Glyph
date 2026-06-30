@@ -1,5 +1,7 @@
 import { Calendar03Icon, Time04Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import {
@@ -37,8 +39,9 @@ const rateLimitSegmentCount = 12;
 function formatRateLimitLabel(
 	label: string,
 	windowMinutes: number | null,
+	t: TFunction<"settings">,
 ): string {
-	if (windowMinutes === MINUTES_PER_WEEK) return "Weekly";
+	if (windowMinutes === MINUTES_PER_WEEK) return t("ai.codex.weekly");
 	if (windowMinutes != null && Number.isFinite(windowMinutes)) {
 		if (windowMinutes >= 60 && windowMinutes % 60 === 0) {
 			return `${windowMinutes / 60}hr`;
@@ -61,10 +64,11 @@ export function AiCodexAccountSection({
 	onConnect,
 	onDisconnect,
 }: AiCodexAccountSectionProps) {
+	const { t } = useTranslation("settings");
 	return (
 		<SettingsSection
-			title="ChatGPT Account"
-			description="Check connection status, sign in, and review Codex usage limits."
+			title={t("ai.codex.title")}
+			description={t("ai.codex.description")}
 			aside={
 				<div
 					className={`settingsPill ${toneForCodexStatus(codexState.status)}`}
@@ -74,13 +78,15 @@ export function AiCodexAccountSection({
 			}
 		>
 			<SettingsRow
-				label="Identity"
-				description="The connected account Glyph is currently using for Codex."
+				label={t("ai.codex.identity")}
+				description={t("ai.codex.identityDescription")}
 				interactive={false}
 			>
 				<div className="settingsInline">
 					<div className="settingsHint">
-						{codexState.displayName || codexState.email || "Not connected"}
+						{codexState.displayName ||
+							codexState.email ||
+							t("ai.codex.notConnected")}
 					</div>
 					{codexState.status === "connected" ? (
 						<>
@@ -91,7 +97,7 @@ export function AiCodexAccountSection({
 								onClick={() => void onDisconnect()}
 								disabled={codexState.loading}
 							>
-								Disconnect
+								{t("ai.codex.disconnect")}
 							</Button>
 						</>
 					) : (
@@ -101,15 +107,15 @@ export function AiCodexAccountSection({
 							onClick={() => void onConnect()}
 							disabled={codexState.loading}
 						>
-							Sign In with ChatGPT
+							{t("ai.codex.signIn")}
 						</Button>
 					)}
 				</div>
 			</SettingsRow>
 			{codexState.authMode ? (
 				<SettingsRow
-					label="Authentication"
-					description="How this ChatGPT session is currently authenticated."
+					label={t("ai.codex.authentication")}
+					description={t("ai.codex.authenticationDescription")}
 					interactive={false}
 				>
 					<div className="settingsHint">{codexState.authMode}</div>
@@ -117,8 +123,8 @@ export function AiCodexAccountSection({
 			) : null}
 			{codexState.rateLimits.length > 0 ? (
 				<SettingsRow
-					label="Rate limits"
-					description="These counters show the remaining capacity for the connected account."
+					label={t("ai.codex.rateLimits")}
+					description={t("ai.codex.rateLimitsDescription")}
 					stacked
 					interactive={false}
 				>
@@ -127,10 +133,10 @@ export function AiCodexAccountSection({
 							<thead>
 								<tr>
 									<th scope="col" className="codexRateLimitWindowHeader">
-										<span className="sr-only">Window</span>
+										<span className="sr-only">{t("ai.codex.window")}</span>
 									</th>
-									<th scope="col">Remaining</th>
-									<th scope="col">Resets in</th>
+									<th scope="col">{t("ai.codex.remaining")}</th>
+									<th scope="col">{t("ai.codex.resetsIn")}</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -147,6 +153,7 @@ export function AiCodexAccountSection({
 									const shortLabel = formatRateLimitLabel(
 										item.label,
 										item.windowMinutes,
+										t,
 									);
 
 									return (
@@ -168,7 +175,9 @@ export function AiCodexAccountSection({
 														className="sr-only"
 														value={Math.round(remainingPercent)}
 														max={100}
-														aria-label={`${item.label} remaining`}
+														aria-label={t("ai.codex.remainingPercent", {
+															label: item.label,
+														})}
 													/>
 													<div
 														className="codexRateLimitMeter"

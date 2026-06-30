@@ -124,6 +124,13 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["font", "code", "mono"],
 	},
 	{
+		id: "appearance-editor-font",
+		tab: "appearance",
+		section: "Typography",
+		title: "Editor font",
+		keywords: ["font", "editor", "notes", "prose"],
+	},
+	{
 		id: "appearance-ui-font-size",
 		tab: "appearance",
 		section: "Typography",
@@ -482,6 +489,13 @@ const SETTINGS_SEARCH_ITEMS = [
 		section: "App",
 		title: "Folio Mode",
 		keywords: ["layout", "reading"],
+	},
+	{
+		id: "advanced-classic-all-notes",
+		tab: "advanced",
+		section: "App",
+		title: "Classic All Notes grid",
+		keywords: ["all notes", "activity", "timeline", "grid"],
 	},
 	{
 		id: "advanced-folder-counts",

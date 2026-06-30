@@ -78,6 +78,10 @@ const BASE_EDITOR_ACTIONS: EditorActionDefinition[] = [
 		label: "Divider",
 	},
 	{
+		id: "details_block",
+		label: "Details Block",
+	},
+	{
 		id: "callout_info",
 		label: "Info Callout",
 	},
