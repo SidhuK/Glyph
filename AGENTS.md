@@ -34,56 +34,45 @@ Repo extras: internal product and engineering docs live in `docs/`.
 
 ## Frontend Overview (`src/`)
 
-- `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (app contexts)
-- **`contexts/`** — App state via React Context: `SpaceContext`, `FileTreeContext`, `UIContext`, `EditorContext`, composed in `AppProviders`
-- **`components/app/`** — App shell and navigation: `AppShell`, `Sidebar`, `MainContent`, `TabBar`, `CommandPalette`, welcome flow, command search helpers
-- **`components/editor/`** — TipTap markdown editor, note properties UI, extensions, markdown serialization, slash commands, editor hooks
-- **`components/ai/`** — AI workspace: `AIPanel`, `AIComposer`, `AIChatThread`, `AIToolTimeline`, `ModelSelector`, history/context/profile helpers, `hooks/useRigChat`
-- **`components/filetree/`** — File browser: `FileTreePane`, `FileTreeDirItem`, `FileTreeFileItem`, `fileTypeUtils`
-- **`components/database/`** — Database-note UI: table/board views, source picker, column dialogs, toolbar, cells
-- **`components/licensing/`** — Trial, license gate, lock screen, and settings surfaces
-- **`components/preview/`** — `MarkdownEditorPane`
-- **`components/checklists/`** — `TaskProgressIndicator` (markdown checklist progress rings)
-- **`components/settings/`** — Settings panes: AI, Appearance (accent, typography), Space, DailyNotes, General, About
-- **`components/ui/`** — shadcn/ui primitives under `shadcn/` plus shared motion helpers in `animations.ts`
-- **`components/Icons/`** — Shared icon wrappers for editor, file, navigation, and action icons
-- **`hooks/`** — Core app hooks such as `useFileTree`, `useFileTreeCRUD`, `useViewLoader`, `useSearch`, `useCommandShortcuts`, `useMenuListeners`, `useDailyNote`, `useRecentFiles`, plus `hooks/database/`
-- **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/`, `views/`, `database/`, and utilities like `settings.ts`, `dailyNotes.ts`, `checklistSummary.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
-- **`utils/`** — `path.ts`, `window.ts`
-- **`styles/`** — `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
+- App entry is `main.tsx` / `App.tsx`; app-wide state lives in `contexts/`; feature UI lives under `components/`; shared hooks/utilities live in `hooks/`, `lib/`, and `utils/`.
+- Use `src/lib/tauri.ts` for typed IPC, `components/ui/shadcn/` for shared primitives, and `src/design-tokens.css` plus `styles/` for styling.
 
 ## Backend Overview (`src-tauri/src/`)
 
-- `lib.rs` / `main.rs` — Tauri setup, command registration
-- **`space/`** — Space lifecycle: open/close/create, file `watcher.rs`, `state.rs`
-- **`space_fs/`** — Filesystem ops: listing, summaries, view data, link ops, and `read_write/` for text/preview/path/trash operations
-- **`notes/`** — Note CRUD, attachments, frontmatter/properties helpers, and Tauri commands/types
-- **`index/`** — SQLite index: schema, indexer, search, tags, links, frontmatter/properties, helpers, and `checklists/`
-- **`database/`** — Database-note parsing, queries, mutations, config rendering, and shared types
-- **`ai_rig/`** — Rig AI runtime: providers, models, runtime, tools, commands, events, history, audit, store, and context
-- **`ai_codex/`** — Codex/ChatGPT account state, transport, chat flow, and Tauri commands
-- **`license/`** — Trial/license persistence, verification, service layer, and commands
-- **`links/`** — Link fetching, metadata extraction, caching, helpers, commands, and types
-- `paths.rs` — Safe path joining (prevents traversal via `join_under()`)
-- `io_atomic.rs` — Crash-safe atomic writes
-- `net.rs` — SSRF prevention for user-supplied URLs
-- `glyph_paths.rs` / `glyph_fs.rs` — `.glyph/` directory helpers
-- `system_fonts.rs` — System font enumeration
+- Tauri setup and command registration live in `lib.rs` / `main.rs`; native features are grouped by domain such as `space`, `space_fs`, `notes`, `index`, `database`, `ai_*`, `license`, and `links`.
+- Use `paths::join_under()` for safe space paths, `io_atomic::write_atomic()` for durable writes, and `net.rs` checks for user-supplied URLs.
 
 ## Code Style & Safety
 
 - TypeScript strict mode, no `any` (use `unknown` + narrowing). Biome handles formatting/imports.
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
-- Avoid `useEffect` unless it is truly needed; prefer React patterns from https://react.dev/learn/you-might-not-need-an-effect.
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
 - Aim for roughly 200 LOC per file; treat this as a guideline, not a hard rule. Don't obsess over landing exactly at 200, but do refactor into subfolders when a file is getting out of hand.
 - Use `paths::join_under()` for space paths (prevent traversal). Never log secrets.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
-- Make sure we dont over-engineer CSS and use default components as much as possible unless explicitly stated.
-- Make sure we always narrow the code and apply fixes instead of patching the code by adding un-necessary LOCs in places that it doesn't need.
+- Make sure we don't over-engineer CSS and use default components as much as possible unless explicitly stated.
+- Make sure we always narrow the code and apply fixes instead of patching the code by adding unnecessary LOCs in places that don't need them.
 - NEVER make test files unless specifically requested by users.
 - For TSX files extract hooks/subcomponents when rendering, state, effects, and commands start mixing.
+
+## React Code Practices
+
+Agents and reviewers should flag these patterns unless the change includes a clear justification and there is no simpler React/Tauri-safe alternative:
+
+- `useEffect`: avoid unless synchronizing with an external system. Prefer deriving values during render, event handlers for user actions, keys for reset behavior, and React Query for async server/IPC/filesystem state. See https://react.dev/learn/you-might-not-need-an-effect.
+- TanStack Query: prefer queries/mutations for async server, IPC, filesystem, loading, error, retry, cache, and invalidation flows instead of hand-rolled `useState`/`useEffect` state machines.
+- TanStack Virtual: use the existing virtualizer patterns for large lists, tables, boards, timelines, and scroll-heavy surfaces instead of rendering everything or inventing custom windowing logic.
+- `setTimeout`: do not use to sequence React state, paper over races, or wait for rendering. If used for debounce, retry, focus, or transient UI, use cleanup, a named delay constant, and explain why the delay is needed.
+- `setInterval`: prefer React Query polling/refetch behavior or an approved interval hook. Do not create raw intervals inside components.
+- `useImperativeHandle`: avoid; prefer state and props. Only acceptable for narrow wrappers around imperative third-party APIs such as editors.
+- Duplicate state: derive values from existing state instead of mirroring them. Refactor ownership when derivation is awkward.
+- Direct DOM queries/manipulation: avoid `document.querySelector`, `document.getElementById`, manual node creation, and direct mutation in React code. Prefer refs, props, and component state. Exceptions are app bootstrap, portals, sanitized renderers, and third-party integration boundaries.
+- `useRef`: do not use refs as hidden mutable state. Refs are acceptable for DOM handles, external imperative APIs, timers/animation handles, stale-closure avoidance, and measurement/scroll integration.
+- Type assertions with `as`: prefer narrowing, typed helpers, `satisfies`, and explicit annotations. `as const` is allowed.
+- Silent fallbacks: do not hide failed user-initiated actions behind fallback behavior. Surface errors clearly when the product cannot do what the user asked.
+- Async action booleans like `isSaving`, `isLoadingFoo`, or `isDeleting`: prefer React Query mutations/queries for server, IPC, filesystem, and durable async work. Local UI-only state is fine.
+- Lint/type suppression comments such as `eslint-disable`, `biome-ignore`, `@ts-ignore`, or `@ts-expect-error` require explicit human approval.
 
 ## Migration Policy
 
