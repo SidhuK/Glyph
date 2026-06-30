@@ -695,7 +695,10 @@ describe("useNoteEditor", () => {
 
 		await act(async () => {
 			root.render(
-				<Harness additionalExtensions={[secondExtension]} onChange={onChange} />,
+				<Harness
+					additionalExtensions={[secondExtension]}
+					onChange={onChange}
+				/>,
 			);
 		});
 	});
