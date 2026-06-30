@@ -1,6 +1,7 @@
 import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { type MouseEvent, memo, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	type NativeContextMenuItem,
 	isNativeContextMenuAvailable,
@@ -160,32 +161,33 @@ export const TableInlineControls = memo(function TableInlineControls({
 	canDeleteRow,
 	canDeleteColumn,
 }: TableInlineControlsProps) {
+	const { t } = useTranslation("ui");
 	const nativeMenusEnabled = isNativeContextMenuAvailable();
 	const rowMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
-				"Add row above",
-				"Add row below",
-				"Delete row",
+				t("editor.table.addRowAbove"),
+				t("editor.table.addRowBelow"),
+				t("editor.table.deleteRow"),
 				"addRowBefore",
 				"addRowAfter",
 				"deleteRow",
 				canDeleteRow,
 			),
-		[canDeleteRow],
+		[canDeleteRow, t],
 	);
 	const columnMenuItems = useMemo(
 		() =>
 			buildAxisMenuItems(
-				"Add column left",
-				"Add column right",
-				"Delete column",
+				t("editor.table.addColumnLeft"),
+				t("editor.table.addColumnRight"),
+				t("editor.table.deleteColumn"),
 				"addColumnBefore",
 				"addColumnAfter",
 				"deleteColumn",
 				canDeleteColumn,
 			),
-		[canDeleteColumn],
+		[canDeleteColumn, t],
 	);
 
 	return (
@@ -194,7 +196,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 				axis="row"
 				left={selected.rowControlLeft}
 				top={selected.rowControlTop}
-				ariaLabel="Row options"
+				ariaLabel={t("editor.table.rowOptions")}
 				menuItems={rowMenuItems}
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}
@@ -204,7 +206,7 @@ export const TableInlineControls = memo(function TableInlineControls({
 				axis="column"
 				left={selected.columnControlLeft}
 				top={selected.columnControlTop}
-				ariaLabel="Column options"
+				ariaLabel={t("editor.table.columnOptions")}
 				menuItems={columnMenuItems}
 				onControlMouseDown={onControlMouseDown}
 				onCommand={onCommand}

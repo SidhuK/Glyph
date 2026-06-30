@@ -55,11 +55,14 @@ export function useDebouncedNoteChange({
 
 		let cancelled = false;
 		let unlisteners: (() => void)[] = [];
-		void Promise.all([
+		void Promise.allSettled([
 			listenTauriEvent("space:fs_changed", schedule),
 			listenTauriEvent("notes:external_changed", schedule),
 		])
-			.then((stops) => {
+			.then((results) => {
+				const stops = results.flatMap((result) =>
+					result.status === "fulfilled" ? [result.value] : [],
+				);
 				if (cancelled) {
 					for (const stop of stops) runUnlisten(stop);
 					return;

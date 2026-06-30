@@ -28,6 +28,7 @@ import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "../markdown/wikiLinkMarkdownBridge";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
@@ -224,7 +225,7 @@ function getInsertableMarkdownContent(
 	markdownManager: MarkdownManager,
 	text: string,
 ): JSONContent[] {
-	const parsed = markdownManager.parse(preprocessMarkdownForEditor(text));
+	const parsed = markdownManager.parse(preprocessMarkdownForParsing(text));
 	const content = Array.isArray(parsed.content) ? parsed.content : [];
 	if (content.length !== 1 || content[0]?.type !== "paragraph") {
 		return content;

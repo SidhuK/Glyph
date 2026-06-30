@@ -1,5 +1,6 @@
 import katex from "katex";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/shadcn/button";
 import {
 	Popover,
@@ -28,6 +29,7 @@ export function MathNodeEditor({
 	onDelete,
 	request,
 }: MathNodeEditorProps) {
+	const { t } = useTranslation("ui");
 	const [draft, setDraft] = useState(request.latex);
 	const previewRef = useRef<HTMLDivElement | null>(null);
 	const [renderError, setRenderError] = useState("");
@@ -55,12 +57,12 @@ export function MathNodeEditor({
 			} catch (error: unknown) {
 				preview.textContent = draft;
 				setRenderError(
-					error instanceof Error ? error.message : "Invalid LaTeX",
+					error instanceof Error ? error.message : t("math.invalidLatex"),
 				);
 			}
 		});
 		return () => window.cancelAnimationFrame(frame);
-	}, [draft, request.kind]);
+	}, [draft, request.kind, t]);
 
 	return (
 		<Popover open onOpenChange={(open) => !open && onCancel()}>
@@ -78,25 +80,25 @@ export function MathNodeEditor({
 			>
 				<PopoverHeader>
 					<PopoverTitle>
-						{request.kind === "inline" ? "Inline equation" : "Display equation"}
+						{request.kind === "inline"
+							? t("math.inlineEquation")
+							: t("math.displayEquation")}
 					</PopoverTitle>
-					<PopoverDescription>
-						Write KaTeX-compatible LaTeX. Press ⌘/Ctrl+Enter to apply.
-					</PopoverDescription>
+					<PopoverDescription>{t("math.description")}</PopoverDescription>
 				</PopoverHeader>
 				<LatexSourceEditor
 					key={`${request.kind}:${request.pos}`}
 					multiline={request.kind === "block"}
 					value={request.latex}
 					onChange={setDraft}
-					onApply={() => onApply(draft)}
+					onApply={(latex) => onApply(latex)}
 					onCancel={onCancel}
 				/>
 				<div
 					ref={previewRef}
 					className="mathNodeEditorPreview"
 					data-error={renderError ? "true" : undefined}
-					aria-label="Equation preview"
+					aria-label={t("math.previewAriaLabel")}
 				/>
 				{renderError ? (
 					<output className="mathNodeEditorError">{renderError}</output>
@@ -108,14 +110,14 @@ export function MathNodeEditor({
 						variant="destructive"
 						onClick={onDelete}
 					>
-						Delete
+						{t("math.delete")}
 					</Button>
 					<span className="mathNodeEditorActionsSpacer" />
 					<Button type="button" size="sm" variant="ghost" onClick={onCancel}>
-						Cancel
+						{t("common.cancel")}
 					</Button>
 					<Button type="button" size="sm" onClick={() => onApply(draft)}>
-						Apply
+						{t("common.apply")}
 					</Button>
 				</div>
 			</PopoverContent>

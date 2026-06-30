@@ -17,13 +17,56 @@ function distance(left: GraphPosition, right: GraphPosition) {
 	return Math.hypot(left.x - right.x, left.y - right.y);
 }
 
+function communityHasBridges(
+	community: ConnectionsCommunity,
+	model: ConnectionsCommunityModel,
+) {
+	for (const other of model.communities) {
+		if (other.id === community.id) continue;
+		if (
+			(model.communityBridges.get(communityBridgeKey(community.id, other.id)) ??
+				0) > 0
+		) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function placeIsolatedCommunityCenter(
+	community: ConnectionsCommunity,
+	isolationIndex: number,
+) {
+	const seed = hashString(`isolated-community:${community.hubId}`);
+	const angle = randomUnit(seed, isolationIndex * 2) * Math.PI * 2;
+	const orbit =
+		COMMUNITY_GAP * 2 +
+		community.radius +
+		isolationIndex * (COMMUNITY_GAP + community.radius);
+	return {
+		x: Math.cos(angle) * orbit,
+		y: Math.sin(angle) * orbit,
+	};
+}
+
 function placeCommunityCenters(model: ConnectionsCommunityModel) {
 	const centers = new Map<number, GraphPosition>();
 	const placed: ConnectionsCommunity[] = [];
+	let isolatedPlacementIndex = 0;
 
 	for (const community of model.communities) {
 		if (placed.length === 0) {
 			centers.set(community.id, { x: 0, y: 0 });
+			placed.push(community);
+			continue;
+		}
+
+		if (!communityHasBridges(community, model)) {
+			centers.set(
+				community.id,
+				placeIsolatedCommunityCenter(community, isolatedPlacementIndex),
+			);
+			isolatedPlacementIndex += 1;
 			placed.push(community);
 			continue;
 		}

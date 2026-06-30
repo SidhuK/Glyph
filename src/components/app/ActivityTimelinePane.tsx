@@ -19,8 +19,10 @@ import {
 	startOfDay,
 	subDays,
 } from "date-fns";
+import type { TFunction } from "i18next";
 import { useReducedMotion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -87,11 +89,11 @@ function dateKey(date: Date): string {
 	return format(date, "yyyy-MM-dd");
 }
 
-function dayLabel(date: Date): string {
+function dayLabel(date: Date, t: TFunction<"ui">): string {
 	const today = startOfDay(new Date());
 	const yesterday = subDays(today, 1);
-	if (isSameDay(date, today)) return "Today";
-	if (isSameDay(date, yesterday)) return "Yesterday";
+	if (isSameDay(date, today)) return t("activity.dayToday");
+	if (isSameDay(date, yesterday)) return t("activity.dayYesterday");
 	return format(date, isSameYear(date, today) ? "EEEE, MMM d" : "MMM d, yyyy");
 }
 
@@ -209,10 +211,12 @@ function sortedDayNotes(day: ActivityDay): ActivityNote[] {
 	});
 }
 
-function heatmapTooltip(day: ActivityDay): string {
+function heatmapTooltip(day: ActivityDay, t: TFunction<"ui">): string {
 	const noteCount = day.notes.size;
-	const countLabel = noteCount === 1 ? "1 note" : `${noteCount} notes`;
-	return `${countLabel} on ${format(day.date, "MMM d")}`;
+	return t("activity.heatmapTooltip", {
+		count: noteCount,
+		date: format(day.date, "MMM d"),
+	});
 }
 
 function monthVisibilityCounts(days: ActivityDay[]): Map<string, number> {
@@ -400,15 +404,20 @@ interface ActivityHeatmapProps {
 	columns: ActivityDay[][];
 	visibleMonthCounts: Map<string, number>;
 	maxCount: number;
+	t: TFunction<"ui">;
 }
 
 function ActivityHeatmap({
 	columns,
 	visibleMonthCounts,
 	maxCount,
+	t,
 }: ActivityHeatmapProps) {
 	return (
-		<div className="activityHeatmapBlock" aria-label="Recent note activity">
+		<div
+			className="activityHeatmapBlock"
+			aria-label={t("activity.heatmapAriaLabel")}
+		>
 			<div className="activityHeatmapMonths" aria-hidden="true">
 				{columns.map((column, index) => {
 					const first = column[0];
@@ -430,7 +439,7 @@ function ActivityHeatmap({
 					<div key={column[0]?.dateKey} className="activityHeatmapColumn">
 						{column.map((day) => {
 							const level = intensity(day, maxCount);
-							const tooltip = heatmapTooltip(day);
+							const tooltip = heatmapTooltip(day, t);
 							return (
 								<span
 									key={day.dateKey}
@@ -461,6 +470,7 @@ interface ActivityFeedProps {
 	shouldReduceMotion: boolean;
 	onSelectNote: (notePath: string) => void;
 	onOpenFile: (relPath: string) => Promise<void>;
+	t: TFunction<"ui">;
 }
 
 function ActivityFeed({
@@ -474,13 +484,12 @@ function ActivityFeed({
 	shouldReduceMotion,
 	onSelectNote,
 	onOpenFile,
+	t,
 }: ActivityFeedProps) {
 	if (feedDays.length === 0) {
 		return (
 			<div className="activityFeed">
-				<div className="databaseLoadingState">
-					No activity yet. Create or edit a note to start the timeline.
-				</div>
+				<div className="databaseLoadingState">{t("activity.emptyFeed")}</div>
 			</div>
 		);
 	}
@@ -502,7 +511,7 @@ function ActivityFeed({
 						style={{ transform: `translateY(${virtualRow.start}px)` }}
 					>
 						{row.kind === "header" ? (
-							<ActivityDayHeaderRow day={row.day} />
+							<ActivityDayHeaderRow day={row.day} t={t} />
 						) : (
 							<ActivityCardsRow
 								row={row}
@@ -521,18 +530,22 @@ function ActivityFeed({
 	);
 }
 
-function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
+function ActivityDayHeaderRow({
+	day,
+	t,
+}: {
+	day: ActivityDay;
+	t: TFunction<"ui">;
+}) {
 	return (
 		<section className="activityDayGroup activityDayHeaderRow">
 			<div className="activityDayRail" aria-hidden="true" />
 			<header className="activityDayHeader">
 				<div>
-					<h2>{dayLabel(day.date)}</h2>
+					<h2>{dayLabel(day.date, t)}</h2>
 				</div>
 				<div className="activityDayCounts">
-					<span>
-						{day.notes.size} {day.notes.size === 1 ? "note" : "notes"}
-					</span>
+					<span>{t("activity.noteCount", { count: day.notes.size })}</span>
 				</div>
 			</header>
 		</section>
@@ -592,6 +605,7 @@ function ActivityCardsRow({
 export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	onOpenFile,
 }: ActivityTimelinePaneProps) {
+	const { t } = useTranslation("ui");
 	const { itemAppearance } = useFileTreeContext();
 	const { dailyNotesFolder } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
@@ -631,10 +645,12 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 	if (notesQuery.error) {
 		return (
 			<div className="databaseLoadingState">
-				Could not load activity:{" "}
-				{notesQuery.error instanceof Error
-					? notesQuery.error.message
-					: String(notesQuery.error)}
+				{t("activity.loadError", {
+					message:
+						notesQuery.error instanceof Error
+							? notesQuery.error.message
+							: String(notesQuery.error),
+				})}
 			</div>
 		);
 	}
@@ -649,18 +665,18 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 							size="var(--icon-2xl)"
 							strokeWidth={0.9}
 						/>
-						<span>All Notes</span>
+						<span>{t("activity.title")}</span>
 					</h1>
 					<p
 						className="activityTimelineSummary"
-						title="Includes note creation dates and latest edit dates."
+						title={t("activity.summaryTitle")}
 					>
 						{recentNotesCount === 0
-							? "No notes worked on in the last year"
-							: `${recentNotesCount} notes created or edited in the last year`}
+							? t("activity.summaryEmpty")
+							: t("activity.summaryCount", { count: recentNotesCount })}
 					</p>
 					<div className="activityHeatmapLegend" aria-hidden="true">
-						<span>Less</span>
+						<span>{t("activity.heatmapLegendLess")}</span>
 						{[0, 1, 2, 3, 4].map((level) => (
 							<span
 								key={level}
@@ -668,7 +684,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 								data-level={level}
 							/>
 						))}
-						<span>More</span>
+						<span>{t("activity.heatmapLegendMore")}</span>
 					</div>
 				</div>
 			</header>
@@ -676,6 +692,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 				columns={columns}
 				visibleMonthCounts={visibleMonthCounts}
 				maxCount={maxCount}
+				t={t}
 			/>
 			<ActivityFeed
 				feedDays={feedDays}
@@ -688,6 +705,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 				shouldReduceMotion={shouldReduceMotion}
 				onSelectNote={setSelectedNotePath}
 				onOpenFile={onOpenFile}
+				t={t}
 			/>
 			{notesQuery.hasNextPage ? (
 				<button
@@ -696,7 +714,9 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 					disabled={notesQuery.isFetchingNextPage}
 					onClick={() => void notesQuery.fetchNextPage()}
 				>
-					{notesQuery.isFetchingNextPage ? "Loading..." : "Load older notes"}
+					{notesQuery.isFetchingNextPage
+						? t("activity.loadingMore")
+						: t("activity.loadMore")}
 				</button>
 			) : null}
 		</section>

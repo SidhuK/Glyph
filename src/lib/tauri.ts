@@ -1009,7 +1009,10 @@ interface TauriCommands {
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
-	space_connections: CommandDef<void, SpaceConnections>;
+	space_connections: CommandDef<
+		{ max_nodes?: number; max_tags?: number },
+		SpaceConnections
+	>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<

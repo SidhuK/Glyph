@@ -1,6 +1,7 @@
 import { LibraryIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useReducedMotion } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
@@ -38,6 +39,7 @@ function DatabasesPaneContent({
 	initialDocument = null,
 }: DatabasesPaneProps) {
 	const reduceMotion = useReducedMotion();
+	const { t } = useTranslation("ui");
 	const {
 		selection,
 		document: doc,
@@ -178,27 +180,28 @@ function DatabasesPaneContent({
 					/>
 					<div className="databasesEmptyTitle">
 						{selection.summaries.length === 0
-							? "Create your first collection"
-							: "Select a collection"}
+							? t("databases.empty.createTitle")
+							: t("databases.empty.selectTitle")}
 					</div>
 					<div className="databasesEmptyText">
 						{selection.summaries.length === 0
-							? "Collections help you see notes from a folder as a table or Kanban board."
-							: "Use Switch collection above to get started."}
+							? t("databases.empty.createText")
+							: t("databases.empty.selectText")}
 					</div>
 					{selection.summaries.length === 0 ? (
 						<>
 							<ol className="databasesOnboardingSteps">
 								<li>
-									<strong>Choose notes</strong> — pick a folder, tag, or search.
+									<strong>{t("databases.empty.step1Title")}</strong> —{" "}
+									{t("databases.empty.step1Text")}
 								</li>
 								<li>
-									<strong>Shape the view</strong> — show columns, filters, and
-									sorting.
+									<strong>{t("databases.empty.step2Title")}</strong> —{" "}
+									{t("databases.empty.step2Text")}
 								</li>
 								<li>
-									<strong>Track work</strong> — switch to board view and group
-									by status, tags, or another field.
+									<strong>{t("databases.empty.step3Title")}</strong> —{" "}
+									{t("databases.empty.step3Text")}
 								</li>
 							</ol>
 							<Button
@@ -208,7 +211,7 @@ function DatabasesPaneContent({
 								onClick={selection.openCreateCollectionDialog}
 							>
 								<Plus size="var(--icon-sm)" />
-								Create Collection
+								{t("databases.empty.createCollection")}
 							</Button>
 						</>
 					) : null}

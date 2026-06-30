@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "./wikiLinkMarkdownBridge";
 
 describe("wikiLinkMarkdownBridge", () => {
@@ -74,15 +75,15 @@ describe("wikiLinkMarkdownBridge", () => {
 
 	it("preserves escaped dollar signs through editor bridge round-trip", () => {
 		const md = String.raw`Price is \$5 and math is $x^2$.`;
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(
+			postprocessMarkdownFromEditor(preprocessMarkdownForParsing(md)),
+		).toBe(md);
 	});
 
 	it("preserves literal placeholder sentinels through editor bridge round-trip", () => {
 		const md = "Marker \uE000 and escape \uE001 here";
-		expect(postprocessMarkdownFromEditor(preprocessMarkdownForEditor(md))).toBe(
-			md,
-		);
+		expect(
+			postprocessMarkdownFromEditor(preprocessMarkdownForParsing(md)),
+		).toBe(md);
 	});
 });

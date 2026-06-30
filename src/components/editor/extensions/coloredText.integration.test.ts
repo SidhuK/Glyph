@@ -5,7 +5,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { describe, expect, it } from "vitest";
 import {
 	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "../markdown/wikiLinkMarkdownBridge";
 import { createEditorExtensions } from "./index";
 
@@ -29,7 +29,7 @@ describe("ColoredText markdown integration", () => {
 		const input =
 			'Hello <span data-glyph-color="blue" style="color: var(--glyph-inline-color-blue)">world</span>';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const paragraph = json.content?.[0];
 		const coloredText = paragraph?.content?.[1];
 
@@ -47,7 +47,7 @@ describe("ColoredText markdown integration", () => {
 		const input =
 			'Before <span data-glyph-color="red" style="color: var(--glyph-inline-color-red)">**alert**</span> after';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 
 		expect(output).toBe(input);
@@ -58,7 +58,7 @@ describe("ColoredText markdown integration", () => {
 		const input =
 			'Before <span data-glyph-color="magenta" style="color: magenta">text</span> after';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const paragraph = json.content?.[0];
 		expect(paragraph?.content?.[1]?.marks).toBeUndefined();
 

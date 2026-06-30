@@ -1,5 +1,6 @@
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type {
@@ -172,6 +173,7 @@ export function AllDocsCard({
 	onPrefetch,
 	onOpen,
 }: AllDocsCardProps) {
+	const { t } = useTranslation("ui");
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
 		if (event.key === "Enter") {
 			event.preventDefault();
@@ -193,7 +195,7 @@ export function AllDocsCard({
 			type="button"
 			className="allDocsCard"
 			data-state={selected ? "selected" : undefined}
-			aria-label={`Select ${title}. Press Enter to open.`}
+			aria-label={t("allDocs.selectLabel", { title })}
 			aria-pressed={selected}
 			onClick={onSelect}
 			onMouseEnter={onPrefetch}
@@ -210,7 +212,7 @@ export function AllDocsCard({
 							delay: Math.min(animationIndex * 0.02, 0.18),
 						}
 			}
-			title="Double-click to open note"
+			title={t("allDocs.doubleClickHint")}
 		>
 			<div className="allDocsCardSurface">
 				<div className="allDocsCardTop">
@@ -252,7 +254,7 @@ export function AllDocsCard({
 					</div>
 				) : (
 					<div className="allDocsCardPreview is-placeholder">
-						No preview yet
+						{t("allDocs.noPreview")}
 					</div>
 				)}
 			</div>

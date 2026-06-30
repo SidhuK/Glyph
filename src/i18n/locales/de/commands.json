@@ -433,6 +433,14 @@
 		"underline": {
 			"label": "Unterstrichen",
 			"description": "Unterstreichung für die aktuelle Auswahl umschalten."
+		},
+		"copy-active-file-relative-path": {
+			"label": "Relativen Pfad der aktuellen Datei kopieren",
+			"description": "Kopiert den relativen Pfad der aktuellen Datei."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "Absoluten Pfad der aktuellen Datei kopieren",
+			"description": "Kopiert den absoluten Pfad der aktuellen Datei."
 		}
 	}
 }

@@ -1,0 +1,14 @@
+{
+	"connections": {
+		"showUnconnectedNotes": "Afficher les notes non connectées",
+		"legendAriaLabel": "Légende des connexions",
+		"note": "Note",
+		"tag": "Tag"
+	},
+	"activity": {
+		"heatmapAriaLabel": "Activité récente des notes",
+		"emptyFeed": "Aucune activité pour l'instant. Créez ou modifiez une note pour démarrer la chronologie.",
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes"
+	}
+}

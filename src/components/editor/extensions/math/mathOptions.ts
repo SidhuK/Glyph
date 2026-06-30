@@ -28,7 +28,8 @@ export function preprocessEscapedDollars(markdown: string): string {
 /** Restore escaped dollar signs after math parsing. */
 export function postprocessEscapedDollars(markdown: string): string {
 	return markdown
-		.replace(new RegExp(ESCAPED_DOLLAR_PLACEHOLDER, "g"), String.raw`\$`)
+		.split(ESCAPED_DOLLAR_PLACEHOLDER)
+		.join(String.raw`\$`)
 		.replace(/\uE001/g, "\uE000")
 		.replace(/\uE002/g, "\uE001");
 }
@@ -44,8 +45,10 @@ export const GLYPH_KATEX_OPTIONS = {
 
 // TipTap math attributes may contain soft line breaks. They remain inline
 // Markdown until a blank line, so retain them across Edit -> Raw -> Edit.
-const INLINE_MATH_RE = /^\$(?!\$)(?!\s)((?:\\.|[^$\\])+?)(?<!\s)\$(?!\$)/;
-const BLOCK_MATH_RE = /^\$\$[\t ]*\n([\s\S]*?)\n\$\$(?:[\t ]*(?:\n|$))/;
+const INLINE_MATH_RE =
+	/^(?<!\\)\$(?!\$)(?!\s)((?:\\.|[^$\\])+?)(?<!\s)(?<!\\)\$(?!\$)/;
+const BLOCK_MATH_RE =
+	/^\$\$[\t ]*\r?\n([\s\S]*?)\r?\n\$\$(?:[\t ]*(?:\r?\n|$))/;
 
 export function matchInlineMath(source: string): RegExpMatchArray | null {
 	const match = source.match(INLINE_MATH_RE);

@@ -162,18 +162,24 @@ function postprocessWhitespaceLines(input: string): string {
 		.join("\n");
 }
 
-export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessEscapedDollars(
-		preprocessColoredText(
-			preprocessHighlightedText(
-				encodeMarkdownImageDestinations(
-					canonicalizeWikiLinks(
-						preprocessDetailsMarkdown(preprocessInlineTocMarkers(markdown)),
-					),
+function preprocessMarkdownStorage(markdown: string): string {
+	return preprocessColoredText(
+		preprocessHighlightedText(
+			encodeMarkdownImageDestinations(
+				canonicalizeWikiLinks(
+					preprocessDetailsMarkdown(preprocessInlineTocMarkers(markdown)),
 				),
 			),
 		),
 	);
+}
+
+export function preprocessMarkdownForEditor(markdown: string): string {
+	return preprocessMarkdownStorage(markdown);
+}
+
+export function preprocessMarkdownForParsing(markdown: string): string {
+	return preprocessEscapedDollars(preprocessMarkdownStorage(markdown));
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {

@@ -1,5 +1,8 @@
 import type { TFunction } from "i18next";
+import { DATABASE_BOARD_EMPTY_LANE_ID } from "../../lib/database/board";
 import type { DatabaseColumn } from "../../lib/database/types";
+import { priorityColorKey, priorityLabel } from "../../lib/priorityProperties";
+import { statusColorKey, statusLabel } from "../../lib/statusProperties";
 
 export function databaseSortDirectionLabel(
 	t: TFunction<"ui">,
@@ -50,4 +53,51 @@ export const DATABASE_DATE_SHORTCUTS = [
 
 export function defaultDateFilterValue(): string {
 	return "Last 7 Days";
+}
+
+export function localizeBoardLaneLabel(
+	column: DatabaseColumn | null,
+	laneId: string,
+	t: TFunction<"ui">,
+): string {
+	if (laneId === DATABASE_BOARD_EMPTY_LANE_ID) {
+		if (!column) return t("database.board.laneLabels.noValueYet");
+		if (column.type === "tags" || column.property_kind === "tags") {
+			return t("database.board.laneLabels.noTagsYet");
+		}
+		if (column.property_kind === "status") {
+			return t("database.board.laneLabels.noStatusYet");
+		}
+		if (column.property_kind === "priority") {
+			return t("database.board.laneLabels.noPriorityYet");
+		}
+		if (column.property_kind === "checkbox") {
+			return t("database.board.laneLabels.notSetYet");
+		}
+		const label = column.label.trim();
+		if (label) {
+			return t("database.board.laneLabels.noFieldYet", {
+				field: label.toLowerCase(),
+			});
+		}
+		return t("database.board.laneLabels.noValueYet");
+	}
+	if (column?.property_kind === "checkbox") {
+		if (laneId === "true") return t("database.board.laneLabels.checked");
+		if (laneId === "false") return t("database.board.laneLabels.unchecked");
+		return t("database.board.laneLabels.notSetYet");
+	}
+	if (column?.property_kind === "status") {
+		const key = statusColorKey(laneId) ?? laneId;
+		return t(`database.board.laneLabels.status.${key}`, {
+			defaultValue: statusLabel(laneId),
+		});
+	}
+	if (column?.property_kind === "priority") {
+		const key = priorityColorKey(laneId) ?? laneId;
+		return t(`database.board.laneLabels.priority.${key}`, {
+			defaultValue: priorityLabel(laneId),
+		});
+	}
+	return laneId;
 }

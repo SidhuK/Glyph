@@ -75,6 +75,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 					createTipTapSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
 						lockEditorScroll: false,
+						pluginKey: MD_LINK_SUGGESTION_KEY,
 						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";

@@ -1,0 +1,14 @@
+{
+	"connections": {
+		"showUnconnectedNotes": "Show unconnected notes",
+		"legendAriaLabel": "Connections legend",
+		"note": "Note",
+		"tag": "Tag"
+	},
+	"activity": {
+		"heatmapAriaLabel": "Recent note activity",
+		"emptyFeed": "No activity yet. Create or edit a note to start the timeline.",
+		"noteCount_one": "{{count}} note",
+		"noteCount_other": "{{count}} notes"
+	}
+}

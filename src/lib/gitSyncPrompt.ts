@@ -1,3 +1,4 @@
+import { i18n } from "../i18n";
 import type { GitSyncStatus } from "./tauri";
 import { invoke } from "./tauri";
 
@@ -40,23 +41,20 @@ export async function promptForAutoSync(
 	const branch = status.branch ?? status.detected_branch ?? "main";
 	const remoteLabel = remote
 		? `${redactRemoteUrl(remote)} (${branch})`
-		: "its remote";
+		: i18n.t("gitSync.autoSync.remoteFallback", { ns: "app" });
 
 	const { confirm } = await import("@tauri-apps/plugin-dialog");
-	return confirm(
-		`This space is linked to a Git repository at ${remoteLabel}. Enable automatic sync to commit and push changes on a schedule?`,
-		{
-			title: "Enable Git Sync?",
-			okLabel: "Enable Automatic Sync",
-			cancelLabel: "Not Now",
-		},
-	);
+	return confirm(i18n.t("gitSync.autoSync.body", { ns: "app", remoteLabel }), {
+		title: i18n.t("gitSync.autoSync.title", { ns: "app" }),
+		okLabel: i18n.t("gitSync.autoSync.okLabel", { ns: "app" }),
+		cancelLabel: i18n.t("gitSync.autoSync.cancelLabel", { ns: "app" }),
+	});
 }
 
 export async function completeAutoSyncPrompt(enable: boolean): Promise<void> {
 	await invoke("git_sync_config_update", {
 		patch: {
-			enabled: enable,
+			...(enable ? { enabled: true } : {}),
 			auto_sync_prompted: true,
 		},
 	});

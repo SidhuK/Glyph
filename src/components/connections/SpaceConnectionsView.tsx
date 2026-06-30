@@ -1,6 +1,8 @@
 import { LoaderCircle, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { TFunction } from "i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -19,13 +21,17 @@ async function warnAboutLargeGraph(payload: SpaceConnections) {
 	const noteCount = payload.nodes.length;
 	if (noteCount <= LARGE_GRAPH_NOTE_THRESHOLD) return;
 
+	const { i18n } = await import("../../i18n");
 	const { message } = await import("@tauri-apps/plugin-dialog");
 	await message(
-		`This space contains ${noteCount.toLocaleString()} notes. Building the full connections graph may take a while and make Glyph temporarily less responsive.`,
+		i18n.t("connections.largeGraphBody", {
+			ns: "ui",
+			count: noteCount.toLocaleString(),
+		}),
 		{
-			title: "Large connections graph",
+			title: i18n.t("connections.largeGraphTitle", { ns: "ui" }),
 			kind: "warning",
-			okLabel: "Continue",
+			okLabel: i18n.t("connections.continue", { ns: "ui" }),
 		},
 	);
 }
@@ -48,37 +54,39 @@ function openTagSearch(_tagId: string, label: string) {
 interface SpaceConnectionsControlsProps {
 	showUnconnectedNotes: boolean;
 	onShowUnconnectedNotesChange: (checked: boolean) => void;
+	t: TFunction<"ui">;
 }
 
 function SpaceConnectionsControls({
 	showUnconnectedNotes,
 	onShowUnconnectedNotesChange,
+	t,
 }: SpaceConnectionsControlsProps) {
 	return (
 		<div className="spaceConnectionsControls">
 			<Toggle
 				checked={showUnconnectedNotes}
 				onCheckedChange={onShowUnconnectedNotesChange}
-				label="Show unconnected notes"
+				label={t("connections.showUnconnectedNotes")}
 				size="sm"
 			/>
 			<div
 				className="localNoteConnectionsLegend is-space"
-				aria-label="Connections legend"
+				aria-label={t("connections.legendAriaLabel")}
 			>
 				<span className="localNoteConnectionsLegendItem">
 					<span
 						className="localNoteConnectionsLegendNode is-note"
 						aria-hidden="true"
 					/>
-					Note
+					{t("connections.note")}
 				</span>
 				<span className="localNoteConnectionsLegendItem">
 					<span
 						className="localNoteConnectionsLegendNode is-tag"
 						aria-hidden="true"
 					/>
-					Tag
+					{t("connections.tag")}
 				</span>
 			</div>
 		</div>
@@ -86,6 +94,7 @@ function SpaceConnectionsControls({
 }
 
 export function SpaceConnectionsView() {
+	const { t } = useTranslation("ui");
 	const { spacePath } = useSpace();
 	const [payload, setPayload] = useState<SpaceConnections | null>(null);
 	const [dataLoading, setDataLoading] = useState(true);
@@ -102,7 +111,7 @@ export function SpaceConnectionsView() {
 		setDataLoading(true);
 		setError("");
 
-		void invoke("space_connections")
+		void invoke("space_connections", {})
 			.then(async (nextGraph) => {
 				if (
 					requestId !== requestIdRef.current ||
@@ -171,7 +180,7 @@ export function SpaceConnectionsView() {
 							size="var(--icon-sm)"
 							strokeWidth={0.9}
 						/>
-						Loading notes and links…
+						{t("connections.loadingNotes")}
 					</div>
 				</div>
 			</section>
@@ -188,6 +197,7 @@ export function SpaceConnectionsView() {
 				<SpaceConnectionsControls
 					showUnconnectedNotes={showUnconnectedNotes}
 					onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+					t={t}
 				/>
 				<div className="absolute inset-0 flex items-center justify-center">
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -197,7 +207,7 @@ export function SpaceConnectionsView() {
 							size="var(--icon-sm)"
 							strokeWidth={0.9}
 						/>
-						Arranging connections…
+						{t("connections.arranging")}
 					</div>
 				</div>
 			</section>
@@ -209,7 +219,7 @@ export function SpaceConnectionsView() {
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
 				<div className="flex max-w-md flex-col items-center gap-3 text-center">
 					<p className="text-sm text-muted-foreground">
-						Could not load connections: {visibleError}
+						{t("connections.loadError", { message: visibleError })}
 					</p>
 					<Button type="button" size="sm" onClick={loadConnections}>
 						<HugeiconsIcon
@@ -218,7 +228,7 @@ export function SpaceConnectionsView() {
 							size="var(--icon-md)"
 							strokeWidth={0.9}
 						/>
-						Retry
+						{t("connections.retry")}
 					</Button>
 				</div>
 			</div>
@@ -229,7 +239,7 @@ export function SpaceConnectionsView() {
 		return (
 			<div className="flex h-full min-h-0 flex-1 items-center justify-center p-6">
 				<p className="text-sm text-muted-foreground">
-					No notes in this space yet.
+					{t("connections.noNotes")}
 				</p>
 			</div>
 		);
@@ -245,9 +255,10 @@ export function SpaceConnectionsView() {
 				<SpaceConnectionsControls
 					showUnconnectedNotes={showUnconnectedNotes}
 					onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+					t={t}
 				/>
 				<p className="relative z-1 flex h-full items-center justify-center text-sm text-muted-foreground">
-					No connected notes in this space.
+					{t("connections.noConnectedNotes")}
 				</p>
 			</section>
 		);
@@ -258,11 +269,12 @@ export function SpaceConnectionsView() {
 			<div
 				ref={containerRef}
 				className="localNoteConnectionsViewport absolute inset-0"
-				aria-label="Space connections"
+				aria-label={t("connections.viewportAriaLabel")}
 			/>
 			<SpaceConnectionsControls
 				showUnconnectedNotes={showUnconnectedNotes}
 				onShowUnconnectedNotesChange={setShowUnconnectedNotes}
+				t={t}
 			/>
 		</section>
 	);

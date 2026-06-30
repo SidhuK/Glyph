@@ -433,6 +433,14 @@
 		"underline": {
 			"label": "下線",
 			"description": "現在の選択範囲の下線を切り替えます。"
+		},
+		"copy-active-file-relative-path": {
+			"label": "現在のファイルの相対パスをコピー",
+			"description": "現在のファイルの相対パスをコピーします。"
+		},
+		"copy-active-file-absolute-path": {
+			"label": "現在のファイルの絶対パスをコピー",
+			"description": "現在のファイルの絶対パスをコピーします。"
 		}
 	}
 }

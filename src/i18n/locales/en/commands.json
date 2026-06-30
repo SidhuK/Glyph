@@ -146,6 +146,14 @@
 			"label": "Copy Note as Markdown",
 			"description": "Copy the current note as markdown."
 		},
+		"copy-active-file-relative-path": {
+			"label": "Copy current file relative path",
+			"description": "Copy the relative path of the current file."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "Copy current file absolute path",
+			"description": "Copy the absolute path of the current file."
+		},
 		"create-from-template": {
 			"label": "Create From Template",
 			"description": "Create a new note from a template."

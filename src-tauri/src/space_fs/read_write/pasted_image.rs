@@ -9,7 +9,14 @@ use super::super::helpers::deny_hidden_rel_path;
 const MAX_SUFFIX_ATTEMPTS: u32 = 999;
 
 pub fn extension_for_mime(mime: &str) -> Option<&'static str> {
-    match mime.trim().to_ascii_lowercase().as_str() {
+    let normalized = mime
+        .trim()
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase();
+    match normalized.as_str() {
         "image/png" => Some("png"),
         "image/jpeg" => Some("jpg"),
         "image/gif" => Some("gif"),
@@ -23,7 +30,14 @@ pub fn extension_for_mime(mime: &str) -> Option<&'static str> {
 }
 
 fn extension_matches_mime(mime: &str, ext: &str) -> bool {
-    match mime.trim().to_ascii_lowercase().as_str() {
+    let normalized = mime
+        .trim()
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase();
+    match normalized.as_str() {
         "image/jpeg" => ext.eq_ignore_ascii_case("jpg") || ext.eq_ignore_ascii_case("jpeg"),
         "image/tiff" => ext.eq_ignore_ascii_case("tif") || ext.eq_ignore_ascii_case("tiff"),
         _ => extension_for_mime(mime).is_some_and(|expected| ext.eq_ignore_ascii_case(expected)),
@@ -189,6 +203,14 @@ mod tests {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.root);
         }
+    }
+
+    #[test]
+    fn filename_for_mime_strips_mime_parameters() {
+        assert_eq!(
+            filename_for_mime(None, "image/png; charset=binary", "png").unwrap(),
+            "image.png"
+        );
     }
 
     #[test]

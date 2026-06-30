@@ -212,8 +212,12 @@ export function useCollectionWorkspace({
 			void prefetchDatabaseDocument(activeDatabaseId)
 				.then((next) => {
 					if (documentIdRef.current !== activeDatabaseId) return;
+					const previousName = documentRef.current?.database.name;
 					documentRef.current = next;
 					setDocument(next);
+					setNameDraft((draft) =>
+						draft === previousName ? next.database.name : draft,
+					);
 					clearError();
 				})
 				.catch((cause) => {

@@ -5,7 +5,7 @@ import { MarkdownManager } from "@tiptap/markdown";
 import { describe, expect, it } from "vitest";
 import {
 	postprocessMarkdownFromEditor,
-	preprocessMarkdownForEditor,
+	preprocessMarkdownForParsing,
 } from "../markdown/wikiLinkMarkdownBridge";
 import { createEditorExtensions } from "./index";
 
@@ -29,7 +29,7 @@ describe("HighlightedText markdown integration", () => {
 		const input =
 			'Hello <mark data-glyph-highlight="yellow" style="background-color: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26))">world</mark>';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const paragraph = json.content?.[0];
 		const highlightedText = paragraph?.content?.[1];
 
@@ -47,7 +47,7 @@ describe("HighlightedText markdown integration", () => {
 		const input =
 			'Before <mark data-glyph-highlight="blue" style="background-color: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22))"><span data-glyph-color="red" style="color: var(--glyph-inline-color-red)">alert</span></mark> after';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
 
 		expect(output).toBe(input);
@@ -58,7 +58,7 @@ describe("HighlightedText markdown integration", () => {
 		const input =
 			'Before <mark data-glyph-highlight="pink" style="background-color: pink">text</mark> after';
 
-		const json = manager.parse(preprocessMarkdownForEditor(input));
+		const json = manager.parse(preprocessMarkdownForParsing(input));
 		const paragraph = json.content?.[0];
 		expect(paragraph?.content?.[1]?.marks).toBeUndefined();
 

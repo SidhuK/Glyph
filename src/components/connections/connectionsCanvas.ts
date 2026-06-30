@@ -103,19 +103,18 @@ export function drawConnectionsNodeLabel(
 	const emphasized = Boolean(data.highlighted || data.forceLabel);
 	const fontSize = settings.labelSize;
 	const weight = emphasized ? "600" : settings.labelWeight;
+	const drawPill = variant === "local" || emphasized;
 
 	context.save();
 	context.font = `${weight} ${fontSize}px ${settings.labelFont}`;
 	context.textBaseline = "alphabetic";
 
-	const textWidth = context.measureText(label).width;
 	const offsetX = variant === "local" ? 8 : 6;
 	const textX = Math.round(data.x + size + offsetX);
 	const textY = Math.round(data.y + fontSize / 3);
 
-	const drawPill = variant === "local" || emphasized;
-
 	if (drawPill) {
+		const textWidth = context.measureText(label).width;
 		const paddingX = emphasized ? 7 : 6;
 		const pillHeight = fontSize + (emphasized ? 9 : 7);
 		const pillX = textX - paddingX;

@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { useEffect } from "react";
+import { i18n } from "../../../i18n";
 import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
@@ -137,7 +138,13 @@ export function useRibbonCommands({
 					case "divider":
 						return chain.setHorizontalRule().run();
 					case "details_block":
-						return chain.insertContent(createDetailsBlockContent()).run();
+						return chain
+							.insertContent(
+								createDetailsBlockContent(
+									i18n.t("editor.details.defaultSummary", { ns: "ui" }),
+								),
+							)
+							.run();
 					case "extract_selection_to_note":
 						onTriggerExtractToNote?.();
 						return true;

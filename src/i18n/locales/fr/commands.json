@@ -433,6 +433,14 @@
 		"underline": {
 			"label": "Souligné",
 			"description": "Activer ou désactiver le soulignement pour la sélection."
+		},
+		"copy-active-file-relative-path": {
+			"label": "Copier le chemin relatif du fichier actuel",
+			"description": "Copie le chemin relatif du fichier actuel."
+		},
+		"copy-active-file-absolute-path": {
+			"label": "Copier le chemin absolu du fichier actuel",
+			"description": "Copie le chemin absolu du fichier actuel."
 		}
 	}
 }

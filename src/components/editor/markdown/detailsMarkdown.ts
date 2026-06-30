@@ -85,11 +85,25 @@ function detailsFencesToHtml(
 	return blocks.join("\n");
 }
 
+function extractDetailsSummary(inner: string): string {
+	const summaryTagMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
+	if (summaryTagMatch) {
+		return htmlFragmentToPlainText(summaryTagMatch[1] ?? "");
+	}
+	const summaryDivMatch = inner.match(
+		/<div[^>]*data-type=(["'])detailsSummary\1[^>]*>([\s\S]*?)<\/div>/i,
+	);
+	return htmlFragmentToPlainText(summaryDivMatch?.[2] ?? "");
+}
+
 function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
-	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
-	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
+	const summary = extractDetailsSummary(inner);
 	const content = inner
 		.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, "")
+		.replace(
+			/<div[^>]*data-type=(["'])detailsSummary\1[^>]*>[\s\S]*?<\/div>/i,
+			"",
+		)
 		.trim();
 	const openLine = isOpen ? ":::details {open}" : ":::details";
 	return [
