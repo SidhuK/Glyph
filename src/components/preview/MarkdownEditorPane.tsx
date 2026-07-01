@@ -49,7 +49,10 @@ import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
 import { MarkdownFloatingToc } from "./MarkdownFloatingToc";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
-import { initialEditorMode, requiresPlainEditorMode } from "./editorModeSelection";
+import {
+	initialEditorMode,
+	requiresPlainEditorMode,
+} from "./editorModeSelection";
 import {
 	clearMarkdownDocCache,
 	getCachedMarkdownDoc,

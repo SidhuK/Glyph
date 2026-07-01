@@ -12,6 +12,8 @@ interface TocSource {
 export function useDeferredTocSource() {
 	const [tocSource, setTocSource] = useState<TocSource | null>(null);
 	const tocReadyFrameRef = useRef<number | null>(null);
+	const tocReadyResizeObserverRef = useRef<ResizeObserver | null>(null);
+	const tocReadyGenerationRef = useRef(0);
 
 	const cancelPendingTocReady = useCallback(() => {
 		if (tocReadyFrameRef.current === null) return;
@@ -19,16 +21,63 @@ export function useDeferredTocSource() {
 		tocReadyFrameRef.current = null;
 	}, []);
 
+	const disconnectPendingTocResizeObserver = useCallback(() => {
+		tocReadyResizeObserverRef.current?.disconnect();
+		tocReadyResizeObserverRef.current = null;
+	}, []);
+
+	const resetPendingTocReady = useCallback(() => {
+		tocReadyGenerationRef.current += 1;
+		cancelPendingTocReady();
+		disconnectPendingTocResizeObserver();
+	}, [cancelPendingTocReady, disconnectPendingTocResizeObserver]);
+
 	const handleEditorReady = useCallback(
 		(editor: Editor | null, contentRoot: HTMLElement | null) => {
-			cancelPendingTocReady();
+			resetPendingTocReady();
 			setTocSource(null);
 			if (!editor || !contentRoot) return;
+			const readyEditor = editor;
+			const readyContentRoot = contentRoot;
+			const readyGeneration = tocReadyGenerationRef.current;
+
+			function rootCanBecomeReady() {
+				return (
+					tocReadyGenerationRef.current === readyGeneration &&
+					readyContentRoot.isConnected &&
+					!readyEditor.isDestroyed
+				);
+			}
+
+			function publishWhenRootHasLayout() {
+				if (!rootCanBecomeReady()) return false;
+				const rootRect = readyContentRoot.getBoundingClientRect();
+				if (rootRect.width === 0 || rootRect.height === 0) return false;
+
+				disconnectPendingTocResizeObserver();
+				setTocSource({ editor: readyEditor, contentRoot: readyContentRoot });
+				return true;
+			}
+
+			function observeRootLayout() {
+				if (!rootCanBecomeReady()) return;
+				if (tocReadyResizeObserverRef.current !== null) return;
+				if (typeof ResizeObserver === "undefined") {
+					tocReadyFrameRef.current =
+						window.requestAnimationFrame(markReadyAfterPaint);
+					return;
+				}
+				const resizeObserver = new ResizeObserver(() => {
+					publishWhenRootHasLayout();
+				});
+				resizeObserver.observe(readyContentRoot);
+				tocReadyResizeObserverRef.current = resizeObserver;
+			}
 
 			let frameCount = 0;
-			const markReadyAfterPaint = () => {
+			function markReadyAfterPaint() {
 				frameCount += 1;
-				const rootRect = contentRoot.getBoundingClientRect();
+				const rootRect = readyContentRoot.getBoundingClientRect();
 				const rootHasLayout = rootRect.width > 0 && rootRect.height > 0;
 				const minFramesElapsed = frameCount >= TOC_EDITOR_READY_MIN_FRAME_COUNT;
 				const maxFramesElapsed = frameCount >= TOC_EDITOR_READY_MAX_FRAME_COUNT;
@@ -40,19 +89,18 @@ export function useDeferredTocSource() {
 				}
 
 				tocReadyFrameRef.current = null;
-				if (!contentRoot.isConnected || editor.isDestroyed || !rootHasLayout) {
-					return;
+				if (!publishWhenRootHasLayout()) {
+					observeRootLayout();
 				}
-				setTocSource({ editor, contentRoot });
-			};
+			}
 
 			tocReadyFrameRef.current =
 				window.requestAnimationFrame(markReadyAfterPaint);
 		},
-		[cancelPendingTocReady],
+		[disconnectPendingTocResizeObserver, resetPendingTocReady],
 	);
 
-	useEffect(() => cancelPendingTocReady, [cancelPendingTocReady]);
+	useEffect(() => resetPendingTocReady, [resetPendingTocReady]);
 
 	return { tocSource, handleEditorReady };
 }

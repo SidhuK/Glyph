@@ -21,15 +21,20 @@
 
 .floatingTocMark {
 	all: unset;
+	box-sizing: border-box;
 	cursor: pointer;
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
 	width: 28px;
-	height: 10px;
+	height: 24px;
 	border-radius: var(--radius-sm);
 	background: transparent;
 	color: inherit;
+}
+
+.floatingTocMark + .floatingTocMark {
+	margin-top: -14px;
 }
 
 .floatingTocMark:hover,
@@ -121,11 +126,7 @@
 
 .floatingTocOutlineItem[data-active="true"] {
 	background: transparent;
-	color: color-mix(
-		in srgb,
-		var(--interactive-accent) 74%,
-		var(--text-primary)
-	);
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
 }
 
 .floatingTocOutlineText {

@@ -142,6 +142,12 @@ export const FloatingTOC = memo(function FloatingTOC({
 					id={panelId}
 					onMouseEnter={() => setPreviewHeadingId(previewHeading.id)}
 					onClick={() => onSelectHeading(previewHeading)}
+					onKeyDown={(event) => {
+						if (event.key === "Escape") {
+							event.preventDefault();
+							setPreviewHeadingId(null);
+						}
+					}}
 					title={previewHeading.text}
 				>
 					<span className="floatingTocPreviewHeading">

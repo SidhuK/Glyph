@@ -176,7 +176,7 @@ function rangeTouchesHeading(
 	heading: TOCHeading,
 	range: ChangedRange,
 ): boolean {
-	return heading.pos >= range.from && heading.pos <= range.to;
+	return heading.pos >= range.from && heading.pos < range.to;
 }
 
 function mapHeadingsThroughTransaction(
@@ -362,13 +362,11 @@ export function useTableOfContents(
 			const headingIndex = headingsRef.current.findIndex(
 				(item) => item.id === heading.id,
 			);
-			const nextHeading =
-				headingIndex === -1 ? undefined : headingsRef.current[headingIndex + 1];
-			return getHeadingPreview(
-				editor.state.doc,
-				heading,
-				nextHeading,
-			);
+			if (headingIndex === -1) return null;
+			const currentHeading = headingsRef.current[headingIndex];
+			if (!currentHeading) return null;
+			const nextHeading = headingsRef.current[headingIndex + 1];
+			return getHeadingPreview(editor.state.doc, currentHeading, nextHeading);
 		},
 		[editor],
 	);
