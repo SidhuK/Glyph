@@ -293,7 +293,15 @@
 		"unsupportedOperatorGeneric": "Não suportado: {{operator}}",
 		"value": "Valor",
 		"viewSettings": "Configurações da visualização",
-		"where": "Onde"
+		"where": "Onde",
+		"builtinColumns": {
+			"title": "Título",
+			"tags": "Tags",
+			"updated": "Atualizado",
+			"path": "Caminho",
+			"linkedNotes": "Notas vinculadas",
+			"created": "Criado"
+		}
 	},
 	"databases": {
 		"empty": {
@@ -307,7 +315,10 @@
 			"step2Text": "mostre colunas, filtros e ordenação.",
 			"step2Title": "Moldar a visualização",
 			"step3Text": "mude para a visualização de quadro e agrupe por status, tags ou outro campo.",
-			"step3Title": "Acompanhar o trabalho"
+			"step3Title": "Acompanhar o trabalho",
+			"step1": "Escolher notas — selecione uma pasta, tag ou busca.",
+			"step2": "Moldar a visualização — mostre colunas, filtros e ordenação.",
+			"step3": "Acompanhar o trabalho — mude para a visualização em quadro e agrupe por status, tags ou outro campo."
 		}
 	},
 	"editor": {

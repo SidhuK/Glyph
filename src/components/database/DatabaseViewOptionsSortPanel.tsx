@@ -7,7 +7,10 @@ import type {
 } from "../../lib/database/types";
 import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
-import { databaseSortDirectionLabel } from "./databaseViewI18n";
+import {
+	databaseSortDirectionLabel,
+	localizeDatabaseColumnLabel,
+} from "./databaseViewI18n";
 import {
 	type DatabaseSortPreset,
 	databaseSortPresets,
@@ -104,7 +107,7 @@ export function SortPanel({
 						>
 							{columns.map((column) => (
 								<option key={column.id} value={column.id}>
-									{column.label}
+									{localizeDatabaseColumnLabel(column, t)}
 								</option>
 							))}
 						</select>

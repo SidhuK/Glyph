@@ -1145,6 +1145,15 @@ fn space_connections_for_conn(
         }
     }
 
+    let mut returned_link_count_by_note = HashMap::<String, u32>::new();
+    for edge in &edges {
+        *returned_link_count_by_note
+            .entry(edge.from_id.clone())
+            .or_insert(0) += 1;
+        *returned_link_count_by_note
+            .entry(edge.to_id.clone())
+            .or_insert(0) += 1;
+    }
     let mut returned_tag_edge_count_by_note = HashMap::<String, u32>::new();
     for edge in &tag_edges {
         *returned_tag_edge_count_by_note
@@ -1154,6 +1163,10 @@ fn space_connections_for_conn(
     let nodes = node_seeds
         .into_iter()
         .map(|node| {
+            let returned_link_count = returned_link_count_by_note
+                .get(&node.id)
+                .copied()
+                .unwrap_or(0);
             let returned_tag_edge_count = returned_tag_edge_count_by_note
                 .get(&node.id)
                 .copied()
@@ -1161,7 +1174,7 @@ fn space_connections_for_conn(
             SpaceConnectionsNode {
                 id: node.id,
                 title: node.title,
-                is_isolated: node.link_count == 0 && returned_tag_edge_count == 0,
+                is_isolated: returned_link_count == 0 && returned_tag_edge_count == 0,
             }
         })
         .collect::<Vec<_>>();

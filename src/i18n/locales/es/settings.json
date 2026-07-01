@@ -166,7 +166,7 @@
 				"llama_cpp": "llama.cpp",
 				"ollama": "Ollama",
 				"openai": "OpenAI",
-				"openai_compat": "OpenAI compatible",
+				"openai_compat": "Compatible con OpenAI",
 				"opencode": "OpenCode",
 				"openrouter": "OpenRouter",
 				"pi": "PI"

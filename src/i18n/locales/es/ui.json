@@ -293,7 +293,15 @@
 		"unsupportedOperatorGeneric": "No compatible: {{operator}}",
 		"value": "Valor",
 		"viewSettings": "Ajustes de vista",
-		"where": "Donde"
+		"where": "Donde",
+		"builtinColumns": {
+			"title": "Título",
+			"tags": "Etiquetas",
+			"updated": "Actualizado",
+			"path": "Ruta",
+			"linkedNotes": "Notas vinculadas",
+			"created": "Creado"
+		}
 	},
 	"databases": {
 		"empty": {
@@ -307,7 +315,10 @@
 			"step2Text": "muestra columnas, filtros y ordenación.",
 			"step2Title": "Dale forma a la vista",
 			"step3Text": "cambia a vista de tablero y agrupa por estado, etiquetas u otro campo.",
-			"step3Title": "Haz seguimiento"
+			"step3Title": "Haz seguimiento",
+			"step1": "Elige notas — selecciona una carpeta, etiqueta o búsqueda.",
+			"step2": "Diseña la vista — muestra columnas, filtros y ordenación.",
+			"step3": "Sigue el trabajo — cambia a la vista de tablero y agrupa por estado, etiquetas u otro campo."
 		}
 	},
 	"editor": {

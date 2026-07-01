@@ -285,7 +285,15 @@
 		"unsupportedOperatorGeneric": "지원되지 않음: {{operator}}",
 		"value": "값",
 		"viewSettings": "보기 설정",
-		"where": "조건"
+		"where": "조건",
+		"builtinColumns": {
+			"title": "제목",
+			"tags": "태그",
+			"updated": "수정됨",
+			"path": "경로",
+			"linkedNotes": "연결된 노트",
+			"created": "생성됨"
+		}
 	},
 	"databases": {
 		"empty": {
@@ -299,7 +307,10 @@
 			"step2Text": "열, 필터 및 정렬을 표시합니다.",
 			"step2Title": "보기 구성",
 			"step3Text": "보드 보기로 전환하고 상태, 태그 또는 다른 필드로 그룹화합니다.",
-			"step3Title": "작업 추적"
+			"step3Title": "작업 추적",
+			"step1": "노트 선택 — 폴더, 태그 또는 검색을 고르세요.",
+			"step2": "보기 구성 — 열, 필터, 정렬을 표시하세요.",
+			"step3": "작업 추적 — 보드 보기로 전환하고 상태, 태그 또는 다른 필드로 그룹화하세요."
 		}
 	},
 	"editor": {

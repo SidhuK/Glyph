@@ -4,6 +4,51 @@ import type { DatabaseColumn } from "../../lib/database/types";
 import { priorityColorKey, priorityLabel } from "../../lib/priorityProperties";
 import { statusColorKey, statusLabel } from "../../lib/statusProperties";
 
+export function localizeDatabaseColumnLabel(
+	column: DatabaseColumn,
+	t: TFunction<"ui">,
+): string {
+	if (column.type === "property") {
+		return column.label;
+	}
+	switch (column.id) {
+		case "title":
+			return t("database.builtinColumns.title");
+		case "tags":
+			return t("database.builtinColumns.tags");
+		case "updated":
+			return t("database.builtinColumns.updated");
+		case "folder":
+			return t("database.folder");
+		case "path":
+			return t("database.builtinColumns.path");
+		case "linked_notes":
+			return t("database.builtinColumns.linkedNotes");
+		case "created":
+			return t("database.builtinColumns.created");
+		default:
+			break;
+	}
+	switch (column.type) {
+		case "title":
+			return t("database.builtinColumns.title");
+		case "tags":
+			return t("database.builtinColumns.tags");
+		case "updated":
+			return t("database.builtinColumns.updated");
+		case "folder":
+			return t("database.folder");
+		case "path":
+			return t("database.builtinColumns.path");
+		case "linked_notes":
+			return t("database.builtinColumns.linkedNotes");
+		case "created":
+			return t("database.builtinColumns.created");
+		default:
+			return column.label;
+	}
+}
+
 export function databaseSortDirectionLabel(
 	t: TFunction<"ui">,
 	column: DatabaseColumn | null,
@@ -77,7 +122,7 @@ export function localizeBoardLaneLabel(
 		const label = column.label.trim();
 		if (label) {
 			return t("database.board.laneLabels.noFieldYet", {
-				field: label.toLowerCase(),
+				field: label,
 			});
 		}
 		return t("database.board.laneLabels.noValueYet");

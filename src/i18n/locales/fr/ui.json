@@ -293,7 +293,15 @@
 		"unsupportedOperatorGeneric": "Non pris en charge : {{operator}}",
 		"value": "Valeur",
 		"viewSettings": "Réglages de la vue",
-		"where": "Où"
+		"where": "Où",
+		"builtinColumns": {
+			"title": "Titre",
+			"tags": "Tags",
+			"updated": "Mis à jour",
+			"path": "Chemin",
+			"linkedNotes": "Notes liées",
+			"created": "Créé"
+		}
 	},
 	"databases": {
 		"empty": {
@@ -307,7 +315,10 @@
 			"step2Text": "affichez colonnes, filtres et tri.",
 			"step2Title": "Façonner la vue",
 			"step3Text": "passez à la vue tableau et regroupez par statut, tags ou autre champ.",
-			"step3Title": "Suivre le travail"
+			"step3Title": "Suivre le travail",
+			"step1": "Choisir les notes — sélectionnez un dossier, un tag ou une recherche.",
+			"step2": "Composer la vue — affichez colonnes, filtres et tri.",
+			"step3": "Suivre le travail — passez à la vue tableau et regroupez par statut, tags ou autre champ."
 		}
 	},
 	"editor": {

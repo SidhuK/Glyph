@@ -15,6 +15,7 @@ import {
 	DATABASE_DATE_SHORTCUTS,
 	databaseFilterOperatorLabel,
 	defaultDateFilterValue,
+	localizeDatabaseColumnLabel,
 } from "./databaseViewI18n";
 import {
 	type DatabaseFilterPreset,
@@ -353,7 +354,7 @@ export function FiltersPanel({
 									>
 										{columns.map((column) => (
 											<option key={column.id} value={column.id}>
-												{column.label}
+												{localizeDatabaseColumnLabel(column, t)}
 											</option>
 										))}
 									</select>
