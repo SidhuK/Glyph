@@ -45,7 +45,7 @@ import {
 	DatabaseNoteAppearanceIcon,
 	databaseNoteAppearanceStyle,
 } from "./DatabaseNoteAppearanceIcon";
-import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
+import { buildDatabaseTagPickerOptions } from "./databaseTagPickerOptions";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 const DATABASE_CELL_PILL_GAP = 6;

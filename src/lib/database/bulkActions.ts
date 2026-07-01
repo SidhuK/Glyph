@@ -37,6 +37,22 @@ export function findBulkEligibleColumns(
 	return { statusColumn, priorityColumn, checkboxColumns, tagsColumns };
 }
 
+export function pruneRowSelection<T extends Record<string, boolean>>(
+	selection: T,
+	visiblePaths: Iterable<string>,
+): T {
+	const visible = new Set(visiblePaths);
+	let changed = false;
+	const next = { ...selection };
+	for (const path of Object.keys(next)) {
+		if (!visible.has(path)) {
+			delete next[path];
+			changed = true;
+		}
+	}
+	return changed ? next : selection;
+}
+
 function tagKey(tag: string): string {
 	return tag.trim().toLowerCase();
 }

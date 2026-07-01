@@ -15,7 +15,7 @@ import { ScrollArea } from "../ui/shadcn/scroll-area";
 import {
 	buildDatabaseTagPickerExplicitTags,
 	buildDatabaseTagPickerOptions,
-} from "./DatabaseTagPicker";
+} from "./databaseTagPickerOptions";
 
 export interface DatabaseTagPickerPanelProps {
 	selectedValue?: string | null;

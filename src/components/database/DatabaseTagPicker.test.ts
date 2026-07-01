@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	buildDatabaseTagPickerExplicitTags,
 	buildDatabaseTagPickerOptions,
-} from "./DatabaseTagPicker";
+} from "./databaseTagPickerOptions";
 
 const availableTags = [
 	{

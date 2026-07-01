@@ -336,6 +336,7 @@ export function DatabaseBoardCardView({
 			className="databaseBoardCard"
 			data-state={selected ? "selected" : undefined}
 			data-multi-selected={multiSelected ? "true" : undefined}
+			aria-pressed={multiSelected ? true : undefined}
 			data-dragging={isDragging ? "true" : undefined}
 			data-drop-target={isDropTarget ? "true" : undefined}
 			onClick={(event) => {
@@ -352,8 +353,14 @@ export function DatabaseBoardCardView({
 				if (event.key === "Enter") {
 					event.preventDefault();
 					onOpenRow(row.note_path);
-				} else if (event.key === " ") {
+					return;
+				}
+				if (event.key === " ") {
 					event.preventDefault();
+					if (event.metaKey || event.ctrlKey) {
+						onToggleRowSelection(row.note_path);
+						return;
+					}
 					onSelectRow(row.note_path);
 				}
 			}}

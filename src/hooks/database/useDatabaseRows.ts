@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { pruneRowSelection } from "../../lib/database/bulkActions";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	invalidateDatabasePrefetch,
@@ -183,6 +184,15 @@ export function useDatabaseRows({
 				.map(([notePath]) => notePath),
 		[rowSelection],
 	);
+
+	useEffect(() => {
+		setRowSelectionState((current) =>
+			pruneRowSelection(
+				current,
+				rows.map((row) => row.note_path),
+			),
+		);
+	}, [rows]);
 
 	useEffect(() => {
 		const previous = previousSelectionRef.current;
