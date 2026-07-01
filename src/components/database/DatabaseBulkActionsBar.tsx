@@ -1,4 +1,8 @@
-import type { BulkEligibleColumns } from "../../lib/database/bulkActions";
+import { useMemo } from "react";
+import {
+	type BulkEligibleColumns,
+	collectSelectedRowTextValues,
+} from "../../lib/database/bulkActions";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { priorityOptionsWithCustomValues } from "../../lib/priorityProperties";
 import { statusOptionsWithCustomValues } from "../../lib/statusProperties";
@@ -47,10 +51,35 @@ export function DatabaseBulkActionsBar({
 	onAddTags,
 	onRemoveTags,
 }: DatabaseBulkActionsBarProps) {
+	const statusOptions = useMemo(
+		() =>
+			statusOptionsWithCustomValues(
+				bulkEligible.statusColumn
+					? collectSelectedRowTextValues(
+							rows,
+							selectedRowPaths,
+							bulkEligible.statusColumn,
+						)
+					: [],
+			),
+		[bulkEligible.statusColumn, rows, selectedRowPaths],
+	);
+	const priorityOptions = useMemo(
+		() =>
+			priorityOptionsWithCustomValues(
+				bulkEligible.priorityColumn
+					? collectSelectedRowTextValues(
+							rows,
+							selectedRowPaths,
+							bulkEligible.priorityColumn,
+						)
+					: [],
+			),
+		[bulkEligible.priorityColumn, rows, selectedRowPaths],
+	);
+
 	if (selectedCount === 0) return null;
 
-	const statusOptions = statusOptionsWithCustomValues([]);
-	const priorityOptions = priorityOptionsWithCustomValues([]);
 	const hasCheckboxActions = bulkEligible.checkboxColumns.length > 0;
 	const hasTagActions = bulkEligible.tagsColumns.length > 0;
 	const hasAnyAction =

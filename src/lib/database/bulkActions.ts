@@ -96,6 +96,21 @@ export interface SelectedRowTagOption {
 	count: number;
 }
 
+export function collectSelectedRowTextValues(
+	rows: DatabaseRow[],
+	selectedRowPaths: string[],
+	column: DatabaseColumn,
+): string[] {
+	const selectedPaths = new Set(selectedRowPaths);
+	const values: string[] = [];
+	for (const row of rows) {
+		if (!selectedPaths.has(row.note_path)) continue;
+		const text = databaseCellValueFromRow(row, column).value_text?.trim();
+		if (text) values.push(text);
+	}
+	return values;
+}
+
 export function collectSelectedRowTags(
 	rows: DatabaseRow[],
 	selectedRowPaths: string[],

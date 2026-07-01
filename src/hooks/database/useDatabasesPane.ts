@@ -82,7 +82,7 @@ export function useDatabasesPane({
 
 	const bulkActions = useDatabaseBulkActions({
 		rows: rows.rows,
-		columns: activeCollection?.config.columns ?? [],
+		columns: views.visibleColumns,
 		selectedRowPaths: rows.selectedRowPaths,
 		clearRowSelection: rows.clearRowSelection,
 		handleUpdateCell: rowActions.handleUpdateCell,
