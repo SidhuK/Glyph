@@ -3,7 +3,6 @@ import {
 	LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
@@ -38,7 +37,6 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
-import { FloatingTOC } from "../editor/FloatingTOC";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
@@ -49,13 +47,19 @@ import type {
 } from "../editor/types";
 import { GitDiffView } from "./GitDiffView";
 import { LinkedNotePreviewSheet } from "./LinkedNotePreviewSheet";
+import { MarkdownFloatingToc } from "./MarkdownFloatingToc";
 import { NotesInfoSidebar } from "./NotesInfoSidebar";
+import {
+	initialEditorMode,
+	requiresPlainEditorMode,
+} from "./editorModeSelection";
 import {
 	clearMarkdownDocCache,
 	getCachedMarkdownDoc,
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
+import { useDeferredTocSource } from "./useDeferredTocSource";
 import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
 
 interface MarkdownEditorPaneProps {
@@ -94,16 +98,6 @@ function noteLabelFromPath(path: string): string {
 
 function noteLinkLabel(label: string | null | undefined, fallbackPath: string) {
 	return label?.trim() || noteLabelFromPath(fallbackPath);
-}
-
-const LARGE_NOTE_RICH_EDITOR_LIMIT = 100_000;
-
-function requiresPlainEditorMode(markdown: string): boolean {
-	return markdown.length >= LARGE_NOTE_RICH_EDITOR_LIMIT;
-}
-
-function initialEditorMode(markdown: string): NoteInlineEditorMode {
-	return requiresPlainEditorMode(markdown) ? "plain" : "rich";
 }
 
 function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
@@ -240,16 +234,7 @@ export function MarkdownEditorPane({
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
-	const [tocSource, setTocSource] = useState<{
-		editor: Editor;
-		contentRoot: HTMLElement;
-	} | null>(null);
-	const handleEditorReady = useCallback(
-		(editor: Editor | null, contentRoot: HTMLElement | null) => {
-			setTocSource(editor && contentRoot ? { editor, contentRoot } : null);
-		},
-		[],
-	);
+	const { tocSource, handleEditorReady } = useDeferredTocSource();
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
 	const handleRawEditorReady = useCallback(
 		(editor: RawMarkdownEditorHandle | null) => {
@@ -260,6 +245,7 @@ export function MarkdownEditorPane({
 	const {
 		headings: tocHeadings,
 		activeId: tocActiveId,
+		getPreviewForHeading,
 		scrollToHeading,
 	} = useTableOfContents(
 		tocSource?.editor ?? null,
@@ -968,13 +954,15 @@ export function MarkdownEditorPane({
 					</div>
 				</div>
 			) : null}
-			{showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain" ? (
-				<FloatingTOC
-					headings={tocHeadings}
-					activeId={tocActiveId}
-					onSelectHeading={scrollToHeading}
-				/>
-			) : null}
+			<MarkdownFloatingToc
+				headings={tocHeadings}
+				activeId={tocActiveId}
+				getHeadingPreview={getPreviewForHeading}
+				onSelectHeading={scrollToHeading}
+				visible={
+					showToc && !infoPanelOpen && !gitDiff && !error && mode !== "plain"
+				}
+			/>
 
 			<NotesInfoSidebar
 				open={infoPanelOpen}

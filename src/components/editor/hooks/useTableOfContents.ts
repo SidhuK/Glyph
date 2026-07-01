@@ -17,6 +17,8 @@ export interface TOCHeading {
 	slug?: string;
 }
 
+const HEADING_PREVIEW_MAX_LENGTH = 150;
+
 export function getHeadingElement(
 	editor: Editor,
 	heading: TOCHeading,
@@ -61,6 +63,38 @@ export function isSameHeadingList(
 	);
 }
 
+function truncatePreview(text: string): string {
+	if (text.length <= HEADING_PREVIEW_MAX_LENGTH) return text;
+	return `${text.slice(0, HEADING_PREVIEW_MAX_LENGTH).trimEnd()}...`;
+}
+
+function normalizePreviewText(text: string): string {
+	return text.replace(/\s+/g, " ").trim();
+}
+
+export function getHeadingPreview(
+	doc: ProseMirrorNode,
+	heading: TOCHeading,
+	nextHeading: TOCHeading | undefined,
+): string | null {
+	const chunks: string[] = [];
+	const to = nextHeading?.pos ?? doc.content.size;
+
+	doc.nodesBetween(heading.pos, to, (node) => {
+		if (node.type.name === "heading") return false;
+		if (!node.isTextblock) return;
+
+		const text = normalizePreviewText(node.textContent);
+		if (!text) return false;
+
+		chunks.push(text);
+		return chunks.join(" ").length < HEADING_PREVIEW_MAX_LENGTH;
+	});
+
+	const preview = normalizePreviewText(chunks.join(" "));
+	return preview ? truncatePreview(preview) : null;
+}
+
 function headingFromNode(
 	node: ProseMirrorNode,
 	pos: number,
@@ -92,7 +126,9 @@ function expandRangesToTextblocks(
 ): ChangedRange[] {
 	const expanded: ChangedRange[] = [];
 	for (const range of ranges) {
-		doc.nodesBetween(range.from, range.to, (node, pos) => {
+		const from = Math.max(0, range.from - 1);
+		const to = Math.min(doc.content.size, range.to + 1);
+		doc.nodesBetween(from, to, (node, pos) => {
 			if (!node.isTextblock) return;
 			expanded.push({ from: pos, to: pos + node.nodeSize });
 			return false;
@@ -118,11 +154,43 @@ function extractHeadingsInRanges(
 	return headings;
 }
 
+function rangesContainHeading(
+	doc: ProseMirrorNode,
+	ranges: readonly ChangedRange[],
+): boolean {
+	for (const range of ranges) {
+		let containsHeading = false;
+		doc.nodesBetween(range.from, range.to, (node) => {
+			if (node.type.name === "heading") {
+				containsHeading = true;
+				return false;
+			}
+			return !containsHeading;
+		});
+		if (containsHeading) return true;
+	}
+	return false;
+}
+
 function rangeTouchesHeading(
 	heading: TOCHeading,
 	range: ChangedRange,
 ): boolean {
-	return heading.pos >= range.from && heading.pos <= range.to;
+	return heading.pos >= range.from && heading.pos < range.to;
+}
+
+function mapHeadingsThroughTransaction(
+	current: readonly TOCHeading[],
+	transaction: Transaction,
+): TOCHeading[] {
+	return current
+		.map((heading) => {
+			const result = transaction.mapping.mapResult(heading.pos, -1);
+			return result.deleted
+				? null
+				: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
+		})
+		.filter((heading): heading is TOCHeading => heading !== null);
 }
 
 export function updateHeadingsFromTransaction(
@@ -134,31 +202,29 @@ export function updateHeadingsFromTransaction(
 		transaction.doc.content.size,
 	);
 	if (!changedRanges.length) {
-		return current
-			.map((heading) => {
-				const result = transaction.mapping.mapResult(heading.pos, -1);
-				return result.deleted
-					? null
-					: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
-			})
-			.filter((heading): heading is TOCHeading => heading !== null);
+		return mapHeadingsThroughTransaction(current, transaction);
 	}
 
 	const scanRanges = expandRangesToTextblocks(transaction.doc, changedRanges);
-	const next = current
-		.map((heading) => {
-			const result = transaction.mapping.mapResult(heading.pos, -1);
-			return result.deleted
-				? null
-				: { ...heading, id: `toc-${result.pos}`, pos: result.pos };
-		})
-		.filter(
-			(heading): heading is TOCHeading =>
-				heading !== null &&
-				!scanRanges.some((range) => rangeTouchesHeading(heading, range)),
-		);
+	const mapped = mapHeadingsThroughTransaction(current, transaction);
+	const touchedExistingHeading = mapped.some((heading) =>
+		scanRanges.some((range) => rangeTouchesHeading(heading, range)),
+	);
+	const changedRangeHasHeading = rangesContainHeading(
+		transaction.doc,
+		scanRanges,
+	);
 
-	next.push(...extractHeadingsInRanges(transaction.doc, scanRanges));
+	if (!touchedExistingHeading && !changedRangeHasHeading) {
+		return mapped;
+	}
+
+	const changedHeadings = extractHeadingsInRanges(transaction.doc, scanRanges);
+	const next = mapped.filter(
+		(heading) =>
+			!scanRanges.some((range) => rangeTouchesHeading(heading, range)),
+	);
+	next.push(...changedHeadings);
 	next.sort((a, b) => a.pos - b.pos);
 	return withHeadingSlugs(next);
 }
@@ -290,5 +356,20 @@ export function useTableOfContents(
 		[editor],
 	);
 
-	return { headings, activeId, scrollToHeading };
+	const getPreviewForHeading = useCallback(
+		(heading: TOCHeading) => {
+			if (!editor) return null;
+			const headingIndex = headingsRef.current.findIndex(
+				(item) => item.id === heading.id,
+			);
+			if (headingIndex === -1) return null;
+			const currentHeading = headingsRef.current[headingIndex];
+			if (!currentHeading) return null;
+			const nextHeading = headingsRef.current[headingIndex + 1];
+			return getHeadingPreview(editor.state.doc, currentHeading, nextHeading);
+		},
+		[editor],
+	);
+
+	return { headings, activeId, scrollToHeading, getPreviewForHeading };
 }

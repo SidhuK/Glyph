@@ -3,42 +3,60 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .floatingToc {
 	position: absolute;
-	right: 14px;
+	right: 16px;
 	top: 50%;
 	transform: translateY(-50%);
 	z-index: 14;
 	pointer-events: auto;
 }
 
-/* ── Trigger button (wraps collapsed dashes) ─────────────────────────────── */
-.floatingTocTrigger {
-	all: unset;
-	cursor: pointer;
-	display: block;
-}
-
-/* ── Collapsed: minimap dashes ───────────────────────────────────────────── */
-.floatingTocCollapsed {
+.floatingTocRail {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
-	gap: 4px;
-	padding: 6px 0;
-	transition: opacity 140ms ease;
+	gap: 0;
+	padding: 4px 0;
+	pointer-events: auto;
 }
 
-.floatingToc[data-expanded="true"] .floatingTocCollapsed {
-	opacity: 0;
+.floatingTocMark {
+	all: unset;
+	box-sizing: border-box;
+	cursor: pointer;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	width: 28px;
+	height: 24px;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: inherit;
+}
+
+.floatingTocMark + .floatingTocMark {
+	margin-top: -14px;
+}
+
+.floatingTocMark:hover,
+.floatingTocMark:focus-visible,
+.floatingTocMark:active {
+	background: transparent;
+	color: inherit;
+	outline: none;
 }
 
 .floatingTocDash {
+	display: block;
 	height: 2px;
+	min-width: 4px;
 	border-radius: 1px;
-	background: color-mix(in srgb, var(--text-tertiary) 50%, transparent);
-	transition: background-color 180ms ease, opacity 180ms ease;
+	background: color-mix(in srgb, var(--text-tertiary) 44%, transparent);
+	transform-origin: right center;
+	transition: background-color 140ms ease, opacity 140ms ease, transform 180ms
+		cubic-bezier(0.2, 0, 0, 1);
 }
 
-.floatingTocDash[data-active="true"] {
+.floatingTocMark[data-active="true"] .floatingTocDash {
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 68%,
@@ -47,61 +65,170 @@
 	opacity: 0.95;
 }
 
-/* ── Expanded: full heading list ─────────────────────────────────────────── */
-.floatingTocExpanded {
+.floatingTocMark[data-wave="peak"] .floatingTocDash {
+	transform: scaleX(1.35);
+}
+
+.floatingTocMark[data-wave="near"] .floatingTocDash {
+	transform: scaleX(1.16);
+}
+
+.floatingTocOutline {
 	position: absolute;
-	right: 0;
+	right: 34px;
 	top: 50%;
-	transform: translateY(-50%);
-	max-width: 220px;
+	box-sizing: border-box;
+	width: 254px;
+	max-width: calc(100vw - 96px);
 	max-height: 60vh;
 	overflow-y: auto;
 	overflow-x: hidden;
-	scrollbar-width: thin;
-	padding: 8px 10px;
-	border-radius: calc(var(--radius-md) + 2px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	box-shadow: 0 16px 36px
-		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
-}
-
-.floatingTocItems {
+	scrollbar-width: none;
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
+	padding: 9px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: calc(var(--radius-md) + 4px);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	box-shadow: 0 10px 28px
+		color-mix(in srgb, var(--shadow-color, #000) 11%, transparent);
+	pointer-events: auto;
+	transform: translateY(-50%);
 }
 
-.floatingTocItem {
+.floatingTocOutline::-webkit-scrollbar {
+	display: none;
+}
+
+.floatingTocOutlineItem {
 	all: unset;
 	cursor: pointer;
-	display: block;
-	padding: 3px 6px;
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding-top: 3px;
+	padding-right: 6px;
+	padding-bottom: 3px;
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
 	font-size: calc(var(--text-base) * 0.8);
 	line-height: 1.35;
-	color: var(--text-secondary);
-	border-radius: var(--radius-sm);
-	white-space: nowrap;
+	transition: color 140ms ease;
+}
+
+.floatingTocOutlineItem:hover,
+.floatingTocOutlineItem:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
+	outline: none;
+}
+
+.floatingTocOutlineItem[data-active="true"] {
+	background: transparent;
+	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+}
+
+.floatingTocOutlineText {
+	min-width: 0;
+	flex: 1 1 auto;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	transition: background-color 140ms ease, color 140ms ease;
+	white-space: nowrap;
 }
 
-.floatingTocItem:hover {
-	background: var(--bg-hover);
+.floatingTocOutlineLevel {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.66);
+	font-weight: var(--font-medium);
+	letter-spacing: 0;
+}
+
+.floatingTocPreview {
+	all: unset;
+	position: absolute;
+	right: 34px;
+	top: 50%;
+	box-sizing: border-box;
+	width: 254px;
+	max-width: calc(100vw - 96px);
+	cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 13px 16px 14px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: calc(var(--radius-md) + 4px);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	color: var(--text-primary);
+	box-shadow: 0 10px 28px
+		color-mix(in srgb, var(--shadow-color, #000) 11%, transparent);
+	pointer-events: auto;
+	transform: translateY(-50%);
 }
 
-.floatingTocItem[data-active="true"] {
-	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
-	color: color-mix(in srgb, var(--interactive-accent) 74%, var(--text-primary));
+.floatingTocPreview:hover,
+.floatingTocPreview:focus-visible,
+.floatingTocPreview:active {
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	color: var(--text-primary);
+	outline: none;
+}
+
+.floatingTocPreviewHeading {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	min-width: 0;
+}
+
+.floatingTocPreviewTitle {
+	min-width: 0;
+	flex: 1 1 auto;
+	font-size: calc(var(--text-base) * 0.92);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+	color: var(--text-primary);
+	text-wrap: balance;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.floatingTocPreviewLevel {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.66);
+	font-weight: var(--font-medium);
+	letter-spacing: 0;
+}
+
+.floatingTocPreviewText {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.78);
+	line-height: 1.42;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 860px) {
 	.floatingToc {
 		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.floatingTocDash {
+		transition: background-color 140ms ease, opacity 140ms ease;
+	}
+
+	.floatingTocMark[data-wave="peak"] .floatingTocDash,
+	.floatingTocMark[data-wave="near"] .floatingTocDash {
+		transform: none;
 	}
 }
