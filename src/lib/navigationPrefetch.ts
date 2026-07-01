@@ -2,17 +2,18 @@ import {
 	clearMarkdownDocCache,
 	setCachedMarkdownDoc,
 } from "../components/preview/markdownCache";
-import { buildWeekRange } from "./calendar";
-import { readStoredSelectedViewId } from "./database/selectedViewStorage";
+import { summarizeChecklistsFromMarkdown } from "./checklistSummary";
+import {
+	readStoredSelectedDatabaseId,
+	resolveSelectedDatabaseId,
+} from "./database/selectedViewStorage";
 import { parseNotePreview } from "./notePreview";
 import { queryClient } from "./queryClient";
 import type {
 	AllDocsItem,
-	CalendarRangeResponse,
-	DatabaseRow,
+	NoteTaskSummary,
 	TextFileDoc,
 	WorkspaceDatabaseDocument,
-	WorkspaceDatabaseQueryResult,
 	WorkspaceDatabaseSummary,
 } from "./tauri";
 import { invoke } from "./tauri";
@@ -48,26 +49,13 @@ const compareAllDocsItems = (left: AllDocsItem, right: AllDocsItem) =>
 	Date.parse(right.updated) - Date.parse(left.updated) ||
 	left.note_path.localeCompare(right.note_path);
 
+type TaskSummaryCache = Record<string, NoteTaskSummary>;
+
 export const navigationQueryKeys = {
 	all: ["navigation"] as const,
 	notes: () => [...navigationQueryKeys.all, "notes"] as const,
 	note: (path: string) =>
 		[...navigationQueryKeys.notes(), path.trim()] as const,
-	calendar: () => [...navigationQueryKeys.all, "calendar"] as const,
-	calendarRange: (args: {
-		anchorDate: string;
-		selectedDate: string;
-		dailyNotesFolder: string | null;
-	}) => {
-		const range = buildWeekRange(args.anchorDate);
-		return [
-			...navigationQueryKeys.calendar(),
-			range.start,
-			range.end,
-			args.selectedDate,
-			args.dailyNotesFolder ?? "",
-		] as const;
-	},
 	databases: () => [...navigationQueryKeys.all, "databases"] as const,
 	databaseSummaries: () =>
 		[...navigationQueryKeys.databases(), "summaries"] as const,
@@ -77,17 +65,31 @@ export const navigationQueryKeys = {
 			"document",
 			databaseId.trim(),
 		] as const,
-	databaseRows: (databaseId: string, viewId: string) =>
+	databaseRowsPages: (databaseId: string, viewId: string, pageSize: number) =>
 		[
 			...navigationQueryKeys.databases(),
-			"rows",
+			"rows-pages",
 			databaseId.trim(),
 			viewId.trim(),
+			pageSize,
 		] as const,
 	allDocs: () => [...navigationQueryKeys.all, "all-docs"] as const,
 	allDocsList: (folderPrefix?: string | null) =>
 		[
 			...navigationQueryKeys.allDocs(),
+			normalizeAllDocsFolder(folderPrefix),
+		] as const,
+	allDocsPages: (folderPrefix?: string | null, pageSize = ALL_DOCS_PAGE_SIZE) =>
+		[
+			...navigationQueryKeys.allDocs(),
+			"pages",
+			normalizeAllDocsFolder(folderPrefix),
+			pageSize,
+		] as const,
+	allDocsCount: (folderPrefix?: string | null) =>
+		[
+			...navigationQueryKeys.allDocs(),
+			"count",
 			normalizeAllDocsFolder(folderPrefix),
 		] as const,
 	taskSummaries: () => [...navigationQueryKeys.all, "task-summaries"] as const,
@@ -123,49 +125,6 @@ export function invalidatePrefetchedNote(path?: string | null) {
 		return;
 	}
 	queryClient.removeQueries({ queryKey: navigationQueryKeys.note(path) });
-}
-
-export function loadCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	const range = buildWeekRange(args.anchorDate);
-	return invoke("calendar_query_range", {
-		start_date: range.start,
-		end_date: range.end,
-		selected_date: args.selectedDate,
-		daily_notes_folder: args.dailyNotesFolder,
-	});
-}
-
-export function prefetchCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	return queryClient.fetchQuery({
-		queryKey: navigationQueryKeys.calendarRange(args),
-		queryFn: () => loadCalendarData(args),
-	});
-}
-
-export function getPrefetchedCalendarData(args: {
-	anchorDate: string;
-	selectedDate: string;
-	dailyNotesFolder: string | null;
-}) {
-	return (
-		queryClient.getQueryData<CalendarRangeResponse>(
-			navigationQueryKeys.calendarRange(args),
-		) ?? null
-	);
-}
-
-export function invalidateCalendarPrefetch() {
-	void queryClient.invalidateQueries({
-		queryKey: navigationQueryKeys.calendar(),
-	});
 }
 
 export function prefetchDatabaseSummaries() {
@@ -218,86 +177,11 @@ export function setPrefetchedDatabaseDocument(
 	);
 }
 
-async function loadAllDatabaseRows(
-	databaseId: string,
-	viewId: string,
-): Promise<WorkspaceDatabaseQueryResult> {
-	const maxIterations = 100;
-	let offset = 0;
-	let totalCount = 0;
-	let truncated = false;
-	let iterations = 0;
-	const rows: DatabaseRow[] = [];
-	let availableProperties =
-		[] as WorkspaceDatabaseQueryResult["available_properties"];
-
-	while (true) {
-		const next = await invoke("databases_query_rows", {
-			database_id: databaseId,
-			view_id: viewId,
-			offset,
-			limit: 200,
-		});
-		rows.push(...next.rows);
-		totalCount = next.total_count;
-		truncated = next.truncated;
-		if (next.available_properties.length > 0) {
-			availableProperties = next.available_properties;
-		}
-		iterations += 1;
-		if (next.next_offset == null) {
-			return {
-				rows,
-				available_properties: availableProperties,
-				total_count: totalCount,
-				truncated,
-				next_offset: null,
-			};
-		}
-		if (iterations >= maxIterations) {
-			return {
-				rows,
-				available_properties: availableProperties,
-				total_count: totalCount,
-				truncated: true,
-				next_offset: next.next_offset,
-			};
-		}
-		offset = next.next_offset;
-	}
-}
-
-export function prefetchDatabaseRows(databaseId: string, viewId: string) {
-	return queryClient.fetchQuery({
-		queryKey: navigationQueryKeys.databaseRows(databaseId, viewId),
-		queryFn: () => loadAllDatabaseRows(databaseId, viewId),
-	});
-}
-
-export function getPrefetchedDatabaseRows(databaseId: string, viewId: string) {
-	return (
-		queryClient.getQueryData<WorkspaceDatabaseQueryResult>(
-			navigationQueryKeys.databaseRows(databaseId, viewId),
-		) ?? null
-	);
-}
-
-export function setPrefetchedDatabaseRows(
-	databaseId: string,
-	viewId: string,
-	rows: WorkspaceDatabaseQueryResult,
-) {
-	queryClient.setQueryData(
-		navigationQueryKeys.databaseRows(databaseId, viewId),
-		rows,
-	);
-}
-
 export function invalidateDatabaseRowsPrefetch(databaseId?: string | null) {
 	void queryClient.invalidateQueries({
 		queryKey: databaseId
-			? [...navigationQueryKeys.databases(), "rows", databaseId.trim()]
-			: [...navigationQueryKeys.databases(), "rows"],
+			? [...navigationQueryKeys.databases(), "rows-pages", databaseId.trim()]
+			: [...navigationQueryKeys.databases(), "rows-pages"],
 	});
 }
 
@@ -318,44 +202,105 @@ export async function prefetchDatabasesLanding(
 	initialDatabaseId?: string | null,
 ) {
 	const summaries = await prefetchDatabaseSummaries();
-	const databaseId = initialDatabaseId ?? summaries[0]?.id ?? null;
+	const databaseId = resolveSelectedDatabaseId(summaries, {
+		current: null,
+		openRequestId: initialDatabaseId ?? null,
+		storedId: readStoredSelectedDatabaseId(),
+	});
 	if (!databaseId) return;
-	const document = await prefetchDatabaseDocument(databaseId);
-	const viewIds = document.database.views.map((view) => view.id);
-	const storedViewId = readStoredSelectedViewId(databaseId, viewIds);
-	const preferredViewId =
-		storedViewId ?? document.database.views[0]?.id ?? null;
-	if (!preferredViewId) return;
-	await prefetchDatabaseRows(databaseId, preferredViewId);
+	await prefetchDatabaseDocument(databaseId);
+}
+
+export const ALL_DOCS_LIST_LIMIT = 2000;
+export const ALL_DOCS_PAGE_SIZE = 48;
+export const ACTIVITY_DOCS_PAGE_SIZE = 40;
+
+export function formatAllDocsCountLabel(count: number): string | null {
+	if (count <= 0) return null;
+	if (count > ALL_DOCS_LIST_LIMIT) return `${ALL_DOCS_LIST_LIMIT}+`;
+	return String(count);
+}
+
+export async function loadAllDocsCount(folderPrefix?: string | null) {
+	return invoke("all_docs_count", {
+		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+	});
+}
+
+export interface AllDocsPage {
+	items: AllDocsItem[];
+	nextOffset: number | null;
+}
+
+interface AllDocsPagesData {
+	pages: AllDocsPage[];
+	pageParams: unknown[];
+}
+
+export async function loadAllDocsPage(
+	folderPrefix?: string | null,
+	offset = 0,
+	limit = ALL_DOCS_PAGE_SIZE,
+): Promise<AllDocsPage> {
+	const items = await invoke("all_docs_list", {
+		limit: limit + 1,
+		offset,
+		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
+	});
+	const pageItems = items.slice(0, limit);
+	return {
+		items: pageItems,
+		nextOffset: items.length > limit ? offset + pageItems.length : null,
+	};
 }
 
 export async function loadAllDocs(folderPrefix?: string | null) {
-	const normalized = normalizeAllDocsFolder(folderPrefix);
-	const items = await invoke("all_docs_list", {
-		limit: 2000,
-		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
-	});
-	if (normalized === "__all__") return items;
-	return items.filter((item) => {
-		const normalizedPath = item.note_path
-			.trim()
-			.replace(/\\/g, "/")
-			.replace(/^\/+/, "");
-		return (
-			normalizedPath === normalized ||
-			normalizedPath.startsWith(`${normalized}/`)
+	const pages: AllDocsItem[] = [];
+	let offset = 0;
+	while (pages.length < ALL_DOCS_LIST_LIMIT) {
+		const next = await loadAllDocsPage(
+			folderPrefix,
+			offset,
+			Math.min(ALL_DOCS_PAGE_SIZE, ALL_DOCS_LIST_LIMIT - pages.length),
 		);
+		pages.push(...next.items);
+		if (next.nextOffset == null) break;
+		offset = next.nextOffset;
+	}
+	return pages;
+}
+
+export function prefetchAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
+	return queryClient.prefetchInfiniteQuery({
+		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
+		queryFn: ({ pageParam }) => {
+			const offset = typeof pageParam === "number" ? pageParam : 0;
+			return loadAllDocsPage(folderPrefix, offset, pageSize);
+		},
+		initialPageParam: 0,
+		getNextPageParam: (lastPage: AllDocsPage) =>
+			lastPage.nextOffset ?? undefined,
 	});
 }
 
-export function prefetchAllDocs(folderPrefix?: string | null) {
-	return queryClient.fetchQuery({
+export function prefetchAllDocsList(folderPrefix?: string | null) {
+	return queryClient.prefetchQuery({
 		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		queryFn: () => loadAllDocs(folderPrefix),
 	});
 }
 
-export function getPrefetchedAllDocs(folderPrefix?: string | null) {
+export function getPrefetchedAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
+	const pages = queryClient.getQueryData<AllDocsPagesData>(
+		navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
+	);
+	if (pages) return pages.pages.flatMap((page) => page.items);
 	return (
 		queryClient.getQueryData<AllDocsItem[]>(
 			navigationQueryKeys.allDocsList(folderPrefix),
@@ -363,21 +308,77 @@ export function getPrefetchedAllDocs(folderPrefix?: string | null) {
 	);
 }
 
-function updateAllDocsListCaches(
+function rebuildAllDocsPages(
+	current: AllDocsPagesData,
+	items: AllDocsItem[],
+	pageSize: number,
+): AllDocsPagesData {
+	if (current.pages.length === 0 && items.length === 0) {
+		return {
+			pages: [{ items, nextOffset: null }],
+			pageParams: [0],
+		};
+	}
+	const hadMore = current.pages[current.pages.length - 1]?.nextOffset != null;
+	const pages: AllDocsPage[] = [];
+	for (let offset = 0; offset < items.length; offset += pageSize) {
+		const pageItems = items.slice(offset, offset + pageSize);
+		const hasLocalNext = offset + pageSize < items.length;
+		pages.push({
+			items: pageItems,
+			nextOffset: hasLocalNext || hadMore ? offset + pageItems.length : null,
+		});
+	}
+	if (pages.length === 0) {
+		return {
+			pages: [{ items: [], nextOffset: hadMore ? 0 : null }],
+			pageParams: [0],
+		};
+	}
+	return {
+		pages,
+		pageParams: pages.map((_, index) => index * pageSize),
+	};
+}
+
+function updateAllDocsCaches(
 	updater: (current: AllDocsItem[], folderKey: string) => AllDocsItem[],
 ) {
 	const queries = queryClient
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
-		const folderKey = Array.isArray(query.queryKey)
-			? String(query.queryKey[2] ?? "__all__")
-			: "__all__";
-		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
+		if (!Array.isArray(query.queryKey)) {
+			continue;
+		}
+		if (query.queryKey.length === 3) {
+			const folderKey = normalizeAllDocsFolder(String(query.queryKey[2] ?? ""));
+			const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
+			if (!current) continue;
+			queryClient.setQueryData<AllDocsItem[]>(
+				query.queryKey,
+				updater(current, folderKey),
+			);
+			continue;
+		}
+		if (query.queryKey.length !== 5 || query.queryKey[2] !== "pages") {
+			continue;
+		}
+		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
+		const rawPageSize = query.queryKey[4];
+		const pageSize =
+			typeof rawPageSize === "number" && rawPageSize > 0
+				? rawPageSize
+				: ALL_DOCS_PAGE_SIZE;
+		const current = queryClient.getQueryData<AllDocsPagesData>(query.queryKey);
 		if (!current) continue;
-		queryClient.setQueryData<AllDocsItem[]>(
+		const nextItems = updater(
+			current.pages.flatMap((page) => page.items),
+			folderKey,
+		);
+		queryClient.setQueryData<AllDocsPagesData>(
 			query.queryKey,
-			updater(current, folderKey),
+			rebuildAllDocsPages(current, nextItems, pageSize),
 		);
 	}
 }
@@ -388,7 +389,17 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 		.getQueryCache()
 		.findAll({ queryKey: navigationQueryKeys.allDocs() });
 	for (const query of queries) {
-		const current = queryClient.getQueryData<AllDocsItem[]>(query.queryKey);
+		if (!Array.isArray(query.queryKey)) {
+			continue;
+		}
+		const current =
+			query.queryKey.length === 3
+				? queryClient.getQueryData<AllDocsItem[]>(query.queryKey)
+				: query.queryKey.length === 5 && query.queryKey[2] === "pages"
+					? queryClient
+							.getQueryData<AllDocsPagesData>(query.queryKey)
+							?.pages.flatMap((page) => page.items)
+					: null;
 		const item = current?.find(
 			(note) => normalizeAllDocsPath(note.note_path) === normalizedPath,
 		);
@@ -400,7 +411,7 @@ function findCachedAllDocsItem(path: string): AllDocsItem | null {
 function upsertAllDocsPrefetchItem(item: AllDocsItem) {
 	const normalizedPath = normalizeAllDocsPath(item.note_path);
 	if (!normalizedPath) return;
-	updateAllDocsListCaches((current, folderKey) => {
+	updateAllDocsCaches((current, folderKey) => {
 		const withoutItem = current.filter(
 			(note) => normalizeAllDocsPath(note.note_path) !== normalizedPath,
 		);
@@ -450,7 +461,7 @@ export function optimisticallyRenameAllDocsPath(
 	if (!from || !to) return;
 	const fromTitle = titleFromAllDocsPath(from);
 	const toTitle = titleFromAllDocsPath(to);
-	updateAllDocsListCaches((current, folderKey) => {
+	updateAllDocsCaches((current, folderKey) => {
 		const next: AllDocsItem[] = [];
 		for (const note of current) {
 			const notePath = normalizeAllDocsPath(note.note_path);
@@ -482,7 +493,7 @@ export function optimisticallyRemoveAllDocsPath(
 ) {
 	const normalizedPath = normalizeAllDocsPath(path);
 	if (!normalizedPath) return;
-	updateAllDocsListCaches((current) =>
+	updateAllDocsCaches((current) =>
 		current.filter((note) => {
 			const notePath = normalizeAllDocsPath(note.note_path);
 			return (
@@ -494,12 +505,74 @@ export function optimisticallyRemoveAllDocsPath(
 }
 
 export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
+	if (typeof folderPrefix === "string" || folderPrefix === null) {
+		void queryClient.invalidateQueries({
+			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		});
+		void queryClient.invalidateQueries({
+			queryKey: [
+				...navigationQueryKeys.allDocs(),
+				"pages",
+				normalizeAllDocsFolder(folderPrefix),
+			],
+		});
+		return;
+	}
 	void queryClient.invalidateQueries({
-		queryKey:
-			typeof folderPrefix === "string" || folderPrefix === null
-				? navigationQueryKeys.allDocsList(folderPrefix)
-				: navigationQueryKeys.allDocs(),
+		queryKey: navigationQueryKeys.allDocs(),
 	});
+}
+
+export function invalidateTaskSummariesPrefetch() {
+	void queryClient.invalidateQueries({
+		queryKey: navigationQueryKeys.taskSummaries(),
+	});
+}
+
+function cachedTaskSummaryForPath(path: string): NoteTaskSummary | undefined {
+	const summaries = queryClient.getQueriesData<TaskSummaryCache>({
+		queryKey: navigationQueryKeys.taskSummaries(),
+	});
+	for (const [, data] of summaries) {
+		const summary = data?.[path];
+		if (summary) return summary;
+	}
+	return undefined;
+}
+
+function taskSummariesEqual(left: NoteTaskSummary, right: NoteTaskSummary) {
+	return (
+		left?.total_count === right.total_count &&
+		left.completed_count === right.completed_count &&
+		left.open_count === right.open_count
+	);
+}
+
+export async function invalidateTaskSummariesPrefetchForNote(
+	path: string,
+	options: { removed?: boolean } = {},
+) {
+	const normalizedPath = normalizeAllDocsPath(path);
+	if (!normalizedPath) return;
+
+	const cachedSummary = cachedTaskSummaryForPath(normalizedPath);
+	if (options.removed) {
+		if (cachedSummary) invalidateTaskSummariesPrefetch();
+		return;
+	}
+
+	try {
+		const doc = await invoke("space_read_text", { path: normalizedPath });
+		const nextSummary = summarizeChecklistsFromMarkdown(doc.text);
+		const shouldInvalidate = cachedSummary
+			? !taskSummariesEqual(cachedSummary, nextSummary)
+			: nextSummary.total_count > 0;
+		if (shouldInvalidate) {
+			invalidateTaskSummariesPrefetch();
+		}
+	} catch {
+		if (cachedSummary) invalidateTaskSummariesPrefetch();
+	}
 }
 
 export function invalidateNavigationPrefetch() {

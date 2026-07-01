@@ -38,11 +38,10 @@ export function listCommandDefinitions(): AppCommandDefinition[] {
 	return Object.values(APP_COMMANDS);
 }
 
-export function getCommandDefinitionByMenuId(
-	menuId: string,
-): AppCommandDefinition | null {
-	return (
-		listCommandDefinitions().find((command) => command.menuId === menuId) ??
-		null
-	);
+export function isShortcutConfigurable(command: AppCommandDefinition): boolean {
+	return command.category !== "settings" || command.id === "open-settings";
+}
+
+export function listShortcutConfigurableCommands(): AppCommandDefinition[] {
+	return listCommandDefinitions().filter(isShortcutConfigurable);
 }

@@ -28,6 +28,7 @@ import {
 	SettingsToggle,
 	SettingsValueCard,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_templates: true,
@@ -55,12 +56,10 @@ export function GitSettingsPane() {
 	const [config, setConfig] = useState<GitSyncConfig | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageMode] =
 		useState<AttachmentStorageMode>("note-folder");
-	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
 
 	const load = useCallback(async () => {
-		setLoading(true);
 		setError("");
 		try {
 			const [nextStatus, nextConfig, settings] = await Promise.all([
@@ -73,8 +72,6 @@ export function GitSettingsPane() {
 			setAttachmentStorageMode(settings.editor.attachmentStorageMode);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
-		} finally {
-			setLoading(false);
 		}
 	}, []);
 
@@ -178,17 +175,11 @@ export function GitSettingsPane() {
 							icon={
 								<HugeiconsIcon
 									icon={CheckmarkCircle02Icon}
-									size={14}
+									size="var(--icon-md)"
 									strokeWidth={0.9}
 								/>
 							}
-							value={
-								loading
-									? "Loading..."
-									: status?.git_installed
-										? "Installed"
-										: "Missing"
-							}
+							value={status?.git_installed ? "Installed" : "Missing"}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -201,7 +192,7 @@ export function GitSettingsPane() {
 							icon={
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
-									size={14}
+									size="var(--icon-md)"
 									strokeWidth={0.9}
 								/>
 							}
@@ -216,7 +207,11 @@ export function GitSettingsPane() {
 					>
 						<SettingsValueCard
 							icon={
-								<HugeiconsIcon icon={Link01Icon} size={14} strokeWidth={0.9} />
+								<HugeiconsIcon
+									icon={Link01Icon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
 							}
 							value={
 								config?.remote_url ??
@@ -236,7 +231,7 @@ export function GitSettingsPane() {
 								icon={
 									<HugeiconsIcon
 										icon={GitBranchIcon}
-										size={14}
+										size="var(--icon-md)"
 										strokeWidth={0.9}
 									/>
 								}
@@ -269,7 +264,7 @@ export function GitSettingsPane() {
 						label="Interval"
 						description="How often Glyph should run scheduled syncs."
 					>
-						<select
+						<SettingsSelect
 							aria-label="Git sync interval"
 							value={String(config?.interval_minutes ?? 10)}
 							disabled={!gitEnabledForSpace || busy}
@@ -284,7 +279,7 @@ export function GitSettingsPane() {
 									{option.label}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
 						label="Actions"
@@ -335,7 +330,7 @@ export function GitSettingsPane() {
 						label="Policy"
 						description="Glyph resolves conflicts automatically."
 					>
-						<select
+						<SettingsSelect
 							aria-label="Conflict policy"
 							value={config?.conflict_policy ?? "local_wins"}
 							disabled={!gitEnabledForSpace || busy}
@@ -351,7 +346,7 @@ export function GitSettingsPane() {
 									{option.label}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 					</SettingsRow>
 				</SettingsSection>
 

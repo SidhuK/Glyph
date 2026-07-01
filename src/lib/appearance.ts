@@ -5,6 +5,7 @@ import {
 	type UiAccent,
 	type UiFontFamily,
 	type UiFontSize,
+	isUiAccent,
 } from "./settings";
 import {
 	type UiDarkThemeId,
@@ -12,17 +13,6 @@ import {
 	asUiDarkThemeId,
 	asUiLightThemeId,
 } from "./uiThemes";
-
-const BASE_TEXT_SIZES = {
-	xs: 11,
-	sm: 12,
-	base: 14,
-	md: 16,
-	lg: 18,
-	xl: 20,
-	"2xl": 24,
-	"3xl": 30,
-} as const;
 
 const BASE_SPACE_SIZES = {
 	1: 4,
@@ -41,26 +31,29 @@ const BASE_LAYOUT_SIZES = {
 	inputHeight: 32,
 } as const;
 
-const BASE_EDITOR_TEXT_SIZES = {
-	body: 16,
-	inline: 13,
-	raw: 12,
-	h1: 25.28,
-	h2: 20.48,
-	h3: 17.28,
-	h4: 16,
-	h5: 14.8,
-	h6: 13.6,
-} as const;
+const BASE_EDITOR_FONT_SIZE = 16;
+const DERIVED_EDITOR_FONT_SIZE_PROPERTIES = [
+	"--editor-inline-font-size",
+	"--editor-raw-font-size",
+	"--editor-h1-font-size",
+	"--editor-h2-font-size",
+	"--editor-h3-font-size",
+	"--editor-h4-font-size",
+	"--editor-h5-font-size",
+	"--editor-h6-font-size",
+] as const;
+const DERIVED_UI_FONT_SIZE_PROPERTIES = [
+	"--text-xs",
+	"--text-sm",
+	"--text-base",
+	"--text-md",
+] as const;
 
-const UI_ACCENT_COLORS: Record<UiAccent, string> = {
-	neutral: "#2f2f2f",
+const UI_ACCENT_COLORS: Record<Exclude<UiAccent, "neutral">, string> = {
 	"glyph-orange": "#de7356",
+	"glyph-red": "#e84d42",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
-	"light-yellow": "#fdfcdc",
-	"soft-apricot": "#fed9b7",
-	"vibrant-coral": "#f07167",
 };
 
 function clampColorChannel(value: number): number {
@@ -82,10 +75,6 @@ function scaledPx(px: number, scale: number): string {
 	return `${Math.round(px * scale)}px`;
 }
 
-function scaledEditorPx(px: number, scale: number): string {
-	return `${Math.round(px * scale * 100) / 100}px`;
-}
-
 function getCompactDisplayBoost(): number {
 	if (typeof window === "undefined" || !window.screen) return 1;
 	const availableWidth = Number(window.screen.availWidth);
@@ -97,14 +86,24 @@ function getCompactDisplayBoost(): number {
 	return 1;
 }
 
-export function applyUiTypography(
-	fontFamily: UiFontFamily,
-	monoFontFamily: UiFontFamily,
-	uiFontSize: UiFontSize,
-	editorFontSize: UiFontSize,
-): void {
+export interface UiTypographyPreferences {
+	fontFamily: UiFontFamily;
+	editorFontFamily: UiFontFamily;
+	monoFontFamily: UiFontFamily;
+	uiFontSize: UiFontSize;
+	editorFontSize: UiFontSize;
+}
+
+export function applyUiTypography({
+	fontFamily,
+	editorFontFamily,
+	monoFontFamily,
+	uiFontSize,
+	editorFontSize,
+}: UiTypographyPreferences): void {
 	const root = document.documentElement;
 	const safeFamily = fontFamily.trim() || "Geist";
+	const safeEditorFamily = editorFontFamily.trim() || safeFamily;
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
 	const compactDisplayBoost = getCompactDisplayBoost();
@@ -112,11 +111,15 @@ export function applyUiTypography(
 		0.5,
 		Math.min(3, uiScale * compactDisplayBoost),
 	);
-	const editorScale = Math.max(
-		MIN_EDITOR_FONT_SIZE / BASE_EDITOR_TEXT_SIZES.body,
+	const safeEditorFontSize = Math.max(
+		MIN_EDITOR_FONT_SIZE,
 		Math.min(
-			MAX_EDITOR_FONT_SIZE / BASE_EDITOR_TEXT_SIZES.body,
-			editorFontSize / 16,
+			MAX_EDITOR_FONT_SIZE,
+			Math.round(
+				Number.isFinite(editorFontSize)
+					? editorFontSize
+					: BASE_EDITOR_FONT_SIZE,
+			),
 		),
 	);
 	const rootRemPx = 16 * effectiveUiScale;
@@ -128,41 +131,16 @@ export function applyUiTypography(
 		`"${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
 	);
 	root.style.setProperty(
+		"--font-editor",
+		`"${safeEditorFamily}", "${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
+	);
+	root.style.setProperty(
 		"--font-mono",
 		`"${safeMonoFamily}", ui-monospace, SFMono-Regular, Menlo, monospace`,
 	);
-	root.style.setProperty(
-		"--text-xs",
-		scaledPx(BASE_TEXT_SIZES.xs, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-sm",
-		scaledPx(BASE_TEXT_SIZES.sm, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-base",
-		scaledPx(BASE_TEXT_SIZES.base, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-md",
-		scaledPx(BASE_TEXT_SIZES.md, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-lg",
-		scaledPx(BASE_TEXT_SIZES.lg, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-xl",
-		scaledPx(BASE_TEXT_SIZES.xl, effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-2xl",
-		scaledPx(BASE_TEXT_SIZES["2xl"], effectiveUiScale),
-	);
-	root.style.setProperty(
-		"--text-3xl",
-		scaledPx(BASE_TEXT_SIZES["3xl"], effectiveUiScale),
-	);
+	for (const property of DERIVED_UI_FONT_SIZE_PROPERTIES) {
+		root.style.removeProperty(property);
+	}
 	root.style.setProperty(
 		"--space-1",
 		scaledPx(BASE_SPACE_SIZES[1], effectiveUiScale),
@@ -207,53 +185,23 @@ export function applyUiTypography(
 		"--input-height",
 		scaledPx(BASE_LAYOUT_SIZES.inputHeight, effectiveUiScale),
 	);
-	root.style.setProperty(
-		"--editor-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.body, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-inline-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.inline, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-raw-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.raw, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h1-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h1, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h2-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h2, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h3-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h3, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h4-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h4, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h5-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h5, editorScale),
-	);
-	root.style.setProperty(
-		"--editor-h6-font-size",
-		scaledEditorPx(BASE_EDITOR_TEXT_SIZES.h6, editorScale),
-	);
+	root.style.setProperty("--editor-font-size", `${safeEditorFontSize}px`);
+	for (const property of DERIVED_EDITOR_FONT_SIZE_PROPERTIES) {
+		root.style.removeProperty(property);
+	}
 }
 
-export function applyUiAccent(accent: UiAccent): void {
+export function applyUiAccent(
+	accent: UiAccent | string | null | undefined,
+): void {
 	const root = document.documentElement;
-	if (accent === "neutral") {
+	if (!isUiAccent(accent) || accent === "neutral") {
 		root.style.removeProperty("--accent-color");
 		root.style.removeProperty("--glyph-user-accent");
 		root.style.removeProperty("--glyph-user-accent-hover");
 		return;
 	}
-	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.cerulean;
+	const accentColor = UI_ACCENT_COLORS[accent];
 	root.style.setProperty("--glyph-user-accent", accentColor);
 	root.style.setProperty(
 		"--glyph-user-accent-hover",

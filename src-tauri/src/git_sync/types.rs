@@ -78,12 +78,14 @@ pub struct GitSyncConfig {
     pub last_error: Option<String>,
     pub consecutive_auto_sync_failures: u32,
     pub paused: bool,
+    #[serde(default)]
+    pub auto_sync_prompted: bool,
 }
 
 impl GitSyncConfig {
     pub fn with_remote(remote_url: String, branch: String, repo_mode: GitSyncRepoMode) -> Self {
         Self {
-            enabled: true,
+            enabled: repo_mode == GitSyncRepoMode::ManagedNewRepo,
             remote_url,
             branch,
             repo_mode,
@@ -95,6 +97,7 @@ impl GitSyncConfig {
             last_error: None,
             consecutive_auto_sync_failures: 0,
             paused: false,
+            auto_sync_prompted: false,
         }
     }
 }
@@ -127,6 +130,7 @@ pub struct GitSyncConfigPatch {
     pub interval_minutes: Option<u32>,
     pub inclusions: Option<GitSyncInclusionSettings>,
     pub paused: Option<bool>,
+    pub auto_sync_prompted: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -141,6 +145,7 @@ pub struct GitSyncStatus {
     pub branch: Option<String>,
     pub enabled: bool,
     pub paused: bool,
+    pub auto_sync_prompted: bool,
     pub phase: GitSyncPhase,
     pub is_syncing: bool,
     pub interval_minutes: u32,
@@ -173,6 +178,7 @@ impl Default for GitSyncStatus {
             branch: None,
             enabled: false,
             paused: false,
+            auto_sync_prompted: false,
             phase: GitSyncPhase::Idle,
             is_syncing: false,
             interval_minutes: DEFAULT_GIT_SYNC_INTERVAL_MINUTES,
@@ -192,4 +198,24 @@ impl Default for GitSyncStatus {
             message: None,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GitHistoryCommit {
+    pub hash: String,
+    pub short_hash: String,
+    pub rel_path: String,
+    pub author_name: String,
+    pub author_email: String,
+    pub timestamp_ms: i64,
+    pub subject: String,
+    pub added_count: u32,
+    pub modified_count: u32,
+    pub deleted_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GitCommitDiff {
+    pub commit: GitHistoryCommit,
+    pub diff: String,
 }

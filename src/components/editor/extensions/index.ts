@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { type AnyExtension, Extension } from "@tiptap/core";
 import Link from "@tiptap/extension-link";
 import {
 	Table,
@@ -15,15 +15,28 @@ import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import {
+	type ChangedRange,
+	changedRangesFromTransactions,
+	mergeChangedRanges,
+	visitChangedNodes,
+	visitNodesInRanges,
+} from "./changedRanges";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
+import { glyphDetailsExtensions } from "./detailsBlock";
+import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
+import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
+import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
+import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
@@ -40,21 +53,6 @@ function parseCalloutMarker(
 	const rawTitle = (match[2] ?? "").trim();
 	const title = rawTitle || `${kind.slice(0, 1).toUpperCase()}${kind.slice(1)}`;
 	return { kind, title };
-}
-
-function parseStandaloneMarkdownImage(
-	text: string,
-): { alt: string; src: string; title: string } | null {
-	const trimmed = text.trim();
-	const match = trimmed.match(/^!\[([^\]\n]*)\]\((.+?)(?:\s+"([^"]*)")?\)$/);
-	if (!match) return null;
-	const src = (match[2] ?? "").trim();
-	if (!src) return null;
-	return {
-		alt: (match[1] ?? "").trim(),
-		src,
-		title: (match[3] ?? "").trim(),
-	};
 }
 
 const CalloutDecorations = Extension.create({
@@ -136,7 +134,7 @@ const CalloutDecorations = Extension.create({
 					init: (_config, state) => buildCalloutDecorations(state.doc),
 					apply(tr, decorations) {
 						if (!tr.docChanged) return decorations;
-						return buildCalloutDecorations(tr.doc);
+						return updateCalloutDecorations(tr, decorations);
 					},
 				},
 				props: {
@@ -153,110 +151,103 @@ const CalloutDecorations = Extension.create({
 function buildCalloutDecorations(doc: ProseMirrorNode): DecorationSet {
 	const decorations: Decoration[] = [];
 	doc.descendants((node, pos) => {
-		if (node.type.name !== "blockquote") return;
-		let parsed: { kind: string; title: string } | null = null;
-		for (let i = 0; i < node.childCount; i += 1) {
-			const child = node.child(i);
-			const text = child.textContent ?? "";
-			parsed = parseCalloutMarker(text);
-			if (parsed) break;
-		}
-		if (!parsed) return;
-		decorations.push(
-			Decoration.node(pos, pos + node.nodeSize, {
-				class: `callout callout-${parsed.kind}`,
-				"data-callout": parsed.kind,
-				"data-callout-title": parsed.title,
-			}),
-		);
+		const decoration = calloutDecorationForNode(node, pos);
+		if (decoration) decorations.push(decoration);
 	});
 	return decorations.length
 		? DecorationSet.create(doc, decorations)
 		: DecorationSet.empty;
 }
 
-const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
-
-interface ChangedRange {
-	from: number;
-	to: number;
+function calloutDecorationForNode(
+	node: ProseMirrorNode,
+	pos: number,
+): Decoration | null {
+	if (node.type.name !== "blockquote") return null;
+	let parsed: { kind: string; title: string } | null = null;
+	for (let i = 0; i < node.childCount; i += 1) {
+		const child = node.child(i);
+		const text = child.textContent ?? "";
+		parsed = parseCalloutMarker(text);
+		if (parsed) break;
+	}
+	if (!parsed) return null;
+	return Decoration.node(pos, pos + node.nodeSize, {
+		class: `callout callout-${parsed.kind}`,
+		"data-callout": parsed.kind,
+		"data-callout-title": parsed.title,
+	});
 }
 
-function changedRangesFromTransactions(
-	transactions: readonly Transaction[],
-	docSize: number,
-): ChangedRange[] {
-	const ranges: ChangedRange[] = [];
-	let hasDocChange = false;
+function calloutScanRanges(tr: Transaction): ChangedRange[] {
+	const ranges = changedRangesFromTransactions([tr], tr.doc.content.size);
+	if (!ranges.length) return [];
+	const expanded: ChangedRange[] = [];
 
-	for (const transaction of transactions) {
-		if (!transaction.docChanged) continue;
-		hasDocChange = true;
-		for (const stepMap of transaction.mapping.maps) {
-			stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
-				ranges.push({
-					from: Math.max(0, Math.min(newStart, newEnd) - 1),
-					to: Math.min(docSize, Math.max(newStart, newEnd) + 1),
-				});
-			});
+	const addContainingBlockquote = (pos: number) => {
+		const resolvedPos = tr.doc.resolve(
+			Math.max(0, Math.min(pos, tr.doc.content.size)),
+		);
+		for (let depth = resolvedPos.depth; depth > 0; depth -= 1) {
+			const node = resolvedPos.node(depth);
+			if (node.type.name !== "blockquote") continue;
+			const from = resolvedPos.before(depth);
+			expanded.push({ from, to: from + node.nodeSize });
 		}
-	}
+	};
 
-	if (!ranges.length) {
-		return hasDocChange ? [{ from: 0, to: docSize }] : [];
-	}
-
-	ranges.sort((a, b) => a.from - b.from || a.to - b.to);
-	const merged: ChangedRange[] = [];
 	for (const range of ranges) {
-		const previous = merged[merged.length - 1];
-		if (!previous || range.from > previous.to) {
-			merged.push({ ...range });
-			continue;
-		}
-		previous.to = Math.max(previous.to, range.to);
+		addContainingBlockquote(range.from);
+		addContainingBlockquote(Math.max(range.from, range.to - 1));
+		tr.doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (node.type.name !== "blockquote") return;
+			expanded.push({ from: pos, to: pos + node.nodeSize });
+			return false;
+		});
 	}
-	return merged;
+	return mergeChangedRanges(expanded.length ? expanded : ranges);
 }
+
+function buildCalloutDecorationsInRanges(
+	doc: ProseMirrorNode,
+	ranges: readonly ChangedRange[],
+): Decoration[] {
+	const decorations: Decoration[] = [];
+	const seen = new Set<number>();
+	for (const range of ranges) {
+		doc.nodesBetween(range.from, range.to, (node, pos) => {
+			if (seen.has(pos)) return false;
+			const decoration = calloutDecorationForNode(node, pos);
+			if (!decoration) return;
+			seen.add(pos);
+			decorations.push(decoration);
+			return false;
+		});
+	}
+	return decorations;
+}
+
+function updateCalloutDecorations(
+	tr: Transaction,
+	decorations: DecorationSet,
+): DecorationSet {
+	const scanRanges = calloutScanRanges(tr);
+	if (!scanRanges.length) return decorations.map(tr.mapping, tr.doc);
+	const mapped = decorations.map(tr.mapping, tr.doc);
+	const staleDecorations = scanRanges.flatMap((range) =>
+		mapped.find(range.from, range.to),
+	);
+	const nextDecorations = buildCalloutDecorationsInRanges(tr.doc, scanRanges);
+	return mapped.remove(staleDecorations).add(tr.doc, nextDecorations);
+}
+
+const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
 
 function selectionRange(state: EditorState): ChangedRange {
 	return {
 		from: Math.max(0, state.selection.from - 1),
 		to: Math.min(state.doc.content.size, state.selection.to + 1),
 	};
-}
-
-// Deduped overlapping ranges skip a repeated node's subtree because returning
-// false from nodesBetween prevents descent. Current callers either target
-// paragraph nodes or independently scan inline text, so they do not rely on
-// revisiting children from overlapping parent ranges.
-function visitNodesInRanges(
-	state: EditorState,
-	ranges: readonly ChangedRange[],
-	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
-): void {
-	if (!ranges.length) return;
-
-	const seen = new Set<number>();
-	for (const range of ranges) {
-		state.doc.nodesBetween(range.from, range.to, (node, pos, parent, index) => {
-			if (seen.has(pos)) return false;
-			seen.add(pos);
-			return visitor(node, pos, parent, index);
-		});
-	}
-}
-
-function visitChangedNodes(
-	transactions: readonly Transaction[],
-	state: EditorState,
-	visitor: Parameters<ProseMirrorNode["nodesBetween"]>[2],
-): void {
-	visitNodesInRanges(
-		state,
-		changedRangesFromTransactions(transactions, state.doc.content.size),
-		visitor,
-	);
 }
 
 function findMarkdownLinkTextMatches(text: string) {
@@ -571,71 +562,6 @@ const TaskDetailShortcut = Extension.create({
 	},
 });
 
-const MarkdownImageShortcut = Extension.create({
-	name: "markdown-image-shortcut",
-	addProseMirrorPlugins() {
-		const key = new PluginKey("markdown-image-shortcut");
-		return [
-			new Plugin({
-				key,
-				appendTransaction(transactions, _oldState, newState) {
-					if (!transactions.some((tr) => tr.docChanged)) return null;
-
-					const paragraph = newState.schema.nodes.paragraph;
-					const image = newState.schema.nodes.image;
-					if (!paragraph || !image) return null;
-
-					const replacements: Array<{
-						pos: number;
-						size: number;
-						alt: string;
-						src: string;
-						title: string;
-					}> = [];
-
-					visitChangedNodes(transactions, newState, (node, pos) => {
-						if (node.type !== paragraph || node.childCount !== 1) return;
-						if (node.firstChild?.type.name !== "text") return;
-						const parsed = parseStandaloneMarkdownImage(node.textContent ?? "");
-						if (!parsed) return;
-						const $pos = newState.doc.resolve(pos);
-						const parent = $pos.parent;
-						if (parent.type.name === "listItem") return;
-						const index = $pos.index();
-						if (!parent.canReplaceWith(index, index + 1, image)) return;
-						replacements.push({
-							pos,
-							size: node.nodeSize,
-							alt: parsed.alt,
-							src: parsed.src,
-							title: parsed.title,
-						});
-					});
-
-					if (!replacements.length) return null;
-
-					let tr = newState.tr;
-					for (let i = replacements.length - 1; i >= 0; i -= 1) {
-						const replacement = replacements[i];
-						tr = tr.replaceWith(
-							replacement.pos,
-							replacement.pos + replacement.size,
-							image.create({
-								src: replacement.src,
-								alt: replacement.alt,
-								title: replacement.title,
-								originSrc: replacement.src,
-							}),
-						);
-					}
-
-					return tr.docChanged ? tr : null;
-				},
-			}),
-		];
-	},
-});
-
 const TableEnterNavigation = Extension.create({
 	name: "table-enter-navigation",
 	addKeyboardShortcuts() {
@@ -742,6 +668,7 @@ const EditorLink = Link.extend({
 });
 
 interface CreateEditorExtensionsOptions {
+	additionalExtensions?: AnyExtension[];
 	enableEditingExtensions?: boolean;
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
@@ -751,12 +678,14 @@ interface CreateEditorExtensionsOptions {
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
 export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
 	const {
+		additionalExtensions = [],
 		enableEditingExtensions = true,
 		enableSlashCommand = true,
 		enableWikiLinks = true,
@@ -766,6 +695,7 @@ export function createEditorExtensions(
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
+		onMathEditRequest,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -786,7 +716,7 @@ export function createEditorExtensions(
 					TaskListMarkdownShortcut,
 					TaskDetailShortcut,
 					MarkdownLinkSyntaxCollapse,
-					MarkdownImageShortcut,
+					MarkdownImageLivePreview,
 					NoteSearch,
 					TableEnterNavigation,
 				]
@@ -798,7 +728,10 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		...glyphDetailsExtensions,
+		...additionalExtensions,
 		MermaidPreview,
+		InlineTableOfContents,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
 		Markdown.configure({
 			markedOptions: {
@@ -825,11 +758,15 @@ export function createEditorExtensions(
 		...(enableEditingExtensions && enablePeopleMentions
 			? [PersonAutocomplete]
 			: []),
-		...(enableEditingExtensions && enableSlashCommand ? [SlashCommand] : []),
+		...(enableEditingExtensions ? [TagAutocomplete] : []),
+		...(enableEditingExtensions && enableSlashCommand
+			? [SlashCommand.configure({ onMathEditRequest })]
+			: []),
 		CalloutDecorations.configure({
 			enableShortcutTransform: enableEditingExtensions,
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
+		FootnoteDecorations,
 		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

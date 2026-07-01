@@ -4,7 +4,7 @@ import { extractMermaidErrorMessage } from "../../../../lib/mermaid";
 
 const MERMAID_RENDER_CACHE_LIMIT = 50;
 
-export type MermaidRenderResult =
+type MermaidRenderResult =
 	| { ok: true; svgHtml: string }
 	| { ok: false; message: string };
 

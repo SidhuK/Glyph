@@ -1,5 +1,3 @@
-.editorBody .tiptapContent pre,
-.editorBody .tiptap pre,
 .tiptapContentInline pre {
 	--code-token-comment: var(--text-tertiary);
 	--code-token-keyword: var(--interactive-accent);
@@ -14,23 +12,11 @@
 	--code-token-variable: var(--color-red-500);
 }
 
-.editorBody .tiptapContent pre .hljs-comment,
-.editorBody .tiptapContent pre .hljs-quote,
-.editorBody .tiptap pre .hljs-comment,
-.editorBody .tiptap pre .hljs-quote,
 .tiptapContentInline pre .hljs-comment,
 .tiptapContentInline pre .hljs-quote {
 	color: var(--code-token-comment);
 }
 
-.editorBody .tiptapContent pre .hljs-keyword,
-.editorBody .tiptapContent pre .hljs-selector-tag,
-.editorBody .tiptapContent pre .hljs-literal,
-.editorBody .tiptapContent pre .hljs-built_in,
-.editorBody .tiptap pre .hljs-keyword,
-.editorBody .tiptap pre .hljs-selector-tag,
-.editorBody .tiptap pre .hljs-literal,
-.editorBody .tiptap pre .hljs-built_in,
 .tiptapContentInline pre .hljs-keyword,
 .tiptapContentInline pre .hljs-selector-tag,
 .tiptapContentInline pre .hljs-literal,
@@ -38,38 +24,18 @@
 	color: var(--code-token-keyword);
 }
 
-.editorBody .tiptapContent pre .hljs-string,
-.editorBody .tiptapContent pre .hljs-regexp,
-.editorBody .tiptapContent pre .hljs-addition,
-.editorBody .tiptap pre .hljs-string,
-.editorBody .tiptap pre .hljs-regexp,
-.editorBody .tiptap pre .hljs-addition,
 .tiptapContentInline pre .hljs-string,
 .tiptapContentInline pre .hljs-regexp,
 .tiptapContentInline pre .hljs-addition {
 	color: var(--code-token-string);
 }
 
-.editorBody .tiptapContent pre .hljs-number,
-.editorBody .tiptapContent pre .hljs-symbol,
-.editorBody .tiptapContent pre .hljs-bullet,
-.editorBody .tiptap pre .hljs-number,
-.editorBody .tiptap pre .hljs-symbol,
-.editorBody .tiptap pre .hljs-bullet,
 .tiptapContentInline pre .hljs-number,
 .tiptapContentInline pre .hljs-symbol,
 .tiptapContentInline pre .hljs-bullet {
 	color: var(--code-token-number);
 }
 
-.editorBody .tiptapContent pre .hljs-title,
-.editorBody .tiptapContent pre .hljs-section,
-.editorBody .tiptapContent pre .hljs-type,
-.editorBody .tiptapContent pre .hljs-attr,
-.editorBody .tiptap pre .hljs-title,
-.editorBody .tiptap pre .hljs-section,
-.editorBody .tiptap pre .hljs-type,
-.editorBody .tiptap pre .hljs-attr,
 .tiptapContentInline pre .hljs-title,
 .tiptapContentInline pre .hljs-section,
 .tiptapContentInline pre .hljs-type,
@@ -77,29 +43,17 @@
 	color: var(--code-token-title);
 }
 
-.editorBody .tiptapContent pre .hljs-meta,
-.editorBody .tiptapContent pre .hljs-operator,
-.editorBody .tiptap pre .hljs-meta,
-.editorBody .tiptap pre .hljs-operator,
 .tiptapContentInline pre .hljs-meta,
 .tiptapContentInline pre .hljs-operator {
 	color: var(--code-token-meta);
 }
 
-.editorBody .tiptapContent pre .hljs-variable,
-.editorBody .tiptapContent pre .hljs-template-variable,
-.editorBody .tiptapContent pre .hljs-deletion,
-.editorBody .tiptap pre .hljs-variable,
-.editorBody .tiptap pre .hljs-template-variable,
-.editorBody .tiptap pre .hljs-deletion,
 .tiptapContentInline pre .hljs-variable,
 .tiptapContentInline pre .hljs-template-variable,
 .tiptapContentInline pre .hljs-deletion {
 	color: var(--code-token-variable);
 }
 
-:root.dark .editorBody .tiptapContent pre,
-:root.dark .editorBody .tiptap pre,
 :root.dark .tiptapContentInline pre {
 	--code-token-string: var(--color-green-dark-400);
 	--code-token-number: var(--color-yellow-dark-400);

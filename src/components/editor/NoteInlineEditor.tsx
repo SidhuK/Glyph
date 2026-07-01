@@ -1,34 +1,25 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { AnyExtension } from "@tiptap/core";
+import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
+	Suspense,
+	lazy,
 	memo,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
 } from "react";
-import {
-	EDITOR_MENU_ACTION_EVENT,
-	type EditorMenuActionDetail,
-} from "../../lib/appEvents";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { type BacklinkItem, invoke } from "../../lib/tauri";
-import { X } from "../Icons";
-import { Button } from "../ui/shadcn/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/shadcn/dialog";
-import { Input } from "../ui/shadcn/input";
+import { EditorRibbon } from "./EditorRibbon";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
+import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	type SupportedCodeBlockLanguage,
@@ -38,24 +29,38 @@ import {
 import {
 	getMountedEditorContentRoot,
 	getOffsetWithinAncestor,
-	isVisibleEditorHost,
 } from "./hooks/editorDomUtils";
 import { useExtractSelectionToNote } from "./hooks/useExtractSelectionToNote";
+import { useMathNodeEditor } from "./hooks/useMathNodeEditor";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useNoteFind } from "./hooks/useNoteFind";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
-import { useSelectionRibbon } from "./hooks/useSelectionRibbon";
+import { useRibbonCommands } from "./hooks/useRibbonCommands";
 import { useTableInlineControls } from "./hooks/useTableInlineControls";
-import { useTaskInlineDates } from "./hooks/useTaskInlineDates";
 import {
+	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
-import { isEditorTextColor } from "./textColors";
-import { isEditorTextHighlight } from "./textHighlights";
+import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
+
+const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
+
+const RawMarkdownEditor = lazy(() =>
+	import("./raw/RawMarkdownEditor").then((module) => ({
+		default: module.RawMarkdownEditor,
+	})),
+);
+
+const MathNodeEditor = lazy(() =>
+	import("./math/MathNodeEditor").then((module) => ({
+		default: module.MathNodeEditor,
+	})),
+);
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -67,13 +72,6 @@ type FrontmatterLinkToken =
 
 const FRONTMATTER_LINK_PATTERN =
 	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
-
-let lastFocusedNoteEditorHost: HTMLDivElement | null = null;
-
-interface LinkDialogState {
-	href: string;
-	target: "_self" | "_blank";
-}
 
 function areSelectedCodeBlocksEqual(
 	a: SelectedCodeBlockState | null,
@@ -126,39 +124,6 @@ function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
 	return tokens;
 }
 
-function normalizeEditorHref(value: string): string {
-	const trimmed = value.trim();
-	if (!trimmed) return "";
-	if (
-		trimmed.startsWith("http://") ||
-		trimmed.startsWith("https://") ||
-		trimmed.startsWith("mailto:") ||
-		trimmed.startsWith("tel:") ||
-		trimmed.startsWith("#") ||
-		trimmed.startsWith("/")
-	) {
-		return trimmed;
-	}
-	return `https://${trimmed}`;
-}
-
-function normalizeCalloutType(type: string): string {
-	return type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
-}
-
-function createCalloutContent(type: string) {
-	return {
-		type: "blockquote",
-		content: [
-			{
-				type: "paragraph",
-				content: [{ type: "text", text: `[!${normalizeCalloutType(type)}]` }],
-			},
-			{ type: "paragraph" },
-		],
-	};
-}
-
 async function openFrontmatterHref(
 	href: string,
 	sourcePath: string,
@@ -167,7 +132,10 @@ async function openFrontmatterHref(
 		await openUrl(href);
 		return;
 	}
-	if (href.startsWith("#")) return;
+	if (href.startsWith("#")) {
+		dispatchInternalAnchorClick({ anchor: href, sourcePath });
+		return;
+	}
 	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
@@ -176,15 +144,56 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	relPath,
 	mode,
 	interactive = true,
-	showBacklinks = true,
 	deferHeavyFeatures = false,
+	chrome = "full",
+	additionalExtensions: additionalExtensionsProp = EMPTY_ADDITIONAL_EXTENSIONS,
+	placeholder,
 	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
 	onEditorReady,
+	onRawEditorReady,
 	onChange,
 	onFrontmatterCommit,
 	extractToNoteActions,
 }: NoteInlineEditorProps) {
+	const chromeMinimal = chrome === "minimal";
+	const mathNodeEditor = useMathNodeEditor();
+	const [mathExtensions, setMathExtensions] = useState<
+		import("@tiptap/core").AnyExtension[]
+	>([]);
+	const [mathExtensionsReady, setMathExtensionsReady] = useState(
+		mode === "plain",
+	);
+	useEffect(() => {
+		if (chromeMinimal || mode === "plain" || mathExtensions.length > 0) {
+			setMathExtensionsReady(true);
+			return;
+		}
+		let cancelled = false;
+		setMathExtensionsReady(false);
+		void loadMathExtensionFactory()
+			.then((createExtensions) => {
+				if (cancelled) return;
+				setMathExtensions(
+					createExtensions({ onEditRequest: mathNodeEditor.open }),
+				);
+				setMathExtensionsReady(true);
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.error("Failed to load equation support.", error);
+				setMathExtensionsReady(true);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [chromeMinimal, mathExtensions.length, mathNodeEditor.open, mode]);
+
+	const mergedAdditionalExtensions = useMemo(
+		() => [...mathExtensions, ...additionalExtensionsProp],
+		[additionalExtensionsProp, mathExtensions],
+	);
+
 	const {
 		editor,
 		frontmatter,
@@ -194,6 +203,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		colorfulHeadings,
 		showFrontmatterInEditor,
 	} = useNoteEditor({
+		additionalExtensions: mergedAdditionalExtensions,
 		markdown,
 		mode,
 		relPath,
@@ -201,12 +211,16 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableHydrateInlineImages: !deferHeavyFeatures,
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
+		placeholder,
 		onChange,
+		onMathEditRequest: mathNodeEditor.open,
 	});
+	mathNodeEditor.connect(editor, mode === "rich" && !chromeMinimal);
 
+	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+	const showEditorChrome = canEdit && !chromeMinimal;
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
-	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
@@ -217,14 +231,24 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
 	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
 	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
-	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
-	const rawTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
+		null,
+	);
+	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
+	const handleRawEditorRef = useCallback(
+		(editor: RawMarkdownEditorHandle | null) => {
+			rawEditorRef.current = editor;
+			onRawEditorReady?.(editor);
+		},
+		[onRawEditorReady],
+	);
 	const previousRelPathRef = useRef(relPath);
-
-	useEffect(() => {
-		onEditorReady?.(editor ?? null);
-		return () => onEditorReady?.(null);
-	}, [editor, onEditorReady]);
+	useLayoutEffect(() => {
+		// Mode and document identity define the lifetime of an edit request.
+		void mode;
+		void relPath;
+		mathNodeEditor.close();
+	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
 		const host = tiptapHostRef.current;
@@ -264,49 +288,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		relPath,
 	]);
 
-	useEffect(() => {
-		if (!relPath || !showBacklinks || deferHeavyFeatures) {
-			setBacklinks([]);
-			return;
-		}
-		let cancelled = false;
-		void (async () => {
-			try {
-				const items = await invoke("backlinks", { note_id: relPath });
-				if (!cancelled) setBacklinks(items);
-			} catch {
-				if (!cancelled) setBacklinks([]);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [deferHeavyFeatures, relPath, showBacklinks]);
-
-	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
-	const selectionRibbon = useSelectionRibbon({
-		canEdit,
+	const tableControls = useTableInlineControls({
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		mode,
-	});
-	const selectedTable = useTableInlineControls({
-		canEdit,
-		editor,
-		hostRef: tiptapHostRef,
-		mode,
-	});
-	const taskInlineDates = useTaskInlineDates({
-		deferHeavyFeatures,
-		editor,
-		hostRef: tiptapHostRef,
-		markdown,
-		mode,
-		onChange,
 	});
 	const extractToNote = useExtractSelectionToNote({
 		actions: extractToNoteActions,
-		canEdit,
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		relPath,
@@ -316,182 +306,27 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		markdown,
 		mode,
 		relPath,
-		rawTextareaRef,
+		rawEditorRef,
 		tiptapHostRef,
 	});
 
-	useEffect(() => {
-		if (!editor || mode !== "rich") return;
-
-		const runEditorAction = (action: string) => {
-			const host = tiptapHostRef.current;
-			if (!host || !isVisibleEditorHost(host)) return;
-			const activeElement = document.activeElement;
-			if (activeElement instanceof HTMLElement) {
-				if (host.contains(activeElement)) {
-					lastFocusedNoteEditorHost = host;
-				} else if (lastFocusedNoteEditorHost !== host) {
-					return;
-				}
-			} else if (lastFocusedNoteEditorHost !== host) {
-				return;
-			}
-			const scrollHost = host.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
-			const scrollTop = scrollHost?.scrollTop ?? 0;
-			const isReadOnlySafeAction =
-				action === "collapse_all_headings" || action === "expand_all_headings";
-			if (!canEdit && !isReadOnlySafeAction) return;
-			const chain = editor
-				.chain()
-				.focus(null, { scrollIntoView: false })
-				.extendMarkRange("link");
-			const handled = (() => {
-				switch (action) {
-					case "bold":
-						return chain.toggleBold().run();
-					case "italic":
-						return chain.toggleItalic().run();
-					case "underline":
-						return chain.toggleUnderline().run();
-					case "strikethrough":
-						return chain.toggleStrike().run();
-					case "heading_1":
-						return chain.toggleHeading({ level: 1 }).run();
-					case "heading_2":
-						return chain.toggleHeading({ level: 2 }).run();
-					case "heading_3":
-						return chain.toggleHeading({ level: 3 }).run();
-					case "collapse_all_headings":
-						return chain.collapseAllHeadings().run();
-					case "expand_all_headings":
-						return chain.expandAllHeadings().run();
-					case "bullet_list":
-						return chain.toggleBulletList().run();
-					case "numbered_list":
-						return chain.toggleOrderedList().run();
-					case "todo_list":
-						return chain.toggleTaskList().run();
-					case "quote":
-						return chain.toggleBlockquote().run();
-					case "code_block":
-						return chain.toggleCodeBlock().run();
-					case "mermaid_chart":
-						return chain
-							.insertContent({
-								type: "codeBlock",
-								attrs: { language: "mermaid" },
-								content: [
-									{
-										type: "text",
-										text: "flowchart TD\n  A[Start] --> B[End]",
-									},
-								],
-							})
-							.run();
-					case "table":
-						return chain
-							.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-							.run();
-					case "divider":
-						return chain.setHorizontalRule().run();
-					case "extract_selection_to_note":
-						extractToNote.openExtractDialog();
-						return true;
-					case "callout_info":
-						return chain.insertContent(createCalloutContent("info")).run();
-					case "callout_warning":
-						return chain.insertContent(createCalloutContent("warning")).run();
-					case "callout_error":
-						return chain.insertContent(createCalloutContent("error")).run();
-					case "callout_success":
-						return chain.insertContent(createCalloutContent("success")).run();
-					case "callout_tip":
-						return chain.insertContent(createCalloutContent("tip")).run();
-					case "link_set": {
-						const linkAttrs = editor.getAttributes("link") as {
-							href?: string;
-							target?: string;
-						};
-						setLinkDialog({
-							href: linkAttrs.href ?? "",
-							target: linkAttrs.target === "_blank" ? "_blank" : "_self",
-						});
-						return true;
-					}
-					case "link_clear":
-						return chain.unsetLink().run();
-					case "color_clear":
-						return chain.unsetTextColor().run();
-					case "highlight_clear":
-						return chain.unsetTextHighlight().run();
-					default: {
-						if (action.startsWith("color_")) {
-							const color = action.slice("color_".length);
-							if (isEditorTextColor(color)) {
-								return chain.setTextColor(color).run();
-							}
-							return false;
-						}
-						if (action.startsWith("highlight_")) {
-							const highlight = action.slice("highlight_".length);
-							if (isEditorTextHighlight(highlight)) {
-								return chain.setTextHighlight(highlight).run();
-							}
-							return false;
-						}
-						return false;
-					}
-				}
-			})();
-			if (!handled) return;
-			if (scrollHost) {
-				requestAnimationFrame(() => {
-					scrollHost.scrollTop = scrollTop;
-				});
-			}
-		};
-
-		const onEditorMenuAction = (event: Event) => {
-			const detail =
-				event instanceof CustomEvent
-					? (event.detail as EditorMenuActionDetail | null)
-					: null;
-			if (!detail?.action) return;
-			runEditorAction(detail.action);
-		};
-
-		window.addEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
-		return () => {
-			window.removeEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
-		};
-	}, [canEdit, editor, extractToNote.openExtractDialog, mode]);
-
-	useEffect(() => {
-		if (!onRegisterCalloutInserter) return;
-		if (!editor || mode !== "rich") {
-			onRegisterCalloutInserter(null);
-			return;
-		}
-		onRegisterCalloutInserter((type: string) => {
-			const host = tiptapHostRef.current?.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
-			const scrollTop = host?.scrollTop ?? 0;
-			editor
-				.chain()
-				.focus(null, { scrollIntoView: false })
-				.insertContent(createCalloutContent(type))
-				.run();
-			if (host) {
-				requestAnimationFrame(() => {
-					host.scrollTop = scrollTop;
-				});
-			}
-		});
-		return () => onRegisterCalloutInserter(null);
-	}, [editor, mode, onRegisterCalloutInserter]);
+	useRibbonCommands({
+		editor,
+		canEdit: showEditorChrome,
+		mode,
+		tiptapHostRef,
+		tiptapHostNode,
+		onOpenLinkDialog: useCallback(
+			(href: string, target: "_self" | "_blank") => {
+				setLinkDialog({ href, target });
+			},
+			[],
+		),
+		onTriggerExtractToNote: extractToNote.canExtractToNote
+			? extractToNote.openExtractDialog
+			: undefined,
+		onRegisterCalloutInserter,
+	});
 
 	const handleFrontmatterChange = (next: string | null) => {
 		const normalizedFrontmatter = next?.trim().length ? next : null;
@@ -568,7 +403,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich") {
+		if (!editor || mode !== "rich" || chromeMinimal) {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -691,7 +526,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			editor.off("selectionUpdate", scheduleSelectedCodeBlockSync);
 			editor.off("transaction", scheduleSelectedCodeBlockSync);
 		};
-	}, [editor, mode]);
+	}, [chromeMinimal, editor, mode]);
 
 	const selectedCodeBlockLanguage = useMemo(
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
@@ -715,30 +550,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		},
 		[editor],
 	);
-	const preventCodeBlockPickerMouseDown = useCallback(
+	const preventOverlayMouseDown = useCallback(
 		(event: ReactMouseEvent<HTMLElement>) => {
 			event.preventDefault();
 		},
 		[],
 	);
-	const preventTableControlMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
-	const addRowToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
-	}, [editor]);
-	const addColumnToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.addColumnAfter()
-			.run();
-	}, [editor]);
 	useEffect(() => {
 		if (!editor) return;
 		if (mode === "rich" || mode === "preview") {
@@ -762,76 +579,17 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		return () => observer.disconnect();
 	}, [editor, mode]);
 
-	useEffect(() => {
-		const host = tiptapHostNode;
-		if (!host) return;
-		const handleFocusIn = () => {
-			lastFocusedNoteEditorHost = host;
-		};
-		const handleFocusOut = () => {
-			const currentHost = host;
-			window.setTimeout(() => {
-				if (
-					lastFocusedNoteEditorHost === currentHost &&
-					!currentHost.contains(document.activeElement)
-				) {
-					lastFocusedNoteEditorHost = null;
-				}
-			}, 0);
-		};
-		handleFocusOut();
-		host.addEventListener("focusin", handleFocusIn);
-		host.addEventListener("focusout", handleFocusOut);
-		return () => {
-			host.removeEventListener("focusin", handleFocusIn);
-			host.removeEventListener("focusout", handleFocusOut);
-			if (lastFocusedNoteEditorHost === host) {
-				lastFocusedNoteEditorHost = null;
-			}
-		};
-	}, [tiptapHostNode]);
-
 	const handleTiptapHostRef = useCallback((node: HTMLDivElement | null) => {
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
-
-	const closeLinkDialog = useCallback(() => {
-		setLinkDialog(null);
-	}, []);
-
-	const applyLinkDialog = useCallback(() => {
-		if (!editor || !canEdit || !linkDialog) return;
-		const href = normalizeEditorHref(linkDialog.href);
-		const chain = editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.extendMarkRange("link");
-		if (!href) {
-			chain.unsetLink().run();
-			setLinkDialog(null);
-			return;
-		}
-		chain
-			.setLink({
-				href,
-				target: linkDialog.target,
-				rel: linkDialog.target === "_blank" ? "noopener noreferrer" : undefined,
-			})
-			.run();
-		setLinkDialog(null);
-	}, [canEdit, editor, linkDialog]);
-
-	const removeLinkFromDialog = useCallback(() => {
-		if (!editor || !canEdit) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.extendMarkRange("link")
-			.unsetLink()
-			.run();
-		setLinkDialog(null);
-	}, [canEdit, editor]);
+	useEffect(() => {
+		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
+		const mountedEditor =
+			editor && !editor.isDestroyed && contentRoot ? editor : null;
+		onEditorReady?.(mountedEditor, mountedEditor ? contentRoot : null);
+		return () => onEditorReady?.(null, null);
+	}, [editor, onEditorReady, tiptapHostNode]);
 
 	const copySelectedCodeBlock = useCallback(() => {
 		if (!selectedCodeBlock) return;
@@ -859,21 +617,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			});
 	}, [selectedCodeBlock]);
 
-	const tableControls = useMemo(
-		() => ({
-			selected: selectedTable,
-			onControlMouseDown: preventTableControlMouseDown,
-			onAddRow: addRowToSelectedTable,
-			onAddColumn: addColumnToSelectedTable,
-		}),
-		[
-			addColumnToSelectedTable,
-			addRowToSelectedTable,
-			preventTableControlMouseDown,
-			selectedTable,
-		],
-	);
-
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
@@ -882,7 +625,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
-			onPickerMouseDown: preventCodeBlockPickerMouseDown,
+			onPickerMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
 		}),
@@ -891,56 +634,11 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
-			preventCodeBlockPickerMouseDown,
+			preventOverlayMouseDown,
 			selectedCodeBlock,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
 		],
-	);
-
-	const resetTaskDraftDates = useCallback(() => {
-		void taskInlineDates.resetDraftDates();
-	}, [taskInlineDates.resetDraftDates]);
-	const updateTaskDates = useCallback(
-		(scheduled: string, due: string) => {
-			void taskInlineDates.updateTaskDates(scheduled, due);
-		},
-		[taskInlineDates.updateTaskDates],
-	);
-	const taskControls = useMemo(
-		() => ({
-			selectedAnchor: taskInlineDates.selectedTaskAnchor,
-			scheduleAnchor: taskInlineDates.scheduleAnchor,
-			onScheduleAnchorChange: taskInlineDates.setScheduleAnchor,
-			onOpenPopover: taskInlineDates.openTaskPopover,
-			scheduledDate: taskInlineDates.scheduledDate,
-			dueDate: taskInlineDates.dueDate,
-			onScheduledDateChange: taskInlineDates.setScheduledDate,
-			onDueDateChange: taskInlineDates.setDueDate,
-			onResetDraftDates: resetTaskDraftDates,
-			onUpdateDates: updateTaskDates,
-		}),
-		[
-			resetTaskDraftDates,
-			taskInlineDates.dueDate,
-			taskInlineDates.openTaskPopover,
-			taskInlineDates.scheduleAnchor,
-			taskInlineDates.scheduledDate,
-			taskInlineDates.selectedTaskAnchor,
-			taskInlineDates.setDueDate,
-			taskInlineDates.setScheduleAnchor,
-			taskInlineDates.setScheduledDate,
-			updateTaskDates,
-		],
-	);
-
-	const backlinkControls = useMemo(
-		() => ({
-			show: showBacklinks,
-			items: backlinks,
-			interactive,
-		}),
-		[backlinks, interactive, showBacklinks],
 	);
 
 	return (
@@ -948,15 +646,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
+				showEditorChrome ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onKeyDownCapture={noteFind.handleEditorKeyDownCapture}
+			onKeyDownCapture={
+				showEditorChrome ? noteFind.handleEditorKeyDownCapture : undefined
+			}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{noteFind.findOpen ? (
+				{showEditorChrome && noteFind.findOpen ? (
 					<NoteFindBar
 						countLabel={noteFind.findCountLabel}
 						inputRef={noteFind.findInputRef}
@@ -970,13 +671,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 				{mode === "plain" ? (
-					<textarea
-						ref={rawTextareaRef}
-						className="rfNodeNoteEditorRaw mono"
-						value={markdown}
-						onChange={(event) => onChange(event.target.value)}
-						spellCheck={false}
-					/>
+					<Suspense fallback={<div className="rfNodeNoteEditorLoading" />}>
+						<RawMarkdownEditor
+							key={relPath}
+							ref={handleRawEditorRef}
+							markdown={markdown}
+							relPath={relPath}
+							onChange={onChange}
+						/>
+					</Suspense>
 				) : null}
 				{mode === "rich" && showFrontmatterInEditor && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
@@ -990,106 +693,62 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" ? (
+				{mode !== "plain" &&
+				(mathExtensionsReady || !markdown.includes("$")) ? (
 					<NoteEditorSurface
 						editor={editor}
 						mode={mode}
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						selectionRibbon={selectionRibbon}
+						tableControls={tableControls}
+						codeBlock={codeBlockControls}
+					/>
+				) : null}
+			</div>
+			<AnimatePresence>
+				{showEditorChrome && editor ? (
+					<EditorRibbon
+						editor={editor}
+						canEdit={canEdit}
+						className="rfNodeNoteEditorRibbonBottom"
 						onExtractSelectionToNote={
 							extractToNote.canExtractToNote
 								? extractToNote.openExtractDialog
 								: undefined
 						}
-						table={tableControls}
-						codeBlock={codeBlockControls}
-						task={taskControls}
-						backlinks={backlinkControls}
 					/>
 				) : null}
-			</div>
-			<ExtractToNoteDialog
-				state={extractToNote.dialogState}
-				onClose={extractToNote.closeExtractDialog}
-				onSubmit={extractToNote.submitExtractDialog}
-				onTitleChange={extractToNote.setExtractTitle}
-				onDestinationDirChange={extractToNote.setExtractDestinationDir}
-			/>
-			<Dialog
-				open={linkDialog !== null}
-				onOpenChange={(open) => {
-					if (!open) closeLinkDialog();
-				}}
-			>
-				<DialogContent
-					className="editorLinkDialog"
-					onOpenAutoFocus={(event) => {
-						const input = document.querySelector<HTMLInputElement>(
-							".editorLinkDialogInput",
-						);
-						if (!input) return;
-						event.preventDefault();
-						input.focus();
-						input.select();
-					}}
-				>
-					<DialogHeader>
-						<DialogTitle>Link</DialogTitle>
-						<DialogDescription>
-							Paste a URL, or leave it blank to remove the link.
-						</DialogDescription>
-					</DialogHeader>
-					<form
-						className="editorLinkDialogForm"
-						onSubmit={(event) => {
-							event.preventDefault();
-							applyLinkDialog();
-						}}
-					>
-						<Input
-							className="editorLinkDialogInput"
-							value={linkDialog?.href ?? ""}
-							onChange={(event) =>
-								setLinkDialog((current) =>
-									current ? { ...current, href: event.target.value } : current,
-								)
-							}
-							placeholder="https://example.com"
-							aria-label="Link URL"
-						/>
-						<label className="editorLinkDialogCheckbox">
-							<input
-								type="checkbox"
-								checked={linkDialog?.target === "_blank"}
-								onChange={(event) =>
-									setLinkDialog((current) =>
-										current
-											? {
-													...current,
-													target: event.target.checked ? "_blank" : "_self",
-												}
-											: current,
-									)
-								}
-							/>
-							<span>Open in new tab</span>
-						</label>
-						<DialogFooter className="editorLinkDialogActions">
-							<Button
-								type="button"
-								variant="ghost"
-								onClick={removeLinkFromDialog}
-							>
-								<X size={14} />
-								Remove
-							</Button>
-							<Button type="submit">Apply</Button>
-						</DialogFooter>
-					</form>
-				</DialogContent>
-			</Dialog>
+			</AnimatePresence>
+			{showEditorChrome ? (
+				<ExtractToNoteDialog
+					state={extractToNote.dialogState}
+					onClose={extractToNote.closeExtractDialog}
+					onSubmit={extractToNote.submitExtractDialog}
+					onTitleChange={extractToNote.setExtractTitle}
+					onDestinationDirChange={extractToNote.setExtractDestinationDir}
+				/>
+			) : null}
+			{showEditorChrome ? (
+				<NoteLinkDialog
+					editor={editor}
+					canEdit={canEdit}
+					state={linkDialog}
+					onStateChange={setLinkDialog}
+				/>
+			) : null}
+			{showEditorChrome && mathNodeEditor.request ? (
+				<Suspense fallback={null}>
+					<MathNodeEditor
+						key={`${mathNodeEditor.request.kind}:${mathNodeEditor.request.pos}`}
+						request={mathNodeEditor.request}
+						anchorRect={mathNodeEditor.getAnchorRect()}
+						onApply={mathNodeEditor.apply}
+						onCancel={mathNodeEditor.close}
+						onDelete={mathNodeEditor.remove}
+					/>
+				</Suspense>
+			) : null}
 		</div>
 	);
 });

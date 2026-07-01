@@ -7,19 +7,19 @@ import {
 	type UiFontSize,
 } from "../../lib/settings";
 import { Input } from "../ui/shadcn/input";
-import { Slider } from "../ui/shadcn/slider";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
+	editorFontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
 	uiFontSize: UiFontSize;
 	editorFontSize: UiFontSize;
 	availableFonts: string[];
 	availableMonospaceFonts: string[];
-	uiFontSizeOptions: number[];
-	editorFontSizeOptions: number[];
 	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
+	onEditorFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onUiFontSizeChange: (size: UiFontSize) => Promise<void>;
 	onEditorFontSizeChange: (size: UiFontSize) => Promise<void>;
@@ -50,24 +50,11 @@ function FontSizeControl({
 }: FontSizeControlProps) {
 	return (
 		<SettingsRow label={label} htmlFor={id} description={description}>
-			<div className="flex w-full items-center gap-3">
-				<Slider
-					id={id}
-					className="flex-1"
-					min={min}
-					max={max}
-					step={1}
-					value={[value]}
-					onValueChange={(nextValues: number[]) => {
-						const [next] = nextValues;
-						if (typeof next !== "number") return;
-						void onChange(next);
-					}}
-					aria-label={label}
-				/>
+			<div className="flex w-full justify-end">
 				<Input
+					id={id}
 					type="number"
-					className="w-20 min-w-20 text-right [font-variant-numeric:tabular-nums]"
+					className="w-14 text-right [font-variant-numeric:tabular-nums]"
 					min={min}
 					max={max}
 					step={1}
@@ -86,26 +73,18 @@ function FontSizeControl({
 
 export function AppearanceTypographyCard({
 	fontFamily,
+	editorFontFamily,
 	monoFontFamily,
 	uiFontSize,
 	editorFontSize,
 	availableFonts,
 	availableMonospaceFonts,
-	uiFontSizeOptions,
-	editorFontSizeOptions,
 	onFontFamilyChange,
+	onEditorFontFamilyChange,
 	onMonoFontFamilyChange,
 	onUiFontSizeChange,
 	onEditorFontSizeChange,
 }: AppearanceTypographyCardProps) {
-	const minUiFontSize = uiFontSizeOptions[0] ?? MIN_UI_FONT_SIZE;
-	const maxUiFontSize =
-		uiFontSizeOptions[uiFontSizeOptions.length - 1] ?? MAX_UI_FONT_SIZE;
-	const minEditorFontSize = editorFontSizeOptions[0] ?? MIN_EDITOR_FONT_SIZE;
-	const maxEditorFontSize =
-		editorFontSizeOptions[editorFontSizeOptions.length - 1] ??
-		MAX_EDITOR_FONT_SIZE;
-
 	return (
 		<SettingsSection
 			title="Typography"
@@ -116,7 +95,7 @@ export function AppearanceTypographyCard({
 				htmlFor="settingsFontFamily"
 				description="Used for navigation, settings, and most UI copy across Glyph."
 			>
-				<select
+				<SettingsSelect
 					id="settingsFontFamily"
 					value={fontFamily}
 					onChange={(event) => void onFontFamilyChange(event.target.value)}
@@ -126,7 +105,27 @@ export function AppearanceTypographyCard({
 							{font}
 						</option>
 					))}
-				</select>
+				</SettingsSelect>
+			</SettingsRow>
+
+			<SettingsRow
+				label="Editor font"
+				htmlFor="settingsEditorFontFamily"
+				description="Used for regular note text outside inline code and code blocks."
+			>
+				<SettingsSelect
+					id="settingsEditorFontFamily"
+					value={editorFontFamily}
+					onChange={(event) =>
+						void onEditorFontFamilyChange(event.target.value)
+					}
+				>
+					{availableFonts.map((font) => (
+						<option key={font} value={font}>
+							{font}
+						</option>
+					))}
+				</SettingsSelect>
 			</SettingsRow>
 
 			<SettingsRow
@@ -134,7 +133,7 @@ export function AppearanceTypographyCard({
 				htmlFor="settingsMonoFontFamily"
 				description="Used for markdown source, inline code, and developer-oriented surfaces."
 			>
-				<select
+				<SettingsSelect
 					id="settingsMonoFontFamily"
 					value={monoFontFamily}
 					onChange={(event) => void onMonoFontFamilyChange(event.target.value)}
@@ -144,7 +143,7 @@ export function AppearanceTypographyCard({
 							{font}
 						</option>
 					))}
-				</select>
+				</SettingsSelect>
 			</SettingsRow>
 
 			<FontSizeControl
@@ -152,8 +151,8 @@ export function AppearanceTypographyCard({
 				label="UI font size"
 				description="Adjust the base size used by menus, panes, controls, and settings."
 				value={uiFontSize}
-				min={minUiFontSize}
-				max={maxUiFontSize}
+				min={MIN_UI_FONT_SIZE}
+				max={MAX_UI_FONT_SIZE}
 				onChange={onUiFontSizeChange}
 			/>
 
@@ -162,8 +161,8 @@ export function AppearanceTypographyCard({
 				label="Editor font size"
 				description="Adjust the reading size for the note editor, markdown preview, and raw text editing."
 				value={editorFontSize}
-				min={minEditorFontSize}
-				max={maxEditorFontSize}
+				min={MIN_EDITOR_FONT_SIZE}
+				max={MAX_EDITOR_FONT_SIZE}
 				onChange={onEditorFontSizeChange}
 			/>
 		</SettingsSection>

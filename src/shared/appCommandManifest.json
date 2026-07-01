@@ -448,6 +448,17 @@
 			"commandPalette": true,
 			"menuId": "space.create"
 		},
+		"details_block": {
+			"id": "details_block",
+			"label": "Details Block",
+			"description": "Insert a collapsible toggle section.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true,
+			"menuId": "editor.details_block"
+		},
 		"divider": {
 			"id": "divider",
 			"label": "Divider",
@@ -811,16 +822,6 @@
 			"commandPalette": true,
 			"menuId": "file.open_daily_note"
 		},
-		"open-dashboard": {
-			"id": "open-dashboard",
-			"label": "Open Home",
-			"description": "Open the home dashboard.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"open-databases": {
 			"id": "open-databases",
 			"label": "Open Collections",
@@ -852,10 +853,10 @@
 			"allowInEditable": false,
 			"commandPalette": true
 		},
-		"open-local-graph": {
-			"id": "open-local-graph",
-			"label": "Open Local Graph",
-			"description": "Open the local graph for the current note.",
+		"open-local-connections": {
+			"id": "open-local-connections",
+			"label": "Open Local Connections",
+			"description": "Open local connections for the current note.",
 			"category": "file",
 			"context": "editor",
 			"defaultBinding": {
@@ -931,16 +932,6 @@
 			"commandPalette": true,
 			"menuId": "space.settings"
 		},
-		"open-templates": {
-			"id": "open-templates",
-			"label": "Open Templates",
-			"description": "Open the templates view.",
-			"category": "navigation",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true
-		},
 		"previous-tab": {
 			"id": "previous-tab",
 			"label": "Previous Tab",
@@ -1006,23 +997,113 @@
 		},
 		"show-getting-started": {
 			"id": "show-getting-started",
-			"label": "Show Getting Started",
+			"label": "Getting Started",
 			"description": "Open the getting started flow.",
 			"category": "settings",
 			"context": "space",
 			"defaultBinding": null,
 			"allowInEditable": false,
-			"commandPalette": true
+			"commandPalette": true,
+			"menuId": "help.getting_started"
 		},
 		"show-welcome-note": {
 			"id": "show-welcome-note",
-			"label": "Show Welcome Note",
+			"label": "Welcome Note",
 			"description": "Create or open the welcome note in the root of the current space.",
 			"category": "settings",
 			"context": "space",
 			"defaultBinding": null,
 			"allowInEditable": false,
-			"commandPalette": true
+			"commandPalette": true,
+			"menuId": "help.welcome_note"
+		},
+		"open-shortcuts-settings": {
+			"id": "open-shortcuts-settings",
+			"label": "Keyboard Shortcuts\u2026",
+			"description": "Open the keyboard shortcuts section in settings.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "help.shortcuts"
+		},
+		"open-glyph-website": {
+			"id": "open-glyph-website",
+			"label": "Glyph Website",
+			"description": "Open the Glyph website.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.website"
+		},
+		"open-glyph-changelog": {
+			"id": "open-glyph-changelog",
+			"label": "Changelog",
+			"description": "Open the published Glyph changelog.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.changelog"
+		},
+		"open-glyph-privacy": {
+			"id": "open-glyph-privacy",
+			"label": "Privacy Policy",
+			"description": "Open the Glyph privacy policy.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.privacy"
+		},
+		"open-glyph-terms": {
+			"id": "open-glyph-terms",
+			"label": "Terms of Service",
+			"description": "Open the Glyph terms of service.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.terms"
+		},
+		"open-glyph-discord": {
+			"id": "open-glyph-discord",
+			"label": "Discord",
+			"description": "Open the Glyph community Discord.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.discord"
+		},
+		"open-glyph-github": {
+			"id": "open-glyph-github",
+			"label": "GitHub",
+			"description": "Open the Glyph repository on GitHub.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.github"
+		},
+		"open-glyph-x": {
+			"id": "open-glyph-x",
+			"label": "Follow on X",
+			"description": "Open Karat Sidhu on X.",
+			"category": "settings",
+			"context": "global",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": false,
+			"menuId": "help.x"
 		},
 		"strikethrough": {
 			"id": "strikethrough",
@@ -1120,6 +1201,36 @@
 			"allowInEditable": true,
 			"commandPalette": true,
 			"menuId": "editor.underline"
+		},
+		"switch-to-edit": {
+			"id": "switch-to-edit",
+			"label": "Rich Mode",
+			"description": "Switch to the rich WYSIWYG editing mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"switch-to-preview": {
+			"id": "switch-to-preview",
+			"label": "Preview Mode",
+			"description": "Switch to the read-only preview mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"switch-to-raw": {
+			"id": "switch-to-raw",
+			"label": "Raw Mode",
+			"description": "Switch to the raw Markdown editing mode.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
 		}
 	}
 }

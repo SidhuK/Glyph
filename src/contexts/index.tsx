@@ -3,6 +3,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { queryClient } from "../lib/queryClient";
 import { EditorProvider } from "./EditorContext";
 import { FileTreeProvider } from "./FileTreeContext";
+import { GitSyncProvider } from "./GitSyncContext";
 import { SpaceProvider } from "./SpaceContext";
 import { UIProvider } from "./UIContext";
 export { useUpdaterContext } from "./UpdaterContext";
@@ -11,6 +12,7 @@ export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";
 export { useAISidebarContext, useUILayoutContext } from "./UIContext";
 export { useEditorContext, useEditorRegistration } from "./EditorContext";
+export { useGitSyncContext } from "./GitSyncContext";
 
 interface ProvidersErrorBoundaryState {
 	hasError: boolean;
@@ -52,7 +54,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
 				<SpaceProvider>
 					<FileTreeProvider>
 						<UIProvider>
-							<EditorProvider>{children}</EditorProvider>
+							<EditorProvider>
+								<GitSyncProvider>{children}</GitSyncProvider>
+							</EditorProvider>
 						</UIProvider>
 					</FileTreeProvider>
 				</SpaceProvider>

@@ -3,7 +3,6 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
-	getDailyNotesFolder,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
@@ -15,6 +14,7 @@ import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -27,7 +27,12 @@ const ATTACHMENT_LOCATION_OPTIONS: Array<{
 	{ label: "Same folder as note", value: "note-folder" },
 ];
 
-async function selectFolderRelativeToSpace(): Promise<string | null> {
+interface SpaceFolderSelection {
+	relativePath: string;
+	spacePath: string;
+}
+
+async function selectFolderRelativeToSpace(): Promise<SpaceFolderSelection | null> {
 	const { open } = await import("@tauri-apps/plugin-dialog");
 	const selected = await open({
 		directory: true,
@@ -55,7 +60,17 @@ async function selectFolderRelativeToSpace(): Promise<string | null> {
 		throw new Error("Selected folder must be inside the current space.");
 	}
 
-	return normSelected.slice(normSpace.length).replace(/^\/+/, "");
+	return {
+		relativePath: normSelected.slice(normSpace.length).replace(/^\/+/, ""),
+		spacePath: currentSpace,
+	};
+}
+
+function requireSpacePath(spacePath: string | null): string {
+	if (!spacePath) {
+		throw new Error("No space is currently open.");
+	}
+	return spacePath;
 }
 
 export function SpaceSettingsPane() {
@@ -63,19 +78,16 @@ export function SpaceSettingsPane() {
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
-	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
 	const [attachmentStorageMode, setAttachmentStorageModeState] =
 		useState<AttachmentStorageMode>("note-folder");
 	const [attachmentFolder, setAttachmentFolderState] = useState(
 		DEFAULT_ATTACHMENT_FOLDER,
 	);
-	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
 	const [attachmentError, setAttachmentError] = useState<string | null>(null);
 	const [quickNotesFolder, setQuickNotesFolderState] = useState(
 		DEFAULT_QUICK_NOTES_FOLDER,
 	);
-	const [quickNotesLoading, setQuickNotesLoading] = useState(true);
 	const [quickNotesError, setQuickNotesError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
@@ -100,16 +112,12 @@ export function SpaceSettingsPane() {
 
 	const refresh = useCallback(async () => {
 		setError("");
-		setDailyNotesLoading(true);
-		setAttachmentsLoading(true);
-		setQuickNotesLoading(true);
 		try {
-			const [dailyFolder, settings] = await Promise.all([
-				getDailyNotesFolder(),
-				loadSettings(),
-			]);
-			setCurrentSpacePath(settings.currentSpacePath);
-			setDailyNotesFolderState(dailyFolder);
+			const currentSpace = await invoke("space_get_current");
+			const settingsScope = { spacePath: currentSpace };
+			const settings = await loadSettings(settingsScope);
+			setCurrentSpacePath(currentSpace);
+			setDailyNotesFolderState(settings.dailyNotes.folder);
 			setQuickNotesFolderState(settings.quickNotes.folder);
 			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
 			setAttachmentFolderState(
@@ -117,10 +125,6 @@ export function SpaceSettingsPane() {
 			);
 		} catch (e) {
 			setError(extractErrorMessage(e));
-		} finally {
-			setDailyNotesLoading(false);
-			setAttachmentsLoading(false);
-			setQuickNotesLoading(false);
 		}
 	}, []);
 
@@ -131,10 +135,13 @@ export function SpaceSettingsPane() {
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setDailyNotesFolder(relativePath || null);
-			setDailyNotesFolderState(relativePath || null);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setDailyNotesFolder(selection.relativePath || null, {
+				spacePath: selection.spacePath,
+			});
+			setCurrentSpacePath(selection.spacePath);
+			setDailyNotesFolderState(selection.relativePath || null);
 		} catch (cause) {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
@@ -145,23 +152,27 @@ export function SpaceSettingsPane() {
 	const handleClearFolder = useCallback(async () => {
 		setDailyNotesError(null);
 		try {
-			await setDailyNotesFolder(null);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setDailyNotesFolder(null, { spacePath });
 			setDailyNotesFolderState(null);
 		} catch (cause) {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to clear folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	const handleAttachmentModeChange = useCallback(
 		async (nextMode: AttachmentStorageMode) => {
 			setAttachmentError(null);
 			try {
-				await setEditorAttachmentStorageMode(nextMode);
+				const spacePath = requireSpacePath(currentSpacePath);
+				await setEditorAttachmentStorageMode(nextMode, { spacePath });
 				setAttachmentStorageModeState(nextMode);
 				if (nextMode === "specific-folder" && !attachmentFolder) {
-					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, {
+						spacePath,
+					});
 					setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 				}
 			} catch (cause) {
@@ -170,16 +181,21 @@ export function SpaceSettingsPane() {
 				);
 			}
 		},
-		[attachmentFolder],
+		[attachmentFolder, currentSpacePath],
 	);
 
 	const handleBrowseAttachmentFolder = useCallback(async () => {
 		setAttachmentError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setEditorAttachmentFolder(relativePath);
-			setAttachmentFolderState(relativePath || DEFAULT_ATTACHMENT_FOLDER);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setEditorAttachmentFolder(selection.relativePath, {
+				spacePath: selection.spacePath,
+			});
+			setCurrentSpacePath(selection.spacePath);
+			setAttachmentFolderState(
+				selection.relativePath || DEFAULT_ATTACHMENT_FOLDER,
+			);
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
@@ -190,22 +206,29 @@ export function SpaceSettingsPane() {
 	const handleResetAttachmentFolder = useCallback(async () => {
 		setAttachmentError(null);
 		try {
-			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, { spacePath });
 			setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to reset folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	const handleBrowseQuickNotesFolder = useCallback(async () => {
 		setQuickNotesError(null);
 		try {
-			const relativePath = await selectFolderRelativeToSpace();
-			if (relativePath === null) return;
-			await setQuickNotesFolder(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
-			setQuickNotesFolderState(relativePath || DEFAULT_QUICK_NOTES_FOLDER);
+			const selection = await selectFolderRelativeToSpace();
+			if (selection === null) return;
+			await setQuickNotesFolder(
+				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
+				{ spacePath: selection.spacePath },
+			);
+			setCurrentSpacePath(selection.spacePath);
+			setQuickNotesFolderState(
+				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
+			);
 		} catch (cause) {
 			setQuickNotesError(
 				cause instanceof Error
@@ -218,7 +241,8 @@ export function SpaceSettingsPane() {
 	const handleResetQuickNotesFolder = useCallback(async () => {
 		setQuickNotesError(null);
 		try {
-			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER);
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER, { spacePath });
 			setQuickNotesFolderState(DEFAULT_QUICK_NOTES_FOLDER);
 		} catch (cause) {
 			setQuickNotesError(
@@ -227,7 +251,7 @@ export function SpaceSettingsPane() {
 					: "Failed to reset quick notes folder",
 			);
 		}
-	}, []);
+	}, [currentSpacePath]);
 
 	return (
 		<div className="settingsPane">
@@ -247,9 +271,7 @@ export function SpaceSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<div className="dailyNotesFolderPath">
-									{dailyNotesLoading
-										? "Loading..."
-										: (dailyNotesFolder ?? "Not configured")}
+									{dailyNotesFolder ?? "Not configured"}
 								</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
@@ -258,9 +280,8 @@ export function SpaceSettingsPane() {
 										size="sm"
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleBrowseFolder}
-										disabled={dailyNotesLoading}
 									>
-										<FolderOpen size={14} />
+										<FolderOpen size="var(--icon-md)" />
 										Browse
 									</Button>
 									{dailyNotesFolder ? (
@@ -270,11 +291,10 @@ export function SpaceSettingsPane() {
 											size="icon-sm"
 											className="rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleClearFolder}
-											disabled={dailyNotesLoading}
 											aria-label="Clear daily notes folder"
 											title="Clear daily notes folder"
 										>
-											<Trash2 size={14} />
+											<Trash2 size="var(--icon-md)" />
 										</Button>
 									) : null}
 								</div>
@@ -297,19 +317,16 @@ export function SpaceSettingsPane() {
 					>
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
-								<div className="dailyNotesFolderPath">
-									{quickNotesLoading ? "Loading..." : quickNotesFolder}
-								</div>
+								<div className="dailyNotesFolderPath">{quickNotesFolder}</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
 										type="button"
 										variant="outline"
 										size="sm"
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										disabled={quickNotesLoading}
 										onClick={() => void handleBrowseQuickNotesFolder()}
 									>
-										<FolderOpen size={14} />
+										<FolderOpen size="var(--icon-md)" />
 										Browse
 									</Button>
 									<Button
@@ -318,11 +335,10 @@ export function SpaceSettingsPane() {
 										size="icon-sm"
 										className="rounded-md border-border bg-background justify-center shadow-none"
 										onClick={() => void handleResetQuickNotesFolder()}
-										disabled={quickNotesLoading}
 										aria-label="Reset quick notes folder"
 										title="Reset quick notes folder"
 									>
-										<Trash2 size={14} />
+										<Trash2 size="var(--icon-md)" />
 									</Button>
 								</div>
 							</div>
@@ -346,23 +362,21 @@ export function SpaceSettingsPane() {
 						interactive={false}
 					>
 						<div className="dailyNotesFolderField">
-							<select
+							<SettingsSelect
 								aria-label="Attachment location"
-								className="h-9 rounded-md border border-border bg-background px-3 text-sm shadow-none outline-none"
 								value={attachmentStorageMode}
 								onChange={(event) => {
 									void handleAttachmentModeChange(
 										event.target.value as AttachmentStorageMode,
 									);
 								}}
-								disabled={attachmentsLoading}
 							>
 								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
 									<option key={option.value} value={option.value}>
 										{option.label}
 									</option>
 								))}
-							</select>
+							</SettingsSelect>
 							<div className="settingsHelp">
 								{attachmentStorageMode === "space-root"
 									? "Saved at the top level of your space."
@@ -373,9 +387,7 @@ export function SpaceSettingsPane() {
 							{attachmentStorageMode === "specific-folder" ? (
 								<div className="dailyNotesFolderRow">
 									<div className="dailyNotesFolderPath">
-										{attachmentsLoading
-											? "Loading..."
-											: attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
+										{attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
 									</div>
 									<div className="settingsActions dailyNotesActions">
 										<Button
@@ -384,9 +396,8 @@ export function SpaceSettingsPane() {
 											size="sm"
 											className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleBrowseAttachmentFolder}
-											disabled={attachmentsLoading}
 										>
-											<FolderOpen size={14} />
+											<FolderOpen size="var(--icon-md)" />
 											Browse
 										</Button>
 										<Button
@@ -395,11 +406,10 @@ export function SpaceSettingsPane() {
 											size="icon-sm"
 											className="rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleResetAttachmentFolder}
-											disabled={attachmentsLoading}
 											aria-label="Reset attachments folder"
 											title="Reset attachments folder"
 										>
-											<Trash2 size={14} />
+											<Trash2 size="var(--icon-md)" />
 										</Button>
 									</div>
 								</div>
@@ -418,18 +428,6 @@ export function SpaceSettingsPane() {
 				<SettingsSection
 					title="Search Index"
 					description="Rebuild the index if search results are incomplete, stale, or missing."
-					aside={
-						<Button
-							type="button"
-							size="xs"
-							onClick={() => {
-								void onRebuildIndex();
-							}}
-							disabled={!currentSpacePath || isIndexing}
-						>
-							{isIndexing ? "Rebuilding..." : "Rebuild"}
-						</Button>
-					}
 				>
 					<SettingsRow
 						label="Status"
@@ -437,9 +435,26 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsCompactStatus">
-							{reindexStatus ||
-								(!currentSpacePath ? "No space selected." : "Index is ready.")}
+						<div className="dailyNotesFolderRow">
+							<div className="dailyNotesFolderPath">
+								{reindexStatus ||
+									(!currentSpacePath
+										? "No space selected."
+										: "Index is ready.")}
+							</div>
+							<div className="settingsActions dailyNotesActions">
+								<Button
+									type="button"
+									size="sm"
+									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+									onClick={() => {
+										void onRebuildIndex();
+									}}
+									disabled={!currentSpacePath || isIndexing}
+								>
+									{isIndexing ? "Rebuilding..." : "Rebuild"}
+								</Button>
+							</div>
 						</div>
 					</SettingsRow>
 				</SettingsSection>

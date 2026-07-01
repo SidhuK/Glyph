@@ -10,11 +10,12 @@
 	color: var(--text-primary);
 	background: none;
 	border: 1px solid transparent;
-	border-radius: 6px;
+	border-radius: 8px;
 	margin: 0;
 	text-align: left;
 	cursor: pointer;
-	transition: background var(--transition-fast), color var(--transition-fast);
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .sidebarQuickActionBtn:hover {
@@ -41,89 +42,16 @@
 	color: var(--text-primary);
 }
 
-.sidebarTopRow {
-	position: relative;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	width: 100%;
-}
-
-.sidebarSpaceMenuAnchor {
-	position: relative;
-	display: flex;
-	flex: 1 1 auto;
-	min-width: 0;
-}
-
-.sidebarSpaceSwitcher {
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: 8px;
-	flex: 1 1 auto;
-	min-width: 0;
-	height: 26px;
-	padding: 0 8px 0 6px;
-	border: 0;
-	border-radius: 6px;
-	background: transparent;
-	color: var(--text-primary);
-	cursor: pointer;
-	text-align: left;
-	transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.sidebarSpaceSwitcher:hover {
-	background: transparent;
-}
-
-.sidebarSpaceSwitcher:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
-}
-
-.sidebarSpaceBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 20px;
-	width: 20px;
-	height: 20px;
-	border-radius: 5px;
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	line-height: 1;
-}
-
-.sidebarSpaceName {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-}
-
-.sidebarSpaceChevron {
-	flex: 0 0 auto;
-	color: var(--text-tertiary);
-	transition: transform var(--transition-fast), color var(--transition-fast);
-}
-
 .sidebarTopIconButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 26px;
-	width: 26px;
-	height: 26px;
+	width: var(--icon-3xl);
+	height: var(--icon-3xl);
 	padding: 0;
 	border: 0;
-	border-radius: 6px;
+	border-radius: 8px;
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
@@ -131,19 +59,8 @@
 }
 
 .sidebarTopIconButton:hover {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--text-primary);
-}
-
-.sidebarTopNewNoteButton {
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
-}
-
-.sidebarTopNewNoteButton:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
 }
 
 .sidebarTopIconButton:focus-visible {
@@ -157,7 +74,40 @@
 	flex-direction: column;
 	gap: 2px;
 	width: 100%;
-	padding: 0 8px;
+	padding: 10px 8px 0;
+}
+
+.sidebarQuickActionShortcut {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+	margin-left: auto;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	line-height: 1;
+	letter-spacing: 0.02em;
+	opacity: 0;
+	transition: opacity var(--transition-fast);
+}
+
+.sidebarQuickActionBtn:hover .sidebarQuickActionShortcut {
+	opacity: 1;
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionShortcut {
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionCount {
+	flex: 0 0 auto;
+	margin-left: auto;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.85);
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	line-height: 1;
 }
 
 .sidebarNavBtn {
@@ -180,10 +130,39 @@
 	color: var(--text-primary);
 }
 
+/* ── Pinned notes star: always filled gold ── */
+.sidebarNavBtn[data-kind="pinned-notes"] > svg {
+	color: #e8b830;
+}
+
+.sidebarNavBtn[data-kind="pinned-notes"] > svg path {
+	fill: currentColor;
+}
+
 .sidebarNavBtn .sidebarQuickActionLabel {
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	font-weight: var(--font-normal);
 	line-height: 1;
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	margin-bottom: 2px;
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] > svg {
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"]:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"]:hover > svg {
+	color: var(--text-inverse);
 }

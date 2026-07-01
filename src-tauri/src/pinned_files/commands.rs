@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use tauri::State;
+use tauri::{State, WebviewWindow};
 
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
@@ -10,8 +10,11 @@ use super::store::{
 };
 
 #[tauri::command]
-pub async fn pinned_files_list(state: State<'_, SpaceState>) -> Result<Vec<String>, String> {
-    let root = state.current_root()?;
+pub async fn pinned_files_list(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+) -> Result<Vec<String>, String> {
+    let root = state.root_for_window(&window)?;
     let pinned_files_mutex = state.pinned_files_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let _guard = pinned_files_mutex
@@ -29,10 +32,11 @@ pub async fn pinned_files_list(state: State<'_, SpaceState>) -> Result<Vec<Strin
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn pinned_files_toggle(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<Vec<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let pinned_files_mutex = state.pinned_files_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let rel = PathBuf::from(&path);
@@ -54,11 +58,12 @@ pub async fn pinned_files_toggle(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn pinned_files_rename_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
 ) -> Result<Vec<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let pinned_files_mutex = state.pinned_files_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let from_rel = PathBuf::from(&from_path);
@@ -87,10 +92,11 @@ pub async fn pinned_files_rename_path(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn pinned_files_delete_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<Vec<String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let pinned_files_mutex = state.pinned_files_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let rel = PathBuf::from(&path);

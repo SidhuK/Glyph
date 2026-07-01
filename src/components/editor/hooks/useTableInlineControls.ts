@@ -1,11 +1,24 @@
 import type { Editor } from "@tiptap/core";
-import { type RefObject, useEffect, useRef, useState } from "react";
-import type { SelectedTableState } from "../noteEditorOverlayTypes";
+import {
+	type MouseEvent as ReactMouseEvent,
+	type RefObject,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import type {
+	SelectedTableState,
+	TableEditorCommand,
+	TableInlineControlsProps,
+} from "../noteEditorOverlayTypes";
 import type { NoteInlineEditorMode } from "../types";
 import {
 	getMountedEditorContentRoot,
 	getOffsetWithinAncestor,
 } from "./editorDomUtils";
+import { runTableEditorCommand } from "./tableEditorCommands";
 
 const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
 const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
@@ -22,11 +35,48 @@ export function useTableInlineControls({
 	editor,
 	hostRef,
 	mode,
-}: UseTableInlineControlsArgs): SelectedTableState | null {
+}: UseTableInlineControlsArgs): TableInlineControlsProps | null {
 	const syncRafRef = useRef<number | null>(null);
 	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
 		null,
 	);
+	const [canDeleteRow, setCanDeleteRow] = useState(false);
+	const [canDeleteColumn, setCanDeleteColumn] = useState(false);
+
+	const onControlMouseDown = useCallback(
+		(event: ReactMouseEvent<HTMLElement>) => {
+			event.preventDefault();
+		},
+		[],
+	);
+	const onCommand = useCallback(
+		(command: TableEditorCommand) => {
+			if (!editor) return;
+			runTableEditorCommand(editor, command);
+		},
+		[editor],
+	);
+
+	useEffect(() => {
+		if (!editor || mode !== "rich" || !canEdit) {
+			setCanDeleteRow(false);
+			setCanDeleteColumn(false);
+			return;
+		}
+
+		const syncDeleteCapabilities = () => {
+			setCanDeleteRow(editor.can().deleteRow());
+			setCanDeleteColumn(editor.can().deleteColumn());
+		};
+
+		syncDeleteCapabilities();
+		editor.on("transaction", syncDeleteCapabilities);
+		editor.on("selectionUpdate", syncDeleteCapabilities);
+		return () => {
+			editor.off("transaction", syncDeleteCapabilities);
+			editor.off("selectionUpdate", syncDeleteCapabilities);
+		};
+	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || !canEdit) {
@@ -125,5 +175,20 @@ export function useTableInlineControls({
 		};
 	}, [canEdit, editor, hostRef, mode]);
 
-	return selectedTable;
+	return useMemo(() => {
+		if (!selectedTable) return null;
+		return {
+			selected: selectedTable,
+			onControlMouseDown,
+			onCommand,
+			canDeleteRow,
+			canDeleteColumn,
+		};
+	}, [
+		canDeleteColumn,
+		canDeleteRow,
+		onCommand,
+		onControlMouseDown,
+		selectedTable,
+	]);
 }

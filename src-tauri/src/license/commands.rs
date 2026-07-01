@@ -6,8 +6,9 @@ use super::store::{license_path, read_record, write_record};
 use super::types::{
     build_status, build_status_for, ensure_trial_window, ensure_trial_window_from_activation,
     hash_license_key, mask_license_key, normalize_license_key, LicenseActivateResult,
+    LicenseRecord,
 };
-use super::{is_dev_force_licensed, is_official_build};
+use super::{is_dev_force_licensed, is_dev_force_trial, is_official_build, TRIAL_DURATION_MS};
 
 fn now_ms() -> u64 {
     std::time::SystemTime::now()
@@ -17,10 +18,24 @@ fn now_ms() -> u64 {
         .unwrap_or_default()
 }
 
+fn dev_trial_status(current_ms: u64) -> super::types::LicenseStatus {
+    let record = LicenseRecord {
+        trial_started_at_ms: Some(current_ms),
+        trial_expires_at_ms: Some(current_ms.saturating_add(TRIAL_DURATION_MS)),
+        ..Default::default()
+    };
+    build_status_for(&record, current_ms, true)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseStatus, String> {
     let current_ms = now_ms();
     let dev_force_licensed = is_dev_force_licensed();
+    let dev_force_trial = is_dev_force_trial() && !dev_force_licensed;
+
+    if dev_force_trial {
+        return Ok(dev_trial_status(current_ms));
+    }
 
     if !is_official_build() && !dev_force_licensed {
         return Ok(build_status(&Default::default(), current_ms));
@@ -80,6 +95,13 @@ pub async fn license_activate(
 ) -> Result<LicenseActivateResult, String> {
     let current_ms = now_ms();
     let dev_force_licensed = is_dev_force_licensed();
+    let dev_force_trial = is_dev_force_trial() && !dev_force_licensed;
+
+    if dev_force_trial {
+        return Ok(LicenseActivateResult {
+            status: dev_trial_status(current_ms),
+        });
+    }
 
     if !is_official_build() && !dev_force_licensed {
         return Ok(LicenseActivateResult {
@@ -139,6 +161,13 @@ pub async fn license_activate(
 pub fn license_clear_local(app: AppHandle) -> Result<LicenseActivateResult, String> {
     let current_ms = now_ms();
     let dev_force_licensed = is_dev_force_licensed();
+    let dev_force_trial = is_dev_force_trial() && !dev_force_licensed;
+
+    if dev_force_trial {
+        return Ok(LicenseActivateResult {
+            status: dev_trial_status(current_ms),
+        });
+    }
 
     if !is_official_build() && !dev_force_licensed {
         return Ok(LicenseActivateResult {

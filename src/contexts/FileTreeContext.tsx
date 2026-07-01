@@ -8,19 +8,22 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useDebouncedNoteChange } from "../hooks/useDebouncedNoteChange";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { loadSettings } from "../lib/settings";
+import { normalizeTagIconKey } from "../lib/tagIcons";
 import type {
 	FileTreeAppearance,
 	FsEntry,
 	PersonCount,
+	TagAppearance,
 	TagCount,
 } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
-export interface FileTreeContextValue {
+interface FileTreeContextValue {
 	rootEntries: FsEntry[];
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
@@ -57,8 +60,12 @@ export interface FileTreeContextValue {
 	deleteItemAppearance: (path: string) => Promise<void>;
 	tags: TagCount[];
 	people: PersonCount[];
+	beautifulTags: boolean;
+	tagAppearance: Record<string, TagAppearance>;
 	tagsError: string;
 	refreshTags: () => Promise<void>;
+	refreshTagAppearance: () => Promise<void>;
+	setTagAppearance: (tag: string, icon: string | null) => Promise<void>;
 }
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
@@ -91,7 +98,7 @@ async function fetchAllPeople(): Promise<PersonCount[]> {
 }
 
 export function FileTreeProvider({ children }: { children: ReactNode }) {
-	const { spacePath, isIndexing, startIndexRebuild } = useSpace();
+	const { spacePath, startIndexSync } = useSpace();
 
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
@@ -108,9 +115,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>({});
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [people, setPeople] = useState<PersonCount[]>([]);
+	const [beautifulTags, setBeautifulTags] = useState(false);
+	const [tagAppearance, setTagAppearanceState] = useState<
+		Record<string, TagAppearance>
+	>({});
 	const [tagsError, setTagsError] = useState("");
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
+	const tagAppearanceRequestIdRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 	currentSpacePathRef.current = spacePath;
@@ -153,6 +165,34 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		}
 	}, []);
 
+	const refreshTagAppearance = useCallback(async () => {
+		const requestId = tagAppearanceRequestIdRef.current + 1;
+		tagAppearanceRequestIdRef.current = requestId;
+		const originSpace = currentSpacePathRef.current;
+		if (!originSpace) {
+			setTagAppearanceState({});
+			return;
+		}
+		try {
+			const nextAppearance = await invoke("tag_appearance_list");
+			if (
+				requestId !== tagAppearanceRequestIdRef.current ||
+				originSpace !== currentSpacePathRef.current
+			) {
+				return;
+			}
+			setTagAppearanceState(nextAppearance);
+		} catch {
+			if (
+				requestId !== tagAppearanceRequestIdRef.current ||
+				originSpace !== currentSpacePathRef.current
+			) {
+				return;
+			}
+			setTagAppearanceState({});
+		}
+	}, []);
+
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings()
@@ -160,21 +200,25 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				peopleMentionsEnabledRef.current =
 					settings.editor.enablePeopleMentionsAsTags;
+				setBeautifulTags(settings.editor.beautifulTags);
 				if (currentSpacePathRef.current) {
 					void refreshTags();
+					void refreshTagAppearance();
 				}
 			})
 			.catch(() => {
 				if (cancelled) return;
 				peopleMentionsEnabledRef.current = false;
+				setBeautifulTags(false);
 				if (currentSpacePathRef.current) {
 					void refreshTags();
+					void refreshTagAppearance();
 				}
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [refreshTags]);
+	}, [refreshTagAppearance, refreshTags]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
@@ -186,6 +230,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			if (currentSpacePathRef.current) {
 				void refreshTags();
 			}
+		}
+		if (typeof payload.editor?.beautifulTags === "boolean") {
+			setBeautifulTags(payload.editor.beautifulTags);
 		}
 	});
 
@@ -199,17 +246,18 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setItemAppearanceState({});
 		setTags([]);
 		setPeople([]);
+		setTagAppearanceState({});
 		setTagsError("");
 		if (!spacePath) return;
 
+		const originSpace = spacePath;
 		let cancelled = false;
+		const indexSync = startIndexSync();
 		(async () => {
 			try {
 				const entries = await invoke("space_list_dir", {});
 				if (!cancelled) {
 					setRootEntries(entries);
-					void startIndexRebuild();
-					void refreshTags();
 				}
 			} catch {
 				/* ignore initial load errors */
@@ -223,6 +271,20 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				/* ignore appearance load errors */
 			}
 			try {
+				const requestId = tagAppearanceRequestIdRef.current + 1;
+				tagAppearanceRequestIdRef.current = requestId;
+				const appearance = await invoke("tag_appearance_list");
+				if (
+					!cancelled &&
+					requestId === tagAppearanceRequestIdRef.current &&
+					originSpace === currentSpacePathRef.current
+				) {
+					setTagAppearanceState(appearance);
+				}
+			} catch {
+				/* ignore tag appearance load errors */
+			}
+			try {
 				const files = await invoke("pinned_files_list");
 				if (!cancelled) {
 					setPinnedFiles(files);
@@ -231,14 +293,13 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				/* ignore pinned file load errors */
 			}
 		})();
+		void indexSync.then(() => {
+			if (!cancelled) void refreshTags();
+		});
 		return () => {
 			cancelled = true;
 		};
-	}, [spacePath, startIndexRebuild, refreshTags]);
-
-	useEffect(() => {
-		if (!isIndexing && spacePath) void refreshTags();
-	}, [isIndexing, spacePath, refreshTags]);
+	}, [spacePath, startIndexSync, refreshTags]);
 
 	const refreshPinnedFiles = useCallback(async () => {
 		if (!spacePath) {
@@ -256,6 +317,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			}
 		}
 	}, [spacePath]);
+
+	useDebouncedNoteChange({
+		delayMs: 200,
+		enabled: Boolean(spacePath),
+		onChange: () => void refreshTags(),
+	});
 
 	useTauriEvent("space:fs_changed", (payload) => {
 		if (!spacePath) return;
@@ -386,6 +453,31 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		[spacePath],
 	);
 
+	const setTagAppearance = useCallback<
+		FileTreeContextValue["setTagAppearance"]
+	>(
+		async (tag, icon) => {
+			const currentSpacePath = spacePath;
+			const next = await invoke("tag_appearance_set", {
+				tag,
+				icon,
+			});
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setTagAppearanceState((prev) => {
+				const normalizedTag = normalizeTagIconKey(tag) ?? tag;
+				if (!next) {
+					if (!(normalizedTag in prev) && !(tag in prev)) return prev;
+					const nextMap = { ...prev };
+					delete nextMap[normalizedTag];
+					delete nextMap[tag];
+					return nextMap;
+				}
+				return { ...prev, [normalizedTag]: next };
+			});
+		},
+		[spacePath],
+	);
+
 	const updateRootEntries = useCallback<
 		FileTreeContextValue["updateRootEntries"]
 	>((next) => {
@@ -445,8 +537,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			deleteItemAppearance,
 			tags,
 			people,
+			beautifulTags,
+			tagAppearance,
 			tagsError,
 			refreshTags,
+			refreshTagAppearance,
+			setTagAppearance,
 		}),
 		[
 			rootEntries,
@@ -470,8 +566,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			deleteItemAppearance,
 			tags,
 			people,
+			beautifulTags,
+			tagAppearance,
 			tagsError,
 			refreshTags,
+			refreshTagAppearance,
+			setTagAppearance,
 		],
 	);
 

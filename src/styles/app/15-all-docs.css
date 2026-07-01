@@ -1,16 +1,80 @@
 .allDocsPane {
+	--all-docs-card-min-width: 184px;
+	--all-docs-card-min-height: 184px;
+	--all-docs-card-aspect: 1 / 1;
+	--all-docs-card-padding: 12px;
+	--all-docs-card-gap: 14px;
+	--all-docs-card-title-size: var(--text-base);
+	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
+	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
+	--all-docs-pane-padding: clamp(20px, 2.8vw, 32px);
+
 	display: flex;
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
 	overflow-y: auto;
-	padding: clamp(20px, 2.8vw, 32px);
-	background: var(--bg-primary);
+	padding: var(--all-docs-pane-padding);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	gap: 18px;
 }
 
+.canvasPaneHost[data-all-docs="true"] .allDocsPane {
+	padding-top: calc(var(--header-height) + var(--all-docs-pane-padding));
+}
+
+.allDocsHeader {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.allDocsHeaderAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	min-height: 32px;
+	padding: 0 10px;
+	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: 0 10px 22px -20px rgb(30 41 59 / 0.25);
+	transition: transform 120ms ease, background-color 120ms ease, color 120ms
+		ease, box-shadow 120ms ease;
+}
+
+.allDocsHeaderAction:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+	box-shadow: 0 14px 26px -22px rgb(30 41 59 / 0.34);
+}
+
+.allDocsHeaderAction:active {
+	transform: scale(0.96);
+}
+
+.allDocsHeaderAction:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.allDocsHeadingGroup {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 5px;
+}
+
 .allDocsTitle {
-	font-size: clamp(24px, 2.2vw, 30px);
+	font-size: calc(var(--text-base) * 2.1);
 	line-height: 1.08;
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
@@ -19,15 +83,34 @@
 
 .allDocsGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
-	gap: 18px 16px;
+	grid-template-columns: repeat(
+			auto-fill,
+			minmax(var(--all-docs-card-min-width), 1fr)
+		);
+	gap: var(--all-docs-card-gap);
 	align-content: start;
+	padding-bottom: var(--all-docs-card-gap);
 }
 
 .allDocsSections {
 	display: flex;
 	flex-direction: column;
 	gap: 22px;
+}
+
+.allDocsSections.is-virtualized {
+	position: relative;
+	display: block;
+	flex: 0 0 auto;
+	min-height: 0;
+}
+
+.allDocsVirtualRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	will-change: transform;
 }
 
 .allDocsSection {
@@ -44,10 +127,10 @@
 }
 
 .allDocsSectionTitle {
-	font-size: 0.92rem;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.01em;
-	color: var(--text-primary);
+	letter-spacing: 0;
+	color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
 }
 
 .allDocsCard {
@@ -82,49 +165,42 @@
 }
 
 .allDocsCardSurface {
+	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 9px;
+	gap: 10px;
 	width: 100%;
-	aspect-ratio: 0.82 / 1;
-	min-height: 214px;
+	aspect-ratio: var(--all-docs-card-aspect);
+	min-height: var(--all-docs-card-min-height);
 	min-width: 0;
-	padding: 14px;
+	padding: var(--all-docs-card-padding);
 	border-radius: 8px;
-	background: var(--bg-primary);
-	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
-	box-shadow: 0 12px 24px -20px
-		color-mix(in srgb, var(--text-primary) 42%, transparent), 0 3px 10px -8px
-		color-mix(in srgb, var(--text-primary) 28%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.26);
 	overflow: hidden;
-	transition: background-color 120ms ease, outline-color 120ms ease, transform
-		120ms ease, box-shadow 120ms ease;
+	transition: background-color 120ms ease, border-color 120ms ease, box-shadow
+		120ms ease;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-hover) 94%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
-	);
-	outline-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-	box-shadow: 0 16px 30px -22px
-		color-mix(in srgb, var(--text-primary) 48%, transparent), 0 5px 14px -10px
-		color-mix(in srgb, var(--text-primary) 32%, transparent);
-	transform: translateY(-1px);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: 0 12px 24px -18px rgb(30 41 59 / 0.3);
 }
 
 .allDocsCard[data-state="selected"] .allDocsCardSurface {
-	outline: 1.5px solid
-		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 48%,
+		var(--text-primary)
 	);
-	box-shadow: 0 14px 28px -22px
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent), 0 4px 12px
-		-10px color-mix(in srgb, var(--text-primary) 28%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--bg-primary) 92%,
+		var(--interactive-accent)
+	);
+	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.28);
 }
 
 .allDocsCard:focus-visible .allDocsCardSurface {
@@ -132,92 +208,78 @@
 		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
+.dark .allDocsCardSurface {
+	background: var(--bg-tertiary);
+	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.86);
+}
+
+.dark .allDocsCard:hover .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-hover));
+	box-shadow: 0 12px 22px -18px rgb(2 6 23 / 0.92);
+}
+
+.dark .allDocsCard[data-state="selected"] .allDocsCardSurface {
+	background: color-mix(
+		in srgb,
+		var(--bg-tertiary) 92%,
+		var(--interactive-accent)
+	);
+	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.9);
+}
+
+.dark .allDocsCard:focus-visible .allDocsCardSurface {
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+}
+
+.allDocsCardTop {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	gap: 10px;
+	min-width: 0;
+}
+
 .allDocsCardTitle {
 	min-width: 0;
-	display: block;
-	flex: 0 0 auto;
-	font-size: 0.92rem;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	font-size: var(--all-docs-card-title-size);
 	font-weight: var(--font-semibold);
-	line-height: 1.32;
-	color: var(--text-primary);
-	overflow: visible;
+	line-height: 1.3;
+	color: var(--database-note-appearance-color, var(--text-primary));
+	overflow: hidden;
 	overflow-wrap: anywhere;
 	white-space: normal;
 }
 
-.allDocsCardMetaRow {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 5px;
-	min-width: 0;
-	font-size: 0.68rem;
-	line-height: 1.2;
-	color: var(--text-tertiary);
-}
-
-.allDocsCardPath {
-	min-width: 0;
+.allDocsCardTitleIcon {
 	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	overflow: hidden;
-	white-space: nowrap;
-}
-
-.allDocsCardPathIcon {
-	flex: 0 0 auto;
-	color: currentcolor;
-}
-
-.allDocsCardPathLabel {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardTime {
-	min-width: 0;
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	justify-self: end;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.allDocsCardTime::before {
-	content: "";
-	flex: 0 0 auto;
-	width: 3px;
-	height: 3px;
-	border-radius: 50%;
-	background: currentcolor;
-	opacity: 0.72;
-}
-
-.allDocsCardDivider {
-	flex: 0 0 auto;
-	height: 1px;
-	margin: 1px 0 4px;
-	background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+	width: var(--icon-md);
+	margin-right: 6px;
+	color: var(--database-note-appearance-color, var(--text-accent));
+	vertical-align: -2px;
 }
 
 .allDocsCardPreview {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
 	flex: 1 1 auto;
 	min-height: 0;
-	font-size: 0.76rem;
-	line-height: 1.4;
-	color: var(--text-secondary);
+	flex-direction: column;
+	gap: 3px;
 	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: var(--all-docs-card-preview-size);
+	line-height: 1.45;
 	overflow-wrap: anywhere;
 	white-space: normal;
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 1.45em), transparent);
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		#000 calc(100% - 1.45em),
+		transparent
+	);
 }
 
 .allDocsCardPreviewLine {
@@ -227,13 +289,19 @@
 
 .allDocsCardPreviewLine.is-heading {
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+	color: color-mix(in srgb, var(--text-primary) 92%, var(--text-secondary));
 }
 
 .allDocsCardPreviewLine.is-quote {
-	padding-left: 6px;
+	padding-left: 8px;
 	border-left: 2px solid
 		color-mix(in srgb, var(--border-light) 88%, transparent);
+	color: color-mix(in srgb, var(--text-secondary) 70%, var(--text-tertiary));
+}
+
+.allDocsCardPreviewLine.is-task::before {
+	content: "□";
+	margin-right: 5px;
 	color: var(--text-tertiary);
 }
 
@@ -251,59 +319,52 @@
 	font-style: italic;
 }
 
-.allDocsCardTags {
-	display: flex;
-	flex: 0 0 auto;
-	flex-wrap: nowrap;
-	gap: 5px;
-	min-width: 0;
-	margin-top: auto;
-	overflow: hidden;
-}
-
-.allDocsCardTag {
+.allDocsCardTaskSummary {
 	display: inline-flex;
+	flex: 0 0 auto;
 	align-items: center;
 	gap: 4px;
-	max-width: 100%;
-	flex: 0 0 auto;
-	padding: 2px 7px;
-	border: 0;
-	border-radius: 4px;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 9%,
-		var(--bg-primary)
-	);
 	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
-	font-size: 0.68rem;
+	font-size: var(--all-docs-card-meta-size);
 	font-weight: var(--font-medium);
-	line-height: 1.2;
+	line-height: 1.25;
+}
+
+.allDocsCardTaskSummary.is-top {
+	justify-self: end;
+	padding-top: 1px;
+}
+
+.allDocsCardTaskProgress {
+	--task-progress-width: var(--icon-md);
+	--task-progress-height: var(--icon-md);
+	--task-progress-ring-size: var(--icon-md);
+	--task-progress-pie-size: calc(var(--icon-md) * 0.45);
+}
+
+.allDocsCardTaskProgress .markdownEditorTaskProgressRing {
+	border-width: 2px;
+}
+
+.allDocsCardTaskText {
 	white-space: nowrap;
 }
 
-.allDocsCardTag.is-muted {
-	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
-	color: var(--text-tertiary);
-}
-
-.allDocsCardTagIcon {
-	flex: 0 0 auto;
-	color: currentcolor;
-}
-
 @media (max-width: 900px) {
-	.allDocsGrid {
-		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	.allDocsPane {
+		--all-docs-card-min-width: 160px;
 	}
 }
 
 @media (max-width: 640px) {
 	.allDocsPane {
+		--all-docs-card-min-width: 144px;
+		--all-docs-card-min-height: 176px;
+
 		padding: 18px;
 	}
 
-	.allDocsGrid {
-		grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+	.allDocsHeader {
+		align-items: flex-start;
 	}
 }

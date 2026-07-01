@@ -1,34 +1,3 @@
-.editorBacklinks {
-	width: min(
-		100%,
-		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter-compact))
-		)
-	);
-	margin: 0 auto var(--space-2);
-	padding: var(--space-3) var(--editor-readable-content-gutter-compact)
-		var(--space-5);
-	font-size: 11px;
-	color: var(--text-tertiary);
-	box-sizing: border-box;
-}
-
-.editorBacklinksLabel {
-	text-transform: uppercase;
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.06em;
-	flex: 0 0 auto;
-}
-
-.editorBacklinksRow {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 6px 8px;
-}
-
 .tiptapContentInline a {
 	color: var(--interactive-accent);
 	text-decoration: underline;
@@ -42,6 +11,20 @@
 	height: auto;
 	margin: var(--space-2) 0;
 	border-radius: var(--radius-md);
+}
+
+.tiptapContentInline img[data-glyph-hydration-state="pending"],
+.tiptapContentInline img[data-glyph-hydration-state="loading"] {
+	min-height: 120px;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+	color: transparent;
+}
+
+.tiptapContentInline pre,
+.tiptapContentInline table,
+.tiptapContentInline img {
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 240px;
 }
 
 .wikiLink {
@@ -65,12 +48,12 @@
 }
 
 .wikiLinkIcon {
-	--wiki-link-file-icon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M8 7L16 7' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M8 11L12 11' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M13 21.5V21C13 18.1716 13 16.7574 13.8787 15.8787C14.7574 15 16.1716 15 19 15H19.5M20 13.3431V10C20 6.22876 20 4.34315 18.8284 3.17157C17.6569 2 15.7712 2 12 2C8.22877 2 6.34315 2 5.17157 3.17157C4 4.34314 4 6.22876 4 10L4 14.5442C4 17.7892 4 19.4117 4.88607 20.5107C5.06508 20.7327 5.26731 20.9349 5.48933 21.1139C6.58831 22 8.21082 22 11.4558 22C12.1614 22 12.5141 22 12.8372 21.886C12.9044 21.8623 12.9702 21.835 13.0345 21.8043C13.3436 21.6564 13.593 21.407 14.0919 20.9081L18.8284 16.1716C19.4065 15.5935 19.6955 15.3045 19.8478 14.9369C20 14.5694 20 14.1606 20 13.3431Z' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	--wiki-link-file-icon-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%3E%3Cpath%20d%3D'M12.8809%207.01656L17.6538%208.28825M11.8578%2010.8134L14.2442%2011.4492M11.9765%2017.9664L12.9311%2018.2208C15.631%2018.9401%2016.981%2019.2998%2018.0445%2018.6893C19.108%2018.0787%2019.4698%2016.7363%2020.1932%2014.0516L21.2163%2010.2548C21.9398%207.57005%2022.3015%206.22768%2021.6875%205.17016C21.0735%204.11264%2019.7235%203.75295%2017.0235%203.03358L16.0689%202.77924C13.369%202.05986%2012.019%201.70018%2010.9555%202.31074C9.89196%202.9213%209.53023%204.26367%208.80678%206.94841L7.78366%2010.7452C7.0602%2013.4299%206.69848%2014.7723%207.3125%2015.8298C7.92652%2016.8874%209.27651%2017.2471%2011.9765%2017.9664Z'%20stroke%3D'black'%20stroke-width%3D'1.5'%20stroke-linecap%3D'round'/%3E%3Cpath%20d%3D'M12%2020.9462L11.0477%2021.2055C8.35403%2021.939%207.00722%2022.3057%205.94619%2021.6832C4.88517%2021.0607%204.52429%2019.692%203.80253%2016.9546L2.78182%2013.0833C2.06006%2010.3459%201.69918%208.97718%202.31177%207.89892C2.84167%206.96619%204%207.00015%205.5%207.00003'%20stroke%3D'black'%20stroke-width%3D'1.5'%20stroke-linecap%3D'round'/%3E%3C%2Fsvg%3E")
 		center / contain no-repeat;
 
 	flex: 0 0 auto;
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
 	background: var(--text-accent);
 	color: var(--text-accent);
 	mask: var(--wiki-link-file-icon-mask);
@@ -125,6 +108,34 @@
 	color: color-mix(in srgb, var(--interactive-accent) 80%, var(--text-primary));
 }
 
+.tiptapContentInline .footnoteRef {
+	color: var(--interactive-accent);
+	font-size: 0.75em;
+	font-weight: var(--font-semibold);
+	vertical-align: super;
+	line-height: 0;
+	cursor: pointer;
+	border-radius: 3px;
+	padding: 0 1px;
+	transition: background 120ms ease;
+}
+.tiptapContentInline .footnoteRef:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}
+
+.tiptapContentInline .footnoteDef {
+	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-tertiary));
+	font-family: var(--font-mono);
+	font-size: 0.85em;
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+	border-radius: 3px;
+	transition: background 120ms ease;
+}
+.tiptapContentInline .footnoteDef:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
 .tiptapContentInline .personToken {
 	display: inline-block;
 	color: var(--pill-contrast-fg);
@@ -156,22 +167,24 @@
 	pointer-events: none;
 }
 
-.tiptapContentInline {
-	letter-spacing: 0;
-	line-height: 1.68;
-	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
-	text-rendering: optimizeLegibility;
+.tiptapContentInline
+	ul[data-type="taskList"]
+	li[data-type="taskItem"]
+	> div
+	> p.is-editor-empty:first-child::before,
+.tiptapContentInline
+	li[data-type="taskItem"]
+	> div
+	> p.is-editor-empty:first-child::before {
+	float: none;
 }
 
-.tiptapContentInline::selection,
-.tiptapContentInline *::selection,
-.rfNodeNoteEditorRaw::selection,
-.rfNodeNoteEditorRaw *::selection {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 20%,
-		var(--selection-bg-muted)
-	);
+.tiptapContentInline {
+	font-family: var(--font-editor);
+	letter-spacing: 0;
+	line-height: 1.68;
+	color: var(--editor-body-color);
+	text-rendering: optimizeLegibility;
 }
 
 .noteSearchMatch {
@@ -288,8 +301,8 @@
 /* Edit-mode heading rail (H1/H2/...) */
 .tiptapHostInline:not(.is-preview),
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
-	--heading-toggle-rail-width: 12px;
-	--heading-level-rail-width: 18px;
+	--heading-toggle-rail-width: calc(var(--editor-font-size) * 0.8);
+	--heading-level-rail-width: calc(var(--editor-font-size) * 1.2);
 	--heading-rail-gap: 6px;
 }
 
@@ -322,16 +335,16 @@
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before,
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
-	position: absolute;
-	top: auto;
-	bottom: 0;
-	left: calc(
+	display: inline-block;
+	width: var(--heading-level-rail-width);
+	margin-left: calc(
 		-1 *
-		(var(--heading-level-rail-width) + var(--heading-rail-gap)) +
-		2px
+		(var(--heading-level-rail-width) + var(--heading-rail-gap))
 	);
-	font-size: 11px;
-	line-height: 1;
+	margin-right: var(--heading-rail-gap);
+	vertical-align: baseline;
+	text-align: right;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	font-weight: var(--font-medium);
 	letter-spacing: 0.025em;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
@@ -340,17 +353,14 @@
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before {
 	content: "H1";
-	bottom: 6px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before {
 	content: "H2";
-	bottom: 5px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before {
 	content: "H3";
-	bottom: 4px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before {
@@ -401,55 +411,118 @@
 	color: var(--editor-heading-h6-color);
 }
 
-.tiptapContentInline .headingCollapseHeading {
-	position: relative;
+.tiptapContentInline .inlineTocMarker {
+	display: none;
 }
 
-.tiptapContentInline .headingCollapseToggle {
-	position: absolute;
-	top: 50%;
-	left: calc(-1 * var(--space-5));
+.inlineTocWidget {
+	margin: var(--space-3) 0 var(--space-4);
+	padding: var(--space-3);
+	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, var(--bg-primary));
+}
+
+.inlineTocHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-2);
+	gap: var(--space-2);
+}
+
+.inlineTocTitle {
+	color: var(--text-secondary);
+	font-size: calc(var(--editor-font-size) * 0.78);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.inlineTocRemoveBtn {
+	appearance: none;
+	-webkit-appearance: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 12px;
-	height: 12px;
-	margin: 0;
+	width: 22px;
+	height: 22px;
 	padding: 0;
 	border: 0;
 	border-radius: var(--radius-sm);
 	background: transparent;
-	color: color-mix(in srgb, var(--text-tertiary) 84%, transparent);
+	color: var(--text-tertiary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.95);
+	line-height: 1;
 	cursor: pointer;
-	transform: translateY(-50%);
-	transition: color 140ms ease, background-color 140ms ease, transform 140ms
-		ease;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
 }
 
-.tiptapContentInline .headingCollapseToggle:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+.inlineTocRemoveBtn:hover,
+.inlineTocRemoveBtn:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.inlineTocItems {
+	display: grid;
+	gap: 2px;
+}
+
+.inlineTocItem {
+	appearance: none;
+	-webkit-appearance: none;
+	display: block;
+	width: 100%;
+	min-width: 0;
+	padding: 4px 6px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
 	color: var(--text-secondary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.9);
+	line-height: 1.35;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
 }
 
-.tiptapContentInline .headingCollapseToggle:focus-visible {
-	outline: 2px solid var(--border-focus);
-	outline-offset: 1px;
+.inlineTocItem:hover,
+.inlineTocItem:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
 }
 
-.tiptapContentInline .headingCollapseChevron {
-	width: 6px;
-	height: 6px;
-	border-right: 1.35px solid currentcolor;
-	border-bottom: 1.35px solid currentcolor;
-	transform: rotate(45deg) translateY(-1px);
-	transform-origin: 50% 50%;
-	transition: transform 140ms ease;
+.inlineTocItem[data-level="2"] {
+	padding-left: calc(var(--space-3) + 6px);
 }
 
-.tiptapContentInline
-	.headingCollapseHeading[data-heading-collapsed="true"]
-	.headingCollapseChevron {
-	transform: rotate(-45deg) translate(-1px, 1px);
+.inlineTocItem[data-level="3"] {
+	padding-left: calc(var(--space-5) + 2px);
+}
+
+.inlineTocItem[data-level="4"],
+.inlineTocItem[data-level="5"],
+.inlineTocItem[data-level="6"] {
+	padding-left: calc(var(--space-6) + 6px);
+}
+
+.inlineTocEmpty {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.9);
+}
+
+.tiptapContentInline .headingCollapseHeading {
+	position: relative;
 }
 
 .tiptapContentInline .headingCollapseHidden {
@@ -497,7 +570,7 @@
 .tiptapContentInline blockquote.callout::before {
 	content: attr(data-callout-title);
 	display: block;
-	font-size: 11px;
+	font-size: calc(var(--editor-font-size) * 0.8);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	font-weight: var(--font-semibold);
@@ -546,68 +619,39 @@
 	padding: 2px 5px;
 	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	font-family: var(--font-mono);
 }
 
 .tiptapContentInline span[data-glyph-color="gray"] {
-	color: var(--glyph-inline-color-gray, #5f5e5b);
+	color: var(--glyph-inline-color-gray);
 }
 
 .tiptapContentInline span[data-glyph-color="brown"] {
-	color: var(--glyph-inline-color-brown, #8b5e3c);
+	color: var(--glyph-inline-color-brown);
 }
 
 .tiptapContentInline span[data-glyph-color="orange"] {
-	color: var(--glyph-inline-color-orange, #c76b1a);
+	color: var(--glyph-inline-color-orange);
 }
 
 .tiptapContentInline span[data-glyph-color="yellow"] {
-	color: var(--glyph-inline-color-yellow, #a26a00);
+	color: var(--glyph-inline-color-yellow);
 }
 
 .tiptapContentInline span[data-glyph-color="green"] {
-	color: var(--glyph-inline-color-green, #0f7b0f);
+	color: var(--glyph-inline-color-green);
 }
 
 .tiptapContentInline span[data-glyph-color="blue"] {
-	color: var(--glyph-inline-color-blue, #1a6ba4);
+	color: var(--glyph-inline-color-blue);
 }
 
 .tiptapContentInline span[data-glyph-color="purple"] {
-	color: var(--glyph-inline-color-purple, #7a4bc2);
+	color: var(--glyph-inline-color-purple);
 }
 
 .tiptapContentInline span[data-glyph-color="red"] {
-	color: var(--glyph-inline-color-red, #c73838);
-}
-
-.tiptapContentInline mark[data-glyph-highlight] {
-	background: transparent;
-	padding: 0.02em 0.12em;
-	border-radius: 0.22em;
-	box-decoration-break: clone;
-	-webkit-box-decoration-break: clone;
-}
-
-.tiptapContentInline mark[data-glyph-highlight="yellow"] {
-	background-color: var(
-		--glyph-inline-highlight-yellow,
-		rgba(240, 180, 41, 0.26)
-	);
-}
-
-.tiptapContentInline mark[data-glyph-highlight="blue"] {
-	background-color: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22));
-}
-
-.tiptapContentInline mark[data-glyph-highlight="green"] {
-	background-color: var(
-		--glyph-inline-highlight-green,
-		rgba(60, 207, 142, 0.24)
-	);
-}
-
-.tiptapContentInline mark[data-glyph-highlight="red"] {
-	background-color: var(--glyph-inline-highlight-red, rgba(249, 112, 102, 0.2));
+	color: var(--glyph-inline-color-red);
 }
 
 .tiptapContentInline pre {
@@ -615,6 +659,7 @@
 	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
 	border-radius: var(--radius-lg);
 	overflow: auto;
+	font-family: var(--font-mono);
 }
 
 .tiptapContentInline pre code {
@@ -661,28 +706,17 @@
 }
 
 .tiptapContentInline table {
-	width: max-content;
-	min-width: 100%;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	table-layout: fixed;
 	border-collapse: separate;
 	border-spacing: 0;
 	margin: 12px 0;
-	font-size: 12px;
 	background: color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary));
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--border-light) 86%, transparent);
 	border-radius: calc(var(--radius-lg) - 2px);
-}
-
-.tiptapContentInline .tableWrapper {
-	width: 100%;
-	max-width: 100%;
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
-	margin: 12px 0;
-}
-
-.tiptapContentInline .tableWrapper table {
-	margin: 0;
 }
 
 .tiptapContentInline th,
@@ -690,7 +724,8 @@
 	border: 1px solid var(--border-light);
 	padding: 8px 10px;
 	vertical-align: top;
-	min-width: 132px;
+	min-width: 0;
+	overflow-wrap: anywhere;
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	transition: background-color var(--transition-fast), box-shadow
 		var(--transition-fast), border-color var(--transition-fast);
@@ -706,6 +741,7 @@
 .tiptapContentInline td > p {
 	margin: 0;
 	min-height: 1.2em;
+	overflow-wrap: anywhere;
 }
 
 .tiptapContentInline td:focus-within,
@@ -738,28 +774,43 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li,
+.tiptapContentInline li[data-type="taskItem"],
 .tiptapContentInline li[data-checked] {
 	display: flex !important;
 	align-items: flex-start;
-	gap: 8px;
+	gap: 0.55em;
 	list-style: none !important;
 	margin: 0 0 var(--space-2);
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li::marker,
+.tiptapContentInline li[data-type="taskItem"]::marker,
 .tiptapContentInline li[data-checked]::marker {
 	content: "";
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > label,
+.tiptapContentInline li[data-type="taskItem"] > label,
 .tiptapContentInline li[data-checked] > label {
-	margin: 2px 0 0;
+	margin: calc((1.68em - var(--icon-md)) / 2) 0 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex: 0 0 auto;
-	width: auto;
+	flex: 0 0 var(--icon-md);
+	width: var(--icon-md);
+	height: var(--icon-md);
 	position: relative;
+	user-select: none;
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li > label > span,
+.tiptapContentInline li[data-type="taskItem"] > label > span,
+.tiptapContentInline li[data-checked] > label > span {
+	position: absolute;
+	width: 0;
+	height: 0;
+	overflow: hidden;
+	pointer-events: none;
 }
 
 .tiptapContentInline
@@ -767,9 +818,13 @@
 	> li
 	> label
 	input[type="checkbox"],
+.tiptapContentInline li[data-type="taskItem"] > label input[type="checkbox"],
 .tiptapContentInline li[data-checked] > label input[type="checkbox"] {
-	width: 14px;
-	height: 14px;
+	width: var(--icon-md);
+	height: var(--icon-md);
+	margin: 0;
+	padding: 0;
+	flex: 0 0 auto;
 	accent-color: var(--interactive-accent);
 	cursor: pointer;
 	transition: opacity 180ms ease, transform 180ms ease;
@@ -786,13 +841,16 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > label::after,
+.tiptapContentInline li[data-type="taskItem"] > label::after,
 .tiptapContentInline li[data-checked] > label::after {
 	content: "";
 	position: absolute;
-	top: 1px;
-	left: 4px;
+	top: 50%;
+	left: 50%;
 	width: 4px;
 	height: 8px;
+	margin-top: -5px;
+	margin-left: -3px;
 	border-right: 2px solid var(--interactive-accent);
 	border-bottom: 2px solid var(--interactive-accent);
 	pointer-events: none;
@@ -870,17 +928,17 @@
 	}
 
 	.tiptapContentInline h1 {
-		font-size: 23px;
+		font-size: calc(var(--editor-font-size) * 1.4);
 		line-height: 1.28;
 	}
 
 	.tiptapContentInline h2 {
-		font-size: 19px;
+		font-size: calc(var(--editor-font-size) * 1.2);
 		line-height: 1.32;
 	}
 
 	.tiptapContentInline h3 {
-		font-size: 16.5px;
+		font-size: var(--editor-font-size);
 		line-height: 1.38;
 	}
 
@@ -911,25 +969,32 @@
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div,
+.tiptapContentInline li[data-type="taskItem"] > div,
 .tiptapContentInline li[data-checked] > div {
+	flex: 1 1 auto;
 	min-width: 0;
-	width: 100%;
+	width: auto;
 	display: block;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p,
+.tiptapContentInline li[data-type="taskItem"] > div > p,
 .tiptapContentInline li[data-checked] > div > p {
 	min-width: 1px;
+	margin: 0;
+	line-height: inherit;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p:first-child,
+.tiptapContentInline li[data-type="taskItem"] > div > p:first-child,
 .tiptapContentInline li[data-checked] > div > p:first-child {
 	margin: 0;
-	display: inline-block;
+	display: block;
 	min-width: 1px;
 }
 
 .tiptapContentInline ul[data-type="taskList"] > li > div > p:not(:first-child),
+.tiptapContentInline li[data-type="taskItem"] > div > p:not(:first-child),
 .tiptapContentInline li[data-checked] > div > p:not(:first-child) {
 	display: block;
 	margin: var(--space-1) 0 0;
@@ -943,6 +1008,7 @@
 	> li
 	> div
 	> :not(p):not(:first-child),
+.tiptapContentInline li[data-type="taskItem"] > div > :not(p):not(:first-child),
 .tiptapContentInline li[data-checked] > div > :not(p):not(:first-child) {
 	margin-top: var(--space-1);
 	color: var(--text-secondary);
@@ -953,6 +1019,11 @@
 .tiptapContentInline
 	ul[data-type="taskList"]
 	> li
+	> div
+	> :not(p):not(:first-child)
+	p,
+.tiptapContentInline
+	li[data-type="taskItem"]
 	> div
 	> :not(p):not(:first-child)
 	p,

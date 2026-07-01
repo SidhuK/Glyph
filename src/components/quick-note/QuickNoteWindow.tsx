@@ -1,34 +1,21 @@
 import { emit } from "@tauri-apps/api/event";
-import {
-	type KeyboardEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import type { Editor } from "@tiptap/core";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, reloadFromDisk } from "../../lib/settings";
-import { type FsEntry, invoke } from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { basename, parentDir } from "../../utils/path";
-import { ChevronDown, FileText, Save } from "../Icons";
+import { FileText, Save } from "../Icons";
+import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
+import {
+	QUICK_NOTE_TARGET_VALUE,
+	type QuickNoteTarget,
+	QuickNoteTargetBreadcrumbs,
+} from "./QuickNoteTargetBreadcrumbs";
 
-const QUICK_NOTE_TARGET_VALUE = "__quick-note-today__";
-const MARKDOWN_TARGET_LIMIT = 2000;
-
-interface QuickNoteTarget {
-	value: string;
-	path: string;
-	label: string;
-	detail: string;
-}
-
-interface QuickNoteTargetGroup {
-	folder: string;
-	label: string;
-	targets: QuickNoteTarget[];
-}
+const QUICK_NOTE_PLACEHOLDER = "Write a quick note or press / for commands";
 
 function pad(value: number): string {
 	return value.toString().padStart(2, "0");
@@ -86,97 +73,72 @@ function savedLabel(path: string) {
 	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
 }
 
-function targetDetail(path: string) {
-	return parentDir(path) || "Space root";
-}
-
 function quickNoteTarget(folder: string): QuickNoteTarget {
 	const path = quickNotePath(folder);
 	return {
 		value: QUICK_NOTE_TARGET_VALUE,
 		path,
 		label: "Today's quick note",
-		detail: targetDetail(path),
+		detail: parentDir(path) || "Space root",
 	};
 }
 
-function fileTarget(entry: FsEntry): QuickNoteTarget {
-	return {
-		value: entry.rel_path,
-		path: entry.rel_path,
-		label: savedLabel(entry.rel_path),
-		detail: targetDetail(entry.rel_path),
-	};
+function focusEditor(editor: Editor | null) {
+	editor?.commands.focus(undefined, { scrollIntoView: false });
 }
 
-function sortMarkdownFiles(files: FsEntry[]): FsEntry[] {
-	return [...files].sort((a, b) => {
-		const folderCompare = parentDir(a.rel_path).localeCompare(
-			parentDir(b.rel_path),
-		);
-		if (folderCompare !== 0) return folderCompare;
-		return savedLabel(a.rel_path).localeCompare(savedLabel(b.rel_path));
-	});
+function editorHasText(editor: Editor | null): boolean {
+	return Boolean(editor?.getMarkdown().trim());
 }
 
-function groupTargets(targets: QuickNoteTarget[]): QuickNoteTargetGroup[] {
-	const groups = new Map<string, QuickNoteTarget[]>();
-	for (const target of targets) {
-		const folder = parentDir(target.path);
-		groups.set(folder, [...(groups.get(folder) ?? []), target]);
-	}
-	return [...groups.entries()].map(([folder, groupTargets]) => ({
-		folder,
-		label: folder || "Space root",
-		targets: groupTargets,
-	}));
+function clearDraft(editor: Editor | null) {
+	editor?.commands.setContent("", { contentType: "markdown" });
 }
 
 export function QuickNoteWindow() {
 	const [folder, setFolder] = useState("Quick Notes");
 	const [draft, setDraft] = useState("");
+	const [hasText, setHasText] = useState(false);
 	const [status, setStatus] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [targetValue, setTargetValue] = useState(QUICK_NOTE_TARGET_VALUE);
-	const [targetsOpen, setTargetsOpen] = useState(false);
-	const [fileTargets, setFileTargets] = useState<QuickNoteTarget[]>([]);
-	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-	const targetSelectorRef = useRef<HTMLDivElement | null>(null);
-	const targetTriggerRef = useRef<HTMLButtonElement | null>(null);
+	const editorRef = useRef<Editor | null>(null);
+	const unsubscribeRef = useRef<(() => void) | null>(null);
+	const shortcutsRef = useRef({
+		onEscape: () => {
+			void invoke("hide_quick_note_window");
+		},
+		onSave: () => {},
+	});
+	const statusTimerRef = useRef<number | null>(null);
+	const focusTimerRef = useRef<number | null>(null);
 
-	const hasText = draft.trim().length > 0;
-	const defaultTarget = useMemo(() => quickNoteTarget(folder), [folder]);
-	const groupedFileTargets = useMemo(
-		() => groupTargets(fileTargets),
-		[fileTargets],
-	);
-	const selectedTarget =
-		targetValue === QUICK_NOTE_TARGET_VALUE
-			? defaultTarget
-			: (fileTargets.find((target) => target.value === targetValue) ??
-				defaultTarget);
+	const todayQuickNotePath = useMemo(() => quickNotePath(folder), [folder]);
+	const selectedTarget = useMemo((): QuickNoteTarget => {
+		if (targetValue === QUICK_NOTE_TARGET_VALUE) {
+			return quickNoteTarget(folder);
+		}
+		return {
+			value: targetValue,
+			path: targetValue,
+			label: savedLabel(targetValue),
+			detail: parentDir(targetValue) || "Space root",
+		};
+	}, [folder, targetValue]);
 	const isMac =
 		navigator.platform.toLowerCase().includes("mac") ||
 		navigator.userAgent.includes("Mac");
 	const shortcutLabel = isMac ? "⌘+Enter" : "Ctrl+Enter";
 	const shortcutModifierLabel = isMac ? "⌘" : "Ctrl";
 
-	const chooseTarget = useCallback((value: string) => {
-		setTargetValue(value);
-		setTargetsOpen(false);
-		window.setTimeout(() => textareaRef.current?.focus(), 20);
-	}, []);
+	const readDraft = useCallback(
+		() => editorRef.current?.getMarkdown().trim() ?? "",
+		[],
+	);
 
-	const focusTargetOption = useCallback((position: "first" | "last") => {
-		window.requestAnimationFrame(() => {
-			const options =
-				targetSelectorRef.current?.querySelectorAll<HTMLButtonElement>(
-					".quickNoteTargetMenu .quickNoteTargetOption",
-				);
-			const nextOption =
-				position === "first" ? options?.[0] : options?.[options.length - 1];
-			nextOption?.focus();
-		});
+	const chooseTarget = useCallback((target: QuickNoteTarget) => {
+		setTargetValue(target.value);
+		window.setTimeout(() => focusEditor(editorRef.current), 20);
 	}, []);
 
 	const refreshSettings = useCallback(async (withReload = false) => {
@@ -187,61 +149,32 @@ export function QuickNoteWindow() {
 		return nextFolder;
 	}, []);
 
-	const refreshTargets = useCallback(async (nextFolder: string) => {
-		try {
-			const files = await invoke("space_list_markdown_files", {
-				recursive: true,
-				limit: MARKDOWN_TARGET_LIMIT,
-			});
-			const defaultPath = quickNotePath(nextFolder);
-			setFileTargets(
-				sortMarkdownFiles(files)
-					.filter((entry) => entry.rel_path !== defaultPath)
-					.map(fileTarget),
-			);
-		} catch (cause) {
-			setStatus(cause instanceof Error ? cause.message : String(cause));
-		}
-	}, []);
+	useEffect(() => {
+		void refreshSettings().catch((cause) => {
+			console.error("Failed to load quick note settings", cause);
+		});
+	}, [refreshSettings]);
 
 	useEffect(() => {
-		void refreshSettings()
-			.then((nextFolder) => refreshTargets(nextFolder))
-			.catch(() => {});
-		const focusTimer = window.setTimeout(
-			() => textareaRef.current?.focus(),
-			80,
-		);
-		return () => window.clearTimeout(focusTimer);
-	}, [refreshSettings, refreshTargets]);
-
-	useEffect(() => {
-		if (!targetsOpen) return;
-		const handlePointerDown = (event: PointerEvent) => {
-			if (
-				event.target instanceof Node &&
-				targetSelectorRef.current?.contains(event.target)
-			) {
-				return;
-			}
-			setTargetsOpen(false);
-		};
-		document.addEventListener("pointerdown", handlePointerDown);
 		return () => {
-			document.removeEventListener("pointerdown", handlePointerDown);
+			unsubscribeRef.current?.();
+			if (statusTimerRef.current !== null) {
+				window.clearTimeout(statusTimerRef.current);
+			}
+			if (focusTimerRef.current !== null) {
+				window.clearTimeout(focusTimerRef.current);
+			}
 		};
-	}, [targetsOpen]);
+	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.quickNotes?.folder === "string") {
-			const nextFolder = payload.quickNotes.folder;
-			setFolder(nextFolder);
-			void refreshTargets(nextFolder);
+			setFolder(payload.quickNotes.folder);
 		}
 	});
 
 	const save = useCallback(async () => {
-		const text = draft.trim();
+		const text = readDraft();
 		if (!text || saving) return;
 		setSaving(true);
 		setStatus("");
@@ -250,162 +183,107 @@ export function QuickNoteWindow() {
 				selectedTarget.value === QUICK_NOTE_TARGET_VALUE
 					? await appendQuickNote(folder, text)
 					: await appendQuickNoteToPath(selectedTarget.path, text);
+			clearDraft(editorRef.current);
 			setDraft("");
+			setHasText(false);
 			setStatus(`Saved ${savedLabel(path)}`);
 			void emit("quick-note:open_note", { path }).catch(() => {});
-			void refreshTargets(folder);
-			window.setTimeout(() => setStatus(""), 1600);
-			window.setTimeout(() => textareaRef.current?.focus(), 20);
+			if (statusTimerRef.current !== null) {
+				window.clearTimeout(statusTimerRef.current);
+			}
+			if (focusTimerRef.current !== null) {
+				window.clearTimeout(focusTimerRef.current);
+			}
+			statusTimerRef.current = window.setTimeout(() => setStatus(""), 1600);
+			focusTimerRef.current = window.setTimeout(
+				() => focusEditor(editorRef.current),
+				20,
+			);
 		} catch (cause) {
 			setStatus(cause instanceof Error ? cause.message : String(cause));
 		} finally {
 			setSaving(false);
 		}
-	}, [draft, folder, refreshTargets, saving, selectedTarget]);
+	}, [folder, readDraft, saving, selectedTarget.path, selectedTarget.value]);
 
-	const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-		const primary = event.metaKey || event.ctrlKey;
-		if (event.key === "Escape") {
-			event.preventDefault();
-			if (targetsOpen) {
-				setTargetsOpen(false);
-				return;
-			}
+	shortcutsRef.current = {
+		onEscape: () => {
 			void invoke("hide_quick_note_window");
-			return;
-		}
-		if (primary && event.key === "Enter") {
-			event.preventDefault();
+		},
+		onSave: () => {
 			void save();
-		}
+		},
 	};
 
-	const handleTargetTriggerKeyDown = (
-		event: KeyboardEvent<HTMLButtonElement>,
-	) => {
-		if (event.key === "Escape") {
-			event.preventDefault();
-			setTargetsOpen(false);
+	const shortcutExtension = useMemo(
+		() => createEditorShortcutsExtension(() => shortcutsRef.current),
+		[],
+	);
+	const editorAdditionalExtensions = useMemo(
+		() => [shortcutExtension],
+		[shortcutExtension],
+	);
+
+	const handleEditorReady = useCallback((editor: Editor | null) => {
+		unsubscribeRef.current?.();
+		unsubscribeRef.current = null;
+		editorRef.current = editor;
+		if (!editor) {
+			setHasText(false);
 			return;
 		}
-		if (
-			event.key === "Enter" ||
-			event.key === " " ||
-			event.key === "ArrowDown" ||
-			event.key === "ArrowUp"
-		) {
-			event.preventDefault();
-			setTargetsOpen(true);
-			void refreshTargets(folder);
-			if (event.key === "ArrowDown") {
-				focusTargetOption("first");
-			} else if (event.key === "ArrowUp") {
-				focusTargetOption("last");
-			}
-		}
-	};
+		focusEditor(editor);
+		const syncHasText = () => {
+			const nextHasText = editorHasText(editor);
+			setHasText((current) =>
+				current === nextHasText ? current : nextHasText,
+			);
+		};
+		syncHasText();
+		editor.on("update", syncHasText);
+		unsubscribeRef.current = () => {
+			editor.off("update", syncHasText);
+		};
+	}, []);
 
-	const handleTargetOptionKeyDown = (
-		event: KeyboardEvent<HTMLButtonElement>,
-	) => {
-		if (event.key !== "Escape") return;
-		event.preventDefault();
-		setTargetsOpen(false);
-		window.setTimeout(() => targetTriggerRef.current?.focus(), 20);
-	};
+	const handleDraftChange = useCallback((nextMarkdown: string) => {
+		setDraft(nextMarkdown);
+	}, []);
 
 	return (
 		<div className="quickNoteRoot">
 			<div className="quickNoteDragHandle" data-tauri-drag-region />
-			<textarea
-				ref={textareaRef}
-				className="quickNoteTextarea"
-				value={draft}
-				placeholder="Write a quick note"
-				onChange={(event) => setDraft(event.target.value)}
-				onKeyDown={handleKeyDown}
-				spellCheck
-			/>
+			<div className="quickNoteEditorArea">
+				<NoteInlineEditor
+					markdown={draft}
+					relPath={selectedTarget.path}
+					mode="rich"
+					chrome="minimal"
+					deferHeavyFeatures
+					additionalExtensions={editorAdditionalExtensions}
+					placeholder={QUICK_NOTE_PLACEHOLDER}
+					pasteMarkdownBehavior="smart-markdown"
+					onChange={handleDraftChange}
+					onEditorReady={handleEditorReady}
+				/>
+			</div>
 			<div className="quickNoteEditorChrome">
 				<div className="quickNoteTargetGroup">
-					<FileText size={14} aria-hidden="true" />
-					<div className="quickNoteTargetSelectWrap" ref={targetSelectorRef}>
-						<button
-							ref={targetTriggerRef}
-							type="button"
-							className="quickNoteTargetTrigger"
-							aria-label="Quick note destination"
-							aria-expanded={targetsOpen}
-							aria-haspopup="listbox"
-							title={selectedTarget.path}
-							onClick={() => {
-								setTargetsOpen((open) => !open);
-								void refreshTargets(folder);
-							}}
-							onKeyDown={handleTargetTriggerKeyDown}
-						>
-							<span className="quickNoteTargetTriggerText">
-								{selectedTarget.label}
-							</span>
-							<span className="quickNoteTargetTriggerDetail">
-								{selectedTarget.detail}
-							</span>
-							<ChevronDown size={12} aria-hidden="true" />
-						</button>
-						{targetsOpen ? (
-							<div
-								className="quickNoteTargetMenu"
-								aria-label="Quick note destination"
-							>
-								<button
-									type="button"
-									className={
-										selectedTarget.value === defaultTarget.value
-											? "quickNoteTargetOption is-selected"
-											: "quickNoteTargetOption"
-									}
-									aria-selected={selectedTarget.value === defaultTarget.value}
-									onClick={() => chooseTarget(defaultTarget.value)}
-									onKeyDown={handleTargetOptionKeyDown}
-								>
-									<span className="quickNoteTargetOptionLabel">
-										{defaultTarget.label}
-									</span>
-									<span className="quickNoteTargetOptionDetail">
-										{defaultTarget.detail}
-									</span>
-								</button>
-								{groupedFileTargets.map((group) => (
-									<div
-										key={group.folder || "__root__"}
-										className="quickNoteTargetMenuGroup"
-									>
-										<div className="quickNoteTargetMenuGroupLabel">
-											{group.label}
-										</div>
-										{group.targets.map((target) => (
-											<button
-												key={target.value}
-												type="button"
-												className={
-													selectedTarget.value === target.value
-														? "quickNoteTargetOption is-selected"
-														: "quickNoteTargetOption"
-												}
-												aria-selected={selectedTarget.value === target.value}
-												onClick={() => chooseTarget(target.value)}
-												onKeyDown={handleTargetOptionKeyDown}
-											>
-												<span className="quickNoteTargetOptionLabel">
-													{target.label}
-												</span>
-											</button>
-										))}
-									</div>
-								))}
-							</div>
-						) : null}
-					</div>
+					<button
+						type="button"
+						className="quickNoteTargetResetButton"
+						aria-label="Reset to today's quick note"
+						title="Today's quick note"
+						onClick={() => chooseTarget(quickNoteTarget(folder))}
+					>
+						<FileText size="var(--icon-md)" aria-hidden="true" />
+					</button>
+					<QuickNoteTargetBreadcrumbs
+						selectedTarget={selectedTarget}
+						quickNotesFolder={folder}
+						todayQuickNotePath={todayQuickNotePath}
+						onSelectTarget={chooseTarget}
+					/>
 				</div>
 				<div className="quickNoteActionGroup">
 					<div className="quickNoteStatus" aria-live="polite">
@@ -423,7 +301,7 @@ export function QuickNoteWindow() {
 						disabled={saving || !hasText}
 						onClick={() => void save()}
 					>
-						<Save size={16} />
+						<Save size="var(--icon-lg)" />
 						<span className="quickNoteSaveLabel">Save</span>
 						<span className="commandPaletteShortcut" aria-hidden="true">
 							<kbd>

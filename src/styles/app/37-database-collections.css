@@ -1,0 +1,206 @@
+.databasesTopBar {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 18px 10px;
+}
+
+.databasesTopBarLeft {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	min-width: 0;
+	flex: 1;
+}
+
+.databasesCollectionHeader {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.databasesCollectionBreadcrumb {
+	display: flex;
+	align-items: center;
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: calc(var(--text-base) * 0.78);
+	line-height: 1.35;
+	color: var(--text-tertiary);
+}
+
+.databasesCollectionBreadcrumbItem {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+	flex-shrink: 0;
+}
+
+.databasesCollectionBreadcrumbSep {
+	flex-shrink: 0;
+	margin: 0 3px;
+	color: var(--text-quaternary);
+	opacity: 0.8;
+}
+
+.databasesCollectionBreadcrumbLabel {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 180px;
+	color: var(--text-tertiary);
+}
+
+.databasesCollectionBreadcrumbLabel[data-current="true"] {
+	color: var(--text-secondary);
+	font-weight: var(--font-medium);
+}
+
+.databasesTopBarRight {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	padding-top: 4px;
+}
+
+.databasesTopActionButton {
+	color: var(--text-tertiary);
+}
+
+.databasesTopActionButton:hover {
+	color: var(--text-primary);
+}
+
+.databasesTopActionButtonDanger:hover:not(:disabled),
+.databasesTopActionButtonDanger:focus-visible:not(:disabled) {
+	color: var(--text-error);
+}
+
+.databasesCollectionHeading {
+	margin: 0;
+	padding: 0;
+	flex: 0 0 auto;
+	font-size: calc(var(--text-base) * 1.35);
+	font-weight: var(--font-semibold);
+	line-height: 1.15;
+	letter-spacing: -0.025em;
+	color: var(--text-primary);
+}
+
+.databasesCollectionTitleInput {
+	box-sizing: border-box;
+	display: inline-block;
+	width: auto;
+	min-width: 0;
+	max-width: min(520px, 68vw);
+	flex: 0 0 auto;
+	height: auto;
+	min-height: 38px;
+	margin: 0;
+	padding: 2px 6px;
+	border: 1px solid transparent;
+	border-radius: var(--database-radius-md);
+	background: transparent;
+	font-size: calc(var(--text-base) * 1.35);
+	font-weight: var(--font-semibold);
+	line-height: 1.15;
+	letter-spacing: -0.025em;
+	color: var(--text-primary);
+	transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.databasesCollectionTitleInput:hover {
+	background: color-mix(in srgb, var(--bg-hover) 55%, transparent);
+}
+
+.databasesCollectionTitleInput:focus,
+.databasesCollectionTitleInput:focus-visible {
+	background: var(--bg-primary);
+	border-color: var(--border-default);
+}
+
+button.databasesCollectionSwitcher {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: auto;
+	min-height: 0;
+	padding: 4px 8px;
+	border: none;
+	border-radius: var(--database-radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+	white-space: nowrap;
+}
+
+button.databasesCollectionSwitcher:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	color: var(--text-secondary);
+}
+
+.databasesCollectionSwitcherLabel {
+	max-width: 160px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databasesDropdownContent {
+	min-width: 220px;
+	padding: var(--database-dropdown-padding);
+	border-radius: var(--database-dropdown-radius);
+	border: 1px solid var(--database-dropdown-border);
+}
+
+.databasesDropdownItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-radius: var(--database-control-radius);
+	font-size: calc(var(--text-base) * 0.9);
+}
+
+.databasesDropdownItem.is-selected {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+}
+
+.databasesDropdownItemDanger:not([disabled]):hover,
+.databasesDropdownItemDanger:not([disabled]):focus {
+	color: var(--text-error);
+}
+
+.databasesDropdownItemDanger:not([disabled]):hover svg,
+.databasesDropdownItemDanger:not([disabled]):focus svg,
+.databasesDropdownItemDanger:not([disabled])[data-highlighted] svg {
+	color: var(--text-error);
+	opacity: 1;
+}
+
+.databasesCollectionMenu {
+	min-width: 0;
+	width: max-content;
+	padding: var(--database-dropdown-padding);
+}
+
+.databasesCollectionMenu .databasesCollectionMenuItem {
+	min-height: 32px;
+	padding: 0 10px;
+	gap: 8px;
+}
+
+.databasesCollectionMenu [data-slot="dropdown-menu-separator"] {
+	margin: 3px 6px;
+}

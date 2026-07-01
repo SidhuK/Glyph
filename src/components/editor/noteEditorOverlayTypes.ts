@@ -1,11 +1,3 @@
-export type SelectionRibbonPlacement = "above" | "below";
-
-export interface SelectionRibbonPosition {
-	top: number;
-	left: number;
-	placement: SelectionRibbonPlacement;
-}
-
 export interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;
@@ -20,4 +12,20 @@ export interface SelectedTableState {
 	rowControlTop: number;
 	columnControlLeft: number;
 	columnControlTop: number;
+}
+
+export type TableEditorCommand =
+	| "addRowBefore"
+	| "addRowAfter"
+	| "deleteRow"
+	| "addColumnBefore"
+	| "addColumnAfter"
+	| "deleteColumn";
+
+export interface TableInlineControlsProps {
+	selected: SelectedTableState;
+	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
+	onCommand: (command: TableEditorCommand) => void;
+	canDeleteRow: boolean;
+	canDeleteColumn: boolean;
 }

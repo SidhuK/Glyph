@@ -5,6 +5,7 @@ mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
 mod databases;
+mod external_markdown;
 mod file_tree_appearance;
 mod git_sync;
 mod glyph_paths;
@@ -16,9 +17,11 @@ mod net;
 mod notes;
 mod paths;
 mod pinned_files;
+mod release_channels;
 mod space;
 mod space_fs;
 mod system_fonts;
+mod tag_appearance;
 pub(crate) mod utils;
 
 use serde::Serialize;
@@ -39,7 +42,7 @@ use tracing::{error, warn};
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    LogicalPosition, PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
+    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
     WebviewWindowBuilder,
 };
 
@@ -60,11 +63,7 @@ fn init_tracing() {
 }
 
 fn space_is_open(state: &space::SpaceState) -> bool {
-    state
-        .current
-        .lock()
-        .map(|guard| guard.is_some())
-        .unwrap_or(false)
+    !state.session_roots().is_empty()
 }
 
 fn set_menu_item_enabled<R: tauri::Runtime>(
@@ -586,6 +585,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         menu_item_with_shortcut(app, menu_shortcuts, "editor.table", "Table", true, None)?;
     let editor_divider =
         menu_item_with_shortcut(app, menu_shortcuts, "editor.divider", "Divider", true, None)?;
+    let editor_details_block = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.details_block",
+        "Details Block",
+        true,
+        None,
+    )?;
     let editor_callout_info = menu_item_with_shortcut(
         app,
         menu_shortcuts,
@@ -831,6 +838,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &editor_mermaid_chart,
             &editor_table,
             &editor_divider,
+            &editor_details_block,
             &PredefinedMenuItem::separator(app)?,
             &editor_callout_info,
             &editor_callout_warning,
@@ -891,16 +899,67 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let help_menu = Submenu::with_id_and_items(
+    let help_getting_started = menu_item_with_shortcut(
         app,
-        HELP_SUBMENU_ID,
-        "Help",
-        true,
-        &[
-            #[cfg(not(target_os = "macos"))]
-            &PredefinedMenuItem::about(app, None, None)?,
-        ],
+        menu_shortcuts,
+        "help.getting_started",
+        "Getting Started",
+        space_open,
+        None,
     )?;
+    let help_welcome_note = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "help.welcome_note",
+        "Welcome Note",
+        space_open,
+        None,
+    )?;
+    let help_shortcuts = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "help.shortcuts",
+        "Keyboard Shortcuts…",
+        true,
+        None,
+    )?;
+    const HELP_LINK_GROUPS: &[&[(&str, &str)]] = &[
+        &[
+            ("help.website", "Glyph Website"),
+            ("help.changelog", "Changelog"),
+            ("help.privacy", "Privacy Policy"),
+            ("help.terms", "Terms of Service"),
+        ],
+        &[
+            ("help.discord", "Discord"),
+            ("help.github", "GitHub"),
+            ("help.x", "Follow on X"),
+        ],
+    ];
+    let help_menu = {
+        let builder = SubmenuBuilder::with_id(app, HELP_SUBMENU_ID, "Help");
+        #[cfg(not(target_os = "macos"))]
+        let builder = builder
+            .item(&PredefinedMenuItem::about(app, None, None)?)
+            .separator();
+        let builder = builder
+            .item(&help_getting_started)
+            .item(&help_welcome_note)
+            .separator()
+            .item(&help_shortcuts)
+            .separator();
+        let mut builder = builder;
+        for (group_index, group) in HELP_LINK_GROUPS.iter().enumerate() {
+            if group_index > 0 {
+                builder = builder.separator();
+            }
+            for (id, label) in *group {
+                let item = menu_item_with_shortcut(app, menu_shortcuts, id, label, true, None)?;
+                builder = builder.item(&item);
+            }
+        }
+        builder.build()?
+    };
 
     if show_markdown_menu {
         Menu::with_items(
@@ -970,8 +1029,8 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
         WebviewUrl::App(format!("index.html?window={QUICK_NOTE_WINDOW_LABEL}").into()),
     )
     .title("Quick Note")
-    .inner_size(640.0, 360.0)
-    .resizable(false)
+    .inner_size(680.0, 440.0)
+    .resizable(true)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
     .hidden_title(true)
@@ -991,7 +1050,71 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     Ok(window)
 }
 
+fn is_space_host_window_label(label: &str) -> bool {
+    label == "main" || space::commands::is_space_window(label)
+}
+
+fn is_auxiliary_persisted_window(label: &str) -> bool {
+    label == "settings" || label == QUICK_NOTE_WINDOW_LABEL || label == "quick-task"
+}
+
+fn destroy_auxiliary_persisted_windows(app: &tauri::AppHandle) {
+    for (label, window) in app.webview_windows() {
+        if is_auxiliary_persisted_window(&label) {
+            let _ = window.destroy();
+        }
+    }
+}
+
+fn prepare_host_window_close(window: &tauri::Window) {
+    if !is_space_host_window_label(window.label()) {
+        return;
+    }
+    let app = window.app_handle();
+    let host_count = app
+        .webview_windows()
+        .into_iter()
+        .filter(|(label, _)| is_space_host_window_label(label))
+        .count();
+    if host_count <= 1 {
+        destroy_auxiliary_persisted_windows(&app);
+    }
+}
+
+fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
+    app.webview_windows().into_iter().find(|(label, window)| {
+        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
+    })
+}
+
+fn target_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
+    focused_space_host_window(app).or_else(|| {
+        let space_state = app.try_state::<space::SpaceState>()?;
+        let current_root = space_state.current_root().ok()?;
+        app.webview_windows().into_iter().find(|(label, _window)| {
+            is_space_host_window_label(label)
+                && space_state
+                    .root_for_window_label(label)
+                    .map(|root| root == current_root)
+                    .unwrap_or(false)
+        })
+    })
+}
+
+fn sync_fallback_space_to_focused_window(app: &tauri::AppHandle) {
+    let Some(space_state) = app.try_state::<space::SpaceState>() else {
+        return;
+    };
+    let focused_root = focused_space_host_window(app)
+        .and_then(|(_label, window)| space_state.root_for_window(&window).ok());
+    let Some(root) = focused_root else {
+        return;
+    };
+    let _ = space_state.set_current_root(root);
+}
+
 fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    sync_fallback_space_to_focused_window(app);
     let window = quick_note_window(app)?;
     let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
@@ -1020,6 +1143,25 @@ fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
         window.set_focus().map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+fn open_external_markdown_path(app: &tauri::AppHandle, path: std::path::PathBuf) {
+    let state = app.state::<external_markdown::ExternalMarkdownState>();
+    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path) {
+        warn!("Failed to open external markdown file: {error}");
+    }
+}
+
+fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) {
+    for url in urls {
+        if url.scheme() != "file" {
+            continue;
+        }
+        match url.to_file_path() {
+            Ok(path) => open_external_markdown_path(app, path),
+            Err(()) => warn!("Failed to convert opened URL to file path: {url}"),
+        }
+    }
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1158,25 +1300,6 @@ fn set_recent_spaces_menu(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-fn show_space_menu(window: tauri::WebviewWindow, x: f64, y: f64) -> Result<(), String> {
-    let app = window.app_handle();
-    let menu = app
-        .menu()
-        .ok_or_else(|| "app menu is not available".to_string())?;
-    let mut target: Option<Submenu<_>> = None;
-    for item in menu.items().map_err(|error| error.to_string())? {
-        if let Some(found) = find_submenu_by_id(&item, SPACE_MENU_ID) {
-            target = Some(found);
-            break;
-        }
-    }
-    let submenu = target.ok_or_else(|| "space menu is not available".to_string())?;
-    window
-        .popup_menu_at(&submenu, Position::Logical(LogicalPosition::new(x, y)))
-        .map_err(|error| error.to_string())
-}
-
-#[tauri::command(rename_all = "snake_case")]
 fn set_menu_shortcuts(
     app: tauri::AppHandle,
     menu_state: State<'_, MenuState>,
@@ -1218,7 +1341,7 @@ fn set_menu_shortcuts(
 }
 
 #[cfg(target_os = "macos")]
-fn apply_main_window_vibrancy(
+pub(crate) fn apply_main_window_vibrancy(
     window: &tauri::WebviewWindow,
     theme: Option<&str>,
 ) -> Result<(), String> {
@@ -1231,7 +1354,7 @@ fn apply_main_window_vibrancy(
 }
 
 #[cfg(not(target_os = "macos"))]
-fn apply_main_window_vibrancy(
+pub(crate) fn apply_main_window_vibrancy(
     _window: &tauri::WebviewWindow,
     _theme: Option<&str>,
 ) -> Result<(), String> {
@@ -1305,26 +1428,42 @@ pub fn run() {
                 let Some(space_state) = app.try_state::<space::SpaceState>() else {
                     return;
                 };
-                let current_path = space_state.current.lock().ok().and_then(|guard| {
-                    guard
-                        .as_ref()
-                        .map(|path| path.to_string_lossy().to_string())
-                });
+                let current_path = app
+                    .webview_windows()
+                    .into_iter()
+                    .find(|(label, window)| {
+                        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
+                    })
+                    .and_then(|(label, _window)| {
+                        space_state
+                            .root_for_window_label(&label)
+                            .ok()
+                            .map(|path| path.to_string_lossy().to_string())
+                    });
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }
-                let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
+                if let Some((label, _window)) = target_space_host_window(app) {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:open_recent_space",
+                        OpenRecentSpacePayload { path },
+                    );
+                }
             }
             id => {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                let _ = app.emit(
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: command.id,
-                    },
-                );
+                if let Some((label, _window)) = target_space_host_window(app) {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:app_command",
+                        AppCommandPayload {
+                            command_id: command.id,
+                        },
+                    );
+                }
             }
         })
         .setup(|app| {
@@ -1370,13 +1509,40 @@ pub fn run() {
                 }
             }
 
-            #[cfg(target_os = "macos")]
-            if window.label() == "main" {
-                if let WindowEvent::CloseRequested { api, .. } = event {
-                    // Keep app alive on macOS when the last window is closed.
-                    // Dock activation can then restore this window.
-                    api.prevent_close();
-                    let _ = window.hide();
+            if external_markdown::is_external_markdown_window(window.label()) {
+                match event {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        let _ = window.emit("external-markdown:close_requested", ());
+                    }
+                    WindowEvent::Destroyed => {
+                        let state = window.state::<external_markdown::ExternalMarkdownState>();
+                        if let Err(error) = external_markdown::forget_external_markdown_window(
+                            &state,
+                            window.label(),
+                        ) {
+                            warn!("Failed to forget external markdown window: {error}");
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if space::commands::is_space_window(window.label()) {
+                if let WindowEvent::Destroyed = event {
+                    let state = window.state::<space::SpaceState>();
+                    match state.remove_window_session(window.label()) {
+                        Ok(()) => {
+                            space::commands::update_close_space_menu(window.app_handle(), &state)
+                        }
+                        Err(error) => warn!("Failed to forget space window session: {error}"),
+                    }
+                }
+            }
+
+            if is_space_host_window_label(window.label()) {
+                if let WindowEvent::CloseRequested { .. } = event {
+                    prepare_host_window_close(window);
                 }
             }
         })
@@ -1384,17 +1550,18 @@ pub fn run() {
         .manage(ai_codex::state::CodexState::default())
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
+        .manage(external_markdown::ExternalMarkdownState::default())
         .manage(MenuState::default())
         .manage(QuickNoteShortcutState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             app_info,
+            release_channels::updater_check_release_channel,
             system_fonts_list,
             system_monospace_fonts_list,
             show_quick_note_window,
@@ -1403,9 +1570,12 @@ pub fn run() {
             set_quick_note_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
-            show_space_menu,
             set_menu_shortcuts,
             set_window_vibrancy_theme,
+            external_markdown::external_markdown_window_path,
+            external_markdown::external_markdown_read,
+            external_markdown::external_markdown_write,
+            external_markdown::external_markdown_finish_close,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,
@@ -1447,29 +1617,30 @@ pub fn run() {
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,
             file_tree_appearance::commands::file_tree_appearance_delete_path,
+            tag_appearance::commands::tag_appearance_list,
+            tag_appearance::commands::tag_appearance_set,
             pinned_files::commands::pinned_files_list,
             pinned_files::commands::pinned_files_toggle,
             pinned_files::commands::pinned_files_rename_path,
             pinned_files::commands::pinned_files_delete_path,
             index::commands::index_rebuild,
+            index::commands::index_sync,
             index::commands::search,
             index::commands::search_advanced,
             index::commands::search_parse_and_run,
             index::commands::index_set_people_mentions_as_tags_enabled,
             index::commands::all_docs_list,
             index::commands::all_docs_count,
-            index::commands::calendar_query_range,
+            index::calendar::index_calendar_activity,
+            index::calendar::index_calendar_notes_for_date,
             index::commands::tags_list,
             index::commands::people_list,
-            index::commands::task_set_checked,
-            index::commands::task_set_dates,
-            index::commands::task_dates_by_ordinal,
-            index::commands::task_update_by_ordinal,
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
             index::commands::backlinks,
             index::commands::note_relationships,
-            index::commands::note_local_graph,
+            index::commands::note_local_connections,
+            index::commands::space_connections,
             space_fs::list::space_list_dir,
             space_fs::list::space_list_markdown_files,
             space_fs::list::space_list_non_markdown_files,
@@ -1499,22 +1670,23 @@ pub fn run() {
             git_sync::commands::git_sync_config_update,
             git_sync::commands::git_sync_run,
             git_sync::commands::git_sync_disconnect,
+            git_sync::commands::git_history_list,
+            git_sync::commands::git_history_diff,
             space::commands::space_create,
             space::commands::space_open,
+            space::commands::space_open_window,
             space::commands::space_get_current,
+            space::commands::space_get_current_info,
             space::commands::space_show_onboarding_note,
             space::commands::space_close
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
-            #[cfg(target_os = "macos")]
-            if let RunEvent::Reopen { .. } = event {
-                if let Some(window) = app_handle.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.unminimize();
-                    let _ = window.set_focus();
-                }
+            if let RunEvent::Opened { urls } = event {
+                handle_opened_urls(app_handle, urls);
+                return;
             }
+
         });
 }

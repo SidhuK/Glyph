@@ -1,12 +1,12 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "Glyph",
-	"version": "0.2.1",
+	"version": "0.8.5",
 	"identifier": "com.karatsidhu.glyph",
 	"build": {
-		"beforeDevCommand": "corepack pnpm dev",
+		"beforeDevCommand": "pnpm dev",
 		"devUrl": "http://localhost:1420",
-		"beforeBuildCommand": "corepack pnpm build",
+		"beforeBuildCommand": "pnpm build",
 		"frontendDist": "../dist"
 	},
 	"app": {
@@ -22,8 +22,8 @@
 				"decorations": true,
 				"titleBarStyle": "Overlay",
 				"trafficLightPosition": {
-					"x": 14,
-					"y": 20
+					"x": 12,
+					"y": 24
 				},
 				"hiddenTitle": true,
 				"transparent": true
@@ -38,6 +38,15 @@
 		"createUpdaterArtifacts": true,
 		"targets": "all",
 		"icon": ["icons/icon.icns"],
+		"fileAssociations": [
+			{
+				"ext": ["md", "markdown", "mdown"],
+				"name": "Markdown Document",
+				"description": "Markdown document",
+				"role": "Editor",
+				"mimeType": "text/markdown"
+			}
+		],
 		"macOS": {
 			"files": {
 				"Resources/Assets.car": "./icons/Assets.car"
@@ -48,7 +57,7 @@
 		"updater": {
 			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEUzMDlDQjRBQkM2ODYzMEMKUldRTVkyaThTc3NKNHpsV1pzbXpnMFZPSXFKdnhWU082eFpjYU1nVlRWZjhuRVpQZXl5ekF6cGoK",
 			"endpoints": [
-				"https://github.com/SidhuK/Glyph/releases/latest/download/latest.json"
+				"https://raw.githubusercontent.com/SidhuK/Glyph/update-manifests/stable/latest.json"
 			]
 		}
 	}

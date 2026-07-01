@@ -1,13 +1,9 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
-import { Suspense, lazy, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "../Icons";
+import { AIMessageMarkdown } from "./AIMessageMarkdown";
 import { type ToolPhase, formatToolName } from "./aiPanelConstants";
-
-const AIMessageMarkdown = lazy(async () => {
-	const module = await import("./AIMessageMarkdown");
-	return { default: module.AIMessageMarkdown };
-});
 
 interface ToolTimelineToolEvent {
 	id: string;
@@ -235,7 +231,7 @@ function GroupedStepCard({
 					className={cn("aiToolChevron", expanded && "aiToolChevron-open")}
 					aria-hidden
 				>
-					<ChevronDown size={12} />
+					<ChevronDown size="var(--icon-sm)" />
 				</span>
 			</button>
 			{summary ? <div className="aiToolSummary">{summary}</div> : null}
@@ -268,13 +264,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								transition={{ type: "spring", stiffness: 340, damping: 27 }}
 								className="aiToolInlineText"
 							>
-								<Suspense
-									fallback={
-										<div className="aiToolInlineTextContent">{item.text}</div>
-									}
-								>
-									<AIMessageMarkdown markdown={item.text} />
-								</Suspense>
+								<AIMessageMarkdown markdown={item.text} streaming={streaming} />
 								<div className="aiToolTime">{formatTime(item.at)}</div>
 							</m.div>
 						);
@@ -343,7 +333,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 									)}
 									aria-hidden
 								>
-									<ChevronDown size={12} />
+									<ChevronDown size="var(--icon-sm)" />
 								</span>
 							</button>
 							{summary ? <div className="aiToolSummary">{summary}</div> : null}

@@ -3,11 +3,6 @@ export const loadDatabasesPane = () =>
 		default: module.DatabasesPane,
 	}));
 
-export const loadCalendarPane = () =>
-	import("../calendar/CalendarPane").then((module) => ({
-		default: module.CalendarPane,
-	}));
-
 export const loadAllDocsPane = () =>
 	import("./AllDocsPane").then((module) => ({
 		default: module.AllDocsPane,
@@ -16,4 +11,9 @@ export const loadAllDocsPane = () =>
 export const loadFlowPane = () =>
 	import("../flow/FlowPane").then((module) => ({
 		default: module.FlowPane,
+	}));
+
+export const loadActivityTimelinePane = () =>
+	import("./ActivityTimelinePane").then((module) => ({
+		default: module.ActivityTimelinePane,
 	}));

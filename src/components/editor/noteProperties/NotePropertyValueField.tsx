@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	priorityColorKey,
 	priorityOptionsWithCustomValues,
@@ -21,8 +21,15 @@ import {
 	DropdownMenuTrigger,
 } from "../../ui/shadcn/dropdown-menu";
 import { Input } from "../../ui/shadcn/input";
+import { useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
 import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../textColors";
-import { buildTagSuggestions, formatTagLabel } from "./utils";
+import { WikiLinkedText } from "./WikiLinkedText";
+import {
+	buildTagSuggestions,
+	formatPropertyDate,
+	formatTagLabel,
+	tagHueFromName,
+} from "./utils";
 
 interface NotePropertyValueFieldProps {
 	rowId: string;
@@ -59,6 +66,13 @@ export function NotePropertyValueField({
 }: NotePropertyValueFieldProps) {
 	const textValue = property.value_text ?? "";
 	const [textDraft, setTextDraft] = useState(textValue);
+	const textInputRef = useRef<HTMLInputElement | null>(null);
+	const wikiLinkAutocomplete = useWikiLinkAutocomplete({
+		enabled: property.kind === "text" && !readOnly,
+		inputRef: textInputRef,
+		value: textDraft,
+		onChange: setTextDraft,
+	});
 
 	useEffect(() => {
 		setTextDraft(textValue);
@@ -88,25 +102,68 @@ export function NotePropertyValueField({
 			);
 		}
 		if (property.kind === "tags") {
+			if (property.value_list.length === 0) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
 			return (
 				<div className="notePropertyPills">
-					{property.value_list.map((value, valueIndex) => (
-						<span
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
-							className="notePropertyPill"
-						>
-							{formatTagLabel(value)}
-						</span>
-					))}
+					{property.value_list.map((value, valueIndex) => {
+						const hue = tagHueFromName(value);
+						return (
+							<span
+								key={`${property.key || rowId}-${valueIndex}-${value}`}
+								className="notePropertyPill"
+								style={
+									{
+										"--tag-pill-hue": `${hue}`,
+									} as CSSProperties
+								}
+							>
+								{value.startsWith("#") ? value.slice(1) : value}
+							</span>
+						);
+					})}
 				</div>
 			);
 		}
 		if (property.kind === "checkbox") {
-			return property.value_bool ? "True" : "False";
+			return (
+				<span className="notePropertyEmptyValue">
+					{property.value_bool ? "Yes" : "No"}
+				</span>
+			);
+		}
+		if (property.kind === "date") {
+			const formatted = formatPropertyDate(property.value_text ?? "");
+			if (!formatted) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
+			return <span className="notePropertyDateValue">{formatted}</span>;
+		}
+		if (property.kind === "url") {
+			const url = property.value_text ?? "";
+			if (!url) {
+				return <span className="notePropertyEmptyValue">—</span>;
+			}
+			return (
+				<a
+					href={url}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="notePropertyLinkValue"
+					onClick={(event) => event.stopPropagation()}
+				>
+					{url}
+				</a>
+			);
+		}
+		const text = property.value_text ?? "";
+		if (!text) {
+			return <span className="notePropertyEmptyValue">—</span>;
 		}
 		return (
-			<span style={{ color: "var(--text-primary)" }}>
-				{property.value_text ?? ""}
+			<span className="notePropertyTextValue">
+				<WikiLinkedText value={text} />
 			</span>
 		);
 	}
@@ -260,19 +317,28 @@ export function NotePropertyValueField({
 						tagInputRef?.focus();
 					}}
 				>
-					{property.value_list.map((value, valueIndex) => (
-						<button
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
-							type="button"
-							className="notePropertyToken"
-							onClick={() => onRemoveTag(index, value)}
-							title={`Remove ${formatTagLabel(value)}`}
-							aria-label={`Remove ${formatTagLabel(value)}`}
-						>
-							<span>{formatTagLabel(value)}</span>
-							<X size={10} />
-						</button>
-					))}
+					{property.value_list.map((value, valueIndex) => {
+						const hue = tagHueFromName(value);
+						const label = value.startsWith("#") ? value.slice(1) : value;
+						return (
+							<button
+								key={`${property.key || rowId}-${valueIndex}-${value}`}
+								type="button"
+								className="notePropertyToken"
+								style={
+									{
+										"--tag-pill-hue": `${hue}`,
+									} as CSSProperties
+								}
+								onClick={() => onRemoveTag(index, value)}
+								title={`Remove ${label}`}
+								aria-label={`Remove ${label}`}
+							>
+								<span>{label}</span>
+								<X size="var(--icon-xs)" />
+							</button>
+						);
+					})}
 					<input
 						ref={(node) => onSetTagInputRef(rowId, node)}
 						type="text"
@@ -325,26 +391,74 @@ export function NotePropertyValueField({
 	}
 
 	return (
-		<Input
-			className="plainTextInput notePropertyFieldInput"
-			style={{ color: "var(--text-primary)" }}
-			type={
-				property.kind === "date"
-					? "date"
-					: property.kind === "url"
-						? "url"
-						: "text"
-			}
-			value={textDraft}
-			placeholder="Value"
-			aria-label={`${property.key || "Property"} value`}
-			onChange={(event) => setTextDraft(event.target.value)}
-			onBlur={commitTextDraft}
-			onKeyDown={(event) => {
-				if (event.key !== "Enter") return;
-				event.preventDefault();
-				event.currentTarget.blur();
-			}}
-		/>
+		<div className="notePropertyTextEditor">
+			<Input
+				ref={(node) => {
+					textInputRef.current = node;
+				}}
+				className="plainTextInput notePropertyFieldInput"
+				style={{ color: "var(--text-primary)" }}
+				type={
+					property.kind === "date"
+						? "date"
+						: property.kind === "url"
+							? "url"
+							: "text"
+				}
+				value={textDraft}
+				placeholder={textDraft ? "" : "—"}
+				aria-label={`${property.key || "Property"} value`}
+				onChange={(event) => {
+					const nextValue = event.target.value;
+					setTextDraft(nextValue);
+					wikiLinkAutocomplete.refresh(
+						nextValue,
+						event.currentTarget.selectionStart,
+					);
+				}}
+				onBlur={commitTextDraft}
+				onFocus={(event) => {
+					wikiLinkAutocomplete.refresh(
+						event.currentTarget.value,
+						event.currentTarget.selectionStart,
+					);
+				}}
+				onClick={(event) => {
+					wikiLinkAutocomplete.refresh(
+						event.currentTarget.value,
+						event.currentTarget.selectionStart,
+					);
+				}}
+				onKeyDown={(event) => {
+					if (wikiLinkAutocomplete.handleKeyDown(event)) return;
+					if (event.key !== "Enter") return;
+					event.preventDefault();
+					event.currentTarget.blur();
+				}}
+			/>
+			{wikiLinkAutocomplete.items.length > 0 ? (
+				<div className="wikiLinkSuggestionMenu notePropertyWikiLinkSuggestions">
+					{wikiLinkAutocomplete.items.map((item, itemIndex) => (
+						<button
+							key={item.path}
+							type="button"
+							className={[
+								"wikiLinkSuggestionItem",
+								itemIndex === wikiLinkAutocomplete.activeIndex ? "active" : "",
+							]
+								.filter(Boolean)
+								.join(" ")}
+							onMouseDown={(event) => {
+								event.preventDefault();
+								wikiLinkAutocomplete.select(item);
+							}}
+						>
+							<span className="wikiLinkSuggestionTitle">{item.title}</span>
+							<span className="wikiLinkSuggestionPath">{item.path}</span>
+						</button>
+					))}
+				</div>
+			) : null}
+		</div>
 	);
 }

@@ -7,40 +7,64 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FolioNotesListPane } from "./FolioNotesListPane";
 import type { FolioScope } from "./folioScopes";
 
-const {
-	loadAllDocsMock,
-	prefetchNoteMock,
-	invokeMock,
-	scopeRef,
-	pinnedFilesRef,
-	togglePinnedFileMock,
-	taskSummariesRef,
-	showTaskProgressIndicatorRef,
-} = vi.hoisted(() => ({
-	loadAllDocsMock: vi.fn(),
-	prefetchNoteMock: vi.fn(),
-	invokeMock: vi.fn(),
-	scopeRef: { current: { kind: "all" } as FolioScope },
-	pinnedFilesRef: { current: [] as string[] },
-	togglePinnedFileMock: vi.fn(),
-	taskSummariesRef: {
-		current: {} as Record<
-			string,
-			{ total_count: number; completed_count: number; open_count: number }
-		>,
+vi.mock("@tanstack/react-virtual", () => ({
+	useVirtualizer: ({
+		count,
+		estimateSize,
+		getItemKey,
+	}: {
+		count: number;
+		estimateSize: (index: number) => number;
+		getItemKey: (index: number) => string | number;
+	}) => {
+		const starts = Array.from({ length: count }, (_, index) =>
+			Array.from({ length: index }, (__, previousIndex) =>
+				estimateSize(previousIndex),
+			).reduce((total, size) => total + size, 0),
+		);
+		return {
+			getVirtualItems: () =>
+				starts.map((start, index) => ({
+					index,
+					key: getItemKey(index),
+					start,
+				})),
+			getTotalSize: () =>
+				Array.from({ length: count }, (_, index) => estimateSize(index)).reduce(
+					(total, size) => total + size,
+					0,
+				),
+			measureElement: () => {},
+			scrollToIndex: (index: number) => {
+				window.requestAnimationFrame(() => {
+					document
+						.querySelector<HTMLElement>(`[data-index="${index}"]`)
+						?.scrollIntoView({ block: "nearest" });
+				});
+			},
+		};
 	},
-	showTaskProgressIndicatorRef: { current: true as boolean | null },
 }));
 
+const { loadAllDocsMock, prefetchNoteMock, invokeMock, scopeRef } = vi.hoisted(
+	() => ({
+		loadAllDocsMock: vi.fn(),
+		prefetchNoteMock: vi.fn(),
+		invokeMock: vi.fn(),
+		scopeRef: { current: { kind: "all" } as FolioScope },
+	}),
+);
+
 vi.mock("../../contexts", () => ({
+	useSpace: () => ({ spacePath: "/space" }),
 	useUILayoutContext: () => ({
 		folioScope: scopeRef.current,
 	}),
 	useFileTreeContext: () => ({
 		itemAppearance: {},
 		setItemAppearance: vi.fn(),
-		pinnedFiles: pinnedFilesRef.current,
-		togglePinnedFile: togglePinnedFileMock,
+		tagAppearance: {},
+		beautifulTags: false,
 	}),
 }));
 
@@ -66,14 +90,6 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 
 vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: () => {},
-}));
-
-vi.mock("../../hooks/useTaskProgressIndicatorSetting", () => ({
-	useTaskProgressIndicatorSetting: () => showTaskProgressIndicatorRef.current,
-}));
-
-vi.mock("../../hooks/useTaskSummariesForPaths", () => ({
-	useTaskSummariesForPaths: () => taskSummariesRef.current,
 }));
 
 (
@@ -131,9 +147,7 @@ describe("FolioNotesListPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		scopeRef.current = { kind: "all" };
-		pinnedFilesRef.current = [];
-		taskSummariesRef.current = {};
-		showTaskProgressIndicatorRef.current = true;
+
 		loadAllDocsMock.mockResolvedValue(notes);
 		invokeMock.mockResolvedValue([]);
 		queryClient = new QueryClient({
@@ -185,7 +199,6 @@ describe("FolioNotesListPane", () => {
 		expect(container.textContent).toContain("Launch planning and milestones");
 		expect(container.textContent).toContain("Sketch");
 		expect(container.querySelector(".folioNotesTitle")).toBeNull();
-		expect(loadAllDocsMock).toHaveBeenCalledWith(null);
 		expect(renderedNotePaths(container)).toEqual([
 			"Projects/Roadmap.md",
 			"Ideas/Sketch.md",
@@ -218,48 +231,6 @@ describe("FolioNotesListPane", () => {
 
 		expect(container.textContent).toContain("Roadmap");
 		expect(container.textContent).not.toContain("Sketch");
-	});
-
-	it("keeps pinned notes at the top of the folio list", async () => {
-		pinnedFilesRef.current = ["Ideas/Sketch.md"];
-
-		await act(async () => renderPane());
-		await waitFor(() => container.textContent?.includes("Sketch") ?? false);
-
-		expect(renderedNotePaths(container)).toEqual([
-			"Ideas/Sketch.md",
-			"Projects/Roadmap.md",
-		]);
-		expect(container.textContent).toContain("Pinned");
-		expect(
-			container
-				.querySelector('[data-folio-note-path="Ideas/Sketch.md"]')
-				?.getAttribute("data-pinned"),
-		).toBe("true");
-	});
-
-	it("renders task progress rings on note cards", async () => {
-		taskSummariesRef.current = {
-			"Projects/Roadmap.md": {
-				total_count: 4,
-				completed_count: 3,
-				open_count: 1,
-			},
-		};
-
-		await act(async () => renderPane());
-		await waitFor(() => container.textContent?.includes("Roadmap") ?? false);
-
-		expect(
-			container.querySelector(
-				'[data-folio-note-path="Projects/Roadmap.md"] [aria-label="3 of 4 tasks completed"]',
-			),
-		).toBeTruthy();
-		expect(
-			container.querySelector(
-				'[data-folio-note-path="Ideas/Sketch.md"] .folioNoteTaskProgress',
-			),
-		).toBeNull();
 	});
 
 	it("sorts by edited time when selected", async () => {

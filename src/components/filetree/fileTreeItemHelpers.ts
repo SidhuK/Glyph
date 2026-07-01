@@ -9,12 +9,10 @@ export const springTransition = {
 } as const;
 
 export const rowVariants = {
-	idle: { x: 0, backgroundColor: "transparent" },
-	hover: { x: 0, backgroundColor: "var(--bg-hover)" },
-	active: {
-		backgroundColor: "var(--bg-active)",
-	},
-	tap: { scale: 0.98 },
+	idle: { x: 0 },
+	hover: { x: 0 },
+	active: { x: 0 },
+	tap: { x: 0 },
 };
 
 export function buildRowStyle(

@@ -1,6 +1,9 @@
-import type { Editor } from "@tiptap/core";
+import type { AnyExtension, Editor } from "@tiptap/core";
+import type { EditorViewMode } from "../../lib/editorMode";
+import type { RawMarkdownEditorHandle } from "./raw/types";
 
-export type NoteInlineEditorMode = "plain" | "rich" | "preview";
+export type NoteInlineEditorMode = EditorViewMode;
+export type NoteInlineEditorChrome = "full" | "minimal";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
 export interface CreateMarkdownFileOptions {
@@ -25,22 +28,18 @@ export interface NoteInlineEditorProps {
 	onFrontmatterCommit?: () => void;
 	extractToNoteActions?: ExtractToNoteActions;
 	interactive?: boolean;
-	showBacklinks?: boolean;
 	deferHeavyFeatures?: boolean;
+	chrome?: NoteInlineEditorChrome;
+	additionalExtensions?: AnyExtension[];
+	placeholder?: string;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
-	onEditorReady?: ((editor: Editor | null) => void) | undefined;
-}
-
-export interface SlashCommandItem {
-	icon: string;
-	title: string;
-	description: string;
-	keywords: string[];
-	command: (ctx: {
-		editor: Editor;
-		range: { from: number; to: number };
-	}) => void;
+	onEditorReady?:
+		| ((editor: Editor | null, contentRoot: HTMLElement | null) => void)
+		| undefined;
+	onRawEditorReady?:
+		| ((editor: RawMarkdownEditorHandle | null) => void)
+		| undefined;
 }

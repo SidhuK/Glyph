@@ -7,6 +7,15 @@ export interface AppInfo {
 	identifier: string;
 }
 
+export interface ReleaseChannelUpdate {
+	rid: number;
+	currentVersion: string;
+	version: string;
+	date?: string;
+	body?: string;
+	rawJson: Record<string, unknown>;
+}
+
 interface SpaceInfo {
 	root: string;
 	schema_version: number;
@@ -37,6 +46,10 @@ export interface FileTreeAppearance {
 	icon?: string | null;
 }
 
+export interface TagAppearance {
+	icon?: string | null;
+}
+
 type PinnedFiles = string[];
 
 export interface TextFileDoc {
@@ -47,6 +60,18 @@ export interface TextFileDoc {
 }
 
 interface TextFileWriteResult {
+	etag: string;
+	mtime_ms: number;
+}
+
+interface ExternalMarkdownDoc {
+	path: string;
+	text: string;
+	etag: string;
+	mtime_ms: number;
+}
+
+interface ExternalMarkdownWriteResult {
 	etag: string;
 	mtime_ms: number;
 }
@@ -86,7 +111,6 @@ interface BinaryFilePreviewDoc {
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
-	markdown: string;
 }
 
 export interface NoteProperty {
@@ -107,13 +131,20 @@ interface DatabaseNewNoteConfig {
 	folder: string;
 }
 
+interface WorkspaceDatabaseGrouping {
+	column_id: string;
+	ascending: boolean;
+}
+
 interface DatabaseViewState {
 	layout: "table" | "board";
 	search?: string;
 	board_group_by?: string | null;
+	board_grouping?: WorkspaceDatabaseGrouping | null;
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
+	board_card_fields?: string[];
 }
 
 export interface DatabaseColumn {
@@ -197,11 +228,6 @@ export interface DatabaseRow {
 	properties: Record<string, DatabaseCellValue>;
 }
 
-interface WorkspaceDatabaseGrouping {
-	column_id: string;
-	ascending: boolean;
-}
-
 interface WorkspaceDatabaseView {
 	id: string;
 	name: string;
@@ -216,6 +242,7 @@ interface WorkspaceDatabaseView {
 	board_lane_colors?: Record<string, string>;
 	board_lane_order?: Record<string, string[]>;
 	board_card_order?: Record<string, Record<string, string[]>>;
+	board_card_fields?: string[];
 	created_at: string;
 	updated_at: string;
 }
@@ -234,7 +261,6 @@ export interface WorkspaceDatabaseDefinition {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
-	is_system?: boolean;
 	source: {
 		kind: "all_notes" | "folder" | "tag" | "search";
 		value: string;
@@ -252,7 +278,6 @@ export interface WorkspaceDatabaseSummary {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
-	is_system?: boolean;
 	view_count: number;
 }
 
@@ -310,6 +335,19 @@ export interface AllDocsItem {
 	people?: string[];
 }
 
+export interface CalendarDayActivity {
+	date: string;
+	hasDailyNote: boolean;
+	hasCreated: boolean;
+	hasEdited: boolean;
+}
+
+export interface CalendarDateNote {
+	path: string;
+	title: string;
+	kinds: Array<"daily" | "created" | "edited">;
+}
+
 export interface SearchAdvancedRequest {
 	query?: string | null;
 	tags?: string[];
@@ -334,35 +372,63 @@ export interface NoteRelationship {
 	ordinal: number;
 }
 
-interface LocalGraphNode {
+interface LocalConnectionsNode {
 	id: string;
 	title: string;
 	is_center: boolean;
 }
 
-interface LocalGraphEdge {
+interface LocalConnectionsEdge {
 	source: string;
 	target: string;
 }
 
-interface LocalGraphTagNode {
+interface LocalConnectionsTagNode {
 	id: string;
-	tag: string;
 	title: string;
-	note_count: number;
 }
 
-interface LocalGraphTagEdge {
+interface LocalConnectionsTagEdge {
 	tag_id: string;
 	note_id: string;
 }
 
-export interface LocalNoteGraph {
-	center: LocalGraphNode;
-	nodes: LocalGraphNode[];
-	edges: LocalGraphEdge[];
-	tags: LocalGraphTagNode[];
-	tag_edges: LocalGraphTagEdge[];
+export interface LocalNoteConnections {
+	center: LocalConnectionsNode;
+	nodes: LocalConnectionsNode[];
+	edges: LocalConnectionsEdge[];
+	tags: LocalConnectionsTagNode[];
+	tag_edges: LocalConnectionsTagEdge[];
+}
+
+export interface SpaceConnectionsNode {
+	id: string;
+	title: string;
+	is_isolated: boolean;
+}
+
+export interface SpaceConnectionsEdge {
+	from_id: string;
+	to_id: string;
+	kind: "link" | "relationship";
+}
+
+export interface SpaceConnectionsTagNode {
+	id: string;
+	title: string;
+	note_count: number;
+}
+
+export interface SpaceConnectionsTagEdge {
+	tag_id: string;
+	note_id: string;
+}
+
+export interface SpaceConnections {
+	nodes: SpaceConnectionsNode[];
+	edges: SpaceConnectionsEdge[];
+	tags: SpaceConnectionsTagNode[];
+	tag_edges: SpaceConnectionsTagEdge[];
 }
 
 export interface TagCount {
@@ -378,6 +444,16 @@ export interface PersonCount {
 	count: number;
 }
 
+export interface NoteTaskSummary {
+	total_count: number;
+	completed_count: number;
+	open_count: number;
+}
+
+interface NoteTaskSummaryItem extends NoteTaskSummary {
+	note_path: string;
+}
+
 export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
@@ -390,19 +466,9 @@ interface IndexRebuildResult {
 	indexed: number;
 }
 
-interface TaskDateInfo {
-	scheduled_date: string;
-	due_date: string;
-}
-
-export interface NoteTaskSummary {
-	total_count: number;
-	completed_count: number;
-	open_count: number;
-}
-
-interface NoteTaskSummaryItem extends NoteTaskSummary {
-	note_path: string;
+export interface IndexProgress {
+	completed: number;
+	total: number;
 }
 
 interface AiContextAttachment {
@@ -441,62 +507,6 @@ interface AiContextBuildResponse {
 	resolved_paths: string[];
 }
 
-export interface TaskItem {
-	task_id: string;
-	note_id: string;
-	note_title: string;
-	note_path: string;
-	line_start: number;
-	raw_text: string;
-	checked: boolean;
-	status: string;
-	priority: number;
-	due_date: string | null;
-	scheduled_date: string | null;
-	section: string | null;
-	note_updated: string;
-}
-
-interface CalendarDaySummary {
-	date: string;
-	task_count: number;
-	note_activity_count: number;
-	has_daily_note: boolean;
-	needs_daily_note_setup: boolean;
-}
-
-export interface CalendarNoteActivityItem {
-	note_id: string;
-	note_path: string;
-	title: string;
-	preview?: string | null;
-	tags: string[];
-	created: string;
-	updated: string;
-	created_on_day: boolean;
-	edited_on_day: boolean;
-}
-
-interface CalendarDayDetail {
-	selected_date: string;
-	note_activity: CalendarNoteActivityItem[];
-	daily_note_path: string | null;
-	has_daily_note: boolean;
-	daily_note_configured: boolean;
-}
-
-interface CalendarTaskGroups {
-	overdue: TaskItem[];
-	for_day: TaskItem[];
-	ongoing: TaskItem[];
-}
-
-export interface CalendarRangeResponse {
-	days: CalendarDaySummary[];
-	detail: CalendarDayDetail;
-	tasks: CalendarTaskGroups;
-}
-
 type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
 export type GitSyncConflictPolicy = "local_wins" | "remote_wins";
 type GitSyncPhase =
@@ -530,6 +540,7 @@ export interface GitSyncConfig {
 	last_error: string | null;
 	consecutive_auto_sync_failures: number;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 }
 
 export interface GitSyncStatus {
@@ -543,6 +554,7 @@ export interface GitSyncStatus {
 	branch: string | null;
 	enabled: boolean;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 	phase: GitSyncPhase;
 	is_syncing: boolean;
 	interval_minutes: number;
@@ -562,6 +574,24 @@ export interface GitSyncStatus {
 	message: string | null;
 }
 
+export interface GitHistoryCommit {
+	hash: string;
+	short_hash: string;
+	rel_path: string;
+	author_name: string;
+	author_email: string;
+	timestamp_ms: number;
+	subject: string;
+	added_count: number;
+	modified_count: number;
+	deleted_count: number;
+}
+
+export interface GitCommitDiff {
+	commit: GitHistoryCommit;
+	diff: string;
+}
+
 interface GitSyncContext {
 	templates_folder?: string | null;
 	attachment_storage_mode?: AttachmentStorageMode | null;
@@ -579,6 +609,7 @@ interface GitSyncConfigPatch {
 	interval_minutes?: number;
 	inclusions?: GitSyncInclusionSettings;
 	paused?: boolean;
+	auto_sync_prompted?: boolean;
 }
 
 type LicenseMode =
@@ -725,6 +756,10 @@ type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
+	updater_check_release_channel: CommandDef<
+		{ channel: "stable" | "alpha" },
+		ReleaseChannelUpdate | null
+	>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
@@ -736,7 +771,6 @@ interface TauriCommands {
 		void
 	>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
-	show_space_menu: CommandDef<{ x: number; y: number }, void>;
 	set_menu_shortcuts: CommandDef<
 		{
 			accelerators: Record<string, string | null>;
@@ -744,12 +778,24 @@ interface TauriCommands {
 		void
 	>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
+	external_markdown_window_path: CommandDef<void, string>;
+	external_markdown_read: CommandDef<{ path: string }, ExternalMarkdownDoc>;
+	external_markdown_write: CommandDef<
+		{ path: string; text: string; base_mtime_ms?: number | null },
+		ExternalMarkdownWriteResult
+	>;
+	external_markdown_finish_close: CommandDef<void, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;
 	space_create: CommandDef<{ path: string }, SpaceInfo>;
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
+	space_open_window: CommandDef<
+		{ path: string; create?: boolean | null },
+		SpaceInfo
+	>;
 	space_get_current: CommandDef<void, string | null>;
+	space_get_current_info: CommandDef<void, SpaceInfo | null>;
 	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
@@ -766,6 +812,11 @@ interface TauriCommands {
 		void
 	>;
 	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
+	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
+	tag_appearance_set: CommandDef<
+		{ tag: string; icon?: string | null },
+		TagAppearance | null
+	>;
 	pinned_files_list: CommandDef<void, PinnedFiles>;
 	pinned_files_toggle: CommandDef<{ path: string }, PinnedFiles>;
 	pinned_files_rename_path: CommandDef<
@@ -800,7 +851,7 @@ interface TauriCommands {
 			source_path: string;
 			target_dir: string;
 			data_url: string;
-			alt?: string | null;
+			original_filename?: string | null;
 		},
 		SavedPastedImage
 	>;
@@ -856,7 +907,10 @@ interface TauriCommands {
 	>;
 	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
 	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
-	databases_create: CommandDef<{ name: string }, WorkspaceDatabaseDocument>;
+	databases_create: CommandDef<
+		{ name: string; folder: string },
+		WorkspaceDatabaseDocument
+	>;
 	databases_update: CommandDef<
 		{ database: WorkspaceDatabaseDefinition },
 		WorkspaceDatabaseDocument
@@ -897,6 +951,7 @@ interface TauriCommands {
 		Record<string, string>
 	>;
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
+	index_sync: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	search_advanced: CommandDef<
 		{ request: SearchAdvancedRequest },
@@ -911,48 +966,36 @@ interface TauriCommands {
 		void
 	>;
 	all_docs_list: CommandDef<
-		{ limit?: number | null; folder_prefix?: string | null },
+		{
+			limit?: number | null;
+			offset?: number | null;
+			folder_prefix?: string | null;
+		},
 		AllDocsItem[]
 	>;
 	all_docs_count: CommandDef<{ folder_prefix?: string | null }, number>;
-	calendar_query_range: CommandDef<
+	index_calendar_activity: CommandDef<
 		{
-			start_date: string;
-			end_date: string;
-			selected_date: string;
-			daily_notes_folder?: string | null;
+			from_date: string;
+			to_date: string;
+			daily_note_folder?: string | null;
 		},
-		CalendarRangeResponse
+		CalendarDayActivity[]
+	>;
+	index_calendar_notes_for_date: CommandDef<
+		{
+			date: string;
+			daily_note_folder?: string | null;
+		},
+		CalendarDateNote[]
 	>;
 	tags_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
+		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]
 	>;
 	people_list: CommandDef<
 		{ limit?: number | null; offset?: number | null },
 		PersonCount[]
-	>;
-	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
-	task_set_dates: CommandDef<
-		{
-			task_id: string;
-			scheduled_date?: string | null;
-			due_date?: string | null;
-		},
-		void
-	>;
-	task_dates_by_ordinal: CommandDef<
-		{ markdown: string; ordinal: number },
-		TaskDateInfo | null
-	>;
-	task_update_by_ordinal: CommandDef<
-		{
-			markdown: string;
-			ordinal: number;
-			scheduled_date: string;
-			due_date: string;
-		},
-		string | null
 	>;
 	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
 	task_summaries_for_paths: CommandDef<
@@ -964,7 +1007,8 @@ interface TauriCommands {
 		BacklinkItem[]
 	>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
-	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
+	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
+	space_connections: CommandDef<void, SpaceConnections>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<
@@ -973,6 +1017,14 @@ interface TauriCommands {
 	>;
 	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
 	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
+	git_history_list: CommandDef<
+		{ path: string; limit?: number | null },
+		GitHistoryCommit[]
+	>;
+	git_history_diff: CommandDef<
+		{ path: string; commit: GitHistoryCommit },
+		GitCommitDiff
+	>;
 
 	ai_profiles_list: CommandDef<void, AiProfile[]>;
 	ai_active_profile_get: CommandDef<void, string | null>;

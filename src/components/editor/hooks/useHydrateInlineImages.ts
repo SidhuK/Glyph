@@ -5,6 +5,7 @@ import { invoke } from "../../../lib/tauri";
 const INLINE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 const INLINE_IMAGE_CACHE_MAX = 64;
 const INLINE_IMAGE_CACHE_MAX_BYTES = 24 * 1024 * 1024;
+const INLINE_IMAGE_HYDRATION_ROOT_MARGIN = "720px 0px";
 
 const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
@@ -293,14 +294,62 @@ export function useHydrateInlineImages(
 		let rafId: number | null = null;
 		let root: HTMLElement | null = null;
 		let observer: MutationObserver | null = null;
+		let intersectionObserver: IntersectionObserver | null = null;
+		const observedImages = new Set<HTMLImageElement>();
 		let registeredConsumer = false;
+
+		const hydrateImage = (image: HTMLImageElement) => {
+			const current = image.getAttribute("src")?.trim() ?? "";
+			if (!current) return;
+			const originalSrc =
+				image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
+			if (!originalSrc || isDirectImageUrl(originalSrc)) return;
+			if (image.getAttribute("data-glyph-origin-src") !== originalSrc) {
+				image.setAttribute("data-glyph-origin-src", originalSrc);
+			}
+			const resolverKind = getResolverKindForImage(image);
+			const key = getInlineImageCacheKey(sourcePath, originalSrc, resolverKind);
+			if (image.getAttribute("data-glyph-hydrated-key") === key) return;
+			image.dataset.glyphHydrationState = "loading";
+			void resolveInlineImageDataUrl(
+				sourcePath,
+				originalSrc,
+				resolverKind,
+			).then((dataUrl) => {
+				if (cancelled || !image.isConnected) return;
+				const currentOrigin =
+					image.getAttribute("data-glyph-origin-src")?.trim() ?? "";
+				const currentKey = currentOrigin
+					? getInlineImageCacheKey(
+							sourcePath,
+							currentOrigin,
+							getResolverKindForImage(image),
+						)
+					: "";
+				if (currentKey !== key) return;
+				if (!dataUrl) {
+					image.dataset.glyphHydrationState = "failed";
+					return;
+				}
+				hydrateImageNodesInDocument(editor, originalSrc, dataUrl);
+				image.setAttribute("data-glyph-hydrated-key", key);
+				image.setAttribute("src", dataUrl);
+				image.dataset.glyphHydrationState = "ready";
+			});
+		};
 
 		const hydrateImages = () => {
 			if (!root) return;
-			const images = root.querySelectorAll("img[src]");
+			for (const observedImage of observedImages) {
+				if (observedImage.isConnected) continue;
+				intersectionObserver?.unobserve(observedImage);
+				observedImages.delete(observedImage);
+			}
+			const images = root.querySelectorAll<HTMLImageElement>("img[src]");
 			for (const image of images) {
+				image.loading = "lazy";
+				image.decoding = "async";
 				const current = image.getAttribute("src")?.trim() ?? "";
-				if (!current) continue;
 				const originalSrc =
 					image.getAttribute("data-glyph-origin-src")?.trim() ?? current;
 				if (!originalSrc || isDirectImageUrl(originalSrc)) continue;
@@ -314,16 +363,15 @@ export function useHydrateInlineImages(
 					resolverKind,
 				);
 				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
-				void resolveInlineImageDataUrl(
-					sourcePath,
-					originalSrc,
-					resolverKind,
-				).then((dataUrl) => {
-					if (cancelled || !dataUrl || !image.isConnected) return;
-					hydrateImageNodesInDocument(editor, originalSrc, dataUrl);
-					image.setAttribute("data-glyph-hydrated-key", key);
-					image.setAttribute("src", dataUrl);
-				});
+				if (image.dataset.glyphHydrationState === "loading") continue;
+				if (!intersectionObserver) {
+					hydrateImage(image);
+					continue;
+				}
+				if (observedImages.has(image)) continue;
+				image.dataset.glyphHydrationState = "pending";
+				observedImages.add(image);
+				intersectionObserver.observe(image);
 			}
 		};
 
@@ -343,6 +391,9 @@ export function useHydrateInlineImages(
 			}
 			observer?.disconnect();
 			observer = null;
+			intersectionObserver?.disconnect();
+			intersectionObserver = null;
+			observedImages.clear();
 			root = null;
 		};
 
@@ -359,6 +410,21 @@ export function useHydrateInlineImages(
 					attributes: true,
 					attributeFilter: ["src"],
 				});
+				if (typeof IntersectionObserver !== "undefined") {
+					intersectionObserver = new IntersectionObserver(
+						(entries) => {
+							for (const entry of entries) {
+								if (!entry.isIntersecting) continue;
+								const image = entry.target;
+								if (!(image instanceof HTMLImageElement)) continue;
+								intersectionObserver?.unobserve(image);
+								observedImages.delete(image);
+								hydrateImage(image);
+							}
+						},
+						{ rootMargin: INLINE_IMAGE_HYDRATION_ROOT_MARGIN },
+					);
+				}
 			}
 			scheduleHydration();
 		};

@@ -1,8 +1,12 @@
 import { useDraggable } from "@dnd-kit/react";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
 import type {
 	FileTreeAppearance,
@@ -10,9 +14,9 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
@@ -105,7 +109,7 @@ interface FileTreeFileItemProps {
 	onNewFileInDir: (dirPath: string) => unknown;
 	onNewFlowInDir?: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewFolderInDir: (dirPath: string) => unknown;
+	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
 	onStartRename: () => void;
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
@@ -113,7 +117,8 @@ interface FileTreeFileItemProps {
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	onChangeAppearance?: (appearance: FileTreeAppearance) => void;
+	onOpenAppearancePicker?: () => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
 	onMoveClickSuppressRef?: MutableRefObject<boolean>;
@@ -136,7 +141,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onNewFileInDir,
 	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onStartRename,
 	onCommitRename,
@@ -144,7 +149,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	parentDirPath,
 	onDeletePath,
 	appearance,
-	onChangeAppearance,
+	onOpenAppearancePicker,
 	isPinned,
 	onTogglePinned,
 	onMoveClickSuppressRef = DEFAULT_MOVE_CLICK_SUPPRESS_REF,
@@ -152,6 +157,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	taskSummary = null,
 	previewText = null,
 }: FileTreeFileItemProps) {
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -221,6 +227,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: "Show in Finder",
 					action: () => void handleRevealInFinder(),
 				},
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
 					label: "Rename",
@@ -234,7 +241,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: isPinned ? "Unpin file" : "Pin file",
 					action: () => void onTogglePinned(entry.rel_path),
 				},
-				fileTreeAppearanceNativeMenu("file", appearance, onChangeAppearance),
+				fileTreeAppearanceNativeMenu(
+					onOpenAppearancePicker ?? (() => undefined),
+				),
 				{ type: "separator" },
 				{
 					label: "Add file",
@@ -250,7 +259,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				},
 				{
 					label: "Add folder",
-					action: () => void onNewFolderInDir(parentDirPath),
+					action: () => void onRequestCreateFolder(parentDirPath),
 				},
 				{ type: "separator" },
 				{
@@ -262,21 +271,21 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			});
 		},
 		[
-			appearance,
 			entry.rel_path,
 			handleRevealInFinder,
 			isPinned,
-			onChangeAppearance,
+			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onDuplicateFile,
 			onNewFlowInDir,
 			onNewFileInDir,
-			onNewFolderInDir,
+			onRequestCreateFolder,
 			onOpenFile,
 			onStartRename,
 			onTogglePinned,
 			parentDirPath,
+			spacePath,
 		],
 	);
 
@@ -332,12 +341,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{appearance?.icon ? (
 							<DatabaseColumnIcon
 								iconName={appearance.icon}
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 							/>
 						) : (
 							<Icon
-								size={14}
+								size="var(--icon-md)"
 								className="fileTreeIcon"
 								style={{ color: iconColor }}
 								aria-hidden="true"
@@ -349,6 +358,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								<span className="fileTreeFilePreview">{previewText}</span>
 							) : null}
 						</span>
+						{isPinned ? (
+							<HugeiconsIcon
+								icon={StarIcon}
+								size="var(--icon-sm)"
+								strokeWidth={0.9}
+								className="fileTreePinIcon"
+							/>
+						) : null}
 						{taskSummary && taskSummary.total_count > 0 ? (
 							<TaskProgressIndicator
 								summary={taskSummary}

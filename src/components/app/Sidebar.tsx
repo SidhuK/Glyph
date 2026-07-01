@@ -17,7 +17,7 @@ interface SidebarProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFlowInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
 		dirPath: string,
@@ -34,16 +34,19 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
-	onOpenSpace: () => Promise<void>;
 	onOpenAllDocs: () => void;
-	onOpenCalendar: () => void;
+	onOpenPinnedDocs: () => void;
+	onOpenConnections: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
-	activeTopSection: "home" | "all-notes" | "databases" | null;
-	onPrefetchCalendar: () => void;
+	activeTopSection:
+		| "all-notes"
+		| "connections"
+		| "databases"
+		| "pinned-notes"
+		| null;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
-	onOpenSearchPalette: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -57,7 +60,7 @@ export const Sidebar = memo(function Sidebar({
 	onNewFileInDir,
 	onNewFlowInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onRenameDir,
 	onDeletePath,
@@ -66,16 +69,14 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
-	onOpenSpace,
 	onOpenAllDocs,
-	onOpenCalendar,
+	onOpenPinnedDocs,
+	onOpenConnections,
 	onOpenDatabases,
 	activeTopSection,
-	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
-	onOpenSearchPalette,
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -136,22 +137,20 @@ export const Sidebar = memo(function Sidebar({
 									onNewFileInDir={onNewFileInDir}
 									onNewFlowInDir={onNewFlowInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewFolderInDir={onNewFolderInDir}
+									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onRenameDir={onRenameDir}
 									onDeletePath={onDeletePath}
 									onMovePath={onMovePath}
 									onSelectTag={onSelectTag}
-									onOpenCalendar={onOpenCalendar}
 									onOpenDatabases={onOpenDatabases}
-									onPrefetchCalendar={onPrefetchCalendar}
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}
 									onOpenAllDocs={onOpenAllDocs}
-									onOpenSearchPalette={onOpenSearchPalette}
+									onOpenPinnedDocs={onOpenPinnedDocs}
+									onOpenConnections={onOpenConnections}
 									spacePath={spacePath}
-									onOpenSpace={onOpenSpace}
 									activeTopSection={activeTopSection}
 								/>
 							</>

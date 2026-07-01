@@ -44,132 +44,177 @@
 
 .markdownEditorFloatActions {
 	position: absolute;
-	top: -34px;
+	top: -40px;
 	right: 14px;
 	z-index: 24;
 	display: inline-flex;
 	align-items: center;
+	overflow: visible;
 	transition: opacity 180ms ease, transform 220ms ease;
 }
 
-.markdownEditorTopActions {
+.markdownEditorToolbar {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-}
-
-.markdownEditorStatsDock {
-	position: absolute;
-	right: 14px;
-	bottom: 14px;
-	z-index: 18;
-	max-width: min(56vw, 560px);
-	overflow-x: auto;
-	overflow-y: hidden;
-	-webkit-overflow-scrolling: touch;
-	scrollbar-width: thin;
-	pointer-events: auto;
-	transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.markdownEditorStatsDock.withAiFab {
-	right: 88px;
-	max-width: min(48vw, 500px);
-}
-
-.markdownEditorStatsDock.is-hidden {
-	display: none;
-}
-
-.markdownEditorStatsPill {
-	display: inline-flex;
-	align-items: center;
-	gap: 0;
-	min-height: 31px;
+	height: 26px;
 	padding: 2px;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	backdrop-filter: blur(14px);
-	-webkit-backdrop-filter: blur(14px);
+	overflow: visible;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
 }
 
-.markdownEditorStatsItem {
+.markdownEditorToolbarDivider {
+	flex: 0 0 1px;
+	align-self: stretch;
+	margin: 3px 2px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.markdownEditorToolbarActions {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	padding: 0 8px;
-	min-height: 25px;
-	font-size: 10.5px;
-	line-height: 1;
-	color: var(--text-secondary);
-	cursor: help;
-	transition: color 180ms ease, background-color 180ms ease;
 }
 
-.markdownEditorStatsPill::before {
-	display: none;
-	align-items: center;
-	gap: 6px;
-	padding: 0 8px;
-	min-height: 25px;
-	border-right: 1px solid
-		color-mix(in srgb, var(--border-light) 72%, transparent);
-	font-size: 10.5px;
-	font-weight: var(--font-medium);
-	line-height: 1;
-	color: var(--text-secondary);
-	transition: color 180ms ease, background-color 180ms ease;
-}
-
-.markdownEditorPane:has(.tiptapContentInline[data-vim-mode])
-	.markdownEditorStatsPill::before {
-	content: "INSERT";
+.markdownEditorToolbarBtn {
 	display: inline-flex;
-	cursor: default;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: calc(var(--radius-md) - 2px);
+	background: transparent;
+	color: var(--text-tertiary);
+	line-height: 0;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
 }
 
-.markdownEditorPane:has(.tiptapContentInline[data-vim-mode="normal"])
-	.markdownEditorStatsPill::before {
-	content: "NORMAL";
-	color: color-mix(in srgb, var(--interactive-accent) 78%, var(--text-primary));
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
-	border-radius: var(--radius-full);
-}
-
-.markdownEditorStatsItem + .markdownEditorStatsItem {
-	border-left: 1px solid
-		color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
-.markdownEditorStatsItem svg {
-	opacity: 0.78;
-}
-
-.markdownEditorStatsItem:hover {
+.markdownEditorToolbarBtn:hover {
 	color: var(--text-primary);
 }
 
-.markdownEditorTaskProgressItem {
-	padding: 0 5px 0 6px;
-	cursor: default;
+.markdownEditorToolbarBtn[data-active="true"] {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
-.markdownEditorTaskProgressItem:hover {
+.markdownEditorToolbarBtn:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
+}
+
+.markdownEditorModeSwitch {
+	display: inline-grid;
+	grid-template-columns: repeat(3, minmax(0, auto));
+	align-items: center;
+	overflow: visible;
+}
+
+.markdownEditorModeBtnWrap {
+	position: relative;
+	display: inline-flex;
+	overflow: visible;
+}
+
+.markdownEditorModeBtnWrap .markdownEditorModeBtn:disabled {
+	pointer-events: none;
+}
+
+.markdownEditorModeBtnHint {
+	position: absolute;
+	z-index: 30;
+	top: calc(100% + 6px);
+	left: 50%;
+	width: max-content;
+	max-width: 168px;
+	padding: 4px 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
 	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.66);
+	font-weight: var(--font-medium);
+	line-height: 1.25;
+	text-align: center;
+	text-wrap: balance;
+	box-shadow: var(--shadow-sm);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translateX(-50%) translateY(-2px);
+	transition: opacity 140ms ease, visibility 140ms ease, transform 140ms ease;
+}
+
+.markdownEditorModeBtnHint[data-warning="true"] {
+	border-color: color-mix(in srgb, var(--callout-warning) 34%, transparent);
+	background: color-mix(in srgb, var(--callout-warning) 14%, var(--bg-primary));
+	color: var(--status-warning-fg);
+}
+
+.markdownEditorModeBtnWrap:hover .markdownEditorModeBtnHint,
+.markdownEditorModeBtnWrap:focus-within .markdownEditorModeBtnHint {
+	opacity: 1;
+	visibility: visible;
+	transform: translateX(-50%) translateY(0);
+}
+
+.markdownEditorModeBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: calc(var(--radius-md) - 2px);
+	background: transparent;
+	color: var(--text-tertiary);
+	line-height: 0;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
+	color: color-mix(in srgb, var(--status-warning-fg) 72%, var(--text-tertiary));
+}
+
+.markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn:hover {
+	color: var(--status-warning-fg);
+}
+
+.markdownEditorModeBtn:hover {
+	color: var(--text-primary);
+}
+
+.markdownEditorModeBtn[data-active="true"] {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.markdownEditorModeBtn:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
 }
 
 .markdownEditorTaskProgress {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	flex: 0 0 auto;
+	width: var(--task-progress-width, var(--icon-lg));
+	height: var(--task-progress-height, var(--icon-lg));
+	line-height: 0;
 }
 
 .markdownEditorTaskProgressRing {
-	width: 14px;
-	height: 14px;
+	width: var(--task-progress-ring-size, var(--icon-md));
+	height: var(--task-progress-ring-size, var(--icon-md));
+	flex: 0 0 var(--task-progress-ring-size, var(--icon-md));
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -179,107 +224,22 @@
 }
 
 .markdownEditorTaskProgressPie {
-	width: 7px;
-	height: 7px;
+	display: block;
+	width: var(
+		--task-progress-pie-size,
+		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+	);
+	height: var(
+		--task-progress-pie-size,
+		calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+	);
+	flex: 0 0
+		var(
+			--task-progress-pie-size,
+			calc(var(--task-progress-ring-size, var(--icon-md)) * 0.45)
+		);
 	border-radius: 50%;
 	transition: background 180ms ease;
-}
-
-.markdownEditorSaveState {
-	justify-content: center;
-	padding: 0 6px;
-	min-width: 31px;
-	color: var(--text-secondary);
-}
-
-.markdownEditorSaveState svg {
-	opacity: 0.95;
-	transition: color 180ms ease, opacity 180ms ease;
-}
-
-.markdownEditorSaveState[data-save-state="ready"] {
-	color: var(--text-secondary);
-}
-
-.markdownEditorSaveState[data-save-state="dirty"] {
-	color: color-mix(in srgb, var(--status-warning-fg) 76%, var(--text-primary));
-}
-
-.markdownEditorSaveState[data-save-state="saving"] {
-	color: color-mix(in srgb, var(--interactive-accent) 78%, var(--text-primary));
-}
-
-.markdownEditorSaveState[data-save-state="saved"],
-.markdownEditorSaveState[data-save-state="saved-fresh"],
-.markdownEditorSaveState[data-save-state="reloaded"] {
-	color: color-mix(in srgb, var(--status-success-fg) 74%, var(--text-primary));
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorStatsPill {
-	min-height: 28px;
-	padding: 1px;
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorStatsItem {
-	padding: 0 5px;
-	gap: 4px;
-	font-size: 10px;
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgressItem {
-	padding: 0 4px 0 5px;
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
-	width: 16px;
-	height: 12px;
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
-	padding: 0 5px;
-	min-width: 28px;
-}
-
-.markdownEditorStatsDock.is-collapsed
-	.markdownEditorStatsItem[data-metric="characters"] {
-	display: none;
-}
-
-.markdownEditorMenuTrigger {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	height: 20px;
-	padding: 0;
-	border: none;
-	background: transparent;
-	color: var(--text-secondary);
-	box-shadow: none;
-	outline: none;
-	appearance: none;
-	-webkit-appearance: none;
-	cursor: pointer;
-	transition: none;
-}
-
-.markdownEditorMenuTrigger:hover {
-	border: none;
-	background: transparent;
-	box-shadow: none;
-	outline: none;
-	color: var(--text-secondary);
-	transform: none;
-}
-
-.markdownEditorMenuTrigger:focus-visible {
-	outline: 2px solid var(--focus);
-	outline-offset: 2px;
-}
-
-.markdownEditorAiTrigger svg {
-	transform: translateY(-1px);
 }
 
 .markdownEditorCenter {
@@ -290,6 +250,159 @@
 	min-height: 0;
 	height: 100%;
 	display: flex;
+}
+
+.gitDiffView {
+	width: 100%;
+	max-width: none;
+	margin: 0 auto;
+	padding: 0 0 80px;
+	color: var(--text-primary);
+}
+
+.gitDiffHeader {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: 14px var(--editor-readable-content-gutter);
+	background: color-mix(
+		in srgb,
+		var(--bg-canvas, var(--bg-primary)) 94%,
+		transparent
+	);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.gitDiffBackButton {
+	height: 28px;
+	padding: 0 10px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.82);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.gitDiffBackButton:hover {
+	background: var(--bg-hover);
+}
+
+.gitDiffCommitMeta {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.gitDiffCommitMeta strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.gitDiffCommitMeta span {
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+}
+
+.gitDiffBody {
+	width: 100%;
+	overflow: visible;
+	background: transparent;
+}
+
+.gitDiffLine {
+	display: flex;
+	width: 100%;
+	min-height: 23px;
+	margin: 0;
+	padding: 0 var(--editor-readable-content-gutter);
+	color: var(--text-secondary);
+}
+
+.gitDiffLineInner {
+	display: grid;
+	grid-template-columns: 34px minmax(0, 1fr);
+	width: 100%;
+	min-width: 0;
+	max-width: var(--readable-content-outer-width);
+	margin: 0 auto;
+}
+
+.gitDiffMarker {
+	padding: 0 9px 0 0;
+	color: var(--text-tertiary);
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.78);
+	font-variant-numeric: tabular-nums;
+	line-height: 23px;
+	text-align: right;
+	user-select: none;
+}
+
+.gitDiffCode {
+	display: block;
+	min-width: 0;
+	overflow-x: auto;
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 23px;
+	tab-size: 2;
+	white-space: pre;
+}
+
+.gitDiffLine[data-kind="add"] {
+	background: color-mix(in srgb, #22c55e 10%, transparent);
+	color: color-mix(in srgb, #15803d 78%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="add"] .gitDiffMarker {
+	color: color-mix(in srgb, #15803d 82%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="delete"] {
+	background: color-mix(in srgb, #ef4444 10%, transparent);
+	color: color-mix(in srgb, #b91c1c 78%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="delete"] .gitDiffMarker {
+	color: color-mix(in srgb, #b91c1c 82%, var(--text-primary));
+}
+
+.gitDiffLine[data-kind="hunk"] {
+	margin-top: 12px;
+	background: color-mix(in srgb, var(--accent) 8%, transparent);
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.gitDiffLine[data-kind="hunk"] .gitDiffMarker {
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.7);
+}
+
+.gitDiffLine[data-kind="meta"] {
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	color: var(--text-tertiary);
+}
+
+.gitDiffLine[data-kind="meta"] .gitDiffCode {
+	font-size: calc(var(--text-base) * 0.76);
+}
+
+.gitDiffEmpty {
+	padding: 24px var(--editor-readable-content-gutter);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
 }
 
 .notesInfoSidebarPanel {
@@ -310,11 +423,11 @@
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	height: 32px;
-	padding: 0 10px;
+	min-height: 42px;
+	padding: 8px 8px 5px 10px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: space-between;
 	border-bottom: none;
 	background: transparent;
 	backdrop-filter: none;
@@ -360,9 +473,51 @@
 }
 
 .markdownEditorInfoClose > span {
-	font-size: 16px;
+	font-size: calc(var(--text-base) * 1.1);
 	line-height: 1;
 	font-weight: 500;
+}
+
+.markdownEditorInfoTabs {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+}
+
+.markdownEditorInfoTab {
+	height: 24px;
+	padding: 0 9px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: calc(var(--text-base) * 0.76);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.markdownEditorInfoTab:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+}
+
+.markdownEditorInfoTab[data-active="true"] {
+	color: var(--text-primary);
+	background: var(--bg-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
+}
+
+.markdownEditorInfoTab:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
 }
 
 .markdownEditorInfoBody {
@@ -378,23 +533,273 @@
 	padding: 10px 0 12px;
 }
 
+.gitHistoryPanel {
+	background: transparent;
+	padding-top: 2px;
+}
+
+.gitHistoryHeader {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	width: 100%;
+	padding: 2px 12px 10px;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+}
+
+.gitHistoryHeader strong {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.1;
+	text-wrap: balance;
+}
+
+.gitHistoryHeader span {
+	max-width: 100%;
+	overflow: hidden;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.76);
+	line-height: 1.6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gitHistoryBody {
+	padding: 0 0 4px;
+}
+
+.gitHistoryList {
+	display: flex;
+	flex-direction: column;
+	margin: 0 -10px;
+}
+
+.gitHistoryGroup {
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.gitHistoryGroup:last-child {
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.gitHistoryGroupHeader {
+	display: flex;
+	min-height: 38px;
+	width: 100%;
+	align-items: center;
+	gap: 8px;
+	padding: 0 20px;
+	border: 0;
+	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
+	color: var(--text-secondary);
+	text-align: left;
+	cursor: pointer;
+}
+
+.gitHistoryGroupHeader:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+	color: var(--text-primary);
+}
+
+.gitHistoryGroupHeader:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: -2px;
+}
+
+.gitHistoryGroupHeader span {
+	min-width: 0;
+	overflow: hidden;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.1;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gitHistoryGroupHeader em {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-style: normal;
+	font-variant-numeric: tabular-nums;
+}
+
+.gitHistoryGroupItems {
+	display: flex;
+	flex-direction: column;
+}
+
+.gitHistoryItem {
+	position: relative;
+	display: flex;
+	width: 100%;
+	min-height: 76px;
+	align-items: center;
+	gap: 10px;
+	padding: 13px 18px 13px 20px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: none;
+}
+
+.gitHistoryItem + .gitHistoryItem {
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+}
+
+.gitHistoryItem:hover,
+.gitHistoryItemSelected {
+	background: color-mix(in srgb, var(--bg-hover) 56%, transparent);
+}
+
+.gitHistoryItem:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: -2px;
+}
+
+.gitHistoryItemSelected {
+	background: color-mix(in srgb, var(--accent) 7%, var(--bg-hover));
+}
+
+.gitHistoryMarker {
+	display: inline-flex;
+	flex: 0 0 24px;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-full);
+	color: var(--text-tertiary);
+	box-shadow: none;
+	transition: none;
+}
+
+.gitHistoryItem:hover .gitHistoryMarker,
+.gitHistoryItemSelected .gitHistoryMarker {
+	color: var(--text-primary);
+}
+
+.gitHistoryContent {
+	display: flex;
+	min-width: 0;
+	flex: 1;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.gitHistoryTopLine {
+	display: grid;
+	min-width: 0;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 8px;
+}
+
+.gitHistorySubject {
+	overflow: hidden;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.96);
+	font-weight: var(--font-medium);
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	text-wrap: pretty;
+	white-space: nowrap;
+}
+
+.gitHistoryMeta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+}
+
+.gitHistoryHash {
+	color: var(--accent);
+	font-family: var(--font-mono);
+	font-size: calc(var(--text-base) * 0.84);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.gitHistoryOpenIcon {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+}
+
+.gitHistoryStat {
+	font-weight: var(--font-medium);
+}
+
+.gitHistoryStatAdd {
+	color: color-mix(in srgb, #059669 82%, var(--text-primary));
+}
+
+.gitHistoryStatModify {
+	color: color-mix(in srgb, #d97706 86%, var(--text-primary));
+}
+
+.gitHistoryStatDelete {
+	color: color-mix(in srgb, #dc2626 84%, var(--text-primary));
+}
+
+.gitHistoryLoading {
+	position: absolute;
+	right: 18px;
+	bottom: 10px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.74);
+}
+
 .markdownEditorInfoSection + .markdownEditorInfoSection {
 	padding-top: 12px;
 }
 
 .markdownEditorInfoSectionFrontmatter {
 	padding-top: 2px;
-	padding-bottom: 14px;
+	padding-bottom: 8px;
+}
+
+.markdownEditorInfoSectionFile {
+	padding-top: 6px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
 }
 
 .markdownEditorInfoSectionLabel {
 	margin: 0 0 7px;
-	font-size: 10.5px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.035em;
 	text-transform: uppercase;
 	color: var(--text-tertiary);
 	line-height: 1.15;
+}
+
+.markdownEditorInfoSectionLabelSubtle {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: var(--font-normal);
+	font-size: calc(var(--text-base) * 0.85);
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoValue {
+	font-weight: var(--font-normal);
+	color: var(--text-primary);
 }
 
 .markdownEditorInfoRows {
@@ -408,7 +813,7 @@
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 10px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.28;
 	color: var(--text-secondary);
 }
@@ -418,9 +823,13 @@
 	color: var(--text-primary);
 }
 
+.markdownEditorInfoSectionFile .markdownEditorInfoRow {
+	font-size: calc(var(--text-base) * 0.88);
+}
+
 .markdownEditorInfoRow code {
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 	max-width: 180px;
 	overflow: hidden;
 	white-space: nowrap;
@@ -432,7 +841,7 @@
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-primary);
 }
 
@@ -440,7 +849,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.3;
 	color: var(--text-secondary);
 }
@@ -463,7 +872,7 @@
 	padding: 4px 6px;
 	border-radius: 4px;
 	border-left: 0;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
 	cursor: pointer;
 	overflow: hidden;
@@ -497,7 +906,7 @@
 }
 
 .markdownEditorInfoEmpty {
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.3;
 	color: var(--text-tertiary);
 }
@@ -507,14 +916,14 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 5px 6px;
-	font-size: 11px;
+	font-size: calc(var(--text-base) * 0.8);
 }
 
 .markdownEditorInfoRelationshipGroup {
 	display: flex;
 	flex-direction: column;
 	gap: 5px;
-	font-size: 11.5px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.28;
 	color: var(--text-secondary);
 }
@@ -532,7 +941,6 @@
 	display: flex;
 	flex-direction: column;
 	overflow: visible;
-	border: 1px solid var(--border-default);
 	border-radius: var(--radius-md);
 	background: var(--bg-secondary);
 	box-shadow: var(--shadow-lg);
@@ -568,10 +976,17 @@
 	padding: 10px;
 }
 
+.commandPalettePreview > .linkedNotePreviewBody {
+	flex: 1 1 0;
+	min-height: 0;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+}
+
 .linkedNotePreviewText {
 	margin: 0;
 	font: inherit;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	color: var(--text-secondary);
 }
@@ -580,16 +995,28 @@
 	border: none;
 	border-radius: 0;
 	background: transparent;
+	box-shadow: none;
+	min-height: 0;
 }
 
 .linkedNotePreviewText .rfNodeNoteEditorBody {
 	padding: 0;
+	background: transparent;
+	min-height: 0;
+}
+
+.linkedNotePreviewText .tiptapContentInline {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	min-height: 0;
 }
 
 .linkedNotePreviewText .ProseMirror {
 	min-height: 0;
 	padding: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 }
 
@@ -622,44 +1049,9 @@
 	padding-inline: clamp(8px, 1.4vw, 14px);
 }
 
-.markdownEditorPane .editorBacklinks {
-	width: var(--readable-content-outer-width);
-}
-
 @media (max-width: 760px) {
 	.notesInfoSidebarHost[data-open="true"] {
 		width: min(92vw, 340px);
 		flex-basis: min(92vw, 340px);
-	}
-
-	.markdownEditorStatsDock {
-		right: 8px;
-		bottom: 8px;
-		max-width: calc(100vw - 16px);
-	}
-
-	.markdownEditorStatsDock.withAiFab {
-		right: 72px;
-		max-width: calc(100vw - 80px);
-	}
-
-	.markdownEditorStatsItem {
-		padding: 0 7px;
-		gap: 4px;
-		font-size: 10px;
-		max-width: 32vw;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.markdownEditorStatsPill::before {
-		padding: 0 7px;
-		gap: 4px;
-		font-size: 10px;
-		max-width: 32vw;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 }

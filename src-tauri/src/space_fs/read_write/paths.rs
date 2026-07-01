@@ -3,11 +3,12 @@ use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tauri::{Emitter, State};
+use tauri::{Emitter, State, WebviewWindow};
 
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, paths, space::SpaceState, utils};
 
+use super::super::filename::split_stem_extension;
 use super::super::helpers::deny_hidden_rel_path;
 use super::super::link_rewrite::{self, LinkRewriteResult};
 use super::super::types::FsEntry;
@@ -15,28 +16,14 @@ use super::trash::move_path_to_trash;
 
 #[derive(Serialize, Clone)]
 struct NoteChangeEvent {
+    space_path: String,
     rel_path: String,
     removed: bool,
 }
 
-fn is_indexable_document_path(path: &Path) -> bool {
-    utils::is_markdown_path(path)
-        || path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .map(|ext| ext.eq_ignore_ascii_case("flow"))
-            .unwrap_or(false)
-}
-
-fn split_duplicate_name(file_name: &str) -> (&str, &str) {
-    match file_name.rfind('.') {
-        Some(index) if index > 0 => (&file_name[..index], &file_name[index..]),
-        _ => (file_name, ""),
-    }
-}
 
 fn next_duplicate_file_name(existing_names: &HashSet<String>, file_name: &str) -> String {
-    let (stem, ext) = split_duplicate_name(file_name);
+    let (stem, ext) = split_stem_extension(file_name);
     let base_name = if stem.is_empty() { file_name } else { stem };
     let first_candidate = format!("{base_name} Copy{ext}");
     if !existing_names.contains(&first_candidate.to_lowercase()) {
@@ -160,7 +147,7 @@ fn duplicate_file_under_root(
         }
 
         let is_markdown = utils::is_markdown_path(&duplicate_rel);
-        let should_index = is_indexable_document_path(&duplicate_rel);
+        let should_index = utils::is_indexable_document_path(&duplicate_rel);
         crate::io_atomic::copy_atomic(&source_abs, &duplicate_abs).map_err(|e| e.to_string())?;
 
         let duplicate_rel_string = utils::to_slash(&duplicate_rel);
@@ -219,15 +206,19 @@ fn remove_indexed_documents_from_index(
         return;
     }
 
-    if is_indexable_document_path(abs_path) {
+    if utils::is_indexable_document_path(abs_path) {
         mark_recent_local_change(recent_local_changes, rel_path);
         let _ = index::remove_note(root, rel_path);
     }
 }
 
 #[tauri::command]
-pub async fn space_create_dir(state: State<'_, SpaceState>, path: String) -> Result<(), String> {
-    let root = state.current_root()?;
+pub async fn space_create_dir(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    path: String,
+) -> Result<(), String> {
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -241,20 +232,25 @@ pub async fn space_create_dir(state: State<'_, SpaceState>, path: String) -> Res
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_duplicate_path(
     app: tauri::AppHandle,
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<FsEntry, String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let entry = tauri::async_runtime::spawn_blocking(move || {
         duplicate_file_under_root(&root, Path::new(&path), &recent_local_changes)
     })
     .await
     .map_err(|e| e.to_string())??;
-    if is_indexable_document_path(Path::new(&entry.rel_path)) {
-        let _ = app.emit(
+    if utils::is_indexable_document_path(Path::new(&entry.rel_path)) {
+        let _ = app.emit_to(
+            window_label,
             "notes:external_changed",
             NoteChangeEvent {
+                space_path,
                 rel_path: entry.rel_path.clone(),
                 removed: false,
             },
@@ -265,10 +261,11 @@ pub async fn space_duplicate_path(
 
 #[tauri::command]
 pub async fn space_resolve_abs_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<String, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -305,8 +302,12 @@ fn reveal_file_manager_path(_abs: &Path) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn space_reveal_path(state: State<'_, SpaceState>, path: String) -> Result<(), String> {
-    let root = state.current_root()?;
+pub async fn space_reveal_path(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    path: String,
+) -> Result<(), String> {
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -325,12 +326,13 @@ pub async fn space_reveal_path(state: State<'_, SpaceState>, path: String) -> Re
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_rename_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
 ) -> Result<LinkRewriteResult, String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || -> Result<LinkRewriteResult, String> {
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
@@ -349,7 +351,7 @@ pub async fn space_rename_path(
         }
         let is_dir = from_abs.is_dir();
         let rewrite_plan = if is_dir
-            || is_indexable_document_path(&from_abs)
+            || utils::is_indexable_document_path(&from_abs)
             || link_rewrite::is_supported_attachment_path(&from_abs)
         {
             Some(link_rewrite::plan_for_rename(
@@ -449,7 +451,7 @@ fn reindex_after_rename(
                 }
             }
         }
-    } else if is_indexable_document_path(to_abs) {
+    } else if utils::is_indexable_document_path(to_abs) {
         mark_recent_local_change(recent_local_changes, from_path);
         mark_recent_local_change(recent_local_changes, to_path);
         let _ = index::remove_note(root, from_path);
@@ -461,12 +463,13 @@ fn reindex_after_rename(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_delete_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     recursive: Option<bool>,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
         if rel.as_os_str().is_empty() {
@@ -498,10 +501,11 @@ pub async fn space_delete_path(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_relativize_path(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     abs_path: String,
 ) -> Result<String, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let root = root.canonicalize().map_err(|e| e.to_string())?;
         let abs_input = PathBuf::from(abs_path);

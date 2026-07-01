@@ -80,12 +80,15 @@ export function useTabManager(spacePath: string | null) {
 			const nextMarkdownTabs = nextTabs
 				.filter(
 					(tab) =>
-						tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
+						tab.kind === "file" &&
+						tab.target !== null &&
+						isMarkdownPath(tab.target),
 				)
 				.map((tab) => tab.target as string);
 			const nextActiveMarkdownPath =
 				nextActiveTab?.kind === "file" &&
-				nextActiveTab.target?.toLowerCase().endsWith(".md")
+				nextActiveTab.target !== null &&
+				isMarkdownPath(nextActiveTab.target)
 					? nextActiveTab.target
 					: null;
 

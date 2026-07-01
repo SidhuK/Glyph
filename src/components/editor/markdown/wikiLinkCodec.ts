@@ -1,4 +1,6 @@
-import type { WikiLinkAnchorKind, WikiLinkAttrs } from "./wikiLinkTypes";
+import type { WikiLinkAttrs } from "./wikiLinkTypes";
+
+type WikiLinkAnchorKind = "none" | "heading" | "block";
 
 function findUnescapedIndex(text: string, needle: string): number {
 	for (let i = 0; i < text.length; i += 1) {

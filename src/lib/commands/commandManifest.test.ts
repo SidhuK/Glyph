@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	APP_COMMANDS,
-	getCommandDefinitionByMenuId,
 	listCommandDefinitions,
+	listShortcutConfigurableCommands,
 } from "./commandManifest";
 
 const FRONTEND_MENU_COMMAND_IDS = [
@@ -23,6 +23,16 @@ const FRONTEND_MENU_COMMAND_IDS = [
 	"ai-attach-current-note",
 	"ai-attach-all-open-notes",
 	"open-ai-settings",
+	"show-getting-started",
+	"show-welcome-note",
+	"open-shortcuts-settings",
+	"open-glyph-website",
+	"open-glyph-changelog",
+	"open-glyph-privacy",
+	"open-glyph-terms",
+	"open-glyph-discord",
+	"open-glyph-github",
+	"open-glyph-x",
 ];
 
 describe("app command manifest", () => {
@@ -39,7 +49,10 @@ describe("app command manifest", () => {
 
 		expect(new Set(menuIds).size).toBe(menuIds.length);
 		for (const menuId of menuIds) {
-			expect(getCommandDefinitionByMenuId(menuId)?.menuId).toBe(menuId);
+			expect(
+				listCommandDefinitions().find((command) => command.menuId === menuId)
+					?.menuId,
+			).toBe(menuId);
 		}
 	});
 
@@ -51,5 +64,13 @@ describe("app command manifest", () => {
 		for (const commandId of FRONTEND_MENU_COMMAND_IDS) {
 			expect(commandIds.has(commandId)).toBe(true);
 		}
+	});
+
+	it("only exposes open-settings from settings commands in shortcut settings", () => {
+		const settingsShortcutIds = listShortcutConfigurableCommands()
+			.filter((command) => command.category === "settings")
+			.map((command) => command.id);
+
+		expect(settingsShortcutIds).toEqual(["open-settings"]);
 	});
 });

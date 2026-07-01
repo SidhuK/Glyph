@@ -8,12 +8,13 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry } from "../../lib/tauri";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ActiveFileTitle } from "./ActiveFileTitle";
@@ -56,9 +57,10 @@ const MAIN_TAB_SENSORS = [
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
-		path === CALENDAR_TAB_ID ||
+		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === DATABASES_TAB_ID ||
-		path === TEMPLATES_TAB_ID
+		path === PINNED_DOCS_TAB_ID ||
+		path === SPACE_CONNECTIONS_TAB_ID
 	);
 }
 
@@ -102,9 +104,10 @@ export function TabBar({
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
-			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
+			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return "All Notes";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";
-			if (tab.target === TEMPLATES_TAB_ID) return "Templates";
+			if (tab.target === PINNED_DOCS_TAB_ID) return "Pinned";
+			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
 			return compactLabel(stripFileExtension(rawName));
@@ -177,9 +180,9 @@ export function TabBar({
 					onRenameFile={onRenameFile}
 				/>
 				{showTabs ? (
-					<>
-						<DragDropProvider onDragEnd={handleDragEnd}>
-							<div className="mainTabsStrip">
+					<DragDropProvider onDragEnd={handleDragEnd}>
+						<div className="mainTabsStrip">
+							<div className="mainTabsStripTabs">
 								{tabs.map((tab, index) => (
 									<TabItem
 										key={tab.id}
@@ -195,21 +198,21 @@ export function TabBar({
 									/>
 								))}
 							</div>
-						</DragDropProvider>
-						<button
-							type="button"
-							className="mainTabAdd"
-							onClick={onOpenBlankTab}
-							title={`Open blank tab${
-								newTabShortcut
-									? ` (${formatShortcutForPlatform(newTabShortcut)})`
-									: ""
-							}`}
-							aria-label="Open blank tab"
-						>
-							+
-						</button>
-					</>
+							<button
+								type="button"
+								className="mainTabAdd"
+								onClick={onOpenBlankTab}
+								title={`Open blank tab${
+									newTabShortcut
+										? ` (${formatShortcutForPlatform(newTabShortcut)})`
+										: ""
+								}`}
+								aria-label="Open blank tab"
+							>
+								+
+							</button>
+						</div>
+					</DragDropProvider>
 				) : null}
 			</div>
 			<MainTabsBreadcrumbs

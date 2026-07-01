@@ -1,10 +1,9 @@
 use std::collections::BTreeMap;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 use serde_yaml::{Mapping, Value};
-use tauri::State;
+use tauri::{State, WebviewWindow};
 use uuid::Uuid;
 
 use crate::index::index_note;
@@ -21,7 +20,7 @@ use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
 use super::store::{
-    bootstrap_defaults, default_field_value, default_view, list_summaries, load_store, save_store,
+    default_field_value, default_view, list_summaries, load_store, save_store,
 };
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
@@ -57,9 +56,24 @@ fn slugify_title(title: &str) -> String {
 fn normalize_database_name(name: &str) -> Result<String, String> {
     let normalized = name.trim();
     if normalized.is_empty() {
-        return Err("database name cannot be empty".to_string());
+        return Err("collection name cannot be empty".to_string());
     }
     Ok(normalized.to_string())
+}
+
+fn normalize_collection_folder(base_dir: &Path, folder: &str) -> Result<String, String> {
+    let trimmed = folder.trim().replace('\\', "/");
+    if Path::new(&trimmed).is_absolute() {
+        return Err("folder must be relative".to_string());
+    }
+    let normalized = trimmed.trim_matches('/').to_string();
+    if normalized.is_empty() {
+        return Err("folder is required".to_string());
+    }
+    let rel = PathBuf::from(&normalized);
+    deny_hidden_rel_path(&rel)?;
+    paths::join_under(base_dir, &rel)?;
+    Ok(normalized)
 }
 
 fn normalize_status_id(status: &str) -> Result<String, String> {
@@ -93,7 +107,7 @@ fn prune_unsupported_database_view_layouts(database: &mut DatabaseDefinition) {
         .views
         .retain(|view| matches!(view.layout.as_str(), "table" | "board"));
     if database.views.is_empty() {
-        database.views.push(default_view("Table"));
+        database.views.push(default_view("View 1"));
     }
 }
 
@@ -130,6 +144,14 @@ fn yaml_value_from_cell(
                 .map(|item| Value::String(item.clone()))
                 .collect(),
         )),
+        "linked_notes" => Ok(Value::Sequence(
+            value
+                .value_list
+                .iter()
+                .filter_map(|item| linked_note_wikilink_value(item))
+                .map(Value::String)
+                .collect(),
+        )),
         "property" => match column.property_kind.as_deref().unwrap_or("text") {
             "checkbox" => Ok(Value::Bool(value.value_bool.unwrap_or(false))),
             "tags" | "relation" | "multi_select" => Ok(Value::Sequence(
@@ -141,11 +163,40 @@ fn yaml_value_from_cell(
             )),
             _ => Ok(Value::String(value.value_text.clone().unwrap_or_default())),
         },
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             Err(format!("{} columns are read-only", column.column_type))
         }
         other => Err(format!("unsupported column type '{other}'")),
     }
+}
+
+fn linked_note_wikilink_value(raw: &str) -> Option<String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let starts_wrapped = trimmed.starts_with("[[");
+    let ends_wrapped = trimmed.ends_with("]]");
+    if starts_wrapped != ends_wrapped {
+        return None;
+    }
+
+    let value = if starts_wrapped && ends_wrapped {
+        trimmed
+            .strip_prefix("[[")
+            .and_then(|value| value.strip_suffix("]]"))
+            .unwrap_or(trimmed)
+    } else {
+        trimmed
+    };
+
+    let inner = value.split('|').next().unwrap_or(value).trim();
+    let target = inner.split('#').next().unwrap_or(inner).trim();
+    if target.is_empty() {
+        return None;
+    }
+    Some(format!("[[{target}]]"))
 }
 
 fn apply_cell_update_to_markdown(
@@ -163,6 +214,9 @@ fn apply_cell_update_to_markdown(
         "tags" => {
             mapping.insert(key("tags"), yaml_value_from_cell(column, value)?);
         }
+        "linked_notes" => {
+            mapping.insert(key("linked_notes"), yaml_value_from_cell(column, value)?);
+        }
         "property" => {
             let property_key = column
                 .property_key
@@ -170,7 +224,7 @@ fn apply_cell_update_to_markdown(
                 .ok_or_else(|| "property column is missing property_key".to_string())?;
             mapping.insert(key(&property_key), yaml_value_from_cell(column, value)?);
         }
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             return Err(format!("{} columns are read-only", column.column_type))
         }
         other => return Err(format!("unsupported column type '{other}'")),
@@ -208,22 +262,8 @@ fn write_new_markdown_note(
     if let Some(parent) = abs.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    let mut file = match std::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&abs)
-    {
-        Ok(file) => file,
-        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => return Ok(false),
-        Err(error) => return Err(error.to_string()),
-    };
-    file.write_all(markdown.as_bytes())
-        .and_then(|_| file.sync_all())
-        .map_err(|e| e.to_string())?;
-    if let Some(parent) = abs.parent() {
-        std::fs::File::open(parent)
-            .and_then(|dir| dir.sync_all())
-            .map_err(|e| e.to_string())?;
+    if !io_atomic::write_atomic_create_new(&abs, markdown.as_bytes()).map_err(|e| e.to_string())? {
+        return Ok(false);
     }
     mark_recent_local_change(recent_local_changes, rel_path);
     index_note(root, rel_path, markdown)?;
@@ -232,7 +272,7 @@ fn write_new_markdown_note(
 
 fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Result<(), String> {
     match column.column_type.as_str() {
-        "title" | "tags" => Ok(()),
+        "title" | "tags" | "linked_notes" => Ok(()),
         "property" => {
             let property_key = column
                 .property_key
@@ -244,7 +284,7 @@ fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Resul
                 Err("unknown property column".to_string())
             }
         }
-        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+        "path" | "folder" | "created" | "updated" => {
             Err(format!("{} columns are read-only", column.column_type))
         }
         other => Err(format!("unsupported column type '{other}'")),
@@ -454,8 +494,11 @@ fn backlink_note_paths(root: &Path, note_path: &str) -> Result<Vec<String>, Stri
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<DatabaseSummary>, String> {
-    let root = state.current_root()?;
+pub async fn databases_list(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+) -> Result<Vec<DatabaseSummary>, String> {
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -470,12 +513,13 @@ pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<Database
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_get(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .into_iter()
@@ -489,19 +533,22 @@ pub async fn databases_get(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_create(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     name: String,
+    folder: String,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
         let normalized_name = normalize_database_name(&name)?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
+        let normalized_folder = normalize_collection_folder(&root, &folder)?;
+        let mut store = load_store(&root)?;
         if database_name_exists(&store.databases, &normalized_name, None) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let now = chrono::Utc::now().to_rfc3339();
         let database = super::types::DatabaseDefinition {
@@ -509,17 +556,16 @@ pub async fn databases_create(
             name: normalized_name,
             icon: None,
             color: None,
-            is_system: false,
             source: super::types::DatabaseSource {
-                kind: "all_notes".to_string(),
-                value: String::new(),
+                kind: "folder".to_string(),
+                value: normalized_folder.clone(),
                 recursive: true,
             },
             new_note: super::types::DatabaseNewNoteConfig {
-                folder: String::new(),
+                folder: normalized_folder,
             },
             schema: Vec::new(),
-            views: vec![default_view("Table")],
+            views: vec![default_view("View 1")],
             created_at: now.clone(),
             updated_at: now,
         };
@@ -533,30 +579,32 @@ pub async fn databases_create(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_update(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database: DatabaseDefinition,
 ) -> Result<DatabaseDocument, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
+        let mut store = load_store(&root)?;
         let index = store
             .databases
             .iter()
             .position(|entry| entry.id == database.id)
             .ok_or_else(|| "database not found".to_string())?;
         let normalized_name = normalize_database_name(&database.name)?;
-        if store.databases[index].is_system && normalized_name != store.databases[index].name {
-            return Err("system databases cannot be renamed".to_string());
-        }
         if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
-            return Err("database name already exists".to_string());
+            return Err("collection name already exists".to_string());
         }
         let mut next = database.clone();
         next.name = normalized_name;
+        if next.source.kind == "folder" {
+            next.source.value = normalize_collection_folder(&root, &next.source.value)?;
+        }
+        next.new_note.folder = normalize_collection_folder(&root, &next.new_note.folder)?;
         prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
@@ -569,24 +617,17 @@ pub async fn databases_update(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_delete(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
 ) -> Result<(), String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let mut store = bootstrap_defaults(load_store(&root)?);
-        if store
-            .databases
-            .iter()
-            .find(|entry| entry.id == database_id)
-            .is_some_and(|entry| entry.is_system)
-        {
-            return Err("system databases cannot be deleted".to_string());
-        }
+        let mut store = load_store(&root)?;
         store.databases.retain(|entry| entry.id != database_id);
         save_store(&root, &store)
     })
@@ -596,15 +637,16 @@ pub async fn databases_delete(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_query_rows(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
     view_id: String,
     offset: Option<u32>,
     limit: Option<u32>,
 ) -> Result<super::types::DatabaseQueryResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .iter()
@@ -631,13 +673,14 @@ pub async fn databases_query_rows(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_update_cell(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_path: String,
     column: DatabaseColumn,
     value: DatabaseCellValue,
 ) -> Result<DatabaseRow, String> {
-    let root = state.current_root()?;
-    let recent_local_changes = state.recent_local_changes();
+    let root = state.root_for_window(&window)?;
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || {
         let existing_row = row_by_path(&root, &note_path)?;
         validate_editable_column(&existing_row, &column)?;
@@ -655,19 +698,20 @@ pub async fn databases_update_cell(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_create_row(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
     title: Option<String>,
     initial_values: Option<Vec<DatabaseCreateRowInitialValue>>,
 ) -> Result<DatabaseCreateRowResult, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
-    let recent_local_changes = state.recent_local_changes();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let store = bootstrap_defaults(load_store(&root)?);
+        let store = load_store(&root)?;
         let database = store
             .databases
             .iter()
@@ -716,11 +760,12 @@ pub async fn databases_create_row(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_preview_context(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_path: String,
     _space_path: Option<String>,
 ) -> Result<DatabasePreviewContext, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let markdown = read_note_markdown(&root, &note_path)?;
         let row = row_by_path(&root, &note_path)?;
@@ -748,9 +793,10 @@ pub async fn databases_preview_context(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_status_colors_get(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<BTreeMap<String, String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
@@ -764,11 +810,12 @@ pub async fn databases_status_colors_get(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_status_color_set(
+    window: WebviewWindow,
     state: State<'_, SpaceState>,
     status: String,
     color: Option<String>,
 ) -> Result<BTreeMap<String, String>, String> {
-    let root = state.current_root()?;
+    let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex

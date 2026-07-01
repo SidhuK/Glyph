@@ -6,8 +6,12 @@ fn default_true() -> bool {
     true
 }
 
+fn default_database_store_version() -> u32 {
+    1
+}
+
 fn default_database_layout() -> String {
-    "table".to_string()
+    "board".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -101,6 +105,8 @@ pub struct DatabaseViewDefinition {
     pub board_lane_order: BTreeMap<String, Vec<String>>,
     #[serde(default)]
     pub board_card_order: BTreeMap<String, BTreeMap<String, Vec<String>>>,
+    #[serde(default)]
+    pub board_card_fields: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -128,8 +134,6 @@ pub struct DatabaseDefinition {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
-    #[serde(default)]
-    pub is_system: bool,
     pub source: DatabaseSource,
     pub new_note: DatabaseNewNoteConfig,
     #[serde(default)]
@@ -140,14 +144,25 @@ pub struct DatabaseDefinition {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseStore {
+    #[serde(default = "default_database_store_version")]
     pub version: u32,
     #[serde(default)]
     pub databases: Vec<DatabaseDefinition>,
     #[serde(default)]
     pub status_colors: BTreeMap<String, String>,
+}
+
+impl Default for DatabaseStore {
+    fn default() -> Self {
+        Self {
+            version: default_database_store_version(),
+            databases: Vec::new(),
+            status_colors: BTreeMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -159,8 +174,6 @@ pub struct DatabaseSummary {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
-    #[serde(default)]
-    pub is_system: bool,
     #[serde(default)]
     pub view_count: u32,
 }

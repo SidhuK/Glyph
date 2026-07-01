@@ -1,4 +1,4 @@
-import { useDraggable, useDroppable } from "@dnd-kit/react";
+import { useDraggable } from "@dnd-kit/react";
 import {
 	ArrowRight02Icon,
 	Folder01Icon,
@@ -6,9 +6,16 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import type { MouseEvent, MutableRefObject, ReactNode } from "react";
+import type {
+	KeyboardEvent,
+	MouseEvent,
+	MutableRefObject,
+	ReactNode,
+} from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
+import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
@@ -17,6 +24,7 @@ import {
 	FILE_TREE_ENTRY_SENSORS,
 	FILE_TREE_ENTRY_TYPE,
 	fileTreeEntryDragId,
+	useFileTreeDirDropTargets,
 } from "./fileTreeDnd";
 import {
 	buildRowStyle,
@@ -100,11 +108,11 @@ interface FileTreeDirItemProps {
 	onNewFileInDir: (dirPath: string) => unknown;
 	onNewFlowInDir?: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
-	onNewFolderInDir: (dirPath: string) => unknown;
+	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	onEnterDir?: (dirPath: string) => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	onOpenAppearancePicker: () => void;
 	fileCount?: number | null;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
 }
@@ -124,14 +132,15 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onNewFileInDir,
 	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDeletePath,
 	onEnterDir,
 	appearance,
-	onChangeAppearance,
+	onOpenAppearancePicker,
 	fileCount,
 	onMoveClickSuppressRef,
 }: FileTreeDirItemProps) {
+	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -151,18 +160,22 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			kind: "dir",
 		},
 	});
-	const { ref: droppableRef, isDropTarget } = useDroppable({
-		id: `file-tree-dir:${entry.rel_path}`,
-		data: { targetDirPath: entry.rel_path },
-		accept: FILE_TREE_ENTRY_TYPE,
+	const {
+		rowDroppableRef,
+		isRowDropTarget,
+		childrenDroppableRef,
+		isChildrenDropTarget,
+	} = useFileTreeDirDropTargets({
+		relPath: entry.rel_path,
+		isExpanded,
 	});
-	const setRowRef = useCallback(
+	const setDragHandleRef = useCallback(
 		(element: HTMLButtonElement | null) => {
 			draggableRef(element);
-			droppableRef(element);
 			handleRef(element);
+			rowDroppableRef(element);
 		},
-		[draggableRef, droppableRef, handleRef],
+		[draggableRef, handleRef, rowDroppableRef],
 	);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
@@ -181,14 +194,16 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				},
 				{
 					label: "Add folder",
-					action: () => void onNewFolderInDir(entry.rel_path),
+					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
+				{ type: "separator" },
+				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
 					label: "Rename",
 					action: onStartRename,
 				},
-				fileTreeAppearanceNativeMenu("dir", appearance, onChangeAppearance),
+				fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
 				{ type: "separator" },
 				{
 					label: "Delete folder",
@@ -199,20 +214,20 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			});
 		},
 		[
-			appearance,
 			entry.rel_path,
-			onChangeAppearance,
+			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
 			onNewFlowInDir,
 			onNewFileInDir,
-			onNewFolderInDir,
+			onRequestCreateFolder,
 			onStartRename,
+			spacePath,
 		],
 	);
 
 	return (
-		<li className="fileTreeItem">
+		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow" style={rowStyle}>
@@ -227,7 +242,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : (
 					<>
 						<m.button
-							ref={setRowRef}
+							ref={setDragHandleRef}
 							type="button"
 							className="fileTreeRow"
 							onClick={() => {
@@ -245,7 +260,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							title={entry.rel_path || entry.name || "Folder"}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
-							data-drop-target={isDropTarget ? "true" : undefined}
+							data-drop-target={isRowDropTarget ? "true" : undefined}
 							data-has-custom-color={customColor ? "true" : "false"}
 							data-file-tree-kind="dir"
 							data-file-tree-path={entry.rel_path}
@@ -253,67 +268,88 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							{appearance?.icon ? (
 								<DatabaseColumnIcon
 									iconName={appearance.icon}
-									size={14}
+									size="var(--icon-md)"
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							) : (
 								<HugeiconsIcon
 									icon={isExpanded ? Folder03Icon : Folder01Icon}
-									size={12}
+									size="var(--icon-sm)"
 									strokeWidth={0.9}
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							)}
 							<span className="fileTreeName">{displayDirName}</span>
+							{onEnterDir ? (
+								<div className="fileTreeRowActions">
+									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
+									<span
+										role="button"
+										tabIndex={0}
+										className="fileTreeRowAction"
+										title={`Add file to ${displayDirName}`}
+										aria-label={`Add file to ${displayDirName}`}
+										onClick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											void onNewFileInDir(entry.rel_path);
+										}}
+										onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+											if (event.key === "Enter" || event.key === " ") {
+												event.preventDefault();
+												event.stopPropagation();
+												void onNewFileInDir(entry.rel_path);
+											}
+										}}
+									>
+										<Plus size="var(--icon-sm)" />
+									</span>
+									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
+									<span
+										role="button"
+										tabIndex={0}
+										className="fileTreeRowAction"
+										title={`Open ${displayDirName}`}
+										aria-label={`Open ${displayDirName}`}
+										onClick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											onEnterDir(entry.rel_path);
+										}}
+										onKeyDown={(event: KeyboardEvent<HTMLSpanElement>) => {
+											if (event.key === "Enter" || event.key === " ") {
+												event.preventDefault();
+												event.stopPropagation();
+												onEnterDir(entry.rel_path);
+											}
+										}}
+									>
+										<HugeiconsIcon
+											icon={ArrowRight02Icon}
+											size="var(--icon-sm)"
+											strokeWidth={0.9}
+										/>
+									</span>
+								</div>
+							) : null}
 							{typeof fileCount === "number" ? (
 								<span className="fileTreeCounts">{fileCount}</span>
 							) : null}
 						</m.button>
-						{onEnterDir ? (
-							<div className="fileTreeRowActions">
-								<button
-									type="button"
-									className="fileTreeRowAction"
-									title={`Add file to ${displayDirName}`}
-									aria-label={`Add file to ${displayDirName}`}
-									onClick={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										void onNewFileInDir(entry.rel_path);
-									}}
-								>
-									<Plus size={13} />
-								</button>
-								<button
-									type="button"
-									className="fileTreeRowAction"
-									title={`Open ${displayDirName}`}
-									aria-label={`Open ${displayDirName}`}
-									onClick={(event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										onEnterDir(entry.rel_path);
-									}}
-								>
-									<HugeiconsIcon
-										icon={ArrowRight02Icon}
-										size={13}
-										strokeWidth={0.9}
-									/>
-								</button>
-							</div>
-						) : null}
 					</>
 				)}
 			</div>
 			<AnimatePresence>
-				{isExpanded && children ? (
+				{isExpanded ? (
 					<m.div
+						ref={childrenDroppableRef}
+						className="fileTreeChildren"
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
 						transition={springTransition}
 						style={{ overflow: "hidden" }}
+						data-drop-target={isChildrenDropTarget ? "true" : undefined}
 					>
 						{children}
 					</m.div>

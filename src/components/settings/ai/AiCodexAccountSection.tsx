@@ -155,7 +155,7 @@ export function AiCodexAccountSection({
 												<span className="codexRateLimitWindow">
 													<HugeiconsIcon
 														icon={WindowIcon}
-														size={16}
+														size="var(--icon-lg)"
 														strokeWidth={1.6}
 														aria-hidden="true"
 													/>

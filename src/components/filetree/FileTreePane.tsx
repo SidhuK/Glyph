@@ -3,8 +3,7 @@ import {
 	type DragEndEvent,
 	useDroppable,
 } from "@dnd-kit/react";
-import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+
 import { m } from "motion/react";
 import {
 	type KeyboardEvent,
@@ -19,9 +18,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
-import { useTaskProgressIndicatorSetting } from "../../hooks/useTaskProgressIndicatorSetting";
+
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { loadSettings } from "../../lib/settings";
 import type {
@@ -33,19 +33,18 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import {
-	isMarkdownPath,
-	normalizeRelPath,
-	parentDir,
-	basename as relBasename,
-} from "../../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
+import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
-import { FILE_TREE_ENTRY_TYPE } from "./fileTreeDnd";
-import { rowVariants } from "./fileTreeItemHelpers";
+import {
+	FILE_TREE_ENTRY_TYPE,
+	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
+} from "./fileTreeDnd";
+import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -61,7 +60,7 @@ interface FileTreePaneProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFlowInDir?: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	renamingPath: string | null;
@@ -84,16 +83,13 @@ const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
 const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
 const noopCreateFlowInDir = () => undefined;
 
-function spaceLabelFromPath(path: string | null): string {
-	if (!path) return "Glyph";
-	const normalized = path.replace(/\\/g, "/").replace(/\/+$/, "");
-	const parts = normalized.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? path;
+interface AppearancePickerTarget {
+	entry: FsEntry;
 }
 
 function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 	const parts = [
-		{ label: spaceLabelFromPath(spacePath), path: "" },
+		{ label: spaceLabelFromAbsPath(spacePath), path: "" },
 		...dirPath
 			.split("/")
 			.filter(Boolean)
@@ -153,6 +149,7 @@ function FileTreeRootDrop({
 		id: targetDirPath ? `file-tree-focused:${targetDirPath}` : "file-tree-root",
 		data: { targetDirPath },
 		accept: FILE_TREE_ENTRY_TYPE,
+		collisionPriority: FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 	});
 
 	return (
@@ -232,7 +229,7 @@ function FolderBreadcrumb({
 						</button>
 						{!isLast ? (
 							<ChevronRight
-								size={11}
+								size="var(--icon-xs)"
 								className="fileTreeBreadcrumbSeparator"
 								aria-hidden="true"
 							/>
@@ -260,7 +257,7 @@ interface TreeEntriesProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFlowInDir?: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRequestCreateFolder: (dirPath: string) => void;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
 	onStartRename: (path: string) => void;
@@ -274,6 +271,7 @@ interface TreeEntriesProps {
 		entry: FsEntry,
 		appearance: FileTreeAppearance,
 	) => Promise<void> | void;
+	onOpenAppearancePicker: (entry: FsEntry) => void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
@@ -282,8 +280,7 @@ interface TreeEntriesProps {
 		direction: -1 | 1,
 		currentTarget: HTMLElement,
 	) => void;
-	showTaskProgressIndicator: boolean;
-	taskSummariesByPath: Record<string, NoteTaskSummary>;
+	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
 }
@@ -304,7 +301,7 @@ function TreeEntries({
 	onNewFileInDir,
 	onNewFlowInDir = noopCreateFlowInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
 	onStartRename,
@@ -315,12 +312,12 @@ function TreeEntries({
 	folderFileCounts,
 	showFolderFileCounts,
 	onChangeAppearance,
+	onOpenAppearancePicker,
 	pinnedFiles,
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
 	onArrowNavigate,
-	showTaskProgressIndicator,
-	taskSummariesByPath,
+	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
 }: TreeEntriesProps) {
@@ -336,7 +333,8 @@ function TreeEntries({
 
 				if (isDir) {
 					const isExpanded = expandedDirs.has(e.rel_path);
-					const children = childrenByDir[e.rel_path];
+					const childEntries = childrenByDir[e.rel_path];
+					const childEntriesLoaded = childEntries !== undefined;
 
 					return (
 						<FileTreeDirItem
@@ -352,7 +350,7 @@ function TreeEntries({
 							onNewFileInDir={onNewFileInDir}
 							onNewFlowInDir={onNewFlowInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-							onNewFolderInDir={onNewFolderInDir}
+							onRequestCreateFolder={onRequestCreateFolder}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[e.rel_path] ?? null}
 							fileCount={
@@ -360,17 +358,15 @@ function TreeEntries({
 									? (folderFileCounts[e.rel_path] ?? null)
 									: null
 							}
-							onChangeAppearance={(appearance) =>
-								onChangeAppearance(e, appearance)
-							}
+							onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
 							onMoveClickSuppressRef={onMoveClickSuppressRef}
 						>
-							{children && (
+							{childEntriesLoaded ? (
 								<TreeEntries
-									entries={children}
+									entries={childEntries ?? []}
 									parentDepth={depth}
 									childrenByDir={childrenByDir}
 									expandedDirs={expandedDirs}
@@ -385,7 +381,7 @@ function TreeEntries({
 									onNewFileInDir={onNewFileInDir}
 									onNewFlowInDir={onNewFlowInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onNewFolderInDir={onNewFolderInDir}
+									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}
 									onStartRename={onStartRename}
@@ -396,16 +392,16 @@ function TreeEntries({
 									folderFileCounts={folderFileCounts}
 									showFolderFileCounts={showFolderFileCounts}
 									onChangeAppearance={onChangeAppearance}
+									onOpenAppearancePicker={onOpenAppearancePicker}
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
 									onMoveClickSuppressRef={onMoveClickSuppressRef}
 									onArrowNavigate={onArrowNavigate}
-									showTaskProgressIndicator={showTaskProgressIndicator}
 									taskSummariesByPath={taskSummariesByPath}
 									showFilePreviews={showFilePreviews}
 									filePreviewsByPath={filePreviewsByPath}
 								/>
-							)}
+							) : null}
 						</FileTreeDirItem>
 					);
 				}
@@ -421,7 +417,7 @@ function TreeEntries({
 						onNewFileInDir={onNewFileInDir}
 						onNewFlowInDir={onNewFlowInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-						onNewFolderInDir={onNewFolderInDir}
+						onRequestCreateFolder={onRequestCreateFolder}
 						onDuplicateFile={onDuplicateFile}
 						isRenaming={renamingPath === e.rel_path}
 						onStartRename={() => onStartRename(e.rel_path)}
@@ -430,18 +426,12 @@ function TreeEntries({
 						parentDirPath={parentDir(e.rel_path)}
 						onDeletePath={onDeletePath}
 						appearance={itemAppearance[e.rel_path] ?? null}
-						onChangeAppearance={(appearance) =>
-							onChangeAppearance(e, appearance)
-						}
+						onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
 						isPinned={pinnedFiles.includes(e.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
 						onArrowNavigate={onArrowNavigate}
-						taskSummary={
-							showTaskProgressIndicator
-								? (taskSummariesByPath[e.rel_path] ?? null)
-								: null
-						}
+						taskSummary={taskSummariesByPath[e.rel_path] ?? null}
 						previewText={
 							showFilePreviews && e.is_markdown
 								? (filePreviewsByPath[e.rel_path] ?? null)
@@ -468,7 +458,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onNewFileInDir,
 	onNewFlowInDir,
 	onCreateFromTemplateInDir,
-	onNewFolderInDir,
+	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
 	renamingPath,
@@ -484,7 +474,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const showTaskProgressIndicator = useTaskProgressIndicatorSetting();
+
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
@@ -494,9 +484,16 @@ export const FileTreePane = memo(function FileTreePane({
 		Record<string, string | null | undefined>
 	>({});
 	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
+	const [appearancePickerTarget, setAppearancePickerTarget] =
+		useState<AppearancePickerTarget | null>(null);
 	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 	const previousSpacePathRef = useRef(spacePath);
+	const itemAppearanceRef = useRef(itemAppearance);
+
+	useEffect(() => {
+		itemAppearanceRef.current = itemAppearance;
+	}, [itemAppearance]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -620,17 +617,11 @@ export const FileTreePane = memo(function FileTreePane({
 		if (focusedDirPath) {
 			collectEntries(childrenByDir[focusedDirPath]);
 		}
-		for (const pinnedPath of pinnedFiles) {
-			if (isMarkdownPath(pinnedPath)) {
-				paths.add(pinnedPath);
-			}
-		}
-
 		return [...paths].sort();
-	}, [childrenByDir, expandedDirs, focusedDirPath, pinnedFiles, rootEntries]);
+	}, [childrenByDir, expandedDirs, focusedDirPath, rootEntries]);
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
-		Boolean(spacePath) && showTaskProgressIndicator,
+		Boolean(spacePath),
 		taskSummaryRefreshKey,
 	);
 
@@ -655,15 +646,8 @@ export const FileTreePane = memo(function FileTreePane({
 		setTaskSummaryRefreshKey((key) => key + 1);
 	});
 
-	const handleCreateFolder = useCallback(
-		async (dirPath: string) => {
-			const created = await onNewFolderInDir(dirPath);
-			if (created) {
-				onStartRename(created);
-			}
-			return created;
-		},
-		[onNewFolderInDir, onStartRename],
+	const handleRequestCreateFolder = useFileTreeCreateFolderScroll(
+		onRequestCreateFolder,
 	);
 
 	const handleDeletePath = useCallback(
@@ -725,6 +709,42 @@ export const FileTreePane = memo(function FileTreePane({
 		[setError, setItemAppearance],
 	);
 
+	const handleOpenAppearancePicker = useCallback((entry: FsEntry) => {
+		setAppearancePickerTarget({ entry });
+	}, []);
+
+	const appearancePickerEntry = appearancePickerTarget?.entry ?? null;
+	const appearancePickerAppearance = appearancePickerEntry
+		? (itemAppearance[appearancePickerEntry.rel_path] ?? null)
+		: null;
+	const appearancePickerColor =
+		appearancePickerAppearance?.color &&
+		isEditorTextColor(appearancePickerAppearance.color)
+			? appearancePickerAppearance.color
+			: null;
+	const appearancePickerIcon = appearancePickerAppearance?.icon ?? null;
+	const appearancePickerDefaultIcon =
+		appearancePickerEntry?.kind === "dir" ? "folder" : "document";
+
+	const updatePickerAppearance = useCallback(
+		(nextAppearance: FileTreeAppearance) => {
+			if (!appearancePickerEntry) return;
+			const path = appearancePickerEntry.rel_path;
+			const mergedAppearance = {
+				...(itemAppearanceRef.current[path] ?? {}),
+				...nextAppearance,
+			};
+			itemAppearanceRef.current = {
+				...itemAppearanceRef.current,
+				[path]: mergedAppearance,
+			};
+			void handleChangeAppearance(appearancePickerEntry, {
+				...mergedAppearance,
+			});
+		},
+		[appearancePickerEntry, handleChangeAppearance],
+	);
+
 	const handleEnterDir = useCallback(
 		(dirPath: string) => {
 			setFocusedDirPath(dirPath);
@@ -744,7 +764,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
 		: null;
-	const focusedEntriesLoading = Boolean(focusedDirPath && !focusedEntries);
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -828,22 +847,6 @@ export const FileTreePane = memo(function FileTreePane({
 		spacePath,
 	]);
 
-	const pinnedFileItems = useMemo(
-		() =>
-			pinnedFiles.map((path) => {
-				const fileName = relBasename(path);
-				const displayName =
-					fileName.replace(/\.[^./]+$/, "") || fileName || path;
-				return {
-					path,
-					displayName,
-					parent: parentDir(path),
-					isMarkdown: isMarkdownPath(path),
-				};
-			}),
-		[pinnedFiles],
-	);
-
 	const handleArrowNavigate = useCallback(
 		(_path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
 			const pane = currentTarget.closest(".fileTreePane");
@@ -898,6 +901,29 @@ export const FileTreePane = memo(function FileTreePane({
 				transition={springTransition}
 				onKeyDown={handleTreeKeyDown}
 			>
+				<AppearancePicker
+					title="Choose file tree appearance"
+					open={appearancePickerTarget !== null}
+					onOpenChange={(open) => {
+						if (!open) setAppearancePickerTarget(null);
+					}}
+					iconValue={appearancePickerIcon}
+					defaultIconName={appearancePickerDefaultIcon}
+					showDefaultIcon
+					onIconChange={(icon) => {
+						updatePickerAppearance({
+							icon,
+						});
+					}}
+					showColors
+					colorValue={appearancePickerColor}
+					colorOptions={EDITOR_TEXT_COLORS}
+					onColorChange={(color) => {
+						updatePickerAppearance({
+							color,
+						});
+					}}
+				/>
 				{focusedDirPath ? (
 					<FileTreeRootDrop targetDirPath={focusedDirPath}>
 						<FolderBreadcrumb
@@ -906,15 +932,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onNavigate={handleEnterDir}
 							onExit={handleExitFocusedDir}
 						/>
-						{focusedEntriesLoading ? (
-							<m.div
-								className="fileTreeEmpty"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-							>
-								Loading folder...
-							</m.div>
-						) : focusedEntries?.length ? (
+						{focusedEntries === null ? null : focusedEntries.length ? (
 							<TreeEntries
 								entries={focusedEntries}
 								parentDepth={-1}
@@ -931,7 +949,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onNewFileInDir={onNewFileInDir}
 								onNewFlowInDir={onNewFlowInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewFolderInDir={handleCreateFolder}
+								onRequestCreateFolder={handleRequestCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
 								onStartRename={onStartRename}
@@ -942,11 +960,11 @@ export const FileTreePane = memo(function FileTreePane({
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
 								onChangeAppearance={handleChangeAppearance}
+								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
@@ -961,98 +979,8 @@ export const FileTreePane = memo(function FileTreePane({
 							</m.div>
 						)}
 					</FileTreeRootDrop>
-				) : rootEntries.length || pinnedFileItems.length ? (
+				) : rootEntries.length ? (
 					<FileTreeRootDrop>
-						{pinnedFileItems.length > 0 ? (
-							<section className="fileTreePinnedSection">
-								<ul className="fileTreeList fileTreePinnedList">
-									{pinnedFileItems.map((file) => {
-										const isActive = file.path === activeFilePath;
-										return (
-											<li
-												key={file.path}
-												className={
-													isActive ? "fileTreeItem active" : "fileTreeItem"
-												}
-											>
-												<div className="fileTreeRowShell">
-													<m.div
-														className="fileTreeRow"
-														variants={rowVariants}
-														whileHover="hover"
-														whileTap="tap"
-														animate={isActive ? "active" : "idle"}
-														transition={springTransition}
-													>
-														<button
-															type="button"
-															aria-label={`Unpin ${file.displayName}`}
-															title="Unpin"
-															onClick={() => onTogglePinnedFile(file.path)}
-															className="fileTreePinToggle fileTreeIcon fileTreePinnedLeadingPin"
-														>
-															<HugeiconsIcon
-																icon={PinIcon}
-																size={14}
-																strokeWidth={0.9}
-																className="fileTreePinIcon"
-																aria-hidden="true"
-															/>
-															<HugeiconsIcon
-																icon={PinOffIcon}
-																size={14}
-																strokeWidth={0.9}
-																className="fileTreePinOffIcon"
-																aria-hidden="true"
-															/>
-														</button>
-														<button
-															type="button"
-															className="fileTreePinToggle fileTreePinnedRow"
-															onClick={() => onOpenFile(file.path)}
-															onKeyDown={(event) => {
-																if (
-																	event.key !== "ArrowDown" &&
-																	event.key !== "ArrowUp"
-																)
-																	return;
-																event.preventDefault();
-																handleArrowNavigate(
-																	file.path,
-																	event.key === "ArrowDown" ? 1 : -1,
-																	event.currentTarget,
-																);
-															}}
-															title={file.path}
-															data-file-tree-file="true"
-															data-file-tree-kind="file"
-															data-file-tree-path={file.path}
-														>
-															<span className="fileTreeName">
-																{file.displayName}
-															</span>
-															{showTaskProgressIndicator &&
-															(taskSummariesByPath[file.path]?.total_count ??
-																0) > 0 ? (
-																<TaskProgressIndicator
-																	summary={taskSummariesByPath[file.path]}
-																	className="fileTreeTaskProgress"
-																/>
-															) : null}
-															{file.parent ? (
-																<span className="fileTreePinnedPath">
-																	{file.parent}
-																</span>
-															) : null}
-														</button>
-													</m.div>
-												</div>
-											</li>
-										);
-									})}
-								</ul>
-							</section>
-						) : null}
 						{rootEntries.length ? (
 							<TreeEntries
 								entries={rootEntries}
@@ -1070,7 +998,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onNewFileInDir={onNewFileInDir}
 								onNewFlowInDir={onNewFlowInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onNewFolderInDir={handleCreateFolder}
+								onRequestCreateFolder={handleRequestCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
 								onStartRename={onStartRename}
@@ -1081,11 +1009,11 @@ export const FileTreePane = memo(function FileTreePane({
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
 								onChangeAppearance={handleChangeAppearance}
+								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
 								onArrowNavigate={handleArrowNavigate}
-								showTaskProgressIndicator={showTaskProgressIndicator}
 								taskSummariesByPath={taskSummariesByPath}
 							/>
 						) : null}

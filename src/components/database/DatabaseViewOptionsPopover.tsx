@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+	Cards01Icon,
 	FilterMailIcon,
 	GridViewIcon,
 	SlidersVerticalIcon,
@@ -15,7 +16,12 @@ import {
 	useState,
 } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
-import { createPropertyColumn } from "../../lib/database/config";
+import {
+	ensureDatabaseColumn,
+	isReservedDatabasePropertyKey,
+	normalizeDatabasePropertyKey,
+	resolveDatabaseColumns,
+} from "../../lib/database/columns";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
@@ -28,10 +34,17 @@ import { ChevronRight, RefreshCw, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
+	CardFieldsPanel,
+	visibleCardFieldCount,
+} from "./DatabaseViewOptionsCardFieldsPanel";
+import {
 	type ColumnMenuEntry,
 	ColumnsPanel,
 } from "./DatabaseViewOptionsColumnsPanel";
-import { FiltersPanel } from "./DatabaseViewOptionsFiltersPanel";
+import {
+	FiltersPanel,
+	nextFilterForColumn,
+} from "./DatabaseViewOptionsFiltersPanel";
 import { SortPanel } from "./DatabaseViewOptionsSortPanel";
 import { SourcePanel } from "./DatabaseViewOptionsSourcePanel";
 import {
@@ -40,7 +53,14 @@ import {
 	ensurePresetColumn,
 } from "./databaseViewPresets";
 
-type OptionsPanel = "source" | "columns" | "filters" | "sort";
+type OptionsPanel = "source" | "columns" | "filters" | "sort" | "card_fields";
+
+function cardFieldsLabel(fields: string[] | undefined): string {
+	const fieldCount = visibleCardFieldCount(fields);
+	if (fieldCount === null) return "All shown";
+	if (fieldCount === 0) return "Title only";
+	return `${fieldCount} shown`;
+}
 
 interface DatabaseViewOptionsPopoverProps {
 	config: DatabaseConfig;
@@ -55,23 +75,15 @@ interface FilterKeyEntry {
 	signature: string;
 }
 
-const RESERVED_PROPERTY_KEYS = new Set([
-	"created",
-	"folder",
-	"glyph",
-	"linked_notes",
-	"path",
-	"tags",
-	"title",
-	"updated",
-]);
-
-const defaultColumns: DatabaseColumn[] = [
+const RESTORE_DEFAULT_COLUMNS: DatabaseColumn[] = [
 	{
 		id: "title",
 		type: "title",
 		label: "Title",
-		icon: defaultDatabaseColumnIconName({ type: "title", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "title",
+			property_kind: null,
+		}),
 		width: 320,
 		visible: true,
 	},
@@ -79,7 +91,10 @@ const defaultColumns: DatabaseColumn[] = [
 		id: "tags",
 		type: "tags",
 		label: "Tags",
-		icon: defaultDatabaseColumnIconName({ type: "tags", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "tags",
+			property_kind: null,
+		}),
 		width: 220,
 		visible: true,
 	},
@@ -97,7 +112,7 @@ const defaultColumns: DatabaseColumn[] = [
 ];
 
 const builtInColumns: DatabaseColumn[] = [
-	...defaultColumns,
+	...RESTORE_DEFAULT_COLUMNS,
 	{
 		id: "folder",
 		type: "folder",
@@ -123,10 +138,11 @@ const builtInColumns: DatabaseColumn[] = [
 		label: "Linked Notes",
 		icon: defaultDatabaseColumnIconName({
 			type: "linked_notes",
-			property_kind: null,
+			property_kind: "relation",
 		}),
 		width: 220,
 		visible: false,
+		property_kind: "relation",
 	},
 	{
 		id: "created",
@@ -140,10 +156,6 @@ const builtInColumns: DatabaseColumn[] = [
 		visible: false,
 	},
 ];
-
-function isReservedPropertyKey(key: string): boolean {
-	return RESERVED_PROPERTY_KEYS.has(key.trim().toLowerCase());
-}
 
 function filterSignature(filter: DatabaseFilter): string {
 	return JSON.stringify({
@@ -206,7 +218,7 @@ function OptionMenuRow({
 			<span className="databaseViewOptionsRowIcon">{icon}</span>
 			<span className="databaseViewOptionsRowLabel">{label}</span>
 			{value ? <span className="databaseViewOptionsPill">{value}</span> : null}
-			<ChevronRight size={15} aria-hidden="true" />
+			<ChevronRight size="var(--icon-lg)" aria-hidden="true" />
 		</button>
 	);
 }
@@ -225,20 +237,17 @@ export function DatabaseViewOptionsPopover({
 	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
 	const filtersRef = useRef(config.filters);
 	const visibleCount = config.columns.filter((column) => column.visible).length;
+	const isTableView = config.view.layout === "table";
 	filtersRef.current = config.filters;
+	const resolvedColumns = useMemo(
+		() => resolveDatabaseColumns(config.columns, availableProperties),
+		[availableProperties, config.columns],
+	);
 
 	const columnsById = useMemo(
 		() => new Map(config.columns.map((column) => [column.id, column])),
 		[config.columns],
 	);
-	const propertyColumnsByKey = useMemo(() => {
-		const entries = new Map<string, DatabaseColumn>();
-		for (const column of config.columns) {
-			if (column.type !== "property" || !column.property_key) continue;
-			entries.set(column.property_key.trim().toLowerCase(), column);
-		}
-		return entries;
-	}, [config.columns]);
 
 	const columnMenuEntries = useMemo<ColumnMenuEntry[]>(() => {
 		const entries = new Map<string, ColumnMenuEntry>();
@@ -250,31 +259,15 @@ export function DatabaseViewOptionsPopover({
 				enabled: existing?.visible ?? column.visible,
 			});
 		}
-		for (const property of availableProperties) {
-			if (isReservedPropertyKey(property.key)) continue;
-			const trimmedKey = property.key.trim();
-			const propertyKey = trimmedKey.toLowerCase();
+		for (const column of resolvedColumns) {
+			const propertyKey = column.property_key
+				? normalizeDatabasePropertyKey(column.property_key)
+				: "";
 			const normalizedId = `property:${propertyKey}`;
-			if (entries.has(normalizedId)) continue;
-			const id = `property:${trimmedKey}`;
-			const existing =
-				columnsById.get(normalizedId) ??
-				columnsById.get(id) ??
-				propertyColumnsByKey.get(propertyKey);
-			entries.set(normalizedId, {
-				key: normalizedId,
-				column:
-					existing ?? createPropertyColumn({ ...property, key: trimmedKey }),
-				enabled: existing?.visible ?? false,
-			});
-		}
-		for (const column of config.columns) {
-			const normalized = column.property_key?.trim().toLowerCase() ?? "";
-			const normalizedId = `property:${normalized}`;
 			if (
 				column.type !== "property" ||
 				!column.property_key ||
-				isReservedPropertyKey(column.property_key) ||
+				isReservedDatabasePropertyKey(column.property_key) ||
 				entries.has(normalizedId)
 			) {
 				continue;
@@ -282,7 +275,7 @@ export function DatabaseViewOptionsPopover({
 			entries.set(normalizedId, {
 				key: normalizedId,
 				column,
-				enabled: column.visible,
+				enabled: columnsById.get(column.id)?.visible ?? false,
 			});
 		}
 		const orderById = new Map(
@@ -298,7 +291,7 @@ export function DatabaseViewOptionsPopover({
 			if (rightOrder != null) return 1;
 			return left.column.label.localeCompare(right.column.label);
 		});
-	}, [availableProperties, columnsById, config.columns, propertyColumnsByKey]);
+	}, [columnsById, config.columns, resolvedColumns]);
 
 	const deriveFilterUiKeys = useCallback(
 		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
@@ -381,12 +374,17 @@ export function DatabaseViewOptionsPopover({
 	const updateFilters = async (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
 		keyUpdater?: (keys: string[]) => string[],
+		columns: DatabaseColumn[] = config.columns,
 	) => {
 		const nextFilters = updater(config.filters);
 		const nextKeys = keyUpdater?.(filterUiKeys);
 		try {
 			setFilterError("");
-			const saved = await updateConfig({ ...config, filters: nextFilters });
+			const saved = await updateConfig({
+				...config,
+				columns,
+				filters: nextFilters,
+			});
 			if (!saved) return;
 			setFilterUiKeys(deriveFilterUiKeys(nextFilters, nextKeys));
 		} catch (cause) {
@@ -394,6 +392,17 @@ export function DatabaseViewOptionsPopover({
 			console.error("Failed to update database filters", cause);
 			setFilterError(message);
 		}
+	};
+
+	const changeFilterColumn = (index: number, column: DatabaseColumn | null) => {
+		void updateFilters(
+			(filters) =>
+				filters.map((entry, i) =>
+					i === index ? nextFilterForColumn(entry, column) : entry,
+				),
+			undefined,
+			column ? ensureDatabaseColumn(config.columns, column) : config.columns,
+		);
 	};
 
 	const applyFilterPreset = async (preset: DatabaseFilterPreset) => {
@@ -410,21 +419,28 @@ export function DatabaseViewOptionsPopover({
 	};
 
 	const defaultFilterColumn =
-		config.columns.find((column) => column.visible) ??
-		config.columns[0] ??
+		resolvedColumns.find((column) => column.visible) ??
+		resolvedColumns[0] ??
 		null;
 	const activeSort = config.sorts[0] ?? null;
 	const sortColumn =
-		config.columns.find((column) => column.id === activeSort?.column_id) ??
-		config.columns.find((column) => column.visible) ??
-		config.columns[0] ??
+		resolvedColumns.find((column) => column.id === activeSort?.column_id) ??
+		resolvedColumns.find((column) => column.visible) ??
+		resolvedColumns[0] ??
 		null;
 	const sortDirection = activeSort?.direction ?? "asc";
 
 	const setSort = (patch: Partial<DatabaseSort>) => {
 		if (!sortColumn && !patch.column_id) return;
+		const nextColumn = patch.column_id
+			? (resolvedColumns.find((column) => column.id === patch.column_id) ??
+				null)
+			: sortColumn;
 		void updateConfig({
 			...config,
+			columns: nextColumn
+				? ensureDatabaseColumn(config.columns, nextColumn)
+				: config.columns,
 			sorts: [
 				{
 					column_id:
@@ -454,8 +470,9 @@ export function DatabaseViewOptionsPopover({
 				...config.view,
 				search: "",
 				board_group_by: null,
+				board_card_fields: undefined,
 			},
-			columns: defaultColumns,
+			columns: RESTORE_DEFAULT_COLUMNS,
 			sorts: [],
 			filters: [],
 		});
@@ -469,7 +486,7 @@ export function DatabaseViewOptionsPopover({
 		<Popover
 			open={open}
 			onOpenChange={(nextOpen) => {
-				if (nextOpen) setActivePanel(null);
+				setActivePanel(null);
 				onOpenChange?.(nextOpen);
 			}}
 		>
@@ -484,7 +501,7 @@ export function DatabaseViewOptionsPopover({
 				>
 					<HugeiconsIcon
 						icon={SlidersVerticalIcon}
-						size={14}
+						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
 				</Button>
@@ -499,31 +516,37 @@ export function DatabaseViewOptionsPopover({
 				{activePanel === "source" ? (
 					<SourcePanel config={config} updateConfig={updateConfig} />
 				) : null}
-				{activePanel === "columns" ? (
+				{isTableView && activePanel === "columns" ? (
 					<ColumnsPanel
 						columnMenuEntries={columnMenuEntries}
 						setColumnEnabled={setColumnEnabled}
 						updateColumns={updateColumns}
 						onRestoreDefaultColumns={() =>
-							void updateConfig({ ...config, columns: defaultColumns })
+							void updateConfig({
+								...config,
+								columns: RESTORE_DEFAULT_COLUMNS,
+							})
 						}
 					/>
 				) : null}
 				{activePanel === "filters" ? (
 					<FiltersPanel
 						config={config}
+						columns={resolvedColumns}
 						availableProperties={availableProperties}
 						filterError={filterError}
 						filterUiKeys={filterUiKeys}
 						filterKeyCounterRef={filterKeyCounterRef}
 						defaultFilterColumn={defaultFilterColumn}
 						onApplyFilterPreset={applyFilterPreset}
+						onChangeFilterColumn={changeFilterColumn}
 						updateFilters={updateFilters}
 					/>
 				) : null}
 				{activePanel === "sort" ? (
 					<SortPanel
 						config={config}
+						columns={resolvedColumns}
 						availableProperties={availableProperties}
 						activeSort={activeSort}
 						sortColumn={sortColumn}
@@ -533,31 +556,51 @@ export function DatabaseViewOptionsPopover({
 						updateConfig={updateConfig}
 					/>
 				) : null}
+				{activePanel === "card_fields" ? (
+					<CardFieldsPanel
+						fields={config.view.board_card_fields}
+						onChange={(fields) =>
+							void onChangeConfig({
+								...config,
+								view: {
+									...config.view,
+									board_card_fields: fields,
+								},
+							})
+						}
+					/>
+				) : null}
 				<section className="databaseViewOptionsMenu" aria-label="View settings">
 					{configError ? (
 						<div className="databaseViewPanelError">{configError}</div>
 					) : null}
 					<OptionMenuRow
-						icon={<Search size={16} />}
+						icon={<Search size="var(--icon-lg)" />}
 						label="Source"
 						value={sourceLabel(config)}
 						active={activePanel === "source"}
 						onClick={() => togglePanel("source")}
 					/>
-					<OptionMenuRow
-						icon={
-							<HugeiconsIcon icon={GridViewIcon} size={16} strokeWidth={0.9} />
-						}
-						label="Columns"
-						value={`${visibleCount} selected`}
-						active={activePanel === "columns"}
-						onClick={() => togglePanel("columns")}
-					/>
+					{isTableView ? (
+						<OptionMenuRow
+							icon={
+								<HugeiconsIcon
+									icon={GridViewIcon}
+									size="var(--icon-lg)"
+									strokeWidth={0.9}
+								/>
+							}
+							label="Columns"
+							value={`${visibleCount} selected`}
+							active={activePanel === "columns"}
+							onClick={() => togglePanel("columns")}
+						/>
+					) : null}
 					<OptionMenuRow
 						icon={
 							<HugeiconsIcon
 								icon={FilterMailIcon}
-								size={16}
+								size="var(--icon-lg)"
 								strokeWidth={0.9}
 							/>
 						}
@@ -572,19 +615,38 @@ export function DatabaseViewOptionsPopover({
 					/>
 					<OptionMenuRow
 						icon={
-							<HugeiconsIcon icon={TextFontIcon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon
+								icon={TextFontIcon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
 						}
 						label="Sort by"
-						value={sortLabel(activeSort ?? undefined, config.columns)}
+						value={sortLabel(activeSort ?? undefined, resolvedColumns)}
 						active={activePanel === "sort"}
 						onClick={() => togglePanel("sort")}
 					/>
+					{config.view.layout === "board" ? (
+						<OptionMenuRow
+							icon={
+								<HugeiconsIcon
+									icon={Cards01Icon}
+									size="var(--icon-lg)"
+									strokeWidth={0.9}
+								/>
+							}
+							label="Card fields"
+							value={cardFieldsLabel(config.view.board_card_fields)}
+							active={activePanel === "card_fields"}
+							onClick={() => togglePanel("card_fields")}
+						/>
+					) : null}
 					<button
 						type="button"
 						className="databaseViewRestoreButton"
 						onClick={resetViewOptions}
 					>
-						<RefreshCw size={16} aria-hidden="true" />
+						<RefreshCw size="var(--icon-lg)" aria-hidden="true" />
 						Restore defaults
 					</button>
 				</section>

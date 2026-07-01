@@ -1,7 +1,8 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
-import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
+import Suggestion from "@tiptap/suggestion";
 import { type PersonCount, invoke } from "../../../lib/tauri";
+import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const PERSON_SUGGESTION_KEY = new PluginKey("person-suggestion");
 
@@ -35,14 +36,14 @@ export const PersonAutocomplete = Extension.create({
 			const normalized = normalizeHandle(query);
 			let people: PersonCount[] = [];
 			try {
-				people = (await invoke("people_list", {
+				people = await invoke("people_list", {
 					limit: this.options.suggestionLimit * 5,
-				})) as PersonCount[];
+				});
 			} catch (error) {
 				console.warn("Failed to load people suggestions", error);
 				return [];
 			}
-			const matches: PersonSuggestionItem[] = (people as PersonCount[])
+			const matches: PersonSuggestionItem[] = people
 				.filter((person) =>
 					normalized.length === 0 ? true : person.handle.includes(normalized),
 				)
@@ -94,18 +95,16 @@ export const PersonAutocomplete = Extension.create({
 						.insertContent(`@${props.handle}`)
 						.run();
 				},
-				render: () => {
-					let menu: HTMLDivElement | null = null;
-					let selectedIndex = 0;
-					let activeProps: SuggestionProps<PersonSuggestionItem> | null = null;
-
-					const updateMenu = (props: SuggestionProps<PersonSuggestionItem>) => {
-						if (!menu) return;
-						menu.replaceChildren();
-						for (const [index, item] of props.items.entries()) {
+				render: () =>
+					createTipTapSuggestionMenu<PersonSuggestionItem>({
+						menuClassName: "wikiLinkSuggestionMenu",
+						lockEditorScroll: false,
+						resetSelectionOnUpdate: true,
+						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
+							button.classList.toggle("active", isActive);
 							const meta = item.isNew
 								? "Create mention"
 								: `${item.count ?? 0} note${item.count === 1 ? "" : "s"}`;
@@ -118,61 +117,11 @@ export const PersonAutocomplete = Extension.create({
 							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
-								props.command(item);
+								select(item);
 							});
-							if (index === selectedIndex) button.classList.add("active");
-							menu.append(button);
-						}
-						const rect = props.clientRect?.();
-						if (rect) {
-							menu.style.left = `${rect.left}px`;
-							menu.style.top = `${rect.bottom + 6}px`;
-						}
-					};
-
-					return {
-						onStart: (props: SuggestionProps<PersonSuggestionItem>) => {
-							activeProps = props;
-							selectedIndex = 0;
-							menu = document.createElement("div");
-							menu.className = "wikiLinkSuggestionMenu";
-							document.body.append(menu);
-							updateMenu(props);
+							return button;
 						},
-						onUpdate: (props: SuggestionProps<PersonSuggestionItem>) => {
-							activeProps = props;
-							selectedIndex = 0;
-							updateMenu(props);
-						},
-						onKeyDown: ({ event }) => {
-							const current = activeProps;
-							if (!current?.items.length) return false;
-							if (event.key === "ArrowDown") {
-								selectedIndex = (selectedIndex + 1) % current.items.length;
-								updateMenu(current);
-								return true;
-							}
-							if (event.key === "ArrowUp") {
-								selectedIndex =
-									(selectedIndex - 1 + current.items.length) %
-									current.items.length;
-								updateMenu(current);
-								return true;
-							}
-							if (event.key === "Enter" || event.key === "Tab") {
-								event.preventDefault();
-								current.command(current.items[selectedIndex]);
-								return true;
-							}
-							return false;
-						},
-						onExit: () => {
-							menu?.remove();
-							menu = null;
-							activeProps = null;
-						},
-					};
-				},
+					}),
 			}),
 		];
 	},

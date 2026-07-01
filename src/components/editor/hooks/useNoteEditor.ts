@@ -1,10 +1,13 @@
-import { openUrl } from "@tauri-apps/plugin-opener";
-import type { JSONContent } from "@tiptap/core";
+import type { AnyExtension, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
-import { TextSelection } from "@tiptap/pm/state";
-import type { EditorView } from "@tiptap/pm/view";
 import { useEditor } from "@tiptap/react";
-import { useEffect, useMemo, useRef } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+} from "react";
 import { useState } from "react";
 import {
 	joinYamlFrontmatter,
@@ -17,13 +20,10 @@ import {
 import { invoke } from "../../../lib/tauri";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 import { parentDir } from "../../../utils/path";
+import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
-import {
-	dispatchMarkdownLinkClick,
-	dispatchPersonClick,
-	dispatchTagClick,
-	dispatchWikiLinkClick,
-} from "../markdown/editorEvents";
+import type { MathEditRequest } from "../extensions/math/mathOptions";
+import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
@@ -34,6 +34,8 @@ import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
+const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
+const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -73,6 +75,7 @@ const HTML_BLOCK_TAGS = new Set([
 	"ARTICLE",
 	"ASIDE",
 	"BLOCKQUOTE",
+	"DETAILS",
 	"DIV",
 	"DL",
 	"FIELDSET",
@@ -95,6 +98,7 @@ const HTML_BLOCK_TAGS = new Set([
 	"P",
 	"PRE",
 	"SECTION",
+	"SUMMARY",
 	"TABLE",
 	"TD",
 	"TH",
@@ -240,6 +244,7 @@ function shouldHandleSmartMarkdownPaste(
 }
 
 interface UseNoteEditorOptions {
+	additionalExtensions?: AnyExtension[];
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
@@ -247,146 +252,75 @@ interface UseNoteEditorOptions {
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
+	placeholder?: string;
 	onChange: (nextMarkdown: string) => void;
+	onMathEditRequest?: (request: MathEditRequest) => void;
 }
 
-function expandMarkdownLinkForEditing(
-	view: EditorView,
-	link: HTMLAnchorElement,
-): boolean {
-	const href = link.getAttribute("href")?.trim() ?? "";
-	if (!href) return false;
-	if (href.startsWith("#")) return false;
-
-	const linkText = (link.textContent ?? "").trim() || href;
-	const markdown = `[${linkText}](${href})`;
-
-	try {
-		const from = view.posAtDOM(link, 0);
-		const to = view.posAtDOM(link, link.childNodes.length);
-		if (from >= to) return false;
-
-		const hrefStart = from + markdown.lastIndexOf(href);
-		const hrefEnd = hrefStart + href.length;
-		let tr = view.state.tr.insertText(markdown, from, to);
-		try {
-			tr = tr.setSelection(TextSelection.create(tr.doc, hrefStart, hrefEnd));
-		} catch {
-			// Fallback for malformed/mocked docs; the inserted markdown still edits correctly.
-		}
-		view.dispatch(tr.scrollIntoView());
-		view.focus();
-		return true;
-	} catch {
-		return false;
-	}
+interface PendingMarkdownSync {
+	instance: NonNullable<ReturnType<typeof useEditor>>;
+	frontmatter: string | null;
+	lastEmittedMarkdown: string;
+	onChange: (nextMarkdown: string) => void;
+	relPath: string;
 }
 
-function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
-	const href = link.getAttribute("href")?.trim() ?? "";
-	const text = link.textContent?.trim() ?? "";
-	if (!href || text !== href) return false;
-	const previousText = link.previousSibling?.textContent ?? "";
-	const nextText = link.nextSibling?.textContent ?? "";
-	return previousText.endsWith("](") && nextText.startsWith(")");
+interface SelectionSnapshot {
+	from: number;
+	relPath: string;
+	to: number;
 }
 
-function handleEditorClick(
-	event: MouseEvent,
-	view: EditorView,
+function clampSelectionPosition(pos: number, docSize: number): number {
+	return Math.min(Math.max(pos, 0), docSize);
+}
+
+function snapshotFocusedSelection(
+	editor: NonNullable<ReturnType<typeof useEditor>> | null,
 	relPath: string,
-	interactive: boolean,
-	editable: boolean,
+): SelectionSnapshot | null {
+	if (!editor || editor.isDestroyed) return null;
+	try {
+		if (!editor.view.hasFocus()) return null;
+		const { from, to } = editor.state.selection;
+		return { from, relPath, to };
+	} catch {
+		return null;
+	}
+}
+
+function restoreSelectionSnapshot(
+	editor: NonNullable<ReturnType<typeof useEditor>>,
+	snapshot: SelectionSnapshot,
+	relPath: string,
 ): boolean {
-	const target = event.target instanceof Element ? event.target : null;
-	const tagToken = target?.closest(".tagToken") as HTMLElement | null;
-	if (tagToken) {
-		if (!interactive) {
-			event.preventDefault();
+	if (snapshot.relPath !== relPath) return false;
+	const docSize = editor.state.doc.content.size;
+	const from = clampSelectionPosition(snapshot.from, docSize);
+	const to = clampSelectionPosition(snapshot.to, docSize);
+	const range = from <= to ? { from, to } : { from: to, to: from };
+	try {
+		if (editor.commands.setTextSelection(range)) {
+			editor.view.focus();
 			return true;
 		}
-		event.preventDefault();
-		const rawTag =
-			tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
-		const normalized = rawTag.trim().replace(/^#+/, "");
-		if (!normalized) return true;
-		dispatchTagClick({ tag: `#${normalized}` });
-		return true;
+	} catch {
+		// Fall back to a collapsed selection below.
 	}
-
-	const personToken = target?.closest(".personToken") as HTMLElement | null;
-	if (personToken) {
-		if (!interactive) {
-			event.preventDefault();
+	try {
+		if (editor.commands.setTextSelection(range.from)) {
+			editor.view.focus();
 			return true;
 		}
-		event.preventDefault();
-		const rawHandle =
-			personToken.getAttribute("data-handle") ?? personToken.textContent ?? "";
-		const normalized = rawHandle.trim().replace(/^@+/, "");
-		if (!normalized) return true;
-		dispatchPersonClick({ handle: `@${normalized}` });
-		return true;
+	} catch {
+		// If neither selection can be represented in the new document, leave the
+		// editor unfocused instead of letting the browser choose an end position.
 	}
-
-	const wikiLink = target?.closest(
-		'[data-wikilink="true"]',
-	) as HTMLElement | null;
-	if (wikiLink) {
-		if (!interactive) {
-			event.preventDefault();
-			return true;
-		}
-		event.preventDefault();
-		dispatchWikiLinkClick({
-			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
-			target: wikiLink.getAttribute("data-target") ?? "",
-			alias: wikiLink.getAttribute("data-alias") || null,
-			anchorKind:
-				(wikiLink.getAttribute("data-anchor-kind") as
-					| "none"
-					| "heading"
-					| "block") ?? "none",
-			anchor: wikiLink.getAttribute("data-anchor") || null,
-			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
-			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
-		});
-		return true;
-	}
-
-	const link = target?.closest("a") as HTMLAnchorElement | null;
-	if (!link) return false;
-	const href = link?.getAttribute("href") ?? "";
-	if (!href) return false;
-	if (!interactive) {
-		event.preventDefault();
-		return true;
-	}
-	if (href.startsWith("#")) return false;
-	event.preventDefault();
-	if (
-		editable &&
-		isExpandedMarkdownUrlLink(link) &&
-		(href.startsWith("http://") || href.startsWith("https://"))
-	) {
-		void openUrl(href);
-		return true;
-	}
-	if (editable && expandMarkdownLinkForEditing(view, link)) {
-		return true;
-	}
-	if (href.startsWith("http://") || href.startsWith("https://")) {
-		void openUrl(href);
-		return true;
-	}
-	dispatchMarkdownLinkClick({
-		href,
-		sourcePath: relPath,
-	});
-	return true;
+	return false;
 }
 
 export function useNoteEditor({
+	additionalExtensions = EMPTY_ADDITIONAL_EXTENSIONS,
 	markdown,
 	mode,
 	relPath = "",
@@ -394,21 +328,39 @@ export function useNoteEditor({
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
 	pasteMarkdownBehavior = "plain-text",
+	placeholder = "Start writing or press / for commands",
 	onChange,
+	onMathEditRequest,
 }: UseNoteEditorOptions) {
-	const { frontmatter, body } = splitYamlFrontmatter(markdown);
-	const editorBody = preprocessMarkdownForEditor(body);
+	const { frontmatter, editorBody } = useMemo(() => {
+		if (mode === "plain") {
+			return { frontmatter: null, editorBody: "" };
+		}
+		const split = splitYamlFrontmatter(markdown);
+		return {
+			...split,
+			editorBody: preprocessMarkdownForEditor(split.body),
+		};
+	}, [markdown, mode]);
 
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const onChangeRef = useRef(onChange);
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
+	const previousModeRef = useRef(mode);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
+	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
+	const editorContentRelPathRef = useRef(relPath);
+	const markdownSyncTimeoutRef = useRef<number | null>(null);
+	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
@@ -417,16 +369,21 @@ export function useNoteEditor({
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
+				additionalExtensions,
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
-				placeholder: "Start writing or press / for commands",
+				onMathEditRequest,
+				placeholder,
 			}),
 		[
+			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
+			onMathEditRequest,
 			peopleMentionsEnabled,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
@@ -500,14 +457,109 @@ export function useNoteEditor({
 	});
 
 	frontmatterRef.current = frontmatter;
+	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
 	interactiveRef.current = interactive;
 	modeRef.current = mode;
 
+	const clearScheduledMarkdownSync = useCallback(() => {
+		if (markdownSyncTimeoutRef.current !== null) {
+			window.clearTimeout(markdownSyncTimeoutRef.current);
+			markdownSyncTimeoutRef.current = null;
+		}
+		if (markdownSyncFrameRef.current !== null) {
+			window.cancelAnimationFrame(markdownSyncFrameRef.current);
+			markdownSyncFrameRef.current = null;
+		}
+	}, []);
+
+	const flushMarkdownSync = useCallback(
+		(expectedRelPath?: string) => {
+			clearScheduledMarkdownSync();
+			const pending = pendingMarkdownSyncRef.current;
+			pendingMarkdownSyncRef.current = null;
+			if (!pending) {
+				return;
+			}
+			if (
+				expectedRelPath !== undefined &&
+				pending.relPath !== expectedRelPath
+			) {
+				return;
+			}
+			const { instance } = pending;
+			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
+			const nextMarkdown = joinYamlFrontmatter(
+				pending.frontmatter,
+				normalizeBody(nextBody),
+			);
+			if (pending.relPath === relPathRef.current) {
+				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
+				lastEmittedMarkdownRef.current = nextMarkdown;
+			}
+			if (nextMarkdown === pending.lastEmittedMarkdown) return;
+			pending.onChange(nextMarkdown);
+		},
+		[clearScheduledMarkdownSync],
+	);
+
+	const scheduleMarkdownSync = useCallback(
+		(instance: NonNullable<ReturnType<typeof useEditor>>) => {
+			pendingMarkdownSyncRef.current = {
+				instance,
+				frontmatter: frontmatterRef.current,
+				lastEmittedMarkdown: lastEmittedMarkdownRef.current,
+				onChange: onChangeRef.current,
+				relPath: relPathRef.current,
+			};
+			clearScheduledMarkdownSync();
+			markdownSyncTimeoutRef.current = window.setTimeout(() => {
+				markdownSyncTimeoutRef.current = null;
+				markdownSyncFrameRef.current = window.requestAnimationFrame(() => {
+					markdownSyncFrameRef.current = null;
+					flushMarkdownSync();
+				});
+			}, MARKDOWN_SYNC_DEBOUNCE_MS);
+		},
+		[clearScheduledMarkdownSync, flushMarkdownSync],
+	);
+
+	useLayoutEffect(() => {
+		// These values mirror useEditor's recreation dependencies below. Flush
+		// before TipTap destroys an instance so its debounced edits are retained.
+		void additionalExtensions;
+		void peopleMentionsEnabled;
+		void enableMarkdownLinkAutocomplete;
+		void placeholder;
+		void vimKeybindingsEnabled;
+		return () => {
+			const snapshot = snapshotFocusedSelection(
+				committedEditorRef.current,
+				relPath,
+			);
+			if (snapshot) pendingSelectionRestoreRef.current = snapshot;
+			flushMarkdownSync(relPath);
+		};
+	}, [
+		flushMarkdownSync,
+		relPath,
+		additionalExtensions,
+		peopleMentionsEnabled,
+		enableMarkdownLinkAutocomplete,
+		placeholder,
+		vimKeybindingsEnabled,
+	]);
+
+	const pendingSync = pendingMarkdownSyncRef.current;
+	const editorContent =
+		pendingSync?.relPath === relPath
+			? pendingSync.instance.getMarkdown()
+			: editorBody;
+
 	const editor = useEditor(
 		{
 			extensions,
-			content: editorBody,
+			content: editorContent,
 			contentType: "markdown",
 			editorProps: {
 				attributes: {
@@ -515,6 +567,10 @@ export function useNoteEditor({
 					spellcheck: "true",
 				},
 				handleDOMEvents: {
+					mousedown: (_view, event): boolean => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleTagDecorationMouseDown(event);
+					},
 					click: (view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;
 						return handleEditorClick(
@@ -589,7 +645,7 @@ export function useNoteEditor({
 											source_path: sourcePath,
 											target_dir: targetDir,
 											data_url: dataUrl,
-											alt: item.file.name || null,
+											original_filename: item.file.name || null,
 										});
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,
@@ -653,25 +709,31 @@ export function useNoteEditor({
 					suppressUpdateRef.current = false;
 					return;
 				}
-				if (mode !== "rich" || !instance.isEditable) return;
-				const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
-				const nextMarkdown = joinYamlFrontmatter(
-					frontmatterRef.current,
-					normalizeBody(nextBody),
-				);
-				if (nextMarkdown === lastEmittedMarkdownRef.current) return;
-				lastEmittedMarkdownRef.current = nextMarkdown;
-				onChange(nextMarkdown);
+				if (modeRef.current !== "rich" || !instance.isEditable) return;
+				scheduleMarkdownSync(instance);
 			},
 		},
 		[
+			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
 	editorRef.current = editor;
+
+	useLayoutEffect(() => {
+		if (!editor) return;
+		const snapshot = pendingSelectionRestoreRef.current;
+		if (!snapshot) return;
+		pendingSelectionRestoreRef.current = null;
+		restoreSelectionSnapshot(editor, snapshot, relPath);
+	}, [editor, relPath]);
+
+	useLayoutEffect(() => {
+		committedEditorRef.current = editor;
+	}, [editor]);
 
 	useEffect(() => {
 		if (!editor) return;
@@ -685,13 +747,35 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
-		if (markdown === lastEmittedMarkdownRef.current) return;
+		const previousMode = previousModeRef.current;
+		previousModeRef.current = mode;
+		if (mode === "plain") return;
+		const isHydratingFromPlainMode = previousMode === "plain";
+		if (
+			!isHydratingFromPlainMode &&
+			markdown === lastEmittedMarkdownRef.current
+		) {
+			return;
+		}
 		if (editorBody === lastAppliedBodyRef.current) return;
+		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
+		const snapshot = snapshotFocusedSelection(
+			editor,
+			editorContentRelPathRef.current,
+		);
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
+		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
+		editorContentRelPathRef.current = relPath;
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
-	}, [editor, editorBody, markdown]);
+	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
+
+	useEffect(() => {
+		return () => {
+			flushMarkdownSync();
+		};
+	}, [flushMarkdownSync]);
 
 	useHydrateInlineImages(editor, enableHydrateInlineImages ? relPath : "");
 

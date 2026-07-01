@@ -1,7 +1,9 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
+import { toast } from "sonner";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { promptCreateFolderName } from "../lib/promptCreateFolderName";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { canOpenInWorkspace, parentDir } from "../utils/path";
@@ -29,7 +31,7 @@ export interface UseFileTreeResult {
 	onNewFile: () => Promise<string | null>;
 	onNewFileInDir: (dirPath: string) => Promise<string | null>;
 	onNewFlowInDir: (dirPath: string) => Promise<string | null>;
-	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	requestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
 		path: string,
@@ -322,6 +324,43 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		loadedDirsRef,
 	});
 
+	const {
+		createFlowFileAtPath,
+		createFolderInDir,
+		createMarkdownFileAtPath,
+		onNewFile,
+		onNewFileInDir,
+		onNewFlowInDir,
+		onDuplicateFile,
+		onRenameDir,
+		onDeletePath,
+		onMovePath,
+	} = crud;
+
+	const requestCreateFolder = useCallback(
+		async (dirPath: string) => {
+			if (!spacePath) return null;
+			try {
+				const folderName = await promptCreateFolderName({
+					parentDir: dirPath,
+					spacePath,
+					prepareParentDir: (parent) => loadDir(parent, true),
+				});
+				if (!folderName) return null;
+				const createdPath = await createFolderInDir(dirPath, folderName);
+				if (!createdPath) return null;
+				setActiveDirPath(createdPath);
+				return createdPath;
+			} catch (error) {
+				const message = extractErrorMessage(error);
+				setError(message);
+				toast.error("Could not create folder", { description: message });
+				return null;
+			}
+		},
+		[createFolderInDir, loadDir, setActiveDirPath, setError, spacePath],
+	);
+
 	return {
 		loadDir,
 		toggleDir,
@@ -330,6 +369,15 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		openFile,
 		openMarkdownFile,
 		openNonMarkdownExternally,
-		...crud,
+		createMarkdownFileAtPath,
+		createFlowFileAtPath,
+		onNewFile,
+		onNewFileInDir,
+		onNewFlowInDir,
+		requestCreateFolder,
+		onDuplicateFile,
+		onRenameDir,
+		onDeletePath,
+		onMovePath,
 	};
 }

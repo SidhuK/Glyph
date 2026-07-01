@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
@@ -18,7 +19,11 @@ import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
-import { MAIN_WINDOW_LABEL, QUICK_NOTE_WINDOW_LABEL } from "./lib/windowLabels";
+import {
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
+	MAIN_WINDOW_LABEL,
+	QUICK_NOTE_WINDOW_LABEL,
+} from "./lib/windowLabels";
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
@@ -30,6 +35,9 @@ function ThemeAndTypographyBridge() {
 		null,
 	);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
+	const [editorFontFamily, setEditorFontFamily] = React.useState<string | null>(
+		null,
+	);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
 		null,
 	);
@@ -56,6 +64,7 @@ function ThemeAndTypographyBridge() {
 				setDarkThemeId(settings.ui.darkThemeId);
 				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
+				setEditorFontFamily(settings.ui.editorFontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
@@ -113,6 +122,9 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.fontFamily === "string") {
 			setFontFamily(payload.ui.fontFamily);
 		}
+		if (typeof payload.ui?.editorFontFamily === "string") {
+			setEditorFontFamily(payload.ui.editorFontFamily);
+		}
 		if (typeof payload.ui?.monoFontFamily === "string") {
 			setMonoFontFamily(payload.ui.monoFontFamily);
 		}
@@ -148,6 +160,7 @@ function ThemeAndTypographyBridge() {
 	React.useEffect(() => {
 		if (
 			!fontFamily ||
+			!editorFontFamily ||
 			!monoFontFamily ||
 			typeof uiFontSize !== "number" ||
 			typeof editorFontSize !== "number"
@@ -155,14 +168,26 @@ function ThemeAndTypographyBridge() {
 			return;
 		}
 		const applyTypography = () => {
-			applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
+			applyUiTypography({
+				fontFamily,
+				editorFontFamily,
+				monoFontFamily,
+				uiFontSize,
+				editorFontSize,
+			});
 		};
 		applyTypography();
 		window.addEventListener("resize", applyTypography);
 		return () => {
 			window.removeEventListener("resize", applyTypography);
 		};
-	}, [editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
+	}, [
+		editorFontFamily,
+		editorFontSize,
+		fontFamily,
+		monoFontFamily,
+		uiFontSize,
+	]);
 
 	React.useEffect(() => {
 		if (!accent) return;
@@ -202,6 +227,27 @@ function ThemeAndTypographyBridge() {
 	return null;
 }
 
+if (import.meta.env.PROD) {
+	document.addEventListener("contextmenu", (e) => {
+		const target = e.target;
+		if (
+			target instanceof Element &&
+			target.closest(
+				'input, textarea, select, [contenteditable="true"], [contenteditable="plaintext-only"]',
+			)
+		) {
+			return;
+		}
+		e.preventDefault();
+	});
+	document.addEventListener("keydown", (e) => {
+		const key = e.key.toLowerCase();
+		if (key === "f5" || ((e.ctrlKey || e.metaKey) && key === "r")) {
+			e.preventDefault();
+		}
+	});
+}
+
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Missing #root element");
 
@@ -213,13 +259,23 @@ function currentWindowLabel(): string {
 	}
 }
 
-const isQuickNoteWindow = currentWindowLabel() === QUICK_NOTE_WINDOW_LABEL;
+const windowLabel = currentWindowLabel();
+const isQuickNoteWindow = windowLabel === QUICK_NOTE_WINDOW_LABEL;
+const isExternalMarkdownWindow = windowLabel.startsWith(
+	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
+);
 
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
 		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 			<ThemeAndTypographyBridge />
-			{isQuickNoteWindow ? <QuickNoteWindow /> : <App />}
+			{isQuickNoteWindow ? (
+				<QuickNoteWindow />
+			) : isExternalMarkdownWindow ? (
+				<ExternalMarkdownWindow />
+			) : (
+				<App />
+			)}
 			<Toaster />
 		</ThemeProvider>
 	</React.StrictMode>,

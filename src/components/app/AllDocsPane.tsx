@@ -1,134 +1,37 @@
-import { Folder01Icon, Tag01Icon } from "@hugeicons/core-free-icons";
+import { TimelineEventIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
-	formatDistanceToNow,
 	isSameDay,
 	isSameMonth,
 	isSameWeek,
 	startOfToday,
 	subDays,
 } from "date-fns";
-import { m, useReducedMotion } from "motion/react";
-import { memo, useMemo, useState } from "react";
-import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
+import { useReducedMotion } from "motion/react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useFileTreeContext } from "../../contexts";
+
+import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
+import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
-	loadAllDocs,
+	ALL_DOCS_PAGE_SIZE,
+	loadAllDocsPage,
 	navigationQueryKeys,
-	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
+import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
+import { AllDocsCard, prepareAllDocsCardProps } from "./AllDocsCard";
+import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
-	title?: string;
-	folderPrefix?: string | null;
-	emptyMessage?: string;
+	onOpenActivity: () => void;
+	onPrefetchActivity: () => void;
 	initialNotes?: AllDocsItem[] | null;
-}
-
-function normalizeFolderPrefix(value: string | null): string | null {
-	if (typeof value !== "string") return null;
-	const normalized = value
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-	return normalized || null;
-}
-
-function titleFromPath(notePath: string): string {
-	const fileName = notePath.split("/").pop() ?? notePath;
-	return fileName.replace(/\.md$/i, "");
-}
-
-function folderLabel(notePath: string): string {
-	const parts = notePath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "Workspace root";
-	const parentFolders = parts.slice(0, -1);
-	return parentFolders[parentFolders.length - 1] ?? "Workspace root";
-}
-
-type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
-
-type PreviewLine = {
-	kind: PreviewLineKind;
-	text: string;
-};
-
-function previewLines(preview: string, title: string): PreviewLine[] {
-	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
-	const parsed: PreviewLine[] = [];
-	let inFence = false;
-
-	for (const raw of lines) {
-		const line = raw.trim();
-		if (!line) continue;
-		if (/^```/.test(line)) {
-			inFence = !inFence;
-			continue;
-		}
-
-		if (inFence) {
-			const text = normalizeInlineMarkdown(line);
-			if (text) parsed.push({ kind: "code", text });
-			continue;
-		}
-
-		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
-		if (headingMatch?.[1]) {
-			const text = normalizeInlineMarkdown(headingMatch[1]);
-			if (text) parsed.push({ kind: "heading", text });
-			continue;
-		}
-
-		const quoteMatch = line.match(/^>\s?(.*)$/);
-		if (quoteMatch?.[1]) {
-			const text = normalizeInlineMarkdown(quoteMatch[1]);
-			if (text) parsed.push({ kind: "quote", text });
-			continue;
-		}
-
-		const taskMatch = line.match(
-			/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/,
-		);
-		if (taskMatch?.[1]) {
-			const text = normalizeInlineMarkdown(taskMatch[1]);
-			if (text) parsed.push({ kind: "list", text });
-			continue;
-		}
-
-		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
-		if (listMatch?.[1]) {
-			const text = normalizeInlineMarkdown(listMatch[1]);
-			if (text) parsed.push({ kind: "list", text });
-			continue;
-		}
-
-		const text = normalizeInlineMarkdown(line);
-		if (text) parsed.push({ kind: "body", text });
-	}
-
-	const filtered = parsed.filter((line) => {
-		const lower = line.text.toLowerCase();
-		const lowerTitle = title.trim().toLowerCase();
-		return !(lowerTitle && lower.startsWith(lowerTitle));
-	});
-
-	return filtered;
-}
-
-function updatedTimeframe(iso: string): string {
-	try {
-		return formatDistanceToNow(new Date(iso), { addSuffix: true }).replace(
-			/^about\s+/i,
-			"",
-		);
-	} catch {
-		return "recently";
-	}
 }
 
 type AllDocsSection = {
@@ -136,6 +39,20 @@ type AllDocsSection = {
 	label: string;
 	notes: AllDocsItem[];
 };
+
+type VirtualAllDocsRow =
+	| {
+			id: string;
+			kind: "header";
+			label: string;
+	  }
+	| {
+			id: string;
+			kind: "cards";
+			sectionIndex: number;
+			rowIndex: number;
+			notes: AllDocsItem[];
+	  };
 
 function sectionForDate(iso: string): AllDocsSection["id"] {
 	const today = startOfToday();
@@ -164,30 +81,69 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
-	title = "All Notes",
-	folderPrefix = null,
-	emptyMessage = "No notes yet. Create one to get started.",
+	onOpenActivity,
+	onPrefetchActivity,
 	initialNotes = null,
 }: AllDocsPaneProps) {
+	const { itemAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
+	const paneRef = useRef<HTMLElement>(null);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
+	const [paneWidth, setPaneWidth] = useState(0);
 	const queryClient = useQueryClient();
-	const normalizedFolderPrefix = useMemo(
-		() => normalizeFolderPrefix(folderPrefix),
-		[folderPrefix],
-	);
-	const notesQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
-		queryFn: () => loadAllDocs(normalizedFolderPrefix),
-		initialData: initialNotes ?? undefined,
+	const notesQuery = useInfiniteQuery({
+		queryKey: navigationQueryKeys.allDocsPages(null),
+		queryFn: ({ pageParam }) => {
+			const offset = typeof pageParam === "number" ? pageParam : 0;
+			return loadAllDocsPage(null, offset);
+		},
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+		initialData: initialNotes
+			? {
+					pages: [
+						{
+							items: initialNotes.slice(0, ALL_DOCS_PAGE_SIZE),
+							nextOffset:
+								initialNotes.length >= ALL_DOCS_PAGE_SIZE
+									? ALL_DOCS_PAGE_SIZE
+									: null,
+						},
+					],
+					pageParams: [0],
+				}
+			: undefined,
 	});
-	const notes = notesQuery.data ?? [];
-
+	const notes = useMemo(
+		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
+		[notesQuery.data],
+	);
+	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
+	const taskSummariesByPath = useTaskSummariesForPaths(
+		notePaths,
+		true,
+		taskSummaryRefreshKey,
+	);
 	useTauriEvent("notes:external_changed", () => {
 		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(normalizedFolderPrefix),
+			queryKey: navigationQueryKeys.allDocs(),
 		});
+		setTaskSummaryRefreshKey((key) => key + 1);
 	});
+
+	useEffect(() => {
+		const pane = paneRef.current;
+		if (!pane) return;
+		const observer = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (!entry) return;
+			setPaneWidth(entry.contentRect.width);
+		});
+		observer.observe(pane);
+		setPaneWidth(pane.clientWidth);
+		return () => observer.disconnect();
+	}, []);
 
 	const sections = useMemo<AllDocsSection[]>(() => {
 		const buckets = new Map<string, AllDocsItem[]>();
@@ -203,23 +159,68 @@ export const AllDocsPane = memo(function AllDocsPane({
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
 	}, [notes]);
-	const emptyStateMessage = useMemo(() => {
-		if (notes.length === 0) {
-			return emptyMessage;
-		}
-		return "No notes found.";
-	}, [emptyMessage, notes.length]);
 
-	const loadingLabel = title.toLowerCase();
+	const columnCount = useMemo(() => {
+		const minCardWidth = paneWidth <= 640 ? 144 : paneWidth <= 900 ? 160 : 184;
+		const gap = 14;
+		return Math.max(1, Math.floor((paneWidth + gap) / (minCardWidth + gap)));
+	}, [paneWidth]);
+	const virtualRows = useMemo<VirtualAllDocsRow[]>(() => {
+		const rows: VirtualAllDocsRow[] = [];
+		for (const [sectionIndex, section] of sections.entries()) {
+			rows.push({
+				id: `header:${section.id}`,
+				kind: "header",
+				label: section.label,
+			});
+			for (
+				let startIndex = 0, rowIndex = 0;
+				startIndex < section.notes.length;
+				startIndex += columnCount, rowIndex += 1
+			) {
+				rows.push({
+					id: `cards:${section.id}:${rowIndex}`,
+					kind: "cards",
+					sectionIndex,
+					rowIndex,
+					notes: section.notes.slice(startIndex, startIndex + columnCount),
+				});
+			}
+		}
+		return rows;
+	}, [columnCount, sections]);
+	const cardEstimate = useMemo(() => {
+		if (paneWidth <= 0) return 200;
+		const gap = 14;
+		const width = (paneWidth - gap * (columnCount - 1)) / columnCount;
+		const minHeight = paneWidth <= 640 ? 176 : 184;
+		return Math.max(minHeight, width) + gap;
+	}, [columnCount, paneWidth]);
+	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLDivElement>({
+		count: virtualRows.length,
+		estimateSize: (index) =>
+			virtualRows[index]?.kind === "header" ? 32 : cardEstimate,
+		getScrollElement: () => paneRef.current,
+		overscan: 5,
+	});
+	const virtualItems = rowVirtualizer.getVirtualItems();
+	useVirtualLoadMore({
+		hasMore: notesQuery.hasNextPage,
+		isLoading: notesQuery.isFetchingNextPage,
+		onLoadMore: notesQuery.fetchNextPage,
+		virtualItems,
+		totalItems: virtualRows.length,
+		remainingItems: 4,
+	});
 
 	if (notesQuery.isLoading) {
-		return <div className="databaseLoadingState">Loading {loadingLabel}…</div>;
+		return <CanvasPaneAwait variant="all-docs" />;
 	}
 
 	if (notesQuery.error) {
 		return (
 			<div className="databaseLoadingState">
-				Could not load {loadingLabel}:{" "}
+				Could not load all notes:{" "}
 				{notesQuery.error instanceof Error
 					? notesQuery.error.message
 					: String(notesQuery.error)}
@@ -228,138 +229,81 @@ export const AllDocsPane = memo(function AllDocsPane({
 	}
 
 	return (
-		<section className="allDocsPane">
-			<h1 className="allDocsTitle">{title}</h1>
-			<div className="allDocsSections">
+		<section ref={paneRef} className="allDocsPane">
+			<header className="allDocsHeader">
+				<div className="allDocsHeadingGroup">
+					<h1 className="allDocsTitle">All Notes</h1>
+				</div>
+				<button
+					type="button"
+					className="allDocsHeaderAction"
+					onClick={onOpenActivity}
+					onMouseEnter={onPrefetchActivity}
+					onFocus={onPrefetchActivity}
+					title="Show activity"
+					aria-label="Show activity"
+				>
+					<HugeiconsIcon
+						icon={TimelineEventIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
+					<span>Show activity</span>
+				</button>
+			</header>
+			<div
+				className="allDocsSections is-virtualized"
+				style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+			>
 				{notes.length === 0 ? (
-					<div className="databaseLoadingState">{emptyStateMessage}</div>
+					<div className="databaseLoadingState">
+						No notes yet. Create one to get started.
+					</div>
 				) : null}
-				{sections.map((section, sectionIndex) => (
-					<section key={section.id} className="allDocsSection">
-						<div className="allDocsSectionHeader">
-							<h2 className="allDocsSectionTitle">{section.label}</h2>
-						</div>
-						<div className="allDocsGrid">
-							{section.notes.map((note, index) => {
-								const noteTitle =
-									note.title.trim() || titleFromPath(note.note_path);
-								const preview = previewLines(note.preview, noteTitle);
-								const visibleTags = note.tags.slice(0, 1);
-								const extraTagCount = Math.max(
-									note.tags.length - visibleTags.length,
-									0,
-								);
-								const notePath = folderLabel(note.note_path);
-								const animationIndex = sectionIndex * 12 + index;
+				{virtualItems.map((virtualRow) => {
+					const row = virtualRows[virtualRow.index];
+					if (!row) return null;
+					return (
+						<div
+							key={virtualRow.key}
+							data-index={virtualRow.index}
+							ref={(node) => rowVirtualizer.measureElement(node)}
+							className="allDocsVirtualRow"
+							style={{ transform: `translateY(${virtualRow.start}px)` }}
+						>
+							{row.kind === "header" ? (
+								<div className="allDocsSectionHeader">
+									<h2 className="allDocsSectionTitle">{row.label}</h2>
+								</div>
+							) : (
+								<div className="allDocsGrid">
+									{row.notes.map((note, index) => {
+										const cardProps = prepareAllDocsCardProps({
+											note,
+											index: row.rowIndex * columnCount + index,
+											sectionIndex: row.sectionIndex,
+											selectedNotePath,
+											taskSummariesByPath,
+											selectNote: setSelectedNotePath,
+											onOpenFile,
+										});
 
-								return (
-									<m.button
-										key={note.note_path}
-										type="button"
-										className="allDocsCard"
-										data-state={
-											selectedNotePath === note.note_path
-												? "selected"
-												: undefined
-										}
-										aria-label={`Open ${noteTitle}`}
-										onClick={() => setSelectedNotePath(note.note_path)}
-										onMouseEnter={() => prefetchNote(note.note_path)}
-										onFocus={() => prefetchNote(note.note_path)}
-										onDoubleClick={() => void onOpenFile(note.note_path)}
-										onKeyDown={(event) => {
-											if (event.key === "Enter") {
-												event.preventDefault();
-												void onOpenFile(note.note_path);
-												return;
-											}
-											if (event.key === " ") {
-												event.preventDefault();
-												setSelectedNotePath(note.note_path);
-											}
-										}}
-										initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={
-											shouldReduceMotion
-												? { duration: 0 }
-												: {
-														...springPresets.snappy,
-														delay: Math.min(animationIndex * 0.02, 0.18),
-													}
-										}
-										title="Double-click to open note"
-									>
-										<div className="allDocsCardSurface">
-											<span className="allDocsCardTitle" title={noteTitle}>
-												{noteTitle}
-											</span>
-											<div className="allDocsCardMetaRow">
-												<span
-													className="allDocsCardPath"
-													title={note.note_path}
-												>
-													<HugeiconsIcon
-														icon={Folder01Icon}
-														className="allDocsCardPathIcon"
-														size={12}
-														strokeWidth={1.2}
-													/>
-													<span className="allDocsCardPathLabel">
-														{notePath}
-													</span>
-												</span>
-												<span className="allDocsCardTime">
-													{updatedTimeframe(note.updated)}
-												</span>
-											</div>
-											<span className="allDocsCardDivider" aria-hidden="true" />
-											{preview.length > 0 ? (
-												<div className="allDocsCardPreview">
-													{preview.map((line, lineIndex) => (
-														<div
-															key={`${note.note_path}:preview:${lineIndex}`}
-															className={`allDocsCardPreviewLine is-${line.kind}`}
-														>
-															{line.text}
-														</div>
-													))}
-												</div>
-											) : (
-												<div className="allDocsCardPreview is-placeholder">
-													No preview yet
-												</div>
-											)}
-											{visibleTags.length > 0 ? (
-												<div className="allDocsCardTags">
-													{visibleTags.map((tag) => (
-														<span
-															key={`${note.note_path}:${tag}`}
-															className="allDocsCardTag"
-														>
-															<HugeiconsIcon
-																icon={Tag01Icon}
-																className="allDocsCardTagIcon"
-																size={11}
-																strokeWidth={1.2}
-															/>
-															{formatDatabaseTagLabel(tag)}
-														</span>
-													))}
-													{extraTagCount > 0 ? (
-														<span className="allDocsCardTag is-muted">
-															+{extraTagCount}
-														</span>
-													) : null}
-												</div>
-											) : null}
-										</div>
-									</m.button>
-								);
-							})}
+										return (
+											<AllDocsCard
+												key={note.note_path}
+												{...cardProps}
+												noteAppearance={itemAppearance[note.note_path] ?? null}
+												shouldReduceMotion={shouldReduceMotion}
+												springPreset={springPresets.snappy}
+												TaskProgressComponent={TaskProgressIndicator}
+											/>
+										);
+									})}
+								</div>
+							)}
 						</div>
-					</section>
-				))}
+					);
+				})}
 			</div>
 		</section>
 	);

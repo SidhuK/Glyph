@@ -20,10 +20,10 @@ export const LIGHT_THEME_OPTIONS = [
 	{
 		id: "glyph-default",
 		label: "Default",
-		description: "Warm neutral surfaces with editorial contrast.",
+		description: "Clean white surfaces with soft gray chrome.",
 		preview: {
 			badgeBackground: "#f7f6f3",
-			badgeBorder: "#d3d2cf",
+			badgeBorder: "#e3e2de",
 			badgeText: "#37352f",
 			accent: "#37352f",
 			surface: "#ffffff",
@@ -233,15 +233,15 @@ export const DARK_THEME_OPTIONS = [
 	{
 		id: "glyph-default-dark",
 		label: "Default",
-		description: "Soft charcoal surfaces with warm off-white text.",
+		description: "Warm charcoal surfaces with soft off-white text.",
 		preview: {
-			badgeBackground: "#262626",
+			badgeBackground: "#252525",
 			badgeBorder: "#3a3a3a",
-			badgeText: "rgba(255, 255, 255, 0.92)",
-			accent: "rgba(255, 255, 255, 0.92)",
-			surface: "#1e1e1e",
-			surfaceAlt: "#262626",
-			text: "rgba(255, 255, 255, 0.92)",
+			badgeText: "#e8e8e8",
+			accent: "#e8e8e8",
+			surface: "#191919",
+			surfaceAlt: "#141414",
+			text: "#e8e8e8",
 		},
 	},
 	{

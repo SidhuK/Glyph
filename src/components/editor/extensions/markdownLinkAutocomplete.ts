@@ -1,15 +1,13 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
-import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import { invoke } from "../../../lib/tauri";
+import Suggestion from "@tiptap/suggestion";
+import {
+	type EditorLinkSuggestion,
+	suggestMarkdownLinks,
+} from "../../../lib/linkSuggestions";
+import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
-
-interface LinkSuggestionItem {
-	path: string;
-	title: string;
-	insertText: string;
-}
 
 export const MarkdownLinkAutocomplete = Extension.create({
 	name: "markdown-link-autocomplete",
@@ -21,30 +19,23 @@ export const MarkdownLinkAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const getItems = async (query: string): Promise<LinkSuggestionItem[]> => {
-			const currentPath =
-				typeof this.options.getCurrentPath === "function"
-					? this.options.getCurrentPath()
-					: this.options.currentPath;
-			const results = await invoke("space_suggest_links", {
-				request: {
-					query,
-					source_path: currentPath || null,
-					markdown_only: false,
-					strip_markdown_ext: false,
-					relative_to_source: true,
-					limit: this.options.suggestionLimit,
-				},
+		const getItems = async (query: string): Promise<EditorLinkSuggestion[]> => {
+			const getSourcePath = () => {
+				const currentPath =
+					typeof this.options.getCurrentPath === "function"
+						? this.options.getCurrentPath()
+						: this.options.currentPath;
+				return currentPath || null;
+			};
+			return suggestMarkdownLinks({
+				query,
+				sourcePath: getSourcePath(),
+				limit: this.options.suggestionLimit,
 			});
-			return results.map((item) => ({
-				path: item.path,
-				title: item.title,
-				insertText: item.insert_text,
-			}));
 		};
 
 		return [
-			Suggestion<LinkSuggestionItem>({
+			Suggestion<EditorLinkSuggestion>({
 				editor: this.editor,
 				pluginKey: MD_LINK_SUGGESTION_KEY,
 				char: "](",
@@ -80,18 +71,15 @@ export const MarkdownLinkAutocomplete = Extension.create({
 						.insertContent(`](${props.insertText})`)
 						.run();
 				},
-				render: () => {
-					let menu: HTMLDivElement | null = null;
-					let selectedIndex = 0;
-					let activeProps: SuggestionProps<LinkSuggestionItem> | null = null;
-
-					const updateMenu = (props: SuggestionProps<LinkSuggestionItem>) => {
-						if (!menu) return;
-						menu.replaceChildren();
-						for (const [index, item] of props.items.entries()) {
+				render: () =>
+					createTipTapSuggestionMenu<EditorLinkSuggestion>({
+						menuClassName: "wikiLinkSuggestionMenu",
+						lockEditorScroll: false,
+						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
+							button.classList.toggle("active", isActive);
 
 							const title = document.createElement("span");
 							title.className = "wikiLinkSuggestionTitle";
@@ -104,60 +92,11 @@ export const MarkdownLinkAutocomplete = Extension.create({
 							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
-								props.command(item);
+								select(item);
 							});
-							if (index === selectedIndex) button.classList.add("active");
-							menu.append(button);
-						}
-						const rect = props.clientRect?.();
-						if (rect) {
-							menu.style.left = `${rect.left}px`;
-							menu.style.top = `${rect.bottom + 6}px`;
-						}
-					};
-
-					return {
-						onStart: (props: SuggestionProps<LinkSuggestionItem>) => {
-							activeProps = props;
-							selectedIndex = 0;
-							menu = document.createElement("div");
-							menu.className = "wikiLinkSuggestionMenu";
-							document.body.append(menu);
-							updateMenu(props);
+							return button;
 						},
-						onUpdate: (props: SuggestionProps<LinkSuggestionItem>) => {
-							activeProps = props;
-							updateMenu(props);
-						},
-						onKeyDown: ({ event }) => {
-							const current = activeProps;
-							if (!current?.items.length) return false;
-							if (event.key === "ArrowDown") {
-								selectedIndex = (selectedIndex + 1) % current.items.length;
-								updateMenu(current);
-								return true;
-							}
-							if (event.key === "ArrowUp") {
-								selectedIndex =
-									(selectedIndex - 1 + current.items.length) %
-									current.items.length;
-								updateMenu(current);
-								return true;
-							}
-							if (event.key === "Enter" || event.key === "Tab") {
-								event.preventDefault();
-								current.command(current.items[selectedIndex]);
-								return true;
-							}
-							return false;
-						},
-						onExit: () => {
-							menu?.remove();
-							menu = null;
-							activeProps = null;
-						},
-					};
-				},
+					}),
 			}),
 		];
 	},

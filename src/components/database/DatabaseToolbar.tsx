@@ -22,6 +22,16 @@ interface DatabaseToolbarProps {
 	className?: string;
 }
 
+function groupColumnOptionLabel(column: DatabaseColumn): string {
+	if (column.type === "tags" || column.property_kind === "tags") {
+		return `${column.label} (multi-lane)`;
+	}
+	if (column.property_kind === "multi_select") {
+		return `${column.label} (multi-lane)`;
+	}
+	return column.label;
+}
+
 export function DatabaseToolbar({
 	databaseView,
 	groupColumns,
@@ -45,10 +55,17 @@ export function DatabaseToolbar({
 	const hasSelectedGroupColumn =
 		groupColumnId != null &&
 		groupColumns.some((column) => column.id === groupColumnId);
+	const selectedGroupColumn =
+		(hasSelectedGroupColumn
+			? groupColumns.find((column) => column.id === groupColumnId)
+			: null) ??
+		(databaseView === "board" ? groupColumns[0] : null) ??
+		null;
 	const selectedGroupColumnId =
-		(hasSelectedGroupColumn ? groupColumnId : null) ??
+		selectedGroupColumn?.id ??
 		(databaseView === "board" ? groupColumns[0]?.id : "") ??
 		"";
+	const groupByLabel = "Grouped by";
 
 	useEffect(() => {
 		setSearchDraft(searchValue);
@@ -81,13 +98,13 @@ export function DatabaseToolbar({
 			<div className="databaseToolbarActions">
 				{searchExpanded || searchDraft ? (
 					<label className="databaseToolbarSearch" htmlFor={searchInputId}>
-						<Search size={13} aria-hidden="true" />
+						<Search size="var(--icon-sm)" aria-hidden="true" />
 						<Input
 							ref={searchInputRef}
 							id={searchInputId}
 							className="databaseToolbarSearchInput"
 							value={searchDraft}
-							placeholder="Search view"
+							placeholder="Search this view"
 							aria-label="Search this view"
 							onBlur={() => {
 								if (!searchDraft) setSearchExpanded(false);
@@ -112,7 +129,7 @@ export function DatabaseToolbar({
 								title="Clear search"
 								aria-label="Clear search"
 							>
-								<X size={12} />
+								<X size="var(--icon-sm)" />
 							</button>
 						) : null}
 					</label>
@@ -129,27 +146,39 @@ export function DatabaseToolbar({
 						title="Search view"
 						aria-label="Search view"
 					>
-						<Search size={13} />
+						<Search size="var(--icon-sm)" />
 					</Button>
 				)}
 				{groupColumns.length > 0 ? (
 					<label className="databaseToolbarGroupBy">
-						<span className="databaseToolbarGroupByLabel">Group by</span>
+						<span className="databaseToolbarGroupByLabel">{groupByLabel}</span>
 						<select
 							className="databaseToolbarGroupBySelect"
 							value={selectedGroupColumnId}
+							title={
+								selectedGroupColumn
+									? `Grouping by ${selectedGroupColumn.label}`
+									: "Choose a field to group by"
+							}
+							aria-label={groupByLabel}
 							onChange={(event) =>
 								onGroupColumnIdChange(event.target.value || null)
 							}
 						>
-							{databaseView === "board" ? null : <option value="">None</option>}
+							{databaseView === "board" ? null : (
+								<option value="">No grouping</option>
+							)}
 							{groupColumns.map((column) => (
 								<option key={column.id} value={column.id}>
-									{column.label}
+									{groupColumnOptionLabel(column)}
 								</option>
 							))}
 						</select>
 					</label>
+				) : databaseView === "board" ? (
+					<span className="databaseToolbarGroupByHint">
+						Add a status, tag, or checkbox field to create lanes
+					</span>
 				) : null}
 				<DatabaseViewOptionsPopover
 					open={viewOptionsOpen}

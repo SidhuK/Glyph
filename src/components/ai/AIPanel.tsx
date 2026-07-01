@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-	ChatAdd01Icon,
-	Logout05Icon,
-	SparklesIcon,
-} from "@hugeicons/core-free-icons";
+import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
@@ -26,6 +22,8 @@ import { preloadAiContextIndex, useAiContext } from "./useAiContext";
 import { preloadAiHistorySummaries, useAiHistory } from "./useAiHistory";
 import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 
+const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
+
 interface AIPanelProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -39,9 +37,13 @@ export async function prefetchAIPanelData(): Promise<void> {
 	]);
 }
 
+function stripChipMarkers(text: string): string {
+	return text.replace(CHIP_MARKER_RE, "");
+}
+
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const { aiAssistantMode } = useAISidebarContext();
-	const { openSettings } = useUILayoutContext();
+	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
 
 	const [input, setInput] = useState("");
@@ -62,7 +64,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
-	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
+	const composerInputRef = useRef<HTMLDivElement | null>(null);
 	const scheduleResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
@@ -79,7 +81,15 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
 			const paths = detail?.paths ?? [];
 			if (!paths.length) return;
-			for (const path of paths) context.addContext("file", path);
+			for (const path of paths) {
+				context.addContext("file", path);
+				const marker = `\uE000file${path}\uE001`;
+				setInput((prev) =>
+					prev.includes(marker)
+						? prev
+						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
+				);
+			}
 			setAddPanelOpen(false);
 			setAddPanelQuery("");
 			window.requestAnimationFrame(() => composerInputRef.current?.focus());
@@ -90,13 +100,14 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 
 	const canSend =
 		!toolEvents.isAwaitingResponse &&
-		Boolean(input.trim()) &&
+		Boolean(stripChipMarkers(input).trim()) &&
 		Boolean(profiles.activeProfileId);
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
-			if (!trimmed || !profiles.activeProfileId) return false;
+			const sanitized = stripChipMarkers(trimmed).trim();
+			if (!sanitized || !profiles.activeProfileId) return false;
 			toolEvents.clearFinalizingTimer();
 			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("submitted");
@@ -107,7 +118,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				return false;
 			}
 			void chat.sendMessage(
-				{ text: trimmed },
+				{ text: sanitized },
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
@@ -132,9 +143,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	);
 
 	const handleSend = useCallback(async () => {
-		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
-		if (!text) {
+		const sanitized = stripChipMarkers(text).trim();
+		if (
+			!sanitized ||
+			toolEvents.isAwaitingResponse ||
+			!profiles.activeProfileId
+		) {
 			return;
 		}
 		toolEvents.clearFinalizingTimer();
@@ -151,7 +166,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			return;
 		}
 		void chat.sendMessage(
-			{ text },
+			{ text: sanitized },
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
@@ -165,7 +180,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		);
 	}, [
 		aiAssistantMode,
-		canSend,
 		chat,
 		context,
 		input,
@@ -184,11 +198,23 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleAddContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			context.addContext(kind, path);
-			if (trigger)
+			const marker = `\uE000${kind}${path}\uE001`;
+			if (trigger) {
 				setInput((prev) => {
 					const before = prev.slice(0, trigger.start).trimEnd();
-					return before ? `${before} ` : "";
+					const after = prev.slice(trigger.end).replace(/^\s+/, "");
+					const parts = prev.includes(marker)
+						? [before, after]
+						: [before, marker, after];
+					return parts.filter(Boolean).join(" ");
 				});
+			} else {
+				setInput((prev) =>
+					prev.includes(marker)
+						? prev
+						: `${prev}${prev && !/\s$/.test(prev) ? " " : ""}${marker} `,
+				);
+			}
 			setAddPanelOpen(false);
 			setAddPanelQuery("");
 		},
@@ -198,6 +224,16 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleRemoveContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			context.removeContext(kind, path);
+			const marker = `\uE000${kind}${path}\uE001`;
+			setInput((prev) => {
+				const markerIndex = prev.indexOf(marker);
+				if (markerIndex === -1) return prev;
+				const before = prev.slice(0, markerIndex);
+				const after = prev.slice(markerIndex + marker.length);
+				if (!before) return after.replace(/^[ \t]+/, "");
+				if (!after) return before.replace(/[ \t]+$/, "");
+				return `${before.replace(/[ \t]+$/, "")} ${after.replace(/^[ \t]+/, "")}`;
+			});
 		},
 		[context.removeContext],
 	);
@@ -299,9 +335,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				onMouseDown={onWindowDragMouseDown}
 			>
 				<div className="aiPanelHeaderLeft">
-					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={0.9} />
-					</div>
 					<button
 						type="button"
 						className={cn(
@@ -327,7 +360,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size={13} strokeWidth={0.9} />
+						<HugeiconsIcon
+							icon={ChatAdd01Icon}
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
 					</Button>
 					<Button
 						type="button"
@@ -339,7 +376,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Settings"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<SettingsIcon size={13} />
+						<SettingsIcon size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -351,7 +388,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={Logout05Icon} size={13} strokeWidth={0.9} />
+						<HugeiconsIcon
+							icon={Logout05Icon}
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
 					</Button>
 				</div>
 			</div>
@@ -406,14 +447,14 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						aria-label="Scroll to bottom"
 						title="Scroll to latest"
 					>
-						<ChevronDown size={14} />
+						<ChevronDown size="var(--icon-md)" />
 					</Button>
 				)}
 				{chat.error ? (
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>
 						<button type="button" onClick={() => chat.clearError()}>
-							<X size={11} />
+							<X size="var(--icon-xs)" />
 						</button>
 					</div>
 				) : null}
@@ -424,7 +465,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 							type="button"
 							onClick={() => actions.setAssistantActionError("")}
 						>
-							<X size={11} />
+							<X size="var(--icon-xs)" />
 						</button>
 					</div>
 				) : null}
@@ -445,6 +486,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					scheduleComposerInputResize={scheduleResize}
 					profiles={profiles}
 					context={context}
+					activeFilePath={activeMarkdownTabPath}
 					showAddPanel={showAddPanel}
 					panelQuery={panelQuery}
 					addPanelOpen={addPanelOpen}

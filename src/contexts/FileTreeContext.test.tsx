@@ -5,11 +5,13 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTreeProvider, useFileTreeContext } from "./FileTreeContext";
 
-const { invokeMock, useSpaceMock, useTauriEventMock } = vi.hoisted(() => ({
-	invokeMock: vi.fn(),
-	useSpaceMock: vi.fn(),
-	useTauriEventMock: vi.fn(),
-}));
+const { invokeMock, listenTauriEventMock, useSpaceMock, useTauriEventMock } =
+	vi.hoisted(() => ({
+		invokeMock: vi.fn(),
+		listenTauriEventMock: vi.fn(),
+		useSpaceMock: vi.fn(),
+		useTauriEventMock: vi.fn(),
+	}));
 
 vi.mock("../lib/tauri", () => ({
 	invoke: invokeMock,
@@ -20,6 +22,7 @@ vi.mock("./SpaceContext", () => ({
 }));
 
 vi.mock("../lib/tauriEvents", () => ({
+	listenTauriEvent: listenTauriEventMock,
 	useTauriEvent: useTauriEventMock,
 }));
 
@@ -27,6 +30,7 @@ vi.mock("../lib/settings", () => ({
 	loadSettings: () =>
 		Promise.resolve({
 			editor: {
+				beautifulTags: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		}),
@@ -66,16 +70,17 @@ describe("FileTreeProvider pinned files", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		currentSpacePath = "/space-a";
-		const startIndexRebuild = vi.fn();
+		const startIndexSync = vi.fn(() => Promise.resolve());
 		useSpaceMock.mockImplementation(() => ({
 			spacePath: currentSpacePath,
-			isIndexing: false,
-			startIndexRebuild,
+			startIndexSync,
 		}));
+		listenTauriEventMock.mockResolvedValue(() => {});
 		useTauriEventMock.mockImplementation(() => {});
 		invokeMock.mockImplementation((command: string) => {
 			if (command === "space_list_dir") return Promise.resolve([]);
 			if (command === "file_tree_appearance_list") return Promise.resolve({});
+			if (command === "tag_appearance_list") return Promise.resolve({});
 			if (command === "tags_list") return Promise.resolve([]);
 			if (command === "people_list") return Promise.resolve([]);
 			if (command === "pinned_files_toggle") {

@@ -167,61 +167,301 @@ fn collect_tags_from_string(raw: &str, out: &mut Vec<String>) {
     }
 }
 
-pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
-    let mut out: Vec<String> = Vec::new();
+fn is_html_name_start(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_' || byte == b':'
+}
+
+fn is_html_name_char(byte: u8) -> bool {
+    is_html_name_start(byte) || byte.is_ascii_digit() || byte == b'-' || byte == b'.'
+}
+
+fn skip_ascii_whitespace(bytes: &[u8], mut index: usize) -> usize {
+    while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {
+        index += 1;
+    }
+    index
+}
+
+fn find_bytes(haystack: &[u8], start: usize, needle: &[u8]) -> Option<usize> {
+    haystack[start..]
+        .windows(needle.len())
+        .position(|window| window == needle)
+        .map(|index| start + index)
+}
+
+fn html_tag_end(markdown: &str, start: usize) -> Option<usize> {
+    let bytes = markdown.as_bytes();
+    if bytes.get(start) != Some(&b'<') {
+        return None;
+    }
+
+    let mut i = start + 1;
+    match bytes.get(i).copied()? {
+        b'!' => {
+            if bytes.get(start..start + 4) == Some(b"<!--") {
+                return find_bytes(bytes, start + 4, b"-->").map(|end| end + 3);
+            }
+            return bytes[i..]
+                .iter()
+                .position(|byte| *byte == b'>')
+                .map(|offset| i + offset + 1);
+        }
+        b'?' => {
+            return find_bytes(bytes, i + 1, b"?>")
+                .map(|end| end + 2)
+                .or_else(|| {
+                    bytes[i..]
+                        .iter()
+                        .position(|byte| *byte == b'>')
+                        .map(|offset| i + offset + 1)
+                });
+        }
+        b'/' => i += 1,
+        _ => {}
+    }
+
+    if !bytes.get(i).copied().is_some_and(is_html_name_start) {
+        return None;
+    }
+    i += 1;
+    while bytes.get(i).copied().is_some_and(is_html_name_char) {
+        i += 1;
+    }
+
+    loop {
+        i = skip_ascii_whitespace(bytes, i);
+        match bytes.get(i).copied()? {
+            b'>' => return Some(i + 1),
+            b'/' => {
+                i = skip_ascii_whitespace(bytes, i + 1);
+                return (bytes.get(i) == Some(&b'>')).then_some(i + 1);
+            }
+            byte if is_html_name_start(byte) => {
+                i += 1;
+                while bytes.get(i).copied().is_some_and(is_html_name_char) {
+                    i += 1;
+                }
+                i = skip_ascii_whitespace(bytes, i);
+                if bytes.get(i) != Some(&b'=') {
+                    continue;
+                }
+                i = skip_ascii_whitespace(bytes, i + 1);
+                match bytes.get(i).copied()? {
+                    b'\'' | b'"' => {
+                        let quote = bytes[i];
+                        i += 1;
+                        while bytes.get(i).copied()? != quote {
+                            i += 1;
+                        }
+                        i += 1;
+                    }
+                    b'>' => return None,
+                    _ => {
+                        while bytes
+                            .get(i)
+                            .is_some_and(|byte| !byte.is_ascii_whitespace() && *byte != b'>')
+                        {
+                            i += 1;
+                        }
+                    }
+                }
+            }
+            _ => return None,
+        }
+    }
+}
+
+fn skip_line(markdown: &str, start: usize, out: &mut String) -> usize {
+    let bytes = markdown.as_bytes();
+    let Some(offset) = bytes[start..].iter().position(|byte| *byte == b'\n') else {
+        out.push(' ');
+        return bytes.len();
+    };
+    out.push('\n');
+    start + offset + 1
+}
+
+fn count_backticks(bytes: &[u8], mut index: usize) -> usize {
+    let start = index;
+    while bytes.get(index) == Some(&b'`') {
+        index += 1;
+    }
+    index - start
+}
+
+fn metadata_scan_text(markdown: &str) -> String {
+    let bytes = markdown.as_bytes();
+    let mut cleaned = String::with_capacity(markdown.len());
+    let mut i = 0;
+    let mut line_start = true;
     let mut in_fence = false;
-    for line in markdown.lines() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") {
-            in_fence = !in_fence;
-            continue;
-        }
-        if in_fence {
-            continue;
-        }
-        let mut cleaned = String::new();
-        let mut in_code = false;
-        for ch in line.chars() {
-            if ch == '`' {
-                in_code = !in_code;
+    let mut fence_backticks = 0;
+    let mut code_backticks = 0;
+
+    while i < bytes.len() {
+        if line_start {
+            let line_end = bytes[i..]
+                .iter()
+                .position(|byte| *byte == b'\n')
+                .map_or(bytes.len(), |offset| i + offset);
+            let line_content = markdown[i..line_end].trim_start();
+            let backticks = count_backticks(line_content.as_bytes(), 0);
+            if backticks >= 3 && (!in_fence || backticks >= fence_backticks) {
+                in_fence = !in_fence;
+                fence_backticks = if in_fence { backticks } else { 0 };
+                i = skip_line(markdown, i, &mut cleaned);
+                line_start = true;
+                code_backticks = 0;
                 continue;
             }
-            if !in_code {
-                cleaned.push(ch);
+            if in_fence {
+                i = skip_line(markdown, i, &mut cleaned);
+                line_start = true;
+                code_backticks = 0;
+                continue;
+            }
+            line_start = false;
+        }
+
+        if bytes[i] == b'\n' {
+            cleaned.push('\n');
+            i += 1;
+            line_start = true;
+            code_backticks = 0;
+            continue;
+        }
+        if bytes[i] == b'`' {
+            let backticks = count_backticks(bytes, i);
+            if code_backticks == 0 {
+                code_backticks = backticks;
+            } else if backticks == code_backticks {
+                code_backticks = 0;
+            }
+            i += backticks;
+            continue;
+        }
+        if code_backticks > 0 {
+            let Some(ch) = markdown[i..].chars().next() else {
+                break;
+            };
+            i += ch.len_utf8();
+            continue;
+        }
+        if bytes[i] == b'<' {
+            if let Some(end) = html_tag_end(markdown, i) {
+                cleaned.push(' ');
+                i = end;
+                continue;
             }
         }
 
-        let bytes = cleaned.as_bytes();
-        let mut i = 0;
-        while i < bytes.len() {
-            if bytes[i] == b'#' {
-                let prev = if i == 0 { b' ' } else { bytes[i - 1] };
-                let prev_ok =
-                    !(prev as char).is_ascii_alphanumeric() && prev != b'/' && prev != b'_';
-                if !prev_ok {
-                    i += 1;
-                    continue;
-                }
-                let mut j = i + 1;
-                while j < bytes.len() {
-                    let c = bytes[j] as char;
-                    if c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/' {
-                        j += 1;
-                        continue;
-                    }
-                    break;
-                }
-                if j > i + 1 {
-                    let candidate = &cleaned[i + 1..j];
-                    if let Some(t) = normalize_tag(candidate) {
-                        out.push(t);
-                    }
-                }
-                i = j;
+        let Some(ch) = markdown[i..].chars().next() else {
+            break;
+        };
+        cleaned.push(ch);
+        i += ch.len_utf8();
+    }
+
+    cleaned
+}
+
+fn is_css_color_property(property: &str) -> bool {
+    property == "color"
+        || property.ends_with("-color")
+        || property.starts_with("--")
+        || matches!(
+            property,
+            "background"
+                | "border"
+                | "border-block"
+                | "border-block-end"
+                | "border-block-start"
+                | "border-bottom"
+                | "border-inline"
+                | "border-inline-end"
+                | "border-inline-start"
+                | "border-left"
+                | "border-right"
+                | "border-top"
+                | "box-shadow"
+                | "fill"
+                | "outline"
+                | "stroke"
+                | "text-shadow"
+        )
+}
+
+fn is_css_hex_color_literal(text: &str, hash_index: usize, candidate: &str) -> bool {
+    if !matches!(candidate.len(), 3 | 4 | 6 | 8)
+        || !candidate.chars().all(|c| c.is_ascii_hexdigit())
+    {
+        return false;
+    }
+
+    let before_hash = &text[..hash_index];
+    let Some(open_rule) = before_hash.rfind('{') else {
+        return false;
+    };
+    if before_hash
+        .rfind('}')
+        .is_some_and(|close_rule| close_rule > open_rule)
+    {
+        return false;
+    }
+
+    let declaration_start = before_hash
+        .rfind([';', '{', '}'])
+        .map_or(0, |index| index + 1);
+    let declaration_prefix = text[declaration_start..hash_index].trim();
+    let Some((property, _value_prefix)) = declaration_prefix.split_once(':') else {
+        return false;
+    };
+    let property = property.trim().to_ascii_lowercase();
+    let property = property.as_str();
+
+    !property.is_empty()
+        && property
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-')
+        && is_css_color_property(property)
+}
+
+pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let cleaned = metadata_scan_text(markdown);
+    let bytes = cleaned.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'#' {
+            let prev = if i == 0 { b' ' } else { bytes[i - 1] };
+            let prev_ok = !(prev as char).is_ascii_alphanumeric() && prev != b'/' && prev != b'_';
+            if !prev_ok {
+                i += 1;
                 continue;
             }
-            i += 1;
+            let mut j = i + 1;
+            while j < bytes.len() {
+                let c = bytes[j] as char;
+                if c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/' {
+                    j += 1;
+                    continue;
+                }
+                break;
+            }
+            if j > i + 1 {
+                let candidate = &cleaned[i + 1..j];
+                if is_css_hex_color_literal(&cleaned, i, candidate) {
+                    i = j;
+                    continue;
+                }
+                if let Some(t) = normalize_tag(candidate) {
+                    out.push(t);
+                }
+            }
+            i = j;
+            continue;
         }
+        i += 1;
     }
     out.sort();
     out.dedup();
@@ -230,67 +470,45 @@ pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
 
 pub fn parse_inline_people(markdown: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
-    let mut in_fence = false;
-    for line in markdown.lines() {
-        let trimmed = line.trim_start();
-        if trimmed.starts_with("```") {
-            in_fence = !in_fence;
-            continue;
-        }
-        if in_fence {
-            continue;
-        }
-        let mut cleaned = String::new();
-        let mut in_code = false;
-        for ch in line.chars() {
-            if ch == '`' {
-                in_code = !in_code;
+    let cleaned = metadata_scan_text(markdown);
+    let bytes = cleaned.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'@' {
+            let prev = if i == 0 { b' ' } else { bytes[i - 1] };
+            let prev_ok = !(prev as char).is_ascii_alphanumeric()
+                && prev != b'_'
+                && prev != b'-'
+                && prev != b'.'
+                && prev != b'/';
+            if !prev_ok {
+                i += 1;
                 continue;
             }
-            if !in_code {
-                cleaned.push(ch);
+            let mut j = i + 1;
+            while j < bytes.len() {
+                let c = bytes[j] as char;
+                if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+                    j += 1;
+                    continue;
+                }
+                break;
             }
-        }
-
-        let bytes = cleaned.as_bytes();
-        let mut i = 0;
-        while i < bytes.len() {
-            if bytes[i] == b'@' {
-                let prev = if i == 0 { b' ' } else { bytes[i - 1] };
-                let prev_ok = !(prev as char).is_ascii_alphanumeric()
-                    && prev != b'_'
-                    && prev != b'-'
-                    && prev != b'.'
-                    && prev != b'/';
-                if !prev_ok {
-                    i += 1;
-                    continue;
-                }
-                let mut j = i + 1;
-                while j < bytes.len() {
-                    let c = bytes[j] as char;
-                    if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
-                        j += 1;
-                        continue;
-                    }
-                    break;
-                }
-                let next = bytes.get(j).copied();
-                if next == Some(b'@') {
-                    i = j;
-                    continue;
-                }
-                if j > i + 1 {
-                    let candidate = &cleaned[i + 1..j];
-                    if let Some(handle) = normalize_person_handle(candidate) {
-                        out.push(handle);
-                    }
-                }
+            let next = bytes.get(j).copied();
+            if next == Some(b'@') {
                 i = j;
                 continue;
             }
-            i += 1;
+            if j > i + 1 {
+                let candidate = &cleaned[i + 1..j];
+                if let Some(handle) = normalize_person_handle(candidate) {
+                    out.push(handle);
+                }
+            }
+            i = j;
+            continue;
         }
+        i += 1;
     }
     out.sort();
     out.dedup();
@@ -309,8 +527,8 @@ pub fn parse_all_tags(markdown: &str) -> Vec<String> {
 mod tests {
     use super::{
         expand_indexed_people, expand_indexed_tags, normalize_person_handle, normalize_tag,
-        parse_all_tags, parse_inline_people, people_tag_to_handle, person_handle_to_tag, tag_depth,
-        tag_matches_hierarchy,
+        parse_all_tags, parse_inline_people, parse_inline_tags, people_tag_to_handle,
+        person_handle_to_tag, tag_depth, tag_matches_hierarchy,
     };
 
     #[test]
@@ -374,6 +592,123 @@ mod tests {
     }
 
     #[test]
+    fn skips_tags_inside_matching_length_inline_code_spans() {
+        let markdown = "Keep ``code with ` #not-a-tag`` and #actual.";
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual".to_string()]);
+    }
+
+    #[test]
+    fn skips_tags_inside_longer_backtick_fences() {
+        let markdown = r#"
+````md
+``` #not-a-tag
+still #not-a-tag
+```
+````
+Keep #actual.
+"#;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual".to_string()]);
+    }
+
+    #[test]
+    fn skips_tags_inside_inline_html_attributes() {
+        let markdown = r##"
+## <span style="background-color: #00C6BD;" title="#not-a-tag">Styled heading</span>
+Body <span data-label="#also-not-a-tag">#actual-tag</span>
+"##;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual-tag".to_string()]);
+    }
+
+    #[test]
+    fn skips_tags_and_people_inside_multiline_html_attributes() {
+        let markdown = r##"
+<span
+  data-owner="@inline_html_attribute"
+  style="color: #00C6BD"
+>
+Visible #actual-tag and @actual-person.
+</span>
+"##;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["actual-tag".to_string()]);
+        assert_eq!(
+            parse_inline_people(markdown),
+            vec!["actual-person".to_string()]
+        );
+    }
+
+    #[test]
+    fn preserves_tags_and_people_inside_non_html_angle_brackets() {
+        let markdown = "Discuss <todo #project @alice> tomorrow.";
+
+        assert_eq!(parse_inline_tags(markdown), vec!["project".to_string()]);
+        assert_eq!(parse_inline_people(markdown), vec!["alice".to_string()]);
+    }
+
+    #[test]
+    fn skips_css_hex_color_literals_in_css_declarations() {
+        let markdown = r##"
+.swatch { color: #fff; background: #00C6BD; border-color: #abcd; box-shadow: 0 0 #ff00aa80; }
+Keep #project and #00C6BD/design.
+"##;
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec!["00c6bd/design".to_string(), "project".to_string()]
+        );
+    }
+
+    #[test]
+    fn skips_css_hex_color_literals_in_multiline_css_blocks() {
+        let markdown = r##"
+.swatch {
+  color: #fff;
+  background: #00C6BD;
+}
+Keep #project.
+"##;
+
+        assert_eq!(parse_inline_tags(markdown), vec!["project".to_string()]);
+    }
+
+    #[test]
+    fn preserves_hex_shaped_tags_after_prose_property_labels() {
+        let markdown = "Color: #facade\nBackground: #decade\nBorder color: #badcab";
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec![
+                "badcab".to_string(),
+                "decade".to_string(),
+                "facade".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn preserves_standalone_hex_shaped_inline_tags() {
+        let markdown =
+            "Keep #fff #abcd #202406 #20240626 #decade #facade #deface. Note: #deadbeef.";
+
+        assert_eq!(
+            parse_inline_tags(markdown),
+            vec![
+                "202406".to_string(),
+                "20240626".to_string(),
+                "abcd".to_string(),
+                "deadbeef".to_string(),
+                "decade".to_string(),
+                "deface".to_string(),
+                "facade".to_string(),
+                "fff".to_string()
+            ]
+        );
+    }
+
+    #[test]
     fn normalizes_person_handles() {
         assert_eq!(
             normalize_person_handle("@Alice-Jones"),
@@ -408,6 +743,7 @@ const value = "@fenced";
 ```
 Ignore foo@bar too.
 Ignore /@pathlike too.
+Ignore <span data-owner="@inline_html_attribute">html attrs</span> too.
 "#;
         assert_eq!(
             parse_inline_people(markdown),

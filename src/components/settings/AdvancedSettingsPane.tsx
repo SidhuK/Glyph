@@ -8,7 +8,9 @@ import {
 	type EditorWidthMode,
 	loadSettings,
 	setAiAssistantMode,
+	setClassicAllNotesByDefault,
 	setDatabaseShowColumnColor,
+	setEditorBeautifulTags,
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
@@ -27,6 +29,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 
 const VIM_KEYBINDING_HELP = [
 	{ key: "Esc", action: "Enter Vim command mode." },
@@ -67,7 +70,7 @@ function VimKeybindingsHelp() {
 				>
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size={14}
+						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
 				</button>
@@ -106,6 +109,7 @@ export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
+	const [beautifulTags, setBeautifulTags] = useState(false);
 	const [editorWidthMode, setEditorWidthModeState] =
 		useState<EditorWidthMode>("compact");
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
@@ -115,6 +119,8 @@ export function AdvancedSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
 	const [folioMode, setFolioModeState] = useState(false);
+	const [classicAllNotesByDefault, setClassicAllNotesByDefaultState] =
+		useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -126,6 +132,7 @@ export function AdvancedSettingsPane() {
 		useState(false);
 	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
 		useState(false);
+	const [isSavingBeautifulTags, setIsSavingBeautifulTags] = useState(false);
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [
 		isSavingEnablePeopleMentionsAsTags,
@@ -134,6 +141,10 @@ export function AdvancedSettingsPane() {
 	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
+	const [
+		isSavingClassicAllNotesByDefault,
+		setIsSavingClassicAllNotesByDefault,
+	] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -149,12 +160,14 @@ export function AdvancedSettingsPane() {
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setShowFrontmatterInEditor(settings.editor.showFrontmatterInEditor);
 			setColorfulHeadings(settings.editor.colorfulHeadings);
+			setBeautifulTags(settings.editor.beautifulTags);
 			setEditorWidthModeState(settings.editor.editorWidthMode);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setVimKeybindings(settings.editor.vimKeybindings === true);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setFolioModeState(settings.ui.folioMode);
+			setClassicAllNotesByDefaultState(settings.ui.classicAllNotesByDefault);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 		} catch (cause) {
@@ -175,6 +188,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
+		}
+		if (typeof payload.editor?.beautifulTags === "boolean") {
+			setBeautifulTags(payload.editor.beautifulTags);
 		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
@@ -200,6 +216,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.folioMode === "boolean") {
 			setFolioModeState(payload.ui.folioMode);
+		}
+		if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
+			setClassicAllNotesByDefaultState(payload.ui.classicAllNotesByDefault);
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
@@ -326,11 +345,35 @@ export function AdvancedSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
+						label="Beautiful Tags"
+						description="Enable the experimental Beautiful Tags presentation for tags."
+					>
+						<SettingsToggle
+							checked={beautifulTags}
+							disabled={isSavingBeautifulTags}
+							ariaLabel="Beautiful Tags"
+							onCheckedChange={(checked) => {
+								const previous = beautifulTags;
+								setError("");
+								setBeautifulTags(checked);
+								setIsSavingBeautifulTags(true);
+								void setEditorBeautifulTags(checked)
+									.catch((cause) => {
+										setBeautifulTags(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingBeautifulTags(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
 						label="Editor width"
 						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
 						interactive={false}
 					>
-						<select
+						<SettingsSelect
 							aria-label="Editor width"
 							value={editorWidthMode}
 							disabled={isSavingEditorWidthMode}
@@ -355,7 +398,7 @@ export function AdvancedSettingsPane() {
 									{option.label}
 								</option>
 							))}
-						</select>
+						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
 						label="Collapsible headings"
@@ -465,6 +508,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingFolioMode(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Classic All Notes grid"
+						description="Open All Notes as the simple grid instead of the activity timeline."
+					>
+						<SettingsToggle
+							checked={classicAllNotesByDefault}
+							disabled={isSavingClassicAllNotesByDefault}
+							ariaLabel="Classic All Notes grid"
+							onCheckedChange={(checked) => {
+								const previous = classicAllNotesByDefault;
+								setError("");
+								setClassicAllNotesByDefaultState(checked);
+								setIsSavingClassicAllNotesByDefault(true);
+								void setClassicAllNotesByDefault(checked)
+									.catch((cause) => {
+										setClassicAllNotesByDefaultState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingClassicAllNotesByDefault(false);
 									});
 							}}
 						/>

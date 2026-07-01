@@ -17,51 +17,49 @@ import {
 	useAISidebarContext,
 	useEditorContext,
 	useFileTreeContext,
+	useGitSyncContext,
 	useSpace,
 	useUILayoutContext,
 	useUpdaterContext,
 } from "../../contexts";
-import {
-	CHANGELOG_DATA,
-	type VersionReleaseNotes,
-} from "../../data/releaseNotes";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
-import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
 } from "../../lib/appEvents";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
+import { invalidateCalendarPrefetch } from "../../lib/calendarActivity";
+import {
+	INITIAL_DATABASES_OPEN_REQUEST,
+	consumeCreateCollectionDialog,
+	nextDatabasesOpenRequest,
+} from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
+	ACTIVITY_DOCS_PAGE_SIZE,
 	invalidateAllDocsPrefetch,
-	invalidateCalendarPrefetch,
 	invalidateDatabaseRowsPrefetch,
 	invalidatePrefetchedNote,
+	invalidateTaskSummariesPrefetchForNote,
 	prefetchAllDocs,
-	prefetchCalendarData,
+	prefetchAllDocsList,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import {
-	getLastSeenReleaseNotesVersion,
-	loadSettings,
-	setLastSeenReleaseNotesVersion,
-	updateOnboardingSettings,
-} from "../../lib/settings";
+import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
+import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
-import { todayIsoDateLocal } from "../../lib/tasks";
+import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import {
 	canOpenInWorkspace,
 	isMarkdownPath,
@@ -71,18 +69,22 @@ import {
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
+import {
+	CalendarPaletteController,
+	preloadCalendarPalette,
+} from "./CalendarPaletteController";
+import { IndexingNotice } from "./IndexingNotice";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
-import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import {
+	loadActivityTimelinePane,
 	loadAllDocsPane,
-	loadCalendarPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
@@ -111,6 +113,7 @@ export function AppShell() {
 		closeSpace,
 		onboardingNotePath,
 		consumeOnboardingNotePath,
+		isIndexing,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -149,13 +152,16 @@ export function AppShell() {
 		closeSettings,
 	} = useUILayoutContext();
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
-	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
+	const { getCurrentMarkdown, saveCurrentEditor, setCurrentEditorMode } =
+		useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
+	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(
+		INITIAL_DATABASES_OPEN_REQUEST,
+	);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -164,16 +170,18 @@ export function AppShell() {
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
+	const [calendarOpen, setCalendarOpen] = useState(false);
 	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
 	const [templatePickerItems, setTemplatePickerItems] = useState<
 		TemplatePickerItem[]
 	>([]);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [classicAllNotesByDefault, setClassicAllNotesByDefault] = useState<
+		boolean | null
+	>(null);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-	const [whatsNewVersion, setWhatsNewVersion] =
-		useState<VersionReleaseNotes | null>(null);
 	const autoUpdater = useUpdaterContext();
 	const [sidebarAutoCollapsed, setSidebarAutoCollapsed] = useState(() =>
 		typeof window === "undefined"
@@ -188,10 +196,7 @@ export function AppShell() {
 		},
 		[setSidebarCollapsedState, sidebarAutoCollapsed],
 	);
-	const gitSync = useGitSync({
-		spacePath,
-		saveCurrentEditor,
-	});
+	const gitSync = useGitSyncContext();
 	const lastGitSyncStatusRef = useRef<{
 		isSyncing: boolean;
 		phase: string;
@@ -232,6 +237,7 @@ export function AppShell() {
 			void loadCommandPalette().then(() => {
 				if (!cancelled) setCommandPaletteMounted(true);
 			});
+			preloadCalendarPalette();
 		}, 500);
 		return () => {
 			cancelled = true;
@@ -245,50 +251,29 @@ export function AppShell() {
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setClassicAllNotesByDefault(settings.ui.classicAllNotesByDefault);
 			})
 			.catch((error) => {
-				console.error("Failed to load collapsible heading setting", error);
+				console.error("Failed to load workspace display settings", error);
+				if (!cancelled) setClassicAllNotesByDefault(false);
 			});
 		return () => {
 			cancelled = true;
 		};
 	}, []);
 
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			try {
-				const [appInfo, lastSeenVersion] = await Promise.all([
-					invoke("app_info"),
-					getLastSeenReleaseNotesVersion(),
-				]);
-				const version = CHANGELOG_DATA.versions.find(
-					(entry) => entry.version === appInfo.version,
-				);
-				if (cancelled || !version || lastSeenVersion === version.version)
-					return;
-				setWhatsNewVersion(version);
-			} catch (error) {
-				console.warn("Failed to load release notes prompt state", error);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	const closeWhatsNewDialog = useCallback(() => {
-		const version = whatsNewVersion?.version;
-		setWhatsNewVersion(null);
-		if (version) void setLastSeenReleaseNotesVersion(version);
-	}, [whatsNewVersion?.version]);
-
 	useTauriEvent(
 		"settings:updated",
 		useCallback(
-			(payload: { editor?: { showCollapsibleHeadings?: boolean } }) => {
+			(payload: {
+				editor?: { showCollapsibleHeadings?: boolean };
+				ui?: { classicAllNotesByDefault?: boolean };
+			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+				}
+				if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
+					setClassicAllNotesByDefault(payload.ui.classicAllNotesByDefault);
 				}
 			},
 			[],
@@ -470,7 +455,7 @@ export function AppShell() {
 		});
 	});
 
-	const { openOrCreateDailyNote } = useDailyNote({
+	const { openOrCreateDailyNote, openOrCreateDailyNoteAtDate } = useDailyNote({
 		onOpenFile: (path) => openWorkspaceFile(path),
 		setError,
 		spacePath,
@@ -596,6 +581,32 @@ export function AppShell() {
 		}
 		void handleOpenDailyNote();
 	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
+
+	const openCalendar = useCallback(() => {
+		if (!spacePath) return;
+		setCalendarOpen(true);
+	}, [spacePath]);
+
+	const closeCalendar = useCallback(() => {
+		setCalendarOpen(false);
+	}, []);
+
+	const handleOpenDailyNoteAtDate = useCallback(
+		async (date: string) => {
+			if (!dailyNotesFolder) {
+				setDailyNoteSetupNoticeRequest((value) => value + 1);
+				return;
+			}
+			try {
+				await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
+			} catch (e) {
+				setError(
+					`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
+				);
+			}
+		},
+		[dailyNotesFolder, openOrCreateDailyNoteAtDate, setError],
+	);
 
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
@@ -777,6 +788,8 @@ export function AppShell() {
 				const changed = [...fsRefreshQueueRef.current];
 				fsRefreshQueueRef.current.clear();
 				if (!changed.length) return;
+				invalidateCalendarPrefetch();
+				invalidateAllDocsPrefetch();
 				const dirs = new Set<string>([""]);
 				for (const rel of changed) {
 					dirs.add(parentDir(rel));
@@ -791,10 +804,13 @@ export function AppShell() {
 	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
 	useTauriEvent("notes:external_changed", (payload) => {
 		const relPath = normalizeRelPath(payload.rel_path);
-		invalidateAllDocsPrefetch();
 		invalidateCalendarPrefetch();
+		invalidateAllDocsPrefetch();
 		invalidateDatabaseRowsPrefetch();
 		if (relPath) {
+			void invalidateTaskSummariesPrefetchForNote(relPath, {
+				removed: payload.removed,
+			});
 			invalidatePrefetchedNote(relPath);
 		}
 	});
@@ -807,13 +823,18 @@ export function AppShell() {
 	);
 
 	const activeTopSection = useMemo<
-		"home" | "all-notes" | "databases" | null
+		"all-notes" | "connections" | "databases" | "pinned-notes" | null
 	>(() => {
-		if (activeTabId === CALENDAR_TAB_ID) return "home";
-		if (activeTabId === ALL_DOCS_TAB_ID) return "all-notes";
-		if (activeTabId === DATABASES_TAB_ID) return "databases";
+		if (
+			activeTabPath === ALL_DOCS_TAB_ID ||
+			activeTabPath === ACTIVITY_TIMELINE_TAB_ID
+		)
+			return "all-notes";
+		if (activeTabPath === SPACE_CONNECTIONS_TAB_ID) return "connections";
+		if (activeTabPath === DATABASES_TAB_ID) return "databases";
+		if (activeTabPath === PINNED_DOCS_TAB_ID) return "pinned-notes";
 		return null;
-	}, [activeTabId]);
+	}, [activeTabPath]);
 	const openCommandPalette = useCallback(() => {
 		openPalette("commands");
 		void updateOnboardingSettings({ usedCommandPalette: true });
@@ -826,73 +847,63 @@ export function AppShell() {
 		openPalette("search");
 	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
-		openSpecialTab(ALL_DOCS_TAB_ID);
+		if (classicAllNotesByDefault === null) return;
+		openSpecialTab(
+			classicAllNotesByDefault ? ALL_DOCS_TAB_ID : ACTIVITY_TIMELINE_TAB_ID,
+		);
+	}, [classicAllNotesByDefault, openSpecialTab]);
+	const openActivityTab = useCallback(() => {
+		openSpecialTab(ACTIVITY_TIMELINE_TAB_ID);
 	}, [openSpecialTab]);
-	const openTemplatesTab = useCallback(() => {
-		openSpecialTab(TEMPLATES_TAB_ID);
-	}, [openSpecialTab]);
-	const openCalendarTab = useCallback(() => {
-		openSpecialTab(CALENDAR_TAB_ID);
+	const openPinnedDocsTab = useCallback(() => {
+		openSpecialTab(PINNED_DOCS_TAB_ID);
 	}, [openSpecialTab]);
 	const openDatabasesTab = useCallback(
-		(databaseId?: string | null) => {
-			setOpenDatabasesId(databaseId ?? null);
+		(databaseId?: string | null, options?: { openCreateDialog?: boolean }) => {
+			setDatabasesOpenRequest((current) =>
+				nextDatabasesOpenRequest(current, {
+					databaseId: databaseId ?? null,
+					openCreateDialog: options?.openCreateDialog ?? false,
+				}),
+			);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
 		[openSpecialTab],
 	);
-	const createDatabaseAndOpen = useCallback(async () => {
-		try {
-			const summaries = await invoke("databases_list");
-			const existing = new Set(
-				summaries.map((entry) => entry.name.trim().toLowerCase()),
-			);
-			let name = "New Database";
-			if (existing.has(name.toLowerCase())) {
-				let suffix = 2;
-				while (existing.has(`new database ${suffix}`)) {
-					suffix += 1;
-				}
-				name = `New Database ${suffix}`;
-			}
-			const created = await invoke("databases_create", {
-				name,
-			});
-			openDatabasesTab(created.database.id);
-			return created.database.id;
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			setError(message);
-			toast.error("Could not create database", {
-				description: message,
-			});
-			return null;
-		}
-	}, [openDatabasesTab, setError]);
+	const openConnectionsView = useCallback(() => {
+		openSpecialTab(SPACE_CONNECTIONS_TAB_ID);
+	}, [openSpecialTab]);
+	const createDatabaseAndOpen = useCallback(() => {
+		openDatabasesTab(null, { openCreateDialog: true });
+	}, [openDatabasesTab]);
+	const consumeDatabasesOpenRequest = useCallback(() => {
+		setDatabasesOpenRequest((current) =>
+			consumeCreateCollectionDialog(current),
+		);
+	}, []);
 	const prefetchWorkspaceFile = useCallback((path: string) => {
 		if (!isMarkdownPath(path)) return;
 		prefetchNote(path);
 	}, []);
-	const prefetchCalendarTab = useCallback(() => {
-		void loadCalendarPane();
-		const today = todayIsoDateLocal();
-		const anchorDate = window.localStorage.getItem("glyph.calendar.anchorDate");
-		const selectedDate = window.localStorage.getItem(
-			"glyph.calendar.selectedDate",
-		);
-		void prefetchCalendarData({
-			anchorDate: anchorDate ?? today,
-			selectedDate: selectedDate ?? today,
-			dailyNotesFolder,
-		});
-	}, [dailyNotesFolder]);
 	const prefetchDatabasesTab = useCallback((databaseId?: string | null) => {
 		void loadDatabasesPane();
 		void prefetchDatabasesLanding(databaseId);
 	}, []);
 	const prefetchAllDocsTab = useCallback(() => {
-		void loadAllDocsPane();
-		void prefetchAllDocs(null);
+		if (classicAllNotesByDefault === null) return;
+		if (classicAllNotesByDefault) {
+			void loadAllDocsPane();
+			void prefetchAllDocs(null);
+		} else {
+			void loadActivityTimelinePane();
+			void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+			void prefetchAllDocsList(null);
+		}
+	}, [classicAllNotesByDefault]);
+	const prefetchActivityTab = useCallback(() => {
+		void loadActivityTimelinePane();
+		void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+		void prefetchAllDocsList(null);
 	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
@@ -1061,6 +1072,8 @@ export function AppShell() {
 		onEditorAction: (action) => {
 			dispatchEditorMenuAction({ action });
 		},
+		openGettingStarted,
+		showWelcomeNote,
 	});
 
 	const commands = useAppCommands({
@@ -1098,22 +1111,22 @@ export function AppShell() {
 		onOpenSpace,
 		openAllDocsTab,
 		openBlankTab,
-		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openCalendar,
+		openConnectionsView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
 		openPalette,
 		openQuickNoteWindow,
 		openSearchPalette,
 		openSettings,
-		openTemplatesTab,
 		openWorkspaceFile,
 		showWelcomeNote,
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,
+		setCurrentEditorMode,
 		setAiPanelOpen,
-		setError,
 		setMovePickerSourcePath,
 		setSidebarCollapsed,
 		showCollapsibleHeadings,
@@ -1225,6 +1238,7 @@ export function AppShell() {
 				rightSidebarOpen && "appShellRightSidebarOpen",
 			)}
 		>
+			{isIndexing ? <IndexingNotice /> : null}
 			<div
 				aria-hidden="true"
 				className="windowDragStrip"
@@ -1252,7 +1266,7 @@ export function AppShell() {
 									}`
 						}
 					>
-						<LayoutAlignLeft size={14} />
+						<LayoutAlignLeft size="var(--icon-md)" />
 					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
@@ -1268,7 +1282,9 @@ export function AppShell() {
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewFlowInDir={(p) => void fileTree.onNewFlowInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
+				onRequestCreateFolder={(dirPath) =>
+					fileTree.requestCreateFolder(dirPath)
+				}
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
@@ -1283,16 +1299,14 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
-				onOpenSpace={onOpenSpace}
 				onOpenAllDocs={openAllDocsTab}
-				onOpenCalendar={openCalendarTab}
+				onOpenPinnedDocs={openPinnedDocsTab}
+				onOpenConnections={openConnectionsView}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				activeTopSection={activeTopSection}
-				onPrefetchCalendar={prefetchCalendarTab}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
-				onOpenSearchPalette={openSearchPalette}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}
@@ -1317,6 +1331,8 @@ export function AppShell() {
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
+				onOpenActivity={openActivityTab}
+				onPrefetchActivity={prefetchActivityTab}
 				tabs={tabs}
 				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}
@@ -1338,7 +1354,8 @@ export function AppShell() {
 				onGoBack={goBack}
 				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
-				openDatabasesId={openDatabasesId}
+				databasesOpenRequest={databasesOpenRequest}
+				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
@@ -1360,17 +1377,20 @@ export function AppShell() {
 					/>
 				</Suspense>
 			) : null}
+			<CalendarPaletteController
+				open={calendarOpen}
+				onClose={closeCalendar}
+				spacePath={spacePath}
+				dailyNoteFolder={dailyNotesFolder}
+				onOpenNote={(path) => void openWorkspaceFile(path)}
+				onOpenDailyNoteAtDate={(date) => void handleOpenDailyNoteAtDate(date)}
+			/>
 			<TemplatePickerDialog
 				open={templatePickerOpen}
 				templates={templatePickerItems}
 				onClose={() => setTemplatePickerOpen(false)}
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
-			/>
-			<WhatsNewDialog
-				open={whatsNewVersion !== null}
-				version={whatsNewVersion}
-				onClose={closeWhatsNewDialog}
 			/>
 		</div>
 	);

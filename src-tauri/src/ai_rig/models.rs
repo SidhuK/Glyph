@@ -1,10 +1,10 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, WebviewWindow};
 
 use super::helpers::{
     alternate_openai_base_url, apply_extra_headers, http_client, ollama_api_url, parse_base_url,
 };
 use super::local_secrets;
-use super::store::{ensure_default_profiles, read_store, store_path, write_store};
+use super::store::{ensure_default_profiles, read_store, store_path_for_space, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
 use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use crate::space::SpaceState;
@@ -571,14 +571,17 @@ fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
 pub async fn ai_models_list(
     app: AppHandle,
     codex_state: State<'_, CodexState>,
+    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
     provider: Option<AiProviderKind>,
 ) -> Result<Vec<AiModel>, String> {
-    let path = store_path(&app)?;
+    let space_root = space_state
+        .root_for_window(&window)
+        .map_err(|_| "Open a space to manage AI settings".to_string())?;
+    let path = store_path_for_space(&app, Some(&space_root))?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
-    let space_root = space_state.current_root().ok();
     let _ = write_store(&path, &store);
 
     let profile = store
@@ -590,9 +593,9 @@ pub async fn ai_models_list(
     let effective_provider = provider.unwrap_or_else(|| profile.provider.clone());
 
     let client = http_client()?;
-    let api_key = space_root
-        .as_deref()
-        .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten())
+    let api_key = local_secrets::secret_get(&space_root, &profile.id)
+        .ok()
+        .flatten()
         .unwrap_or_default();
     let api_key = api_key.trim().to_string();
 
@@ -617,23 +620,8 @@ pub async fn ai_models_list(
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
         AiProviderKind::CodexChatgpt => list_codex_models(codex_state.inner()),
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
-        AiProviderKind::ClaudeCode => {
-            let root = space_root
-                .as_deref()
-                .ok_or_else(|| "Open a space to load Claude Code models".to_string())?;
-            crate::ai_claude_code::list_models(root, &profile)
-        }
-        AiProviderKind::Opencode => {
-            let root = space_root
-                .as_deref()
-                .ok_or_else(|| "Open a space to load OpenCode models".to_string())?;
-            crate::ai_opencode::list_models(root).await
-        }
-        AiProviderKind::Pi => {
-            let root = space_root
-                .as_deref()
-                .ok_or_else(|| "Open a space to load PI models".to_string())?;
-            crate::ai_pi::list_models(root).await
-        }
+        AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&space_root, &profile),
+        AiProviderKind::Opencode => crate::ai_opencode::list_models(&space_root).await,
+        AiProviderKind::Pi => crate::ai_pi::list_models(&space_root).await,
     }
 }

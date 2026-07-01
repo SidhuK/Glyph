@@ -4,11 +4,6 @@
 
 .settingsTabPanel {
 	--settings-surface: var(--bg-tertiary);
-	--settings-surface-muted: color-mix(
-		in srgb,
-		var(--bg-tertiary) 82%,
-		var(--bg-primary)
-	);
 	--settings-surface-soft: color-mix(
 		in srgb,
 		var(--bg-tertiary) 58%,
@@ -33,7 +28,7 @@
 .settingsBackButton {
 	gap: 6px;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 }
 
@@ -41,9 +36,184 @@
 	color: var(--text-primary);
 }
 
+.settingsSidebarSearch {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 8px 8px 8px;
+	color: var(--text-secondary);
+	-webkit-app-region: no-drag;
+}
+
+.settingsSidebarSearchIcon {
+	position: absolute;
+	left: 16px;
+	pointer-events: none;
+	color: var(--text-secondary);
+}
+
+.settingsSidebarSearchInput {
+	width: 100%;
+	min-width: 0;
+	min-height: 26px;
+	padding: 2px 30px 2px 30px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	line-height: 1;
+	outline: none;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
+	cursor: text;
+}
+
+.settingsSidebarSearchInput::placeholder {
+	color: var(--text-secondary);
+}
+
+.settingsSidebarSearchInput:focus {
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--text-primary));
+	color: var(--text-primary);
+}
+
+.settingsSidebarSearchClear {
+	position: absolute;
+	right: 12px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+}
+
+.settingsSidebarSearchClear:hover,
+.settingsSidebarSearchClear:focus-visible {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.settingsSidebarSearchResults {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	flex-direction: column;
+	gap: 3px;
+	overflow-y: auto;
+	padding: 2px 8px 12px;
+	-webkit-app-region: no-drag;
+}
+
+.settingsSearchResultButton {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	min-height: 48px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	padding: 8px 9px;
+	text-align: left;
+	line-height: normal;
+}
+
+.settingsSearchResultButton:hover,
+.settingsSearchResultButton:focus-visible {
+	background: var(--bg-hover);
+	outline: none;
+}
+
+.settingsSearchResultButtonActive {
+	background: var(--bg-active);
+}
+
+.settingsSearchResultTitle {
+	display: block;
+	width: 100%;
+	min-height: 17px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-semibold);
+	line-height: 17px;
+}
+
+.settingsSearchResultMeta {
+	display: block;
+	width: 100%;
+	min-height: 14px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-semibold);
+	line-height: 14px;
+	color: var(--interactive-accent);
+}
+
+.settingsSearchResultDescription {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.8);
+	line-height: 1.35;
+}
+
+.settingsSearchEmpty {
+	padding: 10px 8px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.9);
+	line-height: 1.4;
+}
+
+.settingsField.settingsSearchTarget,
+.settingsSection.settingsSearchTarget .settingsCard {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 34%,
+		var(--border-default)
+	);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	transition: background var(--transition-base), border-color
+		var(--transition-base);
+}
+
 .settingsSidebarTabs {
+	gap: 14px;
+	padding: 8px 8px 12px;
+}
+
+.settingsSidebarTabGroup {
+	display: flex;
+	flex-direction: column;
 	gap: 2px;
-	padding: 4px 8px 12px;
+	min-width: 0;
+}
+
+.settingsSidebarTabGroupHeading {
+	margin: 0;
+	padding: 0 8px 5px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	text-transform: uppercase;
 }
 
 .settingsFeedbackCard {
@@ -73,7 +243,7 @@
 }
 
 .settingsFeedbackEyebrow {
-	font-size: 10px;
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -81,7 +251,7 @@
 }
 
 .settingsFeedbackTitle {
-	font-size: 14px;
+	font-size: var(--text-base);
 	font-weight: var(--font-bold);
 	line-height: 1.2;
 	color: var(--text-primary);
@@ -89,7 +259,7 @@
 
 .settingsFeedbackBody {
 	margin: 0;
-	font-size: 12px;
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.5;
 	color: var(--text-secondary);
 }
@@ -150,8 +320,8 @@
 }
 
 .settingsTabIcon {
-	height: 16px;
-	width: 16px;
+	height: var(--icon-lg);
+	width: var(--icon-lg);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -173,12 +343,12 @@
 	flex-wrap: wrap;
 }
 
-.settingsTabButton:hover {
+.sidebarQuickActionBtn.settingsTabButton:hover {
 	color: var(--text-primary);
 	background: var(--bg-hover);
 }
 
-.settingsTabButtonActive {
+.sidebarQuickActionBtn.settingsTabButtonActive {
 	color: var(--text-primary);
 	background: var(--bg-active);
 }
@@ -220,21 +390,18 @@
 	gap: 4px;
 	padding: 0 0 16px;
 	background: transparent;
+	width: 70%;
+	max-width: 644px;
+	margin: 0 auto;
 }
 
 .settingsPanelHeader::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	height: 1px;
-	background: var(--border-light);
+	display: none;
 }
 
 .settingsPanelTitle {
 	margin: 0;
-	font-size: 21px;
+	font-size: calc(var(--text-base) * 1.5);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
@@ -251,6 +418,12 @@
 	display: flex;
 	flex-direction: column;
 	gap: 34px;
+}
+
+.settingsSearchTarget {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

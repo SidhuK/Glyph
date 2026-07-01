@@ -47,25 +47,25 @@ export function getFormatButtons(
 			title: "Bold",
 			isActive: () => editor.isActive("bold"),
 			onClick: () => runCommand(() => focusChain().toggleBold().run()),
-			icon: <Bold size={14} />,
+			icon: <Bold size="var(--icon-md)" />,
 		},
 		{
 			title: "Italic",
 			isActive: () => editor.isActive("italic"),
 			onClick: () => runCommand(() => focusChain().toggleItalic().run()),
-			icon: <Italic size={14} />,
+			icon: <Italic size="var(--icon-md)" />,
 		},
 		{
 			title: "Underline",
 			isActive: () => editor.isActive("underline"),
 			onClick: () => runCommand(() => focusChain().toggleUnderline().run()),
-			icon: <Underline size={14} />,
+			icon: <Underline size="var(--icon-md)" />,
 		},
 		{
 			title: "Strikethrough",
 			isActive: () => editor.isActive("strike"),
 			onClick: () => runCommand(() => focusChain().toggleStrike().run()),
-			icon: <Strikethrough size={14} />,
+			icon: <Strikethrough size="var(--icon-md)" />,
 		},
 	];
 }
@@ -139,21 +139,21 @@ export function getHeadingButtons(
 			isActive: () => editor.isActive("heading", { level: 1 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 1 }).run()),
-			icon: <Heading1 size={14} />,
+			icon: <Heading1 size="var(--icon-md)" />,
 		},
 		{
 			title: "Heading 2",
 			isActive: () => editor.isActive("heading", { level: 2 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 2 }).run()),
-			icon: <Heading2 size={14} />,
+			icon: <Heading2 size="var(--icon-md)" />,
 		},
 		{
 			title: "Heading 3",
 			isActive: () => editor.isActive("heading", { level: 3 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 3 }).run()),
-			icon: <Heading3 size={14} />,
+			icon: <Heading3 size="var(--icon-md)" />,
 		},
 	];
 }
@@ -168,19 +168,19 @@ export function getListButtons(
 			title: "Bullet list",
 			isActive: () => editor.isActive("bulletList"),
 			onClick: () => runCommand(() => focusChain().toggleBulletList().run()),
-			icon: <List size={14} />,
+			icon: <List size="var(--icon-md)" />,
 		},
 		{
 			title: "Numbered list",
 			isActive: () => editor.isActive("orderedList"),
 			onClick: () => runCommand(() => focusChain().toggleOrderedList().run()),
-			icon: <ListOrdered size={14} />,
+			icon: <ListOrdered size="var(--icon-md)" />,
 		},
 		{
 			title: "Task list",
 			isActive: () => editor.isActive("taskList"),
 			onClick: () => runCommand(() => focusChain().toggleTaskList().run()),
-			icon: <ListChecks size={14} />,
+			icon: <ListChecks size="var(--icon-md)" />,
 		},
 	];
 }
@@ -195,13 +195,13 @@ export function getBlockButtons(
 			title: "Quote",
 			isActive: () => editor.isActive("blockquote"),
 			onClick: () => runCommand(() => focusChain().toggleBlockquote().run()),
-			icon: <Quote size={14} />,
+			icon: <Quote size="var(--icon-md)" />,
 		},
 		{
 			title: "Code block",
 			isActive: () => editor.isActive("codeBlock"),
 			onClick: () => runCommand(() => focusChain().toggleCodeBlock().run()),
-			icon: <Code size={14} />,
+			icon: <Code size="var(--icon-md)" />,
 		},
 	];
 }

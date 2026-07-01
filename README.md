@@ -5,12 +5,16 @@
 </p>
 
 <p align="center">
+  <a href="https://app.codspeed.io/SidhuK/Glyph?utm_source=badge"><img src="https://img.shields.io/endpoint?url=https://codspeed.io/badge.json" alt="CodSpeed"/></a>
+</p>
+
+<p align="center">
   <strong>Join the Glyph community</strong><br />
   Share feedback, ask questions, and help shape what comes next.
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/fasY8gAQR"><strong>Join us on Discord →</strong></a>
+  <a href="https://discord.gg/cNqrBfFx7D"><strong>Join us on Discord →</strong></a>
 </p>
 
 Offline-first desktop note-taking application. Tauri 2 shell with a React 19 / TypeScript / Vite 8 frontend and a Rust backend. Data lives entirely on-disk in a per-space `.glyph/` directory backed by SQLite and the local filesystem. No cloud sync, no server.

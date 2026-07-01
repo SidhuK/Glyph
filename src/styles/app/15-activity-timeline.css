@@ -1,0 +1,465 @@
+.activityTimelinePane {
+	--activity-content-width: min(100%, 860px);
+	--activity-heatmap-content-width: min(100%, 1040px);
+	--activity-heatmap-cell: 14px;
+	--activity-heatmap-gap: clamp(2px, 0.42vw, 5px);
+	--all-docs-card-min-width: 184px;
+	--all-docs-card-min-height: 184px;
+	--all-docs-card-aspect: 1 / 1;
+	--all-docs-card-padding: 12px;
+	--all-docs-card-gap: 14px;
+	--all-docs-card-title-size: var(--text-base);
+	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
+	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
+
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	min-height: 0;
+	overflow-y: auto;
+	padding: calc(var(--header-height) + clamp(28px, 3.2vw, 46px))
+		clamp(18px, 4vw, 56px) clamp(34px, 5vw, 64px);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	color: var(--text-primary);
+	gap: 26px;
+}
+
+.activityTimelineHeader {
+	display: flex;
+	width: var(--activity-heatmap-content-width);
+	align-items: flex-end;
+	justify-content: flex-end;
+	gap: 16px;
+	text-align: right;
+}
+
+.activityTimelineTitle {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 9px;
+	font-size: calc(var(--text-base) * 2.1);
+	line-height: 1.08;
+	font-weight: var(--font-medium);
+	letter-spacing: 0;
+	color: var(--text-primary);
+	text-wrap: balance;
+}
+
+.activityTimelineTitle svg {
+	flex: 0 0 auto;
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	transform: translateY(0.08em);
+}
+
+.activityTimelineSummary {
+	margin-top: 6px;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	line-height: 1.4;
+}
+
+.activityTimelineHeader .activityHeatmapLegend {
+	justify-content: flex-end;
+	margin-top: 10px;
+}
+
+.activityHeatmapBlock {
+	display: flex;
+	width: var(--activity-heatmap-content-width);
+	max-width: 100%;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	overflow: visible;
+	padding: 16px 0 20px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.activityHeatmapMonths {
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: repeat(53, minmax(0, 1fr));
+	gap: var(--activity-heatmap-gap);
+	width: 100%;
+	padding-left: 1px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.72);
+	line-height: 1;
+}
+
+.activityHeatmapMonths span {
+	overflow: visible;
+	white-space: nowrap;
+}
+
+.activityHeatmapGrid {
+	position: relative;
+	display: grid;
+	grid-auto-flow: column;
+	grid-template-columns: repeat(53, minmax(0, 1fr));
+	gap: var(--activity-heatmap-gap);
+	width: 100%;
+	overflow: visible;
+	padding: 1px 0 2px;
+}
+
+.activityHeatmapColumn {
+	display: grid;
+	grid-template-rows: repeat(7, minmax(0, 1fr));
+	gap: var(--activity-heatmap-gap);
+	min-width: 0;
+}
+
+.activityHeatmapCell,
+.activityHeatmapLegendCell {
+	border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-secondary));
+	box-shadow: none;
+}
+
+.activityHeatmapLegendCell {
+	width: var(--activity-heatmap-cell);
+	height: var(--activity-heatmap-cell);
+}
+
+.activityHeatmapCell {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 1;
+	padding: 0;
+	cursor: help;
+	transition: background-color 120ms ease, border-color 120ms ease;
+	z-index: 0;
+}
+
+.activityHeatmapCell:hover,
+.activityHeatmapCell:focus-visible {
+	z-index: 10;
+}
+
+.activityHeatmapCell:hover {
+	border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+}
+
+.activityHeatmapCell[data-level="1"],
+.activityHeatmapLegendCell[data-level="1"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--bg-tertiary)
+	);
+}
+
+.activityHeatmapCell[data-level="2"],
+.activityHeatmapLegendCell[data-level="2"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--bg-tertiary)
+	);
+}
+
+.activityHeatmapCell[data-level="3"],
+.activityHeatmapLegendCell[data-level="3"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		var(--bg-tertiary)
+	);
+}
+
+.activityHeatmapCell[data-level="4"],
+.activityHeatmapLegendCell[data-level="4"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 82%,
+		var(--text-primary)
+	);
+}
+
+.activityHeatmapCell:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 2px;
+}
+
+.activityHeatmapCell::after {
+	content: attr(data-tooltip);
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 8px);
+	z-index: 20;
+	width: max-content;
+	max-width: 180px;
+	padding: 5px 7px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--text-primary) 92%, var(--bg-primary));
+	color: var(--bg-primary);
+	font-size: calc(var(--text-base) * 0.72);
+	line-height: 1.2;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(-50%) translateY(2px);
+	transition: opacity 120ms ease, transform 120ms ease;
+	white-space: nowrap;
+	border: 1px solid color-mix(in srgb, var(--bg-primary) 22%, transparent);
+	box-shadow: none;
+}
+
+.activityHeatmapCell:hover::after,
+.activityHeatmapCell:focus-visible::after {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
+.activityHeatmapLegend {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.72);
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+}
+
+.activityFeed {
+	display: flex;
+	width: var(--activity-content-width);
+	flex-direction: column;
+	gap: 0;
+}
+
+.activityFeed.is-virtualized {
+	position: relative;
+	display: block;
+	flex: 0 0 auto;
+	min-height: 0;
+}
+
+.activityVirtualRow {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	will-change: transform;
+}
+
+.activityDayGroup {
+	position: relative;
+	display: grid;
+	grid-template-columns: 24px minmax(0, 1fr);
+	column-gap: 16px;
+	padding-bottom: 32px;
+	scroll-margin-top: calc(var(--header-height) + 18px);
+}
+
+.activityDayHeaderRow {
+	padding-bottom: 12px;
+}
+
+.activityDayCardsRow {
+	padding-bottom: 20px;
+}
+
+.activityDayRail {
+	grid-row: 1 / span 2;
+	position: relative;
+	width: 24px;
+}
+
+.activityDayRail::before {
+	content: "";
+	position: absolute;
+	top: 13px;
+	left: 11px;
+	bottom: -32px;
+	width: 1px;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--interactive-accent) 32%, transparent),
+		color-mix(in srgb, var(--border-light) 72%, transparent)
+	);
+}
+
+.activityDayRail::after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 5px;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	background: var(--bg-primary);
+	border: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
+	box-shadow: 0 0 0 4px
+		color-mix(in srgb, var(--interactive-accent) 9%, transparent);
+}
+
+.activityVirtualRow:last-child .activityDayRail::before {
+	display: none;
+}
+
+.activityDayCardsRow .activityDayRail::after {
+	display: none;
+}
+
+.activityDayCardsRow .activityDayRail::before {
+	top: -12px;
+	bottom: -20px;
+}
+
+.activityDayHeader {
+	grid-column: 2;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.activityDayHeader h2 {
+	font-size: calc(var(--text-base) * 1.05);
+	font-weight: var(--font-semibold);
+	line-height: 1.25;
+	letter-spacing: 0;
+	color: var(--text-primary);
+	text-wrap: balance;
+}
+
+.activityDayCounts {
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.35;
+}
+
+.activityDayCounts {
+	display: inline-flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+	font-variant-numeric: tabular-nums;
+}
+
+.activityNoteGrid {
+	grid-column: 2;
+	min-width: 0;
+}
+
+.activityTimelinePane .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--text-primary) 8%, transparent);
+	box-shadow: none;
+	transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.activityTimelinePane .allDocsCard:hover .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-hover));
+	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: none;
+}
+
+.activityTimelinePane .allDocsCard[data-state="selected"] .allDocsCardSurface {
+	background: color-mix(
+		in srgb,
+		var(--bg-primary) 90%,
+		var(--interactive-accent)
+	);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		var(--text-primary)
+	);
+	box-shadow: none;
+}
+
+.activityTimelinePane .allDocsCard:focus-visible .allDocsCardSurface {
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+}
+
+.dark .activityTimelinePane .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
+	box-shadow: none;
+}
+
+.dark .activityTimelinePane .allDocsCard:hover .allDocsCardSurface {
+	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-hover));
+	box-shadow: none;
+}
+
+.dark
+	.activityTimelinePane
+	.allDocsCard[data-state="selected"]
+	.allDocsCardSurface {
+	background: color-mix(
+		in srgb,
+		var(--bg-tertiary) 86%,
+		var(--interactive-accent)
+	);
+	box-shadow: none;
+}
+
+.activityLoadMore {
+	align-self: flex-start;
+	min-height: 30px;
+	padding: 0 12px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
+	border-radius: 8px;
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	cursor: pointer;
+	transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.activityLoadMore:hover {
+	background: var(--bg-hover);
+}
+
+.activityLoadMore:active {
+	transform: scale(0.96);
+}
+
+.activityLoadMore:disabled {
+	cursor: default;
+	opacity: 0.62;
+}
+
+@media (max-width: 640px) {
+	.activityTimelinePane {
+		padding-right: 18px;
+		padding-left: 18px;
+	}
+
+	.activityDayGroup {
+		grid-template-columns: 18px minmax(0, 1fr);
+		column-gap: 12px;
+	}
+
+	.activityDayRail {
+		width: 18px;
+	}
+
+	.activityDayRail::before {
+		left: 8px;
+	}
+
+	.activityDayRail::after {
+		left: 2px;
+	}
+
+	.activityDayHeader {
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.activityDayCounts {
+		justify-content: flex-start;
+	}
+}

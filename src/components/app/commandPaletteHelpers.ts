@@ -4,18 +4,20 @@ import type { SearchAdvancedRequest } from "../../lib/tauri";
 
 export interface Command {
 	id: string;
-	label: string;
+	label?: string;
 	icon?: ReactNode;
 	category?: string;
+	searchTerms?: readonly string[];
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;
 	enabled?: boolean;
 	allowInEditable?: boolean;
+	hideWhenQueryEmpty?: boolean;
 }
 
 export type Tab = "commands" | "search";
 
-export interface ParsedSearchQuery {
+interface ParsedSearchQuery {
 	request: SearchAdvancedRequest;
 	text: string;
 }

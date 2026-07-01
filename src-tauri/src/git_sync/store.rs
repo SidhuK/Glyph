@@ -84,6 +84,27 @@ mod tests {
     }
 
     #[test]
+    fn adopted_existing_repo_defaults_to_manual_sync() {
+        let config = GitSyncConfig::with_remote(
+            "https://github.com/team/repo".to_string(),
+            "main".to_string(),
+            GitSyncRepoMode::AdoptedExistingRepo,
+        );
+        assert!(!config.enabled);
+        assert!(!config.auto_sync_prompted);
+    }
+
+    #[test]
+    fn managed_new_repo_defaults_to_automatic_sync() {
+        let config = GitSyncConfig::with_remote(
+            "https://github.com/team/repo".to_string(),
+            "main".to_string(),
+            GitSyncRepoMode::ManagedNewRepo,
+        );
+        assert!(config.enabled);
+    }
+
+    #[test]
     fn deletes_store() {
         let root = temp_root();
         let config = GitSyncConfig::with_remote(
