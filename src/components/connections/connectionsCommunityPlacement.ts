@@ -35,18 +35,50 @@ function communityHasBridges(
 
 function placeIsolatedCommunityCenter(
 	community: ConnectionsCommunity,
+	placed: ConnectionsCommunity[],
+	centers: Map<number, GraphPosition>,
 	isolationIndex: number,
 ) {
 	const seed = hashString(`isolated-community:${community.hubId}`);
-	const angle = randomUnit(seed, isolationIndex * 2) * Math.PI * 2;
-	const orbit =
-		COMMUNITY_GAP * 2 +
-		community.radius +
-		isolationIndex * (COMMUNITY_GAP + community.radius);
-	return {
-		x: Math.cos(angle) * orbit,
-		y: Math.sin(angle) * orbit,
-	};
+	let bestPosition: GraphPosition | null = null;
+	let bestScore = Number.NEGATIVE_INFINITY;
+	for (let index = 0; index < CLUSTER_CANDIDATE_COUNT; index += 1) {
+		const angle = randomUnit(seed, index * 2) * Math.PI * 2;
+		const orbit =
+			COMMUNITY_GAP * 2 +
+			community.radius +
+			isolationIndex * (COMMUNITY_GAP + community.radius);
+		const candidate = {
+			x: Math.cos(angle) * orbit,
+			y: Math.sin(angle) * orbit,
+		};
+		let clearance = Number.POSITIVE_INFINITY;
+		for (const existing of placed) {
+			const existingCenter = centers.get(existing.id);
+			if (!existingCenter) continue;
+			clearance = Math.min(
+				clearance,
+				distance(candidate, existingCenter) -
+					community.radius -
+					existing.radius,
+			);
+		}
+		const overlapPenalty = clearance < COMMUNITY_GAP * 0.55 ? 1_000_000 : 0;
+		const score =
+			Math.min(clearance, COMMUNITY_GAP * 2) -
+			Math.hypot(candidate.x, candidate.y) * 0.015 -
+			overlapPenalty;
+		if (score > bestScore) {
+			bestScore = score;
+			bestPosition = candidate;
+		}
+	}
+	return (
+		bestPosition ?? {
+			x: 0,
+			y: 0,
+		}
+	);
 }
 
 function placeCommunityCenters(model: ConnectionsCommunityModel) {
@@ -64,7 +96,12 @@ function placeCommunityCenters(model: ConnectionsCommunityModel) {
 		if (!communityHasBridges(community, model)) {
 			centers.set(
 				community.id,
-				placeIsolatedCommunityCenter(community, isolatedPlacementIndex),
+				placeIsolatedCommunityCenter(
+					community,
+					placed,
+					centers,
+					isolatedPlacementIndex,
+				),
 			);
 			isolatedPlacementIndex += 1;
 			placed.push(community);

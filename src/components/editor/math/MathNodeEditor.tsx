@@ -54,11 +54,9 @@ export function MathNodeEditor({
 					throwOnError: true,
 				});
 				setRenderError("");
-			} catch (error: unknown) {
+			} catch {
 				preview.textContent = draft;
-				setRenderError(
-					error instanceof Error ? error.message : t("math.invalidLatex"),
-				);
+				setRenderError(t("math.invalidLatex"));
 			}
 		});
 		return () => window.cancelAnimationFrame(frame);

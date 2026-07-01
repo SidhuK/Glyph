@@ -321,7 +321,15 @@
 		"value": "Value",
 		"viewName": "View name",
 		"viewSettings": "View settings",
-		"where": "Where"
+		"where": "Where",
+		"builtinColumns": {
+			"title": "Title",
+			"tags": "Tags",
+			"updated": "Updated",
+			"path": "Path",
+			"linkedNotes": "Linked notes",
+			"created": "Created"
+		}
 	},
 	"databases": {
 		"empty": {
@@ -335,7 +343,10 @@
 			"step2Text": "show columns, filters, and sorting.",
 			"step2Title": "Shape the view",
 			"step3Text": "switch to board view and group by status, tags, or another field.",
-			"step3Title": "Track work"
+			"step3Title": "Track work",
+			"step1": "Choose notes — pick a folder, tag, or search.",
+			"step2": "Shape the view — show columns, filters, and sorting.",
+			"step3": "Track work — switch to board view and group by status, tags, or another field."
 		}
 	},
 	"editor": {

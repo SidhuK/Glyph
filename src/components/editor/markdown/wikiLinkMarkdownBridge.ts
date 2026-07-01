@@ -181,7 +181,7 @@ function preprocessMarkdownStorage(markdown: string): string {
 }
 
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessMarkdownStorage(markdown);
+	return preprocessEscapedDollars(preprocessMarkdownStorage(markdown));
 }
 
 export function preprocessMarkdownForParsing(markdown: string): string {

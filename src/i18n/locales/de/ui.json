@@ -311,6 +311,14 @@
 			"thisWeek": "Diese Woche",
 			"last7Days": "Letzte 7 Tage",
 			"last30Days": "Letzte 30 Tage"
+		},
+		"builtinColumns": {
+			"title": "Titel",
+			"tags": "Tags",
+			"updated": "Aktualisiert",
+			"path": "Pfad",
+			"linkedNotes": "Verknüpfte Notizen",
+			"created": "Erstellt"
 		}
 	},
 	"databases": {
@@ -325,7 +333,10 @@
 			"step2Text": "Spalten, Filter und Sortierung anzeigen.",
 			"step2Title": "Ansicht gestalten",
 			"step3Text": "wechsle zur Board-Ansicht und gruppiere nach Status, Tags oder einem anderen Feld.",
-			"step3Title": "Arbeit verfolgen"
+			"step3Title": "Arbeit verfolgen",
+			"step1": "Notizen wählen — wähle einen Ordner, Tag oder eine Suche.",
+			"step2": "Ansicht gestalten — Spalten, Filter und Sortierung anzeigen.",
+			"step3": "Arbeit verfolgen — wechsle zur Board-Ansicht und gruppiere nach Status, Tags oder einem anderen Feld."
 		}
 	},
 	"editor": {

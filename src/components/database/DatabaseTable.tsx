@@ -28,7 +28,10 @@ import {
 } from "../ui/shadcn/table";
 import { DatabaseCell } from "./DatabaseCell";
 import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
-import { localizeBoardLaneLabel } from "./databaseViewI18n";
+import {
+	localizeBoardLaneLabel,
+	localizeDatabaseColumnLabel,
+} from "./databaseViewI18n";
 
 interface DatabaseTableProps {
 	rows: DatabaseRow[];
@@ -219,7 +222,9 @@ export function DatabaseTable({
 							onClick={() => onToggleSort(column)}
 						>
 							<span className="databaseHeaderLabel">
-								<span className="databaseHeaderText">{column.label}</span>
+								<span className="databaseHeaderText">
+									{localizeDatabaseColumnLabel(column, t)}
+								</span>
 								<SortIndicator activeSort={activeSort} columnId={column.id} />
 							</span>
 						</button>
@@ -256,6 +261,7 @@ export function DatabaseTable({
 			safeLaneColors,
 			statusColors,
 			onStatusColorChange,
+			t,
 		],
 	);
 

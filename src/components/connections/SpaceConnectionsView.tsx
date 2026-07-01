@@ -4,6 +4,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
+import { i18n } from "../../i18n";
 import type { SpaceConnections } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Toggle } from "../base/toggle/toggle";
@@ -21,7 +22,6 @@ async function warnAboutLargeGraph(payload: SpaceConnections) {
 	const noteCount = payload.nodes.length;
 	if (noteCount <= LARGE_GRAPH_NOTE_THRESHOLD) return;
 
-	const { i18n } = await import("../../i18n");
 	const { message } = await import("@tauri-apps/plugin-dialog");
 	await message(
 		i18n.t("connections.largeGraphBody", {

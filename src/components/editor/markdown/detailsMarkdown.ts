@@ -88,14 +88,17 @@ function detailsFencesToHtml(
 }
 
 function extractDetailsSummary(inner: string): string {
+	const summaryDivMatch = inner.match(
+		/<div[^>]*data-type=(["'])detailsSummary\1[^>]*>([\s\S]*?)<\/div>/i,
+	);
+	if (summaryDivMatch) {
+		return htmlFragmentToPlainText(summaryDivMatch[2] ?? "");
+	}
 	const summaryTagMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
 	if (summaryTagMatch) {
 		return htmlFragmentToPlainText(summaryTagMatch[1] ?? "");
 	}
-	const summaryDivMatch = inner.match(
-		/<div[^>]*data-type=(["'])detailsSummary\1[^>]*>([\s\S]*?)<\/div>/i,
-	);
-	return htmlFragmentToPlainText(summaryDivMatch?.[2] ?? "");
+	return "";
 }
 
 function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {

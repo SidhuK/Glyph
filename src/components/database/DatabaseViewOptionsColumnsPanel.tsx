@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { DatabaseColumn } from "../../lib/database/types";
 import { RefreshCw } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
+import { localizeDatabaseColumnLabel } from "./databaseViewI18n";
 
 export interface ColumnMenuEntry {
 	key: string;
@@ -44,7 +45,7 @@ export function ColumnsPanel({
 						)}
 					>
 						<span className="databaseViewColumnLabel">
-							{entry.column.label}
+							{localizeDatabaseColumnLabel(entry.column, t)}
 						</span>
 						<span className="databaseViewColumnToggle">
 							<Toggle
@@ -52,7 +53,9 @@ export function ColumnsPanel({
 								checked={entry.enabled}
 								ariaLabel={t(
 									entry.enabled ? "database.hideColumn" : "database.showColumn",
-									{ label: entry.column.label },
+									{
+										label: localizeDatabaseColumnLabel(entry.column, t),
+									},
 								)}
 								onCheckedChange={(checked) =>
 									void setColumnEnabled(entry.column, checked)

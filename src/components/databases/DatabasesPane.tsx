@@ -191,18 +191,9 @@ function DatabasesPaneContent({
 					{selection.summaries.length === 0 ? (
 						<>
 							<ol className="databasesOnboardingSteps">
-								<li>
-									<strong>{t("databases.empty.step1Title")}</strong> —{" "}
-									{t("databases.empty.step1Text")}
-								</li>
-								<li>
-									<strong>{t("databases.empty.step2Title")}</strong> —{" "}
-									{t("databases.empty.step2Text")}
-								</li>
-								<li>
-									<strong>{t("databases.empty.step3Title")}</strong> —{" "}
-									{t("databases.empty.step3Text")}
-								</li>
+								<li>{t("databases.empty.step1")}</li>
+								<li>{t("databases.empty.step2")}</li>
+								<li>{t("databases.empty.step3")}</li>
 							</ol>
 							<Button
 								type="button"
