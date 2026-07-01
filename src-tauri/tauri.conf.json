@@ -48,6 +48,9 @@
 			}
 		],
 		"macOS": {
+			"dmg": {
+				"background": "./icons/dmg-background.png"
+			},
 			"files": {
 				"Resources/Assets.car": "./icons/Assets.car"
 			}
