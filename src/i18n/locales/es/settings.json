@@ -140,7 +140,7 @@
 		"modelCombobox": {
 			"connecting": "Conectando...",
 			"models_one": "{{count}} modelo",
-			"models_many": "",
+			"models_many": "{{count}} modelos",
 			"models_other": "{{count}} modelos",
 			"noModels": "No hay modelos disponibles",
 			"retry": "Reintentar",
@@ -177,7 +177,12 @@
 			"reasoningPlaceholder": "p. ej. bajo, medio, alto",
 			"service": "Servicio",
 			"serviceDescription": "Cambia entre configuraciones de proveedor.",
-			"title": "Proveedor"
+			"title": "Proveedor",
+			"groups": {
+				"agents": "Agentes",
+				"api": "API",
+				"local": "Local"
+			}
 		}
 	},
 	"appearance": {
@@ -414,10 +419,36 @@
 			"updateDailyTemplate": "No se pudo actualizar la plantilla de nota diaria"
 		},
 		"summary_one": "{{count}} plantilla encontrada",
-		"summary_many": "",
+		"summary_many": "{{count}} plantillas encontradas",
 		"summary_other": "{{count}} plantillas encontradas",
 		"templateFolder": "Carpeta de plantillas",
 		"templateFolderDescription": "Elige una carpeta dentro del espacio actual que contenga tus plantillas Markdown.",
 		"title": "Plantillas"
+	},
+	"tabs": {
+		"general": "General",
+		"appearance": "Apariencia",
+		"shortcuts": "Atajos",
+		"ai": "Glyph AI",
+		"space": "Espacio",
+		"git": "Git",
+		"advanced": "Avanzado",
+		"about": "Acerca de"
+	},
+	"groups": {
+		"workspace": "Espacio de trabajo",
+		"features": "Funciones",
+		"system": "Sistema",
+		"application": "Aplicación"
+	},
+	"categories": {
+		"workspace": "Espacio de trabajo",
+		"navigation": "Navegación",
+		"search": "Buscar",
+		"file": "Operaciones de archivos",
+		"tabs": "Pestañas",
+		"ai": "IA",
+		"editor": "Editor",
+		"settings": "Ajustes"
 	}
 }

@@ -140,7 +140,7 @@
 		"modelCombobox": {
 			"connecting": "Conectando...",
 			"models_one": "{{count}} modelo",
-			"models_many": "",
+			"models_many": "{{count}} modelos",
 			"models_other": "{{count}} modelos",
 			"noModels": "Nenhum modelo disponível",
 			"retry": "Tentar novamente",
@@ -177,7 +177,12 @@
 			"reasoningPlaceholder": "ex.: baixo, médio, alto",
 			"service": "Serviço",
 			"serviceDescription": "Alterne entre configurações de provedor.",
-			"title": "Provedor"
+			"title": "Provedor",
+			"groups": {
+				"agents": "Agentes",
+				"api": "API",
+				"local": "Local"
+			}
 		}
 	},
 	"appearance": {
@@ -414,10 +419,36 @@
 			"updateDailyTemplate": "Falha ao atualizar modelo de nota diária"
 		},
 		"summary_one": "{{count}} modelo encontrado",
-		"summary_many": "",
+		"summary_many": "{{count}} modelos encontrados",
 		"summary_other": "{{count}} modelos encontrados",
 		"templateFolder": "Pasta de modelos",
 		"templateFolderDescription": "Escolha uma pasta dentro do espaço atual que contenha seus modelos Markdown.",
 		"title": "Modelos"
+	},
+	"tabs": {
+		"general": "Geral",
+		"appearance": "Aparência",
+		"shortcuts": "Atalhos",
+		"ai": "Glyph IA",
+		"space": "Espaço",
+		"git": "Git",
+		"advanced": "Avançado",
+		"about": "Sobre"
+	},
+	"groups": {
+		"workspace": "Área de trabalho",
+		"features": "Recursos",
+		"system": "Sistema",
+		"application": "Aplicativo"
+	},
+	"categories": {
+		"workspace": "Área de trabalho",
+		"navigation": "Navegação",
+		"search": "Busca",
+		"file": "Operações de arquivo",
+		"tabs": "Abas",
+		"ai": "IA",
+		"editor": "Editor",
+		"settings": "Configurações"
 	}
 }

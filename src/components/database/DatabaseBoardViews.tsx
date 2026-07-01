@@ -21,7 +21,7 @@ import {
 	type DatabaseBoardLane,
 } from "../../lib/database/board";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
-import type { DatabaseRow } from "../../lib/database/types";
+import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import {
 	type NativeContextMenuItem,
 	showNativeContextMenu,
@@ -42,6 +42,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
+import { localizeBoardLaneLabel } from "./databaseViewI18n";
 
 const DATABASE_BOARD_CARD_SENSORS = [
 	PointerSensor.configure({
@@ -66,6 +67,7 @@ function boardCardDragId(notePath: string, laneId: string): string {
 
 interface DatabaseBoardLaneViewProps {
 	lane: DatabaseBoardLane;
+	groupColumn: DatabaseColumn | null;
 	laneIndex: number;
 	showColumnColor: boolean;
 	laneColors: Record<string, string>;
@@ -86,6 +88,7 @@ interface DatabaseBoardLaneViewProps {
 
 export function DatabaseBoardLaneView({
 	lane,
+	groupColumn,
 	laneIndex,
 	showColumnColor,
 	laneColors,
@@ -102,6 +105,7 @@ export function DatabaseBoardLaneView({
 	children,
 }: DatabaseBoardLaneViewProps) {
 	const { t } = useTranslation("ui");
+	const displayLabel = localizeBoardLaneLabel(groupColumn, lane.id, t);
 	const { ref, isDropTarget } = useDroppable({
 		id: lane.id,
 		data: { laneId: lane.id },
@@ -112,7 +116,9 @@ export function DatabaseBoardLaneView({
 			...(onRenameLane
 				? [
 						{
-							label: t("database.board.renameLaneMenu", { label: lane.label }),
+							label: t("database.board.renameLaneMenu", {
+								label: displayLabel,
+							}),
 							action: () => onRenameLane(lane),
 						},
 					]
@@ -129,13 +135,22 @@ export function DatabaseBoardLaneView({
 			...reorderableLanes.map((targetLane, index) => ({
 				label: t("database.board.positionLane", {
 					index: index + 1,
-					label: targetLane.label,
+					label: localizeBoardLaneLabel(groupColumn, targetLane.id, t),
 				}),
 				enabled: targetLane.id !== lane.id,
 				action: () => moveLaneToIndex(lane.id, index),
 			})),
 		],
-		[lane, moveLaneToIndex, onAddLane, onRenameLane, reorderableLanes, t],
+		[
+			lane,
+			displayLabel,
+			groupColumn,
+			moveLaneToIndex,
+			onAddLane,
+			onRenameLane,
+			reorderableLanes,
+			t,
+		],
 	);
 	const handleLaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
@@ -178,7 +193,7 @@ export function DatabaseBoardLaneView({
 			) : (
 				<span className="databaseBoardLaneDot" />
 			)}
-			<div className="databaseBoardLaneTitle">{lane.label}</div>
+			<div className="databaseBoardLaneTitle">{displayLabel}</div>
 		</>
 	);
 
@@ -218,9 +233,9 @@ export function DatabaseBoardLaneView({
 								type="button"
 								className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
 								aria-label={t("database.board.setColorFor", {
-									label: lane.label,
+									label: displayLabel,
 								})}
-								title={t("database.board.setColorFor", { label: lane.label })}
+								title={t("database.board.setColorFor", { label: displayLabel })}
 							>
 								{laneTitleContent}
 							</button>
@@ -239,7 +254,7 @@ export function DatabaseBoardLaneView({
 										onClick={() => onLaneColorChange(lane.id, color.id)}
 										title={color.label}
 										aria-label={t("database.board.setColorTo", {
-											lane: lane.label,
+											lane: displayLabel,
 											color: color.label,
 										})}
 									/>
@@ -250,7 +265,7 @@ export function DatabaseBoardLaneView({
 									onClick={() => onLaneColorChange(lane.id, null)}
 									title={t("database.clearColor")}
 									aria-label={t("database.board.clearColorFor", {
-										label: lane.label,
+										label: displayLabel,
 									})}
 								>
 									<span />
@@ -269,12 +284,12 @@ export function DatabaseBoardLaneView({
 						aria-label={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
 								? t("database.board.unassignedLaneLast")
-								: t("database.board.openLaneOptions", { label: lane.label })
+								: t("database.board.openLaneOptions", { label: displayLabel })
 						}
 						title={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
 								? t("database.board.unassignedLaneLast")
-								: t("database.board.openLaneOptions", { label: lane.label })
+								: t("database.board.openLaneOptions", { label: displayLabel })
 						}
 						aria-haspopup="menu"
 						onClick={handleLaneMenuClick}
