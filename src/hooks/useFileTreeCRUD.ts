@@ -243,25 +243,12 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		return onNewFileInDir("");
 	}, [onNewFileInDir]);
 
-	const onNewFolderInDir = useCallback(
-		async (dirPath: string) => {
+	const createFolderInDir = useCallback(
+		async (dirPath: string, folderName: string) => {
 			if (!spacePath) return null;
+			const name = folderName.trim();
+			if (!name) return null;
 			try {
-				const siblings = await invoke(
-					"space_list_dir",
-					dirPath ? { dir: dirPath } : {},
-				);
-				const siblingNames = new Set(
-					siblings
-						.filter((e) => e.kind === "dir")
-						.map((e) => e.name.toLowerCase()),
-				);
-				let name = "New Folder";
-				if (siblingNames.has(name.toLowerCase())) {
-					let n = 2;
-					while (siblingNames.has(`new folder ${n}`)) n += 1;
-					name = `New Folder ${n}`;
-				}
 				setError("");
 				const path = dirPath ? `${dirPath}/${name}` : name;
 				await invoke("space_create_dir", { path });
@@ -652,7 +639,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
-		onNewFolderInDir,
+		createFolderInDir,
 		onDuplicateFile,
 		onRenameDir,
 		onDeletePath,

@@ -228,7 +228,7 @@ function edgeColorForRole(
 
 export function buildEdgeReducer(
 	getPalette: () => ConnectionsPalette,
-	variant: ConnectionsGraphVariant,
+	_variant: ConnectionsGraphVariant,
 	getFocusState: () => ConnectionsFocusState,
 	isEdgeInFocus: (source: string, target: string) => boolean,
 ) {
@@ -250,7 +250,7 @@ export function buildEdgeReducer(
 
 		if (isHighlighted) {
 			color = palette.edgeAccent;
-			size = Math.max(data.size, variant === "local" ? 1.5 : 1.35);
+			size = Math.max(data.size, 1.7);
 		}
 
 		if (isFaded) {

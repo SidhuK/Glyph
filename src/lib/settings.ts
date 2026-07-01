@@ -170,6 +170,7 @@ export function isUiAccent(value: unknown): value is UiAccent {
 }
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Geist";
+const DEFAULT_UI_EDITOR_FONT_FAMILY = DEFAULT_UI_FONT_FAMILY;
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 export const MIN_UI_FONT_SIZE = 7;
@@ -308,12 +309,19 @@ function asUiAccent(value: unknown): UiAccent {
 	return isUiAccent(value) ? value : DEFAULT_UI_ACCENT;
 }
 
-function asUiFontFamily(value: unknown): UiFontFamily {
-	if (typeof value !== "string") return DEFAULT_UI_FONT_FAMILY;
+function asUiFontFamily(
+	value: unknown,
+	fallback: UiFontFamily = DEFAULT_UI_FONT_FAMILY,
+): UiFontFamily {
+	if (typeof value !== "string") return fallback;
 	const trimmed = value.trim();
-	if (!trimmed) return DEFAULT_UI_FONT_FAMILY;
-	if (trimmed === "Satoshi") return DEFAULT_UI_FONT_FAMILY;
+	if (!trimmed) return fallback;
+	if (trimmed === "Satoshi") return fallback;
 	return trimmed.slice(0, 80);
+}
+
+function asUiEditorFontFamily(value: unknown): UiFontFamily {
+	return asUiFontFamily(value, DEFAULT_UI_EDITOR_FONT_FAMILY);
 }
 
 function asUiMonoFontFamily(value: unknown): UiFontFamily {
@@ -360,6 +368,7 @@ async function emitSettingsUpdated(payload: {
 		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
 		fontFamily?: UiFontFamily;
+		editorFontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
@@ -367,6 +376,7 @@ async function emitSettingsUpdated(payload: {
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		folioMode?: boolean;
+		classicAllNotesByDefault?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 	};
@@ -430,6 +440,7 @@ interface AppSettings {
 		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
 		fontFamily: UiFontFamily;
+		editorFontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
@@ -437,6 +448,7 @@ interface AppSettings {
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		folioMode: boolean;
+		classicAllNotesByDefault: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -497,6 +509,7 @@ const KEYS = {
 	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
 	fontFamily: "ui.fontFamily",
+	editorFontFamily: "ui.editorFontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
@@ -504,6 +517,7 @@ const KEYS = {
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	folioMode: "ui.folioMode",
+	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
@@ -811,6 +825,7 @@ export async function loadSettings(
 	const rawDarkThemeId = getSettingValue(entries, KEYS.darkThemeId);
 	const rawAccent = getSettingValue(entries, KEYS.accent);
 	const rawFontFamily = getSettingValue(entries, KEYS.fontFamily);
+	const rawEditorFontFamily = getSettingValue(entries, KEYS.editorFontFamily);
 	const rawMonoFontFamily = getSettingValue(entries, KEYS.monoFontFamily);
 	const rawFontSize = getSettingValue(entries, KEYS.fontSize);
 	const rawEditorFontSize = getSettingValue(entries, KEYS.editorFontSize);
@@ -824,6 +839,10 @@ export async function loadSettings(
 		KEYS.showFileTreeFolderCounts,
 	);
 	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
+	const rawClassicAllNotesByDefault = getSettingValue<boolean | null>(
+		entries,
+		KEYS.classicAllNotesByDefault,
+	);
 	const dailyNotesFolderRaw = getSettingValue<string | null>(
 		entries,
 		KEYS.dailyNotesFolder,
@@ -927,6 +946,16 @@ export async function loadSettings(
 		entries.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
 	}
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
+	const editorFontFamily =
+		rawEditorFontFamily === undefined || rawEditorFontFamily === null
+			? fontFamily
+			: asUiEditorFontFamily(rawEditorFontFamily);
+	if (rawEditorFontFamily === undefined || rawEditorFontFamily === null) {
+		const store = await getStore();
+		await store.set(KEYS.editorFontFamily, editorFontFamily);
+		await saveSettingsStore(store);
+		entries.set(KEYS.editorFontFamily, editorFontFamily);
+	}
 	const fontSize = asUiFontSize(rawFontSize);
 	const editorFontSize =
 		rawEditorFontSize === undefined || rawEditorFontSize === null
@@ -942,6 +971,10 @@ export async function loadSettings(
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
+	const classicAllNotesByDefault =
+		typeof rawClassicAllNotesByDefault === "boolean"
+			? rawClassicAllNotesByDefault
+			: false;
 	const dailyNotesFolder = hasActiveSpace
 		? (activeScopedSettings?.dailyNotesFolder ?? null)
 		: typeof dailyNotesFolderRaw === "string"
@@ -1025,6 +1058,7 @@ export async function loadSettings(
 			darkThemeId,
 			accent,
 			fontFamily,
+			editorFontFamily,
 			monoFontFamily,
 			fontSize,
 			editorFontSize,
@@ -1032,6 +1066,7 @@ export async function loadSettings(
 			showToc,
 			showFileTreeFolderCounts,
 			folioMode,
+			classicAllNotesByDefault,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -1226,6 +1261,16 @@ export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {
 	void emitSettingsUpdated({ ui: { fontFamily: next } });
 }
 
+export async function setUiEditorFontFamily(
+	fontFamily: UiFontFamily,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiEditorFontFamily(fontFamily);
+	await store.set(KEYS.editorFontFamily, next);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { editorFontFamily: next } });
+}
+
 export async function setUiMonoFontFamily(
 	fontFamily: UiFontFamily,
 ): Promise<void> {
@@ -1280,6 +1325,15 @@ export async function setFolioMode(enabled: boolean): Promise<void> {
 	await store.set(KEYS.folioMode, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { folioMode: enabled } });
+}
+
+export async function setClassicAllNotesByDefault(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.classicAllNotesByDefault, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { classicAllNotesByDefault: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(

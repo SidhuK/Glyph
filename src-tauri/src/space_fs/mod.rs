@@ -1,3 +1,4 @@
+pub(crate) mod filename;
 pub(crate) mod helpers;
 pub mod link_ops;
 pub mod link_rewrite;

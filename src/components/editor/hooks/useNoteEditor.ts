@@ -23,6 +23,7 @@ import { parentDir } from "../../../utils/path";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
+import { handleTagDecorationMouseDown } from "../extensions/tagDecorations";
 import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
@@ -74,6 +75,7 @@ const HTML_BLOCK_TAGS = new Set([
 	"ARTICLE",
 	"ASIDE",
 	"BLOCKQUOTE",
+	"DETAILS",
 	"DIV",
 	"DL",
 	"FIELDSET",
@@ -96,6 +98,7 @@ const HTML_BLOCK_TAGS = new Set([
 	"P",
 	"PRE",
 	"SECTION",
+	"SUMMARY",
 	"TABLE",
 	"TD",
 	"TH",
@@ -249,6 +252,7 @@ interface UseNoteEditorOptions {
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
+	placeholder?: string;
 	onChange: (nextMarkdown: string) => void;
 	onMathEditRequest?: (request: MathEditRequest) => void;
 }
@@ -261,6 +265,60 @@ interface PendingMarkdownSync {
 	relPath: string;
 }
 
+interface SelectionSnapshot {
+	from: number;
+	relPath: string;
+	to: number;
+}
+
+function clampSelectionPosition(pos: number, docSize: number): number {
+	return Math.min(Math.max(pos, 0), docSize);
+}
+
+function snapshotFocusedSelection(
+	editor: NonNullable<ReturnType<typeof useEditor>> | null,
+	relPath: string,
+): SelectionSnapshot | null {
+	if (!editor || editor.isDestroyed) return null;
+	try {
+		if (!editor.view.hasFocus()) return null;
+		const { from, to } = editor.state.selection;
+		return { from, relPath, to };
+	} catch {
+		return null;
+	}
+}
+
+function restoreSelectionSnapshot(
+	editor: NonNullable<ReturnType<typeof useEditor>>,
+	snapshot: SelectionSnapshot,
+	relPath: string,
+): boolean {
+	if (snapshot.relPath !== relPath) return false;
+	const docSize = editor.state.doc.content.size;
+	const from = clampSelectionPosition(snapshot.from, docSize);
+	const to = clampSelectionPosition(snapshot.to, docSize);
+	const range = from <= to ? { from, to } : { from: to, to: from };
+	try {
+		if (editor.commands.setTextSelection(range)) {
+			editor.view.focus();
+			return true;
+		}
+	} catch {
+		// Fall back to a collapsed selection below.
+	}
+	try {
+		if (editor.commands.setTextSelection(range.from)) {
+			editor.view.focus();
+			return true;
+		}
+	} catch {
+		// If neither selection can be represented in the new document, leave the
+		// editor unfocused instead of letting the browser choose an end position.
+	}
+	return false;
+}
+
 export function useNoteEditor({
 	additionalExtensions = EMPTY_ADDITIONAL_EXTENSIONS,
 	markdown,
@@ -270,6 +328,7 @@ export function useNoteEditor({
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
 	pasteMarkdownBehavior = "plain-text",
+	placeholder = "Start writing or press / for commands",
 	onChange,
 	onMathEditRequest,
 }: UseNoteEditorOptions) {
@@ -296,7 +355,10 @@ export function useNoteEditor({
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
+	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
+	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
+	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
@@ -314,13 +376,14 @@ export function useNoteEditor({
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableVimKeybindings: vimKeybindingsEnabled,
 				onMathEditRequest,
-				placeholder: "Start writing or press / for commands",
+				placeholder,
 			}),
 		[
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
-			peopleMentionsEnabled,
 			onMathEditRequest,
+			peopleMentionsEnabled,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
@@ -467,8 +530,14 @@ export function useNoteEditor({
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
+		void placeholder;
 		void vimKeybindingsEnabled;
 		return () => {
+			const snapshot = snapshotFocusedSelection(
+				committedEditorRef.current,
+				relPath,
+			);
+			if (snapshot) pendingSelectionRestoreRef.current = snapshot;
 			flushMarkdownSync(relPath);
 		};
 	}, [
@@ -477,6 +546,7 @@ export function useNoteEditor({
 		additionalExtensions,
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
+		placeholder,
 		vimKeybindingsEnabled,
 	]);
 
@@ -497,6 +567,10 @@ export function useNoteEditor({
 					spellcheck: "true",
 				},
 				handleDOMEvents: {
+					mousedown: (_view, event): boolean => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleTagDecorationMouseDown(event);
+					},
 					click: (view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;
 						return handleEditorClick(
@@ -571,7 +645,7 @@ export function useNoteEditor({
 											source_path: sourcePath,
 											target_dir: targetDir,
 											data_url: dataUrl,
-											alt: item.file.name || null,
+											original_filename: item.file.name || null,
 										});
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,
@@ -643,10 +717,23 @@ export function useNoteEditor({
 			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			placeholder,
 			vimKeybindingsEnabled,
 		],
 	);
 	editorRef.current = editor;
+
+	useLayoutEffect(() => {
+		if (!editor) return;
+		const snapshot = pendingSelectionRestoreRef.current;
+		if (!snapshot) return;
+		pendingSelectionRestoreRef.current = null;
+		restoreSelectionSnapshot(editor, snapshot, relPath);
+	}, [editor, relPath]);
+
+	useLayoutEffect(() => {
+		committedEditorRef.current = editor;
+	}, [editor]);
 
 	useEffect(() => {
 		if (!editor) return;
@@ -673,7 +760,13 @@ export function useNoteEditor({
 		if (editorBody === lastAppliedBodyRef.current) return;
 		flushMarkdownSync(relPath);
 		suppressUpdateRef.current = true;
+		const snapshot = snapshotFocusedSelection(
+			editor,
+			editorContentRelPathRef.current,
+		);
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
+		if (snapshot) restoreSelectionSnapshot(editor, snapshot, relPath);
+		editorContentRelPathRef.current = relPath;
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);

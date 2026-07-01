@@ -12,12 +12,14 @@ import { SettingsSelect } from "./SettingsSelect";
 
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
+	editorFontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
 	uiFontSize: UiFontSize;
 	editorFontSize: UiFontSize;
 	availableFonts: string[];
 	availableMonospaceFonts: string[];
 	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
+	onEditorFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onUiFontSizeChange: (size: UiFontSize) => Promise<void>;
 	onEditorFontSizeChange: (size: UiFontSize) => Promise<void>;
@@ -71,12 +73,14 @@ function FontSizeControl({
 
 export function AppearanceTypographyCard({
 	fontFamily,
+	editorFontFamily,
 	monoFontFamily,
 	uiFontSize,
 	editorFontSize,
 	availableFonts,
 	availableMonospaceFonts,
 	onFontFamilyChange,
+	onEditorFontFamilyChange,
 	onMonoFontFamilyChange,
 	onUiFontSizeChange,
 	onEditorFontSizeChange,
@@ -95,6 +99,26 @@ export function AppearanceTypographyCard({
 					id="settingsFontFamily"
 					value={fontFamily}
 					onChange={(event) => void onFontFamilyChange(event.target.value)}
+				>
+					{availableFonts.map((font) => (
+						<option key={font} value={font}>
+							{font}
+						</option>
+					))}
+				</SettingsSelect>
+			</SettingsRow>
+
+			<SettingsRow
+				label="Editor font"
+				htmlFor="settingsEditorFontFamily"
+				description="Used for regular note text outside inline code and code blocks."
+			>
+				<SettingsSelect
+					id="settingsEditorFontFamily"
+					value={editorFontFamily}
+					onChange={(event) =>
+						void onEditorFontFamilyChange(event.target.value)
+					}
 				>
 					{availableFonts.map((font) => (
 						<option key={font} value={font}>

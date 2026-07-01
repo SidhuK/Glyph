@@ -12,6 +12,10 @@ vi.mock("../../lib/nativeContextMenu", () => ({
 	showNativeContextMenu: showNativeContextMenuMock,
 }));
 
+vi.mock("../../contexts", () => ({
+	useSpace: () => ({ spacePath: "/space" }),
+}));
+
 vi.mock("motion/react", async () => {
 	const React = await vi.importActual<typeof import("react")>("react");
 	const stripMotionProps = (
@@ -99,7 +103,7 @@ describe("FileTreeFileItem", () => {
 					onOpenFile={vi.fn()}
 					onNewFileInDir={vi.fn()}
 					onCreateFromTemplateInDir={vi.fn()}
-					onNewFolderInDir={vi.fn()}
+					onRequestCreateFolder={vi.fn()}
 					onDuplicateFile={vi.fn()}
 					onStartRename={vi.fn()}
 					onCommitRename={vi.fn()}

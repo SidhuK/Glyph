@@ -256,12 +256,12 @@ export function DatabaseBoardLaneView({
 						disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
 						aria-label={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "No value stays last"
+								? "Unassigned lane stays last"
 								: `Open ${lane.label} lane options`
 						}
 						title={
 							lane.id === DATABASE_BOARD_EMPTY_LANE_ID
-								? "No value stays last"
+								? "Unassigned lane stays last"
 								: `Open ${lane.label} lane options`
 						}
 						aria-haspopup="menu"

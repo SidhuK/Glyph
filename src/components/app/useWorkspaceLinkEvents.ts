@@ -1,8 +1,14 @@
 import { useCallback, useEffect } from "react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
-import { isPdfTarget } from "../../lib/linkSuggestions";
 import { invoke } from "../../lib/tauri";
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import {
+	isImagePath,
+	isMarkdownCreatablePath,
+	isMarkdownPath,
+	isPdfPath,
+	normalizeRelPath,
+	parentDir,
+} from "../../utils/path";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,
@@ -13,35 +19,6 @@ import {
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
-
-const IMAGE_EXTENSIONS = new Set([
-	"png",
-	"jpg",
-	"jpeg",
-	"webp",
-	"gif",
-	"svg",
-	"bmp",
-	"avif",
-	"tif",
-	"tiff",
-]);
-
-function fileExtension(path: string): string {
-	const name = path.split("/").pop() ?? path;
-	const dot = name.lastIndexOf(".");
-	if (dot <= 0 || dot === name.length - 1) return "";
-	return name.slice(dot + 1).toLowerCase();
-}
-
-function isImageWikiTarget(target: string): boolean {
-	return IMAGE_EXTENSIONS.has(fileExtension(target));
-}
-
-function isMarkdownWikiTarget(target: string): boolean {
-	const ext = fileExtension(target);
-	return !ext || ext === "md";
-}
 
 interface UseWorkspaceLinkEventsArgs {
 	activeMarkdownTabPath: string | null;
@@ -63,7 +40,7 @@ export function useWorkspaceLinkEvents({
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
-			if (isPdfTarget(normalizedTarget)) {
+			if (isPdfPath(normalizedTarget)) {
 				const resolved = await invoke("space_resolve_wikilink", {
 					target: normalizedTarget,
 				});
@@ -74,7 +51,7 @@ export function useWorkspaceLinkEvents({
 				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
 				return;
 			}
-			if (!isMarkdownWikiTarget(normalizedTarget)) {
+			if (!isMarkdownCreatablePath(normalizedTarget)) {
 				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
 				return;
 			}
@@ -133,7 +110,7 @@ export function useWorkspaceLinkEvents({
 					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 					if (!normalizedTarget) return;
 
-					if (detail.embed || isImageWikiTarget(normalizedTarget)) {
+					if (detail.embed || isImagePath(normalizedTarget)) {
 						const resolvedImage = await invoke("space_resolve_image_wikilink", {
 							target: normalizedTarget,
 						});
@@ -145,12 +122,12 @@ export function useWorkspaceLinkEvents({
 						return;
 					}
 
-					if (isPdfTarget(normalizedTarget)) {
+					if (isPdfPath(normalizedTarget)) {
 						await openOrCreateWikiLinkTarget(detail.target);
 						return;
 					}
 
-					if (!isMarkdownWikiTarget(normalizedTarget)) {
+					if (!isMarkdownCreatablePath(normalizedTarget)) {
 						setError(
 							`Unsupported non-markdown wikilink target: ${detail.target}`,
 						);

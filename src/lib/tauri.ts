@@ -111,7 +111,6 @@ interface BinaryFilePreviewDoc {
 interface SavedPastedImage {
 	asset_rel_path: string;
 	href: string;
-	markdown: string;
 }
 
 export interface NoteProperty {
@@ -541,6 +540,7 @@ export interface GitSyncConfig {
 	last_error: string | null;
 	consecutive_auto_sync_failures: number;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 }
 
 export interface GitSyncStatus {
@@ -554,6 +554,7 @@ export interface GitSyncStatus {
 	branch: string | null;
 	enabled: boolean;
 	paused: boolean;
+	auto_sync_prompted: boolean;
 	phase: GitSyncPhase;
 	is_syncing: boolean;
 	interval_minutes: number;
@@ -608,6 +609,7 @@ interface GitSyncConfigPatch {
 	interval_minutes?: number;
 	inclusions?: GitSyncInclusionSettings;
 	paused?: boolean;
+	auto_sync_prompted?: boolean;
 }
 
 type LicenseMode =
@@ -849,7 +851,7 @@ interface TauriCommands {
 			source_path: string;
 			target_dir: string;
 			data_url: string;
-			alt?: string | null;
+			original_filename?: string | null;
 		},
 		SavedPastedImage
 	>;
@@ -988,7 +990,7 @@ interface TauriCommands {
 		CalendarDateNote[]
 	>;
 	tags_list: CommandDef<
-		{ limit?: number | null; offset?: number | null },
+		{ limit?: number | null; offset?: number | null; query?: string | null },
 		TagCount[]
 	>;
 	people_list: CommandDef<

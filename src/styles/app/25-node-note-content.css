@@ -180,6 +180,7 @@
 }
 
 .tiptapContentInline {
+	font-family: var(--font-editor);
 	letter-spacing: 0;
 	line-height: 1.68;
 	color: var(--editor-body-color);
@@ -410,55 +411,118 @@
 	color: var(--editor-heading-h6-color);
 }
 
-.tiptapContentInline .headingCollapseHeading {
-	position: relative;
+.tiptapContentInline .inlineTocMarker {
+	display: none;
 }
 
-.tiptapContentInline .headingCollapseToggle {
-	position: absolute;
-	top: 50%;
-	left: calc(-1 * var(--space-5));
+.inlineTocWidget {
+	margin: var(--space-3) 0 var(--space-4);
+	padding: var(--space-3);
+	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, var(--bg-primary));
+}
+
+.inlineTocHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-2);
+	gap: var(--space-2);
+}
+
+.inlineTocTitle {
+	color: var(--text-secondary);
+	font-size: calc(var(--editor-font-size) * 0.78);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.inlineTocRemoveBtn {
+	appearance: none;
+	-webkit-appearance: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--heading-toggle-rail-width);
-	height: var(--heading-toggle-rail-width);
-	margin: 0;
+	width: 22px;
+	height: 22px;
 	padding: 0;
 	border: 0;
 	border-radius: var(--radius-sm);
 	background: transparent;
-	color: color-mix(in srgb, var(--text-tertiary) 84%, transparent);
+	color: var(--text-tertiary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.95);
+	line-height: 1;
 	cursor: pointer;
-	transform: translateY(-50%);
-	transition: color 140ms ease, background-color 140ms ease, transform 140ms
-		ease;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
 }
 
-.tiptapContentInline .headingCollapseToggle:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+.inlineTocRemoveBtn:hover,
+.inlineTocRemoveBtn:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.inlineTocItems {
+	display: grid;
+	gap: 2px;
+}
+
+.inlineTocItem {
+	appearance: none;
+	-webkit-appearance: none;
+	display: block;
+	width: 100%;
+	min-width: 0;
+	padding: 4px 6px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
 	color: var(--text-secondary);
+	font: inherit;
+	font-size: calc(var(--editor-font-size) * 0.9);
+	line-height: 1.35;
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color var(--transition-fast), color
+		var(--transition-fast);
 }
 
-.tiptapContentInline .headingCollapseToggle:focus-visible {
-	outline: 2px solid var(--border-focus);
-	outline-offset: 1px;
+.inlineTocItem:hover,
+.inlineTocItem:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-primary);
+	outline: none;
 }
 
-.tiptapContentInline .headingCollapseChevron {
-	width: 6px;
-	height: 6px;
-	border-right: 1.35px solid currentcolor;
-	border-bottom: 1.35px solid currentcolor;
-	transform: rotate(45deg) translateY(-1px);
-	transform-origin: 50% 50%;
-	transition: transform 140ms ease;
+.inlineTocItem[data-level="2"] {
+	padding-left: calc(var(--space-3) + 6px);
 }
 
-.tiptapContentInline
-	.headingCollapseHeading[data-heading-collapsed="true"]
-	.headingCollapseChevron {
-	transform: rotate(-45deg) translate(-1px, 1px);
+.inlineTocItem[data-level="3"] {
+	padding-left: calc(var(--space-5) + 2px);
+}
+
+.inlineTocItem[data-level="4"],
+.inlineTocItem[data-level="5"],
+.inlineTocItem[data-level="6"] {
+	padding-left: calc(var(--space-6) + 6px);
+}
+
+.inlineTocEmpty {
+	color: var(--text-tertiary);
+	font-size: calc(var(--editor-font-size) * 0.9);
+}
+
+.tiptapContentInline .headingCollapseHeading {
+	position: relative;
 }
 
 .tiptapContentInline .headingCollapseHidden {
@@ -555,6 +619,7 @@
 	padding: 2px 5px;
 	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	font-family: var(--font-mono);
 }
 
 .tiptapContentInline span[data-glyph-color="gray"] {
@@ -594,6 +659,7 @@
 	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
 	border-radius: var(--radius-lg);
 	overflow: auto;
+	font-family: var(--font-mono);
 }
 
 .tiptapContentInline pre code {

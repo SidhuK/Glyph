@@ -218,6 +218,7 @@ fn config_to_status(
         status.branch = Some(config.branch);
         status.enabled = config.enabled;
         status.paused = config.paused;
+        status.auto_sync_prompted = config.auto_sync_prompted;
         status.interval_minutes = config.interval_minutes;
         status.conflict_policy = config.conflict_policy;
         status.inclusions = config.inclusions;
@@ -352,6 +353,12 @@ pub fn update_git_sync_config(
     }
     if let Some(paused) = patch.paused {
         config.paused = paused;
+    }
+    if let Some(auto_sync_prompted) = patch.auto_sync_prompted {
+        config.auto_sync_prompted = auto_sync_prompted;
+    }
+    if patch.enabled.is_some() || patch.paused.is_some() {
+        config.auto_sync_prompted = true;
     }
     save_store(&space_root, &config)?;
     let status = read_status_internal(git_state, space_state, window_label)?;

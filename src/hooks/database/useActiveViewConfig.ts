@@ -1,4 +1,9 @@
 import { useMemo } from "react";
+import {
+	getBoardGroupColumns,
+	getDatabaseGroupColumns,
+} from "../../lib/database/board";
+import { resolveDatabaseColumns } from "../../lib/database/columns";
 import { viewToConfig } from "../../lib/database/viewConfig";
 import type {
 	DatabaseColumn,
@@ -13,6 +18,7 @@ export interface ActiveViewConfig {
 	groupColumns: DatabaseColumn[];
 	activeGroupColumn: DatabaseColumn | null;
 	visibleColumns: DatabaseColumn[];
+	resolvedColumns: DatabaseColumn[];
 }
 
 export interface UseActiveViewConfigOptions {
@@ -31,10 +37,17 @@ export function deriveActiveViewConfig(
 
 	const activeView =
 		document?.database.views.find((view) => view.id === selectedViewId) ?? null;
+	const resolvedColumns = activeConfig
+		? resolveDatabaseColumns(
+				activeConfig.columns,
+				document?.available_properties ?? [],
+			)
+		: [];
 
-	const groupColumns = (activeConfig?.columns ?? []).filter(
-		(column) => column.type === "tags" || column.type === "property",
-	);
+	const groupColumns =
+		activeConfig?.view.layout === "board"
+			? getBoardGroupColumns(resolvedColumns)
+			: getDatabaseGroupColumns(resolvedColumns);
 
 	const activeGroupColumn =
 		groupColumns.find(
@@ -50,6 +63,7 @@ export function deriveActiveViewConfig(
 		groupColumns,
 		activeGroupColumn,
 		visibleColumns,
+		resolvedColumns,
 	};
 }
 

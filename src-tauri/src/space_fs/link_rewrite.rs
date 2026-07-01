@@ -260,14 +260,17 @@ fn rewrite_markdown_target_path(
         return None;
     }
 
-    if target.starts_with('/') {
-        let root_target = target.trim_start_matches('/');
+    let decoded_target = percent_decode_utf8(target).unwrap_or_else(|| target.to_string());
+    let path_target = decoded_target.as_str();
+
+    if path_target.starts_with('/') {
+        let root_target = path_target.trim_start_matches('/');
         return rewrite_target(root_target, plan, true)
-            .map(|replacement| format!("/{replacement}"));
+            .map(|replacement| format!("/{}", encode_markdown_target_path(&replacement)));
     }
 
-    if let Some(replacement) = rewrite_target(target, plan, true) {
-        return Some(replacement);
+    if let Some(replacement) = rewrite_target(path_target, plan, true) {
+        return Some(encode_markdown_target_path(&replacement));
     }
 
     let current_source_dir = source_dir(source_rel_path);
@@ -276,21 +279,86 @@ fn rewrite_markdown_target_path(
         .as_deref()
         .map(source_dir)
         .unwrap_or_else(|| current_source_dir.clone());
-    let root_target = join_rel_path(&resolution_source_dir, target);
+    let root_target = join_rel_path(&resolution_source_dir, path_target);
 
     if let Some(replacement) = rewrite_target(&root_target, plan, true) {
         let relative = relative_path_from_source_dir(&replacement, &current_source_dir);
-        return (relative != target).then_some(relative);
+        let encoded = encode_markdown_target_path(&relative);
+        return (encoded != target).then_some(encoded);
     }
 
     if old_source_rel_path.is_some() {
         let relocated = relative_path_from_source_dir(&root_target, &current_source_dir);
-        if relocated != target {
-            return Some(relocated);
+        let encoded = encode_markdown_target_path(&relocated);
+        if encoded != target {
+            return Some(encoded);
         }
     }
 
     None
+}
+
+fn percent_decode_utf8(value: &str) -> Option<String> {
+    if !value.as_bytes().contains(&b'%') {
+        return None;
+    }
+
+    let bytes = value.as_bytes();
+    let mut decoded = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' && index + 2 < bytes.len() {
+            let Some(high) = hex_value(bytes[index + 1]) else {
+                decoded.push(bytes[index]);
+                index += 1;
+                continue;
+            };
+            let Some(low) = hex_value(bytes[index + 2]) else {
+                decoded.push(bytes[index]);
+                index += 1;
+                continue;
+            };
+            decoded.push(high << 4 | low);
+            index += 3;
+            continue;
+        }
+        decoded.push(bytes[index]);
+        index += 1;
+    }
+
+    String::from_utf8(decoded).ok()
+}
+
+fn hex_value(value: u8) -> Option<u8> {
+    match value {
+        b'0'..=b'9' => Some(value - b'0'),
+        b'a'..=b'f' => Some(value - b'a' + 10),
+        b'A'..=b'F' => Some(value - b'A' + 10),
+        _ => None,
+    }
+}
+
+fn encode_markdown_target_path(path: &str) -> String {
+    let mut encoded = String::with_capacity(path.len());
+    for byte in path.bytes() {
+        if should_percent_encode_markdown_target_byte(byte) {
+            encoded.push('%');
+            encoded.push_str(&format!("{byte:02X}"));
+        } else {
+            encoded.push(byte as char);
+        }
+    }
+    encoded
+}
+
+fn should_percent_encode_markdown_target_byte(byte: u8) -> bool {
+    byte <= b' '
+        || byte >= 0x80
+        || matches!(
+            byte,
+            b'%' | b'<' | b'>' | b'[' | b']' | b'"' | b'\\' | b'^' | b'`' | b'{' | b'|'
+                | b'}'
+        )
 }
 
 fn join_rel_path(base: &str, target: &str) -> String {
@@ -672,6 +740,54 @@ mod tests {
             "[[media/logo-new.png]] [[media/logo-new.png]] ![[media/logo-new.png|Logo]] [logo](../media/logo-new.png)"
         );
         assert_eq!(output.changed_links, 4);
+    }
+
+    #[test]
+    fn rewrites_pasted_image_markdown_links_using_space_root_paths() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/paste.png".to_string();
+        plan.to_rel_path = "assets/images/paste.png".to_string();
+        plan.from_basename_is_unique = false;
+
+        let input = "![paste.png](/assets/paste.png)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "notes/source.md");
+
+        assert_eq!(output.markdown, "![paste.png](/assets/images/paste.png)");
+        assert_eq!(output.changed_links, 1);
+    }
+
+    #[test]
+    fn rewrites_encoded_pasted_image_markdown_links() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/picture new.png".to_string();
+        plan.to_rel_path = "assets/archive/picture new.png".to_string();
+        plan.from_basename_is_unique = false;
+
+        let input = "![picture new.png](../assets/picture%20new.png)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "notes/source.md");
+
+        assert_eq!(
+            output.markdown,
+            "![picture new.png](../assets/archive/picture%20new.png)"
+        );
+        assert_eq!(output.changed_links, 1);
+    }
+
+    #[test]
+    fn rewrites_encoded_pasted_image_root_markdown_links() {
+        let mut plan = plan();
+        plan.from_rel_path = "assets/picture new.png".to_string();
+        plan.to_rel_path = "assets/archive/picture new.png".to_string();
+        plan.from_basename_is_unique = false;
+
+        let input = "![picture new.png](/assets/picture%20new.png)";
+        let output = rewrite_markdown_links_for_path(input, &plan, "notes/source.md");
+
+        assert_eq!(
+            output.markdown,
+            "![picture new.png](/assets/archive/picture%20new.png)"
+        );
+        assert_eq!(output.changed_links, 1);
     }
 
     #[test]

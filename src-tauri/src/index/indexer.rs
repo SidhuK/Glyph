@@ -1,3 +1,5 @@
+#[cfg(test)]
+use std::sync::{Mutex, MutexGuard, OnceLock};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -24,6 +26,12 @@ use super::tags::{
 use super::types::IndexRebuildResult;
 
 static PEOPLE_MENTIONS_AS_TAGS_ENABLED: AtomicBool = AtomicBool::new(false);
+
+#[cfg(test)]
+pub(crate) fn people_mentions_as_tags_test_lock() -> MutexGuard<'static, ()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
+}
 
 pub fn set_people_mentions_as_tags_enabled(enabled: bool) {
     PEOPLE_MENTIONS_AS_TAGS_ENABLED.store(enabled, Ordering::Relaxed);

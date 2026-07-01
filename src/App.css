@@ -8,6 +8,7 @@
 @import "./styles/app/05-main-area.css";
 @import "./styles/app/14-welcome.css";
 @import "./styles/app/15-all-docs.css";
+@import "./styles/app/15-activity-timeline.css";
 @import "./styles/app/16-main-workspace-layout.css";
 @import "./styles/app/17-main-tabs.css";
 @import "./styles/app/20-main-empty-state.css";
@@ -28,6 +29,8 @@
 @import "./styles/app/23-raw-markdown-editor.css";
 @import "./styles/app/24-node-note-properties.css";
 @import "./styles/app/25-node-note-content.css";
+@import "./styles/app/25-editor-disclosure-toggle.css";
+@import "./styles/app/25-details-block.css";
 @import "./styles/app/26-node-note-overlays.css";
 @import "./styles/app/27-editor-math.css";
 @import "./styles/app/30-markdown-editor-pane.css";

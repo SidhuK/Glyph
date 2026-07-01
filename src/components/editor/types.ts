@@ -1,8 +1,9 @@
-import type { Editor } from "@tiptap/core";
+import type { AnyExtension, Editor } from "@tiptap/core";
 import type { EditorViewMode } from "../../lib/editorMode";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 
 export type NoteInlineEditorMode = EditorViewMode;
+export type NoteInlineEditorChrome = "full" | "minimal";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
 export interface CreateMarkdownFileOptions {
@@ -28,6 +29,9 @@ export interface NoteInlineEditorProps {
 	extractToNoteActions?: ExtractToNoteActions;
 	interactive?: boolean;
 	deferHeavyFeatures?: boolean;
+	chrome?: NoteInlineEditorChrome;
+	additionalExtensions?: AnyExtension[];
+	placeholder?: string;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)

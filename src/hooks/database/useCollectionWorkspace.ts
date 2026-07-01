@@ -24,6 +24,7 @@ import type {
 	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
+import { useDebouncedNoteChange } from "../useDebouncedNoteChange";
 import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
 export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
@@ -200,6 +201,27 @@ export function useCollectionWorkspace({
 		}
 		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
 	}, [document, selectedDatabaseId, selectedViewId]);
+
+	useDebouncedNoteChange({
+		delayMs: 200,
+		enabled: documentIdRef.current != null,
+		onChange: () => {
+			const activeDatabaseId = documentIdRef.current;
+			if (!activeDatabaseId) return;
+			invalidateDatabasePrefetch(activeDatabaseId);
+			void prefetchDatabaseDocument(activeDatabaseId)
+				.then((next) => {
+					if (documentIdRef.current !== activeDatabaseId) return;
+					documentRef.current = next;
+					setDocument(next);
+					clearError();
+				})
+				.catch((cause) => {
+					if (documentIdRef.current !== activeDatabaseId) return;
+					setError(extractErrorMessage(cause));
+				});
+		},
+	});
 
 	const setSelectedDatabaseId = useCallback((databaseId: string) => {
 		setSelectedDatabaseIdState(databaseId);

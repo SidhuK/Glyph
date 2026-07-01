@@ -11,7 +11,7 @@
 	min-height: 100%;
 	background: transparent;
 	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
-	font-family: var(--font-sans);
+	font-family: var(--font-editor);
 	font-size: var(--editor-raw-font-size);
 	font-variant-ligatures: common-ligatures;
 	line-height: 1.68;

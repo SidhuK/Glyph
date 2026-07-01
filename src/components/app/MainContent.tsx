@@ -20,6 +20,7 @@ import {
 } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
@@ -31,10 +32,12 @@ import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
+	ACTIVITY_DOCS_PAGE_SIZE,
 	getPrefetchedAllDocs,
 	getPrefetchedDatabaseDocument,
 	getPrefetchedNote,
 	prefetchAllDocs,
+	prefetchAllDocsList,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -73,7 +76,11 @@ import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
-import { loadAllDocsPane, loadDatabasesPane } from "./prefetchablePanes";
+import {
+	loadActivityTimelinePane,
+	loadAllDocsPane,
+	loadDatabasesPane,
+} from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
 const PinnedDocsPane = lazy(() =>
@@ -84,6 +91,7 @@ const PinnedDocsPane = lazy(() =>
 
 const DatabasesPane = lazy(loadDatabasesPane);
 const AllDocsPane = lazy(loadAllDocsPane);
+const ActivityTimelinePane = lazy(loadActivityTimelinePane);
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
@@ -272,6 +280,8 @@ interface MainContentProps {
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
+	onOpenActivity: () => void;
+	onPrefetchActivity: () => void;
 	tabs: WorkspaceTab[];
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
@@ -380,6 +390,8 @@ export const MainContent = memo(function MainContent({
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
+	onOpenActivity,
+	onPrefetchActivity,
 	tabs,
 	rootEntries,
 	childrenByDir,
@@ -610,7 +622,12 @@ export const MainContent = memo(function MainContent({
 			const initialNotes = getPrefetchedAllDocs(null);
 			return (
 				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
+					<AllDocsPane
+						onOpenFile={onOpenFile}
+						onOpenActivity={onOpenActivity}
+						onPrefetchActivity={onPrefetchActivity}
+						initialNotes={initialNotes}
+					/>
 				</Suspense>
 			);
 		}
@@ -618,6 +635,13 @@ export const MainContent = memo(function MainContent({
 			return (
 				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
 					<PinnedDocsPane onOpenFile={onOpenFile} />
+				</Suspense>
+			);
+		}
+		if (viewerPath === ACTIVITY_TIMELINE_TAB_ID) {
+			return (
+				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
+					<ActivityTimelinePane onOpenFile={onOpenFile} />
 				</Suspense>
 			);
 		}
@@ -677,6 +701,8 @@ export const MainContent = memo(function MainContent({
 		fileTree,
 		onOpenFile,
 		onOpenFileInNewTab,
+		onOpenActivity,
+		onPrefetchActivity,
 		databasesOpenRequest,
 		onConsumeDatabasesOpenRequest,
 		viewerPath,
@@ -695,6 +721,12 @@ export const MainContent = memo(function MainContent({
 			if (target === ALL_DOCS_TAB_ID) {
 				void loadAllDocsPane();
 				void prefetchAllDocs(null);
+				return;
+			}
+			if (target === ACTIVITY_TIMELINE_TAB_ID) {
+				void loadActivityTimelinePane();
+				void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
+				void prefetchAllDocsList(null);
 				return;
 			}
 			if (target === DATABASES_TAB_ID) {
@@ -731,12 +763,13 @@ export const MainContent = memo(function MainContent({
 	);
 	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
+	const isActivityTab = viewerPath === ACTIVITY_TIMELINE_TAB_ID;
 	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
 	const editorCanvas = (
 		<div
 			className="canvasPaneHost"
 			data-space-connections={isSpaceConnectionsTab ? "true" : undefined}
-			data-all-docs={isAllDocsTab ? "true" : undefined}
+			data-all-docs={isAllDocsTab || isActivityTab ? "true" : undefined}
 			data-databases={isDatabasesTab ? "true" : undefined}
 		>
 			<DailyNotesSetupToast

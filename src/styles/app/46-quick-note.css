@@ -1,5 +1,7 @@
 .quickNoteRoot {
 	position: relative;
+	display: flex;
+	flex-direction: column;
 	height: 100%;
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
@@ -15,28 +17,42 @@
 	left: 0;
 	right: 0;
 	height: 18px;
-	z-index: 1;
+	z-index: 3;
 }
 
-.quickNoteTextarea {
-	width: 100%;
-	min-width: 0;
+.quickNoteEditorArea {
+	flex: 1;
+	min-height: 0;
+	padding-top: 18px;
+	overflow: hidden;
+	-webkit-app-region: no-drag;
+}
+
+.quickNoteEditorArea .rfNodeNoteEditor {
 	height: 100%;
-	resize: none;
 	border: 0;
-	outline: none;
+	border-radius: 0;
 	background: transparent;
-	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
-	padding: 30px 28px 72px;
-	font: inherit;
-	font-size: var(--editor-inline-font-size);
-	line-height: 1.68;
-	letter-spacing: 0;
-	caret-color: var(--interactive-accent);
+	overflow: hidden;
 }
 
-.quickNoteTextarea::placeholder {
-	color: var(--text-placeholder);
+.quickNoteEditorArea .rfNodeNoteEditor:focus-within {
+	border-color: transparent;
+	box-shadow: none;
+}
+
+.quickNoteEditorArea .rfNodeNoteEditorBody {
+	padding: 10px 24px 72px;
+	background: transparent;
+}
+
+.quickNoteEditorArea .tiptapHostInline,
+.quickNoteEditorArea .tiptapContentInline {
+	min-height: 100%;
+}
+
+.quickNoteEditorArea .tiptapContentInline {
+	padding-bottom: 8px;
 }
 
 .quickNoteEditorChrome {
@@ -49,6 +65,7 @@
 	justify-content: space-between;
 	gap: 16px;
 	pointer-events: none;
+	z-index: 4;
 }
 
 .quickNoteTargetGroup,

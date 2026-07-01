@@ -17,7 +17,7 @@ export interface TOCHeading {
 	slug?: string;
 }
 
-function getHeadingElement(
+export function getHeadingElement(
 	editor: Editor,
 	heading: TOCHeading,
 ): HTMLElement | null {
@@ -29,7 +29,7 @@ function getHeadingElement(
 	}
 }
 
-function findScrollParent(el: HTMLElement): HTMLElement | null {
+export function findScrollParent(el: HTMLElement): HTMLElement | null {
 	let current = el.parentElement;
 	while (current) {
 		const style = getComputedStyle(current);
@@ -46,7 +46,7 @@ function findScrollParent(el: HTMLElement): HTMLElement | null {
 	return null;
 }
 
-function isSameHeadingList(
+export function isSameHeadingList(
 	prev: readonly TOCHeading[],
 	next: readonly TOCHeading[],
 ) {
@@ -77,7 +77,7 @@ function headingFromNode(
 	};
 }
 
-function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
+export function extractHeadingsFromDoc(doc: ProseMirrorNode): TOCHeading[] {
 	const headings: TOCHeading[] = [];
 	doc.descendants((node, pos) => {
 		const heading = headingFromNode(node, pos);
@@ -125,7 +125,7 @@ function rangeTouchesHeading(
 	return heading.pos >= range.from && heading.pos <= range.to;
 }
 
-function updateHeadingsFromTransaction(
+export function updateHeadingsFromTransaction(
 	current: readonly TOCHeading[],
 	transaction: Transaction,
 ): TOCHeading[] {

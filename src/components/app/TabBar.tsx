@@ -8,6 +8,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
@@ -56,6 +57,7 @@ const MAIN_TAB_SENSORS = [
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
+		path === ACTIVITY_TIMELINE_TAB_ID ||
 		path === DATABASES_TAB_ID ||
 		path === PINNED_DOCS_TAB_ID ||
 		path === SPACE_CONNECTIONS_TAB_ID
@@ -102,6 +104,7 @@ export function TabBar({
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
+			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return "All Notes";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";
 			if (tab.target === PINNED_DOCS_TAB_ID) return "Pinned";
 			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";

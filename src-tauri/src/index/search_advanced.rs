@@ -170,19 +170,29 @@ mod tests {
     use rusqlite::Connection;
 
     use crate::index::schema::ensure_schema;
-    use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
+    use std::sync::MutexGuard;
+
+    use crate::index::{
+        people_mentions_as_tags_enabled, people_mentions_as_tags_test_lock,
+        set_people_mentions_as_tags_enabled,
+    };
 
     use super::{run_search_advanced, SearchAdvancedRequest};
 
     struct PeopleMentionsFlagGuard {
         previous: bool,
+        _lock: MutexGuard<'static, ()>,
     }
 
     impl PeopleMentionsFlagGuard {
         fn set(enabled: bool) -> Self {
+            let lock = people_mentions_as_tags_test_lock();
             let previous = people_mentions_as_tags_enabled();
             set_people_mentions_as_tags_enabled(enabled);
-            Self { previous }
+            Self {
+                previous,
+                _lock: lock,
+            }
         }
     }
 

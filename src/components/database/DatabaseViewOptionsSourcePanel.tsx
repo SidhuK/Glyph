@@ -14,9 +14,12 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 			<div className="databaseViewPanelHeader">
 				<span>Source</span>
 			</div>
+			<p className="databaseViewPanelHint">
+				Choose which notes appear in this view. Changes save automatically.
+			</p>
 			<div className="databaseViewPanelStack">
 				<label className="databaseViewField">
-					<span>Source</span>
+					<span>Show notes from</span>
 					<select
 						className="databaseNativeSelect"
 						value={config.source.kind}
@@ -31,9 +34,9 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						}
 					>
 						<option value="all_notes">All notes</option>
-						<option value="folder">Folder</option>
-						<option value="tag">Tag</option>
-						<option value="search">Search</option>
+						<option value="folder">A folder</option>
+						<option value="tag">A tag</option>
+						<option value="search">A search query</option>
 					</select>
 				</label>
 				{config.source.kind === "folder" ? (
@@ -73,8 +76,8 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 				{config.source.kind === "tag" ? (
 					<DatabaseTagPicker
 						value={config.source.value}
-						label="Database Tag"
-						description="Choose a tag for this database."
+						label="Tag"
+						description="Only notes with this tag will appear."
 						placeholder="Choose a tag"
 						onChange={(value) =>
 							void updateConfig({
@@ -89,7 +92,7 @@ export function SourcePanel({ config, updateConfig }: SourcePanelProps) {
 						className="databaseViewField"
 						htmlFor="databaseViewSourceQuery"
 					>
-						<span>Query</span>
+						<span>Search query</span>
 						<Input
 							id="databaseViewSourceQuery"
 							value={config.source.value}

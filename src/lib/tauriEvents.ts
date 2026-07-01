@@ -11,26 +11,7 @@ import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
 	"menu:app_command": { command_id: string };
-	"menu:new_note": undefined;
-	"menu:create_from_template": undefined;
-	"menu:open_daily_note": undefined;
-	"menu:save_note": undefined;
-	"menu:close_tab": undefined;
-	"menu:open_space": undefined;
 	"menu:open_recent_space": { path: string };
-	"menu:create_space": undefined;
-	"menu:close_space": undefined;
-	"menu:reveal_space": undefined;
-	"menu:open_space_settings": undefined;
-	"menu:git_sync_now": undefined;
-	"menu:open_git_settings": undefined;
-	"menu:open_about": undefined;
-	"menu:open_settings": undefined;
-	"menu:toggle_ai": undefined;
-	"menu:ai_attach_current_note": undefined;
-	"menu:ai_attach_all_open_notes": undefined;
-	"menu:open_ai_settings": undefined;
-	"menu:editor_action": { action: string };
 	"quick-note:open_note": { path: string };
 	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
@@ -82,6 +63,7 @@ type TauriEventMap = {
 			darkThemeId?: UiDarkThemeId;
 			accent?: UiAccent;
 			fontFamily?: string;
+			editorFontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;
 			editorFontSize?: number;
@@ -89,6 +71,7 @@ type TauriEventMap = {
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
 			folioMode?: boolean;
+			classicAllNotesByDefault?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 		};

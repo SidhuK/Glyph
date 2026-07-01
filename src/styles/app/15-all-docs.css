@@ -30,6 +30,42 @@
 	gap: 16px;
 }
 
+.allDocsHeaderAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	min-height: 32px;
+	padding: 0 10px;
+	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	color: var(--text-secondary);
+	font: inherit;
+	font-size: var(--text-sm);
+	line-height: 1;
+	cursor: pointer;
+	box-shadow: 0 10px 22px -20px rgb(30 41 59 / 0.25);
+	transition: transform 120ms ease, background-color 120ms ease, color 120ms
+		ease, box-shadow 120ms ease;
+}
+
+.allDocsHeaderAction:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+	box-shadow: 0 14px 26px -22px rgb(30 41 59 / 0.34);
+}
+
+.allDocsHeaderAction:active {
+	transform: scale(0.96);
+}
+
+.allDocsHeaderAction:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
 .allDocsHeadingGroup {
 	display: flex;
 	min-width: 0;

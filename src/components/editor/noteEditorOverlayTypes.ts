@@ -13,3 +13,19 @@ export interface SelectedTableState {
 	columnControlLeft: number;
 	columnControlTop: number;
 }
+
+export type TableEditorCommand =
+	| "addRowBefore"
+	| "addRowAfter"
+	| "deleteRow"
+	| "addColumnBefore"
+	| "addColumnAfter"
+	| "deleteColumn";
+
+export interface TableInlineControlsProps {
+	selected: SelectedTableState;
+	onControlMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
+	onCommand: (command: TableEditorCommand) => void;
+	canDeleteRow: boolean;
+	canDeleteColumn: boolean;
+}

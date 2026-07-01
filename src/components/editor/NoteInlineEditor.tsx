@@ -1,4 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { AnyExtension } from "@tiptap/core";
 import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -46,6 +47,8 @@ import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
 import type { NoteInlineEditorProps } from "./types";
+
+const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
 
 const RawMarkdownEditor = lazy(() =>
 	import("./raw/RawMarkdownEditor").then((module) => ({
@@ -142,6 +145,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	mode,
 	interactive = true,
 	deferHeavyFeatures = false,
+	chrome = "full",
+	additionalExtensions: additionalExtensionsProp = EMPTY_ADDITIONAL_EXTENSIONS,
+	placeholder,
 	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
 	onEditorReady,
@@ -150,6 +156,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onFrontmatterCommit,
 	extractToNoteActions,
 }: NoteInlineEditorProps) {
+	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
 	const [mathExtensions, setMathExtensions] = useState<
 		import("@tiptap/core").AnyExtension[]
@@ -158,7 +165,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		mode === "plain",
 	);
 	useEffect(() => {
-		if (mode === "plain" || mathExtensions.length > 0) {
+		if (chromeMinimal || mode === "plain" || mathExtensions.length > 0) {
 			setMathExtensionsReady(true);
 			return;
 		}
@@ -180,7 +187,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [mathExtensions.length, mathNodeEditor.open, mode]);
+	}, [chromeMinimal, mathExtensions.length, mathNodeEditor.open, mode]);
+
+	const mergedAdditionalExtensions = useMemo(
+		() => [...mathExtensions, ...additionalExtensionsProp],
+		[additionalExtensionsProp, mathExtensions],
+	);
 
 	const {
 		editor,
@@ -191,7 +203,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		colorfulHeadings,
 		showFrontmatterInEditor,
 	} = useNoteEditor({
-		additionalExtensions: mathExtensions,
+		additionalExtensions: mergedAdditionalExtensions,
 		markdown,
 		mode,
 		relPath,
@@ -199,11 +211,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		enableHydrateInlineImages: !deferHeavyFeatures,
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
 		pasteMarkdownBehavior,
+		placeholder,
 		onChange,
 		onMathEditRequest: mathNodeEditor.open,
 	});
-	mathNodeEditor.connect(editor, mode === "rich");
+	mathNodeEditor.connect(editor, mode === "rich" && !chromeMinimal);
 
+	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+	const showEditorChrome = canEdit && !chromeMinimal;
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
@@ -273,16 +288,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		relPath,
 	]);
 
-	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
-	const selectedTable = useTableInlineControls({
-		canEdit,
+	const tableControls = useTableInlineControls({
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		mode,
 	});
 	const extractToNote = useExtractSelectionToNote({
 		actions: extractToNoteActions,
-		canEdit,
+		canEdit: showEditorChrome,
 		editor,
 		hostRef: tiptapHostRef,
 		relPath,
@@ -298,7 +312,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	useRibbonCommands({
 		editor,
-		canEdit,
+		canEdit: showEditorChrome,
 		mode,
 		tiptapHostRef,
 		tiptapHostNode,
@@ -389,7 +403,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich") {
+		if (!editor || mode !== "rich" || chromeMinimal) {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -512,7 +526,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			editor.off("selectionUpdate", scheduleSelectedCodeBlockSync);
 			editor.off("transaction", scheduleSelectedCodeBlockSync);
 		};
-	}, [editor, mode]);
+	}, [chromeMinimal, editor, mode]);
 
 	const selectedCodeBlockLanguage = useMemo(
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
@@ -536,30 +550,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		},
 		[editor],
 	);
-	const preventCodeBlockPickerMouseDown = useCallback(
+	const preventOverlayMouseDown = useCallback(
 		(event: ReactMouseEvent<HTMLElement>) => {
 			event.preventDefault();
 		},
 		[],
 	);
-	const preventTableControlMouseDown = useCallback(
-		(event: ReactMouseEvent<HTMLButtonElement>) => {
-			event.preventDefault();
-		},
-		[],
-	);
-	const addRowToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
-	}, [editor]);
-	const addColumnToSelectedTable = useCallback(() => {
-		if (!editor) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.addColumnAfter()
-			.run();
-	}, [editor]);
 	useEffect(() => {
 		if (!editor) return;
 		if (mode === "rich" || mode === "preview") {
@@ -621,21 +617,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			});
 	}, [selectedCodeBlock]);
 
-	const tableControls = useMemo(
-		() => ({
-			selected: selectedTable,
-			onControlMouseDown: preventTableControlMouseDown,
-			onAddRow: addRowToSelectedTable,
-			onAddColumn: addColumnToSelectedTable,
-		}),
-		[
-			addColumnToSelectedTable,
-			addRowToSelectedTable,
-			preventTableControlMouseDown,
-			selectedTable,
-		],
-	);
-
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
@@ -644,7 +625,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
-			onPickerMouseDown: preventCodeBlockPickerMouseDown,
+			onPickerMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
 		}),
@@ -653,7 +634,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
-			preventCodeBlockPickerMouseDown,
+			preventOverlayMouseDown,
 			selectedCodeBlock,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
@@ -665,16 +646,18 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
-				canEdit ? "rfNodeNoteEditorHasRibbon" : "",
+				showEditorChrome ? "rfNodeNoteEditorHasRibbon" : "",
 				"nodrag",
 				"nopan",
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onKeyDownCapture={noteFind.handleEditorKeyDownCapture}
+			onKeyDownCapture={
+				showEditorChrome ? noteFind.handleEditorKeyDownCapture : undefined
+			}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{noteFind.findOpen ? (
+				{showEditorChrome && noteFind.findOpen ? (
 					<NoteFindBar
 						countLabel={noteFind.findCountLabel}
 						inputRef={noteFind.findInputRef}
@@ -718,13 +701,13 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
-						table={tableControls}
+						tableControls={tableControls}
 						codeBlock={codeBlockControls}
 					/>
 				) : null}
 			</div>
 			<AnimatePresence>
-				{canEdit && editor ? (
+				{showEditorChrome && editor ? (
 					<EditorRibbon
 						editor={editor}
 						canEdit={canEdit}
@@ -737,20 +720,24 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</AnimatePresence>
-			<ExtractToNoteDialog
-				state={extractToNote.dialogState}
-				onClose={extractToNote.closeExtractDialog}
-				onSubmit={extractToNote.submitExtractDialog}
-				onTitleChange={extractToNote.setExtractTitle}
-				onDestinationDirChange={extractToNote.setExtractDestinationDir}
-			/>
-			<NoteLinkDialog
-				editor={editor}
-				canEdit={canEdit}
-				state={linkDialog}
-				onStateChange={setLinkDialog}
-			/>
-			{mathNodeEditor.request ? (
+			{showEditorChrome ? (
+				<ExtractToNoteDialog
+					state={extractToNote.dialogState}
+					onClose={extractToNote.closeExtractDialog}
+					onSubmit={extractToNote.submitExtractDialog}
+					onTitleChange={extractToNote.setExtractTitle}
+					onDestinationDirChange={extractToNote.setExtractDestinationDir}
+				/>
+			) : null}
+			{showEditorChrome ? (
+				<NoteLinkDialog
+					editor={editor}
+					canEdit={canEdit}
+					state={linkDialog}
+					onStateChange={setLinkDialog}
+				/>
+			) : null}
+			{showEditorChrome && mathNodeEditor.request ? (
 				<Suspense fallback={null}>
 					<MathNodeEditor
 						key={`${mathNodeEditor.request.kind}:${mathNodeEditor.request.pos}`}

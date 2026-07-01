@@ -1,17 +1,15 @@
-import type { KeyboardEvent, RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
+import { useCallback, useMemo } from "react";
 import {
 	type EditorLinkSuggestion,
 	suggestWikiLinks,
 } from "../../../lib/linkSuggestions";
+import {
+	type SuggestionRange,
+	useInputSuggestionEngine,
+} from "../suggestions/suggestionEngine";
 
 const WIKI_LINK_SUGGESTION_LIMIT = 8;
-
-interface WikiLinkRange {
-	from: number;
-	to: number;
-	query: string;
-}
 
 interface UseWikiLinkAutocompleteOptions {
 	enabled: boolean;
@@ -24,7 +22,7 @@ interface UseWikiLinkAutocompleteOptions {
 function findActiveWikiLinkRange(
 	value: string,
 	selectionStart: number | null,
-): WikiLinkRange | null {
+): SuggestionRange | null {
 	if (selectionStart == null) return null;
 	const beforeCursor = value.slice(0, selectionStart);
 	const openIndex = beforeCursor.lastIndexOf("[[");
@@ -48,76 +46,31 @@ export function useWikiLinkAutocomplete({
 	onChange,
 	onSelectItem,
 }: UseWikiLinkAutocompleteOptions) {
-	const requestIdRef = useRef(0);
-	const [range, setRange] = useState<WikiLinkRange | null>(null);
-	const [items, setItems] = useState<EditorLinkSuggestion[]>([]);
-	const [activeIndex, setActiveIndex] = useState(0);
-
-	const close = useCallback(() => {
-		requestIdRef.current += 1;
-		setRange(null);
-		setItems([]);
-		setActiveIndex(0);
-	}, []);
-
-	const refresh = useCallback(
-		(nextValue: string, selectionStart: number | null) => {
-			if (!enabled) {
-				close();
-				return;
-			}
-
-			const nextRange = findActiveWikiLinkRange(nextValue, selectionStart);
-			if (!nextRange) {
-				close();
-				return;
-			}
-
-			const requestId = requestIdRef.current + 1;
-			requestIdRef.current = requestId;
-			setRange(nextRange);
-			setActiveIndex(0);
-			setItems([]);
-
-			void suggestWikiLinks({
-				query: nextRange.query,
-				includeAttachments: false,
-				limit: WIKI_LINK_SUGGESTION_LIMIT,
-			})
-				.then((results) => {
-					if (requestIdRef.current !== requestId) return;
-					setItems(results);
-				})
-				.catch((error) => {
-					if (requestIdRef.current !== requestId) return;
-					console.warn("Failed to load wikilink suggestions", error);
-					setItems([]);
-				});
-		},
-		[close, enabled],
+	const provider = useMemo(
+		() => ({
+			id: "wiki-link",
+			limit: WIKI_LINK_SUGGESTION_LIMIT,
+			getItems: (query: string) =>
+				suggestWikiLinks({
+					query,
+					includeAttachments: false,
+					limit: WIKI_LINK_SUGGESTION_LIMIT,
+				}),
+		}),
+		[],
 	);
-
-	useEffect(() => {
-		const input = inputRef.current;
-		if (!input || document.activeElement !== input) return;
-		refresh(value, input.selectionStart);
-	}, [inputRef, refresh, value]);
-
-	const select = useCallback(
-		(item: EditorLinkSuggestion) => {
+	const handleSelect = useCallback(
+		(item: EditorLinkSuggestion, range: SuggestionRange) => {
 			if (onSelectItem) {
 				onSelectItem(item);
-				close();
 				return;
 			}
-			if (!range) return;
 			const markdown = `[[${item.insertText}]]`;
 			const nextValue = `${value.slice(0, range.from)}${markdown}${value.slice(
 				range.to,
 			)}`;
 			const nextCursor = range.from + markdown.length;
 			onChange(nextValue);
-			close();
 			requestAnimationFrame(() => {
 				const input = inputRef.current;
 				if (!input) return;
@@ -125,45 +78,14 @@ export function useWikiLinkAutocomplete({
 				input.setSelectionRange(nextCursor, nextCursor);
 			});
 		},
-		[close, inputRef, onChange, onSelectItem, range, value],
+		[inputRef, onChange, onSelectItem, value],
 	);
-
-	const handleKeyDown = useCallback(
-		(event: KeyboardEvent<HTMLInputElement>) => {
-			if (!items.length) return false;
-			if (event.key === "ArrowDown") {
-				event.preventDefault();
-				setActiveIndex((current) => (current + 1) % items.length);
-				return true;
-			}
-			if (event.key === "ArrowUp") {
-				event.preventDefault();
-				setActiveIndex(
-					(current) => (current - 1 + items.length) % items.length,
-				);
-				return true;
-			}
-			if (event.key === "Enter" || event.key === "Tab") {
-				event.preventDefault();
-				select(items[activeIndex] ?? items[0]);
-				return true;
-			}
-			if (event.key === "Escape") {
-				event.preventDefault();
-				close();
-				return true;
-			}
-			return false;
-		},
-		[activeIndex, close, items, select],
-	);
-
-	return {
-		activeIndex,
-		close,
-		handleKeyDown,
-		items,
-		refresh,
-		select,
-	};
+	return useInputSuggestionEngine({
+		enabled,
+		inputRef,
+		value,
+		provider,
+		findRange: findActiveWikiLinkRange,
+		onSelect: handleSelect,
+	});
 }

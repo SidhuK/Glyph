@@ -8,6 +8,7 @@ use tauri::{Emitter, State, WebviewWindow};
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, paths, space::SpaceState, utils};
 
+use super::super::filename::split_stem_extension;
 use super::super::helpers::deny_hidden_rel_path;
 use super::super::link_rewrite::{self, LinkRewriteResult};
 use super::super::types::FsEntry;
@@ -20,15 +21,8 @@ struct NoteChangeEvent {
     removed: bool,
 }
 
-fn split_duplicate_name(file_name: &str) -> (&str, &str) {
-    match file_name.rfind('.') {
-        Some(index) if index > 0 => (&file_name[..index], &file_name[index..]),
-        _ => (file_name, ""),
-    }
-}
-
 fn next_duplicate_file_name(existing_names: &HashSet<String>, file_name: &str) -> String {
-    let (stem, ext) = split_duplicate_name(file_name);
+    let (stem, ext) = split_stem_extension(file_name);
     let base_name = if stem.is_empty() { file_name } else { stem };
     let first_candidate = format!("{base_name} Copy{ext}");
     if !existing_names.contains(&first_candidate.to_lowercase()) {

@@ -37,6 +37,7 @@ import {
 import { getCommandDefinition } from "../../lib/commands/commandManifest";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { getLicenseStatus } from "../../lib/license";
+import { copyAbsolutePath, copyRelativePath } from "../../lib/pathClipboard";
 import type { EffectiveShortcutBindings } from "../../lib/settings";
 import {
 	SHORTCUT_CATEGORY_LABELS,
@@ -105,7 +106,6 @@ interface UseAppCommandsDeps {
 	saveCurrentEditor: () => Promise<unknown>;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
-	setError: (error: string) => void;
 	setMovePickerSourcePath: (path: string | null) => void;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	showCollapsibleHeadings: boolean;
@@ -193,7 +193,7 @@ function resolveCommandShortcuts(
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: command.label ?? definition.label,
+					label: command.label ?? definition.label ?? command.id,
 					category: SHORTCUT_CATEGORY_LABELS[definition.category],
 					allowInEditable: definition.allowInEditable,
 					shortcut: definition.defaultBinding ?? command.shortcut,
@@ -259,7 +259,6 @@ export function useAppCommands({
 	saveCurrentEditor,
 	setCurrentEditorMode,
 	setAiPanelOpen,
-	setError,
 	setMovePickerSourcePath,
 	setSidebarCollapsed,
 	showCollapsibleHeadings,
@@ -409,21 +408,10 @@ export function useAppCommands({
 				),
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						await fileTree.onNewFolderInDir(dir);
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create folder", error);
-						setError(message);
-						toast.error("Could not create folder", {
-							description: message,
-						});
-					}
+				action: () => {
+					const dir =
+						activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+					void fileTree.requestCreateFolder(dir);
 				},
 			},
 			{
@@ -551,6 +539,44 @@ export function useAppCommands({
 				enabled: Boolean(activeMarkdownTabPath),
 				allowInEditable: true,
 				action: () => void handleCopyOpenNoteAsMarkdown(),
+			},
+			{
+				id: "copy-active-file-relative-path",
+				label: "Copy current file relative path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "relative path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyRelativePath(activeFilePath);
+				},
+			},
+			{
+				id: "copy-active-file-absolute-path",
+				label: "Copy current file absolute path",
+				icon: (
+					<HugeiconsIcon
+						icon={Link01Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
+				allowInEditable: true,
+				searchTerms: ["copy file path", "absolute path", "full path"],
+				action: () => {
+					if (!activeFilePath) return;
+					void copyAbsolutePath(spacePath, activeFilePath);
+				},
 			},
 			{
 				id: "move-active-file",
@@ -861,7 +887,6 @@ export function useAppCommands({
 			},
 			{
 				id: "show-getting-started",
-				label: "Show getting started",
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
@@ -869,13 +894,11 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
 				action: openGettingStarted,
 			},
 			{
 				id: "show-welcome-note",
-				label: "Show welcome note",
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
@@ -883,9 +906,8 @@ export function useAppCommands({
 						strokeWidth={0.9}
 					/>
 				),
-				category: "Help",
 				enabled: Boolean(spacePath),
-				action: () => void showWelcomeNote(),
+				action: showWelcomeNote,
 			},
 		];
 		return resolveCommandShortcuts(
@@ -946,7 +968,6 @@ export function useAppCommands({
 		getBinding,
 		moveTargetDirs,
 		movePickerSourcePath,
-		setError,
 		openSettings,
 		refreshMoveTargetDirs,
 		openPalette,

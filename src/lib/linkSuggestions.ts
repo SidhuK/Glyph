@@ -1,3 +1,4 @@
+import { isImagePath, isPdfPath } from "../utils/path";
 import { invoke } from "./tauri";
 
 export interface EditorLinkSuggestion {
@@ -20,11 +21,11 @@ interface SuggestMarkdownLinksOptions {
 }
 
 export function isImageTarget(path: string): boolean {
-	return /\.(?:avif|bmp|gif|jpe?g|png|svg|tiff?|webp)$/i.test(path);
+	return isImagePath(path);
 }
 
 export function isPdfTarget(path: string): boolean {
-	return /\.pdf$/i.test(path);
+	return isPdfPath(path);
 }
 
 function titleFromPath(path: string): string {
