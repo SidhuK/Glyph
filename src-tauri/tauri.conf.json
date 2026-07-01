@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "Glyph",
-	"version": "0.8.6-alpha.1",
+	"version": "0.8.6-alpha.2",
 	"identifier": "com.karatsidhu.glyph",
 	"build": {
 		"beforeDevCommand": "pnpm dev",
@@ -48,6 +48,9 @@
 			}
 		],
 		"macOS": {
+			"dmg": {
+				"background": "./icons/dmg-background.png"
+			},
 			"files": {
 				"Resources/Assets.car": "./icons/Assets.car"
 			}

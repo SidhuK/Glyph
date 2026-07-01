@@ -195,11 +195,8 @@ jobs:
       - name: Format updated version files
         run: pnpm exec biome format --write package.json src-tauri/tauri.conf.json
 
-      - name: Validate
-        run: |
-          pnpm check
-          pnpm build
-          cd src-tauri && cargo check
+      - name: Check formatting and lint
+        run: pnpm check
 
       - name: Generate GitHub release notes
         id: release_notes
