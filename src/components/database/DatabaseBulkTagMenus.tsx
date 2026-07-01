@@ -1,8 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-	type SelectedRowTagOption,
-	collectSelectedRowTags,
-} from "../../lib/database/bulkActions";
+import { collectSelectedRowTags } from "../../lib/database/bulkActions";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { Search, Tags } from "../Icons";
 import { formatTagLabel } from "../editor/noteProperties/utils";
@@ -26,6 +23,8 @@ import { DatabaseTagPickerPanel } from "./DatabaseTagPickerPanel";
 
 const BULK_TAG_PICKER_MENU_CLASS =
 	"databasePickerMenu databaseBulkTagPickerMenu";
+
+type SelectedRowTagOption = ReturnType<typeof collectSelectedRowTags>[number];
 
 interface DatabaseBulkTagMenusProps {
 	disabled: boolean;

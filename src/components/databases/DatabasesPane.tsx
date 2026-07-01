@@ -107,7 +107,6 @@ function DatabasesPaneContent({
 						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
 					) : null}
 					<DatabaseBulkActionsBar
-						selectedCount={rows.selectedRowPaths.length}
 						selectedRowPaths={rows.selectedRowPaths}
 						rows={rows.rows}
 						bulkEligible={bulkActions.bulkEligible}

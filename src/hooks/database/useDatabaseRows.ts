@@ -151,11 +151,6 @@ export function useDatabaseRows({
 		[pageSize, queryClient, rowsQueryKey, selectedDatabaseId, selectedViewId],
 	);
 
-	const clearRows = useCallback(() => {
-		setSelectedRowPath(null);
-		setRowSelectionState({});
-	}, []);
-
 	const setRowSelection = useCallback((updater: Updater<RowSelectionState>) => {
 		setRowSelectionState((current) =>
 			typeof updater === "function" ? updater(current) : updater,
@@ -186,12 +181,13 @@ export function useDatabaseRows({
 	);
 
 	useEffect(() => {
-		setRowSelectionState((current) =>
-			pruneRowSelection(
+		setRowSelectionState((current) => {
+			if (Object.keys(current).length === 0) return current;
+			return pruneRowSelection(
 				current,
 				rows.map((row) => row.note_path),
-			),
-		);
+			);
+		});
 	}, [rows]);
 
 	useEffect(() => {
@@ -251,6 +247,5 @@ export function useDatabaseRows({
 		clearRowSelection,
 		toggleRowSelection,
 		loadRows,
-		clearRows,
 	};
 }

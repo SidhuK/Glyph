@@ -17,7 +17,7 @@ import {
 	buildDatabaseTagPickerOptions,
 } from "./databaseTagPickerOptions";
 
-export interface DatabaseTagPickerPanelProps {
+interface DatabaseTagPickerPanelProps {
 	selectedValue?: string | null;
 	label: string;
 	description: string;

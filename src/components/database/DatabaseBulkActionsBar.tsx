@@ -23,7 +23,6 @@ import {
 import { DatabaseBulkTagMenus } from "./DatabaseBulkTagMenus";
 
 interface DatabaseBulkActionsBarProps {
-	selectedCount: number;
 	selectedRowPaths: string[];
 	rows: DatabaseRow[];
 	bulkEligible: BulkEligibleColumns;
@@ -38,7 +37,6 @@ interface DatabaseBulkActionsBarProps {
 }
 
 export function DatabaseBulkActionsBar({
-	selectedCount,
 	selectedRowPaths,
 	rows,
 	bulkEligible,
@@ -78,7 +76,7 @@ export function DatabaseBulkActionsBar({
 		[bulkEligible.priorityColumn, rows, selectedRowPaths],
 	);
 
-	if (selectedCount === 0) return null;
+	if (selectedRowPaths.length === 0) return null;
 
 	const hasCheckboxActions = bulkEligible.checkboxColumns.length > 0;
 	const hasTagActions = bulkEligible.tagsColumns.length > 0;
@@ -92,7 +90,7 @@ export function DatabaseBulkActionsBar({
 		<div className="databaseBulkActionsBar" aria-live="polite">
 			<div className="databaseBulkActionsSummary">
 				<span className="databaseBulkActionsCount">
-					{selectedCount} selected
+					{selectedRowPaths.length} selected
 				</span>
 				<Button
 					type="button"

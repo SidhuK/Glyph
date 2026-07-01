@@ -107,11 +107,6 @@ export function buildTagsCellValue(
 	};
 }
 
-export interface SelectedRowTagOption {
-	tag: string;
-	count: number;
-}
-
 export function collectSelectedRowTextValues(
 	rows: DatabaseRow[],
 	selectedRowPaths: string[],
@@ -131,7 +126,7 @@ export function collectSelectedRowTags(
 	rows: DatabaseRow[],
 	selectedRowPaths: string[],
 	column: DatabaseColumn,
-): SelectedRowTagOption[] {
+): Array<{ tag: string; count: number }> {
 	const selectedPaths = new Set(selectedRowPaths);
 	const counts = new Map<string, { tag: string; count: number }>();
 
