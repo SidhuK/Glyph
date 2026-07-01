@@ -1,1 +1,29 @@
-{}
+{
+	"app": {
+		"about": "Über Glyph",
+		"settings": "Einstellungen..."
+	},
+	"menu": {
+		"file": "Datei",
+		"edit": "Bearbeiten",
+		"markdown": "Markdown",
+		"ai": "KI",
+		"space": "Space",
+		"window": "Fenster",
+		"help": "Hilfe"
+	},
+	"space": {
+		"recent": {
+			"menu": "Zuletzt verwendete Spaces",
+			"empty": "Keine zuletzt verwendeten Spaces"
+		}
+	},
+	"editor": {
+		"text_color": {
+			"menu": "Textfarbe"
+		},
+		"text_highlight": {
+			"menu": "Texthervorhebung"
+		}
+	}
+}

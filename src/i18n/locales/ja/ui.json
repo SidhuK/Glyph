@@ -286,7 +286,32 @@
 		"unsupportedOperatorGeneric": "非対応: {{operator}}",
 		"value": "値",
 		"viewSettings": "ビュー設定",
-		"where": "条件"
+		"where": "条件",
+		"filterOperators": {
+			"equals": "次と等しい",
+			"not_equals": "次と等しくない",
+			"contains": "含む",
+			"not_contains": "含まない",
+			"starts_with": "で始まる",
+			"ends_with": "で終わる",
+			"greater_than": "> より大きい",
+			"less_than": "< より小さい",
+			"is_empty": "空",
+			"is_not_empty": "空でない",
+			"is_true": "チェック済み",
+			"is_false": "未チェック",
+			"tags_contains": "含む",
+			"any_of": "次のいずれか",
+			"none_of": "次のいずれでもない",
+			"within_last_7_days": "次と等しい"
+		},
+		"dateShortcuts": {
+			"overdue": "期限切れ",
+			"today": "今日",
+			"thisWeek": "今週",
+			"last7Days": "過去7日間",
+			"last30Days": "過去30日間"
+		}
 	},
 	"databases": {
 		"empty": {

@@ -26,7 +26,7 @@ async function warnAboutLargeGraph(payload: SpaceConnections) {
 	await message(
 		i18n.t("connections.largeGraphBody", {
 			ns: "ui",
-			count: noteCount.toLocaleString(),
+			count: noteCount,
 		}),
 		{
 			title: i18n.t("connections.largeGraphTitle", { ns: "ui" }),

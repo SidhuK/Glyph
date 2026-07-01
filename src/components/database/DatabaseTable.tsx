@@ -283,14 +283,8 @@ export function DatabaseTable({
 	const resizingInfo = table.getState().columnSizingInfo;
 	const activeResizingColumnId = resizingInfo.isResizingColumn;
 	const rowGroups = useMemo(
-		() =>
-			createDatabaseRowGroups(rows, groupColumn).map((group) => ({
-				...group,
-				label: groupColumn
-					? localizeBoardLaneLabel(groupColumn, group.id, t)
-					: group.label,
-			})),
-		[rows, groupColumn, t],
+		() => createDatabaseRowGroups(rows, groupColumn),
+		[rows, groupColumn],
 	);
 	const displayRows = table.getRowModel().rows;
 	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
@@ -393,6 +387,9 @@ export function DatabaseTable({
 							const transform = `translateY(${virtualRow.start}px)`;
 							if (item.kind === "group") {
 								const { group } = item;
+								const groupDisplayLabel = groupColumn
+									? localizeBoardLaneLabel(groupColumn, group.id, t)
+									: group.label;
 								return (
 									<tr
 										key={virtualRow.key}
@@ -406,7 +403,9 @@ export function DatabaseTable({
 											colSpan={visibleColumnCount}
 											className="databaseGroupCell"
 										>
-											<span className="databaseGroupLabel">{group.label}</span>
+											<span className="databaseGroupLabel">
+												{groupDisplayLabel}
+											</span>
 											{canCreateInGroup && groupColumn ? (
 												<button
 													type="button"
@@ -417,8 +416,12 @@ export function DatabaseTable({
 															laneId: group.id,
 														});
 													}}
-													title={`Add note to ${group.label}`}
-													aria-label={`Add note to ${group.label}`}
+													title={t("database.board.addNoteTo", {
+														label: groupDisplayLabel,
+													})}
+													aria-label={t("database.board.addNoteTo", {
+														label: groupDisplayLabel,
+													})}
 												>
 													<Plus
 														size="var(--icon-sm)"

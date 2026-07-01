@@ -176,7 +176,12 @@
 			"reasoningPlaceholder": "예: low, medium, high",
 			"service": "서비스",
 			"serviceDescription": "공급자 구성 간 전환.",
-			"title": "공급자"
+			"title": "공급자",
+			"groups": {
+				"agents": "에이전트",
+				"api": "API",
+				"local": "로컬"
+			}
 		}
 	},
 	"appearance": {
@@ -448,5 +453,31 @@
 		"templateFolder": "템플릿 폴더",
 		"templateFolderDescription": "Markdown 템플릿이 있는 현재 스페이스 내 폴더를 선택합니다.",
 		"title": "템플릿"
+	},
+	"tabs": {
+		"general": "일반",
+		"appearance": "모양",
+		"shortcuts": "단축키",
+		"ai": "Glyph AI",
+		"space": "스페이스",
+		"git": "Git",
+		"advanced": "고급",
+		"about": "정보"
+	},
+	"groups": {
+		"workspace": "작업 공간",
+		"features": "기능",
+		"system": "시스템",
+		"application": "애플리케이션"
+	},
+	"categories": {
+		"workspace": "작업 공간",
+		"navigation": "탐색",
+		"search": "검색",
+		"file": "파일 작업",
+		"tabs": "탭",
+		"ai": "AI",
+		"editor": "편집기",
+		"settings": "설정"
 	}
 }

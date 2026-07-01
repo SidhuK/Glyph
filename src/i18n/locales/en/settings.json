@@ -176,7 +176,12 @@
 			"reasoningPlaceholder": "e.g. low, medium, high",
 			"service": "Service",
 			"serviceDescription": "Switch between provider configurations.",
-			"title": "Provider"
+			"title": "Provider",
+			"groups": {
+				"agents": "Agents",
+				"api": "API",
+				"local": "Local"
+			}
 		}
 	},
 	"appearance": {
@@ -449,5 +454,31 @@
 		"templateFolder": "Template folder",
 		"templateFolderDescription": "Choose a folder inside the current space that contains your markdown templates.",
 		"title": "Templates"
+	},
+	"tabs": {
+		"general": "General",
+		"appearance": "Appearance",
+		"shortcuts": "Shortcuts",
+		"ai": "Glyph AI",
+		"space": "Space",
+		"git": "Git",
+		"advanced": "Advanced",
+		"about": "About"
+	},
+	"groups": {
+		"workspace": "Workspace",
+		"features": "Features",
+		"system": "System",
+		"application": "Application"
+	},
+	"categories": {
+		"workspace": "Workspace",
+		"navigation": "Navigation",
+		"search": "Search",
+		"file": "File Operations",
+		"tabs": "Tabs",
+		"ai": "AI",
+		"editor": "Editor",
+		"settings": "Settings"
 	}
 }

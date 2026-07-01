@@ -176,7 +176,12 @@
 			"reasoningPlaceholder": "z. B. niedrig, mittel, hoch",
 			"service": "Dienst",
 			"serviceDescription": "Wechsle zwischen Anbieterkonfigurationen.",
-			"title": "Anbieter"
+			"title": "Anbieter",
+			"groups": {
+				"agents": "Agenten",
+				"api": "API",
+				"local": "Lokal"
+			}
 		}
 	},
 	"appearance": {
@@ -448,5 +453,31 @@
 		"templateFolder": "Vorlagenordner",
 		"templateFolderDescription": "Wähle einen Ordner im aktuellen Space, der deine Markdown-Vorlagen enthält.",
 		"title": "Vorlagen"
+	},
+	"tabs": {
+		"general": "Allgemein",
+		"appearance": "Darstellung",
+		"shortcuts": "Tastenkürzel",
+		"ai": "Glyph AI",
+		"space": "Space",
+		"git": "Git",
+		"advanced": "Erweitert",
+		"about": "Info"
+	},
+	"groups": {
+		"workspace": "Arbeitsbereich",
+		"features": "Funktionen",
+		"system": "System",
+		"application": "Anwendung"
+	},
+	"categories": {
+		"workspace": "Arbeitsbereich",
+		"navigation": "Navigation",
+		"search": "Suche",
+		"file": "Dateivorgänge",
+		"tabs": "Tabs",
+		"ai": "KI",
+		"editor": "Editor",
+		"settings": "Einstellungen"
 	}
 }

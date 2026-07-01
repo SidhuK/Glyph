@@ -176,7 +176,12 @@
 			"reasoningPlaceholder": "例: low, medium, high",
 			"service": "サービス",
 			"serviceDescription": "プロバイダー設定を切り替えます。",
-			"title": "プロバイダー"
+			"title": "プロバイダー",
+			"groups": {
+				"agents": "エージェント",
+				"api": "API",
+				"local": "ローカル"
+			}
 		}
 	},
 	"appearance": {
@@ -448,5 +453,31 @@
 		"templateFolder": "テンプレートフォルダ",
 		"templateFolderDescription": "Markdown テンプレートを含む、現在のスペース内のフォルダを選びます。",
 		"title": "テンプレート"
+	},
+	"tabs": {
+		"general": "一般",
+		"appearance": "外観",
+		"shortcuts": "ショートカット",
+		"ai": "Glyph AI",
+		"space": "スペース",
+		"git": "Git",
+		"advanced": "詳細",
+		"about": "情報"
+	},
+	"groups": {
+		"workspace": "ワークスペース",
+		"features": "機能",
+		"system": "システム",
+		"application": "アプリケーション"
+	},
+	"categories": {
+		"workspace": "ワークスペース",
+		"navigation": "ナビゲーション",
+		"search": "検索",
+		"file": "ファイル操作",
+		"tabs": "タブ",
+		"ai": "AI",
+		"editor": "エディタ",
+		"settings": "設定"
 	}
 }

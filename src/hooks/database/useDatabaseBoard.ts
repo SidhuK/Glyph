@@ -6,8 +6,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useTranslation } from "react-i18next";
-import { localizeBoardLaneLabel } from "../../components/database/databaseViewI18n";
 import {
 	DATABASE_BOARD_EMPTY_LANE_ID,
 	type DatabaseBoardLane,
@@ -164,7 +162,6 @@ export function useDatabaseBoard({
 	onLaneOrderChange,
 	onCardOrderChange,
 }: UseDatabaseBoardParams) {
-	const { t } = useTranslation("ui");
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
 	const [rawGroupColumnId, setRawGroupColumnId] = useState<string | null>(
 		() => null,
@@ -254,11 +251,8 @@ export function useDatabaseBoard({
 			cardOrderByGroup[groupColumn.id] ??
 			displayedCardIdsRef.current[groupColumn.id] ??
 			{};
-		return orderBoardLaneRows(orderedLanes, previousCardOrder).map((lane) => ({
-			...lane,
-			label: localizeBoardLaneLabel(groupColumn, lane.id, t),
-		}));
-	}, [cardOrderByGroup, groupColumn, laneOrderByGroup, rows, t]);
+		return orderBoardLaneRows(orderedLanes, previousCardOrder);
+	}, [cardOrderByGroup, groupColumn, laneOrderByGroup, rows]);
 
 	useEffect(() => {
 		if (!groupColumn) return;

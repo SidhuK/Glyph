@@ -186,7 +186,7 @@ export function useGitSync({
 					statusSpaceRef.current === spacePath && current
 						? {
 								...current,
-								enabled: enable,
+								enabled: enable ? true : current.enabled,
 								auto_sync_prompted: true,
 							}
 						: current,

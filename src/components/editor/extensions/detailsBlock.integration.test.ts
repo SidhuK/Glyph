@@ -263,7 +263,7 @@ Second paragraph.
 			element: document.createElement("div"),
 		});
 
-		editor.chain().focus().insertContent(createDetailsBlockContent()).run();
+		editor.chain().focus().insertContent(createDetailsBlockContent("Toggle title")).run();
 		await new Promise((resolve) => setTimeout(resolve, 0));
 		const toggle = editor.view.dom.querySelector("button");
 		expect(toggle).toBeInstanceOf(HTMLButtonElement);

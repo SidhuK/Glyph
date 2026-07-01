@@ -286,7 +286,32 @@
 		"unsupportedOperatorGeneric": "Nicht unterstützt: {{operator}}",
 		"value": "Wert",
 		"viewSettings": "Ansichtseinstellungen",
-		"where": "Wo"
+		"where": "Wo",
+		"filterOperators": {
+			"equals": "ist",
+			"not_equals": "ist nicht",
+			"contains": "enthält",
+			"not_contains": "enthält nicht",
+			"starts_with": "beginnt mit",
+			"ends_with": "endet mit",
+			"greater_than": "> Größer als",
+			"less_than": "< Kleiner als",
+			"is_empty": "ist leer",
+			"is_not_empty": "ist nicht leer",
+			"is_true": "ist markiert",
+			"is_false": "ist nicht markiert",
+			"tags_contains": "enthält",
+			"any_of": "ist eines von",
+			"none_of": "ist keines von",
+			"within_last_7_days": "ist"
+		},
+		"dateShortcuts": {
+			"overdue": "Überfällig",
+			"today": "Heute",
+			"thisWeek": "Diese Woche",
+			"last7Days": "Letzte 7 Tage",
+			"last30Days": "Letzte 30 Tage"
+		}
 	},
 	"databases": {
 		"empty": {

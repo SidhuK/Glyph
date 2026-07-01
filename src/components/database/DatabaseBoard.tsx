@@ -526,6 +526,7 @@ export function DatabaseBoard({
 								<DatabaseBoardLaneView
 									key={lane.id}
 									lane={lane}
+									groupColumn={groupColumn}
 									laneIndex={laneIndex}
 									showColumnColor={showColumnColor}
 									laneColors={laneColors}
