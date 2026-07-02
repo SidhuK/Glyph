@@ -10,12 +10,23 @@ import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyEditorWidthMode,
 	applyUiAccent,
+	applyUiCornerRadius,
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
-import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
-import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
+import type {
+	UiAccent,
+	UiCornerRadiusStyle,
+	UiDarkThemeId,
+	UiLightThemeId,
+} from "./lib/settings";
+import {
+	isUiAccent,
+	isUiCornerRadiusStyle,
+	loadSettings,
+	reloadFromDisk,
+} from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
@@ -48,6 +59,8 @@ function ThemeAndTypographyBridge() {
 	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
 		null,
 	);
+	const [cornerRadiusStyle, setCornerRadiusStyle] =
+		React.useState<UiCornerRadiusStyle | null>(null);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -69,6 +82,7 @@ function ThemeAndTypographyBridge() {
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
+				setCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -143,6 +157,9 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.translucentApp === "boolean") {
 			setTranslucentApp(payload.ui.translucentApp);
 		}
+		if (isUiCornerRadiusStyle(payload.ui?.cornerRadiusStyle)) {
+			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
+		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
 			payload.editor?.editorWidthMode === "comfortable" ||
@@ -203,6 +220,11 @@ function ThemeAndTypographyBridge() {
 		if (typeof translucentApp !== "boolean") return;
 		applyUiSurfacePreferences({ translucentApp });
 	}, [translucentApp]);
+
+	React.useEffect(() => {
+		if (cornerRadiusStyle === null) return;
+		applyUiCornerRadius(cornerRadiusStyle);
+	}, [cornerRadiusStyle]);
 
 	React.useEffect(() => {
 		if (typeof translucentApp !== "boolean") return;

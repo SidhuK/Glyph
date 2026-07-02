@@ -286,7 +286,7 @@
 	width: var(--icon-xl);
 	height: var(--icon-xl);
 	object-fit: contain;
-	border-radius: 3px;
+	border-radius: var(--radius-3);
 	display: block;
 }
 

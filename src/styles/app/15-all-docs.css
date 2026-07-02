@@ -38,7 +38,7 @@
 	min-height: 32px;
 	padding: 0 10px;
 	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 	color: var(--text-secondary);
 	font: inherit;
@@ -174,7 +174,7 @@
 	min-height: var(--all-docs-card-min-height);
 	min-width: 0;
 	padding: var(--all-docs-card-padding);
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
 	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.26);

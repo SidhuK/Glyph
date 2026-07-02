@@ -90,7 +90,7 @@
 		var(--bg-secondary)
 	);
 	border: 0;
-	border-radius: 4px;
+	border-radius: var(--radius-4);
 	padding: 1px 7px;
 	font-weight: var(--font-semibold);
 	line-height: 1.35;
@@ -115,7 +115,7 @@
 	vertical-align: super;
 	line-height: 0;
 	cursor: pointer;
-	border-radius: 3px;
+	border-radius: var(--radius-3);
 	padding: 0 1px;
 	transition: background 120ms ease;
 }
@@ -129,7 +129,7 @@
 	font-size: 0.85em;
 	font-weight: var(--font-semibold);
 	cursor: pointer;
-	border-radius: 3px;
+	border-radius: var(--radius-3);
 	transition: background 120ms ease;
 }
 .tiptapContentInline .footnoteDef:hover {
@@ -188,7 +188,7 @@
 }
 
 .noteSearchMatch {
-	border-radius: 3px;
+	border-radius: var(--radius-3);
 	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 	box-shadow: 0 0 0 1px
 		color-mix(in srgb, var(--interactive-accent) 12%, transparent);

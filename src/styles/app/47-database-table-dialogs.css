@@ -343,7 +343,7 @@
 	gap: 5px;
 	padding: 2px 8px;
 	border: 0;
-	border-radius: 4px;
+	border-radius: var(--radius-4);
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
@@ -502,7 +502,7 @@
 	width: 24px;
 	height: 24px;
 	border: none;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 	color: var(--interactive-accent);
 	cursor: pointer;
@@ -648,7 +648,7 @@
 	gap: 6px;
 	min-width: 0;
 	padding: 3px 10px 3px 8px;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	background: color-mix(in srgb, var(--database-tone) 91%, var(--bg-primary));
 }
 

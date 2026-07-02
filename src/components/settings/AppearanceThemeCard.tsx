@@ -10,12 +10,12 @@ import type {
 import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
 import {
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import { SettingsSelect } from "./SettingsSelect";
 import { getAccentPreviewColor } from "./accentOptions";
 
 interface AppearanceThemeCardProps {
@@ -31,12 +31,6 @@ interface AppearanceThemeCardProps {
 	onDarkThemeChange: (themeId: UiDarkThemeId) => Promise<void>;
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
-
-const THEME_MODE_OPTIONS = [
-	{ label: "System", value: "system" },
-	{ label: "Light", value: "light" },
-	{ label: "Dark", value: "dark" },
-] as const satisfies readonly { label: string; value: ThemeMode }[];
 
 function resolvePreview<T extends string>(
 	option: UiThemeOption<T>,
@@ -216,20 +210,15 @@ export function AppearanceThemeCard({
 			title="Theme"
 			description="Mix and match light and dark theme families."
 		>
-			<SettingsRow label="Select Theme" interactive={false}>
-				<SettingsSelect
-					aria-label="Theme mode"
-					value={themeMode}
-					onChange={(event) =>
-						void onThemeModeChange(event.currentTarget.value as ThemeMode)
-					}
-				>
-					{THEME_MODE_OPTIONS.map((option) => (
-						<option key={option.value} value={option.value}>
-							{option.label}
-						</option>
-					))}
-				</SettingsSelect>
+			<SettingsRow
+				label="Appearance"
+				description="Follow your system or lock Glyph to light or dark mode."
+				interactive={false}
+			>
+				<AppearanceThemeModePicker
+					themeMode={themeMode}
+					onThemeModeChange={onThemeModeChange}
+				/>
 			</SettingsRow>
 
 			<ThemeSelector

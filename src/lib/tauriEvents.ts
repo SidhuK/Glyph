@@ -6,6 +6,7 @@ import type {
 	EditorWidthMode,
 	ReleaseChannel,
 	UiAccent,
+	UiCornerRadiusStyle,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
@@ -68,6 +69,7 @@ type TauriEventMap = {
 			fontSize?: number;
 			editorFontSize?: number;
 			translucentApp?: boolean;
+			cornerRadiusStyle?: UiCornerRadiusStyle;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
 			showNonMarkdownFiles?: boolean;

@@ -442,7 +442,7 @@
 .commandPaletteResultSnippet mark {
 	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 	color: color-mix(in srgb, var(--interactive-accent) 75%, var(--text-primary));
-	border-radius: 2px;
+	border-radius: var(--radius-2);
 	padding: 0 1px;
 	font-weight: var(--font-medium);
 	text-decoration: none;

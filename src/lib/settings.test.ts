@@ -152,6 +152,58 @@ describe("settings Folio Mode", () => {
 	});
 });
 
+describe("settings corner radius style", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults corner radius style to default", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.cornerRadiusStyle).toBe("default");
+	});
+
+	it("loads corner radius style from the store", async () => {
+		storeState.set("ui.cornerRadiusStyle", "round");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.cornerRadiusStyle).toBe("round");
+	});
+
+	it("falls back to default for invalid corner radius style values", async () => {
+		storeState.set("ui.cornerRadiusStyle", "invalid");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.cornerRadiusStyle).toBe("default");
+	});
+
+	it("persists and emits corner radius style changes", async () => {
+		const { setUiCornerRadiusStyle } = await import("./settings");
+
+		await setUiCornerRadiusStyle("sharp");
+
+		expect(storeState.get("ui.cornerRadiusStyle")).toBe("sharp");
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { cornerRadiusStyle: "sharp" },
+		});
+
+		await setUiCornerRadiusStyle("round");
+
+		expect(storeState.get("ui.cornerRadiusStyle")).toBe("round");
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { cornerRadiusStyle: "round" },
+		});
+	});
+});
+
 describe("settings app translucency", () => {
 	beforeEach(() => {
 		vi.resetModules();

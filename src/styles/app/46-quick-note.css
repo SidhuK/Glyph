@@ -6,7 +6,7 @@
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
-	border-radius: 22px;
+	border-radius: var(--radius-24);
 	box-shadow: 0 24px 64px color-mix(in srgb, black 24%, transparent);
 	overflow: hidden;
 }
@@ -274,7 +274,7 @@
 	min-height: 28px;
 	padding: 3px 7px 3px 8px;
 	border: 0;
-	border-radius: 7px;
+	border-radius: var(--radius-7);
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
 	cursor: pointer;

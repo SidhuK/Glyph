@@ -19,7 +19,7 @@ export function AppearanceAccentCard({
 		<SettingsSection title="Accent" description={description}>
 			<SettingsRow
 				label="Palette"
-				description="Preview and select the accent that feels best for your workspace."
+				description="Applies to links, buttons, focus rings, and emphasis."
 			>
 				<div className="settingsAccentPicker">
 					<div

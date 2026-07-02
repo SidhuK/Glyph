@@ -31,8 +31,10 @@ import {
 	isGlyphDefaultLightTheme,
 } from "../../lib/uiThemes";
 import { AppearanceAccentCard } from "./AppearanceAccentCard";
+import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
+import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 
 export function AppearanceSettingsPane() {
@@ -49,6 +51,8 @@ export function AppearanceSettingsPane() {
 		DEFAULT_UI_TRANSLUCENT_APP,
 	);
 	const [error, setError] = useState("");
+	const { cornerRadiusStyle, onCornerRadiusStyleChange } =
+		useAppearanceCornerRadius({ setError });
 	const {
 		fontFamily,
 		editorFontFamily,
@@ -175,10 +179,10 @@ export function AppearanceSettingsPane() {
 	const accentDescription =
 		isGlyphDefaultLightTheme(lightThemeId) &&
 		isGlyphDefaultDarkTheme(darkThemeId)
-			? "Choose the accent used for highlights, focus rings, and emphasis in the default light and dark themes."
+			? "Sets the accent for highlights, focus rings, and emphasis in the default light and dark themes."
 			: isGlyphDefaultLightTheme(lightThemeId)
-				? "Choose the accent used for highlights, focus rings, and emphasis in the default light theme."
-				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
+				? "Sets the accent for highlights, focus rings, and emphasis in the default light theme."
+				: "Sets the accent for highlights, focus rings, and emphasis in the default dark theme.";
 	const lightTheme = getUiLightThemeOption(lightThemeId);
 	const darkTheme = getUiDarkThemeOption(darkThemeId);
 
@@ -198,6 +202,10 @@ export function AppearanceSettingsPane() {
 					onLightThemeChange={onLightThemeChange}
 					onDarkThemeChange={onDarkThemeChange}
 					onTranslucentAppChange={onTranslucentAppChange}
+				/>
+				<AppearanceCornerRadiusCard
+					cornerRadiusStyle={cornerRadiusStyle}
+					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
 				/>
 				{showAccentCard ? (
 					<AppearanceAccentCard

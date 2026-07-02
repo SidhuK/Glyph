@@ -870,7 +870,7 @@
 	font: inherit;
 	text-align: left;
 	padding: 4px 6px;
-	border-radius: 4px;
+	border-radius: var(--radius-4);
 	border-left: 0;
 	font-size: calc(var(--text-base) * 0.9);
 	color: var(--text-secondary);
@@ -1022,7 +1022,7 @@
 
 .markdownEditorPane .rfNodeNoteEditor {
 	border: none;
-	border-radius: 18px;
+	border-radius: var(--radius-18);
 	background: transparent;
 }
 
