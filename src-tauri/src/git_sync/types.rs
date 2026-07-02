@@ -45,6 +45,7 @@ pub enum AttachmentStorageMode {
     SpaceRoot,
     SpecificFolder,
     NoteFolder,
+    NoteSubfolder,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

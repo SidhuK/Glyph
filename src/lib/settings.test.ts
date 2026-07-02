@@ -328,10 +328,13 @@ describe("attachment storage settings", () => {
 		const { setEditorAttachmentStorageMode } = await import("./settings");
 
 		await setEditorAttachmentStorageMode("space-root");
+		await setEditorAttachmentStorageMode("note-subfolder");
 
-		expect(storeState.get("editor.attachmentStorageMode")).toBe("space-root");
+		expect(storeState.get("editor.attachmentStorageMode")).toBe(
+			"note-subfolder",
+		);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { attachmentStorageMode: "space-root" },
+			editor: { attachmentStorageMode: "note-subfolder" },
 		});
 	});
 
@@ -344,6 +347,22 @@ describe("attachment storage settings", () => {
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			editor: { attachmentFolder: "assets/uploads" },
 		});
+	});
+
+	it("recognizes note-subfolder as a valid attachment storage mode", async () => {
+		const { isAttachmentStorageMode } = await import("./settings");
+
+		expect(isAttachmentStorageMode("note-subfolder")).toBe(true);
+		expect(isAttachmentStorageMode("invalid-mode")).toBe(false);
+	});
+
+	it("rejects invalid attachment folder paths", async () => {
+		const { setEditorAttachmentFolder } = await import("./settings");
+
+		await expect(setEditorAttachmentFolder("../secret")).rejects.toThrow("..");
+		await expect(setEditorAttachmentFolder(".hidden")).rejects.toThrow(
+			"hidden",
+		);
 	});
 });
 

@@ -6,6 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ATTACHMENT_LOCATION_OPTIONS } from "../../lib/attachmentStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	getGitSyncConnectionHelp,
@@ -152,10 +153,14 @@ export function GitSettingsPane() {
 		[config, status],
 	);
 	const presentation = useMemo(() => getGitSyncPresentation(status), [status]);
+	const specificFolderModeLabel =
+		ATTACHMENT_LOCATION_OPTIONS.find(
+			(option) => option.value === "specific-folder",
+		)?.label ?? "One folder for all attachments";
 	const attachmentFilteringHelp =
 		attachmentStorageMode === "specific-folder"
 			? "Sync files from the configured attachments folder."
-			: "Attachment-only filtering works only when attachments use Specific folder. In other modes, attachment files follow the broader non-markdown files setting.";
+			: `Attachment-only filtering works only when attachments use ${specificFolderModeLabel}. In other modes, attachment files follow the broader non-markdown files setting.`;
 
 	return (
 		<div className="settingsPane">

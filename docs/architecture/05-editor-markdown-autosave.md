@@ -252,6 +252,7 @@ This prevents the active note from reloading while the user has unsaved changes.
    - space root
    - specific attachment folder
    - note folder
+   - subfolder under the note folder
 3. Insert temporary object URL image nodes as placeholders.
 4. Convert each file to a data URL.
 5. Call `space_save_pasted_image` with the browser `File.name` as `original_filename`; the backend derives the on-disk filename from that dedicated parameter. Markdown `alt` remains separate display text on the editor image node.
@@ -259,6 +260,8 @@ This prevents the active note from reloading while the user has unsaved changes.
 7. Revoke object URLs.
 
 The backend writes the image into the space using a sanitized version of `original_filename`, for example `assets/picture-new.png`. The response keeps that filesystem identity in `asset_rel_path`, and returns a note-relative markdown `href` such as `../assets/picture-new.png`; pasted-image nodes store `href` in `originSrc` so markdown serialization, hydration, indexing, and attachment renames all use the same link shape. If that filename already exists with identical bytes, the existing file is reused; if it exists with different bytes, the backend allocates a non-destructive suffix such as `picture-new-2.png`. Unnamed clipboard images fall back to `image.{ext}` and use the same suffixing rules.
+
+In `note-subfolder` mode, the target directory is the configured subfolder under the note's parent folder. For example, a note at `Projects/Upcoming/Plan.md` with subfolder `attachments` saves pasted images to `Projects/Upcoming/attachments/` and inserts links like `attachments/picture-new.png`. Root-level notes such as `Plan.md` save to `attachments/` at the space root.
 
 Existing hash-named pasted assets are not migrated. Notes that already reference paths such as `assets/{hash}.png` keep resolving through the normal markdown-link hydration path.
 

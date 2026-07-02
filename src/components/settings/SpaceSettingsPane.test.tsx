@@ -44,15 +44,18 @@ const {
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("../../lib/settings", () => ({
-	DEFAULT_QUICK_NOTES_FOLDER: "Quick Notes",
-	getDailyNotesFolder: getDailyNotesFolderMock,
-	loadSettings: loadSettingsMock,
-	setDailyNotesFolder: setDailyNotesFolderMock,
-	setEditorAttachmentFolder: setEditorAttachmentFolderMock,
-	setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
-	setQuickNotesFolder: setQuickNotesFolderMock,
-}));
+vi.mock("../../lib/settings", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../../lib/settings")>();
+	return {
+		...actual,
+		getDailyNotesFolder: getDailyNotesFolderMock,
+		loadSettings: loadSettingsMock,
+		setDailyNotesFolder: setDailyNotesFolderMock,
+		setEditorAttachmentFolder: setEditorAttachmentFolderMock,
+		setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
+		setQuickNotesFolder: setQuickNotesFolderMock,
+	};
+});
 
 vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
@@ -152,7 +155,7 @@ describe("SpaceSettingsPane", () => {
 		container.remove();
 	});
 
-	it("renders the attachment location dropdown with all three options", async () => {
+	it("renders the attachment location dropdown with all four options", async () => {
 		await act(async () => {
 			root.render(<SpaceSettingsPane />);
 			await Promise.resolve();
@@ -167,9 +170,13 @@ describe("SpaceSettingsPane", () => {
 			value: option.value,
 		}));
 		expect(options).toEqual([
-			{ label: "Main space folder", value: "space-root" },
-			{ label: "Specific folder", value: "specific-folder" },
-			{ label: "Same folder as note", value: "note-folder" },
+			{ label: "At the top of your space", value: "space-root" },
+			{ label: "One folder for all attachments", value: "specific-folder" },
+			{ label: "Next to each note", value: "note-folder" },
+			{
+				label: "In a subfolder with the note",
+				value: "note-subfolder",
+			},
 		]);
 		expect(getAttachmentsSection().textContent).not.toContain("Browse");
 	});
@@ -208,5 +215,132 @@ describe("SpaceSettingsPane", () => {
 			{ spacePath: "/spaces/test" },
 		);
 		expect(getAttachmentsSection().textContent).not.toContain("Browse");
+	});
+
+	it("shows the subfolder text input for note-subfolder mode", async () => {
+		await act(async () => {
+			root.render(<SpaceSettingsPane />);
+			await Promise.resolve();
+		});
+
+		const select = container.querySelector(
+			'select[aria-label="Attachment location"]',
+		) as HTMLSelectElement;
+
+		await act(async () => {
+			select.value = "note-subfolder";
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+			await Promise.resolve();
+		});
+
+		expect(setEditorAttachmentStorageModeMock).toHaveBeenCalledWith(
+			"note-subfolder",
+			{ spacePath: "/spaces/test" },
+		);
+		expect(
+			container.querySelector('input[aria-label="Attachment subfolder name"]'),
+		).not.toBeNull();
+		expect(getAttachmentsSection().textContent).not.toContain("Browse");
+		expect(getAttachmentsSection().textContent).toContain(
+			"Attachments go in this subfolder inside the note's folder.",
+		);
+	});
+
+	it("resets the attachment folder when switching between folder modes", async () => {
+		loadSettingsMock.mockResolvedValueOnce({
+			currentSpacePath: "/spaces/test",
+			dailyNotes: { folder: null },
+			editor: {
+				attachmentStorageMode: "specific-folder",
+				attachmentFolder: "Projects/Media",
+			},
+			quickNotes: { folder: "Quick Notes" },
+		});
+
+		await act(async () => {
+			root.render(<SpaceSettingsPane />);
+			await Promise.resolve();
+		});
+
+		const select = container.querySelector(
+			'select[aria-label="Attachment location"]',
+		) as HTMLSelectElement;
+
+		await act(async () => {
+			select.value = "note-subfolder";
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+			await Promise.resolve();
+		});
+
+		expect(setEditorAttachmentFolderMock).toHaveBeenCalledWith("assets", {
+			spacePath: "/spaces/test",
+		});
+	});
+
+	it("resets stale attachment folders when entering note-subfolder from an ignored mode", async () => {
+		loadSettingsMock.mockResolvedValueOnce({
+			currentSpacePath: "/spaces/test",
+			dailyNotes: { folder: null },
+			editor: {
+				attachmentStorageMode: "note-folder",
+				attachmentFolder: "Projects/Media",
+			},
+			quickNotes: { folder: "Quick Notes" },
+		});
+
+		await act(async () => {
+			root.render(<SpaceSettingsPane />);
+			await Promise.resolve();
+		});
+
+		const select = container.querySelector(
+			'select[aria-label="Attachment location"]',
+		) as HTMLSelectElement;
+
+		await act(async () => {
+			select.value = "note-subfolder";
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+			await Promise.resolve();
+		});
+
+		expect(setEditorAttachmentFolderMock).toHaveBeenCalledWith("assets", {
+			spacePath: "/spaces/test",
+		});
+	});
+
+	it("shows validation errors for invalid subfolder paths on blur", async () => {
+		loadSettingsMock.mockResolvedValueOnce({
+			currentSpacePath: "/spaces/test",
+			dailyNotes: { folder: null },
+			editor: {
+				attachmentStorageMode: "note-subfolder",
+				attachmentFolder: "../secret",
+			},
+			quickNotes: { folder: "Quick Notes" },
+		});
+
+		await act(async () => {
+			root.render(<SpaceSettingsPane />);
+			await Promise.resolve();
+		});
+
+		const input = container.querySelector(
+			'input[aria-label="Attachment subfolder name"]',
+		) as HTMLInputElement;
+
+		await act(async () => {
+			input.focus();
+		});
+
+		await act(async () => {
+			input.blur();
+			await Promise.resolve();
+		});
+
+		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		expect(
+			container.querySelector("#attachmentSubfolderError")?.textContent,
+		).toContain("Folder path cannot contain '..'.");
+		expect(input.getAttribute("aria-invalid")).toBe("true");
 	});
 });

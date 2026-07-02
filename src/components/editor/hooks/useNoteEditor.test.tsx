@@ -1194,6 +1194,45 @@ describe("useNoteEditor", () => {
 		});
 	});
 
+	it("saves pasted images in a subfolder under the note folder in note-subfolder mode", async () => {
+		const onChange = vi.fn();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "attachments",
+				attachmentStorageMode: "note-subfolder",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: false,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [{ type: "image/png", getAsFile: () => file }],
+		});
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await flushImageUploadWork();
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+			source_path: "notes/test.md",
+			target_dir: "notes/attachments",
+			data_url: "data:image/png;base64,abc",
+			original_filename: "paste.png",
+		});
+	});
+
 	it("does not start image uploads when image placeholders cannot be inserted", async () => {
 		const onChange = vi.fn();
 		canCommands.insertContentAt.mockReturnValue(false);

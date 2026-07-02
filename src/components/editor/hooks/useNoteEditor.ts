@@ -10,6 +10,10 @@ import {
 } from "react";
 import { useState } from "react";
 import {
+	DEFAULT_ATTACHMENT_FOLDER,
+	resolveAttachmentTargetDir,
+} from "../../../lib/attachmentStorage";
+import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
@@ -19,7 +23,6 @@ import {
 } from "../../../lib/settings";
 import { invoke } from "../../../lib/tauri";
 import { useTauriEvent } from "../../../lib/tauriEvents";
-import { parentDir } from "../../../utils/path";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
@@ -33,7 +36,6 @@ import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
-const DEFAULT_ATTACHMENT_FOLDER = "assets";
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
 const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
 
@@ -47,23 +49,6 @@ function getClipboardHtml(event: ClipboardEvent): string {
 
 function getClipboardPlainText(event: ClipboardEvent): string {
 	return event.clipboardData?.getData("text/plain") ?? "";
-}
-
-function resolveAttachmentTargetDir(
-	mode: AttachmentStorageMode,
-	attachmentFolder: string | null,
-	notePath: string,
-): string {
-	switch (mode) {
-		case "space-root":
-			return "";
-		case "specific-folder":
-			return attachmentFolder?.trim() || DEFAULT_ATTACHMENT_FOLDER;
-		case "note-folder":
-			return parentDir(notePath);
-		default:
-			return parentDir(notePath);
-	}
 }
 
 function normalizeClipboardMarkdownText(text: string): string {
