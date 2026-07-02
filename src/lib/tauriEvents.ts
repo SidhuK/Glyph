@@ -8,6 +8,7 @@ import type {
 	UiAccent,
 	UiCornerRadiusStyle,
 } from "./settings";
+import type { UiThemeColorOverridesPatch } from "./themeColors";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
@@ -63,6 +64,7 @@ type TauriEventMap = {
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
 			accent?: UiAccent;
+			themeColors?: UiThemeColorOverridesPatch;
 			fontFamily?: string;
 			editorFontFamily?: string;
 			monoFontFamily?: string;

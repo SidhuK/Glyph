@@ -205,3 +205,94 @@
 		width: min(100vw - 16px, 460px);
 	}
 }
+
+.appearanceThemeColorField {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	padding: 4px 10px 4px 6px;
+	border-radius: var(--radius-md);
+	background: var(--settings-control-surface);
+	border: 1px solid color-mix(in srgb, var(--border-default) 90%, transparent);
+}
+
+.appearanceThemeColorFieldEditable {
+	position: relative;
+	cursor: pointer;
+}
+
+.appearanceThemeColorInput {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.appearanceThemeColorFieldEditable:focus-within {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 2px;
+}
+
+.appearanceThemeColorSwatch {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	border-radius: 999px;
+	background: var(--theme-color-swatch);
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, #000000 6%, transparent);
+}
+
+.appearanceThemeColorHex {
+	font-size: calc(var(--text-base) * 0.8);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0.01em;
+	color: var(--text-primary);
+	white-space: nowrap;
+}
+
+.appearanceThemeColorControl {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	min-width: 0;
+}
+
+.appearanceThemeColorReset {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-default) 90%, transparent);
+	background: var(--settings-control-surface);
+	color: var(--text-secondary);
+	transition: background var(--transition-base), color var(--transition-base),
+		border-color var(--transition-base), opacity var(--transition-base);
+}
+
+.appearanceThemeColorReset:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-primary);
+	border-color: color-mix(in srgb, var(--border-default) 100%, transparent);
+}
+
+.appearanceThemeColorReset:disabled {
+	opacity: 0.42;
+	cursor: not-allowed;
+}
+
+.appearanceThemeColorReset:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline-offset: 2px;
+}

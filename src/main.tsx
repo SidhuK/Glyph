@@ -12,6 +12,7 @@ import {
 	applyUiAccent,
 	applyUiCornerRadius,
 	applyUiSurfacePreferences,
+	applyUiThemeColors,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
@@ -20,6 +21,7 @@ import type {
 	UiCornerRadiusStyle,
 	UiDarkThemeId,
 	UiLightThemeId,
+	UiThemeColorOverrides,
 } from "./lib/settings";
 import {
 	isUiAccent,
@@ -29,6 +31,11 @@ import {
 } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
+import {
+	DEFAULT_UI_THEME_COLOR_OVERRIDES,
+	asThemeColorOverridesPatch,
+	mergeThemeColorOverrides,
+} from "./lib/themeColors";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 import {
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
@@ -61,6 +68,8 @@ function ThemeAndTypographyBridge() {
 	);
 	const [cornerRadiusStyle, setCornerRadiusStyle] =
 		React.useState<UiCornerRadiusStyle | null>(null);
+	const [themeColors, setThemeColors] =
+		React.useState<UiThemeColorOverrides | null>(null);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -83,6 +92,7 @@ function ThemeAndTypographyBridge() {
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
 				setCornerRadiusStyle(settings.ui.cornerRadiusStyle);
+				setThemeColors(settings.ui.themeColors);
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -160,6 +170,15 @@ function ThemeAndTypographyBridge() {
 		if (isUiCornerRadiusStyle(payload.ui?.cornerRadiusStyle)) {
 			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
 		}
+		const themeColorPatch = asThemeColorOverridesPatch(payload.ui?.themeColors);
+		if (themeColorPatch) {
+			setThemeColors((current) =>
+				mergeThemeColorOverrides(
+					current ?? DEFAULT_UI_THEME_COLOR_OVERRIDES,
+					themeColorPatch,
+				),
+			);
+		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
 			payload.editor?.editorWidthMode === "comfortable" ||
@@ -225,6 +244,11 @@ function ThemeAndTypographyBridge() {
 		if (cornerRadiusStyle === null) return;
 		applyUiCornerRadius(cornerRadiusStyle);
 	}, [cornerRadiusStyle]);
+
+	React.useEffect(() => {
+		if (!themeColors) return;
+		applyUiThemeColors(themeColors);
+	}, [themeColors]);
 
 	React.useEffect(() => {
 		if (typeof translucentApp !== "boolean") return;
