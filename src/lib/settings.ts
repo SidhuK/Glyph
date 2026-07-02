@@ -22,11 +22,26 @@ import {
 import { invoke } from "./tauri";
 import type { AiAssistantMode } from "./tauri";
 import {
+	type UiThemeColorField,
+	type UiThemeColorMode,
+	type UiThemeColorOverrides,
+	type UiThemeColorOverridesPatch,
+	asNullableThemeColorValue,
+	tryNormalizeThemeColorHex,
+} from "./themeColors";
+import {
 	type UiDarkThemeId,
 	type UiLightThemeId,
 	asUiDarkThemeId,
 	asUiLightThemeId,
 } from "./uiThemes";
+
+export type {
+	UiThemeColorField,
+	UiThemeColorMode,
+	UiThemeColorOverrides,
+	UiThemeColorOverridesPatch,
+} from "./themeColors";
 
 export type { AiAssistantMode } from "./tauri";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
@@ -344,6 +359,29 @@ function asUiAccent(value: unknown): UiAccent {
 	return isUiAccent(value) ? value : DEFAULT_UI_ACCENT;
 }
 
+function loadUiThemeColorOverrides(
+	entries: Map<string, unknown>,
+): UiThemeColorOverrides {
+	return {
+		light: {
+			background: asNullableThemeColorValue(
+				getSettingValue(entries, KEYS.lightThemeBackground),
+			),
+			foreground: asNullableThemeColorValue(
+				getSettingValue(entries, KEYS.lightThemeForeground),
+			),
+		},
+		dark: {
+			background: asNullableThemeColorValue(
+				getSettingValue(entries, KEYS.darkThemeBackground),
+			),
+			foreground: asNullableThemeColorValue(
+				getSettingValue(entries, KEYS.darkThemeForeground),
+			),
+		},
+	};
+}
+
 function asUiFontFamily(
 	value: unknown,
 	fallback: UiFontFamily = DEFAULT_UI_FONT_FAMILY,
@@ -402,6 +440,7 @@ async function emitSettingsUpdated(payload: {
 		lightThemeId?: UiLightThemeId;
 		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
+		themeColors?: UiThemeColorOverridesPatch;
 		fontFamily?: UiFontFamily;
 		editorFontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
@@ -476,6 +515,7 @@ interface AppSettings {
 		lightThemeId: UiLightThemeId;
 		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
+		themeColors: UiThemeColorOverrides;
 		fontFamily: UiFontFamily;
 		editorFontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
@@ -547,6 +587,10 @@ const KEYS = {
 	lightThemeId: "ui.lightThemeId",
 	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
+	lightThemeBackground: "ui.lightThemeBackground",
+	lightThemeForeground: "ui.lightThemeForeground",
+	darkThemeBackground: "ui.darkThemeBackground",
+	darkThemeForeground: "ui.darkThemeForeground",
 	fontFamily: "ui.fontFamily",
 	editorFontFamily: "ui.editorFontFamily",
 	monoFontFamily: "ui.monoFontFamily",
@@ -981,6 +1025,7 @@ export async function loadSettings(
 	const lightThemeId = asUiLightThemeId(rawLightThemeId);
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
+	const themeColors = loadUiThemeColorOverrides(entries);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	if (
 		typeof rawFontFamily === "string" &&
@@ -1108,6 +1153,7 @@ export async function loadSettings(
 			lightThemeId,
 			darkThemeId,
 			accent,
+			themeColors,
 			fontFamily,
 			editorFontFamily,
 			monoFontFamily,
@@ -1304,6 +1350,47 @@ export async function setUiAccent(accent: UiAccent): Promise<void> {
 	await store.set(KEYS.accent, next);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { accent: next } });
+}
+
+const THEME_COLOR_SETTING_KEYS = {
+	light: {
+		background: KEYS.lightThemeBackground,
+		foreground: KEYS.lightThemeForeground,
+	},
+	dark: {
+		background: KEYS.darkThemeBackground,
+		foreground: KEYS.darkThemeForeground,
+	},
+} as const;
+
+export async function setUiThemeColorOverride({
+	mode,
+	field,
+	color,
+}: {
+	mode: UiThemeColorMode;
+	field: UiThemeColorField;
+	color: string | null;
+}): Promise<void> {
+	const store = await getStore();
+	const next = color === null ? null : tryNormalizeThemeColorHex(color);
+	if (color !== null && next === null) {
+		throw new Error("Invalid theme color");
+	}
+	const key = THEME_COLOR_SETTING_KEYS[mode][field];
+	if (next === null) {
+		await store.delete(key);
+	} else {
+		await store.set(key, next);
+	}
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		ui: {
+			themeColors: {
+				[mode]: { [field]: next },
+			},
+		},
+	});
 }
 
 export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {

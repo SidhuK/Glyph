@@ -27,14 +27,14 @@
 :root.dark:not([data-dark-theme]),
 :root.dark[data-dark-theme="glyph-default-dark"] {
 	/* Clean neutral default — warm charcoal surfaces with soft off-white text. */
-	--bg-primary: #191919;
+	--bg-primary: var(--glyph-user-dark-background, #191919);
 	--bg-secondary: #252525;
 	--bg-tertiary: #2f2f2f;
 	--bg-hover: rgba(255, 255, 255, 0.05);
 	--bg-active: rgba(255, 255, 255, 0.08);
 	--bg-sidebar: #252525;
 	--bg-canvas: #141414;
-	--text-primary: #e8e8e8;
+	--text-primary: var(--glyph-user-dark-foreground, #e8e8e8);
 	--text-secondary: rgba(232, 232, 232, 0.68);
 	--text-tertiary: rgba(232, 232, 232, 0.45);
 	--text-placeholder: rgba(232, 232, 232, 0.32);

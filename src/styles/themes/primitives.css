@@ -102,4 +102,8 @@
 
 	--glyph-user-accent: initial;
 	--glyph-user-accent-hover: initial;
+	--glyph-user-light-background: initial;
+	--glyph-user-light-foreground: initial;
+	--glyph-user-dark-background: initial;
+	--glyph-user-dark-foreground: initial;
 }

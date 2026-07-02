@@ -8,6 +8,7 @@ import {
 	type UiFontSize,
 	isUiAccent,
 } from "./settings";
+import type { UiThemeColorOverrides } from "./themeColors";
 import {
 	type UiDarkThemeId,
 	type UiLightThemeId,
@@ -217,6 +218,24 @@ export function applyUiAccent(
 		"--glyph-user-accent-hover",
 		shiftHexColor(accentColor, -18),
 	);
+}
+
+export function applyUiThemeColors(themeColors: UiThemeColorOverrides): void {
+	const root = document.documentElement;
+	const assignments: Array<[string, string | null]> = [
+		["--glyph-user-light-background", themeColors.light.background],
+		["--glyph-user-light-foreground", themeColors.light.foreground],
+		["--glyph-user-dark-background", themeColors.dark.background],
+		["--glyph-user-dark-foreground", themeColors.dark.foreground],
+	];
+
+	for (const [property, value] of assignments) {
+		if (value) {
+			root.style.setProperty(property, value);
+		} else {
+			root.style.removeProperty(property);
+		}
+	}
 }
 
 export function applyUiThemeSelection(
