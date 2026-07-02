@@ -7,6 +7,8 @@ use tauri::{AppHandle, Manager};
 
 const SPACES_MANIFEST_FILE: &str = "spaces.json";
 const MANIFEST_VERSION: u32 = 1;
+const GLYPH_DB_WAL_NAME: &str = "glyph.sqlite-wal";
+const GLYPH_DB_SHM_NAME: &str = "glyph.sqlite-shm";
 
 #[derive(Serialize, Deserialize)]
 struct SpaceManifestEntry {
@@ -20,6 +22,7 @@ struct SpacesManifest {
 }
 
 static INDEX_ROOT: Mutex<Option<PathBuf>> = Mutex::new(None);
+static MANIFEST_MUTEX: Mutex<()> = Mutex::new(());
 
 pub fn init_index_root(app: &AppHandle) -> Result<(), String> {
     let config_dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
@@ -32,7 +35,7 @@ pub fn init_index_root(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-fn index_root_dir() -> Result<PathBuf, String> {
+pub fn index_root_path() -> Result<PathBuf, String> {
     INDEX_ROOT
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner())
@@ -41,10 +44,10 @@ fn index_root_dir() -> Result<PathBuf, String> {
 }
 
 fn manifest_path() -> Result<PathBuf, String> {
-    Ok(index_root_dir()?.join(SPACES_MANIFEST_FILE))
+    Ok(index_root_path()?.join(SPACES_MANIFEST_FILE))
 }
 
-fn load_manifest() -> Result<SpacesManifest, String> {
+fn load_manifest_unlocked() -> Result<SpacesManifest, String> {
     let path = manifest_path()?;
     match std::fs::read(&path) {
         Ok(bytes) => serde_json::from_slice(&bytes).map_err(|e| e.to_string()),
@@ -56,7 +59,8 @@ fn load_manifest() -> Result<SpacesManifest, String> {
     }
 }
 
-fn save_manifest(manifest: &SpacesManifest) -> Result<(), String> {
+fn save_manifest_unlocked(manifest: &mut SpacesManifest) -> Result<(), String> {
+    manifest.version = MANIFEST_VERSION;
     let path = manifest_path()?;
     let bytes = serde_json::to_vec_pretty(manifest).map_err(|e| e.to_string())?;
     io_atomic::write_atomic(&path, &bytes).map_err(|e| e.to_string())
@@ -103,9 +107,10 @@ fn short_path_hash(root: &Path) -> String {
 fn resolve_unique_key(manifest: &SpacesManifest, root: &Path) -> String {
     let base = base_key_from_root(root);
     let root_key = canonical_root_key(root);
-    let base_taken = manifest.spaces.iter().any(|(path, entry)| {
-        path != &root_key && entry.key == base
-    });
+    let base_taken = manifest
+        .spaces
+        .iter()
+        .any(|(path, entry)| path != &root_key && entry.key == base);
     if !base_taken {
         return base;
     }
@@ -114,26 +119,38 @@ fn resolve_unique_key(manifest: &SpacesManifest, root: &Path) -> String {
 
 pub fn register_space(canonical_root: &Path) -> Result<String, String> {
     let root_key = canonical_root_key(canonical_root);
-    let mut manifest = load_manifest()?;
+    let _guard = MANIFEST_MUTEX
+        .lock()
+        .map_err(|_| "index manifest state poisoned".to_string())?;
+
+    let mut manifest = load_manifest_unlocked()?;
     if let Some(entry) = manifest.spaces.get(&root_key) {
         return Ok(entry.key.clone());
     }
 
     let key = resolve_unique_key(&manifest, canonical_root);
     manifest.spaces.insert(
-        root_key,
+        root_key.clone(),
         SpaceManifestEntry {
             key: key.clone(),
         },
     );
-    save_manifest(&manifest)?;
+    save_manifest_unlocked(&mut manifest)?;
     ensure_index_glyph_dir(&key)?;
+    tracing::info!(
+        space_root = %root_key,
+        index_key = %key,
+        "Registered space in app-support index manifest"
+    );
     Ok(key)
 }
 
-pub fn space_index_key(canonical_root: &Path) -> Result<String, String> {
+pub(crate) fn space_index_key(canonical_root: &Path) -> Result<String, String> {
     let root_key = canonical_root_key(canonical_root);
-    let manifest = load_manifest()?;
+    let _guard = MANIFEST_MUTEX
+        .lock()
+        .map_err(|_| "index manifest state poisoned".to_string())?;
+    let manifest = load_manifest_unlocked()?;
     manifest
         .spaces
         .get(&root_key)
@@ -142,7 +159,7 @@ pub fn space_index_key(canonical_root: &Path) -> Result<String, String> {
 }
 
 fn index_glyph_dir(key: &str) -> Result<PathBuf, String> {
-    Ok(index_root_dir()?
+    Ok(index_root_path()?
         .join(key)
         .join(glyph_paths::GLYPH_DIR_NAME))
 }
@@ -167,12 +184,23 @@ pub fn remove_stale_in_space_db(space_root: &Path) {
     let Ok(glyph_dir) = glyph_paths::glyph_dir(space_root) else {
         return;
     };
+    let mut removed = 0usize;
     for name in [
         glyph_paths::GLYPH_DB_NAME,
-        &format!("{}-wal", glyph_paths::GLYPH_DB_NAME),
-        &format!("{}-shm", glyph_paths::GLYPH_DB_NAME),
+        GLYPH_DB_WAL_NAME,
+        GLYPH_DB_SHM_NAME,
     ] {
-        let _ = std::fs::remove_file(glyph_dir.join(name));
+        let path = glyph_dir.join(name);
+        if path.exists() && std::fs::remove_file(&path).is_ok() {
+            removed += 1;
+        }
+    }
+    if removed > 0 {
+        tracing::info!(
+            space_root = %space_root.to_string_lossy(),
+            removed,
+            "Removed stale in-space SQLite index files"
+        );
     }
 }
 
@@ -230,15 +258,15 @@ mod tests {
         let glyph_dir = glyph_paths::ensure_glyph_dir(&space_root).expect("glyph dir should exist");
         let marker = glyph_dir.join("onboarding-note-v2.json");
         std::fs::write(&marker, b"{}").expect("marker should be written");
-        for name in ["glyph.sqlite", "glyph.sqlite-wal", "glyph.sqlite-shm"] {
+        for name in [glyph_paths::GLYPH_DB_NAME, GLYPH_DB_WAL_NAME, GLYPH_DB_SHM_NAME] {
             std::fs::write(glyph_dir.join(name), b"x").expect("sqlite file should be written");
         }
 
         remove_stale_in_space_db(&space_root);
 
-        assert!(!glyph_dir.join("glyph.sqlite").exists());
-        assert!(!glyph_dir.join("glyph.sqlite-wal").exists());
-        assert!(!glyph_dir.join("glyph.sqlite-shm").exists());
+        assert!(!glyph_dir.join(glyph_paths::GLYPH_DB_NAME).exists());
+        assert!(!glyph_dir.join(GLYPH_DB_WAL_NAME).exists());
+        assert!(!glyph_dir.join(GLYPH_DB_SHM_NAME).exists());
         assert!(marker.exists());
 
         let _ = std::fs::remove_dir_all(space_root);

@@ -1,6 +1,7 @@
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
+use crate::index::paths as index_paths;
 use crate::{glyph_paths, io_atomic, paths};
 
 #[derive(Serialize)]
@@ -93,6 +94,8 @@ pub fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn create_or_open_impl(root: &Path) -> Result<SpaceInfo, String> {
+    index_paths::register_space(root)?;
+    index_paths::remove_stale_in_space_db(root);
     ensure_glyph_dirs(root)?;
     let _ = cleanup_tmp_files(root);
     let onboarding_note_path = ensure_onboarding_note_for_launch(root);

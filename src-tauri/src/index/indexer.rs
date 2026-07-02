@@ -538,7 +538,7 @@ where
 mod tests {
     use super::index_note;
     use crate::index::db::open_db;
-    use crate::index_paths;
+    use crate::index::paths;
     use std::path::{Path, PathBuf};
     use std::thread;
     use std::time::Duration;
@@ -574,8 +574,8 @@ mod tests {
             "glyph-indexer-index-root-{}",
             uuid::Uuid::new_v4()
         ));
-        index_paths::init_test_index_root(index_root);
-        index_paths::register_space(root).expect("space should register");
+        paths::init_test_index_root(index_root);
+        paths::register_space(root).expect("space should register");
 
         let note_id = "Projects/Idle Churn.md";
         let markdown = "- [ ] Keep index stable\n";

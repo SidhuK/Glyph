@@ -10,7 +10,7 @@ Backend:
 
 - `src-tauri/src/index/schema.rs`: table and FTS schema
 - `src-tauri/src/index/db.rs`: database open, WAL setup, schema cache, migrations
-- `src-tauri/src/index_paths.rs`: app-support index paths and `spaces.json` manifest
+- `src-tauri/src/index/paths.rs`: app-support index paths and `spaces.json` manifest
 - `src-tauri/src/index/indexer.rs`: note indexing, removal, rebuild
 - `src-tauri/src/index/commands.rs`: Tauri commands for search, all docs, tags, checklist summaries, graph
 - `src-tauri/src/index/frontmatter.rs`: frontmatter title and preview parsing
@@ -39,7 +39,7 @@ Frontend consumers:
 
 ## Database Location
 
-`index_paths::index_db_path(space_root)` returns:
+`index::paths::index_db_path(space_root)` returns:
 
 ```text
 Application Support/com.karatsidhu.glyph/index/<space-key>/.glyph/glyph.sqlite

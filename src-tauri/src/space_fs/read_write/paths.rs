@@ -526,7 +526,7 @@ pub async fn space_relativize_path(
 mod tests {
     use super::{duplicate_file_under_root, next_duplicate_file_name};
     use crate::index::open_db;
-    use crate::index_paths;
+    use crate::index::paths;
     use crate::space::state::{has_recent_local_change, RecentLocalChanges};
     use std::{
         collections::{HashMap, HashSet},
@@ -566,8 +566,8 @@ mod tests {
             "glyph-duplicate-index-root-{}",
             uuid::Uuid::new_v4()
         ));
-        index_paths::init_test_index_root(index_root);
-        index_paths::register_space(root).expect("space should register");
+        paths::init_test_index_root(index_root);
+        paths::register_space(root).expect("space should register");
     }
 
     #[test]

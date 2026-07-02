@@ -10,7 +10,6 @@ mod file_tree_appearance;
 mod git_sync;
 mod glyph_paths;
 mod index;
-mod index_paths;
 mod io_atomic;
 mod license;
 mod menu_manifest;
@@ -1468,7 +1467,7 @@ pub fn run() {
             }
         })
         .setup(|app| {
-            if let Err(error) = index_paths::init_index_root(app.handle()) {
+            if let Err(error) = index::paths::init_index_root(app.handle()) {
                 warn!("Failed to initialize app-support index root: {error}");
             }
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());

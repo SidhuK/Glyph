@@ -44,7 +44,7 @@ Code ownership:
 - `src-tauri/src/space/state.rs`: active root, watcher handle, local-change tracking, store mutexes
 - `src-tauri/src/space/watcher.rs`: recursive filesystem watcher and index refresh
 - `src-tauri/src/glyph_paths.rs`: `.glyph/` paths in the space folder
-- `src-tauri/src/index_paths.rs`: app-support SQLite index paths and space-key manifest
+- `src-tauri/src/index/paths.rs`: app-support SQLite index paths and space-key manifest
 - `src-tauri/src/space_fs/`: file tree, read/write, preview, rename, delete, link resolution
 - `src-tauri/src/paths.rs`: traversal-safe joining
 - `src-tauri/src/io_atomic.rs`: crash-safer writes and copies
@@ -259,9 +259,9 @@ The editor and preview panes dispatch link click events. `AppShell` listens and 
 - `glyph_app_dir()`: `.glyph/Glyph`
 - `ai_history_dir()`: `.glyph/Glyph/ai_history`
 
-`index_paths.rs` defines the derived SQLite index under app support:
+`index/paths.rs` defines the derived SQLite index under app support:
 
-- `index_root_dir()`: `Application Support/com.karatsidhu.glyph/index`
+- `index_root_path()`: `Application Support/com.karatsidhu.glyph/index`
 - `index_db_path(space_root)`: `index/<space-key>/.glyph/glyph.sqlite`
 - `spaces.json`: canonical space root to stable index key mapping
 

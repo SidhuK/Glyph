@@ -1,5 +1,5 @@
-use crate::index_paths;
 use crate::glyph_paths;
+use crate::index::paths;
 use std::collections::HashSet;
 use std::ffi::CString;
 use std::path::{Path, PathBuf};
@@ -189,7 +189,7 @@ fn migrate_priority_property_kinds(conn: &rusqlite::Connection) -> Result<(), St
 }
 
 pub fn db_path(space_root: &Path) -> Result<PathBuf, String> {
-    Ok(index_paths::ensure_index_dir(space_root)?.join(glyph_paths::GLYPH_DB_NAME))
+    Ok(paths::ensure_index_dir(space_root)?.join(glyph_paths::GLYPH_DB_NAME))
 }
 
 fn configure_wal(conn: &rusqlite::Connection) -> Result<(), String> {
@@ -221,9 +221,6 @@ fn configure_wal(conn: &rusqlite::Connection) -> Result<(), String> {
 
 pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
     let path = db_path(space_root)?;
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
     let conn = rusqlite::Connection::open(&path).map_err(|e| e.to_string())?;
     configure_wal(&conn)?;
 
