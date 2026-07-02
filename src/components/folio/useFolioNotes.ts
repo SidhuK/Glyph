@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
@@ -129,18 +129,31 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 
 export function useFolioNotes(scope: FolioScope) {
 	const queryClient = useQueryClient();
-	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState(false);
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
+		boolean | null
+	>(null);
+	const settingsVersionRef = useRef(0);
 	const folderPrefix = folderForScope(scope);
 	const includesNonMarkdownFiles =
-		showNonMarkdownFiles && scope.kind !== "tag" && scope.kind !== "person";
+		showNonMarkdownFiles === true &&
+		scope.kind !== "tag" &&
+		scope.kind !== "person";
 
 	useEffect(() => {
 		let cancelled = false;
-		void loadSettings().then((settings) => {
-			if (!cancelled) {
-				setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
-			}
-		});
+		const loadId = settingsVersionRef.current + 1;
+		settingsVersionRef.current = loadId;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
+				}
+			})
+			.catch(() => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowNonMarkdownFiles(true);
+				}
+			});
 		return () => {
 			cancelled = true;
 		};
@@ -148,6 +161,7 @@ export function useFolioNotes(scope: FolioScope) {
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
+			settingsVersionRef.current += 1;
 			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
 		}
 	});
