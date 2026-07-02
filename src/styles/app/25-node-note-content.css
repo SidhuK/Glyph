@@ -28,23 +28,35 @@
 }
 
 .wikiLink {
+	--wiki-link-affordance-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%3E%3Cpath%20d%3D'M7%2017L17%207M17%207H9M17%207V15'%20stroke%3D'black'%20stroke-width%3D'1.75'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'/%3E%3C%2Fsvg%3E");
+
 	height: auto;
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
+	gap: 2px;
 	vertical-align: baseline;
 	color: var(--interactive-accent);
 	text-decoration: none;
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	background: none;
 	border: none;
-	border-radius: var(--radius-xs);
-	padding: 1px 4px;
+	border-radius: 0;
+	padding: 0;
 	font: inherit;
-	font-weight: var(--font-medium);
+	font-weight: inherit;
 	line-height: inherit;
 	white-space: nowrap;
-	transition: background 120ms ease, color 120ms ease;
+	transition: color 120ms ease, opacity 120ms ease;
 	cursor: pointer;
+}
+
+.wikiLinkLabel {
+	text-decoration: underline;
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 42%,
+		transparent
+	);
+	text-underline-offset: 0.14em;
 }
 
 .wikiLinkIcon {
@@ -52,20 +64,46 @@
 		center / contain no-repeat;
 
 	flex: 0 0 auto;
-	width: var(--icon-md);
-	height: var(--icon-md);
-	background: var(--text-accent);
-	color: var(--text-accent);
+	width: var(--icon-sm);
+	height: var(--icon-sm);
+	background: currentcolor;
+	color: currentcolor;
 	mask: var(--wiki-link-file-icon-mask);
 	-webkit-mask: var(--wiki-link-file-icon-mask);
 	pointer-events: none;
 }
 
+.wikiLink::after {
+	content: "";
+	flex: 0 0 auto;
+	width: 0.72em;
+	height: 0.72em;
+	margin-left: 1px;
+	background: currentcolor;
+	opacity: 0.58;
+	mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
+	-webkit-mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
+	pointer-events: none;
+}
+
 .wikiLink:hover,
 .wikiLink:focus-visible {
-	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
 	color: var(--interactive-accent);
 	outline: none;
+}
+
+.wikiLink:hover .wikiLinkLabel,
+.wikiLink:focus-visible .wikiLinkLabel {
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		transparent
+	);
+}
+
+.wikiLink:hover::after,
+.wikiLink:focus-visible::after {
+	opacity: 0.85;
 }
 
 .wikiLink:active {
@@ -78,7 +116,14 @@
 
 .wikiLink[data-unresolved="true"] {
 	color: var(--text-tertiary);
-	background: color-mix(in srgb, var(--text-tertiary) 6%, transparent);
+}
+
+.wikiLink[data-unresolved="true"] .wikiLinkLabel {
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--text-tertiary) 42%,
+		transparent
+	);
 }
 
 .tiptapContentInline .tagToken {
