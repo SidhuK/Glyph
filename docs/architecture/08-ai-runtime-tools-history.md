@@ -97,7 +97,7 @@ Normal workspace file APIs and AI tools reject hidden `.glyph/` paths, so standa
 Never put API keys into:
 
 - `.glyph/databases.json`
-- `.glyph/glyph.sqlite`
+- the app-support search index database
 - AI audit logs
 - frontend settings JSON
 - app traces

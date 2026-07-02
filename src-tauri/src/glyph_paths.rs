@@ -10,10 +10,6 @@ pub fn glyph_dir(space_root: &Path) -> Result<PathBuf, String> {
     paths::join_under(space_root, Path::new(GLYPH_DIR_NAME))
 }
 
-pub fn glyph_db_path(space_root: &Path) -> Result<PathBuf, String> {
-    Ok(glyph_dir(space_root)?.join(GLYPH_DB_NAME))
-}
-
 pub fn glyph_cache_dir(space_root: &Path) -> Result<PathBuf, String> {
     Ok(glyph_dir(space_root)?.join("cache"))
 }

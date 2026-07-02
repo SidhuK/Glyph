@@ -1,3 +1,4 @@
+use crate::index_paths;
 use crate::glyph_paths;
 use std::collections::HashSet;
 use std::ffi::CString;
@@ -188,7 +189,7 @@ fn migrate_priority_property_kinds(conn: &rusqlite::Connection) -> Result<(), St
 }
 
 pub fn db_path(space_root: &Path) -> Result<PathBuf, String> {
-    glyph_paths::glyph_db_path(space_root)
+    Ok(index_paths::ensure_index_dir(space_root)?.join(glyph_paths::GLYPH_DB_NAME))
 }
 
 fn configure_wal(conn: &rusqlite::Connection) -> Result<(), String> {

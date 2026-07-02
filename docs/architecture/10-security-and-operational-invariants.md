@@ -30,7 +30,7 @@ Markdown files are the source of truth for note content.
 
 Allowed derived state:
 
-- `.glyph/glyph.sqlite`
+- app-support `index/<space-key>/.glyph/glyph.sqlite`
 - `.glyph/databases.json`
 - `.glyph/cache/ai/`
 - `.glyph/Glyph/ai_history/`
@@ -113,7 +113,7 @@ This prevents duplicate indexing and reload loops while keeping the UI informed.
 
 ## Invariant 7: SQLite Is Derived
 
-`.glyph/glyph.sqlite` stores derived rows for:
+The app-support search index (`index/<space-key>/.glyph/glyph.sqlite`) stores derived rows for:
 
 - notes
 - links

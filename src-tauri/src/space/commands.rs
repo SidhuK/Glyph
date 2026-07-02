@@ -3,6 +3,7 @@ use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
 
 use crate::{
     index::{self, db::reset_schema_cache},
+    index_paths,
     paths, utils, window_geometry,
 };
 
@@ -57,6 +58,12 @@ pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState
     let _ = crate::set_space_close_menu_enabled(app, !state.session_roots().is_empty());
 }
 
+fn prepare_space_root(root: &Path) -> Result<SpaceInfo, String> {
+    index_paths::register_space(root)?;
+    index_paths::remove_stale_in_space_db(root);
+    create_or_open_impl(root)
+}
+
 #[tauri::command]
 pub async fn space_create(
     app: tauri::AppHandle,
@@ -68,7 +75,7 @@ pub async fn space_create(
     let info = tauri::async_runtime::spawn_blocking(move || -> Result<SpaceInfo, String> {
         std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
         let root = canonicalize_dir(&root)?;
-        create_or_open_impl(&root)
+        prepare_space_root(&root)
     })
     .await
     .map_err(|e| e.to_string())??;
@@ -97,7 +104,7 @@ pub async fn space_open(
     let root = PathBuf::from(path);
     let info = tauri::async_runtime::spawn_blocking(move || -> Result<SpaceInfo, String> {
         let root = canonicalize_dir(&root)?;
-        create_or_open_impl(&root)
+        prepare_space_root(&root)
     })
     .await
     .map_err(|e| e.to_string())??;
@@ -135,7 +142,7 @@ pub async fn space_get_current_info(
     let Ok(root) = state.root_for_window(&window) else {
         return Ok(None);
     };
-    tauri::async_runtime::spawn_blocking(move || create_or_open_impl(&root).map(Some))
+    tauri::async_runtime::spawn_blocking(move || prepare_space_root(&root).map(Some))
         .await
         .map_err(|e| e.to_string())?
 }
@@ -184,7 +191,7 @@ pub async fn space_open_window(
             std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
         }
         let root = canonicalize_dir(&root)?;
-        create_or_open_impl(&root)
+        prepare_space_root(&root)
     })
     .await
     .map_err(|e| e.to_string())??;
