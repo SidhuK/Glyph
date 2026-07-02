@@ -168,7 +168,7 @@ export const WikiLink = Node.create({
 				class: "wikiLink",
 			}),
 			WIKI_LINK_FILE_ICON,
-			displayName,
+			["span", { class: "wikiLinkLabel" }, displayName],
 		];
 	},
 	renderText({ node }) {
