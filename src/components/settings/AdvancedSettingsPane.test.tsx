@@ -19,6 +19,7 @@ const {
 	setEditorVimKeybindingsMock,
 	setFolioModeMock,
 	setShowFileTreeFolderCountsMock,
+	setShowNonMarkdownFilesMock,
 	setShowTocMock,
 } = vi.hoisted(() => ({
 	loadSettingsMock: vi.fn(),
@@ -33,6 +34,7 @@ const {
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setFolioModeMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
+	setShowNonMarkdownFilesMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
 }));
 
@@ -56,6 +58,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setFolioMode: setFolioModeMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
+	setShowNonMarkdownFiles: setShowNonMarkdownFilesMock,
 	setShowToc: setShowTocMock,
 }));
 
@@ -141,6 +144,7 @@ function makeSettings(
 			aiAssistantMode: "create" as const,
 			folioMode: false,
 			showFileTreeFolderCounts: false,
+			showNonMarkdownFiles: true,
 			showToc: true,
 		},
 		database: {
@@ -351,5 +355,35 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setFolioModeMock).toHaveBeenCalledWith(true);
+	});
+
+	it("shows non-Markdown files on by default", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Show non-Markdown files"]',
+		) as HTMLInputElement | null;
+
+		expect(container.textContent).toContain("Show non-Markdown files");
+		expect(toggle?.checked).toBe(true);
+	});
+
+	it("saves show non-Markdown files changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Show non-Markdown files"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setShowNonMarkdownFilesMock).toHaveBeenCalledWith(false);
 	});
 });

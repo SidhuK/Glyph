@@ -70,6 +70,7 @@ type TauriEventMap = {
 			translucentApp?: boolean;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
+			showNonMarkdownFiles?: boolean;
 			folioMode?: boolean;
 			classicAllNotesByDefault?: boolean;
 			aiEnabled?: boolean;

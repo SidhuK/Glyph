@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
+import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -128,9 +129,43 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 
 export function useFolioNotes(scope: FolioScope) {
 	const queryClient = useQueryClient();
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
+		boolean | null
+	>(null);
+	const settingsVersionRef = useRef(0);
 	const folderPrefix = folderForScope(scope);
 	const includesNonMarkdownFiles =
-		scope.kind !== "tag" && scope.kind !== "person";
+		showNonMarkdownFiles === true &&
+		scope.kind !== "tag" &&
+		scope.kind !== "person";
+
+	useEffect(() => {
+		let cancelled = false;
+		const loadId = settingsVersionRef.current + 1;
+		settingsVersionRef.current = loadId;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
+				}
+			})
+			.catch(() => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowNonMarkdownFiles(true);
+				}
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
+			settingsVersionRef.current += 1;
+			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
+		}
+	});
+
 	const query = useQuery({
 		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		queryFn: () => loadAllDocs(folderPrefix),
@@ -151,17 +186,20 @@ export function useFolioNotes(scope: FolioScope) {
 			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: folioFilesQueryKey(folderPrefix),
+			queryKey: ["navigation", "folio-files"],
 		});
 	});
 
 	const items = useMemo(
 		() =>
 			filterNotesForScope(
-				mergeFolioItems(query.data ?? [], filesQuery.data?.files ?? []),
+				mergeFolioItems(
+					query.data ?? [],
+					includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
+				),
 				scope,
 			),
-		[filesQuery.data?.files, query.data, scope],
+		[filesQuery.data?.files, includesNonMarkdownFiles, query.data, scope],
 	);
 
 	return {

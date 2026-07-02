@@ -4,6 +4,7 @@ import { normalizeRelPath } from "../utils/path";
 import {
 	areEntriesEqual,
 	compareEntries,
+	filterVisibleFileTreeEntries,
 	normalizeEntries,
 	normalizeEntry,
 	withInsertedEntry,
@@ -19,6 +20,26 @@ function mkEntry(partial: Partial<FsEntry>): FsEntry {
 }
 
 describe("fileTreeHelpers", () => {
+	it("filterVisibleFileTreeEntries hides non-markdown files", () => {
+		const entries = [
+			mkEntry({
+				name: "note.md",
+				rel_path: "note.md",
+				kind: "file",
+				is_markdown: true,
+			}),
+			mkEntry({
+				name: "image.png",
+				rel_path: "image.png",
+				kind: "file",
+				is_markdown: false,
+			}),
+		];
+
+		expect(filterVisibleFileTreeEntries(entries, true)).toEqual(entries);
+		expect(filterVisibleFileTreeEntries(entries, false)).toEqual([entries[0]]);
+	});
+
 	it("normalizes rel paths and strips surrounding slashes", () => {
 		expect(normalizeRelPath("\\foo\\bar\\baz.md")).toBe("foo/bar/baz.md");
 		expect(normalizeRelPath(" /foo/bar/ ")).toBe("foo/bar");
