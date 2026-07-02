@@ -294,7 +294,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 											title={item.id}
 										>
 											<span className="wikiLinkIcon" aria-hidden="true" />
-											{item.label}
+											<span className="wikiLinkLabel">{item.label}</span>
 										</button>
 									))}
 								</div>
@@ -339,7 +339,9 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 																className="wikiLinkIcon"
 																aria-hidden="true"
 															/>
-															{relationshipTargetLabel(item)}
+															<span className="wikiLinkLabel">
+																{relationshipTargetLabel(item)}
+															</span>
 														</button>
 													);
 												})}
@@ -380,7 +382,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 											title={item.id}
 										>
 											<span className="wikiLinkIcon" aria-hidden="true" />
-											{item.label}
+											<span className="wikiLinkLabel">{item.label}</span>
 										</button>
 									))}
 								</div>

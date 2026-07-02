@@ -48,7 +48,9 @@ export function WikiLinkedText({ value }: { value: string }) {
 					title={detail.target}
 				>
 					<span className="wikiLinkIcon" aria-hidden="true" />
-					{detail.alias || displayNameForTarget(detail.target)}
+					<span className="wikiLinkLabel">
+						{detail.alias || displayNameForTarget(detail.target)}
+					</span>
 				</button>,
 			);
 		}
