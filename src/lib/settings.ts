@@ -1,7 +1,12 @@
 import { type UnlistenFn, emit, emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyStore } from "@tauri-apps/plugin-store";
-import { normalizeRelPath } from "../utils/path";
+import { normalizeRelPath, validateRelFolderPath } from "../utils/path";
+import {
+	ATTACHMENT_MODE_UI,
+	DEFAULT_ATTACHMENT_FOLDER,
+} from "./attachmentStorage";
+export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import {
 	type Shortcut,
 	areShortcutsEqual,
@@ -145,12 +150,11 @@ const AUTO_UPDATE_CHECK_INTERVALS = new Set<AutoUpdateCheckInterval>(["3h"]);
 export type AttachmentStorageMode =
 	| "space-root"
 	| "specific-folder"
-	| "note-folder";
-const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>([
-	"space-root",
-	"specific-folder",
-	"note-folder",
-]);
+	| "note-folder"
+	| "note-subfolder";
+const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>(
+	Object.keys(ATTACHMENT_MODE_UI) as AttachmentStorageMode[],
+);
 export type UiAccent =
 	| "neutral"
 	| "glyph-orange"
@@ -184,7 +188,6 @@ const DEFAULT_AI_ENABLED = true;
 export const DEFAULT_QUICK_NOTES_FOLDER = "Quick Notes";
 export type UiFontFamily = string;
 export type UiFontSize = number;
-const DEFAULT_ATTACHMENT_FOLDER = "assets";
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 export type EditorWidthMode = "compact" | "comfortable" | "wide";
 const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
@@ -292,10 +295,18 @@ function asAiAssistantMode(value: unknown): AiAssistantMode {
 }
 
 function asAttachmentStorageMode(value: unknown): AttachmentStorageMode {
-	return typeof value === "string" &&
-		ATTACHMENT_STORAGE_MODES.has(value as AttachmentStorageMode)
-		? (value as AttachmentStorageMode)
+	return isAttachmentStorageMode(value)
+		? value
 		: DEFAULT_EDITOR_SETTINGS.attachmentStorageMode;
+}
+
+export function isAttachmentStorageMode(
+	value: unknown,
+): value is AttachmentStorageMode {
+	return (
+		typeof value === "string" &&
+		ATTACHMENT_STORAGE_MODES.has(value as AttachmentStorageMode)
+	);
 }
 
 function asEditorWidthMode(value: unknown): EditorWidthMode {
@@ -1422,6 +1433,10 @@ export async function setEditorAttachmentFolder(
 		typeof folder === "string"
 			? normalizeRelPath(folder) || DEFAULT_ATTACHMENT_FOLDER
 			: DEFAULT_ATTACHMENT_FOLDER;
+	const validationError = validateRelFolderPath(nextFolder);
+	if (validationError) {
+		throw new Error(validationError);
+	}
 	const spacePath = await updateActiveSpaceSettings(
 		{
 			attachmentFolder: nextFolder,

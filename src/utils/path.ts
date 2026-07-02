@@ -93,3 +93,23 @@ export function normalizeRelPath(path: string): string {
 		.replace(/\\/g, "/")
 		.replace(/^\/+|\/+$/g, "");
 }
+
+export function joinRelPath(...segments: string[]): string {
+	return segments
+		.flatMap((segment) => normalizeRelPath(segment).split("/"))
+		.filter(Boolean)
+		.join("/");
+}
+
+export function validateRelFolderPath(path: string): string | null {
+	const normalized = normalizeRelPath(path);
+	if (!normalized) return "Folder path cannot be empty.";
+	for (const segment of normalized.split("/")) {
+		if (!segment.trim()) return "Folder path cannot contain empty segments.";
+		if (segment === "..") return "Folder path cannot contain '..'.";
+		if (segment.startsWith(".")) {
+			return "Folder path cannot contain hidden segments.";
+		}
+	}
+	return null;
+}

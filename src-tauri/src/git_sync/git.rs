@@ -569,6 +569,22 @@ mod tests {
         assert!(block.contains("!config/templates/**"));
         assert!(!block.contains("!assets/images/**"));
         assert!(!block.contains("assets/images/"));
+
+        let note_subfolder_block = render_managed_gitignore(
+            &GitSyncInclusionSettings {
+                include_templates: true,
+                include_attachments: true,
+                include_non_markdown_files: false,
+            },
+            &crate::git_sync::types::GitSyncContext {
+                templates_folder: Some("config/templates".to_string()),
+                attachment_storage_mode: Some(AttachmentStorageMode::NoteSubfolder),
+                attachment_folder: Some("attachments".to_string()),
+            },
+        );
+        assert!(note_subfolder_block.contains("!config/templates/**"));
+        assert!(!note_subfolder_block.contains("!attachments/**"));
+        assert!(!note_subfolder_block.contains("attachments/"));
     }
 
     #[test]

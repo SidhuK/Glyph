@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
+import {
+	ATTACHMENT_LOCATION_OPTIONS,
+	ATTACHMENT_MODE_UI,
+	DEFAULT_ATTACHMENT_FOLDER,
+	modeRequiresAttachmentFolder,
+	modesUseDifferentFolderSemantics,
+} from "../../lib/attachmentStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AttachmentStorageMode,
 	DEFAULT_QUICK_NOTES_FOLDER,
+	isAttachmentStorageMode,
 	loadSettings,
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
@@ -10,22 +18,16 @@ import {
 	setQuickNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
+import { Input } from "../ui/shadcn/input";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
-const DEFAULT_ATTACHMENT_FOLDER = "assets";
-const ATTACHMENT_LOCATION_OPTIONS: Array<{
-	label: string;
-	value: AttachmentStorageMode;
-}> = [
-	{ label: "Main space folder", value: "space-root" },
-	{ label: "Specific folder", value: "specific-folder" },
-	{ label: "Same folder as note", value: "note-folder" },
-];
+const ATTACHMENT_SUBFOLDER_ERROR_ID = "attachmentSubfolderError";
 
 interface SpaceFolderSelection {
 	relativePath: string;
@@ -169,7 +171,11 @@ export function SpaceSettingsPane() {
 				const spacePath = requireSpacePath(currentSpacePath);
 				await setEditorAttachmentStorageMode(nextMode, { spacePath });
 				setAttachmentStorageModeState(nextMode);
-				if (nextMode === "specific-folder" && !attachmentFolder) {
+
+				const shouldResetFolder =
+					modesUseDifferentFolderSemantics(attachmentStorageMode, nextMode) ||
+					(modeRequiresAttachmentFolder(nextMode) && !attachmentFolder);
+				if (shouldResetFolder) {
 					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, {
 						spacePath,
 					});
@@ -181,8 +187,27 @@ export function SpaceSettingsPane() {
 				);
 			}
 		},
-		[attachmentFolder, currentSpacePath],
+		[attachmentFolder, attachmentStorageMode, currentSpacePath],
 	);
+
+	const handleAttachmentSubfolderBlur = useCallback(async () => {
+		setAttachmentError(null);
+		const validationError = validateRelFolderPath(attachmentFolder);
+		if (validationError) {
+			setAttachmentError(validationError);
+			return;
+		}
+		const normalized = normalizeRelPath(attachmentFolder);
+		try {
+			const spacePath = requireSpacePath(currentSpacePath);
+			await setEditorAttachmentFolder(normalized, { spacePath });
+			setAttachmentFolderState(normalized);
+		} catch (cause) {
+			setAttachmentError(
+				cause instanceof Error ? cause.message : "Failed to update subfolder",
+			);
+		}
+	}, [attachmentFolder, currentSpacePath]);
 
 	const handleBrowseAttachmentFolder = useCallback(async () => {
 		setAttachmentError(null);
@@ -252,6 +277,9 @@ export function SpaceSettingsPane() {
 			);
 		}
 	}, [currentSpacePath]);
+
+	const attachmentFolderEditor =
+		ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor;
 
 	return (
 		<div className="settingsPane">
@@ -366,9 +394,9 @@ export function SpaceSettingsPane() {
 								aria-label="Attachment location"
 								value={attachmentStorageMode}
 								onChange={(event) => {
-									void handleAttachmentModeChange(
-										event.target.value as AttachmentStorageMode,
-									);
+									const nextMode = event.target.value;
+									if (!isAttachmentStorageMode(nextMode)) return;
+									void handleAttachmentModeChange(nextMode);
 								}}
 							>
 								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
@@ -378,13 +406,9 @@ export function SpaceSettingsPane() {
 								))}
 							</SettingsSelect>
 							<div className="settingsHelp">
-								{attachmentStorageMode === "space-root"
-									? "Saved at the top level of your space."
-									: attachmentStorageMode === "note-folder"
-										? "Saved next to the note they are attached to."
-										: "All attachments go in one folder."}
+								{ATTACHMENT_MODE_UI[attachmentStorageMode].help}
 							</div>
-							{attachmentStorageMode === "specific-folder" ? (
+							{attachmentFolderEditor === "browse" ? (
 								<div className="dailyNotesFolderRow">
 									<div className="dailyNotesFolderPath">
 										{attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
@@ -405,7 +429,9 @@ export function SpaceSettingsPane() {
 											variant="outline"
 											size="icon-sm"
 											className="rounded-md border-border bg-background justify-center shadow-none"
-											onClick={handleResetAttachmentFolder}
+											onClick={() => {
+												void handleResetAttachmentFolder();
+											}}
 											aria-label="Reset attachments folder"
 											title="Reset attachments folder"
 										>
@@ -414,8 +440,56 @@ export function SpaceSettingsPane() {
 									</div>
 								</div>
 							) : null}
+							{attachmentFolderEditor === "text" ? (
+								<div
+									className="dailyNotesFolderRow"
+									data-invalid={attachmentError ? true : undefined}
+								>
+									<Input
+										aria-label="Attachment subfolder name"
+										aria-invalid={attachmentError ? true : undefined}
+										aria-describedby={
+											attachmentError
+												? ATTACHMENT_SUBFOLDER_ERROR_ID
+												: undefined
+										}
+										value={attachmentFolder}
+										placeholder={DEFAULT_ATTACHMENT_FOLDER}
+										onChange={(event) => {
+											setAttachmentError(null);
+											setAttachmentFolderState(event.target.value);
+										}}
+										onBlur={() => {
+											void handleAttachmentSubfolderBlur();
+										}}
+									/>
+									<div className="settingsActions dailyNotesActions">
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-sm"
+											className="rounded-md border-border bg-background justify-center shadow-none"
+											onClick={() => {
+												void handleResetAttachmentFolder();
+											}}
+											aria-label="Reset attachment subfolder"
+											title="Reset attachment subfolder"
+										>
+											<Trash2 size="var(--icon-md)" />
+										</Button>
+									</div>
+								</div>
+							) : null}
 							{attachmentError ? (
-								<div className="settingsError dailyNotesError">
+								<div
+									id={
+										attachmentFolderEditor === "text"
+											? ATTACHMENT_SUBFOLDER_ERROR_ID
+											: undefined
+									}
+									className="settingsError dailyNotesError"
+									role="alert"
+								>
 									{attachmentError}
 								</div>
 							) : null}
