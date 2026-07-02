@@ -44,6 +44,23 @@ describe("resolveAttachmentTargetDir", () => {
 			resolveAttachmentTargetDir("note-subfolder", "  ", "notes/test.md"),
 		).toBe(`notes/${DEFAULT_ATTACHMENT_FOLDER}`);
 	});
+
+	it("falls back to the default attachment folder for invalid persisted values", () => {
+		expect(
+			resolveAttachmentTargetDir(
+				"note-subfolder",
+				"../secret",
+				"notes/test.md",
+			),
+		).toBe(`notes/${DEFAULT_ATTACHMENT_FOLDER}`);
+		expect(
+			resolveAttachmentTargetDir(
+				"specific-folder",
+				"../secret",
+				"notes/test.md",
+			),
+		).toBe(DEFAULT_ATTACHMENT_FOLDER);
+	});
 });
 
 describe("attachment mode helpers", () => {

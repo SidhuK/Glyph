@@ -277,7 +277,45 @@ describe("SpaceSettingsPane", () => {
 		});
 	});
 
-	it("resets stale attachment folders when entering note-subfolder from an ignored mode", async () => {
+	it("preserves the attachment folder when switching back to specific-folder", async () => {
+		loadSettingsMock.mockResolvedValueOnce({
+			currentSpacePath: "/spaces/test",
+			dailyNotes: { folder: null },
+			editor: {
+				attachmentStorageMode: "specific-folder",
+				attachmentFolder: "Projects/Media",
+			},
+			quickNotes: { folder: "Quick Notes" },
+		});
+
+		await act(async () => {
+			root.render(<SpaceSettingsPane />);
+			await Promise.resolve();
+		});
+
+		const select = container.querySelector(
+			'select[aria-label="Attachment location"]',
+		) as HTMLSelectElement;
+
+		await act(async () => {
+			select.value = "note-folder";
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+			await Promise.resolve();
+		});
+
+		setEditorAttachmentFolderMock.mockClear();
+
+		await act(async () => {
+			select.value = "specific-folder";
+			select.dispatchEvent(new Event("change", { bubbles: true }));
+			await Promise.resolve();
+		});
+
+		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		expect(getAttachmentsSection().textContent).toContain("Projects/Media");
+	});
+
+	it("does not reset the attachment folder when entering note-subfolder from note-folder", async () => {
 		loadSettingsMock.mockResolvedValueOnce({
 			currentSpacePath: "/spaces/test",
 			dailyNotes: { folder: null },
@@ -303,9 +341,11 @@ describe("SpaceSettingsPane", () => {
 			await Promise.resolve();
 		});
 
-		expect(setEditorAttachmentFolderMock).toHaveBeenCalledWith("assets", {
-			spacePath: "/spaces/test",
-		});
+		expect(setEditorAttachmentFolderMock).not.toHaveBeenCalled();
+		const input = container.querySelector(
+			'input[aria-label="Attachment subfolder name"]',
+		) as HTMLInputElement | null;
+		expect(input?.value).toBe("Projects/Media");
 	});
 
 	it("shows validation errors for invalid subfolder paths on blur", async () => {

@@ -2,7 +2,10 @@ import { type UnlistenFn, emit, emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath, validateRelFolderPath } from "../utils/path";
-import { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
+import {
+	ATTACHMENT_MODE_UI,
+	DEFAULT_ATTACHMENT_FOLDER,
+} from "./attachmentStorage";
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import {
 	type Shortcut,
@@ -149,12 +152,9 @@ export type AttachmentStorageMode =
 	| "specific-folder"
 	| "note-folder"
 	| "note-subfolder";
-const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>([
-	"space-root",
-	"specific-folder",
-	"note-folder",
-	"note-subfolder",
-]);
+const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>(
+	Object.keys(ATTACHMENT_MODE_UI) as AttachmentStorageMode[],
+);
 export type UiAccent =
 	| "neutral"
 	| "glyph-orange"

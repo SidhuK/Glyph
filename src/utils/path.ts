@@ -105,7 +105,7 @@ export function validateRelFolderPath(path: string): string | null {
 	const normalized = normalizeRelPath(path);
 	if (!normalized) return "Folder path cannot be empty.";
 	for (const segment of normalized.split("/")) {
-		if (!segment) return "Folder path cannot contain empty segments.";
+		if (!segment.trim()) return "Folder path cannot contain empty segments.";
 		if (segment === "..") return "Folder path cannot contain '..'.";
 		if (segment.startsWith(".")) {
 			return "Folder path cannot contain hidden segments.";

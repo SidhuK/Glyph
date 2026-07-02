@@ -174,8 +174,6 @@ export function SpaceSettingsPane() {
 
 				const shouldResetFolder =
 					modesUseDifferentFolderSemantics(attachmentStorageMode, nextMode) ||
-					(modeRequiresAttachmentFolder(nextMode) &&
-						!modeRequiresAttachmentFolder(attachmentStorageMode)) ||
 					(modeRequiresAttachmentFolder(nextMode) && !attachmentFolder);
 				if (shouldResetFolder) {
 					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, {
@@ -203,7 +201,7 @@ export function SpaceSettingsPane() {
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
 			await setEditorAttachmentFolder(normalized, { spacePath });
-			setAttachmentFolderState(normalized || DEFAULT_ATTACHMENT_FOLDER);
+			setAttachmentFolderState(normalized);
 		} catch (cause) {
 			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to update subfolder",
@@ -279,6 +277,9 @@ export function SpaceSettingsPane() {
 			);
 		}
 	}, [currentSpacePath]);
+
+	const attachmentFolderEditor =
+		ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor;
 
 	return (
 		<div className="settingsPane">
@@ -407,8 +408,7 @@ export function SpaceSettingsPane() {
 							<div className="settingsHelp">
 								{ATTACHMENT_MODE_UI[attachmentStorageMode].help}
 							</div>
-							{ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor ===
-							"browse" ? (
+							{attachmentFolderEditor === "browse" ? (
 								<div className="dailyNotesFolderRow">
 									<div className="dailyNotesFolderPath">
 										{attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
@@ -440,8 +440,7 @@ export function SpaceSettingsPane() {
 									</div>
 								</div>
 							) : null}
-							{ATTACHMENT_MODE_UI[attachmentStorageMode].folderEditor ===
-							"text" ? (
+							{attachmentFolderEditor === "text" ? (
 								<div
 									className="dailyNotesFolderRow"
 									data-invalid={attachmentError ? true : undefined}
@@ -484,7 +483,7 @@ export function SpaceSettingsPane() {
 							{attachmentError ? (
 								<div
 									id={
-										attachmentStorageMode === "note-subfolder"
+										attachmentFolderEditor === "text"
 											? ATTACHMENT_SUBFOLDER_ERROR_ID
 											: undefined
 									}

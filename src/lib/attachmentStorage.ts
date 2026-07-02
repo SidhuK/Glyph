@@ -1,4 +1,9 @@
-import { joinRelPath, parentDir } from "../utils/path";
+import {
+	joinRelPath,
+	normalizeRelPath,
+	parentDir,
+	validateRelFolderPath,
+} from "../utils/path";
 import type { AttachmentStorageMode } from "./settings";
 
 export const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -35,6 +40,13 @@ export const ATTACHMENT_MODE_UI = {
 	{ help: string; folderEditor: "browse" | "text" | null }
 >;
 
+function sanitizedAttachmentFolder(attachmentFolder: string | null): string {
+	const trimmed = attachmentFolder?.trim();
+	if (!trimmed) return DEFAULT_ATTACHMENT_FOLDER;
+	if (validateRelFolderPath(trimmed)) return DEFAULT_ATTACHMENT_FOLDER;
+	return normalizeRelPath(trimmed);
+}
+
 export function resolveAttachmentTargetDir(
 	mode: AttachmentStorageMode,
 	attachmentFolder: string | null,
@@ -44,11 +56,11 @@ export function resolveAttachmentTargetDir(
 		case "space-root":
 			return "";
 		case "specific-folder":
-			return attachmentFolder?.trim() || DEFAULT_ATTACHMENT_FOLDER;
+			return sanitizedAttachmentFolder(attachmentFolder);
 		case "note-folder":
 			return parentDir(notePath);
 		case "note-subfolder": {
-			const subfolder = attachmentFolder?.trim() || DEFAULT_ATTACHMENT_FOLDER;
+			const subfolder = sanitizedAttachmentFolder(attachmentFolder);
 			return joinRelPath(parentDir(notePath), subfolder);
 		}
 		default: {

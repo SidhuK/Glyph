@@ -16,6 +16,10 @@ describe("validateRelFolderPath", () => {
 		expect(validateRelFolderPath("")).toContain("empty");
 		expect(validateRelFolderPath("   ")).toContain("empty");
 	});
+
+	it("rejects whitespace-only segments", () => {
+		expect(validateRelFolderPath("assets/ /images")).toContain("empty");
+	});
 });
 
 describe("joinRelPath", () => {
