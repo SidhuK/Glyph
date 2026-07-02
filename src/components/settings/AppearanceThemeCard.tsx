@@ -10,12 +10,12 @@ import type {
 import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
 import {
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
 import { getAccentPreviewColor } from "./accentOptions";
 
 interface AppearanceThemeCardProps {

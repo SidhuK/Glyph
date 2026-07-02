@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
 import type { ThemeMode } from "../../lib/settings";
 import { AppearancePreviewFrame } from "./AppearancePreviewFrame";
+import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { THEME_MODE_OPTIONS } from "./themeModeOptions";
 
 interface AppearanceThemeModePickerProps {
@@ -13,35 +13,16 @@ export function AppearanceThemeModePicker({
 	onThemeModeChange,
 }: AppearanceThemeModePickerProps) {
 	return (
-		<div className="settingsSegmentedPicker">
-			<div
-				className="settingsSegmentedTrack"
-				role="radiogroup"
-				aria-label="Theme mode"
-			>
-				{THEME_MODE_OPTIONS.map((option) => (
-					<label
-						key={option.value}
-						className={cn(
-							"settingsSegmentedOption",
-							themeMode === option.value && "is-active",
-						)}
-						data-theme-mode-preview={option.value}
-						title={option.description}
-					>
-						<input
-							type="radio"
-							name="settings-theme-mode"
-							checked={themeMode === option.value}
-							onChange={() => void onThemeModeChange(option.value)}
-							className="settingsSegmentedInput"
-							aria-label={option.label}
-						/>
-						<AppearancePreviewFrame mode={option.value} />
-						<span className="settingsSegmentedLabel">{option.label}</span>
-					</label>
-				))}
-			</div>
-		</div>
+		<SettingsSegmentedPicker
+			name="settings-theme-mode"
+			ariaLabel="Theme mode"
+			value={themeMode}
+			options={THEME_MODE_OPTIONS}
+			onChange={(next) => void onThemeModeChange(next)}
+			renderPreview={(value) => <AppearancePreviewFrame mode={value} />}
+			getDataAttributes={(value) => ({
+				"data-theme-mode-preview": value,
+			})}
+		/>
 	);
 }

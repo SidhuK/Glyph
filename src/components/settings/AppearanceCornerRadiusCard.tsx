@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils";
 import type { UiCornerRadiusStyle } from "../../lib/settings";
 import { AppearancePreviewFrame } from "./AppearancePreviewFrame";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsSegmentedPicker } from "./SettingsSegmentedPicker";
 import { CORNER_RADIUS_OPTIONS } from "./cornerRadiusOptions";
 
 interface AppearanceCornerRadiusCardProps {
@@ -21,37 +21,19 @@ export function AppearanceCornerRadiusCard({
 			<SettingsRow
 				label="Corners"
 				description="Applies everywhere — sidebars, dialogs, inputs, and cards."
+				interactive={false}
 			>
-				<div className="settingsSegmentedPicker">
-					<div
-						className="settingsSegmentedTrack"
-						role="radiogroup"
-						aria-label="UI shape"
-					>
-						{CORNER_RADIUS_OPTIONS.map((option) => (
-							<label
-								key={option.id}
-								className={cn(
-									"settingsSegmentedOption",
-									cornerRadiusStyle === option.id && "is-active",
-								)}
-								data-corner-radius-style={option.id}
-								title={option.description}
-							>
-								<input
-									type="radio"
-									name="settings-corner-radius"
-									checked={cornerRadiusStyle === option.id}
-									onChange={() => void onCornerRadiusStyleChange(option.id)}
-									className="settingsSegmentedInput"
-									aria-label={option.label}
-								/>
-								<AppearancePreviewFrame />
-								<span className="settingsSegmentedLabel">{option.label}</span>
-							</label>
-						))}
-					</div>
-				</div>
+				<SettingsSegmentedPicker
+					name="settings-corner-radius"
+					ariaLabel="UI shape"
+					value={cornerRadiusStyle}
+					options={CORNER_RADIUS_OPTIONS}
+					onChange={(next) => void onCornerRadiusStyleChange(next)}
+					renderPreview={() => <AppearancePreviewFrame />}
+					getDataAttributes={(value) => ({
+						"data-corner-radius-style": value,
+					})}
+				/>
 			</SettingsRow>
 		</SettingsSection>
 	);
