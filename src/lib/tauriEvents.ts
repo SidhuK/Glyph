@@ -72,6 +72,7 @@ type TauriEventMap = {
 			cornerRadiusStyle?: UiCornerRadiusStyle;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
+			showNonMarkdownFiles?: boolean;
 			folioMode?: boolean;
 			classicAllNotesByDefault?: boolean;
 			aiEnabled?: boolean;

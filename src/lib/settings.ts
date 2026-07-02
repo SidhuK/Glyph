@@ -255,6 +255,7 @@ interface EditorSettings {
 
 interface FileTreeSettings {
 	showFolderFileCounts: boolean;
+	showNonMarkdownFiles: boolean;
 }
 
 export interface ShortcutSettings {
@@ -291,6 +292,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 
 const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
 	showFolderFileCounts: false,
+	showNonMarkdownFiles: true,
 };
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -409,6 +411,7 @@ async function emitSettingsUpdated(payload: {
 		cornerRadiusStyle?: UiCornerRadiusStyle;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
+		showNonMarkdownFiles?: boolean;
 		folioMode?: boolean;
 		classicAllNotesByDefault?: boolean;
 		aiAssistantMode?: AiAssistantMode;
@@ -482,6 +485,7 @@ interface AppSettings {
 		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
+		showNonMarkdownFiles: boolean;
 		folioMode: boolean;
 		classicAllNotesByDefault: boolean;
 		aiAssistantMode: AiAssistantMode;
@@ -552,6 +556,7 @@ const KEYS = {
 	cornerRadiusStyle: "ui.cornerRadiusStyle",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
+	showNonMarkdownFiles: "ui.fileTree.showNonMarkdownFiles",
 	folioMode: "ui.folioMode",
 	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
@@ -875,6 +880,10 @@ export async function loadSettings(
 		entries,
 		KEYS.showFileTreeFolderCounts,
 	);
+	const rawShowNonMarkdownFiles = getSettingValue<boolean | null>(
+		entries,
+		KEYS.showNonMarkdownFiles,
+	);
 	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
 	const rawClassicAllNotesByDefault = getSettingValue<boolean | null>(
 		entries,
@@ -1008,6 +1017,10 @@ export async function loadSettings(
 		typeof rawShowFileTreeFolderCounts === "boolean"
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
+	const showNonMarkdownFiles =
+		typeof rawShowNonMarkdownFiles === "boolean"
+			? rawShowNonMarkdownFiles
+			: DEFAULT_FILE_TREE_SETTINGS.showNonMarkdownFiles;
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
 	const classicAllNotesByDefault =
 		typeof rawClassicAllNotesByDefault === "boolean"
@@ -1104,6 +1117,7 @@ export async function loadSettings(
 			cornerRadiusStyle,
 			showToc,
 			showFileTreeFolderCounts,
+			showNonMarkdownFiles,
 			folioMode,
 			classicAllNotesByDefault,
 			aiAssistantMode,
@@ -1367,6 +1381,13 @@ export async function setShowFileTreeFolderCounts(
 	await store.set(KEYS.showFileTreeFolderCounts, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
+}
+
+export async function setShowNonMarkdownFiles(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showNonMarkdownFiles, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { showNonMarkdownFiles: enabled } });
 }
 
 export async function setFolioMode(enabled: boolean): Promise<void> {

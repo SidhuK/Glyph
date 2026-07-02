@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 
+import { filterVisibleFileTreeEntries } from "../../hooks/fileTreeHelpers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
@@ -264,6 +265,7 @@ interface TreeEntriesProps {
 	itemAppearance: Record<string, FileTreeAppearance>;
 	folderFileCounts: Record<string, number>;
 	showFolderFileCounts: boolean;
+	showNonMarkdownFiles: boolean;
 	onChangeAppearance: (
 		entry: FsEntry,
 		appearance: FileTreeAppearance,
@@ -307,6 +309,7 @@ function TreeEntries({
 	itemAppearance,
 	folderFileCounts,
 	showFolderFileCounts,
+	showNonMarkdownFiles,
 	onChangeAppearance,
 	onOpenAppearancePicker,
 	pinnedFiles,
@@ -317,11 +320,15 @@ function TreeEntries({
 	showFilePreviews = false,
 	filePreviewsByPath = {},
 }: TreeEntriesProps) {
-	if (entries.length === 0) return null;
+	const visibleEntries = filterVisibleFileTreeEntries(
+		entries,
+		showNonMarkdownFiles,
+	);
+	if (visibleEntries.length === 0) return null;
 
 	return (
 		<ul className="fileTreeList">
-			{entries.map((e) => {
+			{visibleEntries.map((e) => {
 				const isDir = e.kind === "dir";
 				const depth = parentDepth + 1;
 				const rowKey =
@@ -385,6 +392,7 @@ function TreeEntries({
 									itemAppearance={itemAppearance}
 									folderFileCounts={folderFileCounts}
 									showFolderFileCounts={showFolderFileCounts}
+									showNonMarkdownFiles={showNonMarkdownFiles}
 									onChangeAppearance={onChangeAppearance}
 									onOpenAppearancePicker={onOpenAppearancePicker}
 									pinnedFiles={pinnedFiles}
@@ -466,6 +474,9 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
+		boolean | null
+	>(null);
 
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
@@ -480,6 +491,7 @@ export const FileTreePane = memo(function FileTreePane({
 		useState<AppearancePickerTarget | null>(null);
 	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
+	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
 
@@ -496,19 +508,37 @@ export const FileTreePane = memo(function FileTreePane({
 
 	useEffect(() => {
 		let cancelled = false;
-		void loadSettings().then((settings) => {
-			if (!cancelled) {
-				setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
-			}
-		});
+		const loadId = settingsVersionRef.current + 1;
+		settingsVersionRef.current = loadId;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
+					setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
+				}
+			})
+			.catch(() => {
+				if (!cancelled && loadId === settingsVersionRef.current) {
+					setShowNonMarkdownFiles(true);
+				}
+			});
 		return () => {
 			cancelled = true;
 		};
 	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (
+			typeof payload.ui?.showFileTreeFolderCounts === "boolean" ||
+			typeof payload.ui?.showNonMarkdownFiles === "boolean"
+		) {
+			settingsVersionRef.current += 1;
+		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
+		}
+		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
+			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
 		}
 	});
 
@@ -539,7 +569,7 @@ export const FileTreePane = memo(function FileTreePane({
 	}, [childrenByDir, rootEntries, summaryParentDirs]);
 
 	useEffect(() => {
-		if (!spacePath || !showFolderFileCounts) {
+		if (!spacePath || !showFolderFileCounts || showNonMarkdownFiles === null) {
 			setFolderFileCounts({});
 			return;
 		}
@@ -571,7 +601,9 @@ export const FileTreePane = memo(function FileTreePane({
 				}
 				hasSuccessfulResult = true;
 				for (const summary of result.value) {
-					nextCounts[summary.dir_rel_path] = summary.total_files_recursive;
+					nextCounts[summary.dir_rel_path] = showNonMarkdownFiles
+						? summary.total_files_recursive
+						: summary.total_markdown_recursive;
 				}
 			}
 
@@ -588,6 +620,7 @@ export const FileTreePane = memo(function FileTreePane({
 	}, [
 		spacePath,
 		showFolderFileCounts,
+		showNonMarkdownFiles,
 		summaryParentDirs,
 		folderCountTreeRevision,
 	]);
@@ -756,6 +789,19 @@ export const FileTreePane = memo(function FileTreePane({
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
 		: null;
+	const hasLoadedFileVisibility = showNonMarkdownFiles !== null;
+	const showNonMarkdownFilesSetting = showNonMarkdownFiles ?? false;
+	const visibleRootEntries = filterVisibleFileTreeEntries(
+		rootEntries,
+		showNonMarkdownFilesSetting,
+	);
+	const visibleFocusedEntries =
+		focusedEntries === null
+			? null
+			: filterVisibleFileTreeEntries(
+					focusedEntries,
+					showNonMarkdownFilesSetting,
+				);
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -916,7 +962,7 @@ export const FileTreePane = memo(function FileTreePane({
 						});
 					}}
 				/>
-				{focusedDirPath ? (
+				{!hasLoadedFileVisibility ? null : focusedDirPath ? (
 					<FileTreeRootDrop targetDirPath={focusedDirPath}>
 						<FolderBreadcrumb
 							spacePath={spacePath}
@@ -924,9 +970,9 @@ export const FileTreePane = memo(function FileTreePane({
 							onNavigate={handleEnterDir}
 							onExit={handleExitFocusedDir}
 						/>
-						{focusedEntries === null ? null : focusedEntries.length ? (
+						{!visibleFocusedEntries ? null : visibleFocusedEntries.length ? (
 							<TreeEntries
-								entries={focusedEntries}
+								entries={visibleFocusedEntries}
 								parentDepth={-1}
 								childrenByDir={childrenByDir}
 								expandedDirs={expandedDirs}
@@ -950,6 +996,7 @@ export const FileTreePane = memo(function FileTreePane({
 								itemAppearance={itemAppearance}
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
+								showNonMarkdownFiles={showNonMarkdownFilesSetting}
 								onChangeAppearance={handleChangeAppearance}
 								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
@@ -970,9 +1017,9 @@ export const FileTreePane = memo(function FileTreePane({
 							</m.div>
 						)}
 					</FileTreeRootDrop>
-				) : rootEntries.length ? (
+				) : visibleRootEntries.length ? (
 					<FileTreeRootDrop>
-						{rootEntries.length ? (
+						{visibleRootEntries.length ? (
 							<TreeEntries
 								entries={rootEntries}
 								parentDepth={-1}
@@ -998,6 +1045,7 @@ export const FileTreePane = memo(function FileTreePane({
 								itemAppearance={itemAppearance}
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
+								showNonMarkdownFiles={showNonMarkdownFilesSetting}
 								onChangeAppearance={handleChangeAppearance}
 								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}

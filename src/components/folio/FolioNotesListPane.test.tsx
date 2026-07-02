@@ -92,6 +92,21 @@ vi.mock("../../lib/tauriEvents", () => ({
 	useTauriEvent: () => {},
 }));
 
+vi.mock("../../lib/settings", async () => {
+	const actual =
+		await vi.importActual<typeof import("../../lib/settings")>(
+			"../../lib/settings",
+		);
+	return {
+		...actual,
+		loadSettings: vi.fn().mockResolvedValue({
+			ui: {
+				showNonMarkdownFiles: true,
+			},
+		}),
+	};
+});
+
 (
 	globalThis as typeof globalThis & {
 		IS_REACT_ACT_ENVIRONMENT?: boolean;
