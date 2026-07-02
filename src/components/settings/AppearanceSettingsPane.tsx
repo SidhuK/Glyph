@@ -2,18 +2,22 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
 import {
 	applyUiAccent,
+	applyUiCornerRadius,
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 } from "../../lib/appearance";
 import {
+	DEFAULT_UI_CORNER_RADIUS_STYLE,
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type ThemeMode,
 	type UiAccent,
+	type UiCornerRadiusStyle,
 	type UiDarkThemeId,
 	type UiLightThemeId,
 	loadSettings,
 	setThemeMode,
 	setUiAccent,
+	setUiCornerRadiusStyle,
 	setUiDarkThemeId,
 	setUiLightThemeId,
 	setUiTranslucentApp,
@@ -31,6 +35,7 @@ import {
 	isGlyphDefaultLightTheme,
 } from "../../lib/uiThemes";
 import { AppearanceAccentCard } from "./AppearanceAccentCard";
+import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import { useAppearanceTypography } from "./useAppearanceTypography";
@@ -48,6 +53,8 @@ export function AppearanceSettingsPane() {
 	const [translucentApp, setTranslucentAppState] = useState(
 		DEFAULT_UI_TRANSLUCENT_APP,
 	);
+	const [cornerRadiusStyle, setCornerRadiusStyleState] =
+		useState<UiCornerRadiusStyle>(DEFAULT_UI_CORNER_RADIUS_STYLE);
 	const [error, setError] = useState("");
 	const {
 		fontFamily,
@@ -75,6 +82,7 @@ export function AppearanceSettingsPane() {
 				setDarkThemeIdState(settings.ui.darkThemeId);
 				setAccentState(settings.ui.accent);
 				setTranslucentAppState(settings.ui.translucentApp);
+				setCornerRadiusStyleState(settings.ui.cornerRadiusStyle);
 				setTheme(settings.ui.theme);
 				applyUiThemeSelection(
 					settings.ui.lightThemeId,
@@ -84,6 +92,7 @@ export function AppearanceSettingsPane() {
 				applyUiSurfacePreferences({
 					translucentApp: settings.ui.translucentApp,
 				});
+				applyUiCornerRadius(settings.ui.cornerRadiusStyle);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -169,16 +178,33 @@ export function AppearanceSettingsPane() {
 		}
 	}, []);
 
+	const onCornerRadiusStyleChange = useCallback(
+		async (next: UiCornerRadiusStyle) => {
+			setError("");
+			const previous = cornerRadiusStyle;
+			setCornerRadiusStyleState(next);
+			applyUiCornerRadius(next);
+			try {
+				await setUiCornerRadiusStyle(next);
+			} catch (e) {
+				setCornerRadiusStyleState(previous);
+				applyUiCornerRadius(previous);
+				setError(e instanceof Error ? e.message : "Failed to save settings");
+			}
+		},
+		[cornerRadiusStyle],
+	);
+
 	const showAccentCard =
 		isGlyphDefaultLightTheme(lightThemeId) ||
 		isGlyphDefaultDarkTheme(darkThemeId);
 	const accentDescription =
 		isGlyphDefaultLightTheme(lightThemeId) &&
 		isGlyphDefaultDarkTheme(darkThemeId)
-			? "Choose the accent used for highlights, focus rings, and emphasis in the default light and dark themes."
+			? "Sets the accent for highlights, focus rings, and emphasis in the default light and dark themes."
 			: isGlyphDefaultLightTheme(lightThemeId)
-				? "Choose the accent used for highlights, focus rings, and emphasis in the default light theme."
-				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
+				? "Sets the accent for highlights, focus rings, and emphasis in the default light theme."
+				: "Sets the accent for highlights, focus rings, and emphasis in the default dark theme.";
 	const lightTheme = getUiLightThemeOption(lightThemeId);
 	const darkTheme = getUiDarkThemeOption(darkThemeId);
 
@@ -198,6 +224,10 @@ export function AppearanceSettingsPane() {
 					onLightThemeChange={onLightThemeChange}
 					onDarkThemeChange={onDarkThemeChange}
 					onTranslucentAppChange={onTranslucentAppChange}
+				/>
+				<AppearanceCornerRadiusCard
+					cornerRadiusStyle={cornerRadiusStyle}
+					onCornerRadiusStyleChange={onCornerRadiusStyleChange}
 				/>
 				{showAccentCard ? (
 					<AppearanceAccentCard

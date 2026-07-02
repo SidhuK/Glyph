@@ -59,7 +59,7 @@
 	min-height: 26px;
 	padding: 2px 30px 2px 30px;
 	border: 1px solid transparent;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	background: var(--bg-tertiary);
 	color: var(--text-secondary);
 	font-size: var(--text-sm);
@@ -88,7 +88,7 @@
 	width: 20px;
 	height: 20px;
 	border: 0;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
@@ -121,7 +121,7 @@
 	align-items: flex-start;
 	gap: 4px;
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	background: transparent;
 	color: var(--text-primary);
 	cursor: pointer;
@@ -314,7 +314,7 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	transition: background var(--transition-fast), border-color
 		var(--transition-fast), color var(--transition-fast);
 }

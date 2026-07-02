@@ -115,7 +115,7 @@
 .activityHeatmapCell,
 .activityHeatmapLegendCell {
 	border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
-	border-radius: 4px;
+	border-radius: var(--radius-4);
 	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-secondary));
 	box-shadow: none;
 }
@@ -197,7 +197,7 @@
 	width: max-content;
 	max-width: 180px;
 	padding: 5px 7px;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--text-primary) 92%, var(--bg-primary));
 	color: var(--bg-primary);
 	font-size: calc(var(--text-base) * 0.72);
@@ -410,7 +410,7 @@
 	min-height: 30px;
 	padding: 0 12px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	background: var(--bg-primary);
 	color: var(--text-primary);
 	font-size: var(--text-sm);

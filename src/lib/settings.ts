@@ -172,6 +172,28 @@ const UI_ACCENTS = new Set<UiAccent>([
 export function isUiAccent(value: unknown): value is UiAccent {
 	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent);
 }
+export type UiCornerRadiusStyle = "default" | "sharp" | "round";
+const UI_CORNER_RADIUS_STYLES = new Set<UiCornerRadiusStyle>([
+	"default",
+	"sharp",
+	"round",
+]);
+
+export function isUiCornerRadiusStyle(
+	value: unknown,
+): value is UiCornerRadiusStyle {
+	return (
+		typeof value === "string" &&
+		UI_CORNER_RADIUS_STYLES.has(value as UiCornerRadiusStyle)
+	);
+}
+
+export const DEFAULT_UI_CORNER_RADIUS_STYLE: UiCornerRadiusStyle = "default";
+
+function asUiCornerRadiusStyle(value: unknown): UiCornerRadiusStyle {
+	return isUiCornerRadiusStyle(value) ? value : DEFAULT_UI_CORNER_RADIUS_STYLE;
+}
+
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Geist";
 const DEFAULT_UI_EDITOR_FONT_FAMILY = DEFAULT_UI_FONT_FAMILY;
@@ -384,6 +406,7 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
 		translucentApp?: boolean;
+		cornerRadiusStyle?: UiCornerRadiusStyle;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		folioMode?: boolean;
@@ -456,6 +479,7 @@ interface AppSettings {
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
 		translucentApp: boolean;
+		cornerRadiusStyle: UiCornerRadiusStyle;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		folioMode: boolean;
@@ -525,6 +549,7 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
+	cornerRadiusStyle: "ui.cornerRadiusStyle",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	folioMode: "ui.folioMode",
@@ -844,6 +869,7 @@ export async function loadSettings(
 		entries,
 		KEYS.translucentApp,
 	);
+	const rawCornerRadiusStyle = getSettingValue(entries, KEYS.cornerRadiusStyle);
 	const rawShowToc = getSettingValue<boolean | null>(entries, KEYS.showToc);
 	const rawShowFileTreeFolderCounts = getSettingValue<boolean | null>(
 		entries,
@@ -976,6 +1002,7 @@ export async function loadSettings(
 		typeof rawTranslucentApp === "boolean"
 			? rawTranslucentApp
 			: DEFAULT_UI_TRANSLUCENT_APP;
+	const cornerRadiusStyle = asUiCornerRadiusStyle(rawCornerRadiusStyle);
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
 	const showFileTreeFolderCounts =
 		typeof rawShowFileTreeFolderCounts === "boolean"
@@ -1074,6 +1101,7 @@ export async function loadSettings(
 			fontSize,
 			editorFontSize,
 			translucentApp,
+			cornerRadiusStyle,
 			showToc,
 			showFileTreeFolderCounts,
 			folioMode,
@@ -1313,6 +1341,16 @@ export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	await store.set(KEYS.translucentApp, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
+}
+
+export async function setUiCornerRadiusStyle(
+	style: UiCornerRadiusStyle,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiCornerRadiusStyle(style);
+	await store.set(KEYS.cornerRadiusStyle, next);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { cornerRadiusStyle: next } });
 }
 
 export async function setShowToc(enabled: boolean): Promise<void> {

@@ -1,0 +1,25 @@
+:root[data-corner-radius-style="sharp"] {
+	--radius-2: 0px;
+	--radius-3: 0px;
+	--radius-4: 0px;
+	--radius-6: 0px;
+	--radius-7: 0px;
+	--radius-8: 0px;
+	--radius-10: 0px;
+	--radius-14: 0px;
+	--radius-18: 0px;
+	--radius-24: 0px;
+}
+
+:root[data-corner-radius-style="round"] {
+	--radius-2: 4px;
+	--radius-3: 5px;
+	--radius-4: 8px;
+	--radius-6: 12px;
+	--radius-7: 14px;
+	--radius-8: 16px;
+	--radius-10: 18px;
+	--radius-14: 22px;
+	--radius-18: 28px;
+	--radius-24: 36px;
+}

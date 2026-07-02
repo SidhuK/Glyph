@@ -332,7 +332,7 @@ button.databasesViewTab.is-active .databasesViewTabIcon {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	padding: 2px 6px;
 	background: color-mix(
 		in srgb,

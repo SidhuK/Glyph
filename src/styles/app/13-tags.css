@@ -97,7 +97,7 @@ button.tagsHeaderTitle:active {
 	gap: var(--space-3);
 	padding: 1px 8px;
 	min-height: 28px;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	color: var(--text-primary);
 	font-size: var(--text-sm);
 }

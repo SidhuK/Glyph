@@ -469,7 +469,7 @@
 	bottom: 4px;
 	left: 0;
 	width: 2px;
-	border-radius: 1px;
+	border-radius: var(--radius-2);
 	background: linear-gradient(
 		180deg,
 		var(--ai-mode-accent, var(--interactive-accent)),

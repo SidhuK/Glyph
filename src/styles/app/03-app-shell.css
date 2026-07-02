@@ -38,7 +38,7 @@
 	transform: translateX(-50%);
 	padding: 10px 12px 9px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	border-radius: 12px;
+	border-radius: calc(var(--radius-6) + var(--radius-6));
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	box-shadow: var(--shadow-md);
 	backdrop-filter: blur(18px) saturate(1.2);

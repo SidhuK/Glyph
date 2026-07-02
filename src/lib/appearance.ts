@@ -3,6 +3,7 @@ import {
 	MAX_EDITOR_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
 	type UiAccent,
+	type UiCornerRadiusStyle,
 	type UiFontFamily,
 	type UiFontSize,
 	isUiAccent,
@@ -189,6 +190,15 @@ export function applyUiTypography({
 	for (const property of DERIVED_EDITOR_FONT_SIZE_PROPERTIES) {
 		root.style.removeProperty(property);
 	}
+}
+
+export function applyUiCornerRadius(style: UiCornerRadiusStyle): void {
+	const root = document.documentElement;
+	if (style === "default") {
+		delete root.dataset.cornerRadiusStyle;
+		return;
+	}
+	root.dataset.cornerRadiusStyle = style;
 }
 
 export function applyUiAccent(

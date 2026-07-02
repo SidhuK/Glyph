@@ -214,6 +214,330 @@
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }
 
+.settingsSegmentedPicker {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.settingsSegmentedTrack {
+	display: inline-flex;
+	align-items: stretch;
+	gap: 3px;
+	flex-shrink: 0;
+	padding: 4px;
+	border-radius: calc(var(--radius-lg) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 72%, var(--bg-primary));
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.settingsSegmentedOption {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	min-width: 84px;
+	padding: 10px 12px 9px;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	cursor: pointer;
+	position: relative;
+	transition: border-color var(--transition-base), box-shadow
+		var(--transition-base), background var(--transition-base), transform
+		var(--transition-base);
+}
+
+.settingsSegmentedOption:active {
+	transform: scale(0.98);
+}
+
+.settingsSegmentedInput {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.settingsSegmentedLabel {
+	font-size: calc(var(--text-base) * 0.74);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.01em;
+	color: var(--text-secondary);
+	transition: color var(--transition-base);
+}
+
+.settingsSegmentedOption:hover {
+	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+}
+
+.settingsSegmentedOption.is-active {
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
+	box-shadow: 0 1px 3px color-mix(in srgb, black 8%, transparent), 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.settingsSegmentedOption.is-active .settingsSegmentedLabel {
+	color: var(--text-primary);
+}
+
+:root.dark .settingsSegmentedTrack {
+	background: color-mix(in srgb, var(--bg-tertiary) 58%, var(--bg-primary));
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+}
+
+.settingsSegmentedOption[data-corner-radius-style="sharp"] {
+	--settings-corner-radius-preview: 0px;
+}
+
+.settingsSegmentedOption[data-corner-radius-style="default"] {
+	--settings-corner-radius-preview: 6px;
+}
+
+.settingsSegmentedOption[data-corner-radius-style="round"] {
+	--settings-corner-radius-preview: 12px;
+}
+
+.settingsAppearancePreview {
+	width: 58px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.settingsAppearancePreviewFrame,
+.settingsAppearancePreviewPane {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	border-radius: var(--settings-corner-radius-preview, var(--radius-md));
+	transition: box-shadow var(--transition-base), transform
+		var(--transition-base);
+}
+
+.settingsAppearancePreviewFrame {
+	display: flex;
+	border: 1px solid rgb(0 0 0 / 12%);
+	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 14%, transparent);
+}
+
+.settingsAppearancePreviewPane {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	padding: 5px 6px 6px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--bg-primary) 88%, white) 0%,
+		color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary)) 100%
+	);
+	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 14%, transparent);
+}
+
+.settingsAppearancePreviewFrame .settingsAppearancePreviewPane {
+	flex: 1 1 50%;
+	min-width: 0;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.settingsAppearancePreviewPane.is-light {
+	border-color: rgb(0 0 0 / 10%);
+	background: linear-gradient(165deg, #ffffff 0%, #eef0f4 100%);
+}
+
+.settingsAppearancePreviewFrame .settingsAppearancePreviewPane.is-light {
+	border-right: 1px solid rgb(0 0 0 / 8%);
+}
+
+.settingsAppearancePreviewPane.is-dark {
+	border-color: rgb(255 255 255 / 10%);
+	background: linear-gradient(165deg, #2a2a30 0%, #141418 100%);
+	box-shadow: 0 2px 6px color-mix(in srgb, black 28%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 6%, transparent);
+}
+
+.settingsAppearancePreviewChrome {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+
+.settingsAppearancePreviewDot {
+	width: 4px;
+	height: 4px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 34%, transparent);
+}
+
+.settingsAppearancePreviewPane.is-dark .settingsAppearancePreviewDot {
+	background: rgb(255 255 255 / 22%);
+}
+
+.settingsAppearancePreviewDot:nth-child(1) {
+	background: color-mix(in srgb, #ff6b63 72%, var(--bg-primary));
+}
+
+.settingsAppearancePreviewDot:nth-child(2) {
+	background: color-mix(in srgb, #f5bf4f 76%, var(--bg-primary));
+}
+
+.settingsAppearancePreviewDot:nth-child(3) {
+	background: color-mix(in srgb, #58c76b 72%, var(--bg-primary));
+}
+
+.settingsAppearancePreviewPane.is-light
+	.settingsAppearancePreviewDot:nth-child(1) {
+	background: color-mix(in srgb, #ff6b63 82%, white);
+}
+
+.settingsAppearancePreviewPane.is-light
+	.settingsAppearancePreviewDot:nth-child(2) {
+	background: color-mix(in srgb, #f5bf4f 86%, white);
+}
+
+.settingsAppearancePreviewPane.is-light
+	.settingsAppearancePreviewDot:nth-child(3) {
+	background: color-mix(in srgb, #58c76b 82%, white);
+}
+
+.settingsAppearancePreviewPane.is-dark
+	.settingsAppearancePreviewDot:nth-child(1) {
+	background: color-mix(in srgb, #ff6b63 72%, #141418);
+}
+
+.settingsAppearancePreviewPane.is-dark
+	.settingsAppearancePreviewDot:nth-child(2) {
+	background: color-mix(in srgb, #f5bf4f 76%, #141418);
+}
+
+.settingsAppearancePreviewPane.is-dark
+	.settingsAppearancePreviewDot:nth-child(3) {
+	background: color-mix(in srgb, #58c76b 72%, #141418);
+}
+
+.settingsAppearancePreviewBody {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+.settingsAppearancePreviewLine {
+	display: block;
+	height: 3px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 24%, transparent);
+}
+
+.settingsAppearancePreviewPane.is-light .settingsAppearancePreviewLine {
+	background: rgb(0 0 0 / 12%);
+}
+
+.settingsAppearancePreviewPane.is-dark .settingsAppearancePreviewLine {
+	background: rgb(255 255 255 / 16%);
+}
+
+.settingsAppearancePreviewLine.is-short {
+	width: 68%;
+}
+
+.settingsAppearancePreviewButton {
+	display: block;
+	width: 42%;
+	height: 6px;
+	margin-top: auto;
+	margin-left: auto;
+	border-radius: var(--settings-corner-radius-preview, var(--radius-md));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--bg-primary)
+	);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent);
+}
+
+.settingsAppearancePreviewPane.is-light .settingsAppearancePreviewButton,
+.settingsAppearancePreviewPane.is-dark .settingsAppearancePreviewButton {
+	border-radius: var(--radius-4);
+}
+
+.settingsAppearancePreviewPane.is-dark .settingsAppearancePreviewButton {
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+}
+
+.settingsSegmentedOption:hover
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane,
+.settingsSegmentedOption:hover
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewFrame {
+	transform: translateY(-1px);
+}
+
+.settingsSegmentedOption:hover
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane {
+	box-shadow: 0 3px 8px color-mix(in srgb, black 12%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 14%, transparent);
+}
+
+.settingsSegmentedOption.is-active
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane,
+.settingsSegmentedOption.is-active
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewFrame {
+	box-shadow: 0 2px 10px
+		color-mix(in srgb, var(--interactive-accent) 16%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 16%, transparent);
+}
+
+.settingsSegmentedOption.is-active
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane.is-light {
+	box-shadow: 0 2px 10px color-mix(in srgb, #8ab4ff 18%, transparent), inset 0
+		1px 0 color-mix(in srgb, white 16%, transparent);
+}
+
+.settingsSegmentedOption.is-active
+	> .settingsAppearancePreview
+	> .settingsAppearancePreviewPane.is-dark {
+	box-shadow: 0 2px 10px color-mix(in srgb, #6e8cff 20%, transparent), inset 0
+		1px 0 color-mix(in srgb, white 8%, transparent);
+}
+
+.settingsSegmentedInput:focus-visible
+	+ .settingsAppearancePreview
+	> .settingsAppearancePreviewPane,
+.settingsSegmentedInput:focus-visible
+	+ .settingsAppearancePreview
+	> .settingsAppearancePreviewFrame {
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent), 0 2px 8px
+		color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+:root.dark .settingsAppearancePreviewPane:not(.is-light, .is-dark) {
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--bg-secondary) 90%, white) 0%,
+		color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary)) 100%
+	);
+	box-shadow: 0 2px 6px color-mix(in srgb, black 28%, transparent), inset 0 1px
+		0 color-mix(in srgb, white 6%, transparent);
+}
+
 @media (max-width: 760px) {
 	.settingsField {
 		gap: 10px;
@@ -236,7 +560,16 @@
 		justify-content: flex-start;
 	}
 
+	.settingsSegmentedPicker {
+		align-items: flex-start;
+		justify-content: flex-start;
+	}
+
 	.settingsAccentOptions {
+		flex-wrap: wrap;
+	}
+
+	.settingsSegmentedTrack {
 		flex-wrap: wrap;
 	}
 }
@@ -244,12 +577,25 @@
 @media (prefers-reduced-motion: reduce) {
 	.settingsField,
 	.settingsAccentDot,
+	.settingsSegmentedOption,
+	.settingsAppearancePreviewPane,
+	.settingsAppearancePreviewFrame,
 	.settingsKeySaved {
 		transition: none;
 		animation: none;
 	}
 
 	.settingsAccentDot:hover {
+		transform: none;
+	}
+
+	.settingsSegmentedOption:active,
+	.settingsSegmentedOption:hover
+		> .settingsAppearancePreview
+		> .settingsAppearancePreviewPane,
+	.settingsSegmentedOption:hover
+		> .settingsAppearancePreview
+		> .settingsAppearancePreviewFrame {
 		transform: none;
 	}
 }

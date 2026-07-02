@@ -49,7 +49,7 @@
 	display: block;
 	height: 2px;
 	min-width: 4px;
-	border-radius: 1px;
+	border-radius: var(--radius-2);
 	background: color-mix(in srgb, var(--text-tertiary) 44%, transparent);
 	transform-origin: right center;
 	transition: background-color 140ms ease, opacity 140ms ease, transform 180ms
