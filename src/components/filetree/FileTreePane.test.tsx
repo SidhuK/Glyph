@@ -101,6 +101,7 @@ describe("FileTreePane", () => {
 		loadSettingsMock.mockResolvedValue({
 			ui: {
 				showFileTreeFolderCounts: false,
+				showNonMarkdownFiles: true,
 			},
 		});
 		useFileTreeContextMock.mockReturnValue({
@@ -227,5 +228,60 @@ describe("FileTreePane", () => {
 		});
 
 		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
+	});
+
+	it("hides non-markdown files when the setting is off", async () => {
+		loadSettingsMock.mockResolvedValue({
+			ui: {
+				showFileTreeFolderCounts: false,
+				showNonMarkdownFiles: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<FileTreePane
+						rootEntries={[
+							{
+								name: "note.md",
+								rel_path: "note.md",
+								kind: "file",
+								is_markdown: true,
+							},
+							{
+								name: "image.png",
+								rel_path: "image.png",
+								kind: "file",
+								is_markdown: false,
+							},
+						]}
+						childrenByDir={{}}
+						expandedDirs={new Set()}
+						activeFilePath={null}
+						activeDirPath={null}
+						onToggleDir={vi.fn()}
+						onSelectDir={vi.fn()}
+						onOpenFile={vi.fn()}
+						onNewFileInDir={vi.fn()}
+						onCreateFromTemplateInDir={vi.fn()}
+						onRequestCreateFolder={vi.fn()}
+						onDuplicateFile={vi.fn()}
+						onDeletePath={vi.fn()}
+						renamingPath={null}
+						onStartRename={vi.fn()}
+						onCancelRename={vi.fn()}
+						onCommitFileRename={vi.fn()}
+						onCommitDirRename={vi.fn()}
+						onMovePath={vi.fn()}
+						pinnedFiles={[]}
+						onTogglePinnedFile={vi.fn()}
+					/>
+				</QueryClientProvider>,
+			);
+		});
+
+		expect(container.textContent).toContain("note");
+		expect(container.textContent).not.toContain("image");
 	});
 });

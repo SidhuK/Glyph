@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
+import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -128,9 +129,29 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 
 export function useFolioNotes(scope: FolioScope) {
 	const queryClient = useQueryClient();
+	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState(false);
 	const folderPrefix = folderForScope(scope);
 	const includesNonMarkdownFiles =
-		scope.kind !== "tag" && scope.kind !== "person";
+		showNonMarkdownFiles && scope.kind !== "tag" && scope.kind !== "person";
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings().then((settings) => {
+			if (!cancelled) {
+				setShowNonMarkdownFiles(settings.ui.showNonMarkdownFiles);
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
+			setShowNonMarkdownFiles(payload.ui.showNonMarkdownFiles);
+		}
+	});
+
 	const query = useQuery({
 		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		queryFn: () => loadAllDocs(folderPrefix),
@@ -151,17 +172,20 @@ export function useFolioNotes(scope: FolioScope) {
 			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
 		});
 		void queryClient.invalidateQueries({
-			queryKey: folioFilesQueryKey(folderPrefix),
+			queryKey: ["navigation", "folio-files"],
 		});
 	});
 
 	const items = useMemo(
 		() =>
 			filterNotesForScope(
-				mergeFolioItems(query.data ?? [], filesQuery.data?.files ?? []),
+				mergeFolioItems(
+					query.data ?? [],
+					includesNonMarkdownFiles ? (filesQuery.data?.files ?? []) : [],
+				),
 				scope,
 			),
-		[filesQuery.data?.files, query.data, scope],
+		[filesQuery.data?.files, includesNonMarkdownFiles, query.data, scope],
 	);
 
 	return {

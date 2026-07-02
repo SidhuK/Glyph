@@ -1,6 +1,14 @@
 import type { FsEntry } from "../lib/tauri";
 import { normalizeRelPath } from "../utils/path";
 
+export function filterVisibleFileTreeEntries(
+	entries: FsEntry[],
+	showNonMarkdownFiles: boolean,
+): FsEntry[] {
+	if (showNonMarkdownFiles) return entries;
+	return entries.filter((entry) => entry.kind === "dir" || entry.is_markdown);
+}
+
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;
 	if (a.kind === "file" && b.kind === "dir") return 1;

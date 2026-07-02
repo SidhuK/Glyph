@@ -505,6 +505,13 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["sidebar", "counts"],
 	},
 	{
+		id: "advanced-show-non-markdown-files",
+		tab: "advanced",
+		section: "App",
+		title: "Show non-Markdown files",
+		keywords: ["sidebar", "attachments", "pdf", "images", "folio", "file tree"],
+	},
+	{
 		id: "advanced-database-column-color",
 		tab: "advanced",
 		section: "Database",

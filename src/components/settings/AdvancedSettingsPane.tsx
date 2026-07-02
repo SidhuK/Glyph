@@ -19,6 +19,7 @@ import {
 	setEditorWidthMode,
 	setFolioMode,
 	setShowFileTreeFolderCounts,
+	setShowNonMarkdownFiles,
 	setShowToc,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -123,6 +124,7 @@ export function AdvancedSettingsPane() {
 		useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
+	const [showNonMarkdownFiles, setShowNonMarkdownFilesState] = useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [error, setError] = useState("");
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
@@ -149,6 +151,8 @@ export function AdvancedSettingsPane() {
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
 	] = useState(false);
+	const [isSavingShowNonMarkdownFiles, setIsSavingShowNonMarkdownFiles] =
+		useState(false);
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
 		useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
@@ -169,6 +173,7 @@ export function AdvancedSettingsPane() {
 			setFolioModeState(settings.ui.folioMode);
 			setClassicAllNotesByDefaultState(settings.ui.classicAllNotesByDefault);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
+			setShowNonMarkdownFilesState(settings.ui.showNonMarkdownFiles);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
@@ -222,6 +227,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
+		}
+		if (typeof payload.ui?.showNonMarkdownFiles === "boolean") {
+			setShowNonMarkdownFilesState(payload.ui.showNonMarkdownFiles);
 		}
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
@@ -556,6 +564,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingShowFileTreeFolderCounts(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Show non-Markdown files"
+						description="Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only."
+					>
+						<SettingsToggle
+							checked={showNonMarkdownFiles}
+							disabled={isSavingShowNonMarkdownFiles}
+							ariaLabel="Show non-Markdown files"
+							onCheckedChange={(checked) => {
+								const previous = showNonMarkdownFiles;
+								setError("");
+								setShowNonMarkdownFilesState(checked);
+								setIsSavingShowNonMarkdownFiles(true);
+								void setShowNonMarkdownFiles(checked)
+									.catch((cause) => {
+										setShowNonMarkdownFilesState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowNonMarkdownFiles(false);
 									});
 							}}
 						/>
