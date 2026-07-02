@@ -66,8 +66,8 @@
 	flex: 0 0 auto;
 	width: var(--icon-sm);
 	height: var(--icon-sm);
-	background: currentColor;
-	color: currentColor;
+	background: currentcolor;
+	color: currentcolor;
 	mask: var(--wiki-link-file-icon-mask);
 	-webkit-mask: var(--wiki-link-file-icon-mask);
 	pointer-events: none;
@@ -79,7 +79,7 @@
 	width: 0.72em;
 	height: 0.72em;
 	margin-left: 1px;
-	background: currentColor;
+	background: currentcolor;
 	opacity: 0.58;
 	mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
 	-webkit-mask: var(--wiki-link-affordance-mask) center / contain no-repeat;
