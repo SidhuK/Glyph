@@ -58,6 +58,7 @@ export function AppearanceSettingsPane() {
 		showLightColorPickers,
 		showDarkColorPickers,
 		showAccentPicker,
+		onAppearanceSettingsLoaded,
 		onAccentChange,
 		onAccentReset,
 		onThemeColorChange,
@@ -87,6 +88,7 @@ export function AppearanceSettingsPane() {
 				setLightThemeIdState(settings.ui.lightThemeId);
 				setDarkThemeIdState(settings.ui.darkThemeId);
 				setTranslucentAppState(settings.ui.translucentApp);
+				onAppearanceSettingsLoaded(settings.ui.accent, settings.ui.themeColors);
 				setTheme(settings.ui.theme);
 				applyUiThemeSelection(
 					settings.ui.lightThemeId,
@@ -104,7 +106,7 @@ export function AppearanceSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, [setTheme]);
+	}, [onAppearanceSettingsLoaded, setTheme]);
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {

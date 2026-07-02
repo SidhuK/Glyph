@@ -57,8 +57,23 @@ export const DEFAULT_UI_THEME_COLOR_OVERRIDES: UiThemeColorOverrides = {
 	},
 };
 
-function asNullableThemeColorValue(value: unknown): string | null {
+export function asNullableThemeColorValue(value: unknown): string | null {
 	return isHexColor(value) ? normalizeThemeColorHex(value) : null;
+}
+
+function asThemeColorPatchValue(value: unknown): string | null | undefined {
+	if (value === undefined) return undefined;
+	if (value === null) return null;
+	return asNullableThemeColorValue(value) ?? undefined;
+}
+
+function hasThemeColorPatchValue(patch: UiThemeColorOverridesPatch): boolean {
+	return (
+		patch.light?.background !== undefined ||
+		patch.light?.foreground !== undefined ||
+		patch.dark?.background !== undefined ||
+		patch.dark?.foreground !== undefined
+	);
 }
 
 export function asThemeColorOverridesPatch(
@@ -71,32 +86,21 @@ export function asThemeColorOverridesPatch(
 	const dark =
 		patch.dark && typeof patch.dark === "object" ? patch.dark : undefined;
 	if (!light && !dark) return null;
-	return {
+	const result = {
 		light: light
 			? {
-					background:
-						light.background === undefined
-							? undefined
-							: asNullableThemeColorValue(light.background),
-					foreground:
-						light.foreground === undefined
-							? undefined
-							: asNullableThemeColorValue(light.foreground),
+					background: asThemeColorPatchValue(light.background),
+					foreground: asThemeColorPatchValue(light.foreground),
 				}
 			: undefined,
 		dark: dark
 			? {
-					background:
-						dark.background === undefined
-							? undefined
-							: asNullableThemeColorValue(dark.background),
-					foreground:
-						dark.foreground === undefined
-							? undefined
-							: asNullableThemeColorValue(dark.foreground),
+					background: asThemeColorPatchValue(dark.background),
+					foreground: asThemeColorPatchValue(dark.foreground),
 				}
 			: undefined,
 	};
+	return hasThemeColorPatchValue(result) ? result : null;
 }
 
 export function mergeThemeColorOverrides(

@@ -26,8 +26,7 @@ import {
 	type UiThemeColorMode,
 	type UiThemeColorOverrides,
 	type UiThemeColorOverridesPatch,
-	isHexColor,
-	normalizeThemeColorHex,
+	asNullableThemeColorValue,
 	tryNormalizeThemeColorHex,
 } from "./themeColors";
 import {
@@ -360,27 +359,23 @@ function asUiAccent(value: unknown): UiAccent {
 	return isUiAccent(value) ? value : DEFAULT_UI_ACCENT;
 }
 
-function asNullableThemeColor(value: unknown): string | null {
-	return isHexColor(value) ? normalizeThemeColorHex(value) : null;
-}
-
 function loadUiThemeColorOverrides(
 	entries: Map<string, unknown>,
 ): UiThemeColorOverrides {
 	return {
 		light: {
-			background: asNullableThemeColor(
+			background: asNullableThemeColorValue(
 				getSettingValue(entries, KEYS.lightThemeBackground),
 			),
-			foreground: asNullableThemeColor(
+			foreground: asNullableThemeColorValue(
 				getSettingValue(entries, KEYS.lightThemeForeground),
 			),
 		},
 		dark: {
-			background: asNullableThemeColor(
+			background: asNullableThemeColorValue(
 				getSettingValue(entries, KEYS.darkThemeBackground),
 			),
-			foreground: asNullableThemeColor(
+			foreground: asNullableThemeColorValue(
 				getSettingValue(entries, KEYS.darkThemeForeground),
 			),
 		},
