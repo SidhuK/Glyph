@@ -4,6 +4,7 @@ import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
+	FileTreeSortMode,
 	ReleaseChannel,
 	UiAccent,
 	UiCornerRadiusStyle,
@@ -75,6 +76,7 @@ type TauriEventMap = {
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
 			showNonMarkdownFiles?: boolean;
+			fileTreeSortMode?: FileTreeSortMode;
 			folioMode?: boolean;
 			classicAllNotesByDefault?: boolean;
 			aiEnabled?: boolean;

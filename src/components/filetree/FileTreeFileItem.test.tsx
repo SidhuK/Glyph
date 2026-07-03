@@ -111,7 +111,6 @@ describe("FileTreeFileItem", () => {
 					parentDirPath="notes"
 					onDeletePath={vi.fn()}
 					appearance={null}
-					onChangeAppearance={vi.fn()}
 					isPinned={false}
 					onTogglePinned={vi.fn()}
 					{...overrides}

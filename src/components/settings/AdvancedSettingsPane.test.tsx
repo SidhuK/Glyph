@@ -19,6 +19,7 @@ const {
 	setEditorSpellCheckMock,
 	setEditorWidthModeMock,
 	setEditorVimKeybindingsMock,
+	setFileTreeSortModeMock,
 	setFolioModeMock,
 	setShowFileTreeFolderCountsMock,
 	setShowNonMarkdownFilesMock,
@@ -36,6 +37,7 @@ const {
 	setEditorSpellCheckMock: vi.fn(() => Promise.resolve()),
 	setEditorWidthModeMock: vi.fn(() => Promise.resolve()),
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
+	setFileTreeSortModeMock: vi.fn(() => Promise.resolve()),
 	setFolioModeMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
 	setShowNonMarkdownFilesMock: vi.fn(() => Promise.resolve()),
@@ -47,9 +49,22 @@ vi.mock("../../contexts", () => ({
 		spacePath: null,
 		startIndexRebuild: vi.fn(() => Promise.resolve()),
 	}),
+	useFileTreeContext: () => ({
+		fileTreeSortMode: "name-asc",
+		isSavingFileTreeSortMode: false,
+		setFileTreeSortMode: vi.fn(() => Promise.resolve()),
+	}),
 }));
 
 vi.mock("../../lib/settings", () => ({
+	FILE_TREE_SORT_OPTIONS: [
+		{ label: "Name A-Z", value: "name-asc" },
+		{ label: "Name Z-A", value: "name-desc" },
+		{ label: "Modified newest", value: "modified-desc" },
+		{ label: "Modified oldest", value: "modified-asc" },
+		{ label: "Created newest", value: "created-desc" },
+		{ label: "Created oldest", value: "created-asc" },
+	],
 	loadSettings: loadSettingsMock,
 	setAiAssistantMode: setAiAssistantModeMock,
 	setClassicAllNotesByDefault: setClassicAllNotesByDefaultMock,
@@ -62,10 +77,21 @@ vi.mock("../../lib/settings", () => ({
 	setEditorSpellCheck: setEditorSpellCheckMock,
 	setEditorWidthMode: setEditorWidthModeMock,
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
+	setFileTreeSortMode: setFileTreeSortModeMock,
 	setFolioMode: setFolioModeMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
 	setShowNonMarkdownFiles: setShowNonMarkdownFilesMock,
 	setShowToc: setShowTocMock,
+	isFileTreeSortMode: (value: unknown) =>
+		typeof value === "string" &&
+		[
+			"name-asc",
+			"name-desc",
+			"modified-desc",
+			"modified-asc",
+			"created-desc",
+			"created-asc",
+		].includes(value),
 }));
 
 vi.mock("../../lib/tauri", () => ({
@@ -153,6 +179,7 @@ function makeSettings(
 			folioMode: false,
 			showFileTreeFolderCounts: false,
 			showNonMarkdownFiles: true,
+			fileTreeSortMode: "name-asc" as const,
 			showToc: true,
 		},
 		database: {

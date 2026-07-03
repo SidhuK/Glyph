@@ -102,11 +102,15 @@ describe("FileTreePane", () => {
 			ui: {
 				showFileTreeFolderCounts: false,
 				showNonMarkdownFiles: true,
+				fileTreeSortMode: "name-asc",
 			},
 		});
 		useFileTreeContextMock.mockReturnValue({
 			itemAppearance: {},
 			setItemAppearance: vi.fn(),
+			fileTreeSortMode: "name-asc",
+			isSavingFileTreeSortMode: false,
+			setFileTreeSortMode: vi.fn(() => Promise.resolve()),
 		});
 		useSpaceMock.mockReturnValue({
 			spacePath: "/space",
@@ -235,6 +239,7 @@ describe("FileTreePane", () => {
 			ui: {
 				showFileTreeFolderCounts: false,
 				showNonMarkdownFiles: false,
+				fileTreeSortMode: "name-asc",
 			},
 		});
 

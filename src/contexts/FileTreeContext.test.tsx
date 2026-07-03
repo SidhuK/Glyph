@@ -33,6 +33,9 @@ vi.mock("../lib/settings", () => ({
 				beautifulTags: false,
 				enablePeopleMentionsAsTags: false,
 			},
+			ui: {
+				fileTreeSortMode: "name-asc",
+			},
 		}),
 }));
 

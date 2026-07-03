@@ -2,10 +2,13 @@ import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useSpace } from "../../contexts";
+import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AiAssistantMode,
 	type EditorWidthMode,
+	FILE_TREE_SORT_OPTIONS,
+	isFileTreeSortMode,
 	loadSettings,
 	setAiAssistantMode,
 	setClassicAllNotesByDefault,
@@ -137,6 +140,9 @@ export function AdvancedSettingsPane() {
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
+	const fileTreeSort = useFileTreeSortMode({
+		onError: setError,
+	});
 	const showTocToggle = useOptimisticSettingsToggle(
 		showToc,
 		setShowTocState,
@@ -529,6 +535,29 @@ export function AdvancedSettingsPane() {
 							ariaLabel="Show non-Markdown files"
 							onCheckedChange={showNonMarkdownFilesToggle.onCheckedChange}
 						/>
+					</SettingsRow>
+					<SettingsRow
+						label="File tree sort"
+						description="Choose how folders and files are ordered in the sidebar tree."
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label="File tree sort"
+							value={fileTreeSort.sortMode}
+							disabled={fileTreeSort.isSaving}
+							onChange={(event) => {
+								const nextSortMode = event.currentTarget.value;
+								if (!isFileTreeSortMode(nextSortMode)) return;
+								setError("");
+								void fileTreeSort.setSortMode(nextSortMode);
+							}}
+						>
+							{FILE_TREE_SORT_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</SettingsSelect>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection

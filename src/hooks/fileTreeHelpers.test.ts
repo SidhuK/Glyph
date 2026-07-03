@@ -4,6 +4,7 @@ import { normalizeRelPath } from "../utils/path";
 import {
 	areEntriesEqual,
 	compareEntries,
+	compareEntriesForSort,
 	filterVisibleFileTreeEntries,
 	normalizeEntries,
 	normalizeEntry,
@@ -16,6 +17,8 @@ function mkEntry(partial: Partial<FsEntry>): FsEntry {
 		rel_path: partial.rel_path ?? "",
 		kind: partial.kind ?? "file",
 		is_markdown: partial.is_markdown ?? false,
+		created: partial.created,
+		updated: partial.updated,
 	};
 }
 
@@ -162,5 +165,79 @@ describe("fileTreeHelpers", () => {
 			}),
 		);
 		expect(duplicate).toHaveLength(next.length);
+	});
+
+	it("sorts reverse alphabetical within folder and file groups", () => {
+		const entries = normalizeEntries([
+			mkEntry({ name: "Alpha.md", rel_path: "Alpha.md", kind: "file" }),
+			mkEntry({ name: "Zeta.md", rel_path: "Zeta.md", kind: "file" }),
+			mkEntry({ name: "Bravo", rel_path: "Bravo", kind: "dir" }),
+			mkEntry({ name: "Omega", rel_path: "Omega", kind: "dir" }),
+		]).sort(compareEntriesForSort("name-desc"));
+
+		expect(entries.map((entry) => entry.rel_path)).toEqual([
+			"Omega",
+			"Bravo",
+			"Zeta.md",
+			"Alpha.md",
+		]);
+	});
+
+	it("sorts by modified timestamp with missing values after timestamped entries", () => {
+		const entries = [
+			mkEntry({
+				name: "old.md",
+				rel_path: "old.md",
+				kind: "file",
+				updated: "2024-01-01T00:00:00.000Z",
+			}),
+			mkEntry({ name: "missing.md", rel_path: "missing.md", kind: "file" }),
+			mkEntry({
+				name: "new.md",
+				rel_path: "new.md",
+				kind: "file",
+				updated: "2024-01-03T00:00:00.000Z",
+			}),
+		];
+
+		expect(
+			[...entries]
+				.sort(compareEntriesForSort("modified-desc"))
+				.map((entry) => entry.rel_path),
+		).toEqual(["new.md", "old.md", "missing.md"]);
+		expect(
+			[...entries]
+				.sort(compareEntriesForSort("modified-asc"))
+				.map((entry) => entry.rel_path),
+		).toEqual(["old.md", "new.md", "missing.md"]);
+	});
+
+	it("sorts by created timestamp and falls back to name for ties", () => {
+		const entries = normalizeEntries([
+			mkEntry({
+				name: "Beta.md",
+				rel_path: "Beta.md",
+				kind: "file",
+				created: "2024-01-02T00:00:00.000Z",
+			}),
+			mkEntry({
+				name: "Alpha.md",
+				rel_path: "Alpha.md",
+				kind: "file",
+				created: "2024-01-02T00:00:00.000Z",
+			}),
+			mkEntry({
+				name: "Gamma.md",
+				rel_path: "Gamma.md",
+				kind: "file",
+				created: "2024-01-03T00:00:00.000Z",
+			}),
+		]).sort(compareEntriesForSort("created-asc"));
+
+		expect(entries.map((entry) => entry.rel_path)).toEqual([
+			"Alpha.md",
+			"Beta.md",
+			"Gamma.md",
+		]);
 	});
 });

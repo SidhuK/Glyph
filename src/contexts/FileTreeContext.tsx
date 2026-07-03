@@ -10,7 +10,12 @@ import {
 } from "react";
 import { useDebouncedNoteChange } from "../hooks/useDebouncedNoteChange";
 import { extractErrorMessage } from "../lib/errorUtils";
-import { loadSettings } from "../lib/settings";
+import {
+	type FileTreeSortMode,
+	isFileTreeSortMode,
+	loadSettings,
+	setFileTreeSortMode as persistFileTreeSortMode,
+} from "../lib/settings";
 import { normalizeTagIconKey } from "../lib/tagIcons";
 import type {
 	FileTreeAppearance,
@@ -66,6 +71,9 @@ interface FileTreeContextValue {
 	refreshTags: () => Promise<void>;
 	refreshTagAppearance: () => Promise<void>;
 	setTagAppearance: (tag: string, icon: string | null) => Promise<void>;
+	fileTreeSortMode: FileTreeSortMode;
+	isSavingFileTreeSortMode: boolean;
+	setFileTreeSortMode: (sortMode: FileTreeSortMode) => Promise<void>;
 }
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
@@ -120,9 +128,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		Record<string, TagAppearance>
 	>({});
 	const [tagsError, setTagsError] = useState("");
+	const [fileTreeSortMode, setFileTreeSortModeState] =
+		useState<FileTreeSortMode>("name-asc");
+	const [isSavingFileTreeSortMode, setIsSavingFileTreeSortMode] =
+		useState(false);
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
 	const tagAppearanceRequestIdRef = useRef(0);
+	const fileTreeSortModeRequestVersionRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 	currentSpacePathRef.current = spacePath;
@@ -195,12 +208,17 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		let cancelled = false;
+		const requestVersion = fileTreeSortModeRequestVersionRef.current + 1;
+		fileTreeSortModeRequestVersionRef.current = requestVersion;
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
 				peopleMentionsEnabledRef.current =
 					settings.editor.enablePeopleMentionsAsTags;
 				setBeautifulTags(settings.editor.beautifulTags);
+				if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
+					setFileTreeSortModeState(settings.ui.fileTreeSortMode);
+				}
 				if (currentSpacePathRef.current) {
 					void refreshTags();
 					void refreshTagAppearance();
@@ -233,6 +251,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		}
 		if (typeof payload.editor?.beautifulTags === "boolean") {
 			setBeautifulTags(payload.editor.beautifulTags);
+		}
+		const nextSortMode = payload.ui?.fileTreeSortMode;
+		if (isFileTreeSortMode(nextSortMode)) {
+			fileTreeSortModeRequestVersionRef.current += 1;
+			setIsSavingFileTreeSortMode(false);
+			setFileTreeSortModeState(nextSortMode);
 		}
 	});
 
@@ -512,6 +536,31 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		);
 	}, []);
 
+	const setFileTreeSortMode = useCallback<
+		FileTreeContextValue["setFileTreeSortMode"]
+	>(
+		(nextSortMode) => {
+			if (nextSortMode === fileTreeSortMode) return Promise.resolve();
+			const previous = fileTreeSortMode;
+			const requestVersion = fileTreeSortModeRequestVersionRef.current + 1;
+			fileTreeSortModeRequestVersionRef.current = requestVersion;
+			setFileTreeSortModeState(nextSortMode);
+			setIsSavingFileTreeSortMode(true);
+			return persistFileTreeSortMode(nextSortMode)
+				.catch(() => {
+					if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
+						setFileTreeSortModeState(previous);
+					}
+				})
+				.finally(() => {
+					if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
+						setIsSavingFileTreeSortMode(false);
+					}
+				});
+		},
+		[fileTreeSortMode],
+	);
+
 	const value = useMemo<FileTreeContextValue>(
 		() => ({
 			rootEntries,
@@ -543,6 +592,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			refreshTags,
 			refreshTagAppearance,
 			setTagAppearance,
+			fileTreeSortMode,
+			isSavingFileTreeSortMode,
+			setFileTreeSortMode,
 		}),
 		[
 			rootEntries,
@@ -572,6 +624,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			refreshTags,
 			refreshTagAppearance,
 			setTagAppearance,
+			fileTreeSortMode,
+			isSavingFileTreeSortMode,
+			setFileTreeSortMode,
 		],
 	);
 

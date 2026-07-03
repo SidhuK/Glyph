@@ -1477,7 +1477,7 @@ pub fn run() {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
             if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
-                window_geometry::install_main_window_persistence(&window);
+                window_geometry::install_host_window_persistence(&window);
             }
 
             #[cfg(target_os = "macos")]
@@ -1682,7 +1682,7 @@ pub fn run() {
         .expect("error while building tauri application")
         .run(|app_handle, event| match event {
             RunEvent::ExitRequested { .. } | RunEvent::Exit => {
-                window_geometry::flush_main_window_geometry(app_handle);
+                window_geometry::flush_host_window_geometry(app_handle);
             }
             RunEvent::Opened { urls } => {
                 handle_opened_urls(app_handle, urls);

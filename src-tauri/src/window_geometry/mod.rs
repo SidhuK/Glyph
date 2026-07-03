@@ -26,7 +26,7 @@ const DEFAULT_INNER_HEIGHT: f64 = 600.0;
 const MIN_VISIBLE_WIDTH: i32 = 200;
 const MIN_VISIBLE_HEIGHT: i32 = 80;
 
-static LATEST_MAIN_WINDOW_GEOMETRY: Mutex<Option<WindowGeometryRecord>> = Mutex::new(None);
+static LATEST_HOST_WINDOW_GEOMETRY: Mutex<Option<WindowGeometryRecord>> = Mutex::new(None);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Rect {
@@ -149,46 +149,46 @@ fn capture_geometry(window: &WebviewWindow) -> Result<WindowGeometryRecord, Stri
     })
 }
 
-fn save_main_window_geometry(window: &WebviewWindow) {
+fn save_host_window_geometry(window: &WebviewWindow) {
     let record = match capture_geometry(window) {
         Ok(record) => record,
         Err(error) => {
-            warn!("Failed to capture main window geometry: {error}");
+            warn!("Failed to capture host window geometry: {error}");
             return;
         }
     };
-    save_main_window_geometry_record(window, &record);
+    save_host_window_geometry_record(window, &record);
 }
 
-fn save_main_window_geometry_record(window: &WebviewWindow, record: &WindowGeometryRecord) {
-    save_main_window_geometry_record_for_app(window.app_handle(), record);
+fn save_host_window_geometry_record(window: &WebviewWindow, record: &WindowGeometryRecord) {
+    save_host_window_geometry_record_for_app(window.app_handle(), record);
 }
 
-fn save_main_window_geometry_record_for_app(app: &AppHandle, record: &WindowGeometryRecord) {
+fn save_host_window_geometry_record_for_app(app: &AppHandle, record: &WindowGeometryRecord) {
     let path = match store_path(app) {
         Ok(path) => path,
         Err(error) => {
-            warn!("Failed to resolve main window geometry store path: {error}");
+            warn!("Failed to resolve host window geometry store path: {error}");
             return;
         }
     };
     if let Err(error) = save_record(&path, record) {
-        warn!("Failed to save main window geometry: {error}");
+        warn!("Failed to save host window geometry: {error}");
     }
 }
 
-fn remember_main_window_geometry(record: WindowGeometryRecord) {
-    match LATEST_MAIN_WINDOW_GEOMETRY.lock() {
+fn remember_host_window_geometry(record: WindowGeometryRecord) {
+    match LATEST_HOST_WINDOW_GEOMETRY.lock() {
         Ok(mut latest) => *latest = Some(record),
-        Err(_) => warn!("Failed to lock main window geometry cache"),
+        Err(_) => warn!("Failed to lock host window geometry cache"),
     }
 }
 
-fn latest_main_window_geometry() -> Option<WindowGeometryRecord> {
-    match LATEST_MAIN_WINDOW_GEOMETRY.lock() {
+fn latest_host_window_geometry() -> Option<WindowGeometryRecord> {
+    match LATEST_HOST_WINDOW_GEOMETRY.lock() {
         Ok(latest) => latest.clone(),
         Err(_) => {
-            warn!("Failed to lock main window geometry cache");
+            warn!("Failed to lock host window geometry cache");
             None
         }
     }
@@ -196,24 +196,24 @@ fn latest_main_window_geometry() -> Option<WindowGeometryRecord> {
 
 fn remember_captured_geometry(window: &WebviewWindow) {
     match capture_geometry(window) {
-        Ok(record) => remember_main_window_geometry(record),
-        Err(error) => warn!("Failed to capture main window geometry: {error}"),
+        Ok(record) => remember_host_window_geometry(record),
+        Err(error) => warn!("Failed to capture host window geometry: {error}"),
     }
 }
 
-fn flush_latest_main_window_geometry(window: &WebviewWindow) {
-    if let Some(record) = latest_main_window_geometry() {
-        save_main_window_geometry_record(window, &record);
+fn flush_latest_host_window_geometry(window: &WebviewWindow) {
+    if let Some(record) = latest_host_window_geometry() {
+        save_host_window_geometry_record(window, &record);
     } else {
-        save_main_window_geometry(window);
+        save_host_window_geometry(window);
     }
 }
 
-pub fn flush_main_window_geometry(app: &AppHandle) {
-    if let Some(record) = latest_main_window_geometry() {
-        save_main_window_geometry_record_for_app(app, &record);
+pub fn flush_host_window_geometry(app: &AppHandle) {
+    if let Some(record) = latest_host_window_geometry() {
+        save_host_window_geometry_record_for_app(app, &record);
     } else if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
-        save_main_window_geometry(&window);
+        save_host_window_geometry(&window);
     }
 }
 
@@ -232,25 +232,29 @@ fn try_restore_saved_geometry(window: &WebviewWindow) -> Result<bool, String> {
     Ok(true)
 }
 
-pub fn restore_main_window(window: &WebviewWindow) {
+fn restore_host_window(window: &WebviewWindow) {
     let use_default = match try_restore_saved_geometry(window) {
         Ok(true) => false,
         Ok(false) => true,
         Err(error) => {
-            warn!("Failed to restore main window geometry, using default: {error}");
+            warn!("Failed to restore host window geometry, using default: {error}");
             true
         }
     };
 
     if use_default {
         if let Err(error) = apply_default_centered_geometry(window) {
-            warn!("Failed to apply default main window geometry: {error}");
+            warn!("Failed to apply default host window geometry: {error}");
         }
     }
 }
 
-pub fn install_main_window_persistence(window: &WebviewWindow) {
-    restore_main_window(window);
+pub fn install_host_window_persistence(window: &WebviewWindow) {
+    if window.label() != MAIN_WINDOW_LABEL {
+        return;
+    }
+
+    restore_host_window(window);
     remember_captured_geometry(window);
 
     let window_for_events = window.clone();
@@ -263,7 +267,7 @@ pub fn install_main_window_persistence(window: &WebviewWindow) {
                 remember_captured_geometry(&window_for_events);
             }
             WindowEvent::CloseRequested { .. } | WindowEvent::Destroyed => {
-                flush_latest_main_window_geometry(&window_for_events);
+                flush_latest_host_window_geometry(&window_for_events);
             }
             _ => {}
         });
