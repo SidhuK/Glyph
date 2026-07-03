@@ -12,7 +12,10 @@ mod tests {
 
     #[test]
     fn split_stem_extension_preserves_multi_part_extensions() {
-        assert_eq!(split_stem_extension("Archive.tar.gz"), ("Archive.tar", ".gz"));
+        assert_eq!(
+            split_stem_extension("Archive.tar.gz"),
+            ("Archive.tar", ".gz")
+        );
     }
 
     #[test]

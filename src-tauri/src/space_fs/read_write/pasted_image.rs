@@ -161,9 +161,7 @@ pub fn write_or_reuse_asset(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        filename_for_mime, suffixed_file_name, write_or_reuse_asset, MAX_SUFFIX_ATTEMPTS,
-    };
+    use super::{filename_for_mime, suffixed_file_name, write_or_reuse_asset, MAX_SUFFIX_ATTEMPTS};
     use std::path::{Path, PathBuf};
 
     struct TempSpace {
@@ -172,10 +170,8 @@ mod tests {
 
     impl TempSpace {
         fn new() -> Self {
-            let root = std::env::temp_dir().join(format!(
-                "glyph-pasted-image-test-{}",
-                uuid::Uuid::new_v4()
-            ));
+            let root = std::env::temp_dir()
+                .join(format!("glyph-pasted-image-test-{}", uuid::Uuid::new_v4()));
             std::fs::create_dir_all(&root).expect("temp space should be created");
             Self { root }
         }
@@ -264,20 +260,12 @@ mod tests {
     fn write_or_reuse_asset_reuses_identical_bytes() {
         let temp_space = TempSpace::new();
         let bytes = vec![4_u8, 5, 6];
-        let first = write_or_reuse_asset(
-            temp_space.path(),
-            Path::new("assets"),
-            "photo.png",
-            &bytes,
-        )
-        .expect("first write should succeed");
-        let second = write_or_reuse_asset(
-            temp_space.path(),
-            Path::new("assets"),
-            "photo.png",
-            &bytes,
-        )
-        .expect("second write should reuse existing asset");
+        let first =
+            write_or_reuse_asset(temp_space.path(), Path::new("assets"), "photo.png", &bytes)
+                .expect("first write should succeed");
+        let second =
+            write_or_reuse_asset(temp_space.path(), Path::new("assets"), "photo.png", &bytes)
+                .expect("second write should reuse existing asset");
 
         assert_eq!(first, second);
         let entries: Vec<_> = std::fs::read_dir(temp_space.path().join("assets"))
@@ -293,9 +281,8 @@ mod tests {
         let target = Path::new("assets");
         write_or_reuse_asset(temp_space.path(), target, "photo.png", &[1_u8])
             .expect("first write should succeed");
-        let asset_rel =
-            write_or_reuse_asset(temp_space.path(), target, "photo.png", &[2_u8])
-                .expect("conflicting write should suffix");
+        let asset_rel = write_or_reuse_asset(temp_space.path(), target, "photo.png", &[2_u8])
+            .expect("conflicting write should suffix");
 
         assert_eq!(asset_rel, Path::new("assets/photo-2.png"));
         assert_eq!(
@@ -311,11 +298,8 @@ mod tests {
         std::fs::create_dir_all(&target_abs).expect("assets dir should be created");
         std::fs::write(target_abs.join("photo.png"), [1_u8]).expect("seed file should exist");
         for index in 2..=MAX_SUFFIX_ATTEMPTS {
-            std::fs::write(
-                target_abs.join(format!("photo-{index}.png")),
-                [index as u8],
-            )
-            .expect("seed file should exist");
+            std::fs::write(target_abs.join(format!("photo-{index}.png")), [index as u8])
+                .expect("seed file should exist");
         }
 
         let error = write_or_reuse_asset(

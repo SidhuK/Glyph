@@ -1,4 +1,3 @@
-pub(crate) mod paths;
 pub mod calendar;
 pub mod checklists;
 pub mod commands;
@@ -7,6 +6,7 @@ mod frontmatter;
 mod helpers;
 mod indexer;
 mod links;
+pub(crate) mod paths;
 mod properties;
 mod relationships;
 pub(crate) mod schema;

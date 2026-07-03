@@ -356,8 +356,7 @@ fn should_percent_encode_markdown_target_byte(byte: u8) -> bool {
         || byte >= 0x80
         || matches!(
             byte,
-            b'%' | b'<' | b'>' | b'[' | b']' | b'"' | b'\\' | b'^' | b'`' | b'{' | b'|'
-                | b'}'
+            b'%' | b'<' | b'>' | b'[' | b']' | b'"' | b'\\' | b'^' | b'`' | b'{' | b'|' | b'}'
         )
 }
 

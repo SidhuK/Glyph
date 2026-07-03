@@ -907,11 +907,9 @@ fn local_connections_tag_expansion_for_seed_nodes(
     let tags = tag_names
         .into_iter()
         .filter(|tag| note_count_by_tag.contains_key(tag))
-        .map(|tag| {
-            LocalConnectionsTagNode {
-                id: local_connections_tag_id(&tag),
-                title: format!("#{tag}"),
-            }
+        .map(|tag| LocalConnectionsTagNode {
+            id: local_connections_tag_id(&tag),
+            title: format!("#{tag}"),
         })
         .collect::<Vec<_>>();
 

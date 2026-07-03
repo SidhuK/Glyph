@@ -16,10 +16,7 @@ fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
     CACHE.get_or_init(|| Mutex::new(HashSet::new()))
 }
 
-fn migrate_if_needed(
-    conn: &rusqlite::Connection,
-    space_root: &Path,
-) -> Result<(), String> {
+fn migrate_if_needed(conn: &rusqlite::Connection, space_root: &Path) -> Result<(), String> {
     let current_version: i32 = conn
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .map_err(|e| e.to_string())?;
