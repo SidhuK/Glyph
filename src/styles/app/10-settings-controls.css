@@ -41,12 +41,26 @@
 
 .settingsSectionHeader {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
 	gap: 12px;
 	padding: 2px 4px 0;
 	width: 70%;
 	margin: 0 auto;
+}
+
+.settingsSectionHeaderCopy {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.settingsCardDescription {
+	font-size: calc(var(--text-base) * 0.85);
+	line-height: 1.4;
+	color: var(--text-secondary);
+	text-wrap: pretty;
 }
 
 .settingsCard {

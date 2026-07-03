@@ -1,42 +1,32 @@
 import type { UiAccent } from "../../lib/settings";
-
-const ACCENT_COLOR_MAP: Record<Exclude<UiAccent, "neutral">, string> = {
-	"glyph-orange": "#de7356",
-	"glyph-red": "#e84d42",
-	cerulean: "#0081a7",
-	"tropical-teal": "#00afb9",
-};
+import { getAccentOptionColor } from "../../lib/uiAccent";
 
 export const ACCENT_OPTIONS: Array<{
 	id: UiAccent;
 	label: string;
 	color: string;
 }> = [
-	{ id: "neutral", label: "Neutral", color: "var(--text-primary)" },
+	{ id: "neutral", label: "Neutral", color: getAccentOptionColor("neutral") },
 	{
 		id: "glyph-orange",
 		label: "Orange",
-		color: ACCENT_COLOR_MAP["glyph-orange"],
+		color: getAccentOptionColor("glyph-orange"),
 	},
 	{
 		id: "glyph-red",
 		label: "Glyph Red",
-		color: ACCENT_COLOR_MAP["glyph-red"],
+		color: getAccentOptionColor("glyph-red"),
 	},
-	{ id: "cerulean", label: "Cerulean", color: ACCENT_COLOR_MAP.cerulean },
+	{
+		id: "cerulean",
+		label: "Cerulean",
+		color: getAccentOptionColor("cerulean"),
+	},
 	{
 		id: "tropical-teal",
 		label: "Tropical Teal",
-		color: ACCENT_COLOR_MAP["tropical-teal"],
+		color: getAccentOptionColor("tropical-teal"),
 	},
 ];
 
-export function getAccentPreviewColor(
-	accent: UiAccent,
-	mode: "light" | "dark",
-): string {
-	return (
-		ACCENT_COLOR_MAP[accent as Exclude<UiAccent, "neutral">] ??
-		(mode === "dark" ? "#e8e8e8" : "#37352f")
-	);
-}
+export { getAccentPreviewColor } from "../../lib/uiAccent";

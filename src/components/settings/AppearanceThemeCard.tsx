@@ -11,7 +11,13 @@ import {
 	type UiThemeColorOverrides,
 	resolveUiThemeModeColors,
 } from "../../lib/themeColors";
-import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
+import {
+	type UiThemeOption,
+	type UiThemePreview,
+	isGlyphDefaultThemeId,
+	resolveUiThemePreview,
+	sortUiThemeOptions,
+} from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { AppearanceAccentPicker } from "./AppearanceAccentPicker";
@@ -25,7 +31,6 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import { getAccentPreviewColor } from "./accentOptions";
 import type {
 	AppearanceThemeColorsActions,
 	AppearanceThemeColorsState,
@@ -46,52 +51,11 @@ interface AppearanceThemeCardProps {
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
 
-function resolvePreview<T extends string>(
-	option: UiThemeOption<T>,
-	mode: "light" | "dark",
-	accent: AppearanceThemeColorsState["accent"],
-	resolvedColors?: { background: string; foreground: string },
-): UiThemePreview {
-	const preview = resolvedColors
-		? {
-				...option.preview,
-				surface: resolvedColors.background,
-				text: resolvedColors.foreground,
-			}
-		: option.preview;
-
-	if (option.id === "glyph-default" || option.id === "glyph-default-dark") {
-		const accentColor = getAccentPreviewColor(accent, mode);
-		return {
-			...preview,
-			accent: accentColor,
-			badgeText: accentColor,
-		};
-	}
-	return preview;
-}
-
-function sortThemeOptions<T extends string>(
-	options: readonly UiThemeOption<T>[],
-): UiThemeOption<T>[] {
-	if (options.length <= 1) return [...options];
-	const [defaultOption, ...rest] = options;
-	return [
-		defaultOption,
-		...rest.sort((a, b) => a.label.localeCompare(b.label)),
-	];
-}
-
-function getPreviewStyle(preview: UiThemePreview): CSSProperties {
+function getBadgeStyle(preview: UiThemePreview): CSSProperties {
 	return {
-		"--theme-preview-accent": preview.accent,
-		"--theme-preview-surface": preview.surface,
-		"--theme-preview-surface-alt": preview.surfaceAlt,
-		"--theme-preview-text": preview.text,
 		"--theme-preview-badge-bg": preview.badgeBackground,
 		"--theme-preview-badge-border": preview.badgeBorder,
 		"--theme-preview-badge-text": preview.badgeText,
-		"--theme-preview-border": preview.border ?? preview.badgeBorder,
 	} as CSSProperties;
 }
 
@@ -116,11 +80,14 @@ function ThemeSelector<T extends string>({
 	const resolvedSelected = useMemo(
 		() => ({
 			...selected,
-			preview: resolvePreview(selected, mode, accent, resolvedColors),
+			preview: resolveUiThemePreview(selected, mode, accent, resolvedColors),
 		}),
 		[accent, mode, resolvedColors, selected],
 	);
-	const sortedOptions = useMemo(() => sortThemeOptions(options), [options]);
+	const sortedOptions = useMemo(
+		() => sortUiThemeOptions(options, mode),
+		[mode, options],
+	);
 
 	return (
 		<SettingsRow label={label} interactive={false}>
@@ -128,19 +95,14 @@ function ThemeSelector<T extends string>({
 				<PopoverTrigger asChild>
 					<button
 						type="button"
-						className="appearanceThemeDropdownTrigger"
-						style={getPreviewStyle(resolvedSelected.preview)}
+						className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
+						style={getBadgeStyle(resolvedSelected.preview)}
 						aria-expanded={open}
 					>
 						<span className="appearanceThemeDropdownLeading">
 							<span className="appearanceThemeBadge">Aa</span>
-							<span className="appearanceThemeDropdownCopy">
-								<span className="appearanceThemeDropdownTitle">
-									{resolvedSelected.label}
-								</span>
-								<span className="appearanceThemeDropdownDescription">
-									{resolvedSelected.description}
-								</span>
+							<span className="appearanceThemeDropdownTitle">
+								{resolvedSelected.label}
 							</span>
 						</span>
 						<span
@@ -171,16 +133,13 @@ function ThemeSelector<T extends string>({
 					</div>
 					<div className="appearanceThemeDropdownList">
 						{sortedOptions.map((option) => {
-							const isDefaultGlyphTheme =
-								option.id === "glyph-default" ||
-								option.id === "glyph-default-dark";
 							const resolved = {
 								...option,
-								preview: resolvePreview(
+								preview: resolveUiThemePreview(
 									option,
 									mode,
 									accent,
-									isDefaultGlyphTheme ? resolvedColors : undefined,
+									isGlyphDefaultThemeId(option.id) ? resolvedColors : undefined,
 								),
 							};
 							const selectedOption = selected.id === option.id;
@@ -192,7 +151,7 @@ function ThemeSelector<T extends string>({
 										"appearanceThemeDropdownOption",
 										selectedOption && "is-selected",
 									)}
-									style={getPreviewStyle(resolved.preview)}
+									style={getBadgeStyle(resolved.preview)}
 									onClick={() => {
 										void onSelect(option.id);
 										setOpen(false);
@@ -201,13 +160,8 @@ function ThemeSelector<T extends string>({
 								>
 									<span className="appearanceThemeDropdownOptionLead">
 										<span className="appearanceThemeBadge">Aa</span>
-										<span className="appearanceThemeDropdownOptionCopy">
-											<span className="appearanceThemeDropdownOptionTitle">
-												{option.label}
-											</span>
-											<span className="appearanceThemeDropdownOptionDescription">
-												{option.description}
-											</span>
+										<span className="appearanceThemeDropdownOptionTitle">
+											{option.label}
 										</span>
 									</span>
 								</button>
@@ -322,11 +276,11 @@ export function AppearanceThemeCard({
 	const { onAccentChange, onAccentReset, onThemeColorChange } = actions;
 	const canResetAccent = accent !== "neutral";
 	const lightPreview = useMemo(
-		() => resolvePreview(lightTheme, "light", accent, undefined),
+		() => resolveUiThemePreview(lightTheme, "light", accent, undefined),
 		[accent, lightTheme],
 	);
 	const darkPreview = useMemo(
-		() => resolvePreview(darkTheme, "dark", accent, undefined),
+		() => resolveUiThemePreview(darkTheme, "dark", accent, undefined),
 		[accent, darkTheme],
 	);
 	const lightColors = useMemo(
@@ -375,7 +329,7 @@ export function AppearanceThemeCard({
 			{showAccentPicker ? (
 				<SettingsSection
 					title="Accent"
-					description="Applies to the default light and dark themes."
+					description="Applies to the Glyph light and dark themes."
 				>
 					<SettingsRow
 						label="Palette"

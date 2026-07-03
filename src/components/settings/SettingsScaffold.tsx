@@ -30,6 +30,7 @@ interface SettingsToggleProps {
 
 export function SettingsSection({
 	title,
+	description,
 	children,
 	className,
 	id,
@@ -42,7 +43,12 @@ export function SettingsSection({
 			data-settings-section-title={title}
 		>
 			<div className="settingsSectionHeader">
-				<div className="settingsCardTitle">{title}</div>
+				<div className="settingsSectionHeaderCopy">
+					<div className="settingsCardTitle">{title}</div>
+					{description ? (
+						<div className="settingsCardDescription">{description}</div>
+					) : null}
+				</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}
 			</div>
 			<div className="settingsCard">
