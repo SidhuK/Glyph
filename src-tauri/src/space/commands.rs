@@ -3,7 +3,7 @@ use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
 
 use crate::{
     index::{self, db::reset_schema_cache},
-    paths, utils,
+    paths, utils, window_geometry,
 };
 
 use super::helpers::{
@@ -206,7 +206,10 @@ pub async fn space_open_window(
     )
     .title(space_window_title(&root))
     .inner_size(800.0, 600.0)
-    .min_inner_size(680.0, 460.0)
+    .min_inner_size(
+        window_geometry::MIN_INNER_WIDTH as f64,
+        window_geometry::MIN_INNER_HEIGHT as f64,
+    )
     .decorations(true)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
     .hidden_title(true)
