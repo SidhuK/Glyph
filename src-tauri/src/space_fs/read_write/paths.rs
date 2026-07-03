@@ -618,6 +618,7 @@ mod tests {
 
     #[test]
     fn duplicates_markdown_files_and_indexes_the_copy() {
+        let _guard = paths::test_index_root_lock();
         let temp_space = TempSpace::new();
         let root = temp_space.path();
         init_test_index_for_space(root);

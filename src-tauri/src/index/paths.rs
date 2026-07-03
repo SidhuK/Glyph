@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+#[cfg(test)]
+use std::sync::MutexGuard;
 use tauri::{AppHandle, Manager};
 
 const SPACES_MANIFEST_FILE: &str = "spaces.json";
@@ -23,6 +25,8 @@ struct SpacesManifest {
 
 static INDEX_ROOT: Mutex<Option<PathBuf>> = Mutex::new(None);
 static MANIFEST_MUTEX: Mutex<()> = Mutex::new(());
+#[cfg(test)]
+static TEST_INDEX_ROOT_MUTEX: Mutex<()> = Mutex::new(());
 
 pub fn init_index_root(app: &AppHandle) -> Result<(), String> {
     let config_dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
@@ -107,14 +111,27 @@ fn short_path_hash(root: &Path) -> String {
 fn resolve_unique_key(manifest: &SpacesManifest, root: &Path) -> String {
     let base = base_key_from_root(root);
     let root_key = canonical_root_key(root);
-    let base_taken = manifest
-        .spaces
-        .iter()
-        .any(|(path, entry)| path != &root_key && entry.key == base);
-    if !base_taken {
+    let key_taken = |candidate: &str| {
+        manifest
+            .spaces
+            .iter()
+            .any(|(path, entry)| path != &root_key && entry.key == candidate)
+    };
+    let base_taken = key_taken(&base);
+    let hash = short_path_hash(root);
+    let fallback_base = format!("{base}-{hash}");
+    let fallback_taken = key_taken(&fallback_base);
+    if !base_taken && !fallback_taken {
         return base;
     }
-    format!("{}-{}", base, short_path_hash(root))
+
+    let mut candidate = fallback_base;
+    let mut suffix = 2;
+    while key_taken(&candidate) {
+        candidate = format!("{base}-{hash}-{suffix}");
+        suffix += 1;
+    }
+    candidate
 }
 
 pub fn register_space(canonical_root: &Path) -> Result<String, String> {
@@ -145,6 +162,7 @@ pub fn register_space(canonical_root: &Path) -> Result<String, String> {
     Ok(key)
 }
 
+#[cfg(test)]
 pub(crate) fn space_index_key(canonical_root: &Path) -> Result<String, String> {
     let root_key = canonical_root_key(canonical_root);
     let _guard = MANIFEST_MUTEX
@@ -170,6 +188,7 @@ fn ensure_index_glyph_dir(key: &str) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
+#[cfg(test)]
 pub fn index_db_path(canonical_root: &Path) -> Result<PathBuf, String> {
     let key = space_index_key(canonical_root)?;
     Ok(index_glyph_dir(&key)?.join(glyph_paths::GLYPH_DB_NAME))
@@ -213,6 +232,13 @@ pub(crate) fn init_test_index_root(path: PathBuf) {
 }
 
 #[cfg(test)]
+pub(crate) fn test_index_root_lock() -> MutexGuard<'static, ()> {
+    TEST_INDEX_ROOT_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use std::sync::atomic::{AtomicU64, Ordering};
@@ -226,6 +252,7 @@ mod tests {
 
     #[test]
     fn assigns_unique_keys_for_same_folder_name() {
+        let _guard = test_index_root_lock();
         let index_root = temp_index_root();
         init_test_index_root(index_root.clone());
 

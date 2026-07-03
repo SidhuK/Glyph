@@ -568,6 +568,7 @@ mod tests {
 
     #[test]
     fn refreshes_indexed_timestamps_when_mtime_changes_without_content_changes() {
+        let _guard = paths::test_index_root_lock();
         let temp_space = TempSpace::new();
         let root = temp_space.path();
         let index_root = std::env::temp_dir().join(format!(
