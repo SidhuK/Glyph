@@ -1,10 +1,8 @@
-use crate::{glyph_paths, io_atomic, utils};
+use crate::{glyph_paths, io_atomic, paths as safe_paths, utils};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-#[cfg(test)]
-use std::sync::MutexGuard;
+use std::sync::{Mutex, MutexGuard};
 use tauri::{AppHandle, Manager};
 
 const SPACES_MANIFEST_FILE: &str = "spaces.json";
@@ -49,6 +47,12 @@ pub fn index_root_path() -> Result<PathBuf, String> {
 
 fn manifest_path() -> Result<PathBuf, String> {
     Ok(index_root_path()?.join(SPACES_MANIFEST_FILE))
+}
+
+fn manifest_lock() -> MutexGuard<'static, ()> {
+    MANIFEST_MUTEX
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 fn load_manifest_unlocked() -> Result<SpacesManifest, String> {
@@ -136,9 +140,7 @@ fn resolve_unique_key(manifest: &SpacesManifest, root: &Path) -> String {
 
 pub fn register_space(canonical_root: &Path) -> Result<String, String> {
     let root_key = canonical_root_key(canonical_root);
-    let _guard = MANIFEST_MUTEX
-        .lock()
-        .map_err(|_| "index manifest state poisoned".to_string())?;
+    let _guard = manifest_lock();
 
     let mut manifest = load_manifest_unlocked()?;
     if let Some(entry) = manifest.spaces.get(&root_key) {
@@ -165,9 +167,7 @@ pub fn register_space(canonical_root: &Path) -> Result<String, String> {
 #[cfg(test)]
 pub(crate) fn space_index_key(canonical_root: &Path) -> Result<String, String> {
     let root_key = canonical_root_key(canonical_root);
-    let _guard = MANIFEST_MUTEX
-        .lock()
-        .map_err(|_| "index manifest state poisoned".to_string())?;
+    let _guard = manifest_lock();
     let manifest = load_manifest_unlocked()?;
     manifest
         .spaces
@@ -177,9 +177,8 @@ pub(crate) fn space_index_key(canonical_root: &Path) -> Result<String, String> {
 }
 
 fn index_glyph_dir(key: &str) -> Result<PathBuf, String> {
-    Ok(index_root_path()?
-        .join(key)
-        .join(glyph_paths::GLYPH_DIR_NAME))
+    let space_index_dir = safe_paths::join_under(&index_root_path()?, Path::new(key))?;
+    Ok(space_index_dir.join(glyph_paths::GLYPH_DIR_NAME))
 }
 
 fn ensure_index_glyph_dir(key: &str) -> Result<PathBuf, String> {
