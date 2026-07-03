@@ -9,7 +9,10 @@ use super::types::{WindowGeometryRecord, WINDOW_GEOMETRY_STORE_VERSION};
 const WINDOW_GEOMETRY_STORE_FILE: &str = "main_window_geometry.json";
 
 pub fn store_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = app.path().app_config_dir().map_err(|error| error.to_string())?;
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|error| error.to_string())?;
     std::fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
     Ok(dir.join(WINDOW_GEOMETRY_STORE_FILE))
 }

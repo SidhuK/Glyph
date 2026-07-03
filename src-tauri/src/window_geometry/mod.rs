@@ -1,8 +1,11 @@
 mod store;
 mod types;
 
+use std::sync::Mutex;
+
 use tauri::{
-    Manager, Monitor, PhysicalPosition, PhysicalSize, Position, Size, WebviewWindow, WindowEvent,
+    AppHandle, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize, Position, Size,
+    WebviewWindow, WindowEvent,
 };
 use tracing::warn;
 
@@ -15,9 +18,15 @@ pub const MAIN_WINDOW_LABEL: &str = "main";
 pub const MIN_INNER_WIDTH: u32 = 680;
 /// Must match `tauri.conf.json` `minWidth` / `minHeight` for the main window.
 pub const MIN_INNER_HEIGHT: u32 = 460;
+/// Must match `tauri.conf.json` `width` for the main window.
+const DEFAULT_INNER_WIDTH: f64 = 800.0;
+/// Must match `tauri.conf.json` `height` for the main window.
+const DEFAULT_INNER_HEIGHT: f64 = 600.0;
 
 const MIN_VISIBLE_WIDTH: i32 = 200;
 const MIN_VISIBLE_HEIGHT: i32 = 80;
+
+static LATEST_MAIN_WINDOW_GEOMETRY: Mutex<Option<WindowGeometryRecord>> = Mutex::new(None);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Rect {
@@ -98,32 +107,26 @@ fn should_restore_record(record: &WindowGeometryRecord, monitors: &[Monitor]) ->
 }
 
 fn apply_default_centered_geometry(window: &WebviewWindow) -> Result<(), String> {
-    let Some(monitor) = window
-        .current_monitor()
-        .map_err(|error| error.to_string())?
-    else {
-        return Ok(());
-    };
-    let monitor_size = monitor.size();
-    let monitor_pos = monitor.position();
-    let width = ((monitor_size.width as f64) * 0.8).round() as u32;
-    let height = ((monitor_size.height as f64) * 0.8).round() as u32;
     window
-        .set_size(Size::Physical(PhysicalSize::new(width, height)))
+        .set_size(Size::Logical(LogicalSize::new(
+            DEFAULT_INNER_WIDTH,
+            DEFAULT_INNER_HEIGHT,
+        )))
         .map_err(|error| error.to_string())?;
-    let x = monitor_pos.x + ((monitor_size.width as i32 - width as i32) / 2);
-    let y = monitor_pos.y + ((monitor_size.height as i32 - height as i32) / 2);
-    window
-        .set_position(Position::Physical(PhysicalPosition::new(x, y)))
-        .map_err(|error| error.to_string())
+    window.center().map_err(|error| error.to_string())
 }
 
 fn apply_geometry(window: &WebviewWindow, record: &WindowGeometryRecord) -> Result<(), String> {
     window
-        .set_size(Size::Physical(PhysicalSize::new(record.width, record.height)))
+        .set_size(Size::Physical(PhysicalSize::new(
+            record.width,
+            record.height,
+        )))
         .map_err(|error| error.to_string())?;
     window
-        .set_position(Position::Physical(PhysicalPosition::new(record.x, record.y)))
+        .set_position(Position::Physical(PhysicalPosition::new(
+            record.x, record.y,
+        )))
         .map_err(|error| error.to_string())?;
     if record.maximized {
         window.maximize().map_err(|error| error.to_string())?;
@@ -147,14 +150,6 @@ fn capture_geometry(window: &WebviewWindow) -> Result<WindowGeometryRecord, Stri
 }
 
 fn save_main_window_geometry(window: &WebviewWindow) {
-    let app = window.app_handle();
-    let path = match store_path(app) {
-        Ok(path) => path,
-        Err(error) => {
-            warn!("Failed to resolve main window geometry store path: {error}");
-            return;
-        }
-    };
     let record = match capture_geometry(window) {
         Ok(record) => record,
         Err(error) => {
@@ -162,8 +157,63 @@ fn save_main_window_geometry(window: &WebviewWindow) {
             return;
         }
     };
-    if let Err(error) = save_record(&path, &record) {
+    save_main_window_geometry_record(window, &record);
+}
+
+fn save_main_window_geometry_record(window: &WebviewWindow, record: &WindowGeometryRecord) {
+    save_main_window_geometry_record_for_app(window.app_handle(), record);
+}
+
+fn save_main_window_geometry_record_for_app(app: &AppHandle, record: &WindowGeometryRecord) {
+    let path = match store_path(app) {
+        Ok(path) => path,
+        Err(error) => {
+            warn!("Failed to resolve main window geometry store path: {error}");
+            return;
+        }
+    };
+    if let Err(error) = save_record(&path, record) {
         warn!("Failed to save main window geometry: {error}");
+    }
+}
+
+fn remember_main_window_geometry(record: WindowGeometryRecord) {
+    match LATEST_MAIN_WINDOW_GEOMETRY.lock() {
+        Ok(mut latest) => *latest = Some(record),
+        Err(_) => warn!("Failed to lock main window geometry cache"),
+    }
+}
+
+fn latest_main_window_geometry() -> Option<WindowGeometryRecord> {
+    match LATEST_MAIN_WINDOW_GEOMETRY.lock() {
+        Ok(latest) => latest.clone(),
+        Err(_) => {
+            warn!("Failed to lock main window geometry cache");
+            None
+        }
+    }
+}
+
+fn remember_captured_geometry(window: &WebviewWindow) {
+    match capture_geometry(window) {
+        Ok(record) => remember_main_window_geometry(record),
+        Err(error) => warn!("Failed to capture main window geometry: {error}"),
+    }
+}
+
+fn flush_latest_main_window_geometry(window: &WebviewWindow) {
+    if let Some(record) = latest_main_window_geometry() {
+        save_main_window_geometry_record(window, &record);
+    } else {
+        save_main_window_geometry(window);
+    }
+}
+
+pub fn flush_main_window_geometry(app: &AppHandle) {
+    if let Some(record) = latest_main_window_geometry() {
+        save_main_window_geometry_record_for_app(app, &record);
+    } else if let Some(window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
+        save_main_window_geometry(&window);
     }
 }
 
@@ -201,22 +251,28 @@ pub fn restore_main_window(window: &WebviewWindow) {
 
 pub fn install_main_window_persistence(window: &WebviewWindow) {
     restore_main_window(window);
+    remember_captured_geometry(window);
 
     let window_for_events = window.clone();
     window_for_events
         .clone()
-        .on_window_event(move |event| {
-            if matches!(event, WindowEvent::CloseRequested { .. } | WindowEvent::Destroyed) {
-                save_main_window_geometry(&window_for_events);
+        .on_window_event(move |event| match event {
+            WindowEvent::Resized(_)
+            | WindowEvent::Moved(_)
+            | WindowEvent::ScaleFactorChanged { .. } => {
+                remember_captured_geometry(&window_for_events);
             }
+            WindowEvent::CloseRequested { .. } | WindowEvent::Destroyed => {
+                flush_latest_main_window_geometry(&window_for_events);
+            }
+            _ => {}
         });
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        intersection, is_geometry_visible_for_rects, Rect, MIN_INNER_HEIGHT,
-        MIN_INNER_WIDTH,
+        intersection, is_geometry_visible_for_rects, Rect, MIN_INNER_HEIGHT, MIN_INNER_WIDTH,
     };
 
     #[test]
@@ -265,9 +321,7 @@ mod tests {
             width: 1440,
             height: 900,
         }];
-        assert!(is_geometry_visible_for_rects(
-            900, 700, -100, 50, &monitors
-        ));
+        assert!(is_geometry_visible_for_rects(900, 700, -100, 50, &monitors));
     }
 
     #[test]
