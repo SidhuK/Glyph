@@ -49,6 +49,11 @@ vi.mock("../../contexts", () => ({
 		spacePath: null,
 		startIndexRebuild: vi.fn(() => Promise.resolve()),
 	}),
+	useFileTreeContext: () => ({
+		fileTreeSortMode: "name-asc",
+		isSavingFileTreeSortMode: false,
+		setFileTreeSortMode: vi.fn(() => Promise.resolve()),
+	}),
 }));
 
 vi.mock("../../lib/settings", () => ({

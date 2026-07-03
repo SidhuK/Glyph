@@ -10,6 +10,14 @@ export function filterVisibleFileTreeEntries(
 	return entries.filter((entry) => entry.kind === "dir" || entry.is_markdown);
 }
 
+export function hasVisibleFileTreeEntries(
+	entries: FsEntry[],
+	showNonMarkdownFiles: boolean,
+): boolean {
+	if (showNonMarkdownFiles) return entries.length > 0;
+	return entries.some((entry) => entry.kind === "dir" || entry.is_markdown);
+}
+
 function compareEntryNames(a: FsEntry, b: FsEntry, direction: 1 | -1): number {
 	const byName = a.name.toLowerCase().localeCompare(b.name.toLowerCase());
 	if (byName !== 0) return byName * direction;
@@ -67,8 +75,10 @@ export function compareEntriesForSort(
 	};
 }
 
+const compareEntriesNameAsc = compareEntriesForSort("name-asc");
+
 export function compareEntries(a: FsEntry, b: FsEntry): number {
-	return compareEntriesForSort("name-asc")(a, b);
+	return compareEntriesNameAsc(a, b);
 }
 
 function entryNameFromRelPath(relPath: string): string {

@@ -108,6 +108,9 @@ describe("FileTreePane", () => {
 		useFileTreeContextMock.mockReturnValue({
 			itemAppearance: {},
 			setItemAppearance: vi.fn(),
+			fileTreeSortMode: "name-asc",
+			isSavingFileTreeSortMode: false,
+			setFileTreeSortMode: vi.fn(() => Promise.resolve()),
 		});
 		useSpaceMock.mockReturnValue({
 			spacePath: "/space",

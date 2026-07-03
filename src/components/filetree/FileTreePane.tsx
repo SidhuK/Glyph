@@ -22,8 +22,8 @@ import { useFileTreeContext, useSpace } from "../../contexts";
 import {
 	compareEntriesForSort,
 	filterVisibleFileTreeEntries,
+	hasVisibleFileTreeEntries,
 } from "../../hooks/fileTreeHelpers";
-import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
@@ -482,7 +482,11 @@ export const FileTreePane = memo(function FileTreePane({
 	onTogglePinnedFile,
 	children,
 }: FileTreePaneProps) {
-	const { itemAppearance, setItemAppearance } = useFileTreeContext();
+	const {
+		itemAppearance,
+		setItemAppearance,
+		fileTreeSortMode: sortMode,
+	} = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
 	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
@@ -504,8 +508,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
-	const { sortMode } = useFileTreeSortMode();
-
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
 	}, [itemAppearance]);
@@ -802,25 +804,19 @@ export const FileTreePane = memo(function FileTreePane({
 		: null;
 	const hasLoadedFileVisibility = showNonMarkdownFiles !== null;
 	const showNonMarkdownFilesSetting = showNonMarkdownFiles ?? false;
-	const visibleRootEntries = useMemo(
-		() =>
-			sortedVisibleFileTreeEntries(
-				rootEntries,
-				showNonMarkdownFilesSetting,
-				sortMode,
-			),
-		[rootEntries, showNonMarkdownFilesSetting, sortMode],
+	const hasVisibleRootEntries = useMemo(
+		() => hasVisibleFileTreeEntries(rootEntries, showNonMarkdownFilesSetting),
+		[rootEntries, showNonMarkdownFilesSetting],
 	);
-	const visibleFocusedEntries = useMemo(
+	const hasVisibleFocusedEntries = useMemo(
 		() =>
 			focusedEntries === null
 				? null
-				: sortedVisibleFileTreeEntries(
+				: hasVisibleFileTreeEntries(
 						focusedEntries,
 						showNonMarkdownFilesSetting,
-						sortMode,
 					),
-		[focusedEntries, showNonMarkdownFilesSetting, sortMode],
+		[focusedEntries, showNonMarkdownFilesSetting],
 	);
 
 	useEffect(() => {
@@ -990,7 +986,8 @@ export const FileTreePane = memo(function FileTreePane({
 							onNavigate={handleEnterDir}
 							onExit={handleExitFocusedDir}
 						/>
-						{!visibleFocusedEntries ? null : visibleFocusedEntries.length ? (
+						{hasVisibleFocusedEntries ===
+						null ? null : hasVisibleFocusedEntries ? (
 							<TreeEntries
 								entries={focusedEntries ?? []}
 								parentDepth={-1}
@@ -1037,7 +1034,7 @@ export const FileTreePane = memo(function FileTreePane({
 							</m.div>
 						)}
 					</FileTreeRootDrop>
-				) : visibleRootEntries.length ? (
+				) : hasVisibleRootEntries ? (
 					<FileTreeRootDrop>
 						<TreeEntries
 							entries={rootEntries}
