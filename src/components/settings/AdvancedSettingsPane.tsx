@@ -130,39 +130,81 @@ export function AdvancedSettingsPane() {
 	const [showNonMarkdownFiles, setShowNonMarkdownFilesState] = useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [error, setError] = useState("");
-	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
-	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
+	const [isSavingEnablePeopleMentionsAsTags, setIsSavingEnablePeopleMentionsAsTags] =
 		useState(false);
-	const [isSavingShowFrontmatterInEditor, setIsSavingShowFrontmatterInEditor] =
-		useState(false);
-	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
-		useState(false);
-	const [isSavingBeautifulTags, setIsSavingBeautifulTags] = useState(false);
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
-	const [
-		isSavingEnablePeopleMentionsAsTags,
-		setIsSavingEnablePeopleMentionsAsTags,
-	] = useState(false);
-	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
-	const [isSavingFolioMode, setIsSavingFolioMode] = useState(false);
-	const [
-		isSavingClassicAllNotesByDefault,
-		setIsSavingClassicAllNotesByDefault,
-	] = useState(false);
-	const [
-		isSavingShowFileTreeFolderCounts,
-		setIsSavingShowFileTreeFolderCounts,
-	] = useState(false);
-	const [isSavingShowNonMarkdownFiles, setIsSavingShowNonMarkdownFiles] =
-		useState(false);
-	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
-		useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
+	const showTocToggle = useOptimisticSettingsToggle(
+		showToc,
+		setShowTocState,
+		setShowToc,
+		setError,
+	);
+	const showFrontmatterToggle = useOptimisticSettingsToggle(
+		showFrontmatterInEditor,
+		setShowFrontmatterInEditor,
+		setEditorShowFrontmatterInEditor,
+		setError,
+	);
+	const colorfulHeadingsToggle = useOptimisticSettingsToggle(
+		colorfulHeadings,
+		setColorfulHeadings,
+		setEditorColorfulHeadings,
+		setError,
+	);
+	const beautifulTagsToggle = useOptimisticSettingsToggle(
+		beautifulTags,
+		setBeautifulTags,
+		setEditorBeautifulTags,
+		setError,
+	);
+	const showCollapsibleHeadingsToggle = useOptimisticSettingsToggle(
+		showCollapsibleHeadings,
+		setShowCollapsibleHeadings,
+		setEditorShowCollapsibleHeadings,
+		setError,
+	);
 	const spellCheckToggle = useOptimisticSettingsToggle(
 		spellCheck,
 		setSpellCheck,
 		setEditorSpellCheck,
+		setError,
+	);
+	const vimKeybindingsToggle = useOptimisticSettingsToggle(
+		vimKeybindings,
+		setVimKeybindings,
+		setEditorVimKeybindings,
+		setError,
+	);
+	const folioModeToggle = useOptimisticSettingsToggle(
+		folioMode,
+		setFolioModeState,
+		setFolioMode,
+		setError,
+	);
+	const classicAllNotesToggle = useOptimisticSettingsToggle(
+		classicAllNotesByDefault,
+		setClassicAllNotesByDefaultState,
+		setClassicAllNotesByDefault,
+		setError,
+	);
+	const showFileTreeFolderCountsToggle = useOptimisticSettingsToggle(
+		showFileTreeFolderCounts,
+		setShowFileTreeFolderCountsState,
+		setShowFileTreeFolderCounts,
+		setError,
+	);
+	const showNonMarkdownFilesToggle = useOptimisticSettingsToggle(
+		showNonMarkdownFiles,
+		setShowNonMarkdownFilesState,
+		setShowNonMarkdownFiles,
+		setError,
+	);
+	const showDatabaseColumnColorToggle = useOptimisticSettingsToggle(
+		showDatabaseColumnColor,
+		setShowDatabaseColumnColor,
+		setDatabaseShowColumnColor,
 		setError,
 	);
 
@@ -264,22 +306,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showToc}
-							disabled={isSavingShowToc}
+							disabled={showTocToggle.isSaving}
 							ariaLabel="Table of contents"
-							onCheckedChange={(checked) => {
-								const previous = showToc;
-								setError("");
-								setShowTocState(checked);
-								setIsSavingShowToc(true);
-								void setShowToc(checked)
-									.catch((cause) => {
-										setShowTocState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowToc(false);
-									});
-							}}
+							onCheckedChange={showTocToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -323,22 +352,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showFrontmatterInEditor}
-							disabled={isSavingShowFrontmatterInEditor}
+							disabled={showFrontmatterToggle.isSaving}
 							ariaLabel="Show frontmatter in editor"
-							onCheckedChange={(checked) => {
-								const previous = showFrontmatterInEditor;
-								setError("");
-								setShowFrontmatterInEditor(checked);
-								setIsSavingShowFrontmatterInEditor(true);
-								void setEditorShowFrontmatterInEditor(checked)
-									.catch((cause) => {
-										setShowFrontmatterInEditor(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowFrontmatterInEditor(false);
-									});
-							}}
+							onCheckedChange={showFrontmatterToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -347,22 +363,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={colorfulHeadings}
-							disabled={isSavingColorfulHeadings}
+							disabled={colorfulHeadingsToggle.isSaving}
 							ariaLabel="Colorful headings"
-							onCheckedChange={(checked) => {
-								const previous = colorfulHeadings;
-								setError("");
-								setColorfulHeadings(checked);
-								setIsSavingColorfulHeadings(true);
-								void setEditorColorfulHeadings(checked)
-									.catch((cause) => {
-										setColorfulHeadings(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingColorfulHeadings(false);
-									});
-							}}
+							onCheckedChange={colorfulHeadingsToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -371,22 +374,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={beautifulTags}
-							disabled={isSavingBeautifulTags}
+							disabled={beautifulTagsToggle.isSaving}
 							ariaLabel="Beautiful Tags"
-							onCheckedChange={(checked) => {
-								const previous = beautifulTags;
-								setError("");
-								setBeautifulTags(checked);
-								setIsSavingBeautifulTags(true);
-								void setEditorBeautifulTags(checked)
-									.catch((cause) => {
-										setBeautifulTags(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingBeautifulTags(false);
-									});
-							}}
+							onCheckedChange={beautifulTagsToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -427,22 +417,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showCollapsibleHeadings}
-							disabled={isSavingShowCollapsibleHeadings}
+							disabled={showCollapsibleHeadingsToggle.isSaving}
 							ariaLabel="Collapsible headings"
-							onCheckedChange={(checked) => {
-								const previous = showCollapsibleHeadings;
-								setError("");
-								setShowCollapsibleHeadings(checked);
-								setIsSavingShowCollapsibleHeadings(true);
-								void setEditorShowCollapsibleHeadings(checked)
-									.catch((cause) => {
-										setShowCollapsibleHeadings(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowCollapsibleHeadings(false);
-									});
-							}}
+							onCheckedChange={showCollapsibleHeadingsToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -467,22 +444,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={vimKeybindings}
-							disabled={isSavingVimKeybindings}
+							disabled={vimKeybindingsToggle.isSaving}
 							ariaLabel="Vim Mode"
-							onCheckedChange={(checked) => {
-								const previous = vimKeybindings;
-								setError("");
-								setVimKeybindings(checked);
-								setIsSavingVimKeybindings(true);
-								void setEditorVimKeybindings(checked)
-									.catch((cause) => {
-										setVimKeybindings(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingVimKeybindings(false);
-									});
-							}}
+							onCheckedChange={vimKeybindingsToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
@@ -526,22 +490,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={folioMode}
-							disabled={isSavingFolioMode}
+							disabled={folioModeToggle.isSaving}
 							ariaLabel="Folio Mode"
-							onCheckedChange={(checked) => {
-								const previous = folioMode;
-								setError("");
-								setFolioModeState(checked);
-								setIsSavingFolioMode(true);
-								void setFolioMode(checked)
-									.catch((cause) => {
-										setFolioModeState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingFolioMode(false);
-									});
-							}}
+							onCheckedChange={folioModeToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -550,22 +501,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={classicAllNotesByDefault}
-							disabled={isSavingClassicAllNotesByDefault}
+							disabled={classicAllNotesToggle.isSaving}
 							ariaLabel="Classic All Notes grid"
-							onCheckedChange={(checked) => {
-								const previous = classicAllNotesByDefault;
-								setError("");
-								setClassicAllNotesByDefaultState(checked);
-								setIsSavingClassicAllNotesByDefault(true);
-								void setClassicAllNotesByDefault(checked)
-									.catch((cause) => {
-										setClassicAllNotesByDefaultState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingClassicAllNotesByDefault(false);
-									});
-							}}
+							onCheckedChange={classicAllNotesToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -574,22 +512,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showFileTreeFolderCounts}
-							disabled={isSavingShowFileTreeFolderCounts}
+							disabled={showFileTreeFolderCountsToggle.isSaving}
 							ariaLabel="Show folder file counts"
-							onCheckedChange={(checked) => {
-								const previous = showFileTreeFolderCounts;
-								setError("");
-								setShowFileTreeFolderCountsState(checked);
-								setIsSavingShowFileTreeFolderCounts(true);
-								void setShowFileTreeFolderCounts(checked)
-									.catch((cause) => {
-										setShowFileTreeFolderCountsState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowFileTreeFolderCounts(false);
-									});
-							}}
+							onCheckedChange={showFileTreeFolderCountsToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -598,22 +523,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showNonMarkdownFiles}
-							disabled={isSavingShowNonMarkdownFiles}
+							disabled={showNonMarkdownFilesToggle.isSaving}
 							ariaLabel="Show non-Markdown files"
-							onCheckedChange={(checked) => {
-								const previous = showNonMarkdownFiles;
-								setError("");
-								setShowNonMarkdownFilesState(checked);
-								setIsSavingShowNonMarkdownFiles(true);
-								void setShowNonMarkdownFiles(checked)
-									.catch((cause) => {
-										setShowNonMarkdownFilesState(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingShowNonMarkdownFiles(false);
-									});
-							}}
+							onCheckedChange={showNonMarkdownFilesToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
@@ -627,22 +539,9 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showDatabaseColumnColor}
-							disabled={isSavingDatabaseColumnColor}
+							disabled={showDatabaseColumnColorToggle.isSaving}
 							ariaLabel="Show database column color"
-							onCheckedChange={(checked) => {
-								const previous = showDatabaseColumnColor;
-								setError("");
-								setShowDatabaseColumnColor(checked);
-								setIsSavingDatabaseColumnColor(true);
-								void setDatabaseShowColumnColor(checked)
-									.catch((cause) => {
-										setShowDatabaseColumnColor(previous);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => {
-										setIsSavingDatabaseColumnColor(false);
-									});
-							}}
+							onCheckedChange={showDatabaseColumnColorToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

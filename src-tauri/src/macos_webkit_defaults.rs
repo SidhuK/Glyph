@@ -6,4 +6,5 @@ pub fn configure_continuous_spell_checking() {
     let defaults = NSUserDefaults::standardUserDefaults();
     let key = NSString::from_str("WebContinuousSpellCheckingEnabled");
     defaults.setBool_forKey(true, &key);
+    tracing::debug!("configured WebContinuousSpellCheckingEnabled for WKWebView");
 }

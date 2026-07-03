@@ -93,6 +93,7 @@ const {
 			},
 		},
 		view: {
+			dom: document.createElement("div"),
 			dispatch: vi.fn(),
 			focus: vi.fn(),
 			hasFocus: vi.fn(() => false),
@@ -366,6 +367,7 @@ describe("useNoteEditor", () => {
 		);
 		mockEditor.state.tr.setNodeMarkup.mockReset();
 		mockEditor.view.dispatch.mockReset();
+		mockEditor.view.dom = document.createElement("div");
 		mockEditor.view.focus.mockReset();
 		mockEditor.view.hasFocus.mockReset();
 		mockEditor.view.hasFocus.mockReturnValue(false);
@@ -764,6 +766,24 @@ describe("useNoteEditor", () => {
 			colorfulHeadings: false,
 			showFrontmatterInEditor: true,
 		});
+	});
+
+	it("applies spellcheck to the editor DOM from settings and live updates", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} />);
+		});
+
+		expect(getActiveEditor().view.dom.getAttribute("spellcheck")).toBe("true");
+
+		await act(async () => {
+			emitSettingsUpdated({
+				editor: { spellCheck: false },
+			});
+		});
+
+		expect(getActiveEditor().view.dom.getAttribute("spellcheck")).toBe("false");
 	});
 
 	it("hydrates frontmatter visibility from persisted settings on mount", async () => {

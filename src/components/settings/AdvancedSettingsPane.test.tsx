@@ -9,6 +9,7 @@ import { AdvancedSettingsPane } from "./AdvancedSettingsPane";
 const {
 	loadSettingsMock,
 	setAiAssistantModeMock,
+	setClassicAllNotesByDefaultMock,
 	setDatabaseShowColumnColorMock,
 	setEditorBeautifulTagsMock,
 	setEditorColorfulHeadingsMock,
@@ -25,6 +26,7 @@ const {
 } = vi.hoisted(() => ({
 	loadSettingsMock: vi.fn(),
 	setAiAssistantModeMock: vi.fn(() => Promise.resolve()),
+	setClassicAllNotesByDefaultMock: vi.fn(() => Promise.resolve()),
 	setDatabaseShowColumnColorMock: vi.fn(() => Promise.resolve()),
 	setEditorBeautifulTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
@@ -50,6 +52,7 @@ vi.mock("../../contexts", () => ({
 vi.mock("../../lib/settings", () => ({
 	loadSettings: loadSettingsMock,
 	setAiAssistantMode: setAiAssistantModeMock,
+	setClassicAllNotesByDefault: setClassicAllNotesByDefaultMock,
 	setDatabaseShowColumnColor: setDatabaseShowColumnColorMock,
 	setEditorBeautifulTags: setEditorBeautifulTagsMock,
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
