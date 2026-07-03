@@ -936,7 +936,7 @@ fn space_connections_for_conn(
         .query_row("SELECT COUNT(*) FROM notes", [], |row| row.get::<_, i64>(0))
         .map(|count| count as u32)
         .map_err(|e| e.to_string())?;
-    let _truncated = total_notes as usize > max_nodes;
+    let truncated = total_notes as usize > max_nodes;
     let people_tag_like = format!("{PEOPLE_TAG_NAMESPACE}%");
     let node_limit = max_nodes.max(1);
     let node_order = if truncated {
@@ -1572,6 +1572,7 @@ mod space_connections_tests {
     }
 
     #[test]
+    fn space_connections_excludes_edges_with_missing_endpoints() {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
         insert_note(&conn, "notes/source.md", "Source");
