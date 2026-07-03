@@ -9,12 +9,14 @@ import { AdvancedSettingsPane } from "./AdvancedSettingsPane";
 const {
 	loadSettingsMock,
 	setAiAssistantModeMock,
+	setClassicAllNotesByDefaultMock,
 	setDatabaseShowColumnColorMock,
 	setEditorBeautifulTagsMock,
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowFrontmatterInEditorMock,
 	setEditorShowCollapsibleHeadingsMock,
+	setEditorSpellCheckMock,
 	setEditorWidthModeMock,
 	setEditorVimKeybindingsMock,
 	setFolioModeMock,
@@ -24,12 +26,14 @@ const {
 } = vi.hoisted(() => ({
 	loadSettingsMock: vi.fn(),
 	setAiAssistantModeMock: vi.fn(() => Promise.resolve()),
+	setClassicAllNotesByDefaultMock: vi.fn(() => Promise.resolve()),
 	setDatabaseShowColumnColorMock: vi.fn(() => Promise.resolve()),
 	setEditorBeautifulTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorShowFrontmatterInEditorMock: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadingsMock: vi.fn(() => Promise.resolve()),
+	setEditorSpellCheckMock: vi.fn(() => Promise.resolve()),
 	setEditorWidthModeMock: vi.fn(() => Promise.resolve()),
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setFolioModeMock: vi.fn(() => Promise.resolve()),
@@ -48,12 +52,14 @@ vi.mock("../../contexts", () => ({
 vi.mock("../../lib/settings", () => ({
 	loadSettings: loadSettingsMock,
 	setAiAssistantMode: setAiAssistantModeMock,
+	setClassicAllNotesByDefault: setClassicAllNotesByDefaultMock,
 	setDatabaseShowColumnColor: setDatabaseShowColumnColorMock,
 	setEditorBeautifulTags: setEditorBeautifulTagsMock,
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowFrontmatterInEditor: setEditorShowFrontmatterInEditorMock,
 	setEditorShowCollapsibleHeadings: setEditorShowCollapsibleHeadingsMock,
+	setEditorSpellCheck: setEditorSpellCheckMock,
 	setEditorWidthMode: setEditorWidthModeMock,
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setFolioMode: setFolioModeMock,
@@ -129,6 +135,7 @@ function makeSettings(
 	colorfulHeadings: boolean,
 	vimKeybindings = false,
 	beautifulTags = false,
+	spellCheck = true,
 ) {
 	return {
 		editor: {
@@ -138,6 +145,7 @@ function makeSettings(
 			enablePeopleMentionsAsTags: false,
 			showCollapsibleHeadings: false,
 			showFrontmatterInEditor: false,
+			spellCheck,
 			vimKeybindings,
 		},
 		ui: {
@@ -294,6 +302,52 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorWidthModeMock).toHaveBeenCalledWith("wide");
+	});
+
+	it("shows spell check on by default", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Spell check"]',
+		) as HTMLInputElement | null;
+
+		expect(container.textContent).toContain("Spell check");
+		expect(toggle?.checked).toBe(true);
+	});
+
+	it("reflects stored spell check state", async () => {
+		loadSettingsMock.mockResolvedValue(
+			makeSettings(false, false, false, false),
+		);
+
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Spell check"]',
+		) as HTMLInputElement | null;
+
+		expect(toggle?.checked).toBe(false);
+	});
+
+	it("saves spell check changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Spell check"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setEditorSpellCheckMock).toHaveBeenCalledWith(false);
 	});
 
 	it("shows Vim Mode off by default", async () => {

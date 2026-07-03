@@ -103,6 +103,7 @@ type TauriEventMap = {
 			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;
 			vimKeybindings?: boolean;
+			spellCheck?: boolean;
 		};
 		shortcuts?: {
 			bindings?: Partial<

@@ -266,6 +266,7 @@ interface EditorSettings {
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
 	vimKeybindings: boolean;
+	spellCheck: boolean;
 }
 
 interface FileTreeSettings {
@@ -303,6 +304,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
 	vimKeybindings: false,
+	spellCheck: true,
 };
 
 const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
@@ -479,6 +481,7 @@ async function emitSettingsUpdated(payload: {
 		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
 		vimKeybindings?: boolean;
+		spellCheck?: boolean;
 	};
 	shortcuts?: {
 		bindings?: ShortcutBindings;
@@ -612,6 +615,7 @@ const KEYS = {
 	editorAttachmentFolder: "editor.attachmentFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	editorVimKeybindings: "editor.vimKeybindings",
+	editorSpellCheck: "editor.spellCheck",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	quickNotesFolder: "quickNotes.folder",
@@ -982,6 +986,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorVimKeybindings,
 	);
+	const rawEditorSpellCheck = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorSpellCheck,
+	);
 	const rawDatabaseShowColumnColor = getSettingValue<boolean | null>(
 		entries,
 		KEYS.databaseShowColumnColor,
@@ -1133,6 +1141,10 @@ export async function loadSettings(
 			typeof rawEditorVimKeybindings === "boolean"
 				? rawEditorVimKeybindings
 				: DEFAULT_EDITOR_SETTINGS.vimKeybindings,
+		spellCheck:
+			typeof rawEditorSpellCheck === "boolean"
+				? rawEditorSpellCheck
+				: DEFAULT_EDITOR_SETTINGS.spellCheck,
 	};
 	const database: DatabaseSettings = {
 		showColumnColor:
@@ -1621,6 +1633,15 @@ export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { vimKeybindings: enabled },
+	});
+}
+
+export async function setEditorSpellCheck(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorSpellCheck, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { spellCheck: enabled },
 	});
 }
 

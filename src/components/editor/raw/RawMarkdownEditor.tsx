@@ -2,10 +2,15 @@ import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import {
 	forwardRef,
+	useEffect,
 	useImperativeHandle,
 	useLayoutEffect,
 	useRef,
 } from "react";
+import {
+	applyDomSpellCheck,
+	useEditorSpellCheck,
+} from "../hooks/useEditorSpellCheck";
 import {
 	createRawMarkdownExtensions,
 	externalRawMarkdownUpdate,
@@ -33,9 +38,14 @@ export const RawMarkdownEditor = forwardRef<
 	const changeTimerRef = useRef<number | null>(null);
 	const hasPendingChangeRef = useRef(false);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const spellCheckEnabled = useEditorSpellCheck();
 
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
+
+	useEffect(() => {
+		applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
+	}, [spellCheckEnabled]);
 
 	useLayoutEffect(() => {
 		const host = hostRef.current;

@@ -86,6 +86,42 @@ describe("settings colorful headings", () => {
 	});
 });
 
+describe("settings spell check", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults spell check to true", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.spellCheck).toBe(true);
+	});
+
+	it("loads spell check from the store", async () => {
+		storeState.set("editor.spellCheck", false);
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.spellCheck).toBe(false);
+	});
+
+	it("persists and emits spell check changes", async () => {
+		const { setEditorSpellCheck } = await import("./settings");
+
+		await setEditorSpellCheck(false);
+
+		expect(storeState.get("editor.spellCheck")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			editor: { spellCheck: false },
+		});
+	});
+});
+
 describe("settings Vim keybindings", () => {
 	beforeEach(() => {
 		vi.resetModules();
