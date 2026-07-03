@@ -242,7 +242,6 @@ export function createRawMarkdownExtensions(
 			"aria-label": "Raw Markdown editor",
 			"aria-multiline": "true",
 			autocapitalize: "sentences",
-			spellcheck: "true",
 		}),
 		EditorView.updateListener.of((update) => {
 			const isExternalUpdate = update.transactions.some(

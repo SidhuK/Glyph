@@ -15,6 +15,7 @@ import {
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
+	setEditorSpellCheck,
 	setEditorVimKeybindings,
 	setEditorWidthMode,
 	setFolioMode,
@@ -31,6 +32,7 @@ import {
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
+import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
 
 const VIM_KEYBINDING_HELP = [
 	{ key: "Esc", action: "Enter Vim command mode." },
@@ -116,6 +118,7 @@ export function AdvancedSettingsPane() {
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
 	const [vimKeybindings, setVimKeybindings] = useState(false);
+	const [spellCheck, setSpellCheck] = useState(true);
 	const [showToc, setShowTocState] = useState(true);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
@@ -156,6 +159,12 @@ export function AdvancedSettingsPane() {
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
 		useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();
+	const spellCheckToggle = useOptimisticSettingsToggle(
+		spellCheck,
+		setSpellCheck,
+		setEditorSpellCheck,
+		setError,
+	);
 
 	const refresh = useCallback(async () => {
 		setError("");
@@ -168,6 +177,7 @@ export function AdvancedSettingsPane() {
 			setEditorWidthModeState(settings.editor.editorWidthMode);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setVimKeybindings(settings.editor.vimKeybindings === true);
+			setSpellCheck(settings.editor.spellCheck !== false);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setFolioModeState(settings.ui.folioMode);
@@ -209,6 +219,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.editor?.vimKeybindings === "boolean") {
 			setVimKeybindings(payload.editor.vimKeybindings);
+		}
+		if (typeof payload.editor?.spellCheck === "boolean") {
+			setSpellCheck(payload.editor.spellCheck);
 		}
 		if (typeof payload.ui?.showToc === "boolean") {
 			setShowTocState(payload.ui.showToc);
@@ -430,6 +443,17 @@ export function AdvancedSettingsPane() {
 										setIsSavingShowCollapsibleHeadings(false);
 									});
 							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Spell check"
+						description="Underline typos as you type. Right-click a word to see spelling suggestions."
+					>
+						<SettingsToggle
+							checked={spellCheck}
+							disabled={spellCheckToggle.isSaving}
+							ariaLabel="Spell check"
+							onCheckedChange={spellCheckToggle.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

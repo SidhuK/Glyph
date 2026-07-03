@@ -12,6 +12,8 @@ mod glyph_paths;
 mod index;
 mod io_atomic;
 mod license;
+#[cfg(target_os = "macos")]
+mod macos_webkit_defaults;
 mod menu_manifest;
 mod net;
 mod notes;
@@ -1408,6 +1410,9 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
+
+    #[cfg(target_os = "macos")]
+    macos_webkit_defaults::configure_continuous_spell_checking();
 
     tauri::Builder::default()
         .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new()))

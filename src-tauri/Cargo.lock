@@ -1585,6 +1585,7 @@ dependencies = [
  "futures-util",
  "hex",
  "notify",
+ "objc2-foundation",
  "regex",
  "reqwest 0.12.28",
  "rig-core",

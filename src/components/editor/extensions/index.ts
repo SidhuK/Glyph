@@ -700,6 +700,11 @@ export function createEditorExtensions(
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
+			code: {
+				HTMLAttributes: {
+					spellcheck: "false",
+				},
+			},
 			codeBlock: false,
 			orderedList: { keepMarks: true, keepAttributes: false },
 			link: false,

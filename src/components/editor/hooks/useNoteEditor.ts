@@ -8,21 +8,12 @@ import {
 	useMemo,
 	useRef,
 } from "react";
-import { useState } from "react";
-import {
-	DEFAULT_ATTACHMENT_FOLDER,
-	resolveAttachmentTargetDir,
-} from "../../../lib/attachmentStorage";
+import { resolveAttachmentTargetDir } from "../../../lib/attachmentStorage";
 import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
-import {
-	type AttachmentStorageMode,
-	loadSettings,
-} from "../../../lib/settings";
 import { invoke } from "../../../lib/tauri";
-import { useTauriEvent } from "../../../lib/tauriEvents";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
@@ -33,7 +24,12 @@ import {
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
 import type { NoteInlineEditorMode, PasteMarkdownBehavior } from "../types";
+import {
+	applyEditorSpellCheck,
+	useEditorSpellCheck,
+} from "./useEditorSpellCheck";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
+import { useNoteEditorSettings } from "./useNoteEditorSettings";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 const MARKDOWN_SYNC_DEBOUNCE_MS = 300;
@@ -337,8 +333,16 @@ export function useNoteEditor({
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
 	const previousModeRef = useRef(mode);
-	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
-	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
+	const {
+		attachmentFolderRef,
+		attachmentStorageModeRef,
+		colorfulHeadings,
+		peopleMentionsEnabled,
+		showCollapsibleHeadings,
+		showFrontmatterInEditor,
+		vimKeybindingsEnabled,
+	} = useNoteEditorSettings();
+	const spellCheckEnabled = useEditorSpellCheck();
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const committedEditorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const pendingMarkdownSyncRef = useRef<PendingMarkdownSync | null>(null);
@@ -346,11 +350,6 @@ export function useNoteEditor({
 	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
-	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
-	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
-	const [colorfulHeadings, setColorfulHeadings] = useState(false);
-	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
-	const [vimKeybindingsEnabled, setVimKeybindingsEnabled] = useState(false);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -385,61 +384,6 @@ export function useNoteEditor({
 				: null,
 		[extensions, pasteMarkdownBehavior],
 	);
-
-	useEffect(() => {
-		let cancelled = false;
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
-				setShowFrontmatterInEditor(
-					settings.editor.showFrontmatterInEditor === true,
-				);
-				setColorfulHeadings(settings.editor.colorfulHeadings);
-				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-				setVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
-				attachmentStorageModeRef.current =
-					settings.editor.attachmentStorageMode;
-				attachmentFolderRef.current = settings.editor.attachmentFolder;
-			})
-			.catch(() => {
-				if (cancelled) return;
-				setShowCollapsibleHeadings(false);
-				setShowFrontmatterInEditor(false);
-				setColorfulHeadings(false);
-				setPeopleMentionsEnabled(false);
-				setVimKeybindingsEnabled(false);
-				attachmentStorageModeRef.current = "note-folder";
-				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
-			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
-		}
-		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
-			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
-		}
-		if (typeof payload.editor?.colorfulHeadings === "boolean") {
-			setColorfulHeadings(payload.editor.colorfulHeadings);
-		}
-		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
-			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
-		}
-		if (typeof payload.editor?.vimKeybindings === "boolean") {
-			setVimKeybindingsEnabled(payload.editor.vimKeybindings);
-		}
-		if (payload.editor?.attachmentStorageMode) {
-			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
-		}
-		if ("attachmentFolder" in (payload.editor ?? {})) {
-			attachmentFolderRef.current = payload.editor?.attachmentFolder ?? null;
-		}
-	});
 
 	frontmatterRef.current = frontmatter;
 	onChangeRef.current = onChange;
@@ -549,7 +493,6 @@ export function useNoteEditor({
 			editorProps: {
 				attributes: {
 					class: "tiptapContentInline",
-					spellcheck: "true",
 				},
 				handleDOMEvents: {
 					mousedown: (_view, event): boolean => {
@@ -707,6 +650,10 @@ export function useNoteEditor({
 		],
 	);
 	editorRef.current = editor;
+
+	useEffect(() => {
+		applyEditorSpellCheck(editor, spellCheckEnabled);
+	}, [editor, spellCheckEnabled]);
 
 	useLayoutEffect(() => {
 		if (!editor) return;

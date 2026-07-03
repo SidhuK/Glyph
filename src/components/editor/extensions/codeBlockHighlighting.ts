@@ -114,4 +114,7 @@ export function getCodeBlockLanguageLabel(
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.configure({
 	lowlight,
 	defaultLanguage: "plaintext",
+	HTMLAttributes: {
+		spellcheck: "false",
+	},
 });

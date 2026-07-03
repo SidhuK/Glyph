@@ -10,6 +10,7 @@ import { useNoteEditor } from "./useNoteEditor";
 const {
 	canCommands,
 	chainCommands,
+	clearSettingsUpdatedHandlers,
 	emitSettingsUpdated,
 	getActiveEditor,
 	getEditorOptions,
@@ -23,18 +24,19 @@ const {
 	setSettingsUpdatedHandler,
 } = vi.hoisted(() => {
 	let editorOptions: Record<string, unknown> | null = null;
-	let settingsUpdatedHandler:
-		| ((payload: {
-				editor?: {
-					attachmentFolder?: string | null;
-					attachmentStorageMode?: AttachmentStorageMode;
-					colorfulHeadings?: boolean;
-					enablePeopleMentionsAsTags?: boolean;
-					showFrontmatterInEditor?: boolean;
-					showCollapsibleHeadings?: boolean;
-				};
-		  }) => void)
-		| null = null;
+	let settingsUpdatedHandlers: Array<
+		(payload: {
+			editor?: {
+				attachmentFolder?: string | null;
+				attachmentStorageMode?: AttachmentStorageMode;
+				colorfulHeadings?: boolean;
+				enablePeopleMentionsAsTags?: boolean;
+				showFrontmatterInEditor?: boolean;
+				showCollapsibleHeadings?: boolean;
+				spellCheck?: boolean;
+			};
+		}) => void
+	> = [];
 	const chainCommands = {
 		focus: vi.fn(() => chainCommands),
 		insertContentAt: vi.fn(() => chainCommands),
@@ -126,8 +128,13 @@ const {
 				enablePeopleMentionsAsTags?: boolean;
 				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
+				spellCheck?: boolean;
 			};
-		}) => settingsUpdatedHandler?.(payload),
+		}) => {
+			for (const handler of settingsUpdatedHandlers) {
+				handler(payload);
+			}
+		},
 		getEditorOptions: () => editorOptions,
 		invokeMock: vi.fn(),
 		loadSettingsMock: vi.fn(() =>
@@ -152,8 +159,13 @@ const {
 			editorOptions = options;
 		},
 		getActiveEditor: () => activeEditor,
-		setSettingsUpdatedHandler: (handler: typeof settingsUpdatedHandler) => {
-			settingsUpdatedHandler = handler;
+		setSettingsUpdatedHandler: (
+			handler: (typeof settingsUpdatedHandlers)[number],
+		) => {
+			settingsUpdatedHandlers.push(handler);
+		},
+		clearSettingsUpdatedHandlers: () => {
+			settingsUpdatedHandlers = [];
 		},
 	};
 });
@@ -207,6 +219,7 @@ vi.mock("../../../lib/tauriEvents", () => ({
 				enablePeopleMentionsAsTags?: boolean;
 				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
+				spellCheck?: boolean;
 			};
 		}) => void,
 	) => {
@@ -315,7 +328,7 @@ describe("useNoteEditor", () => {
 	let originalFileReader: typeof FileReader | undefined;
 
 	beforeEach(() => {
-		setSettingsUpdatedHandler(null);
+		clearSettingsUpdatedHandlers();
 		setActiveEditor(mockEditor);
 		mockEditor.isEditable = true;
 		mockEditor.isActive.mockReset();
