@@ -22,6 +22,7 @@ mod space;
 mod space_fs;
 mod system_fonts;
 mod tag_appearance;
+mod window_geometry;
 pub(crate) mod utils;
 
 use serde::Serialize;
@@ -42,8 +43,7 @@ use tracing::{error, warn};
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{
-    PhysicalPosition, PhysicalSize, Position, Size, TitleBarStyle, WebviewUrl,
-    WebviewWindowBuilder,
+    TitleBarStyle, WebviewUrl, WebviewWindowBuilder,
 };
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
@@ -1469,22 +1469,13 @@ pub fn run() {
         .setup(|app| {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
-            if let Some(window) = app.get_webview_window("main") {
-                if let Ok(Some(monitor)) = window.current_monitor() {
-                    let monitor_size = monitor.size();
-                    let monitor_pos = monitor.position();
-                    let width = ((monitor_size.width as f64) * 0.8).round() as u32;
-                    let height = ((monitor_size.height as f64) * 0.8).round() as u32;
-                    let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
-                    let x = monitor_pos.x + ((monitor_size.width as i32 - width as i32) / 2);
-                    let y = monitor_pos.y + ((monitor_size.height as i32 - height as i32) / 2);
-                    let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
-                }
+            if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
+                window_geometry::install_main_window_persistence(&window);
             }
 
             #[cfg(target_os = "macos")]
             {
-                if let Some(window) = app.get_webview_window("main") {
+                if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
                     if let Err(e) = apply_main_window_vibrancy(&window, None) {
                         warn!("Failed to apply vibrancy to main window: {e}");
                     }
