@@ -29,7 +29,7 @@ src/lib/tauri.ts typed command map
 Tauri command handlers in src-tauri/src/lib.rs
   |
   +--> space files: markdown, attachments, folders
-  +--> .glyph/glyph.sqlite derived index
+  +--> app support index: derived SQLite search index per space
   +--> .glyph/databases.json workspace database definitions
   +--> app config: settings, AI profiles, license, update state
 ```
@@ -97,14 +97,15 @@ The Rust backend owns durable operations and native integration:
 
 The selected space folder contains user-owned content. Markdown notes are first-class files. Attachments and other files can live beside notes.
 
-Glyph stores app metadata under `.glyph/` in the space:
+Glyph stores space-local app metadata under `.glyph/` in the space:
 
-- `.glyph/glyph.sqlite`: derived SQLite index
 - `.glyph/databases.json`: workspace database definitions and status colors
 - `.glyph/cache/ai/`: per-run AI audit JSON
 - `.glyph/Glyph/ai_history/`: AI chat history records
 - `.glyph/Glyph/ai_secrets.json`: per-space AI API keys
 - `.glyph/cache/`: cache material
+
+The derived SQLite search index lives under Tauri app config (`Application Support/com.karatsidhu.glyph/index/<space-key>/.glyph/glyph.sqlite`). Markdown files remain the source of truth; the index rebuilds from notes when missing or empty.
 
 App-level preferences that do not belong to a single space live in Tauri app config through plugins or Rust app config paths.
 
@@ -136,7 +137,7 @@ See `05-editor-markdown-autosave.md`.
 ### Query Notes
 
 1. The UI calls search, all-docs, calendar, tags, graph, database, or task commands.
-2. Rust opens `.glyph/glyph.sqlite`.
+2. Rust opens the app-support SQLite index for the active space.
 3. Rust queries derived rows generated from Markdown content.
 4. If the result needs note content, Rust reads the backing note file after validating the path.
 
@@ -158,7 +159,7 @@ See `08-ai-runtime-tools-history.md`.
 Use these rules when changing the architecture:
 
 - Keep the active space as the root of user data. Do not add a second source of truth for notes.
-- Treat `.glyph/glyph.sqlite` as derived. Rebuild it when the parser or schema behavior changes.
+- Treat the app-support SQLite index as derived. Rebuild it when the parser or schema behavior changes.
 - Route durable filesystem writes through Rust. The frontend may use Tauri plugins for dialogs and opening external files, but note content should go through `space_fs`.
 - Use `paths::join_under()` and hidden-path checks for any space-relative path.
 - Use `io_atomic::write_atomic()` for durable writes unless a create-new operation needs `OpenOptions::create_new`.

@@ -538,6 +538,7 @@ where
 mod tests {
     use super::index_note;
     use crate::index::db::open_db;
+    use crate::index::paths;
     use std::path::{Path, PathBuf};
     use std::thread;
     use std::time::Duration;
@@ -567,8 +568,16 @@ mod tests {
 
     #[test]
     fn refreshes_indexed_timestamps_when_mtime_changes_without_content_changes() {
+        let _guard = paths::test_index_root_lock();
         let temp_space = TempSpace::new();
         let root = temp_space.path();
+        let index_root = std::env::temp_dir().join(format!(
+            "glyph-indexer-index-root-{}",
+            uuid::Uuid::new_v4()
+        ));
+        paths::init_test_index_root(index_root);
+        paths::register_space(root).expect("space should register");
+
         let note_id = "Projects/Idle Churn.md";
         let markdown = "- [ ] Keep index stable\n";
         let note_path = root.join(note_id);

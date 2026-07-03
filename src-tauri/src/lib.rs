@@ -1467,6 +1467,10 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            if let Err(error) = index::paths::init_index_root(app.handle()) {
+                error!("Failed to initialize app-support index root: {error}");
+                return Err(std::io::Error::other(error).into());
+            }
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
             if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {

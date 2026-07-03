@@ -15,7 +15,6 @@ My Space/
   assets/
     pasted-image.png
   .glyph/
-    glyph.sqlite
     databases.json
     cache/
     Glyph/
@@ -23,13 +22,29 @@ My Space/
       ai_secrets.json
 ```
 
+The SQLite search index lives under app support, not in the space folder:
+
+```text
+Application Support/com.karatsidhu.glyph/
+  index/
+    spaces.json
+    <space-key>/
+      .glyph/
+        glyph.sqlite
+        glyph.sqlite-wal
+        glyph.sqlite-shm
+```
+
+Use the space folder name as `<space-key>` when it is unique. Colliding names get a short path-hash suffix. `index/spaces.json` maps canonical space roots to stable keys.
+
 Code ownership:
 
 - `src-tauri/src/space/commands.rs`: create, open, close, onboarding note command
 - `src-tauri/src/space/helpers.rs`: create/open implementation and onboarding helpers
 - `src-tauri/src/space/state.rs`: active root, watcher handle, local-change tracking, store mutexes
 - `src-tauri/src/space/watcher.rs`: recursive filesystem watcher and index refresh
-- `src-tauri/src/glyph_paths.rs`: `.glyph/` paths
+- `src-tauri/src/glyph_paths.rs`: `.glyph/` paths in the space folder
+- `src-tauri/src/index/paths.rs`: app-support SQLite index paths and space-key manifest
 - `src-tauri/src/space_fs/`: file tree, read/write, preview, rename, delete, link resolution
 - `src-tauri/src/paths.rs`: traversal-safe joining
 - `src-tauri/src/io_atomic.rs`: crash-safer writes and copies
@@ -75,11 +90,12 @@ Rust flow in `space_open` and `space_create`:
 
 1. Build a `PathBuf` from the user-selected path.
 2. Canonicalize the directory through helper code.
-3. Create or open Glyph metadata.
-4. Reset the index schema cache with `index::db::reset_schema_cache()`.
-5. Store the canonical root in `SpaceState.current`.
-6. Install the notes watcher with `set_notes_watcher()`.
-7. Enable the native Close Space menu item.
+3. Register the space in the app-support index manifest and remove any stale in-space `glyph.sqlite` sidecars.
+4. Create or open Glyph metadata in `.glyph/`.
+5. Reset the index schema cache with `index::db::reset_schema_cache()`.
+6. Store the canonical root in `SpaceState.current`.
+7. Install the notes watcher with `set_notes_watcher()`.
+8. Enable the native Close Space menu item.
 
 `space_close` clears `current`, drops the watcher, resets the schema cache, and disables Close Space.
 
@@ -236,13 +252,18 @@ The editor and preview panes dispatch link click events. `AppShell` listens and 
 
 ## Storage Stores Under `.glyph/`
 
-`glyph_paths.rs` defines app-controlled paths:
+`glyph_paths.rs` defines space-local app metadata paths:
 
 - `glyph_dir()`: `.glyph`
-- `glyph_db_path()`: `.glyph/glyph.sqlite`
 - `glyph_cache_dir()`: `.glyph/cache`
 - `glyph_app_dir()`: `.glyph/Glyph`
 - `ai_history_dir()`: `.glyph/Glyph/ai_history`
+
+`index/paths.rs` defines the derived SQLite index under app support:
+
+- `index_root_path()`: `Application Support/com.karatsidhu.glyph/index`
+- `index_db_path(space_root)`: `index/<space-key>/.glyph/glyph.sqlite`
+- `spaces.json`: canonical space root to stable index key mapping
 
 JSON stores under `.glyph/` include:
 

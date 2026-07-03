@@ -1,6 +1,6 @@
 # SQLite Index, Search, Graph, and Checklists
 
-Glyph keeps Markdown files as the durable source of truth. The SQLite database under `.glyph/glyph.sqlite` is a derived index. It accelerates search, tags, backlinks, relationships, database rows, and checklist progress summaries.
+Glyph keeps Markdown files as the durable source of truth. The SQLite database under app support (`index/<space-key>/.glyph/glyph.sqlite`) is a derived index. It accelerates search, tags, backlinks, relationships, database rows, and checklist progress summaries.
 
 If the index is wrong, rebuild it from Markdown. Do not treat SQLite rows as the authoritative note content.
 
@@ -9,7 +9,8 @@ If the index is wrong, rebuild it from Markdown. Do not treat SQLite rows as the
 Backend:
 
 - `src-tauri/src/index/schema.rs`: table and FTS schema
-- `src-tauri/src/index/db.rs`: database path, WAL setup, schema cache, migrations
+- `src-tauri/src/index/db.rs`: database open, WAL setup, schema cache, migrations
+- `src-tauri/src/index/paths.rs`: app-support index paths and `spaces.json` manifest
 - `src-tauri/src/index/indexer.rs`: note indexing, removal, rebuild
 - `src-tauri/src/index/commands.rs`: Tauri commands for search, all docs, tags, checklist summaries, graph
 - `src-tauri/src/index/frontmatter.rs`: frontmatter title and preview parsing
@@ -38,11 +39,13 @@ Frontend consumers:
 
 ## Database Location
 
-`db_path(space_root)` returns:
+`index::paths::index_db_path(space_root)` returns:
 
 ```text
-.glyph/glyph.sqlite
+Application Support/com.karatsidhu.glyph/index/<space-key>/.glyph/glyph.sqlite
 ```
+
+`space_open` and `space_create` register the canonical space root in `index/spaces.json` and remove any stale in-space `glyph.sqlite` sidecars. On first open after this layout ships, the index is empty and `index_sync` triggers a full rebuild.
 
 `open_db()` creates the parent directory, opens the database, configures WAL, ensures schema, and runs migrations. It caches schema setup by database path so repeated commands do not run schema checks on every open.
 

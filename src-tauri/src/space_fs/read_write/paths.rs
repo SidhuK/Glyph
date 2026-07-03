@@ -526,6 +526,7 @@ pub async fn space_relativize_path(
 mod tests {
     use super::{duplicate_file_under_root, next_duplicate_file_name};
     use crate::index::open_db;
+    use crate::index::paths;
     use crate::space::state::{has_recent_local_change, RecentLocalChanges};
     use std::{
         collections::{HashMap, HashSet},
@@ -558,6 +559,15 @@ mod tests {
 
     fn fresh_recent_local_changes() -> RecentLocalChanges {
         Arc::new(Mutex::new(HashMap::new()))
+    }
+
+    fn init_test_index_for_space(root: &Path) {
+        let index_root = std::env::temp_dir().join(format!(
+            "glyph-duplicate-index-root-{}",
+            uuid::Uuid::new_v4()
+        ));
+        paths::init_test_index_root(index_root);
+        paths::register_space(root).expect("space should register");
     }
 
     #[test]
@@ -608,8 +618,10 @@ mod tests {
 
     #[test]
     fn duplicates_markdown_files_and_indexes_the_copy() {
+        let _guard = paths::test_index_root_lock();
         let temp_space = TempSpace::new();
         let root = temp_space.path();
+        init_test_index_for_space(root);
         let rel_path = Path::new("notes/Plan.md");
         let abs_path = root.join(rel_path);
         std::fs::create_dir_all(abs_path.parent().expect("file should have parent"))

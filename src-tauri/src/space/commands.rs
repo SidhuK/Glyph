@@ -57,6 +57,7 @@ pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState
     let _ = crate::set_space_close_menu_enabled(app, !state.session_roots().is_empty());
 }
 
+
 #[tauri::command]
 pub async fn space_create(
     app: tauri::AppHandle,
