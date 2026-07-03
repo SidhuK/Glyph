@@ -119,7 +119,6 @@ pub fn create_notes_watcher(
                 && !has_recent_local_change(&recent_local_changes, &rel_s)
             {
                 let _ = idx_tx.send((rel_s.clone(), is_remove));
-
             }
 
             let _ = app2.emit_to(

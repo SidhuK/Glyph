@@ -571,10 +571,8 @@ mod tests {
         let _guard = paths::test_index_root_lock();
         let temp_space = TempSpace::new();
         let root = temp_space.path();
-        let index_root = std::env::temp_dir().join(format!(
-            "glyph-indexer-index-root-{}",
-            uuid::Uuid::new_v4()
-        ));
+        let index_root =
+            std::env::temp_dir().join(format!("glyph-indexer-index-root-{}", uuid::Uuid::new_v4()));
         paths::init_test_index_root(index_root);
         paths::register_space(root).expect("space should register");
 

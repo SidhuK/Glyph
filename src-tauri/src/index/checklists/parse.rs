@@ -38,9 +38,7 @@ pub fn parse_checklist_items(markdown: &str) -> Vec<ParsedChecklistItem> {
     markdown
         .lines()
         .filter_map(|line| {
-            parse_checklist_line(line).map(|m| ParsedChecklistItem {
-                checked: m.checked,
-            })
+            parse_checklist_line(line).map(|m| ParsedChecklistItem { checked: m.checked })
         })
         .collect()
 }

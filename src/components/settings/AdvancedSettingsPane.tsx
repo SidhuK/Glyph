@@ -130,8 +130,10 @@ export function AdvancedSettingsPane() {
 	const [showNonMarkdownFiles, setShowNonMarkdownFilesState] = useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [error, setError] = useState("");
-	const [isSavingEnablePeopleMentionsAsTags, setIsSavingEnablePeopleMentionsAsTags] =
-		useState(false);
+	const [
+		isSavingEnablePeopleMentionsAsTags,
+		setIsSavingEnablePeopleMentionsAsTags,
+	] = useState(false);
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const { spacePath, startIndexRebuild } = useSpace();

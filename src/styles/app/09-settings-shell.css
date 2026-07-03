@@ -217,91 +217,104 @@
 }
 
 .settingsFeedbackCard {
-	margin-top: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	padding: 14px 14px 15px;
-	border-radius: calc(var(--radius-md) + 4px);
-	border: 1px solid
-		color-mix(in srgb, var(--color-yellow-500) 32%, var(--border-default));
-	background: color-mix(in srgb, var(--color-yellow-500) 10%, var(--bg-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 70%, transparent);
+	gap: 6px;
+	padding: 12px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-tertiary) 68%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 58%, transparent), 0 1px 2px
+		color-mix(in srgb, var(--text-primary) 3%, transparent);
 }
 
 .settingsFeedbackCardCommunity {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 26%,
-		var(--border-default)
-	);
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-primary)
+		var(--interactive-accent) 5%,
+		var(--bg-tertiary) 68%
 	);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default)), 0
+		1px 2px color-mix(in srgb, var(--text-primary) 3%, transparent);
 }
 
-.settingsFeedbackEyebrow {
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--color-yellow-500) 70%, var(--text-primary));
+.settingsFeedbackBadge {
+	align-self: flex-start;
+	padding: 2px 7px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+	font-size: calc(var(--text-base) * 0.72);
+	font-weight: var(--font-medium);
+	line-height: 1.3;
+	letter-spacing: 0.01em;
+	color: var(--text-tertiary);
+}
+
+.settingsFeedbackCardCommunity .settingsFeedbackBadge {
+	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		var(--text-secondary)
+	);
 }
 
 .settingsFeedbackTitle {
-	font-size: var(--text-base);
-	font-weight: var(--font-bold);
-	line-height: 1.2;
+	font-size: calc(var(--text-base) * 0.92);
+	font-weight: var(--font-medium);
+	line-height: 1.25;
+	letter-spacing: -0.015em;
 	color: var(--text-primary);
+	text-wrap: balance;
 }
 
 .settingsFeedbackBody {
 	margin: 0;
-	font-size: calc(var(--text-base) * 0.9);
-	line-height: 1.5;
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.45;
 	color: var(--text-secondary);
+	text-wrap: pretty;
 }
 
-.settingsFeedbackButton {
-	width: 100%;
-	justify-content: center;
-	gap: 8px;
-	border-radius: calc(var(--radius-md) + 2px);
-	border: 1px solid
-		color-mix(in srgb, var(--color-yellow-500) 42%, var(--border-default));
-	background: color-mix(in srgb, var(--color-yellow-500) 20%, var(--bg-primary));
-	color: color-mix(in srgb, var(--color-yellow-500) 55%, var(--text-primary));
-	font-weight: var(--font-semibold);
+.settingsFeedbackAction {
+	align-self: flex-start;
+	height: auto;
+	min-height: 0;
+	margin-top: 2px;
+	padding: 2px 0;
+	gap: 4px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.82);
+	font-weight: var(--font-medium);
 }
 
-.settingsFeedbackButton:hover {
-	background: color-mix(in srgb, var(--color-yellow-500) 28%, var(--bg-primary));
-	color: color-mix(in srgb, var(--color-yellow-500) 72%, var(--text-primary));
+.settingsFeedbackAction:hover {
+	color: var(--text-primary);
+	background: transparent;
 }
 
-.settingsFeedbackButtonCommunity {
-	border-color: color-mix(
+.settingsFeedbackActionCommunity {
+	color: color-mix(
 		in srgb,
-		var(--interactive-accent) 34%,
-		var(--border-default)
+		var(--interactive-accent) 58%,
+		var(--text-secondary)
 	);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 18%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 48%, var(--text-primary));
 }
 
-.settingsFeedbackButtonCommunity:hover {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 24%,
-		var(--bg-primary)
-	);
-	color: color-mix(in srgb, var(--interactive-accent) 64%, var(--text-primary));
+.settingsFeedbackActionCommunity:hover {
+	color: color-mix(in srgb, var(--interactive-accent) 78%, var(--text-primary));
+	background: transparent;
+}
+
+.settingsFeedbackAction svg {
+	transition: transform var(--transition-fast);
+}
+
+.settingsFeedbackAction:hover svg {
+	transform: translate(1px, -1px);
 }
 
 .settingsTabButton {

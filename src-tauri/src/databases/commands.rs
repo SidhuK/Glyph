@@ -19,9 +19,7 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
-use super::store::{
-    default_field_value, default_view, list_summaries, load_store, save_store,
-};
+use super::store::{default_field_value, default_view, list_summaries, load_store, save_store};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
     DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSchemaField, DatabaseSummary,

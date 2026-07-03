@@ -30,7 +30,9 @@ pub fn init_index_root(app: &AppHandle) -> Result<(), String> {
     let config_dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
     let index_dir = config_dir.join("index");
     std::fs::create_dir_all(&index_dir).map_err(|e| e.to_string())?;
-    let mut guard = INDEX_ROOT.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let mut guard = INDEX_ROOT
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     if guard.is_none() {
         *guard = Some(index_dir);
     }
@@ -148,12 +150,9 @@ pub fn register_space(canonical_root: &Path) -> Result<String, String> {
     }
 
     let key = resolve_unique_key(&manifest, canonical_root);
-    manifest.spaces.insert(
-        root_key.clone(),
-        SpaceManifestEntry {
-            key: key.clone(),
-        },
-    );
+    manifest
+        .spaces
+        .insert(root_key.clone(), SpaceManifestEntry { key: key.clone() });
     save_manifest_unlocked(&mut manifest)?;
     ensure_index_glyph_dir(&key)?;
     tracing::info!(
@@ -284,7 +283,11 @@ mod tests {
         let glyph_dir = glyph_paths::ensure_glyph_dir(&space_root).expect("glyph dir should exist");
         let marker = glyph_dir.join("onboarding-note-v2.json");
         std::fs::write(&marker, b"{}").expect("marker should be written");
-        for name in [glyph_paths::GLYPH_DB_NAME, GLYPH_DB_WAL_NAME, GLYPH_DB_SHM_NAME] {
+        for name in [
+            glyph_paths::GLYPH_DB_NAME,
+            GLYPH_DB_WAL_NAME,
+            GLYPH_DB_SHM_NAME,
+        ] {
             std::fs::write(glyph_dir.join(name), b"x").expect("sqlite file should be written");
         }
 

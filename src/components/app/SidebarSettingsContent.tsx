@@ -1,7 +1,6 @@
 import {
 	ArrowLeft02Icon,
 	ArrowUpRight01Icon,
-	BubbleChatQuestionIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -176,51 +175,48 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 			<div className="settingsSidebarFooter">
 				{licenseStatus?.mode === "community_build" ? (
 					<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-						<div className="settingsFeedbackEyebrow">Community Build</div>
+						<span className="settingsFeedbackBadge">Community build</span>
 						<div className="settingsFeedbackTitle">
-							Thanks for downloading and building Glyph yourself.
+							Thanks for building Glyph
 						</div>
 						<p className="settingsFeedbackBody">
-							Support the project with the official license to get automatic
-							updates and the official build.
+							Get automatic updates and the official build with a license.
 						</p>
 						<Button
 							type="button"
-							className="settingsFeedbackButton settingsFeedbackButtonCommunity"
+							variant="ghost"
+							size="sm"
+							className="settingsFeedbackAction settingsFeedbackActionCommunity"
 							onClick={() => void openUrl(licenseStatus.purchase_url)}
 						>
-							Buy Official License
+							Buy official license
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
+								size="var(--icon-sm)"
+								strokeWidth={1.5}
 							/>
 						</Button>
 					</div>
 				) : (
 					<div className="settingsFeedbackCard">
-						<div className="settingsFeedbackEyebrow">Still in Early Access</div>
+						<span className="settingsFeedbackBadge">Early access</span>
 						<div className="settingsFeedbackTitle">Help shape Glyph</div>
 						<p className="settingsFeedbackBody">
-							Glyph is actively evolving and changing, so you may run into rough
-							edges here and there. If something feels off, I'd really love to
-							hear about it.
+							Glyph is actively evolving — you may hit rough edges. If something
+							feels off, I'd love to hear about it.
 						</p>
 						<Button
 							type="button"
-							className="settingsFeedbackButton"
+							variant="ghost"
+							size="sm"
+							className="settingsFeedbackAction"
 							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
-							<HugeiconsIcon
-								icon={BubbleChatQuestionIcon}
-								size="var(--icon-lg)"
-								strokeWidth={0.9}
-							/>
-							Send Feedback
+							Send feedback
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
+								size="var(--icon-sm)"
+								strokeWidth={1.5}
 							/>
 						</Button>
 					</div>

@@ -108,7 +108,7 @@ const SETTINGS_SEARCH_ITEMS = [
 		tab: "appearance",
 		section: "Accent",
 		title: "Palette",
-		description: "Set the accent for the default light and dark themes.",
+		description: "Set the accent for the Glyph light and dark themes.",
 		keywords: ["accent", "color", "palette"],
 	},
 	{
@@ -116,8 +116,7 @@ const SETTINGS_SEARCH_ITEMS = [
 		tab: "appearance",
 		section: "Light theme",
 		title: "Default colors",
-		description:
-			"Customize the default light theme background and text colors.",
+		description: "Customize the Glyph light theme background and text colors.",
 		keywords: ["theme", "color", "light", "background", "foreground", "text"],
 	},
 	{
@@ -125,7 +124,7 @@ const SETTINGS_SEARCH_ITEMS = [
 		tab: "appearance",
 		section: "Dark theme",
 		title: "Default colors",
-		description: "Customize the default dark theme background and text colors.",
+		description: "Customize the Glyph dark theme background and text colors.",
 		keywords: ["theme", "color", "dark", "background", "foreground", "text"],
 	},
 	{

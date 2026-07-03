@@ -24,8 +24,8 @@ mod space;
 mod space_fs;
 mod system_fonts;
 mod tag_appearance;
-mod window_geometry;
 pub(crate) mod utils;
+mod window_geometry;
 
 use serde::Serialize;
 use std::collections::HashMap;
@@ -44,9 +44,7 @@ use tracing::{error, warn};
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
-use tauri::{
-    TitleBarStyle, WebviewUrl, WebviewWindowBuilder,
-};
+use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
@@ -1682,11 +1680,13 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app_handle, event| {
-            if let RunEvent::Opened { urls } = event {
-                handle_opened_urls(app_handle, urls);
-                return;
+        .run(|app_handle, event| match event {
+            RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+                window_geometry::flush_main_window_geometry(app_handle);
             }
-
+            RunEvent::Opened { urls } => {
+                handle_opened_urls(app_handle, urls);
+            }
+            _ => {}
         });
 }
