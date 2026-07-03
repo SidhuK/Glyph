@@ -54,18 +54,14 @@ fn intersection(window: Rect, monitor: Rect) -> Option<Rect> {
     })
 }
 
-#[cfg(test)]
-fn is_geometry_visible_for_monitor_rects(
+fn is_geometry_visible_for_rects(
     width: u32,
     height: u32,
     x: i32,
     y: i32,
     monitors: &[Rect],
 ) -> bool {
-    if width < MIN_INNER_WIDTH || height < MIN_INNER_HEIGHT {
-        return false;
-    }
-    if monitors.is_empty() {
+    if width < MIN_INNER_WIDTH || height < MIN_INNER_HEIGHT || monitors.is_empty() {
         return false;
     }
 
@@ -90,28 +86,14 @@ fn is_geometry_visible_on_monitors(
     y: i32,
     monitors: &[Monitor],
 ) -> bool {
-    if width < MIN_INNER_WIDTH || height < MIN_INNER_HEIGHT || monitors.is_empty() {
+    if monitors.is_empty() {
         return false;
     }
-
-    let window = Rect {
-        x,
-        y,
-        width: width as i32,
-        height: height as i32,
-    };
-
-    monitors.iter().any(|monitor| {
-        intersection(window, monitor_rect(monitor)).is_some_and(|visible| {
-            visible.width >= MIN_VISIBLE_WIDTH && visible.height >= MIN_VISIBLE_HEIGHT
-        })
-    })
+    let rects: Vec<Rect> = monitors.iter().map(monitor_rect).collect();
+    is_geometry_visible_for_rects(width, height, x, y, &rects)
 }
 
 fn should_restore_record(record: &WindowGeometryRecord, monitors: &[Monitor]) -> bool {
-    if record.maximized {
-        return !monitors.is_empty();
-    }
     is_geometry_visible_on_monitors(record.width, record.height, record.x, record.y, monitors)
 }
 
@@ -137,16 +119,16 @@ fn apply_default_centered_geometry(window: &WebviewWindow) -> Result<(), String>
 }
 
 fn apply_geometry(window: &WebviewWindow, record: &WindowGeometryRecord) -> Result<(), String> {
+    window
+        .set_size(Size::Physical(PhysicalSize::new(record.width, record.height)))
+        .map_err(|error| error.to_string())?;
+    window
+        .set_position(Position::Physical(PhysicalPosition::new(record.x, record.y)))
+        .map_err(|error| error.to_string())?;
     if record.maximized {
-        window.maximize().map_err(|error| error.to_string())
-    } else {
-        window
-            .set_size(Size::Physical(PhysicalSize::new(record.width, record.height)))
-            .map_err(|error| error.to_string())?;
-        window
-            .set_position(Position::Physical(PhysicalPosition::new(record.x, record.y)))
-            .map_err(|error| error.to_string())
+        window.maximize().map_err(|error| error.to_string())?;
     }
+    Ok(())
 }
 
 fn capture_geometry(window: &WebviewWindow) -> Result<WindowGeometryRecord, String> {
@@ -233,7 +215,7 @@ pub fn install_main_window_persistence(window: &WebviewWindow) {
 #[cfg(test)]
 mod tests {
     use super::{
-        intersection, is_geometry_visible_for_monitor_rects, Rect, MIN_INNER_HEIGHT,
+        intersection, is_geometry_visible_for_rects, Rect, MIN_INNER_HEIGHT,
         MIN_INNER_WIDTH,
     };
 
@@ -266,7 +248,7 @@ mod tests {
             width: 1440,
             height: 900,
         }];
-        assert!(!is_geometry_visible_for_monitor_rects(
+        assert!(!is_geometry_visible_for_rects(
             MIN_INNER_WIDTH,
             MIN_INNER_HEIGHT,
             3000,
@@ -283,7 +265,7 @@ mod tests {
             width: 1440,
             height: 900,
         }];
-        assert!(is_geometry_visible_for_monitor_rects(
+        assert!(is_geometry_visible_for_rects(
             900, 700, -100, 50, &monitors
         ));
     }
@@ -296,7 +278,7 @@ mod tests {
             width: 1440,
             height: 900,
         }];
-        assert!(!is_geometry_visible_for_monitor_rects(
+        assert!(!is_geometry_visible_for_rects(
             MIN_INNER_WIDTH - 1,
             MIN_INNER_HEIGHT,
             100,

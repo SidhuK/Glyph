@@ -1475,7 +1475,7 @@ pub fn run() {
 
             #[cfg(target_os = "macos")]
             {
-                if let Some(window) = app.get_webview_window("main") {
+                if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
                     if let Err(e) = apply_main_window_vibrancy(&window, None) {
                         warn!("Failed to apply vibrancy to main window: {e}");
                     }
