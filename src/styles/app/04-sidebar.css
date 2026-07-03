@@ -251,6 +251,7 @@
 	align-items: center;
 	gap: 2px;
 	flex-shrink: 0;
+	min-width: 0;
 }
 
 .sidebarStackHeaderAction {
@@ -275,6 +276,48 @@
 	box-shadow: none;
 	color: var(--text-primary);
 	outline: none;
+}
+
+.sidebarStackHeaderSortNative {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: var(--radius-sm);
+	color: var(--text-tertiary);
+	transition: color var(--transition-fast);
+}
+
+.sidebarStackHeaderSortNative:hover,
+.sidebarStackHeaderSortNative:focus-within {
+	color: var(--text-primary);
+}
+
+.sidebarStackHeaderSortIcon {
+	position: absolute;
+	left: 4px;
+	pointer-events: none;
+	color: currentColor;
+}
+
+.sidebarStackHeaderSortSelect {
+	width: 100%;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+	outline: none;
+	opacity: 0;
+}
+
+.sidebarStackHeaderSortSelect:focus {
+	box-shadow: none;
 }
 
 .sidebarStackHeaderChevron {

@@ -47,6 +47,21 @@ export type { AiAssistantMode } from "./tauri";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 export type ReleaseChannel = "stable" | "alpha";
+export type FileTreeSortMode =
+	| "name-asc"
+	| "name-desc"
+	| "modified-desc"
+	| "modified-asc"
+	| "created-desc"
+	| "created-asc";
+const FILE_TREE_SORT_MODES = new Set<FileTreeSortMode>([
+	"name-asc",
+	"name-desc",
+	"modified-desc",
+	"modified-asc",
+	"created-desc",
+	"created-asc",
+]);
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
@@ -272,6 +287,7 @@ interface EditorSettings {
 interface FileTreeSettings {
 	showFolderFileCounts: boolean;
 	showNonMarkdownFiles: boolean;
+	sortMode: FileTreeSortMode;
 }
 
 export interface ShortcutSettings {
@@ -310,12 +326,26 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
 	showFolderFileCounts: false,
 	showNonMarkdownFiles: true,
+	sortMode: "name-asc",
 };
+
+export function isFileTreeSortMode(value: unknown): value is FileTreeSortMode {
+	return (
+		typeof value === "string" &&
+		FILE_TREE_SORT_MODES.has(value as FileTreeSortMode)
+	);
+}
 
 function asThemeMode(value: unknown): ThemeMode {
 	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
 		? (value as ThemeMode)
 		: "system";
+}
+
+function asFileTreeSortMode(value: unknown): FileTreeSortMode {
+	return isFileTreeSortMode(value)
+		? value
+		: DEFAULT_FILE_TREE_SETTINGS.sortMode;
 }
 
 function asAutoUpdateCheckInterval(value: unknown): AutoUpdateCheckInterval {
@@ -453,6 +483,7 @@ async function emitSettingsUpdated(payload: {
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		showNonMarkdownFiles?: boolean;
+		fileTreeSortMode?: FileTreeSortMode;
 		folioMode?: boolean;
 		classicAllNotesByDefault?: boolean;
 		aiAssistantMode?: AiAssistantMode;
@@ -505,6 +536,15 @@ export interface RecentFile {
 	openedAt: number;
 }
 
+export const FILE_TREE_SORT_OPTIONS = [
+	{ label: "Name A-Z", value: "name-asc" },
+	{ label: "Name Z-A", value: "name-desc" },
+	{ label: "Modified newest", value: "modified-desc" },
+	{ label: "Modified oldest", value: "modified-asc" },
+	{ label: "Created newest", value: "created-desc" },
+	{ label: "Created oldest", value: "created-asc" },
+] as const satisfies readonly { label: string; value: FileTreeSortMode }[];
+
 interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
@@ -529,6 +569,7 @@ interface AppSettings {
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		showNonMarkdownFiles: boolean;
+		fileTreeSortMode: FileTreeSortMode;
 		folioMode: boolean;
 		classicAllNotesByDefault: boolean;
 		aiAssistantMode: AiAssistantMode;
@@ -604,6 +645,7 @@ const KEYS = {
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	showNonMarkdownFiles: "ui.fileTree.showNonMarkdownFiles",
+	fileTreeSortMode: "ui.fileTree.sortMode",
 	folioMode: "ui.folioMode",
 	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
@@ -932,6 +974,7 @@ export async function loadSettings(
 		entries,
 		KEYS.showNonMarkdownFiles,
 	);
+	const rawFileTreeSortMode = getSettingValue(entries, KEYS.fileTreeSortMode);
 	const rawFolioMode = getSettingValue<boolean | null>(entries, KEYS.folioMode);
 	const rawClassicAllNotesByDefault = getSettingValue<boolean | null>(
 		entries,
@@ -1074,6 +1117,7 @@ export async function loadSettings(
 		typeof rawShowNonMarkdownFiles === "boolean"
 			? rawShowNonMarkdownFiles
 			: DEFAULT_FILE_TREE_SETTINGS.showNonMarkdownFiles;
+	const fileTreeSortMode = asFileTreeSortMode(rawFileTreeSortMode);
 	const folioMode = typeof rawFolioMode === "boolean" ? rawFolioMode : false;
 	const classicAllNotesByDefault =
 		typeof rawClassicAllNotesByDefault === "boolean"
@@ -1176,6 +1220,7 @@ export async function loadSettings(
 			showToc,
 			showFileTreeFolderCounts,
 			showNonMarkdownFiles,
+			fileTreeSortMode,
 			folioMode,
 			classicAllNotesByDefault,
 			aiAssistantMode,
@@ -1487,6 +1532,15 @@ export async function setShowNonMarkdownFiles(enabled: boolean): Promise<void> {
 	await store.set(KEYS.showNonMarkdownFiles, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { showNonMarkdownFiles: enabled } });
+}
+
+export async function setFileTreeSortMode(
+	sortMode: FileTreeSortMode,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.fileTreeSortMode, sortMode);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { fileTreeSortMode: sortMode } });
 }
 
 export async function setFolioMode(enabled: boolean): Promise<void> {

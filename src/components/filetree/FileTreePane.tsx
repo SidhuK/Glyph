@@ -19,12 +19,16 @@ import {
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 
-import { filterVisibleFileTreeEntries } from "../../hooks/fileTreeHelpers";
+import {
+	compareEntriesForSort,
+	filterVisibleFileTreeEntries,
+} from "../../hooks/fileTreeHelpers";
+import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
-import { loadSettings } from "../../lib/settings";
+import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import type {
 	DirChildSummary,
 	FileTreeAppearance,
@@ -84,6 +88,16 @@ const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
 
 interface AppearancePickerTarget {
 	entry: FsEntry;
+}
+
+function sortedVisibleFileTreeEntries(
+	entries: FsEntry[],
+	showNonMarkdownFiles: boolean,
+	sortMode: FileTreeSortMode,
+): FsEntry[] {
+	return filterVisibleFileTreeEntries(entries, showNonMarkdownFiles)
+		.slice()
+		.sort(compareEntriesForSort(sortMode));
 }
 
 function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
@@ -266,10 +280,6 @@ interface TreeEntriesProps {
 	folderFileCounts: Record<string, number>;
 	showFolderFileCounts: boolean;
 	showNonMarkdownFiles: boolean;
-	onChangeAppearance: (
-		entry: FsEntry,
-		appearance: FileTreeAppearance,
-	) => Promise<void> | void;
 	onOpenAppearancePicker: (entry: FsEntry) => void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
@@ -282,6 +292,7 @@ interface TreeEntriesProps {
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
+	sortMode: FileTreeSortMode;
 }
 
 function TreeEntries({
@@ -310,7 +321,6 @@ function TreeEntries({
 	folderFileCounts,
 	showFolderFileCounts,
 	showNonMarkdownFiles,
-	onChangeAppearance,
 	onOpenAppearancePicker,
 	pinnedFiles,
 	onTogglePinnedFile,
@@ -319,10 +329,11 @@ function TreeEntries({
 	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
+	sortMode,
 }: TreeEntriesProps) {
-	const visibleEntries = filterVisibleFileTreeEntries(
-		entries,
-		showNonMarkdownFiles,
+	const visibleEntries = useMemo(
+		() => sortedVisibleFileTreeEntries(entries, showNonMarkdownFiles, sortMode),
+		[entries, showNonMarkdownFiles, sortMode],
 	);
 	if (visibleEntries.length === 0) return null;
 
@@ -393,7 +404,6 @@ function TreeEntries({
 									folderFileCounts={folderFileCounts}
 									showFolderFileCounts={showFolderFileCounts}
 									showNonMarkdownFiles={showNonMarkdownFiles}
-									onChangeAppearance={onChangeAppearance}
 									onOpenAppearancePicker={onOpenAppearancePicker}
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
@@ -402,6 +412,7 @@ function TreeEntries({
 									taskSummariesByPath={taskSummariesByPath}
 									showFilePreviews={showFilePreviews}
 									filePreviewsByPath={filePreviewsByPath}
+									sortMode={sortMode}
 								/>
 							) : null}
 						</FileTreeDirItem>
@@ -477,7 +488,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
 		boolean | null
 	>(null);
-
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
@@ -494,6 +504,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
+	const { sortMode } = useFileTreeSortMode();
 
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
@@ -791,17 +802,26 @@ export const FileTreePane = memo(function FileTreePane({
 		: null;
 	const hasLoadedFileVisibility = showNonMarkdownFiles !== null;
 	const showNonMarkdownFilesSetting = showNonMarkdownFiles ?? false;
-	const visibleRootEntries = filterVisibleFileTreeEntries(
-		rootEntries,
-		showNonMarkdownFilesSetting,
+	const visibleRootEntries = useMemo(
+		() =>
+			sortedVisibleFileTreeEntries(
+				rootEntries,
+				showNonMarkdownFilesSetting,
+				sortMode,
+			),
+		[rootEntries, showNonMarkdownFilesSetting, sortMode],
 	);
-	const visibleFocusedEntries =
-		focusedEntries === null
-			? null
-			: filterVisibleFileTreeEntries(
-					focusedEntries,
-					showNonMarkdownFilesSetting,
-				);
+	const visibleFocusedEntries = useMemo(
+		() =>
+			focusedEntries === null
+				? null
+				: sortedVisibleFileTreeEntries(
+						focusedEntries,
+						showNonMarkdownFilesSetting,
+						sortMode,
+					),
+		[focusedEntries, showNonMarkdownFilesSetting, sortMode],
+	);
 
 	useEffect(() => {
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
@@ -972,7 +992,7 @@ export const FileTreePane = memo(function FileTreePane({
 						/>
 						{!visibleFocusedEntries ? null : visibleFocusedEntries.length ? (
 							<TreeEntries
-								entries={visibleFocusedEntries}
+								entries={focusedEntries ?? []}
 								parentDepth={-1}
 								childrenByDir={childrenByDir}
 								expandedDirs={expandedDirs}
@@ -997,7 +1017,6 @@ export const FileTreePane = memo(function FileTreePane({
 								folderFileCounts={folderFileCounts}
 								showFolderFileCounts={showFolderFileCounts}
 								showNonMarkdownFiles={showNonMarkdownFilesSetting}
-								onChangeAppearance={handleChangeAppearance}
 								onOpenAppearancePicker={handleOpenAppearancePicker}
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
@@ -1006,6 +1025,7 @@ export const FileTreePane = memo(function FileTreePane({
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
+								sortMode={sortMode}
 							/>
 						) : (
 							<m.div
@@ -1019,42 +1039,40 @@ export const FileTreePane = memo(function FileTreePane({
 					</FileTreeRootDrop>
 				) : visibleRootEntries.length ? (
 					<FileTreeRootDrop>
-						{visibleRootEntries.length ? (
-							<TreeEntries
-								entries={rootEntries}
-								parentDepth={-1}
-								childrenByDir={childrenByDir}
-								expandedDirs={expandedDirs}
-								activeFilePath={activeFilePath}
-								activeDirPath={activeDirPath}
-								renamingPath={renamingPath}
-								onToggleDir={onToggleDir}
-								onEnterDir={handleEnterDir}
-								onSelectDir={onSelectDir}
-								onOpenFile={onOpenFile}
-								onPrefetchFile={onPrefetchFile}
-								onNewFileInDir={onNewFileInDir}
-								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onRequestCreateFolder={handleRequestCreateFolder}
-								onDuplicateFile={handleDuplicateFile}
-								onDeletePath={handleDeletePath}
-								onStartRename={onStartRename}
-								onCommitDirRename={onCommitDirRename}
-								onCommitFileRename={onCommitFileRename}
-								onCancelRename={onCancelRename}
-								itemAppearance={itemAppearance}
-								folderFileCounts={folderFileCounts}
-								showFolderFileCounts={showFolderFileCounts}
-								showNonMarkdownFiles={showNonMarkdownFilesSetting}
-								onChangeAppearance={handleChangeAppearance}
-								onOpenAppearancePicker={handleOpenAppearancePicker}
-								pinnedFiles={pinnedFiles}
-								onTogglePinnedFile={onTogglePinnedFile}
-								onMoveClickSuppressRef={moveClickSuppressRef}
-								onArrowNavigate={handleArrowNavigate}
-								taskSummariesByPath={taskSummariesByPath}
-							/>
-						) : null}
+						<TreeEntries
+							entries={rootEntries}
+							parentDepth={-1}
+							childrenByDir={childrenByDir}
+							expandedDirs={expandedDirs}
+							activeFilePath={activeFilePath}
+							activeDirPath={activeDirPath}
+							renamingPath={renamingPath}
+							onToggleDir={onToggleDir}
+							onEnterDir={handleEnterDir}
+							onSelectDir={onSelectDir}
+							onOpenFile={onOpenFile}
+							onPrefetchFile={onPrefetchFile}
+							onNewFileInDir={onNewFileInDir}
+							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+							onRequestCreateFolder={handleRequestCreateFolder}
+							onDuplicateFile={handleDuplicateFile}
+							onDeletePath={handleDeletePath}
+							onStartRename={onStartRename}
+							onCommitDirRename={onCommitDirRename}
+							onCommitFileRename={onCommitFileRename}
+							onCancelRename={onCancelRename}
+							itemAppearance={itemAppearance}
+							folderFileCounts={folderFileCounts}
+							showFolderFileCounts={showFolderFileCounts}
+							showNonMarkdownFiles={showNonMarkdownFilesSetting}
+							onOpenAppearancePicker={handleOpenAppearancePicker}
+							pinnedFiles={pinnedFiles}
+							onTogglePinnedFile={onTogglePinnedFile}
+							onMoveClickSuppressRef={moveClickSuppressRef}
+							onArrowNavigate={handleArrowNavigate}
+							taskSummariesByPath={taskSummariesByPath}
+							sortMode={sortMode}
+						/>
 					</FileTreeRootDrop>
 				) : (
 					<m.div

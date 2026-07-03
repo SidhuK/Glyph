@@ -115,7 +115,6 @@ interface FileTreeFileItemProps {
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
-	onChangeAppearance?: (appearance: FileTreeAppearance) => void;
 	onOpenAppearancePicker?: () => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;

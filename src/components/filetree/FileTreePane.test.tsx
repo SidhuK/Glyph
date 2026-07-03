@@ -102,6 +102,7 @@ describe("FileTreePane", () => {
 			ui: {
 				showFileTreeFolderCounts: false,
 				showNonMarkdownFiles: true,
+				fileTreeSortMode: "name-asc",
 			},
 		});
 		useFileTreeContextMock.mockReturnValue({
@@ -235,6 +236,7 @@ describe("FileTreePane", () => {
 			ui: {
 				showFileTreeFolderCounts: false,
 				showNonMarkdownFiles: false,
+				fileTreeSortMode: "name-asc",
 			},
 		});
 

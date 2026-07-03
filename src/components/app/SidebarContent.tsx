@@ -5,6 +5,7 @@ import {
 	ExpandParagraphIcon,
 	LibraryIcon,
 	NoteIcon,
+	Sorting01Icon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -12,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -21,6 +23,11 @@ import {
 	loadAllDocsCount,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
+import {
+	FILE_TREE_SORT_OPTIONS,
+	type FileTreeSortMode,
+	isFileTreeSortMode,
+} from "../../lib/settings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
@@ -118,6 +125,13 @@ function PinnedNotesCountBadge({ count }: { count: number }) {
 	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
+function fileTreeSortLabel(sortMode: FileTreeSortMode): string {
+	return (
+		FILE_TREE_SORT_OPTIONS.find((option) => option.value === sortMode)?.label ??
+		"Sort"
+	);
+}
+
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -166,6 +180,13 @@ export const SidebarContent = memo(function SidebarContent({
 		null,
 	);
 	const [notesExpanded, setNotesExpanded] = useState(true);
+	const fileTreeSort = useFileTreeSortMode({
+		onError: (message) => {
+			toast.error("Could not update file tree sorting", {
+				description: message,
+			});
+		},
+	});
 	const newNoteShortcut = getBinding("new-note");
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
@@ -281,6 +302,7 @@ export const SidebarContent = memo(function SidebarContent({
 		setFolioScope({ kind: "all" });
 		onPrefetchAllDocs();
 	}, [folioMode, onPrefetchAllDocs, setFolioScope]);
+
 	const handleSelectFolioFolder = useCallback(
 		(dirPath: string) => {
 			onSelectDir(dirPath);
@@ -476,6 +498,33 @@ export const SidebarContent = memo(function SidebarContent({
 									)}
 								</button>
 								<div className="sidebarStackHeaderActions">
+									<label className="sidebarStackHeaderSortNative">
+										<span className="sr-only">Sort notes</span>
+										<HugeiconsIcon
+											icon={Sorting01Icon}
+											size="var(--icon-sm)"
+											strokeWidth={0.9}
+											className="sidebarStackHeaderSortIcon"
+											aria-hidden="true"
+										/>
+										<select
+											className="sidebarStackHeaderSortSelect"
+											value={fileTreeSort.sortMode}
+											title={`Sort notes: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
+											aria-label="Sort notes"
+											onChange={(event) => {
+												const nextSortMode = event.currentTarget.value;
+												if (!isFileTreeSortMode(nextSortMode)) return;
+												void fileTreeSort.setSortMode(nextSortMode);
+											}}
+										>
+											{FILE_TREE_SORT_OPTIONS.map((option) => (
+												<option key={option.value} value={option.value}>
+													{option.label}
+												</option>
+											))}
+										</select>
+									</label>
 									<button
 										type="button"
 										className="sidebarStackHeaderAction"
