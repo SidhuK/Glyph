@@ -54,14 +54,19 @@ import {
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
+import { buildPrintHtml } from "../../lib/printHtml";
 import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
-
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import {
+	displayNameFromPath,
+	isMarkdownPath,
+	normalizeRelPath,
+	parentDir,
+} from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
@@ -910,15 +915,13 @@ export function AppShell() {
 		if (!activeMarkdownTabPath) return;
 
 		try {
-			const editorMarkdown = getCurrentMarkdown(activeMarkdownTabPath);
 			const markdown =
-				editorMarkdown ??
+				getCurrentMarkdown(activeMarkdownTabPath) ??
 				(
 					await invoke("space_read_text", {
 						path: activeMarkdownTabPath,
 					})
 				).text;
-
 			await navigator.clipboard.writeText(markdown);
 			toast.success("Copied note as Markdown.");
 		} catch (error) {
@@ -929,6 +932,41 @@ export function AppShell() {
 			});
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown]);
+
+	const handlePrintActiveNote = useCallback(async () => {
+		if (!activeMarkdownTabPath) return;
+		try {
+			await saveCurrentEditor();
+			const markdown =
+				getCurrentMarkdown(activeMarkdownTabPath) ??
+				(
+					await invoke("space_read_text", {
+						path: activeMarkdownTabPath,
+					})
+				).text;
+			const noteAbsPath = await invoke("space_resolve_abs_path", {
+				path: activeMarkdownTabPath,
+			});
+			const html = buildPrintHtml({
+				markdown,
+				notePath: activeMarkdownTabPath,
+				noteAbsPath,
+			});
+			const path = await invoke("print_write_html", {
+				file_stem:
+					displayNameFromPath(activeMarkdownTabPath).trim() || "Untitled",
+				html,
+			});
+			await openPath(path);
+			toast.success("Opened note for printing.");
+		} catch (error) {
+			console.error("Failed to print note", error);
+			toast.error("Could not open the note for printing", {
+				description:
+					error instanceof Error ? error.message : "Try again in a moment.",
+			});
+		}
+	}, [activeMarkdownTabPath, getCurrentMarkdown, saveCurrentEditor]);
 
 	const duplicateFileWithActiveEditorFlush = useCallback(
 		async (path: string) => {
@@ -1043,6 +1081,7 @@ export function AppShell() {
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
+		onPrintNote: handlePrintActiveNote,
 		onCloseTab: () => void handleCloseTabOrWindow(),
 		onOpenSpace,
 		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,

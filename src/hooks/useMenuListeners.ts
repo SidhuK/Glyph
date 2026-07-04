@@ -9,6 +9,7 @@ interface UseMenuListenersProps {
 	onCreateFromTemplate: () => void;
 	onOpenDailyNote: () => void;
 	onSaveNote: () => void;
+	onPrintNote: () => void;
 	onCloseTab: () => void;
 	onOpenSpace: () => void;
 	onOpenRecentSpaceAtPath: (path: string) => void | Promise<void>;
@@ -32,6 +33,7 @@ export function useMenuListeners({
 	onCreateFromTemplate,
 	onOpenDailyNote,
 	onSaveNote,
+	onPrintNote,
 	onCloseTab,
 	onOpenSpace,
 	onOpenRecentSpaceAtPath,
@@ -72,6 +74,7 @@ export function useMenuListeners({
 				"create-from-template": onCreateFromTemplate,
 				"open-daily-note": onOpenDailyNote,
 				"save-note": onSaveNote,
+				"print-note": onPrintNote,
 				"close-active-tab": onCloseTab,
 				"open-space": onOpenSpace,
 				"create-space": onCreateSpace,
@@ -157,6 +160,7 @@ export function useMenuListeners({
 			onOpenGitSettings,
 			onOpenSpace,
 			onOpenSpaceSettings,
+			onPrintNote,
 			onRevealSpace,
 			onSaveNote,
 			onToggleAiPane,

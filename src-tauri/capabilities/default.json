@@ -25,7 +25,8 @@
 				{ "path": "$HOME/**" },
 				{ "path": "$DOWNLOAD/**" },
 				{ "path": "$DOCUMENT/**" },
-				{ "path": "$DESKTOP/**" }
+				{ "path": "$DESKTOP/**" },
+				{ "path": "$APPCACHE/print/**" }
 			]
 		},
 		"opener:default",

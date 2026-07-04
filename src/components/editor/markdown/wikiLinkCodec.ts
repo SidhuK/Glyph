@@ -1,3 +1,4 @@
+import { basename } from "../../../utils/path";
 import type { WikiLinkAttrs } from "./wikiLinkTypes";
 
 type WikiLinkAnchorKind = "none" | "heading" | "block";
@@ -91,4 +92,33 @@ export function findWikiLinkSpans(
 		});
 	}
 	return spans;
+}
+
+function wikiLinkSpanToMarkdown(raw: string): string {
+	const attrs = parseWikiLink(raw);
+	if (!attrs) return raw;
+	const ref =
+		attrs.anchorKind === "heading" && attrs.anchor
+			? `${attrs.target}#${attrs.anchor}`
+			: attrs.anchorKind === "block" && attrs.anchor
+				? `${attrs.target}#^${attrs.anchor}`
+				: attrs.target;
+	const destination = `<${ref}>`;
+	if (attrs.embed) {
+		return `![${attrs.alias || basename(attrs.target)}](${destination})`;
+	}
+	return `[${attrs.alias || attrs.target.replace(/\.(md|markdown)$/i, "")}](${destination})`;
+}
+
+export function wikiLinksToStandardMarkdown(markdown: string): string {
+	const spans = findWikiLinkSpans(markdown);
+	if (spans.length === 0) return markdown;
+	let cursor = 0;
+	let out = "";
+	for (const span of spans) {
+		out += markdown.slice(cursor, span.start);
+		out += wikiLinkSpanToMarkdown(span.raw);
+		cursor = span.end;
+	}
+	return out + markdown.slice(cursor);
 }
