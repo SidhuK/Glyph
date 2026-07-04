@@ -103,10 +103,11 @@ function wikiLinkSpanToMarkdown(raw: string): string {
 			: attrs.anchorKind === "block" && attrs.anchor
 				? `${attrs.target}#^${attrs.anchor}`
 				: attrs.target;
+	const destination = `<${ref}>`;
 	if (attrs.embed) {
-		return `![${attrs.alias || basename(attrs.target)}](${ref})`;
+		return `![${attrs.alias || basename(attrs.target)}](${destination})`;
 	}
-	return `[${attrs.alias || attrs.target.replace(/\.(md|markdown)$/i, "")}](${ref})`;
+	return `[${attrs.alias || attrs.target.replace(/\.(md|markdown)$/i, "")}](${destination})`;
 }
 
 export function wikiLinksToStandardMarkdown(markdown: string): string {

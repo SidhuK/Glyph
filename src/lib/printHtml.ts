@@ -111,19 +111,12 @@ function escapeHtml(value: string): string {
 }
 
 function fileUrlForPath(path: string): string {
-	const normalized = path.replace(/\\/g, "/");
-	const segments = normalized.split("/").map(encodeURIComponent);
-	if (/^[A-Za-z]%3A$/.test(segments[0] ?? "")) {
-		segments[0] = segments[0].replace("%3A", ":");
-	}
-	const encoded = segments.join("/");
-	return normalized.startsWith("/")
-		? `file://${encoded}`
-		: `file:///${encoded}`;
+	const encoded = path.split("/").map(encodeURIComponent).join("/");
+	return `file://${encoded}`;
 }
 
 function baseHrefForNote(noteAbsPath: string): string {
-	const dir = parentDir(noteAbsPath.replace(/\\/g, "/"));
+	const dir = parentDir(noteAbsPath);
 	return `${fileUrlForPath(dir)}/`;
 }
 
