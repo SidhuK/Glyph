@@ -56,6 +56,11 @@ pub(crate) struct SpaceSession {
     pub(crate) recent_local_changes: RecentLocalChanges,
 }
 
+struct ActiveSpace {
+    root: PathBuf,
+    session: SpaceSession,
+}
+
 impl SpaceSession {
     fn new(
         notes_watcher: notify::RecommendedWatcher,
@@ -69,8 +74,7 @@ impl SpaceSession {
 }
 
 pub struct SpaceState {
-    pub(crate) current: Mutex<Option<PathBuf>>,
-    session: Mutex<Option<SpaceSession>>,
+    active: Mutex<Option<ActiveSpace>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
     pinned_files_mutex: Arc<Mutex<()>>,
@@ -79,8 +83,7 @@ pub struct SpaceState {
 impl Default for SpaceState {
     fn default() -> Self {
         Self {
-            current: Mutex::new(None),
-            session: Mutex::new(None),
+            active: Mutex::new(None),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
             pinned_files_mutex: Arc::new(Mutex::new(())),
@@ -94,13 +97,13 @@ impl SpaceState {
     }
 
     pub(crate) fn recent_local_changes(&self) -> RecentLocalChanges {
-        self.session
+        self.active
             .lock()
             .ok()
             .and_then(|guard| {
                 guard
                     .as_ref()
-                    .map(|session| Arc::clone(&session.recent_local_changes))
+                    .map(|active| Arc::clone(&active.session.recent_local_changes))
             })
             .unwrap_or_else(|| Arc::new(Mutex::new(HashMap::new())))
     }
@@ -111,42 +114,31 @@ impl SpaceState {
         notes_watcher: notify::RecommendedWatcher,
         recent_local_changes: RecentLocalChanges,
     ) -> Result<(), String> {
-        let mut session = self
-            .session
+        let mut active = self
+            .active
             .lock()
             .map_err(|_| "space state poisoned".to_string())?;
-        *session = Some(SpaceSession::new(
-            notes_watcher,
-            recent_local_changes,
-        ));
-        let mut current = self
-            .current
-            .lock()
-            .map_err(|_| "space state poisoned".to_string())?;
-        *current = Some(root);
+        *active = Some(ActiveSpace {
+            root,
+            session: SpaceSession::new(notes_watcher, recent_local_changes),
+        });
         Ok(())
     }
 
     pub(crate) fn clear_session(&self) -> Result<(), String> {
-        let mut session = self
-            .session
+        let mut active = self
+            .active
             .lock()
             .map_err(|_| "space state poisoned".to_string())?;
-        *session = None;
-        let mut current = self
-            .current
-            .lock()
-            .map_err(|_| "space state poisoned".to_string())?;
-        *current = None;
+        *active = None;
         Ok(())
     }
 
     pub(crate) fn has_open_session(&self) -> bool {
-        self.current
+        self.active
             .lock()
             .ok()
-            .and_then(|guard| guard.clone())
-            .is_some()
+            .is_some_and(|guard| guard.is_some())
     }
 
     pub(crate) fn db_store_mutex(&self) -> Arc<Mutex<()>> {
@@ -163,12 +155,13 @@ impl SpaceState {
 
     pub fn current_root(&self) -> Result<PathBuf, String> {
         let guard = self
-            .current
+            .active
             .lock()
             .map_err(|_| "space state poisoned".to_string())?;
         guard
-            .clone()
-            .ok_or_else(|| "no space open (select or create a space first)".to_string())
+            .as_ref()
+            .map(|active| active.root.clone())
+            .ok_or_else(|| format!("{NO_SPACE_OPEN} (select or create a space first)"))
     }
 }
 

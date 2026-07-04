@@ -1218,11 +1218,10 @@ fn set_recent_spaces_menu(
     recent_spaces: Vec<String>,
 ) -> Result<(), String> {
     let current_space_path = app.try_state::<space::SpaceState>().and_then(|state| {
-        state.current.lock().ok().and_then(|guard| {
-            guard
-                .as_ref()
-                .map(|path| path.to_string_lossy().to_string())
-        })
+        state
+            .current_root()
+            .ok()
+            .map(|path| path.to_string_lossy().to_string())
     });
     let filtered: Vec<String> = recent_spaces
         .into_iter()
