@@ -1,10 +1,11 @@
-import { Extension } from "@tiptap/core";
-import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import type { Selection } from "@tiptap/pm/state";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import type { EditorView } from "@tiptap/pm/view";
+import { PluginKey } from "@tiptap/pm/state";
 import { isMermaidCodeBlockLanguage } from "../../../lib/mermaid";
+import { appendEditCodeControls } from "./codeBlockPreviewControls";
+import {
+	createLazyCodeBlockPreviewWidget,
+	destroyLazyCodeBlockPreviewWidget,
+} from "./codeBlockPreviewHydration";
+import { createCodeBlockPreviewExtension } from "./codeBlockPreviewPlugin";
 import {
 	createMermaidCanvas,
 	createMermaidErrorCanvas,
@@ -14,247 +15,66 @@ import {
 	renderMermaidCanvasSvg,
 } from "./mermaid/renderer";
 
-interface MermaidPreviewPluginState {
-	decorations: DecorationSet;
-	editable: boolean;
-	refreshKey: number;
-}
-
-const mermaidPreviewPluginKey = new PluginKey<MermaidPreviewPluginState>(
-	"mermaid-preview",
-);
+const mermaidPreviewPluginKey = new PluginKey("mermaid-preview");
 
 type MermaidPreviewMeta = { type: "refresh" };
 
-const canvasDestroyCallbacks = new WeakMap<HTMLElement, () => void>();
-const MERMAID_HYDRATION_ROOT_MARGIN = "640px 0px";
-const mermaidHydrationCallbacks = new WeakMap<Element, () => void>();
-let mermaidHydrationObserver: IntersectionObserver | null = null;
-
-function observeMermaidHydration(element: HTMLElement, hydrate: () => void) {
-	if (typeof IntersectionObserver === "undefined") return false;
-	if (!mermaidHydrationObserver) {
-		mermaidHydrationObserver = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (!entry.isIntersecting) continue;
-					const callback = mermaidHydrationCallbacks.get(entry.target);
-					mermaidHydrationObserver?.unobserve(entry.target);
-					mermaidHydrationCallbacks.delete(entry.target);
-					callback?.();
-				}
-			},
-			{ rootMargin: MERMAID_HYDRATION_ROOT_MARGIN },
-		);
-	}
-	mermaidHydrationCallbacks.set(element, hydrate);
-	mermaidHydrationObserver.observe(element);
-	return true;
-}
-
-function unobserveMermaidHydration(element: HTMLElement) {
-	mermaidHydrationObserver?.unobserve(element);
-	mermaidHydrationCallbacks.delete(element);
-}
-
-function selectionTouchesNode(
-	selection: Selection,
-	from: number,
-	to: number,
-): boolean {
-	return selection.ranges.some((range) => {
-		const rangeFrom = range.$from.pos;
-		const rangeTo = range.$to.pos;
-		if (rangeFrom === rangeTo) {
-			return rangeFrom > from && rangeFrom < to;
-		}
-		return rangeFrom < to && rangeTo > from;
-	});
-}
-
-function selectMermaidSource(
-	view: EditorView,
-	pos: number,
-	nodeSize: number,
-): void {
-	const textStart = pos + 1;
-	const textEnd = Math.max(textStart, pos + nodeSize - 1);
-	const docSize = view.state.doc.content.size;
-	if (textStart > docSize) return;
-
-	const selection = TextSelection.create(
-		view.state.doc,
-		textStart,
-		Math.min(textEnd, docSize),
-	);
-	view.dispatch(view.state.tr.setSelection(selection).scrollIntoView());
-	view.focus();
-}
-
 function buildMermaidCanvasWidget({
 	editable,
-	nodeSize,
-	pos,
 	source,
-	view,
+	selectSource,
 }: {
 	editable: boolean;
-	nodeSize: number;
-	pos: number;
 	source: string;
-	view: EditorView;
+	selectSource: () => void;
 }) {
 	const result = renderMermaidCanvasSvg(source);
 	if (!result.ok) {
 		const element = createMermaidErrorCanvas(result.message);
-		if (!editable) return element;
+		if (!editable) return { element, destroy: () => {} };
 
-		const editButton = document.createElement("button");
-		editButton.type = "button";
-		editButton.className = "mermaidCanvasEditBtn";
-		editButton.textContent = "Edit code";
-		editButton.title = "Edit Mermaid code";
-		editButton.setAttribute("aria-label", "Edit Mermaid code");
-		editButton.addEventListener("mousedown", (event) => {
-			event.preventDefault();
-			event.stopPropagation();
-		});
-		editButton.addEventListener("click", (event) => {
-			event.preventDefault();
-			event.stopPropagation();
-			selectMermaidSource(view, pos, nodeSize);
-		});
-		const controls = document.createElement("div");
-		controls.className = "mermaidCanvasControls";
-		controls.append(editButton);
-		element.querySelector(".mermaidCanvasFrame")?.append(controls);
-		return element;
+		const frame = element.querySelector(".mermaidCanvasFrame");
+		if (frame instanceof HTMLElement) {
+			appendEditCodeControls(frame, {
+				label: "Edit Mermaid code",
+				onEditCode: selectSource,
+			});
+		}
+		return { element, destroy: () => {} };
 	}
 
-	const mount = createMermaidCanvas({
+	return createMermaidCanvas({
 		svgHtml: result.svgHtml,
 		editMode: editable,
-		onEditCode: () => {
-			if (!editable) return;
-			selectMermaidSource(view, pos, nodeSize);
-		},
+		onEditCode: selectSource,
 	});
-	canvasDestroyCallbacks.set(mount.element, mount.destroy);
-	return mount.element;
 }
 
-function createLazyMermaidCanvasWidget(
-	options: Parameters<typeof buildMermaidCanvasWidget>[0],
-): HTMLElement {
-	const placeholder = document.createElement("div");
-	placeholder.className = "mermaidCanvasWidget mermaidCanvasPlaceholder";
-	placeholder.setAttribute("aria-busy", "true");
-	const frame = document.createElement("div");
-	frame.className = "mermaidCanvasFrame";
-	frame.setAttribute("aria-hidden", "true");
-	placeholder.append(frame);
-
-	let hydrated = false;
-	let destroyed = false;
-	let destroyHydratedCanvas: (() => void) | null = null;
-
-	const hydrate = () => {
-		if (destroyed || hydrated) return;
-		hydrated = true;
-		unobserveMermaidHydration(placeholder);
-
-		const rendered = buildMermaidCanvasWidget(options);
-		destroyHydratedCanvas = canvasDestroyCallbacks.get(rendered) ?? null;
-		canvasDestroyCallbacks.delete(rendered);
-		for (const attribute of Array.from(rendered.attributes)) {
-			placeholder.setAttribute(attribute.name, attribute.value);
-		}
-		placeholder.removeAttribute("aria-busy");
-		placeholder.replaceChildren(...Array.from(rendered.childNodes));
-	};
-
-	if (!observeMermaidHydration(placeholder, hydrate)) {
-		hydrate();
-	}
-
-	canvasDestroyCallbacks.set(placeholder, () => {
-		destroyed = true;
-		unobserveMermaidHydration(placeholder);
-		destroyHydratedCanvas?.();
-		destroyHydratedCanvas = null;
-	});
-	return placeholder;
-}
-
-function buildMermaidPreviewDecorations(
-	doc: ProseMirrorNode,
-	selection: Selection,
-	refreshKey: number,
-	editable: boolean,
-): DecorationSet {
-	const decorations: Decoration[] = [];
-
-	doc.descendants((node, pos) => {
-		if (node.type.name !== "codeBlock") return;
-
-		const language =
-			typeof node.attrs.language === "string" ? node.attrs.language : null;
-		if (!isMermaidCodeBlockLanguage(language)) return;
-
-		const to = pos + node.nodeSize;
-		const shouldShowSource =
-			editable && selectionTouchesNode(selection, pos, to);
-		if (shouldShowSource) return;
-
-		const source = node.textContent ?? "";
-
-		decorations.push(
-			Decoration.node(pos, to, {
-				class: "mermaidCodeBlockHiddenInPreview",
-			}),
-		);
-
-		decorations.push(
-			Decoration.widget(
-				to,
-				(view) =>
-					createLazyMermaidCanvasWidget({
-						editable,
-						nodeSize: node.nodeSize,
-						pos,
-						source,
-						view,
-					}),
-				{
-					side: 1,
-					ignoreSelection: true,
-					key: `mermaid-canvas-${pos}-${source}-${refreshKey}-${editable ? "edit" : "read"}`,
-					destroy: (node) => {
-						if (node instanceof HTMLElement) {
-							canvasDestroyCallbacks.get(node)?.();
-							canvasDestroyCallbacks.delete(node);
-						}
-					},
-				},
-			),
-		);
-	});
-
-	return decorations.length
-		? DecorationSet.create(doc, decorations)
-		: DecorationSet.empty;
-}
-
-declare module "@tiptap/core" {
-	interface Commands<ReturnType> {
-		mermaidPreview: {
-			refreshMermaidPreviews: () => ReturnType;
-		};
-	}
-}
-
-export const MermaidPreview = Extension.create({
+export const MermaidPreview = createCodeBlockPreviewExtension({
 	name: "mermaid-preview",
+	pluginKey: mermaidPreviewPluginKey,
+	hiddenClass: "mermaidCodeBlockHiddenInPreview",
+	widgetKeyPrefix: "mermaid-canvas",
+	matchLanguage: (language) => isMermaidCodeBlockLanguage(language),
+	createWidget: ({ source, editable, selectSource }) =>
+		createLazyCodeBlockPreviewWidget({
+			placeholderClassName: "mermaidCanvasWidget mermaidCanvasPlaceholder",
+			frameClassName: "mermaidCanvasFrame",
+			hydrate: () =>
+				buildMermaidCanvasWidget({
+					editable,
+					source,
+					selectSource,
+				}),
+		}),
+	destroyWidget: destroyLazyCodeBlockPreviewWidget,
+	shouldRefresh: (transaction) => {
+		const meta = transaction.getMeta(mermaidPreviewPluginKey) as
+			| MermaidPreviewMeta
+			| undefined;
+		return meta?.type === "refresh";
+	},
+}).extend({
 	addCommands() {
 		return {
 			refreshMermaidPreviews:
@@ -270,66 +90,12 @@ export const MermaidPreview = Extension.create({
 				},
 		};
 	},
-	addProseMirrorPlugins() {
-		const editor = this.editor;
-		const getEditable = () => editor.isEditable;
-		return [
-			new Plugin<MermaidPreviewPluginState>({
-				key: mermaidPreviewPluginKey,
-				state: {
-					init: (_config, state) => {
-						const editable = getEditable();
-						const refreshKey = 0;
-						return {
-							editable,
-							refreshKey,
-							decorations: buildMermaidPreviewDecorations(
-								state.doc,
-								state.selection,
-								refreshKey,
-								editable,
-							),
-						};
-					},
-					apply(transaction, value) {
-						const editable = getEditable();
-						const editableChanged = editable !== value.editable;
-						const meta = transaction.getMeta(mermaidPreviewPluginKey) as
-							| MermaidPreviewMeta
-							| undefined;
-						const refreshKey =
-							meta?.type === "refresh" || editableChanged
-								? value.refreshKey + 1
-								: value.refreshKey;
-
-						if (
-							!transaction.docChanged &&
-							!transaction.selectionSet &&
-							!meta &&
-							!editableChanged
-						) {
-							return value;
-						}
-
-						return {
-							editable,
-							refreshKey,
-							decorations: buildMermaidPreviewDecorations(
-								transaction.doc,
-								transaction.selection,
-								refreshKey,
-								editable,
-							),
-						};
-					},
-				},
-				props: {
-					decorations(state) {
-						const pluginState = mermaidPreviewPluginKey.getState(state);
-						return pluginState?.decorations ?? DecorationSet.empty;
-					},
-				},
-			}),
-		];
-	},
 });
+
+declare module "@tiptap/core" {
+	interface Commands<ReturnType> {
+		mermaidPreview: {
+			refreshMermaidPreviews: () => ReturnType;
+		};
+	}
+}

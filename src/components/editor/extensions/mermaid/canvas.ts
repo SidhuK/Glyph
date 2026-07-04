@@ -1,3 +1,5 @@
+import { appendEditCodeControls } from "../codeBlockPreviewControls";
+
 const MERMAID_CANVAS_HEIGHT = 480;
 const MERMAID_CANVAS_DEFAULT_WIDTH = 800;
 const MERMAID_CANVAS_DEFAULT_HEIGHT = 480;
@@ -106,16 +108,6 @@ function getViewportPoint(
 	};
 }
 
-function createControlButton(className: string, label: string, title: string) {
-	const button = document.createElement("button");
-	button.type = "button";
-	button.className = className;
-	button.textContent = label;
-	button.title = title;
-	button.setAttribute("aria-label", title);
-	return button;
-}
-
 export function createMermaidErrorCanvas(message: string): HTMLElement {
 	const root = document.createElement("div");
 	root.className = "mermaidCanvasWidget";
@@ -174,19 +166,14 @@ export function createMermaidCanvas(
 	stage.className = "mermaidCanvasStage";
 	stage.append(diagramSvg);
 
-	const controls = document.createElement("div");
-	controls.className = "mermaidCanvasControls";
-
-	const editButton = createControlButton(
-		"mermaidCanvasEditBtn",
-		"Edit code",
-		"Edit Mermaid code",
-	);
-	editButton.hidden = !options.editMode;
-
-	controls.append(editButton);
 	viewport.append(stage);
-	frame.append(viewport, controls);
+	frame.append(viewport);
+	if (options.editMode) {
+		appendEditCodeControls(frame, {
+			label: "Edit Mermaid code",
+			onEditCode: options.onEditCode,
+		});
+	}
 	root.append(frame);
 
 	function render() {
@@ -397,16 +384,6 @@ export function createMermaidCanvas(
 		state.hasUserTransform = true;
 		render();
 		event.preventDefault();
-	});
-
-	addListener(editButton, "mousedown", (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-	});
-	addListener(editButton, "click", (event) => {
-		event.preventDefault();
-		event.stopPropagation();
-		options.onEditCode();
 	});
 
 	render();

@@ -75,9 +75,16 @@
 	white-space: nowrap;
 }
 
-.codeBlockCopyBtn {
+.codeBlockActionBtns {
 	position: absolute;
 	z-index: 15;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	transform: translateX(-100%);
+}
+
+.codeBlockActionBtn {
 	width: 22px;
 	height: 18px;
 	padding: 0;
@@ -93,15 +100,14 @@
 	backdrop-filter: blur(4px);
 	cursor: pointer;
 	transition: color 150ms ease, background-color 150ms ease;
-	transform: translateX(-100%);
 }
 
-.codeBlockCopyBtn:hover {
+.codeBlockActionBtn:hover {
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
 	color: var(--text-primary);
 }
 
-.codeBlockCopyBtn[data-copied] {
+.codeBlockActionBtn[data-copied] {
 	color: var(--success);
 }
 
@@ -193,7 +199,7 @@
 	height: auto;
 }
 
-.mermaidCanvasControls {
+.codeBlockPreviewControls {
 	position: absolute;
 	top: 10px;
 	right: 10px;
@@ -206,15 +212,15 @@
 	transition: opacity var(--transition-fast);
 }
 
-.mermaidCanvasWidget:hover .mermaidCanvasControls,
-.mermaidCanvasWidget:focus-within .mermaidCanvasControls,
-.htmlEmbedWidget:hover .mermaidCanvasControls,
-.htmlEmbedWidget:focus-within .mermaidCanvasControls {
+.mermaidCanvasWidget:hover .codeBlockPreviewControls,
+.mermaidCanvasWidget:focus-within .codeBlockPreviewControls,
+.htmlEmbedWidget:hover .codeBlockPreviewControls,
+.htmlEmbedWidget:focus-within .codeBlockPreviewControls {
 	opacity: 1;
 	pointer-events: auto;
 }
 
-.mermaidCanvasEditBtn {
+.codeBlockPreviewEditBtn {
 	appearance: none;
 	-webkit-appearance: none;
 	height: 28px;
@@ -234,8 +240,8 @@
 	white-space: nowrap;
 }
 
-.mermaidCanvasEditBtn:hover,
-.mermaidCanvasEditBtn:focus-visible {
+.codeBlockPreviewEditBtn:hover,
+.codeBlockPreviewEditBtn:focus-visible {
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 	color: var(--text-primary);
 	outline: none;
@@ -266,13 +272,13 @@
 .htmlEmbedWidget {
 	margin: 8px 0 14px;
 	content-visibility: auto;
-	contain-intrinsic-block-size: auto 240px;
+	contain-intrinsic-block-size: auto 80px;
 }
 
 .htmlEmbedFrame {
 	position: relative;
 	width: 100%;
-	min-height: 80px;
+	min-height: 48px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));

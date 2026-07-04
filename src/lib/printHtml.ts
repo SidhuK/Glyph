@@ -1,11 +1,13 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
-import {
-	stripHtmlEmbedRawSentinel,
-	wrapHtmlEmbedBody,
-} from "../components/editor/markdown/htmlEmbedMarkdown";
 import { wikiLinksToStandardMarkdown } from "../components/editor/markdown/wikiLinkCodec";
 import { displayNameFromPath, parentDir } from "../utils/path";
+import {
+	type HtmlEmbedKind,
+	replaceHtmlEmbedFences,
+	stripHtmlEmbedRawSentinel,
+	wrapHtmlEmbedBody,
+} from "./htmlEmbed";
 import { splitYamlFrontmatter } from "./notePreview";
 
 interface BuildPrintHtmlOptions {
@@ -119,12 +121,9 @@ th {
 
 const printMarked = new Marked();
 
-const FENCED_HTML_EMBED_RE =
-	/(`{3,}|~{3,})(html|svg)\s*\n([\s\S]*?)\n\1\s*(?=\n|$)/gi;
-
 function sanitizeHtmlEmbedForPrint(
 	source: string,
-	kind: "html" | "svg",
+	kind: HtmlEmbedKind,
 ): string {
 	const cleaned = stripHtmlEmbedRawSentinel(source).trim();
 	if (!cleaned) return "";
@@ -139,13 +138,8 @@ function sanitizeHtmlEmbedForPrint(
 }
 
 function replaceHtmlEmbedsForPrint(markdown: string): string {
-	return markdown.replace(
-		FENCED_HTML_EMBED_RE,
-		(_match, _fence: string, rawKind: string, body: string) =>
-			sanitizeHtmlEmbedForPrint(
-				body,
-				rawKind.toLowerCase() === "svg" ? "svg" : "html",
-			),
+	return replaceHtmlEmbedFences(markdown, (block) =>
+		sanitizeHtmlEmbedForPrint(block.body, block.kind),
 	);
 }
 

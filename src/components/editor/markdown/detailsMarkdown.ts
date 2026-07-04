@@ -1,3 +1,5 @@
+import { isMarkdownCodeFenceToggle } from "./markdownFence";
+
 const DETAILS_BLOCK_END_RE = /^:::\s*$/;
 const DETAILS_SUMMARY_START_RE = /^:::detailsSummary\s*$/;
 const DETAILS_CONTENT_START_RE = /^:::detailsContent\s*$/;
@@ -64,10 +66,6 @@ function readFencedSection(
 	}
 
 	return { content: contentLines.join("\n").trim(), endIndex: index };
-}
-
-function isMarkdownCodeFenceToggle(line: string): boolean {
-	return /^(`{3,}|~{3,})/.test(line.trim());
 }
 
 function detailsFencesToHtml(
