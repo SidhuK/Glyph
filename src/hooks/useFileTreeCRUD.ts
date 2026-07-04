@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "../lib/toast";
 import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,

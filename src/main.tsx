@@ -6,7 +6,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
-import { Toaster } from "./components/ui/shadcn/sonner";
+import { Toaster } from "./components/ui/notifications";
 import {
 	applyEditorWidthMode,
 	applyUiAccent,

@@ -1,7 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
-import { toast } from "sonner";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
 import type { FsEntry } from "../lib/tauri";
@@ -338,7 +337,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
-				toast.error("Could not create folder", { description: message });
 				return null;
 			}
 		},

@@ -28,7 +28,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
 	dispatchOpenLocalConnections,

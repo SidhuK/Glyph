@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import type { MouseEvent } from "react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { useSpace } from "../../contexts";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";

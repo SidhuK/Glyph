@@ -16,7 +16,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 
 import {
@@ -739,9 +738,6 @@ export const FileTreePane = memo(function FileTreePane({
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
-				toast.error("Could not update file tree appearance", {
-					description: message,
-				});
 			}
 		},
 		[setError, setItemAppearance],

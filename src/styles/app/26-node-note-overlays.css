@@ -632,26 +632,14 @@
 	margin-top: 4px;
 }
 
-.extractToNoteToast[data-sonner-toast][data-styled="true"] {
-	gap: 10px;
-}
-
-.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-content] {
-	min-width: 0;
-	flex: 1 1 auto;
-}
-
-.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-title],
-.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-description] {
+.extractToNoteToastTitle,
+.extractToNoteToastDescription {
 	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.extractToNoteToast[data-sonner-toast][data-styled="true"] [data-button] {
-	height: 28px;
-	padding-inline: 10px;
-	margin-left: 0;
+.extractToNoteToastButton {
 	white-space: nowrap;
 }

@@ -30,7 +30,8 @@ button:hover:not(
 				.databaseBoardColorRibbonSwatch,
 				.databaseBoardColorRibbonClear,
 				.databasesViewTab,
-				.databasesCollectionSwitcher
+				.databasesCollectionSwitcher,
+				[data-sileo-toast]
 			)
 	) {
 	background: var(--bg-hover);
@@ -45,7 +46,8 @@ button:active:not(
 				.databaseBoardColorRibbonSwatch,
 				.databaseBoardColorRibbonClear,
 				.databasesViewTab,
-				.databasesCollectionSwitcher
+				.databasesCollectionSwitcher,
+				[data-sileo-toast]
 			)
 	) {
 	background: var(--bg-active);
