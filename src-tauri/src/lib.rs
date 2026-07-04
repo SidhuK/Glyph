@@ -19,6 +19,7 @@ mod net;
 mod notes;
 mod paths;
 mod pinned_files;
+mod print;
 mod release_channels;
 mod space;
 mod space_fs;
@@ -447,6 +448,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+S"),
     )?;
+    let print_note = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "file.print_note",
+        "Print Note…",
+        show_markdown_menu,
+        None,
+    )?;
     let close_tab = menu_item_with_shortcut(
         app,
         menu_shortcuts,
@@ -763,6 +772,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &open_daily_note,
             &PredefinedMenuItem::separator(app)?,
             &save_note,
+            &print_note,
+            &PredefinedMenuItem::separator(app)?,
             &close_tab,
         ],
     )?;
@@ -1454,6 +1465,17 @@ pub fn run() {
                     );
                 }
             }
+            "file.print_note" => {
+                if let Some((label, _window)) = target_space_host_window(app) {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:app_command",
+                        AppCommandPayload {
+                            command_id: "print-note".to_string(),
+                        },
+                    );
+                }
+            }
             id => {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
@@ -1574,6 +1596,7 @@ pub fn run() {
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
             external_markdown::external_markdown_finish_close,
+            print::print_write_html,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,

@@ -785,6 +785,7 @@ interface TauriCommands {
 		ExternalMarkdownWriteResult
 	>;
 	external_markdown_finish_close: CommandDef<void, void>;
+	print_write_html: CommandDef<{ file_stem: string; html: string }, string>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;

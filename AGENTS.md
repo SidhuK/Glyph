@@ -52,6 +52,7 @@ Repo extras: internal product and engineering docs live in `docs/`.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
 - Make sure we don't over-engineer CSS and use default components as much as possible unless explicitly stated.
+- Hard subtraction pass: fix the issue by deleting or narrowing code first. Do not add new abstractions, command entries, shortcuts, files, or wiring unless the existing code cannot support the fix.
 - Make sure we always narrow the code and apply fixes instead of patching the code by adding unnecessary LOCs in places that don't need them.
 - NEVER make test files unless specifically requested by users.
 - For TSX files extract hooks/subcomponents when rendering, state, effects, and commands start mixing.
