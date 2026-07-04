@@ -10,9 +10,11 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import type { SpaceSwitchDirection } from "../../contexts/SpaceContext";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
@@ -33,7 +35,7 @@ import type { FsEntry } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
-import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
+import { SidebarFooter } from "./SidebarFooter";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -67,6 +69,10 @@ interface SidebarContentProps {
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	spacePath: string | null;
+	switchDirection: SpaceSwitchDirection;
+	onSwitchSpace: (path: string) => void;
+	onSwitchNextSpace?: () => void;
+	onSwitchPreviousSpace?: () => void;
 	activeTopSection:
 		| "all-notes"
 		| "connections"
@@ -156,9 +162,14 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenPinnedDocs,
 	onOpenConnections,
 	spacePath,
+	switchDirection,
+	onSwitchSpace,
+	onSwitchNextSpace,
+	onSwitchPreviousSpace,
 	activeTopSection,
 }: SidebarContentProps) {
 	// Contexts
+	const shouldReduceMotion = useReducedMotion();
 	const { getBinding } = useShortcutBindings();
 	const {
 		rootEntries,
@@ -335,6 +346,11 @@ export const SidebarContent = memo(function SidebarContent({
 		[folioMode, onSelectTag, setFolioScope],
 	);
 
+	const slideOffset = switchDirection === 0 ? 10 : switchDirection * 10;
+	const spaceTransition = shouldReduceMotion
+		? { duration: 0 }
+		: { duration: 0.16, ease: "easeOut" as const };
+
 	if (!spacePath) {
 		return (
 			<>
@@ -344,262 +360,307 @@ export const SidebarContent = memo(function SidebarContent({
 						Open or create a space to get started.
 					</div>
 				</div>
-				<LicenseStatusFooter />
+				<SidebarFooter
+					onSwitchSpace={onSwitchSpace}
+					onSwitchNextSpace={onSwitchNextSpace}
+					onSwitchPreviousSpace={onSwitchPreviousSpace}
+					reducedMotion={shouldReduceMotion}
+				/>
 			</>
 		);
 	}
 
 	return (
 		<>
-			<div className="sidebarSection sidebarSectionGrow">
-				<div className="sidebarSectionContent">
-					<div className="sidebarNavRow">
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="new-note"
-							aria-label="New Note"
-							onClick={onNewNote}
-							title={`New Note${
-								newNoteShortcut
-									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
-									: ""
-							}`}
-						>
-							<HugeiconsIcon
-								icon={NoteIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">New Note</span>
-							{newNoteShortcut ? (
-								<span className="sidebarQuickActionShortcut">
-									{formatShortcutForPlatform(newNoteShortcut)}
-								</span>
-							) : null}
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="pinned-notes"
-							data-active={
-								activeTopSection === "pinned-notes" ? "true" : "false"
-							}
-							aria-label="Pinned"
-							aria-pressed={activeTopSection === "pinned-notes"}
-							aria-current={
-								activeTopSection === "pinned-notes" ? "page" : undefined
-							}
-							onClick={onOpenPinnedDocs}
-							title="Open Pinned"
-						>
-							<HugeiconsIcon
-								icon={StarIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">Pinned</span>
-							<PinnedNotesCountBadge count={pinnedFiles.length} />
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="all-notes"
-							data-active={activeTopSection === "all-notes" ? "true" : "false"}
-							aria-label="All Notes"
-							aria-pressed={activeTopSection === "all-notes"}
-							aria-current={
-								activeTopSection === "all-notes" ? "page" : undefined
-							}
-							onClick={handleOpenAllNotes}
-							onMouseEnter={onPrefetchAllDocs}
-							onFocus={onPrefetchAllDocs}
-							title="Open All Notes"
-						>
-							<HugeiconsIcon
-								icon={Archive04Icon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">All Notes</span>
-							<AllNotesCountBadge />
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="databases"
-							data-active={activeTopSection === "databases" ? "true" : "false"}
-							aria-label="Collections"
-							aria-pressed={activeTopSection === "databases"}
-							aria-current={
-								activeTopSection === "databases" ? "page" : undefined
-							}
-							onClick={() => {
-								onOpenDatabases();
-							}}
-							onMouseEnter={() => onPrefetchDatabases()}
-							onFocus={() => onPrefetchDatabases()}
-							title="Open Collections"
-						>
-							<HugeiconsIcon
-								icon={LibraryIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">Collections</span>
-						</button>
-						<button
-							type="button"
-							className="sidebarQuickActionBtn sidebarNavBtn"
-							data-kind="connections"
-							data-active={
-								activeTopSection === "connections" ? "true" : "false"
-							}
-							aria-label="Connections"
-							aria-pressed={activeTopSection === "connections"}
-							aria-current={
-								activeTopSection === "connections" ? "page" : undefined
-							}
-							onClick={onOpenConnections}
-							title="Open Connections"
-						>
-							<HugeiconsIcon
-								icon={ChartRelationshipIcon}
-								size="var(--icon-md)"
-								strokeWidth={0.9}
-							/>
-							<span className="sidebarQuickActionLabel">Connections</span>
-						</button>
-					</div>
-					<div className="sidebarStack">
-						<section
-							className="sidebarStackItem sidebarStackItemGrow"
-							data-section="files"
-						>
-							<div className="sidebarStackHeader">
-								<button
-									type="button"
-									className="sidebarStackHeaderToggle"
-									onClick={handleNotesHeaderClick}
-									aria-expanded={notesExpanded}
-									aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
-								>
-									<span>Notes</span>
-									{notesExpanded ? (
-										<ChevronDown
-											size="var(--icon-xs)"
-											className="sidebarStackHeaderChevron"
-										/>
-									) : (
-										<ChevronRight
-											size="var(--icon-xs)"
-											className="sidebarStackHeaderChevron"
-										/>
-									)}
-								</button>
-								<div className="sidebarStackHeaderActions">
-									<label className="sidebarStackHeaderSortNative">
-										<span className="sr-only">Sort notes</span>
-										<HugeiconsIcon
-											icon={Sorting01Icon}
-											size="var(--icon-sm)"
-											strokeWidth={0.9}
-											className="sidebarStackHeaderSortIcon"
-											aria-hidden="true"
-										/>
-										<select
-											className="sidebarStackHeaderSortSelect"
-											value={fileTreeSort.sortMode}
-											title={`Sort notes: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
-											aria-label="Sort notes"
-											onChange={(event) => {
-												const nextSortMode = event.currentTarget.value;
-												if (!isFileTreeSortMode(nextSortMode)) return;
-												void fileTreeSort.setSortMode(nextSortMode);
+			<AnimatePresence mode="wait" initial={false}>
+				<m.div
+					key={spacePath}
+					className="sidebarSection sidebarSectionGrow"
+					initial={
+						shouldReduceMotion
+							? false
+							: {
+									opacity: 0,
+									x: -slideOffset,
+									scale: 0.985,
+								}
+					}
+					animate={{ opacity: 1, x: 0, scale: 1 }}
+					exit={
+						shouldReduceMotion
+							? { opacity: 0 }
+							: {
+									opacity: 0,
+									x: slideOffset,
+									scale: 0.985,
+								}
+					}
+					transition={spaceTransition}
+				>
+					<div className="sidebarSectionContent">
+						<div className="sidebarNavRow">
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								data-kind="new-note"
+								aria-label="New Note"
+								onClick={onNewNote}
+								title={`New Note${
+									newNoteShortcut
+										? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+										: ""
+								}`}
+							>
+								<HugeiconsIcon
+									icon={NoteIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+								<span className="sidebarQuickActionLabel">New Note</span>
+								{newNoteShortcut ? (
+									<span className="sidebarQuickActionShortcut">
+										{formatShortcutForPlatform(newNoteShortcut)}
+									</span>
+								) : null}
+							</button>
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								data-kind="pinned-notes"
+								data-active={
+									activeTopSection === "pinned-notes" ? "true" : "false"
+								}
+								aria-label="Pinned"
+								aria-pressed={activeTopSection === "pinned-notes"}
+								aria-current={
+									activeTopSection === "pinned-notes" ? "page" : undefined
+								}
+								onClick={onOpenPinnedDocs}
+								title="Open Pinned"
+							>
+								<HugeiconsIcon
+									icon={StarIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+								<span className="sidebarQuickActionLabel">Pinned</span>
+								<PinnedNotesCountBadge count={pinnedFiles.length} />
+							</button>
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								data-kind="all-notes"
+								data-active={
+									activeTopSection === "all-notes" ? "true" : "false"
+								}
+								aria-label="All Notes"
+								aria-pressed={activeTopSection === "all-notes"}
+								aria-current={
+									activeTopSection === "all-notes" ? "page" : undefined
+								}
+								onClick={handleOpenAllNotes}
+								onMouseEnter={onPrefetchAllDocs}
+								onFocus={onPrefetchAllDocs}
+								title="Open All Notes"
+							>
+								<HugeiconsIcon
+									icon={Archive04Icon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+								<span className="sidebarQuickActionLabel">All Notes</span>
+								<AllNotesCountBadge />
+							</button>
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								data-kind="databases"
+								data-active={
+									activeTopSection === "databases" ? "true" : "false"
+								}
+								aria-label="Collections"
+								aria-pressed={activeTopSection === "databases"}
+								aria-current={
+									activeTopSection === "databases" ? "page" : undefined
+								}
+								onClick={() => {
+									onOpenDatabases();
+								}}
+								onMouseEnter={() => onPrefetchDatabases()}
+								onFocus={() => onPrefetchDatabases()}
+								title="Open Collections"
+							>
+								<HugeiconsIcon
+									icon={LibraryIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+								<span className="sidebarQuickActionLabel">Collections</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarNavBtn"
+								data-kind="connections"
+								data-active={
+									activeTopSection === "connections" ? "true" : "false"
+								}
+								aria-label="Connections"
+								aria-pressed={activeTopSection === "connections"}
+								aria-current={
+									activeTopSection === "connections" ? "page" : undefined
+								}
+								onClick={onOpenConnections}
+								title="Open Connections"
+							>
+								<HugeiconsIcon
+									icon={ChartRelationshipIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+								<span className="sidebarQuickActionLabel">Connections</span>
+							</button>
+						</div>
+						<div className="sidebarStack">
+							<section
+								className="sidebarStackItem sidebarStackItemGrow"
+								data-section="files"
+							>
+								<div className="sidebarStackHeader">
+									<button
+										type="button"
+										className="sidebarStackHeaderToggle"
+										onClick={handleNotesHeaderClick}
+										aria-expanded={notesExpanded}
+										aria-label={
+											notesExpanded ? "Collapse Notes" : "Expand Notes"
+										}
+									>
+										<span>Notes</span>
+										{notesExpanded ? (
+											<ChevronDown
+												size="var(--icon-xs)"
+												className="sidebarStackHeaderChevron"
+											/>
+										) : (
+											<ChevronRight
+												size="var(--icon-xs)"
+												className="sidebarStackHeaderChevron"
+											/>
+										)}
+									</button>
+									<div className="sidebarStackHeaderActions">
+										<label className="sidebarStackHeaderSortNative">
+											<span className="sr-only">Sort notes</span>
+											<HugeiconsIcon
+												icon={Sorting01Icon}
+												size="var(--icon-sm)"
+												strokeWidth={0.9}
+												className="sidebarStackHeaderSortIcon"
+												aria-hidden="true"
+											/>
+											<select
+												className="sidebarStackHeaderSortSelect"
+												value={fileTreeSort.sortMode}
+												title={`Sort notes: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
+												aria-label="Sort notes"
+												onChange={(event) => {
+													const nextSortMode = event.currentTarget.value;
+													if (!isFileTreeSortMode(nextSortMode)) return;
+													void fileTreeSort.setSortMode(nextSortMode);
+												}}
+											>
+												{FILE_TREE_SORT_OPTIONS.map((option) => (
+													<option key={option.value} value={option.value}>
+														{option.label}
+													</option>
+												))}
+											</select>
+										</label>
+										<button
+											type="button"
+											className="sidebarStackHeaderAction"
+											title="Expand all folders"
+											aria-label="Expand all folders"
+											onClick={() => {
+												void onExpandAllDirs();
 											}}
 										>
-											{FILE_TREE_SORT_OPTIONS.map((option) => (
-												<option key={option.value} value={option.value}>
-													{option.label}
-												</option>
-											))}
-										</select>
-									</label>
-									<button
-										type="button"
-										className="sidebarStackHeaderAction"
-										title="Expand all folders"
-										aria-label="Expand all folders"
-										onClick={() => {
-											void onExpandAllDirs();
-										}}
-									>
-										<HugeiconsIcon
-											icon={ExpandParagraphIcon}
-											size="var(--icon-sm)"
-											strokeWidth={0.9}
-										/>
-									</button>
-									<button
-										type="button"
-										className="sidebarStackHeaderAction"
-										title="Collapse all folders"
-										aria-label="Collapse all folders"
-										onClick={onCollapseAllDirs}
-									>
-										<HugeiconsIcon
-											icon={ArrowShrinkIcon}
-											size="var(--icon-sm)"
-											strokeWidth={0.9}
-										/>
-									</button>
+											<HugeiconsIcon
+												icon={ExpandParagraphIcon}
+												size="var(--icon-sm)"
+												strokeWidth={0.9}
+											/>
+										</button>
+										<button
+											type="button"
+											className="sidebarStackHeaderAction"
+											title="Collapse all folders"
+											aria-label="Collapse all folders"
+											onClick={onCollapseAllDirs}
+										>
+											<HugeiconsIcon
+												icon={ArrowShrinkIcon}
+												size="var(--icon-sm)"
+												strokeWidth={0.9}
+											/>
+										</button>
+									</div>
 								</div>
-							</div>
-							{notesExpanded ? (
-								<FileTreePane
-									rootEntries={folioMode ? folioRootEntries : rootEntries}
-									childrenByDir={folioMode ? folioChildrenByDir : childrenByDir}
-									expandedDirs={expandedDirs}
-									activeFilePath={folioMode ? null : activeFilePath}
-									activeDirPath={folioMode ? activeFolioFolder : activeDirPath}
-									onToggleDir={onToggleDir}
-									onLoadDir={onLoadDir}
-									onSelectDir={
-										folioMode ? handleSelectFolioFolder : onSelectDir
-									}
-									onOpenFile={onOpenFile}
-									onPrefetchFile={onPrefetchFile}
-									onNewFileInDir={onNewFileInDir}
-									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onRequestCreateFolder={onRequestCreateFolder}
-									onDuplicateFile={onDuplicateFile}
-									onDeletePath={onDeletePath}
-									renamingPath={renamingPath}
-									onStartRename={handleStartRename}
-									onCancelRename={handleCancelRename}
-									onCommitFileRename={handleCommitFileRename}
-									onCommitDirRename={handleCommitDirRename}
-									onMovePath={onMovePath}
-									pinnedFiles={folioMode ? [] : pinnedFiles}
-									onTogglePinnedFile={togglePinnedFile}
+								{notesExpanded ? (
+									<FileTreePane
+										rootEntries={folioMode ? folioRootEntries : rootEntries}
+										childrenByDir={
+											folioMode ? folioChildrenByDir : childrenByDir
+										}
+										expandedDirs={expandedDirs}
+										activeFilePath={folioMode ? null : activeFilePath}
+										activeDirPath={
+											folioMode ? activeFolioFolder : activeDirPath
+										}
+										onToggleDir={onToggleDir}
+										onLoadDir={onLoadDir}
+										onSelectDir={
+											folioMode ? handleSelectFolioFolder : onSelectDir
+										}
+										onOpenFile={onOpenFile}
+										onPrefetchFile={onPrefetchFile}
+										onNewFileInDir={onNewFileInDir}
+										onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+										onRequestCreateFolder={onRequestCreateFolder}
+										onDuplicateFile={onDuplicateFile}
+										onDeletePath={onDeletePath}
+										renamingPath={renamingPath}
+										onStartRename={handleStartRename}
+										onCancelRename={handleCancelRename}
+										onCommitFileRename={handleCommitFileRename}
+										onCommitDirRename={handleCommitDirRename}
+										onMovePath={onMovePath}
+										pinnedFiles={folioMode ? [] : pinnedFiles}
+										onTogglePinnedFile={togglePinnedFile}
+									/>
+								) : null}
+							</section>
+							<section className="sidebarStackItem" data-section="tags">
+								<TagsPane
+									tags={tags}
+									people={people}
+									onSelectTag={handleSelectTag}
+									onSelectPerson={handleSelectPerson}
+									beautifulTags={beautifulTags}
+									tagAppearance={tagAppearance}
+									onChangeTagIcon={handleChangeTagIcon}
 								/>
-							) : null}
-						</section>
-						<section className="sidebarStackItem" data-section="tags">
-							<TagsPane
-								tags={tags}
-								people={people}
-								onSelectTag={handleSelectTag}
-								onSelectPerson={handleSelectPerson}
-								beautifulTags={beautifulTags}
-								tagAppearance={tagAppearance}
-								onChangeTagIcon={handleChangeTagIcon}
-							/>
-						</section>
+							</section>
+						</div>
 					</div>
-				</div>
-			</div>
-			<LicenseStatusFooter />
+				</m.div>
+			</AnimatePresence>
+			<SidebarFooter
+				onSwitchSpace={onSwitchSpace}
+				onSwitchNextSpace={onSwitchNextSpace}
+				onSwitchPreviousSpace={onSwitchPreviousSpace}
+				reducedMotion={shouldReduceMotion}
+			/>
 		</>
 	);
 });

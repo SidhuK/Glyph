@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
 
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::space::SpaceState;
 
@@ -15,10 +15,9 @@ fn tag_appearance_mutex() -> &'static Mutex<()> {
 
 #[tauri::command]
 pub async fn tag_appearance_list(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<BTreeMap<String, TagAppearance>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let _guard = tag_appearance_mutex()
             .lock()
@@ -31,12 +30,11 @@ pub async fn tag_appearance_list(
 
 #[tauri::command]
 pub async fn tag_appearance_set(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     tag: String,
     icon: Option<String>,
 ) -> Result<Option<TagAppearance>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<_, String> {
         let tag = normalize_tag_key(&tag)?;
         let _guard = tag_appearance_mutex()

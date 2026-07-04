@@ -19,11 +19,10 @@ struct NoteChangeEvent {
 
 #[tauri::command]
 pub async fn space_read_text(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
 ) -> Result<TextFileDoc, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<TextFileDoc, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -44,11 +43,10 @@ pub async fn space_read_text(
 
 #[tauri::command]
 pub async fn space_read_texts_batch(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     paths: Vec<String>,
 ) -> Result<Vec<TextFileDocBatch>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TextFileDocBatch>, String> {
         let mut results = Vec::with_capacity(paths.len());
         for path in paths {
@@ -93,10 +91,10 @@ pub async fn space_write_text(
     text: String,
     base_mtime_ms: Option<u64>,
 ) -> Result<TextFileWriteResult, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
-    let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let recent_local_changes = state.recent_local_changes();
     let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
     let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
     let result =
@@ -154,12 +152,11 @@ pub async fn space_write_text(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_open_or_create_text(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     text: String,
 ) -> Result<OpenOrCreateTextResult, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<OpenOrCreateTextResult, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;

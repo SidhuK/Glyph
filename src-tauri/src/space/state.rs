@@ -6,7 +6,7 @@ use std::{
 };
 
 const RECENT_LOCAL_CHANGE_TTL: Duration = Duration::from_secs(2);
-pub(crate) const NO_SPACE_SESSION_FOR_WINDOW: &str = "no space session for window";
+const NO_SPACE_OPEN: &str = "no space open";
 
 pub(crate) type RecentLocalChanges = Arc<Mutex<HashMap<String, Instant>>>;
 
@@ -52,19 +52,16 @@ pub(crate) fn has_recent_local_change(changes: &RecentLocalChanges, rel_path: &s
 }
 
 pub(crate) struct SpaceSession {
-    pub(crate) root: PathBuf,
     pub(crate) _notes_watcher: Option<notify::RecommendedWatcher>,
     pub(crate) recent_local_changes: RecentLocalChanges,
 }
 
 impl SpaceSession {
     fn new(
-        root: PathBuf,
         notes_watcher: notify::RecommendedWatcher,
         recent_local_changes: RecentLocalChanges,
     ) -> Self {
         Self {
-            root,
             _notes_watcher: Some(notes_watcher),
             recent_local_changes,
         }
@@ -73,7 +70,7 @@ impl SpaceSession {
 
 pub struct SpaceState {
     pub(crate) current: Mutex<Option<PathBuf>>,
-    pub(crate) sessions: Mutex<HashMap<String, SpaceSession>>,
+    session: Mutex<Option<SpaceSession>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
     pinned_files_mutex: Arc<Mutex<()>>,
@@ -83,7 +80,7 @@ impl Default for SpaceState {
     fn default() -> Self {
         Self {
             current: Mutex::new(None),
-            sessions: Mutex::new(HashMap::new()),
+            session: Mutex::new(None),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
             pinned_files_mutex: Arc::new(Mutex::new(())),
@@ -96,43 +93,32 @@ impl SpaceState {
         Arc::new(Mutex::new(HashMap::new()))
     }
 
-    pub(crate) fn recent_local_changes_for_window(&self, window_label: &str) -> RecentLocalChanges {
-        let Ok(sessions) = self.sessions.lock() else {
-            return Arc::new(Mutex::new(HashMap::new()));
-        };
-        if let Some(session) = sessions.get(window_label) {
-            return Arc::clone(&session.recent_local_changes);
-        }
-        let current_root = self.current.lock().ok().and_then(|guard| guard.clone());
-        if let Some(current_root) = current_root {
-            if let Some(session) = sessions
-                .values()
-                .find(|session| session.root == current_root)
-            {
-                return Arc::clone(&session.recent_local_changes);
-            }
-        }
-        Arc::new(Mutex::new(HashMap::new()))
+    pub(crate) fn recent_local_changes(&self) -> RecentLocalChanges {
+        self.session
+            .lock()
+            .ok()
+            .and_then(|guard| {
+                guard
+                    .as_ref()
+                    .map(|session| Arc::clone(&session.recent_local_changes))
+            })
+            .unwrap_or_else(|| Arc::new(Mutex::new(HashMap::new())))
     }
 
-    pub(crate) fn set_window_session(
+    pub(crate) fn replace_session(
         &self,
-        window_label: String,
         root: PathBuf,
         notes_watcher: notify::RecommendedWatcher,
         recent_local_changes: RecentLocalChanges,
     ) -> Result<(), String> {
-        self.sessions
+        let mut session = self
+            .session
             .lock()
-            .map_err(|_| "space sessions state poisoned".to_string())?
-            .insert(
-                window_label,
-                SpaceSession::new(root, notes_watcher, recent_local_changes),
-            );
-        Ok(())
-    }
-
-    pub(crate) fn set_current_root(&self, root: PathBuf) -> Result<(), String> {
+            .map_err(|_| "space state poisoned".to_string())?;
+        *session = Some(SpaceSession::new(
+            notes_watcher,
+            recent_local_changes,
+        ));
         let mut current = self
             .current
             .lock()
@@ -141,60 +127,26 @@ impl SpaceState {
         Ok(())
     }
 
-    pub(crate) fn remove_window_session(&self, window_label: &str) -> Result<(), String> {
-        let removed_root = {
-            let mut sessions = self
-                .sessions
-                .lock()
-                .map_err(|_| "space sessions state poisoned".to_string())?;
-            sessions.remove(window_label).map(|session| session.root)
-        };
+    pub(crate) fn clear_session(&self) -> Result<(), String> {
+        let mut session = self
+            .session
+            .lock()
+            .map_err(|_| "space state poisoned".to_string())?;
+        *session = None;
         let mut current = self
             .current
             .lock()
             .map_err(|_| "space state poisoned".to_string())?;
-        if removed_root.as_ref() == current.as_ref() {
-            *current = None;
-        }
+        *current = None;
         Ok(())
     }
 
-    pub(crate) fn root_for_window_label(&self, window_label: &str) -> Result<PathBuf, String> {
-        if let Some(root) = self
-            .sessions
+    pub(crate) fn has_open_session(&self) -> bool {
+        self.current
             .lock()
-            .map_err(|_| "space sessions state poisoned".to_string())?
-            .get(window_label)
-            .map(|session| session.root.clone())
-        {
-            return Ok(root);
-        }
-        Err(format!("{NO_SPACE_SESSION_FOR_WINDOW}: {window_label}"))
-    }
-
-    pub fn root_for_window(&self, window: &tauri::WebviewWindow) -> Result<PathBuf, String> {
-        match self.root_for_window_label(window.label()) {
-            Ok(root) => Ok(root),
-            Err(error)
-                if matches!(window.label(), "quick-note" | "quick-task")
-                    && is_no_space_session_error(&error) =>
-            {
-                self.current_root()
-            }
-            Err(error) => Err(error),
-        }
-    }
-
-    pub(crate) fn session_roots(&self) -> Vec<PathBuf> {
-        self.sessions
-            .lock()
-            .map(|sessions| {
-                sessions
-                    .values()
-                    .map(|session| session.root.clone())
-                    .collect::<Vec<_>>()
-            })
-            .unwrap_or_default()
+            .ok()
+            .and_then(|guard| guard.clone())
+            .is_some()
     }
 
     pub(crate) fn db_store_mutex(&self) -> Arc<Mutex<()>> {
@@ -220,6 +172,6 @@ impl SpaceState {
     }
 }
 
-pub(crate) fn is_no_space_session_error(error: &str) -> bool {
-    error.starts_with(NO_SPACE_SESSION_FOR_WINDOW)
+pub(crate) fn is_no_space_open_error(error: &str) -> bool {
+    error.starts_with(NO_SPACE_OPEN)
 }

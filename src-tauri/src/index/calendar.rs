@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::{Days, NaiveDate};
 use rusqlite::Connection;
 use serde::Serialize;
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::space::SpaceState;
 
@@ -303,7 +303,6 @@ fn query_calendar_notes_for_date(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn index_calendar_activity(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     from_date: String,
     to_date: String,
@@ -314,7 +313,7 @@ pub async fn index_calendar_activity(
     if from_date > to_date {
         return Err("from_date must be on or before to_date".to_string());
     }
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let daily_note_folder = normalize_daily_note_folder(daily_note_folder);
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<CalendarDayActivity>, String> {
         let conn = open_db(&root)?;
@@ -326,13 +325,12 @@ pub async fn index_calendar_activity(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn index_calendar_notes_for_date(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     date: String,
     daily_note_folder: Option<String>,
 ) -> Result<Vec<CalendarDateNote>, String> {
     let date = parse_iso_date(&date)?;
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let daily_note_folder = normalize_daily_note_folder(daily_note_folder);
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<CalendarDateNote>, String> {
         let conn = open_db(&root)?;

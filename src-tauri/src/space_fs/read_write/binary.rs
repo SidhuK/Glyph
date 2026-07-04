@@ -1,7 +1,7 @@
 use base64::Engine;
 use serde::Serialize;
 use std::path::PathBuf;
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::space::SpaceState;
 
@@ -82,14 +82,13 @@ fn parse_data_url(data_url: &str) -> Result<(String, Vec<u8>), String> {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_save_pasted_image(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     source_path: String,
     target_dir: String,
     data_url: String,
     original_filename: Option<String>,
 ) -> Result<SavedPastedImage, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<SavedPastedImage, String> {
         let source_rel = PathBuf::from(normalize_rel_path(&source_path));
         let target_rel = PathBuf::from(normalize_rel_path(&target_dir));

@@ -5,7 +5,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use tauri::{AppHandle, Emitter, State};
 
-use crate::space::state::{is_no_space_session_error, SpaceState};
+use crate::space::state::{is_no_space_open_error, SpaceState};
 
 use super::git::{
     ahead_behind_counts, commit_all, fetch_remote, git_is_installed, has_head_commit,
@@ -316,11 +316,10 @@ fn read_status_for_root(
 pub fn read_status_internal(
     git_state: &GitSyncState,
     space_state: &SpaceState,
-    window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = match space_state.root_for_window_label(window_label) {
+    let space_root = match space_state.current_root() {
         Ok(root) => root,
-        Err(error) if is_no_space_session_error(&error) => return Ok(GitSyncStatus::default()),
+        Err(error) if is_no_space_open_error(&error) => return Ok(GitSyncStatus::default()),
         Err(error) => return Err(error),
     };
     read_status_for_root(git_state, Some(&space_root))
@@ -337,7 +336,7 @@ pub fn update_git_sync_config(
     window_label: &str,
     patch: GitSyncConfigPatch,
 ) -> Result<GitSyncConfig, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
+    let space_root = space_state.current_root()?;
     let mut config = load_config(&space_root)?;
     if let Some(enabled) = patch.enabled {
         config.enabled = enabled;
@@ -361,7 +360,7 @@ pub fn update_git_sync_config(
         config.auto_sync_prompted = true;
     }
     save_store(&space_root, &config)?;
-    let status = read_status_internal(git_state, space_state, window_label)?;
+    let status = read_status_internal(git_state, space_state)?;
     emit_status(&app, window_label, &status);
     Ok(config)
 }
@@ -372,7 +371,7 @@ pub fn disconnect_git_sync(
     space_state: &SpaceState,
     window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
+    let space_root = space_state.current_root()?;
     delete_store(&space_root)?;
     {
         let mut runtimes = git_state
@@ -381,7 +380,7 @@ pub fn disconnect_git_sync(
             .map_err(|_| "git sync state poisoned".to_string())?;
         runtimes.insert(runtime_key(&space_root), RuntimeStatus::default());
     }
-    let status = read_status_internal(git_state, space_state, window_label)?;
+    let status = read_status_internal(git_state, space_state)?;
     emit_status(&app, window_label, &status);
     Ok(status)
 }
@@ -393,13 +392,13 @@ pub fn run_git_sync(
     window_label: &str,
     request: GitSyncRunRequest,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = space_state.root_for_window_label(window_label)?;
+    let space_root = space_state.current_root()?;
     if !git_is_installed() {
         return Err("Git is not installed on this system.".to_string());
     }
     let config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
-        return read_status_internal(git_state, space_state, window_label);
+        return read_status_internal(git_state, space_state);
     }
 
     {
@@ -577,13 +576,10 @@ fn run_git_sync_background(
     }
 }
 
-pub fn read_config(
-    space_state: &SpaceState,
-    window_label: &str,
-) -> Result<Option<GitSyncConfig>, String> {
-    let space_root = match space_state.root_for_window_label(window_label) {
+pub fn read_config(space_state: &SpaceState) -> Result<Option<GitSyncConfig>, String> {
+    let space_root = match space_state.current_root() {
         Ok(root) => root,
-        Err(error) if is_no_space_session_error(&error) => return Ok(None),
+        Err(error) if is_no_space_open_error(&error) => return Ok(None),
         Err(error) => return Err(error),
     };
     load_store(&space_root)
@@ -592,7 +588,6 @@ pub fn read_config(
 pub fn read_status(
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,
-    window_label: &str,
 ) -> Result<GitSyncStatus, String> {
-    read_status_internal(&git_state, &space_state, window_label)
+    read_status_internal(&git_state, &space_state)
 }

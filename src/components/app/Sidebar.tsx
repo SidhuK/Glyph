@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
+import type { SpaceSwitchDirection } from "../../contexts/SpaceContext";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
@@ -33,6 +34,10 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
+	switchDirection: SpaceSwitchDirection;
+	onSwitchSpace: (path: string) => void;
+	onSwitchNextSpace?: () => void;
+	onSwitchPreviousSpace?: () => void;
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
@@ -67,6 +72,10 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
+	switchDirection,
+	onSwitchSpace,
+	onSwitchNextSpace,
+	onSwitchPreviousSpace,
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
@@ -148,6 +157,10 @@ export const Sidebar = memo(function Sidebar({
 									onOpenPinnedDocs={onOpenPinnedDocs}
 									onOpenConnections={onOpenConnections}
 									spacePath={spacePath}
+									switchDirection={switchDirection}
+									onSwitchSpace={onSwitchSpace}
+									onSwitchNextSpace={onSwitchNextSpace}
+									onSwitchPreviousSpace={onSwitchPreviousSpace}
 									activeTopSection={activeTopSection}
 								/>
 							</>

@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Emitter, Manager, State, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tracing::warn;
 
 use crate::space::SpaceState;
@@ -110,19 +110,18 @@ fn emit_profiles_updated(app: &AppHandle) {
     let _ = app.emit("ai:profiles-updated", ());
 }
 
-fn ai_space_root(space_state: &SpaceState, window: &WebviewWindow) -> Result<PathBuf, String> {
+fn ai_space_root(space_state: &SpaceState) -> Result<PathBuf, String> {
     space_state
-        .root_for_window(window)
+        .current_root()
         .map_err(|_| "Open a space to manage AI settings".to_string())
 }
 
 #[tauri::command]
 pub async fn ai_profiles_list(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Vec<AiProfile>, String> {
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let store = normalized_store_for_space(&app, Some(&space_root))?;
     Ok(store.profiles)
 }
@@ -130,10 +129,9 @@ pub async fn ai_profiles_list(
 #[tauri::command]
 pub async fn ai_active_profile_get(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Option<String>, String> {
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let store = normalized_store_for_space(&app, Some(&space_root))?;
     Ok(store
         .active_profile_id
@@ -143,11 +141,10 @@ pub async fn ai_active_profile_get(
 #[tauri::command]
 pub async fn ai_active_profile_set(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     id: Option<String>,
 ) -> Result<(), String> {
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let path = store_path_for_space(&app, Some(&space_root))?;
     let mut store = normalized_store_for_space(&app, Some(&space_root))?;
     store.active_profile_id = id.filter(|candidate| {
@@ -164,11 +161,10 @@ pub async fn ai_active_profile_set(
 #[tauri::command]
 pub async fn ai_profile_upsert(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile: AiProfile,
 ) -> Result<AiProfile, String> {
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let path = store_path_for_space(&app, Some(&space_root))?;
     let mut store = normalized_store_for_space(&app, Some(&space_root))?;
 
@@ -200,11 +196,10 @@ pub async fn ai_profile_upsert(
 #[tauri::command]
 pub async fn ai_profile_delete(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     id: String,
 ) -> Result<(), String> {
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let path = store_path_for_space(&app, Some(&space_root))?;
     let mut store = normalized_store_for_space(&app, Some(&space_root))?;
     let _ = local_secrets::secret_clear(&space_root, &id);
@@ -232,13 +227,12 @@ pub async fn ai_profile_delete(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_set(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
     api_key: String,
 ) -> Result<(), String> {
     let root = space_state
-        .root_for_window(&window)
+        .current_root()
         .map_err(|_| "Open a space to store API keys locally".to_string())?;
     let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_set(&root, &profile_id, api_key.trim())
@@ -247,12 +241,11 @@ pub async fn ai_secret_set(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_clear(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<(), String> {
     let root = space_state
-        .root_for_window(&window)
+        .current_root()
         .map_err(|_| "Open a space to manage API keys".to_string())?;
     let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_clear(&root, &profile_id)
@@ -261,11 +254,10 @@ pub async fn ai_secret_clear(
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_status(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<bool, String> {
-    let root = match space_state.root_for_window(&window) {
+    let root = match space_state.current_root() {
         Ok(root) => root,
         Err(_) => return Ok(false),
     };
@@ -276,11 +268,10 @@ pub async fn ai_secret_status(
 #[tauri::command]
 pub async fn ai_secret_list(
     app: AppHandle,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Vec<String>, String> {
     let root = space_state
-        .root_for_window(&window)
+        .current_root()
         .map_err(|_| "Open a space to manage API keys".to_string())?;
     let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_ids(&root)
@@ -305,7 +296,6 @@ pub async fn ai_provider_support(app: AppHandle) -> Result<ProviderSupportDocume
 #[tauri::command]
 pub async fn ai_chat_start(
     ai_state: State<'_, AiState>,
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     app: AppHandle,
     mut request: AiChatRequest,
@@ -331,7 +321,7 @@ pub async fn ai_chat_start(
         request.audit = true;
     }
 
-    let space_root = ai_space_root(&space_state, &window)?;
+    let space_root = ai_space_root(&space_state)?;
     let store = normalized_store_for_space(&app, Some(&space_root))?;
 
     let profile = store
@@ -455,20 +445,18 @@ pub async fn ai_chat_cancel(ai_state: State<'_, AiState>, job_id: String) -> Res
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_chat_history_list(
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<history::AiChatHistorySummary>, String> {
-    history::ai_chat_history_list(window, space_state, limit).await
+    history::ai_chat_history_list(space_state, limit).await
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_chat_history_get(
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     job_id: String,
 ) -> Result<history::AiChatHistoryDetail, String> {
-    history::ai_chat_history_get(window, space_state, job_id).await
+    history::ai_chat_history_get(space_state, job_id).await
 }
 
 #[allow(clippy::too_many_arguments)]

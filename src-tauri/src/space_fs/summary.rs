@@ -1,5 +1,5 @@
 use std::{cmp::Reverse, collections::BinaryHeap, ffi::OsStr, path::PathBuf};
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::{paths, space::SpaceState};
 
@@ -8,7 +8,6 @@ use super::types::{DirChildSummary, RecentMarkdown};
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_dir_children_summary(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     dir: Option<String>,
     preview_limit: Option<u32>,
@@ -16,7 +15,7 @@ pub async fn space_dir_children_summary(
     const MAX_PREVIEW_LIMIT: usize = 20;
     const MAX_SCAN_FILES: usize = 200_000;
 
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let dir = dir.unwrap_or_default();
     let limit = preview_limit
         .unwrap_or(5)

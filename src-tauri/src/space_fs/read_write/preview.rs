@@ -1,6 +1,6 @@
 use base64::Engine;
 use std::{io::Read, path::PathBuf};
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::{paths, space::SpaceState};
 
@@ -29,12 +29,11 @@ fn mime_for_preview_ext(ext: &str) -> Option<&'static str> {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_read_text_preview(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     max_bytes: Option<u32>,
 ) -> Result<TextFilePreviewDoc, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<TextFilePreviewDoc, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -76,12 +75,11 @@ pub async fn space_read_text_preview(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_read_binary_preview(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     max_bytes: Option<u32>,
 ) -> Result<BinaryFilePreviewDoc, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<BinaryFilePreviewDoc, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;

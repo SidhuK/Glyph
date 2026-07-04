@@ -547,6 +547,7 @@ export const FILE_TREE_SORT_OPTIONS = [
 
 interface AppSettings {
 	currentSpacePath: string | null;
+	openSpacePaths: string[];
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
 	onboarding: OnboardingSettings;
@@ -621,6 +622,7 @@ async function withSpaceScopedSettingsWriteLock<T>(
 
 const KEYS = {
 	currentSpacePath: "space.currentPath",
+	openSpacePaths: "space.openPaths",
 	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
@@ -923,6 +925,10 @@ export async function loadSettings(
 		entries,
 		KEYS.recentSpaces,
 	);
+	const openSpacePathsRaw = getSettingValue<string[] | null>(
+		entries,
+		KEYS.openSpacePaths,
+	);
 	const rawRecentFiles = getSettingValue(entries, KEYS.recentFiles);
 	const rawOnboardingLauncherSeen = getSettingValue<boolean | null>(
 		entries,
@@ -1057,6 +1063,7 @@ export async function loadSettings(
 		: undefined;
 	const hasActiveSpace = Boolean(activeSettingsSpacePath);
 	const recentSpaces = recentSpacesRaw ?? [];
+	const openSpacePaths = normalizeOpenSpacePaths(openSpacePathsRaw ?? []);
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const onboarding: OnboardingSettings = {
 		launcherSeen: rawOnboardingLauncherSeen ?? false,
@@ -1198,6 +1205,7 @@ export async function loadSettings(
 	};
 	return {
 		currentSpacePath,
+		openSpacePaths,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
 		onboarding,
@@ -1241,18 +1249,38 @@ export async function loadSettings(
 	};
 }
 
-export async function setCurrentSpacePath(path: string): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.currentSpacePath, path);
-	const prev = (await store.get<string[] | null>(KEYS.recentSpaces)) ?? [];
-	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
-	await store.set(KEYS.recentSpaces, next);
-	await saveSettingsStore(store);
+export function normalizeOpenSpacePaths(paths: string[]): string[] {
+	const out: string[] = [];
+	const seen = new Set<string>();
+	for (const value of paths) {
+		const trimmed = value.trim();
+		if (!trimmed || seen.has(trimmed)) continue;
+		seen.add(trimmed);
+		out.push(trimmed);
+	}
+	return out;
 }
 
-export async function clearCurrentSpacePath(): Promise<void> {
+export async function updateSpaceSwitcherState(options: {
+	currentPath: string | null;
+	openPaths: string[];
+}): Promise<void> {
 	const store = await getStore();
-	await store.set(KEYS.currentSpacePath, null);
+	const openPaths = normalizeOpenSpacePaths(options.openPaths);
+	const currentPath = options.currentPath?.trim() || null;
+
+	await store.set(KEYS.openSpacePaths, openPaths);
+	if (currentPath) {
+		await store.set(KEYS.currentSpacePath, currentPath);
+		const prev = (await store.get<string[] | null>(KEYS.recentSpaces)) ?? [];
+		const next = [currentPath, ...prev.filter((p) => p !== currentPath)].slice(
+			0,
+			20,
+		);
+		await store.set(KEYS.recentSpaces, next);
+	} else {
+		await store.set(KEYS.currentSpacePath, null);
+	}
 	await saveSettingsStore(store);
 }
 

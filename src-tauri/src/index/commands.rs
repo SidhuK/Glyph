@@ -129,7 +129,7 @@ pub async fn index_rebuild(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let progress_window = window.clone();
     let res = tauri::async_runtime::spawn_blocking(move || {
         rebuild_with_progress(&root, |completed, total| {
@@ -148,7 +148,7 @@ pub async fn index_sync(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let progress_window = window.clone();
     tauri::async_runtime::spawn_blocking(move || {
         sync(&root, |completed, total| {
@@ -163,11 +163,10 @@ pub async fn index_sync(
 
 #[tauri::command]
 pub async fn search(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     query: String,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         hybrid_search(&conn, &query, &[], 50)
@@ -178,11 +177,10 @@ pub async fn search(
 
 #[tauri::command]
 pub async fn search_advanced(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     request: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         run_search_advanced(&conn, request)
@@ -193,12 +191,11 @@ pub async fn search_advanced(
 
 #[tauri::command]
 pub async fn search_parse_and_run(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     raw_query: String,
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
@@ -216,13 +213,12 @@ pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), St
 
 #[tauri::command]
 pub async fn all_docs_list(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
     folder_prefix: Option<String>,
 ) -> Result<Vec<AllDocsItem>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     let folder_prefix = folder_prefix
@@ -311,11 +307,10 @@ pub async fn all_docs_list(
 
 #[tauri::command]
 pub async fn all_docs_count(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     folder_prefix: Option<String>,
 ) -> Result<u32, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let folder_prefix = folder_prefix
         .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
         .filter(|value| !value.is_empty());
@@ -343,13 +338,12 @@ pub async fn all_docs_count(
 
 #[tauri::command]
 pub async fn tags_list(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
     query: Option<String>,
 ) -> Result<Vec<TagCount>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     let query = query
@@ -426,12 +420,11 @@ fn list_tags(
 
 #[tauri::command]
 pub async fn people_list(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     limit: Option<u32>,
     offset: Option<u32>,
 ) -> Result<Vec<PersonCount>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     let limit = limit.unwrap_or(200).min(2000) as i64;
     let offset = offset.unwrap_or(0) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<PersonCount>, String> {
@@ -586,11 +579,10 @@ pub fn task_summary(markdown: String) -> NoteTaskSummary {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_summaries_for_paths(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_paths: Vec<String>,
 ) -> Result<Vec<NoteTaskSummaryItem>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteTaskSummaryItem>, String> {
         let normalized_paths = note_paths
             .into_iter()
@@ -607,12 +599,11 @@ pub async fn task_summaries_for_paths(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn backlinks(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
     _space_path: Option<String>,
 ) -> Result<Vec<BacklinkItem>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<BacklinkItem>, String> {
         let conn = open_db(&root)?;
         let stem = Path::new(&note_id)
@@ -656,11 +647,10 @@ pub async fn backlinks(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_relationships(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
 ) -> Result<Vec<NoteRelationship>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteRelationship>, String> {
         let conn = open_db(&root)?;
         query_note_relationships(&conn, &note_id)
@@ -1070,11 +1060,10 @@ fn space_connections_for_conn(conn: &rusqlite::Connection) -> Result<SpaceConnec
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_local_connections(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_id: String,
 ) -> Result<LocalNoteConnections, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteConnections, String> {
         let conn = open_db(&root)?;
         local_note_connections_for_conn(&conn, &note_id)
@@ -1085,10 +1074,9 @@ pub async fn note_local_connections(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_connections(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<SpaceConnections, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<SpaceConnections, String> {
         let conn = open_db(&root)?;
         space_connections_for_conn(&conn)

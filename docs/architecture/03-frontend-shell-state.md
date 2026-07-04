@@ -48,27 +48,32 @@ Do not move providers without checking their hooks. A provider that calls `useSp
 
 - app info
 - current space path
+- open space list for the sidebar switcher (`openSpaces`)
+- active switcher index and last switch direction
 - last space path
 - recent spaces
 - onboarding note path
 - indexing flag
-- open/create/close actions
+- open/create/close/switch actions
 
 On startup, it:
 
 1. Calls `app_info`.
-2. Loads settings.
+2. Loads settings, including `space.openPaths`.
 3. Syncs people-mentions-as-tags to the Rust index runtime.
-4. Reopens the last space when settings contain one.
-5. Syncs native recent-space menu entries.
+4. Mounts only the active space (`space.currentPath` or the first open path).
+5. Rewrites the mounted entry to the backend's canonical root before persisting `space.openPaths`.
+6. Syncs native recent-space menu entries.
 
-When opening a new space, it closes the previous one first and clears caches:
+When opening or switching spaces, it replaces the mounted backend session and clears caches:
 
 - `clearAiPanelCaches()`
 - `clearInlineImageHydrationCache()`
 - `invalidateNavigationPrefetch()`
 
 That prevents a note preview, AI context, or editor image cache from leaking across spaces.
+
+The sidebar footer renders one dot per open space. Clicking a dot switches the active root in place. Tabs and editor state reset on switch in the first version; only one backend space mounts at a time.
 
 ## File Tree Provider
 

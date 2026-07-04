@@ -352,6 +352,70 @@
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDEBAR FOOTER / SPACE SWITCHER
+   ───────────────────────────────────────────────────────────────────────────── */
+.sidebarFooter {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+}
+
+.spaceSwitcher {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px var(--space-3) 4px;
+}
+
+.spaceSwitcherDots {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.spaceSwitcherDots::-webkit-scrollbar {
+	display: none;
+}
+
+.spaceSwitcherDot {
+	flex: none;
+	width: 7px;
+	height: 7px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: var(--text-tertiary);
+	opacity: 0.45;
+	cursor: pointer;
+	transition: transform 120ms ease, opacity 120ms ease, background-color 120ms
+		ease;
+}
+
+.spaceSwitcherDot:hover:not(:disabled) {
+	opacity: 0.75;
+}
+
+.spaceSwitcherDot:focus-visible {
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
+}
+
+.spaceSwitcherDot[data-active="true"] {
+	width: 9px;
+	height: 9px;
+	opacity: 1;
+	background: var(--text-primary);
+	cursor: default;
+}
+
+.sidebarFooter .licenseSidebarFooter {
+	border-top: none;
+}
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR RESIZE HANDLE
    ───────────────────────────────────────────────────────────────────────────── */

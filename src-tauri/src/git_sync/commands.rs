@@ -11,19 +11,17 @@ use super::GitSyncState;
 
 #[tauri::command]
 pub fn git_sync_status_read(
-    window: WebviewWindow,
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,
 ) -> Result<GitSyncStatus, String> {
-    service::read_status(git_state, space_state, window.label())
+    service::read_status(git_state, space_state)
 }
 
 #[tauri::command]
 pub fn git_sync_config_read(
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
 ) -> Result<Option<GitSyncConfig>, String> {
-    service::read_config(&space_state, window.label())
+    service::read_config(&space_state)
 }
 
 #[tauri::command]
@@ -60,12 +58,11 @@ pub fn git_sync_disconnect(
 
 #[tauri::command]
 pub fn git_history_list(
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     path: String,
     limit: Option<u32>,
 ) -> Result<Vec<GitHistoryCommit>, String> {
-    let space_root = space_state.root_for_window(&window)?;
+    let space_root = space_state.current_root()?;
     let rel_path = validate_space_rel_path(&space_root, &path)?;
     ensure_repo_at_space_root(&space_root)?;
     let raw = super::git::file_history(&space_root, &rel_path, limit.unwrap_or(30))?;
@@ -74,12 +71,11 @@ pub fn git_history_list(
 
 #[tauri::command]
 pub fn git_history_diff(
-    window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     path: String,
     commit: GitHistoryCommit,
 ) -> Result<GitCommitDiff, String> {
-    let space_root = space_state.root_for_window(&window)?;
+    let space_root = space_state.current_root()?;
     let rel_path = validate_space_rel_path(&space_root, &path)?;
     ensure_repo_at_space_root(&space_root)?;
     validate_commit_hash(&commit.hash)?;

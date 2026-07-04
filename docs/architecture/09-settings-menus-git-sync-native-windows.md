@@ -127,7 +127,7 @@ When adding a command:
 
 Rust builds the main menu in `src-tauri/src/lib.rs`. Menu events follow one of two paths:
 
-- Recent-space menu item emits `menu:open_recent_space`.
+- Recent-space menu item emits `menu:open_recent_space` to the main window, which adds or switches the path in the in-window switcher.
 - Command menu item emits `menu:app_command`.
 
 `useMenuListeners()` maps those events to shell actions:

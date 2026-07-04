@@ -275,7 +275,7 @@
 		"close-space": {
 			"id": "close-space",
 			"label": "Close Current Space",
-			"description": "Close the currently open space.",
+			"description": "Remove the active space from the switcher.",
 			"category": "workspace",
 			"context": "space",
 			"defaultBinding": null,

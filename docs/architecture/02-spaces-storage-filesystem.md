@@ -60,13 +60,14 @@ Rust stores active space state in `SpaceState`:
 ```rust
 pub struct SpaceState {
     pub(crate) current: Mutex<Option<PathBuf>>,
-    pub(crate) notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
-    recent_local_changes: RecentLocalChanges,
+    session: Mutex<Option<SpaceSession>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
     pinned_files_mutex: Arc<Mutex<()>>,
 }
 ```
+
+Only one space mounts at a time. The frontend may keep multiple open space roots in `space.openPaths` for the sidebar switcher, but the backend holds a single watcher, recent-local-change tracker, and active root.
 
 The state has three jobs:
 
@@ -80,11 +81,11 @@ The state has three jobs:
 
 Frontend flow in `SpaceContext`:
 
-1. `loadSettings()` reads the last space path.
-2. If a path exists, React calls `invoke("space_open", { path })`.
-3. User actions call `space_open` or `space_create` from `applySpaceSelection()`.
-4. On successful open, React stores the root in settings and updates recent spaces.
-5. On switching spaces, React closes the previous space, clears AI/editor prefetch caches, and clears current space path.
+1. `loadSettings()` reads `space.currentPath`, `space.openPaths`, and `space.recent`.
+2. On startup, open only the chosen active path with `invoke("space_open", { path })`.
+3. User actions call `space_open` or `space_create` through the single activation path in `SpaceContext`.
+4. On successful open or switch, React stores the backend's canonical root in settings and updates recent/open lists.
+5. On switching spaces, React replaces the mounted backend session, clears AI/editor prefetch caches, and persists the new active path.
 
 Rust flow in `space_open` and `space_create`:
 
@@ -93,11 +94,10 @@ Rust flow in `space_open` and `space_create`:
 3. Register the space in the app-support index manifest and remove any stale in-space `glyph.sqlite` sidecars.
 4. Create or open Glyph metadata in `.glyph/`.
 5. Reset the index schema cache with `index::db::reset_schema_cache()`.
-6. Store the canonical root in `SpaceState.current`.
-7. Install the notes watcher with `set_notes_watcher()`.
-8. Enable the native Close Space menu item.
+6. Replace the active session: store the canonical root, install a new notes watcher, and reset recent-local-change tracking.
+7. Enable the native Close Space menu item.
 
-`space_close` clears `current`, drops the watcher, resets the schema cache, and disables Close Space.
+`space_close` clears the active session, resets the schema cache, and disables Close Space.
 
 ## Path Safety
 

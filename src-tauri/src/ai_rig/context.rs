@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use tauri::{State, WebviewWindow};
+use tauri::State;
 
 use crate::{paths, space::SpaceState, utils};
 
@@ -169,10 +169,9 @@ fn list_files(root: &Path, dir: &str, limit: usize) -> Result<Vec<String>, Strin
 
 #[tauri::command]
 pub async fn ai_context_index(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
 ) -> Result<AiContextIndexResponse, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let files = list_files(&root, "", DEFAULT_FILE_LIST_LIMIT)?;
         let mut dirs = std::collections::BTreeSet::<String>::new();
@@ -218,11 +217,10 @@ pub async fn ai_context_index(
 
 #[tauri::command]
 pub async fn ai_context_build(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     request: AiContextBuildRequest,
 ) -> Result<AiContextBuildResponse, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let mut remaining = request
             .char_budget
@@ -319,11 +317,10 @@ pub async fn ai_context_build(
 
 #[tauri::command]
 pub async fn ai_context_resolve_paths(
-    window: WebviewWindow,
     state: State<'_, SpaceState>,
     attachments: Vec<AiContextAttachment>,
 ) -> Result<Vec<String>, String> {
-    let root = state.root_for_window(&window)?;
+    let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let mut out: Vec<String> = Vec::new();
         let mut seen = std::collections::BTreeSet::<String>::new();

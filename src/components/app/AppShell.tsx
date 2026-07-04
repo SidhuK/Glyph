@@ -89,6 +89,7 @@ import {
 	loadDatabasesPane,
 } from "./prefetchablePanes";
 import { useAppCommands } from "./useAppCommands";
+import { useSpaceActionsWithEditorFlush } from "./useSpaceActionsWithEditorFlush";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
 
@@ -108,6 +109,10 @@ export function AppShell() {
 		spacePath,
 		error,
 		setError,
+		switchDirection,
+		switchSpace,
+		switchToNextSpace,
+		switchToPreviousSpace,
 		onOpenSpace,
 		onOpenSpaceAtPath,
 		onCreateSpace,
@@ -746,6 +751,27 @@ export function AppShell() {
 		void openPath(spacePath);
 	}, [spacePath]);
 
+	const {
+		handleSwitchSpace,
+		handleSwitchNextSpace,
+		handleSwitchPreviousSpace,
+		handleOpenSpace,
+		handleOpenSpaceAtPath,
+		handleCreateSpace,
+		handleCloseSpace,
+	} = useSpaceActionsWithEditorFlush({
+		spacePath,
+		saveCurrentEditor,
+		setError,
+		switchSpace,
+		switchToNextSpace,
+		switchToPreviousSpace,
+		onOpenSpace,
+		onOpenSpaceAtPath,
+		onCreateSpace,
+		closeSpace,
+	});
+
 	const handleOpenSpaceSettings = useCallback(() => {
 		openSettings("space");
 	}, [openSettings]);
@@ -1083,10 +1109,10 @@ export function AppShell() {
 		onSaveNote: handleSaveNoteFromMenu,
 		onPrintNote: handlePrintActiveNote,
 		onCloseTab: () => void handleCloseTabOrWindow(),
-		onOpenSpace,
-		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,
-		onCreateSpace,
-		closeSpace,
+		onOpenSpace: handleOpenSpace,
+		onOpenRecentSpaceAtPath: handleOpenSpaceAtPath,
+		onCreateSpace: handleCreateSpace,
+		closeSpace: handleCloseSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
 		onGitSyncNow: () => {
@@ -1117,7 +1143,7 @@ export function AppShell() {
 		canGoForward,
 		closeActiveTab,
 		closeAllTabs,
-		closeSpace,
+		closeSpace: handleCloseSpace,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
 		fileTree,
@@ -1134,8 +1160,8 @@ export function AppShell() {
 		handleRevealSpaceFromMenu,
 		movePickerSourcePath,
 		moveTargetDirs,
-		onCreateSpace,
-		onOpenSpace,
+		onCreateSpace: handleCreateSpace,
+		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
 		openBlankTab,
 		openDatabasesTab,
@@ -1325,6 +1351,10 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
+				switchDirection={switchDirection}
+				onSwitchSpace={handleSwitchSpace}
+				onSwitchNextSpace={handleSwitchNextSpace}
+				onSwitchPreviousSpace={handleSwitchPreviousSpace}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenPinnedDocs={openPinnedDocsTab}
 				onOpenConnections={openConnectionsView}
