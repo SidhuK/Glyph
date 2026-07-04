@@ -1,14 +1,14 @@
 import { PluginKey } from "@tiptap/pm/state";
-import { stripHtmlEmbedRawSentinel } from "../markdown/htmlEmbedMarkdown";
+import {
+	isHtmlEmbedCodeBlockLanguage,
+	stripHtmlEmbedRawSentinel,
+} from "../../../lib/htmlEmbed";
 import {
 	createLazyCodeBlockPreviewWidget,
 	destroyLazyCodeBlockPreviewWidget,
 } from "./codeBlockPreviewHydration";
 import { createCodeBlockPreviewExtension } from "./codeBlockPreviewPlugin";
-import {
-	createHtmlEmbedWidget,
-	isHtmlEmbedCodeBlockLanguage,
-} from "./htmlEmbed/sandbox";
+import { createHtmlEmbedWidget } from "./htmlEmbed/sandbox";
 
 const htmlEmbedPreviewPluginKey = new PluginKey("html-embed-preview");
 

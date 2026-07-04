@@ -1,4 +1,4 @@
-export const CODE_BLOCK_PREVIEW_ROOT_MARGIN = "640px 0px";
+const CODE_BLOCK_PREVIEW_ROOT_MARGIN = "640px 0px";
 
 const hydrationCallbacks = new WeakMap<Element, () => void>();
 const lazyWidgetDestroyCallbacks = new WeakMap<HTMLElement, () => void>();

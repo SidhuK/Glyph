@@ -6,7 +6,7 @@ export function createMarkdownFenceTracker(): MarkdownFenceTracker {
 	return { activeFence: null };
 }
 
-export function matchMarkdownCodeFence(line: string): string | null {
+function matchMarkdownCodeFence(line: string): string | null {
 	const match = line.trim().match(/^(`{3,}|~{3,})/);
 	return match ? match[1] : null;
 }
@@ -40,9 +40,4 @@ export function isInsideMarkdownCodeFence(
 	tracker: MarkdownFenceTracker,
 ): boolean {
 	return tracker.activeFence !== null;
-}
-
-/** @deprecated Use updateMarkdownFenceTracker for fence-aware preprocessing. */
-export function isMarkdownCodeFenceToggle(line: string): boolean {
-	return matchMarkdownCodeFence(line) !== null;
 }

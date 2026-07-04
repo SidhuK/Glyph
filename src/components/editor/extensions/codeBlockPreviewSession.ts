@@ -6,20 +6,15 @@ export const CODE_BLOCK_PREVIEW_REFRESH_META = "code-block-preview-refresh";
 let nextPreviewId = 1;
 const enabledPreviewIdsByView = new WeakMap<EditorView, Map<number, string>>();
 
-function getPreviewSession(view: EditorView): Map<number, string> {
+export function enableCodeBlockPreviewAt(
+	view: EditorView,
+	pos: number,
+): string {
 	let session = enabledPreviewIdsByView.get(view);
 	if (!session) {
 		session = new Map();
 		enabledPreviewIdsByView.set(view, session);
 	}
-	return session;
-}
-
-export function enableCodeBlockPreviewAt(
-	view: EditorView,
-	pos: number,
-): string {
-	const session = getPreviewSession(view);
 	const existing = session.get(pos);
 	if (existing) return existing;
 
@@ -33,22 +28,32 @@ export function clearCodeBlockPreviews(view: EditorView): void {
 	enabledPreviewIdsByView.delete(view);
 }
 
-export function hasEnabledCodeBlockPreviews(view: EditorView): boolean {
-	return getPreviewSession(view).size > 0;
+// Read helpers tolerate a missing view: plugin state can initialize before
+// TipTap assigns editor.view.
+function readPreviewSession(
+	view: EditorView | undefined,
+): Map<number, string> | undefined {
+	return view ? enabledPreviewIdsByView.get(view) : undefined;
+}
+
+export function hasEnabledCodeBlockPreviews(
+	view: EditorView | undefined,
+): boolean {
+	return (readPreviewSession(view)?.size ?? 0) > 0;
 }
 
 export function isCodeBlockPreviewEnabled(
-	view: EditorView,
+	view: EditorView | undefined,
 	pos: number,
 ): boolean {
-	return getPreviewSession(view).has(pos);
+	return readPreviewSession(view)?.has(pos) ?? false;
 }
 
 export function getCodeBlockPreviewId(
-	view: EditorView,
+	view: EditorView | undefined,
 	pos: number,
 ): string | null {
-	return getPreviewSession(view).get(pos) ?? null;
+	return readPreviewSession(view)?.get(pos) ?? null;
 }
 
 const remappedPreviewTransactions = new WeakSet<Transaction>();

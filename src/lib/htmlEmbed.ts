@@ -48,7 +48,7 @@ export function findHtmlEmbedFences(markdown: string): HtmlEmbedFenceBlock[] {
 
 export function replaceHtmlEmbedFences(
 	markdown: string,
-	replacer: (block: HtmlEmbedFenceBlock) => string,
+	replacer: (block: HtmlEmbedFenceBlock) => string | null,
 ): string {
 	const blocks = findHtmlEmbedFences(markdown);
 	if (!blocks.length) return markdown;
@@ -56,8 +56,10 @@ export function replaceHtmlEmbedFences(
 	let result = markdown;
 	for (let index = blocks.length - 1; index >= 0; index -= 1) {
 		const block = blocks[index];
+		const replacement = replacer(block);
+		if (replacement === null) continue;
 		result =
-			result.slice(0, block.start) + replacer(block) + result.slice(block.end);
+			result.slice(0, block.start) + replacement + result.slice(block.end);
 	}
 	return result;
 }
@@ -65,12 +67,13 @@ export function replaceHtmlEmbedFences(
 export function postprocessHtmlEmbedFences(input: string): string {
 	const sentinelPrefix = `${HTML_EMBED_RAW_SENTINEL}\n`;
 
-	return replaceHtmlEmbedFences(input, (block) => {
-		if (block.body.startsWith(sentinelPrefix)) {
-			return block.body.slice(sentinelPrefix.length);
-		}
-		return [`${block.fence}${block.kind}`, block.body, block.fence].join("\n");
-	});
+	// Only sentinel-tagged fences (raw HTML converted on ingest) need
+	// rewriting; user-authored fences pass through byte-identical.
+	return replaceHtmlEmbedFences(input, (block) =>
+		block.body.startsWith(sentinelPrefix)
+			? block.body.slice(sentinelPrefix.length)
+			: null,
+	);
 }
 
 export function rawHtmlToFencedBlock(

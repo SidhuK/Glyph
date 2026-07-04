@@ -1,15 +1,10 @@
 import {
 	type HtmlEmbedKind,
-	isHtmlEmbedCodeBlockLanguage,
 	wrapHtmlEmbedBody,
 } from "../../../../lib/htmlEmbed";
 import { appendEditCodeControls } from "../codeBlockPreviewControls";
 
-export type { HtmlEmbedKind };
-
-export { isHtmlEmbedCodeBlockLanguage };
-
-export const HTML_EMBED_CSP = [
+const HTML_EMBED_CSP = [
 	"default-src 'none'",
 	"script-src 'unsafe-inline'",
 	"style-src 'unsafe-inline'",
@@ -24,11 +19,11 @@ const HTML_EMBED_MESSAGE_SOURCE = "glyph-html-embed";
 const HTML_EMBED_MIN_HEIGHT = 80;
 const HTML_EMBED_INITIAL_HEIGHT = 240;
 const HTML_EMBED_MAX_HEIGHT = 960;
+// Hard ceiling on the iframe element itself so a runaway embed cannot
+// allocate an arbitrarily tall compositing surface.
+const HTML_EMBED_SCROLL_HEIGHT_CAP = 4000;
 
-export function buildHtmlEmbedSrcDoc(
-	source: string,
-	kind: HtmlEmbedKind,
-): string {
+function buildHtmlEmbedSrcDoc(source: string, kind: HtmlEmbedKind): string {
 	const body = wrapHtmlEmbedBody(source, kind);
 	const escapedCsp = HTML_EMBED_CSP.replace(/"/g, "&quot;");
 	const postMessageOrigin = JSON.stringify(window.location.origin);
@@ -61,11 +56,24 @@ export function buildHtmlEmbedSrcDoc(
     }
     return height;
   }
-  function reportSize() {
+  var lastHeight = -1;
+  var measurePending = false;
+  function reportSize(force) {
+    var height = measureHeight();
+    if (!force && height === lastHeight) return;
+    lastHeight = height;
     parent.postMessage(
-      { source: source, type: "size", height: measureHeight() },
+      { source: source, type: "size", height: height },
       targetOrigin
     );
+  }
+  function scheduleReportSize() {
+    if (measurePending) return;
+    measurePending = true;
+    requestAnimationFrame(function () {
+      measurePending = false;
+      reportSize(false);
+    });
   }
   function reportError(message) {
     parent.postMessage({ source: source, type: "error", message: message }, targetOrigin);
@@ -79,52 +87,34 @@ export function buildHtmlEmbedSrcDoc(
       reportError(reason && reason.message ? reason.message : String(reason || "Unhandled rejection"));
     });
     if (typeof ResizeObserver !== "undefined") {
-      var resizeObserver = new ResizeObserver(function () {
-        reportSize();
-      });
+      var resizeObserver = new ResizeObserver(scheduleReportSize);
       resizeObserver.observe(document.documentElement);
       resizeObserver.observe(document.body);
       var main = document.querySelector("main");
       if (main) resizeObserver.observe(main);
     }
     if (typeof MutationObserver !== "undefined") {
-      new MutationObserver(reportSize).observe(document.body, {
+      new MutationObserver(scheduleReportSize).observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
         characterData: true,
       });
     }
-    reportSize();
-    requestAnimationFrame(function () {
-      reportSize();
-      requestAnimationFrame(reportSize);
-    });
-    for (var index = 0; index < document.images.length; index += 1) {
-      document.images[index].addEventListener("load", reportSize);
-    }
+    reportSize(true);
+    scheduleReportSize();
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });
   } else {
     start();
   }
-  window.addEventListener("load", reportSize);
+  window.addEventListener("load", scheduleReportSize);
 })();
 </script>
 </head>
 <body>${body}</body>
 </html>`;
-}
-
-function clampEmbedHeight(height: number): number {
-	if (!Number.isFinite(height) || height <= 0) {
-		return HTML_EMBED_INITIAL_HEIGHT;
-	}
-	return Math.min(
-		Math.max(Math.ceil(height), HTML_EMBED_MIN_HEIGHT),
-		HTML_EMBED_MAX_HEIGHT,
-	);
 }
 
 function isTrustedEmbedMessage(
@@ -140,10 +130,16 @@ function applyEmbedHeight(
 	iframe: HTMLIFrameElement,
 	height: number,
 ): void {
-	const clamped = clampEmbedHeight(height);
-	iframe.style.height = `${clamped}px`;
-	frame.style.height = `${clamped}px`;
-	frame.style.overflowY = height > HTML_EMBED_MAX_HEIGHT ? "auto" : "hidden";
+	const measured =
+		!Number.isFinite(height) || height <= 0
+			? HTML_EMBED_INITIAL_HEIGHT
+			: Math.max(Math.ceil(height), HTML_EMBED_MIN_HEIGHT);
+	const frameHeight = Math.min(measured, HTML_EMBED_MAX_HEIGHT);
+	// The iframe keeps (a capped version of) its full content height so the
+	// frame can scroll content taller than the max preview height.
+	iframe.style.height = `${Math.min(measured, HTML_EMBED_SCROLL_HEIGHT_CAP)}px`;
+	frame.style.height = `${frameHeight}px`;
+	frame.style.overflowY = measured > HTML_EMBED_MAX_HEIGHT ? "auto" : "hidden";
 }
 
 export function createHtmlEmbedWidget({
@@ -191,9 +187,8 @@ export function createHtmlEmbedWidget({
 			return;
 		}
 		if (data.type === "size" && typeof data.height === "number") {
-			root.classList.remove("htmlEmbedWidgetError");
-			error.textContent = "";
-			error.hidden = true;
+			// Size updates never clear an error: a thrown script error stays
+			// visible even while the embed keeps resizing.
 			root.dataset.state = "ready";
 			applyEmbedHeight(frame, iframe, data.height);
 			return;

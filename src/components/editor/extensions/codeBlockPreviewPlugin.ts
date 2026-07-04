@@ -47,18 +47,6 @@ export function selectCodeBlockSource(
 	view.focus();
 }
 
-export function showCodeBlockPreview(
-	view: EditorView,
-	pos: number,
-	nodeSize: number,
-): void {
-	const docSize = view.state.doc.content.size;
-	const afterBlock = Math.min(pos + nodeSize, docSize);
-	const selection = TextSelection.create(view.state.doc, afterBlock);
-	view.dispatch(view.state.tr.setSelection(selection).scrollIntoView());
-	view.focus();
-}
-
 export interface CodeBlockPreviewWidgetContext {
 	view: EditorView;
 	pos: number;
@@ -210,18 +198,23 @@ export function createCodeBlockPreviewExtension(
 							remapCodeBlockPreviews(editor.view, transaction);
 							const editable = getEditable();
 							const editableChanged = editable !== value.editable;
-							const shouldRefresh =
-								isCodeBlockPreviewRefresh(transaction) ||
-								(options.shouldRefresh?.(transaction, value) ?? false);
+							// forceRecreate bumps widget keys so mounted previews are
+							// rebuilt from scratch (e.g. Mermaid cache invalidation).
+							// Plain refresh metas (enable preview, note switch) only
+							// rebuild decorations; existing widget DOM is reused.
+							const forceRecreate =
+								options.shouldRefresh?.(transaction, value) ?? false;
+							const shouldRebuild =
+								forceRecreate || isCodeBlockPreviewRefresh(transaction);
 							const refreshKey =
-								shouldRefresh || editableChanged
+								forceRecreate || editableChanged
 									? value.refreshKey + 1
 									: value.refreshKey;
 
 							if (
 								!transaction.docChanged &&
 								!transaction.selectionSet &&
-								!shouldRefresh &&
+								!shouldRebuild &&
 								!editableChanged
 							) {
 								return value;
@@ -230,7 +223,7 @@ export function createCodeBlockPreviewExtension(
 							if (
 								editable &&
 								!hasEnabledCodeBlockPreviews(editor.view) &&
-								!shouldRefresh &&
+								!shouldRebuild &&
 								!editableChanged
 							) {
 								return value;
