@@ -237,6 +237,13 @@ function postprocessHtmlEmbedFences(input: string): string {
 	return output.join("\n");
 }
 
+export function wrapHtmlEmbedBody(
+	source: string,
+	kind: "html" | "svg",
+): string {
+	return kind === "svg" ? `<main>${source}</main>` : source;
+}
+
 export function stripHtmlEmbedRawSentinel(source: string): string {
 	if (!source.startsWith(HTML_EMBED_RAW_SENTINEL)) return source;
 	return source.slice(HTML_EMBED_RAW_SENTINEL.length).replace(/^\n/, "");

@@ -207,7 +207,9 @@
 }
 
 .mermaidCanvasWidget:hover .mermaidCanvasControls,
-.mermaidCanvasWidget:focus-within .mermaidCanvasControls {
+.mermaidCanvasWidget:focus-within .mermaidCanvasControls,
+.htmlEmbedWidget:hover .mermaidCanvasControls,
+.htmlEmbedWidget:focus-within .mermaidCanvasControls {
 	opacity: 1;
 	pointer-events: auto;
 }
@@ -239,7 +241,8 @@
 	outline: none;
 }
 
-.mermaidCanvasError {
+.mermaidCanvasError,
+.htmlEmbedError {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -250,6 +253,10 @@
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: var(--status-danger-fg, var(--text-primary));
+}
+
+.htmlEmbedError {
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 }
 
 .htmlEmbedCodeBlockHiddenInPreview {
@@ -282,66 +289,6 @@
 	width: 100%;
 	border: 0;
 	background: transparent;
-}
-
-.htmlEmbedControls {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	z-index: 1;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity var(--transition-fast);
-}
-
-.htmlEmbedWidget:hover .htmlEmbedControls,
-.htmlEmbedWidget:focus-within .htmlEmbedControls {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-.htmlEmbedEditBtn {
-	appearance: none;
-	-webkit-appearance: none;
-	height: 28px;
-	border: none;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	line-height: 1;
-	cursor: pointer;
-	transition: background-color var(--transition-fast), color
-		var(--transition-fast);
-	padding: 0 10px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 76%, transparent);
-	backdrop-filter: blur(8px);
-	white-space: nowrap;
-}
-
-.htmlEmbedEditBtn:hover,
-.htmlEmbedEditBtn:focus-visible {
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
-	color: var(--text-primary);
-	outline: none;
-}
-
-.htmlEmbedError {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	text-align: center;
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	color: var(--status-danger-fg, var(--text-primary));
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 }
 
 .htmlEmbedWidgetError .htmlEmbedIframe {

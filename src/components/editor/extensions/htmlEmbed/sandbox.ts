@@ -1,3 +1,5 @@
+import { wrapHtmlEmbedBody } from "../../markdown/htmlEmbedMarkdown";
+
 export type HtmlEmbedKind = "html" | "svg";
 
 export const HTML_EMBED_CSP = [
@@ -14,6 +16,7 @@ export const HTML_EMBED_CSP = [
 const HTML_EMBED_MESSAGE_SOURCE = "glyph-html-embed";
 const HTML_EMBED_DEFAULT_HEIGHT = 240;
 const HTML_EMBED_MAX_HEIGHT = 960;
+const embedDestroyCallbacks = new WeakMap<HTMLElement, () => void>();
 
 export function isHtmlEmbedCodeBlockLanguage(
 	language: string | null | undefined,
@@ -28,7 +31,7 @@ export function buildHtmlEmbedSrcDoc(
 	source: string,
 	kind: HtmlEmbedKind,
 ): string {
-	const body = kind === "svg" ? `<main>${source}</main>` : source;
+	const body = wrapHtmlEmbedBody(source, kind);
 	const escapedCsp = HTML_EMBED_CSP.replace(/"/g, "&quot;");
 
 	return `<!doctype html>
@@ -86,19 +89,6 @@ function clampEmbedHeight(height: number): number {
 	return Math.min(Math.max(Math.ceil(height), 80), HTML_EMBED_MAX_HEIGHT);
 }
 
-export function createHtmlEmbedErrorElement(message: string): HTMLElement {
-	const root = document.createElement("div");
-	root.className = "htmlEmbedWidget htmlEmbedWidgetError";
-	const frame = document.createElement("div");
-	frame.className = "htmlEmbedFrame";
-	const error = document.createElement("div");
-	error.className = "htmlEmbedError";
-	error.textContent = message;
-	frame.append(error);
-	root.append(frame);
-	return root;
-}
-
 export function createHtmlEmbedWidget({
 	source,
 	kind,
@@ -128,6 +118,10 @@ export function createHtmlEmbedWidget({
 	iframe.srcdoc = buildHtmlEmbedSrcDoc(source, kind);
 	iframe.style.height = `${HTML_EMBED_DEFAULT_HEIGHT}px`;
 
+	const error = document.createElement("div");
+	error.className = "htmlEmbedError";
+	error.hidden = true;
+
 	const onMessage = (event: MessageEvent) => {
 		if (event.source !== iframe.contentWindow) return;
 		const data = event.data;
@@ -150,19 +144,15 @@ export function createHtmlEmbedWidget({
 		}
 	};
 
-	const error = document.createElement("div");
-	error.className = "htmlEmbedError";
-	error.hidden = true;
-
 	frame.append(iframe, error);
 	root.append(frame);
 
 	if (editable) {
 		const controls = document.createElement("div");
-		controls.className = "htmlEmbedControls";
+		controls.className = "mermaidCanvasControls";
 		const editButton = document.createElement("button");
 		editButton.type = "button";
-		editButton.className = "htmlEmbedEditBtn";
+		editButton.className = "mermaidCanvasEditBtn";
 		editButton.textContent = "Edit code";
 		editButton.title = `Edit ${kind.toUpperCase()} code`;
 		editButton.setAttribute("aria-label", `Edit ${kind.toUpperCase()} code`);
@@ -180,18 +170,14 @@ export function createHtmlEmbedWidget({
 	}
 
 	window.addEventListener("message", onMessage);
-	const destroy = () => {
+	embedDestroyCallbacks.set(root, () => {
 		window.removeEventListener("message", onMessage);
-	};
-	(
-		root as HTMLElement & { __htmlEmbedDestroy?: () => void }
-	).__htmlEmbedDestroy = destroy;
+	});
 
 	return root;
 }
 
 export function destroyHtmlEmbedWidget(element: HTMLElement): void {
-	const destroy = (element as HTMLElement & { __htmlEmbedDestroy?: () => void })
-		.__htmlEmbedDestroy;
-	destroy?.();
+	embedDestroyCallbacks.get(element)?.();
+	embedDestroyCallbacks.delete(element);
 }

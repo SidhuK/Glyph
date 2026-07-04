@@ -1,6 +1,9 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
-import { stripHtmlEmbedRawSentinel } from "../components/editor/markdown/htmlEmbedMarkdown";
+import {
+	stripHtmlEmbedRawSentinel,
+	wrapHtmlEmbedBody,
+} from "../components/editor/markdown/htmlEmbedMarkdown";
 import { wikiLinksToStandardMarkdown } from "../components/editor/markdown/wikiLinkCodec";
 import { displayNameFromPath, parentDir } from "../utils/path";
 import { splitYamlFrontmatter } from "./notePreview";
@@ -126,7 +129,7 @@ function sanitizeHtmlEmbedForPrint(
 	const cleaned = stripHtmlEmbedRawSentinel(source).trim();
 	if (!cleaned) return "";
 
-	const body = kind === "svg" ? `<main>${cleaned}</main>` : cleaned;
+	const body = wrapHtmlEmbedBody(cleaned, kind);
 	const sanitized = DOMPurify.sanitize(body, {
 		USE_PROFILES: { html: true, svg: true },
 		FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "base"],

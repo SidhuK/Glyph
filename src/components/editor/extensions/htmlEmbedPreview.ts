@@ -6,7 +6,6 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { EditorView } from "@tiptap/pm/view";
 import { stripHtmlEmbedRawSentinel } from "../markdown/htmlEmbedMarkdown";
 import {
-	type HtmlEmbedKind,
 	createHtmlEmbedWidget,
 	destroyHtmlEmbedWidget,
 	isHtmlEmbedCodeBlockLanguage,
@@ -21,8 +20,6 @@ interface HtmlEmbedPreviewPluginState {
 const htmlEmbedPreviewPluginKey = new PluginKey<HtmlEmbedPreviewPluginState>(
 	"html-embed-preview",
 );
-
-type HtmlEmbedPreviewMeta = { type: "refresh" };
 
 function selectionTouchesNode(
 	selection: Selection,
@@ -119,30 +116,8 @@ function buildHtmlEmbedPreviewDecorations(
 		: DecorationSet.empty;
 }
 
-declare module "@tiptap/core" {
-	interface Commands<ReturnType> {
-		htmlEmbedPreview: {
-			refreshHtmlEmbedPreviews: () => ReturnType;
-		};
-	}
-}
-
 export const HtmlEmbedPreview = Extension.create({
 	name: "html-embed-preview",
-	addCommands() {
-		return {
-			refreshHtmlEmbedPreviews:
-				() =>
-				({ state, dispatch }) => {
-					dispatch?.(
-						state.tr.setMeta(htmlEmbedPreviewPluginKey, {
-							type: "refresh",
-						} satisfies HtmlEmbedPreviewMeta),
-					);
-					return true;
-				},
-		};
-	},
 	addProseMirrorPlugins() {
 		const editor = this.editor;
 		const getEditable = () => editor.isEditable;
@@ -152,14 +127,13 @@ export const HtmlEmbedPreview = Extension.create({
 				state: {
 					init: (_config, state) => {
 						const editable = getEditable();
-						const refreshKey = 0;
 						return {
 							editable,
-							refreshKey,
+							refreshKey: 0,
 							decorations: buildHtmlEmbedPreviewDecorations(
 								state.doc,
 								state.selection,
-								refreshKey,
+								0,
 								editable,
 							),
 						};
@@ -167,18 +141,13 @@ export const HtmlEmbedPreview = Extension.create({
 					apply(transaction, value) {
 						const editable = getEditable();
 						const editableChanged = editable !== value.editable;
-						const meta = transaction.getMeta(htmlEmbedPreviewPluginKey) as
-							| HtmlEmbedPreviewMeta
-							| undefined;
-						const refreshKey =
-							meta?.type === "refresh" || editableChanged
-								? value.refreshKey + 1
-								: value.refreshKey;
+						const refreshKey = editableChanged
+							? value.refreshKey + 1
+							: value.refreshKey;
 
 						if (
 							!transaction.docChanged &&
 							!transaction.selectionSet &&
-							!meta &&
 							!editableChanged
 						) {
 							return value;
@@ -206,5 +175,3 @@ export const HtmlEmbedPreview = Extension.create({
 		];
 	},
 });
-
-export type { HtmlEmbedKind };
