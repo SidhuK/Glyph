@@ -1,5 +1,6 @@
 import {
 	Copy01Icon,
+	PlayIcon,
 	SourceCodeIcon,
 	Tick02Icon,
 } from "@hugeicons/core-free-icons";
@@ -38,6 +39,8 @@ interface NoteEditorSurfaceProps {
 		onPickerMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
 		onCopy: () => void;
+		canPreview: boolean;
+		onPreview: () => void;
 	};
 }
 
@@ -132,25 +135,45 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 				</div>
 			) : null}
 			{canEdit && codeBlock.selected ? (
-				<button
-					type="button"
-					className="codeBlockCopyBtn"
-					data-copied={codeBlock.copied || undefined}
+				<div
+					className="codeBlockActionBtns"
 					style={{
 						top: `${codeBlock.selected.top}px`,
 						left: `${codeBlock.selected.controlsRight}px`,
 					}}
-					onMouseDown={codeBlock.onPickerMouseDown}
-					onClick={codeBlock.onCopy}
-					title={codeBlock.copied ? "Copied!" : "Copy code to clipboard"}
-					aria-label={codeBlock.copied ? "Copied code" : "Copy code"}
 				>
-					<HugeiconsIcon
-						icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
-						size="var(--icon-sm)"
-						strokeWidth={0.9}
-					/>
-				</button>
+					{codeBlock.canPreview ? (
+						<button
+							type="button"
+							className="codeBlockActionBtn"
+							onMouseDown={codeBlock.onPickerMouseDown}
+							onClick={codeBlock.onPreview}
+							title="Run preview"
+							aria-label="Run preview"
+						>
+							<HugeiconsIcon
+								icon={PlayIcon}
+								size="var(--icon-sm)"
+								strokeWidth={0.9}
+							/>
+						</button>
+					) : null}
+					<button
+						type="button"
+						className="codeBlockActionBtn"
+						data-copied={codeBlock.copied || undefined}
+						onMouseDown={codeBlock.onPickerMouseDown}
+						onClick={codeBlock.onCopy}
+						title={codeBlock.copied ? "Copied!" : "Copy code to clipboard"}
+						aria-label={codeBlock.copied ? "Copied code" : "Copy code"}
+					>
+						<HugeiconsIcon
+							icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
+							size="var(--icon-sm)"
+							strokeWidth={0.9}
+						/>
+					</button>
+				</div>
 			) : null}
 		</div>
 	);

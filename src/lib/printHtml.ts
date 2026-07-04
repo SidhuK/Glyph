@@ -1,7 +1,14 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
+import { preprocessHtmlEmbeds } from "../components/editor/markdown/htmlEmbedMarkdown";
 import { wikiLinksToStandardMarkdown } from "../components/editor/markdown/wikiLinkCodec";
 import { displayNameFromPath, parentDir } from "../utils/path";
+import {
+	type HtmlEmbedKind,
+	replaceHtmlEmbedFences,
+	stripHtmlEmbedRawSentinel,
+	wrapHtmlEmbedBody,
+} from "./htmlEmbed";
 import { splitYamlFrontmatter } from "./notePreview";
 
 interface BuildPrintHtmlOptions {
@@ -85,6 +92,19 @@ th {
 	background: #f8fafc;
 	text-align: left;
 }
+.glyph-print-html-embed {
+	margin: 0 0 1em;
+	padding: 14px 16px;
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	background: #ffffff;
+	overflow: auto;
+}
+.glyph-print-html-embed main svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
 @media print {
 	body {
 		background: #ffffff;
@@ -101,6 +121,37 @@ th {
 `;
 
 const printMarked = new Marked();
+
+function sanitizeHtmlEmbedForPrint(
+	source: string,
+	kind: HtmlEmbedKind,
+): string {
+	const cleaned = stripHtmlEmbedRawSentinel(source).trim();
+	if (!cleaned) return "";
+
+	const body = wrapHtmlEmbedBody(cleaned, kind);
+	const sanitized = DOMPurify.sanitize(body, {
+		USE_PROFILES: { html: true, svg: true },
+		FORBID_TAGS: [
+			"script",
+			"iframe",
+			"object",
+			"embed",
+			"form",
+			"base",
+			"link",
+		],
+		FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+		ALLOWED_URI_REGEXP: /^(?:(?:data|blob):|#)/i,
+	});
+	return `<div class="glyph-print-html-embed" data-kind="${kind}">${sanitized}</div>`;
+}
+
+function replaceHtmlEmbedsForPrint(markdown: string): string {
+	return replaceHtmlEmbedFences(markdown, (block) =>
+		sanitizeHtmlEmbedForPrint(block.body, block.kind),
+	);
+}
 
 function escapeHtml(value: string): string {
 	return value
@@ -135,7 +186,9 @@ export function buildPrintHtml({
 	noteAbsPath,
 }: BuildPrintHtmlOptions): string {
 	const { body: markdownBody } = splitYamlFrontmatter(markdown);
-	const preparedMarkdown = wikiLinksToStandardMarkdown(markdownBody);
+	const preparedMarkdown = replaceHtmlEmbedsForPrint(
+		wikiLinksToStandardMarkdown(preprocessHtmlEmbeds(markdownBody)),
+	);
 	const rendered = parseMarkdownSync(preparedMarkdown);
 	let body = DOMPurify.sanitize(rendered, {
 		ADD_ATTR: ["class", "checked"],

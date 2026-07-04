@@ -75,9 +75,16 @@
 	white-space: nowrap;
 }
 
-.codeBlockCopyBtn {
+.codeBlockActionBtns {
 	position: absolute;
 	z-index: 15;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	transform: translateX(-100%);
+}
+
+.codeBlockActionBtn {
 	width: 22px;
 	height: 18px;
 	padding: 0;
@@ -93,15 +100,14 @@
 	backdrop-filter: blur(4px);
 	cursor: pointer;
 	transition: color 150ms ease, background-color 150ms ease;
-	transform: translateX(-100%);
 }
 
-.codeBlockCopyBtn:hover {
+.codeBlockActionBtn:hover {
 	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
 	color: var(--text-primary);
 }
 
-.codeBlockCopyBtn[data-copied] {
+.codeBlockActionBtn[data-copied] {
 	color: var(--success);
 }
 
@@ -193,7 +199,7 @@
 	height: auto;
 }
 
-.mermaidCanvasControls {
+.codeBlockPreviewControls {
 	position: absolute;
 	top: 10px;
 	right: 10px;
@@ -206,13 +212,15 @@
 	transition: opacity var(--transition-fast);
 }
 
-.mermaidCanvasWidget:hover .mermaidCanvasControls,
-.mermaidCanvasWidget:focus-within .mermaidCanvasControls {
+.mermaidCanvasWidget:hover .codeBlockPreviewControls,
+.mermaidCanvasWidget:focus-within .codeBlockPreviewControls,
+.htmlEmbedWidget:hover .codeBlockPreviewControls,
+.htmlEmbedWidget:focus-within .codeBlockPreviewControls {
 	opacity: 1;
 	pointer-events: auto;
 }
 
-.mermaidCanvasEditBtn {
+.codeBlockPreviewEditBtn {
 	appearance: none;
 	-webkit-appearance: none;
 	height: 28px;
@@ -232,14 +240,15 @@
 	white-space: nowrap;
 }
 
-.mermaidCanvasEditBtn:hover,
-.mermaidCanvasEditBtn:focus-visible {
+.codeBlockPreviewEditBtn:hover,
+.codeBlockPreviewEditBtn:focus-visible {
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 	color: var(--text-primary);
 	outline: none;
 }
 
-.mermaidCanvasError {
+.mermaidCanvasError,
+.htmlEmbedError {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -250,6 +259,46 @@
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-medium);
 	color: var(--status-danger-fg, var(--text-primary));
+}
+
+.htmlEmbedError {
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+}
+
+.htmlEmbedCodeBlockHiddenInPreview {
+	display: none;
+}
+
+.htmlEmbedWidget {
+	margin: 8px 0 14px;
+	content-visibility: auto;
+	contain-intrinsic-block-size: auto 80px;
+}
+
+.htmlEmbedFrame {
+	position: relative;
+	width: 100%;
+	min-height: 48px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
+	overflow: hidden;
+	color: var(--text-secondary);
+}
+
+.htmlEmbedWidget[data-state="ready"] .htmlEmbedFrame {
+	color: var(--text-primary);
+}
+
+.htmlEmbedIframe {
+	display: block;
+	width: 100%;
+	border: 0;
+	background: transparent;
+}
+
+.htmlEmbedWidgetError .htmlEmbedIframe {
+	visibility: hidden;
 }
 .editorColorDropdown {
 	--editor-ribbon-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='48'%3E%3Cfilter id='g' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.65' numOctaves='1' stitchTiles='stitch' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 .58'/%3E%3C/filter%3E%3Crect width='192' height='48' fill='white' filter='url(%23g)'/%3E%3C/svg%3E");

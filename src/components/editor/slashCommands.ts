@@ -34,6 +34,40 @@ function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
 	return terms.every((term) => searchText.includes(term));
 }
 
+function createEmbedSlashCommand({
+	icon,
+	title,
+	description,
+	keywords,
+	language,
+	starterText,
+}: {
+	icon: string;
+	title: string;
+	description: string;
+	keywords: string[];
+	language: "html" | "svg";
+	starterText: string;
+}): SlashCommandItem {
+	return {
+		icon,
+		title,
+		description,
+		keywords,
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "codeBlock",
+					attrs: { language },
+					content: [{ type: "text", text: starterText }],
+				})
+				.run(),
+	};
+}
+
 function insertMathAndOpen(
 	editor: Editor,
 	range: { from: number; to: number },
@@ -206,6 +240,24 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				})
 				.run(),
 	},
+	createEmbedSlashCommand({
+		icon: "</>",
+		title: "HTML embed",
+		description: "Insert a sandboxed HTML preview block",
+		keywords: ["html", "embed", "widget", "preview"],
+		language: "html",
+		starterText:
+			'<div id="app"></div>\n<style>\n  #app { padding: 16px; }\n</style>\n<script>\n  document.querySelector("#app").textContent = "Live HTML block";\n</script>',
+	}),
+	createEmbedSlashCommand({
+		icon: "◇",
+		title: "SVG embed",
+		description: "Insert a sandboxed SVG preview block",
+		keywords: ["svg", "vector", "graphic", "embed", "preview"],
+		language: "svg",
+		starterText:
+			'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">\n  <rect width="200" height="80" rx="12" fill="tomato" />\n  <text x="100" y="48" text-anchor="middle">Glyph</text>\n</svg>',
+	}),
 	{
 		icon: "▸",
 		title: "Details block",

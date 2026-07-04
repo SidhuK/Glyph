@@ -1,3 +1,9 @@
+import {
+	createMarkdownFenceTracker,
+	isInsideMarkdownCodeFence,
+	updateMarkdownFenceTracker,
+} from "./markdownFence";
+
 const DETAILS_BLOCK_END_RE = /^:::\s*$/;
 const DETAILS_SUMMARY_START_RE = /^:::detailsSummary\s*$/;
 const DETAILS_CONTENT_START_RE = /^:::detailsContent\s*$/;
@@ -64,10 +70,6 @@ function readFencedSection(
 	}
 
 	return { content: contentLines.join("\n").trim(), endIndex: index };
-}
-
-function isMarkdownCodeFenceToggle(line: string): boolean {
-	return /^(`{3,}|~{3,})/.test(line.trim());
 }
 
 function detailsFencesToHtml(
@@ -164,18 +166,20 @@ function postprocessDetailsFences(input: string): string {
 	const lines = input.split("\n");
 	const output: string[] = [];
 	let index = 0;
-	let inCodeFence = false;
+	const fenceTracker = createMarkdownFenceTracker();
 
 	while (index < lines.length) {
 		const line = lines[index] ?? "";
-		if (isMarkdownCodeFenceToggle(line)) {
-			inCodeFence = !inCodeFence;
+		if (updateMarkdownFenceTracker(line, fenceTracker)) {
 			output.push(line);
 			index += 1;
 			continue;
 		}
 
-		if (inCodeFence || !/^:::details(?:\s+\{open\})?\s*$/.test(line)) {
+		if (
+			isInsideMarkdownCodeFence(fenceTracker) ||
+			!/^:::details(?:\s+\{open\})?\s*$/.test(line)
+		) {
 			output.push(line);
 			index += 1;
 			continue;
@@ -226,19 +230,18 @@ function preprocessHtmlDetails(input: string): string {
 	const lines = input.split("\n");
 	const output: string[] = [];
 	let chunk: string[] = [];
-	let inCodeFence = false;
+	const fenceTracker = createMarkdownFenceTracker();
 
 	for (const line of lines) {
-		if (isMarkdownCodeFenceToggle(line)) {
+		if (updateMarkdownFenceTracker(line, fenceTracker)) {
 			if (chunk.length) {
 				output.push(preprocessHtmlDetailsChunk(chunk.join("\n")));
 				chunk = [];
 			}
-			inCodeFence = !inCodeFence;
 			output.push(line);
 			continue;
 		}
-		if (inCodeFence) {
+		if (isInsideMarkdownCodeFence(fenceTracker)) {
 			output.push(line);
 			continue;
 		}

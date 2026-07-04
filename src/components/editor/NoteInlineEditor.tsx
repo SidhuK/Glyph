@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { AnyExtension } from "@tiptap/core";
+import { Selection } from "@tiptap/pm/state";
 import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -14,6 +15,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { isHtmlEmbedCodeBlockLanguage } from "../../lib/htmlEmbed";
+import { isMermaidCodeBlockLanguage } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { EditorRibbon } from "./EditorRibbon";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
@@ -26,6 +29,11 @@ import {
 	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
+import {
+	CODE_BLOCK_PREVIEW_REFRESH_META,
+	clearCodeBlockPreviews,
+	enableCodeBlockPreviewAt,
+} from "./extensions/codeBlockPreviewPlugin";
 import {
 	getMountedEditorContentRoot,
 	getOffsetWithinAncestor,
@@ -64,6 +72,13 @@ const MathNodeEditor = lazy(() =>
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
+function isPreviewableCodeBlockLanguage(language: string | null): boolean {
+	return (
+		isHtmlEmbedCodeBlockLanguage(language) !== null ||
+		isMermaidCodeBlockLanguage(language)
+	);
 }
 
 type FrontmatterLinkToken =
@@ -267,13 +282,22 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 		};
 		if (previousRelPathRef.current !== relPath) {
+			if (editor && !editor.isDestroyed) {
+				clearCodeBlockPreviews(editor.view);
+				editor.view.dispatch(
+					editor.state.tr.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true),
+				);
+			}
 			blurHostSelection(host);
 			previousRelPathRef.current = relPath;
 		}
 		return () => {
 			blurHostSelection(host);
+			if (editor && !editor.isDestroyed) {
+				clearCodeBlockPreviews(editor.view);
+			}
 		};
-	}, [relPath]);
+	}, [editor, relPath]);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
@@ -617,6 +641,29 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			});
 	}, [selectedCodeBlock]);
 
+	const previewSelectedCodeBlock = useCallback(() => {
+		if (!editor || !selectedCodeBlock) return;
+		const node = editor.state.doc.nodeAt(selectedCodeBlock.pos);
+		if (!node || node.type.name !== "codeBlock") return;
+		enableCodeBlockPreviewAt(editor.view, selectedCodeBlock.pos);
+		const afterBlock = Math.min(
+			selectedCodeBlock.pos + node.nodeSize,
+			editor.state.doc.content.size,
+		);
+		editor.view.dispatch(
+			editor.state.tr
+				.setSelection(Selection.near(editor.state.doc.resolve(afterBlock)))
+				.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true)
+				.scrollIntoView(),
+		);
+		editor.view.focus();
+	}, [editor, selectedCodeBlock]);
+
+	const selectedCodeBlockCanPreview = useMemo(
+		() => isPreviewableCodeBlockLanguage(selectedCodeBlock?.language ?? null),
+		[selectedCodeBlock?.language],
+	);
+
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
@@ -625,17 +672,21 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			language: selectedCodeBlockLanguage,
 			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
+			canPreview: selectedCodeBlockCanPreview,
 			onPickerMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
+			onPreview: previewSelectedCodeBlock,
 		}),
 		[
 			applyCodeBlockLanguage,
 			codeBlockCopied,
 			codeBlockPickerOpen,
 			copySelectedCodeBlock,
+			previewSelectedCodeBlock,
 			preventOverlayMouseDown,
 			selectedCodeBlock,
+			selectedCodeBlockCanPreview,
 			selectedCodeBlockLanguage,
 			selectedCodeBlockLanguageLabel,
 		],

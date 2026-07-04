@@ -28,6 +28,7 @@ import { glyphDetailsExtensions } from "./detailsBlock";
 import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
+import { HtmlEmbedPreview } from "./htmlEmbedPreview";
 import { InlineTableOfContents } from "./inlineTableOfContents";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
@@ -735,6 +736,7 @@ export function createEditorExtensions(
 		}),
 		...glyphDetailsExtensions,
 		...additionalExtensions,
+		HtmlEmbedPreview,
 		MermaidPreview,
 		InlineTableOfContents,
 		...(enableEditingExtensions ? [HeadingCollapse] : []),
