@@ -29,7 +29,11 @@ export function useSpaceActionsWithEditorFlush({
 	const runSpaceActionWithEditorFlush = useCallback(
 		async (action: () => Promise<void>) => {
 			try {
-				await saveCurrentEditor();
+				const saved = await saveCurrentEditor();
+				if (!saved) {
+					setError("Could not save your changes before switching spaces.");
+					return;
+				}
 				await action();
 			} catch (err) {
 				setError(extractErrorMessage(err));

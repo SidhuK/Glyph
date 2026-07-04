@@ -794,8 +794,9 @@ export function AppShell() {
 	}, [openSettings]);
 
 	const handleSpaceFsChanged = useCallback(
-		(payload: { rel_path: string; removed: boolean }) => {
+		(payload: { space_path?: string; rel_path: string; removed: boolean }) => {
 			if (!spacePath) return;
+			if (payload.space_path && payload.space_path !== spacePath) return;
 			const changedPath = normalizeRelPath(payload.rel_path);
 			if (!changedPath) return;
 			if (payload.removed) {
@@ -823,6 +824,7 @@ export function AppShell() {
 
 	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
 	useTauriEvent("notes:external_changed", (payload) => {
+		if (payload.space_path && payload.space_path !== spacePath) return;
 		const relPath = normalizeRelPath(payload.rel_path);
 		invalidateCalendarPrefetch();
 		invalidateAllDocsPrefetch();

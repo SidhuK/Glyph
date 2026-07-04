@@ -607,7 +607,7 @@ export function MarkdownEditorPane({
 		saveRequestTokenRef.current = saveToken;
 		setSaving(true);
 		try {
-			await persistDoc(relPath, textRef.current, sessionId);
+			return await persistDoc(relPath, textRef.current, sessionId);
 		} finally {
 			if (
 				saveRequestTokenRef.current === saveToken &&

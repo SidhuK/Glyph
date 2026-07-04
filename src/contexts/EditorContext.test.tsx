@@ -57,8 +57,8 @@ describe("EditorContext", () => {
 	});
 
 	it("keeps the registered save state current across re-renders", async () => {
-		const firstSave = vi.fn(async () => {});
-		const secondSave = vi.fn(async () => {});
+		const firstSave = vi.fn(async () => true);
+		const secondSave = vi.fn(async () => true);
 		const captured = {
 			current: null as CapturedEditorContext | null,
 		};

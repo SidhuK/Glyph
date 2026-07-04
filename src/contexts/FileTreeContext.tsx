@@ -350,6 +350,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	useTauriEvent("space:fs_changed", (payload) => {
 		if (!spacePath) return;
+		if (payload.space_path && payload.space_path !== spacePath) return;
 		if (!payload.removed) return;
 		if (pinnedFilesRefreshTimerRef.current !== null) {
 			window.clearTimeout(pinnedFilesRefreshTimerRef.current);

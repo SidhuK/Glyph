@@ -17,7 +17,7 @@ export interface EditorSaveState {
 	/** Whether the current editor has unsaved changes */
 	isDirty: boolean;
 	/** Function to save the current editor content */
-	save: () => Promise<void>;
+	save: () => Promise<boolean>;
 	/** Function to get the current editor content as markdown */
 	getMarkdown?: () => string | null;
 	/** Change the current editor's presentation mode. */
@@ -61,9 +61,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
 	const saveCurrentEditor = useCallback(async () => {
 		const state = editorStateRef.current;
-		if (!state) return false;
-		await state.save();
-		return true;
+		if (!state) return true;
+		return state.save();
 	}, []);
 
 	const hasUnsavedChanges = useCallback(() => {

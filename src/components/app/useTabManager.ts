@@ -141,6 +141,10 @@ export function useTabManager(spacePath: string | null) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset tab state when the active space changes.
 	useEffect(() => {
+		const previousActiveTab = tabsRef.current.find(
+			(tab) => tab.id === activeTabIdRef.current,
+		);
+		const previousActiveTarget = previousActiveTab?.target ?? null;
 		tabsRef.current = [];
 		activeTabIdRef.current = null;
 		historyByTabIdRef.current = {};
@@ -148,7 +152,8 @@ export function useTabManager(spacePath: string | null) {
 		setActiveTabIdState(null);
 		setDirtyByPath({});
 		setHistoryByTabId({});
-	}, [spacePath]);
+		syncWorkspaceState([], null, previousActiveTarget);
+	}, [spacePath, syncWorkspaceState]);
 
 	const focusExistingTab = useCallback(
 		(target: string) => {
