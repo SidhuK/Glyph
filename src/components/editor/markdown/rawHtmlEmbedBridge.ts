@@ -3,7 +3,11 @@ import {
 	type HtmlEmbedKind,
 	rawHtmlToFencedBlock,
 } from "../../../lib/htmlEmbed";
-import { isMarkdownCodeFenceToggle } from "./markdownFence";
+import {
+	createMarkdownFenceTracker,
+	isInsideMarkdownCodeFence,
+	updateMarkdownFenceTracker,
+} from "./markdownFence";
 
 const HTML_EMBED_BLOCK_TAG_NAMES = ["div", "svg", "script", "style"] as const;
 type HtmlEmbedBlockTagName = (typeof HTML_EMBED_BLOCK_TAG_NAMES)[number];
@@ -29,12 +33,113 @@ function readScriptOrStyleElement(
 		.match(new RegExp(`^<${tagName}\\b[^>]*>`, "i"));
 	if (!openMatch) return null;
 	const openEnd = start + openMatch[0].length;
-	const closeMatch = text
-		.slice(openEnd)
-		.match(new RegExp(`</${tagName}\\s*>`, "i"));
-	if (!closeMatch || closeMatch.index === undefined) return null;
-	const end = openEnd + closeMatch.index + closeMatch[0].length;
-	return { content: text.slice(start, end), end };
+	const closeEnd = findScriptOrStyleClose(text, openEnd, tagName);
+	if (closeEnd === null) return null;
+	return { content: text.slice(start, closeEnd), end: closeEnd };
+}
+
+function findScriptOrStyleClose(
+	text: string,
+	openEnd: number,
+	tagName: "script" | "style",
+): number | null {
+	const closeTag = `</${tagName}`;
+	let index = openEnd;
+	let inSingle = false;
+	let inDouble = false;
+	let inTemplate = false;
+	let inLineComment = false;
+	let inBlockComment = false;
+
+	while (index < text.length) {
+		const char = text[index];
+		const next = text[index + 1];
+
+		if (inLineComment) {
+			if (char === "\n") inLineComment = false;
+			index += 1;
+			continue;
+		}
+		if (inBlockComment) {
+			if (char === "*" && next === "/") {
+				inBlockComment = false;
+				index += 2;
+				continue;
+			}
+			index += 1;
+			continue;
+		}
+
+		if (!inSingle && !inDouble && !inTemplate) {
+			if (char === "/" && next === "/") {
+				inLineComment = true;
+				index += 2;
+				continue;
+			}
+			if (char === "/" && next === "*") {
+				inBlockComment = true;
+				index += 2;
+				continue;
+			}
+			if (
+				text.slice(index, index + closeTag.length).toLowerCase() === closeTag
+			) {
+				const afterTag = text.slice(index + closeTag.length).match(/^\s*>/);
+				if (afterTag) {
+					return index + closeTag.length + afterTag[0].length;
+				}
+			}
+		}
+
+		if (!inDouble && !inTemplate && char === "'" && !inSingle) {
+			inSingle = true;
+			index += 1;
+			continue;
+		}
+		if (inSingle) {
+			if (char === "\\") {
+				index += 2;
+				continue;
+			}
+			if (char === "'") inSingle = false;
+			index += 1;
+			continue;
+		}
+
+		if (!inSingle && !inTemplate && char === '"' && !inDouble) {
+			inDouble = true;
+			index += 1;
+			continue;
+		}
+		if (inDouble) {
+			if (char === "\\") {
+				index += 2;
+				continue;
+			}
+			if (char === '"') inDouble = false;
+			index += 1;
+			continue;
+		}
+
+		if (!inSingle && !inDouble && char === "`" && !inTemplate) {
+			inTemplate = true;
+			index += 1;
+			continue;
+		}
+		if (inTemplate) {
+			if (char === "\\") {
+				index += 2;
+				continue;
+			}
+			if (char === "`") inTemplate = false;
+			index += 1;
+			continue;
+		}
+
+		index += 1;
+	}
+
+	return null;
 }
 
 function readBalancedElement(
@@ -128,7 +233,13 @@ function findRawHtmlEmbedRuns(input: string) {
 			if (!isHtmlEmbedBlockStart(input, cursor)) break;
 
 			const block = readHtmlEmbedBlockElement(input, cursor);
-			if (!block) break;
+			if (!block) {
+				if (!parts.length) {
+					const nextLine = input.indexOf("\n", cursor);
+					cursor = nextLine === -1 ? input.length : nextLine + 1;
+				}
+				break;
+			}
 			if (!firstTag) firstTag = block.tagName;
 			parts.push(block.content);
 			cursor = skipOptionalBlankLines(input, block.end);
@@ -174,19 +285,18 @@ export function preprocessRawHtmlEmbeds(markdown: string): string {
 	const lines = markdown.split("\n");
 	const output: string[] = [];
 	let chunk: string[] = [];
-	let inCodeFence = false;
+	const fenceTracker = createMarkdownFenceTracker();
 
 	for (const line of lines) {
-		if (isMarkdownCodeFenceToggle(line)) {
+		if (updateMarkdownFenceTracker(line, fenceTracker)) {
 			if (chunk.length) {
 				output.push(preprocessRawHtmlEmbedChunk(chunk.join("\n")));
 				chunk = [];
 			}
-			inCodeFence = !inCodeFence;
 			output.push(line);
 			continue;
 		}
-		if (inCodeFence) {
+		if (isInsideMarkdownCodeFence(fenceTracker)) {
 			output.push(line);
 			continue;
 		}

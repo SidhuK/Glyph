@@ -91,6 +91,7 @@ export interface CodeBlockPreviewPluginState {
 }
 
 function buildCodeBlockPreviewDecorations(
+	view: EditorView,
 	doc: ProseMirrorNode,
 	selection: Selection,
 	refreshKey: number,
@@ -117,14 +118,16 @@ function buildCodeBlockPreviewDecorations(
 		const to = pos + node.nodeSize;
 		const shouldShowSource =
 			editable &&
-			(!isCodeBlockPreviewEnabled(pos) ||
+			(!isCodeBlockPreviewEnabled(view, pos) ||
 				selectionTouchesNode(selection, pos, to));
 		if (shouldShowSource) return;
 
 		const source = options.getSource
 			? options.getSource(node)
 			: (node.textContent ?? "");
-		const previewKey = editable ? getCodeBlockPreviewId(pos) : `read-${pos}`;
+		const previewKey = editable
+			? getCodeBlockPreviewId(view, pos)
+			: `read-${pos}`;
 		if (!previewKey) return;
 
 		decorations.push(
@@ -194,6 +197,7 @@ export function createCodeBlockPreviewExtension(
 								editable,
 								refreshKey: 0,
 								decorations: buildCodeBlockPreviewDecorations(
+									editor.view,
 									state.doc,
 									state.selection,
 									0,
@@ -203,7 +207,7 @@ export function createCodeBlockPreviewExtension(
 							};
 						},
 						apply(transaction, value) {
-							remapCodeBlockPreviews(transaction);
+							remapCodeBlockPreviews(editor.view, transaction);
 							const editable = getEditable();
 							const editableChanged = editable !== value.editable;
 							const shouldRefresh =
@@ -225,7 +229,7 @@ export function createCodeBlockPreviewExtension(
 
 							if (
 								editable &&
-								!hasEnabledCodeBlockPreviews() &&
+								!hasEnabledCodeBlockPreviews(editor.view) &&
 								!shouldRefresh &&
 								!editableChanged
 							) {
@@ -236,6 +240,7 @@ export function createCodeBlockPreviewExtension(
 								editable,
 								refreshKey,
 								decorations: buildCodeBlockPreviewDecorations(
+									editor.view,
 									transaction.doc,
 									transaction.selection,
 									refreshKey,

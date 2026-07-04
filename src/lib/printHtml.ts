@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import { Marked } from "marked";
+import { preprocessHtmlEmbeds } from "../components/editor/markdown/htmlEmbedMarkdown";
 import { wikiLinksToStandardMarkdown } from "../components/editor/markdown/wikiLinkCodec";
 import { displayNameFromPath, parentDir } from "../utils/path";
 import {
@@ -131,8 +132,17 @@ function sanitizeHtmlEmbedForPrint(
 	const body = wrapHtmlEmbedBody(cleaned, kind);
 	const sanitized = DOMPurify.sanitize(body, {
 		USE_PROFILES: { html: true, svg: true },
-		FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "base"],
+		FORBID_TAGS: [
+			"script",
+			"iframe",
+			"object",
+			"embed",
+			"form",
+			"base",
+			"link",
+		],
 		FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+		ALLOWED_URI_REGEXP: /^(?:(?:data|blob):|#)/i,
 	});
 	return `<div class="glyph-print-html-embed" data-kind="${kind}">${sanitized}</div>`;
 }
@@ -177,7 +187,7 @@ export function buildPrintHtml({
 }: BuildPrintHtmlOptions): string {
 	const { body: markdownBody } = splitYamlFrontmatter(markdown);
 	const preparedMarkdown = replaceHtmlEmbedsForPrint(
-		wikiLinksToStandardMarkdown(markdownBody),
+		wikiLinksToStandardMarkdown(preprocessHtmlEmbeds(markdownBody)),
 	);
 	const rendered = parseMarkdownSync(preparedMarkdown);
 	let body = DOMPurify.sanitize(rendered, {

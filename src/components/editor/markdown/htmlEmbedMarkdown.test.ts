@@ -52,6 +52,22 @@ describe("htmlEmbedMarkdown", () => {
 		expect(preprocessed).toContain("```svg");
 		expect(postprocessHtmlEmbeds(preprocessed)).toBe(md);
 	});
+
+	it("parses script blocks that contain a closing tag inside a string", () => {
+		const md = '<script>const markup = "</script>";</script>';
+		expect(preprocessHtmlEmbeds(md)).toContain("```html");
+		expect(postprocessHtmlEmbeds(preprocessHtmlEmbeds(md))).toBe(md);
+	});
+
+	it("preserves content after a fenced html block on round-trip", () => {
+		const md = "```html\n<div>Hi</div>\n```\nNext paragraph";
+		expect(postprocessHtmlEmbeds(md)).toBe(md);
+	});
+
+	it("does not hang on a self-closing svg tag", () => {
+		const md = '<svg width="1" height="1"/>';
+		expect(preprocessHtmlEmbeds(md)).toBe(md);
+	});
 });
 
 describe("wikiLinkMarkdownBridge html embeds", () => {

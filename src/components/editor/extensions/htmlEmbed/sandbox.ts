@@ -21,9 +21,9 @@ export const HTML_EMBED_CSP = [
 ].join("; ");
 
 const HTML_EMBED_MESSAGE_SOURCE = "glyph-html-embed";
-const HTML_EMBED_MIN_HEIGHT = 48;
-const HTML_EMBED_INITIAL_HEIGHT = 80;
-const HTML_EMBED_MAX_HEIGHT = 2400;
+const HTML_EMBED_MIN_HEIGHT = 80;
+const HTML_EMBED_INITIAL_HEIGHT = 240;
+const HTML_EMBED_MAX_HEIGHT = 960;
 
 export function buildHtmlEmbedSrcDoc(
 	source: string,
@@ -44,8 +44,6 @@ export function buildHtmlEmbedSrcDoc(
   main { display: block; }
   main svg { display: block; max-width: 100%; height: auto; }
 </style>
-</head>
-<body>${body}
 <script>
 (function () {
   var source = ${JSON.stringify(HTML_EMBED_MESSAGE_SOURCE)};
@@ -72,42 +70,50 @@ export function buildHtmlEmbedSrcDoc(
   function reportError(message) {
     parent.postMessage({ source: source, type: "error", message: message }, targetOrigin);
   }
-  window.addEventListener("error", function (event) {
-    reportError(event.message || "Script error");
-  });
-  window.addEventListener("unhandledrejection", function (event) {
-    var reason = event.reason;
-    reportError(reason && reason.message ? reason.message : String(reason || "Unhandled rejection"));
-  });
-  if (typeof ResizeObserver !== "undefined") {
-    var resizeObserver = new ResizeObserver(function () {
+  function start() {
+    window.addEventListener("error", function (event) {
+      reportError(event.message || "Script error");
+    });
+    window.addEventListener("unhandledrejection", function (event) {
+      var reason = event.reason;
+      reportError(reason && reason.message ? reason.message : String(reason || "Unhandled rejection"));
+    });
+    if (typeof ResizeObserver !== "undefined") {
+      var resizeObserver = new ResizeObserver(function () {
+        reportSize();
+      });
+      resizeObserver.observe(document.documentElement);
+      resizeObserver.observe(document.body);
+      var main = document.querySelector("main");
+      if (main) resizeObserver.observe(main);
+    }
+    if (typeof MutationObserver !== "undefined") {
+      new MutationObserver(reportSize).observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        characterData: true,
+      });
+    }
+    reportSize();
+    requestAnimationFrame(function () {
       reportSize();
+      requestAnimationFrame(reportSize);
     });
-    resizeObserver.observe(document.documentElement);
-    resizeObserver.observe(document.body);
-    var main = document.querySelector("main");
-    if (main) resizeObserver.observe(main);
+    for (var index = 0; index < document.images.length; index += 1) {
+      document.images[index].addEventListener("load", reportSize);
+    }
   }
-  if (typeof MutationObserver !== "undefined") {
-    new MutationObserver(reportSize).observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      characterData: true,
-    });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
   }
   window.addEventListener("load", reportSize);
-  reportSize();
-  requestAnimationFrame(function () {
-    reportSize();
-    requestAnimationFrame(reportSize);
-  });
-  for (var index = 0; index < document.images.length; index += 1) {
-    document.images[index].addEventListener("load", reportSize);
-  }
 })();
 </script>
-</body>
+</head>
+<body>${body}</body>
 </html>`;
 }
 
@@ -160,7 +166,7 @@ export function createHtmlEmbedWidget({
 
 	const iframe = document.createElement("iframe");
 	iframe.className = "htmlEmbedIframe";
-	iframe.setAttribute("sandbox", "allow-scripts");
+	iframe.setAttribute("sandbox", "allow-scripts allow-downloads");
 	iframe.setAttribute("referrerpolicy", "no-referrer");
 	iframe.setAttribute(
 		"title",
@@ -185,6 +191,9 @@ export function createHtmlEmbedWidget({
 			return;
 		}
 		if (data.type === "size" && typeof data.height === "number") {
+			root.classList.remove("htmlEmbedWidgetError");
+			error.textContent = "";
+			error.hidden = true;
 			root.dataset.state = "ready";
 			applyEmbedHeight(frame, iframe, data.height);
 			return;

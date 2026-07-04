@@ -1,6 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { AnyExtension } from "@tiptap/core";
-import { TextSelection } from "@tiptap/pm/state";
+import { Selection } from "@tiptap/pm/state";
 import { AnimatePresence } from "motion/react";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -282,8 +282,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 		};
 		if (previousRelPathRef.current !== relPath) {
-			clearCodeBlockPreviews();
 			if (editor && !editor.isDestroyed) {
+				clearCodeBlockPreviews(editor.view);
 				editor.view.dispatch(
 					editor.state.tr.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true),
 				);
@@ -293,6 +293,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		}
 		return () => {
 			blurHostSelection(host);
+			if (editor && !editor.isDestroyed) {
+				clearCodeBlockPreviews(editor.view);
+			}
 		};
 	}, [editor, relPath]);
 
@@ -642,14 +645,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		if (!editor || !selectedCodeBlock) return;
 		const node = editor.state.doc.nodeAt(selectedCodeBlock.pos);
 		if (!node || node.type.name !== "codeBlock") return;
-		enableCodeBlockPreviewAt(selectedCodeBlock.pos);
+		enableCodeBlockPreviewAt(editor.view, selectedCodeBlock.pos);
 		const afterBlock = Math.min(
 			selectedCodeBlock.pos + node.nodeSize,
 			editor.state.doc.content.size,
 		);
 		editor.view.dispatch(
 			editor.state.tr
-				.setSelection(TextSelection.create(editor.state.doc, afterBlock))
+				.setSelection(Selection.near(editor.state.doc.resolve(afterBlock)))
 				.setMeta(CODE_BLOCK_PREVIEW_REFRESH_META, true)
 				.scrollIntoView(),
 		);

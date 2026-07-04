@@ -1,47 +1,76 @@
 import type { Transaction } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 
 export const CODE_BLOCK_PREVIEW_REFRESH_META = "code-block-preview-refresh";
 
 let nextPreviewId = 1;
-const enabledPreviewIdsByPos = new Map<number, string>();
+const enabledPreviewIdsByView = new WeakMap<EditorView, Map<number, string>>();
 
-export function enableCodeBlockPreviewAt(pos: number): string {
-	const existing = enabledPreviewIdsByPos.get(pos);
+function getPreviewSession(view: EditorView): Map<number, string> {
+	let session = enabledPreviewIdsByView.get(view);
+	if (!session) {
+		session = new Map();
+		enabledPreviewIdsByView.set(view, session);
+	}
+	return session;
+}
+
+export function enableCodeBlockPreviewAt(
+	view: EditorView,
+	pos: number,
+): string {
+	const session = getPreviewSession(view);
+	const existing = session.get(pos);
 	if (existing) return existing;
 
 	const id = `cb-preview-${nextPreviewId}`;
 	nextPreviewId += 1;
-	enabledPreviewIdsByPos.set(pos, id);
+	session.set(pos, id);
 	return id;
 }
 
-export function clearCodeBlockPreviews(): void {
-	enabledPreviewIdsByPos.clear();
+export function clearCodeBlockPreviews(view: EditorView): void {
+	enabledPreviewIdsByView.delete(view);
 }
 
-export function hasEnabledCodeBlockPreviews(): boolean {
-	return enabledPreviewIdsByPos.size > 0;
+export function hasEnabledCodeBlockPreviews(view: EditorView): boolean {
+	return getPreviewSession(view).size > 0;
 }
 
-export function isCodeBlockPreviewEnabled(pos: number): boolean {
-	return enabledPreviewIdsByPos.has(pos);
+export function isCodeBlockPreviewEnabled(
+	view: EditorView,
+	pos: number,
+): boolean {
+	return getPreviewSession(view).has(pos);
 }
 
-export function getCodeBlockPreviewId(pos: number): string | null {
-	return enabledPreviewIdsByPos.get(pos) ?? null;
+export function getCodeBlockPreviewId(
+	view: EditorView,
+	pos: number,
+): string | null {
+	return getPreviewSession(view).get(pos) ?? null;
 }
 
-export function remapCodeBlockPreviews(transaction: Transaction): void {
-	if (!transaction.docChanged || enabledPreviewIdsByPos.size === 0) return;
+const remappedPreviewTransactions = new WeakSet<Transaction>();
+
+export function remapCodeBlockPreviews(
+	view: EditorView,
+	transaction: Transaction,
+): void {
+	if (remappedPreviewTransactions.has(transaction)) return;
+	remappedPreviewTransactions.add(transaction);
+
+	const session = enabledPreviewIdsByView.get(view);
+	if (!transaction.docChanged || !session || session.size === 0) return;
 
 	const next = new Map<number, string>();
-	for (const [pos, id] of enabledPreviewIdsByPos) {
+	for (const [pos, id] of session) {
 		const mapped = transaction.mapping.mapResult(pos);
 		if (!mapped.deleted) next.set(mapped.pos, id);
 	}
-	enabledPreviewIdsByPos.clear();
+	session.clear();
 	for (const [pos, id] of next) {
-		enabledPreviewIdsByPos.set(pos, id);
+		session.set(pos, id);
 	}
 }
 

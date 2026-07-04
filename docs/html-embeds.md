@@ -41,11 +41,11 @@ The flow has four stages.
 
 **2. Editor document.** TipTap stores your embed as a `codeBlock` node with `language: "html"` or `language: "svg"`. The text content is your source. Nothing from the embed lands in the ProseMirror DOM as live HTML.
 
-**3. Preview decoration.** `HtmlEmbedPreview` scans code blocks. If the language is `html` or `svg` and your selection is not inside that block, the extension hides the code visually and mounts a widget after the node. The widget contains one iframe.
+**3. Preview decoration.** `HtmlEmbedPreview` scans `html` and `svg` code blocks. Previews stay off until you click the play control in the code-block toolbar (same pattern as Mermaid). Once enabled for a block, the extension hides the source visually and mounts a sandboxed iframe widget after the node while your selection is outside that block.
 
 **4. Serialization.** On save, `postprocessHtmlEmbeds` reverses the raw-HTML sentinel conversion so notes that started as bare `<div>` blocks stay bare `<div>` blocks.
 
-If your cursor sits inside the block while the note is editable, you see source. Click outside or press "Edit code" and back out to get the preview again.
+Click the play control to render a preview. While the preview is active, click into the block to edit source again, or use "Edit code" on the preview frame. Switching notes clears enabled previews so iframes are not left mounted in the background.
 
 ## Inside the iframe
 
@@ -53,8 +53,8 @@ Each preview iframe loads your source through `srcdoc`. Glyph wraps it in a mini
 
 Sandbox attribute:
 
-```
-sandbox="allow-scripts"
+```text
+sandbox="allow-scripts allow-downloads"
 ```
 
 What that means in practice:
@@ -69,7 +69,7 @@ What that means in practice:
 
 CSP on the embed document:
 
-```
+```text
 default-src 'none'
 script-src 'unsafe-inline'
 style-src 'unsafe-inline'
@@ -136,13 +136,13 @@ The bridge recognizes consecutive runs of block-level tags: `<div>`, `<svg>`, `<
 
 Runs inside fenced code blocks are left alone. The preprocessor only touches prose regions.
 
-If you open a note in raw Markdown mode, you see fences (or raw HTML if that is how the note was stored). In rich mode with the selection outside the block, you see the preview.
+If you open a note in raw Markdown mode, you see fences (or raw HTML if that is how the note was stored). In rich mode, click the play control on an `html` or `svg` block to render its preview.
 
 ## Debugging a broken embed
 
 | Symptom | Likely cause |
 |---------|----------------|
-| Code visible, no iframe | Cursor still inside the block, or language is `xml` instead of `html` |
+| Code visible, no iframe | Preview not started yet — click the play control; or cursor is inside the block; or language is `xml` instead of `html` |
 | Blank or tiny preview | `height: 100%` collapse; add `min-height` |
 | Chart draws but colors are wrong | Glyph CSS variables used without a local `:root` definition |
 | Red error line under the embed | JavaScript threw; fix the script |
@@ -154,7 +154,7 @@ Errors from the iframe surface in `.htmlEmbedError` under the preview frame.
 
 | File | Role |
 |------|------|
-| `src/components/editor/extensions/htmlEmbedPreview.ts` | Preview decorations, selection toggling |
+| `src/components/editor/extensions/htmlEmbedPreview.ts` | Preview decorations, play-to-render toggling |
 | `src/components/editor/extensions/htmlEmbed/sandbox.ts` | `srcdoc` builder, CSP, iframe widget, sizing |
 | `src/components/editor/markdown/htmlEmbedMarkdown.ts` | Raw HTML preprocess/postprocess |
 | `src/components/editor/markdown/wikiLinkMarkdownBridge.ts` | Pipeline wiring |
@@ -167,7 +167,7 @@ Errors from the iframe surface in `.htmlEmbedError` under the preview frame.
 
 Copy this prompt into Cursor (or any agent) with your HTML file attached:
 
-```
+```text
 Convert the attached HTML file into a single Glyph HTML embed block I can paste into a note.
 
 Requirements:

@@ -3,7 +3,7 @@ export type HtmlEmbedKind = "html" | "svg";
 export const HTML_EMBED_RAW_SENTINEL = "<!--glyph-raw-html-embed-->";
 
 const FENCED_HTML_EMBED_RE =
-	/(`{3,}|~{3,})(html|svg)[^\S\r\n]*\r?\n([\s\S]*?)\r?\n\1[^\S\r\n]*(?:\r?\n|$)/gi;
+	/(`{3,}|~{3,})(html|svg)[^\S\r\n]*\r?\n([\s\S]*?)\r?\n\1[^\S\r\n]*(?=\r?\n|$)/gi;
 
 export interface HtmlEmbedFenceBlock {
 	start: number;
