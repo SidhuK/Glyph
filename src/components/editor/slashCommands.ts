@@ -207,6 +207,50 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		icon: "</>",
+		title: "HTML embed",
+		description: "Insert a sandboxed HTML preview block",
+		keywords: ["html", "embed", "widget", "preview"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "codeBlock",
+					attrs: { language: "html" },
+					content: [
+						{
+							type: "text",
+							text: '<div id="app"></div>\n<style>\n  #app { padding: 16px; }\n</style>\n<script>\n  document.querySelector("#app").textContent = "Live HTML block";\n</script>',
+						},
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "◇",
+		title: "SVG embed",
+		description: "Insert a sandboxed SVG preview block",
+		keywords: ["svg", "vector", "graphic", "embed", "preview"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "codeBlock",
+					attrs: { language: "svg" },
+					content: [
+						{
+							type: "text",
+							text: '<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">\n  <rect width="200" height="80" rx="12" fill="tomato" />\n  <text x="100" y="48" text-anchor="middle">Glyph</text>\n</svg>',
+						},
+					],
+				})
+				.run(),
+	},
+	{
 		icon: "▸",
 		title: "Details block",
 		description: "Insert a collapsible toggle section",

@@ -15,6 +15,7 @@ const lowlight = createLowlight();
 
 lowlight.register({
 	bash,
+	html: xml,
 	javascript,
 	json,
 	markdown,
@@ -22,6 +23,7 @@ lowlight.register({
 	plaintext,
 	python,
 	rust,
+	svg: xml,
 	typescript,
 	xml,
 	yaml,
@@ -34,7 +36,6 @@ const CODE_BLOCK_LANGUAGE_ALIASES = {
 	plaintext: ["text", "txt"],
 	python: ["py"],
 	typescript: ["ts", "tsx"],
-	xml: ["html", "svg"],
 	yaml: ["yml"],
 } as const;
 
@@ -43,6 +44,7 @@ lowlight.registerAlias(CODE_BLOCK_LANGUAGE_ALIASES);
 const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"plaintext",
 	"bash",
+	"html",
 	"javascript",
 	"typescript",
 	"json",
@@ -50,6 +52,7 @@ const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"mermaid",
 	"python",
 	"rust",
+	"svg",
 	"xml",
 	"yaml",
 ] as const;
@@ -70,7 +73,9 @@ export const CODE_BLOCK_LANGUAGE_OPTIONS: ReadonlyArray<{
 	{ label: "Mermaid", value: "mermaid" },
 	{ label: "Python", value: "python" },
 	{ label: "Rust", value: "rust" },
-	{ label: "HTML / XML", value: "xml" },
+	{ label: "HTML", value: "html" },
+	{ label: "SVG", value: "svg" },
+	{ label: "XML", value: "xml" },
 	{ label: "YAML", value: "yaml" },
 ] as const;
 

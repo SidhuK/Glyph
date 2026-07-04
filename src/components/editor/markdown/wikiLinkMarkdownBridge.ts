@@ -19,6 +19,10 @@ import {
 	preprocessDetailsMarkdown,
 } from "./detailsMarkdown";
 import {
+	postprocessHtmlEmbeds,
+	preprocessHtmlEmbeds,
+} from "./htmlEmbedMarkdown";
+import {
 	postprocessInlineTocMarkers,
 	preprocessInlineTocMarkers,
 } from "./inlineTocMarkdown";
@@ -168,7 +172,9 @@ export function preprocessMarkdownForEditor(markdown: string): string {
 			preprocessHighlightedText(
 				encodeMarkdownImageDestinations(
 					canonicalizeWikiLinks(
-						preprocessDetailsMarkdown(preprocessInlineTocMarkers(markdown)),
+						preprocessDetailsMarkdown(
+							preprocessHtmlEmbeds(preprocessInlineTocMarkers(markdown)),
+						),
 					),
 				),
 			),
@@ -182,7 +188,9 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 			postprocessWhitespaceLines(
 				postprocessHighlightedText(
 					postprocessColoredText(
-						postprocessDetailsMarkdown(canonicalizeWikiLinks(markdown)),
+						postprocessDetailsMarkdown(
+							postprocessHtmlEmbeds(canonicalizeWikiLinks(markdown)),
+						),
 					),
 				),
 			),
