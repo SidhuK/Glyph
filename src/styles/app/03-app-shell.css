@@ -88,7 +88,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 }
 
 .glyphToastBadge {
-	background: color-mix(in srgb, currentColor 16%, transparent) !important;
+	background: color-mix(in srgb, currentcolor 16%, transparent) !important;
 }
 
 .glyphToastButton {

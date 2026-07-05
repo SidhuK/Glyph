@@ -517,8 +517,8 @@ export const MainContent = memo(function MainContent({
 		) {
 			return;
 		}
-		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
 		if (!spacePath) return;
+		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
 		toast.info("Set a folder to use daily notes", {
 			id: DAILY_NOTES_SETUP_TOAST_ID,
 			description: "Glyph will create each day's note there automatically.",
