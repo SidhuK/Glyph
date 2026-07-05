@@ -12,7 +12,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { toast } from "../../lib/toast";
 import {
 	useAISidebarContext,
 	useEditorContext,
@@ -61,6 +60,7 @@ import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
+import { toast } from "../../lib/toast";
 import {
 	displayNameFromPath,
 	isMarkdownPath,

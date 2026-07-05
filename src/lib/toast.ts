@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { sileo, type SileoOptions, type SileoPosition } from "sileo";
+import { type SileoOptions, type SileoPosition, sileo } from "sileo";
 
 interface ToastAction {
 	label: string;

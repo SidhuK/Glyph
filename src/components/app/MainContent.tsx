@@ -512,12 +512,12 @@ export const MainContent = memo(function MainContent({
 	useEffect(() => {
 		if (
 			dailyNoteSetupNoticeRequest === 0 ||
-			dailyNoteSetupNoticeRequest === handledDailyNoteSetupNoticeRequestRef.current
+			dailyNoteSetupNoticeRequest ===
+				handledDailyNoteSetupNoticeRequestRef.current
 		) {
 			return;
 		}
-		handledDailyNoteSetupNoticeRequestRef.current =
-			dailyNoteSetupNoticeRequest;
+		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
 		if (!spacePath) return;
 		toast.info("Set a folder to use daily notes", {
 			id: DAILY_NOTES_SETUP_TOAST_ID,

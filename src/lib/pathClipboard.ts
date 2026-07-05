@@ -1,6 +1,6 @@
 import { join } from "@tauri-apps/api/path";
-import { toast } from "./toast";
 import type { NativeContextMenuItem } from "./nativeContextMenu";
+import { toast } from "./toast";
 
 function relativePathLabel(relPath: string): string {
 	return relPath || "/";
