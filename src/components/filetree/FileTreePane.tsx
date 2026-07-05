@@ -16,8 +16,8 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
+import { toast } from "../../lib/toast";
 
 import {
 	compareEntriesForSort,

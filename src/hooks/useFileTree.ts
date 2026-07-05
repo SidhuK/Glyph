@@ -1,11 +1,11 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
-import { toast } from "sonner";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { toast } from "../lib/toast";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";

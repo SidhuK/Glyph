@@ -29,20 +29,93 @@
 	position: relative;
 }
 
+html:root {
+	--glyph-toast-fill: #1a1a1a;
+	--glyph-toast-text: #f7f7f4;
+	--glyph-toast-muted: rgba(247, 247, 244, 0.66);
+	--sileo-width: min(350px, calc(100vw - 32px));
+	--sileo-height: 40px;
+	--sileo-duration: 560ms;
+	--sileo-state-success: var(--status-success-fg);
+	--sileo-state-error: var(--status-danger-fg);
+	--sileo-state-warning: var(--status-warning-fg);
+	--sileo-state-info: var(--status-info-fg);
+	--sileo-state-action: var(--interactive-accent);
+}
+
+:root.dark {
+	--glyph-toast-fill: #f2f2ee;
+	--glyph-toast-text: #171714;
+	--glyph-toast-muted: rgba(23, 23, 20, 0.58);
+}
+
+[data-sileo-viewport][data-position] {
+	z-index: 90;
+	font-family: inherit;
+}
+
+[data-sileo-viewport][data-position="top-center"] {
+	top: 10px;
+}
+
+[data-sileo-toast],
+[data-sileo-toast]:hover,
+[data-sileo-toast]:active {
+	color: inherit !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	outline: 0 !important;
+}
+
+body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
+	top: 58px;
+}
+
+.glyphToastTitle {
+	overflow: hidden !important;
+	color: var(--glyph-toast-text) !important;
+	font-size: 12.5px !important;
+	font-weight: 600 !important;
+	letter-spacing: 0 !important;
+	text-overflow: ellipsis !important;
+	text-transform: none !important;
+}
+
+.glyphToastDescription {
+	color: var(--glyph-toast-muted) !important;
+	font-size: 12.5px !important;
+	line-height: 1.35 !important;
+}
+
+.glyphToastBadge {
+	background: color-mix(in srgb, currentcolor 16%, transparent) !important;
+}
+
+.glyphToastButton {
+	color: var(--glyph-toast-text) !important;
+	background: transparent !important;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.glyphToastButton:hover {
+	background: transparent !important;
+}
+
 .indexingNotice {
-	position: absolute;
-	top: 12px;
+	position: fixed;
+	top: 10px;
 	left: 50%;
-	z-index: 60;
-	width: min(360px, calc(100% - 32px));
+	z-index: 80;
+	width: min(350px, calc(100vw - 32px));
+	min-height: 40px;
 	transform: translateX(-50%);
-	padding: 10px 12px 9px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	border-radius: calc(var(--radius-6) + var(--radius-6));
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	box-shadow: var(--shadow-md);
-	backdrop-filter: blur(18px) saturate(1.2);
-	-webkit-backdrop-filter: blur(18px) saturate(1.2);
+	padding: 8px 10px 9px;
+	border: 0;
+	border-radius: 14px;
+	color: var(--glyph-toast-text);
+	background: var(--glyph-toast-fill);
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 	pointer-events: none;
 }
 
@@ -51,17 +124,17 @@
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 12px;
-	font-size: 12px;
+	font-size: 12.5px;
 	line-height: 1.3;
 }
 
 .indexingNoticeCopy strong {
 	font-weight: 600;
-	color: var(--text-primary);
+	color: var(--glyph-toast-text);
 }
 
 .indexingNoticeCopy span {
-	color: var(--text-muted);
+	color: var(--glyph-toast-muted);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -70,13 +143,13 @@
 	margin-top: 8px;
 	overflow: hidden;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+	background: color-mix(in srgb, var(--glyph-toast-text) 12%, transparent);
 }
 
 .indexingNoticeBar {
 	height: 100%;
 	border-radius: inherit;
-	background: var(--accent-color);
+	background: var(--status-info-fg);
 	transition: width 120ms ease-out;
 }
 

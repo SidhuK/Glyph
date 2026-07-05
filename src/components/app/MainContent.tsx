@@ -52,9 +52,10 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { toast } from "../../lib/toast";
 import { cn } from "../../lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Calendar, FileText, Settings } from "../Icons";
+import { Calendar, FileText } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type {
 	CreateMarkdownFileOptions,
@@ -71,7 +72,6 @@ import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { springPresets } from "../ui/animations";
-import { Button } from "../ui/shadcn/button";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
@@ -92,6 +92,7 @@ const PinnedDocsPane = lazy(() =>
 const DatabasesPane = lazy(loadDatabasesPane);
 const AllDocsPane = lazy(loadAllDocsPane);
 const ActivityTimelinePane = lazy(loadActivityTimelinePane);
+const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
@@ -314,73 +315,6 @@ interface MainContentProps {
 	onRightSidebarOpenChange?: (open: boolean) => void;
 }
 
-function DailyNotesSetupToast({
-	visible,
-	onOpenSettings,
-	onDismiss,
-}: {
-	visible: boolean;
-	onOpenSettings: () => void;
-	onDismiss: () => void;
-}) {
-	const reduced = useReducedMotion() ?? false;
-
-	return (
-		<AnimatePresence>
-			{visible ? (
-				<m.div
-					className="dailyNotesSetupToastLayer"
-					initial={reduced ? false : { opacity: 0, scale: 0.96, y: 18 }}
-					animate={{ opacity: 1, scale: 1, y: 0 }}
-					exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 12 }}
-					transition={
-						reduced
-							? { duration: 0.16 }
-							: { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
-					}
-				>
-					<output className="dailyNotesSetupToast" aria-live="polite">
-						<div className="dailyNotesSetupToastHeader">
-							<div className="dailyNotesSetupToastIcon">
-								<Calendar size="var(--icon-lg)" />
-							</div>
-							<div className="dailyNotesSetupToastTitleBlock">
-								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
-								<h2 className="dailyNotesSetupToastTitle">
-									Set a folder to use daily notes
-								</h2>
-							</div>
-						</div>
-						<p className="dailyNotesSetupToastText">
-							Glyph will create each day&apos;s note there automatically.
-						</p>
-						<div className="dailyNotesSetupToastActions">
-							<Button
-								type="button"
-								size="sm"
-								variant="ghost"
-								className="dailyNotesSetupToastSecondary"
-								onClick={onDismiss}
-							>
-								Not now
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								className="dailyNotesSetupToastPrimary"
-								onClick={onOpenSettings}
-							>
-								<Settings size="var(--icon-md)" />
-								<span>Open settings</span>
-							</Button>
-						</div>
-					</output>
-				</m.div>
-			) : null}
-		</AnimatePresence>
-	);
-}
-
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenFile,
@@ -429,13 +363,12 @@ export const MainContent = memo(function MainContent({
 	);
 	const [onboardingLoaded, setOnboardingLoaded] = useState(false);
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
-	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
-		useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const [activeGitDiffState, setActiveGitDiffState] =
 		useState<ActiveGitDiffState | null>(null);
 	const handledShowGettingStartedRequestRef = useRef(0);
+	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
 		[tabs, activeTabId],
@@ -577,13 +510,33 @@ export const MainContent = memo(function MainContent({
 	});
 
 	useEffect(() => {
-		if (!spacePath || dailyNoteSetupNoticeRequest === 0) return;
-		setDailyNoteSetupToastVisible(true);
-		const timeout = window.setTimeout(() => {
-			setDailyNoteSetupToastVisible(false);
-		}, 5200);
-		return () => window.clearTimeout(timeout);
-	}, [dailyNoteSetupNoticeRequest, spacePath]);
+		if (
+			dailyNoteSetupNoticeRequest === 0 ||
+			dailyNoteSetupNoticeRequest ===
+				handledDailyNoteSetupNoticeRequestRef.current
+		) {
+			return;
+		}
+		if (!spacePath) return;
+		handledDailyNoteSetupNoticeRequestRef.current = dailyNoteSetupNoticeRequest;
+		toast.info("Set a folder to use daily notes", {
+			id: DAILY_NOTES_SETUP_TOAST_ID,
+			description: "Glyph will create each day's note there automatically.",
+			duration: 7200,
+			action: {
+				label: "Open settings",
+				onClick: () => {
+					toast.dismiss(DAILY_NOTES_SETUP_TOAST_ID);
+					onOpenDailyNotesSettings();
+				},
+			},
+		});
+	}, [dailyNoteSetupNoticeRequest, onOpenDailyNotesSettings, spacePath]);
+
+	useEffect(() => {
+		if (spacePath) return;
+		toast.dismiss(DAILY_NOTES_SETUP_TOAST_ID);
+	}, [spacePath]);
 
 	useEffect(() => {
 		if (!spacePath) return;
@@ -772,14 +725,6 @@ export const MainContent = memo(function MainContent({
 			data-all-docs={isAllDocsTab || isActivityTab ? "true" : undefined}
 			data-databases={isDatabasesTab ? "true" : undefined}
 		>
-			<DailyNotesSetupToast
-				visible={dailyNoteSetupToastVisible}
-				onDismiss={() => setDailyNoteSetupToastVisible(false)}
-				onOpenSettings={() => {
-					setDailyNoteSetupToastVisible(false);
-					onOpenDailyNotesSettings();
-				}}
-			/>
 			{showTabBar ? (
 				<div className="mainTabBarTransition">
 					<TabBar

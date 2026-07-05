@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/core";
 import { type RefObject, useCallback, useState } from "react";
-import { toast } from "sonner";
 import { invoke } from "../../../lib/tauri";
+import { toast } from "../../../lib/toast";
 import {
 	type ExtractToNoteDialogState,
 	buildExtractSelectionDraft,

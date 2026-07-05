@@ -1,5 +1,4 @@
 import { useCallback, useRef } from "react";
-import { toast } from "sonner";
 import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
@@ -16,6 +15,7 @@ import {
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { toast } from "../lib/toast";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../utils/path";
 import {
 	compareEntries,

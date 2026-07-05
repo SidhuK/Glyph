@@ -28,7 +28,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
-import { toast } from "sonner";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import {
 	dispatchOpenLocalConnections,
@@ -44,6 +43,7 @@ import {
 	type ShortcutActionId,
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
+import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
 import type { Command } from "./CommandPalette";

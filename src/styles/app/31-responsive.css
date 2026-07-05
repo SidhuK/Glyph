@@ -22,24 +22,4 @@
 	.starterPane {
 		padding: var(--space-3);
 	}
-
-	.dailyNotesSetupToast {
-		width: min(340px, calc(100% - 16px));
-		padding: 14px;
-	}
-
-	.dailyNotesSetupToastText,
-	.dailyNotesSetupToastActions {
-		padding-left: 0;
-	}
-
-	.dailyNotesSetupToastActions {
-		justify-content: stretch;
-		flex-wrap: wrap;
-	}
-
-	.dailyNotesSetupToastPrimary,
-	.dailyNotesSetupToastSecondary {
-		flex: 1 1 160px;
-	}
 }
