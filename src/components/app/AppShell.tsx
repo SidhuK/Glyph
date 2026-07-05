@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openPath } from "@tauri-apps/plugin-opener";
+import { AnimatePresence } from "motion/react";
 import {
 	Suspense,
 	lazy,
@@ -189,11 +190,6 @@ export function AppShell() {
 			: window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_WIDTH,
 	);
 
-	useEffect(() => {
-		if (!error) return;
-		toast.error(error);
-		setError("");
-	}, [error, setError]);
 	const sidebarCollapsed = sidebarCollapsedState || sidebarAutoCollapsed;
 	const setSidebarCollapsed = useCallback(
 		(collapsed: boolean) => {
@@ -394,6 +390,7 @@ export function AppShell() {
 		} catch (cause) {
 			const message = cause instanceof Error ? cause.message : String(cause);
 			setError(message);
+			toast.error("Could not open the welcome note", { description: message });
 		}
 	}, [fileTree, openWorkspaceFile, setError, spacePath]);
 
@@ -456,6 +453,7 @@ export function AppShell() {
 			console.error("Failed to open quick note", cause);
 			const message = cause instanceof Error ? cause.message : String(cause);
 			setError(message);
+			toast.error("Could not open quick note", { description: message });
 		});
 	});
 
@@ -467,10 +465,6 @@ export function AppShell() {
 	});
 
 	const openTemplatesSettings = useCallback(() => {
-		openSettings("space");
-	}, [openSettings]);
-
-	const openDailyNotesSettings = useCallback(() => {
 		openSettings("space");
 	}, [openSettings]);
 
@@ -1066,6 +1060,9 @@ export function AppShell() {
 			const message =
 				cause instanceof Error ? cause.message : "Git Sync failed.";
 			setError(message);
+			toast.error("Git Sync failed", {
+				description: message,
+			});
 		},
 		[setError],
 	);
@@ -1387,9 +1384,12 @@ export function AppShell() {
 				databasesOpenRequest={databasesOpenRequest}
 				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
-				onOpenDailyNotesSettings={openDailyNotesSettings}
+				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
+			<AnimatePresence>
+				{error && <div className="appError">{error}</div>}
+			</AnimatePresence>
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette

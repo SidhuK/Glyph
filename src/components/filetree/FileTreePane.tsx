@@ -17,6 +17,7 @@ import {
 	useState,
 } from "react";
 import { useFileTreeContext, useSpace } from "../../contexts";
+import { toast } from "../../lib/toast";
 
 import {
 	compareEntriesForSort,
@@ -738,6 +739,9 @@ export const FileTreePane = memo(function FileTreePane({
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
+				toast.error("Could not update file tree appearance", {
+					description: message,
+				});
 			}
 		},
 		[setError, setItemAppearance],

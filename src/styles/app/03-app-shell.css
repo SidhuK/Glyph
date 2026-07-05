@@ -87,19 +87,6 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	line-height: 1.35 !important;
 }
 
-.glyphToastDescriptionBody {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 10px;
-	min-width: 0;
-}
-
-.glyphToastDescriptionText {
-	min-width: 0;
-	max-width: 100%;
-}
-
 .glyphToastBadge {
 	background: color-mix(
 		in srgb,
@@ -117,28 +104,6 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 
 .glyphToastButton:hover {
 	background: transparent !important;
-}
-
-.glyphToastDismissButton {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	align-self: center;
-	height: 24px;
-	padding: 0;
-	color: var(--glyph-toast-text);
-	background: transparent;
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1;
-	text-decoration: none;
-}
-
-.glyphToastDismissButton:hover,
-.glyphToastDismissButton:focus-visible {
-	color: var(--glyph-toast-text);
-	background: transparent;
-	text-decoration: none;
 }
 
 .indexingNotice {

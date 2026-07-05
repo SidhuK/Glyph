@@ -1,4 +1,4 @@
-import { createElement, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { sileo, type SileoOptions, type SileoPosition } from "sileo";
 
 interface ToastAction {
@@ -26,35 +26,6 @@ function nextToastId() {
 	return `glyph-toast-${toastId}`;
 }
 
-function toastDescription(id: string, description: ReactNode | undefined) {
-	return createElement(
-		"div",
-		{ className: "glyphToastDescriptionBody" },
-		description === undefined
-			? null
-			: createElement(
-					"div",
-					{ className: "glyphToastDescriptionText" },
-					description,
-				),
-		createElement(
-			"a",
-			{
-				href: "#",
-				role: "button",
-				"data-sileo-button": true,
-				className: "glyphToastDismissButton",
-				onClick: (event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					sileo.dismiss(id);
-				},
-			},
-			"Dismiss",
-		),
-	);
-}
-
 function stylesForClassName(className: string | undefined) {
 	if (!className) return undefined;
 	return {
@@ -73,10 +44,9 @@ function toSileoOptions(
 		title,
 	};
 
-	sileoOptions.description = toastDescription(
-		sileoOptions.id,
-		options.description,
-	);
+	if (options.description !== undefined) {
+		sileoOptions.description = options.description;
+	}
 	if (options.duration !== undefined) {
 		sileoOptions.duration = options.duration;
 	}

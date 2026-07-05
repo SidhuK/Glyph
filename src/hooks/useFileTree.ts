@@ -5,6 +5,7 @@ import { extractErrorMessage } from "../lib/errorUtils";
 import { promptCreateFolderName } from "../lib/promptCreateFolderName";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { toast } from "../lib/toast";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
@@ -337,6 +338,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			} catch (error) {
 				const message = extractErrorMessage(error);
 				setError(message);
+				toast.error("Could not create folder", { description: message });
 				return null;
 			}
 		},
