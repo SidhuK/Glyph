@@ -15,8 +15,11 @@ interface ToastOptions {
 	id?: string;
 }
 
-interface SileoOptionsWithId extends SileoOptions {
+// Same shape as SileoOptions, but sileo renders `title` as React children,
+// so at runtime it accepts a ReactNode even though its published type is string.
+interface GlyphSileoOptions extends Omit<SileoOptions, "title"> {
 	id: string;
+	title: ReactNode;
 }
 
 let toastId = 0;
@@ -35,13 +38,36 @@ function stylesForClassName(className: string | undefined) {
 	} satisfies SileoOptions["styles"];
 }
 
+function titleWithDismiss(id: string, title: string) {
+	return (
+		<span className="glyphToastTitleRow">
+			{title}
+			{/* Not a <button>: sileo renders the whole toast as a <button>, and
+			    buttons cannot nest. data-sileo-button opts out of swipe-to-dismiss. */}
+			<input
+				type="button"
+				value="✕"
+				data-sileo-button
+				className="glyphToastClose"
+				aria-label="Dismiss notification"
+				onClick={(event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					sileo.dismiss(id);
+				}}
+			/>
+		</span>
+	);
+}
+
 function toSileoOptions(
 	title: string,
 	options: ToastOptions = {},
-): SileoOptionsWithId {
-	const sileoOptions: SileoOptionsWithId = {
-		id: options.id ?? nextToastId(),
-		title,
+): SileoOptions {
+	const id = options.id ?? nextToastId();
+	const sileoOptions: GlyphSileoOptions = {
+		id,
+		title: titleWithDismiss(id, title),
 	};
 
 	if (options.description !== undefined) {
@@ -65,7 +91,9 @@ function toSileoOptions(
 		sileoOptions.styles = styles;
 	}
 
-	return sileoOptions;
+	// Boundary cast: sileo's published title type (string) is narrower than
+	// what its renderer supports (React children). See GlyphSileoOptions.
+	return sileoOptions as SileoOptions;
 }
 
 export const toast = {

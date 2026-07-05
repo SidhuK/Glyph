@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openPath } from "@tauri-apps/plugin-opener";
-import { AnimatePresence } from "motion/react";
 import {
 	Suspense,
 	lazy,
@@ -106,7 +105,6 @@ export function AppShell() {
 	const space = useSpace();
 	const {
 		spacePath,
-		error,
 		setError,
 		onOpenSpace,
 		onOpenSpaceAtPath,
@@ -292,7 +290,10 @@ export function AppShell() {
 			} else if (status.phase === "error" || status.last_error) {
 				const message =
 					status.last_error ?? status.message ?? "Git Sync failed.";
-				setError(message);
+				toast.error("Git Sync failed", {
+					description: message,
+					id: "glyph-git-sync-error",
+				});
 			}
 		}
 
@@ -304,7 +305,7 @@ export function AppShell() {
 					message: status.message,
 				}
 			: null;
-	}, [gitSync.status, setError]);
+	}, [gitSync.status]);
 
 	const fileTree = useFileTree({
 		spacePath,
@@ -1055,17 +1056,13 @@ export function AppShell() {
 		[fileTree.loadDir, setSidebarCollapsed, updateExpandedDirs],
 	);
 
-	const handleGitSyncFailure = useCallback(
-		(cause: unknown) => {
-			const message =
-				cause instanceof Error ? cause.message : "Git Sync failed.";
-			setError(message);
-			toast.error("Git Sync failed", {
-				description: message,
-			});
-		},
-		[setError],
-	);
+	const handleGitSyncFailure = useCallback((cause: unknown) => {
+		const message = cause instanceof Error ? cause.message : "Git Sync failed.";
+		toast.error("Git Sync failed", {
+			description: message,
+			id: "glyph-git-sync-error",
+		});
+	}, []);
 
 	const handleCloseTabOrWindow = useCallback(async () => {
 		if (tabs.length > 0) {
@@ -1387,9 +1384,6 @@ export function AppShell() {
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
-			<AnimatePresence>
-				{error && <div className="appError">{error}</div>}
-			</AnimatePresence>
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette
