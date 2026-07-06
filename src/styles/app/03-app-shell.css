@@ -87,6 +87,36 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 	line-height: 1.35 !important;
 }
 
+.glyphToastTitleRow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.glyphToastClose[data-sileo-button] {
+	flex: none;
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--glyph-toast-muted);
+	font-size: 10px;
+	line-height: 18px;
+	text-align: center;
+	cursor: pointer;
+	transition: color 120ms ease, background 120ms ease;
+}
+
+.glyphToastClose[data-sileo-button]:hover,
+.glyphToastClose[data-sileo-button]:focus-visible {
+	color: var(--glyph-toast-text);
+	background: color-mix(in srgb, var(--glyph-toast-text) 10%, transparent);
+	outline: 0;
+}
+
 .glyphToastBadge {
 	background: color-mix(in srgb, currentcolor 16%, transparent) !important;
 }

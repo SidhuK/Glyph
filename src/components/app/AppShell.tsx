@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import { join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openPath } from "@tauri-apps/plugin-opener";
-import { AnimatePresence } from "motion/react";
 import {
 	Suspense,
 	lazy,
@@ -102,11 +101,19 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760;
+const GIT_SYNC_ERROR_TOAST_ID = "glyph-git-sync-error";
+
+function showGitSyncErrorToast(message: string) {
+	toast.error("Git Sync failed", {
+		description: message,
+		id: GIT_SYNC_ERROR_TOAST_ID,
+	});
+}
+
 export function AppShell() {
 	const space = useSpace();
 	const {
 		spacePath,
-		error,
 		setError,
 		onOpenSpace,
 		onOpenSpaceAtPath,
@@ -292,7 +299,7 @@ export function AppShell() {
 			} else if (status.phase === "error" || status.last_error) {
 				const message =
 					status.last_error ?? status.message ?? "Git Sync failed.";
-				setError(message);
+				showGitSyncErrorToast(message);
 			}
 		}
 
@@ -304,7 +311,7 @@ export function AppShell() {
 					message: status.message,
 				}
 			: null;
-	}, [gitSync.status, setError]);
+	}, [gitSync.status]);
 
 	const fileTree = useFileTree({
 		spacePath,
@@ -389,10 +396,9 @@ export function AppShell() {
 			await openWorkspaceFile(notePath);
 		} catch (cause) {
 			const message = cause instanceof Error ? cause.message : String(cause);
-			setError(message);
 			toast.error("Could not open the welcome note", { description: message });
 		}
-	}, [fileTree, openWorkspaceFile, setError, spacePath]);
+	}, [fileTree, openWorkspaceFile, spacePath]);
 
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
@@ -452,7 +458,6 @@ export function AppShell() {
 		void openWorkspaceFile(payload.path).catch((cause) => {
 			console.error("Failed to open quick note", cause);
 			const message = cause instanceof Error ? cause.message : String(cause);
-			setError(message);
 			toast.error("Could not open quick note", { description: message });
 		});
 	});
@@ -1055,17 +1060,10 @@ export function AppShell() {
 		[fileTree.loadDir, setSidebarCollapsed, updateExpandedDirs],
 	);
 
-	const handleGitSyncFailure = useCallback(
-		(cause: unknown) => {
-			const message =
-				cause instanceof Error ? cause.message : "Git Sync failed.";
-			setError(message);
-			toast.error("Git Sync failed", {
-				description: message,
-			});
-		},
-		[setError],
-	);
+	const handleGitSyncFailure = useCallback((cause: unknown) => {
+		const message = cause instanceof Error ? cause.message : "Git Sync failed.";
+		showGitSyncErrorToast(message);
+	}, []);
 
 	const handleCloseTabOrWindow = useCallback(async () => {
 		if (tabs.length > 0) {
@@ -1387,9 +1385,6 @@ export function AppShell() {
 				onOpenDailyNotesSettings={() => openSettings("space")}
 				onRightSidebarOpenChange={setRightSidebarOpen}
 			/>
-			<AnimatePresence>
-				{error && <div className="appError">{error}</div>}
-			</AnimatePresence>
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette

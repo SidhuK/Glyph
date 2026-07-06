@@ -337,12 +337,11 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return createdPath;
 			} catch (error) {
 				const message = extractErrorMessage(error);
-				setError(message);
 				toast.error("Could not create folder", { description: message });
 				return null;
 			}
 		},
-		[createFolderInDir, loadDir, setActiveDirPath, setError, spacePath],
+		[createFolderInDir, loadDir, setActiveDirPath, spacePath],
 	);
 
 	return {

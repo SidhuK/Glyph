@@ -19,6 +19,7 @@ import {
 	updateOnboardingSettings,
 } from "../lib/settings";
 import { type AppInfo, invoke } from "../lib/tauri";
+import { toast } from "../lib/toast";
 import { SPACE_WINDOW_PREFIX } from "../lib/windowLabels";
 
 function isSpaceWindow(): boolean {
@@ -31,7 +32,6 @@ function isSpaceWindow(): boolean {
 
 interface SpaceContextValue {
 	info: AppInfo | null;
-	error: string;
 	setError: (error: string) => void;
 	spacePath: string | null;
 	lastSpacePath: string | null;
@@ -80,9 +80,13 @@ function recentSpacesForMenu(
 		.slice(0, 20);
 }
 
+// Space-level errors surface as top toasts; there is no persistent error state.
+function setError(message: string) {
+	if (message) toast.error(message, { id: "glyph-space-error" });
+}
+
 export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [info, setInfo] = useState<AppInfo | null>(null);
-	const [error, setError] = useState("");
 	const [spacePath, setSpacePath] = useState<string | null>(null);
 	const [lastSpacePath, setLastSpacePath] = useState<string | null>(null);
 	const [spaceSchemaVersion, setSpaceSchemaVersion] = useState<number | null>(
@@ -236,7 +240,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		async (path: string, mode: "open" | "create") => {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
-			setError("");
 			try {
 				const sessionSpacePath = await invoke("space_get_current");
 				const spaceInfo = sessionSpacePath
@@ -271,7 +274,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	);
 
 	const closeSpace = useCallback(async () => {
-		setError("");
 		try {
 			await invoke("space_close");
 			clearAiPanelCaches();
@@ -325,7 +327,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const value = useMemo<SpaceContextValue>(
 		() => ({
 			info,
-			error,
 			setError,
 			spacePath,
 			lastSpacePath,
@@ -345,7 +346,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		}),
 		[
 			info,
-			error,
 			spacePath,
 			lastSpacePath,
 			spaceSchemaVersion,
