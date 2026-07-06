@@ -15,8 +15,6 @@ interface ToastOptions {
 	id?: string;
 }
 
-// Same shape as SileoOptions, but sileo renders `title` as React children,
-// so at runtime it accepts a ReactNode even though its published type is string.
 interface GlyphSileoOptions extends Omit<SileoOptions, "title"> {
 	id: string;
 	title: ReactNode;
@@ -91,8 +89,6 @@ function toSileoOptions(
 		sileoOptions.styles = styles;
 	}
 
-	// Boundary cast: sileo's published title type (string) is narrower than
-	// what its renderer supports (React children). See GlyphSileoOptions.
 	return sileoOptions as SileoOptions;
 }
 
