@@ -5,12 +5,13 @@ import {
 	Folder03Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, m } from "motion/react";
+import { m } from "motion/react";
 import type {
+	CSSProperties,
 	KeyboardEvent,
 	MouseEvent,
 	MutableRefObject,
-	ReactNode,
+	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
@@ -97,7 +98,6 @@ interface FileTreeDirItemProps {
 	isExpanded: boolean;
 	isActive: boolean;
 	isRenaming: boolean;
-	children?: ReactNode;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onStartRename: () => void;
@@ -112,6 +112,9 @@ interface FileTreeDirItemProps {
 	onOpenAppearancePicker: () => void;
 	fileCount?: number | null;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
+	virtualRowRef?: Ref<HTMLLIElement>;
+	virtualRowStyle?: CSSProperties;
+	virtualRowIndex?: number;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -120,7 +123,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	isExpanded,
 	isActive,
 	isRenaming,
-	children,
 	onToggleDir,
 	onSelectDir,
 	onStartRename,
@@ -135,6 +137,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onOpenAppearancePicker,
 	fileCount,
 	onMoveClickSuppressRef,
+	virtualRowRef,
+	virtualRowStyle,
+	virtualRowIndex,
 }: FileTreeDirItemProps) {
 	const { spacePath } = useSpace();
 	const customColor =
@@ -156,14 +161,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			kind: "dir",
 		},
 	});
-	const {
-		rowDroppableRef,
-		isRowDropTarget,
-		childrenDroppableRef,
-		isChildrenDropTarget,
-	} = useFileTreeDirDropTargets({
+	const { rowDroppableRef, isRowDropTarget } = useFileTreeDirDropTargets({
 		relPath: entry.rel_path,
-		isExpanded,
 	});
 	const setDragHandleRef = useCallback(
 		(element: HTMLButtonElement | null) => {
@@ -218,7 +217,12 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	);
 
 	return (
-		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
+		<li
+			ref={virtualRowRef}
+			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+			style={virtualRowStyle}
+			data-index={virtualRowIndex}
+		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow" style={rowStyle}>
@@ -330,22 +334,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					</>
 				)}
 			</div>
-			<AnimatePresence>
-				{isExpanded ? (
-					<m.div
-						ref={childrenDroppableRef}
-						className="fileTreeChildren"
-						initial={{ height: 0, opacity: 0 }}
-						animate={{ height: "auto", opacity: 1 }}
-						exit={{ height: 0, opacity: 0 }}
-						transition={springTransition}
-						style={{ overflow: "hidden" }}
-						data-drop-target={isChildrenDropTarget ? "true" : undefined}
-					>
-						{children}
-					</m.div>
-				) : null}
-			</AnimatePresence>
 		</li>
 	);
 });

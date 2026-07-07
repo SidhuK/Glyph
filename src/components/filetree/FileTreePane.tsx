@@ -3,9 +3,11 @@ import {
 	type DragEndEvent,
 	useDroppable,
 } from "@dnd-kit/react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 import { m } from "motion/react";
 import {
+	type CSSProperties,
 	type KeyboardEvent,
 	type MutableRefObject,
 	type ReactNode,
@@ -85,6 +87,8 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
 const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
+const FILE_TREE_ROW_ESTIMATE = 32;
+const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
 
 interface AppearancePickerTarget {
 	entry: FsEntry;
@@ -284,15 +288,57 @@ interface TreeEntriesProps {
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
-	onArrowNavigate: (
-		path: string,
-		direction: -1 | 1,
-		currentTarget: HTMLElement,
-	) => void;
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
 	sortMode: FileTreeSortMode;
+}
+
+interface VirtualFileTreeRow {
+	id: string;
+	entry: FsEntry;
+	depth: number;
+}
+
+function flattenVisibleFileTreeRows({
+	entries,
+	parentDepth,
+	childrenByDir,
+	expandedDirs,
+	showNonMarkdownFiles,
+	sortMode,
+}: Pick<
+	TreeEntriesProps,
+	| "entries"
+	| "parentDepth"
+	| "childrenByDir"
+	| "expandedDirs"
+	| "showNonMarkdownFiles"
+	| "sortMode"
+>): VirtualFileTreeRow[] {
+	const rows: VirtualFileTreeRow[] = [];
+	const walk = (currentEntries: FsEntry[], currentParentDepth: number) => {
+		const visibleEntries = sortedVisibleFileTreeEntries(
+			currentEntries,
+			showNonMarkdownFiles,
+			sortMode,
+		);
+		for (const entry of visibleEntries) {
+			const depth = currentParentDepth + 1;
+			rows.push({
+				id:
+					entry.rel_path.trim() ||
+					`${entry.kind}:${entry.name.trim()}:${depth}`,
+				entry,
+				depth,
+			});
+			if (entry.kind !== "dir" || !expandedDirs.has(entry.rel_path)) continue;
+			const childEntries = childrenByDir[entry.rel_path];
+			if (childEntries) walk(childEntries, depth);
+		}
+	};
+	walk(entries, parentDepth);
+	return rows;
 }
 
 function TreeEntries({
@@ -325,39 +371,125 @@ function TreeEntries({
 	pinnedFiles,
 	onTogglePinnedFile,
 	onMoveClickSuppressRef,
-	onArrowNavigate,
 	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
 	sortMode,
 }: TreeEntriesProps) {
-	const visibleEntries = useMemo(
-		() => sortedVisibleFileTreeEntries(entries, showNonMarkdownFiles, sortMode),
-		[entries, showNonMarkdownFiles, sortMode],
+	const virtualRows = useMemo(
+		() =>
+			flattenVisibleFileTreeRows({
+				entries,
+				parentDepth,
+				childrenByDir,
+				expandedDirs,
+				showNonMarkdownFiles,
+				sortMode,
+			}),
+		[
+			childrenByDir,
+			entries,
+			expandedDirs,
+			parentDepth,
+			showNonMarkdownFiles,
+			sortMode,
+		],
 	);
-	if (visibleEntries.length === 0) return null;
+	const [listElement, setListElement] = useState<HTMLUListElement | null>(null);
+	const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
+	const listRef = useCallback((element: HTMLUListElement | null) => {
+		setListElement(element);
+		setScrollElement(
+			element?.closest<HTMLElement>(".sidebarSectionContent") ??
+				element?.parentElement ??
+				null,
+		);
+	}, []);
+	const rowVirtualizer = useVirtualizer<HTMLElement, HTMLLIElement>({
+		count: virtualRows.length,
+		estimateSize: (index) => {
+			const row = virtualRows[index];
+			if (!row) return FILE_TREE_ROW_ESTIMATE;
+			return showFilePreviews &&
+				row.entry.kind === "file" &&
+				row.entry.is_markdown
+				? FILE_TREE_PREVIEW_ROW_ESTIMATE
+				: FILE_TREE_ROW_ESTIMATE;
+		},
+		getScrollElement: () => scrollElement,
+		getItemKey: (index) => virtualRows[index]?.id ?? index,
+		overscan: 4,
+		scrollMargin: listElement?.offsetTop ?? 0,
+	});
+	const virtualItems = rowVirtualizer.getVirtualItems();
+	const handleVirtualArrowNavigate = useCallback(
+		(path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
+			const currentIndex = virtualRows.findIndex(
+				(row) => row.entry.kind === "file" && row.entry.rel_path === path,
+			);
+			if (currentIndex === -1) return;
+			for (
+				let nextIndex = currentIndex + direction;
+				nextIndex >= 0 && nextIndex < virtualRows.length;
+				nextIndex += direction
+			) {
+				const nextRow = virtualRows[nextIndex];
+				if (!nextRow || nextRow.entry.kind !== "file") continue;
+				const pane = currentTarget.closest(".fileTreePane");
+				rowVirtualizer.scrollToIndex(nextIndex, { align: "auto" });
+				onOpenFile(nextRow.entry.rel_path);
+				requestAnimationFrame(() => {
+					const nextButton = Array.from(
+						pane?.querySelectorAll<HTMLElement>(
+							"[data-file-tree-file='true']",
+						) ?? [],
+					).find(
+						(button) => button.dataset.fileTreePath === nextRow.entry.rel_path,
+					);
+					nextButton?.focus();
+				});
+				return;
+			}
+		},
+		[onOpenFile, rowVirtualizer, virtualRows],
+	);
+
+	if (virtualRows.length === 0) return null;
 
 	return (
-		<ul className="fileTreeList">
-			{visibleEntries.map((e) => {
-				const isDir = e.kind === "dir";
-				const depth = parentDepth + 1;
-				const rowKey =
-					e.rel_path.trim() || `${e.kind}:${e.name.trim()}:${depth}`;
+		<ul
+			ref={listRef}
+			className="fileTreeList"
+			style={{ height: rowVirtualizer.getTotalSize() }}
+		>
+			{virtualItems.map((virtualItem) => {
+				const row = virtualRows[virtualItem.index];
+				if (!row) return null;
+				const { entry, depth } = row;
+				const virtualRowStyle: CSSProperties = {
+					position: "absolute",
+					top: 0,
+					left: 0,
+					width: "100%",
+					transform: `translateY(${
+						virtualItem.start - rowVirtualizer.options.scrollMargin
+					}px)`,
+				};
 
-				if (isDir) {
-					const isExpanded = expandedDirs.has(e.rel_path);
-					const childEntries = childrenByDir[e.rel_path];
-					const childEntriesLoaded = childEntries !== undefined;
+				if (entry.kind === "dir") {
+					const isExpanded = expandedDirs.has(entry.rel_path);
 
 					return (
 						<FileTreeDirItem
-							key={rowKey}
-							entry={e}
+							key={virtualItem.key}
+							virtualRowRef={rowVirtualizer.measureElement}
+							virtualRowStyle={virtualRowStyle}
+							virtualRowIndex={virtualItem.index}
+							entry={entry}
 							depth={depth}
 							isExpanded={isExpanded}
-							isActive={!activeFilePath && e.rel_path === activeDirPath}
-							isRenaming={renamingPath === e.rel_path}
+							isActive={!activeFilePath && entry.rel_path === activeDirPath}
+							isRenaming={renamingPath === entry.rel_path}
 							onToggleDir={onToggleDir}
 							onEnterDir={onEnterDir}
 							onSelectDir={onSelectDir}
@@ -365,88 +497,52 @@ function TreeEntries({
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onRequestCreateFolder={onRequestCreateFolder}
 							onDeletePath={onDeletePath}
-							appearance={itemAppearance[e.rel_path] ?? null}
+							appearance={itemAppearance[entry.rel_path] ?? null}
 							fileCount={
 								showFolderFileCounts
-									? (folderFileCounts[e.rel_path] ?? null)
+									? (folderFileCounts[entry.rel_path] ?? null)
 									: null
 							}
-							onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
-							onStartRename={() => onStartRename(e.rel_path)}
+							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
+							onStartRename={() => onStartRename(entry.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
 							onMoveClickSuppressRef={onMoveClickSuppressRef}
-						>
-							{childEntriesLoaded ? (
-								<TreeEntries
-									entries={childEntries ?? []}
-									parentDepth={depth}
-									childrenByDir={childrenByDir}
-									expandedDirs={expandedDirs}
-									activeFilePath={activeFilePath}
-									activeDirPath={activeDirPath}
-									renamingPath={renamingPath}
-									onToggleDir={onToggleDir}
-									onEnterDir={onEnterDir}
-									onSelectDir={onSelectDir}
-									onOpenFile={onOpenFile}
-									onPrefetchFile={onPrefetchFile}
-									onNewFileInDir={onNewFileInDir}
-									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-									onRequestCreateFolder={onRequestCreateFolder}
-									onDuplicateFile={onDuplicateFile}
-									onDeletePath={onDeletePath}
-									onStartRename={onStartRename}
-									onCommitDirRename={onCommitDirRename}
-									onCommitFileRename={onCommitFileRename}
-									onCancelRename={onCancelRename}
-									itemAppearance={itemAppearance}
-									folderFileCounts={folderFileCounts}
-									showFolderFileCounts={showFolderFileCounts}
-									showNonMarkdownFiles={showNonMarkdownFiles}
-									onOpenAppearancePicker={onOpenAppearancePicker}
-									pinnedFiles={pinnedFiles}
-									onTogglePinnedFile={onTogglePinnedFile}
-									onMoveClickSuppressRef={onMoveClickSuppressRef}
-									onArrowNavigate={onArrowNavigate}
-									taskSummariesByPath={taskSummariesByPath}
-									showFilePreviews={showFilePreviews}
-									filePreviewsByPath={filePreviewsByPath}
-									sortMode={sortMode}
-								/>
-							) : null}
-						</FileTreeDirItem>
+						/>
 					);
 				}
 
 				return (
 					<FileTreeFileItem
-						key={rowKey}
-						entry={e}
+						key={virtualItem.key}
+						virtualRowRef={rowVirtualizer.measureElement}
+						virtualRowStyle={virtualRowStyle}
+						virtualRowIndex={virtualItem.index}
+						entry={entry}
 						depth={depth}
-						isActive={e.rel_path === activeFilePath}
+						isActive={entry.rel_path === activeFilePath}
 						onOpenFile={onOpenFile}
 						onPrefetchFile={onPrefetchFile}
 						onNewFileInDir={onNewFileInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onRequestCreateFolder={onRequestCreateFolder}
 						onDuplicateFile={onDuplicateFile}
-						isRenaming={renamingPath === e.rel_path}
-						onStartRename={() => onStartRename(e.rel_path)}
+						isRenaming={renamingPath === entry.rel_path}
+						onStartRename={() => onStartRename(entry.rel_path)}
 						onCommitRename={onCommitFileRename}
 						onCancelRename={onCancelRename}
-						parentDirPath={parentDir(e.rel_path)}
+						parentDirPath={parentDir(entry.rel_path)}
 						onDeletePath={onDeletePath}
-						appearance={itemAppearance[e.rel_path] ?? null}
-						onOpenAppearancePicker={() => onOpenAppearancePicker(e)}
-						isPinned={pinnedFiles.includes(e.rel_path)}
+						appearance={itemAppearance[entry.rel_path] ?? null}
+						onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
+						isPinned={pinnedFiles.includes(entry.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
 						onMoveClickSuppressRef={onMoveClickSuppressRef}
-						onArrowNavigate={onArrowNavigate}
-						taskSummary={taskSummariesByPath[e.rel_path] ?? null}
+						onArrowNavigate={handleVirtualArrowNavigate}
+						taskSummary={taskSummariesByPath[entry.rel_path] ?? null}
 						previewText={
-							showFilePreviews && e.is_markdown
-								? (filePreviewsByPath[e.rel_path] ?? null)
+							showFilePreviews && entry.is_markdown
+								? (filePreviewsByPath[entry.rel_path] ?? null)
 								: null
 						}
 					/>
@@ -901,25 +997,6 @@ export const FileTreePane = memo(function FileTreePane({
 		spacePath,
 	]);
 
-	const handleArrowNavigate = useCallback(
-		(_path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
-			const pane = currentTarget.closest(".fileTreePane");
-			if (!pane) return;
-			const fileButtons = Array.from(
-				pane.querySelectorAll<HTMLElement>("[data-file-tree-file='true']"),
-			);
-			const currentIndex = fileButtons.findIndex(
-				(button) => button === currentTarget,
-			);
-			if (currentIndex === -1) return;
-			const nextButton = fileButtons[currentIndex + direction];
-			if (!nextButton) return;
-			nextButton.focus();
-			nextButton.click();
-		},
-		[],
-	);
-
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			moveClickSuppressRef.current = true;
@@ -1018,7 +1095,6 @@ export const FileTreePane = memo(function FileTreePane({
 								pinnedFiles={pinnedFiles}
 								onTogglePinnedFile={onTogglePinnedFile}
 								onMoveClickSuppressRef={moveClickSuppressRef}
-								onArrowNavigate={handleArrowNavigate}
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
@@ -1066,7 +1142,6 @@ export const FileTreePane = memo(function FileTreePane({
 							pinnedFiles={pinnedFiles}
 							onTogglePinnedFile={onTogglePinnedFile}
 							onMoveClickSuppressRef={moveClickSuppressRef}
-							onArrowNavigate={handleArrowNavigate}
 							taskSummariesByPath={taskSummariesByPath}
 							sortMode={sortMode}
 						/>

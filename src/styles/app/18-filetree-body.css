@@ -242,16 +242,6 @@
 	border-radius: var(--radius-md);
 }
 
-.fileTreeChildren {
-	min-height: 28px;
-}
-
-.fileTreeChildren[data-drop-target="true"] {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 22%, transparent);
-	border-radius: var(--radius-md);
-}
-
 .fileTreeRow[data-draggable="true"]:not([data-dragging="true"]) {
 	cursor: pointer;
 }

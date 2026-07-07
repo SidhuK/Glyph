@@ -7,6 +7,40 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTreePane } from "./FileTreePane";
 
+vi.mock("@tanstack/react-virtual", () => ({
+	useVirtualizer: ({
+		count,
+		estimateSize,
+		getItemKey,
+	}: {
+		count: number;
+		estimateSize: (index: number) => number;
+		getItemKey: (index: number) => string | number;
+	}) => {
+		const starts = Array.from({ length: count }, (_, index) =>
+			Array.from({ length: index }, (__, previousIndex) =>
+				estimateSize(previousIndex),
+			).reduce((total, size) => total + size, 0),
+		);
+		return {
+			getVirtualItems: () =>
+				starts.map((start, index) => ({
+					index,
+					key: getItemKey(index),
+					start,
+				})),
+			getTotalSize: () =>
+				Array.from({ length: count }, (_, index) => estimateSize(index)).reduce(
+					(total, size) => total + size,
+					0,
+				),
+			measureElement: () => {},
+			scrollToIndex: () => {},
+			options: { scrollMargin: 0 },
+		};
+	},
+}));
+
 const {
 	invokeMock,
 	loadSettingsMock,

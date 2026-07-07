@@ -299,7 +299,7 @@ export function DatabaseTable({
 				: DATABASE_TABLE_ROW_HEIGHT,
 		getScrollElement: () => tableContainerRef.current,
 		getItemKey: (index) => displayItems[index]?.id ?? index,
-		overscan: 8,
+		overscan: 4,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 	useVirtualLoadMore({
