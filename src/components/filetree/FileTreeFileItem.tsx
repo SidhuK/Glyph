@@ -135,6 +135,7 @@ interface FileTreeFileItemProps {
 	previewText?: string | null;
 	virtualRowRef?: Ref<HTMLLIElement>;
 	virtualRowStyle?: CSSProperties;
+	virtualRowIndex?: number;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -163,6 +164,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	previewText = null,
 	virtualRowRef,
 	virtualRowStyle,
+	virtualRowIndex,
 }: FileTreeFileItemProps) {
 	const { spacePath } = useSpace();
 	const customColor =
@@ -299,6 +301,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			ref={virtualRowRef}
 			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
 			style={virtualRowStyle}
+			data-index={virtualRowIndex}
 		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (

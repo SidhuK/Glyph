@@ -435,10 +435,10 @@ function TreeEntries({
 			) {
 				const nextRow = virtualRows[nextIndex];
 				if (!nextRow || nextRow.entry.kind !== "file") continue;
+				const pane = currentTarget.closest(".fileTreePane");
 				rowVirtualizer.scrollToIndex(nextIndex, { align: "auto" });
 				onOpenFile(nextRow.entry.rel_path);
 				requestAnimationFrame(() => {
-					const pane = currentTarget.closest(".fileTreePane");
 					const nextButton = Array.from(
 						pane?.querySelectorAll<HTMLElement>(
 							"[data-file-tree-file='true']",
@@ -484,6 +484,7 @@ function TreeEntries({
 							key={virtualItem.key}
 							virtualRowRef={rowVirtualizer.measureElement}
 							virtualRowStyle={virtualRowStyle}
+							virtualRowIndex={virtualItem.index}
 							entry={entry}
 							depth={depth}
 							isExpanded={isExpanded}
@@ -516,6 +517,7 @@ function TreeEntries({
 						key={virtualItem.key}
 						virtualRowRef={rowVirtualizer.measureElement}
 						virtualRowStyle={virtualRowStyle}
+						virtualRowIndex={virtualItem.index}
 						entry={entry}
 						depth={depth}
 						isActive={entry.rel_path === activeFilePath}
