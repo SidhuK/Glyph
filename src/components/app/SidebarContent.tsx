@@ -13,14 +13,14 @@ import { useQuery } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import {
+	allDocsCountQueryOptions,
 	formatAllDocsCountLabel,
-	loadAllDocsCount,
-	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import {
 	FILE_TREE_SORT_OPTIONS,
@@ -111,10 +111,7 @@ function folioTreeRootEntries(
 }
 
 function AllNotesCountBadge() {
-	const countQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsCount(),
-		queryFn: () => loadAllDocsCount(),
-	});
+	const countQuery = useQuery(allDocsCountQueryOptions());
 	const label = formatAllDocsCountLabel(countQuery.data ?? 0);
 	if (!label) return null;
 	return <span className="sidebarQuickActionCount">{label}</span>;
@@ -188,6 +185,16 @@ export const SidebarContent = memo(function SidebarContent({
 		},
 	});
 	const newNoteShortcut = getBinding("new-note");
+	const {
+		cancelHoverPrefetch: cancelAllDocsHoverPrefetch,
+		hoverPrefetchProps: allDocsHoverPrefetchProps,
+	} = useHoverPrefetch(onPrefetchAllDocs);
+	const {
+		cancelHoverPrefetch: cancelDatabasesHoverPrefetch,
+		hoverPrefetchProps: databasesHoverPrefetchProps,
+	} = useHoverPrefetch(() => {
+		onPrefetchDatabases();
+	});
 	const activeFolioFolder =
 		folioScope.kind === "folder" ? folioScope.folderPrefix : null;
 	const spaceLabel = spacePath ? formatSpaceLabel(spacePath) : "Glyph";
@@ -411,8 +418,11 @@ export const SidebarContent = memo(function SidebarContent({
 							aria-current={
 								activeTopSection === "all-notes" ? "page" : undefined
 							}
-							onClick={handleOpenAllNotes}
-							onMouseEnter={onPrefetchAllDocs}
+							onClick={() => {
+								cancelAllDocsHoverPrefetch();
+								handleOpenAllNotes();
+							}}
+							{...allDocsHoverPrefetchProps}
 							onFocus={onPrefetchAllDocs}
 							title="Open All Notes"
 						>
@@ -435,9 +445,10 @@ export const SidebarContent = memo(function SidebarContent({
 								activeTopSection === "databases" ? "page" : undefined
 							}
 							onClick={() => {
+								cancelDatabasesHoverPrefetch();
 								onOpenDatabases();
 							}}
-							onMouseEnter={() => onPrefetchDatabases()}
+							{...databasesHoverPrefetchProps}
 							onFocus={() => onPrefetchDatabases()}
 							title="Open Collections"
 						>

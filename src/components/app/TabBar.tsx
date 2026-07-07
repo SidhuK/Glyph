@@ -7,6 +7,7 @@ import {
 import { useSortable } from "@dnd-kit/react/sortable";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
@@ -258,10 +259,14 @@ const TabItem = memo(function TabItem({
 		data: { tabId: tab.id },
 		transition: { duration: 160, easing: "ease" },
 	});
+	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
+		onPrefetchTab(tab.target);
+	});
 	const handleSelect = useCallback(() => {
+		cancelHoverPrefetch();
 		if (suppressClickRef.current) return;
 		onSelectTab(tab.id);
-	}, [onSelectTab, suppressClickRef, tab.id]);
+	}, [cancelHoverPrefetch, onSelectTab, suppressClickRef, tab.id]);
 	const handleClose = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
 			event.stopPropagation();
@@ -304,7 +309,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
-				onMouseEnter={() => onPrefetchTab(tab.target)}
+				{...hoverPrefetchProps}
 				onFocus={() => onPrefetchTab(tab.target)}
 				title={title}
 				onDoubleClick={handleDoubleClick}

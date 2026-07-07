@@ -13,11 +13,12 @@ import { useReducedMotion } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
 
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
 	ALL_DOCS_PAGE_SIZE,
-	loadAllDocsPage,
+	allDocsPagesQueryOptions,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
@@ -88,18 +89,18 @@ export const AllDocsPane = memo(function AllDocsPane({
 	const { itemAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const paneRef = useRef<HTMLElement>(null);
+	const {
+		cancelHoverPrefetch: cancelActivityHoverPrefetch,
+		hoverPrefetchProps: activityHoverPrefetchProps,
+	} = useHoverPrefetch(onPrefetchActivity);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const [paneWidth, setPaneWidth] = useState(0);
 	const queryClient = useQueryClient();
 	const notesQuery = useInfiniteQuery({
-		queryKey: navigationQueryKeys.allDocsPages(null),
-		queryFn: ({ pageParam }) => {
-			const offset = typeof pageParam === "number" ? pageParam : 0;
-			return loadAllDocsPage(null, offset);
-		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
+		...allDocsPagesQueryOptions(null),
+		// Prefetch keeps a 5-minute stale window; the pane should still refetch on open.
+		staleTime: 0,
 		initialData: initialNotes
 			? {
 					pages: [
@@ -114,6 +115,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 					pageParams: [0],
 				}
 			: undefined,
+		initialDataUpdatedAt: initialNotes ? 0 : undefined,
 	});
 	const notes = useMemo(
 		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
@@ -237,8 +239,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 				<button
 					type="button"
 					className="allDocsHeaderAction"
-					onClick={onOpenActivity}
-					onMouseEnter={onPrefetchActivity}
+					onClick={() => {
+						cancelActivityHoverPrefetch();
+						onOpenActivity();
+					}}
+					{...activityHoverPrefetchProps}
 					onFocus={onPrefetchActivity}
 					title="Show activity"
 					aria-label="Show activity"

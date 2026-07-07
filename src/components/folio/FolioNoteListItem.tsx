@@ -11,6 +11,7 @@ import {
 	useState,
 } from "react";
 import { useSpace } from "../../contexts";
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
@@ -451,6 +452,9 @@ export const FolioNoteListItem = memo(
 					className="folioNoteTaskProgress"
 				/>
 			) : null;
+		const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
+			if (isMarkdown) onPrefetch(note.note_path);
+		});
 		const handleRevealInFinder = useCallback(async () => {
 			try {
 				await invoke("space_reveal_path", { path: note.note_path });
@@ -633,6 +637,7 @@ export const FolioNoteListItem = memo(
 						data-folio-note-path={note.note_path}
 						aria-current={selected ? "page" : undefined}
 						onClick={(event) => {
+							cancelHoverPrefetch();
 							if (event.metaKey || event.ctrlKey) {
 								onOpenInNewTab(note.note_path);
 								return;
@@ -642,11 +647,10 @@ export const FolioNoteListItem = memo(
 						onContextMenu={handleContextMenu}
 						onDoubleClick={() => onOpenInNewTab(note.note_path)}
 						onAuxClick={(event) => {
+							cancelHoverPrefetch();
 							if (event.button === 1) onOpenInNewTab(note.note_path);
 						}}
-						onMouseEnter={() => {
-							if (isMarkdown) onPrefetch(note.note_path);
-						}}
+						{...hoverPrefetchProps}
 						onFocus={() => {
 							onFocus();
 							if (isMarkdown) onPrefetch(note.note_path);

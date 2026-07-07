@@ -37,7 +37,6 @@ import {
 	getPrefetchedDatabaseDocument,
 	getPrefetchedNote,
 	prefetchAllDocs,
-	prefetchAllDocsList,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -679,7 +678,6 @@ export const MainContent = memo(function MainContent({
 			if (target === ACTIVITY_TIMELINE_TAB_ID) {
 				void loadActivityTimelinePane();
 				void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
-				void prefetchAllDocsList(null);
 				return;
 			}
 			if (target === DATABASES_TAB_ID) {

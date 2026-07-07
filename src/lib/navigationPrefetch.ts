@@ -18,6 +18,9 @@ import type {
 } from "./tauri";
 import { invoke } from "./tauri";
 
+const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
+const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
+
 const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
 	const normalized = folderPrefix
 		?.trim()
@@ -107,6 +110,8 @@ export function prefetchNote(path: string) {
 	void queryClient.prefetchQuery({
 		queryKey: navigationQueryKeys.note(normalized),
 		queryFn: () => fetchNote(normalized),
+		gcTime: NOTE_PREFETCH_GC_TIME_MS,
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -131,6 +136,7 @@ export function prefetchDatabaseSummaries() {
 	return queryClient.fetchQuery({
 		queryKey: navigationQueryKeys.databaseSummaries(),
 		queryFn: () => invoke("databases_list"),
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -156,6 +162,7 @@ export function prefetchDatabaseDocument(databaseId: string) {
 	return queryClient.fetchQuery({
 		queryKey: navigationQueryKeys.databaseDocument(normalized),
 		queryFn: () => invoke("databases_get", { database_id: normalized }),
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -201,13 +208,23 @@ export function invalidateDatabasePrefetch(databaseId?: string | null) {
 export async function prefetchDatabasesLanding(
 	initialDatabaseId?: string | null,
 ) {
-	const summaries = await prefetchDatabaseSummaries();
+	const storedId = readStoredSelectedDatabaseId();
+	const candidateId = initialDatabaseId ?? storedId;
+	const summariesPromise = prefetchDatabaseSummaries();
+	const candidateDocumentPromise = candidateId
+		? prefetchDatabaseDocument(candidateId).catch(() => null)
+		: null;
+	const summaries = await summariesPromise;
 	const databaseId = resolveSelectedDatabaseId(summaries, {
 		current: null,
 		openRequestId: initialDatabaseId ?? null,
-		storedId: readStoredSelectedDatabaseId(),
+		storedId,
 	});
 	if (!databaseId) return;
+	if (databaseId === candidateId && candidateDocumentPromise) {
+		const document = await candidateDocumentPromise;
+		if (document) return;
+	}
 	await prefetchDatabaseDocument(databaseId);
 }
 
@@ -270,27 +287,50 @@ export async function loadAllDocs(folderPrefix?: string | null) {
 	return pages;
 }
 
-export function prefetchAllDocs(
+export function allDocsPagesQueryOptions(
 	folderPrefix?: string | null,
 	pageSize = ALL_DOCS_PAGE_SIZE,
 ) {
-	return queryClient.prefetchInfiniteQuery({
+	return {
 		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
-		queryFn: ({ pageParam }) => {
+		queryFn: ({ pageParam }: { pageParam: unknown }) => {
 			const offset = typeof pageParam === "number" ? pageParam : 0;
 			return loadAllDocsPage(folderPrefix, offset, pageSize);
 		},
 		initialPageParam: 0,
 		getNextPageParam: (lastPage: AllDocsPage) =>
 			lastPage.nextOffset ?? undefined,
-	});
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function allDocsListQueryOptions(folderPrefix?: string | null) {
+	return {
+		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix),
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function allDocsCountQueryOptions(folderPrefix?: string | null) {
+	return {
+		queryKey: navigationQueryKeys.allDocsCount(folderPrefix),
+		queryFn: () => loadAllDocsCount(folderPrefix),
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function prefetchAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
+	return queryClient.prefetchInfiniteQuery(
+		allDocsPagesQueryOptions(folderPrefix, pageSize),
+	);
 }
 
 export function prefetchAllDocsList(folderPrefix?: string | null) {
-	return queryClient.prefetchQuery({
-		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		queryFn: () => loadAllDocs(folderPrefix),
-	});
+	return queryClient.prefetchQuery(allDocsListQueryOptions(folderPrefix));
 }
 
 export function getPrefetchedAllDocs(
@@ -339,6 +379,35 @@ function rebuildAllDocsPages(
 		pages,
 		pageParams: pages.map((_, index) => index * pageSize),
 	};
+}
+
+function updateAllDocsCountCaches(
+	updater: (current: number, folderKey: string) => number,
+) {
+	const queries = queryClient
+		.getQueryCache()
+		.findAll({ queryKey: [...navigationQueryKeys.allDocs(), "count"] });
+	for (const query of queries) {
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 4) {
+			continue;
+		}
+		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
+		const current = queryClient.getQueryData<number>(query.queryKey);
+		if (current === undefined) continue;
+		queryClient.setQueryData<number>(
+			query.queryKey,
+			updater(current, folderKey),
+		);
+	}
+}
+
+function adjustAllDocsCount(path: string, delta: number) {
+	const normalizedPath = normalizeAllDocsPath(path);
+	if (!normalizedPath.toLowerCase().endsWith(".md")) return;
+	updateAllDocsCountCaches((current, folderKey) => {
+		if (!allDocsFolderContainsPath(folderKey, normalizedPath)) return current;
+		return Math.max(0, current + delta);
+	});
 }
 
 function updateAllDocsCaches(
@@ -435,6 +504,7 @@ export function optimisticallyAddAllDocsNote(args: {
 		: null;
 	const preview = parseNotePreview(normalizedPath, args.text ?? "");
 	const now = new Date().toISOString();
+	const alreadyCached = findCachedAllDocsItem(normalizedPath) !== null;
 	upsertAllDocsPrefetchItem({
 		note_path: normalizedPath,
 		title:
@@ -449,6 +519,9 @@ export function optimisticallyAddAllDocsNote(args: {
 		tags: source?.tags ?? [],
 		people: source?.people ?? [],
 	});
+	if (!alreadyCached) {
+		adjustAllDocsCount(normalizedPath, 1);
+	}
 }
 
 export function optimisticallyRenameAllDocsPath(
@@ -493,15 +566,25 @@ export function optimisticallyRemoveAllDocsPath(
 ) {
 	const normalizedPath = normalizeAllDocsPath(path);
 	if (!normalizedPath) return;
+	const removedMarkdownPaths = new Set<string>();
+	if (!recursive && normalizedPath.toLowerCase().endsWith(".md")) {
+		removedMarkdownPaths.add(normalizedPath);
+	}
 	updateAllDocsCaches((current) =>
 		current.filter((note) => {
 			const notePath = normalizeAllDocsPath(note.note_path);
-			return (
-				notePath !== normalizedPath &&
-				(!recursive || !notePath.startsWith(`${normalizedPath}/`))
-			);
+			const shouldRemove =
+				notePath === normalizedPath ||
+				(recursive && notePath.startsWith(`${normalizedPath}/`));
+			if (shouldRemove && notePath.toLowerCase().endsWith(".md")) {
+				removedMarkdownPaths.add(notePath);
+			}
+			return !shouldRemove;
 		}),
 	);
+	for (const removedPath of removedMarkdownPaths) {
+		adjustAllDocsCount(removedPath, -1);
+	}
 }
 
 export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
