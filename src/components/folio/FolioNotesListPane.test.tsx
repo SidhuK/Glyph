@@ -85,6 +85,10 @@ vi.mock("../../lib/navigationPrefetch", async () => {
 		...actual,
 		loadAllDocs: loadAllDocsMock,
 		prefetchNote: prefetchNoteMock,
+		allDocsListQueryOptions: (folderPrefix?: string | null) => ({
+			...actual.allDocsListQueryOptions(folderPrefix),
+			queryFn: () => loadAllDocsMock(folderPrefix),
+		}),
 	};
 });
 
