@@ -1,5 +1,6 @@
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import { prefetchNote } from "../../lib/navigationPrefetch";
 import type {
@@ -172,14 +173,19 @@ export function AllDocsCard({
 	onPrefetch,
 	onOpen,
 }: AllDocsCardProps) {
+	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
+		onPrefetch?.();
+	});
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
 		if (event.key === "Enter") {
 			event.preventDefault();
+			cancelHoverPrefetch();
 			onOpen();
 			return;
 		}
 		if (event.key === " ") {
 			event.preventDefault();
+			cancelHoverPrefetch();
 			onSelect();
 		}
 	};
@@ -195,8 +201,11 @@ export function AllDocsCard({
 			data-state={selected ? "selected" : undefined}
 			aria-label={`Select ${title}. Press Enter to open.`}
 			aria-pressed={selected}
-			onClick={onSelect}
-			onMouseEnter={onPrefetch}
+			onClick={() => {
+				cancelHoverPrefetch();
+				onSelect();
+			}}
+			{...hoverPrefetchProps}
 			onFocus={onPrefetch}
 			onDoubleClick={onOpen}
 			onKeyDown={handleKeyDown}

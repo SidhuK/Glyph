@@ -18,6 +18,11 @@ import type {
 } from "./tauri";
 import { invoke } from "./tauri";
 
+// Stale time controls refetching; GC time controls memory retention.
+// Hover-prefetched note bodies may be evicted sooner when unused.
+const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
+const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
+
 const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
 	const normalized = folderPrefix
 		?.trim()
@@ -107,6 +112,8 @@ export function prefetchNote(path: string) {
 	void queryClient.prefetchQuery({
 		queryKey: navigationQueryKeys.note(normalized),
 		queryFn: () => fetchNote(normalized),
+		gcTime: NOTE_PREFETCH_GC_TIME_MS,
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -131,6 +138,7 @@ export function prefetchDatabaseSummaries() {
 	return queryClient.fetchQuery({
 		queryKey: navigationQueryKeys.databaseSummaries(),
 		queryFn: () => invoke("databases_list"),
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -156,6 +164,7 @@ export function prefetchDatabaseDocument(databaseId: string) {
 	return queryClient.fetchQuery({
 		queryKey: navigationQueryKeys.databaseDocument(normalized),
 		queryFn: () => invoke("databases_get", { database_id: normalized }),
+		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
 
@@ -201,13 +210,23 @@ export function invalidateDatabasePrefetch(databaseId?: string | null) {
 export async function prefetchDatabasesLanding(
 	initialDatabaseId?: string | null,
 ) {
-	const summaries = await prefetchDatabaseSummaries();
+	const storedId = readStoredSelectedDatabaseId();
+	const candidateId = initialDatabaseId ?? storedId;
+	const summariesPromise = prefetchDatabaseSummaries();
+	const candidateDocumentPromise = candidateId
+		? prefetchDatabaseDocument(candidateId).catch(() => null)
+		: null;
+	const summaries = await summariesPromise;
 	const databaseId = resolveSelectedDatabaseId(summaries, {
 		current: null,
 		openRequestId: initialDatabaseId ?? null,
-		storedId: readStoredSelectedDatabaseId(),
+		storedId,
 	});
 	if (!databaseId) return;
+	if (databaseId === candidateId && candidateDocumentPromise) {
+		const document = await candidateDocumentPromise;
+		if (document) return;
+	}
 	await prefetchDatabaseDocument(databaseId);
 }
 
@@ -270,27 +289,50 @@ export async function loadAllDocs(folderPrefix?: string | null) {
 	return pages;
 }
 
-export function prefetchAllDocs(
+export function allDocsPagesQueryOptions(
 	folderPrefix?: string | null,
 	pageSize = ALL_DOCS_PAGE_SIZE,
 ) {
-	return queryClient.prefetchInfiniteQuery({
+	return {
 		queryKey: navigationQueryKeys.allDocsPages(folderPrefix, pageSize),
-		queryFn: ({ pageParam }) => {
+		queryFn: ({ pageParam }: { pageParam: unknown }) => {
 			const offset = typeof pageParam === "number" ? pageParam : 0;
 			return loadAllDocsPage(folderPrefix, offset, pageSize);
 		},
 		initialPageParam: 0,
 		getNextPageParam: (lastPage: AllDocsPage) =>
 			lastPage.nextOffset ?? undefined,
-	});
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function allDocsListQueryOptions(folderPrefix?: string | null) {
+	return {
+		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
+		queryFn: () => loadAllDocs(folderPrefix),
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function allDocsCountQueryOptions(folderPrefix?: string | null) {
+	return {
+		queryKey: navigationQueryKeys.allDocsCount(folderPrefix),
+		queryFn: () => loadAllDocsCount(folderPrefix),
+		staleTime: NAVIGATION_STALE_TIME_MS,
+	};
+}
+
+export function prefetchAllDocs(
+	folderPrefix?: string | null,
+	pageSize = ALL_DOCS_PAGE_SIZE,
+) {
+	return queryClient.prefetchInfiniteQuery(
+		allDocsPagesQueryOptions(folderPrefix, pageSize),
+	);
 }
 
 export function prefetchAllDocsList(folderPrefix?: string | null) {
-	return queryClient.prefetchQuery({
-		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		queryFn: () => loadAllDocs(folderPrefix),
-	});
+	return queryClient.prefetchQuery(allDocsListQueryOptions(folderPrefix));
 }
 
 export function getPrefetchedAllDocs(

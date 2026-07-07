@@ -27,8 +27,8 @@ import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { getDailyNotePath } from "../../lib/dailyNotes";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
-	loadAllDocs,
-	loadAllDocsPage,
+	allDocsListQueryOptions,
+	allDocsPagesQueryOptions,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type {
@@ -236,19 +236,10 @@ function countUniqueNotes(days: ActivityDay[]): number {
 
 function useActivityTimelineData(dailyNotesFolder: string | null) {
 	const queryClient = useQueryClient();
-	const notesQuery = useInfiniteQuery({
-		queryKey: navigationQueryKeys.allDocsPages(null, ACTIVITY_DOCS_PAGE_SIZE),
-		queryFn: ({ pageParam }) => {
-			const offset = typeof pageParam === "number" ? pageParam : 0;
-			return loadAllDocsPage(null, offset, ACTIVITY_DOCS_PAGE_SIZE);
-		},
-		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage.nextOffset ?? undefined,
-	});
-	const heatmapNotesQuery = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(null),
-		queryFn: () => loadAllDocs(null),
-	});
+	const notesQuery = useInfiniteQuery(
+		allDocsPagesQueryOptions(null, ACTIVITY_DOCS_PAGE_SIZE),
+	);
+	const heatmapNotesQuery = useQuery(allDocsListQueryOptions(null));
 	const feedNotes = useMemo(
 		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
 		[notesQuery.data],

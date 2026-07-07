@@ -1,6 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { loadAllDocs, navigationQueryKeys } from "../../lib/navigationPrefetch";
+import {
+	allDocsListQueryOptions,
+	navigationQueryKeys,
+} from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -166,10 +169,7 @@ export function useFolioNotes(scope: FolioScope) {
 		}
 	});
 
-	const query = useQuery({
-		queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		queryFn: () => loadAllDocs(folderPrefix),
-	});
+	const query = useQuery(allDocsListQueryOptions(folderPrefix));
 	const filesQuery = useQuery({
 		queryKey: folioFilesQueryKey(folderPrefix),
 		queryFn: () => listNonMarkdownFiles(folderPrefix),

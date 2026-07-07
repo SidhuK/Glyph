@@ -47,7 +47,6 @@ import {
 	invalidatePrefetchedNote,
 	invalidateTaskSummariesPrefetchForNote,
 	prefetchAllDocs,
-	prefetchAllDocsList,
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
@@ -897,13 +896,11 @@ export function AppShell() {
 		} else {
 			void loadActivityTimelinePane();
 			void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
-			void prefetchAllDocsList(null);
 		}
 	}, [classicAllNotesByDefault]);
 	const prefetchActivityTab = useCallback(() => {
 		void loadActivityTimelinePane();
 		void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
-		void prefetchAllDocsList(null);
 	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);

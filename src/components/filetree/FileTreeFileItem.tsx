@@ -5,6 +5,7 @@ import { m } from "motion/react";
 import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
+import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
@@ -163,6 +164,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		entry.rel_path,
 		entry.is_markdown,
 	);
+	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
+		onPrefetchFile?.(entry.rel_path);
+	});
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
 	const isMd = fileExt.toLowerCase() === ".md";
 	const displayStem =
@@ -308,11 +312,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							previewText ? "fileTreeRow fileTreePreviewRow" : "fileTreeRow"
 						}
 						onClick={() => {
+							cancelHoverPrefetch();
 							if (onMoveClickSuppressRef.current) return;
 							onOpenFile(entry.rel_path);
 						}}
 						onContextMenu={handleContextMenu}
-						onMouseEnter={() => onPrefetchFile?.(entry.rel_path)}
+						{...hoverPrefetchProps}
 						onFocus={() => onPrefetchFile?.(entry.rel_path)}
 						onKeyDown={handleKeyDown}
 						style={rowStyle}
