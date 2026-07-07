@@ -18,9 +18,6 @@ import type {
 } from "./tauri";
 import { invoke } from "./tauri";
 
-// Stale time controls refetching; GC time controls memory retention.
-// Hover-prefetched note bodies may be evicted sooner when unused.
-const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
 const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
 
 const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
@@ -112,7 +109,7 @@ export function prefetchNote(path: string) {
 	void queryClient.prefetchQuery({
 		queryKey: navigationQueryKeys.note(normalized),
 		queryFn: () => fetchNote(normalized),
-		gcTime: NOTE_PREFETCH_GC_TIME_MS,
+		gcTime: NAVIGATION_STALE_TIME_MS,
 		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
@@ -383,6 +380,35 @@ function rebuildAllDocsPages(
 	};
 }
 
+function updateAllDocsCountCaches(
+	updater: (current: number, folderKey: string) => number,
+) {
+	const queries = queryClient
+		.getQueryCache()
+		.findAll({ queryKey: [...navigationQueryKeys.allDocs(), "count"] });
+	for (const query of queries) {
+		if (!Array.isArray(query.queryKey) || query.queryKey.length !== 4) {
+			continue;
+		}
+		const folderKey = normalizeAllDocsFolder(String(query.queryKey[3] ?? ""));
+		const current = queryClient.getQueryData<number>(query.queryKey);
+		if (current === undefined) continue;
+		queryClient.setQueryData<number>(
+			query.queryKey,
+			updater(current, folderKey),
+		);
+	}
+}
+
+function adjustAllDocsCount(path: string, delta: number) {
+	const normalizedPath = normalizeAllDocsPath(path);
+	if (!normalizedPath.toLowerCase().endsWith(".md")) return;
+	updateAllDocsCountCaches((current, folderKey) => {
+		if (!allDocsFolderContainsPath(folderKey, normalizedPath)) return current;
+		return Math.max(0, current + delta);
+	});
+}
+
 function updateAllDocsCaches(
 	updater: (current: AllDocsItem[], folderKey: string) => AllDocsItem[],
 ) {
@@ -477,6 +503,7 @@ export function optimisticallyAddAllDocsNote(args: {
 		: null;
 	const preview = parseNotePreview(normalizedPath, args.text ?? "");
 	const now = new Date().toISOString();
+	const alreadyCached = findCachedAllDocsItem(normalizedPath) !== null;
 	upsertAllDocsPrefetchItem({
 		note_path: normalizedPath,
 		title:
@@ -491,6 +518,9 @@ export function optimisticallyAddAllDocsNote(args: {
 		tags: source?.tags ?? [],
 		people: source?.people ?? [],
 	});
+	if (!alreadyCached) {
+		adjustAllDocsCount(normalizedPath, 1);
+	}
 }
 
 export function optimisticallyRenameAllDocsPath(
@@ -535,15 +565,22 @@ export function optimisticallyRemoveAllDocsPath(
 ) {
 	const normalizedPath = normalizeAllDocsPath(path);
 	if (!normalizedPath) return;
+	const removedMarkdownPaths = new Set<string>();
 	updateAllDocsCaches((current) =>
 		current.filter((note) => {
 			const notePath = normalizeAllDocsPath(note.note_path);
-			return (
-				notePath !== normalizedPath &&
-				(!recursive || !notePath.startsWith(`${normalizedPath}/`))
-			);
+			const shouldRemove =
+				notePath === normalizedPath ||
+				(recursive && notePath.startsWith(`${normalizedPath}/`));
+			if (shouldRemove && notePath.toLowerCase().endsWith(".md")) {
+				removedMarkdownPaths.add(notePath);
+			}
+			return !shouldRemove;
 		}),
 	);
+	for (const removedPath of removedMarkdownPaths) {
+		adjustAllDocsCount(removedPath, -1);
+	}
 }
 
 export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {

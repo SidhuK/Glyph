@@ -99,6 +99,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 	const queryClient = useQueryClient();
 	const notesQuery = useInfiniteQuery({
 		...allDocsPagesQueryOptions(null),
+		// Prefetch keeps a 5-minute stale window; the pane should still refetch on open.
+		staleTime: 0,
 		initialData: initialNotes
 			? {
 					pages: [
@@ -113,6 +115,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 					pageParams: [0],
 				}
 			: undefined,
+		initialDataUpdatedAt: initialNotes ? 0 : undefined,
 	});
 	const notes = useMemo(
 		() => notesQuery.data?.pages.flatMap((page) => page.items) ?? [],
