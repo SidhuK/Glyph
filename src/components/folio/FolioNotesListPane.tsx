@@ -228,7 +228,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 		},
 		getScrollElement: () => listRef.current,
 		getItemKey: (index) => virtualRows[index]?.id ?? index,
-		overscan: 8,
+		overscan: 4,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 

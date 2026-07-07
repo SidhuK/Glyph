@@ -7,10 +7,12 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import type {
+	CSSProperties,
 	KeyboardEvent,
 	MouseEvent,
 	MutableRefObject,
 	ReactNode,
+	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
@@ -112,6 +114,8 @@ interface FileTreeDirItemProps {
 	onOpenAppearancePicker: () => void;
 	fileCount?: number | null;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
+	virtualRowRef?: Ref<HTMLLIElement>;
+	virtualRowStyle?: CSSProperties;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -135,6 +139,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onOpenAppearancePicker,
 	fileCount,
 	onMoveClickSuppressRef,
+	virtualRowRef,
+	virtualRowStyle,
 }: FileTreeDirItemProps) {
 	const { spacePath } = useSpace();
 	const customColor =
@@ -218,7 +224,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	);
 
 	return (
-		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
+		<li
+			ref={virtualRowRef}
+			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+			style={virtualRowStyle}
+		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow" style={rowStyle}>
@@ -331,7 +341,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				)}
 			</div>
 			<AnimatePresence>
-				{isExpanded ? (
+				{isExpanded && children ? (
 					<m.div
 						ref={childrenDroppableRef}
 						className="fileTreeChildren"

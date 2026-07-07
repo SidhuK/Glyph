@@ -2,7 +2,13 @@ import { useDraggable } from "@dnd-kit/react";
 import { StarIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import type { KeyboardEvent, MouseEvent, MutableRefObject } from "react";
+import type {
+	CSSProperties,
+	KeyboardEvent,
+	MouseEvent,
+	MutableRefObject,
+	Ref,
+} from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -127,6 +133,8 @@ interface FileTreeFileItemProps {
 	) => void;
 	taskSummary?: NoteTaskSummary | null;
 	previewText?: string | null;
+	virtualRowRef?: Ref<HTMLLIElement>;
+	virtualRowStyle?: CSSProperties;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -153,6 +161,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onArrowNavigate,
 	taskSummary = null,
 	previewText = null,
+	virtualRowRef,
+	virtualRowStyle,
 }: FileTreeFileItemProps) {
 	const { spacePath } = useSpace();
 	const customColor =
@@ -285,7 +295,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	);
 
 	return (
-		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
+		<li
+			ref={virtualRowRef}
+			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+			style={virtualRowStyle}
+		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div
