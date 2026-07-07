@@ -18,6 +18,7 @@ import type {
 } from "./tauri";
 import { invoke } from "./tauri";
 
+const NOTE_PREFETCH_GC_TIME_MS = 60 * 1000;
 const NAVIGATION_STALE_TIME_MS = 5 * 60 * 1000;
 
 const normalizeAllDocsFolder = (folderPrefix?: string | null) => {
@@ -109,7 +110,7 @@ export function prefetchNote(path: string) {
 	void queryClient.prefetchQuery({
 		queryKey: navigationQueryKeys.note(normalized),
 		queryFn: () => fetchNote(normalized),
-		gcTime: NAVIGATION_STALE_TIME_MS,
+		gcTime: NOTE_PREFETCH_GC_TIME_MS,
 		staleTime: NAVIGATION_STALE_TIME_MS,
 	});
 }
@@ -566,6 +567,9 @@ export function optimisticallyRemoveAllDocsPath(
 	const normalizedPath = normalizeAllDocsPath(path);
 	if (!normalizedPath) return;
 	const removedMarkdownPaths = new Set<string>();
+	if (!recursive && normalizedPath.toLowerCase().endsWith(".md")) {
+		removedMarkdownPaths.add(normalizedPath);
+	}
 	updateAllDocsCaches((current) =>
 		current.filter((note) => {
 			const notePath = normalizeAllDocsPath(note.note_path);
