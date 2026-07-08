@@ -12,6 +12,7 @@ import type {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
+import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import { invoke } from "../../lib/tauri";
@@ -228,6 +229,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			console.error("Failed to show file in Finder", error);
 		}
 	}, [entry.rel_path]);
+	const handleOpenInSeparateWindow = useCallback(async () => {
+		await openMarkdownInExternalWindow(entry.rel_path);
+	}, [entry.rel_path]);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
@@ -235,6 +239,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: "Open",
 					action: () => void onOpenFile(entry.rel_path),
 				},
+				...(entry.is_markdown
+					? [
+							{
+								label: "Open in New Window",
+								action: () => void handleOpenInSeparateWindow(),
+							},
+						]
+					: []),
 				{
 					label: "Show in Finder",
 					action: () => void handleRevealInFinder(),
@@ -288,6 +300,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onDuplicateFile,
 			onNewFileInDir,
 			onRequestCreateFolder,
+			handleOpenInSeparateWindow,
 			onOpenFile,
 			onStartRename,
 			onTogglePinned,

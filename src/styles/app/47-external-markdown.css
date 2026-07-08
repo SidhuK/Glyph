@@ -1,4 +1,7 @@
 .externalMarkdownWindow {
+	--external-markdown-chrome-height: 56px;
+
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	width: 100vw;
@@ -6,90 +9,158 @@
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
-	background: var(--bg-primary);
 	color: var(--text-primary);
+	background: var(--bg-canvas, var(--bg-primary));
 }
 
-.externalMarkdownHeader {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	align-items: center;
-	gap: 16px;
-	min-height: 56px;
-	padding: 9px 14px 8px 82px;
-	border-bottom: 1px solid var(--border-light);
-	background: var(--bg-secondary);
-	flex: 0 0 auto;
+.externalMarkdownDragRegion {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: var(--external-markdown-chrome-height);
+	z-index: 0;
+	pointer-events: auto;
+	-webkit-app-region: drag;
+}
+
+.externalMarkdownOverlayChrome {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 4;
+	display: flex;
+	align-items: flex-start;
+	min-height: var(--external-markdown-chrome-height);
+	padding: 8px 16px 10px 82px;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 96%, transparent) 0%,
+		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 84%, transparent) 72%,
+		transparent 100%
+	);
+	pointer-events: none;
 }
 
 .externalMarkdownTitleBlock {
+	position: relative;
+	z-index: 1;
 	min-width: 0;
+	flex: 1 1 auto;
+	max-width: calc(100% - 112px);
+	padding-top: 2px;
+	padding-right: 12px;
+	pointer-events: none;
 }
 
 .externalMarkdownTitle {
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-bold);
-	line-height: 1.35;
-	color: var(--text-primary);
+	min-width: 0;
+	margin: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.9);
+	font-weight: var(--font-medium);
+	line-height: 1.35;
+	color: var(--text-secondary);
 }
 
-.externalMarkdownPath {
-	margin-top: 2px;
-	font-size: calc(var(--text-base) * 0.8);
+.externalMarkdownMeta {
+	margin: 2px 0 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: calc(var(--text-base) * 0.76);
 	line-height: 1.35;
 	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
-.externalMarkdownActions {
+.externalMarkdownBody {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 0;
+	background: transparent;
+}
+
+.externalMarkdownEditorPane {
+	position: relative;
+	width: 100%;
+	min-height: 100%;
+}
+
+.externalMarkdownFloatActions {
+	position: sticky;
+	top: calc(var(--external-markdown-chrome-height) - 34px);
+	z-index: 6;
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	justify-content: flex-end;
+	gap: 10px;
+	width: min(
+		var(--editor-readable-content-max-width),
+		calc(100% - (2 * var(--editor-readable-content-gutter-compact)))
+	);
+	margin: 0 auto;
+	padding-right: 2px;
+	overflow: visible;
+	pointer-events: none;
 	-webkit-app-region: no-drag;
 }
 
-.externalMarkdownModeSwitch {
-	display: inline-grid;
-	grid-template-columns: repeat(3, minmax(54px, auto));
-	align-items: center;
-	height: 30px;
-	padding: 2px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
-	background: var(--bg-primary);
+.externalMarkdownFloatActions > * {
+	pointer-events: auto;
 }
 
-.externalMarkdownModeBtn {
-	height: 24px;
-	padding: 0 9px;
-	border: 0;
-	border-radius: calc(var(--radius-md) - 2px);
-	background: transparent;
-	color: var(--text-secondary);
-	font-size: calc(var(--text-base) * 0.8);
+.externalMarkdownFloatActions .markdownEditorToolbar {
+	flex: 0 0 auto;
+	overflow: visible;
+}
+
+.externalMarkdownFloatActions .markdownEditorModeSwitch {
+	display: inline-grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	align-items: center;
+	overflow: visible;
+}
+
+.externalMarkdownFloatActions .markdownEditorModeBtn {
+	width: 24px;
+	height: 20px;
+}
+
+.externalMarkdownSaveStatus {
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.76);
+	font-weight: var(--font-medium);
 	line-height: 1;
 	white-space: nowrap;
-	transition: background-color var(--transition-base), color
-		var(--transition-base);
+	transition: color var(--transition-fast);
 }
 
-.externalMarkdownModeBtn:hover {
-	color: var(--text-primary);
+.externalMarkdownSaveStatus[data-state="edited"] {
+	color: color-mix(in srgb, var(--status-warning-fg) 84%, var(--text-tertiary));
 }
 
-.externalMarkdownModeBtn[data-active="true"] {
-	background: var(--bg-tertiary);
-	color: var(--text-primary);
+.externalMarkdownSaveStatus[data-state="saving"],
+.externalMarkdownSaveStatus[data-state="loading"] {
+	color: var(--text-secondary);
+}
+
+.externalMarkdownSaveStatus[data-state="saved"] {
+	color: color-mix(in srgb, var(--status-success-fg) 78%, var(--text-tertiary));
 }
 
 .externalMarkdownError {
-	margin: 12px auto 0;
-	width: min(820px, calc(100vw - 32px));
+	position: absolute;
+	top: calc(var(--external-markdown-chrome-height) + 8px);
+	left: 50%;
+	z-index: 4;
+	width: min(
+		var(--editor-readable-content-max-width),
+		calc(100vw - (2 * var(--editor-readable-content-gutter-compact)))
+	);
 	padding: 8px 10px;
 	border: 1px solid var(--status-danger-border);
 	border-radius: var(--radius-md);
@@ -97,63 +168,57 @@
 	color: var(--status-danger-fg);
 	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.4;
-	flex: 0 0 auto;
+	transform: translateX(-50%);
 }
 
-.externalMarkdownEditor {
-	flex: 1;
-	min-height: 0;
-	overflow: auto;
-	padding: 34px 18px 56px;
-	background: var(--bg-primary);
-}
+.externalMarkdownEditorShell {
+	--readable-content-outer-width: min(
+		100%,
+		calc(
+			var(--editor-readable-content-max-width) +
+			(2 * var(--editor-readable-content-gutter))
+		)
+	);
 
-.externalMarkdownEditor .rfNodeNoteEditor {
-	width: min(820px, 100%);
+	width: var(--readable-content-outer-width);
 	min-height: 100%;
+	margin: 0 auto;
+	padding: calc(var(--external-markdown-chrome-height) + 6px)
+		var(--editor-readable-content-gutter) 50vh;
+}
+
+.externalMarkdownEditorShell .rfNodeNoteEditor {
+	width: 100%;
+	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
 	margin: 0 auto;
 	border: 0;
 	background: transparent;
 	overflow: visible;
 }
 
-.externalMarkdownEditor .rfNodeNoteEditor:focus-within {
+.externalMarkdownEditorShell .rfNodeNoteEditor:focus-within {
 	box-shadow: none;
 }
 
-.externalMarkdownEditor .rfNodeNoteEditorBody {
+.externalMarkdownEditorShell .rfNodeNoteEditorBody {
 	overflow: visible;
+	padding: 0;
+	background: transparent;
 }
 
-.externalMarkdownEditor .rfNodeNoteEditorRaw {
-	min-height: calc(100vh - 158px);
+.externalMarkdownEditorShell .rfNodeNoteEditorRaw {
+	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
 	padding: 0;
 	border: 0;
 	background: transparent;
 	box-shadow: none;
 }
 
-.externalMarkdownEditor .tiptapHostInline,
-.externalMarkdownEditor .tiptapContentInline {
-	min-height: calc(100vh - 158px);
+.externalMarkdownEditorShell .tiptapHostInline,
+.externalMarkdownEditorShell .tiptapContentInline {
+	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
 }
 
-@media (max-width: 640px) {
-	.externalMarkdownHeader {
-		padding-left: 74px;
-		gap: 10px;
-	}
-
-	.externalMarkdownModeSwitch {
-		grid-template-columns: repeat(3, 1fr);
-		width: 156px;
-	}
-
-	.externalMarkdownModeBtn {
-		padding-inline: 0;
-	}
-
-	.externalMarkdownEditor {
-		padding: 24px 12px 40px;
-	}
+.externalMarkdownEditorShell .tiptapContentInline {
+	padding-bottom: 8px;
 }

@@ -10,6 +10,8 @@ use crate::{io_atomic, utils};
 
 const EXTERNAL_MARKDOWN_LABEL_PREFIX: &str = "external-markdown-";
 const EXTERNAL_MARKDOWN_EXTENSIONS: &[&str] = &["md", "markdown", "mdown"];
+const EXTERNAL_MARKDOWN_MIN_WIDTH: f64 = 680.0;
+const EXTERNAL_MARKDOWN_MIN_HEIGHT: f64 = 360.0;
 
 #[derive(Default)]
 pub struct ExternalMarkdownState {
@@ -106,16 +108,21 @@ pub fn open_external_markdown_window(
     )
     .title(format!("{} - Glyph", file_name_for_title(&path)))
     .inner_size(820.0, 720.0)
-    .min_inner_size(520.0, 360.0)
+    .min_inner_size(EXTERNAL_MARKDOWN_MIN_WIDTH, EXTERNAL_MARKDOWN_MIN_HEIGHT)
     .resizable(true)
     .decorations(true)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
     .hidden_title(true)
-    .transparent(false)
+    .transparent(true)
     .shadow(true)
     .center()
     .build()
     .map_err(|error| error.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    if let Err(error) = crate::apply_main_window_vibrancy(&window, None) {
+        tracing::warn!("Failed to apply vibrancy to external markdown window: {error}");
+    }
 
     window.set_focus().map_err(|error| error.to_string())
 }
@@ -130,6 +137,15 @@ pub fn forget_external_markdown_window(
         .map_err(|_| "failed to lock external markdown state".to_string())?
         .remove(label);
     Ok(())
+}
+
+#[tauri::command]
+pub fn open_external_markdown_path(
+    app: tauri::AppHandle,
+    state: State<'_, ExternalMarkdownState>,
+    path: String,
+) -> Result<(), String> {
+    open_external_markdown_window(&app, &state, PathBuf::from(path))
 }
 
 #[tauri::command]
