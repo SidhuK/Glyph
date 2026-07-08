@@ -4,7 +4,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -12,6 +11,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import {
 	OPEN_LOCAL_CONNECTIONS_EVENT,
 	type OpenLocalConnectionsDetail,
@@ -414,7 +414,7 @@ export function MarkdownEditorPane({
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
-	}, [initialDoc, initialError, relPath, resolveEditorModeForNote]);
+	}, [clearPulse, initialDoc, initialError, relPath, resolveEditorModeForNote]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -443,7 +443,7 @@ export function MarkdownEditorPane({
 		if (spacePath === null) {
 			return;
 		}
-	}, [spacePath]);
+	}, [clearPulse, spacePath]);
 
 	const loadDoc = useCallback(
 		async (showRefreshFeedback = false) => {

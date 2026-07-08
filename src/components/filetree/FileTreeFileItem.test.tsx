@@ -20,6 +20,10 @@ vi.mock("../../lib/externalMarkdown", () => ({
 
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
+	useEditorContext: () => ({
+		getEditorState: () => null,
+		saveCurrentEditor: vi.fn().mockResolvedValue(false),
+	}),
 }));
 
 vi.mock("motion/react", async () => {
@@ -185,7 +189,9 @@ describe("FileTreeFileItem", () => {
 		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
 			| Array<{ label?: string; action?: () => void }>
 			| undefined;
-		expect(menuItems?.map((item) => item.label)).toContain("Open in New Window");
+		expect(menuItems?.map((item) => item.label)).toContain(
+			"Open in New Window",
+		);
 
 		const openInNewWindow = menuItems?.find(
 			(item) => item.label === "Open in New Window",

@@ -61,12 +61,7 @@ export function useEditorSaveIndicator() {
 			isDirty: boolean;
 			saving?: boolean;
 			autosaveBusy?: boolean;
-		}):
-			| "loading"
-			| "saving"
-			| "edited"
-			| "saved"
-			| undefined => {
+		}): "loading" | "saving" | "edited" | "saved" | undefined => {
 			if (loading) return "loading";
 			if (saving || options.saving || options.autosaveBusy) return "saving";
 			if (options.isDirty) return "edited";

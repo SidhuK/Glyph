@@ -4,9 +4,14 @@ use std::{
     path::{Path, PathBuf},
     sync::Mutex,
 };
-use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, State, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
-use crate::{io_atomic, utils};
+use crate::{
+    io_atomic, paths,
+    space::SpaceState,
+    space_fs::helpers::deny_hidden_rel_path,
+    utils,
+};
 
 const EXTERNAL_MARKDOWN_LABEL_PREFIX: &str = "external-markdown-";
 const EXTERNAL_MARKDOWN_EXTENSIONS: &[&str] = &["md", "markdown", "mdown"];
@@ -141,11 +146,23 @@ pub fn forget_external_markdown_window(
 
 #[tauri::command]
 pub fn open_external_markdown_path(
+    window: WebviewWindow,
     app: tauri::AppHandle,
+    space_state: State<'_, SpaceState>,
     state: State<'_, ExternalMarkdownState>,
     path: String,
 ) -> Result<(), String> {
-    open_external_markdown_window(&app, &state, PathBuf::from(path))
+    let root = space_state.root_for_window(&window)?;
+    let rel = PathBuf::from(path);
+    deny_hidden_rel_path(&rel)?;
+    let abs = paths::join_under(&root, &rel)?;
+    if !abs.exists() {
+        return Err("path does not exist".to_string());
+    }
+    if !abs.is_file() {
+        return Err("path is not a file".to_string());
+    }
+    open_external_markdown_window(&app, &state, abs)
 }
 
 #[tauri::command]

@@ -10,7 +10,7 @@ import type {
 	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useSpace } from "../../contexts";
+import { useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
@@ -168,6 +168,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	virtualRowIndex,
 }: FileTreeFileItemProps) {
 	const { spacePath } = useSpace();
+	const { getEditorState, saveCurrentEditor } = useEditorContext();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
 			? appearance.color
@@ -230,8 +231,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		}
 	}, [entry.rel_path]);
 	const handleOpenInSeparateWindow = useCallback(async () => {
+		const editorState = getEditorState();
+		if (editorState?.relPath === entry.rel_path && editorState.isDirty) {
+			await saveCurrentEditor();
+		}
 		await openMarkdownInExternalWindow(entry.rel_path);
-	}, [entry.rel_path]);
+	}, [entry.rel_path, getEditorState, saveCurrentEditor]);
 	const handleContextMenu = useCallback(
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
@@ -291,6 +296,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			});
 		},
 		[
+			entry.is_markdown,
 			entry.rel_path,
 			handleRevealInFinder,
 			isPinned,

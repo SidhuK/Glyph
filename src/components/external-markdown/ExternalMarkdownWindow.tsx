@@ -1,8 +1,8 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
-import { extractErrorMessage } from "../../lib/errorUtils";
 import type { EditorViewMode } from "../../lib/editorMode";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -22,13 +22,12 @@ function fallbackRelPathFromAbs(absPath: string): string {
 }
 
 async function resolveRelPath(absPath: string): Promise<string> {
-	let relPath = fallbackRelPathFromAbs(absPath);
 	try {
-		relPath = await invoke("space_relativize_path", { abs_path: absPath });
+		return await invoke("space_relativize_path", { abs_path: absPath });
 	} catch {
 		// External files opened from Finder may sit outside the active space.
+		return "";
 	}
-	return relPath;
 }
 
 export function ExternalMarkdownWindow() {
@@ -143,7 +142,9 @@ export function ExternalMarkdownWindow() {
 				const nextRelPath = await resolveRelPath(absPath);
 				if (cancelled) return;
 
-				const nextTitle = displayNameFromPath(nextRelPath);
+				const nextTitle = displayNameFromPath(
+					nextRelPath || fallbackRelPathFromAbs(absPath),
+				);
 				setRelPath(nextRelPath);
 				setTitle(nextTitle);
 				await getCurrentWindow().setTitle(`${nextTitle} - Glyph`);
@@ -223,18 +224,16 @@ export function ExternalMarkdownWindow() {
 						</div>
 					</div>
 					<div className="externalMarkdownEditorShell">
-						{relPath ? (
-							<NoteInlineEditor
-								markdown={text}
-								relPath={relPath}
-								mode={mode}
-								chrome="minimal"
-								deferHeavyFeatures
-								pasteMarkdownBehavior="smart-markdown"
-								onChange={handleChange}
-								onFrontmatterCommit={saveNow}
-							/>
-						) : null}
+						<NoteInlineEditor
+							markdown={text}
+							relPath={relPath}
+							mode={mode}
+							chrome="minimal"
+							deferHeavyFeatures
+							pasteMarkdownBehavior="smart-markdown"
+							onChange={handleChange}
+							onFrontmatterCommit={saveNow}
+						/>
 					</div>
 				</div>
 			</main>

@@ -8,8 +8,7 @@ export async function openMarkdownInExternalWindow(
 ): Promise<void> {
 	if (!isMarkdownPath(relPath)) return;
 	try {
-		const abs = await invoke("space_resolve_abs_path", { path: relPath });
-		await invoke("open_external_markdown_path", { path: abs });
+		await invoke("open_external_markdown_path", { path: relPath });
 	} catch (error) {
 		const message = extractErrorMessage(error);
 		toast.error("Could not open in new window", { description: message });
