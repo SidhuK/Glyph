@@ -23,6 +23,12 @@ function fallbackRelPathFromAbs(absPath: string): string {
 
 async function resolveRelPath(absPath: string): Promise<string> {
 	try {
+		const storedRelPath = await invoke("external_markdown_window_rel_path");
+		if (storedRelPath) return storedRelPath;
+	} catch {
+		// Fall back to relativizing against the active space when available.
+	}
+	try {
 		return await invoke("space_relativize_path", { abs_path: absPath });
 	} catch {
 		// External files opened from Finder may sit outside the active space.

@@ -98,6 +98,10 @@ vi.mock("motion/react", async () => {
 vi.mock("../../contexts", () => ({
 	useFileTreeContext: useFileTreeContextMock,
 	useSpace: useSpaceMock,
+	useEditorContext: () => ({
+		getEditorState: () => null,
+		saveCurrentEditor: vi.fn().mockResolvedValue(false),
+	}),
 }));
 
 vi.mock("../../lib/settings", async () => {

@@ -780,6 +780,7 @@ interface TauriCommands {
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	open_external_markdown_path: CommandDef<{ path: string }, void>;
 	external_markdown_window_path: CommandDef<void, string>;
+	external_markdown_window_rel_path: CommandDef<void, string | null>;
 	external_markdown_read: CommandDef<{ path: string }, ExternalMarkdownDoc>;
 	external_markdown_write: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },

@@ -1158,7 +1158,7 @@ fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
 
 fn open_external_markdown_from_finder(app: &tauri::AppHandle, path: std::path::PathBuf) {
     let state = app.state::<external_markdown::ExternalMarkdownState>();
-    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path) {
+    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path, None) {
         warn!("Failed to open external markdown file: {error}");
     }
 }
@@ -1594,6 +1594,7 @@ pub fn run() {
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,
             external_markdown::external_markdown_window_path,
+            external_markdown::external_markdown_window_rel_path,
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
             external_markdown::external_markdown_finish_close,
