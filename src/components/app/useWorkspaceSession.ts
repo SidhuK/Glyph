@@ -31,7 +31,7 @@ function buildWorkspaceSessionTabs(
 
 async function validateRestorableSessionTabs(
 	tabs: WorkspaceSessionTabSnapshot[],
-): Promise<WorkspaceSessionTabSnapshot[]> {
+): Promise<WorkspaceSessionTabSnapshot[] | null> {
 	const fileTargets = tabs
 		.filter((tab) => tab.kind === "file")
 		.map((tab) => tab.target);
@@ -47,7 +47,7 @@ async function validateRestorableSessionTabs(
 			(tab) => tab.kind === "special" || existingTargets.has(tab.target),
 		);
 	} catch {
-		return tabs.filter((tab) => tab.kind === "special");
+		return null;
 	}
 }
 
@@ -85,6 +85,7 @@ export function useWorkspaceSession({
 	const pendingSaveRef = useRef<PendingWorkspaceSessionSave | null>(null);
 	const saveTimerRef = useRef<number | null>(null);
 	const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+	const saveSpaceRef = useRef(spacePath);
 
 	const clearSaveTimer = useCallback(() => {
 		if (saveTimerRef.current === null) return;
@@ -138,6 +139,7 @@ export function useWorkspaceSession({
 			const restorableTabs = await validateRestorableSessionTabs(snapshot.tabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
+				restorableTabs === null ||
 				!restorableTabs.length
 			) {
 				return;
@@ -152,6 +154,9 @@ export function useWorkspaceSession({
 		})().catch((cause) => {
 			console.error("Failed to restore workspace session", cause);
 		});
+		return () => {
+			restoreSessionRequestIdRef.current += 1;
+		};
 	}, [
 		onboardingNotePath,
 		restoreWorkspaceTabs,
@@ -161,6 +166,12 @@ export function useWorkspaceSession({
 	]);
 
 	useEffect(() => {
+		if (saveSpaceRef.current !== spacePath) {
+			pendingSaveRef.current = null;
+			clearSaveTimer();
+			saveSpaceRef.current = spacePath;
+			return;
+		}
 		if (!spacePath || tabsRevision === 0) {
 			return;
 		}

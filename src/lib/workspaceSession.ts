@@ -1,4 +1,4 @@
-import { normalizeRelPath } from "../utils/path";
+import { isMarkdownPath, normalizeRelPath } from "../utils/path";
 import { getSettingsStore, saveSettingsStore } from "./settingsStore";
 
 const WORKSPACE_SESSION_BY_SPACE_KEY = "workspace.sessionBySpace";
@@ -29,7 +29,7 @@ function normalizeWorkspaceSessionTab(
 
 	if (value.kind === "file") {
 		const target = normalizeRelPath(value.target);
-		if (!target.toLowerCase().endsWith(".md")) return null;
+		if (!isMarkdownPath(target)) return null;
 		if (seenTargets.has(target)) return null;
 		seenTargets.add(target);
 		return { kind: "file", target };

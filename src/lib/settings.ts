@@ -323,7 +323,6 @@ function asUiFontFamily(
 	if (typeof value !== "string") return fallback;
 	const trimmed = value.trim();
 	if (!trimmed) return fallback;
-	if (trimmed === "Satoshi") return fallback;
 	return trimmed.slice(0, 80);
 }
 
@@ -987,26 +986,11 @@ export async function loadSettings(
 	const accent = asUiAccent(rawAccent);
 	const themeColors = loadUiThemeColorOverrides(entries);
 	const fontFamily = asUiFontFamily(rawFontFamily);
-	if (
-		typeof rawFontFamily === "string" &&
-		rawFontFamily.trim() === "Satoshi" &&
-		fontFamily === DEFAULT_UI_FONT_FAMILY
-	) {
-		const store = await getSettingsStore();
-		await store.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
-		entries.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
-	}
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const editorFontFamily =
 		rawEditorFontFamily === undefined || rawEditorFontFamily === null
 			? fontFamily
 			: asUiEditorFontFamily(rawEditorFontFamily);
-	if (rawEditorFontFamily === undefined || rawEditorFontFamily === null) {
-		const store = await getSettingsStore();
-		await store.set(KEYS.editorFontFamily, editorFontFamily);
-		await saveSettingsStore(store);
-		entries.set(KEYS.editorFontFamily, editorFontFamily);
-	}
 	const fontSize = asUiFontSize(rawFontSize);
 	const editorFontSize =
 		rawEditorFontSize === undefined || rawEditorFontSize === null

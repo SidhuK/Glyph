@@ -6,8 +6,9 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
-const { useLicenseStatusMock } = vi.hoisted(() => ({
+const { useLicenseStatusMock, useTauriEventMock } = vi.hoisted(() => ({
 	useLicenseStatusMock: vi.fn(),
+	useTauriEventMock: vi.fn(),
 }));
 
 vi.mock("../../lib/settings", () => ({
@@ -20,7 +21,7 @@ vi.mock("../../lib/settings", () => ({
 }));
 
 vi.mock("../../lib/tauriEvents", () => ({
-	useTauriEvent: vi.fn(),
+	useTauriEvent: useTauriEventMock,
 }));
 
 vi.mock("../../lib/license", () => ({
@@ -133,5 +134,35 @@ describe("GeneralSettingsPane", () => {
 			"Automatic updates are always on.",
 		);
 		expect(container.textContent).toContain("License Card Stub");
+	});
+
+	it("syncs resume last session from settings update events", async () => {
+		useLicenseStatusMock.mockReturnValue({
+			status: undefined,
+			loading: true,
+			error: "",
+			reload: vi.fn(),
+		} as never);
+
+		await act(async () => {
+			root.render(<GeneralSettingsPane />);
+		});
+
+		const toggle = container.querySelector("input");
+		expect(toggle?.checked).toBe(false);
+
+		const handler = useTauriEventMock.mock.calls.find(
+			([eventName]) => eventName === "settings:updated",
+		)?.[1] as (payload: { ui?: { resumeLastSession?: boolean } }) => void;
+
+		act(() => {
+			handler({ ui: {} });
+		});
+		expect(toggle?.checked).toBe(false);
+
+		act(() => {
+			handler({ ui: { resumeLastSession: true } });
+		});
+		expect(toggle?.checked).toBe(true);
 	});
 });

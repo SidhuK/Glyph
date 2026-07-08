@@ -53,11 +53,11 @@ export function GeneralSettingsPane() {
 			<div className="settingsGrid">
 				<SettingsSection
 					title="Startup"
-					description="Choose what Glyph restores when the app launches."
+					description="Choose what opens when you start Glyph."
 				>
 					<SettingsRow
-						label="Resume last session"
-						description="Reopen the tabs from this space the next time Glyph launches."
+						label="Open previous tabs"
+						description="Start this space with the tabs you left open."
 					>
 						<SettingsToggle
 							checked={resumeLastSession}

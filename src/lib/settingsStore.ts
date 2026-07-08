@@ -62,7 +62,11 @@ export async function getSettingsStore(): Promise<LazyStore> {
 	ensureSettingsInvalidationListener();
 	if (!storeInstance) {
 		storeInstance = new LazyStore("settings.json");
-		storeInitPromise = storeInstance.init();
+		storeInitPromise = storeInstance.init().catch((cause) => {
+			storeInstance = null;
+			storeInitPromise = null;
+			throw cause;
+		});
 	}
 	if (storeInitPromise) {
 		await storeInitPromise;

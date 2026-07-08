@@ -76,9 +76,8 @@ const SETTINGS_SEARCH_ITEMS = [
 		id: "general-resume-last-session",
 		tab: "general",
 		section: "Startup",
-		title: "Resume last session",
-		description:
-			"Reopen the tabs from this space the next time Glyph launches.",
+		title: "Open previous tabs",
+		description: "Start this space with the tabs you left open.",
 		keywords: [
 			"restore",
 			"startup",
