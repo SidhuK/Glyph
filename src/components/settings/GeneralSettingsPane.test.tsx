@@ -10,15 +10,18 @@ const { useLicenseStatusMock } = vi.hoisted(() => ({
 	useLicenseStatusMock: vi.fn(),
 }));
 
-vi.mock("../../lib/settings", async () => {
-	const actual =
-		await vi.importActual<typeof import("../../lib/settings")>(
-			"../../lib/settings",
-		);
-	return {
-		...actual,
-	};
-});
+vi.mock("../../lib/settings", () => ({
+	loadSettings: vi.fn(() =>
+		Promise.resolve({
+			ui: { resumeLastSession: false },
+		}),
+	),
+	setResumeLastSession: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock("../../lib/tauriEvents", () => ({
+	useTauriEvent: vi.fn(),
+}));
 
 vi.mock("../../lib/license", () => ({
 	useLicenseStatus: useLicenseStatusMock,
@@ -69,6 +72,22 @@ vi.mock("./SettingsScaffold", () => ({
 			{description ? <div>{description}</div> : null}
 			{children}
 		</div>
+	),
+	SettingsToggle: ({
+		checked,
+		ariaLabel,
+		onCheckedChange,
+	}: {
+		checked: boolean;
+		ariaLabel: string;
+		onCheckedChange: (checked: boolean) => void;
+	}) => (
+		<input
+			aria-label={ariaLabel}
+			checked={checked}
+			onChange={(event) => onCheckedChange(event.currentTarget.checked)}
+			type="checkbox"
+		/>
 	),
 }));
 

@@ -89,6 +89,7 @@ import {
 import { useAppCommands } from "./useAppCommands";
 import { useTabManager } from "./useTabManager";
 import { useWorkspaceLinkEvents } from "./useWorkspaceLinkEvents";
+import { useWorkspaceSession } from "./useWorkspaceSession";
 
 const loadCommandPalette = () =>
 	import("./CommandPalette").then((module) => ({
@@ -121,6 +122,7 @@ export function AppShell() {
 		onboardingNotePath,
 		consumeOnboardingNotePath,
 		isIndexing,
+		settingsLoaded,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -187,6 +189,9 @@ export function AppShell() {
 	const [classicAllNotesByDefault, setClassicAllNotesByDefault] = useState<
 		boolean | null
 	>(null);
+	const [resumeLastSession, setResumeLastSession] = useState<boolean | null>(
+		null,
+	);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 	const autoUpdater = useUpdaterContext();
@@ -260,10 +265,12 @@ export function AppShell() {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 				setClassicAllNotesByDefault(settings.ui.classicAllNotesByDefault);
+				setResumeLastSession(settings.ui.resumeLastSession);
 			})
 			.catch((error) => {
 				console.error("Failed to load workspace display settings", error);
 				if (!cancelled) setClassicAllNotesByDefault(false);
+				if (!cancelled) setResumeLastSession(false);
 			});
 		return () => {
 			cancelled = true;
@@ -275,13 +282,19 @@ export function AppShell() {
 		useCallback(
 			(payload: {
 				editor?: { showCollapsibleHeadings?: boolean };
-				ui?: { classicAllNotesByDefault?: boolean };
+				ui?: {
+					classicAllNotesByDefault?: boolean;
+					resumeLastSession?: boolean;
+				};
 			}) => {
 				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
 				}
 				if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
 					setClassicAllNotesByDefault(payload.ui.classicAllNotesByDefault);
+				}
+				if (typeof payload.ui?.resumeLastSession === "boolean") {
+					setResumeLastSession(payload.ui.resumeLastSession);
 				}
 			},
 			[],
@@ -344,6 +357,7 @@ export function AppShell() {
 		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
+		restoreWorkspaceTabs,
 		canGoBack,
 		canGoForward,
 		goBack,
@@ -351,8 +365,19 @@ export function AppShell() {
 		activateNextTab,
 		activatePreviousTab,
 		activateTabByIndex,
+		tabsRevision,
 	} = useTabManager(spacePath);
 	const { getBinding, actionsWithBindings } = useShortcutBindings();
+	useWorkspaceSession({
+		spacePath,
+		settingsLoaded,
+		resumeLastSession,
+		onboardingNotePath,
+		tabs,
+		activeTabPath,
+		tabsRevision,
+		restoreWorkspaceTabs,
+	});
 
 	useEffect(() => {
 		const visible =

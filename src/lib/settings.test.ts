@@ -188,6 +188,54 @@ describe("settings Folio Mode", () => {
 	});
 });
 
+describe("settings workspace session restore", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults resume last session to false", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.resumeLastSession).toBe(false);
+	});
+
+	it("persists and emits resume last session changes", async () => {
+		const { setResumeLastSession } = await import("./settings");
+		await setResumeLastSession(true);
+		expect(storeState.get("ui.resumeLastSession")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { resumeLastSession: true },
+		});
+	});
+
+	it("saves normalized per-space workspace session snapshots", async () => {
+		const { loadWorkspaceSessionSnapshot, saveWorkspaceSessionSnapshot } =
+			await import("./workspaceSession");
+
+		await saveWorkspaceSessionSnapshot("/tmp/space", {
+			version: 1,
+			savedAt: 123.5,
+			tabs: [
+				{ kind: "file", target: "Notes/A.md" },
+				{ kind: "special", target: "all-docs" },
+			],
+			activeTabTarget: "all-docs",
+		});
+
+		expect(await loadWorkspaceSessionSnapshot("/tmp/space")).toEqual({
+			version: 1,
+			savedAt: 123,
+			tabs: [
+				{ kind: "file", target: "Notes/A.md" },
+				{ kind: "special", target: "all-docs" },
+			],
+			activeTabTarget: "all-docs",
+		});
+	});
+});
+
 describe("settings corner radius style", () => {
 	beforeEach(() => {
 		vi.resetModules();

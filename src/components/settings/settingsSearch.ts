@@ -73,6 +73,22 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["support", "remove local activation"],
 	},
 	{
+		id: "general-resume-last-session",
+		tab: "general",
+		section: "Startup",
+		title: "Resume last session",
+		description:
+			"Reopen the tabs from this space the next time Glyph launches.",
+		keywords: [
+			"restore",
+			"startup",
+			"launch",
+			"start where I left off",
+			"tabs",
+			"workspace session",
+		],
+	},
+	{
 		id: "appearance-theme-mode",
 		tab: "appearance",
 		section: "Theme",

@@ -190,6 +190,8 @@ Special tabs use stable ids such as:
 
 Markdown file tabs sync into `UIProvider` as `openMarkdownTabs` and `activeMarkdownTabPath`. AI context actions use those values.
 
+When `ui.resumeLastSession` is enabled, `AppShell` restores the last saved per-space tab snapshot from `workspace.sessionBySpace` after the space and settings are loaded. The snapshot stores non-blank file and special tabs plus the active target. Missing markdown files are skipped by validating each file against disk before restoring. Tab changes are saved back through `saveWorkspaceSessionSnapshot()` after real tab commits, so switching spaces does not write an empty snapshot.
+
 ### Rename and Delete Behavior
 
 When a path gets renamed:

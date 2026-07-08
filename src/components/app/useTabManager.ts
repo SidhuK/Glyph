@@ -20,6 +20,11 @@ type TabNoteHistory = {
 
 type TabHistoryById = Record<string, TabNoteHistory>;
 
+interface RestoredWorkspaceTab {
+	kind: "file" | "special";
+	target: string;
+}
+
 function matchesRemovedPath(
 	tab: WorkspaceTab,
 	path: string,
@@ -40,6 +45,7 @@ export function useTabManager(spacePath: string | null) {
 	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const [historyByTabId, setHistoryByTabId] = useState<TabHistoryById>({});
+	const [tabsRevision, setTabsRevision] = useState(0);
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
@@ -127,6 +133,7 @@ export function useTabManager(spacePath: string | null) {
 			activeTabIdRef.current = nextActiveTabId;
 			setTabs(nextTabs);
 			setActiveTabIdState(nextActiveTabId);
+			setTabsRevision((revision) => revision + 1);
 			syncWorkspaceState(nextTabs, nextActiveTabId, previousActiveTarget);
 		},
 		[syncWorkspaceState],
@@ -148,6 +155,7 @@ export function useTabManager(spacePath: string | null) {
 		setActiveTabIdState(null);
 		setDirtyByPath({});
 		setHistoryByTabId({});
+		setTabsRevision(0);
 	}, [spacePath]);
 
 	const focusExistingTab = useCallback(
@@ -362,6 +370,38 @@ export function useTabManager(spacePath: string | null) {
 			updateActiveTabInPlace("special", target);
 		},
 		[clearHistoryForTab, focusExistingTab, updateActiveTabInPlace],
+	);
+
+	const restoreWorkspaceTabs = useCallback(
+		(tabSnapshots: RestoredWorkspaceTab[], activeTabTarget: string | null) => {
+			const seenTargets = new Set<string>();
+			const nextTabs: WorkspaceTab[] = [];
+			const nextHistory: TabHistoryById = {};
+
+			for (const snapshot of tabSnapshots) {
+				if (seenTargets.has(snapshot.target)) continue;
+				seenTargets.add(snapshot.target);
+				const tab = createTab(snapshot.kind, snapshot.target);
+				nextTabs.push(tab);
+				if (snapshot.kind === "file" && isMarkdownPath(snapshot.target)) {
+					nextHistory[tab.id] = {
+						entries: [{ path: snapshot.target }],
+						index: 0,
+					};
+				}
+			}
+
+			const nextActiveTabId =
+				nextTabs.find((tab) => tab.target === activeTabTarget)?.id ??
+				nextTabs[0]?.id ??
+				null;
+
+			historyByTabIdRef.current = nextHistory;
+			setHistoryByTabId(nextHistory);
+			setDirtyByPath({});
+			commitTabsChange(nextTabs, nextActiveTabId);
+		},
+		[commitTabsChange, createTab],
 	);
 
 	const openBlankTab = useCallback(() => {
@@ -665,6 +705,7 @@ export function useTabManager(spacePath: string | null) {
 		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
+		restoreWorkspaceTabs,
 		canGoBack,
 		canGoForward,
 		goBack,
@@ -672,5 +713,6 @@ export function useTabManager(spacePath: string | null) {
 		activateNextTab,
 		activatePreviousTab,
 		activateTabByIndex,
+		tabsRevision,
 	};
 }
