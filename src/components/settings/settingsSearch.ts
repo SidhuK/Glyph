@@ -73,6 +73,21 @@ const SETTINGS_SEARCH_ITEMS = [
 		keywords: ["support", "remove local activation"],
 	},
 	{
+		id: "general-resume-last-session",
+		tab: "general",
+		section: "Startup",
+		title: "Open previous tabs",
+		description: "Start this space with the tabs you left open.",
+		keywords: [
+			"restore",
+			"startup",
+			"launch",
+			"start where I left off",
+			"tabs",
+			"workspace session",
+		],
+	},
+	{
 		id: "appearance-theme-mode",
 		tab: "appearance",
 		section: "Theme",

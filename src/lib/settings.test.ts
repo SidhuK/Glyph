@@ -188,6 +188,87 @@ describe("settings Folio Mode", () => {
 	});
 });
 
+describe("settings workspace session restore", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults resume last session to false", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.resumeLastSession).toBe(false);
+	});
+
+	it("persists and emits resume last session changes", async () => {
+		const { setResumeLastSession } = await import("./settings");
+		await setResumeLastSession(true);
+		expect(storeState.get("ui.resumeLastSession")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { resumeLastSession: true },
+		});
+	});
+
+	it("saves normalized per-space workspace session snapshots", async () => {
+		const { loadWorkspaceSessionSnapshot, saveWorkspaceSessionSnapshot } =
+			await import("./workspaceSession");
+
+		await saveWorkspaceSessionSnapshot("/tmp/space", {
+			version: 1,
+			savedAt: 123.5,
+			tabs: [
+				{ kind: "file", target: "Notes/A.md" },
+				{ kind: "special", target: "all-docs" },
+			],
+			activeTabTarget: "all-docs",
+		});
+
+		expect(await loadWorkspaceSessionSnapshot("/tmp/space")).toEqual({
+			version: 1,
+			savedAt: 123,
+			tabs: [
+				{ kind: "file", target: "Notes/A.md" },
+				{ kind: "special", target: "all-docs" },
+			],
+			activeTabTarget: "all-docs",
+		});
+	});
+
+	it("normalizes malformed persisted workspace session snapshots", async () => {
+		const { loadWorkspaceSessionSnapshot } = await import("./workspaceSession");
+
+		storeState.set("workspace.sessionBySpace", {
+			"/tmp/space": {
+				version: 1,
+				savedAt: Number.POSITIVE_INFINITY,
+				tabs: [
+					{ kind: "file", target: "Notes/A.md" },
+					{ kind: "special", target: "Notes/A.md" },
+					{ kind: "file", target: "Notes/B.markdown" },
+					{ kind: "file", target: "Notes/C.txt" },
+					{ kind: "unknown", target: "Notes/D.md" },
+					{ kind: "special", target: "x".repeat(121) },
+					{ kind: "special", target: "all-docs" },
+				],
+				activeTabTarget: "missing",
+			},
+		});
+
+		expect(await loadWorkspaceSessionSnapshot("/tmp/missing")).toBeNull();
+		expect(await loadWorkspaceSessionSnapshot("/tmp/space")).toEqual({
+			version: 1,
+			savedAt: 0,
+			tabs: [
+				{ kind: "file", target: "Notes/A.md" },
+				{ kind: "file", target: "Notes/B.markdown" },
+				{ kind: "special", target: "all-docs" },
+			],
+			activeTabTarget: null,
+		});
+	});
+});
+
 describe("settings corner radius style", () => {
 	beforeEach(() => {
 		vi.resetModules();
@@ -290,14 +371,14 @@ describe("settings editor font family", () => {
 		storeState.clear();
 	});
 
-	it("materializes the editor font from the UI font for existing settings", async () => {
+	it("derives the editor font from the UI font when unset", async () => {
 		storeState.set("ui.fontFamily", "Atkinson Hyperlegible");
 		const { loadSettings } = await import("./settings");
 
 		const settings = await loadSettings();
 
 		expect(settings.ui.editorFontFamily).toBe("Atkinson Hyperlegible");
-		expect(storeState.get("ui.editorFontFamily")).toBe("Atkinson Hyperlegible");
+		expect(storeState.get("ui.editorFontFamily")).toBeUndefined();
 	});
 
 	it("preserves an existing editor font instead of deriving it from the UI font", async () => {

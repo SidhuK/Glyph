@@ -79,6 +79,7 @@ type TauriEventMap = {
 			fileTreeSortMode?: FileTreeSortMode;
 			folioMode?: boolean;
 			classicAllNotesByDefault?: boolean;
+			resumeLastSession?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 		};
