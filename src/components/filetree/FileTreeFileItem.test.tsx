@@ -12,8 +12,18 @@ vi.mock("../../lib/nativeContextMenu", () => ({
 	showNativeContextMenu: showNativeContextMenuMock,
 }));
 
+const openMarkdownInExternalWindowMock = vi.hoisted(() => vi.fn());
+
+vi.mock("../../lib/externalMarkdown", () => ({
+	openMarkdownInExternalWindow: openMarkdownInExternalWindowMock,
+}));
+
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({ spacePath: "/space" }),
+	useEditorContext: () => ({
+		getEditorState: () => null,
+		saveCurrentEditor: vi.fn().mockResolvedValue(false),
+	}),
 }));
 
 vi.mock("motion/react", async () => {
@@ -83,6 +93,7 @@ describe("FileTreeFileItem", () => {
 		});
 		container.remove();
 		showNativeContextMenuMock.mockReset();
+		openMarkdownInExternalWindowMock.mockReset();
 	});
 
 	const renderFileTreeFileItem = async (
@@ -159,6 +170,65 @@ describe("FileTreeFileItem", () => {
 			| undefined;
 		expect(menuItems?.map((item) => item.label)).toContain("Unpin file");
 		expect(menuItems?.map((item) => item.label)).not.toContain("Pin file");
+	});
+
+	it("shows Open in New Window for markdown files", async () => {
+		await renderFileTreeFileItem();
+
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+			);
+		});
+
+		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
+			| Array<{ label?: string; action?: () => void }>
+			| undefined;
+		expect(menuItems?.map((item) => item.label)).toContain(
+			"Open in New Window",
+		);
+
+		const openInNewWindow = menuItems?.find(
+			(item) => item.label === "Open in New Window",
+		);
+		openInNewWindow?.action?.();
+		expect(openMarkdownInExternalWindowMock).toHaveBeenCalledWith(
+			"notes/alpha.md",
+		);
+	});
+
+	it("hides Open in New Window for non-markdown files", async () => {
+		await renderFileTreeFileItem({
+			entry: {
+				name: "alpha.txt",
+				rel_path: "notes/alpha.txt",
+				kind: "file",
+				is_markdown: false,
+			},
+		});
+
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+			);
+		});
+
+		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
+			| Array<{ label?: string }>
+			| undefined;
+		expect(menuItems?.map((item) => item.label)).not.toContain(
+			"Open in New Window",
+		);
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {

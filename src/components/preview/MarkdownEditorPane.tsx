@@ -11,6 +11,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import {
 	OPEN_LOCAL_CONNECTIONS_EVENT,
 	type OpenLocalConnectionsDetail,
@@ -73,7 +74,6 @@ interface MarkdownEditorPaneProps {
 	extractToNoteActions?: ExtractToNoteActions;
 }
 
-type SyncPulse = "saved" | "reloaded" | null;
 type LinkedNoteKind = "wiki" | "markdown";
 
 interface LinkedNoteItem {
@@ -182,7 +182,7 @@ export function MarkdownEditorPane({
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
 	);
-	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
+	const { flashPulse, clearPulse, resolveLabel } = useEditorSaveIndicator();
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
 
@@ -226,7 +226,6 @@ export function MarkdownEditorPane({
 	const autosaveQueuedRef = useRef(false);
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
-	const syncPulseTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const activeRelPathRef = useRef(relPath);
 	const infoPanelOpenRef = useRef(infoPanelOpen);
@@ -339,32 +338,13 @@ export function MarkdownEditorPane({
 		selectVisibleHeading,
 	});
 
-	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
-		if (syncPulseTimerRef.current !== null) {
-			window.clearTimeout(syncPulseTimerRef.current);
-		}
-		setSyncPulse(next);
-		syncPulseTimerRef.current = window.setTimeout(() => {
-			syncPulseTimerRef.current = null;
-			setSyncPulse(null);
-		}, 1400);
-	}, []);
-
-	const saveLabel = useMemo(() => {
-		if (saving || autosaveBusy) {
-			return "Saving";
-		}
-		if (isDirty) {
-			return "Edited";
-		}
-		if (syncPulse === "reloaded") {
-			return "Fresh";
-		}
-		if (syncPulse === "saved") {
-			return "Saved";
-		}
-		return lastSavedMtimeMs ? "Saved" : "Ready";
-	}, [autosaveBusy, isDirty, lastSavedMtimeMs, saving, syncPulse]);
+	const saveLabel =
+		resolveLabel({
+			isDirty,
+			saving,
+			autosaveBusy,
+			hasSavedBefore: lastSavedMtimeMs !== null,
+		}) ?? "Ready";
 
 	useEffect(() => {
 		mountedRef.current = true;
@@ -420,7 +400,7 @@ export function MarkdownEditorPane({
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSaving(false);
 		setAutosaveBusy(false);
-		setSyncPulse(null);
+		clearPulse();
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		if (activeRelPathRef.current !== relPath) {
@@ -434,7 +414,7 @@ export function MarkdownEditorPane({
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
-	}, [initialDoc, initialError, relPath, resolveEditorModeForNote]);
+	}, [clearPulse, initialDoc, initialError, relPath, resolveEditorModeForNote]);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -458,12 +438,12 @@ export function MarkdownEditorPane({
 		setLastSavedMtimeMs(null);
 		setSaving(false);
 		setAutosaveBusy(false);
-		setSyncPulse(null);
+		clearPulse();
 		clearMarkdownDocCache();
 		if (spacePath === null) {
 			return;
 		}
-	}, [spacePath]);
+	}, [clearPulse, spacePath]);
 
 	const loadDoc = useCallback(
 		async (showRefreshFeedback = false) => {
@@ -491,14 +471,14 @@ export function MarkdownEditorPane({
 				hasUserEditsRef.current = false;
 				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
-					flashSyncPulse("reloaded");
+					flashPulse("reloaded");
 				}
 			} catch (e) {
 				if (!isCurrentSession(sessionId)) return;
 				setError(extractErrorMessage(e));
 			}
 		},
-		[flashSyncPulse, isCurrentSession, relPath, resolveEditorModeForNote],
+		[flashPulse, isCurrentSession, relPath, resolveEditorModeForNote],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
@@ -551,7 +531,7 @@ export function MarkdownEditorPane({
 				setSavedText(saved);
 				setLastSavedMtimeMs(mtimeMs);
 				hasUserEditsRef.current = false;
-				flashSyncPulse("saved");
+				flashPulse("saved");
 			};
 
 			setError("");
@@ -598,7 +578,7 @@ export function MarkdownEditorPane({
 				}
 			}
 		},
-		[flashSyncPulse, isCurrentSession, relPath],
+		[flashPulse, isCurrentSession, relPath],
 	);
 
 	const onSave = useCallback(async () => {
@@ -732,9 +712,6 @@ export function MarkdownEditorPane({
 		() => () => {
 			if (externalSyncTimerRef.current !== null) {
 				window.clearTimeout(externalSyncTimerRef.current);
-			}
-			if (syncPulseTimerRef.current !== null) {
-				window.clearTimeout(syncPulseTimerRef.current);
 			}
 		},
 		[],

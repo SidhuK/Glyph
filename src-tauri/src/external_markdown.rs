@@ -4,16 +4,29 @@ use std::{
     path::{Path, PathBuf},
     sync::Mutex,
 };
-use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, State, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
-use crate::{io_atomic, utils};
+use crate::{
+    io_atomic, paths,
+    space::SpaceState,
+    space_fs::helpers::deny_hidden_rel_path,
+    utils,
+};
 
 const EXTERNAL_MARKDOWN_LABEL_PREFIX: &str = "external-markdown-";
 const EXTERNAL_MARKDOWN_EXTENSIONS: &[&str] = &["md", "markdown", "mdown"];
+const EXTERNAL_MARKDOWN_MIN_WIDTH: f64 = 680.0;
+const EXTERNAL_MARKDOWN_MIN_HEIGHT: f64 = 360.0;
+
+#[derive(Clone)]
+struct ExternalMarkdownWindowEntry {
+    abs_path: String,
+    rel_path: Option<String>,
+}
 
 #[derive(Default)]
 pub struct ExternalMarkdownState {
-    paths_by_window: Mutex<HashMap<String, String>>,
+    paths_by_window: Mutex<HashMap<String, ExternalMarkdownWindowEntry>>,
 }
 
 #[derive(Serialize)]
@@ -80,6 +93,7 @@ pub fn open_external_markdown_window(
     app: &tauri::AppHandle,
     state: &ExternalMarkdownState,
     path: PathBuf,
+    rel_path: Option<String>,
 ) -> Result<(), String> {
     validate_markdown_file(&path)?;
 
@@ -89,7 +103,13 @@ pub fn open_external_markdown_window(
             .paths_by_window
             .lock()
             .map_err(|_| "failed to lock external markdown state".to_string())?;
-        paths_by_window.insert(label.clone(), path.to_string_lossy().to_string());
+        paths_by_window.insert(
+            label.clone(),
+            ExternalMarkdownWindowEntry {
+                abs_path: path.to_string_lossy().to_string(),
+                rel_path,
+            },
+        );
     }
 
     if let Some(window) = app.get_webview_window(&label) {
@@ -106,16 +126,21 @@ pub fn open_external_markdown_window(
     )
     .title(format!("{} - Glyph", file_name_for_title(&path)))
     .inner_size(820.0, 720.0)
-    .min_inner_size(520.0, 360.0)
+    .min_inner_size(EXTERNAL_MARKDOWN_MIN_WIDTH, EXTERNAL_MARKDOWN_MIN_HEIGHT)
     .resizable(true)
     .decorations(true)
     .title_bar_style(tauri::TitleBarStyle::Overlay)
     .hidden_title(true)
-    .transparent(false)
+    .transparent(true)
     .shadow(true)
     .center()
     .build()
     .map_err(|error| error.to_string())?;
+
+    #[cfg(target_os = "macos")]
+    if let Err(error) = crate::apply_main_window_vibrancy(&window, None) {
+        tracing::warn!("Failed to apply vibrancy to external markdown window: {error}");
+    }
 
     window.set_focus().map_err(|error| error.to_string())
 }
@@ -133,6 +158,27 @@ pub fn forget_external_markdown_window(
 }
 
 #[tauri::command]
+pub fn open_external_markdown_path(
+    window: WebviewWindow,
+    app: tauri::AppHandle,
+    space_state: State<'_, SpaceState>,
+    state: State<'_, ExternalMarkdownState>,
+    path: String,
+) -> Result<(), String> {
+    let root = space_state.root_for_window(&window)?;
+    let rel = PathBuf::from(&path);
+    deny_hidden_rel_path(&rel)?;
+    let abs = paths::join_under(&root, &rel)?;
+    if !abs.exists() {
+        return Err("path does not exist".to_string());
+    }
+    if !abs.is_file() {
+        return Err("path is not a file".to_string());
+    }
+    open_external_markdown_window(&app, &state, abs, Some(path))
+}
+
+#[tauri::command]
 pub fn external_markdown_window_path(
     window: tauri::WebviewWindow,
     state: State<'_, ExternalMarkdownState>,
@@ -142,8 +188,21 @@ pub fn external_markdown_window_path(
         .lock()
         .map_err(|_| "failed to lock external markdown state".to_string())?
         .get(window.label())
-        .cloned()
+        .map(|entry| entry.abs_path.clone())
         .ok_or_else(|| "external markdown file is not registered for this window".to_string())
+}
+
+#[tauri::command]
+pub fn external_markdown_window_rel_path(
+    window: tauri::WebviewWindow,
+    state: State<'_, ExternalMarkdownState>,
+) -> Result<Option<String>, String> {
+    Ok(state
+        .paths_by_window
+        .lock()
+        .map_err(|_| "failed to lock external markdown state".to_string())?
+        .get(window.label())
+        .and_then(|entry| entry.rel_path.clone()))
 }
 
 fn registered_path_for_window(
@@ -156,7 +215,7 @@ fn registered_path_for_window(
         .lock()
         .map_err(|_| "failed to lock external markdown state".to_string())?
         .get(window.label())
-        .cloned()
+        .map(|entry| entry.abs_path.clone())
         .ok_or_else(|| "external markdown file is not registered for this window".to_string())?;
     if PathBuf::from(supplied_path) != PathBuf::from(&registered_path) {
         return Err("external markdown path does not match this window".to_string());

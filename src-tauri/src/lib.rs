@@ -1156,9 +1156,9 @@ fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-fn open_external_markdown_path(app: &tauri::AppHandle, path: std::path::PathBuf) {
+fn open_external_markdown_from_finder(app: &tauri::AppHandle, path: std::path::PathBuf) {
     let state = app.state::<external_markdown::ExternalMarkdownState>();
-    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path) {
+    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path, None) {
         warn!("Failed to open external markdown file: {error}");
     }
 }
@@ -1169,7 +1169,7 @@ fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) {
             continue;
         }
         match url.to_file_path() {
-            Ok(path) => open_external_markdown_path(app, path),
+            Ok(path) => open_external_markdown_from_finder(app, path),
             Err(()) => warn!("Failed to convert opened URL to file path: {url}"),
         }
     }
@@ -1592,7 +1592,9 @@ pub fn run() {
             set_recent_spaces_menu,
             set_menu_shortcuts,
             set_window_vibrancy_theme,
+            external_markdown::open_external_markdown_path,
             external_markdown::external_markdown_window_path,
+            external_markdown::external_markdown_window_rel_path,
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
             external_markdown::external_markdown_finish_close,
