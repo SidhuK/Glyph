@@ -258,13 +258,20 @@ function getMountedEditorRoot(editor: Editor): HTMLElement | null {
 
 function hydrateImageNodesInDocument(
 	editor: Editor,
+	image: HTMLImageElement,
 	originalSrc: string,
 	dataUrl: string,
 ) {
+	let domPos: number;
+	try {
+		domPos = editor.view.posAtDOM(image, 0);
+	} catch {
+		return;
+	}
 	const tr = editor.state.tr;
-	let changed = false;
-	editor.state.doc.descendants((node, pos) => {
-		if (node.type.name !== "image") return;
+	for (const pos of [domPos, Math.max(0, domPos - 1)]) {
+		const node = editor.state.doc.nodeAt(pos);
+		if (node?.type.name !== "image") continue;
 		const currentSrc = typeof node.attrs.src === "string" ? node.attrs.src : "";
 		const currentOrigin =
 			typeof node.attrs.originSrc === "string" && node.attrs.originSrc.trim()
@@ -277,10 +284,9 @@ function hydrateImageNodesInDocument(
 			src: dataUrl,
 			originSrc: originalSrc,
 		});
-		changed = true;
-	});
-	if (!changed) return;
-	editor.view.dispatch(tr);
+		editor.view.dispatch(tr);
+		return;
+	}
 }
 
 export function useHydrateInlineImages(
@@ -331,7 +337,7 @@ export function useHydrateInlineImages(
 					image.dataset.glyphHydrationState = "failed";
 					return;
 				}
-				hydrateImageNodesInDocument(editor, originalSrc, dataUrl);
+				hydrateImageNodesInDocument(editor, image, originalSrc, dataUrl);
 				image.setAttribute("data-glyph-hydrated-key", key);
 				image.setAttribute("src", dataUrl);
 				image.dataset.glyphHydrationState = "ready";

@@ -36,7 +36,10 @@ export const TagAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		let requestId = 0;
 		const getItems = async (query: string): Promise<TagSuggestionItem[]> => {
+			const currentRequestId = requestId + 1;
+			requestId = currentRequestId;
 			const normalizedQuery = normalizeTagDraftPrefix(query);
 			if (!normalizedQuery) return [];
 			let tags: TagCount[] = [];
@@ -49,6 +52,7 @@ export const TagAutocomplete = Extension.create({
 				console.warn("Failed to load tag suggestions", error);
 				return [];
 			}
+			if (currentRequestId !== requestId) return [];
 			const descendantPrefix = normalizedQuery.endsWith("/")
 				? normalizedQuery
 				: `${normalizedQuery}/`;

@@ -169,6 +169,17 @@ export function useNoteFind({
 		[effectiveFindActiveIndex, findMatches.length, selectFindMatch],
 	);
 
+	useEffect(() => {
+		if (!findOpen || !findQuery || !findMatches.length) return;
+		selectFindMatch(effectiveFindActiveIndex);
+	}, [
+		effectiveFindActiveIndex,
+		findMatches.length,
+		findOpen,
+		findQuery,
+		selectFindMatch,
+	]);
+
 	const getSelectedSearchText = useCallback(() => {
 		if (mode === "plain") {
 			return selectedTextForQuery(

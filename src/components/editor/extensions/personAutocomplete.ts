@@ -32,7 +32,10 @@ export const PersonAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		let requestId = 0;
 		const getItems = async (query: string): Promise<PersonSuggestionItem[]> => {
+			const currentRequestId = requestId + 1;
+			requestId = currentRequestId;
 			const normalized = normalizeHandle(query);
 			let people: PersonCount[] = [];
 			try {
@@ -43,6 +46,7 @@ export const PersonAutocomplete = Extension.create({
 				console.warn("Failed to load people suggestions", error);
 				return [];
 			}
+			if (currentRequestId !== requestId) return [];
 			const matches: PersonSuggestionItem[] = people
 				.filter((person) =>
 					normalized.length === 0 ? true : person.handle.includes(normalized),

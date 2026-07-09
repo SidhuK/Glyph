@@ -51,6 +51,7 @@ export function matchInlineMath(source: string): RegExpMatchArray | null {
 	const match = source.match(INLINE_MATH_RE);
 	if (!match) return null;
 	const latex = match[1] ?? "";
+	if (/\n\s*\n/.test(latex)) return null;
 	if (/^[\d.,]+$/.test(latex)) return null;
 	return match;
 }

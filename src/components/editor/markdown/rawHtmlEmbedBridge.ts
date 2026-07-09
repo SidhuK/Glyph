@@ -20,6 +20,7 @@ const HTML_EMBED_BLOCK_OPEN_RE = new RegExp(
 function isHtmlEmbedBlockStart(text: string, index: number): boolean {
 	const slice = text.slice(index);
 	const trimmed = slice.match(/^[\t ]*/)?.[0]?.length ?? 0;
+	if (trimmed > 3 || slice.startsWith("\t")) return false;
 	return HTML_EMBED_BLOCK_OPEN_RE.test(slice.slice(trimmed));
 }
 
@@ -156,6 +157,9 @@ function readBalancedElement(
 		.match(new RegExp(`^<${tagName}\\b[^>]*>`, "i"));
 	if (!openMatch) return null;
 	const openEnd = start + openMatch[0].length;
+	if (/\/\s*>$/.test(openMatch[0])) {
+		return { content: text.slice(start, openEnd), end: openEnd };
+	}
 	const openTagRe = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
 	const closeTagRe = new RegExp(`</${tagName}\\s*>`, "gi");
 	let depth = 1;
@@ -188,6 +192,7 @@ function readHtmlEmbedBlockElement(
 	start: number,
 ): { content: string; end: number; tagName: HtmlEmbedBlockTagName } | null {
 	const leading = text.slice(start).match(/^[\t ]*/)?.[0]?.length ?? 0;
+	if (leading > 3 || text.slice(start).startsWith("\t")) return null;
 	const tagStart = start + leading;
 	const tagMatch = text.slice(tagStart).match(HTML_EMBED_BLOCK_OPEN_RE);
 	if (!tagMatch) return null;

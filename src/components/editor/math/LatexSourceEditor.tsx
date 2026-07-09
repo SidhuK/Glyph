@@ -86,8 +86,13 @@ export function LatexSourceEditor({
 				],
 			}),
 		});
-		if (autoFocus) window.requestAnimationFrame(() => view.focus());
-		return () => view.destroy();
+		const focusFrame = autoFocus
+			? window.requestAnimationFrame(() => view.focus())
+			: null;
+		return () => {
+			if (focusFrame !== null) window.cancelAnimationFrame(focusFrame);
+			view.destroy();
+		};
 	}, [autoFocus]);
 
 	return (

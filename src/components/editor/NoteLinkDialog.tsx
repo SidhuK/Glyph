@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -14,6 +14,7 @@ import { Input } from "../ui/shadcn/input";
 
 export interface NoteLinkDialogState {
 	href: string;
+	range: { from: number; to: number };
 	target: "_self" | "_blank";
 }
 
@@ -50,6 +51,7 @@ export function NoteLinkDialog({
 	state,
 	onStateChange,
 }: NoteLinkDialogProps) {
+	const inputRef = useRef<HTMLInputElement | null>(null);
 	const close = useCallback(() => onStateChange(null), [onStateChange]);
 
 	const apply = useCallback(() => {
@@ -58,6 +60,7 @@ export function NoteLinkDialog({
 		const chain = editor
 			.chain()
 			.focus(null, { scrollIntoView: false })
+			.setTextSelection(state.range)
 			.extendMarkRange("link");
 		if (!href) {
 			chain.unsetLink().run();
@@ -75,15 +78,16 @@ export function NoteLinkDialog({
 	}, [canEdit, editor, onStateChange, state]);
 
 	const remove = useCallback(() => {
-		if (!editor || !canEdit) return;
+		if (!editor || !canEdit || !state) return;
 		editor
 			.chain()
 			.focus(null, { scrollIntoView: false })
+			.setTextSelection(state.range)
 			.extendMarkRange("link")
 			.unsetLink()
 			.run();
 		onStateChange(null);
-	}, [canEdit, editor, onStateChange]);
+	}, [canEdit, editor, onStateChange, state]);
 
 	return (
 		<Dialog
@@ -95,9 +99,7 @@ export function NoteLinkDialog({
 			<DialogContent
 				className="editorLinkDialog"
 				onOpenAutoFocus={(event) => {
-					const input = document.querySelector<HTMLInputElement>(
-						".editorLinkDialogInput",
-					);
+					const input = inputRef.current;
 					if (!input) return;
 					event.preventDefault();
 					input.focus();
@@ -118,6 +120,7 @@ export function NoteLinkDialog({
 					}}
 				>
 					<Input
+						ref={inputRef}
 						className="editorLinkDialogInput"
 						value={state?.href ?? ""}
 						onChange={(event) =>

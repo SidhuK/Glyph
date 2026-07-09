@@ -17,15 +17,6 @@ function escapeHtmlText(text: string): string {
 		.replace(/"/g, "&quot;");
 }
 
-function htmlFragmentToPlainText(html: string): string {
-	if (!html.trim() || typeof DOMParser === "undefined") return html.trim();
-	const doc = new DOMParser().parseFromString(
-		`<div>${html}</div>`,
-		"text/html",
-	);
-	return doc.body.textContent?.trim() ?? html.trim();
-}
-
 function nextNonBlankLine(lines: string[], startIndex: number): string | null {
 	let index = startIndex;
 	while (index < lines.length) {
@@ -34,6 +25,20 @@ function nextNonBlankLine(lines: string[], startIndex: number): string | null {
 		index += 1;
 	}
 	return null;
+}
+
+function stripStructuralBlankLines(lines: string[]) {
+	const out = [...lines];
+	if (out[0]?.trim() === "") out.shift();
+	if (out[out.length - 1]?.trim() === "") out.pop();
+	return out.join("\n");
+}
+
+function stripOuterBlankLines(text: string) {
+	const lines = text.split("\n");
+	while (lines[0]?.trim() === "") lines.shift();
+	while (lines[lines.length - 1]?.trim() === "") lines.pop();
+	return lines.join("\n");
 }
 
 function isDetailsSectionEnd(
@@ -63,13 +68,16 @@ function readFencedSection(
 
 	while (index < lines.length) {
 		if (isDetailsSectionEnd(lines, index, section)) {
-			return { content: contentLines.join("\n").trim(), endIndex: index };
+			return {
+				content: stripStructuralBlankLines(contentLines),
+				endIndex: index,
+			};
 		}
 		contentLines.push(lines[index] ?? "");
 		index += 1;
 	}
 
-	return { content: contentLines.join("\n").trim(), endIndex: index };
+	return { content: stripStructuralBlankLines(contentLines), endIndex: index };
 }
 
 function detailsFencesToHtml(
@@ -89,10 +97,10 @@ function detailsFencesToHtml(
 
 function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
 	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
-	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
-	const content = inner
-		.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, "")
-		.trim();
+	const summary = summaryMatch?.[1]?.trim() ?? "";
+	const content = stripOuterBlankLines(
+		inner.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, ""),
+	);
 	const openLine = isOpen ? ":::details {open}" : ":::details";
 	return [
 		openLine,

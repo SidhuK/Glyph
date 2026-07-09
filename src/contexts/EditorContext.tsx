@@ -114,10 +114,12 @@ export function useEditorContext(): EditorContextValue {
  * Hook for editor components to register their save state
  */
 export function useEditorRegistration(state: EditorSaveState | null): void {
-	const { registerEditor } = useEditorContext();
+	const { getEditorState, registerEditor } = useEditorContext();
 
 	useEffect(() => {
 		registerEditor(state);
-		return () => registerEditor(null);
-	}, [registerEditor, state]);
+		return () => {
+			if (getEditorState() === state) registerEditor(null);
+		};
+	}, [getEditorState, registerEditor, state]);
 }

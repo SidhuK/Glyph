@@ -1,3 +1,5 @@
+import { transformMarkdownOutsideCode } from "./markdownFence";
+
 export const INLINE_TOC_MARKDOWN_MARKER = "<!-- glyph:toc -->";
 export const INLINE_TOC_EDITOR_MARKER = "{{glyph:toc}}";
 
@@ -7,14 +9,16 @@ function replaceMarkerLines(
 	toMarker: string,
 ) {
 	const normalizedFromMarker = fromMarker.toLowerCase();
-	return input
-		.split("\n")
-		.map((line) => {
-			if (line.trim().toLowerCase() !== normalizedFromMarker) return line;
-			const leadingWhitespace = line.match(/^\s*/)?.[0] ?? "";
-			return `${leadingWhitespace}${toMarker}`;
-		})
-		.join("\n");
+	return transformMarkdownOutsideCode(input, (text) => {
+		return text
+			.split("\n")
+			.map((line) => {
+				if (line.trim().toLowerCase() !== normalizedFromMarker) return line;
+				const leadingWhitespace = line.match(/^\s*/)?.[0] ?? "";
+				return `${leadingWhitespace}${toMarker}`;
+			})
+			.join("\n");
+	});
 }
 
 export function preprocessInlineTocMarkers(markdown: string) {

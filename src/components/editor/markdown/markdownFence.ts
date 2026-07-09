@@ -41,3 +41,45 @@ export function isInsideMarkdownCodeFence(
 ): boolean {
 	return tracker.activeFence !== null;
 }
+
+function transformLineOutsideInlineCode(
+	line: string,
+	transform: (text: string) => string,
+) {
+	let output = "";
+	let cursor = 0;
+	while (cursor < line.length) {
+		const tickStart = line.indexOf("`", cursor);
+		if (tickStart === -1) {
+			output += transform(line.slice(cursor));
+			break;
+		}
+		output += transform(line.slice(cursor, tickStart));
+		const tickMatch = line.slice(tickStart).match(/^`+/);
+		const ticks = tickMatch?.[0] ?? "`";
+		const close = line.indexOf(ticks, tickStart + ticks.length);
+		if (close === -1) {
+			output += line.slice(tickStart);
+			break;
+		}
+		output += line.slice(tickStart, close + ticks.length);
+		cursor = close + ticks.length;
+	}
+	return output;
+}
+
+export function transformMarkdownOutsideCode(
+	markdown: string,
+	transform: (text: string) => string,
+) {
+	const tracker = createMarkdownFenceTracker();
+	return markdown
+		.split("\n")
+		.map((line) => {
+			if (updateMarkdownFenceTracker(line, tracker)) return line;
+			if (isInsideMarkdownCodeFence(tracker)) return line;
+			if (/^( {4}|\t)/.test(line)) return line;
+			return transformLineOutsideInlineCode(line, transform);
+		})
+		.join("\n");
+}

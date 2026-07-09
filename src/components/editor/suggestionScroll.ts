@@ -29,11 +29,11 @@ export function lockEditorScrollDuringSuggestion(
 	};
 
 	host.addEventListener("scroll", restoreScroll);
-	document.addEventListener("wheel", preventDocumentScroll, {
+	host.addEventListener("wheel", preventDocumentScroll, {
 		capture: true,
 		passive: false,
 	});
-	document.addEventListener("touchmove", preventDocumentScroll, {
+	host.addEventListener("touchmove", preventDocumentScroll, {
 		capture: true,
 		passive: false,
 	});
@@ -41,10 +41,10 @@ export function lockEditorScrollDuringSuggestion(
 
 	return () => {
 		host.removeEventListener("scroll", restoreScroll);
-		document.removeEventListener("wheel", preventDocumentScroll, {
+		host.removeEventListener("wheel", preventDocumentScroll, {
 			capture: true,
 		});
-		document.removeEventListener("touchmove", preventDocumentScroll, {
+		host.removeEventListener("touchmove", preventDocumentScroll, {
 			capture: true,
 		});
 	};

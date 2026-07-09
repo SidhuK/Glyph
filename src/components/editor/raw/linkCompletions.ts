@@ -12,13 +12,18 @@ import {
 
 const COMPLETION_LIMIT = 8;
 
-function completionApply(markdown: string, closing: string) {
+function completionApply(
+	markdown: string,
+	closing: string,
+	isCurrentContext: (text: string) => boolean,
+) {
 	return (
 		view: EditorView,
 		completion: Completion,
 		from: number,
 		to: number,
 	) => {
+		if (!isCurrentContext(view.state.doc.sliceString(from, to))) return;
 		const existingClosing = view.state.doc.sliceString(to, to + closing.length);
 		const replaceTo = existingClosing === closing ? to + closing.length : to;
 		view.dispatch({
@@ -47,7 +52,11 @@ async function wikiLinkCompletions(
 		(item): Completion => ({
 			label: item.title,
 			detail: item.path,
-			apply: completionApply(`${opening}${item.insertText}]]`, "]]"),
+			apply: completionApply(
+				`${opening}${item.insertText}]]`,
+				"]]",
+				(text) => text.startsWith(opening) && !text.includes("\n"),
+			),
 			type: asEmbed ? "keyword" : "text",
 			boost: item.title ? 1 : 0,
 		}),
@@ -72,7 +81,11 @@ async function markdownLinkCompletions(
 		(item): Completion => ({
 			label: item.title,
 			detail: item.path,
-			apply: completionApply(`](${item.insertText})`, ")"),
+			apply: completionApply(
+				`](${item.insertText})`,
+				")",
+				(text) => text.startsWith("](") && !text.includes("\n"),
+			),
 			type: "text",
 		}),
 	);

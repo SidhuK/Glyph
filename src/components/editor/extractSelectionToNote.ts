@@ -12,6 +12,7 @@ export interface ExtractToNoteDialogState extends ExtractSelectionDraft {
 	destinationDir: string;
 	loading: boolean;
 	title: string;
+	titleDirty: boolean;
 }
 
 const FALLBACK_TITLE = "Untitled";
