@@ -251,14 +251,18 @@ export function MarkdownEditorPane({
 		onGitDiffChange?.(null);
 	}, [hasSupportedGit, onGitDiffChange]);
 
-	useEffect(() => {
+	// Reset note-local sidebar state when the active note identity changes.
+	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
+	const [sidebarNoteKey, setSidebarNoteKey] = useState(activeNoteKey);
+	if (sidebarNoteKey !== activeNoteKey) {
+		setSidebarNoteKey(activeNoteKey);
 		setInfoPanelText("");
 		setInfoPanelOpen(false);
 		setLocalConnectionsOpen(false);
 		setPreviewContext(null);
 		setLinkedMentions([]);
 		setRelationships([]);
-	}, [relPath, spacePath]);
+	}
 
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
 		() =>
@@ -322,10 +326,10 @@ export function MarkdownEditorPane({
 			}
 			scrollToHeading(heading);
 		},
-		[mode, scrollToHeading],
+		[mode, rawEditorRef, scrollToHeading],
 	);
 
-	const getPlainText = useCallback(() => textRef.current, []);
+	const getPlainText = useCallback(() => textRef.current, [textRef]);
 	useInternalAnchorNavigation({
 		relPath,
 		mode,
@@ -337,7 +341,7 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		if (!infoPanelOpen) return;
 		setInfoPanelText(textRef.current);
-	}, [infoPanelOpen]);
+	}, [infoPanelOpen, textRef]);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;
@@ -381,7 +385,7 @@ export function MarkdownEditorPane({
 				handleToggleInfoSidebar,
 			);
 		};
-	}, [relPath, setAiPanelOpen]);
+	}, [relPath, setAiPanelOpen, textRef]);
 
 	useEffect(() => {
 		if (aiPanelOpen) setInfoPanelOpen(false);
@@ -396,7 +400,7 @@ export function MarkdownEditorPane({
 			getMarkdown: () => textRef.current,
 			setMode: requestEditorMode,
 		}),
-		[isDirty, onSave, relPath, requestEditorMode],
+		[isDirty, onSave, relPath, requestEditorMode, textRef],
 	);
 	useEditorRegistration(editorState);
 
@@ -494,7 +498,7 @@ export function MarkdownEditorPane({
 			if (nextOpen) setInfoPanelText(textRef.current);
 			return nextOpen;
 		});
-	}, [setAiPanelOpen]);
+	}, [setAiPanelOpen, textRef]);
 	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
 	const isLargeNote = requiresPlainEditorMode(text);

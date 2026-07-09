@@ -190,16 +190,13 @@ export const MarkdownImageLivePreview = Extension.create({
 					};
 
 					if (docChanged) {
+						// changedRangesFromTransactions always yields ranges when docChanged.
 						const changedRanges = changedRangesFromTransactions(
 							transactions,
 							newState.doc.content.size,
 						);
-						if (!changedRanges.length) {
-							newState.doc.descendants(visitNode);
-						} else {
-							for (const range of changedRanges) {
-								newState.doc.nodesBetween(range.from, range.to, visitNode);
-							}
+						for (const range of changedRanges) {
+							newState.doc.nodesBetween(range.from, range.to, visitNode);
 						}
 					} else {
 						for (const range of selectionScanRanges(oldState, newState)) {

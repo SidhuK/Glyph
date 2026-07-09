@@ -52,7 +52,10 @@ export const TagAutocomplete = Extension.create({
 				console.warn("Failed to load tag suggestions", error);
 				return [];
 			}
-			if (currentRequestId !== requestId) return [];
+			// Stale responses must not resolve as [] — TipTap would clear the active menu.
+			if (currentRequestId !== requestId) {
+				return new Promise<TagSuggestionItem[]>(() => {});
+			}
 			const descendantPrefix = normalizedQuery.endsWith("/")
 				? normalizedQuery
 				: `${normalizedQuery}/`;

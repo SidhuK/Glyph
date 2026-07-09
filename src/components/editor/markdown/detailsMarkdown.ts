@@ -17,6 +17,15 @@ function escapeHtmlText(text: string): string {
 		.replace(/"/g, "&quot;");
 }
 
+function htmlFragmentToPlainText(html: string): string {
+	if (!html.trim() || typeof DOMParser === "undefined") return html.trim();
+	const doc = new DOMParser().parseFromString(
+		`<div>${html}</div>`,
+		"text/html",
+	);
+	return doc.body.textContent?.trim() ?? html.trim();
+}
+
 function nextNonBlankLine(lines: string[], startIndex: number): string | null {
 	let index = startIndex;
 	while (index < lines.length) {
@@ -97,7 +106,8 @@ function detailsFencesToHtml(
 
 function detailsInnerHtmlToFences(isOpen: boolean, inner: string): string {
 	const summaryMatch = inner.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
-	const summary = summaryMatch?.[1]?.trim() ?? "";
+	// Strip tags so postprocess → escapeHtmlText does not double-escape markup.
+	const summary = htmlFragmentToPlainText(summaryMatch?.[1] ?? "");
 	const content = stripOuterBlankLines(
 		inner.replace(/<summary[^>]*>[\s\S]*?<\/summary>/i, ""),
 	);

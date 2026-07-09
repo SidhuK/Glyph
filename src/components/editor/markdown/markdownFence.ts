@@ -42,6 +42,24 @@ export function isInsideMarkdownCodeFence(
 	return tracker.activeFence !== null;
 }
 
+function findInlineCodeClose(
+	line: string,
+	openStart: number,
+	tickCount: number,
+): number {
+	let search = openStart + tickCount;
+	while (search < line.length) {
+		const next = line.indexOf("`".repeat(tickCount), search);
+		if (next === -1) return -1;
+		const before = next > 0 ? line[next - 1] : "";
+		const after = line[next + tickCount] ?? "";
+		// Closing run must be exactly tickCount and not part of a longer run.
+		if (before !== "`" && after !== "`") return next;
+		search = next + 1;
+	}
+	return -1;
+}
+
 function transformLineOutsideInlineCode(
 	line: string,
 	transform: (text: string) => string,
@@ -57,7 +75,7 @@ function transformLineOutsideInlineCode(
 		output += transform(line.slice(cursor, tickStart));
 		const tickMatch = line.slice(tickStart).match(/^`+/);
 		const ticks = tickMatch?.[0] ?? "`";
-		const close = line.indexOf(ticks, tickStart + ticks.length);
+		const close = findInlineCodeClose(line, tickStart, ticks.length);
 		if (close === -1) {
 			output += line.slice(tickStart);
 			break;
@@ -68,18 +86,31 @@ function transformLineOutsideInlineCode(
 	return output;
 }
 
-export function transformMarkdownOutsideCode(
+/** Transform line-oriented markdown outside fenced/indented code (keeps inline code intact). */
+export function transformMarkdownOutsideFences(
 	markdown: string,
-	transform: (text: string) => string,
+	transform: (line: string) => string,
 ) {
 	const tracker = createMarkdownFenceTracker();
 	return markdown
 		.split("\n")
 		.map((line) => {
+			// Indented code never opens/closes fenced state.
+			if (!isInsideMarkdownCodeFence(tracker) && /^( {4}|\t)/.test(line)) {
+				return line;
+			}
 			if (updateMarkdownFenceTracker(line, tracker)) return line;
 			if (isInsideMarkdownCodeFence(tracker)) return line;
-			if (/^( {4}|\t)/.test(line)) return line;
-			return transformLineOutsideInlineCode(line, transform);
+			return transform(line);
 		})
 		.join("\n");
+}
+
+export function transformMarkdownOutsideCode(
+	markdown: string,
+	transform: (text: string) => string,
+) {
+	return transformMarkdownOutsideFences(markdown, (line) =>
+		transformLineOutsideInlineCode(line, transform),
+	);
 }

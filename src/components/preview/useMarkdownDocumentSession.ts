@@ -13,6 +13,11 @@ import {
 	peekCachedMarkdownDoc,
 } from "./markdownCache";
 
+/** Debounce typing before persisting so rapid keystrokes coalesce. */
+const AUTOSAVE_DEBOUNCE_MS = 900;
+/** Brief delay so bursty external FS events settle before reload. */
+const EXTERNAL_RELOAD_DEBOUNCE_MS = 180;
+
 interface UseMarkdownDocumentSessionOptions {
 	initialDoc: TextFileDoc | null;
 	initialError: string;
@@ -189,12 +194,16 @@ export function useMarkdownDocumentSession({
 						setEditorMode(resolveEditorModeForNote(doc.text));
 					}
 					replaceText(doc.text);
+					hasUserEditsRef.current = false;
+				} else {
+					// User edited before this read resolved; keep the dirty edit
+					// flagged so it still autosaves instead of going stale.
+					hasUserEditsRef.current = true;
 				}
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
-				hasUserEditsRef.current = false;
 				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
 					flashPulse("reloaded");
@@ -257,10 +266,17 @@ export function useMarkdownDocumentSession({
 		}
 	}, [flushRawMarkdown, isCurrentSession, relPath, replaceText]);
 
+	const loadedSpacePathRef = useRef(spacePath);
+
 	useEffect(() => {
-		if (initialDoc) return;
+		const spaceChanged = loadedSpacePathRef.current !== spacePath;
+		loadedSpacePathRef.current = spacePath;
+		// A stale `initialDoc` from the previous space must not block a reload:
+		// the space-change effect already cleared local state, so this note
+		// still needs to be fetched from the newly active space.
+		if (initialDoc && !spaceChanged) return;
 		void loadDoc();
-	}, [initialDoc, loadDoc]);
+	}, [initialDoc, loadDoc, spacePath]);
 
 	const persistDoc = useCallback(
 		async (
@@ -424,7 +440,7 @@ export function useMarkdownDocumentSession({
 		if (!isDirty || !hasUserEditsRef.current) return;
 		const timer = window.setTimeout(() => {
 			runAutosave();
-		}, 900);
+		}, AUTOSAVE_DEBOUNCE_MS);
 		return () => window.clearTimeout(timer);
 	}, [isDirty, runAutosave]);
 
@@ -455,7 +471,7 @@ export function useMarkdownDocumentSession({
 					return;
 				}
 				void loadDocFromExternalChange();
-			}, 180);
+			}, EXTERNAL_RELOAD_DEBOUNCE_MS);
 		},
 		[flushRawMarkdown, loadDocFromExternalChange, relPath],
 	);

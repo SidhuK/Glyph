@@ -277,7 +277,7 @@ function hydrateImageNodesInDocument(
 			typeof node.attrs.originSrc === "string" && node.attrs.originSrc.trim()
 				? node.attrs.originSrc
 				: currentSrc;
-		if (currentOrigin !== originalSrc) return;
+		if (currentOrigin !== originalSrc) continue;
 		if (currentSrc === dataUrl && node.attrs.originSrc === originalSrc) return;
 		tr.setNodeMarkup(pos, undefined, {
 			...node.attrs,

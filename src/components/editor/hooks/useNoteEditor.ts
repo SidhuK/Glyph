@@ -602,6 +602,13 @@ export function useNoteEditor({
 											originSrc: saved.href,
 										});
 									} catch {
+										if (
+											editorInstance.isDestroyed ||
+											editorRef.current !== editorInstance ||
+											sourcePath !== relPathRef.current
+										) {
+											continue;
+										}
 										replacePlaceholderWithFallbackText(
 											editorInstance,
 											item.uploadId,

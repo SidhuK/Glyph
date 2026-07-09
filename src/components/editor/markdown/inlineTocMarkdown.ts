@@ -10,14 +10,9 @@ function replaceMarkerLines(
 ) {
 	const normalizedFromMarker = fromMarker.toLowerCase();
 	return transformMarkdownOutsideCode(input, (text) => {
-		return text
-			.split("\n")
-			.map((line) => {
-				if (line.trim().toLowerCase() !== normalizedFromMarker) return line;
-				const leadingWhitespace = line.match(/^\s*/)?.[0] ?? "";
-				return `${leadingWhitespace}${toMarker}`;
-			})
-			.join("\n");
+		if (text.trim().toLowerCase() !== normalizedFromMarker) return text;
+		const leadingWhitespace = text.match(/^\s*/)?.[0] ?? "";
+		return `${leadingWhitespace}${toMarker}`;
 	});
 }
 

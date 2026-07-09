@@ -46,7 +46,10 @@ export const PersonAutocomplete = Extension.create({
 				console.warn("Failed to load people suggestions", error);
 				return [];
 			}
-			if (currentRequestId !== requestId) return [];
+			// Stale responses must not resolve as [] — TipTap would clear the active menu.
+			if (currentRequestId !== requestId) {
+				return new Promise<PersonSuggestionItem[]>(() => {});
+			}
 			const matches: PersonSuggestionItem[] = people
 				.filter((person) =>
 					normalized.length === 0 ? true : person.handle.includes(normalized),
