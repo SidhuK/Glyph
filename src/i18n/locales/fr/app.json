@@ -18,9 +18,9 @@
 		"noResults": "Aucun résultat",
 		"notes": "Notes",
 		"recentlyOpened": "Ouvert récemment",
-		"results_one": "{{count}} résultat",
-		"results_many": "{{count}} résultats",
-		"results_other": "{{count}} résultats",
+		"results_one": "{{formattedCount}} résultat",
+		"results_many": "{{formattedCount}} résultats",
+		"results_other": "{{formattedCount}} résultats",
 		"searchCommands": "Rechercher des commandes",
 		"searching": "Recherche...",
 		"searchNotes": "Rechercher des notes...",
@@ -29,9 +29,11 @@
 		"typeToSearch": "Tapez pour rechercher dans vos notes..."
 	},
 	"commands": {
+		"licensePageErrorTitle": "Impossible d'ouvrir la page de licence",
 		"openAnotherSpace": "Ouvrir un autre espace",
 		"openSpace": "Ouvrir un espace",
 		"pinCurrentFile": "Épingler le fichier actuel",
+		"tryAgain": "Réessayez dans un instant.",
 		"unpinCurrentFile": "Désépingler le fichier actuel"
 	},
 	"gitSync": {

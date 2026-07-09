@@ -18,9 +18,9 @@
 		"noResults": "결과 없음",
 		"notes": "노트",
 		"recentlyOpened": "최근 열림",
-		"results": "결과 {{count}}개",
-		"results_one": "{{count}}개 결과",
-		"results_other": "결과 {{count}}개",
+		"results": "결과 {{formattedCount}}개",
+		"results_one": "{{formattedCount}}개 결과",
+		"results_other": "결과 {{formattedCount}}개",
 		"searchCommands": "명령 검색",
 		"searchNotes": "노트 검색...",
 		"searching": "검색 중...",
@@ -29,14 +29,10 @@
 		"typeToSearch": "노트를 검색하려면 입력하세요..."
 	},
 	"commands": {
-		"createFolderErrorTitle": "폴더를 만들 수 없음",
-		"goBack": "뒤로",
 		"licensePageErrorTitle": "라이선스 페이지를 열 수 없음",
-		"moveDestination": "이동 대상",
 		"openAnotherSpace": "다른 스페이스 열기",
 		"openSpace": "스페이스 열기",
 		"pinCurrentFile": "현재 파일 고정",
-		"settingsCategory": "설정 > {{tab}}",
 		"tryAgain": "잠시 후 다시 시도하세요.",
 		"unpinCurrentFile": "현재 파일 고정 해제"
 	},

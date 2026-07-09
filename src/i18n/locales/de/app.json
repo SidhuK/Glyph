@@ -18,8 +18,8 @@
 		"noResults": "Keine Ergebnisse",
 		"notes": "Notizen",
 		"recentlyOpened": "Zuletzt geöffnet",
-		"results_one": "{{count}} Ergebnis",
-		"results_other": "{{count}} Ergebnisse",
+		"results_one": "{{formattedCount}} Ergebnis",
+		"results_other": "{{formattedCount}} Ergebnisse",
 		"searchCommands": "Befehle suchen",
 		"searching": "Sucht...",
 		"searchNotes": "Notizen suchen...",
@@ -28,9 +28,11 @@
 		"typeToSearch": "Tippen, um Ihre Notizen zu durchsuchen..."
 	},
 	"commands": {
+		"licensePageErrorTitle": "Lizenzseite konnte nicht geöffnet werden",
 		"openAnotherSpace": "Anderen Space öffnen",
 		"openSpace": "Space öffnen",
 		"pinCurrentFile": "Aktuelle Datei anheften",
+		"tryAgain": "Versuche es in einem Moment erneut.",
 		"unpinCurrentFile": "Aktuelle Datei lösen"
 	},
 	"gitSync": {

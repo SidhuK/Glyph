@@ -96,7 +96,18 @@
 	"allDocs": {
 		"doubleClickHint": "Double-click to open note",
 		"noPreview": "No preview yet",
-		"selectLabel": "Select {{title}}. Press Enter to open."
+		"selectLabel": "Select {{title}}. Press Enter to open.",
+		"empty": "No notes yet. Create one to get started.",
+		"loadError": "Could not load all notes: {{message}}",
+		"sections": {
+			"earlier": "Earlier",
+			"thisMonth": "This Month",
+			"thisWeek": "This Week",
+			"today": "Today",
+			"yesterday": "Yesterday"
+		},
+		"showActivity": "Show activity",
+		"title": "All Notes"
 	},
 	"common": {
 		"add": "Add",
@@ -219,14 +230,37 @@
 		"created": null,
 		"databaseTag": "Database Tag",
 		"date": "Date",
-		"dateShortcuts": null,
+		"dateShortcuts": {
+			"overdue": "Overdue",
+			"today": "Today",
+			"thisWeek": "This Week",
+			"last7Days": "Last 7 Days",
+			"last30Days": "Last 30 Days"
+		},
 		"deleteCollection": "Delete collection",
 		"filterBy": "Filter by",
 		"filterDateRange": "Filter {{index}} date range",
 		"filterField": "Filter {{index}} field",
 		"filterHint": "Narrow this view by column values. To search note text, use the search box in the toolbar.",
 		"filterOperator": "Filter {{index}} operator",
-		"filterOperators": null,
+		"filterOperators": {
+			"equals": "is",
+			"not_equals": "is not",
+			"contains": "contains",
+			"not_contains": "does not contain",
+			"starts_with": "starts with",
+			"ends_with": "ends with",
+			"greater_than": "> Greater than",
+			"less_than": "< Less than",
+			"is_empty": "is empty",
+			"is_not_empty": "is not empty",
+			"is_true": "is checked",
+			"is_false": "is unchecked",
+			"tags_contains": "contains",
+			"any_of": "is any of",
+			"none_of": "is none of",
+			"within_last_7_days": "within last 7 days"
+		},
 		"filterPresets": "Filter presets",
 		"filterTag": "Filter Tag",
 		"filterTagDescription": "Choose a tag for this filter.",
@@ -438,7 +472,8 @@
 		"unpin": "Unpin",
 		"unpinFile": "Unpin file",
 		"unpinNamed": "Unpin {{name}}",
-		"untitled": "Untitled"
+		"untitled": "Untitled",
+		"openInNewWindow": "Open in New Window"
 	},
 	"loading": {
 		"allNotes": "Loading all notes…",
@@ -473,6 +508,14 @@
 		"path": "Path",
 		"readingTime": "Reading time",
 		"relationships": "Relationships",
+		"save": {
+			"edited": "Edited",
+			"fresh": "Fresh",
+			"opening": "Opening",
+			"ready": "Ready",
+			"saved": "Saved",
+			"saving": "Saving"
+		},
 		"saveStatus": "Save status",
 		"sidebar": "Note sidebar",
 		"size": "Size",
@@ -549,7 +592,9 @@
 		"openSpace": "Open space",
 		"pinned": "Pinned",
 		"searchNotes": "Search notes",
-		"tagIconError": "Could not update tag icon"
+		"tagIconError": "Could not update tag icon",
+		"sortError": "Could not update file tree sorting",
+		"sortNotes": "Sort notes"
 	},
 	"tabs": {
 		"allNotes": "All Notes",
@@ -587,5 +632,15 @@
 		"openFolder": "Open Folder",
 		"opening": "Opening...",
 		"title": "Give your thoughts a home"
+	},
+	"indexing": {
+		"checking": "Checking for note changes…",
+		"progress": "{{completed}} of {{total}} notes",
+		"title": "Indexing your space"
+	},
+	"pinned": {
+		"empty": "No pinned notes yet. Pin a note from the file tree to get started.",
+		"loading": "Loading pinned notes...",
+		"title": "Pinned"
 	}
 }

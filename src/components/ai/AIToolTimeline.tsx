@@ -358,7 +358,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 					aria-label={i18n.t("ai.toolInProgress", { ns: "ui" })}
 				>
 					<span className="aiToolLiveDot" />
-					Working with tools...
+					{i18n.t("ai.toolInProgress", { ns: "ui" })}
 				</div>
 			) : null}
 		</m.div>

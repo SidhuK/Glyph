@@ -864,7 +864,11 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     ];
     let help_menu = {
-        let builder = SubmenuBuilder::with_id(app, HELP_SUBMENU_ID, "Help");
+        let builder = SubmenuBuilder::with_id(
+            app,
+            HELP_SUBMENU_ID,
+            menu_label(menu_labels, "menu.help", "Help"),
+        );
         #[cfg(not(target_os = "macos"))]
         let builder = builder
             .item(&PredefinedMenuItem::about(app, None, None)?)

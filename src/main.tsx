@@ -348,21 +348,25 @@ const isExternalMarkdownWindow = windowLabel.startsWith(
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 );
 
-void initI18n().finally(() => {
-	ReactDOM.createRoot(rootEl).render(
-		<React.StrictMode>
-			<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-				<I18nBridge />
-				<ThemeAndTypographyBridge />
-				{isQuickNoteWindow ? (
-					<QuickNoteWindow />
-				) : isExternalMarkdownWindow ? (
-					<ExternalMarkdownWindow />
-				) : (
-					<App />
-				)}
-				<Toaster />
-			</ThemeProvider>
-		</React.StrictMode>,
-	);
-});
+void initI18n()
+	.catch((cause) => {
+		console.error("Failed to initialize i18n", cause);
+	})
+	.finally(() => {
+		ReactDOM.createRoot(rootEl).render(
+			<React.StrictMode>
+				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+					<I18nBridge />
+					<ThemeAndTypographyBridge />
+					{isQuickNoteWindow ? (
+						<QuickNoteWindow />
+					) : isExternalMarkdownWindow ? (
+						<ExternalMarkdownWindow />
+					) : (
+						<App />
+					)}
+					<Toaster />
+				</ThemeProvider>
+			</React.StrictMode>,
+		);
+	});

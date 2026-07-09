@@ -3,7 +3,7 @@
 		"workspace": "Arbeitsbereich",
 		"navigation": "Navigation",
 		"search": "Suche",
-		"file": "Dateivorgänge",
+		"file": "Dateioperationen",
 		"tabs": "Tabs",
 		"ai": "KI",
 		"editor": "Editor",
@@ -371,8 +371,8 @@
 			"description": "Notizinfo-Seitenleiste ein- oder ausblenden."
 		},
 		"toggle-pin-active-file": {
-			"label": "Aktuelle Datei anheften oder lösen",
-			"description": "Aktive Datei anheften oder lösen."
+			"label": "Aktuelle Datei anheften oder Anheftung aufheben",
+			"description": "Aktive Datei anheften oder Anheftung aufheben."
 		},
 		"toggle-sidebar": {
 			"label": "Seitenleiste umschalten",
@@ -389,6 +389,58 @@
 		"copy-active-file-absolute-path": {
 			"label": "Absoluten Pfad der aktuellen Datei kopieren",
 			"description": "Kopiert den absoluten Pfad der aktuellen Datei."
+		},
+		"details_block": {
+			"label": "Details-Block",
+			"description": "Einklappbaren Umschaltbereich einfügen."
+		},
+		"open-glyph-changelog": {
+			"label": "Änderungsprotokoll",
+			"description": "Glyph-Änderungsprotokoll öffnen."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph-Discord-Community öffnen."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Glyph-GitHub-Repository öffnen."
+		},
+		"open-glyph-privacy": {
+			"label": "Datenschutzrichtlinie",
+			"description": "Datenschutzrichtlinie öffnen."
+		},
+		"open-glyph-terms": {
+			"label": "Nutzungsbedingungen",
+			"description": "Nutzungsbedingungen öffnen."
+		},
+		"open-glyph-website": {
+			"label": "Glyph-Website",
+			"description": "Glyph-Website öffnen."
+		},
+		"open-glyph-x": {
+			"label": "Auf X folgen",
+			"description": "Glyph auf X öffnen."
+		},
+		"open-local-connections": {
+			"label": "Lokale Verbindungen öffnen",
+			"description": "Graph-Ansicht der lokalen Verbindungen öffnen."
+		},
+		"open-shortcuts-settings": {
+			"label": "Tastenkürzel…",
+			"description": "Tastenkürzel-Bereich in den Einstellungen öffnen."
+		},
+		"switch-to-edit": {
+			"label": "Formatierter Modus",
+			"description": "Editor in den formatierten Bearbeitungsmodus umschalten."
+		},
+		"switch-to-preview": {
+			"label": "Vorschau-Modus",
+			"description": "Editor in den Vorschau-Modus umschalten."
+		},
+		"switch-to-raw": {
+			"label": "Quelltext-Modus",
+			"description": "Editor in den Markdown-Quelltextmodus umschalten."
 		}
 	}
 }

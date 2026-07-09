@@ -103,7 +103,7 @@
 			"description": "Activer ou désactiver un bloc de code."
 		},
 		"collapse_all_headings": {
-			"label": "Réduire tous les titres",
+			"label": "Replier tous les titres",
 			"description": "Réduire tous les titres de la note actuelle."
 		},
 		"color_blue": {
@@ -163,7 +163,7 @@
 			"description": "Dupliquer la note actuelle."
 		},
 		"expand_all_headings": {
-			"label": "Développer tous les titres",
+			"label": "Déplier tous les titres",
 			"description": "Développer tous les titres de la note actuelle."
 		},
 		"extract_selection_to_note": {
@@ -389,6 +389,58 @@
 		"copy-active-file-absolute-path": {
 			"label": "Copier le chemin absolu du fichier actuel",
 			"description": "Copie le chemin absolu du fichier actuel."
+		},
+		"details_block": {
+			"label": "Bloc détails",
+			"description": "Insérer une section repliable."
+		},
+		"open-glyph-changelog": {
+			"label": "Journal des modifications",
+			"description": "Ouvrir le journal des modifications Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Ouvrir la communauté Discord Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Ouvrir le dépôt GitHub Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Politique de confidentialité",
+			"description": "Ouvrir la politique de confidentialité."
+		},
+		"open-glyph-terms": {
+			"label": "Conditions d'utilisation",
+			"description": "Ouvrir les conditions d'utilisation."
+		},
+		"open-glyph-website": {
+			"label": "Site web Glyph",
+			"description": "Ouvrir le site web Glyph."
+		},
+		"open-glyph-x": {
+			"label": "Suivre sur X",
+			"description": "Ouvrir Glyph sur X."
+		},
+		"open-local-connections": {
+			"label": "Ouvrir les connexions locales",
+			"description": "Ouvrir la vue graphe des connexions locales."
+		},
+		"open-shortcuts-settings": {
+			"label": "Raccourcis clavier…",
+			"description": "Ouvrir la section raccourcis clavier dans les réglages."
+		},
+		"switch-to-edit": {
+			"label": "Mode enrichi",
+			"description": "Passer l'éditeur en mode édition enrichie."
+		},
+		"switch-to-preview": {
+			"label": "Mode aperçu",
+			"description": "Passer l'éditeur en mode aperçu."
+		},
+		"switch-to-raw": {
+			"label": "Mode brut",
+			"description": "Passer l'éditeur en mode Markdown brut."
 		}
 	}
 }

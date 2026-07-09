@@ -165,7 +165,7 @@ export function ShortcutsSettingsPane() {
 			}
 			const validation = validateConfigurableShortcut(nextBinding);
 			if (!validation.valid) {
-				setError(validation.reason ?? t("settings:shortcuts.errors.invalid"));
+				setError(t("settings:shortcuts.errors.invalid"));
 				return;
 			}
 			const conflictId = findShortcutConflict(

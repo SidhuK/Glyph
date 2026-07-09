@@ -96,7 +96,18 @@
 	"allDocs": {
 		"doubleClickHint": "더블 클릭하여 노트 열기",
 		"noPreview": "아직 미리보기 없음",
-		"selectLabel": "{{title}} 선택. Enter로 엽니다."
+		"selectLabel": "{{title}} 선택. Enter로 엽니다.",
+		"title": "모든 노트",
+		"showActivity": "활동 보기",
+		"empty": "아직 노트가 없습니다. 노트를 만들어 시작하세요.",
+		"loadError": "모든 노트를 불러올 수 없습니다: {{message}}",
+		"sections": {
+			"today": "오늘",
+			"yesterday": "어제",
+			"thisWeek": "이번 주",
+			"thisMonth": "이번 달",
+			"earlier": "이전"
+		}
 	},
 	"common": {
 		"add": "추가",
@@ -294,7 +305,59 @@
 			"path": "경로",
 			"linkedNotes": "연결된 노트",
 			"created": "생성됨"
-		}
+		},
+		"filterOperators": {
+			"equals": "같음",
+			"not_equals": "같지 않음",
+			"contains": "포함",
+			"not_contains": "포함하지 않음",
+			"starts_with": "다음으로 시작",
+			"ends_with": "다음으로 끝남",
+			"greater_than": "> 보다 큼",
+			"less_than": "< 보다 작음",
+			"is_empty": "비어 있음",
+			"is_not_empty": "비어 있지 않음",
+			"is_true": "선택됨",
+			"is_false": "선택되지 않음",
+			"tags_contains": "포함",
+			"any_of": "다음 중 하나",
+			"none_of": "다음 중 없음",
+			"within_last_7_days": "지난 7일 이내"
+		},
+		"dateShortcuts": {
+			"overdue": "기한 초과",
+			"today": "오늘",
+			"thisWeek": "이번 주",
+			"last7Days": "지난 7일",
+			"last30Days": "지난 30일"
+		},
+		"addLane": "레인 추가",
+		"addView": "보기 추가",
+		"chooseTagDescription": "이 데이터베이스의 태그를 선택하세요.",
+		"collectionFolder": "컬렉션 폴더",
+		"collectionName": "컬렉션 이름",
+		"collectionViews": "컬렉션 보기",
+		"collections": "컬렉션",
+		"databaseTag": "데이터베이스 태그",
+		"date": "날짜",
+		"deleteCollection": "컬렉션 삭제",
+		"groupBy": "그룹화 기준",
+		"howCollectionsWork": "컬렉션 작동 방식",
+		"laneName": "레인 이름",
+		"name": "이름",
+		"nameExample": "예: 제품 로드맵",
+		"newCollection": "새 컬렉션",
+		"newNote": "새 노트",
+		"none": "없음",
+		"priority": "우선순위",
+		"projectFolder": "프로젝트 폴더",
+		"query": "검색어",
+		"status": "상태",
+		"suggestedTags": "추천 태그",
+		"suggestedValues": "추천 값",
+		"tags": "태그",
+		"taskProgress": "작업 진행률",
+		"viewName": "보기 이름"
 	},
 	"databases": {
 		"empty": {
@@ -321,7 +384,7 @@
 		},
 		"extractToNote": "노트로 추출",
 		"link": "링크",
-		"linkDescription": "URL을 붙여넣거나 링크를 제거하려면 비워 두세요.",
+		"linkDescription": "URL을 붙여넣거나 비워 두면 링크가 제거됩니다.",
 		"linkUrl": "링크 URL",
 		"noteTitle": "노트 제목",
 		"openInNewTab": "새 탭에서 열기",
@@ -347,7 +410,7 @@
 	"editorMode": {
 		"largeNoteHint": "큰 노트에서는 느릴 수 있습니다",
 		"preview": "미리보기",
-		"raw": "Raw",
+		"raw": "원본",
 		"rich": "리치",
 		"toolbar": "편집기 모드"
 	},
@@ -391,7 +454,11 @@
 		"rename": "이름 바꾸기",
 		"showInFinder": "Finder에서 보기",
 		"unpinFile": "파일 고정 해제",
-		"untitled": "제목 없음"
+		"untitled": "제목 없음",
+		"openInNewWindow": "새 윈도우에서 열기",
+		"loadingFolder": "폴더 로딩 중...",
+		"unpin": "고정 해제",
+		"unpinNamed": "{{name}} 고정 해제"
 	},
 	"loading": null,
 	"math": {
@@ -419,6 +486,14 @@
 		"path": "경로",
 		"readingTime": "읽는 시간",
 		"relationships": "관계",
+		"save": {
+			"edited": "편집됨",
+			"fresh": "최신",
+			"opening": "여는 중",
+			"ready": "준비됨",
+			"saved": "저장됨",
+			"saving": "저장 중"
+		},
 		"saveStatus": "저장 상태",
 		"sidebar": "노트 사이드바",
 		"size": "크기",
@@ -488,9 +563,16 @@
 		"openAllNotes": "모든 노트 열기",
 		"openCollections": "컬렉션 열기",
 		"openConnections": "연결 열기",
-		"openPinned": "고정된 항목 열기",
-		"pinned": "고정됨",
-		"tagIconError": "태그 아이콘을 업데이트할 수 없습니다"
+		"openPinned": "고정 열기",
+		"pinned": "고정",
+		"tagIconError": "태그 아이콘을 업데이트할 수 없습니다",
+		"sortNotes": "노트 정렬",
+		"sortError": "파일 트리 정렬을 업데이트할 수 없습니다",
+		"createNote": "새 노트 만들기",
+		"home": "홈",
+		"openHome": "홈 열기",
+		"openSpace": "스페이스 열기",
+		"searchNotes": "노트 검색"
 	},
 	"tabs": {
 		"allNotes": "모든 노트",
@@ -501,7 +583,7 @@
 		"goForward": "앞으로",
 		"newTab": "새 탭",
 		"openBlankTab": "빈 탭 열기",
-		"pinned": "고정됨",
+		"pinned": "고정",
 		"renameFile": "현재 파일 이름 변경",
 		"renameNamed": "{{name}} 이름 변경"
 	},
@@ -513,9 +595,26 @@
 		"settings": "템플릿 설정"
 	},
 	"welcome": {
-		"currentDescription": "현재 노트 폴더를 열거나 새 작업 공간을 만드세요.",
-		"kicker": "간단한 Markdown. 로컬 파일.",
+		"currentDescription": "현재 노트 폴더를 열거나 새 스페이스를 만드세요.",
+		"kicker": "순수 Markdown. 로컬 파일.",
 		"openFolder": "폴더 열기",
-		"opening": "여는 중..."
+		"opening": "여는 중...",
+		"checklist": "체크리스트",
+		"dataChart": "데이터 차트",
+		"description": "내 노트, 내 파일, 내 기기. Glyph는 기존 Markdown 노트 폴더나, 새로 시작하는 폴더에서 가장 잘 작동합니다.",
+		"document": "문서",
+		"folder": "폴더",
+		"notes": "노트",
+		"title": "생각을 담을 공간을"
+	},
+	"pinned": {
+		"title": "고정",
+		"loading": "고정된 노트 불러오는 중…",
+		"empty": "고정된 노트가 없습니다. 파일 트리에서 노트를 고정해 보세요."
+	},
+	"indexing": {
+		"title": "스페이스 인덱싱 중",
+		"progress": "노트 {{completed}} / {{total}}개",
+		"checking": "노트 변경 사항 확인 중…"
 	}
 }

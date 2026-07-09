@@ -1,30 +1,11 @@
+import {
+	createMarkdownFenceTracker,
+	isInsideMarkdownCodeFence,
+	updateMarkdownFenceTracker,
+} from "./markdownFence";
+
 export const INLINE_TOC_MARKDOWN_MARKER = "<!-- glyph:toc -->";
 export const INLINE_TOC_EDITOR_MARKER = "{{glyph:toc}}";
-
-type CodeFenceState = {
-	open: boolean;
-	marker: string | null;
-};
-
-function parseCodeFenceToggle(line: string): string | null {
-	const match = line.trim().match(/^(`{3,}|~{3,})/);
-	return match?.[1] ?? null;
-}
-
-function updateCodeFenceState(
-	state: CodeFenceState,
-	line: string,
-): CodeFenceState {
-	const fence = parseCodeFenceToggle(line);
-	if (!fence) return state;
-	if (!state.open) {
-		return { open: true, marker: fence };
-	}
-	if (state.marker === fence) {
-		return { open: false, marker: null };
-	}
-	return state;
-}
 
 function replaceMarkerLines(
 	input: string,
@@ -33,12 +14,12 @@ function replaceMarkerLines(
 ) {
 	const normalizedFromMarker = fromMarker.toLowerCase();
 	const lines = input.split("\n");
-	let fenceState: CodeFenceState = { open: false, marker: null };
+	const fenceTracker = createMarkdownFenceTracker();
 	return lines
 		.map((line) => {
-			fenceState = updateCodeFenceState(fenceState, line);
+			updateMarkdownFenceTracker(line, fenceTracker);
 			if (
-				fenceState.open ||
+				isInsideMarkdownCodeFence(fenceTracker) ||
 				line.trim().toLowerCase() !== normalizedFromMarker
 			) {
 				return line;

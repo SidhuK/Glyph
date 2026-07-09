@@ -19,8 +19,8 @@
 		"notes": "ノート",
 		"recentlyOpened": "最近開いた項目",
 		"results": "{{count}} 件の結果",
-		"results_one": "{{count}} 件の結果",
-		"results_other": "{{count}} 件の結果",
+		"results_one": "{{formattedCount}} 件の結果",
+		"results_other": "{{formattedCount}} 件の結果",
 		"searchCommands": "コマンドを検索",
 		"searchNotes": "ノートを検索...",
 		"searching": "検索中...",
@@ -29,14 +29,10 @@
 		"typeToSearch": "入力してノートを検索..."
 	},
 	"commands": {
-		"createFolderErrorTitle": "フォルダを作成できませんでした",
-		"goBack": "戻る",
 		"licensePageErrorTitle": "ライセンスページを開けませんでした",
-		"moveDestination": "移動先",
 		"openAnotherSpace": "別のスペースを開く",
 		"openSpace": "スペースを開く",
 		"pinCurrentFile": "現在のファイルをピン留め",
-		"settingsCategory": "設定 > {{tab}}",
 		"tryAgain": "少ししてから再試行してください。",
 		"unpinCurrentFile": "現在のファイルのピン留めを解除"
 	},

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import { Hash, Search, Tags } from "../Icons";
 import {
@@ -71,9 +72,11 @@ export function DatabaseTagPicker({
 	placeholder = "Choose a tag",
 	emptyLabel,
 }: DatabaseTagPickerProps) {
+	const { t } = useTranslation("ui");
 	const { tags } = useFileTreeContext();
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
+	const resolvedEmptyLabel = emptyLabel ?? t("database.picker.noMatchingTags");
 
 	const selectedTag = normalizedSelection(value);
 
@@ -176,7 +179,7 @@ export function DatabaseTagPicker({
 							</button>
 						) : null}
 						{options.length === 0 && !manualTag ? (
-							<div className="databasePickerEmpty">{emptyLabel}</div>
+							<div className="databasePickerEmpty">{resolvedEmptyLabel}</div>
 						) : null}
 					</div>
 				</ScrollArea>

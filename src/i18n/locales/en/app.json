@@ -18,8 +18,8 @@
 		"noResults": "No results",
 		"notes": "Notes",
 		"recentlyOpened": "Recently opened",
-		"results_one": "{{count}} result",
-		"results_other": "{{count}} results",
+		"results_one": "{{formattedCount}} result",
+		"results_other": "{{formattedCount}} results",
 		"searchCommands": "Search Commands",
 		"searching": "Searching...",
 		"searchNotes": "Search notes...",
@@ -28,9 +28,11 @@
 		"typeToSearch": "Type to search your notes..."
 	},
 	"commands": {
+		"licensePageErrorTitle": "Couldn't open license page",
 		"openAnotherSpace": "Open another space",
 		"openSpace": "Open space",
 		"pinCurrentFile": "Pin current file",
+		"tryAgain": "Try again in a moment.",
 		"unpinCurrentFile": "Unpin current file"
 	},
 	"gitSync": {

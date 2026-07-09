@@ -96,7 +96,18 @@
 	"allDocs": {
 		"doubleClickHint": "Doppelklick zum Öffnen der Notiz",
 		"noPreview": "Noch keine Vorschau",
-		"selectLabel": "{{title}} auswählen. Enter drücken zum Öffnen."
+		"selectLabel": "{{title}} auswählen. Enter drücken zum Öffnen.",
+		"title": "Alle Notizen",
+		"showActivity": "Aktivität anzeigen",
+		"empty": "Noch keine Notizen. Erstelle eine, um loszulegen.",
+		"loadError": "Alle Notizen konnten nicht geladen werden: {{message}}",
+		"sections": {
+			"today": "Heute",
+			"yesterday": "Gestern",
+			"thisWeek": "Diese Woche",
+			"thisMonth": "Dieser Monat",
+			"earlier": "Früher"
+		}
 	},
 	"common": {
 		"add": "Hinzufügen",
@@ -155,9 +166,9 @@
 				"unchecked": "Deaktiviert",
 				"status": {
 					"backlog": "Backlog",
-					"todo": "Todo",
+					"todo": "Zu erledigen",
 					"in_progress": "In Bearbeitung",
-					"in_review": "In Review",
+					"in_review": "In Prüfung",
 					"blocked": "Blockiert",
 					"waiting": "Wartend",
 					"done": "Erledigt",
@@ -303,7 +314,7 @@
 			"tags_contains": "enthält",
 			"any_of": "ist eines von",
 			"none_of": "ist keines von",
-			"within_last_7_days": "ist"
+			"within_last_7_days": "innerhalb der letzten 7 Tage"
 		},
 		"dateShortcuts": {
 			"overdue": "Überfällig",
@@ -319,7 +330,34 @@
 			"path": "Pfad",
 			"linkedNotes": "Verknüpfte Notizen",
 			"created": "Erstellt"
-		}
+		},
+		"addLane": "Spur hinzufügen",
+		"addView": "Ansicht hinzufügen",
+		"chooseTagDescription": "Wähle ein Tag für diese Datenbank.",
+		"collectionFolder": "Sammlungsordner",
+		"collectionName": "Sammlungsname",
+		"collectionViews": "Sammlungsansichten",
+		"collections": "Sammlungen",
+		"databaseTag": "Datenbank-Tag",
+		"date": "Datum",
+		"deleteCollection": "Sammlung löschen",
+		"groupBy": "Gruppieren nach",
+		"howCollectionsWork": "So funktionieren Sammlungen",
+		"laneName": "Spurname",
+		"name": "Name",
+		"nameExample": "z. B. Produkt-Roadmap",
+		"newCollection": "Neue Sammlung",
+		"newNote": "Neue Notiz",
+		"none": "Keine",
+		"priority": "Priorität",
+		"projectFolder": "Projektordner",
+		"query": "Abfrage",
+		"status": "Status",
+		"suggestedTags": "Vorgeschlagene Tags",
+		"suggestedValues": "Vorgeschlagene Werte",
+		"tags": "Tags",
+		"taskProgress": "Aufgabenfortschritt",
+		"viewName": "Ansichtsname"
 	},
 	"databases": {
 		"empty": {
@@ -342,7 +380,7 @@
 	"editor": {
 		"destination": "Ziel",
 		"details": {
-			"defaultSummary": "Toggle-Titel"
+			"defaultSummary": "Titel"
 		},
 		"extractToNote": "In Notiz extrahieren",
 		"link": "Link",
@@ -372,8 +410,8 @@
 	"editorMode": {
 		"largeNoteHint": "Bei großen Notizen kann es langsam sein",
 		"preview": "Vorschau",
-		"raw": "Raw",
-		"rich": "Rich",
+		"raw": "Quelltext",
+		"rich": "Formatiert",
 		"toolbar": "Editor-Modus"
 	},
 	"errors": {
@@ -415,8 +453,12 @@
 		"pinFile": "Datei anheften",
 		"rename": "Umbenennen",
 		"showInFinder": "Im Finder anzeigen",
-		"unpinFile": "Datei lösen",
-		"untitled": "Ohne Titel"
+		"unpinFile": "Anheftung aufheben",
+		"untitled": "Unbenannt",
+		"openInNewWindow": "In neuem Fenster öffnen",
+		"loadingFolder": "Ordner wird geladen...",
+		"unpin": "Lösen",
+		"unpinNamed": "{{name}} lösen"
 	},
 	"loading": null,
 	"math": {
@@ -428,7 +470,7 @@
 		"previewAriaLabel": "Gleichungsvorschau"
 	},
 	"noteInfo": {
-		"backlinks": "Backlinks",
+		"backlinks": "Rückverweise",
 		"characters": "Zeichen",
 		"close": "Infopanel schließen",
 		"created": "Erstellt",
@@ -444,6 +486,14 @@
 		"path": "Pfad",
 		"readingTime": "Lesezeit",
 		"relationships": "Beziehungen",
+		"save": {
+			"edited": "Bearbeitet",
+			"fresh": "Aktuell",
+			"opening": "Wird geöffnet",
+			"ready": "Bereit",
+			"saved": "Gespeichert",
+			"saving": "Wird gespeichert"
+		},
 		"saveStatus": "Speicherstatus",
 		"sidebar": "Notiz-Seitenleiste",
 		"size": "Größe",
@@ -472,8 +522,8 @@
 		"openPalette": "Palette öffnen",
 		"openSettings": "Einstellungen öffnen",
 		"paletteDescription": "Springe von einem Ort aus zu Befehlen, Dateien und Aktionen.",
-		"paletteTip": "Befehls-Palette öffnen",
-		"paletteTitle": "Probiere die Befehls-Palette aus",
+		"paletteTip": "Befehlspalette öffnen",
+		"paletteTitle": "Probiere die Befehlspalette aus",
 		"press": "Drücke",
 		"progress": "Fortschritt bei den ersten Schritten",
 		"progressRing": "Fortschrittsring für die ersten Schritte",
@@ -515,7 +565,14 @@
 		"openConnections": "Verbindungen öffnen",
 		"openPinned": "Angeheftete öffnen",
 		"pinned": "Angeheftet",
-		"tagIconError": "Tag-Symbol konnte nicht aktualisiert werden"
+		"tagIconError": "Tag-Symbol konnte nicht aktualisiert werden",
+		"sortNotes": "Notizen sortieren",
+		"sortError": "Dateibaum-Sortierung konnte nicht aktualisiert werden",
+		"createNote": "Neue Notiz erstellen",
+		"home": "Start",
+		"openHome": "Start öffnen",
+		"openSpace": "Space öffnen",
+		"searchNotes": "Notizen suchen"
 	},
 	"tabs": {
 		"allNotes": "Alle Notizen",
@@ -538,9 +595,26 @@
 		"settings": "Vorlageneinstellungen"
 	},
 	"welcome": {
-		"currentDescription": "Öffne deinen aktuellen Notizordner oder erstelle einen neuen Arbeitsbereich.",
+		"currentDescription": "Öffne deinen aktuellen Notizordner oder erstelle einen neuen Space.",
 		"kicker": "Einfaches Markdown. Lokale Dateien.",
 		"openFolder": "Ordner öffnen",
-		"opening": "Wird geöffnet..."
+		"opening": "Wird geöffnet...",
+		"checklist": "Checkliste",
+		"dataChart": "Datendiagramm",
+		"description": "Deine Notizen, deine Dateien, dein Gerät. Glyph funktioniert am besten mit vorhandenen Ordnern von Markdown-Notizen – oder mit einem neuen Ordner für einen Neustart.",
+		"document": "Dokument",
+		"folder": "Ordner",
+		"notes": "Notizen",
+		"title": "Gib deinen Gedanken ein Zuhause"
+	},
+	"pinned": {
+		"title": "Angeheftet",
+		"loading": "Angeheftete Notizen werden geladen...",
+		"empty": "Noch keine angehefteten Notizen. Hefte eine Notiz im Dateibaum an, um loszulegen."
+	},
+	"indexing": {
+		"title": "Dein Space wird indexiert",
+		"progress": "{{completed}} von {{total}} Notizen",
+		"checking": "Auf Notizänderungen prüfen…"
 	}
 }

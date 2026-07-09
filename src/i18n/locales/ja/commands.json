@@ -11,39 +11,39 @@
 	},
 	"commands": {
 		"activate-tab-1": {
-			"label": "タブ 1 を有効化",
+			"label": "タブ 1 に切り替え",
 			"description": "タブ 1 に切り替えます。"
 		},
 		"activate-tab-2": {
-			"label": "タブ 2 を有効化",
+			"label": "タブ 2 に切り替え",
 			"description": "タブ 2 に切り替えます。"
 		},
 		"activate-tab-3": {
-			"label": "タブ 3 を有効化",
+			"label": "タブ 3 に切り替え",
 			"description": "タブ 3 に切り替えます。"
 		},
 		"activate-tab-4": {
-			"label": "タブ 4 を有効化",
+			"label": "タブ 4 に切り替え",
 			"description": "タブ 4 に切り替えます。"
 		},
 		"activate-tab-5": {
-			"label": "タブ 5 を有効化",
+			"label": "タブ 5 に切り替え",
 			"description": "タブ 5 に切り替えます。"
 		},
 		"activate-tab-6": {
-			"label": "タブ 6 を有効化",
+			"label": "タブ 6 に切り替え",
 			"description": "タブ 6 に切り替えます。"
 		},
 		"activate-tab-7": {
-			"label": "タブ 7 を有効化",
+			"label": "タブ 7 に切り替え",
 			"description": "タブ 7 に切り替えます。"
 		},
 		"activate-tab-8": {
-			"label": "タブ 8 を有効化",
+			"label": "タブ 8 に切り替え",
 			"description": "タブ 8 に切り替えます。"
 		},
 		"activate-tab-9": {
-			"label": "タブ 9 を有効化",
+			"label": "タブ 9 に切り替え",
 			"description": "タブ 9 に切り替えます。"
 		},
 		"ai-attach-all-open-notes": {
@@ -87,7 +87,7 @@
 			"description": "警告のコールアウトブロックを挿入します。"
 		},
 		"close-active-tab": {
-			"label": "アクティブタブを閉じる",
+			"label": "現在のタブを閉じる",
 			"description": "現在のタブを閉じます。"
 		},
 		"close-all-tabs": {
@@ -389,6 +389,58 @@
 		"copy-active-file-absolute-path": {
 			"label": "現在のファイルの絶対パスをコピー",
 			"description": "現在のファイルの絶対パスをコピーします。"
+		},
+		"details_block": {
+			"label": "詳細ブロック",
+			"description": "折りたたみ可能なトグルセクションを挿入します。"
+		},
+		"open-glyph-changelog": {
+			"label": "変更履歴",
+			"description": "Glyphの変更履歴を開きます。"
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph Discordコミュニティを開きます。"
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Glyph GitHubリポジトリを開きます。"
+		},
+		"open-glyph-privacy": {
+			"label": "プライバシーポリシー",
+			"description": "プライバシーポリシーを開きます。"
+		},
+		"open-glyph-terms": {
+			"label": "利用規約",
+			"description": "利用規約を開きます。"
+		},
+		"open-glyph-website": {
+			"label": "Glyphウェブサイト",
+			"description": "Glyphウェブサイトを開きます。"
+		},
+		"open-glyph-x": {
+			"label": "Xでフォロー",
+			"description": "XでGlyphを開きます。"
+		},
+		"open-local-connections": {
+			"label": "ローカル接続を開く",
+			"description": "ローカル接続グラフビューを開きます。"
+		},
+		"open-shortcuts-settings": {
+			"label": "キーボードショートカット…",
+			"description": "設定のキーボードショートカットセクションを開きます。"
+		},
+		"switch-to-edit": {
+			"label": "リッチモード",
+			"description": "エディターをリッチ編集モードに切り替えます。"
+		},
+		"switch-to-preview": {
+			"label": "プレビューモード",
+			"description": "エディターをプレビューモードに切り替えます。"
+		},
+		"switch-to-raw": {
+			"label": "Rawモード",
+			"description": "エディターをRaw Markdownモードに切り替えます。"
 		}
 	}
 }

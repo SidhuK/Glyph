@@ -4,6 +4,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -166,6 +167,7 @@ export function MarkdownEditorPane({
 	initialError = "",
 	extractToNoteActions,
 }: MarkdownEditorPaneProps) {
+	const { t } = useTranslation("ui");
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(() => initialText);
 	const [infoPanelText, setInfoPanelText] = useState("");
@@ -344,7 +346,7 @@ export function MarkdownEditorPane({
 			saving,
 			autosaveBusy,
 			hasSavedBefore: lastSavedMtimeMs !== null,
-		}) ?? "Ready";
+		}) ?? t("noteInfo.save.ready");
 
 	useEffect(() => {
 		mountedRef.current = true;

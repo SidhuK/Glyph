@@ -1,6 +1,7 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
+import { i18n } from "../../i18n";
 import { createDetailsBlockContent } from "./extensions/detailsBlock";
 import {
 	BLOCK_MATH_STARTER,
@@ -268,7 +269,11 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.chain()
 				.focus()
 				.deleteRange(range)
-				.insertContent(createDetailsBlockContent())
+				.insertContent(
+					createDetailsBlockContent(
+						i18n.t("editor.details.defaultSummary", { ns: "ui" }),
+					),
+				)
 				.run(),
 	},
 	{

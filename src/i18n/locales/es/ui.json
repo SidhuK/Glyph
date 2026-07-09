@@ -100,7 +100,18 @@
 	"allDocs": {
 		"doubleClickHint": "Doble clic para abrir la nota",
 		"noPreview": "Aún no hay vista previa",
-		"selectLabel": "Seleccionar {{title}}. Pulsa Intro para abrir."
+		"selectLabel": "Seleccionar {{title}}. Pulsa Intro para abrir.",
+		"title": "Todas las notas",
+		"showActivity": "Mostrar actividad",
+		"empty": "Aún no hay notas. Crea una para empezar.",
+		"loadError": "No se pudieron cargar todas las notas: {{message}}",
+		"sections": {
+			"today": "Hoy",
+			"yesterday": "Ayer",
+			"thisWeek": "Esta semana",
+			"thisMonth": "Este mes",
+			"earlier": "Anteriores"
+		}
 	},
 	"common": {
 		"add": "Añadir",
@@ -294,7 +305,7 @@
 		"unsupportedOperatorGeneric": "No compatible: {{operator}}",
 		"value": "Valor",
 		"viewSettings": "Ajustes de vista",
-		"where": "Donde",
+		"where": "Dónde",
 		"builtinColumns": {
 			"title": "Título",
 			"tags": "Etiquetas",
@@ -302,7 +313,59 @@
 			"path": "Ruta",
 			"linkedNotes": "Notas vinculadas",
 			"created": "Creado"
-		}
+		},
+		"filterOperators": {
+			"equals": "es",
+			"not_equals": "no es",
+			"contains": "contiene",
+			"not_contains": "no contiene",
+			"starts_with": "empieza por",
+			"ends_with": "termina en",
+			"greater_than": "> Mayor que",
+			"less_than": "< Menor que",
+			"is_empty": "está vacío",
+			"is_not_empty": "no está vacío",
+			"is_true": "está marcado",
+			"is_false": "no está marcado",
+			"tags_contains": "contiene",
+			"any_of": "es cualquiera de",
+			"none_of": "no es ninguno de",
+			"within_last_7_days": "en los últimos 7 días"
+		},
+		"dateShortcuts": {
+			"overdue": "Vencido",
+			"today": "Hoy",
+			"thisWeek": "Esta semana",
+			"last7Days": "Últimos 7 días",
+			"last30Days": "Últimos 30 días"
+		},
+		"addLane": "Añadir carril",
+		"addView": "Añadir vista",
+		"chooseTagDescription": "Elige una etiqueta para esta base de datos.",
+		"collectionFolder": "Carpeta de la colección",
+		"collectionName": "Nombre de la colección",
+		"collectionViews": "Vistas de la colección",
+		"collections": "Colecciones",
+		"databaseTag": "Etiqueta de base de datos",
+		"date": "Fecha",
+		"deleteCollection": "Eliminar colección",
+		"groupBy": "Agrupar por",
+		"howCollectionsWork": "Cómo funcionan las colecciones",
+		"laneName": "Nombre del carril",
+		"name": "Nombre",
+		"nameExample": "p. ej. Hoja de ruta del producto",
+		"newCollection": "Nueva colección",
+		"newNote": "Nueva nota",
+		"none": "Ninguno",
+		"priority": "Prioridad",
+		"projectFolder": "Carpeta del proyecto",
+		"query": "Consulta",
+		"status": "Estado",
+		"suggestedTags": "Etiquetas sugeridas",
+		"suggestedValues": "Valores sugeridos",
+		"tags": "Etiquetas",
+		"taskProgress": "Progreso de tareas",
+		"viewName": "Nombre de la vista"
 	},
 	"databases": {
 		"empty": {
@@ -400,7 +463,11 @@
 		"rename": "Renombrar",
 		"showInFinder": "Mostrar en Finder",
 		"unpinFile": "Desfijar archivo",
-		"untitled": "Sin título"
+		"untitled": "Sin título",
+		"openInNewWindow": "Abrir en una ventana nueva",
+		"loadingFolder": "Cargando carpeta...",
+		"unpin": "Desanclar",
+		"unpinNamed": "Desanclar {{name}}"
 	},
 	"loading": null,
 	"math": {
@@ -417,7 +484,7 @@
 		"close": "Cerrar panel de información",
 		"created": "Creado",
 		"history": "Historial",
-		"info": "Info",
+		"info": "Información",
 		"lines": "Líneas",
 		"linkedNotes": "Notas enlazadas",
 		"modified": "Modificado",
@@ -428,6 +495,14 @@
 		"path": "Ruta",
 		"readingTime": "Tiempo de lectura",
 		"relationships": "Relaciones",
+		"save": {
+			"edited": "Editado",
+			"fresh": "Actualizado",
+			"opening": "Abriendo",
+			"ready": "Listo",
+			"saved": "Guardado",
+			"saving": "Guardando"
+		},
 		"saveStatus": "Estado de guardado",
 		"sidebar": "Barra lateral de la nota",
 		"size": "Tamaño",
@@ -437,7 +512,7 @@
 		"words": "Palabras"
 	},
 	"onboarding": {
-		"completeDescription": "Tu espacio está preparado. Empieza a escribir y explorar.",
+		"completeDescription": "Tu espacio está listo. Empieza a escribir y explorar.",
 		"completeTitle": "¡Todo listo!",
 		"createNote": "Crear nota",
 		"dailyDescription": "Se crea una nota con fecha en tu carpeta de notas diarias. Configura la ruta en Ajustes → Notas diarias.",
@@ -499,7 +574,14 @@
 		"openConnections": "Abrir conexiones",
 		"openPinned": "Abrir fijadas",
 		"pinned": "Fijadas",
-		"tagIconError": "No se pudo actualizar el icono de la etiqueta"
+		"tagIconError": "No se pudo actualizar el icono de la etiqueta",
+		"sortNotes": "Ordenar notas",
+		"sortError": "No se pudo actualizar el orden del árbol de archivos",
+		"createNote": "Crear una nota nueva",
+		"home": "Inicio",
+		"openHome": "Abrir Inicio",
+		"openSpace": "Abrir espacio",
+		"searchNotes": "Buscar notas"
 	},
 	"tabs": {
 		"allNotes": "Todas las notas",
@@ -525,6 +607,23 @@
 		"currentDescription": "Abre tu carpeta de notas actual o crea un espacio de trabajo nuevo.",
 		"kicker": "Markdown simple. Archivos locales.",
 		"openFolder": "Abrir carpeta",
-		"opening": "Abriendo..."
+		"opening": "Abriendo...",
+		"checklist": "Lista de tareas",
+		"dataChart": "Gráfico de datos",
+		"description": "Tus notas, tus archivos, tu máquina. Glyph funciona mejor con tus carpetas existentes de notas Markdown, o con una carpeta nueva si quieres empezar de cero.",
+		"document": "Documento",
+		"folder": "Carpeta",
+		"notes": "Notas",
+		"title": "Dale un hogar a tus ideas"
+	},
+	"pinned": {
+		"title": "Fijadas",
+		"loading": "Cargando notas fijadas...",
+		"empty": "Aún no hay notas fijadas. Fija una nota desde el árbol de archivos para empezar."
+	},
+	"indexing": {
+		"title": "Indexando tu espacio",
+		"progress": "{{completed}} de {{total}} notas",
+		"checking": "Buscando cambios en las notas…"
 	}
 }

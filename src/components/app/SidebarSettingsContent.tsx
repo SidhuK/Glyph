@@ -19,7 +19,7 @@ import {
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
-	const { t } = useTranslation(["settings", "app"]);
+	const { t } = useTranslation(["settings"]);
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
@@ -60,7 +60,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							strokeWidth={0.9}
 						/>
 						<span className="sidebarQuickActionLabel">
-							{t("app:commands.goBack", { defaultValue: "Back" })}
+							{t("settings:actions.back")}
 						</span>
 					</button>
 				</div>

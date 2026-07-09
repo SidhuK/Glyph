@@ -58,11 +58,13 @@ export function GeneralSettingsPane() {
 	);
 
 	const handleLanguageChange = async (nextLanguage: AppLanguage) => {
+		const previous = language;
 		setLanguageState(nextLanguage);
 		setError("");
 		try {
 			await setLanguage(nextLanguage);
 		} catch (cause) {
+			setLanguageState(previous);
 			setError(cause instanceof Error ? cause.message : String(cause));
 		}
 	};

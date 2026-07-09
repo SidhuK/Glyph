@@ -2,7 +2,7 @@
 	"commandPalette": {
 		"content": "Conteúdo",
 		"filters": {
-			"tag": "Etiqueta",
+			"tag": "Tag",
 			"title": "Título"
 		},
 		"footer": {
@@ -18,25 +18,27 @@
 		"noResults": "Nenhum resultado",
 		"notes": "Notas",
 		"recentlyOpened": "Abertos recentemente",
-		"results_one": "{{count}} resultado",
-		"results_many": "{{count}} resultados",
-		"results_other": "{{count}} resultados",
+		"results_one": "{{formattedCount}} resultado",
+		"results_many": "{{formattedCount}} resultados",
+		"results_other": "{{formattedCount}} resultados",
 		"searchCommands": "Buscar comandos",
 		"searching": "Buscando...",
 		"searchNotes": "Buscar notas...",
-		"taggedNotes": "Notas com etiquetas",
+		"taggedNotes": "Notas com tags",
 		"title": "Paleta de comandos",
 		"typeToSearch": "Digite para buscar suas notas..."
 	},
 	"commands": {
+		"licensePageErrorTitle": "Não foi possível abrir a página de licença",
 		"openAnotherSpace": "Abrir outro espaço",
 		"openSpace": "Abrir espaço",
 		"pinCurrentFile": "Fixar arquivo atual",
+		"tryAgain": "Tente novamente em um momento.",
 		"unpinCurrentFile": "Desafixar arquivo atual"
 	},
 	"gitSync": {
 		"autoSync": {
-			"body": "Este espaço está vinculado a um repositório Git em {{remoteLabel}}. Ativar a sincronização automática para confirmar e enviar alterações em um cronograma?",
+			"body": "Deseja ativar a sincronização automática do Git para fazer commit e enviar as alterações periodicamente?",
 			"cancelLabel": "Agora não",
 			"okLabel": "Ativar sincronização automática",
 			"remoteFallback": "seu remoto",

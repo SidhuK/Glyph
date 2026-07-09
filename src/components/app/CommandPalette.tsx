@@ -56,7 +56,8 @@ export function CommandPalette({
 	spacePath,
 	onSelectSearchResult,
 }: CommandPaletteProps) {
-	const { t } = useTranslation("app");
+	const { i18n, t } = useTranslation("app");
+	const locale = i18n.resolvedLanguage ?? i18n.language;
 	const canSearch = spacePath !== null;
 	const [state, setState] = useState<{
 		activeTab: Tab;
@@ -320,6 +321,8 @@ export function CommandPalette({
 											? t("commandPalette.searching")
 											: t("commandPalette.results", {
 													count: searchItems.length,
+													formattedCount:
+														searchItems.length.toLocaleString(locale),
 												})}
 									</div>
 								) : null}

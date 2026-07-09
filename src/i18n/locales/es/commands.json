@@ -83,7 +83,7 @@
 			"description": "Inserta un bloque de aviso de consejo."
 		},
 		"callout_warning": {
-			"label": "Aviso de advertencia",
+			"label": "Advertencia",
 			"description": "Inserta un bloque de aviso de advertencia."
 		},
 		"close-active-tab": {
@@ -389,6 +389,58 @@
 		"copy-active-file-absolute-path": {
 			"label": "Copiar ruta absoluta del archivo actual",
 			"description": "Copia la ruta absoluta del archivo actual."
+		},
+		"details_block": {
+			"label": "Bloque de detalles",
+			"description": "Inserta una sección plegable."
+		},
+		"open-glyph-changelog": {
+			"label": "Registro de cambios",
+			"description": "Abre el registro de cambios de Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Abre la comunidad de Discord de Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Abre el repositorio de GitHub de Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Política de privacidad",
+			"description": "Abre la política de privacidad."
+		},
+		"open-glyph-terms": {
+			"label": "Términos de servicio",
+			"description": "Abre los términos de servicio."
+		},
+		"open-glyph-website": {
+			"label": "Sitio web de Glyph",
+			"description": "Abre el sitio web de Glyph."
+		},
+		"open-glyph-x": {
+			"label": "Seguir en X",
+			"description": "Abre Glyph en X."
+		},
+		"open-local-connections": {
+			"label": "Abrir conexiones locales",
+			"description": "Abre la vista de grafo de conexiones locales."
+		},
+		"open-shortcuts-settings": {
+			"label": "Atajos de teclado…",
+			"description": "Abre la sección de atajos de teclado en ajustes."
+		},
+		"switch-to-edit": {
+			"label": "Modo enriquecido",
+			"description": "Cambia el editor al modo de edición enriquecida."
+		},
+		"switch-to-preview": {
+			"label": "Modo vista previa",
+			"description": "Cambia el editor al modo de vista previa."
+		},
+		"switch-to-raw": {
+			"label": "Modo Markdown",
+			"description": "Cambia el editor al modo Markdown sin procesar."
 		}
 	}
 }

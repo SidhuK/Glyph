@@ -96,7 +96,18 @@
 	"allDocs": {
 		"doubleClickHint": "ダブルクリックでノートを開く",
 		"noPreview": "プレビューはまだありません",
-		"selectLabel": "{{title}} を選択。Enter で開きます。"
+		"selectLabel": "{{title}} を選択。Enter で開きます。",
+		"title": "すべてのノート",
+		"showActivity": "アクティビティを表示",
+		"empty": "まだノートがありません。作成して始めましょう。",
+		"loadError": "すべてのノートを読み込めませんでした: {{message}}",
+		"sections": {
+			"today": "今日",
+			"yesterday": "昨日",
+			"thisWeek": "今週",
+			"thisMonth": "今月",
+			"earlier": "それ以前"
+		}
 	},
 	"common": {
 		"add": "追加",
@@ -155,7 +166,7 @@
 				"unchecked": "未チェック",
 				"status": {
 					"backlog": "バックログ",
-					"todo": "Todo",
+					"todo": "未着手",
 					"in_progress": "進行中",
 					"in_review": "レビュー中",
 					"blocked": "ブロック",
@@ -303,7 +314,7 @@
 			"tags_contains": "含む",
 			"any_of": "次のいずれか",
 			"none_of": "次のいずれでもない",
-			"within_last_7_days": "次と等しい"
+			"within_last_7_days": "過去7日間以内"
 		},
 		"dateShortcuts": {
 			"overdue": "期限切れ",
@@ -319,7 +330,34 @@
 			"path": "パス",
 			"linkedNotes": "リンクされたノート",
 			"created": "作成日"
-		}
+		},
+		"addLane": "レーンを追加",
+		"addView": "ビューを追加",
+		"chooseTagDescription": "このデータベースのタグを選択してください。",
+		"collectionFolder": "コレクションフォルダ",
+		"collectionName": "コレクション名",
+		"collectionViews": "コレクションビュー",
+		"collections": "コレクション",
+		"databaseTag": "データベースタグ",
+		"date": "日付",
+		"deleteCollection": "コレクションを削除",
+		"groupBy": "グループ化",
+		"howCollectionsWork": "コレクションの仕組み",
+		"laneName": "レーン名",
+		"name": "名前",
+		"nameExample": "例: プロダクトロードマップ",
+		"newCollection": "新しいコレクション",
+		"newNote": "新しいノート",
+		"none": "なし",
+		"priority": "優先度",
+		"projectFolder": "プロジェクトフォルダ",
+		"query": "クエリ",
+		"status": "ステータス",
+		"suggestedTags": "候補のタグ",
+		"suggestedValues": "候補の値",
+		"tags": "タグ",
+		"taskProgress": "タスクの進捗",
+		"viewName": "ビュー名"
 	},
 	"databases": {
 		"empty": {
@@ -342,11 +380,11 @@
 	"editor": {
 		"destination": "保存先",
 		"details": {
-			"defaultSummary": "トグルタイトル"
+			"defaultSummary": "タイトル"
 		},
 		"extractToNote": "ノートに抽出",
 		"link": "リンク",
-		"linkDescription": "URLを貼り付けるか、リンクを削除する場合は空欄にします。",
+		"linkDescription": "URLを貼り付けるか、空白のままにするとリンクを削除します。",
 		"linkUrl": "リンクURL",
 		"noteTitle": "ノートのタイトル",
 		"openInNewTab": "新しいタブで開く",
@@ -372,7 +410,7 @@
 	"editorMode": {
 		"largeNoteHint": "大きなノートでは遅くなる場合があります",
 		"preview": "プレビュー",
-		"raw": "Raw",
+		"raw": "ソース",
 		"rich": "リッチ",
 		"toolbar": "エディターモード"
 	},
@@ -416,7 +454,11 @@
 		"rename": "名前を変更",
 		"showInFinder": "Finderで表示",
 		"unpinFile": "ファイルのピン留めを解除",
-		"untitled": "無題"
+		"untitled": "無題",
+		"openInNewWindow": "新規ウインドウで開く",
+		"loadingFolder": "フォルダを読み込み中...",
+		"unpin": "ピン留めを解除",
+		"unpinNamed": "{{name}}のピン留めを解除"
 	},
 	"loading": null,
 	"math": {
@@ -444,6 +486,14 @@
 		"path": "パス",
 		"readingTime": "読了時間",
 		"relationships": "関連",
+		"save": {
+			"edited": "編集済み",
+			"fresh": "最新",
+			"opening": "開いています",
+			"ready": "準備完了",
+			"saved": "保存済み",
+			"saving": "保存中"
+		},
 		"saveStatus": "保存状態",
 		"sidebar": "ノートサイドバー",
 		"size": "サイズ",
@@ -474,7 +524,7 @@
 		"paletteDescription": "コマンド、ファイル、アクションに一か所からアクセスできます。",
 		"paletteTip": "コマンドパレットを開く",
 		"paletteTitle": "コマンドパレットを試す",
-		"press": "押す",
+		"press": "押して",
 		"progress": "はじめにの進捗",
 		"progressRing": "はじめにの進捗リング",
 		"skip": "スキップ",
@@ -515,7 +565,14 @@
 		"openConnections": "接続を開く",
 		"openPinned": "ピン留めを開く",
 		"pinned": "ピン留め",
-		"tagIconError": "タグアイコンを更新できませんでした"
+		"tagIconError": "タグアイコンを更新できませんでした",
+		"sortNotes": "ノートを並べ替え",
+		"sortError": "ファイルツリーの並べ替えを更新できませんでした",
+		"createNote": "新しいノートを作成",
+		"home": "ホーム",
+		"openHome": "ホームを開く",
+		"openSpace": "スペースを開く",
+		"searchNotes": "ノートを検索"
 	},
 	"tabs": {
 		"allNotes": "すべてのノート",
@@ -541,6 +598,23 @@
 		"currentDescription": "現在のノートフォルダを開くか、新しいワークスペースを作成してください。",
 		"kicker": "シンプルなMarkdown。ローカルファイル。",
 		"openFolder": "フォルダを開く",
-		"opening": "開いています..."
+		"opening": "開いています...",
+		"checklist": "チェックリスト",
+		"dataChart": "データチャート",
+		"description": "あなたのノート、ファイル、マシン。Glyphは既存のMarkdownノートフォルダ、またはまっさらな新しいフォルダで最もよく機能します。",
+		"document": "ドキュメント",
+		"folder": "フォルダ",
+		"notes": "ノート",
+		"title": "思考の居場所を"
+	},
+	"pinned": {
+		"title": "ピン留め",
+		"loading": "ピン留めしたノートを読み込み中…",
+		"empty": "ピン留めしたノートはまだありません。ファイルツリーからノートをピン留めしてください。"
+	},
+	"indexing": {
+		"title": "スペースをインデックス中",
+		"progress": "{{completed}} / {{total}} 件のノート",
+		"checking": "ノートの変更を確認中…"
 	}
 }

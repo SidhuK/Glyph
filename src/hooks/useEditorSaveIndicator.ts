@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type EditorSavePulse = "saved" | "reloaded";
 
 const EDITOR_SAVE_PULSE_MS = 1400;
 
 export function useEditorSaveIndicator() {
+	const { t } = useTranslation("ui");
 	const [saving, setSaving] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [pulse, setPulse] = useState<EditorSavePulse | null>(null);
@@ -44,16 +46,20 @@ export function useEditorSaveIndicator() {
 			idleLabel?: string | null;
 			hasSavedBefore?: boolean;
 		}): string | null => {
-			if (loading) return "Opening";
-			if (saving || options.saving || options.autosaveBusy) return "Saving";
-			if (options.isDirty) return "Edited";
-			if (pulse === "reloaded") return "Fresh";
-			if (pulse === "saved") return "Saved";
+			if (loading) return t("noteInfo.save.opening");
+			if (saving || options.saving || options.autosaveBusy) {
+				return t("noteInfo.save.saving");
+			}
+			if (options.isDirty) return t("noteInfo.save.edited");
+			if (pulse === "reloaded") return t("noteInfo.save.fresh");
+			if (pulse === "saved") return t("noteInfo.save.saved");
 			if (options.idleLabel === null) return null;
 			if (options.idleLabel !== undefined) return options.idleLabel;
-			return options.hasSavedBefore ? "Saved" : "Ready";
+			return options.hasSavedBefore
+				? t("noteInfo.save.saved")
+				: t("noteInfo.save.ready");
 		},
-		[loading, pulse, saving],
+		[loading, pulse, saving, t],
 	);
 
 	const resolveState = useCallback(

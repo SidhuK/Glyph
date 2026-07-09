@@ -18,9 +18,9 @@
 		"noResults": "Sin resultados",
 		"notes": "Notas",
 		"recentlyOpened": "Abierto recientemente",
-		"results_one": "{{count}} resultado",
-		"results_many": "{{count}} resultados",
-		"results_other": "{{count}} resultados",
+		"results_one": "{{formattedCount}} resultado",
+		"results_many": "{{formattedCount}} resultados",
+		"results_other": "{{formattedCount}} resultados",
 		"searchCommands": "Buscar comandos",
 		"searching": "Buscando...",
 		"searchNotes": "Buscar notas...",
@@ -29,14 +29,16 @@
 		"typeToSearch": "Escribe para buscar en tus notas..."
 	},
 	"commands": {
+		"licensePageErrorTitle": "No se pudo abrir la página de licencia",
 		"openAnotherSpace": "Abrir otro espacio",
 		"openSpace": "Abrir espacio",
 		"pinCurrentFile": "Fijar archivo actual",
+		"tryAgain": "Inténtalo de nuevo en un momento.",
 		"unpinCurrentFile": "Desfijar archivo actual"
 	},
 	"gitSync": {
 		"autoSync": {
-			"body": "Este espacio está vinculado a un repositorio Git en {{remoteLabel}}. ¿Activar la sincronización automática para confirmar y enviar cambios según un horario?",
+			"body": "¿Quieres activar la sincronización automática de Git para hacer commit y enviar los cambios periódicamente?",
 			"cancelLabel": "Ahora no",
 			"okLabel": "Activar sincronización automática",
 			"remoteFallback": "su remoto",

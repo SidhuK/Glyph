@@ -186,6 +186,12 @@ function buildAiCommands({
 	];
 }
 
+/** Commands whose labels are state-dependent and must not be replaced by the manifest. */
+const DYNAMIC_LABEL_COMMAND_IDS = new Set([
+	"toggle-pin-active-file",
+	"open-space",
+]);
+
 function resolveCommandShortcuts(
 	commands: Command[],
 	getBinding: UseAppCommandsDeps["getBinding"],
@@ -196,9 +202,11 @@ function resolveCommandShortcuts(
 		const commandWithManifest = definition
 			? {
 					...command,
-					label: t(`commands:commands.${definition.id}.label`, {
-						defaultValue: definition.label,
-					}),
+					label: DYNAMIC_LABEL_COMMAND_IDS.has(command.id)
+						? command.label
+						: t(`commands:commands.${definition.id}.label`, {
+								defaultValue: definition.label,
+							}),
 					category: t(`commands:categories.${definition.category}`, {
 						defaultValue: SHORTCUT_CATEGORY_LABELS[definition.category],
 					}),

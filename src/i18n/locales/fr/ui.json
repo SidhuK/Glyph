@@ -100,7 +100,18 @@
 	"allDocs": {
 		"doubleClickHint": "Double-cliquez pour ouvrir la note",
 		"noPreview": "Pas encore d'aperçu",
-		"selectLabel": "Sélectionner {{title}}. Appuyez sur Entrée pour ouvrir."
+		"selectLabel": "Sélectionner {{title}}. Appuyez sur Entrée pour ouvrir.",
+		"title": "Toutes les notes",
+		"showActivity": "Afficher l’activité",
+		"empty": "Aucune note pour l’instant. Créez-en une pour commencer.",
+		"loadError": "Impossible de charger toutes les notes : {{message}}",
+		"sections": {
+			"today": "Aujourd’hui",
+			"yesterday": "Hier",
+			"thisWeek": "Cette semaine",
+			"thisMonth": "Ce mois-ci",
+			"earlier": "Plus tôt"
+		}
 	},
 	"common": {
 		"add": "Ajouter",
@@ -109,7 +120,7 @@
 		"close": "Fermer",
 		"create": "Créer",
 		"creating": "Création",
-		"remove": "Supprimer",
+		"remove": "Retirer",
 		"rename": "Renommer"
 	},
 	"connections": {
@@ -302,19 +313,71 @@
 			"path": "Chemin",
 			"linkedNotes": "Notes liées",
 			"created": "Créé"
-		}
+		},
+		"filterOperators": {
+			"equals": "est",
+			"not_equals": "n'est pas",
+			"contains": "contient",
+			"not_contains": "ne contient pas",
+			"starts_with": "commence par",
+			"ends_with": "se termine par",
+			"greater_than": "> Supérieur à",
+			"less_than": "< Inférieur à",
+			"is_empty": "est vide",
+			"is_not_empty": "n'est pas vide",
+			"is_true": "est coché",
+			"is_false": "n'est pas coché",
+			"tags_contains": "contient",
+			"any_of": "est l'un de",
+			"none_of": "n'est aucun de",
+			"within_last_7_days": "dans les 7 derniers jours"
+		},
+		"dateShortcuts": {
+			"overdue": "En retard",
+			"today": "Aujourd'hui",
+			"thisWeek": "Cette semaine",
+			"last7Days": "7 derniers jours",
+			"last30Days": "30 derniers jours"
+		},
+		"addLane": "Ajouter une colonne",
+		"addView": "Ajouter une vue",
+		"chooseTagDescription": "Choisissez un tag pour cette base de données.",
+		"collectionFolder": "Dossier de la collection",
+		"collectionName": "Nom de la collection",
+		"collectionViews": "Vues de la collection",
+		"collections": "Collections",
+		"databaseTag": "Tag de base de données",
+		"date": "Date",
+		"deleteCollection": "Supprimer la collection",
+		"groupBy": "Grouper par",
+		"howCollectionsWork": "Comment fonctionnent les collections",
+		"laneName": "Nom de la colonne",
+		"name": "Nom",
+		"nameExample": "ex. Feuille de route produit",
+		"newCollection": "Nouvelle collection",
+		"newNote": "Nouvelle note",
+		"none": "Aucun",
+		"priority": "Priorité",
+		"projectFolder": "Dossier du projet",
+		"query": "Requête",
+		"status": "Statut",
+		"suggestedTags": "Tags suggérés",
+		"suggestedValues": "Valeurs suggérées",
+		"tags": "Tags",
+		"taskProgress": "Progression des tâches",
+		"viewName": "Nom de la vue"
 	},
 	"databases": {
 		"empty": {
 			"createCollection": "Créer une collection",
 			"createText": "Les collections vous aident à voir les notes d'un dossier sous forme de tableau ou de kanban.",
 			"createTitle": "Créez votre première collection",
-			"selectText": "Utilisez Changer de collection ci-dessus pour commencer.",
+			"selectText": "Utilisez « Changer de collection » ci-dessus pour commencer.",
 			"selectTitle": "Sélectionnez une collection",
 			"step1Text": "choisissez un dossier, un tag ou une recherche.",
 			"step1Title": "Choisir des notes",
 			"step2Text": "affichez colonnes, filtres et tri.",
-			"step2Title": "Façonner la vue",
+			"step2Title": "Composer la vue",
 			"step3Text": "passez à la vue tableau et regroupez par statut, tags ou autre champ.",
 			"step3Title": "Suivre le travail",
 			"step1": "Choisir les notes — sélectionnez un dossier, un tag ou une recherche.",
@@ -325,15 +388,15 @@
 	"editor": {
 		"destination": "Destination",
 		"details": {
-			"defaultSummary": "Titre du toggle"
+			"defaultSummary": "Titre du repli"
 		},
 		"extractToNote": "Extraire vers une note",
 		"link": "Lien",
-		"linkDescription": "Collez une URL ou laissez le champ vide pour supprimer le lien.",
+		"linkDescription": "Collez une URL ou laissez vide pour supprimer le lien.",
 		"linkUrl": "URL du lien",
 		"noteTitle": "Titre de la note",
 		"openInNewTab": "Ouvrir dans un nouvel onglet",
-		"spaceRoot": "Racine de l’espace",
+		"spaceRoot": "Racine de l'espace",
 		"table": {
 			"addColumnLeft": "Ajouter une colonne à gauche",
 			"addColumnRight": "Ajouter une colonne à droite",
@@ -400,7 +463,11 @@
 		"rename": "Renommer",
 		"showInFinder": "Afficher dans le Finder",
 		"unpinFile": "Désépingler le fichier",
-		"untitled": "Sans titre"
+		"untitled": "Sans titre",
+		"openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
+		"loadingFolder": "Chargement du dossier...",
+		"unpin": "Désépingler",
+		"unpinNamed": "Désépingler {{name}}"
 	},
 	"loading": null,
 	"math": {
@@ -428,6 +495,14 @@
 		"path": "Chemin",
 		"readingTime": "Temps de lecture",
 		"relationships": "Relations",
+		"save": {
+			"edited": "Modifié",
+			"fresh": "À jour",
+			"opening": "Ouverture",
+			"ready": "Prêt",
+			"saved": "Enregistré",
+			"saving": "Enregistrement"
+		},
 		"saveStatus": "État de l'enregistrement",
 		"sidebar": "Barre latérale de la note",
 		"size": "Taille",
@@ -484,12 +559,12 @@
 	},
 	"sidebar": {
 		"allNotes": "Toutes les notes",
-		"collapseFolders": "Réduire tous les dossiers",
-		"collapseNotes": "Réduire les notes",
+		"collapseFolders": "Replier tous les dossiers",
+		"collapseNotes": "Replier les notes",
 		"collections": "Collections",
 		"connections": "Connexions",
-		"expandFolders": "Développer tous les dossiers",
-		"expandNotes": "Développer les notes",
+		"expandFolders": "Déplier tous les dossiers",
+		"expandNotes": "Déplier les notes",
 		"newNote": "Nouvelle note",
 		"noSpace": "Aucun espace ouvert",
 		"noSpaceHint": "Ouvrez ou créez un espace pour commencer.",
@@ -499,7 +574,14 @@
 		"openConnections": "Ouvrir les connexions",
 		"openPinned": "Ouvrir les épinglées",
 		"pinned": "Épinglées",
-		"tagIconError": "Impossible de mettre à jour l'icône du tag"
+		"tagIconError": "Impossible de mettre à jour l'icône du tag",
+		"sortNotes": "Trier les notes",
+		"sortError": "Impossible de mettre à jour le tri de l’arborescence",
+		"createNote": "Créer une nouvelle note",
+		"home": "Accueil",
+		"openHome": "Ouvrir l'accueil",
+		"openSpace": "Ouvrir l'espace",
+		"searchNotes": "Rechercher des notes"
 	},
 	"tabs": {
 		"allNotes": "Toutes les notes",
@@ -516,7 +598,7 @@
 	},
 	"templateBrowser": null,
 	"templates": {
-		"createFrom": "Créer à partir d’un modèle",
+		"createFrom": "Créer à partir d'un modèle",
 		"empty": "Aucun modèle trouvé.",
 		"search": "Rechercher des modèles…",
 		"settings": "Réglages des modèles"
@@ -525,6 +607,23 @@
 		"currentDescription": "Ouvrez votre dossier de notes actuel ou créez un nouvel espace de travail.",
 		"kicker": "Markdown simple. Fichiers locaux.",
 		"openFolder": "Ouvrir un dossier",
-		"opening": "Ouverture..."
+		"opening": "Ouverture...",
+		"checklist": "Liste de contrôle",
+		"dataChart": "Graphique de données",
+		"description": "Vos notes, vos fichiers, votre machine. Glyph fonctionne mieux avec vos dossiers existants de notes Markdown, ou un nouveau dossier pour repartir de zéro.",
+		"document": "Document",
+		"folder": "Dossier",
+		"notes": "Notes",
+		"title": "Offrez un foyer à vos idées"
+	},
+	"pinned": {
+		"title": "Épinglées",
+		"loading": "Chargement des notes épinglées…",
+		"empty": "Aucune note épinglée. Épinglez une note depuis l’arborescence pour commencer."
+	},
+	"indexing": {
+		"title": "Indexation de votre espace",
+		"progress": "{{completed}} notes sur {{total}}",
+		"checking": "Recherche des modifications…"
 	}
 }
