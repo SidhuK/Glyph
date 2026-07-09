@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "Zeigt eine rekursive Dateianzahl am Ende jeder Ordnerzeile im Dateibaum.",
 			"folioMode": "Folio-Modus",
 			"folioModeDescription": "Zeigt Navigation, Notizen und Editor in einem dreispaltigen Arbeitsbereich.",
-			"title": "App"
+			"title": "App",
+			"fileTreeSort": "Dateibaum-Sortierung",
+			"fileTreeSortDescription": "Wähle, wie Ordner und Dateien in der Seitenleiste sortiert werden.",
+			"fileTreeSortModes": {
+				"createdAsc": "Erstellung: älteste zuerst",
+				"createdDesc": "Erstellung: neueste zuerst",
+				"modifiedAsc": "Änderung: älteste zuerst",
+				"modifiedDesc": "Änderung: neueste zuerst",
+				"nameAsc": "Name A-Z",
+				"nameDesc": "Name Z-A"
+			},
+			"showNonMarkdownFiles": "Nicht-Markdown-Dateien anzeigen",
+			"showNonMarkdownFilesDescription": "Zeigt PDFs, Bilder und andere Anhänge im Dateibaum und in der Folio-Liste. Wenn deaktiviert, werden sie nur in diesen Ansichten ausgeblendet."
 		},
 		"database": {
 			"columnColor": "Datenbankspaltenfarbe anzeigen",
@@ -94,7 +106,9 @@
 				"title": "Vim-Tastenkürzel"
 			},
 			"vimMode": "Vim-Modus",
-			"vimModeDescription": "Schalte dies NICHT ein, wenn du nicht weißt, was es bedeutet."
+			"vimModeDescription": "Schalte dies NICHT ein, wenn du nicht weißt, was es bedeutet.",
+			"spellCheck": "Rechtschreibprüfung",
+			"spellCheckDescription": "Markiert Tippfehler beim Tippen. Rechtsklick auf ein Wort zeigt Rechtschreibvorschläge."
 		}
 	},
 	"ai": {
@@ -192,7 +206,9 @@
 			"descriptionLight": "Wähle den Akzent für Hervorhebungen, Fokusringe und Betonungen im Standard-Design Hell.",
 			"palette": "Palette",
 			"paletteDescription": "Vorschau anzeigen und den Akzent auswählen, der am besten zu deinem Arbeitsbereich passt.",
-			"title": "Akzent"
+			"title": "Akzent",
+			"description": "Gilt für die Glyph-Designs Hell und Dunkel.",
+			"resetAccent": "Akzent zurücksetzen"
 		},
 		"theme": {
 			"darkTheme": "Dunkles Design",
@@ -208,7 +224,18 @@
 			"selectTheme": "Design auswählen",
 			"themeMode": "Designmodus",
 			"title": "Design",
-			"translucentApp": "Transparente App"
+			"translucentApp": "Transparente App",
+			"appearance": "Erscheinungsbild",
+			"appearanceDescription": "Folge deinem System oder sperre Glyph auf den hellen oder dunklen Modus.",
+			"background": "Hintergrund",
+			"backgroundColorAria": "{{section}} Hintergrundfarbe",
+			"foreground": "Vordergrund",
+			"foregroundColorAria": "{{section}} Vordergrundfarbe",
+			"invalidColor": "Ungültige Designfarbe",
+			"preset": "Voreinstellung",
+			"resetBackground": "{{section}}-Hintergrund zurücksetzen",
+			"resetForeground": "{{section}}-Vordergrund zurücksetzen",
+			"translucentSidebar": "Transparente Seitenleiste"
 		},
 		"typography": {
 			"description": "Passe Oberflächenschrift, Code-Stil und Leseskalierung unabhängig voneinander an.",
@@ -269,7 +296,16 @@
 			"description": "Wählen Sie die Sprache für die Oberfläche von Glyph.",
 			"label": "App-Sprache",
 			"systemDescription": "Verwendet die Sprache Ihres Betriebssystems, wenn Glyph sie unterstützt, sonst Englisch.",
-			"title": "Sprache"
+			"title": "Sprache",
+			"disclaimer": "Übersetzungen stammen aus der Community. Wenn etwas seltsam wirkt,",
+			"discordLink": "sag uns Bescheid auf Discord."
+		},
+		"startup": {
+			"description": "Wähle, was beim Start von Glyph geöffnet wird.",
+			"resumeAriaLabel": "Letzte Sitzung fortsetzen",
+			"resumeDescription": "Starte diesen Space mit den Tabs, die du offen gelassen hast.",
+			"resumeLabel": "Vorherige Tabs öffnen",
+			"title": "Start"
 		}
 	},
 	"git": {
@@ -353,7 +389,8 @@
 	"groups": {
 		"workspace": "Arbeitsbereich",
 		"features": "Funktionen",
-		"system": "System"
+		"system": "System",
+		"application": "Anwendung"
 	},
 	"search": {
 		"clear": "Einstellungssuche löschen",
@@ -389,10 +426,16 @@
 			"modes": {
 				"noteFolder": "Gleicher Ordner wie Notiz",
 				"spaceRoot": "Hauptordner des Space",
-				"specificFolder": "Bestimmter Ordner"
+				"specificFolder": "Bestimmter Ordner",
+				"nextToNote": "Neben jeder Notiz",
+				"noteSubfolder": "In einem Unterordner zur Notiz",
+				"oneFolderForAll": "Ein Ordner für alle Anhänge"
 			},
 			"resetFolder": "Anhänge-Ordner zurücksetzen",
-			"title": "Anhänge"
+			"title": "Anhänge",
+			"helpNoteSubfolder": "Anhänge landen in diesem Unterordner im Ordner der Notiz.",
+			"resetSubfolder": "Anhang-Unterordner zurücksetzen",
+			"subfolderName": "Name des Anhang-Unterordners"
 		},
 		"dailyNotes": {
 			"clearFolder": "Tagesnotizen-Ordner löschen",
@@ -408,7 +451,8 @@
 			"resetQuickNotesFolder": "Schnellnotizen-Ordner konnte nicht zurückgesetzt werden",
 			"selectFolder": "Ordner konnte nicht ausgewählt werden",
 			"selectQuickNotesFolder": "Schnellnotizen-Ordner konnte nicht ausgewählt werden",
-			"updateSetting": "Einstellung konnte nicht aktualisiert werden"
+			"updateSetting": "Einstellung konnte nicht aktualisiert werden",
+			"updateSubfolder": "Unterordner konnte nicht aktualisiert werden"
 		},
 		"quickNotes": {
 			"folderDescription": "Neue Schnellnotizen werden zur heutigen Notiz in diesem Ordner hinzugefügt.",
@@ -453,31 +497,5 @@
 		"templateFolder": "Vorlagenordner",
 		"templateFolderDescription": "Wähle einen Ordner im aktuellen Space, der deine Markdown-Vorlagen enthält.",
 		"title": "Vorlagen"
-	},
-	"tabs": {
-		"general": "Allgemein",
-		"appearance": "Darstellung",
-		"shortcuts": "Tastenkürzel",
-		"ai": "Glyph AI",
-		"space": "Space",
-		"git": "Git",
-		"advanced": "Erweitert",
-		"about": "Info"
-	},
-	"groups": {
-		"workspace": "Arbeitsbereich",
-		"features": "Funktionen",
-		"system": "System",
-		"application": "Anwendung"
-	},
-	"categories": {
-		"workspace": "Arbeitsbereich",
-		"navigation": "Navigation",
-		"search": "Suche",
-		"file": "Dateivorgänge",
-		"tabs": "Tabs",
-		"ai": "KI",
-		"editor": "Editor",
-		"settings": "Einstellungen"
 	}
 }

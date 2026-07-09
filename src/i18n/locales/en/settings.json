@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "Show a recursive file total at the end of each folder row in the file tree.",
 			"folioMode": "Folio Mode",
 			"folioModeDescription": "Show navigation, notes, and editor in a three-column workspace.",
-			"title": "App"
+			"title": "App",
+			"fileTreeSort": "File tree sort",
+			"fileTreeSortDescription": "Choose how folders and files are ordered in the sidebar tree.",
+			"fileTreeSortModes": {
+				"createdAsc": "Created oldest",
+				"createdDesc": "Created newest",
+				"modifiedAsc": "Modified oldest",
+				"modifiedDesc": "Modified newest",
+				"nameAsc": "Name A-Z",
+				"nameDesc": "Name Z-A"
+			},
+			"showNonMarkdownFiles": "Show non-Markdown files",
+			"showNonMarkdownFilesDescription": "Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only."
 		},
 		"database": {
 			"columnColor": "Show database column color",
@@ -94,7 +106,9 @@
 				"title": "Vim keybindings"
 			},
 			"vimMode": "Vim Mode",
-			"vimModeDescription": "Do NOT Turn this ON if you don't know what it means."
+			"vimModeDescription": "Do NOT Turn this ON if you don't know what it means.",
+			"spellCheck": "Spell check",
+			"spellCheckDescription": "Underline typos as you type. Right-click a word to see spelling suggestions."
 		}
 	},
 	"ai": {
@@ -192,7 +206,9 @@
 			"descriptionLight": "Choose the accent used for highlights, focus rings, and emphasis in the default light theme.",
 			"palette": "Palette",
 			"paletteDescription": "Preview and select the accent that feels best for your workspace.",
-			"title": "Accent"
+			"title": "Accent",
+			"description": "Applies to the Glyph light and dark themes.",
+			"resetAccent": "Reset accent"
 		},
 		"theme": {
 			"darkTheme": "Dark theme",
@@ -208,7 +224,18 @@
 			"selectTheme": "Select Theme",
 			"themeMode": "Theme mode",
 			"title": "Theme",
-			"translucentApp": "Translucent app"
+			"translucentApp": "Translucent app",
+			"appearance": "Appearance",
+			"appearanceDescription": "Follow your system or lock Glyph to light or dark mode.",
+			"background": "Background",
+			"backgroundColorAria": "{{section}} background color",
+			"foreground": "Foreground",
+			"foregroundColorAria": "{{section}} foreground color",
+			"invalidColor": "Invalid theme color",
+			"preset": "Preset",
+			"resetBackground": "Reset {{section}} background",
+			"resetForeground": "Reset {{section}} foreground",
+			"translucentSidebar": "Translucent sidebar"
 		},
 		"typography": {
 			"description": "Tune interface type, code styling, and reading scale independently.",
@@ -269,7 +296,16 @@
 			"description": "Choose the language used by Glyph's interface.",
 			"label": "App language",
 			"systemDescription": "Uses your operating system language when Glyph supports it, otherwise English.",
-			"title": "Language"
+			"title": "Language",
+			"disclaimer": "Translations are community-made. If something looks off,",
+			"discordLink": "tell us on Discord."
+		},
+		"startup": {
+			"description": "Choose what opens when you start Glyph.",
+			"resumeAriaLabel": "Resume last session",
+			"resumeDescription": "Start this space with the tabs you left open.",
+			"resumeLabel": "Open previous tabs",
+			"title": "Startup"
 		}
 	},
 	"git": {
@@ -390,10 +426,16 @@
 			"modes": {
 				"noteFolder": "Same folder as note",
 				"spaceRoot": "Main space folder",
-				"specificFolder": "Specific folder"
+				"specificFolder": "Specific folder",
+				"nextToNote": "Next to each note",
+				"noteSubfolder": "In a subfolder with the note",
+				"oneFolderForAll": "One folder for all attachments"
 			},
 			"resetFolder": "Reset attachments folder",
-			"title": "Attachments"
+			"title": "Attachments",
+			"helpNoteSubfolder": "Attachments go in this subfolder inside the note's folder.",
+			"resetSubfolder": "Reset attachment subfolder",
+			"subfolderName": "Attachment subfolder name"
 		},
 		"dailyNotes": {
 			"clearFolder": "Clear daily notes folder",
@@ -409,7 +451,8 @@
 			"resetQuickNotesFolder": "Failed to reset quick notes folder",
 			"selectFolder": "Failed to select folder",
 			"selectQuickNotesFolder": "Failed to select quick notes folder",
-			"updateSetting": "Failed to update setting"
+			"updateSetting": "Failed to update setting",
+			"updateSubfolder": "Failed to update subfolder"
 		},
 		"quickNotes": {
 			"folderDescription": "New quick notes are added to today's note in this folder.",
@@ -454,31 +497,5 @@
 		"templateFolder": "Template folder",
 		"templateFolderDescription": "Choose a folder inside the current space that contains your markdown templates.",
 		"title": "Templates"
-	},
-	"tabs": {
-		"general": "General",
-		"appearance": "Appearance",
-		"shortcuts": "Shortcuts",
-		"ai": "Glyph AI",
-		"space": "Space",
-		"git": "Git",
-		"advanced": "Advanced",
-		"about": "About"
-	},
-	"groups": {
-		"workspace": "Workspace",
-		"features": "Features",
-		"system": "System",
-		"application": "Application"
-	},
-	"categories": {
-		"workspace": "Workspace",
-		"navigation": "Navigation",
-		"search": "Search",
-		"file": "File Operations",
-		"tabs": "Tabs",
-		"ai": "AI",
-		"editor": "Editor",
-		"settings": "Settings"
 	}
 }

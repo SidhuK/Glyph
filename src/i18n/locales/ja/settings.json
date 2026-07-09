@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "ファイルツリーの各フォルダ行の末尾に再帰的なファイル合計を表示します。",
 			"folioMode": "Folio モード",
 			"folioModeDescription": "ナビゲーション、ノート、エディターを 3 列のワークスペースで表示します。",
-			"title": "アプリ"
+			"title": "アプリ",
+			"fileTreeSort": "ファイルツリーの並べ替え",
+			"fileTreeSortDescription": "サイドバーのツリーでフォルダとファイルを並べる方法を選びます。",
+			"fileTreeSortModes": {
+				"createdAsc": "作成日（古い順）",
+				"createdDesc": "作成日（新しい順）",
+				"modifiedAsc": "更新日（古い順）",
+				"modifiedDesc": "更新日（新しい順）",
+				"nameAsc": "名前 A-Z",
+				"nameDesc": "名前 Z-A"
+			},
+			"showNonMarkdownFiles": "非 Markdown ファイルを表示",
+			"showNonMarkdownFilesDescription": "PDF、画像、その他の添付ファイルをファイルツリーと Folio リストに表示します。オフにするとこれらのビューでのみ非表示になります。"
 		},
 		"database": {
 			"columnColor": "データベース列の色を表示",
@@ -94,7 +106,9 @@
 				"title": "Vim キーバインド"
 			},
 			"vimMode": "Vim モード",
-			"vimModeDescription": "意味が分からない場合は絶対にオンにしないでください。"
+			"vimModeDescription": "意味が分からない場合は絶対にオンにしないでください。",
+			"spellCheck": "スペルチェック",
+			"spellCheckDescription": "入力中に誤字を下線表示します。単語を右クリックすると候補が表示されます。"
 		}
 	},
 	"ai": {
@@ -192,7 +206,9 @@
 			"descriptionLight": "既定のライトテーマで、ハイライト、フォーカスリング、強調に使用するアクセントを選びます。",
 			"palette": "パレット",
 			"paletteDescription": "ワークスペースに最適なアクセントをプレビューして選択します。",
-			"title": "アクセント"
+			"title": "アクセント",
+			"description": "Glyph のライトテーマとダークテーマに適用されます。",
+			"resetAccent": "アクセントをリセット"
 		},
 		"theme": {
 			"darkTheme": "ダークテーマ",
@@ -208,7 +224,18 @@
 			"selectTheme": "テーマを選択",
 			"themeMode": "テーマモード",
 			"title": "テーマ",
-			"translucentApp": "半透明のアプリ"
+			"translucentApp": "半透明のアプリ",
+			"appearance": "外観",
+			"appearanceDescription": "システムに従うか、Glyph をライトまたはダークモードに固定します。",
+			"background": "背景",
+			"foreground": "前景",
+			"preset": "プリセット",
+			"invalidColor": "無効なテーマカラー",
+			"translucentSidebar": "半透明サイドバー",
+			"resetBackground": "{{section}} の背景をリセット",
+			"resetForeground": "{{section}} の前景をリセット",
+			"backgroundColorAria": "{{section}} の背景色",
+			"foregroundColorAria": "{{section}} の前景色"
 		},
 		"typography": {
 			"description": "インターフェースの書体、コードスタイル、読み取りサイズを個別に調整します。",
@@ -269,7 +296,16 @@
 			"description": "Glyph の画面で使う言語を選択します。",
 			"label": "アプリの言語",
 			"systemDescription": "Glyph が対応している場合は OS の言語を使用し、それ以外は英語を使用します。",
-			"title": "言語"
+			"title": "言語",
+			"disclaimer": "翻訳はコミュニティによるものです。違和感があれば、",
+			"discordLink": "Discord でお知らせください。"
+		},
+		"startup": {
+			"description": "Glyph の起動時に開く内容を選びます。",
+			"resumeAriaLabel": "前回のセッションを再開",
+			"resumeDescription": "開いたままにしたタブでこのスペースを開始します。",
+			"resumeLabel": "前回のタブを開く",
+			"title": "起動"
 		}
 	},
 	"git": {
@@ -353,7 +389,8 @@
 	"groups": {
 		"workspace": "ワークスペース",
 		"features": "機能",
-		"system": "システム"
+		"system": "システム",
+		"application": "アプリケーション"
 	},
 	"search": {
 		"clear": "設定検索をクリア",
@@ -389,10 +426,16 @@
 			"modes": {
 				"noteFolder": "ノートと同じフォルダ",
 				"spaceRoot": "メインスペースフォルダ",
-				"specificFolder": "特定のフォルダ"
+				"specificFolder": "特定のフォルダ",
+				"nextToNote": "各ノートの隣",
+				"noteSubfolder": "ノートと同じサブフォルダ内",
+				"oneFolderForAll": "すべての添付ファイルを1つのフォルダに"
 			},
 			"resetFolder": "添付ファイルフォルダをリセット",
-			"title": "添付ファイル"
+			"title": "添付ファイル",
+			"helpNoteSubfolder": "添付ファイルはノートのフォルダ内のこのサブフォルダに保存されます。",
+			"resetSubfolder": "添付サブフォルダをリセット",
+			"subfolderName": "添付サブフォルダ名"
 		},
 		"dailyNotes": {
 			"clearFolder": "デイリーノートフォルダをクリア",
@@ -408,7 +451,8 @@
 			"resetQuickNotesFolder": "クイックノートフォルダをリセットできませんでした",
 			"selectFolder": "フォルダを選択できませんでした",
 			"selectQuickNotesFolder": "クイックノートフォルダを選択できませんでした",
-			"updateSetting": "設定を更新できませんでした"
+			"updateSetting": "設定を更新できませんでした",
+			"updateSubfolder": "サブフォルダを更新できませんでした"
 		},
 		"quickNotes": {
 			"folderDescription": "新しいクイックノートはこのフォルダ内の今日のノートに追加されます。",
@@ -453,31 +497,5 @@
 		"templateFolder": "テンプレートフォルダ",
 		"templateFolderDescription": "Markdown テンプレートを含む、現在のスペース内のフォルダを選びます。",
 		"title": "テンプレート"
-	},
-	"tabs": {
-		"general": "一般",
-		"appearance": "外観",
-		"shortcuts": "ショートカット",
-		"ai": "Glyph AI",
-		"space": "スペース",
-		"git": "Git",
-		"advanced": "詳細",
-		"about": "情報"
-	},
-	"groups": {
-		"workspace": "ワークスペース",
-		"features": "機能",
-		"system": "システム",
-		"application": "アプリケーション"
-	},
-	"categories": {
-		"workspace": "ワークスペース",
-		"navigation": "ナビゲーション",
-		"search": "検索",
-		"file": "ファイル操作",
-		"tabs": "タブ",
-		"ai": "AI",
-		"editor": "エディタ",
-		"settings": "設定"
 	}
 }

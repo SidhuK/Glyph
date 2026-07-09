@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "파일 트리의 각 폴더 행 끝에 재귀적 파일 합계를 표시합니다.",
 			"folioMode": "Folio 모드",
 			"folioModeDescription": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",
-			"title": "앱"
+			"title": "앱",
+			"fileTreeSort": "파일 트리 정렬",
+			"fileTreeSortDescription": "사이드바 트리에서 폴더와 파일을 정렬하는 방법을 선택합니다.",
+			"fileTreeSortModes": {
+				"createdAsc": "생성일 오래된 순",
+				"createdDesc": "생성일 최신 순",
+				"modifiedAsc": "수정일 오래된 순",
+				"modifiedDesc": "수정일 최신 순",
+				"nameAsc": "이름 A-Z",
+				"nameDesc": "이름 Z-A"
+			},
+			"showNonMarkdownFiles": "비 Markdown 파일 표시",
+			"showNonMarkdownFilesDescription": "PDF, 이미지 및 기타 첨부 파일을 파일 트리와 Folio 목록에 표시합니다. 끄면 해당 보기에서만 숨겨집니다."
 		},
 		"database": {
 			"columnColor": "데이터베이스 열 색상 표시",
@@ -94,7 +106,9 @@
 				"title": "Vim 키 바인딩"
 			},
 			"vimMode": "Vim 모드",
-			"vimModeDescription": "의미를 모르면 절대 켜지 마세요."
+			"vimModeDescription": "의미를 모르면 절대 켜지 마세요.",
+			"spellCheck": "맞춤법 검사",
+			"spellCheckDescription": "입력하는 동안 오타에 밑줄을 표시합니다. 단어를 우클릭하면 제안을 볼 수 있습니다."
 		}
 	},
 	"ai": {
@@ -192,7 +206,9 @@
 			"descriptionLight": "기본 밝은 테마에서 강조, 포커스 링, 강조 표시에 사용할 색을 선택합니다.",
 			"palette": "팔레트",
 			"paletteDescription": "작업 공간에 가장 잘 맞는 강조색을 미리 보고 선택합니다.",
-			"title": "강조색"
+			"title": "강조색",
+			"description": "Glyph 밝은/어두운 테마에 적용됩니다.",
+			"resetAccent": "강조색 재설정"
 		},
 		"theme": {
 			"darkTheme": "어두운 테마",
@@ -208,7 +224,18 @@
 			"selectTheme": "테마 선택",
 			"themeMode": "테마 모드",
 			"title": "테마",
-			"translucentApp": "반투명 앱"
+			"translucentApp": "반투명 앱",
+			"appearance": "모양",
+			"appearanceDescription": "시스템을 따르거나 Glyph를 밝은/어두운 모드로 고정합니다.",
+			"background": "배경",
+			"foreground": "전경",
+			"preset": "프리셋",
+			"invalidColor": "잘못된 테마 색상",
+			"translucentSidebar": "반투명 사이드바",
+			"resetBackground": "{{section}} 배경 재설정",
+			"resetForeground": "{{section}} 전경 재설정",
+			"backgroundColorAria": "{{section}} 배경색",
+			"foregroundColorAria": "{{section}} 전경색"
 		},
 		"typography": {
 			"description": "인터페이스 글꼴, 코드 스타일, 읽기 크기를 각각 조정합니다.",
@@ -269,7 +296,16 @@
 			"description": "Glyph 인터페이스에 사용할 언어를 선택합니다.",
 			"label": "앱 언어",
 			"systemDescription": "Glyph가 지원하면 운영체제 언어를 사용하고, 아니면 영어를 사용합니다.",
-			"title": "언어"
+			"title": "언어",
+			"disclaimer": "번역은 커뮤니티에서 만들었습니다. 어색한 부분이 있으면",
+			"discordLink": "Discord에서 알려 주세요."
+		},
+		"startup": {
+			"description": "Glyph를 시작할 때 열 내용을 선택합니다.",
+			"resumeAriaLabel": "마지막 세션 이어하기",
+			"resumeDescription": "열어 둔 탭으로 이 스페이스를 시작합니다.",
+			"resumeLabel": "이전 탭 열기",
+			"title": "시작"
 		}
 	},
 	"git": {
@@ -353,7 +389,8 @@
 	"groups": {
 		"workspace": "작업 공간",
 		"features": "기능",
-		"system": "시스템"
+		"system": "시스템",
+		"application": "애플리케이션"
 	},
 	"search": {
 		"clear": "설정 검색 지우기",
@@ -389,10 +426,16 @@
 			"modes": {
 				"noteFolder": "노트와 같은 폴더",
 				"spaceRoot": "메인 스페이스 폴더",
-				"specificFolder": "특정 폴더"
+				"specificFolder": "특정 폴더",
+				"nextToNote": "각 노트 옆",
+				"noteSubfolder": "노트와 같은 하위 폴더",
+				"oneFolderForAll": "모든 첨부 파일을 한 폴더에"
 			},
 			"resetFolder": "첨부 파일 폴더 재설정",
-			"title": "첨부 파일"
+			"title": "첨부 파일",
+			"helpNoteSubfolder": "첨부 파일은 노트 폴더 안의 이 하위 폴더에 저장됩니다.",
+			"resetSubfolder": "첨부 하위 폴더 재설정",
+			"subfolderName": "첨부 하위 폴더 이름"
 		},
 		"dailyNotes": {
 			"clearFolder": "데일리 노트 폴더 지우기",
@@ -408,7 +451,8 @@
 			"resetQuickNotesFolder": "빠른 노트 폴더를 재설정하지 못했습니다",
 			"selectFolder": "폴더를 선택하지 못했습니다",
 			"selectQuickNotesFolder": "빠른 노트 폴더를 선택하지 못했습니다",
-			"updateSetting": "설정을 업데이트하지 못했습니다"
+			"updateSetting": "설정을 업데이트하지 못했습니다",
+			"updateSubfolder": "하위 폴더를 업데이트하지 못했습니다"
 		},
 		"quickNotes": {
 			"folderDescription": "새 빠른 노트는 이 폴더의 오늘 노트에 추가됩니다.",
@@ -453,31 +497,5 @@
 		"templateFolder": "템플릿 폴더",
 		"templateFolderDescription": "Markdown 템플릿이 있는 현재 스페이스 내 폴더를 선택합니다.",
 		"title": "템플릿"
-	},
-	"tabs": {
-		"general": "일반",
-		"appearance": "모양",
-		"shortcuts": "단축키",
-		"ai": "Glyph AI",
-		"space": "스페이스",
-		"git": "Git",
-		"advanced": "고급",
-		"about": "정보"
-	},
-	"groups": {
-		"workspace": "작업 공간",
-		"features": "기능",
-		"system": "시스템",
-		"application": "애플리케이션"
-	},
-	"categories": {
-		"workspace": "작업 공간",
-		"navigation": "탐색",
-		"search": "검색",
-		"file": "파일 작업",
-		"tabs": "탭",
-		"ai": "AI",
-		"editor": "편집기",
-		"settings": "설정"
 	}
 }

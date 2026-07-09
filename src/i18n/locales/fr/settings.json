@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "Affiche un total récursif de fichiers à la fin de chaque ligne de dossier dans l'arborescence.",
 			"folioMode": "Mode Folio",
 			"folioModeDescription": "Affiche la navigation, les notes et l'éditeur dans un espace de travail à trois colonnes.",
-			"title": "App"
+			"title": "App",
+			"fileTreeSort": "Tri de l'arborescence",
+			"fileTreeSortDescription": "Choisissez l'ordre des dossiers et fichiers dans l'arborescence de la barre latérale.",
+			"fileTreeSortModes": {
+				"createdAsc": "Date de création (anciennes d’abord)",
+				"createdDesc": "Date de création (récentes d’abord)",
+				"modifiedAsc": "Date de modification (anciennes d’abord)",
+				"modifiedDesc": "Date de modification (récentes d’abord)",
+				"nameAsc": "Nom A-Z",
+				"nameDesc": "Nom Z-A"
+			},
+			"showNonMarkdownFiles": "Afficher les fichiers non Markdown",
+			"showNonMarkdownFilesDescription": "Affiche les PDF, images et autres pièces jointes dans l'arborescence et la liste Folio. Désactivé, ils sont masqués uniquement dans ces vues."
 		},
 		"database": {
 			"columnColor": "Afficher la couleur des colonnes de base de données",
@@ -94,7 +106,9 @@
 				"title": "Raccourcis Vim"
 			},
 			"vimMode": "Mode Vim",
-			"vimModeDescription": "N'activez PAS ceci si vous ne savez pas ce que cela signifie."
+			"vimModeDescription": "N'activez PAS ceci si vous ne savez pas ce que cela signifie.",
+			"spellCheck": "Vérification orthographique",
+			"spellCheckDescription": "Souligne les fautes de frappe pendant la saisie. Clic droit sur un mot pour voir des suggestions."
 		}
 	},
 	"ai": {
@@ -193,7 +207,9 @@
 			"descriptionLight": "Choisissez l'accent utilisé pour les surlignages, les anneaux de focus et l'emphase dans le thème clair par défaut.",
 			"palette": "Palette",
 			"paletteDescription": "Prévisualisez et sélectionnez l'accent qui convient le mieux à votre espace de travail.",
-			"title": "Accent"
+			"title": "Accent",
+			"description": "S'applique aux thèmes clair et sombre de Glyph.",
+			"resetAccent": "Réinitialiser l'accent"
 		},
 		"theme": {
 			"darkTheme": "Thème sombre",
@@ -209,7 +225,18 @@
 			"selectTheme": "Sélectionner un thème",
 			"themeMode": "Mode de thème",
 			"title": "Thème",
-			"translucentApp": "App translucide"
+			"translucentApp": "App translucide",
+			"appearance": "Apparence",
+			"appearanceDescription": "Suivez votre système ou verrouillez Glyph en mode clair ou sombre.",
+			"background": "Arrière-plan",
+			"foreground": "Premier plan",
+			"preset": "Préréglage",
+			"invalidColor": "Couleur de thème invalide",
+			"translucentSidebar": "Barre latérale translucide",
+			"resetBackground": "Réinitialiser l'arrière-plan {{section}}",
+			"resetForeground": "Réinitialiser le premier plan {{section}}",
+			"backgroundColorAria": "Couleur d'arrière-plan {{section}}",
+			"foregroundColorAria": "Couleur de premier plan {{section}}"
 		},
 		"typography": {
 			"description": "Ajustez indépendamment la police de l'interface, le style du code et l'échelle de lecture.",
@@ -270,7 +297,16 @@
 			"description": "Choisissez la langue de l'interface de Glyph.",
 			"label": "Langue de l'app",
 			"systemDescription": "Utilise la langue de votre système si Glyph la prend en charge, sinon l'anglais.",
-			"title": "Langue"
+			"title": "Langue",
+			"disclaimer": "Les traductions sont faites par la communauté. Si quelque chose cloche,",
+			"discordLink": "dites-le-nous sur Discord."
+		},
+		"startup": {
+			"description": "Choisissez ce qui s'ouvre au démarrage de Glyph.",
+			"resumeAriaLabel": "Reprendre la dernière session",
+			"resumeDescription": "Ouvre cet espace avec les onglets laissés ouverts.",
+			"resumeLabel": "Ouvrir les onglets précédents",
+			"title": "Démarrage"
 		}
 	},
 	"git": {
@@ -354,7 +390,8 @@
 	"groups": {
 		"workspace": "Espace de travail",
 		"features": "Fonctions",
-		"system": "Système"
+		"system": "Système",
+		"application": "Application"
 	},
 	"search": {
 		"clear": "Effacer la recherche des réglages",
@@ -390,10 +427,16 @@
 			"modes": {
 				"noteFolder": "Même dossier que la note",
 				"spaceRoot": "Dossier principal de l'espace",
-				"specificFolder": "Dossier spécifique"
+				"specificFolder": "Dossier spécifique",
+				"nextToNote": "À côté de chaque note",
+				"noteSubfolder": "Dans un sous-dossier avec la note",
+				"oneFolderForAll": "Un dossier pour toutes les pièces jointes"
 			},
 			"resetFolder": "Réinitialiser le dossier des pièces jointes",
-			"title": "Pièces jointes"
+			"title": "Pièces jointes",
+			"helpNoteSubfolder": "Les pièces jointes vont dans ce sous-dossier du dossier de la note.",
+			"resetSubfolder": "Réinitialiser le sous-dossier des pièces jointes",
+			"subfolderName": "Nom du sous-dossier des pièces jointes"
 		},
 		"dailyNotes": {
 			"clearFolder": "Effacer le dossier des notes quotidiennes",
@@ -409,7 +452,8 @@
 			"resetQuickNotesFolder": "Impossible de réinitialiser le dossier des notes rapides",
 			"selectFolder": "Impossible de sélectionner le dossier",
 			"selectQuickNotesFolder": "Impossible de sélectionner le dossier des notes rapides",
-			"updateSetting": "Impossible de mettre à jour le réglage"
+			"updateSetting": "Impossible de mettre à jour le réglage",
+			"updateSubfolder": "Impossible de mettre à jour le sous-dossier"
 		},
 		"quickNotes": {
 			"folderDescription": "Les nouvelles notes rapides sont ajoutées à la note du jour dans ce dossier.",
@@ -455,31 +499,5 @@
 		"templateFolder": "Dossier de modèles",
 		"templateFolderDescription": "Choisissez un dossier dans l'espace actuel contenant vos modèles Markdown.",
 		"title": "Modèles"
-	},
-	"tabs": {
-		"general": "Général",
-		"appearance": "Apparence",
-		"shortcuts": "Raccourcis",
-		"ai": "Glyph IA",
-		"space": "Espace",
-		"git": "Git",
-		"advanced": "Avancé",
-		"about": "À propos"
-	},
-	"groups": {
-		"workspace": "Espace de travail",
-		"features": "Fonctions",
-		"system": "Système",
-		"application": "Application"
-	},
-	"categories": {
-		"workspace": "Espace de travail",
-		"navigation": "Navigation",
-		"search": "Recherche",
-		"file": "Opérations sur les fichiers",
-		"tabs": "Onglets",
-		"ai": "IA",
-		"editor": "Éditeur",
-		"settings": "Réglages"
 	}
 }

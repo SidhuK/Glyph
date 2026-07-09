@@ -57,7 +57,19 @@
 			"folderFileCountsDescription": "Mostra um total recursivo de arquivos no final de cada linha de pasta na árvore de arquivos.",
 			"folioMode": "Modo Folio",
 			"folioModeDescription": "Mostra navegação, notas e editor em uma área de trabalho de três colunas.",
-			"title": "App"
+			"title": "App",
+			"fileTreeSort": "Ordenação da árvore de arquivos",
+			"fileTreeSortDescription": "Escolha como pastas e arquivos são ordenados na árvore da barra lateral.",
+			"fileTreeSortModes": {
+				"createdAsc": "Mais antigas (criação)",
+				"createdDesc": "Mais recentes (criação)",
+				"modifiedAsc": "Mais antigas (modificação)",
+				"modifiedDesc": "Mais recentes (modificação)",
+				"nameAsc": "Nome A-Z",
+				"nameDesc": "Nome Z-A"
+			},
+			"showNonMarkdownFiles": "Mostrar arquivos não Markdown",
+			"showNonMarkdownFilesDescription": "Mostra PDFs, imagens e outros anexos na árvore de arquivos e na lista Folio. Desativar oculta apenas nessas visualizações."
 		},
 		"database": {
 			"columnColor": "Mostrar cor da coluna do banco de dados",
@@ -94,7 +106,9 @@
 				"title": "Atalhos Vim"
 			},
 			"vimMode": "Modo Vim",
-			"vimModeDescription": "NÃO ative isso se você não souber o que significa."
+			"vimModeDescription": "NÃO ative isso se você não souber o que significa.",
+			"spellCheck": "Verificação ortográfica",
+			"spellCheckDescription": "Sublinha erros de digitação enquanto você digita. Clique com o botão direito em uma palavra para ver sugestões."
 		}
 	},
 	"ai": {
@@ -193,7 +207,9 @@
 			"descriptionLight": "Escolha o destaque usado para realces, anéis de foco e ênfase no tema claro padrão.",
 			"palette": "Paleta",
 			"paletteDescription": "Visualize e selecione o destaque que funciona melhor para sua área de trabalho.",
-			"title": "Destaque"
+			"title": "Destaque",
+			"description": "Aplica-se aos temas claro e escuro do Glyph.",
+			"resetAccent": "Redefinir destaque"
 		},
 		"theme": {
 			"darkTheme": "Tema escuro",
@@ -209,7 +225,18 @@
 			"selectTheme": "Selecionar tema",
 			"themeMode": "Modo de tema",
 			"title": "Tema",
-			"translucentApp": "App translúcido"
+			"translucentApp": "App translúcido",
+			"appearance": "Aparência",
+			"appearanceDescription": "Siga o sistema ou fixe o Glyph no modo claro ou escuro.",
+			"background": "Fundo",
+			"foreground": "Primeiro plano",
+			"preset": "Predefinição",
+			"invalidColor": "Cor de tema inválida",
+			"translucentSidebar": "Barra lateral translúcida",
+			"resetBackground": "Redefinir fundo de {{section}}",
+			"resetForeground": "Redefinir primeiro plano de {{section}}",
+			"backgroundColorAria": "Cor de fundo de {{section}}",
+			"foregroundColorAria": "Cor de primeiro plano de {{section}}"
 		},
 		"typography": {
 			"description": "Ajuste o tipo da interface, o estilo de código e a escala de leitura de forma independente.",
@@ -270,7 +297,16 @@
 			"description": "Escolha o idioma usado na interface do Glyph.",
 			"label": "Idioma do aplicativo",
 			"systemDescription": "Usa o idioma do sistema operacional quando o Glyph oferece suporte; caso contrário, usa inglês.",
-			"title": "Idioma"
+			"title": "Idioma",
+			"disclaimer": "As traduções são da comunidade. Se algo parecer estranho,",
+			"discordLink": "avise no Discord."
+		},
+		"startup": {
+			"description": "Escolha o que abre ao iniciar o Glyph.",
+			"resumeAriaLabel": "Retomar a última sessão",
+			"resumeDescription": "Abra este espaço com as abas que você deixou abertas.",
+			"resumeLabel": "Abrir abas anteriores",
+			"title": "Inicialização"
 		}
 	},
 	"git": {
@@ -354,7 +390,8 @@
 	"groups": {
 		"workspace": "Área de trabalho",
 		"features": "Recursos",
-		"system": "Sistema"
+		"system": "Sistema",
+		"application": "Aplicativo"
 	},
 	"search": {
 		"clear": "Limpar busca de configurações",
@@ -390,10 +427,16 @@
 			"modes": {
 				"noteFolder": "Mesma pasta da nota",
 				"spaceRoot": "Pasta principal do espaço",
-				"specificFolder": "Pasta específica"
+				"specificFolder": "Pasta específica",
+				"nextToNote": "Ao lado de cada nota",
+				"noteSubfolder": "Em uma subpasta com a nota",
+				"oneFolderForAll": "Uma pasta para todos os anexos"
 			},
 			"resetFolder": "Redefinir pasta de anexos",
-			"title": "Anexos"
+			"title": "Anexos",
+			"helpNoteSubfolder": "Anexos vão nesta subpasta dentro da pasta da nota.",
+			"resetSubfolder": "Redefinir subpasta de anexos",
+			"subfolderName": "Nome da subpasta de anexos"
 		},
 		"dailyNotes": {
 			"clearFolder": "Limpar pasta de notas diárias",
@@ -409,7 +452,8 @@
 			"resetQuickNotesFolder": "Falha ao redefinir pasta de notas rápidas",
 			"selectFolder": "Falha ao selecionar pasta",
 			"selectQuickNotesFolder": "Falha ao selecionar pasta de notas rápidas",
-			"updateSetting": "Falha ao atualizar configuração"
+			"updateSetting": "Falha ao atualizar configuração",
+			"updateSubfolder": "Falha ao atualizar subpasta"
 		},
 		"quickNotes": {
 			"folderDescription": "Novas notas rápidas são adicionadas à nota de hoje nesta pasta.",
@@ -455,31 +499,5 @@
 		"templateFolder": "Pasta de modelos",
 		"templateFolderDescription": "Escolha uma pasta dentro do espaço atual que contenha seus modelos Markdown.",
 		"title": "Modelos"
-	},
-	"tabs": {
-		"general": "Geral",
-		"appearance": "Aparência",
-		"shortcuts": "Atalhos",
-		"ai": "Glyph IA",
-		"space": "Espaço",
-		"git": "Git",
-		"advanced": "Avançado",
-		"about": "Sobre"
-	},
-	"groups": {
-		"workspace": "Área de trabalho",
-		"features": "Recursos",
-		"system": "Sistema",
-		"application": "Aplicativo"
-	},
-	"categories": {
-		"workspace": "Área de trabalho",
-		"navigation": "Navegação",
-		"search": "Busca",
-		"file": "Operações de arquivo",
-		"tabs": "Abas",
-		"ai": "IA",
-		"editor": "Editor",
-		"settings": "Configurações"
 	}
 }
