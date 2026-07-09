@@ -350,6 +350,8 @@ export function useNoteEditor({
 	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownSyncFrameRef = useRef<number | null>(null);
+	const markdownManagerRef = useRef<MarkdownManager | null>(null);
+	const pasteMarkdownBehaviorRef = useRef(pasteMarkdownBehavior);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -386,7 +388,9 @@ export function useNoteEditor({
 	);
 
 	frontmatterRef.current = frontmatter;
+	markdownManagerRef.current = markdownManager;
 	onChangeRef.current = onChange;
+	pasteMarkdownBehaviorRef.current = pasteMarkdownBehavior;
 	relPathRef.current = relPath;
 	interactiveRef.current = interactive;
 	modeRef.current = mode;
@@ -417,6 +421,7 @@ export function useNoteEditor({
 				return;
 			}
 			const { instance } = pending;
+			if (instance.isDestroyed) return;
 			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
 			const nextMarkdown = joinYamlFrontmatter(
 				pending.frontmatter,
@@ -481,7 +486,7 @@ export function useNoteEditor({
 
 	const pendingSync = pendingMarkdownSyncRef.current;
 	const editorContent =
-		pendingSync?.relPath === relPath
+		pendingSync?.relPath === relPath && !pendingSync.instance.isDestroyed
 			? pendingSync.instance.getMarkdown()
 			: editorBody;
 
@@ -567,6 +572,14 @@ export function useNoteEditor({
 							event.preventDefault();
 							void (async () => {
 								for (const item of placeholders) {
+									if (
+										editorInstance.isDestroyed ||
+										editorRef.current !== editorInstance ||
+										sourcePath !== relPathRef.current
+									) {
+										URL.revokeObjectURL(item.objectUrl);
+										continue;
+									}
 									try {
 										const dataUrl = await readFileAsDataUrl(item.file);
 										const saved = await invoke("space_save_pasted_image", {
@@ -575,6 +588,13 @@ export function useNoteEditor({
 											data_url: dataUrl,
 											original_filename: item.file.name || null,
 										});
+										if (
+											editorInstance.isDestroyed ||
+											editorRef.current !== editorInstance ||
+											sourcePath !== relPathRef.current
+										) {
+											continue;
+										}
 										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,
 											alt: item.file.name || "",
@@ -582,6 +602,13 @@ export function useNoteEditor({
 											originSrc: saved.href,
 										});
 									} catch {
+										if (
+											editorInstance.isDestroyed ||
+											editorRef.current !== editorInstance ||
+											sourcePath !== relPathRef.current
+										) {
+											continue;
+										}
 										replacePlaceholderWithFallbackText(
 											editorInstance,
 											item.uploadId,
@@ -594,7 +621,9 @@ export function useNoteEditor({
 							})();
 							return true;
 						}
-						if (pasteMarkdownBehavior !== "smart-markdown") return false;
+						if (pasteMarkdownBehaviorRef.current !== "smart-markdown") {
+							return false;
+						}
 						if (editorInstance.isActive("codeBlock")) return false;
 						const clipboardHtml = getClipboardHtml(event);
 						const clipboardText = normalizeClipboardMarkdownText(
@@ -607,9 +636,10 @@ export function useNoteEditor({
 							from: editorInstance.state.selection.from,
 							to: editorInstance.state.selection.to,
 						};
-						if (!markdownManager) return false;
+						const activeMarkdownManager = markdownManagerRef.current;
+						if (!activeMarkdownManager) return false;
 						const insertableContent = getInsertableMarkdownContent(
-							markdownManager,
+							activeMarkdownManager,
 							clipboardText,
 						);
 						if (!insertableContent.length) return false;

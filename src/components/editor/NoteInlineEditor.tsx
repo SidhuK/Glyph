@@ -342,9 +342,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		tiptapHostNode,
 		onOpenLinkDialog: useCallback(
 			(href: string, target: "_self" | "_blank") => {
-				setLinkDialog({ href, target });
+				const selection = editor?.state.selection;
+				if (!selection) return;
+				setLinkDialog({
+					href,
+					range: { from: selection.from, to: selection.to },
+					target,
+				});
 			},
-			[],
+			[editor],
 		),
 		onTriggerExtractToNote: extractToNote.canExtractToNote
 			? extractToNote.openExtractDialog

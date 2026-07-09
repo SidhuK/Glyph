@@ -11,16 +11,13 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
-import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import {
 	OPEN_LOCAL_CONNECTIONS_EVENT,
 	type OpenLocalConnectionsDetail,
 	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
 	type ToggleNoteInfoSidebarDetail,
 } from "../../lib/appEvents";
-import { extractErrorMessage } from "../../lib/errorUtils";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
-import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
@@ -34,14 +31,12 @@ import {
 	type WorkspaceDatabasePreviewContext,
 	invoke,
 } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
-import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,
@@ -54,14 +49,11 @@ import {
 	initialEditorMode,
 	requiresPlainEditorMode,
 } from "./editorModeSelection";
-import {
-	clearMarkdownDocCache,
-	getCachedMarkdownDoc,
-	peekCachedMarkdownDoc,
-} from "./markdownCache";
+import { peekCachedMarkdownDoc } from "./markdownCache";
 import { analyzeNoteInfo } from "./noteInfoAnalysis";
 import { useDeferredTocSource } from "./useDeferredTocSource";
 import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
+import { useMarkdownDocumentSession } from "./useMarkdownDocumentSession";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -166,28 +158,16 @@ export function MarkdownEditorPane({
 	initialError = "",
 	extractToNoteActions,
 }: MarkdownEditorPaneProps) {
-	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
-	const [text, setText] = useState(() => initialText);
 	const [infoPanelText, setInfoPanelText] = useState("");
-	const [savedText, setSavedText] = useState(() => initialText);
 	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
+	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [mode, setMode] = useState<NoteInlineEditorMode>(() =>
 		initialEditorMode(initialText),
 	);
-	const [saving, setSaving] = useState(false);
-	const [autosaveBusy, setAutosaveBusy] = useState(false);
-	const [error, setError] = useState(() => initialError || "");
 	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 	const [localConnectionsOpen, setLocalConnectionsOpen] = useState(false);
-	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
-		initialDoc?.mtime_ms ?? null,
-	);
-	const { flashPulse, clearPulse, resolveLabel } = useEditorSaveIndicator();
 	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [relationships, setRelationships] = useState<NoteRelationship[]>([]);
-
-	const savedTextRef = useRef(savedText);
-	const textRef = useRef(text);
 	const resolveEditorModeForNote = useCallback(
 		(markdown: string): NoteInlineEditorMode => {
 			if (requiresPlainEditorMode(markdown)) return "plain";
@@ -199,8 +179,39 @@ export function MarkdownEditorPane({
 		preferredEditorModeRef.current = nextMode;
 		setMode(nextMode);
 	}, []);
+	const infoPanelOpenRef = useRef(infoPanelOpen);
+	const paneRef = useRef<HTMLElement | null>(null);
+	const contentScrollRef = useRef<HTMLDivElement | null>(null);
+	const { spacePath } = useSpace();
+	const { tocSource, handleEditorReady } = useDeferredTocSource();
+	const handleDocumentTextReplaced = useCallback((nextText: string) => {
+		if (infoPanelOpenRef.current) setInfoPanelText(nextText);
+	}, []);
+	const {
+		error,
+		flushRawMarkdown,
+		handleRawEditorReady,
+		isDirty,
+		lastSavedMtimeMs,
+		markUserEdit,
+		onSave,
+		rawEditorRef,
+		runAutosave,
+		saveLabel,
+		text,
+		textRef,
+	} = useMarkdownDocumentSession({
+		initialDoc,
+		initialError,
+		onTextReplaced: handleDocumentTextReplaced,
+		relPath,
+		resolveEditorModeForNote,
+		setEditorMode: setMode,
+		spacePath,
+	});
 	const requestEditorMode = useCallback(
 		async (nextMode: NoteInlineEditorMode) => {
+			flushRawMarkdown();
 			if (nextMode !== "plain" && requiresPlainEditorMode(textRef.current)) {
 				const modeLabel = nextMode === "rich" ? "Rich" : "Preview";
 				const { confirm } = await import("@tauri-apps/plugin-dialog");
@@ -216,30 +227,7 @@ export function MarkdownEditorPane({
 			}
 			applyEditorMode(nextMode);
 		},
-		[applyEditorMode],
-	);
-	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
-	const documentSessionRef = useRef(0);
-	const mountedRef = useRef(true);
-	const saveRequestTokenRef = useRef(0);
-	const autosaveInFlightRef = useRef(false);
-	const autosaveQueuedRef = useRef(false);
-	const hasUserEditsRef = useRef(false);
-	const externalSyncTimerRef = useRef<number | null>(null);
-	const pendingExternalReloadRef = useRef(false);
-	const activeRelPathRef = useRef(relPath);
-	const infoPanelOpenRef = useRef(infoPanelOpen);
-	const paneRef = useRef<HTMLElement | null>(null);
-	const contentScrollRef = useRef<HTMLDivElement | null>(null);
-	const { spacePath } = useSpace();
-	const previousSpacePathRef = useRef<string | null>(spacePath);
-	const { tocSource, handleEditorReady } = useDeferredTocSource();
-	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
-	const handleRawEditorReady = useCallback(
-		(editor: RawMarkdownEditorHandle | null) => {
-			rawEditorRef.current = editor;
-		},
-		[],
+		[applyEditorMode, flushRawMarkdown, textRef],
 	);
 	const {
 		headings: tocHeadings,
@@ -263,7 +251,19 @@ export function MarkdownEditorPane({
 		onGitDiffChange?.(null);
 	}, [hasSupportedGit, onGitDiffChange]);
 
-	const isDirty = text !== savedText;
+	// Reset note-local sidebar state when the active note identity changes.
+	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
+	const [sidebarNoteKey, setSidebarNoteKey] = useState(activeNoteKey);
+	if (sidebarNoteKey !== activeNoteKey) {
+		setSidebarNoteKey(activeNoteKey);
+		setInfoPanelText("");
+		setInfoPanelOpen(false);
+		setLocalConnectionsOpen(false);
+		setPreviewContext(null);
+		setLinkedMentions([]);
+		setRelationships([]);
+	}
+
 	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
 		() =>
 			infoPanelOpen
@@ -326,10 +326,10 @@ export function MarkdownEditorPane({
 			}
 			scrollToHeading(heading);
 		},
-		[mode, scrollToHeading],
+		[mode, rawEditorRef, scrollToHeading],
 	);
 
-	const getPlainText = useCallback(() => textRef.current, []);
+	const getPlainText = useCallback(() => textRef.current, [textRef]);
 	useInternalAnchorNavigation({
 		relPath,
 		mode,
@@ -338,26 +338,10 @@ export function MarkdownEditorPane({
 		selectVisibleHeading,
 	});
 
-	const saveLabel =
-		resolveLabel({
-			isDirty,
-			saving,
-			autosaveBusy,
-			hasSavedBefore: lastSavedMtimeMs !== null,
-		}) ?? "Ready";
-
-	useEffect(() => {
-		mountedRef.current = true;
-		return () => {
-			mountedRef.current = false;
-			documentSessionRef.current += 1;
-		};
-	}, []);
-
 	useEffect(() => {
 		if (!infoPanelOpen) return;
 		setInfoPanelText(textRef.current);
-	}, [infoPanelOpen]);
+	}, [infoPanelOpen, textRef]);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;
@@ -367,300 +351,6 @@ export function MarkdownEditorPane({
 		return () => window.clearTimeout(timer);
 	}, [infoPanelOpen, text]);
 
-	const isCurrentSession = useCallback((sessionId: number) => {
-		return mountedRef.current && documentSessionRef.current === sessionId;
-	}, []);
-
-	useEffect(() => {
-		// `initialDoc` is a seed for the pane. Autosave also refreshes that cache,
-		// so do not treat the resulting object identity change as a new document.
-		if (
-			activeRelPathRef.current === relPath &&
-			initialDoc?.text === textRef.current
-		) {
-			return;
-		}
-		const sessionId = documentSessionRef.current + 1;
-		documentSessionRef.current = sessionId;
-		saveRequestTokenRef.current += 1;
-		const cached = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
-		textRef.current = cached;
-		savedTextRef.current = cached;
-		mtimeRef.current = initialDoc?.mtime_ms ?? null;
-		autosaveInFlightRef.current = false;
-		autosaveQueuedRef.current = false;
-		if (externalSyncTimerRef.current !== null) {
-			window.clearTimeout(externalSyncTimerRef.current);
-			externalSyncTimerRef.current = null;
-		}
-		pendingExternalReloadRef.current = false;
-		setText(cached);
-		setInfoPanelText("");
-		setSavedText(cached);
-		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
-		setSaving(false);
-		setAutosaveBusy(false);
-		clearPulse();
-		hasUserEditsRef.current = false;
-		setError(initialError);
-		if (activeRelPathRef.current !== relPath) {
-			setInfoPanelOpen(false);
-			setMode(resolveEditorModeForNote(cached));
-		}
-		activeRelPathRef.current = relPath;
-		setLocalConnectionsOpen(false);
-		setPreviewContext(null);
-		setLinkedMentions([]);
-		if (initialDoc) {
-			setPrefetchedNote(relPath, initialDoc);
-		}
-	}, [clearPulse, initialDoc, initialError, relPath, resolveEditorModeForNote]);
-
-	useEffect(() => {
-		if (previousSpacePathRef.current === spacePath) return;
-		previousSpacePathRef.current = spacePath;
-		documentSessionRef.current += 1;
-		saveRequestTokenRef.current += 1;
-		if (externalSyncTimerRef.current !== null) {
-			window.clearTimeout(externalSyncTimerRef.current);
-			externalSyncTimerRef.current = null;
-		}
-		pendingExternalReloadRef.current = false;
-		textRef.current = "";
-		savedTextRef.current = "";
-		mtimeRef.current = null;
-		autosaveInFlightRef.current = false;
-		autosaveQueuedRef.current = false;
-		hasUserEditsRef.current = false;
-		setText("");
-		setInfoPanelText("");
-		setSavedText("");
-		setLastSavedMtimeMs(null);
-		setSaving(false);
-		setAutosaveBusy(false);
-		clearPulse();
-		clearMarkdownDocCache();
-		if (spacePath === null) {
-			return;
-		}
-	}, [clearPulse, spacePath]);
-
-	const loadDoc = useCallback(
-		async (showRefreshFeedback = false) => {
-			const sessionId = documentSessionRef.current;
-			setError("");
-			try {
-				const doc = await invoke("space_read_text", { path: relPath });
-				if (!isCurrentSession(sessionId)) return;
-				const shouldReplaceText = textRef.current === savedTextRef.current;
-				const shouldChooseInitialMode =
-					textRef.current.length === 0 && savedTextRef.current.length === 0;
-				setPrefetchedNote(relPath, doc);
-				if (shouldReplaceText) {
-					if (shouldChooseInitialMode) {
-						setMode(resolveEditorModeForNote(doc.text));
-					}
-					textRef.current = doc.text;
-					setText(doc.text);
-					if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
-				}
-				savedTextRef.current = doc.text;
-				mtimeRef.current = doc.mtime_ms;
-				setSavedText(doc.text);
-				setLastSavedMtimeMs(doc.mtime_ms);
-				hasUserEditsRef.current = false;
-				setPrefetchedNote(relPath, doc);
-				if (showRefreshFeedback) {
-					flashPulse("reloaded");
-				}
-			} catch (e) {
-				if (!isCurrentSession(sessionId)) return;
-				setError(extractErrorMessage(e));
-			}
-		},
-		[flashPulse, isCurrentSession, relPath, resolveEditorModeForNote],
-	);
-
-	const loadDocFromExternalChange = useCallback(async () => {
-		const sessionId = documentSessionRef.current;
-		setError("");
-		try {
-			const doc = await invoke("space_read_text", { path: relPath });
-			if (!isCurrentSession(sessionId)) return;
-			if (
-				doc.mtime_ms === mtimeRef.current &&
-				doc.text === savedTextRef.current
-			)
-				return;
-			setPrefetchedNote(relPath, doc);
-			textRef.current = doc.text;
-			savedTextRef.current = doc.text;
-			mtimeRef.current = doc.mtime_ms;
-			setText(doc.text);
-			if (infoPanelOpenRef.current) setInfoPanelText(doc.text);
-			setSavedText(doc.text);
-			setLastSavedMtimeMs(doc.mtime_ms);
-			hasUserEditsRef.current = false;
-		} catch (e) {
-			if (!isCurrentSession(sessionId)) return;
-			setError(extractErrorMessage(e));
-		}
-	}, [isCurrentSession, relPath]);
-
-	useEffect(() => {
-		if (initialDoc) return;
-		void loadDoc();
-	}, [initialDoc, loadDoc]);
-
-	const persistDoc = useCallback(
-		async (
-			path: string,
-			nextText: string,
-			sessionId = documentSessionRef.current,
-		): Promise<boolean> => {
-			const applySaveState = (saved: string, mtimeMs: number) => {
-				if (path !== relPath || !isCurrentSession(sessionId)) return;
-				setPrefetchedNote(path, {
-					rel_path: path,
-					text: saved,
-					etag: "",
-					mtime_ms: mtimeMs,
-				});
-				savedTextRef.current = saved;
-				mtimeRef.current = mtimeMs;
-				setSavedText(saved);
-				setLastSavedMtimeMs(mtimeMs);
-				hasUserEditsRef.current = false;
-				flashPulse("saved");
-			};
-
-			setError("");
-			try {
-				const result = await invoke("space_write_text", {
-					path,
-					text: nextText,
-					base_mtime_ms: mtimeRef.current,
-				});
-				applySaveState(nextText, result.mtime_ms);
-				return true;
-			} catch (e) {
-				if (!isCurrentSession(sessionId)) return false;
-				const message = extractErrorMessage(e);
-				const isConflict = message.includes(
-					"conflict: on-disk file changed since it was opened",
-				);
-				if (!isConflict) {
-					setError(message);
-					return false;
-				}
-
-				// Conflict recovery: refresh latest mtime/content and retry save once.
-				try {
-					const latest = await invoke("space_read_text", { path });
-					if (!isCurrentSession(sessionId)) return false;
-					if (latest.text === nextText) {
-						applySaveState(nextText, latest.mtime_ms);
-						return true;
-					}
-					savedTextRef.current = latest.text;
-					mtimeRef.current = latest.mtime_ms;
-					const retry = await invoke("space_write_text", {
-						path,
-						text: nextText,
-						base_mtime_ms: latest.mtime_ms,
-					});
-					applySaveState(nextText, retry.mtime_ms);
-					return true;
-				} catch (retryError) {
-					if (!isCurrentSession(sessionId)) return false;
-					setError(extractErrorMessage(retryError));
-					return false;
-				}
-			}
-		},
-		[flashPulse, isCurrentSession, relPath],
-	);
-
-	const onSave = useCallback(async () => {
-		const sessionId = documentSessionRef.current;
-		const saveToken = saveRequestTokenRef.current + 1;
-		saveRequestTokenRef.current = saveToken;
-		setSaving(true);
-		try {
-			await persistDoc(relPath, textRef.current, sessionId);
-		} finally {
-			if (
-				saveRequestTokenRef.current === saveToken &&
-				isCurrentSession(sessionId)
-			) {
-				setSaving(false);
-			}
-		}
-	}, [isCurrentSession, persistDoc, relPath]);
-
-	const runAutosave = useCallback(async () => {
-		const sessionId = documentSessionRef.current;
-		if (autosaveInFlightRef.current) {
-			autosaveQueuedRef.current = true;
-			return false;
-		}
-
-		const path = relPath;
-		const snapshot = textRef.current;
-		if (snapshot === savedTextRef.current) return false;
-
-		autosaveInFlightRef.current = true;
-		setAutosaveBusy(true);
-		const ok = await persistDoc(path, snapshot, sessionId);
-		if (!isCurrentSession(sessionId)) return ok;
-		autosaveInFlightRef.current = false;
-		setAutosaveBusy(false);
-		if (autosaveQueuedRef.current) {
-			autosaveQueuedRef.current = false;
-			return runAutosave();
-		}
-		if (ok && textRef.current !== savedTextRef.current) {
-			return runAutosave();
-		}
-		return ok;
-	}, [isCurrentSession, persistDoc, relPath]);
-
-	useEffect(() => {
-		if (!isDirty || !hasUserEditsRef.current) return;
-		const timer = window.setTimeout(() => {
-			runAutosave();
-		}, 900);
-		return () => window.clearTimeout(timer);
-	}, [isDirty, runAutosave]);
-
-	useEffect(() => {
-		return () => {
-			if (textRef.current === savedTextRef.current) return;
-			runAutosave();
-		};
-	}, [runAutosave]);
-
-	const handleExternalNoteChanged = useCallback(
-		(payload: { rel_path: string }) => {
-			const changed = normalizeRelPath(payload.rel_path);
-			const current = normalizeRelPath(relPath);
-			if (!changed || changed !== current) return;
-			if (externalSyncTimerRef.current !== null) {
-				window.clearTimeout(externalSyncTimerRef.current);
-			}
-			externalSyncTimerRef.current = window.setTimeout(() => {
-				externalSyncTimerRef.current = null;
-				if (isDirty || autosaveInFlightRef.current || saving) {
-					pendingExternalReloadRef.current = true;
-					return;
-				}
-				void loadDocFromExternalChange();
-			}, 180);
-		},
-		[isDirty, loadDocFromExternalChange, relPath, saving],
-	);
-
-	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
 	useEffect(() => {
 		const handleOpenLocalConnections = (event: Event) => {
 			const detail = (event as CustomEvent<OpenLocalConnectionsDetail>).detail;
@@ -695,27 +385,11 @@ export function MarkdownEditorPane({
 				handleToggleInfoSidebar,
 			);
 		};
-	}, [relPath, setAiPanelOpen]);
+	}, [relPath, setAiPanelOpen, textRef]);
 
 	useEffect(() => {
 		if (aiPanelOpen) setInfoPanelOpen(false);
 	}, [aiPanelOpen]);
-
-	useEffect(() => {
-		if (!pendingExternalReloadRef.current) return;
-		if (isDirty || saving) return;
-		pendingExternalReloadRef.current = false;
-		void loadDocFromExternalChange();
-	}, [isDirty, loadDocFromExternalChange, saving]);
-
-	useEffect(
-		() => () => {
-			if (externalSyncTimerRef.current !== null) {
-				window.clearTimeout(externalSyncTimerRef.current);
-			}
-		},
-		[],
-	);
 
 	// Register editor state for keyboard shortcuts
 	const editorState = useMemo(
@@ -726,7 +400,7 @@ export function MarkdownEditorPane({
 			getMarkdown: () => textRef.current,
 			setMode: requestEditorMode,
 		}),
-		[isDirty, onSave, relPath, requestEditorMode],
+		[isDirty, onSave, relPath, requestEditorMode, textRef],
 	);
 	useEditorRegistration(editorState);
 
@@ -808,15 +482,13 @@ export function MarkdownEditorPane({
 			const { body } = splitYamlFrontmatter(textRef.current);
 			const nextMarkdown = joinYamlFrontmatter(normalizedFrontmatter, body);
 			if (nextMarkdown === textRef.current) return;
-			hasUserEditsRef.current = true;
-			textRef.current = nextMarkdown;
-			setText(nextMarkdown);
+			markUserEdit(nextMarkdown);
 			setInfoPanelText(nextMarkdown);
 			// Property edits are discrete commits — save immediately so the
 			// indexer picks up the change and databases/backlinks update.
 			void runAutosave();
 		},
-		[runAutosave],
+		[markUserEdit, runAutosave, textRef],
 	);
 
 	const toggleInfoPanel = useCallback(() => {
@@ -826,7 +498,7 @@ export function MarkdownEditorPane({
 			if (nextOpen) setInfoPanelText(textRef.current);
 			return nextOpen;
 		});
-	}, [setAiPanelOpen]);
+	}, [setAiPanelOpen, textRef]);
 	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
 	const isLargeNote = requiresPlainEditorMode(text);
@@ -918,9 +590,7 @@ export function MarkdownEditorPane({
 								mode={mode}
 								pasteMarkdownBehavior="smart-markdown"
 								onChange={(nextText) => {
-									hasUserEditsRef.current = true;
-									textRef.current = nextText;
-									setText(nextText);
+									markUserEdit(nextText);
 								}}
 								onFrontmatterCommit={runAutosave}
 								onEditorReady={handleEditorReady}

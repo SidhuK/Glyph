@@ -27,6 +27,10 @@ import {
 	preprocessInlineTocMarkers,
 } from "./inlineTocMarkdown";
 import {
+	transformMarkdownOutsideCode,
+	transformMarkdownOutsideFences,
+} from "./markdownFence";
+import {
 	findWikiLinkSpans,
 	parseWikiLink,
 	wikiLinkAttrsToMarkdown,
@@ -37,7 +41,7 @@ const WHITESPACE_SPACE_SENTINEL = "\u2061";
 const WHITESPACE_TAB_SENTINEL = "\u2062";
 const LEGACY_EXTRA_BLANK_LINE_SENTINEL = "\u200b";
 
-function canonicalizeWikiLinks(input: string): string {
+function canonicalizeWikiLinksText(input: string): string {
 	if (!input.includes("[[")) return input;
 	const spans = findWikiLinkSpans(input);
 	if (!spans.length) return input;
@@ -54,21 +58,29 @@ function canonicalizeWikiLinks(input: string): string {
 	return out;
 }
 
+function canonicalizeWikiLinks(input: string): string {
+	return transformMarkdownOutsideCode(input, canonicalizeWikiLinksText);
+}
+
 const MARKDOWN_IMAGE_WITHOUT_TITLE_RE =
 	/!\[([^\]\n]*)\]\(([^)\n"]*\s[^)\n"]*)\)/g;
 
 function encodeMarkdownImageDestinations(input: string): string {
-	return input.replace(
-		MARKDOWN_IMAGE_WITHOUT_TITLE_RE,
-		(match, alt: string, rawHref: string) => {
-			const href = typeof rawHref === "string" ? rawHref.trim() : "";
-			if (!href) return match;
-			try {
-				return `![${alt}](${encodeURI(decodeURI(href))})`;
-			} catch {
-				return `![${alt}](${encodeURI(href)})`;
-			}
-		},
+	// Fence-aware only: alt text may contain inline code, so the full `![...](...)`
+	// token must stay intact for the image regex.
+	return transformMarkdownOutsideFences(input, (line) =>
+		line.replace(
+			MARKDOWN_IMAGE_WITHOUT_TITLE_RE,
+			(match, alt: string, rawHref: string) => {
+				const href = typeof rawHref === "string" ? rawHref.trim() : "";
+				if (!href) return match;
+				try {
+					return `![${alt}](${encodeURI(decodeURI(href))})`;
+				} catch {
+					return `![${alt}](${encodeURI(href)})`;
+				}
+			},
+		),
 	);
 }
 

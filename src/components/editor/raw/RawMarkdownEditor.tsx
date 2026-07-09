@@ -2,6 +2,7 @@ import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import {
 	forwardRef,
+	useCallback,
 	useEffect,
 	useImperativeHandle,
 	useLayoutEffect,
@@ -18,6 +19,23 @@ import {
 import type { RawMarkdownEditorHandle } from "./types";
 
 const RAW_MARKDOWN_CHANGE_DEBOUNCE_MS = 120;
+
+function diffMarkdownChange(current: string, next: string) {
+	let from = 0;
+	const maxPrefix = Math.min(current.length, next.length);
+	while (from < maxPrefix && current[from] === next[from]) from += 1;
+	let currentEnd = current.length;
+	let nextEnd = next.length;
+	while (
+		currentEnd > from &&
+		nextEnd > from &&
+		current[currentEnd - 1] === next[nextEnd - 1]
+	) {
+		currentEnd -= 1;
+		nextEnd -= 1;
+	}
+	return { from, to: currentEnd, insert: next.slice(from, nextEnd) };
+}
 
 interface RawMarkdownEditorProps {
 	markdown: string;
@@ -43,6 +61,20 @@ export const RawMarkdownEditor = forwardRef<
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
 
+	const flushPendingChange = useCallback(() => {
+		if (changeTimerRef.current !== null) {
+			window.clearTimeout(changeTimerRef.current);
+			changeTimerRef.current = null;
+		}
+		if (!hasPendingChangeRef.current) return;
+		hasPendingChangeRef.current = false;
+		const currentView = viewRef.current;
+		if (!currentView) return;
+		const nextMarkdown = currentView.state.doc.toString();
+		lastEmittedMarkdownRef.current = nextMarkdown;
+		onChangeRef.current(nextMarkdown);
+	}, []);
+
 	useEffect(() => {
 		applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
 	}, [spellCheckEnabled]);
@@ -50,20 +82,6 @@ export const RawMarkdownEditor = forwardRef<
 	useLayoutEffect(() => {
 		const host = hostRef.current;
 		if (!host) return;
-		const flushPendingChange = () => {
-			if (changeTimerRef.current !== null) {
-				window.clearTimeout(changeTimerRef.current);
-				changeTimerRef.current = null;
-			}
-			if (!hasPendingChangeRef.current) return;
-			hasPendingChangeRef.current = false;
-			const currentView = viewRef.current;
-			if (!currentView) return;
-			const nextMarkdown = currentView.state.doc.toString();
-			lastEmittedMarkdownRef.current = nextMarkdown;
-			onChangeRef.current(nextMarkdown);
-		};
-
 		const view = new EditorView({
 			parent: host,
 			state: EditorState.create({
@@ -90,7 +108,7 @@ export const RawMarkdownEditor = forwardRef<
 			viewRef.current = null;
 			view.destroy();
 		};
-	}, []);
+	}, [flushPendingChange]);
 
 	useLayoutEffect(() => {
 		const view = viewRef.current;
@@ -121,7 +139,7 @@ export const RawMarkdownEditor = forwardRef<
 			changes:
 				currentMarkdown === markdown
 					? undefined
-					: { from: 0, to: currentMarkdown.length, insert: markdown },
+					: diffMarkdownChange(currentMarkdown, markdown),
 			selection,
 			effects: didChangeDocument
 				? EditorView.scrollIntoView(0, { y: "start" })
@@ -133,7 +151,9 @@ export const RawMarkdownEditor = forwardRef<
 	useImperativeHandle(
 		forwardedRef,
 		() => ({
+			flushPendingChange,
 			focus: () => viewRef.current?.focus(),
+			getMarkdown: () => viewRef.current?.state.doc.toString() ?? "",
 			getSelectedText: () => {
 				const view = viewRef.current;
 				if (!view) return "";
@@ -153,7 +173,7 @@ export const RawMarkdownEditor = forwardRef<
 				view.focus();
 			},
 		}),
-		[],
+		[flushPendingChange],
 	);
 
 	return <div ref={hostRef} className="rfNodeNoteEditorRaw" />;

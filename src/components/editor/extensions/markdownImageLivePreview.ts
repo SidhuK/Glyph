@@ -7,6 +7,7 @@ import {
 	Selection,
 	TextSelection,
 } from "@tiptap/pm/state";
+import { changedRangesFromTransactions } from "./changedRanges";
 import { encodeMarkdownImageSrc } from "./markdownImage";
 
 export const markdownImagePreviewPluginKey = new PluginKey(
@@ -189,7 +190,14 @@ export const MarkdownImageLivePreview = Extension.create({
 					};
 
 					if (docChanged) {
-						newState.doc.descendants(visitNode);
+						// changedRangesFromTransactions always yields ranges when docChanged.
+						const changedRanges = changedRangesFromTransactions(
+							transactions,
+							newState.doc.content.size,
+						);
+						for (const range of changedRanges) {
+							newState.doc.nodesBetween(range.from, range.to, visitNode);
+						}
 					} else {
 						for (const range of selectionScanRanges(oldState, newState)) {
 							newState.doc.nodesBetween(range.from, range.to, visitNode);

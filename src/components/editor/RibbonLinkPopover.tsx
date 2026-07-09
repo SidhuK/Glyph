@@ -41,6 +41,10 @@ export function RibbonLinkPopover({
 	const [linkOpen, setLinkOpen] = useState(false);
 	const [linkHref, setLinkHref] = useState("");
 	const [linkTarget, setLinkTarget] = useState<"_self" | "_blank">("_self");
+	const [linkRange, setLinkRange] = useState<{
+		from: number;
+		to: number;
+	} | null>(null);
 
 	const handleOpenChange = (nextOpen: boolean) => {
 		setLinkOpen(nextOpen);
@@ -51,30 +55,42 @@ export function RibbonLinkPopover({
 		};
 		setLinkHref(linkAttrs.href ?? "");
 		setLinkTarget(linkAttrs.target === "_blank" ? "_blank" : "_self");
+		const { from, to } = editor.state.selection;
+		setLinkRange({ from, to });
 	};
 
 	const applyLink = () => {
 		const href = normalizeHref(linkHref);
 		if (!href) {
-			runCommand(() => focusChain().unsetLink().run());
+			runCommand(() => {
+				const chain = focusChain();
+				if (linkRange) chain.setTextSelection(linkRange);
+				chain.unsetLink().run();
+			});
 			setLinkOpen(false);
 			return;
 		}
-		runCommand(() =>
-			focusChain()
+		runCommand(() => {
+			const chain = focusChain();
+			if (linkRange) chain.setTextSelection(linkRange);
+			chain
 				.extendMarkRange("link")
 				.setLink({
 					href,
 					target: linkTarget,
 					rel: linkTarget === "_blank" ? "noopener noreferrer" : undefined,
 				})
-				.run(),
-		);
+				.run();
+		});
 		setLinkOpen(false);
 	};
 
 	const removeLink = () => {
-		runCommand(() => focusChain().unsetLink().run());
+		runCommand(() => {
+			const chain = focusChain();
+			if (linkRange) chain.setTextSelection(linkRange);
+			chain.unsetLink().run();
+		});
 		setLinkOpen(false);
 	};
 

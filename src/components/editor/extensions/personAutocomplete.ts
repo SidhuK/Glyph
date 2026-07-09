@@ -32,7 +32,10 @@ export const PersonAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		let requestId = 0;
 		const getItems = async (query: string): Promise<PersonSuggestionItem[]> => {
+			const currentRequestId = requestId + 1;
+			requestId = currentRequestId;
 			const normalized = normalizeHandle(query);
 			let people: PersonCount[] = [];
 			try {
@@ -41,7 +44,11 @@ export const PersonAutocomplete = Extension.create({
 				});
 			} catch (error) {
 				console.warn("Failed to load people suggestions", error);
-				return [];
+				people = [];
+			}
+			// Stale responses must not resolve as [] — TipTap would clear the active menu.
+			if (currentRequestId !== requestId) {
+				return new Promise<PersonSuggestionItem[]>(() => {});
 			}
 			const matches: PersonSuggestionItem[] = people
 				.filter((person) =>

@@ -20,7 +20,28 @@ const HTML_EMBED_BLOCK_OPEN_RE = new RegExp(
 function isHtmlEmbedBlockStart(text: string, index: number): boolean {
 	const slice = text.slice(index);
 	const trimmed = slice.match(/^[\t ]*/)?.[0]?.length ?? 0;
+	if (trimmed > 3 || slice.startsWith("\t")) return false;
 	return HTML_EMBED_BLOCK_OPEN_RE.test(slice.slice(trimmed));
+}
+
+// Finds the unquoted `>` that closes the tag starting at `tagStart`, so that
+// `/>` or `>` inside a quoted attribute value (e.g. data-x="/>") isn't
+// mistaken for the end of the tag.
+function findOpenTagEnd(text: string, tagStart: number): number | null {
+	let index = tagStart;
+	let quote: '"' | "'" | null = null;
+	while (index < text.length) {
+		const char = text[index];
+		if (quote) {
+			if (char === quote) quote = null;
+		} else if (char === '"' || char === "'") {
+			quote = char;
+		} else if (char === ">") {
+			return index;
+		}
+		index += 1;
+	}
+	return null;
 }
 
 function readScriptOrStyleElement(
@@ -28,11 +49,11 @@ function readScriptOrStyleElement(
 	start: number,
 	tagName: "script" | "style",
 ): { content: string; end: number } | null {
-	const openMatch = text
-		.slice(start)
-		.match(new RegExp(`^<${tagName}\\b[^>]*>`, "i"));
+	const openMatch = text.slice(start).match(new RegExp(`^<${tagName}\\b`, "i"));
 	if (!openMatch) return null;
-	const openEnd = start + openMatch[0].length;
+	const openTagEnd = findOpenTagEnd(text, start + openMatch[0].length);
+	if (openTagEnd === null) return null;
+	const openEnd = openTagEnd + 1;
 	const closeEnd = findScriptOrStyleClose(text, openEnd, tagName);
 	if (closeEnd === null) return null;
 	return { content: text.slice(start, closeEnd), end: closeEnd };
@@ -151,25 +172,36 @@ function readBalancedElement(
 		return readScriptOrStyleElement(text, start, tagName);
 	}
 
-	const openMatch = text
-		.slice(start)
-		.match(new RegExp(`^<${tagName}\\b[^>]*>`, "i"));
+	const openMatch = text.slice(start).match(new RegExp(`^<${tagName}\\b`, "i"));
 	if (!openMatch) return null;
-	const openEnd = start + openMatch[0].length;
-	const openTagRe = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+	const openTagEnd = findOpenTagEnd(text, start + openMatch[0].length);
+	if (openTagEnd === null) return null;
+	const openEnd = openTagEnd + 1;
+	if (/\/\s*>$/.test(text.slice(start, openEnd))) {
+		return { content: text.slice(start, openEnd), end: openEnd };
+	}
+	const openTagStartRe = new RegExp(`<${tagName}\\b`, "gi");
 	const closeTagRe = new RegExp(`</${tagName}\\s*>`, "gi");
 	let depth = 1;
 	let cursor = openEnd;
 
 	while (depth > 0 && cursor < text.length) {
-		openTagRe.lastIndex = cursor;
+		openTagStartRe.lastIndex = cursor;
 		closeTagRe.lastIndex = cursor;
-		const nextOpen = openTagRe.exec(text);
+		const nextOpen = openTagStartRe.exec(text);
 		const nextClose = closeTagRe.exec(text);
 		if (!nextClose) return null;
 		if (nextOpen && nextOpen.index < nextClose.index) {
-			depth += 1;
-			cursor = nextOpen.index + nextOpen[0].length;
+			const nestedOpenEnd = findOpenTagEnd(
+				text,
+				nextOpen.index + nextOpen[0].length,
+			);
+			if (nestedOpenEnd === null) return null;
+			const nestedOpen = text.slice(nextOpen.index, nestedOpenEnd + 1);
+			cursor = nestedOpenEnd + 1;
+			if (!/\/\s*>$/.test(nestedOpen)) {
+				depth += 1;
+			}
 			continue;
 		}
 		depth -= 1;
@@ -188,6 +220,7 @@ function readHtmlEmbedBlockElement(
 	start: number,
 ): { content: string; end: number; tagName: HtmlEmbedBlockTagName } | null {
 	const leading = text.slice(start).match(/^[\t ]*/)?.[0]?.length ?? 0;
+	if (leading > 3 || text.slice(start).startsWith("\t")) return null;
 	const tagStart = start + leading;
 	const tagMatch = text.slice(tagStart).match(HTML_EMBED_BLOCK_OPEN_RE);
 	if (!tagMatch) return null;

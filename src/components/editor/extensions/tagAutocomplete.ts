@@ -36,7 +36,10 @@ export const TagAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		let requestId = 0;
 		const getItems = async (query: string): Promise<TagSuggestionItem[]> => {
+			const currentRequestId = requestId + 1;
+			requestId = currentRequestId;
 			const normalizedQuery = normalizeTagDraftPrefix(query);
 			if (!normalizedQuery) return [];
 			let tags: TagCount[] = [];
@@ -47,7 +50,11 @@ export const TagAutocomplete = Extension.create({
 				});
 			} catch (error) {
 				console.warn("Failed to load tag suggestions", error);
-				return [];
+				tags = [];
+			}
+			// Stale responses must not resolve as [] — TipTap would clear the active menu.
+			if (currentRequestId !== requestId) {
+				return new Promise<TagSuggestionItem[]>(() => {});
 			}
 			const descendantPrefix = normalizedQuery.endsWith("/")
 				? normalizedQuery

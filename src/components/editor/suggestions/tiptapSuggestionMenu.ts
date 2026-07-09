@@ -134,11 +134,13 @@ export function createTipTapSuggestionMenu<T>({
 			}
 			if (!items.length) return false;
 			if (event.key === "ArrowDown") {
+				event.preventDefault();
 				selectedIndex = nextSuggestionIndex(selectedIndex, items.length, 1);
 				updateSelection(items);
 				return true;
 			}
 			if (event.key === "ArrowUp") {
+				event.preventDefault();
 				selectedIndex = nextSuggestionIndex(selectedIndex, items.length, -1);
 				updateSelection(items);
 				return true;

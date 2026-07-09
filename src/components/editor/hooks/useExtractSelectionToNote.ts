@@ -65,12 +65,17 @@ export function useExtractSelectionToNote({
 			destinationDir,
 			loading: true,
 			title: sanitizeExtractedNoteTitle(draft.suggestedTitle),
+			titleDirty: false,
 		});
 		void loadUniqueExtractTitle(draft.suggestedTitle, destinationDir)
 			.then((title) => {
 				setDialogState((current) =>
 					current && current.range.from === draft.range.from
-						? { ...current, loading: false, title }
+						? {
+								...current,
+								loading: false,
+								title: current.titleDirty ? current.title : title,
+							}
 						: current,
 				);
 			})
@@ -89,7 +94,9 @@ export function useExtractSelectionToNote({
 	}, []);
 
 	const setExtractTitle = useCallback((title: string) => {
-		setDialogState((current) => (current ? { ...current, title } : current));
+		setDialogState((current) =>
+			current ? { ...current, title, titleDirty: true } : current,
+		);
 	}, []);
 
 	const setExtractDestinationDir = useCallback((destinationDir: string) => {
