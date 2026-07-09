@@ -44,7 +44,7 @@ export const PersonAutocomplete = Extension.create({
 				});
 			} catch (error) {
 				console.warn("Failed to load people suggestions", error);
-				return [];
+				people = [];
 			}
 			// Stale responses must not resolve as [] — TipTap would clear the active menu.
 			if (currentRequestId !== requestId) {

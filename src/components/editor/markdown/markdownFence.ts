@@ -95,8 +95,8 @@ export function transformMarkdownOutsideFences(
 	return markdown
 		.split("\n")
 		.map((line) => {
-			// Indented code never opens/closes fenced state.
-			if (!isInsideMarkdownCodeFence(tracker) && /^( {4}|\t)/.test(line)) {
+			// Indented code never opens or closes fenced state (incl. inside fences).
+			if (/^( {4}|\t)/.test(line)) {
 				return line;
 			}
 			if (updateMarkdownFenceTracker(line, tracker)) return line;

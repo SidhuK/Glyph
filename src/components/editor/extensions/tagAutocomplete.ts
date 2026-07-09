@@ -50,7 +50,7 @@ export const TagAutocomplete = Extension.create({
 				});
 			} catch (error) {
 				console.warn("Failed to load tag suggestions", error);
-				return [];
+				tags = [];
 			}
 			// Stale responses must not resolve as [] — TipTap would clear the active menu.
 			if (currentRequestId !== requestId) {
