@@ -105,7 +105,7 @@ export function SpaceSettingsPane() {
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
 	const [isSavingPeopleMentions, setIsSavingPeopleMentions] = useState(false);
-	const { spacePath, startIndexRebuild } = useSpace();
+	const { startIndexRebuild } = useSpace();
 
 	const onRebuildIndex = useCallback(async () => {
 		if (!currentSpacePath) {
@@ -162,7 +162,7 @@ export function SpaceSettingsPane() {
 				await invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: checked,
 				});
-				if (spacePath) await startIndexRebuild();
+				if (currentSpacePath) await startIndexRebuild();
 				await setEditorEnablePeopleMentionsAsTags(checked);
 				setEnablePeopleMentionsAsTags(checked);
 			})()
@@ -175,7 +175,7 @@ export function SpaceSettingsPane() {
 				})
 				.finally(() => setIsSavingPeopleMentions(false));
 		},
-		[enablePeopleMentionsAsTags, spacePath, startIndexRebuild],
+		[currentSpacePath, enablePeopleMentionsAsTags, startIndexRebuild],
 	);
 
 	const handleBrowseFolder = useCallback(async () => {

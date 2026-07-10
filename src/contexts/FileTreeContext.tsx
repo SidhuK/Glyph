@@ -547,10 +547,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setFileTreeSortModeState(nextSortMode);
 			setIsSavingFileTreeSortMode(true);
 			return persistFileTreeSortMode(nextSortMode)
-				.catch(() => {
+				.catch((error) => {
 					if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
 						setFileTreeSortModeState(previous);
 					}
+					throw error;
 				})
 				.finally(() => {
 					if (requestVersion === fileTreeSortModeRequestVersionRef.current) {

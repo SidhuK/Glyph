@@ -307,6 +307,7 @@ export function GeneralSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
+						title="Vim Mode"
 						label={
 							<span className="settingsLabelWithHelp">
 								Vim Mode

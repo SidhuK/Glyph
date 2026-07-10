@@ -513,8 +513,8 @@ const SETTINGS_SEARCH_ITEMS = [
 		id: "general-editor-vim-keybindings",
 		tab: "general",
 		section: "Editor",
-		title: "Vim keybindings",
-		keywords: ["vim", "keyboard", "modal"],
+		title: "Vim Mode",
+		keywords: ["vim", "keybindings", "keyboard", "modal"],
 	},
 	{
 		id: "ai-assistant-behavior-tools",

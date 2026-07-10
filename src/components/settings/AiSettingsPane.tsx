@@ -121,6 +121,9 @@ export function AiSettingsPane() {
 	});
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.aiEnabled === "boolean") {
+			setAiEnabledState(payload.ui.aiEnabled);
+		}
 		if (
 			payload.ui?.aiAssistantMode === "chat" ||
 			payload.ui?.aiAssistantMode === "create"

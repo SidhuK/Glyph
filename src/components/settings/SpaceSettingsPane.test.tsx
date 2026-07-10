@@ -49,7 +49,6 @@ const {
 
 vi.mock("../../contexts", () => ({
 	useSpace: () => ({
-		spacePath: "/spaces/test",
 		startIndexRebuild: vi.fn(() => Promise.resolve()),
 	}),
 }));
