@@ -55,33 +55,10 @@
 		"vimMode": {
 			"title": "Vim-Modus",
 			"label": "Vim-Modus",
-			"description": "Schalte dies NICHT ein, wenn du nicht weißt, was es bedeutet.",
+			"description": "Vim-Tastenkürzel aktivieren.",
 			"ariaLabel": "Vim-Modus",
-			"helpAriaLabel": "Hilfe zu Vim-Tastenkürzeln",
-			"helpTitle": "Vim-Tastenkürzel",
-			"insertMode": "<strong>insert</strong> bedeutet normalen Tippmodus. Du tippst und Text erscheint, wie der Editor es bereits tut.",
-			"normalMode": "<strong>normal</strong> bedeutet Befehlsmodus. Deine Tasten bewegen den Cursor oder bearbeiten Text, statt Buchstaben einzugeben.",
-			"help": {
-				"esc": "In den Vim-Befehlsmodus wechseln.",
-				"i": "An der Cursorposition tippen.",
-				"a": "Hinter dem Cursor tippen.",
-				"I": "Zum Zeilenanfang gehen und tippen.",
-				"A": "Zum Zeilenende gehen und tippen.",
-				"o": "Darunter eine neue Zeile öffnen und tippen.",
-				"O": "Darüber eine neue Zeile öffnen und tippen.",
-				"hjkl": "Links, unten, oben und rechts bewegen.",
-				"w": "Zum nächsten Wort springen.",
-				"b": "Zum vorherigen Wort springen.",
-				"e": "Zum Wortende springen.",
-				"0": "Zum Zeilenanfang springen.",
-				"dollar": "Zum Zeilenende springen.",
-				"gg": "Zum Anfang der Notiz springen.",
-				"G": "Zum Ende der Notiz springen.",
-				"x": "Das Zeichen unter oder nahe dem Cursor löschen.",
-				"dd": "Den Inhalt der aktuellen Zeile löschen.",
-				"u": "Rückgängig.",
-				"controlR": "Wiederholen."
-			}
+			"helpAriaLabel": "Über den Vim-Modus",
+			"info": "Der Vim-Modus ist nur im Rohmarkdown-Modus verfügbar."
 		}
 	},
 	"fileTree": {

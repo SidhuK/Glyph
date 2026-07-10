@@ -340,7 +340,6 @@ export function useNoteEditor({
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
 		showFrontmatterInEditor,
-		vimKeybindingsEnabled,
 	} = useNoteEditorSettings();
 	const spellCheckEnabled = useEditorSpellCheck();
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -360,7 +359,6 @@ export function useNoteEditor({
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
-				enableVimKeybindings: vimKeybindingsEnabled,
 				onMathEditRequest,
 				placeholder,
 			}),
@@ -370,7 +368,6 @@ export function useNoteEditor({
 			onMathEditRequest,
 			peopleMentionsEnabled,
 			placeholder,
-			vimKeybindingsEnabled,
 		],
 	);
 	const markdownManager = useMemo(
@@ -465,7 +462,6 @@ export function useNoteEditor({
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
 		void placeholder;
-		void vimKeybindingsEnabled;
 		return () => {
 			const snapshot = snapshotFocusedSelection(
 				committedEditorRef.current,
@@ -481,7 +477,6 @@ export function useNoteEditor({
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
 		placeholder,
-		vimKeybindingsEnabled,
 	]);
 
 	const pendingSync = pendingMarkdownSyncRef.current;
@@ -676,7 +671,6 @@ export function useNoteEditor({
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
 			placeholder,
-			vimKeybindingsEnabled,
 		],
 	);
 	editorRef.current = editor;

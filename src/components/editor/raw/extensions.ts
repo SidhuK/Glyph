@@ -42,6 +42,7 @@ import {
 } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 import { latexHoverTooltip } from "codemirror-lang-latex";
+import { vim } from "@replit/codemirror-vim";
 import { createRawMarkdownDecorations } from "./decorations";
 import {
 	embeddedLatexCompletionSource,
@@ -204,6 +205,7 @@ function moveTableCell(direction: 1 | -1): Command {
 export function createRawMarkdownExtensions(
 	onChange: () => void,
 	getRelPath: () => string,
+	vimMode: Extension,
 ): Extension[] {
 	return [
 		highlightSpecialChars(),
@@ -252,6 +254,7 @@ export function createRawMarkdownExtensions(
 				onChange();
 			}
 		}),
+		vimMode,
 		keymap.of([
 			...completionKeymap,
 			{ key: "Mod-b", run: wrapSelection("**") },
@@ -268,4 +271,8 @@ export function createRawMarkdownExtensions(
 			...defaultKeymap,
 		]),
 	];
+}
+
+export function createRawMarkdownVimMode(enabled: boolean): Extension {
+	return enabled ? vim({ status: true }) : [];
 }

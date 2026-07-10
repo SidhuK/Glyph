@@ -55,33 +55,10 @@
 		"vimMode": {
 			"title": "Modo Vim",
 			"label": "Modo Vim",
-			"description": "NO actives esto si no sabes lo que significa.",
+			"description": "Activar atajos de Vim.",
 			"ariaLabel": "Modo Vim",
-			"helpAriaLabel": "Ayuda de atajos de Vim",
-			"helpTitle": "Atajos de Vim",
-			"insertMode": "<strong>insert</strong> es el modo de escritura normal. Escribes y aparece el texto, como ya hace el editor.",
-			"normalMode": "<strong>normal</strong> es el modo de comandos. Las teclas mueven el cursor o editan el texto en lugar de escribir letras.",
-			"help": {
-				"esc": "Entrar en el modo de comandos de Vim.",
-				"i": "Escribir en la posición del cursor.",
-				"a": "Escribir después del cursor.",
-				"I": "Ir al inicio de la línea y escribir.",
-				"A": "Ir al final de la línea y escribir.",
-				"o": "Abrir una línea nueva debajo y escribir.",
-				"O": "Abrir una línea nueva encima y escribir.",
-				"hjkl": "Mover a la izquierda, abajo, arriba y derecha.",
-				"w": "Saltar a la siguiente palabra.",
-				"b": "Saltar a la palabra anterior.",
-				"e": "Saltar al final de la palabra.",
-				"0": "Saltar al inicio de la línea.",
-				"dollar": "Saltar al final de la línea.",
-				"gg": "Saltar al inicio de la nota.",
-				"G": "Saltar al final de la nota.",
-				"x": "Eliminar el carácter bajo o cerca del cursor.",
-				"dd": "Eliminar el contenido de la línea actual.",
-				"u": "Deshacer.",
-				"controlR": "Rehacer."
-			}
+			"helpAriaLabel": "Acerca del modo Vim",
+			"info": "El modo Vim solo está disponible en el modo Markdown sin formato."
 		}
 	},
 	"fileTree": {

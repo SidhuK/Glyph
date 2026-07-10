@@ -55,33 +55,10 @@
 		"vimMode": {
 			"title": "Mode Vim",
 			"label": "Mode Vim",
-			"description": "N’activez PAS ceci si vous ne savez pas ce que cela signifie.",
+			"description": "Activer les raccourcis Vim.",
 			"ariaLabel": "Mode Vim",
-			"helpAriaLabel": "Aide des raccourcis Vim",
-			"helpTitle": "Raccourcis Vim",
-			"insertMode": "<strong>insert</strong> désigne le mode de saisie normal. Vous tapez et le texte apparaît, comme le fait déjà l’éditeur.",
-			"normalMode": "<strong>normal</strong> désigne le mode commande. Vos touches déplacent le curseur ou modifient le texte au lieu de saisir des lettres.",
-			"help": {
-				"esc": "Entrer en mode commande Vim.",
-				"i": "Saisir à la position du curseur.",
-				"a": "Saisir après le curseur.",
-				"I": "Aller au début de la ligne et saisir.",
-				"A": "Aller à la fin de la ligne et saisir.",
-				"o": "Ouvrir une nouvelle ligne en dessous et saisir.",
-				"O": "Ouvrir une nouvelle ligne au-dessus et saisir.",
-				"hjkl": "Se déplacer à gauche, en bas, en haut et à droite.",
-				"w": "Aller au mot suivant.",
-				"b": "Revenir au mot précédent.",
-				"e": "Aller à la fin du mot.",
-				"0": "Aller au début de la ligne.",
-				"dollar": "Aller à la fin de la ligne.",
-				"gg": "Aller au début de la note.",
-				"G": "Aller à la fin de la note.",
-				"x": "Supprimer le caractère sous ou près du curseur.",
-				"dd": "Supprimer le contenu de la ligne actuelle.",
-				"u": "Annuler.",
-				"controlR": "Rétablir."
-			}
+			"helpAriaLabel": "À propos du mode Vim",
+			"info": "Le mode Vim est disponible uniquement en mode Markdown brut."
 		}
 	},
 	"fileTree": {

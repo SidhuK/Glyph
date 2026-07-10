@@ -1,4 +1,4 @@
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import {
 	forwardRef,
@@ -7,6 +7,7 @@ import {
 	useImperativeHandle,
 	useLayoutEffect,
 	useRef,
+	useState,
 } from "react";
 import {
 	applyDomSpellCheck,
@@ -14,9 +15,11 @@ import {
 } from "../hooks/useEditorSpellCheck";
 import {
 	createRawMarkdownExtensions,
+	createRawMarkdownVimMode,
 	externalRawMarkdownUpdate,
 } from "./extensions";
 import type { RawMarkdownEditorHandle } from "./types";
+import { useRawMarkdownVimMode } from "./useRawMarkdownVimMode";
 
 const RAW_MARKDOWN_CHANGE_DEBOUNCE_MS = 120;
 
@@ -56,7 +59,9 @@ export const RawMarkdownEditor = forwardRef<
 	const changeTimerRef = useRef<number | null>(null);
 	const hasPendingChangeRef = useRef(false);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const [vimModeCompartment] = useState(() => new Compartment());
 	const spellCheckEnabled = useEditorSpellCheck();
+	const vimModeEnabled = useRawMarkdownVimMode();
 
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
@@ -79,6 +84,14 @@ export const RawMarkdownEditor = forwardRef<
 		applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
 	}, [spellCheckEnabled]);
 
+	useEffect(() => {
+		viewRef.current?.dispatch({
+			effects: vimModeCompartment.reconfigure(
+				createRawMarkdownVimMode(vimModeEnabled),
+			),
+		});
+	}, [vimModeCompartment, vimModeEnabled]);
+
 	useLayoutEffect(() => {
 		const host = hostRef.current;
 		if (!host) return;
@@ -98,6 +111,7 @@ export const RawMarkdownEditor = forwardRef<
 						);
 					},
 					() => relPathRef.current ?? "",
+					vimModeCompartment.of([]),
 				),
 			}),
 		});
@@ -108,7 +122,7 @@ export const RawMarkdownEditor = forwardRef<
 			viewRef.current = null;
 			view.destroy();
 		};
-	}, [flushPendingChange]);
+	}, [flushPendingChange, vimModeCompartment]);
 
 	useLayoutEffect(() => {
 		const view = viewRef.current;

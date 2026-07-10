@@ -55,33 +55,10 @@
 		"vimMode": {
 			"title": "Modo Vim",
 			"label": "Modo Vim",
-			"description": "NÃO ative isto se você não souber o que significa.",
+			"description": "Ativar atalhos do Vim.",
 			"ariaLabel": "Modo Vim",
-			"helpAriaLabel": "Ajuda dos atalhos do Vim",
-			"helpTitle": "Atalhos do Vim",
-			"insertMode": "<strong>insert</strong> é o modo de digitação normal. Você digita e o texto aparece, como o editor já faz.",
-			"normalMode": "<strong>normal</strong> é o modo de comandos. As teclas movem o cursor ou editam o texto em vez de digitar letras.",
-			"help": {
-				"esc": "Entrar no modo de comandos do Vim.",
-				"i": "Digitar na posição do cursor.",
-				"a": "Digitar depois do cursor.",
-				"I": "Ir ao início da linha e digitar.",
-				"A": "Ir ao fim da linha e digitar.",
-				"o": "Abrir uma nova linha abaixo e digitar.",
-				"O": "Abrir uma nova linha acima e digitar.",
-				"hjkl": "Mover para a esquerda, baixo, cima e direita.",
-				"w": "Pular para a próxima palavra.",
-				"b": "Pular para a palavra anterior.",
-				"e": "Pular para o fim da palavra.",
-				"0": "Pular para o início da linha.",
-				"dollar": "Pular para o fim da linha.",
-				"gg": "Pular para o início da nota.",
-				"G": "Pular para o fim da nota.",
-				"x": "Excluir o caractere sob ou perto do cursor.",
-				"dd": "Excluir o conteúdo da linha atual.",
-				"u": "Desfazer.",
-				"controlR": "Refazer."
-			}
+			"helpAriaLabel": "Sobre o modo Vim",
+			"info": "O modo Vim está disponível apenas no modo Markdown bruto."
 		}
 	},
 	"fileTree": {

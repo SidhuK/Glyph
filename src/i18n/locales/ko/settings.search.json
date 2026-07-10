@@ -478,7 +478,7 @@
 			"section": "편집기",
 			"keywords": ["맞춤법", "오타", "사전", "spelling", "typo", "dictionary"]
 		},
-		"general-editor-vim-keybindings": {
+		"general-editor-vim-mode": {
 			"title": "Vim 모드",
 			"section": "편집기",
 			"keywords": [
@@ -487,7 +487,9 @@
 				"키보드",
 				"모달",
 				"keybindings",
-				"keyboard"
+				"keyboard",
+				"raw",
+				"markdown"
 			]
 		},
 		"ai-assistant-behavior-tools": {
