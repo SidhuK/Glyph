@@ -11,6 +11,8 @@ body:
 
         Glyph is currently maintained as a macOS-first desktop app. Windows-specific reports are out of scope right now, and we are not accepting Windows support requests or Windows-focused fixes through GitHub Issues.
 
+        Glyph has its own design and interaction model. A difference from another app is not, by itself, a bug; describe the unexpected behavior in Glyph and the result you expected.
+
   - type: checkboxes
     id: preflight
     attributes:
