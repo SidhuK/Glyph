@@ -155,14 +155,6 @@ pub fn forget_external_markdown_window(
     Ok(())
 }
 
-pub fn has_external_markdown_windows(state: &ExternalMarkdownState) -> Result<bool, String> {
-    Ok(!state
-        .paths_by_window
-        .lock()
-        .map_err(|_| "failed to lock external markdown state".to_string())?
-        .is_empty())
-}
-
 #[tauri::command]
 pub fn open_external_markdown_path(
     window: WebviewWindow,

@@ -1022,36 +1022,29 @@ fn open_external_markdown_from_finder(app: &tauri::AppHandle, path: std::path::P
     }
 }
 
+fn has_external_markdown_windows(app: &tauri::AppHandle) -> bool {
+    app.webview_windows()
+        .keys()
+        .any(|label| external_markdown::is_external_markdown_window(label))
+}
+
 fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
-    let mut received_file_open = false;
     for url in urls {
         if url.scheme() != "file" {
             continue;
         }
-        received_file_open = true;
         match url.to_file_path() {
             Ok(path) => open_external_markdown_from_finder(app, path),
             Err(()) => warn!("Failed to convert opened URL to file path: {url}"),
         }
     }
-    received_file_open
+    has_external_markdown_windows(app)
 }
 
-fn should_exit_after_external_markdown_close(
-    app: &tauri::AppHandle,
-    state: &external_markdown::ExternalMarkdownState,
-) -> bool {
-    match external_markdown::has_external_markdown_windows(state) {
-        Ok(true) => false,
-        Ok(false) => !app
-            .webview_windows()
-            .keys()
-            .any(|label| is_space_host_window_label(label)),
-        Err(error) => {
-            warn!("Failed to inspect external markdown windows: {error}");
-            false
-        }
-    }
+fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
+    !app.webview_windows().keys().any(|label| {
+        external_markdown::is_external_markdown_window(label) || is_space_host_window_label(label)
+    })
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1480,7 +1473,7 @@ pub fn run() {
                         ) {
                             warn!("Failed to forget external markdown window: {error}");
                         }
-                        if should_exit_after_external_markdown_close(window.app_handle(), &state) {
+                        if should_exit_after_external_markdown_close(window.app_handle()) {
                             destroy_auxiliary_persisted_windows(window.app_handle());
                             window.app_handle().exit(0);
                         }
