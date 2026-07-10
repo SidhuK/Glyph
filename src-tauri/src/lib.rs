@@ -981,6 +981,7 @@ fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
         .find(|config| config.label == window_geometry::MAIN_WINDOW_LABEL)
         .ok_or_else(|| "main window configuration not found".to_string())?;
     let window = WebviewWindowBuilder::from_config(app, config)
+        .map_err(|error| error.to_string())?
         .build()
         .map_err(|error| error.to_string())?;
 
