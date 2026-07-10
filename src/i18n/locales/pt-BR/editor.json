@@ -1,0 +1,215 @@
+{
+	"mode": {
+		"label": "Modo do editor",
+		"raw": "Bruto",
+		"rich": "Rico",
+		"preview": "Pré-visualização"
+	},
+	"ribbon": {
+		"bold": "Negrito",
+		"italic": "Itálico",
+		"underline": "Sublinhado",
+		"strikethrough": "Tachado",
+		"textColor": "Cor do texto",
+		"clearColor": "Limpar cor",
+		"textHighlight": "Destaque do texto",
+		"clearHighlight": "Limpar destaque",
+		"extractToNote": "Extrair para nota",
+		"heading1": "Título 1",
+		"heading2": "Título 2",
+		"heading3": "Título 3",
+		"bulletList": "Lista com marcadores",
+		"numberedList": "Lista numerada",
+		"taskList": "Lista de tarefas",
+		"quote": "Citação",
+		"codeBlock": "Bloco de código"
+	},
+	"colors": {
+		"gray": "Cinza",
+		"brown": "Marrom",
+		"orange": "Laranja",
+		"yellow": "Amarelo",
+		"green": "Verde",
+		"blue": "Azul",
+		"purple": "Roxo",
+		"red": "Vermelho"
+	},
+	"highlights": {
+		"yellow": "Amarelo",
+		"blue": "Azul",
+		"green": "Verde",
+		"red": "Vermelho"
+	},
+	"codeBlock": {
+		"setLanguage": "Definir linguagem do bloco de código",
+		"languageHeader": "Linguagem do bloco de código",
+		"runPreview": "Executar pré-visualização",
+		"copy": "Copiar código",
+		"copied": "Código copiado",
+		"editCode": "Editar código",
+		"editMermaid": "Editar código Mermaid",
+		"editHtml": "Editar código HTML",
+		"editSvg": "Editar código SVG",
+		"languages": {
+			"plaintext": "Texto simples",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "Título 1",
+			"description": "Título grande de seção"
+		},
+		"heading2": {
+			"title": "Título 2",
+			"description": "Título de seção"
+		},
+		"heading3": {
+			"title": "Título 3",
+			"description": "Subtítulo"
+		},
+		"bulletList": {
+			"title": "Lista com marcadores",
+			"description": "Iniciar uma lista com marcadores"
+		},
+		"numberedList": {
+			"title": "Lista numerada",
+			"description": "Iniciar uma lista numerada"
+		},
+		"todoList": {
+			"title": "Lista de tarefas",
+			"description": "Iniciar uma lista de tarefas"
+		},
+		"quote": {
+			"title": "Citação",
+			"description": "Inserir uma citação em bloco"
+		},
+		"codeBlock": {
+			"title": "Bloco de código",
+			"description": "Inserir um bloco de código"
+		},
+		"divider": {
+			"title": "Divisor",
+			"description": "Inserir uma linha horizontal"
+		},
+		"table": {
+			"title": "Tabela",
+			"description": "Inserir uma tabela Markdown"
+		},
+		"tableOfContents": {
+			"title": "Sumário",
+			"description": "Inserir um sumário ao vivo desta nota"
+		},
+		"mermaidChart": {
+			"title": "Diagrama Mermaid",
+			"description": "Inserir um bloco de diagrama Mermaid"
+		},
+		"htmlEmbed": {
+			"title": "Incorporação HTML",
+			"description": "Inserir um bloco de pré-visualização HTML isolado"
+		},
+		"svgEmbed": {
+			"title": "Incorporação SVG",
+			"description": "Inserir um bloco de pré-visualização SVG isolado"
+		},
+		"detailsBlock": {
+			"title": "Bloco de detalhes",
+			"description": "Inserir uma seção recolhível"
+		},
+		"calloutInfo": {
+			"title": "Destaque de informação",
+			"description": "Inserir um destaque de informação"
+		},
+		"calloutTip": {
+			"title": "Destaque de dica",
+			"description": "Inserir um destaque de dica"
+		},
+		"calloutSuccess": {
+			"title": "Destaque de sucesso",
+			"description": "Inserir um destaque de sucesso"
+		},
+		"calloutWarning": {
+			"title": "Destaque de aviso",
+			"description": "Inserir um destaque de aviso"
+		},
+		"calloutError": {
+			"title": "Destaque de erro",
+			"description": "Inserir um destaque de erro"
+		},
+		"mathInline": {
+			"title": "Equação em linha",
+			"description": "Inserir LaTeX dentro de uma linha"
+		},
+		"mathDisplay": {
+			"title": "Equação em bloco",
+			"description": "Inserir um bloco LaTeX centralizado"
+		},
+		"colorGray": {
+			"title": "Cor: Cinza",
+			"description": "Aplicar cor de texto cinza"
+		},
+		"colorBrown": {
+			"title": "Cor: Marrom",
+			"description": "Aplicar cor de texto marrom"
+		},
+		"colorOrange": {
+			"title": "Cor: Laranja",
+			"description": "Aplicar cor de texto laranja"
+		},
+		"colorYellow": {
+			"title": "Cor: Amarelo",
+			"description": "Aplicar cor de texto amarelo"
+		},
+		"colorGreen": {
+			"title": "Cor: Verde",
+			"description": "Aplicar cor de texto verde"
+		},
+		"colorBlue": {
+			"title": "Cor: Azul",
+			"description": "Aplicar cor de texto azul"
+		},
+		"colorPurple": {
+			"title": "Cor: Roxo",
+			"description": "Aplicar cor de texto roxo"
+		},
+		"colorRed": {
+			"title": "Cor: Vermelho",
+			"description": "Aplicar cor de texto vermelho"
+		},
+		"colorClear": {
+			"title": "Cor: Limpar",
+			"description": "Remover a cor do texto"
+		},
+		"highlightYellow": {
+			"title": "Destaque: Amarelo",
+			"description": "Aplicar destaque de texto amarelo"
+		},
+		"highlightBlue": {
+			"title": "Destaque: Azul",
+			"description": "Aplicar destaque de texto azul"
+		},
+		"highlightGreen": {
+			"title": "Destaque: Verde",
+			"description": "Aplicar destaque de texto verde"
+		},
+		"highlightRed": {
+			"title": "Destaque: Vermelho",
+			"description": "Aplicar destaque de texto vermelho"
+		},
+		"highlightClear": {
+			"title": "Destaque: Limpar",
+			"description": "Remover o destaque do texto"
+		}
+	}
+}

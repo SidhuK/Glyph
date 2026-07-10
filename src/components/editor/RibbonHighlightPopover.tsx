@@ -2,6 +2,7 @@ import { HighlighterIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { X } from "../Icons";
 import { springPresets } from "../ui/animations";
 import {
@@ -26,6 +27,7 @@ export function RibbonHighlightPopover({
 	focusChain,
 	preventMouseDown,
 }: RibbonHighlightPopoverProps) {
+	const { t } = useTranslation("editor");
 	const button = getTextHighlightButton(editor, runCommand, focusChain);
 
 	return (
@@ -58,7 +60,7 @@ export function RibbonHighlightPopover({
 				<div
 					className="editorColorGrid"
 					role="menu"
-					aria-label="Text highlight"
+					aria-label={t("ribbon.textHighlight")}
 				>
 					{button.options.map((option) => (
 						<button
@@ -84,8 +86,8 @@ export function RibbonHighlightPopover({
 					<button
 						type="button"
 						className="editorColorSwatchButton editorColorClearButton"
-						title="Clear highlight"
-						aria-label="Clear highlight"
+						title={t("ribbon.clearHighlight")}
+						aria-label={t("ribbon.clearHighlight")}
 						onMouseDown={preventMouseDown}
 						onClick={button.onClear}
 					>

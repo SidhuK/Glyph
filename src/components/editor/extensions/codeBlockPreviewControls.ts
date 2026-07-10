@@ -14,7 +14,7 @@ export function appendEditCodeControls(
 	const editButton = document.createElement("button");
 	editButton.type = "button";
 	editButton.className = "codeBlockPreviewEditBtn";
-	editButton.textContent = "Edit code";
+	editButton.textContent = label;
 	editButton.title = label;
 	editButton.setAttribute("aria-label", label);
 	editButton.addEventListener("mousedown", (event) => {

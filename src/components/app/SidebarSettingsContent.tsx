@@ -5,6 +5,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUILayoutContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
@@ -12,19 +13,21 @@ import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
 import { SETTINGS_TAB_GROUPS } from "../settings/settingsConfig";
 import {
+	localizedSettingsTabLabel,
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
 } from "../settings/settingsSearch";
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
+	const { t: tGeneral, i18n } = useTranslation("settings.general");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
 	const [settingsSearchActive, setSettingsSearchActive] = useState(false);
 	const settingsSearchResults = useMemo(
-		() => searchSettingsEntries(settingsSearchQuery, 8),
-		[settingsSearchQuery],
+		() => searchSettingsEntries(settingsSearchQuery, 8, i18n.language),
+		[settingsSearchQuery, i18n.language],
 	);
 	const hasSearchQuery =
 		settingsSearchActive && settingsSearchQuery.trim().length > 0;
@@ -82,15 +85,15 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 								clearSettingsSearch();
 							}
 						}}
-						placeholder="Search settings"
-						aria-label="Search settings"
+						placeholder={tGeneral("nav.searchPlaceholder")}
+						aria-label={tGeneral("nav.searchAriaLabel")}
 					/>
 					{hasSearchQuery ? (
 						<button
 							type="button"
 							className="settingsSidebarSearchClear"
 							onClick={clearSettingsSearch}
-							aria-label="Clear settings search"
+							aria-label={tGeneral("nav.clearSearchAriaLabel")}
 						>
 							<X size="var(--icon-sm)" />
 						</button>
@@ -143,7 +146,9 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 									id={`settings-sidebar-group-${group.id}`}
 									className="settingsSidebarTabGroupHeading"
 								>
-									{group.label}
+									{group.id === "application"
+										? tGeneral("nav.groupApplication")
+										: group.label}
 								</h3>
 								{group.tabs.map((tab) => (
 									<button
@@ -162,7 +167,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 											{tab.renderIcon()}
 										</span>
 										<span className="sidebarQuickActionLabel settingsTabLabel">
-											{tab.label}
+											{localizedSettingsTabLabel(tab.id, i18n.language)}
 										</span>
 									</button>
 								))}

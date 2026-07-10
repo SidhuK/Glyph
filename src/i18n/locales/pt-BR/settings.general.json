@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "Geral",
+		"panelTitle": "Geral",
+		"groupApplication": "Aplicativo",
+		"searchPlaceholder": "Buscar configurações",
+		"searchAriaLabel": "Buscar configurações",
+		"clearSearchAriaLabel": "Limpar busca de configurações"
+	},
+	"language": {
+		"sectionTitle": "Idioma",
+		"sectionDescription": "Escolha o idioma usado no Glyph.",
+		"label": "Idioma",
+		"description": "Aplica-se imediatamente a menus, configurações e navegação.",
+		"ariaLabel": "Idioma",
+		"communityNotice": "As traduções são contribuições da comunidade e podem estar incompletas. Dúvidas ou melhorias? <discord>Entre no Discord</discord>."
+	},
+	"startup": {
+		"sectionTitle": "Inicialização",
+		"sectionDescription": "Escolha o que abre ao iniciar o Glyph.",
+		"openPreviousTabs": {
+			"label": "Abrir abas anteriores",
+			"description": "Iniciar este espaço com as abas que você deixou abertas.",
+			"ariaLabel": "Retomar a última sessão"
+		}
+	},
+	"editor": {
+		"sectionTitle": "Editor",
+		"sectionDescription": "Controles do comportamento de edição e da estrutura das notas no Glyph.",
+		"tableOfContents": {
+			"label": "Sumário",
+			"description": "Mostrar um sumário flutuante em cada nota.",
+			"ariaLabel": "Sumário"
+		},
+		"showFrontmatter": {
+			"label": "Mostrar frontmatter no editor",
+			"description": "Exibir o frontmatter YAML no topo das notas ao editar. Desativar mantém o frontmatter disponível para indexação e bancos de dados.",
+			"ariaLabel": "Mostrar frontmatter no editor"
+		},
+		"colorfulHeadings": {
+			"label": "Títulos coloridos",
+			"description": "Usar cores integradas distintas para H1-H6 ao editar notas.",
+			"ariaLabel": "Títulos coloridos"
+		},
+		"collapsibleHeadings": {
+			"label": "Títulos recolhíveis",
+			"description": "Mostrar controles de recolher nos títulos das notas no editor e na pré-visualização.",
+			"ariaLabel": "Títulos recolhíveis"
+		},
+		"spellCheck": {
+			"label": "Verificação ortográfica",
+			"description": "Sublinhar erros de digitação enquanto você escreve. Clique com o botão direito em uma palavra para ver sugestões.",
+			"ariaLabel": "Verificação ortográfica"
+		},
+		"vimMode": {
+			"title": "Modo Vim",
+			"label": "Modo Vim",
+			"description": "NÃO ative isto se você não souber o que significa.",
+			"ariaLabel": "Modo Vim",
+			"helpAriaLabel": "Ajuda dos atalhos do Vim",
+			"helpTitle": "Atalhos do Vim",
+			"insertMode": "<strong>insert</strong> é o modo de digitação normal. Você digita e o texto aparece, como o editor já faz.",
+			"normalMode": "<strong>normal</strong> é o modo de comandos. As teclas movem o cursor ou editam o texto em vez de digitar letras.",
+			"help": {
+				"esc": "Entrar no modo de comandos do Vim.",
+				"i": "Digitar na posição do cursor.",
+				"a": "Digitar depois do cursor.",
+				"I": "Ir ao início da linha e digitar.",
+				"A": "Ir ao fim da linha e digitar.",
+				"o": "Abrir uma nova linha abaixo e digitar.",
+				"O": "Abrir uma nova linha acima e digitar.",
+				"hjkl": "Mover para a esquerda, baixo, cima e direita.",
+				"w": "Pular para a próxima palavra.",
+				"b": "Pular para a palavra anterior.",
+				"e": "Pular para o fim da palavra.",
+				"0": "Pular para o início da linha.",
+				"dollar": "Pular para o fim da linha.",
+				"gg": "Pular para o início da nota.",
+				"G": "Pular para o fim da nota.",
+				"x": "Excluir o caractere sob ou perto do cursor.",
+				"dd": "Excluir o conteúdo da linha atual.",
+				"u": "Desfazer.",
+				"controlR": "Refazer."
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "Árvore de arquivos",
+		"sectionDescription": "Escolha o que aparece na árvore de arquivos da barra lateral e na lista do Folio.",
+		"folderCounts": {
+			"label": "Mostrar contagem de arquivos por pasta",
+			"description": "Mostrar o total recursivo de arquivos no final de cada linha de pasta na árvore.",
+			"ariaLabel": "Mostrar contagem de arquivos por pasta"
+		},
+		"nonMarkdownFiles": {
+			"label": "Mostrar arquivos que não são Markdown",
+			"description": "Mostrar PDFs, imagens e outros anexos na árvore de arquivos e na lista do Folio. Desativar oculta-os apenas nessas visualizações.",
+			"ariaLabel": "Mostrar arquivos que não são Markdown"
+		},
+		"sort": {
+			"label": "Ordenação da árvore de arquivos",
+			"description": "Escolha como pastas e arquivos são ordenados na árvore da barra lateral.",
+			"ariaLabel": "Ordenação da árvore de arquivos"
+		}
+	}
+}

@@ -1,0 +1,94 @@
+{
+	"sidebar": {
+		"collapse": "Collapse sidebar",
+		"expand": "Expand sidebar",
+		"newNote": "New Note",
+		"pinned": "Pinned",
+		"allNotes": "All Notes",
+		"collections": "Collections",
+		"connections": "Connections",
+		"notes": "Notes",
+		"collapseNotes": "Collapse Notes",
+		"expandNotes": "Expand Notes",
+		"sortNotes": "Sort notes",
+		"sort": "Sort",
+		"expandAllFolders": "Expand all folders",
+		"collapseAllFolders": "Collapse all folders"
+	},
+	"sort": {
+		"nameAsc": "Name A-Z",
+		"nameDesc": "Name Z-A",
+		"modifiedNewest": "Modified newest",
+		"modifiedOldest": "Modified oldest",
+		"createdNewest": "Created newest",
+		"createdOldest": "Created oldest"
+	},
+	"pinned": {
+		"title": "Pinned"
+	},
+	"allNotes": {
+		"title": "All Notes",
+		"showActivity": "Show activity",
+		"today": "Today",
+		"yesterday": "Yesterday",
+		"thisWeek": "This Week",
+		"thisMonth": "This Month",
+		"earlier": "Earlier"
+	},
+	"tags": {
+		"header": "Tags",
+		"collapse": "Collapse Tags",
+		"expand": "Expand Tags",
+		"people": "People",
+		"showLess": "Show less",
+		"showMore": "Show {{count}} more"
+	},
+	"fileTree": {
+		"open": "Open",
+		"openInNewWindow": "Open in New Window",
+		"showInFinder": "Show in Finder",
+		"copyRelativePath": "Copy Relative Path",
+		"copyAbsolutePath": "Copy Absolute Path",
+		"rename": "Rename",
+		"duplicateFile": "Duplicate file",
+		"pinFile": "Pin file",
+		"unpinFile": "Unpin file",
+		"iconAndColor": "Icon & Color...",
+		"addFile": "Add file",
+		"createFromTemplate": "Create from template",
+		"addFolder": "Add folder",
+		"deleteFile": "Delete file",
+		"deleteFolder": "Delete folder"
+	},
+	"commandPalette": {
+		"title": "Command Palette",
+		"searchCommands": "Search Commands",
+		"searchNotes": "Search notes…",
+		"notePreview": "Note preview",
+		"sectionGeneral": "General",
+		"navigate": "Navigate",
+		"runCommand": "Run command",
+		"openNote": "Open note",
+		"commands": "Commands",
+		"search": "Search",
+		"close": "Close",
+		"filterTitle": "Title",
+		"filterTag": "Tag",
+		"searching": "Searching...",
+		"results": "{{count}} results",
+		"recentlyOpened": "Recently opened",
+		"groupNotes": "Notes",
+		"groupTaggedNotes": "Tagged Notes",
+		"groupContent": "Content",
+		"noCommands": "No commands"
+	},
+	"tabs": {
+		"allNotes": "All Notes",
+		"collections": "Collections",
+		"pinned": "Pinned"
+	},
+	"workspace": {
+		"openSpace": "Open space",
+		"openAnotherSpace": "Open another space"
+	}
+}

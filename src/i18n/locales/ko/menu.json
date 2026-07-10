@@ -1,0 +1,21 @@
+{
+	"app": {
+		"about": "Glyph 정보",
+		"settings": "설정…"
+	},
+	"submenus": {
+		"file": "파일",
+		"edit": "편집",
+		"markdown": "Markdown",
+		"textColor": "텍스트 색상",
+		"textHighlight": "텍스트 강조",
+		"ai": "AI",
+		"space": "스페이스",
+		"recentSpaces": "최근 스페이스",
+		"window": "창",
+		"help": "도움말"
+	},
+	"recentSpaces": {
+		"empty": "최근 스페이스 없음"
+	}
+}

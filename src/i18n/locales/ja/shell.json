@@ -1,0 +1,89 @@
+{
+	"sidebar": {
+		"collapse": "サイドバーを折りたたむ",
+		"expand": "サイドバーを展開",
+		"newNote": "新規ノート",
+		"pinned": "ピン留め",
+		"allNotes": "すべてのノート",
+		"collections": "コレクション",
+		"connections": "接続",
+		"notes": "ノート",
+		"collapseNotes": "ノートを折りたたむ",
+		"expandNotes": "ノートを展開",
+		"sortNotes": "ノートを並べ替え",
+		"sort": "並べ替え",
+		"expandAllFolders": "すべてのフォルダを展開",
+		"collapseAllFolders": "すべてのフォルダを折りたたむ"
+	},
+	"sort": {
+		"nameAsc": "名前 A-Z",
+		"nameDesc": "名前 Z-A",
+		"modifiedNewest": "更新日（新しい順）",
+		"modifiedOldest": "更新日（古い順）",
+		"createdNewest": "作成日（新しい順）",
+		"createdOldest": "作成日（古い順）"
+	},
+	"pinned": {
+		"title": "ピン留め"
+	},
+	"allNotes": {
+		"title": "すべてのノート",
+		"showActivity": "アクティビティを表示",
+		"today": "今日",
+		"yesterday": "昨日",
+		"thisWeek": "今週",
+		"thisMonth": "今月",
+		"earlier": "それ以前"
+	},
+	"tags": {
+		"header": "タグ",
+		"collapse": "タグを折りたたむ",
+		"expand": "タグを展開",
+		"people": "人物",
+		"showLess": "表示を減らす",
+		"showMore": "あと {{count}} 件表示"
+	},
+	"fileTree": {
+		"open": "開く",
+		"openInNewWindow": "新しいウィンドウで開く",
+		"showInFinder": "Finder で表示",
+		"copyRelativePath": "相対パスをコピー",
+		"copyAbsolutePath": "絶対パスをコピー",
+		"rename": "名前を変更",
+		"duplicateFile": "ファイルを複製",
+		"pinFile": "ファイルをピン留め",
+		"unpinFile": "ピン留めを解除",
+		"iconAndColor": "アイコンと色…",
+		"addFile": "ファイルを追加",
+		"createFromTemplate": "テンプレートから作成",
+		"addFolder": "フォルダを追加",
+		"deleteFile": "ファイルを削除",
+		"deleteFolder": "フォルダを削除"
+	},
+	"commandPalette": {
+		"title": "コマンドパレット",
+		"searchCommands": "コマンドを検索",
+		"searchNotes": "ノートを検索…",
+		"notePreview": "ノートのプレビュー",
+		"sectionGeneral": "一般",
+		"navigate": "移動",
+		"runCommand": "コマンドを実行",
+		"openNote": "ノートを開く",
+		"commands": "コマンド",
+		"search": "検索",
+		"close": "閉じる",
+		"filterTitle": "タイトル",
+		"filterTag": "タグ",
+		"searching": "検索中…",
+		"results": "{{count}} 件の結果",
+		"recentlyOpened": "最近開いた項目",
+		"groupNotes": "ノート",
+		"groupTaggedNotes": "タグ付きノート",
+		"groupContent": "コンテンツ"
+	},
+	"tabs": {
+		"allNotes": "すべてのノート",
+		"collections": "コレクション",
+		"pinned": "ピン留め"
+	}
+}

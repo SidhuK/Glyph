@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -69,6 +70,7 @@ import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
 import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
+import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { springPresets } from "../ui/animations";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
@@ -705,10 +707,15 @@ export const MainContent = memo(function MainContent({
 		about: <AboutSettingsPane />,
 	};
 
+	const { i18n } = useTranslation();
 	const activeSettingsTabMeta = useMemo(
 		() =>
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
+	);
+	const settingsPanelTitle = localizedSettingsTabLabel(
+		activeSettingsTabMeta.id,
+		i18n.language,
 	);
 	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
@@ -820,9 +827,7 @@ export const MainContent = memo(function MainContent({
 				<div className="settingsTabPanel">
 					<header className="settingsPanelHeader">
 						<div className="settingsPanelTitleRow">
-							<h2 className="settingsPanelTitle">
-								{activeSettingsTabMeta.label}
-							</h2>
+							<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
 						</div>
 					</header>
 					{settingsTabContentByTab[settingsTab]}

@@ -1,0 +1,535 @@
+{
+	"tabs": {
+		"general": "General",
+		"appearance": "Appearance",
+		"shortcuts": "Shortcuts",
+		"ai": "AI",
+		"space": "Space",
+		"git": "Git Sync",
+		"about": "About"
+	},
+	"tabEntry": {
+		"general": {
+			"title": "General settings",
+			"description": "Open General settings.",
+			"keywords": ["General"]
+		},
+		"appearance": {
+			"title": "Appearance settings",
+			"description": "Open Appearance settings.",
+			"keywords": ["Appearance"]
+		},
+		"shortcuts": {
+			"title": "Shortcuts settings",
+			"description": "Open Shortcuts settings.",
+			"keywords": ["Shortcuts"]
+		},
+		"ai": {
+			"title": "AI settings",
+			"description": "Open AI settings.",
+			"keywords": ["AI"]
+		},
+		"space": {
+			"title": "Space settings",
+			"description": "Open Space settings.",
+			"keywords": ["Space"]
+		},
+		"git": {
+			"title": "Git Sync settings",
+			"description": "Open Git Sync settings.",
+			"keywords": ["Git Sync"]
+		},
+		"about": {
+			"title": "About settings",
+			"description": "Open About settings.",
+			"keywords": ["About"]
+		}
+	},
+	"entries": {
+		"general-license": {
+			"title": "License",
+			"description": "Trial status, license key, activation, and official build.",
+			"keywords": [
+				"trial",
+				"activate",
+				"activation",
+				"subscription",
+				"purchase"
+			]
+		},
+		"general-trial-status": {
+			"title": "Trial status",
+			"section": "License",
+			"description": "Remaining time on the current trial for this device.",
+			"keywords": ["trial remaining", "expired"]
+		},
+		"general-activated": {
+			"title": "Activated",
+			"section": "License",
+			"description": "Activation date for the local Glyph license.",
+			"keywords": ["licensed", "license date"]
+		},
+		"general-license-key": {
+			"title": "License key",
+			"section": "License",
+			"description": "View the masked license key stored locally.",
+			"keywords": ["serial", "activation key"]
+		},
+		"general-activate-glyph": {
+			"title": "Activate Glyph",
+			"section": "License",
+			"description": "Enter a license key to unlock Glyph permanently.",
+			"keywords": ["activate", "buy", "official build"]
+		},
+		"general-official-build": {
+			"title": "Official build",
+			"section": "License",
+			"description": "Purchase an official license for support and automatic updates.",
+			"keywords": ["community build", "buy", "updates"]
+		},
+		"general-license-help": {
+			"title": "Help",
+			"section": "License",
+			"description": "Get help with licensing, lost keys, or purchase issues.",
+			"keywords": ["support", "remove local activation"]
+		},
+		"general-language": {
+			"title": "Language",
+			"section": "Language",
+			"description": "Choose the display language for Glyph.",
+			"keywords": ["locale", "translation", "i18n", "language"]
+		},
+		"general-resume-last-session": {
+			"title": "Open previous tabs",
+			"section": "Startup",
+			"description": "Start this space with the tabs you left open.",
+			"keywords": [
+				"restore",
+				"startup",
+				"launch",
+				"start where I left off",
+				"tabs",
+				"workspace session"
+			]
+		},
+		"appearance-theme-mode": {
+			"title": "Select Theme",
+			"section": "Theme",
+			"description": "Choose system, light, or dark mode.",
+			"keywords": ["mode", "system", "light", "dark"]
+		},
+		"appearance-light-theme": {
+			"title": "Preset",
+			"section": "Light theme",
+			"description": "Choose the palette Glyph uses in light mode.",
+			"keywords": ["theme", "color", "light"]
+		},
+		"appearance-dark-theme": {
+			"title": "Preset",
+			"section": "Dark theme",
+			"description": "Choose the palette Glyph uses in dark mode.",
+			"keywords": ["theme", "color", "dark"]
+		},
+		"appearance-translucent-app": {
+			"title": "Translucent sidebar",
+			"section": "Theme",
+			"keywords": ["window", "glass", "blur", "translucent"]
+		},
+		"appearance-accent": {
+			"title": "Palette",
+			"section": "Accent",
+			"description": "Set the accent for the Glyph light and dark themes.",
+			"keywords": ["accent", "color", "palette"]
+		},
+		"appearance-light-theme-colors": {
+			"title": "Default colors",
+			"section": "Light theme",
+			"description": "Customize the Glyph light theme background and text colors.",
+			"keywords": [
+				"theme",
+				"color",
+				"light",
+				"background",
+				"foreground",
+				"text"
+			]
+		},
+		"appearance-dark-theme-colors": {
+			"title": "Default colors",
+			"section": "Dark theme",
+			"description": "Customize the Glyph dark theme background and text colors.",
+			"keywords": ["theme", "color", "dark", "background", "foreground", "text"]
+		},
+		"appearance-interface-font": {
+			"title": "Interface font",
+			"section": "Typography",
+			"keywords": ["font", "ui", "sans"]
+		},
+		"appearance-monospace-font": {
+			"title": "Monospace font",
+			"section": "Typography",
+			"keywords": ["font", "code", "mono"]
+		},
+		"appearance-editor-font": {
+			"title": "Editor font",
+			"section": "Typography",
+			"keywords": ["font", "editor", "notes", "prose"]
+		},
+		"appearance-ui-font-size": {
+			"title": "UI font size",
+			"section": "Typography",
+			"keywords": ["font", "text", "interface"]
+		},
+		"appearance-editor-font-size": {
+			"title": "Editor font size",
+			"section": "Typography",
+			"keywords": ["font", "text", "notes"]
+		},
+		"shortcuts-customize": {
+			"title": "Customize Shortcuts",
+			"section": "Customize Shortcuts",
+			"description": "Edit keyboard shortcuts.",
+			"keywords": ["hotkeys", "keybindings", "commands"]
+		},
+		"shortcuts-search": {
+			"title": "Search actions, categories, or shortcuts",
+			"section": "Customize Shortcuts",
+			"description": "Filter shortcuts by action, category, binding, or description.",
+			"keywords": ["filter", "find shortcuts", "shortcut search"]
+		},
+		"shortcuts-workspace": {
+			"title": "Workspace shortcuts",
+			"section": "Workspace",
+			"keywords": ["space", "window", "workspace"]
+		},
+		"shortcuts-navigation": {
+			"title": "Navigation shortcuts",
+			"section": "Navigation",
+			"keywords": ["move", "go", "navigate"]
+		},
+		"shortcuts-search-category": {
+			"title": "Search shortcuts",
+			"section": "Search",
+			"keywords": ["find", "quick search", "command palette"]
+		},
+		"shortcuts-file-operations": {
+			"title": "File Operations shortcuts",
+			"section": "File Operations",
+			"keywords": ["file", "folder", "rename", "delete"]
+		},
+		"shortcuts-tabs": {
+			"title": "Tabs shortcuts",
+			"section": "Tabs",
+			"keywords": ["tab", "open tab", "close tab"]
+		},
+		"shortcuts-ai": {
+			"title": "AI shortcuts",
+			"section": "AI",
+			"keywords": ["assistant", "chat", "glyph ai"]
+		},
+		"shortcuts-editor": {
+			"title": "Editor shortcuts",
+			"section": "Editor",
+			"keywords": ["note", "markdown", "editing"]
+		},
+		"ai-features": {
+			"title": "AI features",
+			"section": "Availability",
+			"description": "Turn AI tools on or off across Glyph.",
+			"keywords": ["assistant", "chat", "enable", "disable"]
+		},
+		"ai-configuration": {
+			"title": "Configuration",
+			"section": "Availability",
+			"keywords": ["providers", "models", "account"]
+		},
+		"ai-provider-service": {
+			"title": "Service",
+			"section": "Provider",
+			"keywords": ["provider", "openai", "anthropic", "ollama"]
+		},
+		"ai-provider-model": {
+			"title": "Model",
+			"section": "Provider",
+			"keywords": ["provider", "model", "assistant"]
+		},
+		"ai-reasoning-level": {
+			"title": "Reasoning level",
+			"section": "Provider",
+			"keywords": ["effort", "thinking"]
+		},
+		"ai-base-url": {
+			"title": "Base URL",
+			"section": "Provider",
+			"keywords": ["endpoint", "local", "server"]
+		},
+		"ai-local-network": {
+			"title": "Allow local network",
+			"section": "Provider",
+			"keywords": ["localhost", "lan", "network"]
+		},
+		"ai-api-key": {
+			"title": "Set key",
+			"section": "API Key",
+			"keywords": ["secret", "token", "credential", "update key"]
+		},
+		"ai-chatgpt-account": {
+			"title": "ChatGPT Account",
+			"section": "ChatGPT Account",
+			"keywords": ["codex", "account", "authentication", "rate limits"]
+		},
+		"ai-chatgpt-identity": {
+			"title": "Identity",
+			"section": "ChatGPT Account",
+			"description": "The connected account Glyph is currently using for Codex.",
+			"keywords": ["email", "display name", "connect", "disconnect"]
+		},
+		"ai-chatgpt-authentication": {
+			"title": "Authentication",
+			"section": "ChatGPT Account",
+			"description": "How the current ChatGPT session is authenticated.",
+			"keywords": ["auth mode", "session"]
+		},
+		"ai-chatgpt-rate-limits": {
+			"title": "Rate limits",
+			"section": "ChatGPT Account",
+			"description": "Review remaining capacity for the connected account.",
+			"keywords": ["usage", "remaining", "resets"]
+		},
+		"space-daily-notes-folder": {
+			"title": "Folder",
+			"section": "Daily Notes",
+			"description": "Choose where daily notes are created.",
+			"keywords": ["journal", "today", "date"]
+		},
+		"space-quick-notes-folder": {
+			"title": "Folder",
+			"section": "Quick Notes",
+			"description": "Choose where quick notes are saved.",
+			"keywords": ["capture", "inbox"]
+		},
+		"space-attachments-location": {
+			"title": "Location",
+			"section": "Attachments",
+			"keywords": ["assets", "files", "images", "folder"]
+		},
+		"space-template-folder": {
+			"title": "Template folder",
+			"section": "Templates",
+			"keywords": ["templates", "folder"]
+		},
+		"space-default-daily-template": {
+			"title": "Default daily note template",
+			"section": "Templates",
+			"keywords": ["templates", "daily notes"]
+		},
+		"space-search-index-status": {
+			"title": "Status",
+			"section": "Search Index",
+			"keywords": ["index", "rebuild", "search"]
+		},
+		"git-availability": {
+			"title": "Git availability",
+			"section": "Connection",
+			"keywords": ["sync", "repository"]
+		},
+		"git-repository-state": {
+			"title": "Repository state",
+			"section": "Connection",
+			"keywords": ["repo", "sync", "branch"]
+		},
+		"git-how-it-works": {
+			"title": "How it works",
+			"section": "Connection",
+			"description": "Review remote connection details for the current repository.",
+			"keywords": ["remote url", "initialize git", "credentials"]
+		},
+		"git-branch": {
+			"title": "Branch",
+			"section": "Connection",
+			"keywords": ["repo", "sync"]
+		},
+		"git-automatic-sync": {
+			"title": "Automatic sync",
+			"section": "Sync",
+			"keywords": ["auto", "git"]
+		},
+		"git-sync-interval": {
+			"title": "Interval",
+			"section": "Sync",
+			"keywords": ["frequency", "minutes"]
+		},
+		"git-sync-actions": {
+			"title": "Actions",
+			"section": "Sync",
+			"keywords": ["run", "sync now", "push", "pull"]
+		},
+		"git-conflict-policy": {
+			"title": "Policy",
+			"section": "Conflict Resolution",
+			"keywords": ["merge", "conflict"]
+		},
+		"git-include-templates": {
+			"title": "Include templates",
+			"section": "Content",
+			"keywords": ["sync", "templates"]
+		},
+		"git-include-attachments": {
+			"title": "Include attachments",
+			"section": "Content",
+			"keywords": ["sync", "assets", "files"]
+		},
+		"git-include-non-markdown": {
+			"title": "Include non-markdown files",
+			"section": "Content",
+			"keywords": ["sync", "files"]
+		},
+		"general-editor-table-of-contents": {
+			"title": "Table of contents",
+			"section": "Editor",
+			"keywords": ["toc", "outline"]
+		},
+		"space-search-index-people-tags": {
+			"title": "People mentions as tags",
+			"section": "Search Index",
+			"keywords": ["mentions", "people", "tags"]
+		},
+		"general-editor-frontmatter": {
+			"title": "Show frontmatter in editor",
+			"section": "Editor",
+			"keywords": ["properties", "yaml", "metadata"]
+		},
+		"general-editor-colorful-headings": {
+			"title": "Colorful headings",
+			"section": "Editor",
+			"keywords": ["editor", "color"]
+		},
+		"appearance-editor-presentation-beautiful-tags": {
+			"title": "Beautiful Tags",
+			"section": "Editor presentation",
+			"keywords": ["tags", "editor"]
+		},
+		"appearance-editor-presentation-width": {
+			"title": "Editor width",
+			"section": "Editor presentation",
+			"keywords": ["compact", "comfortable", "wide"]
+		},
+		"general-editor-collapsible-headings": {
+			"title": "Collapsible headings",
+			"section": "Editor",
+			"keywords": ["fold", "collapse", "expand"]
+		},
+		"general-editor-spell-check": {
+			"title": "Spell check",
+			"section": "Editor",
+			"keywords": ["spelling", "typo", "dictionary"]
+		},
+		"general-editor-vim-keybindings": {
+			"title": "Vim Mode",
+			"section": "Editor",
+			"keywords": ["vim", "keybindings", "keyboard", "modal"]
+		},
+		"ai-assistant-behavior-tools": {
+			"title": "AI chat has access to tools",
+			"section": "Assistant behavior",
+			"keywords": ["assistant", "tool calls"]
+		},
+		"appearance-layout-folio-mode": {
+			"title": "Folio Mode",
+			"section": "Layout",
+			"keywords": ["layout", "reading"]
+		},
+		"appearance-layout-classic-all-notes": {
+			"title": "Classic All Notes grid",
+			"section": "Layout",
+			"keywords": ["all notes", "activity", "timeline", "grid"]
+		},
+		"general-file-tree-folder-counts": {
+			"title": "Show folder file counts",
+			"section": "File tree",
+			"keywords": ["sidebar", "counts"]
+		},
+		"general-file-tree-non-markdown-files": {
+			"title": "Show non-Markdown files",
+			"section": "File tree",
+			"keywords": [
+				"sidebar",
+				"attachments",
+				"pdf",
+				"images",
+				"folio",
+				"file tree"
+			]
+		},
+		"general-file-tree-sort": {
+			"title": "File tree sort",
+			"section": "File tree",
+			"keywords": ["sidebar", "folders", "files", "order"]
+		},
+		"appearance-database-column-color": {
+			"title": "Show database column color",
+			"section": "Database",
+			"keywords": ["collection", "database", "color"]
+		},
+		"about-app": {
+			"title": "Glyph",
+			"description": "View Glyph app name, version, attribution, and quick links.",
+			"keywords": ["about", "version", "karat sidhu"]
+		},
+		"about-website": {
+			"title": "Website",
+			"description": "Open the Glyph website.",
+			"keywords": ["glyphformac.com", "home"]
+		},
+		"about-discord": {
+			"title": "Discord",
+			"description": "Open the Glyph community Discord.",
+			"keywords": ["community", "support", "feedback"]
+		},
+		"about-terms": {
+			"title": "Terms",
+			"description": "Open the Glyph terms page.",
+			"keywords": ["legal", "terms of service"]
+		},
+		"about-privacy": {
+			"title": "Privacy",
+			"description": "Open the Glyph privacy page.",
+			"keywords": ["legal", "privacy policy"]
+		},
+		"about-updates": {
+			"title": "App updates",
+			"section": "Updates",
+			"keywords": ["release", "version", "update"]
+		},
+		"about-alpha-releases": {
+			"title": "Alpha releases",
+			"section": "Updates",
+			"description": "Receive early release builds before they become stable.",
+			"keywords": ["alpha", "prerelease", "beta", "release channel"]
+		},
+		"about-license-status": {
+			"title": "License status",
+			"section": "Updates",
+			"description": "Review whether this build can use automatic updates.",
+			"keywords": ["official build", "community build"]
+		},
+		"about-community-build": {
+			"title": "Community build",
+			"section": "Updates",
+			"keywords": ["license", "build"]
+		},
+		"about-update-status": {
+			"title": "Status",
+			"section": "Updates",
+			"description": "Latest updater activity from this window.",
+			"keywords": ["checking", "ready", "latest version"]
+		},
+		"about-changelog": {
+			"title": "Changelog",
+			"section": "Updates",
+			"description": "Open the published Glyph changelog.",
+			"keywords": ["release notes", "version", "updates"]
+		}
+	},
+	"categoryPrefix": "Settings > {{tab}}"
+}

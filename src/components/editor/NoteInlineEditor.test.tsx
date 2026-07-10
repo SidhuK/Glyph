@@ -5,6 +5,13 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NoteInlineEditor } from "./NoteInlineEditor";
 
+vi.mock("react-i18next", () => ({
+	useTranslation: () => ({
+		t: (key: string, options?: { defaultValue?: string }) =>
+			options?.defaultValue ?? key,
+	}),
+}));
+
 const {
 	chainCommands,
 	emitEditorEvent,
@@ -166,7 +173,7 @@ vi.mock("./markdown/wikiLinkCodec", () => ({
 }));
 
 vi.mock("./extensions/codeBlockHighlighting", () => ({
-	CODE_BLOCK_LANGUAGE_OPTIONS: [],
+	getCodeBlockLanguageOptions: () => [],
 	getCodeBlockLanguageLabel: () => "Plain text",
 	normalizeCodeBlockLanguage: () => "plaintext",
 }));

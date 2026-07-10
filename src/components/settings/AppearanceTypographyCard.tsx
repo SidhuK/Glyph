@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
 	MAX_EDITOR_FONT_SIZE,
 	MAX_UI_FONT_SIZE,
@@ -29,6 +30,7 @@ interface FontSizeControlProps {
 	id: string;
 	label: string;
 	description: string;
+	valueAriaLabel: string;
 	value: UiFontSize;
 	min: number;
 	max: number;
@@ -43,6 +45,7 @@ function FontSizeControl({
 	id,
 	label,
 	description,
+	valueAriaLabel,
 	value,
 	min,
 	max,
@@ -64,7 +67,7 @@ function FontSizeControl({
 						if (!Number.isFinite(next)) return;
 						void onChange(clampFontSize(next, min, max));
 					}}
-					aria-label={`${label} value`}
+					aria-label={valueAriaLabel}
 				/>
 			</div>
 		</SettingsRow>
@@ -85,15 +88,17 @@ export function AppearanceTypographyCard({
 	onUiFontSizeChange,
 	onEditorFontSizeChange,
 }: AppearanceTypographyCardProps) {
+	const { t } = useTranslation("settings.appearance");
+
 	return (
 		<SettingsSection
-			title="Typography"
-			description="Tune interface type, code styling, and reading scale independently."
+			title={t("typography.sectionTitle")}
+			description={t("typography.sectionDescription")}
 		>
 			<SettingsRow
-				label="Interface font"
+				label={t("typography.interfaceFont.label")}
 				htmlFor="settingsFontFamily"
-				description="Used for navigation, settings, and most UI copy across Glyph."
+				description={t("typography.interfaceFont.description")}
 			>
 				<SettingsSelect
 					id="settingsFontFamily"
@@ -109,9 +114,9 @@ export function AppearanceTypographyCard({
 			</SettingsRow>
 
 			<SettingsRow
-				label="Editor font"
+				label={t("typography.editorFont.label")}
 				htmlFor="settingsEditorFontFamily"
-				description="Used for regular note text outside inline code and code blocks."
+				description={t("typography.editorFont.description")}
 			>
 				<SettingsSelect
 					id="settingsEditorFontFamily"
@@ -129,9 +134,9 @@ export function AppearanceTypographyCard({
 			</SettingsRow>
 
 			<SettingsRow
-				label="Monospace font"
+				label={t("typography.monospaceFont.label")}
 				htmlFor="settingsMonoFontFamily"
-				description="Used for markdown source, inline code, and developer-oriented surfaces."
+				description={t("typography.monospaceFont.description")}
 			>
 				<SettingsSelect
 					id="settingsMonoFontFamily"
@@ -148,8 +153,9 @@ export function AppearanceTypographyCard({
 
 			<FontSizeControl
 				id="settingsUiFontSize"
-				label="UI font size"
-				description="Adjust the base size used by menus, panes, controls, and settings."
+				label={t("typography.uiFontSize.label")}
+				description={t("typography.uiFontSize.description")}
+				valueAriaLabel={t("typography.uiFontSize.valueAriaLabel")}
 				value={uiFontSize}
 				min={MIN_UI_FONT_SIZE}
 				max={MAX_UI_FONT_SIZE}
@@ -158,8 +164,9 @@ export function AppearanceTypographyCard({
 
 			<FontSizeControl
 				id="settingsEditorFontSize"
-				label="Editor font size"
-				description="Adjust the reading size for the note editor, markdown preview, and raw text editing."
+				label={t("typography.editorFontSize.label")}
+				description={t("typography.editorFontSize.description")}
+				valueAriaLabel={t("typography.editorFontSize.valueAriaLabel")}
 				value={editorFontSize}
 				min={MIN_EDITOR_FONT_SIZE}
 				max={MAX_EDITOR_FONT_SIZE}

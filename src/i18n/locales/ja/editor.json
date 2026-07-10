@@ -1,0 +1,215 @@
+{
+	"mode": {
+		"label": "エディタモード",
+		"raw": "Raw",
+		"rich": "リッチ",
+		"preview": "プレビュー"
+	},
+	"ribbon": {
+		"bold": "太字",
+		"italic": "斜体",
+		"underline": "下線",
+		"strikethrough": "取り消し線",
+		"textColor": "文字色",
+		"clearColor": "色をクリア",
+		"textHighlight": "テキストハイライト",
+		"clearHighlight": "ハイライトをクリア",
+		"extractToNote": "ノートに抽出",
+		"heading1": "見出し 1",
+		"heading2": "見出し 2",
+		"heading3": "見出し 3",
+		"bulletList": "箇条書きリスト",
+		"numberedList": "番号付きリスト",
+		"taskList": "タスクリスト",
+		"quote": "引用",
+		"codeBlock": "コードブロック"
+	},
+	"colors": {
+		"gray": "グレー",
+		"brown": "茶",
+		"orange": "オレンジ",
+		"yellow": "黄",
+		"green": "緑",
+		"blue": "青",
+		"purple": "紫",
+		"red": "赤"
+	},
+	"highlights": {
+		"yellow": "黄",
+		"blue": "青",
+		"green": "緑",
+		"red": "赤"
+	},
+	"codeBlock": {
+		"setLanguage": "コードブロックの言語を設定",
+		"languageHeader": "コードブロックの言語",
+		"runPreview": "プレビューを実行",
+		"copy": "コードをコピー",
+		"copied": "コードをコピーしました",
+		"editCode": "コードを編集",
+		"editMermaid": "Mermaid コードを編集",
+		"editHtml": "HTML コードを編集",
+		"editSvg": "SVG コードを編集",
+		"languages": {
+			"plaintext": "プレーンテキスト",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "見出し 1",
+			"description": "大きなセクション見出し"
+		},
+		"heading2": {
+			"title": "見出し 2",
+			"description": "セクション見出し"
+		},
+		"heading3": {
+			"title": "見出し 3",
+			"description": "小見出し"
+		},
+		"bulletList": {
+			"title": "箇条書きリスト",
+			"description": "箇条書きリストを開始"
+		},
+		"numberedList": {
+			"title": "番号付きリスト",
+			"description": "番号付きリストを開始"
+		},
+		"todoList": {
+			"title": "To-do リスト",
+			"description": "タスクリストを開始"
+		},
+		"quote": {
+			"title": "引用",
+			"description": "引用ブロックを挿入"
+		},
+		"codeBlock": {
+			"title": "コードブロック",
+			"description": "コードブロックを挿入"
+		},
+		"divider": {
+			"title": "区切り線",
+			"description": "水平線を挿入"
+		},
+		"table": {
+			"title": "表",
+			"description": "Markdown の表を挿入"
+		},
+		"tableOfContents": {
+			"title": "目次",
+			"description": "このノートのライブアウトラインを挿入"
+		},
+		"mermaidChart": {
+			"title": "Mermaid チャート",
+			"description": "Mermaid 図ブロックを挿入"
+		},
+		"htmlEmbed": {
+			"title": "HTML 埋め込み",
+			"description": "サンドボックス化された HTML プレビューブロックを挿入"
+		},
+		"svgEmbed": {
+			"title": "SVG 埋め込み",
+			"description": "サンドボックス化された SVG プレビューブロックを挿入"
+		},
+		"detailsBlock": {
+			"title": "詳細ブロック",
+			"description": "折りたたみ可能なトグルセクションを挿入"
+		},
+		"calloutInfo": {
+			"title": "情報コールアウト",
+			"description": "情報コールアウトを挿入"
+		},
+		"calloutTip": {
+			"title": "ヒントコールアウト",
+			"description": "ヒントコールアウトを挿入"
+		},
+		"calloutSuccess": {
+			"title": "成功コールアウト",
+			"description": "成功コールアウトを挿入"
+		},
+		"calloutWarning": {
+			"title": "警告コールアウト",
+			"description": "警告コールアウトを挿入"
+		},
+		"calloutError": {
+			"title": "エラーコールアウト",
+			"description": "エラーコールアウトを挿入"
+		},
+		"mathInline": {
+			"title": "インライン数式",
+			"description": "行内に LaTeX を挿入"
+		},
+		"mathDisplay": {
+			"title": "ディスプレイ数式",
+			"description": "中央揃えの LaTeX ブロックを挿入"
+		},
+		"colorGray": {
+			"title": "色: グレー",
+			"description": "グレーの文字色を適用"
+		},
+		"colorBrown": {
+			"title": "色: 茶",
+			"description": "茶色の文字色を適用"
+		},
+		"colorOrange": {
+			"title": "色: オレンジ",
+			"description": "オレンジの文字色を適用"
+		},
+		"colorYellow": {
+			"title": "色: 黄",
+			"description": "黄色い文字色を適用"
+		},
+		"colorGreen": {
+			"title": "色: 緑",
+			"description": "緑の文字色を適用"
+		},
+		"colorBlue": {
+			"title": "色: 青",
+			"description": "青い文字色を適用"
+		},
+		"colorPurple": {
+			"title": "色: 紫",
+			"description": "紫の文字色を適用"
+		},
+		"colorRed": {
+			"title": "色: 赤",
+			"description": "赤い文字色を適用"
+		},
+		"colorClear": {
+			"title": "色: クリア",
+			"description": "文字色を削除"
+		},
+		"highlightYellow": {
+			"title": "ハイライト: 黄",
+			"description": "黄色いテキストハイライトを適用"
+		},
+		"highlightBlue": {
+			"title": "ハイライト: 青",
+			"description": "青いテキストハイライトを適用"
+		},
+		"highlightGreen": {
+			"title": "ハイライト: 緑",
+			"description": "緑のテキストハイライトを適用"
+		},
+		"highlightRed": {
+			"title": "ハイライト: 赤",
+			"description": "赤いテキストハイライトを適用"
+		},
+		"highlightClear": {
+			"title": "ハイライト: クリア",
+			"description": "テキストハイライトを削除"
+		}
+	}
+}

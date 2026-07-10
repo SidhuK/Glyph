@@ -3,6 +3,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { springPresets } from "../ui/animations";
 import { RibbonColorPopover } from "./RibbonColorPopover";
 import { RibbonHighlightPopover } from "./RibbonHighlightPopover";
@@ -57,6 +58,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 	className,
 	onExtractSelectionToNote,
 }: EditorRibbonProps) {
+	const { t } = useTranslation("editor");
 	const focusChain = () =>
 		editor.chain().focus(undefined, { scrollIntoView: false });
 
@@ -118,8 +120,8 @@ export const EditorRibbon = memo(function EditorRibbon({
 						<m.button
 							type="button"
 							className="ribbonBtn"
-							title="Extract to note"
-							aria-label="Extract to note"
+							title={t("ribbon.extractToNote")}
+							aria-label={t("ribbon.extractToNote")}
 							disabled={!canEdit}
 							onMouseDown={preventMouseDown}
 							onClick={() => canEdit && onExtractSelectionToNote()}

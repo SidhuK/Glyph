@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
 	ThemeMode,
 	UiDarkThemeId,
@@ -61,6 +62,7 @@ function getBadgeStyle(preview: UiThemePreview): CSSProperties {
 
 function ThemeSelector<T extends string>({
 	label,
+	hint,
 	mode,
 	selected,
 	options,
@@ -69,6 +71,7 @@ function ThemeSelector<T extends string>({
 	onSelect,
 }: {
 	label: string;
+	hint: string;
 	mode: "light" | "dark";
 	selected: UiThemeOption<T>;
 	options: readonly UiThemeOption<T>[];
@@ -125,11 +128,7 @@ function ThemeSelector<T extends string>({
 				>
 					<div className="appearanceThemeDropdownHeader">
 						<div className="appearanceThemeDropdownHeaderTitle">{label}</div>
-						<div className="appearanceThemeDropdownHeaderHint">
-							{mode === "light"
-								? "Pick the palette Glyph uses in light mode."
-								: "Pick the palette Glyph uses in dark mode."}
-						</div>
+						<div className="appearanceThemeDropdownHeaderHint">{hint}</div>
 					</div>
 					<div className="appearanceThemeDropdownList">
 						{sortedOptions.map((option) => {
@@ -203,12 +202,15 @@ function ThemeModeSection<T extends string>({
 	onThemeChange,
 	onThemeColorChange,
 }: ThemeModeSectionProps<T>) {
+	const { t } = useTranslation("settings.appearance");
 	const modeOverrides = themeColors[mode];
+	const presetKey = mode === "light" ? "lightTheme" : "darkTheme";
 
 	return (
 		<SettingsSection title={title}>
 			<ThemeSelector
-				label="Preset"
+				label={t(`${presetKey}.preset.label`)}
+				hint={t(`${presetKey}.preset.hint`)}
 				mode={mode}
 				selected={theme}
 				options={themeOptions}
@@ -219,7 +221,10 @@ function ThemeModeSection<T extends string>({
 
 			{showColorPickers ? (
 				<>
-					<SettingsRow label="Background" interactive={false}>
+					<SettingsRow
+						label={t(`${presetKey}.background.label`)}
+						interactive={false}
+					>
 						<AppearanceThemeColorControl
 							color={backgroundColor}
 							editable
@@ -228,12 +233,15 @@ function ThemeModeSection<T extends string>({
 								void onThemeColorChange(mode, "background", color)
 							}
 							onReset={() => void onThemeColorChange(mode, "background", null)}
-							resetAriaLabel={`Reset ${title.toLowerCase()} background`}
-							aria-label={`${title} background color`}
+							resetAriaLabel={t(`${presetKey}.background.resetAriaLabel`)}
+							aria-label={t(`${presetKey}.background.ariaLabel`)}
 						/>
 					</SettingsRow>
 
-					<SettingsRow label="Foreground" interactive={false}>
+					<SettingsRow
+						label={t(`${presetKey}.foreground.label`)}
+						interactive={false}
+					>
 						<AppearanceThemeColorControl
 							color={foregroundColor}
 							editable
@@ -242,8 +250,8 @@ function ThemeModeSection<T extends string>({
 								void onThemeColorChange(mode, "foreground", color)
 							}
 							onReset={() => void onThemeColorChange(mode, "foreground", null)}
-							resetAriaLabel={`Reset ${title.toLowerCase()} foreground`}
-							aria-label={`${title} foreground color`}
+							resetAriaLabel={t(`${presetKey}.foreground.resetAriaLabel`)}
+							aria-label={t(`${presetKey}.foreground.ariaLabel`)}
 						/>
 					</SettingsRow>
 				</>
@@ -266,6 +274,7 @@ export function AppearanceThemeCard({
 	onDarkThemeChange,
 	onTranslucentAppChange,
 }: AppearanceThemeCardProps) {
+	const { t } = useTranslation("settings.appearance");
 	const {
 		accent,
 		themeColors,
@@ -303,12 +312,12 @@ export function AppearanceThemeCard({
 	return (
 		<>
 			<SettingsSection
-				title="Theme"
-				description="Mix and match light and dark theme families."
+				title={t("theme.sectionTitle")}
+				description={t("theme.sectionDescription")}
 			>
 				<SettingsRow
-					label="Appearance"
-					description="Follow your system or lock Glyph to light or dark mode."
+					label={t("theme.appearance.label")}
+					description={t("theme.appearance.description")}
 					interactive={false}
 				>
 					<AppearanceThemeModePicker
@@ -317,9 +326,9 @@ export function AppearanceThemeCard({
 					/>
 				</SettingsRow>
 
-				<SettingsRow label="Translucent sidebar">
+				<SettingsRow label={t("theme.translucentSidebar.label")}>
 					<SettingsToggle
-						ariaLabel="Translucent sidebar"
+						ariaLabel={t("theme.translucentSidebar.ariaLabel")}
 						checked={translucentApp}
 						onCheckedChange={(checked) => void onTranslucentAppChange(checked)}
 					/>
@@ -328,24 +337,24 @@ export function AppearanceThemeCard({
 
 			{showAccentPicker ? (
 				<SettingsSection
-					title="Accent"
-					description="Applies to the Glyph light and dark themes."
+					title={t("accent.sectionTitle")}
+					description={t("accent.sectionDescription")}
 				>
 					<SettingsRow
-						label="Palette"
-						description="Sets the accent for highlights, focus rings, and emphasis."
+						label={t("accent.palette.label")}
+						description={t("accent.palette.description")}
 						interactive={false}
 					>
 						<div className="appearanceThemeColorControl">
 							<AppearanceAccentPicker
 								accent={accent}
 								onAccentChange={onAccentChange}
-								aria-label="Accent color"
+								aria-label={t("accent.palette.ariaLabel")}
 							/>
 							<AppearanceThemeColorResetButton
 								disabled={!canResetAccent}
 								onClick={() => void onAccentReset()}
-								ariaLabel="Reset accent"
+								ariaLabel={t("accent.palette.resetAriaLabel")}
 							/>
 						</div>
 					</SettingsRow>
@@ -353,7 +362,7 @@ export function AppearanceThemeCard({
 			) : null}
 
 			<ThemeModeSection
-				title="Light theme"
+				title={t("lightTheme.sectionTitle")}
 				mode="light"
 				theme={lightTheme}
 				themeOptions={lightOptions}
@@ -368,7 +377,7 @@ export function AppearanceThemeCard({
 			/>
 
 			<ThemeModeSection
-				title="Dark theme"
+				title={t("darkTheme.sectionTitle")}
 				mode="dark"
 				theme={darkTheme}
 				themeOptions={darkOptions}

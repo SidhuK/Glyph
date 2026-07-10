@@ -127,6 +127,7 @@ struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
+    menu_labels: Mutex<HashMap<String, String>>,
 }
 
 #[derive(Default)]
@@ -134,11 +135,39 @@ struct QuickNoteShortcutState {
     current_accelerator: Mutex<Option<String>>,
 }
 
+fn default_menu_label(id: &str) -> String {
+    match id {
+        "app.about" => "About Glyph".to_string(),
+        "app.settings" => "Settings…".to_string(),
+        "menu.file" => "File".to_string(),
+        "menu.edit" => "Edit".to_string(),
+        "menu.markdown" => "Markdown".to_string(),
+        "editor.text_color.menu" => "Text Color".to_string(),
+        "editor.text_highlight.menu" => "Text Highlight".to_string(),
+        "menu.ai" => "AI".to_string(),
+        "menu.space" => "Space".to_string(),
+        "space.recent.menu" => "Recent Spaces".to_string(),
+        "space.recent.empty" => "No Recent Spaces".to_string(),
+        "menu.window" => "Window".to_string(),
+        "menu.help" => "Help".to_string(),
+        _ => menu_manifest::command_for_menu_id(id)
+            .map(|command| command.label)
+            .unwrap_or_else(|| id.to_string()),
+    }
+}
+
+fn menu_label(menu_labels: &HashMap<String, String>, id: &str) -> String {
+    menu_labels
+        .get(id)
+        .cloned()
+        .unwrap_or_else(|| default_menu_label(id))
+}
+
 fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
+    menu_labels: &HashMap<String, String>,
     menu_shortcuts: &HashMap<String, Option<String>>,
     id: &str,
-    label: &str,
     enabled: bool,
     default_accelerator: Option<&str>,
 ) -> tauri::Result<MenuItem<R>> {
@@ -151,10 +180,7 @@ fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
         Some(override_val) => override_val.clone(),
         None => manifest_accelerator.or_else(|| default_accelerator.map(str::to_string)),
     };
-    let label = manifest_command
-        .as_ref()
-        .map(|command| command.label.as_str())
-        .unwrap_or(label);
+    let label = menu_label(menu_labels, id);
     MenuItem::with_id(app, id, label, enabled, accelerator.as_deref())
 }
 
@@ -224,14 +250,19 @@ mod tests {
 fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     recent_spaces: &[String],
+    menu_labels: &HashMap<String, String>,
 ) -> tauri::Result<Submenu<R>> {
     let revision = next_recent_spaces_menu_revision();
-    let mut builder = SubmenuBuilder::with_id(app, RECENT_SPACES_MENU_ID, "Recent Spaces");
+    let mut builder = SubmenuBuilder::with_id(
+        app,
+        RECENT_SPACES_MENU_ID,
+        menu_label(menu_labels, "space.recent.menu"),
+    );
     if recent_spaces.is_empty() {
         let none = MenuItem::with_id(
             app,
             recent_space_none_item_id(revision),
-            "No Recent Spaces",
+            menu_label(menu_labels, "space.recent.empty"),
             false,
             None::<&str>,
         )?;
@@ -265,6 +296,7 @@ fn find_submenu_by_id<R: tauri::Runtime>(item: &MenuItemKind<R>, id: &str) -> Op
 fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     recent_spaces: &[String],
+    menu_labels: &HashMap<String, String>,
 ) -> Result<bool, String> {
     let Some(menu) = app.menu() else {
         return Ok(false);
@@ -283,6 +315,10 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     };
     let revision = next_recent_spaces_menu_revision();
 
+    submenu
+        .set_text(menu_label(menu_labels, "space.recent.menu"))
+        .map_err(|error| error.to_string())?;
+
     while submenu
         .remove_at(0)
         .map_err(|error| error.to_string())?
@@ -293,7 +329,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
         let none = MenuItem::with_id(
             app,
             recent_space_none_item_id(revision),
-            "No Recent Spaces",
+            menu_label(menu_labels, "space.recent.empty"),
             false,
             None::<&str>,
         )
@@ -323,21 +359,18 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     space_open: bool,
     recent_spaces: &[String],
     menu_shortcuts: &HashMap<String, Option<String>>,
+    menu_labels: &HashMap<String, String>,
 ) -> tauri::Result<Menu<R>> {
     #[cfg(target_os = "macos")]
     let app_about = MenuItem::with_id(
         app,
         "app.about",
-        format!("About {}", app.package_info().name),
+        menu_label(menu_labels, "app.about"),
         true,
         None::<&str>,
     )?;
     #[cfg(target_os = "macos")]
-    let app_settings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "app.settings",
-        "Settings…",
+    let app_settings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "app.settings",
         true,
         Some("CmdOrCtrl+,"),
     )?;
@@ -360,411 +393,219 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let open_space = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.open",
-        "Open Space…",
+    let open_space = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.open",
         true,
         Some("CmdOrCtrl+O"),
     )?;
-    let create_space = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.create",
-        "New Space…",
+    let create_space = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.create",
         true,
         Some("CmdOrCtrl+Shift+N"),
     )?;
-    let close_space = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.close",
-        "Close Space",
+    let close_space = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.close",
         space_open,
         None,
     )?;
-    let reveal_space = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.reveal",
-        "Show Space in Finder",
+    let reveal_space = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.reveal",
         true,
         None,
     )?;
-    let open_space_settings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.settings",
-        "Space Settings…",
+    let open_space_settings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.settings",
         true,
         None,
     )?;
-    let sync_now = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.git_sync_now",
-        "Sync Now",
+    let sync_now = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.git_sync_now",
         true,
         None,
     )?;
-    let open_git_settings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "space.git_settings",
-        "Git Sync Settings…",
+    let open_git_settings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "space.git_settings",
         true,
         None,
     )?;
-    let new_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.new_note",
-        "New Note",
+    let new_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.new_note",
         true,
         Some("CmdOrCtrl+N"),
     )?;
-    let create_from_template = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.create_from_template",
-        "Create From Template",
+    let create_from_template = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.create_from_template",
         true,
         Some("CmdOrCtrl+Shift+M"),
     )?;
-    let open_daily_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.open_daily_note",
-        "Open Daily Note",
+    let open_daily_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_daily_note",
         true,
         Some("CmdOrCtrl+Shift+D"),
     )?;
-    let save_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.save_note",
-        "Save",
+    let save_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.save_note",
         true,
         Some("CmdOrCtrl+S"),
     )?;
-    let print_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.print_note",
-        "Print Note…",
+    let print_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.print_note",
         show_markdown_menu,
         None,
     )?;
-    let close_tab = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "file.close_tab",
-        "Close Tab",
+    let close_tab = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.close_tab",
         true,
         Some("CmdOrCtrl+W"),
     )?;
-    let toggle_ai = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "ai.toggle",
-        "Toggle AI Pane",
+    let toggle_ai = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "ai.toggle",
         true,
         Some("CmdOrCtrl+Shift+A"),
     )?;
     let editor_bold =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.bold", "Bold", true, None)?;
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.bold", true, None)?;
     let editor_italic =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.italic", "Italic", true, None)?;
-    let editor_underline = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.underline",
-        "Underline",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.italic", true, None)?;
+    let editor_underline = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.underline",
         true,
         None,
     )?;
-    let editor_strikethrough = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.strikethrough",
-        "Strikethrough",
+    let editor_strikethrough = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.strikethrough",
         true,
         None,
     )?;
-    let editor_link_set = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.link_set",
-        "Insert/Edit Link…",
+    let editor_link_set = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.link_set",
         true,
         None,
     )?;
-    let editor_link_clear = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.link_clear",
-        "Remove Link",
+    let editor_link_clear = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.link_clear",
         true,
         None,
     )?;
-    let editor_heading_1 = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.heading_1",
-        "Heading 1",
+    let editor_heading_1 = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.heading_1",
         true,
         None,
     )?;
-    let editor_heading_2 = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.heading_2",
-        "Heading 2",
+    let editor_heading_2 = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.heading_2",
         true,
         None,
     )?;
-    let editor_heading_3 = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.heading_3",
-        "Heading 3",
+    let editor_heading_3 = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.heading_3",
         true,
         None,
     )?;
-    let editor_collapse_all_headings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.collapse_all_headings",
-        "Collapse All Headings",
+    let editor_collapse_all_headings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.collapse_all_headings",
         true,
         None,
     )?;
-    let editor_expand_all_headings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.expand_all_headings",
-        "Expand All Headings",
+    let editor_expand_all_headings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.expand_all_headings",
         true,
         None,
     )?;
-    let editor_bullet_list = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.bullet_list",
-        "Bullet List",
+    let editor_bullet_list = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.bullet_list",
         true,
         None,
     )?;
-    let editor_numbered_list = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.numbered_list",
-        "Numbered List",
+    let editor_numbered_list = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.numbered_list",
         true,
         None,
     )?;
-    let editor_todo_list = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.todo_list",
-        "To-do List",
+    let editor_todo_list = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.todo_list",
         true,
         None,
     )?;
     let editor_quote =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.quote", "Quote", true, None)?;
-    let editor_code_block = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.code_block",
-        "Code Block",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.quote", true, None)?;
+    let editor_code_block = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.code_block",
         true,
         None,
     )?;
-    let editor_mermaid_chart = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.mermaid_chart",
-        "Mermaid Chart",
+    let editor_mermaid_chart = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.mermaid_chart",
         true,
         None,
     )?;
     let editor_table =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.table", "Table", true, None)?;
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.table", true, None)?;
     let editor_divider =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.divider", "Divider", true, None)?;
-    let editor_details_block = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.details_block",
-        "Details Block",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.divider", true, None)?;
+    let editor_details_block = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.details_block",
         true,
         None,
     )?;
-    let editor_callout_info = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.callout_info",
-        "Info Callout",
+    let editor_callout_info = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.callout_info",
         true,
         None,
     )?;
-    let editor_callout_warning = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.callout_warning",
-        "Warning Callout",
+    let editor_callout_warning = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.callout_warning",
         true,
         None,
     )?;
-    let editor_callout_error = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.callout_error",
-        "Error Callout",
+    let editor_callout_error = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.callout_error",
         true,
         None,
     )?;
-    let editor_callout_success = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.callout_success",
-        "Success Callout",
+    let editor_callout_success = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.callout_success",
         true,
         None,
     )?;
-    let editor_callout_tip = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.callout_tip",
-        "Tip Callout",
+    let editor_callout_tip = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.callout_tip",
         true,
         None,
     )?;
     let editor_color_gray =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_gray", "Gray", true, None)?;
-    let editor_color_brown = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_brown",
-        "Brown",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_gray", true, None)?;
+    let editor_color_brown = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_brown",
         true,
         None,
     )?;
-    let editor_color_orange = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_orange",
-        "Orange",
+    let editor_color_orange = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_orange",
         true,
         None,
     )?;
-    let editor_color_yellow = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_yellow",
-        "Yellow",
+    let editor_color_yellow = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_yellow",
         true,
         None,
     )?;
-    let editor_color_green = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_green",
-        "Green",
+    let editor_color_green = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_green",
         true,
         None,
     )?;
     let editor_color_blue =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_blue", "Blue", true, None)?;
-    let editor_color_purple = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_purple",
-        "Purple",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_blue", true, None)?;
+    let editor_color_purple = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_purple",
         true,
         None,
     )?;
     let editor_color_red =
-        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_red", "Red", true, None)?;
-    let editor_color_clear = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.color_clear",
-        "Clear Color",
+        menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_red", true, None)?;
+    let editor_color_clear = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.color_clear",
         true,
         None,
     )?;
-    let editor_highlight_yellow = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.highlight_yellow",
-        "Yellow",
+    let editor_highlight_yellow = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.highlight_yellow",
         true,
         None,
     )?;
-    let editor_highlight_blue = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.highlight_blue",
-        "Blue",
+    let editor_highlight_blue = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.highlight_blue",
         true,
         None,
     )?;
-    let editor_highlight_green = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.highlight_green",
-        "Green",
+    let editor_highlight_green = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.highlight_green",
         true,
         None,
     )?;
-    let editor_highlight_red = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.highlight_red",
-        "Red",
+    let editor_highlight_red = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.highlight_red",
         true,
         None,
     )?;
-    let editor_highlight_clear = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "editor.highlight_clear",
-        "Clear Highlight",
+    let editor_highlight_clear = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "editor.highlight_clear",
         true,
         None,
     )?;
-    let attach_current_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "ai.attach_current_note",
-        "Send Current Note to AI",
+    let attach_current_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "ai.attach_current_note",
         true,
         Some("CmdOrCtrl+Alt+A"),
     )?;
-    let attach_all_open_notes = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "ai.attach_all_open_notes",
-        "Send All Open Notes to AI",
+    let attach_all_open_notes = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "ai.attach_all_open_notes",
         true,
         Some("CmdOrCtrl+Alt+Shift+A"),
     )?;
-    let open_ai_settings = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "ai.settings",
-        "AI Settings…",
+    let open_ai_settings = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "ai.settings",
         true,
         None,
     )?;
-    let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces)?;
+    let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces, menu_labels)?;
 
     let file_menu = Submenu::with_items(
         app,
-        "File",
+        menu_label(menu_labels, "menu.file"),
         true,
         &[
             &new_note,
@@ -780,7 +621,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
 
     let ai_menu = Submenu::with_items(
         app,
-        "AI",
+        menu_label(menu_labels, "menu.ai"),
         true,
         &[
             &toggle_ai,
@@ -793,7 +634,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_text_color_menu = Submenu::with_items(
         app,
-        "Text Color",
+        menu_label(menu_labels, "editor.text_color.menu"),
         true,
         &[
             &editor_color_gray,
@@ -810,7 +651,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_text_highlight_menu = Submenu::with_items(
         app,
-        "Text Highlight",
+        menu_label(menu_labels, "editor.text_highlight.menu"),
         true,
         &[
             &editor_highlight_yellow,
@@ -823,7 +664,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let markdown_menu = Submenu::with_items(
         app,
-        "Markdown",
+        menu_label(menu_labels, "menu.markdown"),
         true,
         &[
             &editor_bold,
@@ -865,7 +706,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let space_menu = Submenu::with_id_and_items(
         app,
         SPACE_MENU_ID,
-        "Space",
+        menu_label(menu_labels, "menu.space"),
         true,
         &[
             &create_space,
@@ -883,7 +724,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
 
     let edit_menu = Submenu::with_items(
         app,
-        "Edit",
+        menu_label(menu_labels, "menu.edit"),
         true,
         &[
             &PredefinedMenuItem::undo(app, None)?,
@@ -899,7 +740,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     let window_menu = Submenu::with_id_and_items(
         app,
         WINDOW_SUBMENU_ID,
-        "Window",
+        menu_label(menu_labels, "menu.window"),
         true,
         &[
             &PredefinedMenuItem::minimize(app, None)?,
@@ -910,45 +751,33 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let help_getting_started = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "help.getting_started",
-        "Getting Started",
+    let help_getting_started = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "help.getting_started",
         space_open,
         None,
     )?;
-    let help_welcome_note = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "help.welcome_note",
-        "Welcome Note",
+    let help_welcome_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "help.welcome_note",
         space_open,
         None,
     )?;
-    let help_shortcuts = menu_item_with_shortcut(
-        app,
-        menu_shortcuts,
-        "help.shortcuts",
-        "Keyboard Shortcuts…",
+    let help_shortcuts = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "help.shortcuts",
         true,
         None,
     )?;
-    const HELP_LINK_GROUPS: &[&[(&str, &str)]] = &[
+    const HELP_LINK_GROUPS: &[&[&str]] = &[
         &[
-            ("help.website", "Glyph Website"),
-            ("help.changelog", "Changelog"),
-            ("help.privacy", "Privacy Policy"),
-            ("help.terms", "Terms of Service"),
+            "help.website",
+            "help.changelog",
+            "help.privacy",
+            "help.terms",
         ],
-        &[
-            ("help.discord", "Discord"),
-            ("help.github", "GitHub"),
-            ("help.x", "Follow on X"),
-        ],
+        &["help.discord", "help.github", "help.x"],
     ];
     let help_menu = {
-        let builder = SubmenuBuilder::with_id(app, HELP_SUBMENU_ID, "Help");
+        let builder = SubmenuBuilder::with_id(
+            app,
+            HELP_SUBMENU_ID,
+            menu_label(menu_labels, "menu.help"),
+        );
         #[cfg(not(target_os = "macos"))]
         let builder = builder
             .item(&PredefinedMenuItem::about(app, None, None)?)
@@ -964,8 +793,9 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             if group_index > 0 {
                 builder = builder.separator();
             }
-            for (id, label) in *group {
-                let item = menu_item_with_shortcut(app, menu_shortcuts, id, label, true, None)?;
+            for id in *group {
+                let item =
+                    menu_item_with_shortcut(app, menu_labels, menu_shortcuts, id, true, None)?;
                 builder = builder.item(&item);
             }
         }
@@ -1241,12 +1071,24 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
         .lock()
         .map_err(|_| "failed to lock menu shortcuts state".to_string())?
         .clone();
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
         .unwrap_or(false);
-    let menu = build_main_menu(&app, visible, space_open, &recent_spaces, &menu_shortcuts)
-        .map_err(|error| error.to_string())?;
+    let menu = build_main_menu(
+        &app,
+        visible,
+        space_open,
+        &recent_spaces,
+        &menu_shortcuts,
+        &menu_labels,
+    )
+    .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
 }
@@ -1277,7 +1119,13 @@ fn set_recent_spaces_menu(
         .lock()
         .map_err(|_| "failed to lock recent spaces state".to_string())? = filtered.clone();
 
-    match try_update_recent_spaces_submenu(&app, &filtered) {
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
+
+    match try_update_recent_spaces_submenu(&app, &filtered, &menu_labels) {
         Ok(true) => return Ok(()),
         Ok(false) => {}
         Err(error) => {
@@ -1304,6 +1152,7 @@ fn set_recent_spaces_menu(
         space_open,
         &filtered,
         &menu_shortcuts,
+        &menu_labels,
     )
     .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
@@ -1325,6 +1174,11 @@ fn set_menu_shortcuts(
         .show_markdown_menu
         .lock()
         .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let menu_labels = menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
@@ -1335,6 +1189,7 @@ fn set_menu_shortcuts(
         space_open,
         &recent_spaces,
         &accelerators,
+        &menu_labels,
     )
     .map_err(|error| {
         error!("failed to build menu with shortcut accelerators: {error}");
@@ -1348,6 +1203,53 @@ fn set_menu_shortcuts(
         .menu_shortcuts
         .lock()
         .map_err(|_| "failed to lock menu shortcuts state".to_string())? = accelerators;
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_menu_labels(
+    app: tauri::AppHandle,
+    menu_state: State<'_, MenuState>,
+    labels: HashMap<String, String>,
+) -> Result<(), String> {
+    let recent_spaces = menu_state
+        .recent_spaces
+        .lock()
+        .map_err(|_| "failed to lock recent spaces state".to_string())?
+        .clone();
+    let show_markdown_menu = *menu_state
+        .show_markdown_menu
+        .lock()
+        .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let menu_shortcuts = menu_state
+        .menu_shortcuts
+        .lock()
+        .map_err(|_| "failed to lock menu shortcuts state".to_string())?
+        .clone();
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let menu = build_main_menu(
+        &app,
+        show_markdown_menu,
+        space_open,
+        &recent_spaces,
+        &menu_shortcuts,
+        &labels,
+    )
+    .map_err(|error| {
+        error!("failed to build menu with labels: {error}");
+        error.to_string()
+    })?;
+    app.set_menu(menu).map_err(|error| {
+        error!("failed to install menu with labels: {error}");
+        error.to_string()
+    })?;
+    *menu_state
+        .menu_labels
+        .lock()
+        .map_err(|_| "failed to lock menu labels state".to_string())? = labels;
     Ok(())
 }
 
@@ -1424,7 +1326,7 @@ pub fn run() {
     macos_webkit_defaults::configure_continuous_spell_checking();
 
     tauri::Builder::default()
-        .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new()))
+        .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new(), &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
             id if id.starts_with("space.recent.") => {
                 let Some(index) = parse_recent_space_index(id) else {
@@ -1591,6 +1493,7 @@ pub fn run() {
             set_markdown_menu_visible,
             set_recent_spaces_menu,
             set_menu_shortcuts,
+            set_menu_labels,
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,
             external_markdown::external_markdown_window_path,

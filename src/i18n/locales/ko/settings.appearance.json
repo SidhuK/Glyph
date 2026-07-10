@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "모양",
+		"panelTitle": "모양"
+	},
+	"theme": {
+		"sectionTitle": "테마",
+		"sectionDescription": "라이트와 다크 테마 패밀리를 조합합니다.",
+		"appearance": {
+			"label": "모양",
+			"description": "시스템을 따르거나 Glyph를 라이트 또는 다크 모드로 고정합니다.",
+			"ariaLabel": "테마 모드"
+		},
+		"modes": {
+			"system": {
+				"label": "시스템",
+				"description": "기기의 라이트 또는 다크 모양에 맞춥니다."
+			},
+			"light": {
+				"label": "라이트",
+				"description": "항상 라이트 모드를 사용합니다."
+			},
+			"dark": {
+				"label": "다크",
+				"description": "항상 다크 모드를 사용합니다."
+			}
+		},
+		"translucentSidebar": {
+			"label": "반투명 사이드바",
+			"ariaLabel": "반투명 사이드바"
+		}
+	},
+	"accent": {
+		"sectionTitle": "액센트",
+		"sectionDescription": "Glyph 라이트 및 다크 테마에 적용됩니다.",
+		"palette": {
+			"label": "팔레트",
+			"description": "강조, 포커스 링, 강조 표시의 액센트를 설정합니다.",
+			"ariaLabel": "액센트 색상",
+			"resetAriaLabel": "액센트 재설정"
+		},
+		"options": {
+			"neutral": "뉴트럴",
+			"glyphOrange": "주황",
+			"glyphRed": "Glyph Red",
+			"cerulean": "세룰리안",
+			"tropicalTeal": "트로피컬 틸"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "라이트 테마",
+		"preset": {
+			"label": "프리셋",
+			"hint": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
+		},
+		"background": {
+			"label": "배경",
+			"ariaLabel": "라이트 테마 배경색",
+			"resetAriaLabel": "라이트 테마 배경 재설정"
+		},
+		"foreground": {
+			"label": "전경",
+			"ariaLabel": "라이트 테마 전경색",
+			"resetAriaLabel": "라이트 테마 전경 재설정"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "다크 테마",
+		"preset": {
+			"label": "프리셋",
+			"hint": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
+		},
+		"background": {
+			"label": "배경",
+			"ariaLabel": "다크 테마 배경색",
+			"resetAriaLabel": "다크 테마 배경 재설정"
+		},
+		"foreground": {
+			"label": "전경",
+			"ariaLabel": "다크 테마 전경색",
+			"resetAriaLabel": "다크 테마 전경 재설정"
+		}
+	},
+	"shape": {
+		"sectionTitle": "형태",
+		"sectionDescription": "앱 전반의 패널, 버튼, 창의 둥근 정도를 선택합니다.",
+		"corners": {
+			"label": "모서리",
+			"description": "사이드바, 대화상자, 입력란, 카드 등 어디에나 적용됩니다.",
+			"ariaLabel": "UI 형태"
+		},
+		"options": {
+			"sharp": {
+				"label": "브루탈리스트",
+				"description": "앱 전반에 선명하고 각진 모서리."
+			},
+			"default": {
+				"label": "기본",
+				"description": "Glyph의 균형 잡힌 모습."
+			},
+			"round": {
+				"label": "소프트",
+				"description": "앱 전반에 더 부드럽고 둥근 모서리."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "타이포그래피",
+		"sectionDescription": "인터페이스 서체, 코드 스타일, 읽기 배율을 각각 조정합니다.",
+		"interfaceFont": {
+			"label": "인터페이스 글꼴",
+			"description": "탐색, 설정, Glyph UI의 대부분 텍스트에 사용됩니다."
+		},
+		"editorFont": {
+			"label": "편집기 글꼴",
+			"description": "인라인 코드와 코드 블록을 제외한 일반 노트 텍스트에 사용됩니다."
+		},
+		"monospaceFont": {
+			"label": "고정폭 글꼴",
+			"description": "Markdown 소스, 인라인 코드, 개발자용 화면에 사용됩니다."
+		},
+		"uiFontSize": {
+			"label": "UI 글꼴 크기",
+			"description": "메뉴, 패널, 컨트롤, 설정에 사용되는 기본 크기를 조정합니다.",
+			"valueAriaLabel": "UI 글꼴 크기 값"
+		},
+		"editorFontSize": {
+			"label": "편집기 글꼴 크기",
+			"description": "노트 편집기, Markdown 미리보기, 원시 텍스트 편집의 읽기 크기를 조정합니다.",
+			"valueAriaLabel": "편집기 글꼴 크기 값"
+		}
+	},
+	"layout": {
+		"sectionTitle": "레이아웃",
+		"sectionDescription": "Glyph가 작업 공간과 모든 노트를 표시하는 방식을 선택합니다.",
+		"folioMode": {
+			"label": "Folio 모드",
+			"description": "탐색, 노트, 편집기를 3열 작업 공간으로 표시합니다.",
+			"ariaLabel": "Folio 모드"
+		},
+		"classicAllNotes": {
+			"label": "클래식 모든 노트 그리드",
+			"description": "활동 타임라인 대신 단순 그리드로 모든 노트를 엽니다.",
+			"ariaLabel": "클래식 모든 노트 그리드"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "편집기 표시",
+		"sectionDescription": "편집 중 노트의 모습을 선택합니다.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "태그를 위한 실험적 Beautiful Tags 표시를 사용합니다.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "편집기 너비",
+			"description": "컴팩트는 줄을 짧게 유지하고, 편안함은 조금 더 여유를 주며, 넓음은 편집기 전체 너비를 사용합니다.",
+			"ariaLabel": "편집기 너비",
+			"options": {
+				"compact": "컴팩트",
+				"comfortable": "편안함",
+				"wide": "넓음"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "데이터베이스",
+		"sectionDescription": "Glyph 전반에서 데이터베이스가 표시되는 방식을 선택합니다.",
+		"showColumnColor": {
+			"label": "데이터베이스 열 색상 표시",
+			"description": "레인 필과 태그 색상은 유지하면서 전체 열 색조 표시를 전환합니다.",
+			"ariaLabel": "데이터베이스 열 색상 표시"
+		}
+	}
+}

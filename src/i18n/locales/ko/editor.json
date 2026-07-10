@@ -1,0 +1,215 @@
+{
+	"mode": {
+		"label": "편집기 모드",
+		"raw": "Raw",
+		"rich": "리치",
+		"preview": "미리보기"
+	},
+	"ribbon": {
+		"bold": "굵게",
+		"italic": "기울임꼴",
+		"underline": "밑줄",
+		"strikethrough": "취소선",
+		"textColor": "텍스트 색상",
+		"clearColor": "색상 지우기",
+		"textHighlight": "텍스트 강조",
+		"clearHighlight": "강조 지우기",
+		"extractToNote": "노트로 추출",
+		"heading1": "제목 1",
+		"heading2": "제목 2",
+		"heading3": "제목 3",
+		"bulletList": "글머리 기호 목록",
+		"numberedList": "번호 매기기 목록",
+		"taskList": "작업 목록",
+		"quote": "인용",
+		"codeBlock": "코드 블록"
+	},
+	"colors": {
+		"gray": "회색",
+		"brown": "갈색",
+		"orange": "주황",
+		"yellow": "노랑",
+		"green": "초록",
+		"blue": "파랑",
+		"purple": "보라",
+		"red": "빨강"
+	},
+	"highlights": {
+		"yellow": "노랑",
+		"blue": "파랑",
+		"green": "초록",
+		"red": "빨강"
+	},
+	"codeBlock": {
+		"setLanguage": "코드 블록 언어 설정",
+		"languageHeader": "코드 블록 언어",
+		"runPreview": "미리보기 실행",
+		"copy": "코드 복사",
+		"copied": "코드 복사됨",
+		"editCode": "코드 편집",
+		"editMermaid": "Mermaid 코드 편집",
+		"editHtml": "HTML 코드 편집",
+		"editSvg": "SVG 코드 편집",
+		"languages": {
+			"plaintext": "일반 텍스트",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "제목 1",
+			"description": "큰 섹션 제목"
+		},
+		"heading2": {
+			"title": "제목 2",
+			"description": "섹션 제목"
+		},
+		"heading3": {
+			"title": "제목 3",
+			"description": "소제목"
+		},
+		"bulletList": {
+			"title": "글머리 기호 목록",
+			"description": "글머리 기호 목록 시작"
+		},
+		"numberedList": {
+			"title": "번호 매기기 목록",
+			"description": "번호 매기기 목록 시작"
+		},
+		"todoList": {
+			"title": "할 일 목록",
+			"description": "작업 목록 시작"
+		},
+		"quote": {
+			"title": "인용",
+			"description": "인용 블록 삽입"
+		},
+		"codeBlock": {
+			"title": "코드 블록",
+			"description": "코드 블록 삽입"
+		},
+		"divider": {
+			"title": "구분선",
+			"description": "가로줄 삽입"
+		},
+		"table": {
+			"title": "표",
+			"description": "Markdown 표 삽입"
+		},
+		"tableOfContents": {
+			"title": "목차",
+			"description": "이 노트의 실시간 개요 삽입"
+		},
+		"mermaidChart": {
+			"title": "Mermaid 차트",
+			"description": "Mermaid 다이어그램 블록 삽입"
+		},
+		"htmlEmbed": {
+			"title": "HTML 임베드",
+			"description": "샌드박스 HTML 미리보기 블록 삽입"
+		},
+		"svgEmbed": {
+			"title": "SVG 임베드",
+			"description": "샌드박스 SVG 미리보기 블록 삽입"
+		},
+		"detailsBlock": {
+			"title": "세부 정보 블록",
+			"description": "접을 수 있는 토글 섹션 삽입"
+		},
+		"calloutInfo": {
+			"title": "정보 콜아웃",
+			"description": "정보 콜아웃 삽입"
+		},
+		"calloutTip": {
+			"title": "팁 콜아웃",
+			"description": "팁 콜아웃 삽입"
+		},
+		"calloutSuccess": {
+			"title": "성공 콜아웃",
+			"description": "성공 콜아웃 삽입"
+		},
+		"calloutWarning": {
+			"title": "경고 콜아웃",
+			"description": "경고 콜아웃 삽입"
+		},
+		"calloutError": {
+			"title": "오류 콜아웃",
+			"description": "오류 콜아웃 삽입"
+		},
+		"mathInline": {
+			"title": "인라인 수식",
+			"description": "줄 안에 LaTeX 삽입"
+		},
+		"mathDisplay": {
+			"title": "디스플레이 수식",
+			"description": "가운데 정렬 LaTeX 블록 삽입"
+		},
+		"colorGray": {
+			"title": "색상: 회색",
+			"description": "회색 텍스트 색상 적용"
+		},
+		"colorBrown": {
+			"title": "색상: 갈색",
+			"description": "갈색 텍스트 색상 적용"
+		},
+		"colorOrange": {
+			"title": "색상: 주황",
+			"description": "주황색 텍스트 색상 적용"
+		},
+		"colorYellow": {
+			"title": "색상: 노랑",
+			"description": "노란색 텍스트 색상 적용"
+		},
+		"colorGreen": {
+			"title": "색상: 초록",
+			"description": "초록색 텍스트 색상 적용"
+		},
+		"colorBlue": {
+			"title": "색상: 파랑",
+			"description": "파란색 텍스트 색상 적용"
+		},
+		"colorPurple": {
+			"title": "색상: 보라",
+			"description": "보라색 텍스트 색상 적용"
+		},
+		"colorRed": {
+			"title": "색상: 빨강",
+			"description": "빨간색 텍스트 색상 적용"
+		},
+		"colorClear": {
+			"title": "색상: 지우기",
+			"description": "텍스트 색상 제거"
+		},
+		"highlightYellow": {
+			"title": "강조: 노랑",
+			"description": "노란색 텍스트 강조 적용"
+		},
+		"highlightBlue": {
+			"title": "강조: 파랑",
+			"description": "파란색 텍스트 강조 적용"
+		},
+		"highlightGreen": {
+			"title": "강조: 초록",
+			"description": "초록색 텍스트 강조 적용"
+		},
+		"highlightRed": {
+			"title": "강조: 빨강",
+			"description": "빨간색 텍스트 강조 적용"
+		},
+		"highlightClear": {
+			"title": "강조: 지우기",
+			"description": "텍스트 강조 제거"
+		}
+	}
+}

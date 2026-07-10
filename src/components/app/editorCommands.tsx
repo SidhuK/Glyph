@@ -19,20 +19,17 @@ interface BuildEditorCommandsOptions {
 const VIEW_MODE_COMMANDS = [
 	{
 		id: "switch-to-edit",
-		label: "Rich Mode",
-		mode: "rich",
+		mode: "rich" as const,
 		icon: PencilEdit02Icon,
 	},
 	{
 		id: "switch-to-preview",
-		label: "Preview Mode",
-		mode: "preview",
+		mode: "preview" as const,
 		icon: EyeIcon,
 	},
 	{
 		id: "switch-to-raw",
-		label: "Raw Mode",
-		mode: "plain",
+		mode: "plain" as const,
 		icon: CodeIcon,
 	},
 ] as const;
@@ -49,8 +46,6 @@ export function buildEditorCommands({
 			action.id !== "expand_all_headings",
 	).map((action) => ({
 		id: action.id,
-		label: action.label,
-		category: "Editor",
 		enabled,
 		allowInEditable: true,
 		action: () => dispatchEditorMenuAction({ action: action.id }),
@@ -59,9 +54,7 @@ export function buildEditorCommands({
 	const headingCommands: Command[] = [
 		{
 			id: "collapse_all_headings",
-			label: "Collapse all headings",
 			icon: <ChevronUp size="var(--icon-lg)" />,
-			category: "Editor",
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
 			action: () =>
@@ -69,9 +62,7 @@ export function buildEditorCommands({
 		},
 		{
 			id: "expand_all_headings",
-			label: "Expand all headings",
 			icon: <ChevronDown size="var(--icon-lg)" />,
-			category: "Editor",
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
 			action: () => dispatchEditorMenuAction({ action: "expand_all_headings" }),
@@ -80,7 +71,6 @@ export function buildEditorCommands({
 
 	const viewModeCommands: Command[] = VIEW_MODE_COMMANDS.map((command) => ({
 		id: command.id,
-		label: command.label,
 		icon: (
 			<HugeiconsIcon
 				icon={command.icon}
@@ -88,7 +78,6 @@ export function buildEditorCommands({
 				strokeWidth={0.9}
 			/>
 		),
-		category: "Editor",
 		enabled,
 		allowInEditable: true,
 		action: () => {

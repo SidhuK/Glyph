@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "일반",
+		"panelTitle": "일반",
+		"groupApplication": "애플리케이션",
+		"searchPlaceholder": "설정 검색",
+		"searchAriaLabel": "설정 검색",
+		"clearSearchAriaLabel": "설정 검색 지우기"
+	},
+	"language": {
+		"sectionTitle": "언어",
+		"sectionDescription": "Glyph 전반에서 사용할 언어를 선택합니다.",
+		"label": "언어",
+		"description": "메뉴, 설정, 탐색에 즉시 적용됩니다.",
+		"ariaLabel": "언어",
+		"communityNotice": "번역은 커뮤니티 기여이며 불완전할 수 있습니다. 질문이나 개선 사항이 있나요? <discord>Discord 참여</discord>."
+	},
+	"startup": {
+		"sectionTitle": "시작",
+		"sectionDescription": "Glyph를 시작할 때 열 내용을 선택합니다.",
+		"openPreviousTabs": {
+			"label": "이전 탭 열기",
+			"description": "열어 두었던 탭으로 이 스페이스를 시작합니다.",
+			"ariaLabel": "마지막 세션 이어하기"
+		}
+	},
+	"editor": {
+		"sectionTitle": "편집기",
+		"sectionDescription": "Glyph 내 편집 동작과 노트 구조에 대한 제어입니다.",
+		"tableOfContents": {
+			"label": "목차",
+			"description": "각 노트에 떠 있는 목차를 표시합니다.",
+			"ariaLabel": "목차"
+		},
+		"showFrontmatter": {
+			"label": "편집기에서 frontmatter 표시",
+			"description": "편집 중 노트 상단에 YAML frontmatter를 표시합니다. 끄면 인덱싱과 데이터베이스에는 frontmatter가 계속 사용됩니다.",
+			"ariaLabel": "편집기에서 frontmatter 표시"
+		},
+		"colorfulHeadings": {
+			"label": "컬러풀 제목",
+			"description": "노트 편집 시 H1-H6에 내장된 서로 다른 색상을 사용합니다.",
+			"ariaLabel": "컬러풀 제목"
+		},
+		"collapsibleHeadings": {
+			"label": "접을 수 있는 제목",
+			"description": "편집기와 미리보기에서 노트 제목의 접기 토글을 표시합니다.",
+			"ariaLabel": "접을 수 있는 제목"
+		},
+		"spellCheck": {
+			"label": "맞춤법 검사",
+			"description": "입력할 때 오타에 밑줄을 표시합니다. 단어를 마우스 오른쪽 버튼으로 클릭하면 맞춤법 제안이 표시됩니다.",
+			"ariaLabel": "맞춤법 검사"
+		},
+		"vimMode": {
+			"title": "Vim 모드",
+			"label": "Vim 모드",
+			"description": "의미를 모른다면 켜지 마세요.",
+			"ariaLabel": "Vim 모드",
+			"helpAriaLabel": "Vim 키 바인딩 도움말",
+			"helpTitle": "Vim 키 바인딩",
+			"insertMode": "<strong>insert</strong>는 일반 입력 모드입니다. 키를 누르면 편집기에서처럼 텍스트가 입력됩니다.",
+			"normalMode": "<strong>normal</strong>은 명령 모드입니다. 키는 글자를 입력하는 대신 이동하거나 텍스트를 편집합니다.",
+			"help": {
+				"esc": "Vim 명령 모드로 들어갑니다.",
+				"i": "커서 위치에서 입력합니다.",
+				"a": "커서 뒤에서 입력합니다.",
+				"I": "줄 시작으로 가서 입력합니다.",
+				"A": "줄 끝으로 가서 입력합니다.",
+				"o": "아래에 새 줄을 열고 입력합니다.",
+				"O": "위에 새 줄을 열고 입력합니다.",
+				"hjkl": "왼쪽, 아래, 위, 오른쪽으로 이동합니다.",
+				"w": "다음 단어로 이동합니다.",
+				"b": "이전 단어로 이동합니다.",
+				"e": "단어 끝으로 이동합니다.",
+				"0": "줄 시작으로 이동합니다.",
+				"dollar": "줄 끝으로 이동합니다.",
+				"gg": "노트 시작으로 이동합니다.",
+				"G": "노트 끝으로 이동합니다.",
+				"x": "커서 아래 또는 근처의 문자를 삭제합니다.",
+				"dd": "현재 줄의 내용을 삭제합니다.",
+				"u": "실행 취소.",
+				"controlR": "다시 실행."
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "파일 트리",
+		"sectionDescription": "사이드바 파일 트리와 Folio 목록에 표시할 항목을 선택합니다.",
+		"folderCounts": {
+			"label": "폴더 파일 수 표시",
+			"description": "파일 트리의 각 폴더 행 끝에 재귀적 파일 합계를 표시합니다.",
+			"ariaLabel": "폴더 파일 수 표시"
+		},
+		"nonMarkdownFiles": {
+			"label": "Markdown이 아닌 파일 표시",
+			"description": "PDF, 이미지 및 기타 첨부 파일을 파일 트리와 Folio 목록에 표시합니다. 끄면 해당 보기에서만 숨겨집니다.",
+			"ariaLabel": "Markdown이 아닌 파일 표시"
+		},
+		"sort": {
+			"label": "파일 트리 정렬",
+			"description": "사이드바 트리에서 폴더와 파일의 정렬 방식을 선택합니다.",
+			"ariaLabel": "파일 트리 정렬"
+		}
+	}
+}

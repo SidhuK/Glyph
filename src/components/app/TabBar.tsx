@@ -7,6 +7,7 @@ import {
 import { useSortable } from "@dnd-kit/react/sortable";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
+import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
@@ -87,6 +88,7 @@ export function TabBar({
 	onStartRenamePath,
 	onReorder,
 }: TabBarProps) {
+	const { t } = useTranslation("shell");
 	const { getBinding } = useShortcutBindings();
 	const suppressClickRef = useRef(false);
 	const stripFileExtension = useCallback((name: string) => {
@@ -104,16 +106,17 @@ export function TabBar({
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
-			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
-			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return "All Notes";
-			if (tab.target === DATABASES_TAB_ID) return "Collections";
-			if (tab.target === PINNED_DOCS_TAB_ID) return "Pinned";
-			if (tab.target === SPACE_CONNECTIONS_TAB_ID) return "Connections";
+			if (tab.target === ALL_DOCS_TAB_ID) return t("tabs.allNotes");
+			if (tab.target === ACTIVITY_TIMELINE_TAB_ID) return t("tabs.allNotes");
+			if (tab.target === DATABASES_TAB_ID) return t("tabs.collections");
+			if (tab.target === PINNED_DOCS_TAB_ID) return t("tabs.pinned");
+			if (tab.target === SPACE_CONNECTIONS_TAB_ID)
+				return t("sidebar.connections");
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
 			return compactLabel(stripFileExtension(rawName));
 		},
-		[compactLabel, stripFileExtension],
+		[compactLabel, stripFileExtension, t],
 	);
 
 	const showTabs = tabs.length > 1;

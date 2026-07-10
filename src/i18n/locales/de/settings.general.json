@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "Allgemein",
+		"panelTitle": "Allgemein",
+		"groupApplication": "Anwendung",
+		"searchPlaceholder": "Einstellungen durchsuchen",
+		"searchAriaLabel": "Einstellungen durchsuchen",
+		"clearSearchAriaLabel": "Einstellungssuche löschen"
+	},
+	"language": {
+		"sectionTitle": "Sprache",
+		"sectionDescription": "Wähle die Sprache, die in Glyph verwendet wird.",
+		"label": "Sprache",
+		"description": "Gilt sofort für Menüs, Einstellungen und Navigation.",
+		"ariaLabel": "Sprache",
+		"communityNotice": "Übersetzungen stammen aus der Community und können unvollständig sein. Fragen oder Verbesserungen? <discord>Discord beitreten</discord>."
+	},
+	"startup": {
+		"sectionTitle": "Start",
+		"sectionDescription": "Wähle, was beim Start von Glyph geöffnet wird.",
+		"openPreviousTabs": {
+			"label": "Vorherige Tabs öffnen",
+			"description": "Diesen Space mit den Tabs starten, die du offen gelassen hast.",
+			"ariaLabel": "Letzte Sitzung fortsetzen"
+		}
+	},
+	"editor": {
+		"sectionTitle": "Editor",
+		"sectionDescription": "Steuerung für Bearbeitungsverhalten und Notizstruktur in Glyph.",
+		"tableOfContents": {
+			"label": "Inhaltsverzeichnis",
+			"description": "Ein schwebendes Inhaltsverzeichnis für jede Notiz anzeigen.",
+			"ariaLabel": "Inhaltsverzeichnis"
+		},
+		"showFrontmatter": {
+			"label": "Frontmatter im Editor anzeigen",
+			"description": "YAML-Frontmatter oben in Notizen während der Bearbeitung anzeigen. Wenn deaktiviert, bleibt Frontmatter für Indexierung und Datenbanken verfügbar.",
+			"ariaLabel": "Frontmatter im Editor anzeigen"
+		},
+		"colorfulHeadings": {
+			"label": "Farbige Überschriften",
+			"description": "Beim Bearbeiten von Notizen eingebaute Farben für H1–H6 verwenden.",
+			"ariaLabel": "Farbige Überschriften"
+		},
+		"collapsibleHeadings": {
+			"label": "Einklappbare Überschriften",
+			"description": "Einklapp-Schalter an Notizüberschriften in Editor und Vorschau anzeigen.",
+			"ariaLabel": "Einklappbare Überschriften"
+		},
+		"spellCheck": {
+			"label": "Rechtschreibprüfung",
+			"description": "Tippfehler beim Tippen unterstreichen. Rechtsklick auf ein Wort zeigt Vorschläge.",
+			"ariaLabel": "Rechtschreibprüfung"
+		},
+		"vimMode": {
+			"title": "Vim-Modus",
+			"label": "Vim-Modus",
+			"description": "Schalte dies NICHT ein, wenn du nicht weißt, was es bedeutet.",
+			"ariaLabel": "Vim-Modus",
+			"helpAriaLabel": "Hilfe zu Vim-Tastenkürzeln",
+			"helpTitle": "Vim-Tastenkürzel",
+			"insertMode": "<strong>insert</strong> bedeutet normalen Tippmodus. Du tippst und Text erscheint, wie der Editor es bereits tut.",
+			"normalMode": "<strong>normal</strong> bedeutet Befehlsmodus. Deine Tasten bewegen den Cursor oder bearbeiten Text, statt Buchstaben einzugeben.",
+			"help": {
+				"esc": "In den Vim-Befehlsmodus wechseln.",
+				"i": "An der Cursorposition tippen.",
+				"a": "Hinter dem Cursor tippen.",
+				"I": "Zum Zeilenanfang gehen und tippen.",
+				"A": "Zum Zeilenende gehen und tippen.",
+				"o": "Darunter eine neue Zeile öffnen und tippen.",
+				"O": "Darüber eine neue Zeile öffnen und tippen.",
+				"hjkl": "Links, unten, oben und rechts bewegen.",
+				"w": "Zum nächsten Wort springen.",
+				"b": "Zum vorherigen Wort springen.",
+				"e": "Zum Wortende springen.",
+				"0": "Zum Zeilenanfang springen.",
+				"dollar": "Zum Zeilenende springen.",
+				"gg": "Zum Anfang der Notiz springen.",
+				"G": "Zum Ende der Notiz springen.",
+				"x": "Das Zeichen unter oder nahe dem Cursor löschen.",
+				"dd": "Den Inhalt der aktuellen Zeile löschen.",
+				"u": "Rückgängig.",
+				"controlR": "Wiederholen."
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "Dateibaum",
+		"sectionDescription": "Wähle, was im Dateibaum der Seitenleiste und in der Folio-Liste erscheint.",
+		"folderCounts": {
+			"label": "Dateianzahl in Ordnern anzeigen",
+			"description": "Am Ende jeder Ordnerzeile im Dateibaum die rekursive Dateigesamtzahl anzeigen.",
+			"ariaLabel": "Dateianzahl in Ordnern anzeigen"
+		},
+		"nonMarkdownFiles": {
+			"label": "Nicht-Markdown-Dateien anzeigen",
+			"description": "PDFs, Bilder und andere Anhänge im Dateibaum und in der Folio-Liste anzeigen. Wenn deaktiviert, werden sie nur in diesen Ansichten ausgeblendet.",
+			"ariaLabel": "Nicht-Markdown-Dateien anzeigen"
+		},
+		"sort": {
+			"label": "Dateibaum-Sortierung",
+			"description": "Wähle, wie Ordner und Dateien im Seitenleistenbaum sortiert werden.",
+			"ariaLabel": "Dateibaum-Sortierung"
+		}
+	}
+}

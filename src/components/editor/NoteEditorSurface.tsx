@@ -8,12 +8,14 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { TableInlineControls } from "./TableInlineControls";
 import {
-	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
+	getCodeBlockLanguageLabel,
+	getCodeBlockLanguageOptions,
 } from "./extensions/codeBlockHighlighting";
 import type {
 	SelectedCodeBlockState,
@@ -34,7 +36,6 @@ interface NoteEditorSurfaceProps {
 		pickerOpen: boolean;
 		onPickerOpenChange: (open: boolean) => void;
 		language: SupportedCodeBlockLanguage | null;
-		languageLabel: string;
 		copied: boolean;
 		onPickerMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
@@ -53,6 +54,11 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	tableControls,
 	codeBlock,
 }: NoteEditorSurfaceProps) {
+	const { t } = useTranslation("editor");
+	const languageOptions = getCodeBlockLanguageOptions();
+	const languageLabel = getCodeBlockLanguageLabel(
+		codeBlock.selected?.language ?? codeBlock.language,
+	);
 	const hostClassName = [
 		"tiptapHostInline",
 		mode === "preview" ? "is-preview" : "",
@@ -92,8 +98,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 								type="button"
 								className="codeBlockLanguageBtn"
 								onMouseDown={codeBlock.onPickerMouseDown}
-								title="Set code block language"
-								aria-label="Set code block language"
+								title={t("codeBlock.setLanguage")}
+								aria-label={t("codeBlock.setLanguage")}
 							>
 								<span className="codeBlockLanguageBtnIcon" aria-hidden>
 									<HugeiconsIcon
@@ -103,16 +109,16 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 									/>
 								</span>
 								<span className="codeBlockLanguageBtnLabel mono">
-									{codeBlock.languageLabel}
+									{languageLabel}
 								</span>
 							</button>
 						</PopoverTrigger>
 						<PopoverContent className="codeBlockLanguagePopover" align="start">
 							<div className="codeBlockLanguagePopoverHeader">
-								Code block language
+								{t("codeBlock.languageHeader")}
 							</div>
 							<div className="codeBlockLanguageOptions">
-								{CODE_BLOCK_LANGUAGE_OPTIONS.map((option) => (
+								{languageOptions.map((option) => (
 									<Button
 										key={option.value}
 										type="button"
@@ -148,8 +154,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 							className="codeBlockActionBtn"
 							onMouseDown={codeBlock.onPickerMouseDown}
 							onClick={codeBlock.onPreview}
-							title="Run preview"
-							aria-label="Run preview"
+							title={t("codeBlock.runPreview")}
+							aria-label={t("codeBlock.runPreview")}
 						>
 							<HugeiconsIcon
 								icon={PlayIcon}
@@ -164,8 +170,12 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						data-copied={codeBlock.copied || undefined}
 						onMouseDown={codeBlock.onPickerMouseDown}
 						onClick={codeBlock.onCopy}
-						title={codeBlock.copied ? "Copied!" : "Copy code to clipboard"}
-						aria-label={codeBlock.copied ? "Copied code" : "Copy code"}
+						title={
+							codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")
+						}
+						aria-label={
+							codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")
+						}
 					>
 						<HugeiconsIcon
 							icon={codeBlock.copied ? Tick02Icon : Copy01Icon}

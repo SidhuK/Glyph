@@ -19,6 +19,20 @@ const { noteInlineEditorMock, localNoteConnectionsDialogMock, invokeMock } =
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
+vi.mock("react-i18next", () => ({
+	useTranslation: () => ({
+		t: (key: string, options?: { defaultValue?: string }) => {
+			const labels: Record<string, string> = {
+				"mode.label": "Editor mode",
+				"mode.raw": "Raw",
+				"mode.rich": "Rich",
+				"mode.preview": "Preview",
+			};
+			return labels[key] ?? options?.defaultValue ?? key;
+		},
+	}),
+}));
+
 vi.mock("../../contexts", () => ({
 	useAISidebarContext: () => ({
 		aiEnabled: false,

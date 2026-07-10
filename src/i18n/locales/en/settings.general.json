@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "General",
+		"panelTitle": "General",
+		"groupApplication": "Application",
+		"searchPlaceholder": "Search settings",
+		"searchAriaLabel": "Search settings",
+		"clearSearchAriaLabel": "Clear settings search"
+	},
+	"language": {
+		"sectionTitle": "Language",
+		"sectionDescription": "Choose the language used across Glyph.",
+		"label": "Language",
+		"description": "Applies immediately to menus, settings, and navigation.",
+		"ariaLabel": "Language",
+		"communityNotice": "Translations are community-contributed and may be incomplete. Questions or improvements? <discord>Join Discord</discord>."
+	},
+	"startup": {
+		"sectionTitle": "Startup",
+		"sectionDescription": "Choose what opens when you start Glyph.",
+		"openPreviousTabs": {
+			"label": "Open previous tabs",
+			"description": "Start this space with the tabs you left open.",
+			"ariaLabel": "Resume last session"
+		}
+	},
+	"editor": {
+		"sectionTitle": "Editor",
+		"sectionDescription": "Controls for editing behavior and note structure inside Glyph.",
+		"tableOfContents": {
+			"label": "Table of contents",
+			"description": "Show a floating table of contents for each note.",
+			"ariaLabel": "Table of contents"
+		},
+		"showFrontmatter": {
+			"label": "Show frontmatter in editor",
+			"description": "Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases.",
+			"ariaLabel": "Show frontmatter in editor"
+		},
+		"colorfulHeadings": {
+			"label": "Colorful headings",
+			"description": "Use distinct built-in colors for H1-H6 while editing notes.",
+			"ariaLabel": "Colorful headings"
+		},
+		"collapsibleHeadings": {
+			"label": "Collapsible headings",
+			"description": "Show collapse toggles on note headings in editor and preview.",
+			"ariaLabel": "Collapsible headings"
+		},
+		"spellCheck": {
+			"label": "Spell check",
+			"description": "Underline typos as you type. Right-click a word to see spelling suggestions.",
+			"ariaLabel": "Spell check"
+		},
+		"vimMode": {
+			"title": "Vim Mode",
+			"label": "Vim Mode",
+			"description": "Do NOT Turn this ON if you don't know what it means.",
+			"ariaLabel": "Vim Mode",
+			"helpAriaLabel": "Vim keybindings help",
+			"helpTitle": "Vim keybindings",
+			"insertMode": "<strong>insert</strong> means normal typing mode. You type and text appears, like the editor already does.",
+			"normalMode": "<strong>normal</strong> means command mode. Your keys move around or edit text instead of typing letters.",
+			"help": {
+				"esc": "Enter Vim command mode.",
+				"i": "Type at the cursor.",
+				"a": "Type after the cursor.",
+				"I": "Go to the start of the line and type.",
+				"A": "Go to the end of the line and type.",
+				"o": "Open a new line below and type.",
+				"O": "Open a new line above and type.",
+				"hjkl": "Move left, down, up, and right.",
+				"w": "Jump to the next word.",
+				"b": "Jump back to the previous word.",
+				"e": "Jump to the end of the word.",
+				"0": "Jump to the start of the line.",
+				"dollar": "Jump to the end of the line.",
+				"gg": "Jump to the start of the note.",
+				"G": "Jump to the end of the note.",
+				"x": "Delete the character under or near the cursor.",
+				"dd": "Delete the current line's contents.",
+				"u": "Undo.",
+				"controlR": "Redo."
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "File tree",
+		"sectionDescription": "Choose what appears in the sidebar file tree and Folio list.",
+		"folderCounts": {
+			"label": "Show folder file counts",
+			"description": "Show a recursive file total at the end of each folder row in the file tree.",
+			"ariaLabel": "Show folder file counts"
+		},
+		"nonMarkdownFiles": {
+			"label": "Show non-Markdown files",
+			"description": "Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only.",
+			"ariaLabel": "Show non-Markdown files"
+		},
+		"sort": {
+			"label": "File tree sort",
+			"description": "Choose how folders and files are ordered in the sidebar tree.",
+			"ariaLabel": "File tree sort"
+		}
+	}
+}

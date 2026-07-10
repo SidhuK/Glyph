@@ -27,16 +27,16 @@ if (import.meta.env.DEV) {
 const SHORTCUT_ACTION_RECORD: Record<string, ShortcutActionDefinition> =
 	Object.fromEntries(SHORTCUT_ACTIONS.map((action) => [action.id, action]));
 
-export const SHORTCUT_CATEGORY_LABELS: Record<ShortcutCategory, string> = {
-	workspace: "Workspace",
-	navigation: "Navigation",
-	search: "Search",
-	file: "File Operations",
-	tabs: "Tabs",
-	ai: "AI",
-	editor: "Editor",
-	settings: "Settings",
-};
+export const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
+	"workspace",
+	"navigation",
+	"search",
+	"file",
+	"tabs",
+	"ai",
+	"editor",
+	"settings",
+];
 
 export function isShortcutActionId(value: string): value is ShortcutActionId {
 	return value in SHORTCUT_ACTION_RECORD;

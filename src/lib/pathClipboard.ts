@@ -1,4 +1,5 @@
 import { join } from "@tauri-apps/api/path";
+import { i18n } from "../i18n";
 import type { NativeContextMenuItem } from "./nativeContextMenu";
 import { toast } from "./toast";
 
@@ -63,11 +64,11 @@ export function buildPathCopyMenuItems(
 ): NativeContextMenuItem[] {
 	return [
 		{
-			label: "Copy Relative Path",
+			label: i18n.t("shell:fileTree.copyRelativePath"),
 			action: () => void copyRelativePath(relPath),
 		},
 		{
-			label: "Copy Absolute Path",
+			label: i18n.t("shell:fileTree.copyAbsolutePath"),
 			action: () => void copyAbsolutePath(spacePath, relPath),
 		},
 	];

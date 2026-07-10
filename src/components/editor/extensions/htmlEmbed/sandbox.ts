@@ -1,3 +1,4 @@
+import { i18n } from "../../../../i18n";
 import {
 	type HtmlEmbedKind,
 	wrapHtmlEmbedBody,
@@ -205,7 +206,10 @@ export function createHtmlEmbedWidget({
 
 	if (editable) {
 		appendEditCodeControls(frame, {
-			label: `Edit ${kind.toUpperCase()} code`,
+			label:
+				kind === "svg"
+					? i18n.t("editor:codeBlock.editSvg")
+					: i18n.t("editor:codeBlock.editHtml"),
 			onEditCode,
 		});
 	}

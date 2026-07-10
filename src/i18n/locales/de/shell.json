@@ -1,0 +1,89 @@
+{
+	"sidebar": {
+		"collapse": "Seitenleiste einklappen",
+		"expand": "Seitenleiste ausklappen",
+		"newNote": "Neue Notiz",
+		"pinned": "Angeheftet",
+		"allNotes": "Alle Notizen",
+		"collections": "Sammlungen",
+		"connections": "Verbindungen",
+		"notes": "Notizen",
+		"collapseNotes": "Notizen einklappen",
+		"expandNotes": "Notizen ausklappen",
+		"sortNotes": "Notizen sortieren",
+		"sort": "Sortieren",
+		"expandAllFolders": "Alle Ordner ausklappen",
+		"collapseAllFolders": "Alle Ordner einklappen"
+	},
+	"sort": {
+		"nameAsc": "Name A-Z",
+		"nameDesc": "Name Z-A",
+		"modifiedNewest": "Geändert (neueste)",
+		"modifiedOldest": "Geändert (älteste)",
+		"createdNewest": "Erstellt (neueste)",
+		"createdOldest": "Erstellt (älteste)"
+	},
+	"pinned": {
+		"title": "Angeheftet"
+	},
+	"allNotes": {
+		"title": "Alle Notizen",
+		"showActivity": "Aktivität anzeigen",
+		"today": "Heute",
+		"yesterday": "Gestern",
+		"thisWeek": "Diese Woche",
+		"thisMonth": "Dieser Monat",
+		"earlier": "Früher"
+	},
+	"tags": {
+		"header": "Tags",
+		"collapse": "Tags einklappen",
+		"expand": "Tags ausklappen",
+		"people": "Personen",
+		"showLess": "Weniger anzeigen",
+		"showMore": "{{count}} weitere anzeigen"
+	},
+	"fileTree": {
+		"open": "Öffnen",
+		"openInNewWindow": "In neuem Fenster öffnen",
+		"showInFinder": "Im Finder anzeigen",
+		"copyRelativePath": "Relativen Pfad kopieren",
+		"copyAbsolutePath": "Absoluten Pfad kopieren",
+		"rename": "Umbenennen",
+		"duplicateFile": "Datei duplizieren",
+		"pinFile": "Datei anheften",
+		"unpinFile": "Datei lösen",
+		"iconAndColor": "Symbol & Farbe…",
+		"addFile": "Datei hinzufügen",
+		"createFromTemplate": "Aus Vorlage erstellen",
+		"addFolder": "Ordner hinzufügen",
+		"deleteFile": "Datei löschen",
+		"deleteFolder": "Ordner löschen"
+	},
+	"commandPalette": {
+		"title": "Befehlspalette",
+		"searchCommands": "Befehle suchen",
+		"searchNotes": "Notizen suchen…",
+		"notePreview": "Notizvorschau",
+		"sectionGeneral": "Allgemein",
+		"navigate": "Navigieren",
+		"runCommand": "Befehl ausführen",
+		"openNote": "Notiz öffnen",
+		"commands": "Befehle",
+		"search": "Suchen",
+		"close": "Schließen",
+		"filterTitle": "Titel",
+		"filterTag": "Tag",
+		"searching": "Suche…",
+		"results": "{{count}} Ergebnisse",
+		"recentlyOpened": "Zuletzt geöffnet",
+		"groupNotes": "Notizen",
+		"groupTaggedNotes": "Getaggte Notizen",
+		"groupContent": "Inhalt"
+	},
+	"tabs": {
+		"allNotes": "Alle Notizen",
+		"collections": "Sammlungen",
+		"pinned": "Angeheftet"
+	}
+}

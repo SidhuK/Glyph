@@ -1,4 +1,5 @@
 import { PluginKey } from "@tiptap/pm/state";
+import { i18n } from "../../../i18n";
 import { isMermaidCodeBlockLanguage } from "../../../lib/mermaid";
 import { appendEditCodeControls } from "./codeBlockPreviewControls";
 import {
@@ -36,7 +37,7 @@ function buildMermaidCanvasWidget({
 		const frame = element.querySelector(".mermaidCanvasFrame");
 		if (frame instanceof HTMLElement) {
 			appendEditCodeControls(frame, {
-				label: "Edit Mermaid code",
+				label: i18n.t("editor:codeBlock.editMermaid"),
 				onEditCode: selectSource,
 			});
 		}

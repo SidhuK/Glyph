@@ -2,6 +2,7 @@ import { PaintBucketIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { X } from "../Icons";
 import { springPresets } from "../ui/animations";
 import {
@@ -26,6 +27,7 @@ export function RibbonColorPopover({
 	focusChain,
 	preventMouseDown,
 }: RibbonColorPopoverProps) {
+	const { t } = useTranslation("editor");
 	const button = getTextColorButton(editor, runCommand, focusChain);
 
 	return (
@@ -55,7 +57,11 @@ export function RibbonColorPopover({
 				className="editorColorDropdown"
 				onCloseAutoFocus={(event) => event.preventDefault()}
 			>
-				<div className="editorColorGrid" role="menu" aria-label="Text color">
+				<div
+					className="editorColorGrid"
+					role="menu"
+					aria-label={t("ribbon.textColor")}
+				>
 					{button.options.map((option) => (
 						<button
 							key={option.id}
@@ -80,8 +86,8 @@ export function RibbonColorPopover({
 					<button
 						type="button"
 						className="editorColorSwatchButton editorColorClearButton"
-						title="Clear color"
-						aria-label="Clear color"
+						title={t("ribbon.clearColor")}
+						aria-label={t("ribbon.clearColor")}
 						onMouseDown={preventMouseDown}
 						onClick={button.onClear}
 					>

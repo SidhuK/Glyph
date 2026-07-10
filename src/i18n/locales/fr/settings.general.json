@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "Général",
+		"panelTitle": "Général",
+		"groupApplication": "Application",
+		"searchPlaceholder": "Rechercher dans les réglages",
+		"searchAriaLabel": "Rechercher dans les réglages",
+		"clearSearchAriaLabel": "Effacer la recherche des réglages"
+	},
+	"language": {
+		"sectionTitle": "Langue",
+		"sectionDescription": "Choisissez la langue utilisée dans Glyph.",
+		"label": "Langue",
+		"description": "S’applique immédiatement aux menus, réglages et navigation.",
+		"ariaLabel": "Langue",
+		"communityNotice": "Les traductions sont fournies par la communauté et peuvent être incomplètes. Des questions ou des améliorations ? <discord>Rejoindre Discord</discord>."
+	},
+	"startup": {
+		"sectionTitle": "Démarrage",
+		"sectionDescription": "Choisissez ce qui s’ouvre au démarrage de Glyph.",
+		"openPreviousTabs": {
+			"label": "Ouvrir les onglets précédents",
+			"description": "Démarrer cet espace avec les onglets que vous aviez laissés ouverts.",
+			"ariaLabel": "Reprendre la dernière session"
+		}
+	},
+	"editor": {
+		"sectionTitle": "Éditeur",
+		"sectionDescription": "Contrôles du comportement d’édition et de la structure des notes dans Glyph.",
+		"tableOfContents": {
+			"label": "Table des matières",
+			"description": "Afficher une table des matières flottante pour chaque note.",
+			"ariaLabel": "Table des matières"
+		},
+		"showFrontmatter": {
+			"label": "Afficher le frontmatter dans l’éditeur",
+			"description": "Afficher le frontmatter YAML en haut des notes pendant l’édition. Si désactivé, le frontmatter reste disponible pour l’indexation et les bases de données.",
+			"ariaLabel": "Afficher le frontmatter dans l’éditeur"
+		},
+		"colorfulHeadings": {
+			"label": "Titres colorés",
+			"description": "Utiliser des couleurs intégrées distinctes pour H1-H6 lors de l’édition des notes.",
+			"ariaLabel": "Titres colorés"
+		},
+		"collapsibleHeadings": {
+			"label": "Titres repliables",
+			"description": "Afficher les commandes de repli sur les titres des notes dans l’éditeur et l’aperçu.",
+			"ariaLabel": "Titres repliables"
+		},
+		"spellCheck": {
+			"label": "Vérification orthographique",
+			"description": "Souligner les fautes de frappe pendant la saisie. Cliquez avec le bouton droit sur un mot pour voir des suggestions.",
+			"ariaLabel": "Vérification orthographique"
+		},
+		"vimMode": {
+			"title": "Mode Vim",
+			"label": "Mode Vim",
+			"description": "N’activez PAS ceci si vous ne savez pas ce que cela signifie.",
+			"ariaLabel": "Mode Vim",
+			"helpAriaLabel": "Aide des raccourcis Vim",
+			"helpTitle": "Raccourcis Vim",
+			"insertMode": "<strong>insert</strong> désigne le mode de saisie normal. Vous tapez et le texte apparaît, comme le fait déjà l’éditeur.",
+			"normalMode": "<strong>normal</strong> désigne le mode commande. Vos touches déplacent le curseur ou modifient le texte au lieu de saisir des lettres.",
+			"help": {
+				"esc": "Entrer en mode commande Vim.",
+				"i": "Saisir à la position du curseur.",
+				"a": "Saisir après le curseur.",
+				"I": "Aller au début de la ligne et saisir.",
+				"A": "Aller à la fin de la ligne et saisir.",
+				"o": "Ouvrir une nouvelle ligne en dessous et saisir.",
+				"O": "Ouvrir une nouvelle ligne au-dessus et saisir.",
+				"hjkl": "Se déplacer à gauche, en bas, en haut et à droite.",
+				"w": "Aller au mot suivant.",
+				"b": "Revenir au mot précédent.",
+				"e": "Aller à la fin du mot.",
+				"0": "Aller au début de la ligne.",
+				"dollar": "Aller à la fin de la ligne.",
+				"gg": "Aller au début de la note.",
+				"G": "Aller à la fin de la note.",
+				"x": "Supprimer le caractère sous ou près du curseur.",
+				"dd": "Supprimer le contenu de la ligne actuelle.",
+				"u": "Annuler.",
+				"controlR": "Rétablir."
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "Arborescence des fichiers",
+		"sectionDescription": "Choisissez ce qui apparaît dans l’arborescence de la barre latérale et dans la liste Folio.",
+		"folderCounts": {
+			"label": "Afficher le nombre de fichiers par dossier",
+			"description": "Afficher le total récursif de fichiers à la fin de chaque ligne de dossier dans l’arborescence.",
+			"ariaLabel": "Afficher le nombre de fichiers par dossier"
+		},
+		"nonMarkdownFiles": {
+			"label": "Afficher les fichiers non Markdown",
+			"description": "Afficher les PDF, images et autres pièces jointes dans l’arborescence et la liste Folio. Si désactivé, ils sont masqués uniquement dans ces vues.",
+			"ariaLabel": "Afficher les fichiers non Markdown"
+		},
+		"sort": {
+			"label": "Tri de l’arborescence",
+			"description": "Choisissez comment les dossiers et fichiers sont ordonnés dans l’arborescence de la barre latérale.",
+			"ariaLabel": "Tri de l’arborescence"
+		}
+	}
+}

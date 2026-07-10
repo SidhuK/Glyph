@@ -1,0 +1,426 @@
+{
+	"categories": {
+		"workspace": "ワークスペース",
+		"navigation": "ナビゲーション",
+		"search": "検索",
+		"file": "ファイル操作",
+		"tabs": "タブ",
+		"ai": "AI",
+		"editor": "エディタ",
+		"settings": "設定"
+	},
+	"commands": {
+		"activate-tab-1": {
+			"label": "タブ 1 をアクティブにする",
+			"description": "タブ 1 に切り替えます。"
+		},
+		"activate-tab-2": {
+			"label": "タブ 2 をアクティブにする",
+			"description": "タブ 2 に切り替えます。"
+		},
+		"activate-tab-3": {
+			"label": "タブ 3 をアクティブにする",
+			"description": "タブ 3 に切り替えます。"
+		},
+		"activate-tab-4": {
+			"label": "タブ 4 をアクティブにする",
+			"description": "タブ 4 に切り替えます。"
+		},
+		"activate-tab-5": {
+			"label": "タブ 5 をアクティブにする",
+			"description": "タブ 5 に切り替えます。"
+		},
+		"activate-tab-6": {
+			"label": "タブ 6 をアクティブにする",
+			"description": "タブ 6 に切り替えます。"
+		},
+		"activate-tab-7": {
+			"label": "タブ 7 をアクティブにする",
+			"description": "タブ 7 に切り替えます。"
+		},
+		"activate-tab-8": {
+			"label": "タブ 8 をアクティブにする",
+			"description": "タブ 8 に切り替えます。"
+		},
+		"activate-tab-9": {
+			"label": "タブ 9 をアクティブにする",
+			"description": "タブ 9 に切り替えます。"
+		},
+		"ai-attach-all-open-notes": {
+			"label": "AI: 開いているすべてのノートを添付",
+			"description": "開いているすべてのノートを AI に添付します。"
+		},
+		"ai-attach-current-note": {
+			"label": "AI: 現在のノートを添付",
+			"description": "現在のノートを AI に添付します。"
+		},
+		"bold": {
+			"label": "太字",
+			"description": "選択範囲の太字を切り替えます。"
+		},
+		"bullet_list": {
+			"label": "箇条書きリスト",
+			"description": "箇条書きリストを切り替えます。"
+		},
+		"buy-glyph-license": {
+			"label": "Glyph ライセンスを購入",
+			"description": "Glyph の購入ページを開きます。"
+		},
+		"callout_error": {
+			"label": "エラーコールアウト",
+			"description": "エラーコールアウトブロックを挿入します。"
+		},
+		"callout_info": {
+			"label": "情報コールアウト",
+			"description": "情報コールアウトブロックを挿入します。"
+		},
+		"callout_success": {
+			"label": "成功コールアウト",
+			"description": "成功コールアウトブロックを挿入します。"
+		},
+		"callout_tip": {
+			"label": "ヒントコールアウト",
+			"description": "ヒントコールアウトブロックを挿入します。"
+		},
+		"callout_warning": {
+			"label": "警告コールアウト",
+			"description": "警告コールアウトブロックを挿入します。"
+		},
+		"close-active-tab": {
+			"label": "アクティブなタブを閉じる",
+			"description": "現在のタブを閉じます。"
+		},
+		"close-all-tabs": {
+			"label": "すべてのタブを閉じる",
+			"description": "開いているすべてのタブを閉じます。"
+		},
+		"close-space": {
+			"label": "現在のスペースを閉じる",
+			"description": "現在開いているスペースを閉じます。"
+		},
+		"code_block": {
+			"label": "コードブロック",
+			"description": "コードブロックを切り替えます。"
+		},
+		"collapse_all_headings": {
+			"label": "すべての見出しを折りたたむ",
+			"description": "現在のノートのすべての見出しを折りたたみます。"
+		},
+		"color_blue": {
+			"label": "文字色: 青",
+			"description": "青い文字色を適用します。"
+		},
+		"color_brown": {
+			"label": "文字色: 茶",
+			"description": "茶色の文字色を適用します。"
+		},
+		"color_clear": {
+			"label": "文字色をクリア",
+			"description": "文字色の書式を削除します。"
+		},
+		"color_gray": {
+			"label": "文字色: グレー",
+			"description": "グレーの文字色を適用します。"
+		},
+		"color_green": {
+			"label": "文字色: 緑",
+			"description": "緑の文字色を適用します。"
+		},
+		"color_orange": {
+			"label": "文字色: オレンジ",
+			"description": "オレンジの文字色を適用します。"
+		},
+		"color_purple": {
+			"label": "文字色: 紫",
+			"description": "紫の文字色を適用します。"
+		},
+		"color_red": {
+			"label": "文字色: 赤",
+			"description": "赤い文字色を適用します。"
+		},
+		"color_yellow": {
+			"label": "文字色: 黄",
+			"description": "黄色い文字色を適用します。"
+		},
+		"copy-note-markdown": {
+			"label": "ノートを Markdown としてコピー",
+			"description": "現在のノートを Markdown としてコピーします。"
+		},
+		"create-from-template": {
+			"label": "テンプレートから作成",
+			"description": "テンプレートから新しいノートを作成します。"
+		},
+		"create-space": {
+			"label": "スペースを作成",
+			"description": "新しいスペースを作成します。"
+		},
+		"details_block": {
+			"label": "詳細ブロック",
+			"description": "折りたたみ可能なトグルセクションを挿入します。"
+		},
+		"divider": {
+			"label": "区切り線",
+			"description": "水平の区切り線を挿入します。"
+		},
+		"duplicate-current-note": {
+			"label": "現在のノートを複製",
+			"description": "現在のノートを複製します。"
+		},
+		"expand_all_headings": {
+			"label": "すべての見出しを展開",
+			"description": "現在のノートのすべての見出しを展開します。"
+		},
+		"extract_selection_to_note": {
+			"label": "ノートに抽出",
+			"description": "現在の選択範囲からノートを作成します。"
+		},
+		"git-sync-now": {
+			"label": "今すぐ同期",
+			"description": "Git Sync を今すぐ実行します。"
+		},
+		"go-back-note": {
+			"label": "戻る",
+			"description": "現在のタブのノート履歴を戻ります。"
+		},
+		"go-forward-note": {
+			"label": "進む",
+			"description": "現在のタブのノート履歴を進みます。"
+		},
+		"heading_1": {
+			"label": "見出し 1",
+			"description": "現在のブロックをレベル 1 の見出しに変換します。"
+		},
+		"heading_2": {
+			"label": "見出し 2",
+			"description": "現在のブロックをレベル 2 の見出しに変換します。"
+		},
+		"heading_3": {
+			"label": "見出し 3",
+			"description": "現在のブロックをレベル 3 の見出しに変換します。"
+		},
+		"highlight_blue": {
+			"label": "ハイライト: 青",
+			"description": "青いテキストハイライトを適用します。"
+		},
+		"highlight_clear": {
+			"label": "ハイライトをクリア",
+			"description": "テキストハイライトの書式を削除します。"
+		},
+		"highlight_green": {
+			"label": "ハイライト: 緑",
+			"description": "緑のテキストハイライトを適用します。"
+		},
+		"highlight_red": {
+			"label": "ハイライト: 赤",
+			"description": "赤いテキストハイライトを適用します。"
+		},
+		"highlight_yellow": {
+			"label": "ハイライト: 黄",
+			"description": "黄色いテキストハイライトを適用します。"
+		},
+		"italic": {
+			"label": "斜体",
+			"description": "選択範囲の斜体を切り替えます。"
+		},
+		"link_clear": {
+			"label": "リンクを削除",
+			"description": "選択範囲から現在のリンクを削除します。"
+		},
+		"link_set": {
+			"label": "リンクを挿入または編集",
+			"description": "リンクを挿入するか、現在のリンクを編集します。"
+		},
+		"mermaid_chart": {
+			"label": "Mermaid チャート",
+			"description": "Mermaid コードブロックを挿入します。"
+		},
+		"move-active-file": {
+			"label": "アクティブなファイルを移動",
+			"description": "現在のファイルを別のフォルダに移動します。"
+		},
+		"new-database": {
+			"label": "新規コレクション",
+			"description": "新しいコレクションを作成します。"
+		},
+		"new-folder": {
+			"label": "新規フォルダ",
+			"description": "新しいフォルダを作成します。"
+		},
+		"new-note": {
+			"label": "新規ノート",
+			"description": "現在のフォルダに新しいノートを作成します。"
+		},
+		"new-tab": {
+			"label": "新規タブ",
+			"description": "空白のタブを開きます。"
+		},
+		"next-tab": {
+			"label": "次のタブ",
+			"description": "次のタブに移動します。"
+		},
+		"numbered_list": {
+			"label": "番号付きリスト",
+			"description": "番号付きリストを切り替えます。"
+		},
+		"open-about": {
+			"label": "このアプリについてを開く",
+			"description": "このアプリについての画面を開きます。"
+		},
+		"open-ai-settings": {
+			"label": "AI 設定を開く",
+			"description": "AI 設定を開きます。"
+		},
+		"open-all-docs": {
+			"label": "すべてのノートを開く",
+			"description": "すべてのノートビューを開きます。"
+		},
+		"open-command-palette": {
+			"label": "コマンドパレットを開く",
+			"description": "コマンドパレットを開きます。"
+		},
+		"open-daily-note": {
+			"label": "デイリーノートを開く",
+			"description": "今日のデイリーノートを開くか作成します。"
+		},
+		"open-databases": {
+			"label": "コレクションを開く",
+			"description": "コレクションビューを開きます。"
+		},
+		"open-git-sync-settings": {
+			"label": "Git Sync 設定を開く",
+			"description": "設定の Git Sync セクションを開きます。"
+		},
+		"open-license-settings": {
+			"label": "ライセンス設定を開く",
+			"description": "設定のライセンスセクションを開きます。"
+		},
+		"open-local-connections": {
+			"label": "ローカル接続を開く",
+			"description": "現在のノートのローカル接続を開きます。"
+		},
+		"open-quick-note": {
+			"label": "クイックノートを開く",
+			"description": "フローティングのクイックノートスクラッチパッドを開きます。"
+		},
+		"open-search-palette": {
+			"label": "検索パレットを開く",
+			"description": "コマンドパレットで検索を開きます。"
+		},
+		"open-settings": {
+			"label": "設定を開く",
+			"description": "設定ビューを開きます。"
+		},
+		"open-space": {
+			"label": "スペースを開く",
+			"description": "既存のスペースを開きます。"
+		},
+		"open-space-settings": {
+			"label": "スペース設定を開く",
+			"description": "現在のスペースの設定を開きます。"
+		},
+		"previous-tab": {
+			"label": "前のタブ",
+			"description": "前のタブに移動します。"
+		},
+		"quick-open": {
+			"label": "クイックオープン",
+			"description": "コマンドパレットをファイルモードで直接開きます。"
+		},
+		"quote": {
+			"label": "引用",
+			"description": "引用ブロックを切り替えます。"
+		},
+		"reveal-space": {
+			"label": "スペースを表示",
+			"description": "現在のスペースをシステムのファイルブラウザで表示します。"
+		},
+		"save-note": {
+			"label": "ノートを保存",
+			"description": "変更がある場合、現在のノートを保存します。"
+		},
+		"show-getting-started": {
+			"label": "はじめに",
+			"description": "はじめにのフローを開きます。"
+		},
+		"show-welcome-note": {
+			"label": "ウェルカムノート",
+			"description": "現在のスペースのルートにウェルカムノートを作成または開きます。"
+		},
+		"open-shortcuts-settings": {
+			"label": "キーボードショートカット…",
+			"description": "設定のキーボードショートカットセクションを開きます。"
+		},
+		"open-glyph-website": {
+			"label": "Glyph ウェブサイト",
+			"description": "Glyph のウェブサイトを開きます。"
+		},
+		"open-glyph-changelog": {
+			"label": "変更履歴",
+			"description": "公開されている Glyph の変更履歴を開きます。"
+		},
+		"open-glyph-privacy": {
+			"label": "プライバシーポリシー",
+			"description": "Glyph のプライバシーポリシーを開きます。"
+		},
+		"open-glyph-terms": {
+			"label": "利用規約",
+			"description": "Glyph の利用規約を開きます。"
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Glyph コミュニティの Discord を開きます。"
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "GitHub 上の Glyph リポジトリを開きます。"
+		},
+		"open-glyph-x": {
+			"label": "X でフォロー",
+			"description": "X で Karat Sidhu を開きます。"
+		},
+		"strikethrough": {
+			"label": "取り消し線",
+			"description": "選択範囲の取り消し線を切り替えます。"
+		},
+		"table": {
+			"label": "表",
+			"description": "Markdown の表を挿入します。"
+		},
+		"todo_list": {
+			"label": "To-do リスト",
+			"description": "タスクリストを切り替えます。"
+		},
+		"toggle-ai": {
+			"label": "AI パネルの表示切替",
+			"description": "AI アシスタントパネルの表示／非表示を切り替えます。"
+		},
+		"toggle-note-info-sidebar": {
+			"label": "ノート情報サイドバーの表示切替",
+			"description": "ノート情報サイドバーの表示／非表示を切り替えます。"
+		},
+		"toggle-pin-active-file": {
+			"label": "現在のファイルのピン留め切替",
+			"description": "アクティブなファイルのピン留めを切り替えます。"
+		},
+		"toggle-sidebar": {
+			"label": "サイドバーの表示切替",
+			"description": "ファイルツリーサイドバーの表示／非表示を切り替えます。"
+		},
+		"underline": {
+			"label": "下線",
+			"description": "選択範囲の下線を切り替えます。"
+		},
+		"switch-to-edit": {
+			"label": "リッチモード",
+			"description": "リッチな WYSIWYG 編集モードに切り替えます。"
+		},
+		"switch-to-preview": {
+			"label": "プレビューモード",
+			"description": "読み取り専用のプレビューモードに切り替えます。"
+		},
+		"switch-to-raw": {
+			"label": "Raw モード",
+			"description": "生の Markdown 編集モードに切り替えます。"
+		}
+	}
+}

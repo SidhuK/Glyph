@@ -1,4 +1,5 @@
 import { Fragment, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	formatShortcutForPlatform,
 	formatShortcutPartsForPlatform,
@@ -18,6 +19,8 @@ export function CommandList({
 	onSetSelectedIndex,
 	onRunCommand,
 }: CommandListProps) {
+	const { t } = useTranslation("shell");
+	const generalCategory = t("commandPalette.sectionGeneral");
 	const sections = useMemo(() => {
 		const order: string[] = [];
 		const grouped = new Map<
@@ -29,7 +32,7 @@ export function CommandList({
 		>();
 
 		filtered.forEach((command, index) => {
-			const category = command.category?.trim() || "General";
+			const category = command.category?.trim() || generalCategory;
 			if (!grouped.has(category)) {
 				grouped.set(category, []);
 				order.push(category);
@@ -41,15 +44,19 @@ export function CommandList({
 			category,
 			items: grouped.get(category) ?? [],
 		}));
-	}, [filtered]);
+	}, [filtered, generalCategory]);
 
 	if (filtered.length === 0) {
-		return <div className="commandPaletteEmpty">No commands</div>;
+		return (
+			<div className="commandPaletteEmpty">
+				{t("commandPalette.noCommands")}
+			</div>
+		);
 	}
 
 	const showSectionLabels =
 		sections.length > 1 ||
-		(sections.length === 1 && sections[0]?.category !== "General");
+		(sections.length === 1 && sections[0]?.category !== generalCategory);
 
 	return (
 		<>

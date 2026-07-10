@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import type { UiAccent } from "../../lib/settings";
-import { ACCENT_OPTIONS } from "./accentOptions";
+import { getAccentOptions } from "./accentOptions";
 
 interface AppearanceAccentPickerProps {
 	accent: UiAccent;
@@ -12,16 +13,18 @@ interface AppearanceAccentPickerProps {
 export function AppearanceAccentPicker({
 	accent,
 	onAccentChange,
-	"aria-label": ariaLabel = "Accent color",
+	"aria-label": ariaLabel,
 }: AppearanceAccentPickerProps) {
+	const { t } = useTranslation("settings.appearance");
+	const options = getAccentOptions();
 	return (
 		<div className="settingsAccentPicker">
 			<div
 				className="settingsAccentOptions"
 				role="radiogroup"
-				aria-label={ariaLabel}
+				aria-label={ariaLabel ?? t("accent.palette.ariaLabel")}
 			>
-				{ACCENT_OPTIONS.map((option) => (
+				{options.map((option) => (
 					<label
 						key={option.id}
 						className={cn(

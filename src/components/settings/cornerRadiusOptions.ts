@@ -1,23 +1,22 @@
+import { i18n } from "../../i18n";
 import type { UiCornerRadiusStyle } from "../../lib/settings";
 
-export const CORNER_RADIUS_OPTIONS: Array<{
+const CORNER_RADIUS_VALUES = [
+	"sharp",
+	"default",
+	"round",
+] as const satisfies readonly UiCornerRadiusStyle[];
+
+export function getCornerRadiusOptions(): Array<{
 	value: UiCornerRadiusStyle;
 	label: string;
 	description: string;
-}> = [
-	{
-		value: "sharp",
-		label: "Brutalist",
-		description: "Crisp, square edges throughout the app.",
-	},
-	{
-		value: "default",
-		label: "Default",
-		description: "Glyph's balanced look.",
-	},
-	{
-		value: "round",
-		label: "Soft",
-		description: "Gentler, more rounded edges throughout the app.",
-	},
-];
+}> {
+	return CORNER_RADIUS_VALUES.map((value) => ({
+		value,
+		label: i18n.t(`settings.appearance:shape.options.${value}.label`),
+		description: i18n.t(
+			`settings.appearance:shape.options.${value}.description`,
+		),
+	}));
+}
