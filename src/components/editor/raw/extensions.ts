@@ -228,6 +228,7 @@ export function createRawMarkdownExtensions(
 	vimMode: Extension,
 ): Extension[] {
 	return [
+		vimMode,
 		highlightSpecialChars(),
 		history(),
 		drawSelection(),
@@ -274,7 +275,6 @@ export function createRawMarkdownExtensions(
 				onChange();
 			}
 		}),
-		vimMode,
 		keymap.of([
 			...completionKeymap,
 			{ key: "Mod-b", run: wrapSelection("**") },
