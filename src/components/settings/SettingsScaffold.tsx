@@ -13,6 +13,8 @@ interface SettingsSectionProps {
 
 interface SettingsRowProps {
 	label: ReactNode;
+	/** String used for settings search targeting when `label` is not a plain string. */
+	title?: string;
 	htmlFor?: string;
 	description?: ReactNode;
 	children: ReactNode;
@@ -60,6 +62,7 @@ export function SettingsSection({
 
 export function SettingsRow({
 	label,
+	title,
 	htmlFor,
 	description,
 	children,
@@ -68,7 +71,7 @@ export function SettingsRow({
 	interactive = true,
 }: SettingsRowProps) {
 	const CopyTag = htmlFor ? "label" : "div";
-	const rowTitle = typeof label === "string" ? label : undefined;
+	const rowTitle = title ?? (typeof label === "string" ? label : undefined);
 
 	const tryToggleRowCheckbox = (
 		target: EventTarget | null,

@@ -2,7 +2,11 @@ import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { isMissingFileError } from "../../lib/fsErrors";
-import { loadSettings, setAiEnabled } from "../../lib/settings";
+import {
+	loadSettings,
+	setAiAssistantMode,
+	setAiEnabled,
+} from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -12,6 +16,7 @@ import {
 } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
+import { useSettingsBoolean } from "./useSettingsBoolean";
 
 const MISSING_FILE_RETRY_DELAY_MS = 80;
 const IS_DEV = import.meta.env.DEV;
@@ -50,6 +55,11 @@ export function AiSettingsPane() {
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
+	const setAiToolsEnabled = useCallback(async (checked: boolean) => {
+		await setAiAssistantMode(checked ? "create" : "chat");
+	}, []);
+	const aiToolsEnabled = useSettingsBoolean(true, setAiToolsEnabled, setError);
+	const setAiToolsEnabledChecked = aiToolsEnabled.setChecked;
 	const activeProfileIdRef = useRef<string | null>(null);
 	const pendingActiveProfileIdRef = useRef<string | null>(null);
 	const saveProfileRequestIdRef = useRef(0);
@@ -77,6 +87,7 @@ export function AiSettingsPane() {
 			const settings = await loadSettings();
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setAiEnabledState(settings.ui.aiEnabled);
+			setAiToolsEnabledChecked(settings.ui.aiAssistantMode === "create");
 			const [list, active] = await Promise.all([
 				invoke("ai_profiles_list"),
 				invoke("ai_active_profile_get"),
@@ -99,7 +110,7 @@ export function AiSettingsPane() {
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setError(errMessage(e));
 		}
-	}, [setActiveProfileIdTracked]);
+	}, [setActiveProfileIdTracked, setAiToolsEnabledChecked]);
 
 	useEffect(() => {
 		void reloadProfiles();
@@ -107,6 +118,18 @@ export function AiSettingsPane() {
 
 	useTauriEvent("ai:profiles-updated", () => {
 		void reloadProfiles();
+	});
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.aiEnabled === "boolean") {
+			setAiEnabledState(payload.ui.aiEnabled);
+		}
+		if (
+			payload.ui?.aiAssistantMode === "chat" ||
+			payload.ui?.aiAssistantMode === "create"
+		) {
+			setAiToolsEnabledChecked(payload.ui.aiAssistantMode === "create");
+		}
 	});
 
 	const updateAiEnabled = useCallback(async (enabled: boolean) => {
@@ -200,6 +223,24 @@ export function AiSettingsPane() {
 						</SettingsRow>
 					) : null}
 				</SettingsSection>
+				{aiEnabled ? (
+					<SettingsSection
+						title="Assistant behavior"
+						description="Choose whether Glyph AI can take actions with tools."
+					>
+						<SettingsRow
+							label="AI chat has access to tools"
+							description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
+						>
+							<SettingsToggle
+								checked={aiToolsEnabled.checked}
+								disabled={aiToolsEnabled.isSaving}
+								ariaLabel="AI chat has access to tools"
+								onCheckedChange={aiToolsEnabled.onCheckedChange}
+							/>
+						</SettingsRow>
+					</SettingsSection>
+				) : null}
 
 				{aiEnabled ? (
 					<AiProfileSections

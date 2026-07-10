@@ -15,7 +15,6 @@ const SETTINGS_TAB_LABELS = {
 	ai: "Glyph AI",
 	space: "Space",
 	git: "Git",
-	advanced: "Advanced",
 	about: "About",
 } as const satisfies Record<SettingsTab, string>;
 

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+
+import { useSpace } from "../../contexts";
 import {
 	ATTACHMENT_LOCATION_OPTIONS,
 	ATTACHMENT_MODE_UI,
@@ -15,15 +17,21 @@ import {
 	setDailyNotesFolder,
 	setEditorAttachmentFolder,
 	setEditorAttachmentStorageMode,
+	setEditorEnablePeopleMentionsAsTags,
 	setQuickNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
-import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
@@ -94,6 +102,10 @@ export function SpaceSettingsPane() {
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
 	const [isIndexing, setIsIndexing] = useState(false);
+	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
+		useState(false);
+	const [isSavingPeopleMentions, setIsSavingPeopleMentions] = useState(false);
+	const { startIndexRebuild } = useSpace();
 
 	const onRebuildIndex = useCallback(async () => {
 		if (!currentSpacePath) {
@@ -125,6 +137,7 @@ export function SpaceSettingsPane() {
 			setAttachmentFolderState(
 				settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
 			);
+			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		}
@@ -133,6 +146,37 @@ export function SpaceSettingsPane() {
 	useEffect(() => {
 		void refresh();
 	}, [refresh]);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
+		}
+	});
+
+	const handlePeopleMentionsChange = useCallback(
+		(checked: boolean) => {
+			const previous = enablePeopleMentionsAsTags;
+			setError("");
+			setIsSavingPeopleMentions(true);
+			void (async () => {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: checked,
+				});
+				if (currentSpacePath) await startIndexRebuild();
+				await setEditorEnablePeopleMentionsAsTags(checked);
+				setEnablePeopleMentionsAsTags(checked);
+			})()
+				.catch((cause) => {
+					setEnablePeopleMentionsAsTags(previous);
+					void invoke("index_set_people_mentions_as_tags_enabled", {
+						enabled: previous,
+					}).catch(() => undefined);
+					setError(extractErrorMessage(cause));
+				})
+				.finally(() => setIsSavingPeopleMentions(false));
+		},
+		[currentSpacePath, enablePeopleMentionsAsTags, startIndexRebuild],
+	);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
@@ -530,6 +574,17 @@ export function SpaceSettingsPane() {
 								</Button>
 							</div>
 						</div>
+					</SettingsRow>
+					<SettingsRow
+						label="People mentions as tags"
+						description="When enabled, standalone @mentions are indexed and shown as people in the sidebar and search."
+					>
+						<SettingsToggle
+							checked={enablePeopleMentionsAsTags}
+							disabled={isSavingPeopleMentions}
+							ariaLabel="People mentions as tags"
+							onCheckedChange={handlePeopleMentionsChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

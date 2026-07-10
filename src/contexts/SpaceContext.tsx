@@ -201,8 +201,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		setIsIndexing(true);
 		try {
 			await invoke("index_rebuild");
-		} catch {
-			/* index is derived; ignore */
 		} finally {
 			setIsIndexing(false);
 		}

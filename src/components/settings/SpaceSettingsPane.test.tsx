@@ -13,6 +13,7 @@ const {
 	setDailyNotesFolderMock,
 	setEditorAttachmentFolderMock,
 	setEditorAttachmentStorageModeMock,
+	setEditorEnablePeopleMentionsAsTagsMock,
 	setQuickNotesFolderMock,
 } = vi.hoisted(() => ({
 	getDailyNotesFolderMock: vi.fn(() => Promise.resolve(null)),
@@ -26,6 +27,7 @@ const {
 			editor: {
 				attachmentStorageMode: "note-folder",
 				attachmentFolder: "assets",
+				enablePeopleMentionsAsTags: false,
 			},
 			quickNotes: {
 				folder: "Quick Notes",
@@ -35,6 +37,7 @@ const {
 	setDailyNotesFolderMock: vi.fn(() => Promise.resolve()),
 	setEditorAttachmentFolderMock: vi.fn(() => Promise.resolve()),
 	setEditorAttachmentStorageModeMock: vi.fn(() => Promise.resolve()),
+	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
 	setQuickNotesFolderMock: vi.fn(() => Promise.resolve()),
 }));
 
@@ -43,6 +46,12 @@ const {
 		IS_REACT_ACT_ENVIRONMENT?: boolean;
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
+
+vi.mock("../../contexts", () => ({
+	useSpace: () => ({
+		startIndexRebuild: vi.fn(() => Promise.resolve()),
+	}),
+}));
 
 vi.mock("../../lib/settings", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../../lib/settings")>();
@@ -53,12 +62,18 @@ vi.mock("../../lib/settings", async (importOriginal) => {
 		setDailyNotesFolder: setDailyNotesFolderMock,
 		setEditorAttachmentFolder: setEditorAttachmentFolderMock,
 		setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
+		setEditorEnablePeopleMentionsAsTags:
+			setEditorEnablePeopleMentionsAsTagsMock,
 		setQuickNotesFolder: setQuickNotesFolderMock,
 	};
 });
 
 vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
+}));
+
+vi.mock("../../lib/tauriEvents", () => ({
+	useTauriEvent: vi.fn(),
 }));
 
 vi.mock("./TemplatesSettingsPane", () => ({
@@ -123,6 +138,22 @@ vi.mock("./SettingsScaffold", () => ({
 		icon: React.ReactNode;
 		value: string;
 	}) => <div>{value}</div>,
+	SettingsToggle: ({
+		checked,
+		ariaLabel,
+		onCheckedChange,
+	}: {
+		checked: boolean;
+		ariaLabel: string;
+		onCheckedChange: (checked: boolean) => void;
+	}) => (
+		<input
+			aria-label={ariaLabel}
+			checked={checked}
+			onChange={(event) => onCheckedChange(event.currentTarget.checked)}
+			type="checkbox"
+		/>
+	),
 }));
 
 describe("SpaceSettingsPane", () => {
@@ -253,6 +284,7 @@ describe("SpaceSettingsPane", () => {
 			editor: {
 				attachmentStorageMode: "specific-folder",
 				attachmentFolder: "Projects/Media",
+				enablePeopleMentionsAsTags: false,
 			},
 			quickNotes: { folder: "Quick Notes" },
 		});
@@ -284,6 +316,7 @@ describe("SpaceSettingsPane", () => {
 			editor: {
 				attachmentStorageMode: "specific-folder",
 				attachmentFolder: "Projects/Media",
+				enablePeopleMentionsAsTags: false,
 			},
 			quickNotes: { folder: "Quick Notes" },
 		});
@@ -322,6 +355,7 @@ describe("SpaceSettingsPane", () => {
 			editor: {
 				attachmentStorageMode: "note-folder",
 				attachmentFolder: "Projects/Media",
+				enablePeopleMentionsAsTags: false,
 			},
 			quickNotes: { folder: "Quick Notes" },
 		});
@@ -355,6 +389,7 @@ describe("SpaceSettingsPane", () => {
 			editor: {
 				attachmentStorageMode: "note-subfolder",
 				attachmentFolder: "../secret",
+				enablePeopleMentionsAsTags: false,
 			},
 			quickNotes: { folder: "Quick Notes" },
 		});
