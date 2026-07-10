@@ -13,25 +13,14 @@ import { cn } from "../../lib/utils";
 import { Search, X } from "../Icons";
 import { SETTINGS_TAB_GROUPS } from "../settings/settingsConfig";
 import {
+	localizedSettingsTabLabel,
 	scrollToSettingsSearchEntry,
 	searchSettingsEntries,
 } from "../settings/settingsSearch";
 import { Button } from "../ui/shadcn/button";
 
-function settingsTabLabel(
-	tabId: string,
-	fallback: string,
-	tGeneral: (key: string) => string,
-	tAppearance: (key: string) => string,
-): string {
-	if (tabId === "general") return tGeneral("nav.tab");
-	if (tabId === "appearance") return tAppearance("nav.tab");
-	return fallback;
-}
-
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 	const { t: tGeneral, i18n } = useTranslation("settings.general");
-	const { t: tAppearance } = useTranslation("settings.appearance");
 	const { settingsTab, setSettingsTab, closeSettings } = useUILayoutContext();
 	const { status: licenseStatus } = useLicenseStatus(false);
 	const [settingsSearchQuery, setSettingsSearchQuery] = useState("");
@@ -178,12 +167,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 											{tab.renderIcon()}
 										</span>
 										<span className="sidebarQuickActionLabel settingsTabLabel">
-											{settingsTabLabel(
-												tab.id,
-												tab.label,
-												tGeneral,
-												tAppearance,
-											)}
+											{localizedSettingsTabLabel(tab.id, i18n.language)}
 										</span>
 									</button>
 								))}

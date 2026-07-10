@@ -70,6 +70,7 @@ import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
 import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
+import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { springPresets } from "../ui/animations";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { GettingStartedPane } from "./GettingStartedPane";
@@ -706,19 +707,16 @@ export const MainContent = memo(function MainContent({
 		about: <AboutSettingsPane />,
 	};
 
-	const { t: tGeneral } = useTranslation("settings.general");
-	const { t: tAppearance } = useTranslation("settings.appearance");
+	const { i18n } = useTranslation();
 	const activeSettingsTabMeta = useMemo(
 		() =>
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
-	const settingsPanelTitle =
-		activeSettingsTabMeta.id === "general"
-			? tGeneral("nav.panelTitle")
-			: activeSettingsTabMeta.id === "appearance"
-				? tAppearance("nav.panelTitle")
-				: activeSettingsTabMeta.label;
+	const settingsPanelTitle = localizedSettingsTabLabel(
+		activeSettingsTabMeta.id,
+		i18n.language,
+	);
 	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
 	const isActivityTab = viewerPath === ACTIVITY_TIMELINE_TAB_ID;

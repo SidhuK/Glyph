@@ -65,8 +65,7 @@ export function buildEditorCommands({
 			icon: <ChevronDown size="var(--icon-lg)" />,
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
-			action: () =>
-				dispatchEditorMenuAction({ action: "expand_all_headings" }),
+			action: () => dispatchEditorMenuAction({ action: "expand_all_headings" }),
 		},
 	];
 

@@ -26,7 +26,6 @@ import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	type SupportedCodeBlockLanguage,
-	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
 import {
@@ -562,9 +561,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
 		[selectedCodeBlock?.language],
 	);
-	const selectedCodeBlockLanguageLabel = getCodeBlockLanguageLabel(
-		selectedCodeBlock?.language,
-	);
 
 	const applyCodeBlockLanguage = useCallback(
 		(language: SupportedCodeBlockLanguage) => {
@@ -676,7 +672,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			pickerOpen: codeBlockPickerOpen,
 			onPickerOpenChange: setCodeBlockPickerOpen,
 			language: selectedCodeBlockLanguage,
-			languageLabel: selectedCodeBlockLanguageLabel,
 			copied: codeBlockCopied,
 			canPreview: selectedCodeBlockCanPreview,
 			onPickerMouseDown: preventOverlayMouseDown,
@@ -694,7 +689,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			selectedCodeBlock,
 			selectedCodeBlockCanPreview,
 			selectedCodeBlockLanguage,
-			selectedCodeBlockLanguageLabel,
 		],
 	);
 

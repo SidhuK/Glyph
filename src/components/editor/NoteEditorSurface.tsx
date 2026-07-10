@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { TableInlineControls } from "./TableInlineControls";
 import {
 	type SupportedCodeBlockLanguage,
+	getCodeBlockLanguageLabel,
 	getCodeBlockLanguageOptions,
 } from "./extensions/codeBlockHighlighting";
 import type {
@@ -35,7 +36,6 @@ interface NoteEditorSurfaceProps {
 		pickerOpen: boolean;
 		onPickerOpenChange: (open: boolean) => void;
 		language: SupportedCodeBlockLanguage | null;
-		languageLabel: string;
 		copied: boolean;
 		onPickerMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
@@ -56,6 +56,9 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 }: NoteEditorSurfaceProps) {
 	const { t } = useTranslation("editor");
 	const languageOptions = getCodeBlockLanguageOptions();
+	const languageLabel = getCodeBlockLanguageLabel(
+		codeBlock.selected?.language ?? codeBlock.language,
+	);
 	const hostClassName = [
 		"tiptapHostInline",
 		mode === "preview" ? "is-preview" : "",
@@ -106,7 +109,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 									/>
 								</span>
 								<span className="codeBlockLanguageBtnLabel mono">
-									{codeBlock.languageLabel}
+									{languageLabel}
 								</span>
 							</button>
 						</PopoverTrigger>

@@ -28,6 +28,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { type Dispatch, type SetStateAction, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import { i18n } from "../../i18n";
 import {
@@ -273,7 +274,8 @@ export function useAppCommands({
 	togglePinnedFile,
 	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
-	const language = i18n.language;
+	const { i18n: i18nInstance } = useTranslation();
+	const language = i18nInstance.language;
 	return useMemo<Command[]>(() => {
 		const movePickerCommands = buildMovePickerCommands({
 			fileTree,
@@ -515,6 +517,7 @@ export function useAppCommands({
 			},
 			{
 				id: "copy-active-file-relative-path",
+				label: "Copy current file relative path",
 				icon: (
 					<HugeiconsIcon
 						icon={Link01Icon}
@@ -532,6 +535,7 @@ export function useAppCommands({
 			},
 			{
 				id: "copy-active-file-absolute-path",
+				label: "Copy current file absolute path",
 				icon: (
 					<HugeiconsIcon
 						icon={Link01Icon}
@@ -620,6 +624,7 @@ export function useAppCommands({
 			},
 			{
 				id: "open-connections",
+				label: "Open Connections",
 				icon: (
 					<HugeiconsIcon
 						icon={ChartRelationshipIcon}
@@ -644,6 +649,7 @@ export function useAppCommands({
 			},
 			{
 				id: "open-calendar",
+				label: "Open calendar",
 				icon: (
 					<HugeiconsIcon
 						icon={Calendar03Icon}

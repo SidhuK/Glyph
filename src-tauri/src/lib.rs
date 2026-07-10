@@ -135,11 +135,32 @@ struct QuickNoteShortcutState {
     current_accelerator: Mutex<Option<String>>,
 }
 
+fn default_menu_label(id: &str) -> String {
+    match id {
+        "app.about" => "About Glyph".to_string(),
+        "app.settings" => "Settings…".to_string(),
+        "menu.file" => "File".to_string(),
+        "menu.edit" => "Edit".to_string(),
+        "menu.markdown" => "Markdown".to_string(),
+        "editor.text_color.menu" => "Text Color".to_string(),
+        "editor.text_highlight.menu" => "Text Highlight".to_string(),
+        "menu.ai" => "AI".to_string(),
+        "menu.space" => "Space".to_string(),
+        "space.recent.menu" => "Recent Spaces".to_string(),
+        "space.recent.empty" => "No Recent Spaces".to_string(),
+        "menu.window" => "Window".to_string(),
+        "menu.help" => "Help".to_string(),
+        _ => menu_manifest::command_for_menu_id(id)
+            .map(|command| command.label)
+            .unwrap_or_else(|| id.to_string()),
+    }
+}
+
 fn menu_label(menu_labels: &HashMap<String, String>, id: &str) -> String {
     menu_labels
         .get(id)
         .cloned()
-        .unwrap_or_else(|| id.to_string())
+        .unwrap_or_else(|| default_menu_label(id))
 }
 
 fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(

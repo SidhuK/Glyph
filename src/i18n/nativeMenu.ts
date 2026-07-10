@@ -21,13 +21,14 @@ const NATIVE_MENU_CHROME_KEYS = [
 export function buildNativeMenuLabels(): Record<string, string> {
 	const labels: Record<string, string> = {};
 
-	for (const [id, key] of NATIVE_MENU_CHROME_KEYS) {
-		labels[id] = i18n.t(`menu:${key}`);
-	}
-
 	for (const command of listCommandDefinitions()) {
 		if (!command.menuId) continue;
 		labels[command.menuId] = i18n.t(`commands:commands.${command.id}.label`);
+	}
+
+	// Chrome labels win over command labels for shared IDs (app.about, app.settings).
+	for (const [id, key] of NATIVE_MENU_CHROME_KEYS) {
+		labels[id] = i18n.t(`menu:${key}`);
 	}
 
 	return labels;

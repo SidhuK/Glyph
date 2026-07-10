@@ -1,8 +1,8 @@
 import { ReloadIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { i18n } from "../../i18n";
 import {
 	type ShortcutBindings,
 	findShortcutConflict,
@@ -29,10 +29,6 @@ import {
 import { Trash2 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
-
-function shortcutCategoryLabel(category: ShortcutCategory): string {
-	return i18n.t(`commands:categories.${category}`);
-}
 
 function formatBinding(binding: Shortcut | null) {
 	return binding ? formatShortcutForPlatform(binding) : "Disabled";
@@ -65,6 +61,7 @@ interface ShortcutCaptureEvent {
 }
 
 export function ShortcutsSettingsPane() {
+	const { t } = useTranslation("commands");
 	const { actionsWithBindings, bindings } = useShortcutBindings();
 	const [filter, setFilter] = useState("");
 	const [recordingActionId, setRecordingActionId] = useState<string | null>(
@@ -78,14 +75,17 @@ export function ShortcutsSettingsPane() {
 		if (!query) return actionsWithBindings;
 		return actionsWithBindings.filter((action) => {
 			const binding = formatBinding(action.binding).toLowerCase();
+			const label = t(`commands.${action.id}.label`).toLowerCase();
+			const description = t(`commands.${action.id}.description`).toLowerCase();
+			const category = t(`categories.${action.category}`).toLowerCase();
 			return (
-				action.label.toLowerCase().includes(query) ||
-				action.description.toLowerCase().includes(query) ||
-				shortcutCategoryLabel(action.category).toLowerCase().includes(query) ||
+				label.includes(query) ||
+				description.includes(query) ||
+				category.includes(query) ||
 				binding.includes(query)
 			);
 		});
-	}, [actionsWithBindings, filter]);
+	}, [actionsWithBindings, filter, t]);
 
 	const groupedActions = useMemo(() => {
 		const groups = new Map<ShortcutCategory, typeof filteredActions>();
@@ -159,7 +159,9 @@ export function ShortcutsSettingsPane() {
 			if (conflictId) {
 				const conflict = getShortcutActionDefinition(conflictId);
 				setError(
-					`${formatShortcutForPlatform(nextBinding)} is already used by ${conflict?.label ?? conflictId}.`,
+					`${formatShortcutForPlatform(nextBinding)} is already used by ${
+						conflict ? t(`commands.${conflictId}.label`) : conflictId
+					}.`,
 				);
 				return;
 			}
@@ -176,7 +178,7 @@ export function ShortcutsSettingsPane() {
 				setBusyActionId(null);
 			}
 		},
-		[bindings],
+		[bindings, t],
 	);
 
 	const handleRecordKeyUp = useCallback(
@@ -230,18 +232,15 @@ export function ShortcutsSettingsPane() {
 					{error ? <div className="shortcutError">{error}</div> : null}
 				</div>
 				{groupedActions.map(([category, categoryActions]) => (
-					<SettingsSection
-						key={category}
-						title={shortcutCategoryLabel(category)}
-					>
+					<SettingsSection key={category} title={t(`categories.${category}`)}>
 						{categoryActions.map((action) => {
 							const isRecording = recordingActionId === action.id;
 							const isBusy = busyActionId === action.id;
 							return (
 								<SettingsRow
 									key={action.id}
-									label={action.label}
-									description={action.description}
+									label={t(`commands.${action.id}.label`)}
+									description={t(`commands.${action.id}.description`)}
 									stacked
 								>
 									<div className="shortcutBindingRow">
