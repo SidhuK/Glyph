@@ -424,10 +424,10 @@
 			"section": "Editor",
 			"keywords": ["spelling", "typo", "dictionary"]
 		},
-		"general-editor-vim-keybindings": {
+		"general-editor-vim-mode": {
 			"title": "Vim Mode",
 			"section": "Editor",
-			"keywords": ["vim", "keybindings", "keyboard", "modal"]
+			"keywords": ["vim", "raw", "markdown", "keybindings", "keyboard"]
 		},
 		"ai-assistant-behavior-tools": {
 			"title": "AI chat has access to tools",

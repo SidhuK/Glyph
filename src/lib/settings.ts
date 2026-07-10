@@ -184,7 +184,7 @@ interface EditorSettings {
 	attachmentStorageMode: AttachmentStorageMode;
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
-	vimKeybindings: boolean;
+	rawMarkdownVimMode: boolean;
 	spellCheck: boolean;
 }
 
@@ -223,7 +223,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	attachmentStorageMode: "note-folder",
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
-	vimKeybindings: false,
+	rawMarkdownVimMode: false,
 	spellCheck: true,
 };
 
@@ -416,7 +416,7 @@ async function emitSettingsUpdated(payload: {
 		attachmentStorageMode?: AttachmentStorageMode;
 		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
-		vimKeybindings?: boolean;
+		rawMarkdownVimMode?: boolean;
 		spellCheck?: boolean;
 	};
 	shortcuts?: {
@@ -556,7 +556,7 @@ const KEYS = {
 	editorAttachmentStorageMode: "editor.attachmentStorageMode",
 	editorAttachmentFolder: "editor.attachmentFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
-	editorVimKeybindings: "editor.vimKeybindings",
+	editorRawMarkdownVimMode: "editor.rawMarkdownVimMode",
 	editorSpellCheck: "editor.spellCheck",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
@@ -930,9 +930,9 @@ export async function loadSettings(
 		entries,
 		KEYS.editorEnablePeopleMentionsAsTags,
 	);
-	const rawEditorVimKeybindings = getSettingValue<boolean | null>(
+	const rawEditorRawMarkdownVimMode = getSettingValue<boolean | null>(
 		entries,
-		KEYS.editorVimKeybindings,
+		KEYS.editorRawMarkdownVimMode,
 	);
 	const rawEditorSpellCheck = getSettingValue<boolean | null>(
 		entries,
@@ -1074,10 +1074,10 @@ export async function loadSettings(
 			typeof rawEditorEnablePeopleMentionsAsTags === "boolean"
 				? rawEditorEnablePeopleMentionsAsTags
 				: DEFAULT_EDITOR_SETTINGS.enablePeopleMentionsAsTags,
-		vimKeybindings:
-			typeof rawEditorVimKeybindings === "boolean"
-				? rawEditorVimKeybindings
-				: DEFAULT_EDITOR_SETTINGS.vimKeybindings,
+		rawMarkdownVimMode:
+			typeof rawEditorRawMarkdownVimMode === "boolean"
+				? rawEditorRawMarkdownVimMode
+				: DEFAULT_EDITOR_SETTINGS.rawMarkdownVimMode,
 		spellCheck:
 			typeof rawEditorSpellCheck === "boolean"
 				? rawEditorSpellCheck
@@ -1591,12 +1591,14 @@ export async function setEditorEnablePeopleMentionsAsTags(
 	});
 }
 
-export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
+export async function setEditorRawMarkdownVimMode(
+	enabled: boolean,
+): Promise<void> {
 	const store = await getSettingsStore();
-	await store.set(KEYS.editorVimKeybindings, enabled);
+	await store.set(KEYS.editorRawMarkdownVimMode, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
-		editor: { vimKeybindings: enabled },
+		editor: { rawMarkdownVimMode: enabled },
 	});
 }
 

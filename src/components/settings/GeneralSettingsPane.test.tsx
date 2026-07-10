@@ -26,7 +26,7 @@ vi.mock("../../lib/settings", () => ({
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
 				spellCheck: true,
-				vimKeybindings: false,
+				rawMarkdownVimMode: false,
 			},
 		}),
 	),
@@ -37,7 +37,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorColorfulHeadings: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadings: vi.fn(() => Promise.resolve()),
 	setEditorSpellCheck: vi.fn(() => Promise.resolve()),
-	setEditorVimKeybindings: vi.fn(() => Promise.resolve()),
+	setEditorRawMarkdownVimMode: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCounts: vi.fn(() => Promise.resolve()),
 	setShowNonMarkdownFiles: vi.fn(() => Promise.resolve()),
 }));

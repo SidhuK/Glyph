@@ -8,10 +8,10 @@ import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
 	setEditorColorfulHeadings,
+	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
 	setEditorSpellCheck,
-	setEditorVimKeybindings,
 	setLanguage,
 	setResumeLastSession,
 	setShowFileTreeFolderCounts,
@@ -30,36 +30,14 @@ import {
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
-const VIM_HELP_ENTRIES = [
-	{ key: "Esc", actionKey: "esc" },
-	{ key: "i", actionKey: "i" },
-	{ key: "a", actionKey: "a" },
-	{ key: "I", actionKey: "I" },
-	{ key: "A", actionKey: "A" },
-	{ key: "o", actionKey: "o" },
-	{ key: "O", actionKey: "O" },
-	{ key: "h / j / k / l", actionKey: "hjkl" },
-	{ key: "w", actionKey: "w" },
-	{ key: "b", actionKey: "b" },
-	{ key: "e", actionKey: "e" },
-	{ key: "0", actionKey: "0" },
-	{ key: "$", actionKey: "dollar" },
-	{ key: "gg", actionKey: "gg" },
-	{ key: "G", actionKey: "G" },
-	{ key: "x", actionKey: "x" },
-	{ key: "dd", actionKey: "dd" },
-	{ key: "u", actionKey: "u" },
-	{ key: "Control-r", actionKey: "controlR" },
-] as const;
-
-function VimKeybindingsHelp() {
+function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
-					className="vimKeybindingsInfoButton"
+					className="vimModeInfoButton"
 					aria-label={t("editor.vimMode.helpAriaLabel")}
 				>
 					<HugeiconsIcon
@@ -73,35 +51,9 @@ function VimKeybindingsHelp() {
 				align="start"
 				side="right"
 				sideOffset={8}
-				className="vimKeybindingsPopover"
+				className="vimModeInfoPopover"
 			>
-				<div className="vimKeybindingsPopoverTitle">
-					{t("editor.vimMode.helpTitle")}
-				</div>
-				<div className="vimKeybindingsModes">
-					<div>
-						<Trans
-							ns="settings.general"
-							i18nKey="editor.vimMode.insertMode"
-							components={{ strong: <strong /> }}
-						/>
-					</div>
-					<div>
-						<Trans
-							ns="settings.general"
-							i18nKey="editor.vimMode.normalMode"
-							components={{ strong: <strong /> }}
-						/>
-					</div>
-				</div>
-				<div className="vimKeybindingsList">
-					{VIM_HELP_ENTRIES.map((item) => (
-						<div className="vimKeybindingsItem" key={item.key}>
-							<kbd>{item.key}</kbd>
-							<span>{t(`editor.vimMode.help.${item.actionKey}`)}</span>
-						</div>
-					))}
-				</div>
+				{t("editor.vimMode.info")}
 			</PopoverContent>
 		</Popover>
 	);
@@ -133,9 +85,9 @@ export function GeneralSettingsPane() {
 		setError,
 	);
 	const spellCheck = useSettingsBoolean(true, setEditorSpellCheck, setError);
-	const vimKeybindings = useSettingsBoolean(
+	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
-		setEditorVimKeybindings,
+		setEditorRawMarkdownVimMode,
 		setError,
 	);
 	const folderCounts = useSettingsBoolean(
@@ -155,7 +107,7 @@ export function GeneralSettingsPane() {
 	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
 	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
 	const setSpellCheckChecked = spellCheck.setChecked;
-	const setVimKeybindingsChecked = vimKeybindings.setChecked;
+	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
 	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
 
@@ -172,7 +124,7 @@ export function GeneralSettingsPane() {
 				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
 				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
 				setSpellCheckChecked(settings.editor.spellCheck);
-				setVimKeybindingsChecked(settings.editor.vimKeybindings);
+				setRawMarkdownVimModeChecked(settings.editor.rawMarkdownVimMode);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
 				setNonMarkdownFilesChecked(settings.ui.showNonMarkdownFiles);
 			})
@@ -191,7 +143,7 @@ export function GeneralSettingsPane() {
 		setColorfulHeadingsChecked,
 		setCollapsibleHeadingsChecked,
 		setSpellCheckChecked,
-		setVimKeybindingsChecked,
+		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
 		setNonMarkdownFilesChecked,
 	]);
@@ -222,8 +174,8 @@ export function GeneralSettingsPane() {
 				);
 				applyIfBoolean(payload.editor?.spellCheck, setSpellCheckChecked);
 				applyIfBoolean(
-					payload.editor?.vimKeybindings,
-					setVimKeybindingsChecked,
+					payload.editor?.rawMarkdownVimMode,
+					setRawMarkdownVimModeChecked,
 				);
 				applyIfBoolean(
 					payload.ui?.showFileTreeFolderCounts,
@@ -241,7 +193,7 @@ export function GeneralSettingsPane() {
 				setColorfulHeadingsChecked,
 				setCollapsibleHeadingsChecked,
 				setSpellCheckChecked,
-				setVimKeybindingsChecked,
+				setRawMarkdownVimModeChecked,
 				setFolderCountsChecked,
 				setNonMarkdownFilesChecked,
 			],
@@ -343,16 +295,16 @@ export function GeneralSettingsPane() {
 						label={
 							<span className="settingsLabelWithHelp">
 								{t("editor.vimMode.label")}
-								<VimKeybindingsHelp />
+								<VimModeInfo />
 							</span>
 						}
 						description={t("editor.vimMode.description")}
 					>
 						<SettingsToggle
-							checked={vimKeybindings.checked}
-							disabled={vimKeybindings.isSaving}
+							checked={rawMarkdownVimMode.checked}
+							disabled={rawMarkdownVimMode.isSaving}
 							ariaLabel={t("editor.vimMode.ariaLabel")}
-							onCheckedChange={vimKeybindings.onCheckedChange}
+							onCheckedChange={rawMarkdownVimMode.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

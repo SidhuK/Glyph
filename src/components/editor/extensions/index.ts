@@ -39,7 +39,6 @@ import { NoteSearch } from "./noteSearch";
 import { PersonAutocomplete } from "./personAutocomplete";
 import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
-import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
 
 function parseCalloutMarker(
@@ -675,7 +674,6 @@ interface CreateEditorExtensionsOptions {
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	enablePeopleMentions?: boolean;
-	enableVimKeybindings?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
@@ -692,7 +690,6 @@ export function createEditorExtensions(
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
 		enablePeopleMentions = false,
-		enableVimKeybindings = false,
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
@@ -774,6 +771,5 @@ export function createEditorExtensions(
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
 		FootnoteDecorations,
-		...(enableEditingExtensions && enableVimKeybindings ? [VimMode] : []),
 	];
 }

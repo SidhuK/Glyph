@@ -496,7 +496,7 @@
 				"dictionary"
 			]
 		},
-		"general-editor-vim-keybindings": {
+		"general-editor-vim-mode": {
 			"title": "Mode Vim",
 			"section": "Éditeur",
 			"keywords": [
@@ -505,7 +505,9 @@
 				"clavier",
 				"modal",
 				"keybindings",
-				"keyboard"
+				"keyboard",
+				"raw",
+				"markdown"
 			]
 		},
 		"ai-assistant-behavior-tools": {

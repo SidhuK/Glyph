@@ -34,6 +34,7 @@ import {
 import {
 	type Command,
 	EditorView,
+	type ViewUpdate,
 	drawSelection,
 	dropCursor,
 	highlightSpecialChars,
@@ -41,6 +42,7 @@ import {
 	rectangularSelection,
 } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
+import { vim } from "@replit/codemirror-vim";
 import { latexHoverTooltip } from "codemirror-lang-latex";
 import { createRawMarkdownDecorations } from "./decorations";
 import {
@@ -201,11 +203,34 @@ function moveTableCell(direction: 1 | -1): Command {
 	};
 }
 
+const EDITOR_SCROLL_HOST_SELECTOR = ".rfNodeNoteEditorBody";
+
+function scrollOuterNoteBodyToCursor(update: ViewUpdate): void {
+	if (!update.selectionSet) return;
+	const scrollHost = update.view.dom.closest(EDITOR_SCROLL_HOST_SELECTOR);
+	if (!(scrollHost instanceof HTMLElement)) return;
+
+	try {
+		const cursor = update.view.coordsAtPos(update.state.selection.main.head);
+		if (!cursor) return;
+		const hostBounds = scrollHost.getBoundingClientRect();
+		if (cursor.top < hostBounds.top) {
+			scrollHost.scrollTop += cursor.top - hostBounds.top;
+		} else if (cursor.bottom > hostBounds.bottom) {
+			scrollHost.scrollTop += cursor.bottom - hostBounds.bottom;
+		}
+	} catch {
+		// CodeMirror can have no measurable cursor while the editor is unmounting.
+	}
+}
+
 export function createRawMarkdownExtensions(
 	onChange: () => void,
 	getRelPath: () => string,
+	vimMode: Extension,
 ): Extension[] {
 	return [
+		vimMode,
 		highlightSpecialChars(),
 		history(),
 		drawSelection(),
@@ -268,4 +293,13 @@ export function createRawMarkdownExtensions(
 			...defaultKeymap,
 		]),
 	];
+}
+
+export function createRawMarkdownVimMode(enabled: boolean): Extension {
+	return enabled
+		? [
+				vim({ status: true }),
+				EditorView.updateListener.of(scrollOuterNoteBodyToCursor),
+			]
+		: [];
 }

@@ -21,30 +21,40 @@ export function applyEditorSpellCheck(
 	}
 }
 
-export function useEditorSpellCheck(): boolean {
-	const [enabled, setEnabled] = useState(true);
+function useEditorBooleanSetting(
+	key: "spellCheck" | "rawMarkdownVimMode",
+	defaultValue: boolean,
+): boolean {
+	const [enabled, setEnabled] = useState(defaultValue);
 
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
-				setEnabled(settings.editor.spellCheck !== false);
+				const value = settings.editor[key];
+				setEnabled(typeof value === "boolean" ? value : defaultValue);
 			})
 			.catch(() => {
-				if (cancelled) return;
-				setEnabled(true);
+				if (!cancelled) setEnabled(defaultValue);
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [defaultValue, key]);
 
 	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.editor?.spellCheck === "boolean") {
-			setEnabled(payload.editor.spellCheck);
-		}
+		const value = payload.editor?.[key];
+		if (typeof value === "boolean") setEnabled(value);
 	});
 
 	return enabled;
+}
+
+export function useEditorSpellCheck(): boolean {
+	return useEditorBooleanSetting("spellCheck", true);
+}
+
+export function useRawMarkdownVimMode(): boolean {
+	return useEditorBooleanSetting("rawMarkdownVimMode", false);
 }

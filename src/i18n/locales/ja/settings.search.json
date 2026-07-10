@@ -492,7 +492,7 @@
 			"section": "エディタ",
 			"keywords": ["スペル", "誤字", "辞書", "spelling", "typo", "dictionary"]
 		},
-		"general-editor-vim-keybindings": {
+		"general-editor-vim-mode": {
 			"title": "Vim モード",
 			"section": "エディタ",
 			"keywords": [
@@ -501,7 +501,9 @@
 				"キーボード",
 				"モーダル",
 				"keybindings",
-				"keyboard"
+				"keyboard",
+				"raw",
+				"markdown"
 			]
 		},
 		"ai-assistant-behavior-tools": {

@@ -122,38 +122,38 @@ describe("settings spell check", () => {
 	});
 });
 
-describe("settings Vim keybindings", () => {
+describe("settings Raw Markdown Vim Mode", () => {
 	beforeEach(() => {
 		vi.resetModules();
 		emitMock.mockClear();
 		storeState.clear();
 	});
 
-	it("defaults Vim keybindings to false", async () => {
+	it("defaults Raw Markdown Vim Mode to false", async () => {
 		const { loadSettings } = await import("./settings");
 
 		const settings = await loadSettings();
 
-		expect(settings.editor.vimKeybindings).toBe(false);
+		expect(settings.editor.rawMarkdownVimMode).toBe(false);
 	});
 
-	it("loads Vim keybindings from the store", async () => {
-		storeState.set("editor.vimKeybindings", true);
+	it("loads Raw Markdown Vim Mode from the store", async () => {
+		storeState.set("editor.rawMarkdownVimMode", true);
 		const { loadSettings } = await import("./settings");
 
 		const settings = await loadSettings();
 
-		expect(settings.editor.vimKeybindings).toBe(true);
+		expect(settings.editor.rawMarkdownVimMode).toBe(true);
 	});
 
-	it("persists and emits Vim keybinding changes", async () => {
-		const { setEditorVimKeybindings } = await import("./settings");
+	it("persists and emits Raw Markdown Vim Mode changes", async () => {
+		const { setEditorRawMarkdownVimMode } = await import("./settings");
 
-		await setEditorVimKeybindings(true);
+		await setEditorRawMarkdownVimMode(true);
 
-		expect(storeState.get("editor.vimKeybindings")).toBe(true);
+		expect(storeState.get("editor.rawMarkdownVimMode")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
-			editor: { vimKeybindings: true },
+			editor: { rawMarkdownVimMode: true },
 		});
 	});
 });

@@ -11,7 +11,6 @@ export function useNoteEditorSettings() {
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
-	const [vimKeybindingsEnabled, setVimKeybindingsEnabled] = useState(false);
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 
@@ -26,7 +25,6 @@ export function useNoteEditorSettings() {
 				);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-				setVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
 				attachmentFolderRef.current = settings.editor.attachmentFolder;
@@ -37,7 +35,6 @@ export function useNoteEditorSettings() {
 				setShowFrontmatterInEditor(false);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
-				setVimKeybindingsEnabled(false);
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
@@ -59,9 +56,6 @@ export function useNoteEditorSettings() {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
-		if (typeof payload.editor?.vimKeybindings === "boolean") {
-			setVimKeybindingsEnabled(payload.editor.vimKeybindings);
-		}
 		if (payload.editor?.attachmentStorageMode) {
 			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
 		}
@@ -77,6 +71,5 @@ export function useNoteEditorSettings() {
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
 		showFrontmatterInEditor,
-		vimKeybindingsEnabled,
 	};
 }

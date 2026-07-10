@@ -1,4 +1,4 @@
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import {
 	forwardRef,
@@ -11,9 +11,11 @@ import {
 import {
 	applyDomSpellCheck,
 	useEditorSpellCheck,
+	useRawMarkdownVimMode,
 } from "../hooks/useEditorSpellCheck";
 import {
 	createRawMarkdownExtensions,
+	createRawMarkdownVimMode,
 	externalRawMarkdownUpdate,
 } from "./extensions";
 import type { RawMarkdownEditorHandle } from "./types";
@@ -56,7 +58,11 @@ export const RawMarkdownEditor = forwardRef<
 	const changeTimerRef = useRef<number | null>(null);
 	const hasPendingChangeRef = useRef(false);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const vimModeCompartmentRef = useRef(new Compartment());
 	const spellCheckEnabled = useEditorSpellCheck();
+	const vimModeEnabled = useRawMarkdownVimMode();
+	const vimModeEnabledRef = useRef(vimModeEnabled);
+	vimModeEnabledRef.current = vimModeEnabled;
 
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
@@ -79,6 +85,14 @@ export const RawMarkdownEditor = forwardRef<
 		applyDomSpellCheck(viewRef.current?.contentDOM, spellCheckEnabled);
 	}, [spellCheckEnabled]);
 
+	useEffect(() => {
+		viewRef.current?.dispatch({
+			effects: vimModeCompartmentRef.current.reconfigure(
+				createRawMarkdownVimMode(vimModeEnabled),
+			),
+		});
+	}, [vimModeEnabled]);
+
 	useLayoutEffect(() => {
 		const host = hostRef.current;
 		if (!host) return;
@@ -98,6 +112,9 @@ export const RawMarkdownEditor = forwardRef<
 						);
 					},
 					() => relPathRef.current ?? "",
+					vimModeCompartmentRef.current.of(
+						createRawMarkdownVimMode(vimModeEnabledRef.current),
+					),
 				),
 			}),
 		});

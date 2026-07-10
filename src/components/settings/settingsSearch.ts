@@ -89,7 +89,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "appearance-editor-presentation-width", tab: "appearance" },
 	{ id: "general-editor-collapsible-headings", tab: "general" },
 	{ id: "general-editor-spell-check", tab: "general" },
-	{ id: "general-editor-vim-keybindings", tab: "general" },
+	{ id: "general-editor-vim-mode", tab: "general" },
 	{ id: "ai-assistant-behavior-tools", tab: "ai" },
 	{ id: "appearance-layout-folio-mode", tab: "appearance" },
 	{ id: "appearance-layout-classic-all-notes", tab: "appearance" },

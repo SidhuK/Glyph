@@ -125,7 +125,6 @@ Use the bridge helpers rather than ad hoc string replacement when changing wiki-
 - note search
 - person autocomplete
 - tag decorations
-- Vim mode
 - wiki links
 - callout decorations
 - details/toggle blocks
@@ -135,7 +134,6 @@ Use the bridge helpers rather than ad hoc string replacement when changing wiki-
 Feature settings can enable or disable parts of this list:
 
 - people mentions as tags
-- vim keybindings
 - markdown link autocomplete
 - collapsible headings
 

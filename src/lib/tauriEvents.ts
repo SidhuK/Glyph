@@ -107,7 +107,7 @@ type TauriEventMap = {
 			attachmentStorageMode?: AttachmentStorageMode;
 			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;
-			vimKeybindings?: boolean;
+			rawMarkdownVimMode?: boolean;
 			spellCheck?: boolean;
 		};
 		shortcuts?: {
