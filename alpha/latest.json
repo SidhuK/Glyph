@@ -1,15 +1,15 @@
 {
-  "version": "0.8.7-alpha.2",
-  "notes": "## What's Changed\n* Harden editor document session and markdown lifecycle handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/305\n* Support Unicode letters in tags by @SidhuK in https://github.com/SidhuK/Glyph/pull/317\n* Redistribute advanced settings into logical tabs by @SidhuK in https://github.com/SidhuK/Glyph/pull/318\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7-alpha.1...v0.8.7-alpha.2",
-  "pub_date": "2026-07-10T05:56:19.068Z",
+  "version": "0.8.7-alpha.3",
+  "notes": "## What's Changed\n* Scale task checkboxes with editor font size by @SidhuK in https://github.com/SidhuK/Glyph/pull/319\n* Add UI translations (i18n) for high-traffic surfaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/320\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7-alpha.2...v0.8.7-alpha.3",
+  "pub_date": "2026-07-10T09:48:14.498Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdvZThTeHpjWGRvdmZscGNrN1djL1hYR1M2SUxJL1VNUm9QSktzUTFJUDUzK0ZVcjdjVlY4elR2bTBxUy94dmpFYXZwWmFCQUh0MHZoeHFvY2l6OGdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjYyOTc0CWZpbGU6R2x5cGguYXBwLnRhci5negp1VS9peXUyRUlOTktpTUkvUnpWMStIWVNrMk9VUndUTkdqcTZxVkF3VzBZYUtDOURackR6ZUxYWTVTWFN5SDdZS2hGdXo4WDhzdXZxTnB1Ym9UNVNEQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDEyVXlGYmFrMllxdGhjUHNidlFTQjFvcDlFQngzM3FkSFVkNk1IZmJDWUZSVXRSbW9jTE9UZ0lieE1ueHJ0YW1DeXZPMkowdFZ0K0x2K1YxY296Z3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjc2ODg5CWZpbGU6R2x5cGguYXBwLnRhci5negpMODdFdEVWYXRBYTB5Q0RLK2JKQmVuKy9SRGRKWFl4OUhkS1Rvd09VLzVjYVhxU2JYV29FbFh2L0UxYzJsdVVBOGQxVzVObHQ2RHNla3FjdXA1OXNDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.3/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdvZThTeHpjWGRvdmZscGNrN1djL1hYR1M2SUxJL1VNUm9QSktzUTFJUDUzK0ZVcjdjVlY4elR2bTBxUy94dmpFYXZwWmFCQUh0MHZoeHFvY2l6OGdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjYyOTc0CWZpbGU6R2x5cGguYXBwLnRhci5negp1VS9peXUyRUlOTktpTUkvUnpWMStIWVNrMk9VUndUTkdqcTZxVkF3VzBZYUtDOURackR6ZUxYWTVTWFN5SDdZS2hGdXo4WDhzdXZxTnB1Ym9UNVNEQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.2/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDEyVXlGYmFrMllxdGhjUHNidlFTQjFvcDlFQngzM3FkSFVkNk1IZmJDWUZSVXRSbW9jTE9UZ0lieE1ueHJ0YW1DeXZPMkowdFZ0K0x2K1YxY296Z3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjc2ODg5CWZpbGU6R2x5cGguYXBwLnRhci5negpMODdFdEVWYXRBYTB5Q0RLK2JKQmVuKy9SRGRKWFl4OUhkS1Rvd09VLzVjYVhxU2JYV29FbFh2L0UxYzJsdVVBOGQxVzVObHQ2RHNla3FjdXA1OXNDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.3/Glyph_aarch64.app.tar.gz"
     }
   }
 }
