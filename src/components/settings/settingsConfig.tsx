@@ -5,7 +5,6 @@ import {
 	GitBranchIcon,
 	Settings01Icon,
 	Sun03Icon,
-	ToolsIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ReactElement } from "react";
@@ -18,7 +17,6 @@ export type SettingsTab =
 	| "ai"
 	| "space"
 	| "git"
-	| "advanced"
 	| "about";
 
 export interface SettingsTabMeta {
@@ -91,13 +89,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		),
 	},
 	{
-		id: "advanced",
-		label: "Advanced",
-		renderIcon: () => (
-			<HugeiconsIcon icon={ToolsIcon} size="var(--icon-md)" strokeWidth={0.9} />
-		),
-	},
-	{
 		id: "about",
 		label: "About",
 		renderIcon: () => (
@@ -123,7 +114,6 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 				tab.id === "general" ||
 				tab.id === "appearance" ||
 				tab.id === "shortcuts" ||
-				tab.id === "advanced" ||
 				tab.id === "about",
 		),
 	},

@@ -2,7 +2,12 @@ import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { isMissingFileError } from "../../lib/fsErrors";
-import { loadSettings, setAiEnabled } from "../../lib/settings";
+import {
+	type AiAssistantMode,
+	loadSettings,
+	setAiAssistantMode,
+	setAiEnabled,
+} from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -12,6 +17,7 @@ import {
 } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
+import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
 
 const MISSING_FILE_RETRY_DELAY_MS = 80;
 const IS_DEV = import.meta.env.DEV;
@@ -47,9 +53,17 @@ async function setActiveProfileWithRetry(id: string | null) {
 
 export function AiSettingsPane() {
 	const [aiEnabled, setAiEnabledState] = useState(true);
+	const [aiAssistantMode, setAiAssistantModeState] =
+		useState<AiAssistantMode>("create");
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
+	const aiAssistantModeToggle = useOptimisticSettingsToggle(
+		aiAssistantMode === "create",
+		(checked) => setAiAssistantModeState(checked ? "create" : "chat"),
+		async (checked) => setAiAssistantMode(checked ? "create" : "chat"),
+		setError,
+	);
 	const activeProfileIdRef = useRef<string | null>(null);
 	const pendingActiveProfileIdRef = useRef<string | null>(null);
 	const saveProfileRequestIdRef = useRef(0);
@@ -77,6 +91,7 @@ export function AiSettingsPane() {
 			const settings = await loadSettings();
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setAiEnabledState(settings.ui.aiEnabled);
+			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			const [list, active] = await Promise.all([
 				invoke("ai_profiles_list"),
 				invoke("ai_active_profile_get"),
@@ -107,6 +122,15 @@ export function AiSettingsPane() {
 
 	useTauriEvent("ai:profiles-updated", () => {
 		void reloadProfiles();
+	});
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (
+			payload.ui?.aiAssistantMode === "chat" ||
+			payload.ui?.aiAssistantMode === "create"
+		) {
+			setAiAssistantModeState(payload.ui.aiAssistantMode);
+		}
 	});
 
 	const updateAiEnabled = useCallback(async (enabled: boolean) => {
@@ -200,6 +224,24 @@ export function AiSettingsPane() {
 						</SettingsRow>
 					) : null}
 				</SettingsSection>
+				{aiEnabled ? (
+					<SettingsSection
+						title="Assistant behavior"
+						description="Choose whether Glyph AI can take actions with tools."
+					>
+						<SettingsRow
+							label="AI chat has access to tools"
+							description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
+						>
+							<SettingsToggle
+								checked={aiAssistantMode === "create"}
+								disabled={aiAssistantModeToggle.isSaving}
+								ariaLabel="AI chat has access to tools"
+								onCheckedChange={aiAssistantModeToggle.onCheckedChange}
+							/>
+						</SettingsRow>
+					</SettingsSection>
+				) : null}
 
 				{aiEnabled ? (
 					<AiProfileSections

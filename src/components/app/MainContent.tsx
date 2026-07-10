@@ -63,7 +63,6 @@ import type {
 import { FolioWorkspace } from "../folio/FolioWorkspace";
 import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
-import { AdvancedSettingsPane } from "../settings/AdvancedSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
 import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
@@ -703,7 +702,6 @@ export const MainContent = memo(function MainContent({
 		ai: <AiSettingsPane />,
 		space: <SpaceSettingsPane />,
 		git: <GitSettingsPane />,
-		advanced: <AdvancedSettingsPane />,
 		about: <AboutSettingsPane />,
 	};
 
