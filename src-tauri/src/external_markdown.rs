@@ -98,20 +98,6 @@ pub fn open_external_markdown_window(
     validate_markdown_file(&path)?;
 
     let label = external_markdown_label(&path);
-    {
-        let mut paths_by_window = state
-            .paths_by_window
-            .lock()
-            .map_err(|_| "failed to lock external markdown state".to_string())?;
-        paths_by_window.insert(
-            label.clone(),
-            ExternalMarkdownWindowEntry {
-                abs_path: path.to_string_lossy().to_string(),
-                rel_path,
-            },
-        );
-    }
-
     if let Some(window) = app.get_webview_window(&label) {
         window.show().map_err(|error| error.to_string())?;
         window.unminimize().map_err(|error| error.to_string())?;
@@ -137,6 +123,18 @@ pub fn open_external_markdown_window(
     .build()
     .map_err(|error| error.to_string())?;
 
+    state
+        .paths_by_window
+        .lock()
+        .map_err(|_| "failed to lock external markdown state".to_string())?
+        .insert(
+            label,
+            ExternalMarkdownWindowEntry {
+                abs_path: path.to_string_lossy().to_string(),
+                rel_path,
+            },
+        );
+
     #[cfg(target_os = "macos")]
     if let Err(error) = crate::apply_main_window_vibrancy(&window, None) {
         tracing::warn!("Failed to apply vibrancy to external markdown window: {error}");
@@ -155,6 +153,14 @@ pub fn forget_external_markdown_window(
         .map_err(|_| "failed to lock external markdown state".to_string())?
         .remove(label);
     Ok(())
+}
+
+pub fn has_external_markdown_windows(state: &ExternalMarkdownState) -> Result<bool, String> {
+    Ok(!state
+        .paths_by_window
+        .lock()
+        .map_err(|_| "failed to lock external markdown state".to_string())?
+        .is_empty())
 }
 
 #[tauri::command]
