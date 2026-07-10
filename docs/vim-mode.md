@@ -56,8 +56,6 @@ Visual selections work with these operators too. For example, use `v` to select 
 | `:s/old/new/`, `:%s/old/new/g` | Substitute within the line or throughout the document. |
 | `:noh` | Clear search highlighting. |
 
-The cursor stays in view when normal-mode movement crosses the visible editor area.
-
 ## Not included
 
 - Vim mode does not run in the Rich editor.

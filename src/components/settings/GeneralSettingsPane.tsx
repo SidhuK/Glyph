@@ -8,10 +8,10 @@ import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
 	setEditorColorfulHeadings,
+	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
 	setEditorSpellCheck,
-	setEditorRawMarkdownVimMode,
 	setLanguage,
 	setResumeLastSession,
 	setShowFileTreeFolderCounts,

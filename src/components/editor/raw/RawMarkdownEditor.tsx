@@ -7,11 +7,11 @@ import {
 	useImperativeHandle,
 	useLayoutEffect,
 	useRef,
-	useState,
 } from "react";
 import {
 	applyDomSpellCheck,
 	useEditorSpellCheck,
+	useRawMarkdownVimMode,
 } from "../hooks/useEditorSpellCheck";
 import {
 	createRawMarkdownExtensions,
@@ -19,7 +19,6 @@ import {
 	externalRawMarkdownUpdate,
 } from "./extensions";
 import type { RawMarkdownEditorHandle } from "./types";
-import { useRawMarkdownVimMode } from "./useRawMarkdownVimMode";
 
 const RAW_MARKDOWN_CHANGE_DEBOUNCE_MS = 120;
 
@@ -59,9 +58,11 @@ export const RawMarkdownEditor = forwardRef<
 	const changeTimerRef = useRef<number | null>(null);
 	const hasPendingChangeRef = useRef(false);
 	const lastEmittedMarkdownRef = useRef(markdown);
-	const [vimModeCompartment] = useState(() => new Compartment());
+	const vimModeCompartmentRef = useRef(new Compartment());
 	const spellCheckEnabled = useEditorSpellCheck();
 	const vimModeEnabled = useRawMarkdownVimMode();
+	const vimModeEnabledRef = useRef(vimModeEnabled);
+	vimModeEnabledRef.current = vimModeEnabled;
 
 	onChangeRef.current = onChange;
 	relPathRef.current = relPath;
@@ -86,11 +87,11 @@ export const RawMarkdownEditor = forwardRef<
 
 	useEffect(() => {
 		viewRef.current?.dispatch({
-			effects: vimModeCompartment.reconfigure(
+			effects: vimModeCompartmentRef.current.reconfigure(
 				createRawMarkdownVimMode(vimModeEnabled),
 			),
 		});
-	}, [vimModeCompartment, vimModeEnabled]);
+	}, [vimModeEnabled]);
 
 	useLayoutEffect(() => {
 		const host = hostRef.current;
@@ -111,7 +112,9 @@ export const RawMarkdownEditor = forwardRef<
 						);
 					},
 					() => relPathRef.current ?? "",
-					vimModeCompartment.of([]),
+					vimModeCompartmentRef.current.of(
+						createRawMarkdownVimMode(vimModeEnabledRef.current),
+					),
 				),
 			}),
 		});
@@ -122,7 +125,7 @@ export const RawMarkdownEditor = forwardRef<
 			viewRef.current = null;
 			view.destroy();
 		};
-	}, [flushPendingChange, vimModeCompartment]);
+	}, [flushPendingChange]);
 
 	useLayoutEffect(() => {
 		const view = viewRef.current;

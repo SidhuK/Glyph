@@ -42,8 +42,8 @@ import {
 	rectangularSelection,
 } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
-import { latexHoverTooltip } from "codemirror-lang-latex";
 import { vim } from "@replit/codemirror-vim";
+import { latexHoverTooltip } from "codemirror-lang-latex";
 import { createRawMarkdownDecorations } from "./decorations";
 import {
 	embeddedLatexCompletionSource,
@@ -203,9 +203,11 @@ function moveTableCell(direction: 1 | -1): Command {
 	};
 }
 
+const EDITOR_SCROLL_HOST_SELECTOR = ".rfNodeNoteEditorBody";
+
 function scrollOuterNoteBodyToCursor(update: ViewUpdate): void {
 	if (!update.selectionSet) return;
-	const scrollHost = update.view.dom.closest(".rfNodeNoteEditorBody");
+	const scrollHost = update.view.dom.closest(EDITOR_SCROLL_HOST_SELECTOR);
 	if (!(scrollHost instanceof HTMLElement)) return;
 
 	try {
@@ -274,6 +276,7 @@ export function createRawMarkdownExtensions(
 			if (update.docChanged && !isExternalUpdate) {
 				onChange();
 			}
+			scrollOuterNoteBodyToCursor(update);
 		}),
 		keymap.of([
 			...completionKeymap,
@@ -294,10 +297,5 @@ export function createRawMarkdownExtensions(
 }
 
 export function createRawMarkdownVimMode(enabled: boolean): Extension {
-	return enabled
-		? [
-				vim({ status: true }),
-				EditorView.updateListener.of(scrollOuterNoteBodyToCursor),
-			]
-		: [];
+	return enabled ? vim({ status: true }) : [];
 }
