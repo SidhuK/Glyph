@@ -15,9 +15,9 @@ import {
 	isAttachmentStorageMode,
 	loadSettings,
 	setDailyNotesFolder,
-	setEditorEnablePeopleMentionsAsTags,
 	setEditorAttachmentFolder,
 	setEditorAttachmentStorageMode,
+	setEditorEnablePeopleMentionsAsTags,
 	setQuickNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -153,6 +153,30 @@ export function SpaceSettingsPane() {
 		}
 	});
 
+	const handlePeopleMentionsChange = useCallback(
+		(checked: boolean) => {
+			const previous = enablePeopleMentionsAsTags;
+			setError("");
+			setIsSavingPeopleMentions(true);
+			void (async () => {
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: checked,
+				});
+				if (spacePath) await startIndexRebuild();
+				await setEditorEnablePeopleMentionsAsTags(checked);
+				setEnablePeopleMentionsAsTags(checked);
+			})()
+				.catch((cause) => {
+					setEnablePeopleMentionsAsTags(previous);
+					void invoke("index_set_people_mentions_as_tags_enabled", {
+						enabled: previous,
+					}).catch(() => undefined);
+					setError(extractErrorMessage(cause));
+				})
+				.finally(() => setIsSavingPeopleMentions(false));
+		},
+		[enablePeopleMentionsAsTags, spacePath, startIndexRebuild],
+	);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
@@ -559,27 +583,7 @@ export function SpaceSettingsPane() {
 							checked={enablePeopleMentionsAsTags}
 							disabled={isSavingPeopleMentions}
 							ariaLabel="People mentions as tags"
-							onCheckedChange={(checked) => {
-								const previous = enablePeopleMentionsAsTags;
-								setError("");
-								setIsSavingPeopleMentions(true);
-								void (async () => {
-									await invoke("index_set_people_mentions_as_tags_enabled", {
-										enabled: checked,
-									});
-									if (spacePath) await startIndexRebuild();
-									await setEditorEnablePeopleMentionsAsTags(checked);
-									setEnablePeopleMentionsAsTags(checked);
-								})()
-									.catch((cause) => {
-										setEnablePeopleMentionsAsTags(previous);
-										void invoke("index_set_people_mentions_as_tags_enabled", {
-											enabled: previous,
-										}).catch(() => undefined);
-										setError(extractErrorMessage(cause));
-									})
-									.finally(() => setIsSavingPeopleMentions(false));
-							}}
+							onCheckedChange={handlePeopleMentionsChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

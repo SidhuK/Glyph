@@ -9,6 +9,8 @@ import {
 	setEditorSpellCheck,
 	setEditorVimKeybindings,
 	setResumeLastSession,
+	setShowFileTreeFolderCounts,
+	setShowNonMarkdownFiles,
 	setShowToc,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -20,7 +22,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
+import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
 const VIM_KEYBINDING_HELP = [
 	{ key: "Esc", action: "Enter Vim command mode." },
@@ -91,56 +93,54 @@ function VimKeybindingsHelp() {
 }
 
 export function GeneralSettingsPane() {
-	const [resumeLastSession, setResumeLastSessionState] = useState(false);
-	const [showToc, setShowTocState] = useState(true);
-	const [showFrontmatter, setShowFrontmatter] = useState(false);
-	const [colorfulHeadings, setColorfulHeadings] = useState(false);
-	const [collapsibleHeadings, setCollapsibleHeadings] = useState(false);
-	const [spellCheck, setSpellCheck] = useState(true);
-	const [vimKeybindings, setVimKeybindings] = useState(false);
 	const [error, setError] = useState("");
-	const resumeLastSessionToggle = useOptimisticSettingsToggle(
-		resumeLastSession,
-		setResumeLastSessionState,
+	const resumeLastSession = useSettingsBoolean(
+		false,
 		setResumeLastSession,
 		setError,
 	);
-	const showTocToggle = useOptimisticSettingsToggle(
-		showToc,
-		setShowTocState,
-		setShowToc,
-		setError,
-	);
-	const showFrontmatterToggle = useOptimisticSettingsToggle(
-		showFrontmatter,
-		setShowFrontmatter,
+	const showToc = useSettingsBoolean(true, setShowToc, setError);
+	const showFrontmatter = useSettingsBoolean(
+		false,
 		setEditorShowFrontmatterInEditor,
 		setError,
 	);
-	const colorfulHeadingsToggle = useOptimisticSettingsToggle(
-		colorfulHeadings,
-		setColorfulHeadings,
+	const colorfulHeadings = useSettingsBoolean(
+		false,
 		setEditorColorfulHeadings,
 		setError,
 	);
-	const collapsibleHeadingsToggle = useOptimisticSettingsToggle(
-		collapsibleHeadings,
-		setCollapsibleHeadings,
+	const collapsibleHeadings = useSettingsBoolean(
+		false,
 		setEditorShowCollapsibleHeadings,
 		setError,
 	);
-	const spellCheckToggle = useOptimisticSettingsToggle(
-		spellCheck,
-		setSpellCheck,
-		setEditorSpellCheck,
-		setError,
-	);
-	const vimKeybindingsToggle = useOptimisticSettingsToggle(
-		vimKeybindings,
-		setVimKeybindings,
+	const spellCheck = useSettingsBoolean(true, setEditorSpellCheck, setError);
+	const vimKeybindings = useSettingsBoolean(
+		false,
 		setEditorVimKeybindings,
 		setError,
 	);
+	const folderCounts = useSettingsBoolean(
+		false,
+		setShowFileTreeFolderCounts,
+		setError,
+	);
+	const nonMarkdownFiles = useSettingsBoolean(
+		true,
+		setShowNonMarkdownFiles,
+		setError,
+	);
+
+	const setResumeLastSessionChecked = resumeLastSession.setChecked;
+	const setShowTocChecked = showToc.setChecked;
+	const setShowFrontmatterChecked = showFrontmatter.setChecked;
+	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
+	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
+	const setSpellCheckChecked = spellCheck.setChecked;
+	const setVimKeybindingsChecked = vimKeybindings.setChecked;
+	const setFolderCountsChecked = folderCounts.setChecked;
+	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -148,13 +148,15 @@ export function GeneralSettingsPane() {
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
-				setResumeLastSessionState(settings.ui.resumeLastSession);
-				setShowTocState(settings.ui.showToc);
-				setShowFrontmatter(settings.editor.showFrontmatterInEditor);
-				setColorfulHeadings(settings.editor.colorfulHeadings);
-				setCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
-				setSpellCheck(settings.editor.spellCheck);
-				setVimKeybindings(settings.editor.vimKeybindings);
+				setResumeLastSessionChecked(settings.ui.resumeLastSession);
+				setShowTocChecked(settings.ui.showToc);
+				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
+				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
+				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
+				setSpellCheckChecked(settings.editor.spellCheck);
+				setVimKeybindingsChecked(settings.editor.vimKeybindings);
+				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
+				setNonMarkdownFilesChecked(settings.ui.showNonMarkdownFiles);
 			})
 			.catch((cause) => {
 				if (!cancelled) {
@@ -164,33 +166,65 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [
+		setResumeLastSessionChecked,
+		setShowTocChecked,
+		setShowFrontmatterChecked,
+		setColorfulHeadingsChecked,
+		setCollapsibleHeadingsChecked,
+		setSpellCheckChecked,
+		setVimKeybindingsChecked,
+		setFolderCountsChecked,
+		setNonMarkdownFilesChecked,
+	]);
 
 	useTauriEvent(
 		"settings:updated",
-		useCallback((payload) => {
-			if (typeof payload.ui?.resumeLastSession === "boolean") {
-				setResumeLastSessionState(payload.ui.resumeLastSession);
-			}
-			if (typeof payload.ui?.showToc === "boolean") {
-				setShowTocState(payload.ui.showToc);
-			}
-			if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
-				setShowFrontmatter(payload.editor.showFrontmatterInEditor);
-			}
-			if (typeof payload.editor?.colorfulHeadings === "boolean") {
-				setColorfulHeadings(payload.editor.colorfulHeadings);
-			}
-			if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
-				setCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
-			}
-			if (typeof payload.editor?.spellCheck === "boolean") {
-				setSpellCheck(payload.editor.spellCheck);
-			}
-			if (typeof payload.editor?.vimKeybindings === "boolean") {
-				setVimKeybindings(payload.editor.vimKeybindings);
-			}
-		}, []),
+		useCallback(
+			(payload) => {
+				applyIfBoolean(
+					payload.ui?.resumeLastSession,
+					setResumeLastSessionChecked,
+				);
+				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
+				applyIfBoolean(
+					payload.editor?.showFrontmatterInEditor,
+					setShowFrontmatterChecked,
+				);
+				applyIfBoolean(
+					payload.editor?.colorfulHeadings,
+					setColorfulHeadingsChecked,
+				);
+				applyIfBoolean(
+					payload.editor?.showCollapsibleHeadings,
+					setCollapsibleHeadingsChecked,
+				);
+				applyIfBoolean(payload.editor?.spellCheck, setSpellCheckChecked);
+				applyIfBoolean(
+					payload.editor?.vimKeybindings,
+					setVimKeybindingsChecked,
+				);
+				applyIfBoolean(
+					payload.ui?.showFileTreeFolderCounts,
+					setFolderCountsChecked,
+				);
+				applyIfBoolean(
+					payload.ui?.showNonMarkdownFiles,
+					setNonMarkdownFilesChecked,
+				);
+			},
+			[
+				setResumeLastSessionChecked,
+				setShowTocChecked,
+				setShowFrontmatterChecked,
+				setColorfulHeadingsChecked,
+				setCollapsibleHeadingsChecked,
+				setSpellCheckChecked,
+				setVimKeybindingsChecked,
+				setFolderCountsChecked,
+				setNonMarkdownFilesChecked,
+			],
+		),
 	);
 
 	return (
@@ -206,10 +240,10 @@ export function GeneralSettingsPane() {
 						description="Start this space with the tabs you left open."
 					>
 						<SettingsToggle
-							checked={resumeLastSession}
-							disabled={resumeLastSessionToggle.isSaving}
+							checked={resumeLastSession.checked}
+							disabled={resumeLastSession.isSaving}
 							ariaLabel="Resume last session"
-							onCheckedChange={resumeLastSessionToggle.onCheckedChange}
+							onCheckedChange={resumeLastSession.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
@@ -222,10 +256,10 @@ export function GeneralSettingsPane() {
 						description="Show a floating table of contents for each note."
 					>
 						<SettingsToggle
-							checked={showToc}
-							disabled={showTocToggle.isSaving}
+							checked={showToc.checked}
+							disabled={showToc.isSaving}
 							ariaLabel="Table of contents"
-							onCheckedChange={showTocToggle.onCheckedChange}
+							onCheckedChange={showToc.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -233,10 +267,10 @@ export function GeneralSettingsPane() {
 						description="Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases."
 					>
 						<SettingsToggle
-							checked={showFrontmatter}
-							disabled={showFrontmatterToggle.isSaving}
+							checked={showFrontmatter.checked}
+							disabled={showFrontmatter.isSaving}
 							ariaLabel="Show frontmatter in editor"
-							onCheckedChange={showFrontmatterToggle.onCheckedChange}
+							onCheckedChange={showFrontmatter.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -244,10 +278,10 @@ export function GeneralSettingsPane() {
 						description="Use distinct built-in colors for H1-H6 while editing notes."
 					>
 						<SettingsToggle
-							checked={colorfulHeadings}
-							disabled={colorfulHeadingsToggle.isSaving}
+							checked={colorfulHeadings.checked}
+							disabled={colorfulHeadings.isSaving}
 							ariaLabel="Colorful headings"
-							onCheckedChange={colorfulHeadingsToggle.onCheckedChange}
+							onCheckedChange={colorfulHeadings.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -255,10 +289,10 @@ export function GeneralSettingsPane() {
 						description="Show collapse toggles on note headings in editor and preview."
 					>
 						<SettingsToggle
-							checked={collapsibleHeadings}
-							disabled={collapsibleHeadingsToggle.isSaving}
+							checked={collapsibleHeadings.checked}
+							disabled={collapsibleHeadings.isSaving}
 							ariaLabel="Collapsible headings"
-							onCheckedChange={collapsibleHeadingsToggle.onCheckedChange}
+							onCheckedChange={collapsibleHeadings.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -266,10 +300,10 @@ export function GeneralSettingsPane() {
 						description="Underline typos as you type. Right-click a word to see spelling suggestions."
 					>
 						<SettingsToggle
-							checked={spellCheck}
-							disabled={spellCheckToggle.isSaving}
+							checked={spellCheck.checked}
+							disabled={spellCheck.isSaving}
 							ariaLabel="Spell check"
-							onCheckedChange={spellCheckToggle.onCheckedChange}
+							onCheckedChange={spellCheck.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -282,14 +316,18 @@ export function GeneralSettingsPane() {
 						description="Do NOT Turn this ON if you don't know what it means."
 					>
 						<SettingsToggle
-							checked={vimKeybindings}
-							disabled={vimKeybindingsToggle.isSaving}
+							checked={vimKeybindings.checked}
+							disabled={vimKeybindings.isSaving}
 							ariaLabel="Vim Mode"
-							onCheckedChange={vimKeybindingsToggle.onCheckedChange}
+							onCheckedChange={vimKeybindings.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
-				<FileTreeSettingsSection />
+				<FileTreeSettingsSection
+					folderCounts={folderCounts}
+					nonMarkdownFiles={nonMarkdownFiles}
+					setError={setError}
+				/>
 				<LicenseSettingsCard />
 			</div>
 		</div>

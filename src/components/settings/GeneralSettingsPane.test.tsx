@@ -14,10 +14,30 @@ const { useLicenseStatusMock, useTauriEventMock } = vi.hoisted(() => ({
 vi.mock("../../lib/settings", () => ({
 	loadSettings: vi.fn(() =>
 		Promise.resolve({
-			ui: { resumeLastSession: false },
+			ui: {
+				resumeLastSession: false,
+				showToc: true,
+				showFileTreeFolderCounts: false,
+				showNonMarkdownFiles: true,
+			},
+			editor: {
+				showFrontmatterInEditor: false,
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				spellCheck: true,
+				vimKeybindings: false,
+			},
 		}),
 	),
 	setResumeLastSession: vi.fn(() => Promise.resolve()),
+	setShowToc: vi.fn(() => Promise.resolve()),
+	setEditorShowFrontmatterInEditor: vi.fn(() => Promise.resolve()),
+	setEditorColorfulHeadings: vi.fn(() => Promise.resolve()),
+	setEditorShowCollapsibleHeadings: vi.fn(() => Promise.resolve()),
+	setEditorSpellCheck: vi.fn(() => Promise.resolve()),
+	setEditorVimKeybindings: vi.fn(() => Promise.resolve()),
+	setShowFileTreeFolderCounts: vi.fn(() => Promise.resolve()),
+	setShowNonMarkdownFiles: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("../../lib/tauriEvents", () => ({
@@ -32,8 +52,8 @@ vi.mock("../../lib/tauri", () => ({
 	invoke: vi.fn(),
 }));
 
-vi.mock("./TemplatesSettingsPane", () => ({
-	TemplateSettingsSections: () => <div>Templates Stub</div>,
+vi.mock("./FileTreeSettingsSection", () => ({
+	FileTreeSettingsSection: () => <div>File Tree Stub</div>,
 }));
 
 vi.mock("../licensing/LicenseSettingsCard", () => ({
@@ -148,7 +168,9 @@ describe("GeneralSettingsPane", () => {
 			root.render(<GeneralSettingsPane />);
 		});
 
-		const toggle = container.querySelector("input");
+		const toggle = container.querySelector(
+			'input[aria-label="Resume last session"]',
+		) as HTMLInputElement | null;
 		expect(toggle?.checked).toBe(false);
 
 		const handler = useTauriEventMock.mock.calls.find(

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { isMissingFileError } from "../../lib/fsErrors";
 import {
-	type AiAssistantMode,
 	loadSettings,
 	setAiAssistantMode,
 	setAiEnabled,
@@ -17,7 +16,7 @@ import {
 } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
-import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
+import { useSettingsBoolean } from "./useSettingsBoolean";
 
 const MISSING_FILE_RETRY_DELAY_MS = 80;
 const IS_DEV = import.meta.env.DEV;
@@ -53,17 +52,14 @@ async function setActiveProfileWithRetry(id: string | null) {
 
 export function AiSettingsPane() {
 	const [aiEnabled, setAiEnabledState] = useState(true);
-	const [aiAssistantMode, setAiAssistantModeState] =
-		useState<AiAssistantMode>("create");
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
-	const aiAssistantModeToggle = useOptimisticSettingsToggle(
-		aiAssistantMode === "create",
-		(checked) => setAiAssistantModeState(checked ? "create" : "chat"),
-		async (checked) => setAiAssistantMode(checked ? "create" : "chat"),
-		setError,
-	);
+	const setAiToolsEnabled = useCallback(async (checked: boolean) => {
+		await setAiAssistantMode(checked ? "create" : "chat");
+	}, []);
+	const aiToolsEnabled = useSettingsBoolean(true, setAiToolsEnabled, setError);
+	const setAiToolsEnabledChecked = aiToolsEnabled.setChecked;
 	const activeProfileIdRef = useRef<string | null>(null);
 	const pendingActiveProfileIdRef = useRef<string | null>(null);
 	const saveProfileRequestIdRef = useRef(0);
@@ -91,7 +87,7 @@ export function AiSettingsPane() {
 			const settings = await loadSettings();
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setAiEnabledState(settings.ui.aiEnabled);
-			setAiAssistantModeState(settings.ui.aiAssistantMode);
+			setAiToolsEnabledChecked(settings.ui.aiAssistantMode === "create");
 			const [list, active] = await Promise.all([
 				invoke("ai_profiles_list"),
 				invoke("ai_active_profile_get"),
@@ -114,7 +110,7 @@ export function AiSettingsPane() {
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setError(errMessage(e));
 		}
-	}, [setActiveProfileIdTracked]);
+	}, [setActiveProfileIdTracked, setAiToolsEnabledChecked]);
 
 	useEffect(() => {
 		void reloadProfiles();
@@ -129,7 +125,7 @@ export function AiSettingsPane() {
 			payload.ui?.aiAssistantMode === "chat" ||
 			payload.ui?.aiAssistantMode === "create"
 		) {
-			setAiAssistantModeState(payload.ui.aiAssistantMode);
+			setAiToolsEnabledChecked(payload.ui.aiAssistantMode === "create");
 		}
 	});
 
@@ -234,10 +230,10 @@ export function AiSettingsPane() {
 							description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
 						>
 							<SettingsToggle
-								checked={aiAssistantMode === "create"}
-								disabled={aiAssistantModeToggle.isSaving}
+								checked={aiToolsEnabled.checked}
+								disabled={aiToolsEnabled.isSaving}
 								ariaLabel="AI chat has access to tools"
-								onCheckedChange={aiAssistantModeToggle.onCheckedChange}
+								onCheckedChange={aiToolsEnabled.onCheckedChange}
 							/>
 						</SettingsRow>
 					</SettingsSection>

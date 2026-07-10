@@ -12,6 +12,7 @@ import {
 	type UiLightThemeId,
 	loadSettings,
 	setClassicAllNotesByDefault,
+	setDatabaseShowColumnColor,
 	setEditorBeautifulTags,
 	setEditorWidthMode,
 	setFolioMode,
@@ -32,7 +33,6 @@ import {
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
-import { AppearanceDatabaseSettingsSection } from "./AppearanceDatabaseSettingsSection";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
@@ -44,7 +44,7 @@ import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceThemeColors } from "./useAppearanceThemeColors";
 import { useAppearanceTypography } from "./useAppearanceTypography";
-import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
+import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
 const EDITOR_WIDTH_OPTIONS = [
 	{ label: "Compact", value: "compact" },
@@ -64,30 +64,24 @@ export function AppearanceSettingsPane() {
 	const [translucentApp, setTranslucentAppState] = useState(
 		DEFAULT_UI_TRANSLUCENT_APP,
 	);
-	const [beautifulTags, setBeautifulTags] = useState(false);
 	const [editorWidthMode, setEditorWidthModeState] =
 		useState<EditorWidthMode>("compact");
-	const [folioMode, setFolioModeState] = useState(false);
-	const [classicAllNotesByDefault, setClassicAllNotesByDefaultState] =
-		useState(false);
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [error, setError] = useState("");
-	const beautifulTagsToggle = useOptimisticSettingsToggle(
-		beautifulTags,
-		setBeautifulTags,
+	const beautifulTags = useSettingsBoolean(
+		false,
 		setEditorBeautifulTags,
 		setError,
 	);
-	const folioModeToggle = useOptimisticSettingsToggle(
-		folioMode,
-		setFolioModeState,
-		setFolioMode,
+	const folioMode = useSettingsBoolean(false, setFolioMode, setError);
+	const classicAllNotes = useSettingsBoolean(
+		false,
+		setClassicAllNotesByDefault,
 		setError,
 	);
-	const classicAllNotesToggle = useOptimisticSettingsToggle(
-		classicAllNotesByDefault,
-		setClassicAllNotesByDefaultState,
-		setClassicAllNotesByDefault,
+	const showColumnColor = useSettingsBoolean(
+		true,
+		setDatabaseShowColumnColor,
 		setError,
 	);
 	const { cornerRadiusStyle, onCornerRadiusStyleChange } =
@@ -123,6 +117,11 @@ export function AppearanceSettingsPane() {
 		onEditorFontSizeChange,
 	} = useAppearanceTypography({ setError });
 
+	const setBeautifulTagsChecked = beautifulTags.setChecked;
+	const setFolioModeChecked = folioMode.setChecked;
+	const setClassicAllNotesChecked = classicAllNotes.setChecked;
+	const setShowColumnColorChecked = showColumnColor.setChecked;
+
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
@@ -133,10 +132,11 @@ export function AppearanceSettingsPane() {
 				setLightThemeIdState(settings.ui.lightThemeId);
 				setDarkThemeIdState(settings.ui.darkThemeId);
 				setTranslucentAppState(settings.ui.translucentApp);
-				setBeautifulTags(settings.editor.beautifulTags);
+				setBeautifulTagsChecked(settings.editor.beautifulTags);
 				setEditorWidthModeState(settings.editor.editorWidthMode);
-				setFolioModeState(settings.ui.folioMode);
-				setClassicAllNotesByDefaultState(settings.ui.classicAllNotesByDefault);
+				setFolioModeChecked(settings.ui.folioMode);
+				setClassicAllNotesChecked(settings.ui.classicAllNotesByDefault);
+				setShowColumnColorChecked(settings.database.showColumnColor);
 				onAppearanceSettingsLoaded(settings.ui.accent, settings.ui.themeColors);
 				setTheme(settings.ui.theme);
 				applyUiThemeSelection(
@@ -155,21 +155,33 @@ export function AppearanceSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, [onAppearanceSettingsLoaded, setTheme]);
+	}, [
+		onAppearanceSettingsLoaded,
+		setBeautifulTagsChecked,
+		setClassicAllNotesChecked,
+		setFolioModeChecked,
+		setShowColumnColorChecked,
+		setTheme,
+	]);
 
 	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.editor?.beautifulTags === "boolean") {
-			setBeautifulTags(payload.editor.beautifulTags);
-		}
-		if (payload.editor?.editorWidthMode) {
+		applyIfBoolean(payload.editor?.beautifulTags, setBeautifulTagsChecked);
+		if (
+			payload.editor?.editorWidthMode === "compact" ||
+			payload.editor?.editorWidthMode === "comfortable" ||
+			payload.editor?.editorWidthMode === "wide"
+		) {
 			setEditorWidthModeState(payload.editor.editorWidthMode);
 		}
-		if (typeof payload.ui?.folioMode === "boolean") {
-			setFolioModeState(payload.ui.folioMode);
-		}
-		if (typeof payload.ui?.classicAllNotesByDefault === "boolean") {
-			setClassicAllNotesByDefaultState(payload.ui.classicAllNotesByDefault);
-		}
+		applyIfBoolean(payload.ui?.folioMode, setFolioModeChecked);
+		applyIfBoolean(
+			payload.ui?.classicAllNotesByDefault,
+			setClassicAllNotesChecked,
+		);
+		applyIfBoolean(
+			payload.database?.showColumnColor,
+			setShowColumnColorChecked,
+		);
 	});
 
 	const onThemeModeChange = useCallback(
@@ -289,10 +301,10 @@ export function AppearanceSettingsPane() {
 						description="Show navigation, notes, and editor in a three-column workspace."
 					>
 						<SettingsToggle
-							checked={folioMode}
-							disabled={folioModeToggle.isSaving}
+							checked={folioMode.checked}
+							disabled={folioMode.isSaving}
 							ariaLabel="Folio Mode"
-							onCheckedChange={folioModeToggle.onCheckedChange}
+							onCheckedChange={folioMode.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -300,10 +312,10 @@ export function AppearanceSettingsPane() {
 						description="Open All Notes as the simple grid instead of the activity timeline."
 					>
 						<SettingsToggle
-							checked={classicAllNotesByDefault}
-							disabled={classicAllNotesToggle.isSaving}
+							checked={classicAllNotes.checked}
+							disabled={classicAllNotes.isSaving}
 							ariaLabel="Classic All Notes grid"
-							onCheckedChange={classicAllNotesToggle.onCheckedChange}
+							onCheckedChange={classicAllNotes.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
@@ -316,10 +328,10 @@ export function AppearanceSettingsPane() {
 						description="Enable the experimental Beautiful Tags presentation for tags."
 					>
 						<SettingsToggle
-							checked={beautifulTags}
-							disabled={beautifulTagsToggle.isSaving}
+							checked={beautifulTags.checked}
+							disabled={beautifulTags.isSaving}
 							ariaLabel="Beautiful Tags"
-							onCheckedChange={beautifulTagsToggle.onCheckedChange}
+							onCheckedChange={beautifulTags.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
@@ -347,7 +359,9 @@ export function AppearanceSettingsPane() {
 								void setEditorWidthMode(nextMode)
 									.catch((cause) => {
 										setEditorWidthModeState(previous);
-										setError(cause instanceof Error ? cause.message : String(cause));
+										setError(
+											cause instanceof Error ? cause.message : String(cause),
+										);
 									})
 									.finally(() => {
 										setIsSavingEditorWidthMode(false);
@@ -362,7 +376,22 @@ export function AppearanceSettingsPane() {
 						</SettingsSelect>
 					</SettingsRow>
 				</SettingsSection>
-				<AppearanceDatabaseSettingsSection />
+				<SettingsSection
+					title="Database"
+					description="Choose how databases are presented across Glyph."
+				>
+					<SettingsRow
+						label="Show database column color"
+						description="Keep the lane pill and tag colors while toggling the full column tint."
+					>
+						<SettingsToggle
+							checked={showColumnColor.checked}
+							disabled={showColumnColor.isSaving}
+							ariaLabel="Show database column color"
+							onCheckedChange={showColumnColor.onCheckedChange}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 			</div>
 		</div>
 	);
