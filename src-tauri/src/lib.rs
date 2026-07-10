@@ -49,6 +49,7 @@ use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
+static MAIN_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
@@ -964,6 +965,10 @@ fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
 }
 
 fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
+    let _guard = MAIN_WINDOW_LOCK
+        .lock()
+        .map_err(|_| "failed to lock main window state".to_string())?;
+
     if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
         return Ok(window);
     }
