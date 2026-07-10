@@ -1,12 +1,33 @@
 use super::frontmatter::split_frontmatter;
+use regex::Regex;
 use std::collections::BTreeMap;
+use std::sync::OnceLock;
 
 pub const PEOPLE_TAG_NAMESPACE: &str = "people/";
+
+/// Keep in sync with `INLINE_TAG_PATTERN` / segment rules in
+/// `src/components/editor/noteProperties/utils.ts`.
+static TAG_SEGMENT_PATTERN: OnceLock<Regex> = OnceLock::new();
+static INLINE_TAG_PATTERN: OnceLock<Regex> = OnceLock::new();
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IndexedTag {
     pub tag: String,
     pub is_explicit: bool,
+}
+
+fn tag_segment_pattern() -> &'static Regex {
+    TAG_SEGMENT_PATTERN.get_or_init(|| {
+        Regex::new(r"^[\p{L}\p{N}_][\p{L}\p{M}\p{N}_-]*$")
+            .expect("tag segment pattern must compile")
+    })
+}
+
+fn inline_tag_pattern() -> &'static Regex {
+    INLINE_TAG_PATTERN.get_or_init(|| {
+        Regex::new(r"(^|[^\p{L}\p{M}\p{N}_/#])#([\p{L}\p{N}_][\p{L}\p{M}\p{N}_/-]*)")
+            .expect("inline tag pattern must compile")
+    })
 }
 
 pub fn normalize_tag(raw: &str) -> Option<String> {
@@ -20,13 +41,7 @@ pub fn normalize_tag(raw: &str) -> Option<String> {
     }
     let mut segments = Vec::new();
     for segment in normalized.split('/') {
-        if segment.is_empty() {
-            return None;
-        }
-        if !segment
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
-        {
+        if segment.is_empty() || !tag_segment_pattern().is_match(segment) {
             return None;
         }
         segments.push(segment);
@@ -429,39 +444,21 @@ fn is_css_hex_color_literal(text: &str, hash_index: usize, candidate: &str) -> b
 pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let cleaned = metadata_scan_text(markdown);
-    let bytes = cleaned.as_bytes();
-    let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'#' {
-            let prev = if i == 0 { b' ' } else { bytes[i - 1] };
-            let prev_ok = !(prev as char).is_ascii_alphanumeric() && prev != b'/' && prev != b'_';
-            if !prev_ok {
-                i += 1;
-                continue;
-            }
-            let mut j = i + 1;
-            while j < bytes.len() {
-                let c = bytes[j] as char;
-                if c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/' {
-                    j += 1;
-                    continue;
-                }
-                break;
-            }
-            if j > i + 1 {
-                let candidate = &cleaned[i + 1..j];
-                if is_css_hex_color_literal(&cleaned, i, candidate) {
-                    i = j;
-                    continue;
-                }
-                if let Some(t) = normalize_tag(candidate) {
-                    out.push(t);
-                }
-            }
-            i = j;
+    for caps in inline_tag_pattern().captures_iter(&cleaned) {
+        let Some(full) = caps.get(0) else {
+            continue;
+        };
+        let leading_len = caps.get(1).map_or(0, |m| m.len());
+        let Some(candidate) = caps.get(2).map(|m| m.as_str()) else {
+            continue;
+        };
+        let hash_index = full.start() + leading_len;
+        if is_css_hex_color_literal(&cleaned, hash_index, candidate) {
             continue;
         }
-        i += 1;
+        if let Some(t) = normalize_tag(candidate) {
+            out.push(t);
+        }
     }
     out.sort();
     out.dedup();
@@ -540,6 +537,20 @@ mod tests {
         assert_eq!(normalize_tag("#work//today"), None);
         assert_eq!(normalize_tag("#work/"), None);
         assert_eq!(normalize_tag("#/today"), None);
+        assert_eq!(normalize_tag("#\u{0301}accent"), None);
+    }
+
+    #[test]
+    fn normalizes_and_parses_unicode_tags() {
+        assert_eq!(
+            normalize_tag("#Næring/ØL/År"),
+            Some("næring/øl/år".to_string())
+        );
+        assert_eq!(normalize_tag("#İ"), Some("i̇".to_string()));
+        assert_eq!(
+            parse_inline_tags("Topics: #næring, #øl, and #år."),
+            vec!["næring".to_string(), "år".to_string(), "øl".to_string()]
+        );
     }
 
     #[test]

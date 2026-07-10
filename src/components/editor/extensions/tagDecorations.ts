@@ -1,11 +1,11 @@
 import { Extension } from "@tiptap/core";
 import { Decoration } from "@tiptap/pm/view";
+import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
 import {
 	type TextNodeDecorationContext,
 	createIncrementalTextDecorationPlugin,
 } from "./incrementalTextDecorations";
 
-const TAG_PATTERN = /(^|[^\w/])#([A-Za-z0-9_][\w/-]*)/g;
 const PERSON_PATTERN = /(^|[^A-Za-z0-9_.-])@([A-Za-z0-9_][A-Za-z0-9_-]*)/g;
 const TOKEN_SELECTOR = ".tagToken, .personToken";
 
@@ -24,8 +24,8 @@ function collectTagDecorations(
 	const text = node.text;
 	if (!text) return decorations;
 
-	TAG_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(TAG_PATTERN)) {
+	INLINE_TAG_PATTERN.lastIndex = 0;
+	for (const match of text.matchAll(INLINE_TAG_PATTERN)) {
 		const leading = match[1] ?? "";
 		const tag = match[2] ?? "";
 		if (!tag) continue;
