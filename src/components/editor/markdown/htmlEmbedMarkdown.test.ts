@@ -66,7 +66,10 @@ describe("htmlEmbedMarkdown", () => {
 
 	it("does not hang on a self-closing svg tag", () => {
 		const md = '<svg width="1" height="1"/>';
-		expect(preprocessHtmlEmbeds(md)).toBe(md);
+		const preprocessed = preprocessHtmlEmbeds(md);
+		expect(preprocessed).toContain("```svg");
+		expect(preprocessed).toContain("<!--glyph-raw-html-embed-->");
+		expect(postprocessHtmlEmbeds(preprocessed)).toBe(md);
 	});
 });
 

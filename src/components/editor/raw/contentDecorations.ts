@@ -3,9 +3,9 @@ import type { Range, Text } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 import { FOOTNOTE_PATTERN, footnoteKindAt } from "../markdown/footnote";
 import { parseWikiLink } from "../markdown/wikiLinkCodec";
+import { INLINE_TAG_PATTERN } from "../noteProperties/utils";
 
 const WIKI_LINK_PATTERN = /!?\[\[[^\]\n]+\]\]/g;
-const TAG_PATTERN = /(^|[^\w/#])#([A-Za-z0-9_][\w/-]*)/g;
 const HIGHLIGHT_PATTERN = /==([^=\n]+)==/g;
 const COMMENT_PATTERN = /%%(?:[^%]|%(?!%))*%%/g;
 const BLOCK_ID_PATTERN = /(?:^|\s)(\^[A-Za-z0-9-]+)(?=\s*$)/;
@@ -70,8 +70,8 @@ export function addGlyphInlineDecorations(
 		);
 	}
 
-	TAG_PATTERN.lastIndex = 0;
-	for (const match of text.matchAll(TAG_PATTERN)) {
+	INLINE_TAG_PATTERN.lastIndex = 0;
+	for (const match of text.matchAll(INLINE_TAG_PATTERN)) {
 		if (match.index === undefined || !match[2]) continue;
 		const from = lineFrom + match.index + (match[1]?.length ?? 0);
 		if (isCodePosition(view, from)) continue;

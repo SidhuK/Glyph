@@ -43,6 +43,12 @@ describe("tag utils", () => {
 		expect(normalizeTagToken("#work/")).toBeNull();
 	});
 
+	it("preserves Unicode letters in tag tokens", () => {
+		expect(normalizeTagToken("#Næring/ØL/År")).toBe("næring/øl/år");
+		expect(normalizeTagToken("#İ")).toBe("i̇");
+		expect(normalizeTagToken("#\u0301accent")).toBeNull();
+	});
+
 	it("keeps partial path prefixes for autocomplete", () => {
 		expect(normalizeTagDraftPrefix("#Work/Today/")).toBe("work/today/");
 	});

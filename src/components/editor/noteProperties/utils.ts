@@ -1,5 +1,12 @@
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 
+/** Keep in sync with `TAG_SEGMENT_PATTERN` / `INLINE_TAG_PATTERN` in `src-tauri/src/index/tags.rs`. */
+const TAG_SEGMENT_PATTERN = /^[\p{L}\p{N}_][\p{L}\p{M}\p{N}_-]*$/u;
+
+/** Inline `#tag` matcher shared by rich and raw editor decorations. */
+export const INLINE_TAG_PATTERN =
+	/(^|[^\p{L}\p{M}\p{N}_/#])#([\p{L}\p{N}_][\p{L}\p{M}\p{N}_/-]*)/gu;
+
 export function humanizePropertyKey(key: string): string {
 	if (!key) return "";
 	return key.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -47,7 +54,7 @@ function sanitizeTagText(value: string): string {
 		.replace(/^#+/, "")
 		.toLowerCase()
 		.replace(/\s+/g, "-")
-		.replace(/[^a-z0-9_/-]/g, "");
+		.replace(/[^\p{L}\p{M}\p{N}_/-]/gu, "");
 }
 
 export function normalizeTagToken(value: string): string | null {
@@ -61,7 +68,9 @@ export function normalizeTagToken(value: string): string | null {
 		return null;
 	}
 	const segments = normalized.split("/");
-	return segments.every(Boolean) ? normalized : null;
+	return segments.every((segment) => TAG_SEGMENT_PATTERN.test(segment))
+		? normalized
+		: null;
 }
 
 export function normalizeTagDraftPrefix(value: string): string {
