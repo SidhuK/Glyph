@@ -11,6 +11,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -19,14 +20,14 @@ import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { scheduleScrollFileTreePathIntoView } from "../../lib/fileTreeScroll";
 import {
+	FILE_TREE_SORT_MODES,
+	fileTreeSortLabel,
+} from "../../lib/fileTreeSort";
+import {
 	allDocsCountQueryOptions,
 	formatAllDocsCountLabel,
 } from "../../lib/navigationPrefetch";
-import {
-	FILE_TREE_SORT_OPTIONS,
-	type FileTreeSortMode,
-	isFileTreeSortMode,
-} from "../../lib/settings";
+import { isFileTreeSortMode } from "../../lib/settings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -122,13 +123,6 @@ function PinnedNotesCountBadge({ count }: { count: number }) {
 	return <span className="sidebarQuickActionCount">{count}</span>;
 }
 
-function fileTreeSortLabel(sortMode: FileTreeSortMode): string {
-	return (
-		FILE_TREE_SORT_OPTIONS.find((option) => option.value === sortMode)?.label ??
-		"Sort"
-	);
-}
-
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onLoadDir,
@@ -155,6 +149,7 @@ export const SidebarContent = memo(function SidebarContent({
 	spacePath,
 	activeTopSection,
 }: SidebarContentProps) {
+	const { t } = useTranslation("shell");
 	// Contexts
 	const { getBinding } = useShortcutBindings();
 	const {
@@ -365,9 +360,9 @@ export const SidebarContent = memo(function SidebarContent({
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="new-note"
-							aria-label="New Note"
+							aria-label={t("sidebar.newNote")}
 							onClick={onNewNote}
-							title={`New Note${
+							title={`${t("sidebar.newNote")}${
 								newNoteShortcut
 									? ` (${formatShortcutForPlatform(newNoteShortcut)})`
 									: ""
@@ -378,7 +373,9 @@ export const SidebarContent = memo(function SidebarContent({
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">New Note</span>
+							<span className="sidebarQuickActionLabel">
+								{t("sidebar.newNote")}
+							</span>
 							{newNoteShortcut ? (
 								<span className="sidebarQuickActionShortcut">
 									{formatShortcutForPlatform(newNoteShortcut)}
@@ -392,20 +389,22 @@ export const SidebarContent = memo(function SidebarContent({
 							data-active={
 								activeTopSection === "pinned-notes" ? "true" : "false"
 							}
-							aria-label="Pinned"
+							aria-label={t("sidebar.pinned")}
 							aria-pressed={activeTopSection === "pinned-notes"}
 							aria-current={
 								activeTopSection === "pinned-notes" ? "page" : undefined
 							}
 							onClick={onOpenPinnedDocs}
-							title="Open Pinned"
+							title={t("sidebar.pinned")}
 						>
 							<HugeiconsIcon
 								icon={StarIcon}
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">Pinned</span>
+							<span className="sidebarQuickActionLabel">
+								{t("sidebar.pinned")}
+							</span>
 							<PinnedNotesCountBadge count={pinnedFiles.length} />
 						</button>
 						<button
@@ -413,7 +412,7 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="all-notes"
 							data-active={activeTopSection === "all-notes" ? "true" : "false"}
-							aria-label="All Notes"
+							aria-label={t("sidebar.allNotes")}
 							aria-pressed={activeTopSection === "all-notes"}
 							aria-current={
 								activeTopSection === "all-notes" ? "page" : undefined
@@ -424,14 +423,16 @@ export const SidebarContent = memo(function SidebarContent({
 							}}
 							{...allDocsHoverPrefetchProps}
 							onFocus={onPrefetchAllDocs}
-							title="Open All Notes"
+							title={t("sidebar.allNotes")}
 						>
 							<HugeiconsIcon
 								icon={Archive04Icon}
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">All Notes</span>
+							<span className="sidebarQuickActionLabel">
+								{t("sidebar.allNotes")}
+							</span>
 							<AllNotesCountBadge />
 						</button>
 						<button
@@ -439,7 +440,7 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="databases"
 							data-active={activeTopSection === "databases" ? "true" : "false"}
-							aria-label="Collections"
+							aria-label={t("sidebar.collections")}
 							aria-pressed={activeTopSection === "databases"}
 							aria-current={
 								activeTopSection === "databases" ? "page" : undefined
@@ -450,14 +451,16 @@ export const SidebarContent = memo(function SidebarContent({
 							}}
 							{...databasesHoverPrefetchProps}
 							onFocus={() => onPrefetchDatabases()}
-							title="Open Collections"
+							title={t("sidebar.collections")}
 						>
 							<HugeiconsIcon
 								icon={LibraryIcon}
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">Collections</span>
+							<span className="sidebarQuickActionLabel">
+								{t("sidebar.collections")}
+							</span>
 						</button>
 						<button
 							type="button"
@@ -466,20 +469,22 @@ export const SidebarContent = memo(function SidebarContent({
 							data-active={
 								activeTopSection === "connections" ? "true" : "false"
 							}
-							aria-label="Connections"
+							aria-label={t("sidebar.connections")}
 							aria-pressed={activeTopSection === "connections"}
 							aria-current={
 								activeTopSection === "connections" ? "page" : undefined
 							}
 							onClick={onOpenConnections}
-							title="Open Connections"
+							title={t("sidebar.connections")}
 						>
 							<HugeiconsIcon
 								icon={ChartRelationshipIcon}
 								size="var(--icon-md)"
 								strokeWidth={0.9}
 							/>
-							<span className="sidebarQuickActionLabel">Connections</span>
+							<span className="sidebarQuickActionLabel">
+								{t("sidebar.connections")}
+							</span>
 						</button>
 					</div>
 					<div className="sidebarStack">
@@ -493,9 +498,13 @@ export const SidebarContent = memo(function SidebarContent({
 									className="sidebarStackHeaderToggle"
 									onClick={handleNotesHeaderClick}
 									aria-expanded={notesExpanded}
-									aria-label={notesExpanded ? "Collapse Notes" : "Expand Notes"}
+									aria-label={
+										notesExpanded
+											? t("sidebar.collapseNotes")
+											: t("sidebar.expandNotes")
+									}
 								>
-									<span>Notes</span>
+									<span>{t("sidebar.notes")}</span>
 									{notesExpanded ? (
 										<ChevronDown
 											size="var(--icon-xs)"
@@ -510,7 +519,7 @@ export const SidebarContent = memo(function SidebarContent({
 								</button>
 								<div className="sidebarStackHeaderActions">
 									<label className="sidebarStackHeaderSortNative">
-										<span className="sr-only">Sort notes</span>
+										<span className="sr-only">{t("sidebar.sortNotes")}</span>
 										<HugeiconsIcon
 											icon={Sorting01Icon}
 											size="var(--icon-sm)"
@@ -521,17 +530,17 @@ export const SidebarContent = memo(function SidebarContent({
 										<select
 											className="sidebarStackHeaderSortSelect"
 											value={fileTreeSort.sortMode}
-											title={`Sort notes: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
-											aria-label="Sort notes"
+											title={`${t("sidebar.sortNotes")}: ${fileTreeSortLabel(fileTreeSort.sortMode)}`}
+											aria-label={t("sidebar.sortNotes")}
 											onChange={(event) => {
 												const nextSortMode = event.currentTarget.value;
 												if (!isFileTreeSortMode(nextSortMode)) return;
 												void fileTreeSort.setSortMode(nextSortMode);
 											}}
 										>
-											{FILE_TREE_SORT_OPTIONS.map((option) => (
-												<option key={option.value} value={option.value}>
-													{option.label}
+											{FILE_TREE_SORT_MODES.map((mode) => (
+												<option key={mode} value={mode}>
+													{fileTreeSortLabel(mode)}
 												</option>
 											))}
 										</select>
@@ -539,8 +548,8 @@ export const SidebarContent = memo(function SidebarContent({
 									<button
 										type="button"
 										className="sidebarStackHeaderAction"
-										title="Expand all folders"
-										aria-label="Expand all folders"
+										title={t("sidebar.expandAllFolders")}
+										aria-label={t("sidebar.expandAllFolders")}
 										onClick={() => {
 											void onExpandAllDirs();
 										}}
@@ -554,8 +563,8 @@ export const SidebarContent = memo(function SidebarContent({
 									<button
 										type="button"
 										className="sidebarStackHeaderAction"
-										title="Collapse all folders"
-										aria-label="Collapse all folders"
+										title={t("sidebar.collapseAllFolders")}
+										aria-label={t("sidebar.collapseAllFolders")}
 										onClick={onCollapseAllDirs}
 									>
 										<HugeiconsIcon

@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "外観",
+		"panelTitle": "外観"
+	},
+	"theme": {
+		"sectionTitle": "テーマ",
+		"sectionDescription": "ライトとダークのテーマファミリーを組み合わせます。",
+		"appearance": {
+			"label": "外観",
+			"description": "システムに合わせるか、Glyph をライトまたはダークに固定します。",
+			"ariaLabel": "テーマモード"
+		},
+		"modes": {
+			"system": {
+				"label": "システム",
+				"description": "デバイスのライト／ダーク外観に合わせます。"
+			},
+			"light": {
+				"label": "ライト",
+				"description": "常にライトモードを使用します。"
+			},
+			"dark": {
+				"label": "ダーク",
+				"description": "常にダークモードを使用します。"
+			}
+		},
+		"translucentSidebar": {
+			"label": "半透明サイドバー",
+			"ariaLabel": "半透明サイドバー"
+		}
+	},
+	"accent": {
+		"sectionTitle": "アクセント",
+		"sectionDescription": "Glyph のライト／ダークテーマに適用されます。",
+		"palette": {
+			"label": "パレット",
+			"description": "ハイライト、フォーカスリング、強調のアクセントを設定します。",
+			"ariaLabel": "アクセントカラー",
+			"resetAriaLabel": "アクセントをリセット"
+		},
+		"options": {
+			"neutral": "ニュートラル",
+			"glyphOrange": "オレンジ",
+			"glyphRed": "Glyph Red",
+			"cerulean": "セルリアン",
+			"tropicalTeal": "トロピカルティール"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "ライトテーマ",
+		"preset": {
+			"label": "プリセット",
+			"hint": "ライトモードで Glyph が使うパレットを選びます。"
+		},
+		"background": {
+			"label": "背景",
+			"ariaLabel": "ライトテーマの背景色",
+			"resetAriaLabel": "ライトテーマの背景をリセット"
+		},
+		"foreground": {
+			"label": "前景",
+			"ariaLabel": "ライトテーマの前景色",
+			"resetAriaLabel": "ライトテーマの前景をリセット"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "ダークテーマ",
+		"preset": {
+			"label": "プリセット",
+			"hint": "ダークモードで Glyph が使うパレットを選びます。"
+		},
+		"background": {
+			"label": "背景",
+			"ariaLabel": "ダークテーマの背景色",
+			"resetAriaLabel": "ダークテーマの背景をリセット"
+		},
+		"foreground": {
+			"label": "前景",
+			"ariaLabel": "ダークテーマの前景色",
+			"resetAriaLabel": "ダークテーマの前景をリセット"
+		}
+	},
+	"shape": {
+		"sectionTitle": "形状",
+		"sectionDescription": "アプリ全体のパネル、ボタン、ウィンドウの角の丸みを選びます。",
+		"corners": {
+			"label": "角",
+			"description": "サイドバー、ダイアログ、入力欄、カードなど全体に適用されます。",
+			"ariaLabel": "UI の形状"
+		},
+		"options": {
+			"sharp": {
+				"label": "ブルータリスト",
+				"description": "アプリ全体でシャープな直角のエッジ。"
+			},
+			"default": {
+				"label": "デフォルト",
+				"description": "Glyph のバランスの取れた見た目。"
+			},
+			"round": {
+				"label": "ソフト",
+				"description": "アプリ全体でより丸みのある優しいエッジ。"
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "タイポグラフィ",
+		"sectionDescription": "インターフェース書体、コードスタイル、読書スケールを個別に調整します。",
+		"interfaceFont": {
+			"label": "インターフェースフォント",
+			"description": "ナビゲーション、設定、Glyph のほとんどの UI テキストに使用されます。"
+		},
+		"editorFont": {
+			"label": "エディタフォント",
+			"description": "インラインコードとコードブロック以外の通常のノート本文に使用されます。"
+		},
+		"monospaceFont": {
+			"label": "等幅フォント",
+			"description": "Markdown ソース、インラインコード、開発者向けの画面に使用されます。"
+		},
+		"uiFontSize": {
+			"label": "UI フォントサイズ",
+			"description": "メニュー、ペイン、コントロール、設定で使う基本サイズを調整します。",
+			"valueAriaLabel": "UI フォントサイズの値"
+		},
+		"editorFontSize": {
+			"label": "エディタフォントサイズ",
+			"description": "ノートエディタ、Markdown プレビュー、生テキスト編集の読みやすさを調整します。",
+			"valueAriaLabel": "エディタフォントサイズの値"
+		}
+	},
+	"layout": {
+		"sectionTitle": "レイアウト",
+		"sectionDescription": "ワークスペースとすべてのノートの表示方法を選びます。",
+		"folioMode": {
+			"label": "Folio モード",
+			"description": "ナビゲーション、ノート、エディタを 3 列のワークスペースで表示します。",
+			"ariaLabel": "Folio モード"
+		},
+		"classicAllNotes": {
+			"label": "クラシックなすべてのノートグリッド",
+			"description": "アクティビティタイムラインではなく、シンプルなグリッドですべてのノートを開きます。",
+			"ariaLabel": "クラシックなすべてのノートグリッド"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "エディタの表示",
+		"sectionDescription": "編集中のノートの見た目を選びます。",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "タグ向けの実験的な Beautiful Tags 表示を有効にします。",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "エディタの幅",
+			"description": "コンパクトは行を短く保ち、快適は少し余裕を与え、ワイドはエディタ全幅を使います。",
+			"ariaLabel": "エディタの幅",
+			"options": {
+				"compact": "コンパクト",
+				"comfortable": "快適",
+				"wide": "ワイド"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "データベース",
+		"sectionDescription": "Glyph 全体でのデータベースの表示方法を選びます。",
+		"showColumnColor": {
+			"label": "データベース列の色を表示",
+			"description": "レーンのピルとタグの色は維持しつつ、列全体の色合いの表示を切り替えます。",
+			"ariaLabel": "データベース列の色を表示"
+		}
+	}
+}

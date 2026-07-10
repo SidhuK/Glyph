@@ -1,6 +1,10 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
 	setEditorColorfulHeadings,
@@ -8,6 +12,7 @@ import {
 	setEditorShowFrontmatterInEditor,
 	setEditorSpellCheck,
 	setEditorVimKeybindings,
+	setLanguage,
 	setResumeLastSession,
 	setShowFileTreeFolderCounts,
 	setShowNonMarkdownFiles,
@@ -22,38 +27,40 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
-const VIM_KEYBINDING_HELP = [
-	{ key: "Esc", action: "Enter Vim command mode." },
-	{ key: "i", action: "Type at the cursor." },
-	{ key: "a", action: "Type after the cursor." },
-	{ key: "I", action: "Go to the start of the line and type." },
-	{ key: "A", action: "Go to the end of the line and type." },
-	{ key: "o", action: "Open a new line below and type." },
-	{ key: "O", action: "Open a new line above and type." },
-	{ key: "h / j / k / l", action: "Move left, down, up, and right." },
-	{ key: "w", action: "Jump to the next word." },
-	{ key: "b", action: "Jump back to the previous word." },
-	{ key: "e", action: "Jump to the end of the word." },
-	{ key: "0", action: "Jump to the start of the line." },
-	{ key: "$", action: "Jump to the end of the line." },
-	{ key: "gg", action: "Jump to the start of the note." },
-	{ key: "G", action: "Jump to the end of the note." },
-	{ key: "x", action: "Delete the character under or near the cursor." },
-	{ key: "dd", action: "Delete the current line's contents." },
-	{ key: "u", action: "Undo." },
-	{ key: "Control-r", action: "Redo." },
+const VIM_HELP_ENTRIES = [
+	{ key: "Esc", actionKey: "esc" },
+	{ key: "i", actionKey: "i" },
+	{ key: "a", actionKey: "a" },
+	{ key: "I", actionKey: "I" },
+	{ key: "A", actionKey: "A" },
+	{ key: "o", actionKey: "o" },
+	{ key: "O", actionKey: "O" },
+	{ key: "h / j / k / l", actionKey: "hjkl" },
+	{ key: "w", actionKey: "w" },
+	{ key: "b", actionKey: "b" },
+	{ key: "e", actionKey: "e" },
+	{ key: "0", actionKey: "0" },
+	{ key: "$", actionKey: "dollar" },
+	{ key: "gg", actionKey: "gg" },
+	{ key: "G", actionKey: "G" },
+	{ key: "x", actionKey: "x" },
+	{ key: "dd", actionKey: "dd" },
+	{ key: "u", actionKey: "u" },
+	{ key: "Control-r", actionKey: "controlR" },
 ] as const;
 
 function VimKeybindingsHelp() {
+	const { t } = useTranslation("settings.general");
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
 					className="vimKeybindingsInfoButton"
-					aria-label="Vim keybindings help"
+					aria-label={t("editor.vimMode.helpAriaLabel")}
 				>
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
@@ -68,22 +75,30 @@ function VimKeybindingsHelp() {
 				sideOffset={8}
 				className="vimKeybindingsPopover"
 			>
-				<div className="vimKeybindingsPopoverTitle">Vim keybindings</div>
+				<div className="vimKeybindingsPopoverTitle">
+					{t("editor.vimMode.helpTitle")}
+				</div>
 				<div className="vimKeybindingsModes">
 					<div>
-						<strong>insert</strong> means normal typing mode. You type and text
-						appears, like the editor already does.
+						<Trans
+							ns="settings.general"
+							i18nKey="editor.vimMode.insertMode"
+							components={{ strong: <strong /> }}
+						/>
 					</div>
 					<div>
-						<strong>normal</strong> means command mode. Your keys move around or
-						edit text instead of typing letters.
+						<Trans
+							ns="settings.general"
+							i18nKey="editor.vimMode.normalMode"
+							components={{ strong: <strong /> }}
+						/>
 					</div>
 				</div>
 				<div className="vimKeybindingsList">
-					{VIM_KEYBINDING_HELP.map((item) => (
+					{VIM_HELP_ENTRIES.map((item) => (
 						<div className="vimKeybindingsItem" key={item.key}>
 							<kbd>{item.key}</kbd>
-							<span>{item.action}</span>
+							<span>{t(`editor.vimMode.help.${item.actionKey}`)}</span>
 						</div>
 					))}
 				</div>
@@ -93,7 +108,9 @@ function VimKeybindingsHelp() {
 }
 
 export function GeneralSettingsPane() {
+	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
+	const [language, setLanguageState] = useState<AppLanguage>("en");
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -148,6 +165,7 @@ export function GeneralSettingsPane() {
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
+				setLanguageState(settings.ui.language);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
@@ -182,6 +200,9 @@ export function GeneralSettingsPane() {
 		"settings:updated",
 		useCallback(
 			(payload) => {
+				if (payload.ui?.language) {
+					setLanguageState(payload.ui.language);
+				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
 					setResumeLastSessionChecked,
@@ -227,99 +248,110 @@ export function GeneralSettingsPane() {
 		),
 	);
 
+	const handleLanguageChange = async (nextLanguage: AppLanguage) => {
+		const previous = language;
+		setLanguageState(nextLanguage);
+		try {
+			await setLanguage(nextLanguage);
+		} catch (cause) {
+			setLanguageState(previous);
+			setError(cause instanceof Error ? cause.message : String(cause));
+		}
+	};
+
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Startup"
-					description="Choose what opens when you start Glyph."
+					title={t("startup.sectionTitle")}
+					description={t("startup.sectionDescription")}
 				>
 					<SettingsRow
-						label="Open previous tabs"
-						description="Start this space with the tabs you left open."
+						label={t("startup.openPreviousTabs.label")}
+						description={t("startup.openPreviousTabs.description")}
 					>
 						<SettingsToggle
 							checked={resumeLastSession.checked}
 							disabled={resumeLastSession.isSaving}
-							ariaLabel="Resume last session"
+							ariaLabel={t("startup.openPreviousTabs.ariaLabel")}
 							onCheckedChange={resumeLastSession.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="Editor"
-					description="Controls for editing behavior and note structure inside Glyph."
+					title={t("editor.sectionTitle")}
+					description={t("editor.sectionDescription")}
 				>
 					<SettingsRow
-						label="Table of contents"
-						description="Show a floating table of contents for each note."
+						label={t("editor.tableOfContents.label")}
+						description={t("editor.tableOfContents.description")}
 					>
 						<SettingsToggle
 							checked={showToc.checked}
 							disabled={showToc.isSaving}
-							ariaLabel="Table of contents"
+							ariaLabel={t("editor.tableOfContents.ariaLabel")}
 							onCheckedChange={showToc.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Show frontmatter in editor"
-						description="Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases."
+						label={t("editor.showFrontmatter.label")}
+						description={t("editor.showFrontmatter.description")}
 					>
 						<SettingsToggle
 							checked={showFrontmatter.checked}
 							disabled={showFrontmatter.isSaving}
-							ariaLabel="Show frontmatter in editor"
+							ariaLabel={t("editor.showFrontmatter.ariaLabel")}
 							onCheckedChange={showFrontmatter.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Colorful headings"
-						description="Use distinct built-in colors for H1-H6 while editing notes."
+						label={t("editor.colorfulHeadings.label")}
+						description={t("editor.colorfulHeadings.description")}
 					>
 						<SettingsToggle
 							checked={colorfulHeadings.checked}
 							disabled={colorfulHeadings.isSaving}
-							ariaLabel="Colorful headings"
+							ariaLabel={t("editor.colorfulHeadings.ariaLabel")}
 							onCheckedChange={colorfulHeadings.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Collapsible headings"
-						description="Show collapse toggles on note headings in editor and preview."
+						label={t("editor.collapsibleHeadings.label")}
+						description={t("editor.collapsibleHeadings.description")}
 					>
 						<SettingsToggle
 							checked={collapsibleHeadings.checked}
 							disabled={collapsibleHeadings.isSaving}
-							ariaLabel="Collapsible headings"
+							ariaLabel={t("editor.collapsibleHeadings.ariaLabel")}
 							onCheckedChange={collapsibleHeadings.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Spell check"
-						description="Underline typos as you type. Right-click a word to see spelling suggestions."
+						label={t("editor.spellCheck.label")}
+						description={t("editor.spellCheck.description")}
 					>
 						<SettingsToggle
 							checked={spellCheck.checked}
 							disabled={spellCheck.isSaving}
-							ariaLabel="Spell check"
+							ariaLabel={t("editor.spellCheck.ariaLabel")}
 							onCheckedChange={spellCheck.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						title="Vim Mode"
+						title={t("editor.vimMode.title")}
 						label={
 							<span className="settingsLabelWithHelp">
-								Vim Mode
+								{t("editor.vimMode.label")}
 								<VimKeybindingsHelp />
 							</span>
 						}
-						description="Do NOT Turn this ON if you don't know what it means."
+						description={t("editor.vimMode.description")}
 					>
 						<SettingsToggle
 							checked={vimKeybindings.checked}
 							disabled={vimKeybindings.isSaving}
-							ariaLabel="Vim Mode"
+							ariaLabel={t("editor.vimMode.ariaLabel")}
 							onCheckedChange={vimKeybindings.onCheckedChange}
 						/>
 					</SettingsRow>
@@ -330,6 +362,48 @@ export function GeneralSettingsPane() {
 					setError={setError}
 				/>
 				<LicenseSettingsCard />
+				<SettingsSection
+					title={t("language.sectionTitle")}
+					description={t("language.sectionDescription")}
+				>
+					<SettingsRow
+						title={t("language.label")}
+						label={t("language.label")}
+						description={
+							<Trans
+								ns="settings.general"
+								i18nKey="language.communityNotice"
+								components={{
+									discord: (
+										<button
+											type="button"
+											className="settingsInlineLink"
+											onClick={() => {
+												void openUrl(GLYPH_LINKS.discord);
+											}}
+										/>
+									),
+								}}
+							/>
+						}
+						htmlFor="settings-language-select"
+					>
+						<SettingsSelect
+							id="settings-language-select"
+							aria-label={t("language.ariaLabel")}
+							value={language}
+							onChange={(event) => {
+								void handleLanguageChange(event.target.value as AppLanguage);
+							}}
+						>
+							{LANGUAGE_OPTIONS.map((option) => (
+								<option key={option.id} value={option.id}>
+									{option.nativeLabel}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+				</SettingsSection>
 			</div>
 		</div>
 	);

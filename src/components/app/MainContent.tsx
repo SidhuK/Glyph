@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -705,11 +706,19 @@ export const MainContent = memo(function MainContent({
 		about: <AboutSettingsPane />,
 	};
 
+	const { t: tGeneral } = useTranslation("settings.general");
+	const { t: tAppearance } = useTranslation("settings.appearance");
 	const activeSettingsTabMeta = useMemo(
 		() =>
 			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
 		[settingsTab],
 	);
+	const settingsPanelTitle =
+		activeSettingsTabMeta.id === "general"
+			? tGeneral("nav.panelTitle")
+			: activeSettingsTabMeta.id === "appearance"
+				? tAppearance("nav.panelTitle")
+				: activeSettingsTabMeta.label;
 	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
 	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
 	const isActivityTab = viewerPath === ACTIVITY_TIMELINE_TAB_ID;
@@ -820,9 +829,7 @@ export const MainContent = memo(function MainContent({
 				<div className="settingsTabPanel">
 					<header className="settingsPanelHeader">
 						<div className="settingsPanelTitleRow">
-							<h2 className="settingsPanelTitle">
-								{activeSettingsTabMeta.label}
-							</h2>
+							<h2 className="settingsPanelTitle">{settingsPanelTitle}</h2>
 						</div>
 					</header>
 					{settingsTabContentByTab[settingsTab]}

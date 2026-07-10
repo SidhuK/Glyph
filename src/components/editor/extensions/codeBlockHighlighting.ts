@@ -10,6 +10,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 import yaml from "highlight.js/lib/languages/yaml";
 import { createLowlight } from "lowlight";
+import { i18n } from "../../../i18n";
 
 const lowlight = createLowlight();
 
@@ -60,24 +61,31 @@ const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 export type SupportedCodeBlockLanguage =
 	(typeof SUPPORTED_CODE_BLOCK_LANGUAGES)[number];
 
-export const CODE_BLOCK_LANGUAGE_OPTIONS: ReadonlyArray<{
+const CODE_BLOCK_LANGUAGE_OPTION_ORDER = [
+	"plaintext",
+	"bash",
+	"javascript",
+	"typescript",
+	"json",
+	"markdown",
+	"mermaid",
+	"python",
+	"rust",
+	"html",
+	"svg",
+	"xml",
+	"yaml",
+] as const satisfies readonly SupportedCodeBlockLanguage[];
+
+export function getCodeBlockLanguageOptions(): ReadonlyArray<{
 	label: string;
 	value: SupportedCodeBlockLanguage;
-}> = [
-	{ label: "Plain text", value: "plaintext" },
-	{ label: "Bash", value: "bash" },
-	{ label: "JavaScript", value: "javascript" },
-	{ label: "TypeScript", value: "typescript" },
-	{ label: "JSON", value: "json" },
-	{ label: "Markdown", value: "markdown" },
-	{ label: "Mermaid", value: "mermaid" },
-	{ label: "Python", value: "python" },
-	{ label: "Rust", value: "rust" },
-	{ label: "HTML", value: "html" },
-	{ label: "SVG", value: "svg" },
-	{ label: "XML", value: "xml" },
-	{ label: "YAML", value: "yaml" },
-] as const;
+}> {
+	return CODE_BLOCK_LANGUAGE_OPTION_ORDER.map((value) => ({
+		value,
+		label: i18n.t(`editor:codeBlock.languages.${value}`),
+	}));
+}
 
 const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<
 	string,
@@ -103,17 +111,16 @@ export function normalizeCodeBlockLanguage(
 export function getCodeBlockLanguageLabel(
 	language: string | null | undefined,
 ): string {
-	if (!language) return "Plain text";
+	if (!language) {
+		return i18n.t("editor:codeBlock.languages.plaintext");
+	}
 	const raw = language.trim();
 	const normalized = normalizeCodeBlockLanguage(raw);
 	if (!normalized && raw.length > 0) {
 		return raw;
 	}
-	return (
-		CODE_BLOCK_LANGUAGE_OPTIONS.find(
-			(option) => option.value === (normalized ?? "plaintext"),
-		)?.label ?? raw
-	);
+	const value = normalized ?? "plaintext";
+	return i18n.t(`editor:codeBlock.languages.${value}`);
 }
 
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.configure({

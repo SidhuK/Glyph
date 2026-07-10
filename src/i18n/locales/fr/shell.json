@@ -1,0 +1,89 @@
+{
+	"sidebar": {
+		"collapse": "Réduire la barre latérale",
+		"expand": "Développer la barre latérale",
+		"newNote": "Nouvelle note",
+		"pinned": "Épinglées",
+		"allNotes": "Toutes les notes",
+		"collections": "Collections",
+		"connections": "Connexions",
+		"notes": "Notes",
+		"collapseNotes": "Réduire les notes",
+		"expandNotes": "Développer les notes",
+		"sortNotes": "Trier les notes",
+		"sort": "Trier",
+		"expandAllFolders": "Développer tous les dossiers",
+		"collapseAllFolders": "Réduire tous les dossiers"
+	},
+	"sort": {
+		"nameAsc": "Nom A-Z",
+		"nameDesc": "Nom Z-A",
+		"modifiedNewest": "Modifiées (plus récentes)",
+		"modifiedOldest": "Modifiées (plus anciennes)",
+		"createdNewest": "Créées (plus récentes)",
+		"createdOldest": "Créées (plus anciennes)"
+	},
+	"pinned": {
+		"title": "Épinglées"
+	},
+	"allNotes": {
+		"title": "Toutes les notes",
+		"showActivity": "Afficher l’activité",
+		"today": "Aujourd’hui",
+		"yesterday": "Hier",
+		"thisWeek": "Cette semaine",
+		"thisMonth": "Ce mois-ci",
+		"earlier": "Plus tôt"
+	},
+	"tags": {
+		"header": "Étiquettes",
+		"collapse": "Réduire les étiquettes",
+		"expand": "Développer les étiquettes",
+		"people": "Personnes",
+		"showLess": "Afficher moins",
+		"showMore": "Afficher {{count}} de plus"
+	},
+	"fileTree": {
+		"open": "Ouvrir",
+		"openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
+		"showInFinder": "Afficher dans le Finder",
+		"copyRelativePath": "Copier le chemin relatif",
+		"copyAbsolutePath": "Copier le chemin absolu",
+		"rename": "Renommer",
+		"duplicateFile": "Dupliquer le fichier",
+		"pinFile": "Épingler le fichier",
+		"unpinFile": "Désépingler le fichier",
+		"iconAndColor": "Icône et couleur…",
+		"addFile": "Ajouter un fichier",
+		"createFromTemplate": "Créer à partir d’un modèle",
+		"addFolder": "Ajouter un dossier",
+		"deleteFile": "Supprimer le fichier",
+		"deleteFolder": "Supprimer le dossier"
+	},
+	"commandPalette": {
+		"title": "Palette de commandes",
+		"searchCommands": "Rechercher des commandes",
+		"searchNotes": "Rechercher des notes…",
+		"notePreview": "Aperçu de la note",
+		"sectionGeneral": "Général",
+		"navigate": "Naviguer",
+		"runCommand": "Exécuter la commande",
+		"openNote": "Ouvrir la note",
+		"commands": "Commandes",
+		"search": "Rechercher",
+		"close": "Fermer",
+		"filterTitle": "Titre",
+		"filterTag": "Étiquette",
+		"searching": "Recherche…",
+		"results": "{{count}} résultats",
+		"recentlyOpened": "Ouvertes récemment",
+		"groupNotes": "Notes",
+		"groupTaggedNotes": "Notes étiquetées",
+		"groupContent": "Contenu"
+	},
+	"tabs": {
+		"allNotes": "Toutes les notes",
+		"collections": "Collections",
+		"pinned": "Épinglées"
+	}
+}

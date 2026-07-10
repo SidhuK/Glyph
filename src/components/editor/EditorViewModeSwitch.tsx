@@ -4,16 +4,19 @@ import {
 	PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
 
-const LARGE_NOTE_MODE_HINT = "May be slow on large notes";
-
 const VIEW_MODES = [
-	{ id: "plain" as const, label: "Raw", icon: CodeIcon },
-	{ id: "rich" as const, label: "Rich", icon: PencilEdit02Icon },
+	{ id: "plain" as const, labelKey: "mode.raw" as const, icon: CodeIcon },
+	{
+		id: "rich" as const,
+		labelKey: "mode.rich" as const,
+		icon: PencilEdit02Icon,
+	},
 	{
 		id: "preview" as const,
-		label: "Preview",
+		labelKey: "mode.preview" as const,
 		icon: EyeIcon,
 	},
 ] as const;
@@ -29,15 +32,17 @@ export function EditorViewModeSwitch({
 	onModeChange,
 	largeNote = false,
 }: EditorViewModeSwitchProps) {
+	const { t } = useTranslation("editor");
 	return (
 		<div
 			className="markdownEditorModeSwitch"
 			role="toolbar"
-			aria-label="Editor mode"
+			aria-label={t("mode.label")}
 		>
 			{VIEW_MODES.map((item) => {
+				const label = t(item.labelKey);
 				const showLargeNoteHint = largeNote && item.id !== "plain";
-				const hint = showLargeNoteHint ? LARGE_NOTE_MODE_HINT : item.label;
+				const hint = showLargeNoteHint ? t("mode.largeNoteHint") : label;
 
 				return (
 					<span
@@ -49,7 +54,7 @@ export function EditorViewModeSwitch({
 							type="button"
 							className="markdownEditorModeBtn"
 							aria-pressed={mode === item.id}
-							aria-label={item.label}
+							aria-label={label}
 							data-active={mode === item.id || undefined}
 							onClick={() => onModeChange(item.id)}
 						>

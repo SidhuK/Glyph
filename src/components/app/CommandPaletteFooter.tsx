@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Tab } from "./commandPaletteHelpers";
 
 interface CommandPaletteFooterProps {
@@ -9,8 +10,15 @@ export function CommandPaletteFooter({
 	activeTab,
 	canSearch,
 }: CommandPaletteFooterProps) {
-	const openLabel = activeTab === "search" ? "Open note" : "Run command";
-	const switchLabel = activeTab === "search" ? "Commands" : "Search";
+	const { t } = useTranslation("shell");
+	const openLabel =
+		activeTab === "search"
+			? t("commandPalette.openNote")
+			: t("commandPalette.runCommand");
+	const switchLabel =
+		activeTab === "search"
+			? t("commandPalette.commands")
+			: t("commandPalette.search");
 
 	return (
 		<div className="commandPaletteFooter">
@@ -19,7 +27,9 @@ export function CommandPaletteFooter({
 					<kbd>↑</kbd>
 					<kbd>↓</kbd>
 				</span>
-				<span className="commandPaletteFooterLabel">Navigate</span>
+				<span className="commandPaletteFooterLabel">
+					{t("commandPalette.navigate")}
+				</span>
 			</div>
 			<div className="commandPaletteFooterItem">
 				<span className="commandPaletteFooterKeys">
@@ -39,7 +49,9 @@ export function CommandPaletteFooter({
 				<span className="commandPaletteFooterKeys">
 					<kbd>Esc</kbd>
 				</span>
-				<span className="commandPaletteFooterLabel">Close</span>
+				<span className="commandPaletteFooterLabel">
+					{t("commandPalette.close")}
+				</span>
 			</div>
 		</div>
 	);

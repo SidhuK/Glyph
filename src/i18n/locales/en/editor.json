@@ -1,0 +1,216 @@
+{
+	"mode": {
+		"label": "Editor mode",
+		"raw": "Raw",
+		"rich": "Rich",
+		"preview": "Preview",
+		"largeNoteHint": "May be slow on large notes"
+	},
+	"ribbon": {
+		"bold": "Bold",
+		"italic": "Italic",
+		"underline": "Underline",
+		"strikethrough": "Strikethrough",
+		"textColor": "Text color",
+		"clearColor": "Clear color",
+		"textHighlight": "Text highlight",
+		"clearHighlight": "Clear highlight",
+		"extractToNote": "Extract to note",
+		"heading1": "Heading 1",
+		"heading2": "Heading 2",
+		"heading3": "Heading 3",
+		"bulletList": "Bullet list",
+		"numberedList": "Numbered list",
+		"taskList": "Task list",
+		"quote": "Quote",
+		"codeBlock": "Code block"
+	},
+	"colors": {
+		"gray": "Gray",
+		"brown": "Brown",
+		"orange": "Orange",
+		"yellow": "Yellow",
+		"green": "Green",
+		"blue": "Blue",
+		"purple": "Purple",
+		"red": "Red"
+	},
+	"highlights": {
+		"yellow": "Yellow",
+		"blue": "Blue",
+		"green": "Green",
+		"red": "Red"
+	},
+	"codeBlock": {
+		"setLanguage": "Set code block language",
+		"languageHeader": "Code block language",
+		"runPreview": "Run preview",
+		"copy": "Copy code",
+		"copied": "Copied code",
+		"editCode": "Edit code",
+		"editMermaid": "Edit Mermaid code",
+		"editHtml": "Edit HTML code",
+		"editSvg": "Edit SVG code",
+		"languages": {
+			"plaintext": "Plain text",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "Heading 1",
+			"description": "Big section heading"
+		},
+		"heading2": {
+			"title": "Heading 2",
+			"description": "Section heading"
+		},
+		"heading3": {
+			"title": "Heading 3",
+			"description": "Subheading"
+		},
+		"bulletList": {
+			"title": "Bullet list",
+			"description": "Start a bullet list"
+		},
+		"numberedList": {
+			"title": "Numbered list",
+			"description": "Start a numbered list"
+		},
+		"todoList": {
+			"title": "To-do list",
+			"description": "Start a task list"
+		},
+		"quote": {
+			"title": "Quote",
+			"description": "Insert a blockquote"
+		},
+		"codeBlock": {
+			"title": "Code block",
+			"description": "Insert a code block"
+		},
+		"divider": {
+			"title": "Divider",
+			"description": "Insert a horizontal rule"
+		},
+		"table": {
+			"title": "Table",
+			"description": "Insert a markdown table"
+		},
+		"tableOfContents": {
+			"title": "Table of contents",
+			"description": "Insert a live outline for this note"
+		},
+		"mermaidChart": {
+			"title": "Mermaid chart",
+			"description": "Insert a Mermaid diagram block"
+		},
+		"htmlEmbed": {
+			"title": "HTML embed",
+			"description": "Insert a sandboxed HTML preview block"
+		},
+		"svgEmbed": {
+			"title": "SVG embed",
+			"description": "Insert a sandboxed SVG preview block"
+		},
+		"detailsBlock": {
+			"title": "Details block",
+			"description": "Insert a collapsible toggle section"
+		},
+		"calloutInfo": {
+			"title": "Info callout",
+			"description": "Insert an info callout"
+		},
+		"calloutTip": {
+			"title": "Tip callout",
+			"description": "Insert a tip callout"
+		},
+		"calloutSuccess": {
+			"title": "Success callout",
+			"description": "Insert a success callout"
+		},
+		"calloutWarning": {
+			"title": "Warning callout",
+			"description": "Insert a warning callout"
+		},
+		"calloutError": {
+			"title": "Error callout",
+			"description": "Insert an error callout"
+		},
+		"mathInline": {
+			"title": "Inline equation",
+			"description": "Insert LaTeX within a line"
+		},
+		"mathDisplay": {
+			"title": "Display equation",
+			"description": "Insert a centered LaTeX block"
+		},
+		"colorGray": {
+			"title": "Color: Gray",
+			"description": "Apply gray text color"
+		},
+		"colorBrown": {
+			"title": "Color: Brown",
+			"description": "Apply brown text color"
+		},
+		"colorOrange": {
+			"title": "Color: Orange",
+			"description": "Apply orange text color"
+		},
+		"colorYellow": {
+			"title": "Color: Yellow",
+			"description": "Apply yellow text color"
+		},
+		"colorGreen": {
+			"title": "Color: Green",
+			"description": "Apply green text color"
+		},
+		"colorBlue": {
+			"title": "Color: Blue",
+			"description": "Apply blue text color"
+		},
+		"colorPurple": {
+			"title": "Color: Purple",
+			"description": "Apply purple text color"
+		},
+		"colorRed": {
+			"title": "Color: Red",
+			"description": "Apply red text color"
+		},
+		"colorClear": {
+			"title": "Color: Clear",
+			"description": "Remove text color"
+		},
+		"highlightYellow": {
+			"title": "Highlight: Yellow",
+			"description": "Apply yellow text highlight"
+		},
+		"highlightBlue": {
+			"title": "Highlight: Blue",
+			"description": "Apply blue text highlight"
+		},
+		"highlightGreen": {
+			"title": "Highlight: Green",
+			"description": "Apply green text highlight"
+		},
+		"highlightRed": {
+			"title": "Highlight: Red",
+			"description": "Apply red text highlight"
+		},
+		"highlightClear": {
+			"title": "Highlight: Clear",
+			"description": "Remove text highlight"
+		}
+	}
+}

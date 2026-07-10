@@ -1,5 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { useFileTreeSortMode } from "../../hooks/useFileTreeSortMode";
-import { FILE_TREE_SORT_OPTIONS, isFileTreeSortMode } from "../../lib/settings";
+import {
+	FILE_TREE_SORT_MODES,
+	fileTreeSortLabel,
+} from "../../lib/fileTreeSort";
+import { isFileTreeSortMode } from "../../lib/settings";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -19,42 +24,45 @@ export function FileTreeSettingsSection({
 	nonMarkdownFiles,
 	setError,
 }: FileTreeSettingsSectionProps) {
+	const { t } = useTranslation(["settings.general", "shell"]);
 	const fileTreeSort = useFileTreeSortMode({ onError: setError });
 
 	return (
 		<SettingsSection
-			title="File tree"
-			description="Choose what appears in the sidebar file tree and Folio list."
+			title={t("settings.general:fileTree.sectionTitle")}
+			description={t("settings.general:fileTree.sectionDescription")}
 		>
 			<SettingsRow
-				label="Show folder file counts"
-				description="Show a recursive file total at the end of each folder row in the file tree."
+				label={t("settings.general:fileTree.folderCounts.label")}
+				description={t("settings.general:fileTree.folderCounts.description")}
 			>
 				<SettingsToggle
 					checked={folderCounts.checked}
 					disabled={folderCounts.isSaving}
-					ariaLabel="Show folder file counts"
+					ariaLabel={t("settings.general:fileTree.folderCounts.ariaLabel")}
 					onCheckedChange={folderCounts.onCheckedChange}
 				/>
 			</SettingsRow>
 			<SettingsRow
-				label="Show non-Markdown files"
-				description="Show PDFs, images, and other attachments in the file tree and Folio list. Turning this off hides them from those views only."
+				label={t("settings.general:fileTree.nonMarkdownFiles.label")}
+				description={t(
+					"settings.general:fileTree.nonMarkdownFiles.description",
+				)}
 			>
 				<SettingsToggle
 					checked={nonMarkdownFiles.checked}
 					disabled={nonMarkdownFiles.isSaving}
-					ariaLabel="Show non-Markdown files"
+					ariaLabel={t("settings.general:fileTree.nonMarkdownFiles.ariaLabel")}
 					onCheckedChange={nonMarkdownFiles.onCheckedChange}
 				/>
 			</SettingsRow>
 			<SettingsRow
-				label="File tree sort"
-				description="Choose how folders and files are ordered in the sidebar tree."
+				label={t("settings.general:fileTree.sort.label")}
+				description={t("settings.general:fileTree.sort.description")}
 				interactive={false}
 			>
 				<SettingsSelect
-					aria-label="File tree sort"
+					aria-label={t("settings.general:fileTree.sort.ariaLabel")}
 					value={fileTreeSort.sortMode}
 					disabled={fileTreeSort.isSaving}
 					onChange={(event) => {
@@ -62,9 +70,9 @@ export function FileTreeSettingsSection({
 						if (isFileTreeSortMode(mode)) void fileTreeSort.setSortMode(mode);
 					}}
 				>
-					{FILE_TREE_SORT_OPTIONS.map((option) => (
-						<option key={option.value} value={option.value}>
-							{option.label}
+					{FILE_TREE_SORT_MODES.map((mode) => (
+						<option key={mode} value={mode}>
+							{fileTreeSortLabel(mode)}
 						</option>
 					))}
 				</SettingsSelect>

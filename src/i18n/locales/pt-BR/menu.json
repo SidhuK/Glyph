@@ -1,0 +1,21 @@
+{
+	"app": {
+		"about": "Sobre o Glyph",
+		"settings": "Configurações…"
+	},
+	"submenus": {
+		"file": "Arquivo",
+		"edit": "Editar",
+		"markdown": "Markdown",
+		"textColor": "Cor do texto",
+		"textHighlight": "Destaque do texto",
+		"ai": "IA",
+		"space": "Espaço",
+		"recentSpaces": "Espaços recentes",
+		"window": "Janela",
+		"help": "Ajuda"
+	},
+	"recentSpaces": {
+		"empty": "Nenhum espaço recente"
+	}
+}

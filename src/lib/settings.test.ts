@@ -717,3 +717,48 @@ describe("shortcut settings", () => {
 		});
 	});
 });
+
+describe("settings language", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults language to en", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.language).toBe("en");
+	});
+
+	it("loads language from the store", async () => {
+		storeState.set("ui.language", "ja");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.language).toBe("ja");
+	});
+
+	it("falls back to en for unsupported language values", async () => {
+		storeState.set("ui.language", "system");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.ui.language).toBe("en");
+	});
+
+	it("persists and emits language changes", async () => {
+		const { setLanguage } = await import("./settings");
+
+		await setLanguage("es");
+
+		expect(storeState.get("ui.language")).toBe("es");
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { language: "es" },
+		});
+	});
+});

@@ -8,6 +8,28 @@ import { FileTreeFileItem } from "./FileTreeFileItem";
 
 const showNativeContextMenuMock = vi.hoisted(() => vi.fn());
 
+vi.mock("react-i18next", () => ({
+	useTranslation: () => ({
+		t: (key: string, options?: { defaultValue?: string }) => {
+			const labels: Record<string, string> = {
+				"fileTree.open": "Open",
+				"fileTree.openInNewWindow": "Open in New Window",
+				"fileTree.showInFinder": "Show in Finder",
+				"fileTree.rename": "Rename",
+				"fileTree.duplicateFile": "Duplicate file",
+				"fileTree.pinFile": "Pin file",
+				"fileTree.unpinFile": "Unpin file",
+				"fileTree.addFile": "Add file",
+				"fileTree.createFromTemplate": "Create from template",
+				"fileTree.addFolder": "Add folder",
+				"fileTree.deleteFile": "Delete file",
+				"fileTree.iconAndColor": "Icon & Color...",
+			};
+			return labels[key] ?? options?.defaultValue ?? key;
+		},
+	}),
+}));
+
 vi.mock("../../lib/nativeContextMenu", () => ({
 	showNativeContextMenu: showNativeContextMenuMock,
 }));

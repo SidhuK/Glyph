@@ -8,6 +8,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	type TagIconOverrides,
 	tagIconOverridesFromAppearance,
@@ -85,6 +86,7 @@ export const TagsPane = memo(function TagsPane({
 	tagAppearance = {},
 	onChangeTagIcon,
 }: TagsPaneProps) {
+	const { t } = useTranslation("shell");
 	const onClick = useCallback(
 		(tag: string) => onSelectTag(tag.startsWith("#") ? tag : `#${tag}`),
 		[onSelectTag],
@@ -121,9 +123,9 @@ export const TagsPane = memo(function TagsPane({
 					className="tagsHeaderTitle tagsHeaderToggle"
 					onClick={() => setSectionExpanded((v) => !v)}
 					aria-expanded={sectionExpanded}
-					aria-label={sectionExpanded ? "Collapse Tags" : "Expand Tags"}
+					aria-label={sectionExpanded ? t("tags.collapse") : t("tags.expand")}
 				>
-					<span>Tags</span>
+					<span>{t("tags.header")}</span>
 					{sectionExpanded ? (
 						<ChevronDown size="var(--icon-xs)" className="tagsHeaderChevron" />
 					) : (
@@ -184,14 +186,14 @@ export const TagsPane = memo(function TagsPane({
 							onClick={() => setTagsExpanded((v) => !v)}
 						>
 							{tagsExpanded
-								? "Show less"
-								: `Show ${rows.length - TAG_LIMIT} more`}
+								? t("tags.showLess")
+								: t("tags.showMore", { count: rows.length - TAG_LIMIT })}
 						</button>
 					) : null}
 					{peopleRows.length ? (
 						<>
 							<div className="tagsHeader tagsSubheader">
-								<div className="tagsHeaderTitle">People</div>
+								<div className="tagsHeaderTitle">{t("tags.people")}</div>
 							</div>
 							<ul className="tagsList">
 								{peopleRows.map((person) => (
@@ -219,7 +221,7 @@ export const TagsPane = memo(function TagsPane({
 			) : peopleRows.length ? (
 				<>
 					<div className="tagsHeader tagsSubheader">
-						<div className="tagsHeaderTitle">People</div>
+						<div className="tagsHeaderTitle">{t("tags.people")}</div>
 					</div>
 					<ul className="tagsList">
 						{peopleRows.map((person) => (

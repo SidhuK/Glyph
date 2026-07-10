@@ -1,6 +1,7 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
+import { i18n } from "../../i18n";
 import { createDetailsBlockContent } from "./extensions/detailsBlock";
 import {
 	BLOCK_MATH_STARTER,
@@ -15,16 +16,20 @@ import {
 import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
 
-interface SlashCommandItem {
+interface SlashCommandDef {
+	id: string;
 	icon: string;
-	title: string;
-	description: string;
 	keywords: string[];
 	command: (ctx: {
 		editor: Editor;
 		onMathEditRequest?: (request: MathEditRequest) => void;
 		range: { from: number; to: number };
 	}) => void;
+}
+
+interface SlashCommandItem extends SlashCommandDef {
+	title: string;
+	description: string;
 }
 
 function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
@@ -34,25 +39,30 @@ function slashCommandMatchesQuery(item: SlashCommandItem, query: string) {
 	return terms.every((term) => searchText.includes(term));
 }
 
+function localizeSlashCommandItem(item: SlashCommandDef): SlashCommandItem {
+	return {
+		...item,
+		title: i18n.t(`editor:slash.${item.id}.title`),
+		description: i18n.t(`editor:slash.${item.id}.description`),
+	};
+}
+
 function createEmbedSlashCommand({
+	id,
 	icon,
-	title,
-	description,
 	keywords,
 	language,
 	starterText,
 }: {
+	id: string;
 	icon: string;
-	title: string;
-	description: string;
 	keywords: string[];
 	language: "html" | "svg";
 	starterText: string;
-}): SlashCommandItem {
+}): SlashCommandDef {
 	return {
+		id,
 		icon,
-		title,
-		description,
 		keywords,
 		command: ({ editor, range }) =>
 			editor
@@ -98,11 +108,10 @@ function insertMathAndOpen(
 	onMathEditRequest?.({ kind, latex, pos: nearestPos });
 }
 
-const SLASH_COMMANDS: SlashCommandItem[] = [
+const SLASH_COMMANDS: SlashCommandDef[] = [
 	{
+		id: "heading1",
 		icon: "H1",
-		title: "Heading 1",
-		description: "Big section heading",
 		keywords: ["h1", "header", "title"],
 		command: ({ editor, range }) =>
 			editor
@@ -113,9 +122,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "heading2",
 		icon: "H2",
-		title: "Heading 2",
-		description: "Section heading",
 		keywords: ["h2", "header"],
 		command: ({ editor, range }) =>
 			editor
@@ -126,9 +134,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "heading3",
 		icon: "H3",
-		title: "Heading 3",
-		description: "Subheading",
 		keywords: ["h3", "header"],
 		command: ({ editor, range }) =>
 			editor
@@ -139,57 +146,50 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "bulletList",
 		icon: "•",
-		title: "Bullet list",
-		description: "Start a bullet list",
 		keywords: ["ul", "bullet", "list"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).toggleBulletList().run(),
 	},
 	{
+		id: "numberedList",
 		icon: "1.",
-		title: "Numbered list",
-		description: "Start a numbered list",
 		keywords: ["ol", "ordered", "list"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
 	},
 	{
+		id: "todoList",
 		icon: "✓",
-		title: "To-do list",
-		description: "Start a task list",
 		keywords: ["todo", "task", "checklist", "list"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).toggleTaskList().run(),
 	},
 	{
+		id: "quote",
 		icon: "❝",
-		title: "Quote",
-		description: "Insert a blockquote",
 		keywords: ["blockquote", "quote"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
 	},
 	{
+		id: "codeBlock",
 		icon: "</>",
-		title: "Code block",
-		description: "Insert a code block",
 		keywords: ["code", "block"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
 	},
 	{
+		id: "divider",
 		icon: "—",
-		title: "Divider",
-		description: "Insert a horizontal rule",
 		keywords: ["hr", "divider", "rule"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
 	},
 	{
+		id: "table",
 		icon: "▦",
-		title: "Table",
-		description: "Insert a markdown table",
 		keywords: ["table", "columns", "rows", "grid"],
 		command: ({ editor, range }) =>
 			editor
@@ -200,9 +200,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "tableOfContents",
 		icon: "☰",
-		title: "Table of contents",
-		description: "Insert a live outline for this note",
 		keywords: ["toc", "outline", "contents", "headings", "navigation"],
 		command: ({ editor, range }) =>
 			editor
@@ -219,9 +218,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "mermaidChart",
 		icon: "M",
-		title: "Mermaid chart",
-		description: "Insert a Mermaid diagram block",
 		keywords: ["mermaid", "diagram", "flowchart", "graph"],
 		command: ({ editor, range }) =>
 			editor
@@ -241,27 +239,24 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	createEmbedSlashCommand({
+		id: "htmlEmbed",
 		icon: "</>",
-		title: "HTML embed",
-		description: "Insert a sandboxed HTML preview block",
 		keywords: ["html", "embed", "widget", "preview"],
 		language: "html",
 		starterText:
 			'<div id="app"></div>\n<style>\n  #app { padding: 16px; }\n</style>\n<script>\n  document.querySelector("#app").textContent = "Live HTML block";\n</script>',
 	}),
 	createEmbedSlashCommand({
+		id: "svgEmbed",
 		icon: "◇",
-		title: "SVG embed",
-		description: "Insert a sandboxed SVG preview block",
 		keywords: ["svg", "vector", "graphic", "embed", "preview"],
 		language: "svg",
 		starterText:
 			'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">\n  <rect width="200" height="80" rx="12" fill="tomato" />\n  <text x="100" y="48" text-anchor="middle">Glyph</text>\n</svg>',
 	}),
 	{
+		id: "detailsBlock",
 		icon: "▸",
-		title: "Details block",
-		description: "Insert a collapsible toggle section",
 		keywords: ["details", "toggle", "collapse", "accordion", "summary"],
 		command: ({ editor, range }) =>
 			editor
@@ -272,9 +267,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "calloutInfo",
 		icon: "i",
-		title: "Info callout",
-		description: "Insert an info callout",
 		keywords: ["callout", "info", "admonition"],
 		command: ({ editor, range }) =>
 			editor
@@ -294,9 +288,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "calloutTip",
 		icon: "?",
-		title: "Tip callout",
-		description: "Insert a tip callout",
 		keywords: ["callout", "tip", "hint", "admonition"],
 		command: ({ editor, range }) =>
 			editor
@@ -316,9 +309,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "calloutSuccess",
 		icon: "+",
-		title: "Success callout",
-		description: "Insert a success callout",
 		keywords: ["callout", "success", "done", "admonition"],
 		command: ({ editor, range }) =>
 			editor
@@ -338,9 +330,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "calloutWarning",
 		icon: "!",
-		title: "Warning callout",
-		description: "Insert a warning callout",
 		keywords: ["callout", "warning", "warn", "admonition"],
 		command: ({ editor, range }) =>
 			editor
@@ -360,9 +351,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "calloutError",
 		icon: "×",
-		title: "Error callout",
-		description: "Insert an error callout",
 		keywords: ["callout", "error", "danger", "admonition"],
 		command: ({ editor, range }) =>
 			editor
@@ -382,47 +372,37 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		id: "mathInline",
 		icon: "ƒx",
-		title: "Inline equation",
-		description: "Insert LaTeX within a line",
 		keywords: ["latex", "math", "formula", "equation", "inline"],
 		command: ({ editor, range, onMathEditRequest }) =>
 			insertMathAndOpen(editor, range, "inline", onMathEditRequest),
 	},
 	{
+		id: "mathDisplay",
 		icon: "∑",
-		title: "Display equation",
-		description: "Insert a centered LaTeX block",
 		keywords: ["latex", "math", "formula", "equation", "block", "display"],
 		command: ({ editor, range, onMathEditRequest }) =>
 			insertMathAndOpen(editor, range, "block", onMathEditRequest),
 	},
-	...EDITOR_TEXT_COLORS.map<SlashCommandItem>((color) => ({
+	...EDITOR_TEXT_COLORS.map<SlashCommandDef>((color) => ({
+		id: `color${color.id[0].toUpperCase()}${color.id.slice(1)}`,
 		icon: "A",
-		title: `Color: ${color.label}`,
-		description: `Apply ${color.label.toLowerCase()} text color`,
-		keywords: ["color", "text", color.id, color.label.toLowerCase()],
+		keywords: ["color", "text", color.id],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).setTextColor(color.id).run(),
 	})),
 	{
+		id: "colorClear",
 		icon: "A",
-		title: "Color: Clear",
-		description: "Remove text color",
 		keywords: ["color", "text", "clear", "reset"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).unsetTextColor().run(),
 	},
-	...EDITOR_TEXT_HIGHLIGHTS.map<SlashCommandItem>((highlight) => ({
+	...EDITOR_TEXT_HIGHLIGHTS.map<SlashCommandDef>((highlight) => ({
+		id: `highlight${highlight.id[0].toUpperCase()}${highlight.id.slice(1)}`,
 		icon: "H",
-		title: `Highlight: ${highlight.label}`,
-		description: `Apply ${highlight.label.toLowerCase()} text highlight`,
-		keywords: [
-			"highlight",
-			"text",
-			highlight.id,
-			highlight.label.toLowerCase(),
-		],
+		keywords: ["highlight", "text", highlight.id],
 		command: ({ editor, range }) =>
 			editor
 				.chain()
@@ -432,9 +412,8 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	})),
 	{
+		id: "highlightClear",
 		icon: "H",
-		title: "Highlight: Clear",
-		description: "Remove text highlight",
 		keywords: ["highlight", "text", "clear", "reset"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).unsetTextHighlight().run(),
@@ -455,7 +434,7 @@ export const SlashCommand = Extension.create({
 					return $from.parent.type.name === "paragraph";
 				},
 				items: ({ query }: { query: string }) => {
-					return SLASH_COMMANDS.filter((item) =>
+					return SLASH_COMMANDS.map(localizeSlashCommandItem).filter((item) =>
 						slashCommandMatchesQuery(item, query),
 					);
 				},

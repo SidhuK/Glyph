@@ -1,0 +1,106 @@
+{
+	"nav": {
+		"tab": "一般",
+		"panelTitle": "一般",
+		"groupApplication": "アプリケーション",
+		"searchPlaceholder": "設定を検索",
+		"searchAriaLabel": "設定を検索",
+		"clearSearchAriaLabel": "設定の検索をクリア"
+	},
+	"language": {
+		"sectionTitle": "言語",
+		"sectionDescription": "Glyph 全体で使用する言語を選択します。",
+		"label": "言語",
+		"description": "メニュー、設定、ナビゲーションにすぐに適用されます。",
+		"ariaLabel": "言語",
+		"communityNotice": "翻訳はコミュニティによる貢献であり、不完全な場合があります。質問や改善案は <discord>Discord に参加</discord>してください。"
+	},
+	"startup": {
+		"sectionTitle": "起動",
+		"sectionDescription": "Glyph 起動時に開く内容を選択します。",
+		"openPreviousTabs": {
+			"label": "前回のタブを開く",
+			"description": "前回開いていたタブでこのスペースを開始します。",
+			"ariaLabel": "前回のセッションを再開"
+		}
+	},
+	"editor": {
+		"sectionTitle": "エディタ",
+		"sectionDescription": "Glyph 内の編集動作とノート構造のコントロールです。",
+		"tableOfContents": {
+			"label": "目次",
+			"description": "各ノートにフローティングの目次を表示します。",
+			"ariaLabel": "目次"
+		},
+		"showFrontmatter": {
+			"label": "エディタで frontmatter を表示",
+			"description": "編集中にノート上部の YAML frontmatter を表示します。オフにしても、インデックスとデータベースでは frontmatter を利用できます。",
+			"ariaLabel": "エディタで frontmatter を表示"
+		},
+		"colorfulHeadings": {
+			"label": "カラフルな見出し",
+			"description": "ノート編集時に H1〜H6 に組み込みの異なる色を使います。",
+			"ariaLabel": "カラフルな見出し"
+		},
+		"collapsibleHeadings": {
+			"label": "折りたたみ可能な見出し",
+			"description": "エディタとプレビューで見出しの折りたたみトグルを表示します。",
+			"ariaLabel": "折りたたみ可能な見出し"
+		},
+		"spellCheck": {
+			"label": "スペルチェック",
+			"description": "入力中に誤字を下線で示します。単語を右クリックするとスペル候補が表示されます。",
+			"ariaLabel": "スペルチェック"
+		},
+		"vimMode": {
+			"title": "Vim モード",
+			"label": "Vim モード",
+			"description": "意味がわからない場合はオンにしないでください。",
+			"ariaLabel": "Vim モード",
+			"helpAriaLabel": "Vim キーバインドのヘルプ",
+			"helpTitle": "Vim キーバインド",
+			"insertMode": "<strong>insert</strong> は通常の入力モードです。キーを打つとそのまま文字が入ります。",
+			"normalMode": "<strong>normal</strong> はコマンドモードです。キーは文字入力ではなく、移動や編集に使われます。",
+			"help": {
+				"esc": "Vim のコマンドモードに入ります。",
+				"i": "カーソル位置で入力します。",
+				"a": "カーソルの後ろで入力します。",
+				"I": "行頭に移動して入力します。",
+				"A": "行末に移動して入力します。",
+				"o": "下に新しい行を開いて入力します。",
+				"O": "上に新しい行を開いて入力します。",
+				"hjkl": "左、下、上、右に移動します。",
+				"w": "次の単語にジャンプします。",
+				"b": "前の単語にジャンプします。",
+				"e": "単語の末尾にジャンプします。",
+				"0": "行頭にジャンプします。",
+				"dollar": "行末にジャンプします。",
+				"gg": "ノートの先頭にジャンプします。",
+				"G": "ノートの末尾にジャンプします。",
+				"x": "カーソル下または近くの文字を削除します。",
+				"dd": "現在の行の内容を削除します。",
+				"u": "元に戻す。",
+				"controlR": "やり直す。"
+			}
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "ファイルツリー",
+		"sectionDescription": "サイドバーのファイルツリーと Folio リストに表示する内容を選びます。",
+		"folderCounts": {
+			"label": "フォルダのファイル数を表示",
+			"description": "ファイルツリーの各フォルダ行の末尾に、再帰的なファイル合計を表示します。",
+			"ariaLabel": "フォルダのファイル数を表示"
+		},
+		"nonMarkdownFiles": {
+			"label": "Markdown 以外のファイルを表示",
+			"description": "PDF、画像、その他の添付ファイルをファイルツリーと Folio リストに表示します。オフにすると、これらのビューからのみ非表示になります。",
+			"ariaLabel": "Markdown 以外のファイルを表示"
+		},
+		"sort": {
+			"label": "ファイルツリーの並べ替え",
+			"description": "サイドバーツリー内のフォルダとファイルの並び順を選びます。",
+			"ariaLabel": "ファイルツリーの並べ替え"
+		}
+	}
+}

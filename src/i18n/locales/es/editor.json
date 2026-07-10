@@ -1,0 +1,215 @@
+{
+	"mode": {
+		"label": "Modo del editor",
+		"raw": "Sin formato",
+		"rich": "Enriquecido",
+		"preview": "Vista previa"
+	},
+	"ribbon": {
+		"bold": "Negrita",
+		"italic": "Cursiva",
+		"underline": "Subrayado",
+		"strikethrough": "Tachado",
+		"textColor": "Color de texto",
+		"clearColor": "Quitar color",
+		"textHighlight": "Resaltado de texto",
+		"clearHighlight": "Quitar resaltado",
+		"extractToNote": "Extraer a nota",
+		"heading1": "Encabezado 1",
+		"heading2": "Encabezado 2",
+		"heading3": "Encabezado 3",
+		"bulletList": "Lista con viñetas",
+		"numberedList": "Lista numerada",
+		"taskList": "Lista de tareas",
+		"quote": "Cita",
+		"codeBlock": "Bloque de código"
+	},
+	"colors": {
+		"gray": "Gris",
+		"brown": "Marrón",
+		"orange": "Naranja",
+		"yellow": "Amarillo",
+		"green": "Verde",
+		"blue": "Azul",
+		"purple": "Morado",
+		"red": "Rojo"
+	},
+	"highlights": {
+		"yellow": "Amarillo",
+		"blue": "Azul",
+		"green": "Verde",
+		"red": "Rojo"
+	},
+	"codeBlock": {
+		"setLanguage": "Establecer idioma del bloque de código",
+		"languageHeader": "Idioma del bloque de código",
+		"runPreview": "Ejecutar vista previa",
+		"copy": "Copiar código",
+		"copied": "Código copiado",
+		"editCode": "Editar código",
+		"editMermaid": "Editar código Mermaid",
+		"editHtml": "Editar código HTML",
+		"editSvg": "Editar código SVG",
+		"languages": {
+			"plaintext": "Texto sin formato",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "Encabezado 1",
+			"description": "Encabezado de sección grande"
+		},
+		"heading2": {
+			"title": "Encabezado 2",
+			"description": "Encabezado de sección"
+		},
+		"heading3": {
+			"title": "Encabezado 3",
+			"description": "Subencabezado"
+		},
+		"bulletList": {
+			"title": "Lista con viñetas",
+			"description": "Iniciar una lista con viñetas"
+		},
+		"numberedList": {
+			"title": "Lista numerada",
+			"description": "Iniciar una lista numerada"
+		},
+		"todoList": {
+			"title": "Lista de tareas",
+			"description": "Iniciar una lista de tareas"
+		},
+		"quote": {
+			"title": "Cita",
+			"description": "Insertar una cita en bloque"
+		},
+		"codeBlock": {
+			"title": "Bloque de código",
+			"description": "Insertar un bloque de código"
+		},
+		"divider": {
+			"title": "Separador",
+			"description": "Insertar una regla horizontal"
+		},
+		"table": {
+			"title": "Tabla",
+			"description": "Insertar una tabla Markdown"
+		},
+		"tableOfContents": {
+			"title": "Tabla de contenidos",
+			"description": "Insertar un índice en vivo de esta nota"
+		},
+		"mermaidChart": {
+			"title": "Diagrama Mermaid",
+			"description": "Insertar un bloque de diagrama Mermaid"
+		},
+		"htmlEmbed": {
+			"title": "Incrustación HTML",
+			"description": "Insertar un bloque de vista previa HTML aislado"
+		},
+		"svgEmbed": {
+			"title": "Incrustación SVG",
+			"description": "Insertar un bloque de vista previa SVG aislado"
+		},
+		"detailsBlock": {
+			"title": "Bloque de detalles",
+			"description": "Insertar una sección plegable"
+		},
+		"calloutInfo": {
+			"title": "Aviso informativo",
+			"description": "Insertar un aviso informativo"
+		},
+		"calloutTip": {
+			"title": "Aviso de consejo",
+			"description": "Insertar un aviso de consejo"
+		},
+		"calloutSuccess": {
+			"title": "Aviso de éxito",
+			"description": "Insertar un aviso de éxito"
+		},
+		"calloutWarning": {
+			"title": "Aviso de advertencia",
+			"description": "Insertar un aviso de advertencia"
+		},
+		"calloutError": {
+			"title": "Aviso de error",
+			"description": "Insertar un aviso de error"
+		},
+		"mathInline": {
+			"title": "Ecuación en línea",
+			"description": "Insertar LaTeX dentro de una línea"
+		},
+		"mathDisplay": {
+			"title": "Ecuación en bloque",
+			"description": "Insertar un bloque LaTeX centrado"
+		},
+		"colorGray": {
+			"title": "Color: Gris",
+			"description": "Aplicar color de texto gris"
+		},
+		"colorBrown": {
+			"title": "Color: Marrón",
+			"description": "Aplicar color de texto marrón"
+		},
+		"colorOrange": {
+			"title": "Color: Naranja",
+			"description": "Aplicar color de texto naranja"
+		},
+		"colorYellow": {
+			"title": "Color: Amarillo",
+			"description": "Aplicar color de texto amarillo"
+		},
+		"colorGreen": {
+			"title": "Color: Verde",
+			"description": "Aplicar color de texto verde"
+		},
+		"colorBlue": {
+			"title": "Color: Azul",
+			"description": "Aplicar color de texto azul"
+		},
+		"colorPurple": {
+			"title": "Color: Morado",
+			"description": "Aplicar color de texto morado"
+		},
+		"colorRed": {
+			"title": "Color: Rojo",
+			"description": "Aplicar color de texto rojo"
+		},
+		"colorClear": {
+			"title": "Color: Quitar",
+			"description": "Quitar el color del texto"
+		},
+		"highlightYellow": {
+			"title": "Resaltado: Amarillo",
+			"description": "Aplicar resaltado de texto amarillo"
+		},
+		"highlightBlue": {
+			"title": "Resaltado: Azul",
+			"description": "Aplicar resaltado de texto azul"
+		},
+		"highlightGreen": {
+			"title": "Resaltado: Verde",
+			"description": "Aplicar resaltado de texto verde"
+		},
+		"highlightRed": {
+			"title": "Resaltado: Rojo",
+			"description": "Aplicar resaltado de texto rojo"
+		},
+		"highlightClear": {
+			"title": "Resaltado: Quitar",
+			"description": "Quitar el resaltado del texto"
+		}
+	}
+}

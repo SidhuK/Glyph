@@ -1,0 +1,215 @@
+{
+	"mode": {
+		"label": "Editormodus",
+		"raw": "Raw",
+		"rich": "Rich",
+		"preview": "Vorschau"
+	},
+	"ribbon": {
+		"bold": "Fett",
+		"italic": "Kursiv",
+		"underline": "Unterstrichen",
+		"strikethrough": "Durchgestrichen",
+		"textColor": "Textfarbe",
+		"clearColor": "Farbe entfernen",
+		"textHighlight": "Texthervorhebung",
+		"clearHighlight": "Hervorhebung entfernen",
+		"extractToNote": "In Notiz extrahieren",
+		"heading1": "Überschrift 1",
+		"heading2": "Überschrift 2",
+		"heading3": "Überschrift 3",
+		"bulletList": "Aufzählungsliste",
+		"numberedList": "Nummerierte Liste",
+		"taskList": "Aufgabenliste",
+		"quote": "Zitat",
+		"codeBlock": "Codeblock"
+	},
+	"colors": {
+		"gray": "Grau",
+		"brown": "Braun",
+		"orange": "Orange",
+		"yellow": "Gelb",
+		"green": "Grün",
+		"blue": "Blau",
+		"purple": "Lila",
+		"red": "Rot"
+	},
+	"highlights": {
+		"yellow": "Gelb",
+		"blue": "Blau",
+		"green": "Grün",
+		"red": "Rot"
+	},
+	"codeBlock": {
+		"setLanguage": "Codeblock-Sprache festlegen",
+		"languageHeader": "Codeblock-Sprache",
+		"runPreview": "Vorschau ausführen",
+		"copy": "Code kopieren",
+		"copied": "Code kopiert",
+		"editCode": "Code bearbeiten",
+		"editMermaid": "Mermaid-Code bearbeiten",
+		"editHtml": "HTML-Code bearbeiten",
+		"editSvg": "SVG-Code bearbeiten",
+		"languages": {
+			"plaintext": "Klartext",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"slash": {
+		"heading1": {
+			"title": "Überschrift 1",
+			"description": "Große Abschnittsüberschrift"
+		},
+		"heading2": {
+			"title": "Überschrift 2",
+			"description": "Abschnittsüberschrift"
+		},
+		"heading3": {
+			"title": "Überschrift 3",
+			"description": "Unterüberschrift"
+		},
+		"bulletList": {
+			"title": "Aufzählungsliste",
+			"description": "Eine Aufzählungsliste starten"
+		},
+		"numberedList": {
+			"title": "Nummerierte Liste",
+			"description": "Eine nummerierte Liste starten"
+		},
+		"todoList": {
+			"title": "Aufgabenliste",
+			"description": "Eine Aufgabenliste starten"
+		},
+		"quote": {
+			"title": "Zitat",
+			"description": "Ein Blockzitat einfügen"
+		},
+		"codeBlock": {
+			"title": "Codeblock",
+			"description": "Einen Codeblock einfügen"
+		},
+		"divider": {
+			"title": "Trennlinie",
+			"description": "Eine horizontale Linie einfügen"
+		},
+		"table": {
+			"title": "Tabelle",
+			"description": "Eine Markdown-Tabelle einfügen"
+		},
+		"tableOfContents": {
+			"title": "Inhaltsverzeichnis",
+			"description": "Eine Live-Gliederung für diese Notiz einfügen"
+		},
+		"mermaidChart": {
+			"title": "Mermaid-Diagramm",
+			"description": "Einen Mermaid-Diagrammblock einfügen"
+		},
+		"htmlEmbed": {
+			"title": "HTML-Einbettung",
+			"description": "Einen sandboxed HTML-Vorschaublock einfügen"
+		},
+		"svgEmbed": {
+			"title": "SVG-Einbettung",
+			"description": "Einen sandboxed SVG-Vorschaublock einfügen"
+		},
+		"detailsBlock": {
+			"title": "Details-Block",
+			"description": "Einen einklappbaren Abschnitt einfügen"
+		},
+		"calloutInfo": {
+			"title": "Info-Callout",
+			"description": "Einen Info-Callout einfügen"
+		},
+		"calloutTip": {
+			"title": "Tipp-Callout",
+			"description": "Einen Tipp-Callout einfügen"
+		},
+		"calloutSuccess": {
+			"title": "Erfolgs-Callout",
+			"description": "Einen Erfolgs-Callout einfügen"
+		},
+		"calloutWarning": {
+			"title": "Warn-Callout",
+			"description": "Einen Warn-Callout einfügen"
+		},
+		"calloutError": {
+			"title": "Fehler-Callout",
+			"description": "Einen Fehler-Callout einfügen"
+		},
+		"mathInline": {
+			"title": "Inline-Gleichung",
+			"description": "LaTeX innerhalb einer Zeile einfügen"
+		},
+		"mathDisplay": {
+			"title": "Anzeige-Gleichung",
+			"description": "Einen zentrierten LaTeX-Block einfügen"
+		},
+		"colorGray": {
+			"title": "Farbe: Grau",
+			"description": "Graue Textfarbe anwenden"
+		},
+		"colorBrown": {
+			"title": "Farbe: Braun",
+			"description": "Braune Textfarbe anwenden"
+		},
+		"colorOrange": {
+			"title": "Farbe: Orange",
+			"description": "Orange Textfarbe anwenden"
+		},
+		"colorYellow": {
+			"title": "Farbe: Gelb",
+			"description": "Gelbe Textfarbe anwenden"
+		},
+		"colorGreen": {
+			"title": "Farbe: Grün",
+			"description": "Grüne Textfarbe anwenden"
+		},
+		"colorBlue": {
+			"title": "Farbe: Blau",
+			"description": "Blaue Textfarbe anwenden"
+		},
+		"colorPurple": {
+			"title": "Farbe: Lila",
+			"description": "Lilane Textfarbe anwenden"
+		},
+		"colorRed": {
+			"title": "Farbe: Rot",
+			"description": "Rote Textfarbe anwenden"
+		},
+		"colorClear": {
+			"title": "Farbe: Entfernen",
+			"description": "Textfarbe entfernen"
+		},
+		"highlightYellow": {
+			"title": "Hervorhebung: Gelb",
+			"description": "Gelbe Texthervorhebung anwenden"
+		},
+		"highlightBlue": {
+			"title": "Hervorhebung: Blau",
+			"description": "Blaue Texthervorhebung anwenden"
+		},
+		"highlightGreen": {
+			"title": "Hervorhebung: Grün",
+			"description": "Grüne Texthervorhebung anwenden"
+		},
+		"highlightRed": {
+			"title": "Hervorhebung: Rot",
+			"description": "Rote Texthervorhebung anwenden"
+		},
+		"highlightClear": {
+			"title": "Hervorhebung: Entfernen",
+			"description": "Texthervorhebung entfernen"
+		}
+	}
+}

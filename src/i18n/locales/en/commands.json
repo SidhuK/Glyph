@@ -1,0 +1,426 @@
+{
+	"categories": {
+		"workspace": "Workspace",
+		"navigation": "Navigation",
+		"search": "Search",
+		"file": "File Operations",
+		"tabs": "Tabs",
+		"ai": "AI",
+		"editor": "Editor",
+		"settings": "Settings"
+	},
+	"commands": {
+		"activate-tab-1": {
+			"label": "Activate Tab 1",
+			"description": "Switch to tab 1."
+		},
+		"activate-tab-2": {
+			"label": "Activate Tab 2",
+			"description": "Switch to tab 2."
+		},
+		"activate-tab-3": {
+			"label": "Activate Tab 3",
+			"description": "Switch to tab 3."
+		},
+		"activate-tab-4": {
+			"label": "Activate Tab 4",
+			"description": "Switch to tab 4."
+		},
+		"activate-tab-5": {
+			"label": "Activate Tab 5",
+			"description": "Switch to tab 5."
+		},
+		"activate-tab-6": {
+			"label": "Activate Tab 6",
+			"description": "Switch to tab 6."
+		},
+		"activate-tab-7": {
+			"label": "Activate Tab 7",
+			"description": "Switch to tab 7."
+		},
+		"activate-tab-8": {
+			"label": "Activate Tab 8",
+			"description": "Switch to tab 8."
+		},
+		"activate-tab-9": {
+			"label": "Activate Tab 9",
+			"description": "Switch to tab 9."
+		},
+		"ai-attach-all-open-notes": {
+			"label": "AI: Attach All Open Notes",
+			"description": "Attach all open notes to AI."
+		},
+		"ai-attach-current-note": {
+			"label": "AI: Attach Current Note",
+			"description": "Attach the current note to AI."
+		},
+		"bold": {
+			"label": "Bold",
+			"description": "Toggle bold formatting for the current selection."
+		},
+		"bullet_list": {
+			"label": "Bullet List",
+			"description": "Toggle a bullet list."
+		},
+		"buy-glyph-license": {
+			"label": "Buy Glyph License",
+			"description": "Open the purchase page for Glyph."
+		},
+		"callout_error": {
+			"label": "Error Callout",
+			"description": "Insert an error callout block."
+		},
+		"callout_info": {
+			"label": "Info Callout",
+			"description": "Insert an info callout block."
+		},
+		"callout_success": {
+			"label": "Success Callout",
+			"description": "Insert a success callout block."
+		},
+		"callout_tip": {
+			"label": "Tip Callout",
+			"description": "Insert a tip callout block."
+		},
+		"callout_warning": {
+			"label": "Warning Callout",
+			"description": "Insert a warning callout block."
+		},
+		"close-active-tab": {
+			"label": "Close Active Tab",
+			"description": "Close the current tab."
+		},
+		"close-all-tabs": {
+			"label": "Close All Tabs",
+			"description": "Close every open tab."
+		},
+		"close-space": {
+			"label": "Close Current Space",
+			"description": "Close the currently open space."
+		},
+		"code_block": {
+			"label": "Code Block",
+			"description": "Toggle a code block."
+		},
+		"collapse_all_headings": {
+			"label": "Collapse All Headings",
+			"description": "Collapse every heading in the current note."
+		},
+		"color_blue": {
+			"label": "Text Color: Blue",
+			"description": "Apply blue text color."
+		},
+		"color_brown": {
+			"label": "Text Color: Brown",
+			"description": "Apply brown text color."
+		},
+		"color_clear": {
+			"label": "Clear Text Color",
+			"description": "Remove text color formatting."
+		},
+		"color_gray": {
+			"label": "Text Color: Gray",
+			"description": "Apply gray text color."
+		},
+		"color_green": {
+			"label": "Text Color: Green",
+			"description": "Apply green text color."
+		},
+		"color_orange": {
+			"label": "Text Color: Orange",
+			"description": "Apply orange text color."
+		},
+		"color_purple": {
+			"label": "Text Color: Purple",
+			"description": "Apply purple text color."
+		},
+		"color_red": {
+			"label": "Text Color: Red",
+			"description": "Apply red text color."
+		},
+		"color_yellow": {
+			"label": "Text Color: Yellow",
+			"description": "Apply yellow text color."
+		},
+		"copy-note-markdown": {
+			"label": "Copy Note as Markdown",
+			"description": "Copy the current note as markdown."
+		},
+		"create-from-template": {
+			"label": "Create From Template",
+			"description": "Create a new note from a template."
+		},
+		"create-space": {
+			"label": "Create Space",
+			"description": "Create a new space."
+		},
+		"details_block": {
+			"label": "Details Block",
+			"description": "Insert a collapsible toggle section."
+		},
+		"divider": {
+			"label": "Divider",
+			"description": "Insert a horizontal divider."
+		},
+		"duplicate-current-note": {
+			"label": "Duplicate Current Note",
+			"description": "Duplicate the current note."
+		},
+		"expand_all_headings": {
+			"label": "Expand All Headings",
+			"description": "Expand every heading in the current note."
+		},
+		"extract_selection_to_note": {
+			"label": "Extract to Note",
+			"description": "Create a note from the current selection."
+		},
+		"git-sync-now": {
+			"label": "Sync Now",
+			"description": "Run Git Sync now."
+		},
+		"go-back-note": {
+			"label": "Go Back",
+			"description": "Go back in the current tab's note history."
+		},
+		"go-forward-note": {
+			"label": "Go Forward",
+			"description": "Go forward in the current tab's note history."
+		},
+		"heading_1": {
+			"label": "Heading 1",
+			"description": "Convert the current block to a level 1 heading."
+		},
+		"heading_2": {
+			"label": "Heading 2",
+			"description": "Convert the current block to a level 2 heading."
+		},
+		"heading_3": {
+			"label": "Heading 3",
+			"description": "Convert the current block to a level 3 heading."
+		},
+		"highlight_blue": {
+			"label": "Highlight: Blue",
+			"description": "Apply blue text highlight."
+		},
+		"highlight_clear": {
+			"label": "Clear Highlight",
+			"description": "Remove text highlight formatting."
+		},
+		"highlight_green": {
+			"label": "Highlight: Green",
+			"description": "Apply green text highlight."
+		},
+		"highlight_red": {
+			"label": "Highlight: Red",
+			"description": "Apply red text highlight."
+		},
+		"highlight_yellow": {
+			"label": "Highlight: Yellow",
+			"description": "Apply yellow text highlight."
+		},
+		"italic": {
+			"label": "Italic",
+			"description": "Toggle italic formatting for the current selection."
+		},
+		"link_clear": {
+			"label": "Remove Link",
+			"description": "Remove the current link from the selection."
+		},
+		"link_set": {
+			"label": "Insert or Edit Link",
+			"description": "Insert a link or edit the current link."
+		},
+		"mermaid_chart": {
+			"label": "Mermaid Chart",
+			"description": "Insert a Mermaid code block."
+		},
+		"move-active-file": {
+			"label": "Move Active File",
+			"description": "Move the current file to a different folder."
+		},
+		"new-database": {
+			"label": "New Collection",
+			"description": "Create a new collection."
+		},
+		"new-folder": {
+			"label": "New Folder",
+			"description": "Create a new folder."
+		},
+		"new-note": {
+			"label": "New Note",
+			"description": "Create a new note in the current folder."
+		},
+		"new-tab": {
+			"label": "New Tab",
+			"description": "Open a blank tab."
+		},
+		"next-tab": {
+			"label": "Next Tab",
+			"description": "Move to the next tab."
+		},
+		"numbered_list": {
+			"label": "Numbered List",
+			"description": "Toggle a numbered list."
+		},
+		"open-about": {
+			"label": "Open About",
+			"description": "Open the about screen."
+		},
+		"open-ai-settings": {
+			"label": "Open AI Settings",
+			"description": "Open AI settings."
+		},
+		"open-all-docs": {
+			"label": "Open All Notes",
+			"description": "Open the all notes view."
+		},
+		"open-command-palette": {
+			"label": "Open Command Palette",
+			"description": "Open the command palette."
+		},
+		"open-daily-note": {
+			"label": "Open Daily Note",
+			"description": "Open or create today's daily note."
+		},
+		"open-databases": {
+			"label": "Open Collections",
+			"description": "Open the collections view."
+		},
+		"open-git-sync-settings": {
+			"label": "Open Git Sync Settings",
+			"description": "Open the Git Sync section in settings."
+		},
+		"open-license-settings": {
+			"label": "Open License Settings",
+			"description": "Open the license section in settings."
+		},
+		"open-local-connections": {
+			"label": "Open Local Connections",
+			"description": "Open local connections for the current note."
+		},
+		"open-quick-note": {
+			"label": "Open Quick Note",
+			"description": "Open the floating quick note scratchpad."
+		},
+		"open-search-palette": {
+			"label": "Open Search Palette",
+			"description": "Open search in the command palette."
+		},
+		"open-settings": {
+			"label": "Open Settings",
+			"description": "Open the settings view."
+		},
+		"open-space": {
+			"label": "Open Space",
+			"description": "Open an existing space."
+		},
+		"open-space-settings": {
+			"label": "Open Space Settings",
+			"description": "Open settings for the current space."
+		},
+		"previous-tab": {
+			"label": "Previous Tab",
+			"description": "Move to the previous tab."
+		},
+		"quick-open": {
+			"label": "Quick Open",
+			"description": "Open the command palette directly in file mode."
+		},
+		"quote": {
+			"label": "Quote",
+			"description": "Toggle a blockquote."
+		},
+		"reveal-space": {
+			"label": "Reveal Space",
+			"description": "Show the current space in the system file browser."
+		},
+		"save-note": {
+			"label": "Save Note",
+			"description": "Save the current note if modified."
+		},
+		"show-getting-started": {
+			"label": "Getting Started",
+			"description": "Open the getting started flow."
+		},
+		"show-welcome-note": {
+			"label": "Welcome Note",
+			"description": "Create or open the welcome note in the root of the current space."
+		},
+		"open-shortcuts-settings": {
+			"label": "Keyboard Shortcuts…",
+			"description": "Open the keyboard shortcuts section in settings."
+		},
+		"open-glyph-website": {
+			"label": "Glyph Website",
+			"description": "Open the Glyph website."
+		},
+		"open-glyph-changelog": {
+			"label": "Changelog",
+			"description": "Open the published Glyph changelog."
+		},
+		"open-glyph-privacy": {
+			"label": "Privacy Policy",
+			"description": "Open the Glyph privacy policy."
+		},
+		"open-glyph-terms": {
+			"label": "Terms of Service",
+			"description": "Open the Glyph terms of service."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Open the Glyph community Discord."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Open the Glyph repository on GitHub."
+		},
+		"open-glyph-x": {
+			"label": "Follow on X",
+			"description": "Open Karat Sidhu on X."
+		},
+		"strikethrough": {
+			"label": "Strikethrough",
+			"description": "Toggle strikethrough formatting for the current selection."
+		},
+		"table": {
+			"label": "Table",
+			"description": "Insert a markdown table."
+		},
+		"todo_list": {
+			"label": "To-do List",
+			"description": "Toggle a task list."
+		},
+		"toggle-ai": {
+			"label": "Toggle AI Panel",
+			"description": "Show or hide the AI assistant panel."
+		},
+		"toggle-note-info-sidebar": {
+			"label": "Toggle Note Info Sidebar",
+			"description": "Show or hide the note info sidebar."
+		},
+		"toggle-pin-active-file": {
+			"label": "Pin or Unpin Current File",
+			"description": "Pin or unpin the active file."
+		},
+		"toggle-sidebar": {
+			"label": "Toggle Sidebar",
+			"description": "Show or hide the file tree sidebar."
+		},
+		"underline": {
+			"label": "Underline",
+			"description": "Toggle underline formatting for the current selection."
+		},
+		"switch-to-edit": {
+			"label": "Rich Mode",
+			"description": "Switch to the rich WYSIWYG editing mode."
+		},
+		"switch-to-preview": {
+			"label": "Preview Mode",
+			"description": "Switch to the read-only preview mode."
+		},
+		"switch-to-raw": {
+			"label": "Raw Mode",
+			"description": "Switch to the raw Markdown editing mode."
+		}
+	}
+}

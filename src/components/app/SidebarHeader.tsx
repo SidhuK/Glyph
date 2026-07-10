@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useUpdaterContext } from "../../contexts";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
@@ -15,9 +16,13 @@ export function SidebarHeader({
 	sidebarCollapsed,
 	onToggleSidebar,
 }: SidebarHeaderProps) {
+	const { t } = useTranslation("shell");
 	const { getBinding } = useShortcutBindings();
 	const autoUpdater = useUpdaterContext();
 	const toggleSidebarShortcut = getBinding("toggle-sidebar");
+	const sidebarToggleLabel = sidebarCollapsed
+		? t("sidebar.expand")
+		: t("sidebar.collapse");
 
 	return (
 		<>
@@ -30,10 +35,10 @@ export function SidebarHeader({
 			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
 					<WindowChromeIconButton
-						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+						ariaLabel={sidebarToggleLabel}
 						ariaPressed={!sidebarCollapsed}
 						onClick={onToggleSidebar}
-						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar${
+						title={`${sidebarToggleLabel}${
 							toggleSidebarShortcut
 								? ` (${formatShortcutForPlatform(toggleSidebarShortcut)})`
 								: ""

@@ -2,6 +2,7 @@ import { ReloadIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { i18n } from "../../i18n";
 import {
 	type ShortcutBindings,
 	findShortcutConflict,
@@ -21,13 +22,17 @@ import {
 	isMacOS,
 } from "../../lib/shortcuts/platform";
 import {
-	SHORTCUT_CATEGORY_LABELS,
+	SHORTCUT_CATEGORIES,
 	type ShortcutCategory,
 	getShortcutActionDefinition,
 } from "../../lib/shortcuts/registry";
 import { Trash2 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+
+function shortcutCategoryLabel(category: ShortcutCategory): string {
+	return i18n.t(`commands:categories.${category}`);
+}
 
 function formatBinding(binding: Shortcut | null) {
 	return binding ? formatShortcutForPlatform(binding) : "Disabled";
@@ -76,9 +81,7 @@ export function ShortcutsSettingsPane() {
 			return (
 				action.label.toLowerCase().includes(query) ||
 				action.description.toLowerCase().includes(query) ||
-				SHORTCUT_CATEGORY_LABELS[action.category]
-					.toLowerCase()
-					.includes(query) ||
+				shortcutCategoryLabel(action.category).toLowerCase().includes(query) ||
 				binding.includes(query)
 			);
 		});
@@ -86,9 +89,7 @@ export function ShortcutsSettingsPane() {
 
 	const groupedActions = useMemo(() => {
 		const groups = new Map<ShortcutCategory, typeof filteredActions>();
-		for (const category of Object.keys(
-			SHORTCUT_CATEGORY_LABELS,
-		) as ShortcutCategory[]) {
+		for (const category of SHORTCUT_CATEGORIES) {
 			groups.set(category, []);
 		}
 		for (const action of filteredActions) {
@@ -231,7 +232,7 @@ export function ShortcutsSettingsPane() {
 				{groupedActions.map(([category, categoryActions]) => (
 					<SettingsSection
 						key={category}
-						title={SHORTCUT_CATEGORY_LABELS[category]}
+						title={shortcutCategoryLabel(category)}
 					>
 						{categoryActions.map((action) => {
 							const isRecording = recordingActionId === action.id;

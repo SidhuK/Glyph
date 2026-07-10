@@ -1,0 +1,426 @@
+{
+	"categories": {
+		"workspace": "Espace de travail",
+		"navigation": "Navigation",
+		"search": "Recherche",
+		"file": "Opérations sur les fichiers",
+		"tabs": "Onglets",
+		"ai": "IA",
+		"editor": "Éditeur",
+		"settings": "Réglages"
+	},
+	"commands": {
+		"activate-tab-1": {
+			"label": "Activer l’onglet 1",
+			"description": "Passer à l’onglet 1."
+		},
+		"activate-tab-2": {
+			"label": "Activer l’onglet 2",
+			"description": "Passer à l’onglet 2."
+		},
+		"activate-tab-3": {
+			"label": "Activer l’onglet 3",
+			"description": "Passer à l’onglet 3."
+		},
+		"activate-tab-4": {
+			"label": "Activer l’onglet 4",
+			"description": "Passer à l’onglet 4."
+		},
+		"activate-tab-5": {
+			"label": "Activer l’onglet 5",
+			"description": "Passer à l’onglet 5."
+		},
+		"activate-tab-6": {
+			"label": "Activer l’onglet 6",
+			"description": "Passer à l’onglet 6."
+		},
+		"activate-tab-7": {
+			"label": "Activer l’onglet 7",
+			"description": "Passer à l’onglet 7."
+		},
+		"activate-tab-8": {
+			"label": "Activer l’onglet 8",
+			"description": "Passer à l’onglet 8."
+		},
+		"activate-tab-9": {
+			"label": "Activer l’onglet 9",
+			"description": "Passer à l’onglet 9."
+		},
+		"ai-attach-all-open-notes": {
+			"label": "IA : Joindre toutes les notes ouvertes",
+			"description": "Joindre toutes les notes ouvertes à l’IA."
+		},
+		"ai-attach-current-note": {
+			"label": "IA : Joindre la note actuelle",
+			"description": "Joindre la note actuelle à l’IA."
+		},
+		"bold": {
+			"label": "Gras",
+			"description": "Activer ou désactiver le gras pour la sélection actuelle."
+		},
+		"bullet_list": {
+			"label": "Liste à puces",
+			"description": "Activer ou désactiver une liste à puces."
+		},
+		"buy-glyph-license": {
+			"label": "Acheter une licence Glyph",
+			"description": "Ouvrir la page d’achat de Glyph."
+		},
+		"callout_error": {
+			"label": "Encadré d’erreur",
+			"description": "Insérer un bloc d’encadré d’erreur."
+		},
+		"callout_info": {
+			"label": "Encadré d’info",
+			"description": "Insérer un bloc d’encadré d’info."
+		},
+		"callout_success": {
+			"label": "Encadré de succès",
+			"description": "Insérer un bloc d’encadré de succès."
+		},
+		"callout_tip": {
+			"label": "Encadré de conseil",
+			"description": "Insérer un bloc d’encadré de conseil."
+		},
+		"callout_warning": {
+			"label": "Encadré d’avertissement",
+			"description": "Insérer un bloc d’encadré d’avertissement."
+		},
+		"close-active-tab": {
+			"label": "Fermer l’onglet actif",
+			"description": "Fermer l’onglet actuel."
+		},
+		"close-all-tabs": {
+			"label": "Fermer tous les onglets",
+			"description": "Fermer tous les onglets ouverts."
+		},
+		"close-space": {
+			"label": "Fermer l’espace actuel",
+			"description": "Fermer l’espace actuellement ouvert."
+		},
+		"code_block": {
+			"label": "Bloc de code",
+			"description": "Activer ou désactiver un bloc de code."
+		},
+		"collapse_all_headings": {
+			"label": "Réduire tous les titres",
+			"description": "Réduire tous les titres de la note actuelle."
+		},
+		"color_blue": {
+			"label": "Couleur du texte : Bleu",
+			"description": "Appliquer la couleur de texte bleue."
+		},
+		"color_brown": {
+			"label": "Couleur du texte : Brun",
+			"description": "Appliquer la couleur de texte brune."
+		},
+		"color_clear": {
+			"label": "Effacer la couleur du texte",
+			"description": "Supprimer la mise en forme de couleur du texte."
+		},
+		"color_gray": {
+			"label": "Couleur du texte : Gris",
+			"description": "Appliquer la couleur de texte grise."
+		},
+		"color_green": {
+			"label": "Couleur du texte : Vert",
+			"description": "Appliquer la couleur de texte verte."
+		},
+		"color_orange": {
+			"label": "Couleur du texte : Orange",
+			"description": "Appliquer la couleur de texte orange."
+		},
+		"color_purple": {
+			"label": "Couleur du texte : Violet",
+			"description": "Appliquer la couleur de texte violette."
+		},
+		"color_red": {
+			"label": "Couleur du texte : Rouge",
+			"description": "Appliquer la couleur de texte rouge."
+		},
+		"color_yellow": {
+			"label": "Couleur du texte : Jaune",
+			"description": "Appliquer la couleur de texte jaune."
+		},
+		"copy-note-markdown": {
+			"label": "Copier la note en Markdown",
+			"description": "Copier la note actuelle en Markdown."
+		},
+		"create-from-template": {
+			"label": "Créer à partir d’un modèle",
+			"description": "Créer une nouvelle note à partir d’un modèle."
+		},
+		"create-space": {
+			"label": "Créer un espace",
+			"description": "Créer un nouvel espace."
+		},
+		"details_block": {
+			"label": "Bloc de détails",
+			"description": "Insérer une section repliable."
+		},
+		"divider": {
+			"label": "Séparateur",
+			"description": "Insérer un séparateur horizontal."
+		},
+		"duplicate-current-note": {
+			"label": "Dupliquer la note actuelle",
+			"description": "Dupliquer la note actuelle."
+		},
+		"expand_all_headings": {
+			"label": "Développer tous les titres",
+			"description": "Développer tous les titres de la note actuelle."
+		},
+		"extract_selection_to_note": {
+			"label": "Extraire vers une note",
+			"description": "Créer une note à partir de la sélection actuelle."
+		},
+		"git-sync-now": {
+			"label": "Synchroniser maintenant",
+			"description": "Exécuter Git Sync maintenant."
+		},
+		"go-back-note": {
+			"label": "Retour",
+			"description": "Revenir en arrière dans l’historique des notes de l’onglet actuel."
+		},
+		"go-forward-note": {
+			"label": "Avancer",
+			"description": "Avancer dans l’historique des notes de l’onglet actuel."
+		},
+		"heading_1": {
+			"label": "Titre 1",
+			"description": "Convertir le bloc actuel en titre de niveau 1."
+		},
+		"heading_2": {
+			"label": "Titre 2",
+			"description": "Convertir le bloc actuel en titre de niveau 2."
+		},
+		"heading_3": {
+			"label": "Titre 3",
+			"description": "Convertir le bloc actuel en titre de niveau 3."
+		},
+		"highlight_blue": {
+			"label": "Surlignage : Bleu",
+			"description": "Appliquer un surlignage de texte bleu."
+		},
+		"highlight_clear": {
+			"label": "Effacer le surlignage",
+			"description": "Supprimer la mise en forme de surlignage."
+		},
+		"highlight_green": {
+			"label": "Surlignage : Vert",
+			"description": "Appliquer un surlignage de texte vert."
+		},
+		"highlight_red": {
+			"label": "Surlignage : Rouge",
+			"description": "Appliquer un surlignage de texte rouge."
+		},
+		"highlight_yellow": {
+			"label": "Surlignage : Jaune",
+			"description": "Appliquer un surlignage de texte jaune."
+		},
+		"italic": {
+			"label": "Italique",
+			"description": "Activer ou désactiver l’italique pour la sélection actuelle."
+		},
+		"link_clear": {
+			"label": "Supprimer le lien",
+			"description": "Supprimer le lien actuel de la sélection."
+		},
+		"link_set": {
+			"label": "Insérer ou modifier un lien",
+			"description": "Insérer un lien ou modifier le lien actuel."
+		},
+		"mermaid_chart": {
+			"label": "Diagramme Mermaid",
+			"description": "Insérer un bloc de code Mermaid."
+		},
+		"move-active-file": {
+			"label": "Déplacer le fichier actif",
+			"description": "Déplacer le fichier actuel vers un autre dossier."
+		},
+		"new-database": {
+			"label": "Nouvelle collection",
+			"description": "Créer une nouvelle collection."
+		},
+		"new-folder": {
+			"label": "Nouveau dossier",
+			"description": "Créer un nouveau dossier."
+		},
+		"new-note": {
+			"label": "Nouvelle note",
+			"description": "Créer une nouvelle note dans le dossier actuel."
+		},
+		"new-tab": {
+			"label": "Nouvel onglet",
+			"description": "Ouvrir un onglet vide."
+		},
+		"next-tab": {
+			"label": "Onglet suivant",
+			"description": "Passer à l’onglet suivant."
+		},
+		"numbered_list": {
+			"label": "Liste numérotée",
+			"description": "Activer ou désactiver une liste numérotée."
+		},
+		"open-about": {
+			"label": "Ouvrir À propos",
+			"description": "Ouvrir l’écran À propos."
+		},
+		"open-ai-settings": {
+			"label": "Ouvrir les réglages IA",
+			"description": "Ouvrir les réglages IA."
+		},
+		"open-all-docs": {
+			"label": "Ouvrir toutes les notes",
+			"description": "Ouvrir la vue de toutes les notes."
+		},
+		"open-command-palette": {
+			"label": "Ouvrir la palette de commandes",
+			"description": "Ouvrir la palette de commandes."
+		},
+		"open-daily-note": {
+			"label": "Ouvrir la note du jour",
+			"description": "Ouvrir ou créer la note du jour."
+		},
+		"open-databases": {
+			"label": "Ouvrir les collections",
+			"description": "Ouvrir la vue des collections."
+		},
+		"open-git-sync-settings": {
+			"label": "Ouvrir les réglages Git Sync",
+			"description": "Ouvrir la section Git Sync dans les réglages."
+		},
+		"open-license-settings": {
+			"label": "Ouvrir les réglages de licence",
+			"description": "Ouvrir la section licence dans les réglages."
+		},
+		"open-local-connections": {
+			"label": "Ouvrir les connexions locales",
+			"description": "Ouvrir les connexions locales de la note actuelle."
+		},
+		"open-quick-note": {
+			"label": "Ouvrir la note rapide",
+			"description": "Ouvrir le bloc-notes flottant de note rapide."
+		},
+		"open-search-palette": {
+			"label": "Ouvrir la palette de recherche",
+			"description": "Ouvrir la recherche dans la palette de commandes."
+		},
+		"open-settings": {
+			"label": "Ouvrir les réglages",
+			"description": "Ouvrir la vue des réglages."
+		},
+		"open-space": {
+			"label": "Ouvrir un espace",
+			"description": "Ouvrir un espace existant."
+		},
+		"open-space-settings": {
+			"label": "Ouvrir les réglages de l’espace",
+			"description": "Ouvrir les réglages de l’espace actuel."
+		},
+		"previous-tab": {
+			"label": "Onglet précédent",
+			"description": "Passer à l’onglet précédent."
+		},
+		"quick-open": {
+			"label": "Ouverture rapide",
+			"description": "Ouvrir la palette de commandes directement en mode fichier."
+		},
+		"quote": {
+			"label": "Citation",
+			"description": "Activer ou désactiver une citation en bloc."
+		},
+		"reveal-space": {
+			"label": "Afficher l’espace",
+			"description": "Afficher l’espace actuel dans le navigateur de fichiers du système."
+		},
+		"save-note": {
+			"label": "Enregistrer la note",
+			"description": "Enregistrer la note actuelle si elle a été modifiée."
+		},
+		"show-getting-started": {
+			"label": "Premiers pas",
+			"description": "Ouvrir le parcours de premiers pas."
+		},
+		"show-welcome-note": {
+			"label": "Note de bienvenue",
+			"description": "Créer ou ouvrir la note de bienvenue à la racine de l’espace actuel."
+		},
+		"open-shortcuts-settings": {
+			"label": "Raccourcis clavier…",
+			"description": "Ouvrir la section des raccourcis clavier dans les réglages."
+		},
+		"open-glyph-website": {
+			"label": "Site web de Glyph",
+			"description": "Ouvrir le site web de Glyph."
+		},
+		"open-glyph-changelog": {
+			"label": "Journal des modifications",
+			"description": "Ouvrir le journal des modifications publié de Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Politique de confidentialité",
+			"description": "Ouvrir la politique de confidentialité de Glyph."
+		},
+		"open-glyph-terms": {
+			"label": "Conditions d’utilisation",
+			"description": "Ouvrir les conditions d’utilisation de Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Ouvrir le Discord de la communauté Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Ouvrir le dépôt Glyph sur GitHub."
+		},
+		"open-glyph-x": {
+			"label": "Suivre sur X",
+			"description": "Ouvrir Karat Sidhu sur X."
+		},
+		"strikethrough": {
+			"label": "Barré",
+			"description": "Activer ou désactiver le barré pour la sélection actuelle."
+		},
+		"table": {
+			"label": "Tableau",
+			"description": "Insérer un tableau Markdown."
+		},
+		"todo_list": {
+			"label": "Liste de tâches",
+			"description": "Activer ou désactiver une liste de tâches."
+		},
+		"toggle-ai": {
+			"label": "Afficher/masquer le panneau IA",
+			"description": "Afficher ou masquer le panneau de l’assistant IA."
+		},
+		"toggle-note-info-sidebar": {
+			"label": "Afficher/masquer les infos de la note",
+			"description": "Afficher ou masquer la barre latérale d’infos de la note."
+		},
+		"toggle-pin-active-file": {
+			"label": "Épingler ou désépingler le fichier actuel",
+			"description": "Épingler ou désépingler le fichier actif."
+		},
+		"toggle-sidebar": {
+			"label": "Afficher/masquer la barre latérale",
+			"description": "Afficher ou masquer la barre latérale de l’arborescence des fichiers."
+		},
+		"underline": {
+			"label": "Souligné",
+			"description": "Activer ou désactiver le souligné pour la sélection actuelle."
+		},
+		"switch-to-edit": {
+			"label": "Mode enrichi",
+			"description": "Passer au mode d’édition enrichi WYSIWYG."
+		},
+		"switch-to-preview": {
+			"label": "Mode aperçu",
+			"description": "Passer au mode aperçu en lecture seule."
+		},
+		"switch-to-raw": {
+			"label": "Mode brut",
+			"description": "Passer au mode d’édition Markdown brut."
+		}
+	}
+}

@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "Apparence",
+		"panelTitle": "Apparence"
+	},
+	"theme": {
+		"sectionTitle": "Thème",
+		"sectionDescription": "Combinez les familles de thèmes clairs et sombres.",
+		"appearance": {
+			"label": "Apparence",
+			"description": "Suivre le système ou forcer Glyph en mode clair ou sombre.",
+			"ariaLabel": "Mode du thème"
+		},
+		"modes": {
+			"system": {
+				"label": "Système",
+				"description": "Correspondre à l’apparence claire ou sombre de votre appareil."
+			},
+			"light": {
+				"label": "Clair",
+				"description": "Toujours utiliser le mode clair."
+			},
+			"dark": {
+				"label": "Sombre",
+				"description": "Toujours utiliser le mode sombre."
+			}
+		},
+		"translucentSidebar": {
+			"label": "Barre latérale translucide",
+			"ariaLabel": "Barre latérale translucide"
+		}
+	},
+	"accent": {
+		"sectionTitle": "Accent",
+		"sectionDescription": "S’applique aux thèmes clair et sombre de Glyph.",
+		"palette": {
+			"label": "Palette",
+			"description": "Définit l’accent pour les surlignages, anneaux de focus et emphases.",
+			"ariaLabel": "Couleur d’accent",
+			"resetAriaLabel": "Réinitialiser l’accent"
+		},
+		"options": {
+			"neutral": "Neutre",
+			"glyphOrange": "Orange",
+			"glyphRed": "Glyph Red",
+			"cerulean": "Céruléen",
+			"tropicalTeal": "Sarcelle tropicale"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "Thème clair",
+		"preset": {
+			"label": "Préréglage",
+			"hint": "Choisissez la palette utilisée par Glyph en mode clair."
+		},
+		"background": {
+			"label": "Arrière-plan",
+			"ariaLabel": "Couleur d’arrière-plan du thème clair",
+			"resetAriaLabel": "Réinitialiser l’arrière-plan du thème clair"
+		},
+		"foreground": {
+			"label": "Premier plan",
+			"ariaLabel": "Couleur de premier plan du thème clair",
+			"resetAriaLabel": "Réinitialiser le premier plan du thème clair"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "Thème sombre",
+		"preset": {
+			"label": "Préréglage",
+			"hint": "Choisissez la palette utilisée par Glyph en mode sombre."
+		},
+		"background": {
+			"label": "Arrière-plan",
+			"ariaLabel": "Couleur d’arrière-plan du thème sombre",
+			"resetAriaLabel": "Réinitialiser l’arrière-plan du thème sombre"
+		},
+		"foreground": {
+			"label": "Premier plan",
+			"ariaLabel": "Couleur de premier plan du thème sombre",
+			"resetAriaLabel": "Réinitialiser le premier plan du thème sombre"
+		}
+	},
+	"shape": {
+		"sectionTitle": "Forme",
+		"sectionDescription": "Choisissez l’arrondi des panneaux, boutons et fenêtres dans l’app.",
+		"corners": {
+			"label": "Coins",
+			"description": "S’applique partout — barres latérales, dialogues, champs et cartes.",
+			"ariaLabel": "Forme de l’interface"
+		},
+		"options": {
+			"sharp": {
+				"label": "Brutaliste",
+				"description": "Bords nets et carrés dans toute l’app."
+			},
+			"default": {
+				"label": "Par défaut",
+				"description": "L’apparence équilibrée de Glyph."
+			},
+			"round": {
+				"label": "Doux",
+				"description": "Bords plus doux et arrondis dans toute l’app."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "Typographie",
+		"sectionDescription": "Réglez indépendamment la police d’interface, le style du code et l’échelle de lecture.",
+		"interfaceFont": {
+			"label": "Police d’interface",
+			"description": "Utilisée pour la navigation, les réglages et la plupart des textes de l’UI Glyph."
+		},
+		"editorFont": {
+			"label": "Police de l’éditeur",
+			"description": "Utilisée pour le texte normal des notes, hors code en ligne et blocs de code."
+		},
+		"monospaceFont": {
+			"label": "Police monospace",
+			"description": "Utilisée pour la source Markdown, le code en ligne et les surfaces orientées développeur."
+		},
+		"uiFontSize": {
+			"label": "Taille de police de l’UI",
+			"description": "Ajuster la taille de base des menus, panneaux, contrôles et réglages.",
+			"valueAriaLabel": "Valeur de la taille de police de l’UI"
+		},
+		"editorFontSize": {
+			"label": "Taille de police de l’éditeur",
+			"description": "Ajuster la taille de lecture de l’éditeur de notes, de l’aperçu Markdown et de l’édition de texte brut.",
+			"valueAriaLabel": "Valeur de la taille de police de l’éditeur"
+		}
+	},
+	"layout": {
+		"sectionTitle": "Disposition",
+		"sectionDescription": "Choisissez comment Glyph présente votre espace de travail et Toutes les notes.",
+		"folioMode": {
+			"label": "Mode Folio",
+			"description": "Afficher la navigation, les notes et l’éditeur dans un espace de travail à trois colonnes.",
+			"ariaLabel": "Mode Folio"
+		},
+		"classicAllNotes": {
+			"label": "Grille classique Toutes les notes",
+			"description": "Ouvrir Toutes les notes en grille simple plutôt qu’en chronologie d’activité.",
+			"ariaLabel": "Grille classique Toutes les notes"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "Présentation de l’éditeur",
+		"sectionDescription": "Choisissez l’apparence des notes pendant l’édition.",
+		"beautifulTags": {
+			"label": "Belles étiquettes",
+			"description": "Activer la présentation expérimentale Beautiful Tags pour les étiquettes.",
+			"ariaLabel": "Belles étiquettes"
+		},
+		"editorWidth": {
+			"label": "Largeur de l’éditeur",
+			"description": "Compacte garde des lignes plus courtes, Confortable donne un peu plus d’espace, et Large utilise toute la largeur de l’éditeur.",
+			"ariaLabel": "Largeur de l’éditeur",
+			"options": {
+				"compact": "Compacte",
+				"comfortable": "Confortable",
+				"wide": "Large"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "Base de données",
+		"sectionDescription": "Choisissez comment les bases de données sont présentées dans Glyph.",
+		"showColumnColor": {
+			"label": "Afficher la couleur des colonnes de base de données",
+			"description": "Conserver les couleurs de pastille de voie et d’étiquette tout en basculant la teinte complète de la colonne.",
+			"ariaLabel": "Afficher la couleur des colonnes de base de données"
+		}
+	}
+}

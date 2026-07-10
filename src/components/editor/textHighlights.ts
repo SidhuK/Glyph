@@ -1,3 +1,5 @@
+import { i18n } from "../../i18n";
+
 export type EditorTextHighlight = "yellow" | "blue" | "green" | "red";
 
 interface EditorTextHighlightOption {
@@ -59,6 +61,12 @@ export function isEditorTextHighlight(
 
 export function getEditorTextHighlightOption(highlight: EditorTextHighlight) {
 	return EDITOR_TEXT_HIGHLIGHT_RECORD[highlight];
+}
+
+export function getEditorTextHighlightLabel(
+	highlight: EditorTextHighlight,
+): string {
+	return i18n.t(`editor:highlights.${highlight}`);
 }
 
 export function getEditorTextHighlightStyle(highlight: EditorTextHighlight) {

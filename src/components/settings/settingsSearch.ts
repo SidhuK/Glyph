@@ -1,3 +1,4 @@
+import { i18n } from "../../i18n";
 import { SETTINGS_TABS, type SettingsTab } from "./settingsConfig";
 
 export interface SettingsSearchEntry {
@@ -13,664 +14,180 @@ interface SettingsSearchMatch extends SettingsSearchEntry {
 	tabLabel: string;
 }
 
+interface SettingsSearchDef {
+	id: string;
+	tab: SettingsTab;
+}
+
 const SETTINGS_SEARCH_TARGET_CLASS = "settingsSearchTarget";
 
-const SETTINGS_SEARCH_ITEMS = [
-	{
-		id: "general-license",
-		tab: "general",
-		title: "License",
-		description: "Trial status, license key, activation, and official build.",
-		keywords: ["trial", "activate", "activation", "subscription", "purchase"],
-	},
-	{
-		id: "general-trial-status",
-		tab: "general",
-		section: "License",
-		title: "Trial status",
-		description: "Remaining time on the current trial for this device.",
-		keywords: ["trial remaining", "expired"],
-	},
-	{
-		id: "general-activated",
-		tab: "general",
-		section: "License",
-		title: "Activated",
-		description: "Activation date for the local Glyph license.",
-		keywords: ["licensed", "license date"],
-	},
-	{
-		id: "general-license-key",
-		tab: "general",
-		section: "License",
-		title: "License key",
-		description: "View the masked license key stored locally.",
-		keywords: ["serial", "activation key"],
-	},
-	{
-		id: "general-activate-glyph",
-		tab: "general",
-		section: "License",
-		title: "Activate Glyph",
-		description: "Enter a license key to unlock Glyph permanently.",
-		keywords: ["activate", "buy", "official build"],
-	},
-	{
-		id: "general-official-build",
-		tab: "general",
-		section: "License",
-		title: "Official build",
-		description:
-			"Purchase an official license for support and automatic updates.",
-		keywords: ["community build", "buy", "updates"],
-	},
-	{
-		id: "general-license-help",
-		tab: "general",
-		section: "License",
-		title: "Help",
-		description: "Get help with licensing, lost keys, or purchase issues.",
-		keywords: ["support", "remove local activation"],
-	},
-	{
-		id: "general-resume-last-session",
-		tab: "general",
-		section: "Startup",
-		title: "Open previous tabs",
-		description: "Start this space with the tabs you left open.",
-		keywords: [
-			"restore",
-			"startup",
-			"launch",
-			"start where I left off",
-			"tabs",
-			"workspace session",
-		],
-	},
-	{
-		id: "appearance-theme-mode",
-		tab: "appearance",
-		section: "Theme",
-		title: "Select Theme",
-		description: "Choose system, light, or dark mode.",
-		keywords: ["mode", "system", "light", "dark"],
-	},
-	{
-		id: "appearance-light-theme",
-		tab: "appearance",
-		section: "Light theme",
-		title: "Preset",
-		description: "Choose the palette Glyph uses in light mode.",
-		keywords: ["theme", "color", "light"],
-	},
-	{
-		id: "appearance-dark-theme",
-		tab: "appearance",
-		section: "Dark theme",
-		title: "Preset",
-		description: "Choose the palette Glyph uses in dark mode.",
-		keywords: ["theme", "color", "dark"],
-	},
-	{
-		id: "appearance-translucent-app",
-		tab: "appearance",
-		section: "Theme",
-		title: "Translucent sidebar",
-		keywords: ["window", "glass", "blur", "translucent"],
-	},
-	{
-		id: "appearance-accent",
-		tab: "appearance",
-		section: "Accent",
-		title: "Palette",
-		description: "Set the accent for the Glyph light and dark themes.",
-		keywords: ["accent", "color", "palette"],
-	},
-	{
-		id: "appearance-light-theme-colors",
-		tab: "appearance",
-		section: "Light theme",
-		title: "Default colors",
-		description: "Customize the Glyph light theme background and text colors.",
-		keywords: ["theme", "color", "light", "background", "foreground", "text"],
-	},
-	{
-		id: "appearance-dark-theme-colors",
-		tab: "appearance",
-		section: "Dark theme",
-		title: "Default colors",
-		description: "Customize the Glyph dark theme background and text colors.",
-		keywords: ["theme", "color", "dark", "background", "foreground", "text"],
-	},
-	{
-		id: "appearance-interface-font",
-		tab: "appearance",
-		section: "Typography",
-		title: "Interface font",
-		keywords: ["font", "ui", "sans"],
-	},
-	{
-		id: "appearance-monospace-font",
-		tab: "appearance",
-		section: "Typography",
-		title: "Monospace font",
-		keywords: ["font", "code", "mono"],
-	},
-	{
-		id: "appearance-editor-font",
-		tab: "appearance",
-		section: "Typography",
-		title: "Editor font",
-		keywords: ["font", "editor", "notes", "prose"],
-	},
-	{
-		id: "appearance-ui-font-size",
-		tab: "appearance",
-		section: "Typography",
-		title: "UI font size",
-		keywords: ["font", "text", "interface"],
-	},
-	{
-		id: "appearance-editor-font-size",
-		tab: "appearance",
-		section: "Typography",
-		title: "Editor font size",
-		keywords: ["font", "text", "notes"],
-	},
-	{
-		id: "shortcuts-customize",
-		tab: "shortcuts",
-		section: "Customize Shortcuts",
-		title: "Customize Shortcuts",
-		description: "Edit keyboard shortcuts.",
-		keywords: ["hotkeys", "keybindings", "commands"],
-	},
-	{
-		id: "shortcuts-search",
-		tab: "shortcuts",
-		section: "Customize Shortcuts",
-		title: "Search actions, categories, or shortcuts",
-		description:
-			"Filter shortcuts by action, category, binding, or description.",
-		keywords: ["filter", "find shortcuts", "shortcut search"],
-	},
-	{
-		id: "shortcuts-workspace",
-		tab: "shortcuts",
-		section: "Workspace",
-		title: "Workspace shortcuts",
-		keywords: ["space", "window", "workspace"],
-	},
-	{
-		id: "shortcuts-navigation",
-		tab: "shortcuts",
-		section: "Navigation",
-		title: "Navigation shortcuts",
-		keywords: ["move", "go", "navigate"],
-	},
-	{
-		id: "shortcuts-search-category",
-		tab: "shortcuts",
-		section: "Search",
-		title: "Search shortcuts",
-		keywords: ["find", "quick search", "command palette"],
-	},
-	{
-		id: "shortcuts-file-operations",
-		tab: "shortcuts",
-		section: "File Operations",
-		title: "File Operations shortcuts",
-		keywords: ["file", "folder", "rename", "delete"],
-	},
-	{
-		id: "shortcuts-tabs",
-		tab: "shortcuts",
-		section: "Tabs",
-		title: "Tabs shortcuts",
-		keywords: ["tab", "open tab", "close tab"],
-	},
-	{
-		id: "shortcuts-ai",
-		tab: "shortcuts",
-		section: "AI",
-		title: "AI shortcuts",
-		keywords: ["assistant", "chat", "glyph ai"],
-	},
-	{
-		id: "shortcuts-editor",
-		tab: "shortcuts",
-		section: "Editor",
-		title: "Editor shortcuts",
-		keywords: ["note", "markdown", "editing"],
-	},
-	{
-		id: "ai-features",
-		tab: "ai",
-		section: "Availability",
-		title: "AI features",
-		description: "Turn AI tools on or off across Glyph.",
-		keywords: ["assistant", "chat", "enable", "disable"],
-	},
-	{
-		id: "ai-configuration",
-		tab: "ai",
-		section: "Availability",
-		title: "Configuration",
-		keywords: ["providers", "models", "account"],
-	},
-	{
-		id: "ai-provider-service",
-		tab: "ai",
-		section: "Provider",
-		title: "Service",
-		keywords: ["provider", "openai", "anthropic", "ollama"],
-	},
-	{
-		id: "ai-provider-model",
-		tab: "ai",
-		section: "Provider",
-		title: "Model",
-		keywords: ["provider", "model", "assistant"],
-	},
-	{
-		id: "ai-reasoning-level",
-		tab: "ai",
-		section: "Provider",
-		title: "Reasoning level",
-		keywords: ["effort", "thinking"],
-	},
-	{
-		id: "ai-base-url",
-		tab: "ai",
-		section: "Provider",
-		title: "Base URL",
-		keywords: ["endpoint", "local", "server"],
-	},
-	{
-		id: "ai-local-network",
-		tab: "ai",
-		section: "Provider",
-		title: "Allow local network",
-		keywords: ["localhost", "lan", "network"],
-	},
-	{
-		id: "ai-api-key",
-		tab: "ai",
-		section: "API Key",
-		title: "Set key",
-		keywords: ["secret", "token", "credential", "update key"],
-	},
-	{
-		id: "ai-chatgpt-account",
-		tab: "ai",
-		section: "ChatGPT Account",
-		title: "ChatGPT Account",
-		keywords: ["codex", "account", "authentication", "rate limits"],
-	},
-	{
-		id: "ai-chatgpt-identity",
-		tab: "ai",
-		section: "ChatGPT Account",
-		title: "Identity",
-		description: "The connected account Glyph is currently using for Codex.",
-		keywords: ["email", "display name", "connect", "disconnect"],
-	},
-	{
-		id: "ai-chatgpt-authentication",
-		tab: "ai",
-		section: "ChatGPT Account",
-		title: "Authentication",
-		description: "How the current ChatGPT session is authenticated.",
-		keywords: ["auth mode", "session"],
-	},
-	{
-		id: "ai-chatgpt-rate-limits",
-		tab: "ai",
-		section: "ChatGPT Account",
-		title: "Rate limits",
-		description: "Review remaining capacity for the connected account.",
-		keywords: ["usage", "remaining", "resets"],
-	},
-	{
-		id: "space-daily-notes-folder",
-		tab: "space",
-		section: "Daily Notes",
-		title: "Folder",
-		description: "Choose where daily notes are created.",
-		keywords: ["journal", "today", "date"],
-	},
-	{
-		id: "space-quick-notes-folder",
-		tab: "space",
-		section: "Quick Notes",
-		title: "Folder",
-		description: "Choose where quick notes are saved.",
-		keywords: ["capture", "inbox"],
-	},
-	{
-		id: "space-attachments-location",
-		tab: "space",
-		section: "Attachments",
-		title: "Location",
-		keywords: ["assets", "files", "images", "folder"],
-	},
-	{
-		id: "space-template-folder",
-		tab: "space",
-		section: "Templates",
-		title: "Template folder",
-		keywords: ["templates", "folder"],
-	},
-	{
-		id: "space-default-daily-template",
-		tab: "space",
-		section: "Templates",
-		title: "Default daily note template",
-		keywords: ["templates", "daily notes"],
-	},
-	{
-		id: "space-search-index-status",
-		tab: "space",
-		section: "Search Index",
-		title: "Status",
-		keywords: ["index", "rebuild", "search"],
-	},
-	{
-		id: "git-availability",
-		tab: "git",
-		section: "Connection",
-		title: "Git availability",
-		keywords: ["sync", "repository"],
-	},
-	{
-		id: "git-repository-state",
-		tab: "git",
-		section: "Connection",
-		title: "Repository state",
-		keywords: ["repo", "sync", "branch"],
-	},
-	{
-		id: "git-how-it-works",
-		tab: "git",
-		section: "Connection",
-		title: "How it works",
-		description: "Review remote connection details for the current repository.",
-		keywords: ["remote url", "initialize git", "credentials"],
-	},
-	{
-		id: "git-branch",
-		tab: "git",
-		section: "Connection",
-		title: "Branch",
-		keywords: ["repo", "sync"],
-	},
-	{
-		id: "git-automatic-sync",
-		tab: "git",
-		section: "Sync",
-		title: "Automatic sync",
-		keywords: ["auto", "git"],
-	},
-	{
-		id: "git-sync-interval",
-		tab: "git",
-		section: "Sync",
-		title: "Interval",
-		keywords: ["frequency", "minutes"],
-	},
-	{
-		id: "git-sync-actions",
-		tab: "git",
-		section: "Sync",
-		title: "Actions",
-		keywords: ["run", "sync now", "push", "pull"],
-	},
-	{
-		id: "git-conflict-policy",
-		tab: "git",
-		section: "Conflict Resolution",
-		title: "Policy",
-		keywords: ["merge", "conflict"],
-	},
-	{
-		id: "git-include-templates",
-		tab: "git",
-		section: "Content",
-		title: "Include templates",
-		keywords: ["sync", "templates"],
-	},
-	{
-		id: "git-include-attachments",
-		tab: "git",
-		section: "Content",
-		title: "Include attachments",
-		keywords: ["sync", "assets", "files"],
-	},
-	{
-		id: "git-include-non-markdown",
-		tab: "git",
-		section: "Content",
-		title: "Include non-markdown files",
-		keywords: ["sync", "files"],
-	},
-	{
-		id: "general-editor-table-of-contents",
-		tab: "general",
-		section: "Editor",
-		title: "Table of contents",
-		keywords: ["toc", "outline"],
-	},
-	{
-		id: "space-search-index-people-tags",
-		tab: "space",
-		section: "Search Index",
-		title: "People mentions as tags",
-		keywords: ["mentions", "people", "tags"],
-	},
-	{
-		id: "general-editor-frontmatter",
-		tab: "general",
-		section: "Editor",
-		title: "Show frontmatter in editor",
-		keywords: ["properties", "yaml", "metadata"],
-	},
-	{
-		id: "general-editor-colorful-headings",
-		tab: "general",
-		section: "Editor",
-		title: "Colorful headings",
-		keywords: ["editor", "color"],
-	},
-	{
-		id: "appearance-editor-presentation-beautiful-tags",
-		tab: "appearance",
-		section: "Editor presentation",
-		title: "Beautiful Tags",
-		keywords: ["tags", "editor"],
-	},
-	{
-		id: "appearance-editor-presentation-width",
-		tab: "appearance",
-		section: "Editor presentation",
-		title: "Editor width",
-		keywords: ["compact", "comfortable", "wide"],
-	},
-	{
-		id: "general-editor-collapsible-headings",
-		tab: "general",
-		section: "Editor",
-		title: "Collapsible headings",
-		keywords: ["fold", "collapse", "expand"],
-	},
-	{
-		id: "general-editor-spell-check",
-		tab: "general",
-		section: "Editor",
-		title: "Spell check",
-		keywords: ["spelling", "typo", "dictionary"],
-	},
-	{
-		id: "general-editor-vim-keybindings",
-		tab: "general",
-		section: "Editor",
-		title: "Vim Mode",
-		keywords: ["vim", "keybindings", "keyboard", "modal"],
-	},
-	{
-		id: "ai-assistant-behavior-tools",
-		tab: "ai",
-		section: "Assistant behavior",
-		title: "AI chat has access to tools",
-		keywords: ["assistant", "tool calls"],
-	},
-	{
-		id: "appearance-layout-folio-mode",
-		tab: "appearance",
-		section: "Layout",
-		title: "Folio Mode",
-		keywords: ["layout", "reading"],
-	},
-	{
-		id: "appearance-layout-classic-all-notes",
-		tab: "appearance",
-		section: "Layout",
-		title: "Classic All Notes grid",
-		keywords: ["all notes", "activity", "timeline", "grid"],
-	},
-	{
-		id: "general-file-tree-folder-counts",
-		tab: "general",
-		section: "File tree",
-		title: "Show folder file counts",
-		keywords: ["sidebar", "counts"],
-	},
-	{
-		id: "general-file-tree-non-markdown-files",
-		tab: "general",
-		section: "File tree",
-		title: "Show non-Markdown files",
-		keywords: ["sidebar", "attachments", "pdf", "images", "folio", "file tree"],
-	},
-	{
-		id: "general-file-tree-sort",
-		tab: "general",
-		section: "File tree",
-		title: "File tree sort",
-		keywords: ["sidebar", "folders", "files", "order"],
-	},
-	{
-		id: "appearance-database-column-color",
-		tab: "appearance",
-		section: "Database",
-		title: "Show database column color",
-		keywords: ["collection", "database", "color"],
-	},
-	{
-		id: "about-app",
-		tab: "about",
-		title: "Glyph",
-		description: "View Glyph app name, version, attribution, and quick links.",
-		keywords: ["about", "version", "karat sidhu"],
-	},
-	{
-		id: "about-website",
-		tab: "about",
-		title: "Website",
-		description: "Open the Glyph website.",
-		keywords: ["glyphformac.com", "home"],
-	},
-	{
-		id: "about-discord",
-		tab: "about",
-		title: "Discord",
-		description: "Open the Glyph community Discord.",
-		keywords: ["community", "support", "feedback"],
-	},
-	{
-		id: "about-terms",
-		tab: "about",
-		title: "Terms",
-		description: "Open the Glyph terms page.",
-		keywords: ["legal", "terms of service"],
-	},
-	{
-		id: "about-privacy",
-		tab: "about",
-		title: "Privacy",
-		description: "Open the Glyph privacy page.",
-		keywords: ["legal", "privacy policy"],
-	},
-	{
-		id: "about-updates",
-		tab: "about",
-		section: "Updates",
-		title: "App updates",
-		keywords: ["release", "version", "update"],
-	},
-	{
-		id: "about-alpha-releases",
-		tab: "about",
-		section: "Updates",
-		title: "Alpha releases",
-		description: "Receive early release builds before they become stable.",
-		keywords: ["alpha", "prerelease", "beta", "release channel"],
-	},
-	{
-		id: "about-license-status",
-		tab: "about",
-		section: "Updates",
-		title: "License status",
-		description: "Review whether this build can use automatic updates.",
-		keywords: ["official build", "community build"],
-	},
-	{
-		id: "about-community-build",
-		tab: "about",
-		section: "Updates",
-		title: "Community build",
-		keywords: ["license", "build"],
-	},
-	{
-		id: "about-update-status",
-		tab: "about",
-		section: "Updates",
-		title: "Status",
-		description: "Latest updater activity from this window.",
-		keywords: ["checking", "ready", "latest version"],
-	},
-	{
-		id: "about-changelog",
-		tab: "about",
-		section: "Updates",
-		title: "Changelog",
-		description: "Open the published Glyph changelog.",
-		keywords: ["release notes", "version", "updates"],
-	},
-] as const satisfies readonly SettingsSearchEntry[];
+const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
+	{ id: "general-license", tab: "general" },
+	{ id: "general-trial-status", tab: "general" },
+	{ id: "general-activated", tab: "general" },
+	{ id: "general-license-key", tab: "general" },
+	{ id: "general-activate-glyph", tab: "general" },
+	{ id: "general-official-build", tab: "general" },
+	{ id: "general-license-help", tab: "general" },
+	{ id: "general-language", tab: "general" },
+	{ id: "general-resume-last-session", tab: "general" },
+	{ id: "appearance-theme-mode", tab: "appearance" },
+	{ id: "appearance-light-theme", tab: "appearance" },
+	{ id: "appearance-dark-theme", tab: "appearance" },
+	{ id: "appearance-translucent-app", tab: "appearance" },
+	{ id: "appearance-accent", tab: "appearance" },
+	{ id: "appearance-light-theme-colors", tab: "appearance" },
+	{ id: "appearance-dark-theme-colors", tab: "appearance" },
+	{ id: "appearance-interface-font", tab: "appearance" },
+	{ id: "appearance-monospace-font", tab: "appearance" },
+	{ id: "appearance-editor-font", tab: "appearance" },
+	{ id: "appearance-ui-font-size", tab: "appearance" },
+	{ id: "appearance-editor-font-size", tab: "appearance" },
+	{ id: "shortcuts-customize", tab: "shortcuts" },
+	{ id: "shortcuts-search", tab: "shortcuts" },
+	{ id: "shortcuts-workspace", tab: "shortcuts" },
+	{ id: "shortcuts-navigation", tab: "shortcuts" },
+	{ id: "shortcuts-search-category", tab: "shortcuts" },
+	{ id: "shortcuts-file-operations", tab: "shortcuts" },
+	{ id: "shortcuts-tabs", tab: "shortcuts" },
+	{ id: "shortcuts-ai", tab: "shortcuts" },
+	{ id: "shortcuts-editor", tab: "shortcuts" },
+	{ id: "ai-features", tab: "ai" },
+	{ id: "ai-configuration", tab: "ai" },
+	{ id: "ai-provider-service", tab: "ai" },
+	{ id: "ai-provider-model", tab: "ai" },
+	{ id: "ai-reasoning-level", tab: "ai" },
+	{ id: "ai-base-url", tab: "ai" },
+	{ id: "ai-local-network", tab: "ai" },
+	{ id: "ai-api-key", tab: "ai" },
+	{ id: "ai-chatgpt-account", tab: "ai" },
+	{ id: "ai-chatgpt-identity", tab: "ai" },
+	{ id: "ai-chatgpt-authentication", tab: "ai" },
+	{ id: "ai-chatgpt-rate-limits", tab: "ai" },
+	{ id: "space-daily-notes-folder", tab: "space" },
+	{ id: "space-quick-notes-folder", tab: "space" },
+	{ id: "space-attachments-location", tab: "space" },
+	{ id: "space-template-folder", tab: "space" },
+	{ id: "space-default-daily-template", tab: "space" },
+	{ id: "space-search-index-status", tab: "space" },
+	{ id: "git-availability", tab: "git" },
+	{ id: "git-repository-state", tab: "git" },
+	{ id: "git-how-it-works", tab: "git" },
+	{ id: "git-branch", tab: "git" },
+	{ id: "git-automatic-sync", tab: "git" },
+	{ id: "git-sync-interval", tab: "git" },
+	{ id: "git-sync-actions", tab: "git" },
+	{ id: "git-conflict-policy", tab: "git" },
+	{ id: "git-include-templates", tab: "git" },
+	{ id: "git-include-attachments", tab: "git" },
+	{ id: "git-include-non-markdown", tab: "git" },
+	{ id: "general-editor-table-of-contents", tab: "general" },
+	{ id: "space-search-index-people-tags", tab: "space" },
+	{ id: "general-editor-frontmatter", tab: "general" },
+	{ id: "general-editor-colorful-headings", tab: "general" },
+	{ id: "appearance-editor-presentation-beautiful-tags", tab: "appearance" },
+	{ id: "appearance-editor-presentation-width", tab: "appearance" },
+	{ id: "general-editor-collapsible-headings", tab: "general" },
+	{ id: "general-editor-spell-check", tab: "general" },
+	{ id: "general-editor-vim-keybindings", tab: "general" },
+	{ id: "ai-assistant-behavior-tools", tab: "ai" },
+	{ id: "appearance-layout-folio-mode", tab: "appearance" },
+	{ id: "appearance-layout-classic-all-notes", tab: "appearance" },
+	{ id: "general-file-tree-folder-counts", tab: "general" },
+	{ id: "general-file-tree-non-markdown-files", tab: "general" },
+	{ id: "general-file-tree-sort", tab: "general" },
+	{ id: "appearance-database-column-color", tab: "appearance" },
+	{ id: "about-app", tab: "about" },
+	{ id: "about-website", tab: "about" },
+	{ id: "about-discord", tab: "about" },
+	{ id: "about-terms", tab: "about" },
+	{ id: "about-privacy", tab: "about" },
+	{ id: "about-updates", tab: "about" },
+	{ id: "about-alpha-releases", tab: "about" },
+	{ id: "about-license-status", tab: "about" },
+	{ id: "about-community-build", tab: "about" },
+	{ id: "about-update-status", tab: "about" },
+	{ id: "about-changelog", tab: "about" },
+];
 
-const SETTINGS_TAB_ENTRIES = SETTINGS_TABS.map((tab) => ({
-	id: `${tab.id}-settings`,
-	tab: tab.id,
-	title: `${tab.label} settings`,
-	description: `Open ${tab.label} settings.`,
-	keywords: [tab.label],
-})) satisfies readonly SettingsSearchEntry[];
-
-export const SETTINGS_SEARCH_ENTRIES = [
-	...SETTINGS_TAB_ENTRIES,
-	...SETTINGS_SEARCH_ITEMS,
-] as const satisfies readonly SettingsSearchEntry[];
-
-const TAB_LABEL_BY_ID = new Map<SettingsTab, string>(
-	SETTINGS_TABS.map((tab) => [tab.id, tab.label]),
+const SETTINGS_TAB_DEFS: readonly SettingsSearchDef[] = SETTINGS_TABS.map(
+	(tab) => ({
+		id: `${tab.id}-settings`,
+		tab: tab.id,
+	}),
 );
+
+export const SETTINGS_SEARCH_ENTRIES: readonly SettingsSearchDef[] = [
+	...SETTINGS_TAB_DEFS,
+	...SETTINGS_SEARCH_DEFS,
+];
+
+function readKeywords(
+	nsKey: string,
+	language: string,
+): readonly string[] | undefined {
+	const keywords = i18n.t(nsKey, {
+		lng: language,
+		returnObjects: true,
+	});
+	return Array.isArray(keywords) ? (keywords as string[]) : undefined;
+}
+
+export function localizedSettingsTabLabel(
+	tab: SettingsTab,
+	language: string = i18n.language,
+): string {
+	return i18n.t(`settings.search:tabs.${tab}`, { lng: language });
+}
+
+export function localizeSettingsSearchEntry(
+	def: SettingsSearchDef,
+	language: string = i18n.language,
+): SettingsSearchEntry {
+	const isTabEntry =
+		def.id.endsWith("-settings") && def.id === `${def.tab}-settings`;
+	const base = isTabEntry
+		? `settings.search:tabEntry.${def.tab}`
+		: `settings.search:entries.${def.id}`;
+
+	const localized = i18n.t(base, {
+		lng: language,
+		returnObjects: true,
+	});
+	if (!localized || typeof localized !== "object" || Array.isArray(localized)) {
+		return {
+			id: def.id,
+			tab: def.tab,
+			title: def.id,
+		};
+	}
+
+	const record = localized as Record<string, unknown>;
+	const title = typeof record.title === "string" ? record.title : def.id;
+	const section =
+		typeof record.section === "string" ? record.section : undefined;
+	const description =
+		typeof record.description === "string" ? record.description : undefined;
+	const keywords = Array.isArray(record.keywords)
+		? (record.keywords as string[])
+		: readKeywords(`${base}.keywords`, language);
+
+	return {
+		id: def.id,
+		tab: def.tab,
+		title,
+		section,
+		description,
+		keywords,
+	};
+}
 
 function normalizeSearchText(value: string): string {
 	return value.trim().toLowerCase();
 }
 
-function buildHaystack(entry: SettingsSearchEntry): string {
-	const tabLabel = TAB_LABEL_BY_ID.get(entry.tab) ?? entry.tab;
+function buildHaystack(entry: SettingsSearchEntry, language: string): string {
+	const tabLabel = localizedSettingsTabLabel(entry.tab, language);
 	return [
 		entry.title,
 		entry.section ?? "",
@@ -695,14 +212,19 @@ function scoreSettingsEntry(entry: SettingsSearchEntry, query: string): number {
 export function searchSettingsEntries(
 	query: string,
 	limit = SETTINGS_SEARCH_ENTRIES.length,
+	language: string = i18n.language,
 ): SettingsSearchMatch[] {
 	const normalizedQuery = normalizeSearchText(query);
 	if (!normalizedQuery) return [];
 	const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
-	return SETTINGS_SEARCH_ENTRIES.filter((entry) => {
-		const haystack = buildHaystack(entry);
-		return tokens.every((token) => haystack.includes(token));
-	})
+	const localizedEntries = SETTINGS_SEARCH_ENTRIES.map((def) =>
+		localizeSettingsSearchEntry(def, language),
+	);
+	return localizedEntries
+		.filter((entry) => {
+			const haystack = buildHaystack(entry, language);
+			return tokens.every((token) => haystack.includes(token));
+		})
 		.sort((a, b) => {
 			const byScore =
 				scoreSettingsEntry(a, normalizedQuery) -
@@ -713,7 +235,7 @@ export function searchSettingsEntries(
 		.slice(0, limit)
 		.map((entry) => ({
 			...entry,
-			tabLabel: TAB_LABEL_BY_ID.get(entry.tab) ?? entry.tab,
+			tabLabel: localizedSettingsTabLabel(entry.tab, language),
 		}));
 }
 
@@ -760,7 +282,7 @@ function clearSettingsSearchTargets(root: ParentNode) {
 
 function findSettingsTabPanel(entry: SettingsSearchEntry): HTMLElement | null {
 	const root = document.querySelector<HTMLElement>(".settingsTabPanel");
-	const tabLabel = TAB_LABEL_BY_ID.get(entry.tab);
+	const tabLabel = localizedSettingsTabLabel(entry.tab);
 	const activeTitle = root
 		?.querySelector<HTMLElement>(".settingsPanelTitle")
 		?.textContent?.trim();

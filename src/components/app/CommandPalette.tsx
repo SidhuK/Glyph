@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search } from "../Icons";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
@@ -55,6 +56,7 @@ export function CommandPalette({
 	spacePath,
 	onSelectSearchResult,
 }: CommandPaletteProps) {
+	const { t } = useTranslation("shell");
 	const canSearch = spacePath !== null;
 	const [state, setState] = useState<{
 		activeTab: Tab;
@@ -236,7 +238,9 @@ export function CommandPalette({
 				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
 			>
-				<DialogTitle className="sr-only">Command Palette</DialogTitle>
+				<DialogTitle className="sr-only">
+					{t("commandPalette.title")}
+				</DialogTitle>
 
 				<div className="commandPaletteHeader">
 					<div className="commandPaletteInputWrapper">
@@ -249,7 +253,9 @@ export function CommandPalette({
 							ref={inputRef}
 							className="commandPaletteInput"
 							placeholder={
-								activeTab === "commands" ? "Search Commands" : "Search notes…"
+								activeTab === "commands"
+									? t("commandPalette.searchCommands")
+									: t("commandPalette.searchNotes")
 							}
 							value={query}
 							onChange={(e) =>
@@ -311,8 +317,10 @@ export function CommandPalette({
 										aria-live="polite"
 									>
 										{isSearching
-											? "Searching..."
-											: `${searchItems.length.toLocaleString()} results`}
+											? t("commandPalette.searching")
+											: t("commandPalette.results", {
+													count: searchItems.length,
+												})}
 									</div>
 								) : null}
 								<SearchResultsList
@@ -335,7 +343,10 @@ export function CommandPalette({
 						)}
 					</div>
 					{showPreviewColumn ? (
-						<aside className="commandPalettePreview" aria-label="Note preview">
+						<aside
+							className="commandPalettePreview"
+							aria-label={t("commandPalette.notePreview")}
+						>
 							<div className="linkedNotePreviewBody">
 								{notePreview ? <NotePreviewContent {...notePreview} /> : null}
 							</div>

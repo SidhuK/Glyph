@@ -1,3 +1,5 @@
+import { i18n } from "../../i18n";
+
 export type EditorTextColor =
 	| "gray"
 	| "brown"
@@ -77,6 +79,10 @@ export function isEditorTextColor(value: string): value is EditorTextColor {
 
 export function getEditorTextColorOption(color: EditorTextColor) {
 	return EDITOR_TEXT_COLOR_RECORD[color];
+}
+
+export function getEditorTextColorLabel(color: EditorTextColor): string {
+	return i18n.t(`editor:colors.${color}`);
 }
 
 export function getEditorTextColorStyle(color: EditorTextColor) {

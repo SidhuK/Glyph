@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "Appearance",
+		"panelTitle": "Appearance"
+	},
+	"theme": {
+		"sectionTitle": "Theme",
+		"sectionDescription": "Mix and match light and dark theme families.",
+		"appearance": {
+			"label": "Appearance",
+			"description": "Follow your system or lock Glyph to light or dark mode.",
+			"ariaLabel": "Theme mode"
+		},
+		"modes": {
+			"system": {
+				"label": "System",
+				"description": "Match your device light or dark appearance."
+			},
+			"light": {
+				"label": "Light",
+				"description": "Always use light mode."
+			},
+			"dark": {
+				"label": "Dark",
+				"description": "Always use dark mode."
+			}
+		},
+		"translucentSidebar": {
+			"label": "Translucent sidebar",
+			"ariaLabel": "Translucent sidebar"
+		}
+	},
+	"accent": {
+		"sectionTitle": "Accent",
+		"sectionDescription": "Applies to the Glyph light and dark themes.",
+		"palette": {
+			"label": "Palette",
+			"description": "Sets the accent for highlights, focus rings, and emphasis.",
+			"ariaLabel": "Accent color",
+			"resetAriaLabel": "Reset accent"
+		},
+		"options": {
+			"neutral": "Neutral",
+			"glyphOrange": "Orange",
+			"glyphRed": "Glyph Red",
+			"cerulean": "Cerulean",
+			"tropicalTeal": "Tropical Teal"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "Light theme",
+		"preset": {
+			"label": "Preset",
+			"hint": "Pick the palette Glyph uses in light mode."
+		},
+		"background": {
+			"label": "Background",
+			"ariaLabel": "Light theme background color",
+			"resetAriaLabel": "Reset light theme background"
+		},
+		"foreground": {
+			"label": "Foreground",
+			"ariaLabel": "Light theme foreground color",
+			"resetAriaLabel": "Reset light theme foreground"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "Dark theme",
+		"preset": {
+			"label": "Preset",
+			"hint": "Pick the palette Glyph uses in dark mode."
+		},
+		"background": {
+			"label": "Background",
+			"ariaLabel": "Dark theme background color",
+			"resetAriaLabel": "Reset dark theme background"
+		},
+		"foreground": {
+			"label": "Foreground",
+			"ariaLabel": "Dark theme foreground color",
+			"resetAriaLabel": "Reset dark theme foreground"
+		}
+	},
+	"shape": {
+		"sectionTitle": "Shape",
+		"sectionDescription": "Choose how rounded panels, buttons, and windows look across the app.",
+		"corners": {
+			"label": "Corners",
+			"description": "Applies everywhere — sidebars, dialogs, inputs, and cards.",
+			"ariaLabel": "UI shape"
+		},
+		"options": {
+			"sharp": {
+				"label": "Brutalist",
+				"description": "Crisp, square edges throughout the app."
+			},
+			"default": {
+				"label": "Default",
+				"description": "Glyph's balanced look."
+			},
+			"round": {
+				"label": "Soft",
+				"description": "Gentler, more rounded edges throughout the app."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "Typography",
+		"sectionDescription": "Tune interface type, code styling, and reading scale independently.",
+		"interfaceFont": {
+			"label": "Interface font",
+			"description": "Used for navigation, settings, and most UI copy across Glyph."
+		},
+		"editorFont": {
+			"label": "Editor font",
+			"description": "Used for regular note text outside inline code and code blocks."
+		},
+		"monospaceFont": {
+			"label": "Monospace font",
+			"description": "Used for markdown source, inline code, and developer-oriented surfaces."
+		},
+		"uiFontSize": {
+			"label": "UI font size",
+			"description": "Adjust the base size used by menus, panes, controls, and settings.",
+			"valueAriaLabel": "UI font size value"
+		},
+		"editorFontSize": {
+			"label": "Editor font size",
+			"description": "Adjust the reading size for the note editor, markdown preview, and raw text editing.",
+			"valueAriaLabel": "Editor font size value"
+		}
+	},
+	"layout": {
+		"sectionTitle": "Layout",
+		"sectionDescription": "Choose how Glyph presents your workspace and All Notes.",
+		"folioMode": {
+			"label": "Folio Mode",
+			"description": "Show navigation, notes, and editor in a three-column workspace.",
+			"ariaLabel": "Folio Mode"
+		},
+		"classicAllNotes": {
+			"label": "Classic All Notes grid",
+			"description": "Open All Notes as the simple grid instead of the activity timeline.",
+			"ariaLabel": "Classic All Notes grid"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "Editor presentation",
+		"sectionDescription": "Choose how notes look while you edit them.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "Enable the experimental Beautiful Tags presentation for tags.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "Editor width",
+			"description": "Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width.",
+			"ariaLabel": "Editor width",
+			"options": {
+				"compact": "Compact",
+				"comfortable": "Comfortable",
+				"wide": "Wide"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "Database",
+		"sectionDescription": "Choose how databases are presented across Glyph.",
+		"showColumnColor": {
+			"label": "Show database column color",
+			"description": "Keep the lane pill and tag colors while toggling the full column tint.",
+			"ariaLabel": "Show database column color"
+		}
+	}
+}

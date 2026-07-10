@@ -1,3 +1,4 @@
+import { i18n } from "../../../../i18n";
 import { appendEditCodeControls } from "../codeBlockPreviewControls";
 
 const MERMAID_CANVAS_HEIGHT = 480;
@@ -170,7 +171,7 @@ export function createMermaidCanvas(
 	frame.append(viewport);
 	if (options.editMode) {
 		appendEditCodeControls(frame, {
-			label: "Edit Mermaid code",
+			label: i18n.t("editor:codeBlock.editMermaid"),
 			onEditCode: options.onEditCode,
 		});
 	}

@@ -1,0 +1,89 @@
+{
+	"sidebar": {
+		"collapse": "사이드바 접기",
+		"expand": "사이드바 펼치기",
+		"newNote": "새 노트",
+		"pinned": "고정됨",
+		"allNotes": "모든 노트",
+		"collections": "컬렉션",
+		"connections": "연결",
+		"notes": "노트",
+		"collapseNotes": "노트 접기",
+		"expandNotes": "노트 펼치기",
+		"sortNotes": "노트 정렬",
+		"sort": "정렬",
+		"expandAllFolders": "모든 폴더 펼치기",
+		"collapseAllFolders": "모든 폴더 접기"
+	},
+	"sort": {
+		"nameAsc": "이름 A-Z",
+		"nameDesc": "이름 Z-A",
+		"modifiedNewest": "수정일 (최신순)",
+		"modifiedOldest": "수정일 (오래된순)",
+		"createdNewest": "생성일 (최신순)",
+		"createdOldest": "생성일 (오래된순)"
+	},
+	"pinned": {
+		"title": "고정됨"
+	},
+	"allNotes": {
+		"title": "모든 노트",
+		"showActivity": "활동 표시",
+		"today": "오늘",
+		"yesterday": "어제",
+		"thisWeek": "이번 주",
+		"thisMonth": "이번 달",
+		"earlier": "이전"
+	},
+	"tags": {
+		"header": "태그",
+		"collapse": "태그 접기",
+		"expand": "태그 펼치기",
+		"people": "사람",
+		"showLess": "간략히",
+		"showMore": "{{count}}개 더 보기"
+	},
+	"fileTree": {
+		"open": "열기",
+		"openInNewWindow": "새 창에서 열기",
+		"showInFinder": "Finder에서 보기",
+		"copyRelativePath": "상대 경로 복사",
+		"copyAbsolutePath": "절대 경로 복사",
+		"rename": "이름 변경",
+		"duplicateFile": "파일 복제",
+		"pinFile": "파일 고정",
+		"unpinFile": "파일 고정 해제",
+		"iconAndColor": "아이콘 및 색상…",
+		"addFile": "파일 추가",
+		"createFromTemplate": "템플릿에서 만들기",
+		"addFolder": "폴더 추가",
+		"deleteFile": "파일 삭제",
+		"deleteFolder": "폴더 삭제"
+	},
+	"commandPalette": {
+		"title": "명령 팔레트",
+		"searchCommands": "명령 검색",
+		"searchNotes": "노트 검색…",
+		"notePreview": "노트 미리보기",
+		"sectionGeneral": "일반",
+		"navigate": "이동",
+		"runCommand": "명령 실행",
+		"openNote": "노트 열기",
+		"commands": "명령",
+		"search": "검색",
+		"close": "닫기",
+		"filterTitle": "제목",
+		"filterTag": "태그",
+		"searching": "검색 중…",
+		"results": "결과 {{count}}개",
+		"recentlyOpened": "최근 열림",
+		"groupNotes": "노트",
+		"groupTaggedNotes": "태그된 노트",
+		"groupContent": "내용"
+	},
+	"tabs": {
+		"allNotes": "모든 노트",
+		"collections": "컬렉션",
+		"pinned": "고정됨"
+	}
+}

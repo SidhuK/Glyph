@@ -6,6 +6,7 @@ import {
 	DEFAULT_ATTACHMENT_FOLDER,
 } from "./attachmentStorage";
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
+import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import {
 	getSettingsStore,
 	invalidateSettingsCache,
@@ -50,6 +51,7 @@ export type {
 
 export type { AiAssistantMode } from "./tauri";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
+export type { AppLanguage } from "../i18n/locales";
 
 export type ReleaseChannel = "stable" | "alpha";
 export type FileTreeSortMode =
@@ -390,6 +392,7 @@ async function emitSettingsUpdated(payload: {
 		resumeLastSession?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
+		language?: AppLanguage;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -438,15 +441,6 @@ export interface RecentFile {
 	openedAt: number;
 }
 
-export const FILE_TREE_SORT_OPTIONS = [
-	{ label: "Name A-Z", value: "name-asc" },
-	{ label: "Name Z-A", value: "name-desc" },
-	{ label: "Modified newest", value: "modified-desc" },
-	{ label: "Modified oldest", value: "modified-asc" },
-	{ label: "Created newest", value: "created-desc" },
-	{ label: "Created oldest", value: "created-asc" },
-] as const satisfies readonly { label: string; value: FileTreeSortMode }[];
-
 interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
@@ -454,6 +448,7 @@ interface AppSettings {
 	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
+		language: AppLanguage;
 		theme: ThemeMode;
 		autoUpdateCheckInterval: AutoUpdateCheckInterval;
 		releaseChannel: ReleaseChannel;
@@ -527,6 +522,7 @@ const KEYS = {
 	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
+	language: "ui.language",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
@@ -849,6 +845,7 @@ export async function loadSettings(
 		KEYS.onboardingOpenedDailyNote,
 	);
 	const rawAiEnabled = getSettingValue<boolean | null>(entries, KEYS.aiEnabled);
+	const rawLanguage = getSettingValue(entries, KEYS.language);
 	const rawAiAssistantMode = getSettingValue(entries, KEYS.aiAssistantMode);
 	const rawTheme = getSettingValue(entries, KEYS.theme);
 	const rawAutoUpdateCheckInterval = getSettingValue(
@@ -975,6 +972,7 @@ export async function loadSettings(
 	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
+	const language = normalizeAppLanguage(rawLanguage);
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
 	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
@@ -1098,6 +1096,7 @@ export async function loadSettings(
 		onboarding,
 		ui: {
 			aiEnabled,
+			language,
 			theme,
 			autoUpdateCheckInterval,
 			releaseChannel,
@@ -1268,6 +1267,14 @@ export async function setAiEnabled(enabled: boolean): Promise<void> {
 	await store.set(KEYS.aiEnabled, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
+}
+
+export async function setLanguage(language: AppLanguage): Promise<void> {
+	const store = await getSettingsStore();
+	const normalized = normalizeAppLanguage(language);
+	await store.set(KEYS.language, normalized);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { language: normalized } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {

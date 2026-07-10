@@ -10,6 +10,7 @@ import type {
 	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
 import { openMarkdownInExternalWindow } from "../../lib/externalMarkdown";
@@ -167,6 +168,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	virtualRowStyle,
 	virtualRowIndex,
 }: FileTreeFileItemProps) {
+	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
 	const { getEditorState, saveCurrentEditor } = useEditorContext();
 	const customColor =
@@ -241,33 +243,33 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
 				{
-					label: "Open",
+					label: t("fileTree.open"),
 					action: () => void onOpenFile(entry.rel_path),
 				},
 				...(entry.is_markdown
 					? [
 							{
-								label: "Open in New Window",
+								label: t("fileTree.openInNewWindow"),
 								action: () => void handleOpenInSeparateWindow(),
 							},
 						]
 					: []),
 				{
-					label: "Show in Finder",
+					label: t("fileTree.showInFinder"),
 					action: () => void handleRevealInFinder(),
 				},
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
-					label: "Rename",
+					label: t("fileTree.rename"),
 					action: onStartRename,
 				},
 				{
-					label: "Duplicate file",
+					label: t("fileTree.duplicateFile"),
 					action: () => void onDuplicateFile(entry.rel_path),
 				},
 				{
-					label: isPinned ? "Unpin file" : "Pin file",
+					label: isPinned ? t("fileTree.unpinFile") : t("fileTree.pinFile"),
 					action: () => void onTogglePinned(entry.rel_path),
 				},
 				fileTreeAppearanceNativeMenu(
@@ -275,20 +277,20 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				),
 				{ type: "separator" },
 				{
-					label: "Add file",
+					label: t("fileTree.addFile"),
 					action: () => void onNewFileInDir(parentDirPath),
 				},
 				{
-					label: "Create from template",
+					label: t("fileTree.createFromTemplate"),
 					action: () => void onCreateFromTemplateInDir(parentDirPath),
 				},
 				{
-					label: "Add folder",
+					label: t("fileTree.addFolder"),
 					action: () => void onRequestCreateFolder(parentDirPath),
 				},
 				{ type: "separator" },
 				{
-					label: "Delete file",
+					label: t("fileTree.deleteFile"),
 					action: () => onDeletePath(entry.rel_path, "file"),
 				},
 			]).catch((error: unknown) => {
@@ -312,6 +314,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			onTogglePinned,
 			parentDirPath,
 			spacePath,
+			t,
 		],
 	);
 

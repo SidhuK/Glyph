@@ -3,10 +3,14 @@ import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { I18nextProvider } from "react-i18next";
 import App from "./App";
 import { ExternalMarkdownWindow } from "./components/external-markdown/ExternalMarkdownWindow";
 import { QuickNoteWindow } from "./components/quick-note/QuickNoteWindow";
 import { Toaster } from "./components/ui/notifications";
+import { changeAppLanguage, i18n, initI18n } from "./i18n";
+import { isAppLanguage } from "./i18n/locales";
+import { syncNativeMenuLabels } from "./i18n/nativeMenu";
 import {
 	applyEditorWidthMode,
 	applyUiAccent,
@@ -42,6 +46,17 @@ import {
 	MAIN_WINDOW_LABEL,
 	QUICK_NOTE_WINDOW_LABEL,
 } from "./lib/windowLabels";
+
+function LanguageBridge() {
+	useTauriEvent("settings:updated", (payload) => {
+		const nextLanguage = payload.ui?.language;
+		if (!isAppLanguage(nextLanguage)) return;
+		void changeAppLanguage(nextLanguage)
+			.then(() => syncNativeMenuLabels())
+			.catch(() => {});
+	});
+	return null;
+}
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
@@ -311,18 +326,25 @@ const isExternalMarkdownWindow = windowLabel.startsWith(
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
 );
 
-ReactDOM.createRoot(rootEl).render(
-	<React.StrictMode>
-		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-			<ThemeAndTypographyBridge />
-			{isQuickNoteWindow ? (
-				<QuickNoteWindow />
-			) : isExternalMarkdownWindow ? (
-				<ExternalMarkdownWindow />
-			) : (
-				<App />
-			)}
-			<Toaster />
-		</ThemeProvider>
-	</React.StrictMode>,
-);
+void initI18n()
+	.then(() => syncNativeMenuLabels().catch(() => {}))
+	.finally(() => {
+		ReactDOM.createRoot(rootEl).render(
+			<React.StrictMode>
+				<I18nextProvider i18n={i18n}>
+					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+						<LanguageBridge />
+						<ThemeAndTypographyBridge />
+						{isQuickNoteWindow ? (
+							<QuickNoteWindow />
+						) : isExternalMarkdownWindow ? (
+							<ExternalMarkdownWindow />
+						) : (
+							<App />
+						)}
+						<Toaster />
+					</ThemeProvider>
+				</I18nextProvider>
+			</React.StrictMode>,
+		);
+	});

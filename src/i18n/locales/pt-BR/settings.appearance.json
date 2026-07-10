@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "Aparência",
+		"panelTitle": "Aparência"
+	},
+	"theme": {
+		"sectionTitle": "Tema",
+		"sectionDescription": "Combine famílias de temas claros e escuros.",
+		"appearance": {
+			"label": "Aparência",
+			"description": "Seguir o sistema ou fixar o Glyph no modo claro ou escuro.",
+			"ariaLabel": "Modo do tema"
+		},
+		"modes": {
+			"system": {
+				"label": "Sistema",
+				"description": "Combinar com a aparência clara ou escura do dispositivo."
+			},
+			"light": {
+				"label": "Claro",
+				"description": "Usar sempre o modo claro."
+			},
+			"dark": {
+				"label": "Escuro",
+				"description": "Usar sempre o modo escuro."
+			}
+		},
+		"translucentSidebar": {
+			"label": "Barra lateral translúcida",
+			"ariaLabel": "Barra lateral translúcida"
+		}
+	},
+	"accent": {
+		"sectionTitle": "Destaque",
+		"sectionDescription": "Aplica-se aos temas claro e escuro do Glyph.",
+		"palette": {
+			"label": "Paleta",
+			"description": "Define o destaque para realces, anéis de foco e ênfase.",
+			"ariaLabel": "Cor de destaque",
+			"resetAriaLabel": "Redefinir destaque"
+		},
+		"options": {
+			"neutral": "Neutro",
+			"glyphOrange": "Laranja",
+			"glyphRed": "Glyph Red",
+			"cerulean": "Cerúleo",
+			"tropicalTeal": "Verde-azulado tropical"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "Tema claro",
+		"preset": {
+			"label": "Predefinição",
+			"hint": "Escolha a paleta que o Glyph usa no modo claro."
+		},
+		"background": {
+			"label": "Fundo",
+			"ariaLabel": "Cor de fundo do tema claro",
+			"resetAriaLabel": "Redefinir fundo do tema claro"
+		},
+		"foreground": {
+			"label": "Primeiro plano",
+			"ariaLabel": "Cor de primeiro plano do tema claro",
+			"resetAriaLabel": "Redefinir primeiro plano do tema claro"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "Tema escuro",
+		"preset": {
+			"label": "Predefinição",
+			"hint": "Escolha a paleta que o Glyph usa no modo escuro."
+		},
+		"background": {
+			"label": "Fundo",
+			"ariaLabel": "Cor de fundo do tema escuro",
+			"resetAriaLabel": "Redefinir fundo do tema escuro"
+		},
+		"foreground": {
+			"label": "Primeiro plano",
+			"ariaLabel": "Cor de primeiro plano do tema escuro",
+			"resetAriaLabel": "Redefinir primeiro plano do tema escuro"
+		}
+	},
+	"shape": {
+		"sectionTitle": "Forma",
+		"sectionDescription": "Escolha o arredondamento de painéis, botões e janelas em todo o app.",
+		"corners": {
+			"label": "Cantos",
+			"description": "Aplica-se em todos os lugares — barras laterais, diálogos, campos e cartões.",
+			"ariaLabel": "Forma da interface"
+		},
+		"options": {
+			"sharp": {
+				"label": "Brutalista",
+				"description": "Bordas nítidas e quadradas em todo o app."
+			},
+			"default": {
+				"label": "Padrão",
+				"description": "O visual equilibrado do Glyph."
+			},
+			"round": {
+				"label": "Suave",
+				"description": "Bordas mais arredondadas e suaves em todo o app."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "Tipografia",
+		"sectionDescription": "Ajuste independentemente o tipo da interface, o estilo do código e a escala de leitura.",
+		"interfaceFont": {
+			"label": "Fonte da interface",
+			"description": "Usada na navegação, configurações e na maior parte do texto da UI do Glyph."
+		},
+		"editorFont": {
+			"label": "Fonte do editor",
+			"description": "Usada no texto normal das notas, fora de código em linha e blocos de código."
+		},
+		"monospaceFont": {
+			"label": "Fonte monoespaçada",
+			"description": "Usada na origem Markdown, código em linha e superfícies orientadas a desenvolvedores."
+		},
+		"uiFontSize": {
+			"label": "Tamanho da fonte da UI",
+			"description": "Ajuste o tamanho base de menus, painéis, controles e configurações.",
+			"valueAriaLabel": "Valor do tamanho da fonte da UI"
+		},
+		"editorFontSize": {
+			"label": "Tamanho da fonte do editor",
+			"description": "Ajuste o tamanho de leitura do editor de notas, da pré-visualização Markdown e da edição de texto bruto.",
+			"valueAriaLabel": "Valor do tamanho da fonte do editor"
+		}
+	},
+	"layout": {
+		"sectionTitle": "Layout",
+		"sectionDescription": "Escolha como o Glyph apresenta seu espaço de trabalho e Todas as notas.",
+		"folioMode": {
+			"label": "Modo Folio",
+			"description": "Mostrar navegação, notas e editor em um espaço de trabalho de três colunas.",
+			"ariaLabel": "Modo Folio"
+		},
+		"classicAllNotes": {
+			"label": "Grade clássica de Todas as notas",
+			"description": "Abrir Todas as notas como a grade simples em vez da linha do tempo de atividade.",
+			"ariaLabel": "Grade clássica de Todas as notas"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "Apresentação do editor",
+		"sectionDescription": "Escolha como as notas aparecem enquanto você as edita.",
+		"beautifulTags": {
+			"label": "Beautiful Tags",
+			"description": "Ativar a apresentação experimental Beautiful Tags para tags.",
+			"ariaLabel": "Beautiful Tags"
+		},
+		"editorWidth": {
+			"label": "Largura do editor",
+			"description": "Compacto mantém as linhas mais curtas, Confortável dá um pouco mais de espaço e Largo usa toda a largura do editor.",
+			"ariaLabel": "Largura do editor",
+			"options": {
+				"compact": "Compacto",
+				"comfortable": "Confortável",
+				"wide": "Largo"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "Banco de dados",
+		"sectionDescription": "Escolha como os bancos de dados são apresentados no Glyph.",
+		"showColumnColor": {
+			"label": "Mostrar cor da coluna do banco de dados",
+			"description": "Manter as cores da pílula da faixa e das tags ao alternar o tom completo da coluna.",
+			"ariaLabel": "Mostrar cor da coluna do banco de dados"
+		}
+	}
+}

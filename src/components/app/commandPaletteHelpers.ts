@@ -5,6 +5,8 @@ import type { SearchAdvancedRequest } from "../../lib/tauri";
 export interface Command {
 	id: string;
 	label?: string;
+	/** When set, resolveCommandShortcuts translates this key instead of commands:{id}.label */
+	labelKey?: string;
 	icon?: ReactNode;
 	category?: string;
 	searchTerms?: readonly string[];

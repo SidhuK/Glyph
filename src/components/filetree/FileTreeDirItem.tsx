@@ -14,6 +14,7 @@ import type {
 	Ref,
 } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
@@ -141,6 +142,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	virtualRowStyle,
 	virtualRowIndex,
 }: FileTreeDirItemProps) {
+	const { t } = useTranslation("shell");
 	const { spacePath } = useSpace();
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -176,28 +178,28 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		(event: MouseEvent) => {
 			void showNativeContextMenu(event, [
 				{
-					label: "Add file",
+					label: t("fileTree.addFile"),
 					action: () => void onNewFileInDir(entry.rel_path),
 				},
 				{
-					label: "Create from template",
+					label: t("fileTree.createFromTemplate"),
 					action: () => void onCreateFromTemplateInDir(entry.rel_path),
 				},
 				{
-					label: "Add folder",
+					label: t("fileTree.addFolder"),
 					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
 				{ type: "separator" },
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
 				{
-					label: "Rename",
+					label: t("fileTree.rename"),
 					action: onStartRename,
 				},
 				fileTreeAppearanceNativeMenu(onOpenAppearancePicker),
 				{ type: "separator" },
 				{
-					label: "Delete folder",
+					label: t("fileTree.deleteFolder"),
 					action: () => onDeletePath(entry.rel_path, "dir"),
 				},
 			]).catch((error: unknown) => {
@@ -213,6 +215,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onRequestCreateFolder,
 			onStartRename,
 			spacePath,
+			t,
 		],
 	);
 

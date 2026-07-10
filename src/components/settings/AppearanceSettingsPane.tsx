@@ -1,5 +1,6 @@
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
@@ -46,13 +47,14 @@ import { useAppearanceThemeColors } from "./useAppearanceThemeColors";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
-const EDITOR_WIDTH_OPTIONS = [
-	{ label: "Compact", value: "compact" },
-	{ label: "Comfortable", value: "comfortable" },
-	{ label: "Wide", value: "wide" },
-] as const satisfies readonly { label: string; value: EditorWidthMode }[];
+const EDITOR_WIDTH_VALUES = [
+	"compact",
+	"comfortable",
+	"wide",
+] as const satisfies readonly EditorWidthMode[];
 
 export function AppearanceSettingsPane() {
+	const { t } = useTranslation("settings.appearance");
 	const { setTheme } = useTheme();
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
 	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
@@ -293,54 +295,54 @@ export function AppearanceSettingsPane() {
 					onEditorFontSizeChange={onEditorFontSizeChange}
 				/>
 				<SettingsSection
-					title="Layout"
-					description="Choose how Glyph presents your workspace and All Notes."
+					title={t("layout.sectionTitle")}
+					description={t("layout.sectionDescription")}
 				>
 					<SettingsRow
-						label="Folio Mode"
-						description="Show navigation, notes, and editor in a three-column workspace."
+						label={t("layout.folioMode.label")}
+						description={t("layout.folioMode.description")}
 					>
 						<SettingsToggle
 							checked={folioMode.checked}
 							disabled={folioMode.isSaving}
-							ariaLabel="Folio Mode"
+							ariaLabel={t("layout.folioMode.ariaLabel")}
 							onCheckedChange={folioMode.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Classic All Notes grid"
-						description="Open All Notes as the simple grid instead of the activity timeline."
+						label={t("layout.classicAllNotes.label")}
+						description={t("layout.classicAllNotes.description")}
 					>
 						<SettingsToggle
 							checked={classicAllNotes.checked}
 							disabled={classicAllNotes.isSaving}
-							ariaLabel="Classic All Notes grid"
+							ariaLabel={t("layout.classicAllNotes.ariaLabel")}
 							onCheckedChange={classicAllNotes.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="Editor presentation"
-					description="Choose how notes look while you edit them."
+					title={t("editorPresentation.sectionTitle")}
+					description={t("editorPresentation.sectionDescription")}
 				>
 					<SettingsRow
-						label="Beautiful Tags"
-						description="Enable the experimental Beautiful Tags presentation for tags."
+						label={t("editorPresentation.beautifulTags.label")}
+						description={t("editorPresentation.beautifulTags.description")}
 					>
 						<SettingsToggle
 							checked={beautifulTags.checked}
 							disabled={beautifulTags.isSaving}
-							ariaLabel="Beautiful Tags"
+							ariaLabel={t("editorPresentation.beautifulTags.ariaLabel")}
 							onCheckedChange={beautifulTags.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Editor width"
-						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
+						label={t("editorPresentation.editorWidth.label")}
+						description={t("editorPresentation.editorWidth.description")}
 						interactive={false}
 					>
 						<SettingsSelect
-							aria-label="Editor width"
+							aria-label={t("editorPresentation.editorWidth.ariaLabel")}
 							value={editorWidthMode}
 							disabled={isSavingEditorWidthMode}
 							onChange={(event) => {
@@ -368,26 +370,26 @@ export function AppearanceSettingsPane() {
 									});
 							}}
 						>
-							{EDITOR_WIDTH_OPTIONS.map((option) => (
-								<option key={option.value} value={option.value}>
-									{option.label}
+							{EDITOR_WIDTH_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editorPresentation.editorWidth.options.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>
 					</SettingsRow>
 				</SettingsSection>
 				<SettingsSection
-					title="Database"
-					description="Choose how databases are presented across Glyph."
+					title={t("database.sectionTitle")}
+					description={t("database.sectionDescription")}
 				>
 					<SettingsRow
-						label="Show database column color"
-						description="Keep the lane pill and tag colors while toggling the full column tint."
+						label={t("database.showColumnColor.label")}
+						description={t("database.showColumnColor.description")}
 					>
 						<SettingsToggle
 							checked={showColumnColor.checked}
 							disabled={showColumnColor.isSaving}
-							ariaLabel="Show database column color"
+							ariaLabel={t("database.showColumnColor.ariaLabel")}
 							onCheckedChange={showColumnColor.onCheckedChange}
 						/>
 					</SettingsRow>

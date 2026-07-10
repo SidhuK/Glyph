@@ -1,0 +1,426 @@
+{
+	"categories": {
+		"workspace": "Arbeitsbereich",
+		"navigation": "Navigation",
+		"search": "Suche",
+		"file": "Dateioperationen",
+		"tabs": "Tabs",
+		"ai": "KI",
+		"editor": "Editor",
+		"settings": "Einstellungen"
+	},
+	"commands": {
+		"activate-tab-1": {
+			"label": "Tab 1 aktivieren",
+			"description": "Zu Tab 1 wechseln."
+		},
+		"activate-tab-2": {
+			"label": "Tab 2 aktivieren",
+			"description": "Zu Tab 2 wechseln."
+		},
+		"activate-tab-3": {
+			"label": "Tab 3 aktivieren",
+			"description": "Zu Tab 3 wechseln."
+		},
+		"activate-tab-4": {
+			"label": "Tab 4 aktivieren",
+			"description": "Zu Tab 4 wechseln."
+		},
+		"activate-tab-5": {
+			"label": "Tab 5 aktivieren",
+			"description": "Zu Tab 5 wechseln."
+		},
+		"activate-tab-6": {
+			"label": "Tab 6 aktivieren",
+			"description": "Zu Tab 6 wechseln."
+		},
+		"activate-tab-7": {
+			"label": "Tab 7 aktivieren",
+			"description": "Zu Tab 7 wechseln."
+		},
+		"activate-tab-8": {
+			"label": "Tab 8 aktivieren",
+			"description": "Zu Tab 8 wechseln."
+		},
+		"activate-tab-9": {
+			"label": "Tab 9 aktivieren",
+			"description": "Zu Tab 9 wechseln."
+		},
+		"ai-attach-all-open-notes": {
+			"label": "KI: Alle offenen Notizen anhängen",
+			"description": "Alle offenen Notizen an die KI anhängen."
+		},
+		"ai-attach-current-note": {
+			"label": "KI: Aktuelle Notiz anhängen",
+			"description": "Die aktuelle Notiz an die KI anhängen."
+		},
+		"bold": {
+			"label": "Fett",
+			"description": "Fettformatierung für die aktuelle Auswahl umschalten."
+		},
+		"bullet_list": {
+			"label": "Aufzählungsliste",
+			"description": "Eine Aufzählungsliste umschalten."
+		},
+		"buy-glyph-license": {
+			"label": "Glyph-Lizenz kaufen",
+			"description": "Die Kaufseite für Glyph öffnen."
+		},
+		"callout_error": {
+			"label": "Fehler-Callout",
+			"description": "Einen Fehler-Callout-Block einfügen."
+		},
+		"callout_info": {
+			"label": "Info-Callout",
+			"description": "Einen Info-Callout-Block einfügen."
+		},
+		"callout_success": {
+			"label": "Erfolgs-Callout",
+			"description": "Einen Erfolgs-Callout-Block einfügen."
+		},
+		"callout_tip": {
+			"label": "Tipp-Callout",
+			"description": "Einen Tipp-Callout-Block einfügen."
+		},
+		"callout_warning": {
+			"label": "Warn-Callout",
+			"description": "Einen Warn-Callout-Block einfügen."
+		},
+		"close-active-tab": {
+			"label": "Aktiven Tab schließen",
+			"description": "Den aktuellen Tab schließen."
+		},
+		"close-all-tabs": {
+			"label": "Alle Tabs schließen",
+			"description": "Alle offenen Tabs schließen."
+		},
+		"close-space": {
+			"label": "Aktuellen Space schließen",
+			"description": "Den aktuell geöffneten Space schließen."
+		},
+		"code_block": {
+			"label": "Codeblock",
+			"description": "Einen Codeblock umschalten."
+		},
+		"collapse_all_headings": {
+			"label": "Alle Überschriften einklappen",
+			"description": "Alle Überschriften in der aktuellen Notiz einklappen."
+		},
+		"color_blue": {
+			"label": "Textfarbe: Blau",
+			"description": "Blaue Textfarbe anwenden."
+		},
+		"color_brown": {
+			"label": "Textfarbe: Braun",
+			"description": "Braune Textfarbe anwenden."
+		},
+		"color_clear": {
+			"label": "Textfarbe entfernen",
+			"description": "Textfarbenformatierung entfernen."
+		},
+		"color_gray": {
+			"label": "Textfarbe: Grau",
+			"description": "Graue Textfarbe anwenden."
+		},
+		"color_green": {
+			"label": "Textfarbe: Grün",
+			"description": "Grüne Textfarbe anwenden."
+		},
+		"color_orange": {
+			"label": "Textfarbe: Orange",
+			"description": "Orange Textfarbe anwenden."
+		},
+		"color_purple": {
+			"label": "Textfarbe: Lila",
+			"description": "Lilane Textfarbe anwenden."
+		},
+		"color_red": {
+			"label": "Textfarbe: Rot",
+			"description": "Rote Textfarbe anwenden."
+		},
+		"color_yellow": {
+			"label": "Textfarbe: Gelb",
+			"description": "Gelbe Textfarbe anwenden."
+		},
+		"copy-note-markdown": {
+			"label": "Notiz als Markdown kopieren",
+			"description": "Die aktuelle Notiz als Markdown kopieren."
+		},
+		"create-from-template": {
+			"label": "Aus Vorlage erstellen",
+			"description": "Eine neue Notiz aus einer Vorlage erstellen."
+		},
+		"create-space": {
+			"label": "Space erstellen",
+			"description": "Einen neuen Space erstellen."
+		},
+		"details_block": {
+			"label": "Details-Block",
+			"description": "Einen einklappbaren Abschnitt einfügen."
+		},
+		"divider": {
+			"label": "Trennlinie",
+			"description": "Eine horizontale Trennlinie einfügen."
+		},
+		"duplicate-current-note": {
+			"label": "Aktuelle Notiz duplizieren",
+			"description": "Die aktuelle Notiz duplizieren."
+		},
+		"expand_all_headings": {
+			"label": "Alle Überschriften ausklappen",
+			"description": "Alle Überschriften in der aktuellen Notiz ausklappen."
+		},
+		"extract_selection_to_note": {
+			"label": "In Notiz extrahieren",
+			"description": "Eine Notiz aus der aktuellen Auswahl erstellen."
+		},
+		"git-sync-now": {
+			"label": "Jetzt synchronisieren",
+			"description": "Git Sync jetzt ausführen."
+		},
+		"go-back-note": {
+			"label": "Zurück",
+			"description": "In der Notizhistorie des aktuellen Tabs zurückgehen."
+		},
+		"go-forward-note": {
+			"label": "Vorwärts",
+			"description": "In der Notizhistorie des aktuellen Tabs vorwärtsgehen."
+		},
+		"heading_1": {
+			"label": "Überschrift 1",
+			"description": "Den aktuellen Block in eine Überschrift der Ebene 1 umwandeln."
+		},
+		"heading_2": {
+			"label": "Überschrift 2",
+			"description": "Den aktuellen Block in eine Überschrift der Ebene 2 umwandeln."
+		},
+		"heading_3": {
+			"label": "Überschrift 3",
+			"description": "Den aktuellen Block in eine Überschrift der Ebene 3 umwandeln."
+		},
+		"highlight_blue": {
+			"label": "Hervorhebung: Blau",
+			"description": "Blaue Texthervorhebung anwenden."
+		},
+		"highlight_clear": {
+			"label": "Hervorhebung entfernen",
+			"description": "Texthervorhebungsformatierung entfernen."
+		},
+		"highlight_green": {
+			"label": "Hervorhebung: Grün",
+			"description": "Grüne Texthervorhebung anwenden."
+		},
+		"highlight_red": {
+			"label": "Hervorhebung: Rot",
+			"description": "Rote Texthervorhebung anwenden."
+		},
+		"highlight_yellow": {
+			"label": "Hervorhebung: Gelb",
+			"description": "Gelbe Texthervorhebung anwenden."
+		},
+		"italic": {
+			"label": "Kursiv",
+			"description": "Kursivformatierung für die aktuelle Auswahl umschalten."
+		},
+		"link_clear": {
+			"label": "Link entfernen",
+			"description": "Den aktuellen Link aus der Auswahl entfernen."
+		},
+		"link_set": {
+			"label": "Link einfügen oder bearbeiten",
+			"description": "Einen Link einfügen oder den aktuellen Link bearbeiten."
+		},
+		"mermaid_chart": {
+			"label": "Mermaid-Diagramm",
+			"description": "Einen Mermaid-Codeblock einfügen."
+		},
+		"move-active-file": {
+			"label": "Aktive Datei verschieben",
+			"description": "Die aktuelle Datei in einen anderen Ordner verschieben."
+		},
+		"new-database": {
+			"label": "Neue Sammlung",
+			"description": "Eine neue Sammlung erstellen."
+		},
+		"new-folder": {
+			"label": "Neuer Ordner",
+			"description": "Einen neuen Ordner erstellen."
+		},
+		"new-note": {
+			"label": "Neue Notiz",
+			"description": "Eine neue Notiz im aktuellen Ordner erstellen."
+		},
+		"new-tab": {
+			"label": "Neuer Tab",
+			"description": "Einen leeren Tab öffnen."
+		},
+		"next-tab": {
+			"label": "Nächster Tab",
+			"description": "Zum nächsten Tab wechseln."
+		},
+		"numbered_list": {
+			"label": "Nummerierte Liste",
+			"description": "Eine nummerierte Liste umschalten."
+		},
+		"open-about": {
+			"label": "Info öffnen",
+			"description": "Den Info-Bildschirm öffnen."
+		},
+		"open-ai-settings": {
+			"label": "KI-Einstellungen öffnen",
+			"description": "KI-Einstellungen öffnen."
+		},
+		"open-all-docs": {
+			"label": "Alle Notizen öffnen",
+			"description": "Die Ansicht „Alle Notizen“ öffnen."
+		},
+		"open-command-palette": {
+			"label": "Befehlspalette öffnen",
+			"description": "Die Befehlspalette öffnen."
+		},
+		"open-daily-note": {
+			"label": "Tagesnotiz öffnen",
+			"description": "Die heutige Tagesnotiz öffnen oder erstellen."
+		},
+		"open-databases": {
+			"label": "Sammlungen öffnen",
+			"description": "Die Sammlungsansicht öffnen."
+		},
+		"open-git-sync-settings": {
+			"label": "Git-Sync-Einstellungen öffnen",
+			"description": "Den Git-Sync-Bereich in den Einstellungen öffnen."
+		},
+		"open-license-settings": {
+			"label": "Lizenzeinstellungen öffnen",
+			"description": "Den Lizenzbereich in den Einstellungen öffnen."
+		},
+		"open-local-connections": {
+			"label": "Lokale Verbindungen öffnen",
+			"description": "Lokale Verbindungen der aktuellen Notiz öffnen."
+		},
+		"open-quick-note": {
+			"label": "Schnellnotiz öffnen",
+			"description": "Den schwebenden Schnellnotiz-Scratchpad öffnen."
+		},
+		"open-search-palette": {
+			"label": "Suchpalette öffnen",
+			"description": "Die Suche in der Befehlspalette öffnen."
+		},
+		"open-settings": {
+			"label": "Einstellungen öffnen",
+			"description": "Die Einstellungsansicht öffnen."
+		},
+		"open-space": {
+			"label": "Space öffnen",
+			"description": "Einen vorhandenen Space öffnen."
+		},
+		"open-space-settings": {
+			"label": "Space-Einstellungen öffnen",
+			"description": "Einstellungen für den aktuellen Space öffnen."
+		},
+		"previous-tab": {
+			"label": "Vorheriger Tab",
+			"description": "Zum vorherigen Tab wechseln."
+		},
+		"quick-open": {
+			"label": "Schnell öffnen",
+			"description": "Die Befehlspalette direkt im Dateimodus öffnen."
+		},
+		"quote": {
+			"label": "Zitat",
+			"description": "Ein Blockzitat umschalten."
+		},
+		"reveal-space": {
+			"label": "Space anzeigen",
+			"description": "Den aktuellen Space im System-Dateibrowser anzeigen."
+		},
+		"save-note": {
+			"label": "Notiz speichern",
+			"description": "Die aktuelle Notiz speichern, falls geändert."
+		},
+		"show-getting-started": {
+			"label": "Erste Schritte",
+			"description": "Den Einstiegsablauf öffnen."
+		},
+		"show-welcome-note": {
+			"label": "Willkommensnotiz",
+			"description": "Die Willkommensnotiz im Stammverzeichnis des aktuellen Space erstellen oder öffnen."
+		},
+		"open-shortcuts-settings": {
+			"label": "Tastenkürzel…",
+			"description": "Den Tastenkürzel-Bereich in den Einstellungen öffnen."
+		},
+		"open-glyph-website": {
+			"label": "Glyph-Website",
+			"description": "Die Glyph-Website öffnen."
+		},
+		"open-glyph-changelog": {
+			"label": "Änderungsprotokoll",
+			"description": "Das veröffentlichte Glyph-Änderungsprotokoll öffnen."
+		},
+		"open-glyph-privacy": {
+			"label": "Datenschutzrichtlinie",
+			"description": "Die Glyph-Datenschutzrichtlinie öffnen."
+		},
+		"open-glyph-terms": {
+			"label": "Nutzungsbedingungen",
+			"description": "Die Glyph-Nutzungsbedingungen öffnen."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Den Glyph-Community-Discord öffnen."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Das Glyph-Repository auf GitHub öffnen."
+		},
+		"open-glyph-x": {
+			"label": "Auf X folgen",
+			"description": "Karat Sidhu auf X öffnen."
+		},
+		"strikethrough": {
+			"label": "Durchgestrichen",
+			"description": "Durchgestrichen-Formatierung für die aktuelle Auswahl umschalten."
+		},
+		"table": {
+			"label": "Tabelle",
+			"description": "Eine Markdown-Tabelle einfügen."
+		},
+		"todo_list": {
+			"label": "Aufgabenliste",
+			"description": "Eine Aufgabenliste umschalten."
+		},
+		"toggle-ai": {
+			"label": "KI-Panel umschalten",
+			"description": "Das KI-Assistentenpanel ein- oder ausblenden."
+		},
+		"toggle-note-info-sidebar": {
+			"label": "Notizinfo-Seitenleiste umschalten",
+			"description": "Die Notizinfo-Seitenleiste ein- oder ausblenden."
+		},
+		"toggle-pin-active-file": {
+			"label": "Aktuelle Datei anheften oder lösen",
+			"description": "Die aktive Datei anheften oder lösen."
+		},
+		"toggle-sidebar": {
+			"label": "Seitenleiste umschalten",
+			"description": "Die Dateibaum-Seitenleiste ein- oder ausblenden."
+		},
+		"underline": {
+			"label": "Unterstrichen",
+			"description": "Unterstrichen-Formatierung für die aktuelle Auswahl umschalten."
+		},
+		"switch-to-edit": {
+			"label": "Rich-Modus",
+			"description": "In den Rich-WYSIWYG-Bearbeitungsmodus wechseln."
+		},
+		"switch-to-preview": {
+			"label": "Vorschaumodus",
+			"description": "In den schreibgeschützten Vorschaumodus wechseln."
+		},
+		"switch-to-raw": {
+			"label": "Raw-Modus",
+			"description": "In den Raw-Markdown-Bearbeitungsmodus wechseln."
+		}
+	}
+}

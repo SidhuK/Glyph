@@ -11,6 +11,7 @@ import {
 } from "date-fns";
 import { useReducedMotion } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -72,12 +73,12 @@ function sectionForDate(iso: string): AllDocsSection["id"] {
 	}
 }
 
-const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
-	{ id: "today", label: "Today" },
-	{ id: "yesterday", label: "Yesterday" },
-	{ id: "this-week", label: "This Week" },
-	{ id: "this-month", label: "This Month" },
-	{ id: "earlier", label: "Earlier" },
+const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; labelKey: string }> = [
+	{ id: "today", labelKey: "allNotes.today" },
+	{ id: "yesterday", labelKey: "allNotes.yesterday" },
+	{ id: "this-week", labelKey: "allNotes.thisWeek" },
+	{ id: "this-month", labelKey: "allNotes.thisMonth" },
+	{ id: "earlier", labelKey: "allNotes.earlier" },
 ];
 
 export const AllDocsPane = memo(function AllDocsPane({
@@ -86,6 +87,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	onPrefetchActivity,
 	initialNotes = null,
 }: AllDocsPaneProps) {
+	const { t } = useTranslation("shell");
 	const { itemAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const paneRef = useRef<HTMLElement>(null);
@@ -157,10 +159,10 @@ export const AllDocsPane = memo(function AllDocsPane({
 		}
 		return SECTION_ORDER.map((section) => ({
 			id: section.id,
-			label: section.label,
+			label: t(section.labelKey),
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
-	}, [notes]);
+	}, [notes, t]);
 
 	const columnCount = useMemo(() => {
 		const minCardWidth = paneWidth <= 640 ? 144 : paneWidth <= 900 ? 160 : 184;
@@ -234,7 +236,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		<section ref={paneRef} className="allDocsPane">
 			<header className="allDocsHeader">
 				<div className="allDocsHeadingGroup">
-					<h1 className="allDocsTitle">All Notes</h1>
+					<h1 className="allDocsTitle">{t("allNotes.title")}</h1>
 				</div>
 				<button
 					type="button"
@@ -245,15 +247,15 @@ export const AllDocsPane = memo(function AllDocsPane({
 					}}
 					{...activityHoverPrefetchProps}
 					onFocus={onPrefetchActivity}
-					title="Show activity"
-					aria-label="Show activity"
+					title={t("allNotes.showActivity")}
+					aria-label={t("allNotes.showActivity")}
 				>
 					<HugeiconsIcon
 						icon={TimelineEventIcon}
 						size="var(--icon-md)"
 						strokeWidth={0.9}
 					/>
-					<span>Show activity</span>
+					<span>{t("allNotes.showActivity")}</span>
 				</button>
 			</header>
 			<div

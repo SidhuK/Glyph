@@ -1,0 +1,21 @@
+{
+	"app": {
+		"about": "Glyph について",
+		"settings": "設定…"
+	},
+	"submenus": {
+		"file": "ファイル",
+		"edit": "編集",
+		"markdown": "Markdown",
+		"textColor": "文字色",
+		"textHighlight": "テキストハイライト",
+		"ai": "AI",
+		"space": "スペース",
+		"recentSpaces": "最近のスペース",
+		"window": "ウィンドウ",
+		"help": "ヘルプ"
+	},
+	"recentSpaces": {
+		"empty": "最近のスペースはありません"
+	}
+}

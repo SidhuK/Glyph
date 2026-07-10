@@ -1,0 +1,175 @@
+{
+	"nav": {
+		"tab": "Darstellung",
+		"panelTitle": "Darstellung"
+	},
+	"theme": {
+		"sectionTitle": "Design",
+		"sectionDescription": "Helle und dunkle Designfamilien kombinieren.",
+		"appearance": {
+			"label": "Darstellung",
+			"description": "Dem System folgen oder Glyph auf Hell- oder Dunkelmodus festlegen.",
+			"ariaLabel": "Designmodus"
+		},
+		"modes": {
+			"system": {
+				"label": "System",
+				"description": "Der hellen oder dunklen Darstellung deines Geräts folgen."
+			},
+			"light": {
+				"label": "Hell",
+				"description": "Immer den Hellmodus verwenden."
+			},
+			"dark": {
+				"label": "Dunkel",
+				"description": "Immer den Dunkelmodus verwenden."
+			}
+		},
+		"translucentSidebar": {
+			"label": "Durchscheinende Seitenleiste",
+			"ariaLabel": "Durchscheinende Seitenleiste"
+		}
+	},
+	"accent": {
+		"sectionTitle": "Akzent",
+		"sectionDescription": "Gilt für die hellen und dunklen Glyph-Designs.",
+		"palette": {
+			"label": "Palette",
+			"description": "Setzt den Akzent für Hervorhebungen, Fokusringe und Betonung.",
+			"ariaLabel": "Akzentfarbe",
+			"resetAriaLabel": "Akzent zurücksetzen"
+		},
+		"options": {
+			"neutral": "Neutral",
+			"glyphOrange": "Orange",
+			"glyphRed": "Glyph Red",
+			"cerulean": "Himmelblau",
+			"tropicalTeal": "Tropisches Türkis"
+		}
+	},
+	"lightTheme": {
+		"sectionTitle": "Helles Design",
+		"preset": {
+			"label": "Voreinstellung",
+			"hint": "Wähle die Palette, die Glyph im Hellmodus verwendet."
+		},
+		"background": {
+			"label": "Hintergrund",
+			"ariaLabel": "Hintergrundfarbe des hellen Designs",
+			"resetAriaLabel": "Hintergrund des hellen Designs zurücksetzen"
+		},
+		"foreground": {
+			"label": "Vordergrund",
+			"ariaLabel": "Vordergrundfarbe des hellen Designs",
+			"resetAriaLabel": "Vordergrund des hellen Designs zurücksetzen"
+		}
+	},
+	"darkTheme": {
+		"sectionTitle": "Dunkles Design",
+		"preset": {
+			"label": "Voreinstellung",
+			"hint": "Wähle die Palette, die Glyph im Dunkelmodus verwendet."
+		},
+		"background": {
+			"label": "Hintergrund",
+			"ariaLabel": "Hintergrundfarbe des dunklen Designs",
+			"resetAriaLabel": "Hintergrund des dunklen Designs zurücksetzen"
+		},
+		"foreground": {
+			"label": "Vordergrund",
+			"ariaLabel": "Vordergrundfarbe des dunklen Designs",
+			"resetAriaLabel": "Vordergrund des dunklen Designs zurücksetzen"
+		}
+	},
+	"shape": {
+		"sectionTitle": "Form",
+		"sectionDescription": "Wähle, wie abgerundet Panels, Schaltflächen und Fenster in der App aussehen.",
+		"corners": {
+			"label": "Ecken",
+			"description": "Gilt überall — Seitenleisten, Dialoge, Eingaben und Karten.",
+			"ariaLabel": "UI-Form"
+		},
+		"options": {
+			"sharp": {
+				"label": "Brutalistisch",
+				"description": "Klare, eckige Kanten in der gesamten App."
+			},
+			"default": {
+				"label": "Standard",
+				"description": "Glyphs ausgewogenes Erscheinungsbild."
+			},
+			"round": {
+				"label": "Weich",
+				"description": "Sanftere, rundere Kanten in der gesamten App."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "Typografie",
+		"sectionDescription": "Oberflächenschrift, Codestil und Leseskala unabhängig einstellen.",
+		"interfaceFont": {
+			"label": "Oberflächenschrift",
+			"description": "Wird für Navigation, Einstellungen und die meisten UI-Texte in Glyph verwendet."
+		},
+		"editorFont": {
+			"label": "Editorschrift",
+			"description": "Wird für normalen Notiztext außerhalb von Inline-Code und Codeblöcken verwendet."
+		},
+		"monospaceFont": {
+			"label": "Monospace-Schrift",
+			"description": "Wird für Markdown-Quelle, Inline-Code und entwicklerorientierte Oberflächen verwendet."
+		},
+		"uiFontSize": {
+			"label": "UI-Schriftgröße",
+			"description": "Die Basisgröße für Menüs, Bereiche, Steuerelemente und Einstellungen anpassen.",
+			"valueAriaLabel": "Wert der UI-Schriftgröße"
+		},
+		"editorFontSize": {
+			"label": "Editor-Schriftgröße",
+			"description": "Die Lesegröße für den Notizeditor, die Markdown-Vorschau und die Raw-Textbearbeitung anpassen.",
+			"valueAriaLabel": "Wert der Editor-Schriftgröße"
+		}
+	},
+	"layout": {
+		"sectionTitle": "Layout",
+		"sectionDescription": "Wähle, wie Glyph deinen Arbeitsbereich und Alle Notizen darstellt.",
+		"folioMode": {
+			"label": "Folio-Modus",
+			"description": "Navigation, Notizen und Editor in einem dreispaltigen Arbeitsbereich anzeigen.",
+			"ariaLabel": "Folio-Modus"
+		},
+		"classicAllNotes": {
+			"label": "Klassisches Raster „Alle Notizen“",
+			"description": "Alle Notizen als einfaches Raster statt der Aktivitätszeitleiste öffnen.",
+			"ariaLabel": "Klassisches Raster „Alle Notizen“"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "Editor-Darstellung",
+		"sectionDescription": "Wähle, wie Notizen beim Bearbeiten aussehen.",
+		"beautifulTags": {
+			"label": "Schöne Tags",
+			"description": "Die experimentelle Beautiful-Tags-Darstellung für Tags aktivieren.",
+			"ariaLabel": "Schöne Tags"
+		},
+		"editorWidth": {
+			"label": "Editorbreite",
+			"description": "Kompakt hält Zeilen kürzer, Komfortabel gibt etwas mehr Raum, und Breit nutzt die volle Editorbreite.",
+			"ariaLabel": "Editorbreite",
+			"options": {
+				"compact": "Kompakt",
+				"comfortable": "Komfortabel",
+				"wide": "Breit"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "Datenbank",
+		"sectionDescription": "Wähle, wie Datenbanken in Glyph dargestellt werden.",
+		"showColumnColor": {
+			"label": "Datenbankspaltenfarbe anzeigen",
+			"description": "Lane-Pill- und Tag-Farben beibehalten, während die volle Spaltenfärbung umgeschaltet wird.",
+			"ariaLabel": "Datenbankspaltenfarbe anzeigen"
+		}
+	}
+}

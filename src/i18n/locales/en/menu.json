@@ -1,0 +1,21 @@
+{
+	"app": {
+		"about": "About Glyph",
+		"settings": "Settings…"
+	},
+	"submenus": {
+		"file": "File",
+		"edit": "Edit",
+		"markdown": "Markdown",
+		"textColor": "Text Color",
+		"textHighlight": "Text Highlight",
+		"ai": "AI",
+		"space": "Space",
+		"recentSpaces": "Recent Spaces",
+		"window": "Window",
+		"help": "Help"
+	},
+	"recentSpaces": {
+		"empty": "No Recent Spaces"
+	}
+}

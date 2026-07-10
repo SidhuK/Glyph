@@ -15,6 +15,7 @@ vi.mock("../../lib/settings", () => ({
 	loadSettings: vi.fn(() =>
 		Promise.resolve({
 			ui: {
+				language: "en",
 				resumeLastSession: false,
 				showToc: true,
 				showFileTreeFolderCounts: false,
@@ -29,6 +30,7 @@ vi.mock("../../lib/settings", () => ({
 			},
 		}),
 	),
+	setLanguage: vi.fn(() => Promise.resolve()),
 	setResumeLastSession: vi.fn(() => Promise.resolve()),
 	setShowToc: vi.fn(() => Promise.resolve()),
 	setEditorShowFrontmatterInEditor: vi.fn(() => Promise.resolve()),
@@ -38,6 +40,14 @@ vi.mock("../../lib/settings", () => ({
 	setEditorVimKeybindings: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCounts: vi.fn(() => Promise.resolve()),
 	setShowNonMarkdownFiles: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock("react-i18next", () => ({
+	useTranslation: () => ({
+		t: (key: string) => key,
+		i18n: { language: "en" },
+	}),
+	Trans: ({ i18nKey }: { i18nKey: string }) => i18nKey,
 }));
 
 vi.mock("../../lib/tauriEvents", () => ({
@@ -169,7 +179,7 @@ describe("GeneralSettingsPane", () => {
 		});
 
 		const toggle = container.querySelector(
-			'input[aria-label="Resume last session"]',
+			'input[aria-label="startup.openPreviousTabs.ariaLabel"]',
 		) as HTMLInputElement | null;
 		expect(toggle?.checked).toBe(false);
 

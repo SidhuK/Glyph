@@ -1,5 +1,6 @@
 import { useReducedMotion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { invoke } from "../../lib/tauri";
@@ -22,6 +23,7 @@ interface PinnedFileData {
 export const PinnedDocsPane = memo(function PinnedDocsPane({
 	onOpenFile,
 }: PinnedDocsPaneProps) {
+	const { t } = useTranslation("shell");
 	const { pinnedFiles, itemAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [selectedPath, setSelectedPath] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
 					<div className="allDocsHeadingGroup">
-						<h1 className="allDocsTitle">Pinned</h1>
+						<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 					</div>
 				</header>
 				<div className="databaseLoadingState">Loading pinned notes...</div>
@@ -95,7 +97,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
 					<div className="allDocsHeadingGroup">
-						<h1 className="allDocsTitle">Pinned</h1>
+						<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 					</div>
 				</header>
 				<div className="databaseLoadingState">
@@ -109,7 +111,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		<section className="allDocsPane">
 			<header className="allDocsHeader">
 				<div className="allDocsHeadingGroup">
-					<h1 className="allDocsTitle">Pinned</h1>
+					<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 				</div>
 			</header>
 			<div className="allDocsSections">
