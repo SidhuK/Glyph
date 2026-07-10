@@ -276,7 +276,6 @@ export function createRawMarkdownExtensions(
 			if (update.docChanged && !isExternalUpdate) {
 				onChange();
 			}
-			scrollOuterNoteBodyToCursor(update);
 		}),
 		keymap.of([
 			...completionKeymap,
@@ -297,5 +296,10 @@ export function createRawMarkdownExtensions(
 }
 
 export function createRawMarkdownVimMode(enabled: boolean): Extension {
-	return enabled ? vim({ status: true }) : [];
+	return enabled
+		? [
+				vim({ status: true }),
+				EditorView.updateListener.of(scrollOuterNoteBodyToCursor),
+			]
+		: [];
 }
