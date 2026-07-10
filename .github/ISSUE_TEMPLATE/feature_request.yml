@@ -11,6 +11,8 @@ body:
 
         Glyph is currently focused on the macOS experience first. Requests whose primary goal is Windows support or Windows-specific behavior are out of scope for now.
 
+        Glyph has its own design and interaction model. References to other apps are welcome when they help explain a workflow or usability problem, but making Glyph look or feel like Obsidian, or any other app, is out of scope. Describe the underlying problem and the outcome you want instead.
+
   - type: checkboxes
     id: preflight
     attributes:
@@ -53,6 +55,7 @@ body:
     id: proposal
     attributes:
       label: What would you like to happen?
+      description: Describe the outcome you want. If another app inspired the request, explain the useful behavior rather than asking Glyph to reproduce it.
       placeholder: Describe the feature or change you want to see.
     validations:
       required: true
@@ -67,5 +70,4 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Screenshots, mockups, links, and examples are welcome.
-
+      description: Screenshots, mockups, links, and examples are welcome. For references to another app, explain which behavior helps and why.
