@@ -89,7 +89,6 @@ export function useWorkspaceSession({
 	const saveTimerRef = useRef<number | null>(null);
 	const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 	const saveSpaceRef = useRef(spacePath);
-	const windowCloseInProgressRef = useRef(false);
 
 	const clearSaveTimer = useCallback(() => {
 		if (saveTimerRef.current === null) return;
@@ -224,15 +223,11 @@ export function useWorkspaceSession({
 		let unlisten: (() => void) | null = null;
 		void getCurrentWindow()
 			.onCloseRequested(async (event) => {
-				if (windowCloseInProgressRef.current) return;
-				event.preventDefault();
-				windowCloseInProgressRef.current = true;
 				try {
 					// Keep the webview alive until its open-note snapshot reaches disk.
 					await flushPendingSave();
-					await getCurrentWindow().destroy();
 				} catch (cause) {
-					windowCloseInProgressRef.current = false;
+					event.preventDefault();
 					console.error(
 						"Failed to save workspace session before closing",
 						cause,
