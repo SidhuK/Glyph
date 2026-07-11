@@ -1,15 +1,15 @@
 {
-  "version": "0.8.7-alpha.3",
-  "notes": "## What's Changed\n* Scale task checkboxes with editor font size by @SidhuK in https://github.com/SidhuK/Glyph/pull/319\n* Add UI translations (i18n) for high-traffic surfaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/320\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7-alpha.2...v0.8.7-alpha.3",
-  "pub_date": "2026-07-10T09:48:14.498Z",
+  "version": "0.8.7-alpha.4",
+  "notes": "## What's Changed\n* Add Raw Markdown Vim mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/325\n* Open Finder Markdown files without showing Spaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/327\n* Fix workspace tab restore on shutdown by @SidhuK in https://github.com/SidhuK/Glyph/pull/328\n* Remove space-open feature preloads by @SidhuK in https://github.com/SidhuK/Glyph/pull/329\n* Defer highlight.js grammar loading until a code block needs it by @SidhuK in https://github.com/SidhuK/Glyph/pull/330\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7-alpha.3...v0.8.7-alpha.4",
+  "pub_date": "2026-07-11T05:06:18.045Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDEyVXlGYmFrMllxdGhjUHNidlFTQjFvcDlFQngzM3FkSFVkNk1IZmJDWUZSVXRSbW9jTE9UZ0lieE1ueHJ0YW1DeXZPMkowdFZ0K0x2K1YxY296Z3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjc2ODg5CWZpbGU6R2x5cGguYXBwLnRhci5negpMODdFdEVWYXRBYTB5Q0RLK2JKQmVuKy9SRGRKWFl4OUhkS1Rvd09VLzVjYVhxU2JYV29FbFh2L0UxYzJsdVVBOGQxVzVObHQ2RHNla3FjdXA1OXNDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDM2SlpnKzhteU9qYVNteVhNS0lLUHNMVE9GczdyaHpROGppV0NmK29BS1E4YWtsb2p6SnRWWlRzTUhQUGV0cHFqbkZtTVN5NlNONVA5SmpQVVJZUVFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNzQ2MzcyCWZpbGU6R2x5cGguYXBwLnRhci5nego0L09WeERzeDYyczJsaXpmTEpDWUVSNVU1aVlYdEhENE1TTlpMaVpsT2hwQURhWDlHOVZmUmlKQnp5TS9mTmVqa3lQQWpwaEFsTGcrcTVNeTdCeFdEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDEyVXlGYmFrMllxdGhjUHNidlFTQjFvcDlFQngzM3FkSFVkNk1IZmJDWUZSVXRSbW9jTE9UZ0lieE1ueHJ0YW1DeXZPMkowdFZ0K0x2K1YxY296Z3drPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNjc2ODg5CWZpbGU6R2x5cGguYXBwLnRhci5negpMODdFdEVWYXRBYTB5Q0RLK2JKQmVuKy9SRGRKWFl4OUhkS1Rvd09VLzVjYVhxU2JYV29FbFh2L0UxYzJsdVVBOGQxVzVObHQ2RHNla3FjdXA1OXNDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDM2SlpnKzhteU9qYVNteVhNS0lLUHNMVE9GczdyaHpROGppV0NmK29BS1E4YWtsb2p6SnRWWlRzTUhQUGV0cHFqbkZtTVN5NlNONVA5SmpQVVJZUVFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzNzQ2MzcyCWZpbGU6R2x5cGguYXBwLnRhci5nego0L09WeERzeDYyczJsaXpmTEpDWUVSNVU1aVlYdEhENE1TTlpMaVpsT2hwQURhWDlHOVZmUmlKQnp5TS9mTmVqa3lQQWpwaEFsTGcrcTVNeTdCeFdEUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
