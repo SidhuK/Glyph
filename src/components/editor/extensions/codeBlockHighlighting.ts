@@ -85,10 +85,7 @@ function refreshCodeBlockDecorations(editor: Editor) {
 	}
 }
 
-function loadGrammarsForLanguages(
-	editor: Editor,
-	languages: Iterable<string>,
-) {
+function loadGrammarsForLanguages(editor: Editor, languages: Iterable<string>) {
 	for (const language of languages) {
 		ensureGrammar(language)?.then((registered) => {
 			if (registered && !editor.isDestroyed) {
