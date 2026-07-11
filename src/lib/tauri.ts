@@ -802,6 +802,9 @@ interface TauriCommands {
 	space_get_current_info: CommandDef<void, SpaceInfo | null>;
 	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
+	app_confirm_exit: CommandDef<void, void>;
+	app_register_exit_listener: CommandDef<void, void>;
+	app_report_exit_listener_failure: CommandDef<void, void>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	file_tree_appearance_list: CommandDef<
 		void,
