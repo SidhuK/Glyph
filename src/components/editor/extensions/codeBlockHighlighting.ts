@@ -1,5 +1,6 @@
 import { type Editor, findChildren } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import type { Transaction } from "@tiptap/pm/state";
 import { createLowlight } from "lowlight";
 import { i18n } from "../../../i18n";
 import {
@@ -17,6 +18,9 @@ const lowlight = createLowlight();
 // just a name map, safe to register before the grammars they point at.
 lowlight.register({ plaintext: PLAINTEXT_GRAMMAR });
 lowlight.registerAlias(GRAMMAR_ALIASES);
+
+/** Languages already handed to ensureGrammar (loaded, unsupported, or failed). */
+const ensuredLanguages = new Set<string>();
 
 const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"plaintext",
@@ -43,6 +47,10 @@ export type SupportedCodeBlockLanguage =
  * promise resolving to whether the grammar was registered.
  */
 function ensureGrammar(language: string): Promise<boolean> | null {
+	const key = language || "plaintext";
+	if (ensuredLanguages.has(key)) return null;
+	ensuredLanguages.add(key);
+
 	const grammar = resolveGrammarName(language);
 	if (!grammar || lowlight.registered(grammar)) return null;
 	return loadGrammar(grammar).then((languageFn) => {
@@ -77,11 +85,10 @@ function refreshCodeBlockDecorations(editor: Editor) {
 	}
 }
 
-function loadGrammarsForDoc(editor: Editor) {
-	const languages = new Set<string>();
-	for (const block of codeBlocksIn(editor)) {
-		languages.add(block.node.attrs.language || "plaintext");
-	}
+function loadGrammarsForLanguages(
+	editor: Editor,
+	languages: Iterable<string>,
+) {
 	for (const language of languages) {
 		ensureGrammar(language)?.then((registered) => {
 			if (registered && !editor.isDestroyed) {
@@ -89,6 +96,39 @@ function loadGrammarsForDoc(editor: Editor) {
 			}
 		});
 	}
+}
+
+function loadGrammarsForDoc(editor: Editor) {
+	const languages = new Set<string>();
+	for (const block of codeBlocksIn(editor)) {
+		languages.add(block.node.attrs.language || "plaintext");
+	}
+	loadGrammarsForLanguages(editor, languages);
+}
+
+/**
+ * Collect code-block languages only from ranges touched by `tr`, so ordinary
+ * typing outside code blocks does not walk the whole document.
+ */
+function languagesInChangedRanges(tr: Transaction): Set<string> {
+	const languages = new Set<string>();
+	if (!tr.docChanged) return languages;
+
+	tr.mapping.maps.forEach((stepMap, i) => {
+		stepMap.forEach((_oldStart, _oldEnd, newStart, newEnd) => {
+			const from = tr.mapping.slice(i + 1).map(newStart, -1);
+			const to = tr.mapping.slice(i + 1).map(newEnd, 1);
+			const start = Math.max(0, Math.min(from, to));
+			const end = Math.min(tr.doc.content.size, Math.max(from, to));
+			if (start > end) return;
+			tr.doc.nodesBetween(start, end, (node) => {
+				if (node.type.name !== "codeBlock") return;
+				languages.add(node.attrs.language || "plaintext");
+				return false;
+			});
+		});
+	});
+	return languages;
 }
 
 const CODE_BLOCK_LANGUAGE_OPTION_ORDER = [
@@ -161,8 +201,10 @@ export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
 	onCreate() {
 		loadGrammarsForDoc(this.editor);
 	},
-	onUpdate() {
-		loadGrammarsForDoc(this.editor);
+	onUpdate({ transaction }) {
+		const languages = languagesInChangedRanges(transaction);
+		if (languages.size === 0) return;
+		loadGrammarsForLanguages(this.editor, languages);
 	},
 }).configure({
 	lowlight,
