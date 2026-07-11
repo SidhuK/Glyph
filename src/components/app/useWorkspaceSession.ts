@@ -1,5 +1,8 @@
+import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
 import { invoke } from "../../lib/tauri";
+import { toast } from "../../lib/toast";
 import {
 	type WorkspaceSessionSnapshot,
 	type WorkspaceSessionTabSnapshot,
@@ -86,6 +89,7 @@ export function useWorkspaceSession({
 	const saveTimerRef = useRef<number | null>(null);
 	const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 	const saveSpaceRef = useRef(spacePath);
+	const windowCloseInProgressRef = useRef(false);
 
 	const clearSaveTimer = useCallback(() => {
 		if (saveTimerRef.current === null) return;
@@ -93,19 +97,31 @@ export function useWorkspaceSession({
 		saveTimerRef.current = null;
 	}, []);
 
-	const flushPendingSave = useCallback(() => {
+	const flushPendingSave = useCallback(async (): Promise<void> => {
 		const pending = pendingSaveRef.current;
-		if (!pending) return;
-		pendingSaveRef.current = null;
-		clearSaveTimer();
-		saveQueueRef.current = saveQueueRef.current
-			.catch(() => {})
-			.then(() =>
-				saveWorkspaceSessionSnapshot(pending.spacePath, pending.snapshot),
-			)
-			.catch((cause) => {
-				console.error("Failed to save workspace session", cause);
-			});
+		if (pending) {
+			pendingSaveRef.current = null;
+			clearSaveTimer();
+			saveQueueRef.current = saveQueueRef.current
+				.catch(() => {})
+				.then(() =>
+					saveWorkspaceSessionSnapshot(pending.spacePath, pending.snapshot),
+				);
+		}
+		// Callers at a teardown boundary must be able to wait for queued writes too.
+		const queuedSave = saveQueueRef.current;
+		try {
+			await queuedSave;
+		} catch (cause) {
+			if (saveQueueRef.current === queuedSave) {
+				saveQueueRef.current = Promise.resolve();
+			}
+			// Preserve the failed snapshot so the user's next close attempt can retry it.
+			if (pending && pendingSaveRef.current === null) {
+				pendingSaveRef.current = pending;
+			}
+			throw cause;
+		}
 	}, [clearSaveTimer]);
 
 	useEffect(() => {
@@ -188,10 +204,11 @@ export function useWorkspaceSession({
 			},
 		};
 		clearSaveTimer();
-		saveTimerRef.current = window.setTimeout(
-			flushPendingSave,
-			WORKSPACE_SESSION_SAVE_DEBOUNCE_MS,
-		);
+		saveTimerRef.current = window.setTimeout(() => {
+			void flushPendingSave().catch((cause) => {
+				console.error("Failed to save workspace session", cause);
+			});
+		}, WORKSPACE_SESSION_SAVE_DEBOUNCE_MS);
 		return clearSaveTimer;
 	}, [
 		activeTabPath,
@@ -203,9 +220,90 @@ export function useWorkspaceSession({
 	]);
 
 	useEffect(() => {
-		const currentSpacePath = spacePath;
+		let disposed = false;
+		let unlisten: (() => void) | null = null;
+		void getCurrentWindow()
+			.onCloseRequested(async (event) => {
+				if (windowCloseInProgressRef.current) return;
+				event.preventDefault();
+				windowCloseInProgressRef.current = true;
+				try {
+					// Keep the webview alive until its open-note snapshot reaches disk.
+					await flushPendingSave();
+					await getCurrentWindow().destroy();
+				} catch (cause) {
+					windowCloseInProgressRef.current = false;
+					console.error(
+						"Failed to save workspace session before closing",
+						cause,
+					);
+					toast.error("Could not close Glyph", {
+						description: "The open tabs could not be saved. Please try again.",
+					});
+				}
+			})
+			.then((stopListening) => {
+				if (disposed) {
+					stopListening();
+					return;
+				}
+				unlisten = stopListening;
+			})
+			.catch((cause) => {
+				console.error("Failed to install workspace close handler", cause);
+				toast.error("Session saving is unavailable", {
+					description:
+						"Restart Glyph before closing to preserve your open tabs.",
+				});
+			});
 		return () => {
-			if (currentSpacePath) flushPendingSave();
+			disposed = true;
+			unlisten?.();
 		};
-	}, [flushPendingSave, spacePath]);
+	}, [flushPendingSave]);
+
+	useEffect(() => {
+		let disposed = false;
+		let unlisten: (() => void) | null = null;
+		void listen("app:exit_requested", () => {
+			void flushPendingSave()
+				.then(() => invoke("app_confirm_exit"))
+				.catch((cause) => {
+					console.error(
+						"Failed to save workspace session before quitting",
+						cause,
+					);
+					toast.error("Could not quit Glyph", {
+						description: "The open tabs could not be saved. Please try again.",
+					});
+				});
+		})
+			.then(async (stopListening) => {
+				if (disposed) {
+					stopListening();
+					return;
+				}
+				unlisten = stopListening;
+				await invoke("app_register_exit_listener");
+			})
+			.catch((cause) => {
+				void invoke("app_report_exit_listener_failure").catch((reportCause) => {
+					console.error(
+						"Failed to report unavailable app exit handler",
+						reportCause,
+					);
+				});
+				console.error("Failed to install app exit handler", cause);
+				toast.error("Session saving is unavailable", {
+					description:
+						"Restart Glyph before quitting to preserve your open tabs.",
+				});
+			});
+		return () => {
+			disposed = true;
+			unlisten?.();
+		};
+	}, [flushPendingSave]);
+
+	return flushPendingSave;
 }

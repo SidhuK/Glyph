@@ -4,6 +4,7 @@ mod ai_codex;
 mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
+mod app_exit;
 mod databases;
 mod external_markdown;
 mod file_tree_appearance;
@@ -1510,6 +1511,7 @@ pub fn run() {
         .manage(ai_codex::state::CodexState::default())
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
+        .manage(app_exit::AppExitState::default())
         .manage(external_markdown::ExternalMarkdownState::default())
         .manage(MenuState::default())
         .manage(QuickNoteShortcutState::default())
@@ -1642,7 +1644,10 @@ pub fn run() {
             space::commands::space_get_current,
             space::commands::space_get_current_info,
             space::commands::space_show_onboarding_note,
-            space::commands::space_close
+            space::commands::space_close,
+            app_exit::app_confirm_exit,
+            app_exit::app_register_exit_listener,
+            app_exit::app_report_exit_listener_failure
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -1650,7 +1655,12 @@ pub fn run() {
             let mut initial_launch_pending = true;
             let mut initial_launch_received_file_open = false;
             move |app_handle, event| match event {
-                RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+                RunEvent::ExitRequested { api, .. } => {
+                    if !app_exit::handle_exit_requested(app_handle, &api) {
+                        window_geometry::flush_host_window_geometry(app_handle);
+                    }
+                }
+                RunEvent::Exit => {
                     window_geometry::flush_host_window_geometry(app_handle);
                 }
                 RunEvent::Opened { urls } => {

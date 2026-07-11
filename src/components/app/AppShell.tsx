@@ -368,7 +368,7 @@ export function AppShell() {
 		tabsRevision,
 	} = useTabManager(spacePath);
 	const { getBinding, actionsWithBindings } = useShortcutBindings();
-	useWorkspaceSession({
+	const flushWorkspaceSession = useWorkspaceSession({
 		spacePath,
 		settingsLoaded,
 		resumeLastSession,
@@ -378,6 +378,20 @@ export function AppShell() {
 		tabsRevision,
 		restoreWorkspaceTabs,
 	});
+
+	const handleCloseSpace = useCallback(async () => {
+		try {
+			// Native space teardown happens only after the open-note snapshot is durable.
+			await flushWorkspaceSession();
+			await closeSpace();
+		} catch (cause) {
+			console.error(
+				"Failed to save workspace session before closing space",
+				cause,
+			);
+			setError("The open tabs could not be saved. Please try again.");
+		}
+	}, [closeSpace, flushWorkspaceSession, setError]);
 
 	useEffect(() => {
 		const visible =
@@ -1107,7 +1121,7 @@ export function AppShell() {
 		onOpenSpace,
 		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,
 		onCreateSpace,
-		closeSpace,
+		closeSpace: handleCloseSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
 		onGitSyncNow: () => {
@@ -1138,7 +1152,7 @@ export function AppShell() {
 		canGoForward,
 		closeActiveTab,
 		closeAllTabs,
-		closeSpace,
+		closeSpace: handleCloseSpace,
 		createDatabaseAndOpen,
 		createNoteInSelectedFolder,
 		fileTree,
