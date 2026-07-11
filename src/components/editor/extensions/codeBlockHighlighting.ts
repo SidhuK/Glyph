@@ -1,34 +1,16 @@
+import { type Editor, findChildren } from "@tiptap/core";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import bash from "highlight.js/lib/languages/bash";
-import javascript from "highlight.js/lib/languages/javascript";
-import json from "highlight.js/lib/languages/json";
-import markdown from "highlight.js/lib/languages/markdown";
+import type { LanguageFn } from "highlight.js";
 import plaintext from "highlight.js/lib/languages/plaintext";
-import python from "highlight.js/lib/languages/python";
-import rust from "highlight.js/lib/languages/rust";
-import typescript from "highlight.js/lib/languages/typescript";
-import xml from "highlight.js/lib/languages/xml";
-import yaml from "highlight.js/lib/languages/yaml";
 import { createLowlight } from "lowlight";
 import { i18n } from "../../../i18n";
 
 const lowlight = createLowlight();
 
-lowlight.register({
-	bash,
-	html: xml,
-	javascript,
-	json,
-	markdown,
-	mermaid: plaintext,
-	plaintext,
-	python,
-	rust,
-	svg: xml,
-	typescript,
-	xml,
-	yaml,
-});
+// Plaintext is registered eagerly (it is tiny) so that plain/mermaid blocks
+// never fall through to highlightAuto and get mis-detected as another
+// language. All real grammars load on demand via ensureGrammar().
+lowlight.register({ plaintext });
 
 const CODE_BLOCK_LANGUAGE_ALIASES = {
 	bash: ["shell", "sh", "zsh"],
@@ -40,7 +22,13 @@ const CODE_BLOCK_LANGUAGE_ALIASES = {
 	yaml: ["yml"],
 } as const;
 
-lowlight.registerAlias(CODE_BLOCK_LANGUAGE_ALIASES);
+// Lowlight resolves aliases lazily, so these are safe to register before the
+// grammars themselves. html/svg/mermaid map onto the grammars that back them.
+lowlight.registerAlias({
+	...CODE_BLOCK_LANGUAGE_ALIASES,
+	plaintext: [...CODE_BLOCK_LANGUAGE_ALIASES.plaintext, "mermaid"],
+	xml: ["html", "svg"],
+});
 
 const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"plaintext",
@@ -60,6 +48,101 @@ const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 
 export type SupportedCodeBlockLanguage =
 	(typeof SUPPORTED_CODE_BLOCK_LANGUAGES)[number];
+
+// The highlight.js grammar module that backs each supported language.
+const GRAMMAR_BY_LANGUAGE: Record<SupportedCodeBlockLanguage, string> = {
+	bash: "bash",
+	html: "xml",
+	javascript: "javascript",
+	json: "json",
+	markdown: "markdown",
+	mermaid: "plaintext",
+	plaintext: "plaintext",
+	python: "python",
+	rust: "rust",
+	svg: "xml",
+	typescript: "typescript",
+	xml: "xml",
+	yaml: "yaml",
+};
+
+const GRAMMAR_LOADERS: Record<string, () => Promise<{ default: LanguageFn }>> =
+	{
+		bash: () => import("highlight.js/lib/languages/bash"),
+		javascript: () => import("highlight.js/lib/languages/javascript"),
+		json: () => import("highlight.js/lib/languages/json"),
+		markdown: () => import("highlight.js/lib/languages/markdown"),
+		python: () => import("highlight.js/lib/languages/python"),
+		rust: () => import("highlight.js/lib/languages/rust"),
+		typescript: () => import("highlight.js/lib/languages/typescript"),
+		xml: () => import("highlight.js/lib/languages/xml"),
+		yaml: () => import("highlight.js/lib/languages/yaml"),
+	};
+
+const grammarLoads = new Map<string, Promise<boolean>>();
+
+/**
+ * Loads and registers the grammar backing `language` if it is supported and
+ * not yet registered. Returns null when nothing needs loading, otherwise a
+ * promise resolving to whether the grammar was registered.
+ */
+function ensureGrammar(language: string): Promise<boolean> | null {
+	const normalized = normalizeCodeBlockLanguage(language);
+	if (!normalized) return null;
+	const grammar = GRAMMAR_BY_LANGUAGE[normalized];
+	if (lowlight.registered(grammar)) return null;
+	let load = grammarLoads.get(grammar);
+	if (!load) {
+		load = GRAMMAR_LOADERS[grammar]()
+			.then((module) => {
+				lowlight.register(grammar, module.default);
+				return true;
+			})
+			.catch(() => {
+				grammarLoads.delete(grammar);
+				return false;
+			});
+		grammarLoads.set(grammar, load);
+	}
+	return load;
+}
+
+function codeBlocksIn(editor: Editor) {
+	return findChildren(
+		editor.state.doc,
+		(node) => node.type.name === "codeBlock",
+	);
+}
+
+/**
+ * The lowlight plugin only recomputes decorations on doc changes, so after a
+ * grammar registers asynchronously we dispatch a no-op setNodeMarkup on each
+ * code block to force a re-highlight. Content and attrs are unchanged.
+ */
+function refreshCodeBlockDecorations(editor: Editor) {
+	const { tr } = editor.state;
+	for (const block of codeBlocksIn(editor)) {
+		tr.setNodeMarkup(block.pos, undefined, { ...block.node.attrs });
+	}
+	if (tr.steps.length > 0) {
+		tr.setMeta("addToHistory", false);
+		editor.view.dispatch(tr);
+	}
+}
+
+function loadGrammarsForDoc(editor: Editor) {
+	const languages = new Set<string>();
+	for (const block of codeBlocksIn(editor)) {
+		languages.add(block.node.attrs.language || "plaintext");
+	}
+	for (const language of languages) {
+		ensureGrammar(language)?.then((registered) => {
+			if (registered && !editor.isDestroyed) {
+				refreshCodeBlockDecorations(editor);
+			}
+		});
+	}
+}
 
 const CODE_BLOCK_LANGUAGE_OPTION_ORDER = [
 	"plaintext",
@@ -123,7 +206,14 @@ export function getCodeBlockLanguageLabel(
 	return i18n.t(`editor:codeBlock.languages.${value}`);
 }
 
-export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.configure({
+export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
+	onCreate() {
+		loadGrammarsForDoc(this.editor);
+	},
+	onUpdate() {
+		loadGrammarsForDoc(this.editor);
+	},
+}).configure({
 	lowlight,
 	defaultLanguage: "plaintext",
 	HTMLAttributes: {
