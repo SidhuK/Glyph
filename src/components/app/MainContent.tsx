@@ -538,29 +538,6 @@ export const MainContent = memo(function MainContent({
 		toast.dismiss(DAILY_NOTES_SETUP_TOAST_ID);
 	}, [spacePath]);
 
-	useEffect(() => {
-		if (!spacePath) return;
-		let cancelled = false;
-		const run = () => {
-			if (cancelled) return;
-			void loadDatabasesPane();
-			void loadAllDocsPane();
-			void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
-		};
-		if (typeof window.requestIdleCallback === "function") {
-			const idleId = window.requestIdleCallback(run, { timeout: 900 });
-			return () => {
-				cancelled = true;
-				window.cancelIdleCallback(idleId);
-			};
-		}
-		const timeout = window.setTimeout(run, 180);
-		return () => {
-			cancelled = true;
-			window.clearTimeout(timeout);
-		};
-	}, [databasesOpenRequest.databaseId, spacePath]);
-
 	const handleInfoSidebarResizePointerDown = useCallback(
 		(event: React.PointerEvent<HTMLDivElement>) => {
 			if (!rightSidebarOpen) return;
