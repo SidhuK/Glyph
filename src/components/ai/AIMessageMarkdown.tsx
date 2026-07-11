@@ -1,18 +1,14 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
-import bash from "highlight.js/lib/languages/bash";
-import javascript from "highlight.js/lib/languages/javascript";
-import json from "highlight.js/lib/languages/json";
-import markdownLanguage from "highlight.js/lib/languages/markdown";
-import plaintext from "highlight.js/lib/languages/plaintext";
-import python from "highlight.js/lib/languages/python";
-import rust from "highlight.js/lib/languages/rust";
-import typescript from "highlight.js/lib/languages/typescript";
-import xml from "highlight.js/lib/languages/xml";
-import yaml from "highlight.js/lib/languages/yaml";
 import { marked } from "marked";
 import { memo, useEffect, useMemo, useRef } from "react";
+import {
+	GRAMMAR_ALIASES,
+	PLAINTEXT_GRAMMAR,
+	loadGrammar,
+	resolveGrammarName,
+} from "../../lib/highlightGrammars";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 
 interface AIMessageMarkdownProps {
@@ -28,27 +24,21 @@ const CODE_BLOCK_PROCESSED_ATTR = "data-ai-code-block-enhanced";
 const UNPROCESSED_CODE_BLOCK_SELECTOR = `pre:not([${CODE_BLOCK_PROCESSED_ATTR}])`;
 const COPY_RESET_MS = 1500;
 
-hljs.registerLanguage("bash", bash);
-hljs.registerLanguage("javascript", javascript);
-hljs.registerLanguage("json", json);
-hljs.registerLanguage("markdown", markdownLanguage);
-hljs.registerLanguage("mermaid", plaintext);
-hljs.registerLanguage("plaintext", plaintext);
-hljs.registerLanguage("python", python);
-hljs.registerLanguage("rust", rust);
-hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("xml", xml);
-hljs.registerLanguage("yaml", yaml);
-hljs.registerAliases(["shell", "sh", "zsh"], { languageName: "bash" });
-hljs.registerAliases(["cjs", "js", "jsx", "mjs"], {
-	languageName: "javascript",
-});
-hljs.registerAliases(["md"], { languageName: "markdown" });
-hljs.registerAliases(["text", "txt"], { languageName: "plaintext" });
-hljs.registerAliases(["py"], { languageName: "python" });
-hljs.registerAliases(["ts", "tsx"], { languageName: "typescript" });
-hljs.registerAliases(["html", "svg"], { languageName: "xml" });
-hljs.registerAliases(["yml"], { languageName: "yaml" });
+// Grammars load lazily via ensureGrammar; aliases are just a name map and are
+// safe to register before the grammars they point at.
+hljs.registerLanguage("plaintext", PLAINTEXT_GRAMMAR);
+for (const [languageName, aliases] of Object.entries(GRAMMAR_ALIASES)) {
+	hljs.registerAliases([...aliases], { languageName });
+}
+
+async function ensureGrammar(language: string): Promise<void> {
+	const grammar = resolveGrammarName(language);
+	if (!grammar || hljs.getLanguage(grammar)) return;
+	const languageFn = await loadGrammar(grammar);
+	if (languageFn && !hljs.getLanguage(grammar)) {
+		hljs.registerLanguage(grammar, languageFn);
+	}
+}
 
 function renderMarkdown(markdown: string): string {
 	const html = marked.parse(markdown, {
@@ -87,11 +77,13 @@ function enhanceCodeBlock(pre: HTMLPreElement) {
 	const lang = langClass?.[1] ?? "";
 
 	if (codeEl) {
-		try {
-			hljs.highlightElement(codeEl);
-		} catch {
-			// Keep the escaped code visible if highlight.js cannot parse a language.
-		}
+		void ensureGrammar(lang).then(() => {
+			try {
+				hljs.highlightElement(codeEl);
+			} catch {
+				// Keep the escaped code visible if highlight.js cannot parse a language.
+			}
+		});
 	}
 
 	const header = document.createElement("div");
