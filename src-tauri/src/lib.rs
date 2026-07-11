@@ -49,6 +49,7 @@ use tauri::{TitleBarStyle, WebviewUrl, WebviewWindowBuilder};
 
 static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 static QUICK_NOTE_WINDOW_LOCK: Mutex<()> = Mutex::new(());
+static MAIN_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 const QUICK_NOTE_WINDOW_LABEL: &str = "quick-note";
 const SPACE_MENU_ID: &str = "space.menu";
 const RECENT_SPACES_MENU_ID: &str = "space.recent.menu";
@@ -963,6 +964,44 @@ fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> 
     window.set_focus().map_err(|error| error.to_string())
 }
 
+fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
+    let _guard = MAIN_WINDOW_LOCK
+        .lock()
+        .map_err(|_| "failed to lock main window state".to_string())?;
+
+    if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
+        return Ok(window);
+    }
+
+    let config = app
+        .config()
+        .app
+        .windows
+        .iter()
+        .find(|config| config.label == window_geometry::MAIN_WINDOW_LABEL)
+        .ok_or_else(|| "main window configuration not found".to_string())?;
+    let window = WebviewWindowBuilder::from_config(app, config)
+        .map_err(|error| error.to_string())?
+        .build()
+        .map_err(|error| error.to_string())?;
+
+    window_geometry::install_host_window_persistence(&window);
+
+    #[cfg(target_os = "macos")]
+    if let Err(error) = apply_main_window_vibrancy(&window, None) {
+        warn!("Failed to apply vibrancy to main window: {error}");
+    }
+
+    Ok(window)
+}
+
+fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    let window = main_window(app)?;
+    window.show().map_err(|error| error.to_string())?;
+    window.unminimize().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 fn show_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
     show_quick_note_window_for_app(&app)
@@ -978,22 +1017,24 @@ fn hide_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window("main") {
-        window.show().map_err(|error| error.to_string())?;
-        window.unminimize().map_err(|error| error.to_string())?;
-        window.set_focus().map_err(|error| error.to_string())?;
-    }
-    Ok(())
+    show_main_window_for_app(&app)
 }
 
 fn open_external_markdown_from_finder(app: &tauri::AppHandle, path: std::path::PathBuf) {
     let state = app.state::<external_markdown::ExternalMarkdownState>();
-    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path, None) {
+    if let Err(error) = external_markdown::open_external_markdown_window(app, &state, path, None)
+    {
         warn!("Failed to open external markdown file: {error}");
     }
 }
 
-fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) {
+fn has_external_markdown_windows(app: &tauri::AppHandle) -> bool {
+    app.webview_windows()
+        .keys()
+        .any(|label| external_markdown::is_external_markdown_window(label))
+}
+
+fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
     for url in urls {
         if url.scheme() != "file" {
             continue;
@@ -1003,6 +1044,13 @@ fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) {
             Err(()) => warn!("Failed to convert opened URL to file path: {url}"),
         }
     }
+    has_external_markdown_windows(app)
+}
+
+fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
+    !app.webview_windows().keys().any(|label| {
+        external_markdown::is_external_markdown_window(label) || is_space_host_window_label(label)
+    })
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1400,20 +1448,6 @@ pub fn run() {
             }
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
-            if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
-                window_geometry::install_host_window_persistence(&window);
-            }
-
-            #[cfg(target_os = "macos")]
-            {
-                if let Some(window) = app.get_webview_window(window_geometry::MAIN_WINDOW_LABEL) {
-                    if let Err(e) = apply_main_window_vibrancy(&window, None) {
-                        warn!("Failed to apply vibrancy to main window: {e}");
-                    }
-                } else {
-                    warn!("Main window not found during setup");
-                }
-            }
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -1444,6 +1478,10 @@ pub fn run() {
                             window.label(),
                         ) {
                             warn!("Failed to forget external markdown window: {error}");
+                        }
+                        if should_exit_after_external_markdown_close(window.app_handle()) {
+                            destroy_auxiliary_persisted_windows(window.app_handle());
+                            window.app_handle().exit(0);
                         }
                     }
                     _ => {}
@@ -1608,13 +1646,34 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app_handle, event| match event {
-            RunEvent::ExitRequested { .. } | RunEvent::Exit => {
-                window_geometry::flush_host_window_geometry(app_handle);
+        .run({
+            let mut initial_launch_pending = true;
+            let mut initial_launch_received_file_open = false;
+            move |app_handle, event| match event {
+                RunEvent::ExitRequested { .. } | RunEvent::Exit => {
+                    window_geometry::flush_host_window_geometry(app_handle);
+                }
+                RunEvent::Opened { urls } => {
+                    let received_file_open = handle_opened_urls(app_handle, urls);
+                    if initial_launch_pending {
+                        initial_launch_received_file_open |= received_file_open;
+                    }
+                }
+                RunEvent::MainEventsCleared if initial_launch_pending => {
+                    initial_launch_pending = false;
+                    if !initial_launch_received_file_open {
+                        if let Err(error) = show_main_window_for_app(app_handle) {
+                            warn!("Failed to show main window: {error}");
+                        }
+                    }
+                }
+                #[cfg(target_os = "macos")]
+                RunEvent::Reopen { .. } if !initial_launch_pending => {
+                    if let Err(error) = show_main_window_for_app(app_handle) {
+                        warn!("Failed to show main window: {error}");
+                    }
+                }
+                _ => {}
             }
-            RunEvent::Opened { urls } => {
-                handle_opened_urls(app_handle, urls);
-            }
-            _ => {}
         });
 }

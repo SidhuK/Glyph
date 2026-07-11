@@ -17,6 +17,7 @@ const EXTERNAL_MARKDOWN_LABEL_PREFIX: &str = "external-markdown-";
 const EXTERNAL_MARKDOWN_EXTENSIONS: &[&str] = &["md", "markdown", "mdown"];
 const EXTERNAL_MARKDOWN_MIN_WIDTH: f64 = 680.0;
 const EXTERNAL_MARKDOWN_MIN_HEIGHT: f64 = 360.0;
+static EXTERNAL_MARKDOWN_WINDOW_LOCK: Mutex<()> = Mutex::new(());
 
 #[derive(Clone)]
 struct ExternalMarkdownWindowEntry {
@@ -97,21 +98,11 @@ pub fn open_external_markdown_window(
 ) -> Result<(), String> {
     validate_markdown_file(&path)?;
 
-    let label = external_markdown_label(&path);
-    {
-        let mut paths_by_window = state
-            .paths_by_window
-            .lock()
-            .map_err(|_| "failed to lock external markdown state".to_string())?;
-        paths_by_window.insert(
-            label.clone(),
-            ExternalMarkdownWindowEntry {
-                abs_path: path.to_string_lossy().to_string(),
-                rel_path,
-            },
-        );
-    }
+    let _guard = EXTERNAL_MARKDOWN_WINDOW_LOCK
+        .lock()
+        .map_err(|_| "failed to lock external markdown window state".to_string())?;
 
+    let label = external_markdown_label(&path);
     if let Some(window) = app.get_webview_window(&label) {
         window.show().map_err(|error| error.to_string())?;
         window.unminimize().map_err(|error| error.to_string())?;
@@ -119,7 +110,19 @@ pub fn open_external_markdown_window(
         return Ok(());
     }
 
-    let window = WebviewWindowBuilder::new(
+    state
+        .paths_by_window
+        .lock()
+        .map_err(|_| "failed to lock external markdown state".to_string())?
+        .insert(
+            label.clone(),
+            ExternalMarkdownWindowEntry {
+                abs_path: path.to_string_lossy().to_string(),
+                rel_path,
+            },
+        );
+
+    let window_result = WebviewWindowBuilder::new(
         app,
         &label,
         WebviewUrl::App(format!("index.html?window={label}").into()),
@@ -134,8 +137,15 @@ pub fn open_external_markdown_window(
     .transparent(true)
     .shadow(true)
     .center()
-    .build()
-    .map_err(|error| error.to_string())?;
+    .build();
+
+    let window = match window_result {
+        Ok(window) => window,
+        Err(error) => {
+            let _ = forget_external_markdown_window(state, &label);
+            return Err(error.to_string());
+        }
+    };
 
     #[cfg(target_os = "macos")]
     if let Err(error) = crate::apply_main_window_vibrancy(&window, None) {

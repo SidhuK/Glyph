@@ -14,6 +14,8 @@
 		"windows": [
 			{
 				"label": "main",
+				"create": false,
+				"visible": false,
 				"title": "Glyph",
 				"width": 800,
 				"height": 600,
