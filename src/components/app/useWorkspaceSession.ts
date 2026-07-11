@@ -137,7 +137,6 @@ export function useWorkspaceSession({
 			return;
 		}
 
-		restoredSessionSpaceRef.current = spacePath;
 		if (onboardingNotePath) return;
 		if (!resumeLastSession) return;
 
@@ -166,6 +165,7 @@ export function useWorkspaceSession({
 				? snapshot.activeTabTarget
 				: null;
 			restoreWorkspaceTabs(restorableTabs, activeTabTarget);
+			restoredSessionSpaceRef.current = spacePath;
 		})().catch((cause) => {
 			console.error("Failed to restore workspace session", cause);
 		});
