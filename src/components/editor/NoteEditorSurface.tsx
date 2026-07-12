@@ -1,8 +1,4 @@
-import {
-	Copy01Icon,
-	PlayIcon,
-	Tick02Icon,
-} from "@hugeicons/core-free-icons";
+import { Copy01Icon, PlayIcon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
