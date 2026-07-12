@@ -80,6 +80,10 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 - Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
 - Unless a core functionality is broken, never suggest adding backward compatibility.
 
+## Sub-agents
+
+- Never spawn sub-agents by default. Before spawning any sub-agent, including when you are ready to spawn one or think delegation would help, ask the user which agents to spawn and which base model each should use. Spawn them only after the user explicitly provides that direction.
+
 ## Version Control
 
 - Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
