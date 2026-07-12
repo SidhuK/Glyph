@@ -696,14 +696,12 @@
 	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
 	border-radius: var(--radius-lg);
 	overflow: auto;
-	font-family: var(--font-mono);
 }
 
 .tiptapContentInline pre code {
 	background: transparent;
 	padding: 0;
 	border: none;
-	border-radius: 0;
 }
 
 .tiptapContentInline hr {
