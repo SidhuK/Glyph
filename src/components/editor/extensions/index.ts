@@ -62,7 +62,7 @@ const CalloutDecorations = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const key = new PluginKey("callout-decorations");
+		const key = new PluginKey<DecorationSet>("callout-decorations");
 		const plugins = [
 			...(this.options.enableShortcutTransform
 				? [
@@ -127,11 +127,18 @@ const CalloutDecorations = Extension.create({
 						}),
 					]
 				: []),
-			new Plugin({
+			new Plugin<DecorationSet>({
 				key,
+				state: {
+					init: (_config, state) => buildCalloutDecorations(state.doc),
+					apply(tr, decorations) {
+						if (!tr.docChanged) return decorations;
+						return buildCalloutDecorations(tr.doc);
+					},
+				},
 				props: {
 					decorations(state) {
-						return buildCalloutDecorations(state.doc);
+						return key.getState(state) ?? DecorationSet.empty;
 					},
 				},
 			}),
