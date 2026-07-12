@@ -174,7 +174,6 @@ vi.mock("./markdown/wikiLinkCodec", () => ({
 
 vi.mock("./extensions/codeBlockHighlighting", () => ({
 	getCodeBlockLanguageOptions: () => [],
-	getCodeBlockLanguageLabel: () => "Plain text",
 	normalizeCodeBlockLanguage: () => "plaintext",
 }));
 

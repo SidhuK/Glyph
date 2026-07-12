@@ -239,7 +239,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
 	);
-	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
@@ -439,7 +438,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				codeBlockCopyResetTimerRef.current = null;
 			}
 			setSelectedCodeBlock(null);
-			setCodeBlockPickerOpen(false);
 			setCodeBlockCopied(false);
 			return;
 		}
@@ -454,7 +452,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				codeBlockCopyResetTimerRef.current = null;
 			}
 			setSelectedCodeBlock(null);
-			setCodeBlockPickerOpen(false);
 			setCodeBlockCopied(false);
 		};
 
@@ -486,7 +483,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 
 			const codeOffset = getOffsetWithinAncestor(codeElement, host);
-			const nextTop = codeOffset.top + 8;
+			const nextTop = codeOffset.top + 4;
 			const nextControlsLeft = codeOffset.left + 10;
 			const nextControlsRight = codeOffset.left + codeElement.offsetWidth - 10;
 			const nextLanguage =
@@ -572,7 +569,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					language: language === "plaintext" ? null : language,
 				})
 				.run();
-			setCodeBlockPickerOpen(false);
 		},
 		[editor],
 	);
@@ -669,12 +665,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const codeBlockControls = useMemo(
 		() => ({
 			selected: selectedCodeBlock,
-			pickerOpen: codeBlockPickerOpen,
-			onPickerOpenChange: setCodeBlockPickerOpen,
 			language: selectedCodeBlockLanguage,
 			copied: codeBlockCopied,
 			canPreview: selectedCodeBlockCanPreview,
-			onPickerMouseDown: preventOverlayMouseDown,
+			onCodeBlockActionMouseDown: preventOverlayMouseDown,
 			onApplyLanguage: applyCodeBlockLanguage,
 			onCopy: copySelectedCodeBlock,
 			onPreview: previewSelectedCodeBlock,
@@ -682,7 +676,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[
 			applyCodeBlockLanguage,
 			codeBlockCopied,
-			codeBlockPickerOpen,
 			copySelectedCodeBlock,
 			previewSelectedCodeBlock,
 			preventOverlayMouseDown,
