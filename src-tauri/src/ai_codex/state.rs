@@ -367,7 +367,7 @@ impl CodexState {
     }
 
     pub fn call(&self, method: &str, params: Value, timeout: Duration) -> Result<Value, String> {
-        let process = {
+        let mut process = {
             let mut guard = self
                 .process
                 .lock()
@@ -393,21 +393,22 @@ impl CodexState {
 
             debug!("{error:?}; restarting codex app-server");
             self.discard_if_current(&process)?;
-            let process = {
+            let replacement = {
                 let mut guard = self
                     .process
                     .lock()
                     .map_err(|_| "codex process lock poisoned".to_string())?;
                 self.ensure_process_locked(&mut guard)?
             };
-            if let Err(error) = self.ensure_initialized(&process) {
+            if let Err(error) = self.ensure_initialized(&replacement) {
                 let transport_failure = error.is_transport();
                 let message = error.into_message();
                 if transport_failure {
-                    let _ = self.discard_if_current(&process);
+                    let _ = self.discard_if_current(&replacement);
                 }
                 return Err(message);
             }
+            process = replacement;
         }
 
         let result = self.call_process(&process, method, params, timeout);
