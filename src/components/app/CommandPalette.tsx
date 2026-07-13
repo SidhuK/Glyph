@@ -7,7 +7,6 @@ import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
-import { CommandPaletteFooter } from "./CommandPaletteFooter";
 import { CommandSearchFilters } from "./CommandSearchFilters";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
@@ -310,36 +309,22 @@ export function CommandPalette({
 								onRunCommand={runCommand}
 							/>
 						) : (
-							<>
-								{query.trim() ? (
-									<div
-										className="commandPaletteResultCountPill"
-										aria-live="polite"
-									>
-										{isSearching
-											? t("commandPalette.searching")
-											: t("commandPalette.results", {
-													count: searchItems.length,
-												})}
-									</div>
-								) : null}
-								<SearchResultsList
-									query={query}
-									isSearching={isSearching}
-									titleMatches={titleMatches}
-									contentMatches={contentMatches}
-									recentFiles={recentFiles}
-									selectedIndex={resolvedSelectedIndex}
-									onSetSelectedIndex={(index) =>
-										setState((curr) => ({
-											...curr,
-											selectedIndex: index,
-											selectedId: searchItems[index]?.id ?? null,
-										}))
-									}
-									onSelectResult={selectSearchResult}
-								/>
-							</>
+							<SearchResultsList
+								query={query}
+								isSearching={isSearching}
+								titleMatches={titleMatches}
+								contentMatches={contentMatches}
+								recentFiles={recentFiles}
+								selectedIndex={resolvedSelectedIndex}
+								onSetSelectedIndex={(index) =>
+									setState((curr) => ({
+										...curr,
+										selectedIndex: index,
+										selectedId: searchItems[index]?.id ?? null,
+									}))
+								}
+								onSelectResult={selectSearchResult}
+							/>
 						)}
 					</div>
 					{showPreviewColumn ? (
@@ -353,7 +338,16 @@ export function CommandPalette({
 						</aside>
 					) : null}
 				</div>
-				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
+				{canSearch ? (
+					<div className="commandPaletteModeHint">
+						<kbd>Tab</kbd>
+						<span>
+							{activeTab === "search"
+								? t("commandPalette.commands")
+								: t("commandPalette.search")}
+						</span>
+					</div>
+				) : null}
 			</DialogContent>
 		</Dialog>
 	);
