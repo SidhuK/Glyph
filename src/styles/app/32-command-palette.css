@@ -1,7 +1,7 @@
 /* ── Palette container ── */
 
 .commandPalette {
-	width: min(560px, calc(100vw - 48px));
+	width: min(540px, calc(100vw - 48px));
 	height: min(560px, 72vh);
 	max-height: min(560px, 72vh);
 	overflow: hidden;

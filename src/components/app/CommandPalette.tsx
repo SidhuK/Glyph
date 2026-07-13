@@ -232,7 +232,7 @@ export function CommandPalette({
 			<DialogContent
 				className={cn(
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[540px]",
 				)}
 				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
