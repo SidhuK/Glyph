@@ -502,6 +502,7 @@ export function MarkdownEditorPane({
 	const closeInfoPanel = useCallback(() => setInfoPanelOpen(false), []);
 
 	const isLargeNote = requiresPlainEditorMode(text);
+	const isAiPanelActive = aiEnabled && aiPanelOpen;
 
 	return (
 		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
@@ -512,12 +513,11 @@ export function MarkdownEditorPane({
 						largeNote={isLargeNote}
 						onModeChange={requestEditorMode}
 					/>
-					<div className="markdownEditorToolbarDivider" aria-hidden="true" />
 					<div className="markdownEditorToolbarActions">
 						<button
 							type="button"
 							className="markdownEditorToolbarBtn"
-							data-active={aiEnabled && aiPanelOpen ? true : undefined}
+							data-active={isAiPanelActive || undefined}
 							onClick={() => {
 								if (!aiEnabled) {
 									openSettings("ai");
@@ -545,7 +545,7 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon
 								icon={AiBrain04Icon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={isAiPanelActive ? 1.5 : 1}
 							/>
 						</button>
 						<button
@@ -560,7 +560,7 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon
 								icon={LayoutAlignRightIcon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={infoPanelOpen ? 1.5 : 1}
 							/>
 						</button>
 					</div>
