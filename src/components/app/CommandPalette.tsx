@@ -295,6 +295,13 @@ export function CommandPalette({
 						data-with-preview={showPreviewColumn ? "true" : "false"}
 						ref={listRef}
 					>
+						{activeTab === "search" && query.trim() ? (
+							<output className="sr-only">
+								{isSearching
+									? t("commandPalette.searching")
+									: t("commandPalette.results", { count: searchItems.length })}
+							</output>
+						) : null}
 						{activeTab === "commands" ? (
 							<CommandList
 								filtered={filtered}
