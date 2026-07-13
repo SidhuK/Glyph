@@ -1,12 +1,10 @@
-.allDocsPane {
+:is(.allDocsPane, .activityTimelinePane) {
 	--all-docs-card-min-width: 184px;
 	--all-docs-card-min-height: 184px;
-	--all-docs-card-aspect: 1 / 1;
-	--all-docs-card-padding: 12px;
 	--all-docs-card-gap: 14px;
-	--all-docs-card-title-size: var(--text-base);
-	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
-	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
+}
+
+.allDocsPane {
 	--all-docs-pane-padding: clamp(20px, 2.8vw, 32px);
 
 	display: flex;
@@ -15,7 +13,7 @@
 	min-height: 0;
 	overflow-y: auto;
 	padding: var(--all-docs-pane-padding);
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	background: var(--bg-primary);
 	gap: 18px;
 }
 
@@ -30,54 +28,10 @@
 	gap: 16px;
 }
 
-.allDocsHeaderAction {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 7px;
-	min-height: 32px;
-	padding: 0 10px;
-	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
-	border-radius: var(--radius-8);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	color: var(--text-secondary);
-	font: inherit;
-	font-size: var(--text-sm);
-	line-height: 1;
-	cursor: pointer;
-	box-shadow: 0 10px 22px -20px rgb(30 41 59 / 0.25);
-	transition: transform 120ms ease, background-color 120ms ease, color 120ms
-		ease, box-shadow 120ms ease;
-}
-
-.allDocsHeaderAction:hover {
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
-	color: var(--text-primary);
-	box-shadow: 0 14px 26px -22px rgb(30 41 59 / 0.34);
-}
-
-.allDocsHeaderAction:active {
-	transform: scale(0.96);
-}
-
-.allDocsHeaderAction:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	outline-offset: 2px;
-}
-
-.allDocsHeadingGroup {
-	display: flex;
-	min-width: 0;
-	flex-direction: column;
-	gap: 5px;
-}
-
 .allDocsTitle {
 	font-size: calc(var(--text-base) * 2.1);
 	line-height: 1.08;
 	font-weight: var(--font-medium);
-	letter-spacing: 0;
 	color: var(--text-primary);
 }
 
@@ -110,26 +64,11 @@
 	top: 0;
 	left: 0;
 	width: 100%;
-	will-change: transform;
-}
-
-.allDocsSection {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.allDocsSectionHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
 }
 
 .allDocsSectionTitle {
 	font-size: calc(var(--text-base) * 0.9);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0;
 	color: color-mix(in srgb, var(--text-primary) 88%, var(--text-secondary));
 }
 
@@ -165,71 +104,32 @@
 }
 
 .allDocsCardSurface {
-	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 	width: 100%;
-	aspect-ratio: var(--all-docs-card-aspect);
+	aspect-ratio: 1;
 	min-height: var(--all-docs-card-min-height);
 	min-width: 0;
-	padding: var(--all-docs-card-padding);
+	padding: 12px;
 	border-radius: var(--radius-8);
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
-	border: 1px solid color-mix(in srgb, var(--text-primary) 9%, transparent);
-	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.26);
+	background: var(--bg-secondary);
 	overflow: hidden;
-	transition: background-color 120ms ease, border-color 120ms ease, box-shadow
-		120ms ease;
+	transition: background-color 120ms ease;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
-	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-	box-shadow: 0 12px 24px -18px rgb(30 41 59 / 0.3);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-hover));
 }
 
 .allDocsCard[data-state="selected"] .allDocsCardSurface {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 48%,
-		var(--text-primary)
-	);
-	background: color-mix(
-		in srgb,
-		var(--bg-primary) 92%,
-		var(--interactive-accent)
-	);
-	box-shadow: 0 10px 22px -18px rgb(30 41 59 / 0.28);
+	background: var(--bg-active);
 }
 
 .allDocsCard:focus-visible .allDocsCardSurface {
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
-}
-
-.dark .allDocsCardSurface {
-	background: var(--bg-tertiary);
-	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.86);
-}
-
-.dark .allDocsCard:hover .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-hover));
-	box-shadow: 0 12px 22px -18px rgb(2 6 23 / 0.92);
-}
-
-.dark .allDocsCard[data-state="selected"] .allDocsCardSurface {
-	background: color-mix(
-		in srgb,
-		var(--bg-tertiary) 92%,
-		var(--interactive-accent)
-	);
-	box-shadow: 0 10px 20px -18px rgb(2 6 23 / 0.9);
-}
-
-.dark .allDocsCard:focus-visible .allDocsCardSurface {
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: -2px;
 }
 
 .allDocsCardTop {
@@ -245,7 +145,7 @@
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
-	font-size: var(--all-docs-card-title-size);
+	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
 	line-height: 1.3;
 	color: var(--database-note-appearance-color, var(--text-primary));
@@ -270,7 +170,7 @@
 	gap: 3px;
 	overflow: hidden;
 	color: var(--text-secondary);
-	font-size: var(--all-docs-card-preview-size);
+	font-size: calc(var(--text-base) * 0.9);
 	line-height: 1.45;
 	overflow-wrap: anywhere;
 	white-space: normal;
@@ -280,11 +180,6 @@
 		#000 calc(100% - 1.45em),
 		transparent
 	);
-}
-
-.allDocsCardPreviewLine {
-	display: block;
-	line-height: inherit;
 }
 
 .allDocsCardPreviewLine.is-heading {
@@ -305,10 +200,6 @@
 	color: var(--text-tertiary);
 }
 
-.allDocsCardPreviewLine.is-list {
-	color: var(--text-secondary);
-}
-
 .allDocsCardPreviewLine.is-code {
 	font-family: var(--font-mono, ui-monospace, monospace);
 	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
@@ -325,12 +216,9 @@
 	align-items: center;
 	gap: 4px;
 	color: color-mix(in srgb, var(--interactive-accent) 62%, var(--text-primary));
-	font-size: var(--all-docs-card-meta-size);
+	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.25;
-}
-
-.allDocsCardTaskSummary.is-top {
 	justify-self: end;
 	padding-top: 1px;
 }
@@ -351,16 +239,18 @@
 }
 
 @media (max-width: 900px) {
-	.allDocsPane {
+	:is(.allDocsPane, .activityTimelinePane) {
 		--all-docs-card-min-width: 160px;
 	}
 }
 
 @media (max-width: 640px) {
-	.allDocsPane {
+	:is(.allDocsPane, .activityTimelinePane) {
 		--all-docs-card-min-width: 144px;
 		--all-docs-card-min-height: 176px;
+	}
 
+	.allDocsPane {
 		padding: 18px;
 	}
 

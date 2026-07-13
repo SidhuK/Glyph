@@ -237,7 +237,7 @@ export function AllDocsCard({
 						{title}
 					</span>
 					{taskSummary && taskCount > 0 ? (
-						<span className="allDocsCardTaskSummary is-top">
+						<span className="allDocsCardTaskSummary">
 							<TaskProgressComponent
 								summary={taskSummary}
 								className="allDocsCardTaskProgress"

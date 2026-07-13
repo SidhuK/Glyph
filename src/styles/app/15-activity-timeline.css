@@ -3,14 +3,6 @@
 	--activity-heatmap-content-width: min(100%, 1040px);
 	--activity-heatmap-cell: 14px;
 	--activity-heatmap-gap: clamp(2px, 0.42vw, 5px);
-	--all-docs-card-min-width: 184px;
-	--all-docs-card-min-height: 184px;
-	--all-docs-card-aspect: 1 / 1;
-	--all-docs-card-padding: 12px;
-	--all-docs-card-gap: 14px;
-	--all-docs-card-title-size: var(--text-base);
-	--all-docs-card-preview-size: calc(var(--text-base) * 0.9);
-	--all-docs-card-meta-size: calc(var(--text-base) * 0.8);
 
 	display: flex;
 	flex: 1;
@@ -20,8 +12,7 @@
 	overflow-y: auto;
 	padding: calc(var(--header-height) + clamp(28px, 3.2vw, 46px))
 		clamp(18px, 4vw, 56px) clamp(34px, 5vw, 64px);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	color: var(--text-primary);
+	background: var(--bg-primary);
 	gap: 26px;
 }
 
@@ -41,7 +32,6 @@
 	font-size: calc(var(--text-base) * 2.1);
 	line-height: 1.08;
 	font-weight: var(--font-medium);
-	letter-spacing: 0;
 	color: var(--text-primary);
 	text-wrap: balance;
 }
@@ -67,14 +57,9 @@
 .activityHeatmapBlock {
 	display: flex;
 	width: var(--activity-heatmap-content-width);
-	max-width: 100%;
 	flex-direction: column;
-	align-items: center;
 	gap: 10px;
-	overflow: visible;
 	padding: 16px 0 20px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
 .activityHeatmapMonths {
@@ -90,18 +75,15 @@
 }
 
 .activityHeatmapMonths span {
-	overflow: visible;
 	white-space: nowrap;
 }
 
 .activityHeatmapGrid {
-	position: relative;
 	display: grid;
 	grid-auto-flow: column;
 	grid-template-columns: repeat(53, minmax(0, 1fr));
 	gap: var(--activity-heatmap-gap);
 	width: 100%;
-	overflow: visible;
 	padding: 1px 0 2px;
 }
 
@@ -114,10 +96,8 @@
 
 .activityHeatmapCell,
 .activityHeatmapLegendCell {
-	border: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
 	border-radius: var(--radius-4);
 	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-secondary));
-	box-shadow: none;
 }
 
 .activityHeatmapLegendCell {
@@ -129,21 +109,14 @@
 	position: relative;
 	display: block;
 	width: 100%;
-	height: auto;
 	aspect-ratio: 1;
 	padding: 0;
 	cursor: help;
-	transition: background-color 120ms ease, border-color 120ms ease;
 	z-index: 0;
 }
 
-.activityHeatmapCell:hover,
-.activityHeatmapCell:focus-visible {
-	z-index: 10;
-}
-
 .activityHeatmapCell:hover {
-	border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+	z-index: 10;
 }
 
 .activityHeatmapCell[data-level="1"],
@@ -182,12 +155,6 @@
 	);
 }
 
-.activityHeatmapCell:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
-	outline-offset: 2px;
-}
-
 .activityHeatmapCell::after {
 	content: attr(data-tooltip);
 	position: absolute;
@@ -207,12 +174,9 @@
 	transform: translateX(-50%) translateY(2px);
 	transition: opacity 120ms ease, transform 120ms ease;
 	white-space: nowrap;
-	border: 1px solid color-mix(in srgb, var(--bg-primary) 22%, transparent);
-	box-shadow: none;
 }
 
-.activityHeatmapCell:hover::after,
-.activityHeatmapCell:focus-visible::after {
+.activityHeatmapCell:hover::after {
 	opacity: 1;
 	transform: translateX(-50%) translateY(0);
 }
@@ -231,7 +195,6 @@
 	display: flex;
 	width: var(--activity-content-width);
 	flex-direction: column;
-	gap: 0;
 }
 
 .activityFeed.is-virtualized {
@@ -246,11 +209,9 @@
 	top: 0;
 	left: 0;
 	width: 100%;
-	will-change: transform;
 }
 
 .activityDayGroup {
-	position: relative;
 	display: grid;
 	grid-template-columns: 24px minmax(0, 1fr);
 	column-gap: 16px;
@@ -297,8 +258,6 @@
 	background: var(--bg-primary);
 	border: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 68%, var(--text-primary));
-	box-shadow: 0 0 0 4px
-		color-mix(in srgb, var(--interactive-accent) 9%, transparent);
 }
 
 .activityVirtualRow:last-child .activityDayRail::before {
@@ -327,7 +286,6 @@
 	font-size: calc(var(--text-base) * 1.05);
 	font-weight: var(--font-semibold);
 	line-height: 1.25;
-	letter-spacing: 0;
 	color: var(--text-primary);
 	text-wrap: balance;
 }
@@ -336,9 +294,6 @@
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.82);
 	line-height: 1.35;
-}
-
-.activityDayCounts {
 	display: inline-flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
@@ -349,86 +304,6 @@
 .activityNoteGrid {
 	grid-column: 2;
 	min-width: 0;
-}
-
-.activityTimelinePane .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
-	border-color: color-mix(in srgb, var(--text-primary) 8%, transparent);
-	box-shadow: none;
-	transition: background-color 120ms ease, border-color 120ms ease;
-}
-
-.activityTimelinePane .allDocsCard:hover .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-hover));
-	border-color: color-mix(in srgb, var(--text-primary) 14%, transparent);
-	box-shadow: none;
-}
-
-.activityTimelinePane .allDocsCard[data-state="selected"] .allDocsCardSurface {
-	background: color-mix(
-		in srgb,
-		var(--bg-primary) 90%,
-		var(--interactive-accent)
-	);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 42%,
-		var(--text-primary)
-	);
-	box-shadow: none;
-}
-
-.activityTimelinePane .allDocsCard:focus-visible .allDocsCardSurface {
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
-}
-
-.dark .activityTimelinePane .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
-	box-shadow: none;
-}
-
-.dark .activityTimelinePane .allDocsCard:hover .allDocsCardSurface {
-	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-hover));
-	box-shadow: none;
-}
-
-.dark
-	.activityTimelinePane
-	.allDocsCard[data-state="selected"]
-	.allDocsCardSurface {
-	background: color-mix(
-		in srgb,
-		var(--bg-tertiary) 86%,
-		var(--interactive-accent)
-	);
-	box-shadow: none;
-}
-
-.activityLoadMore {
-	align-self: flex-start;
-	min-height: 30px;
-	padding: 0 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
-	border-radius: var(--radius-8);
-	background: var(--bg-primary);
-	color: var(--text-primary);
-	font-size: var(--text-sm);
-	cursor: pointer;
-	transition: transform 120ms ease, background-color 120ms ease;
-}
-
-.activityLoadMore:hover {
-	background: var(--bg-hover);
-}
-
-.activityLoadMore:active {
-	transform: scale(0.96);
-}
-
-.activityLoadMore:disabled {
-	cursor: default;
-	opacity: 0.62;
 }
 
 @media (max-width: 640px) {
