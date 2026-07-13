@@ -43,7 +43,6 @@
 	},
 	"codeBlock": {
 		"setLanguage": "Set code block language",
-		"languageHeader": "Code block language",
 		"runPreview": "Run preview",
 		"copy": "Copy code",
 		"copied": "Copied code",

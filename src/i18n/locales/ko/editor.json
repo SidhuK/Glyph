@@ -42,7 +42,6 @@
 	},
 	"codeBlock": {
 		"setLanguage": "코드 블록 언어 설정",
-		"languageHeader": "코드 블록 언어",
 		"runPreview": "미리보기 실행",
 		"copy": "코드 복사",
 		"copied": "코드 복사됨",

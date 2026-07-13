@@ -589,21 +589,17 @@
 .tiptapContentInline blockquote {
 	margin: var(--space-3) 0;
 	padding: calc(var(--space-2) + 1px) var(--space-3);
-	border-left: 3px solid
-		color-mix(in srgb, var(--interactive-accent) 48%, var(--border-default));
-	border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
 	color: var(--text-secondary);
 }
 
 .tiptapContentInline blockquote.callout {
-	border-left: 4px solid var(--callout-accent, var(--interactive-accent));
 	background: color-mix(
 		in srgb,
 		var(--callout-accent, var(--interactive-accent)) 14%,
 		var(--bg-secondary)
 	);
-	border-radius: var(--radius-lg);
 	padding: var(--space-3);
 	color: var(--text-primary);
 }
@@ -644,10 +640,6 @@
 }
 
 .tiptapContentInline blockquote.callout[data-callout="warning"] {
-	--callout-accent: var(--callout-warning);
-}
-
-.tiptapContentInline blockquote.callout[data-callout="warn"] {
 	--callout-accent: var(--callout-warning);
 }
 
@@ -700,18 +692,16 @@
 }
 
 .tiptapContentInline pre {
-	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
-	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
+	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
+	padding: var(--space-6) var(--space-4) var(--space-4);
 	border-radius: var(--radius-lg);
 	overflow: auto;
-	font-family: var(--font-mono);
 }
 
 .tiptapContentInline pre code {
 	background: transparent;
 	padding: 0;
 	border: none;
-	border-radius: 0;
 }
 
 .tiptapContentInline hr {

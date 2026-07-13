@@ -179,21 +179,6 @@ export function normalizeCodeBlockLanguage(
 	return NORMALIZED_LANGUAGE_BY_ALIAS.get(language.toLowerCase()) ?? null;
 }
 
-export function getCodeBlockLanguageLabel(
-	language: string | null | undefined,
-): string {
-	if (!language) {
-		return i18n.t("editor:codeBlock.languages.plaintext");
-	}
-	const raw = language.trim();
-	const normalized = normalizeCodeBlockLanguage(raw);
-	if (!normalized && raw.length > 0) {
-		return raw;
-	}
-	const value = normalized ?? "plaintext";
-	return i18n.t(`editor:codeBlock.languages.${value}`);
-}
-
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.extend({
 	onCreate() {
 		loadGrammarsForDoc(this.editor);

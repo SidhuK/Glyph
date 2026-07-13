@@ -42,7 +42,6 @@
 	},
 	"codeBlock": {
 		"setLanguage": "Establecer idioma del bloque de código",
-		"languageHeader": "Idioma del bloque de código",
 		"runPreview": "Ejecutar vista previa",
 		"copy": "Copiar código",
 		"copied": "Código copiado",

@@ -1,20 +1,12 @@
-import {
-	Copy01Icon,
-	PlayIcon,
-	SourceCodeIcon,
-	Tick02Icon,
-} from "@hugeicons/core-free-icons";
+import { Copy01Icon, PlayIcon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui/shadcn/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { TableInlineControls } from "./TableInlineControls";
 import {
 	type SupportedCodeBlockLanguage,
-	getCodeBlockLanguageLabel,
 	getCodeBlockLanguageOptions,
 } from "./extensions/codeBlockHighlighting";
 import type {
@@ -33,11 +25,9 @@ interface NoteEditorSurfaceProps {
 
 	codeBlock: {
 		selected: SelectedCodeBlockState | null;
-		pickerOpen: boolean;
-		onPickerOpenChange: (open: boolean) => void;
 		language: SupportedCodeBlockLanguage | null;
 		copied: boolean;
-		onPickerMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
+		onCodeBlockActionMouseDown: (event: React.MouseEvent<HTMLElement>) => void;
 		onApplyLanguage: (language: SupportedCodeBlockLanguage) => void;
 		onCopy: () => void;
 		canPreview: boolean;
@@ -56,9 +46,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 }: NoteEditorSurfaceProps) {
 	const { t } = useTranslation("editor");
 	const languageOptions = getCodeBlockLanguageOptions();
-	const languageLabel = getCodeBlockLanguageLabel(
-		codeBlock.selected?.language ?? codeBlock.language,
-	);
 	const hostClassName = [
 		"tiptapHostInline",
 		mode === "preview" ? "is-preview" : "",
@@ -89,55 +76,23 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						left: `${codeBlock.selected.controlsLeft}px`,
 					}}
 				>
-					<Popover
-						open={codeBlock.pickerOpen}
-						onOpenChange={codeBlock.onPickerOpenChange}
+					<select
+						className="codeBlockLanguageSelect mono"
+						value={codeBlock.language ?? "plaintext"}
+						onChange={(event) => {
+							const option = languageOptions.find(
+								(candidate) => candidate.value === event.currentTarget.value,
+							);
+							if (option) codeBlock.onApplyLanguage(option.value);
+						}}
+						aria-label={t("codeBlock.setLanguage")}
 					>
-						<PopoverTrigger asChild>
-							<button
-								type="button"
-								className="codeBlockLanguageBtn"
-								onMouseDown={codeBlock.onPickerMouseDown}
-								title={t("codeBlock.setLanguage")}
-								aria-label={t("codeBlock.setLanguage")}
-							>
-								<span className="codeBlockLanguageBtnIcon" aria-hidden>
-									<HugeiconsIcon
-										icon={SourceCodeIcon}
-										size="var(--icon-sm)"
-										strokeWidth={0.9}
-									/>
-								</span>
-								<span className="codeBlockLanguageBtnLabel mono">
-									{languageLabel}
-								</span>
-							</button>
-						</PopoverTrigger>
-						<PopoverContent className="codeBlockLanguagePopover" align="start">
-							<div className="codeBlockLanguagePopoverHeader">
-								{t("codeBlock.languageHeader")}
-							</div>
-							<div className="codeBlockLanguageOptions">
-								{languageOptions.map((option) => (
-									<Button
-										key={option.value}
-										type="button"
-										size="xs"
-										variant={
-											option.value === codeBlock.language
-												? "secondary"
-												: "ghost"
-										}
-										className="codeBlockLanguageOption"
-										onMouseDown={codeBlock.onPickerMouseDown}
-										onClick={() => codeBlock.onApplyLanguage(option.value)}
-									>
-										{option.label}
-									</Button>
-								))}
-							</div>
-						</PopoverContent>
-					</Popover>
+						{languageOptions.map((option) => (
+							<option key={option.value} value={option.value}>
+								{option.label}
+							</option>
+						))}
+					</select>
 				</div>
 			) : null}
 			{canEdit && codeBlock.selected ? (
@@ -152,7 +107,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						<button
 							type="button"
 							className="codeBlockActionBtn"
-							onMouseDown={codeBlock.onPickerMouseDown}
+							onMouseDown={codeBlock.onCodeBlockActionMouseDown}
 							onClick={codeBlock.onPreview}
 							title={t("codeBlock.runPreview")}
 							aria-label={t("codeBlock.runPreview")}
@@ -168,7 +123,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						type="button"
 						className="codeBlockActionBtn"
 						data-copied={codeBlock.copied || undefined}
-						onMouseDown={codeBlock.onPickerMouseDown}
+						onMouseDown={codeBlock.onCodeBlockActionMouseDown}
 						onClick={codeBlock.onCopy}
 						title={
 							codeBlock.copied ? t("codeBlock.copied") : t("codeBlock.copy")

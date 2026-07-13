@@ -11,14 +11,13 @@ import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
-import type { EditorState, Transaction } from "@tiptap/pm/state";
+import type { EditorState } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
 import {
 	type ChangedRange,
 	changedRangesFromTransactions,
-	mergeChangedRanges,
 	visitChangedNodes,
 	visitNodesInRanges,
 } from "./changedRanges";
@@ -63,7 +62,7 @@ const CalloutDecorations = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		const key = new PluginKey("callout-decorations");
+		const key = new PluginKey<DecorationSet>("callout-decorations");
 		const plugins = [
 			...(this.options.enableShortcutTransform
 				? [
@@ -134,7 +133,7 @@ const CalloutDecorations = Extension.create({
 					init: (_config, state) => buildCalloutDecorations(state.doc),
 					apply(tr, decorations) {
 						if (!tr.docChanged) return decorations;
-						return updateCalloutDecorations(tr, decorations);
+						return buildCalloutDecorations(tr.doc);
 					},
 				},
 				props: {
@@ -177,68 +176,6 @@ function calloutDecorationForNode(
 		"data-callout": parsed.kind,
 		"data-callout-title": parsed.title,
 	});
-}
-
-function calloutScanRanges(tr: Transaction): ChangedRange[] {
-	const ranges = changedRangesFromTransactions([tr], tr.doc.content.size);
-	if (!ranges.length) return [];
-	const expanded: ChangedRange[] = [];
-
-	const addContainingBlockquote = (pos: number) => {
-		const resolvedPos = tr.doc.resolve(
-			Math.max(0, Math.min(pos, tr.doc.content.size)),
-		);
-		for (let depth = resolvedPos.depth; depth > 0; depth -= 1) {
-			const node = resolvedPos.node(depth);
-			if (node.type.name !== "blockquote") continue;
-			const from = resolvedPos.before(depth);
-			expanded.push({ from, to: from + node.nodeSize });
-		}
-	};
-
-	for (const range of ranges) {
-		addContainingBlockquote(range.from);
-		addContainingBlockquote(Math.max(range.from, range.to - 1));
-		tr.doc.nodesBetween(range.from, range.to, (node, pos) => {
-			if (node.type.name !== "blockquote") return;
-			expanded.push({ from: pos, to: pos + node.nodeSize });
-			return false;
-		});
-	}
-	return mergeChangedRanges(expanded.length ? expanded : ranges);
-}
-
-function buildCalloutDecorationsInRanges(
-	doc: ProseMirrorNode,
-	ranges: readonly ChangedRange[],
-): Decoration[] {
-	const decorations: Decoration[] = [];
-	const seen = new Set<number>();
-	for (const range of ranges) {
-		doc.nodesBetween(range.from, range.to, (node, pos) => {
-			if (seen.has(pos)) return false;
-			const decoration = calloutDecorationForNode(node, pos);
-			if (!decoration) return;
-			seen.add(pos);
-			decorations.push(decoration);
-			return false;
-		});
-	}
-	return decorations;
-}
-
-function updateCalloutDecorations(
-	tr: Transaction,
-	decorations: DecorationSet,
-): DecorationSet {
-	const scanRanges = calloutScanRanges(tr);
-	if (!scanRanges.length) return decorations.map(tr.mapping, tr.doc);
-	const mapped = decorations.map(tr.mapping, tr.doc);
-	const staleDecorations = scanRanges.flatMap((range) =>
-		mapped.find(range.from, range.to),
-	);
-	const nextDecorations = buildCalloutDecorationsInRanges(tr.doc, scanRanges);
-	return mapped.remove(staleDecorations).add(tr.doc, nextDecorations);
 }
 
 const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
