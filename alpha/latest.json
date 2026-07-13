@@ -1,15 +1,15 @@
 {
-  "version": "0.8.7",
-  "notes": "## What's Changed\n* Hover intent delay for navigation prefetching and TanStack Query option helpers by @SidhuK in https://github.com/SidhuK/Glyph/pull/298\n* Virtualize file tree and tune list overscan for large spaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/299\n* Add file tree Open in New Window for markdown files by @SidhuK in https://github.com/SidhuK/Glyph/pull/301\n* Restore workspace (\"start where I left off\") (#302) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/302\n* Harden editor document session and markdown lifecycle handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/305\n* Support Unicode letters in tags by @SidhuK in https://github.com/SidhuK/Glyph/pull/317\n* Redistribute advanced settings into logical tabs by @SidhuK in https://github.com/SidhuK/Glyph/pull/318\n* Scale task checkboxes with editor font size by @SidhuK in https://github.com/SidhuK/Glyph/pull/319\n* Add UI translations (i18n) for high-traffic surfaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/320\n* Add Raw Markdown Vim mode by @SidhuK in https://github.com/SidhuK/Glyph/pull/325\n* Open Finder Markdown files without showing Spaces by @SidhuK in https://github.com/SidhuK/Glyph/pull/327\n* Fix workspace tab restore on shutdown by @SidhuK in https://github.com/SidhuK/Glyph/pull/328\n* Remove space-open feature preloads by @SidhuK in https://github.com/SidhuK/Glyph/pull/329\n* Defer highlight.js grammar loading until a code block needs it by @SidhuK in https://github.com/SidhuK/Glyph/pull/330\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.6...v0.8.7",
-  "pub_date": "2026-07-12T07:49:50.672Z",
+  "version": "0.8.8-alpha.1",
+  "notes": "## What's Changed\n* Fix rich-text callouts and native code language picker by @SidhuK in https://github.com/SidhuK/Glyph/pull/336\n* Fix Codex app-server startup and rollout handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/337\n* Simplify command palette, editor, and notes UI by @SidhuK in https://github.com/SidhuK/Glyph/pull/338\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7...v0.8.8-alpha.1",
+  "pub_date": "2026-07-13T06:51:46.617Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFpRktKeUdUSU5xbmhLVkl1b01ZTytjMjhTWFNUclRReS9MbjgzSklaTURmVFNzM1lWcEZBMmJpcnhxbWNYS21tVFJMWXdMOC9sQXZKK2Z3dDZiNWdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzODQyNTg2CWZpbGU6R2x5cGguYXBwLnRhci5negpEeDJteVJEc2Z3NWNRSnNSREh1RFZmZFlqaVJXb3k1VFpvL1Z6VTZUa0xMTkxUMTRKdW1tbWNQT2p3amcrRjNyUi9rM0d3Q1kwUG1YS3dFVVUvVzlBdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrSmVHckFQZkFidGlNVE9vNU9PTkhpTlkzYitpeHFhSGdpZEFRRWRkU3ExelpTdlFZSDF2cjRMamVIalFTQ2hDN2FVY25OWng2RjdUWDBJMFhXa1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzOTI1NTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkb2ZrL1pCTVQyMFJzK0M3Zk1EcGptV0crUDdnNUllaEh5ZU1oaDZuNFBURmZoOWlwSEFCYUNtcmZZM0RVYzBoZDVTOVdpNG1la01lWFRyUGh1ckZBUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFpRktKeUdUSU5xbmhLVkl1b01ZTytjMjhTWFNUclRReS9MbjgzSklaTURmVFNzM1lWcEZBMmJpcnhxbWNYS21tVFJMWXdMOC9sQXZKK2Z3dDZiNWdRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzODQyNTg2CWZpbGU6R2x5cGguYXBwLnRhci5negpEeDJteVJEc2Z3NWNRSnNSREh1RFZmZFlqaVJXb3k1VFpvL1Z6VTZUa0xMTkxUMTRKdW1tbWNQT2p3amcrRjNyUi9rM0d3Q1kwUG1YS3dFVVUvVzlBdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.7/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrSmVHckFQZkFidGlNVE9vNU9PTkhpTlkzYitpeHFhSGdpZEFRRWRkU3ExelpTdlFZSDF2cjRMamVIalFTQ2hDN2FVY25OWng2RjdUWDBJMFhXa1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzOTI1NTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkb2ZrL1pCTVQyMFJzK0M3Zk1EcGptV0crUDdnNUllaEh5ZU1oaDZuNFBURmZoOWlwSEFCYUNtcmZZM0RVYzBoZDVTOVdpNG1la01lWFRyUGh1ckZBUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
