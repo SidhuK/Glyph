@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter};
 use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::events::AiStatusEvent;
@@ -10,7 +10,6 @@ use crate::ai_rig::types::{
     AiStoredToolEvent, AiToolEvent,
 };
 
-use super::state::CodexState;
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
 
 fn as_text_input(system: &str, messages: &[AiMessage]) -> String {
@@ -154,7 +153,6 @@ fn push_tool_event(
 
 #[allow(clippy::too_many_arguments)]
 pub async fn run_with_codex(
-    codex_state: State<'_, CodexState>,
     cancel: &CancellationToken,
     app: &AppHandle,
     job_id: &str,
@@ -185,80 +183,52 @@ pub async fn run_with_codex(
     let input_text = as_text_input(system, messages);
     let root_str = root.to_string_lossy().to_string();
 
-    let thread_id = {
-        if let Some(existing) = thread_hint {
-            if existing.starts_with("thr_") {
-                let resumed = rpc_call(
-                    codex_state.inner(),
-                    "thread/resume",
-                    json!({ "threadId": existing }),
-                    Duration::from_secs(20),
-                )?;
-                if let Some(thread_id) = extract_thread_id(&resumed) {
-                    thread_id
-                } else {
-                    let started = rpc_call(
-                        codex_state.inner(),
-                        "thread/start",
-                        json!({
-                            "model": model,
-                            "cwd": root_str.clone(),
-                            "approvalPolicy": "never"
-                        }),
-                        Duration::from_secs(20),
-                    )?;
-                    extract_thread_id(&started)
-                        .or_else(|| {
-                            started
-                                .get("id")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.to_string())
-                        })
-                        .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
-                }
-            } else {
-                let started = rpc_call(
-                    codex_state.inner(),
-                    "thread/start",
-                    json!({
-                        "model": model,
-                        "cwd": root_str.clone(),
-                        "approvalPolicy": "never"
-                    }),
-                    Duration::from_secs(20),
-                )?;
-                extract_thread_id(&started)
-                    .or_else(|| {
-                        started
-                            .get("id")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_string())
-                    })
-                    .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
-            }
-        } else {
-            let started = rpc_call(
-                codex_state.inner(),
-                "thread/start",
-                json!({
-                    "model": model,
-                    "cwd": root_str.clone(),
-                    "approvalPolicy": "never"
-                }),
+    async fn start_thread(app: AppHandle, model: &str, cwd: &str) -> Result<String, String> {
+        let started = rpc_call(
+            app,
+            "thread/start",
+            json!({
+                "model": model,
+                "cwd": cwd,
+                "approvalPolicy": "never"
+            }),
+            Duration::from_secs(20),
+        )
+        .await?;
+        extract_thread_id(&started)
+            .or_else(|| {
+                started
+                    .get("id")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string())
+            })
+            .ok_or_else(|| "missing thread id from codex thread/start".to_string())
+    }
+
+    let thread_id = match thread_hint.map(str::trim).filter(|id| !id.is_empty()) {
+        Some(existing) => {
+            let resumed = rpc_call(
+                app.clone(),
+                "thread/resume",
+                json!({ "threadId": existing }),
                 Duration::from_secs(20),
-            )?;
-            extract_thread_id(&started)
-                .or_else(|| {
-                    started
-                        .get("id")
-                        .and_then(|v| v.as_str())
-                        .map(|s| s.to_string())
-                })
-                .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
+            )
+            .await;
+            match resumed {
+                Ok(resumed) => {
+                    if let Some(thread_id) = extract_thread_id(&resumed) {
+                        thread_id
+                    } else {
+                        start_thread(app.clone(), model, &root_str).await?
+                    }
+                }
+                Err(_) => start_thread(app.clone(), model, &root_str).await?,
+            }
         }
+        None => start_thread(app.clone(), model, &root_str).await?,
     };
 
-    let mut seq = latest_seq(codex_state.inner())?;
+    let mut seq = latest_seq(app.clone()).await?;
     let mut turn_params = json!({
         "threadId": thread_id,
         "input": [
@@ -287,11 +257,12 @@ pub async fn run_with_codex(
         }
     }
     let started = rpc_call(
-        codex_state.inner(),
+        app.clone(),
         "turn/start",
         turn_params,
         Duration::from_secs(30),
-    )?;
+    )
+    .await?;
     let turn_id = extract_turn_id(&started)
         .or_else(|| {
             started
@@ -314,15 +285,16 @@ pub async fn run_with_codex(
         if cancel.is_cancelled() && !interrupted {
             interrupted = true;
             let _ = rpc_call(
-                codex_state.inner(),
+                app.clone(),
                 "turn/interrupt",
                 json!({ "threadId": thread_id }),
                 Duration::from_secs(10),
-            );
+            )
+            .await;
         }
 
         let maybe_notification =
-            wait_notification_after(codex_state.inner(), seq, Duration::from_millis(500))?;
+            wait_notification_after(app.clone(), seq, Duration::from_millis(500)).await?;
 
         let Some(notification) = maybe_notification else {
             continue;

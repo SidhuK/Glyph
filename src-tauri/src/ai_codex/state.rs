@@ -3,7 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::time::Duration;
 use tracing::{debug, warn};
@@ -18,30 +18,48 @@ pub struct CodexNotification {
 enum RpcReply {
     Result(Value),
     Error(String),
+    ProcessExited,
+}
+
+#[derive(Debug)]
+enum CodexError {
+    Transport(String),
+    Message(String),
+}
+
+impl CodexError {
+    fn is_transport(&self) -> bool {
+        matches!(self, Self::Transport(_))
+    }
+
+    fn into_message(self) -> String {
+        match self {
+            Self::Transport(message) | Self::Message(message) => message,
+        }
+    }
 }
 
 struct RuntimeProcess {
-    child: Child,
+    child: Mutex<Child>,
     stdin: Arc<Mutex<ChildStdin>>,
-    initialized: bool,
+    pending: Arc<Mutex<HashMap<u64, mpsc::Sender<RpcReply>>>>,
+    notifications: Arc<(Mutex<NotificationQueue>, Condvar)>,
+    initialized: AtomicBool,
+    initialization: Mutex<()>,
 }
 
 struct NotificationQueue {
-    next_seq: u64,
     items: VecDeque<CodexNotification>,
 }
 
 impl NotificationQueue {
     fn new() -> Self {
         Self {
-            next_seq: 1,
             items: VecDeque::new(),
         }
     }
 
-    fn push(&mut self, method: String, params: Value) -> u64 {
-        let seq = self.next_seq;
-        self.next_seq = self.next_seq.saturating_add(1);
+    fn push(&mut self, seq: u64, method: String, params: Value) -> u64 {
         self.items.push_back(CodexNotification {
             seq,
             method,
@@ -63,19 +81,17 @@ impl NotificationQueue {
 }
 
 pub struct CodexState {
-    process: Mutex<Option<RuntimeProcess>>,
-    pending: Arc<Mutex<HashMap<u64, mpsc::Sender<RpcReply>>>>,
-    notifications: Arc<(Mutex<NotificationQueue>, Condvar)>,
+    process: Mutex<Option<Arc<RuntimeProcess>>>,
     next_id: AtomicU64,
+    next_notification_seq: Arc<AtomicU64>,
 }
 
 impl Default for CodexState {
     fn default() -> Self {
         Self {
             process: Mutex::new(None),
-            pending: Arc::new(Mutex::new(HashMap::new())),
-            notifications: Arc::new((Mutex::new(NotificationQueue::new()), Condvar::new())),
             next_id: AtomicU64::new(1),
+            next_notification_seq: Arc::new(AtomicU64::new(1)),
         }
     }
 }
@@ -139,7 +155,7 @@ impl CodexState {
     fn spawn_process(&self) -> Result<RuntimeProcess, String> {
         let codex_bin = Self::resolve_codex_binary()?;
         let mut child = Command::new(&codex_bin)
-            .args(["app-server"])
+            .args(["app-server", "--listen", "stdio://"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -152,139 +168,273 @@ impl CodexState {
                 )
             })?;
 
-        let stdin = child
-            .stdin
-            .take()
-            .ok_or_else(|| "failed to capture codex stdin".to_string())?;
-        let stdout = child
-            .stdout
-            .take()
-            .ok_or_else(|| "failed to capture codex stdout".to_string())?;
-        let stderr = child
-            .stderr
-            .take()
-            .ok_or_else(|| "failed to capture codex stderr".to_string())?;
+        let stdin = match child.stdin.take() {
+            Some(stdin) => stdin,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stdin".to_string());
+            }
+        };
+        let stdout = match child.stdout.take() {
+            Some(stdout) => stdout,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stdout".to_string());
+            }
+        };
+        let stderr = match child.stderr.take() {
+            Some(stderr) => stderr,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stderr".to_string());
+            }
+        };
 
-        let pending = Arc::clone(&self.pending);
-        let notifications = Arc::clone(&self.notifications);
-        std::thread::spawn(move || read_stdout_loop(stdout, pending, notifications));
+        let pending = Arc::new(Mutex::new(HashMap::new()));
+        let notifications = Arc::new((Mutex::new(NotificationQueue::new()), Condvar::new()));
+        let pending_for_reader = Arc::clone(&pending);
+        let notifications_for_reader = Arc::clone(&notifications);
+        let next_notification_seq = Arc::clone(&self.next_notification_seq);
+        std::thread::spawn(move || {
+            read_stdout_loop(
+                stdout,
+                pending_for_reader,
+                notifications_for_reader,
+                next_notification_seq,
+            )
+        });
         std::thread::spawn(move || read_stderr_loop(stderr));
 
         Ok(RuntimeProcess {
-            child,
+            child: Mutex::new(child),
             stdin: Arc::new(Mutex::new(stdin)),
-            initialized: false,
+            pending,
+            notifications,
+            initialized: AtomicBool::new(false),
+            initialization: Mutex::new(()),
         })
     }
 
-    fn write_line(process: &RuntimeProcess, value: &Value) -> Result<(), String> {
-        let mut line = serde_json::to_vec(value).map_err(|e| e.to_string())?;
+    fn write_line(process: &RuntimeProcess, value: &Value) -> Result<(), CodexError> {
+        let mut line =
+            serde_json::to_vec(value).map_err(|error| CodexError::Message(error.to_string()))?;
         line.push(b'\n');
         let mut guard = process
             .stdin
             .lock()
-            .map_err(|_| "codex stdin lock poisoned".to_string())?;
+            .map_err(|_| CodexError::Message("codex stdin lock poisoned".to_string()))?;
         guard
             .write_all(&line)
             .and_then(|_| guard.flush())
-            .map_err(|e| format!("failed writing to codex app-server: {e}"))
+            .map_err(|error| {
+                CodexError::Transport(format!("failed writing to codex app-server: {error}"))
+            })
     }
 
-    fn ensure_process_locked<'a>(
-        &'a self,
-        guard: &'a mut Option<RuntimeProcess>,
-    ) -> Result<&'a mut RuntimeProcess, String> {
+    fn child_exit_message(process: &RuntimeProcess) -> Option<String> {
+        let mut child = match process.child.lock() {
+            Ok(child) => child,
+            Err(_) => return Some("codex child lock poisoned".to_string()),
+        };
+        match child.try_wait() {
+            Ok(Some(status)) => Some(format!("codex app-server exited with {status}")),
+            Ok(None) => None,
+            Err(error) => Some(format!("failed checking codex app-server: {error}")),
+        }
+    }
+
+    fn stop_child(child: &mut Child) {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+
+    fn stop_process(process: Arc<RuntimeProcess>) {
+        if let Ok(mut child) = process.child.lock() {
+            Self::stop_child(&mut child);
+        }
+    }
+
+    fn discard_process(guard: &mut Option<Arc<RuntimeProcess>>) {
+        if let Some(stale) = guard.take() {
+            Self::stop_process(stale);
+        }
+    }
+
+    fn ensure_process_locked(
+        &self,
+        guard: &mut Option<Arc<RuntimeProcess>>,
+    ) -> Result<Arc<RuntimeProcess>, String> {
         if guard.is_none() {
-            *guard = Some(self.spawn_process()?);
+            *guard = Some(Arc::new(self.spawn_process()?));
         }
         guard
-            .as_mut()
+            .as_ref()
+            .map(Arc::clone)
             .ok_or_else(|| "codex runtime unavailable".to_string())
     }
 
-    fn ensure_initialized_locked(&self, process: &mut RuntimeProcess) -> Result<(), String> {
-        if process.initialized {
+    fn discard_if_current(&self, process: &Arc<RuntimeProcess>) -> Result<(), String> {
+        let mut guard = self
+            .process
+            .lock()
+            .map_err(|_| "codex process lock poisoned".to_string())?;
+        if guard
+            .as_ref()
+            .is_some_and(|current| Arc::ptr_eq(current, process))
+        {
+            Self::discard_process(&mut guard);
+        }
+        Ok(())
+    }
+
+    fn ensure_initialized(&self, process: &RuntimeProcess) -> Result<(), CodexError> {
+        if process.initialized.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let _initialization = process
+            .initialization
+            .lock()
+            .map_err(|_| CodexError::Message("codex initialization lock poisoned".to_string()))?;
+        if process.initialized.load(Ordering::Acquire) {
             return Ok(());
         }
 
         let init_params = json!({
-            "protocolVersion": "1",
             "clientInfo": {
                 "name": "Glyph",
+                "title": "Glyph",
                 "version": "0.1.0"
             }
         });
-        let _ = self.call_locked(process, "initialize", init_params, Duration::from_secs(20))?;
+        let _ = self.call_process(process, "initialize", init_params, Duration::from_secs(20))?;
         Self::write_line(
             process,
             &json!({
-                "jsonrpc": "2.0",
                 "method": "initialized",
                 "params": {}
             }),
         )?;
-        process.initialized = true;
+        process.initialized.store(true, Ordering::Release);
         Ok(())
     }
 
-    fn call_locked(
+    fn call_process(
         &self,
-        process: &mut RuntimeProcess,
+        process: &RuntimeProcess,
         method: &str,
         params: Value,
         timeout: Duration,
-    ) -> Result<Value, String> {
+    ) -> Result<Value, CodexError> {
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = mpsc::channel::<RpcReply>();
         {
-            let mut pending = self
+            let mut pending = process
                 .pending
                 .lock()
-                .map_err(|_| "pending map lock poisoned".to_string())?;
+                .map_err(|_| CodexError::Message("pending map lock poisoned".to_string()))?;
             pending.insert(id, tx);
         }
 
         let msg = json!({
-            "jsonrpc": "2.0",
             "id": id,
             "method": method,
             "params": params,
         });
-        if let Err(e) = Self::write_line(process, &msg) {
-            let mut pending = self
-                .pending
-                .lock()
-                .map_err(|_| "pending map lock poisoned".to_string())?;
-            pending.remove(&id);
-            return Err(e);
+        if let Err(error) = Self::write_line(process, &msg) {
+            if let Ok(mut pending) = process.pending.lock() {
+                pending.remove(&id);
+            }
+            return Err(error);
         }
 
         match rx.recv_timeout(timeout) {
             Ok(RpcReply::Result(v)) => Ok(v),
-            Ok(RpcReply::Error(e)) => Err(e),
+            Ok(RpcReply::Error(error)) => Err(CodexError::Message(error)),
+            Ok(RpcReply::ProcessExited) => Err(CodexError::Transport(
+                "codex app-server process exited".to_string(),
+            )),
             Err(_) => {
-                let mut pending = self
+                let mut pending = process
                     .pending
                     .lock()
-                    .map_err(|_| "pending map lock poisoned".to_string())?;
+                    .map_err(|_| CodexError::Message("pending map lock poisoned".to_string()))?;
                 pending.remove(&id);
-                Err(format!("codex request timed out: {method}"))
+                Err(CodexError::Message(format!(
+                    "codex request timed out: {method}"
+                )))
             }
         }
     }
 
     pub fn call(&self, method: &str, params: Value, timeout: Duration) -> Result<Value, String> {
-        let mut guard = self
-            .process
-            .lock()
-            .map_err(|_| "codex process lock poisoned".to_string())?;
-        let process = self.ensure_process_locked(&mut guard)?;
-        self.ensure_initialized_locked(process)?;
-        self.call_locked(process, method, params, timeout)
+        let mut process = {
+            let mut guard = self
+                .process
+                .lock()
+                .map_err(|_| "codex process lock poisoned".to_string())?;
+            let exited = guard
+                .as_ref()
+                .and_then(|process| Self::child_exit_message(process))
+                .map(|error| {
+                    debug!("{error}; restarting codex app-server");
+                })
+                .is_some();
+            if exited {
+                Self::discard_process(&mut guard);
+            }
+            self.ensure_process_locked(&mut guard)?
+        };
+
+        let initialized = self.ensure_initialized(&process);
+        if let Err(error) = initialized {
+            if !error.is_transport() {
+                return Err(error.into_message());
+            }
+
+            debug!("{error:?}; restarting codex app-server");
+            self.discard_if_current(&process)?;
+            let replacement = {
+                let mut guard = self
+                    .process
+                    .lock()
+                    .map_err(|_| "codex process lock poisoned".to_string())?;
+                self.ensure_process_locked(&mut guard)?
+            };
+            if let Err(error) = self.ensure_initialized(&replacement) {
+                let transport_failure = error.is_transport();
+                let message = error.into_message();
+                if transport_failure {
+                    let _ = self.discard_if_current(&replacement);
+                }
+                return Err(message);
+            }
+            process = replacement;
+        }
+
+        let result = self.call_process(&process, method, params, timeout);
+        if let Err(error) = &result {
+            let child_exited = Self::child_exit_message(&process).is_some();
+            if child_exited || error.is_transport() {
+                let _ = self.discard_if_current(&process);
+            }
+        }
+        result.map_err(CodexError::into_message)
     }
 
     pub fn latest_notification_seq(&self) -> Result<u64, String> {
-        let (lock, _) = &*self.notifications;
+        let notifications = {
+            let guard = self
+                .process
+                .lock()
+                .map_err(|_| "codex process lock poisoned".to_string())?;
+            guard
+                .as_ref()
+                .map(|process| Arc::clone(&process.notifications))
+        };
+        let Some(notifications) = notifications else {
+            return Ok(0);
+        };
+        let (lock, _) = &*notifications;
         let queue = lock
             .lock()
             .map_err(|_| "codex notification lock poisoned".to_string())?;
@@ -296,7 +446,19 @@ impl CodexState {
         after_seq: u64,
         timeout: Duration,
     ) -> Result<Option<CodexNotification>, String> {
-        let (lock, cv) = &*self.notifications;
+        let notifications = {
+            let guard = self
+                .process
+                .lock()
+                .map_err(|_| "codex process lock poisoned".to_string())?;
+            guard
+                .as_ref()
+                .map(|process| Arc::clone(&process.notifications))
+        };
+        let Some(notifications) = notifications else {
+            return Ok(None);
+        };
+        let (lock, cv) = &*notifications;
         let mut queue = lock
             .lock()
             .map_err(|_| "codex notification lock poisoned".to_string())?;
@@ -316,10 +478,7 @@ impl CodexState {
 impl Drop for CodexState {
     fn drop(&mut self) {
         if let Ok(mut guard) = self.process.lock() {
-            if let Some(mut process) = guard.take() {
-                let _ = process.child.kill();
-                let _ = process.child.wait();
-            }
+            Self::discard_process(&mut guard);
         }
     }
 }
@@ -328,6 +487,7 @@ fn read_stdout_loop(
     stdout: ChildStdout,
     pending: Arc<Mutex<HashMap<u64, mpsc::Sender<RpcReply>>>>,
     notifications: Arc<(Mutex<NotificationQueue>, Condvar)>,
+    next_notification_seq: Arc<AtomicU64>,
 ) {
     let reader = BufReader::new(stdout);
     for line in reader.lines() {
@@ -376,16 +536,24 @@ fn read_stdout_loop(
             let params = parsed.get("params").cloned().unwrap_or_else(|| json!({}));
             let (lock, cv) = &*notifications;
             if let Ok(mut q) = lock.lock() {
-                let seq = q.push(method.to_string(), params);
+                let seq = next_notification_seq.fetch_add(1, Ordering::Relaxed);
+                let seq = q.push(seq, method.to_string(), params);
                 debug!("codex notification seq={seq} method={method}");
                 cv.notify_all();
             }
         }
     }
 
+    if let Ok(mut map) = pending.lock() {
+        for (_, tx) in map.drain() {
+            let _ = tx.send(RpcReply::ProcessExited);
+        }
+    }
+
     let (lock, cv) = &*notifications;
     if let Ok(mut q) = lock.lock() {
-        let _ = q.push("codex/process/exited".to_string(), json!({}));
+        let seq = next_notification_seq.fetch_add(1, Ordering::Relaxed);
+        let _ = q.push(seq, "codex/process/exited".to_string(), json!({}));
         cv.notify_all();
     }
 }

@@ -6,7 +6,7 @@ use super::helpers::{
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path_for_space, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
-use crate::ai_codex::{state::CodexState, transport::rpc_call};
+use crate::ai_codex::transport::rpc_call;
 use crate::space::SpaceState;
 
 #[derive(serde::Deserialize)]
@@ -539,13 +539,14 @@ fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
     })
 }
 
-fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
+async fn list_codex_models(app: AppHandle) -> Result<Vec<AiModel>, String> {
     let result = rpc_call(
-        codex_state,
+        app,
         "model/list",
         serde_json::json!({}),
         std::time::Duration::from_secs(20),
-    )?;
+    )
+    .await?;
 
     let list = if let Some(arr) = result.as_array() {
         arr
@@ -570,7 +571,6 @@ fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_models_list(
     app: AppHandle,
-    codex_state: State<'_, CodexState>,
     window: WebviewWindow,
     space_state: State<'_, SpaceState>,
     profile_id: String,
@@ -618,7 +618,7 @@ pub async fn ai_models_list(
         AiProviderKind::Openrouter => list_openrouter(&client, &profile, &api_key).await,
         AiProviderKind::Anthropic => list_anthropic(&client, &profile, &api_key).await,
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
-        AiProviderKind::CodexChatgpt => list_codex_models(codex_state.inner()),
+        AiProviderKind::CodexChatgpt => list_codex_models(app).await,
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
         AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&space_root, &profile),
         AiProviderKind::Opencode => crate::ai_opencode::list_models(&space_root).await,

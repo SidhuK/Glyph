@@ -1,8 +1,7 @@
 use serde_json::json;
 use std::time::Duration;
-use tauri::State;
+use tauri::AppHandle;
 
-use super::state::CodexState;
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
 use super::types::{
     CodexAccountInfo, CodexLoginCompleteResult, CodexLoginStartResult, CodexRateLimitBucket,
@@ -10,13 +9,14 @@ use super::types::{
 };
 
 #[tauri::command]
-pub async fn codex_account_read(state: State<'_, CodexState>) -> Result<CodexAccountInfo, String> {
+pub async fn codex_account_read(app: AppHandle) -> Result<CodexAccountInfo, String> {
     let value = rpc_call(
-        &state,
+        app,
         "account/read",
         json!({ "refreshToken": false }),
         Duration::from_secs(20),
-    )?;
+    )
+    .await?;
     let auth_mode = value
         .get("authMode")
         .and_then(|v| v.as_str())
@@ -46,15 +46,14 @@ pub async fn codex_account_read(state: State<'_, CodexState>) -> Result<CodexAcc
 }
 
 #[tauri::command]
-pub async fn codex_login_start(
-    state: State<'_, CodexState>,
-) -> Result<CodexLoginStartResult, String> {
+pub async fn codex_login_start(app: AppHandle) -> Result<CodexLoginStartResult, String> {
     let value = rpc_call(
-        &state,
+        app,
         "account/login/start",
         json!({ "type": "chatgpt" }),
         Duration::from_secs(30),
-    )?;
+    )
+    .await?;
 
     let auth_url = value
         .get("authUrl")
@@ -74,19 +73,23 @@ pub async fn codex_login_start(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn codex_login_complete(
-    state: State<'_, CodexState>,
+    app: AppHandle,
     flow_id: String,
 ) -> Result<CodexLoginCompleteResult, String> {
-    let mut seq = latest_seq(&state)?;
+    let mut seq = latest_seq(app.clone()).await?;
     let deadline = std::time::Instant::now() + Duration::from_secs(180);
 
     while std::time::Instant::now() < deadline {
         let timeout = Duration::from_millis(800);
-        let notification = wait_notification_after(&state, seq, timeout)?;
+        let notification = wait_notification_after(app.clone(), seq, timeout).await?;
         let Some(notification) = notification else {
             continue;
         };
         seq = notification.seq;
+
+        if notification.method == "codex/process/exited" {
+            return Err("codex app-server exited while waiting for login".to_string());
+        }
 
         if notification.method == "account/login/completed" {
             let login_id = notification
@@ -109,21 +112,20 @@ pub async fn codex_login_complete(
 }
 
 #[tauri::command]
-pub async fn codex_logout(state: State<'_, CodexState>) -> Result<(), String> {
-    let _ = rpc_call(&state, "account/logout", json!({}), Duration::from_secs(20))?;
+pub async fn codex_logout(app: AppHandle) -> Result<(), String> {
+    let _ = rpc_call(app, "account/logout", json!({}), Duration::from_secs(20)).await?;
     Ok(())
 }
 
 #[tauri::command]
-pub async fn codex_rate_limits_read(
-    state: State<'_, CodexState>,
-) -> Result<CodexRateLimits, String> {
+pub async fn codex_rate_limits_read(app: AppHandle) -> Result<CodexRateLimits, String> {
     let value = rpc_call(
-        &state,
+        app,
         "account/rateLimits/read",
         json!({}),
         Duration::from_secs(20),
-    )?;
+    )
+    .await?;
     let parse_window = |v: &serde_json::Value| -> Option<CodexRateLimitWindow> {
         let used_percent = v
             .get("usedPercent")
