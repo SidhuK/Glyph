@@ -267,7 +267,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						: Date.now(),
 			})) as ToolTimelineEvent[];
 			toolEvents.setToolTimeline(restoredTimeline);
-			chat.setThreadId(jobId);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 		},

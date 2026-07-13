@@ -358,7 +358,6 @@ pub async fn ai_chat_start(
 
     tauri::async_runtime::spawn(async move {
         let ai_state_for_task = app_for_task.state::<AiState>();
-        let codex_state = app_for_task.state::<crate::ai_codex::state::CodexState>();
 
         let api_key = local_secrets::secret_get(&space_root, &profile.id)
             .ok()
@@ -368,7 +367,6 @@ pub async fn ai_chat_start(
 
         let mut result = run_request(
             &cancel,
-            codex_state.clone(),
             &app_for_task,
             &job_id_for_task,
             &profile,
@@ -385,7 +383,6 @@ pub async fn ai_chat_start(
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
                 result = run_request(
                     &cancel,
-                    codex_state.clone(),
                     &app_for_task,
                     &job_id_for_task,
                     &profile,
@@ -474,7 +471,6 @@ pub async fn ai_chat_history_get(
 #[allow(clippy::too_many_arguments)]
 pub async fn run_request(
     cancel: &CancellationToken,
-    codex_state: State<'_, crate::ai_codex::state::CodexState>,
     app: &AppHandle,
     job_id: &str,
     profile: &AiProfile,
@@ -487,16 +483,7 @@ pub async fn run_request(
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     if matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt) {
         return crate::ai_codex::chat::run_with_codex(
-            codex_state,
-            cancel,
-            app,
-            job_id,
-            profile,
-            system,
-            messages,
-            mode,
-            space_root,
-            thread_id,
+            cancel, app, job_id, profile, system, messages, mode, space_root, thread_id,
         )
         .await;
     }

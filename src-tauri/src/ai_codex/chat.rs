@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 use std::time::{Duration, Instant};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter};
 use tokio_util::sync::CancellationToken;
 
 use crate::ai_rig::events::AiStatusEvent;
@@ -10,7 +10,6 @@ use crate::ai_rig::types::{
     AiStoredToolEvent, AiToolEvent,
 };
 
-use super::state::CodexState;
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
 
 fn as_text_input(system: &str, messages: &[AiMessage]) -> String {
@@ -154,7 +153,6 @@ fn push_tool_event(
 
 #[allow(clippy::too_many_arguments)]
 pub async fn run_with_codex(
-    codex_state: State<'_, CodexState>,
     cancel: &CancellationToken,
     app: &AppHandle,
     job_id: &str,
@@ -187,18 +185,19 @@ pub async fn run_with_codex(
 
     let thread_id = {
         if let Some(existing) = thread_hint {
-            if existing.starts_with("thr_") {
+            if !existing.trim().is_empty() {
                 let resumed = rpc_call(
-                    codex_state.inner(),
+                    app.clone(),
                     "thread/resume",
                     json!({ "threadId": existing }),
                     Duration::from_secs(20),
-                )?;
+                )
+                .await?;
                 if let Some(thread_id) = extract_thread_id(&resumed) {
                     thread_id
                 } else {
                     let started = rpc_call(
-                        codex_state.inner(),
+                        app.clone(),
                         "thread/start",
                         json!({
                             "model": model,
@@ -206,7 +205,8 @@ pub async fn run_with_codex(
                             "approvalPolicy": "never"
                         }),
                         Duration::from_secs(20),
-                    )?;
+                    )
+                    .await?;
                     extract_thread_id(&started)
                         .or_else(|| {
                             started
@@ -218,7 +218,7 @@ pub async fn run_with_codex(
                 }
             } else {
                 let started = rpc_call(
-                    codex_state.inner(),
+                    app.clone(),
                     "thread/start",
                     json!({
                         "model": model,
@@ -226,7 +226,8 @@ pub async fn run_with_codex(
                         "approvalPolicy": "never"
                     }),
                     Duration::from_secs(20),
-                )?;
+                )
+                .await?;
                 extract_thread_id(&started)
                     .or_else(|| {
                         started
@@ -238,7 +239,7 @@ pub async fn run_with_codex(
             }
         } else {
             let started = rpc_call(
-                codex_state.inner(),
+                app.clone(),
                 "thread/start",
                 json!({
                     "model": model,
@@ -246,7 +247,8 @@ pub async fn run_with_codex(
                     "approvalPolicy": "never"
                 }),
                 Duration::from_secs(20),
-            )?;
+            )
+            .await?;
             extract_thread_id(&started)
                 .or_else(|| {
                     started
@@ -258,7 +260,7 @@ pub async fn run_with_codex(
         }
     };
 
-    let mut seq = latest_seq(codex_state.inner())?;
+    let mut seq = latest_seq(app.clone()).await?;
     let mut turn_params = json!({
         "threadId": thread_id,
         "input": [
@@ -287,11 +289,12 @@ pub async fn run_with_codex(
         }
     }
     let started = rpc_call(
-        codex_state.inner(),
+        app.clone(),
         "turn/start",
         turn_params,
         Duration::from_secs(30),
-    )?;
+    )
+    .await?;
     let turn_id = extract_turn_id(&started)
         .or_else(|| {
             started
@@ -314,15 +317,16 @@ pub async fn run_with_codex(
         if cancel.is_cancelled() && !interrupted {
             interrupted = true;
             let _ = rpc_call(
-                codex_state.inner(),
+                app.clone(),
                 "turn/interrupt",
                 json!({ "threadId": thread_id }),
                 Duration::from_secs(10),
-            );
+            )
+            .await;
         }
 
         let maybe_notification =
-            wait_notification_after(codex_state.inner(), seq, Duration::from_millis(500))?;
+            wait_notification_after(app.clone(), seq, Duration::from_millis(500)).await?;
 
         let Some(notification) = maybe_notification else {
             continue;

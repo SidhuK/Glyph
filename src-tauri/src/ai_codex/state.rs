@@ -23,6 +23,8 @@ enum RpcReply {
 struct RuntimeProcess {
     child: Child,
     stdin: Arc<Mutex<ChildStdin>>,
+    pending: Arc<Mutex<HashMap<u64, mpsc::Sender<RpcReply>>>>,
+    notifications: Arc<(Mutex<NotificationQueue>, Condvar)>,
     initialized: bool,
 }
 
@@ -64,8 +66,6 @@ impl NotificationQueue {
 
 pub struct CodexState {
     process: Mutex<Option<RuntimeProcess>>,
-    pending: Arc<Mutex<HashMap<u64, mpsc::Sender<RpcReply>>>>,
-    notifications: Arc<(Mutex<NotificationQueue>, Condvar)>,
     next_id: AtomicU64,
 }
 
@@ -73,8 +73,6 @@ impl Default for CodexState {
     fn default() -> Self {
         Self {
             process: Mutex::new(None),
-            pending: Arc::new(Mutex::new(HashMap::new())),
-            notifications: Arc::new((Mutex::new(NotificationQueue::new()), Condvar::new())),
             next_id: AtomicU64::new(1),
         }
     }
@@ -139,7 +137,7 @@ impl CodexState {
     fn spawn_process(&self) -> Result<RuntimeProcess, String> {
         let codex_bin = Self::resolve_codex_binary()?;
         let mut child = Command::new(&codex_bin)
-            .args(["app-server"])
+            .args(["app-server", "--listen", "stdio://"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -152,27 +150,42 @@ impl CodexState {
                 )
             })?;
 
-        let stdin = child
-            .stdin
-            .take()
-            .ok_or_else(|| "failed to capture codex stdin".to_string())?;
-        let stdout = child
-            .stdout
-            .take()
-            .ok_or_else(|| "failed to capture codex stdout".to_string())?;
-        let stderr = child
-            .stderr
-            .take()
-            .ok_or_else(|| "failed to capture codex stderr".to_string())?;
+        let stdin = match child.stdin.take() {
+            Some(stdin) => stdin,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stdin".to_string());
+            }
+        };
+        let stdout = match child.stdout.take() {
+            Some(stdout) => stdout,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stdout".to_string());
+            }
+        };
+        let stderr = match child.stderr.take() {
+            Some(stderr) => stderr,
+            None => {
+                Self::stop_child(&mut child);
+                return Err("failed to capture codex stderr".to_string());
+            }
+        };
 
-        let pending = Arc::clone(&self.pending);
-        let notifications = Arc::clone(&self.notifications);
-        std::thread::spawn(move || read_stdout_loop(stdout, pending, notifications));
+        let pending = Arc::new(Mutex::new(HashMap::new()));
+        let notifications = Arc::new((Mutex::new(NotificationQueue::new()), Condvar::new()));
+        let pending_for_reader = Arc::clone(&pending);
+        let notifications_for_reader = Arc::clone(&notifications);
+        std::thread::spawn(move || {
+            read_stdout_loop(stdout, pending_for_reader, notifications_for_reader)
+        });
         std::thread::spawn(move || read_stderr_loop(stderr));
 
         Ok(RuntimeProcess {
             child,
             stdin: Arc::new(Mutex::new(stdin)),
+            pending,
+            notifications,
             initialized: false,
         })
     }
@@ -188,6 +201,37 @@ impl CodexState {
             .write_all(&line)
             .and_then(|_| guard.flush())
             .map_err(|e| format!("failed writing to codex app-server: {e}"))
+    }
+
+    fn child_exit_message(process: &mut RuntimeProcess) -> Option<String> {
+        match process.child.try_wait() {
+            Ok(Some(status)) => Some(format!("codex app-server exited with {status}")),
+            Ok(None) => None,
+            Err(error) => Some(format!("failed checking codex app-server: {error}")),
+        }
+    }
+
+    fn stop_child(child: &mut Child) {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+
+    fn stop_process(process: RuntimeProcess) {
+        let mut child = process.child;
+        Self::stop_child(&mut child);
+    }
+
+    fn discard_process(guard: &mut Option<RuntimeProcess>) {
+        if let Some(stale) = guard.take() {
+            Self::stop_process(stale);
+        }
+    }
+
+    fn is_transport_failure(error: &str) -> bool {
+        let error = error.to_ascii_lowercase();
+        error.contains("broken pipe")
+            || error.contains("failed writing to codex app-server")
+            || error.contains("codex app-server process exited")
     }
 
     fn ensure_process_locked<'a>(
@@ -208,9 +252,9 @@ impl CodexState {
         }
 
         let init_params = json!({
-            "protocolVersion": "1",
             "clientInfo": {
                 "name": "Glyph",
+                "title": "Glyph",
                 "version": "0.1.0"
             }
         });
@@ -218,7 +262,6 @@ impl CodexState {
         Self::write_line(
             process,
             &json!({
-                "jsonrpc": "2.0",
                 "method": "initialized",
                 "params": {}
             }),
@@ -237,7 +280,7 @@ impl CodexState {
         let id = self.next_id.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = mpsc::channel::<RpcReply>();
         {
-            let mut pending = self
+            let mut pending = process
                 .pending
                 .lock()
                 .map_err(|_| "pending map lock poisoned".to_string())?;
@@ -245,13 +288,12 @@ impl CodexState {
         }
 
         let msg = json!({
-            "jsonrpc": "2.0",
             "id": id,
             "method": method,
             "params": params,
         });
         if let Err(e) = Self::write_line(process, &msg) {
-            let mut pending = self
+            let mut pending = process
                 .pending
                 .lock()
                 .map_err(|_| "pending map lock poisoned".to_string())?;
@@ -263,7 +305,7 @@ impl CodexState {
             Ok(RpcReply::Result(v)) => Ok(v),
             Ok(RpcReply::Error(e)) => Err(e),
             Err(_) => {
-                let mut pending = self
+                let mut pending = process
                     .pending
                     .lock()
                     .map_err(|_| "pending map lock poisoned".to_string())?;
@@ -278,13 +320,58 @@ impl CodexState {
             .process
             .lock()
             .map_err(|_| "codex process lock poisoned".to_string())?;
-        let process = self.ensure_process_locked(&mut guard)?;
-        self.ensure_initialized_locked(process)?;
-        self.call_locked(process, method, params, timeout)
+
+        for attempt in 0..2 {
+            let exited = guard
+                .as_mut()
+                .and_then(Self::child_exit_message)
+                .map(|error| {
+                    debug!("{error}; restarting codex app-server");
+                })
+                .is_some();
+            if exited {
+                Self::discard_process(&mut guard);
+            }
+
+            let process = self.ensure_process_locked(&mut guard)?;
+            if let Err(error) = self.ensure_initialized_locked(process) {
+                if attempt == 0 && Self::is_transport_failure(&error) {
+                    debug!("{error}; restarting codex app-server");
+                    Self::discard_process(&mut guard);
+                    continue;
+                }
+                return Err(error);
+            }
+
+            let result = self.call_locked(process, method, params.clone(), timeout);
+            if let Err(error) = &result {
+                let child_exited = guard.as_mut().and_then(Self::child_exit_message).is_some();
+                if child_exited || Self::is_transport_failure(error) {
+                    Self::discard_process(&mut guard);
+                }
+            }
+            return result;
+        }
+
+        Err(format!(
+            "codex app-server unavailable while calling {method}"
+        ))
     }
 
     pub fn latest_notification_seq(&self) -> Result<u64, String> {
-        let (lock, _) = &*self.notifications;
+        let notifications = {
+            let guard = self
+                .process
+                .lock()
+                .map_err(|_| "codex process lock poisoned".to_string())?;
+            guard
+                .as_ref()
+                .map(|process| Arc::clone(&process.notifications))
+        };
+        let Some(notifications) = notifications else {
+            return Ok(0);
+        };
+        let (lock, _) = &*notifications;
         let queue = lock
             .lock()
             .map_err(|_| "codex notification lock poisoned".to_string())?;
@@ -296,7 +383,19 @@ impl CodexState {
         after_seq: u64,
         timeout: Duration,
     ) -> Result<Option<CodexNotification>, String> {
-        let (lock, cv) = &*self.notifications;
+        let notifications = {
+            let guard = self
+                .process
+                .lock()
+                .map_err(|_| "codex process lock poisoned".to_string())?;
+            guard
+                .as_ref()
+                .map(|process| Arc::clone(&process.notifications))
+        };
+        let Some(notifications) = notifications else {
+            return Ok(None);
+        };
+        let (lock, cv) = &*notifications;
         let mut queue = lock
             .lock()
             .map_err(|_| "codex notification lock poisoned".to_string())?;
@@ -316,10 +415,7 @@ impl CodexState {
 impl Drop for CodexState {
     fn drop(&mut self) {
         if let Ok(mut guard) = self.process.lock() {
-            if let Some(mut process) = guard.take() {
-                let _ = process.child.kill();
-                let _ = process.child.wait();
-            }
+            Self::discard_process(&mut guard);
         }
     }
 }
@@ -380,6 +476,14 @@ fn read_stdout_loop(
                 debug!("codex notification seq={seq} method={method}");
                 cv.notify_all();
             }
+        }
+    }
+
+    if let Ok(mut map) = pending.lock() {
+        for (_, tx) in map.drain() {
+            let _ = tx.send(RpcReply::Error(
+                "codex app-server process exited".to_string(),
+            ));
         }
     }
 

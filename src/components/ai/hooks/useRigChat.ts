@@ -152,9 +152,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 			try {
 				clearDoneTimer();
 				const requestedThreadId = options?.body?.thread_id?.trim() ?? "";
-				const threadId =
-					requestedThreadId || activeThreadIdRef.current || crypto.randomUUID();
-				activeThreadIdRef.current = threadId;
+				const threadId = requestedThreadId || activeThreadIdRef.current;
+				if (threadId) activeThreadIdRef.current = threadId;
 				const systemPrompt = options?.body?.system_prompt?.trim() ?? "";
 				const requestMessages = asAiMessages([
 					...previousMessages,
@@ -241,7 +240,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					request: {
 						profile_id: profileId,
 						messages: requestMessages,
-						thread_id: threadId,
+						thread_id: threadId || undefined,
 						mode: options?.body?.mode ?? "create",
 						context: options?.body?.context || undefined,
 						context_manifest: options?.body?.context_manifest,
