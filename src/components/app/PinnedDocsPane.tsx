@@ -83,9 +83,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		return (
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
-					<div className="allDocsHeadingGroup">
-						<h1 className="allDocsTitle">{t("pinned.title")}</h1>
-					</div>
+					<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 				</header>
 				<div className="databaseLoadingState">Loading pinned notes...</div>
 			</section>
@@ -96,9 +94,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		return (
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
-					<div className="allDocsHeadingGroup">
-						<h1 className="allDocsTitle">{t("pinned.title")}</h1>
-					</div>
+					<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 				</header>
 				<div className="databaseLoadingState">
 					No pinned notes yet. Pin a note from the file tree to get started.
@@ -110,9 +106,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 	return (
 		<section className="allDocsPane">
 			<header className="allDocsHeader">
-				<div className="allDocsHeadingGroup">
-					<h1 className="allDocsTitle">{t("pinned.title")}</h1>
-				</div>
+				<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 			</header>
 			<div className="allDocsSections">
 				<div className="allDocsGrid">

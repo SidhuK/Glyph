@@ -26,6 +26,7 @@ import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
+import { Button } from "../ui/shadcn/button";
 import { AllDocsCard, prepareAllDocsCardProps } from "./AllDocsCard";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
@@ -235,12 +236,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 	return (
 		<section ref={paneRef} className="allDocsPane">
 			<header className="allDocsHeader">
-				<div className="allDocsHeadingGroup">
-					<h1 className="allDocsTitle">{t("allNotes.title")}</h1>
-				</div>
-				<button
+				<h1 className="allDocsTitle">{t("allNotes.title")}</h1>
+				<Button
 					type="button"
-					className="allDocsHeaderAction"
+					variant="ghost"
+					size="sm"
 					onClick={() => {
 						cancelActivityHoverPrefetch();
 						onOpenActivity();
@@ -252,11 +252,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 				>
 					<HugeiconsIcon
 						icon={TimelineEventIcon}
-						size="var(--icon-md)"
-						strokeWidth={0.9}
+						strokeWidth={1}
+						data-icon="inline-start"
 					/>
 					<span>{t("allNotes.showActivity")}</span>
-				</button>
+				</Button>
 			</header>
 			<div
 				className="allDocsSections is-virtualized"
@@ -279,9 +279,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 							style={{ transform: `translateY(${virtualRow.start}px)` }}
 						>
 							{row.kind === "header" ? (
-								<div className="allDocsSectionHeader">
-									<h2 className="allDocsSectionTitle">{row.label}</h2>
-								</div>
+								<h2 className="allDocsSectionTitle">{row.label}</h2>
 							) : (
 								<div className="allDocsGrid">
 									{row.notes.map((note, index) => {

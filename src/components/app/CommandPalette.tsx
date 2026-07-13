@@ -7,7 +7,6 @@ import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
-import { CommandPaletteFooter } from "./CommandPaletteFooter";
 import { CommandSearchFilters } from "./CommandSearchFilters";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
@@ -233,7 +232,7 @@ export function CommandPalette({
 			<DialogContent
 				className={cn(
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[560px]",
+					isSearchTab ? "sm:max-w-[840px]" : "sm:max-w-[540px]",
 				)}
 				data-search-tab={isSearchTab ? "true" : "false"}
 				showCloseButton={false}
@@ -296,6 +295,13 @@ export function CommandPalette({
 						data-with-preview={showPreviewColumn ? "true" : "false"}
 						ref={listRef}
 					>
+						{activeTab === "search" && query.trim() ? (
+							<output className="sr-only">
+								{isSearching
+									? t("commandPalette.searching")
+									: t("commandPalette.results", { count: searchItems.length })}
+							</output>
+						) : null}
 						{activeTab === "commands" ? (
 							<CommandList
 								filtered={filtered}
@@ -310,36 +316,22 @@ export function CommandPalette({
 								onRunCommand={runCommand}
 							/>
 						) : (
-							<>
-								{query.trim() ? (
-									<div
-										className="commandPaletteResultCountPill"
-										aria-live="polite"
-									>
-										{isSearching
-											? t("commandPalette.searching")
-											: t("commandPalette.results", {
-													count: searchItems.length,
-												})}
-									</div>
-								) : null}
-								<SearchResultsList
-									query={query}
-									isSearching={isSearching}
-									titleMatches={titleMatches}
-									contentMatches={contentMatches}
-									recentFiles={recentFiles}
-									selectedIndex={resolvedSelectedIndex}
-									onSetSelectedIndex={(index) =>
-										setState((curr) => ({
-											...curr,
-											selectedIndex: index,
-											selectedId: searchItems[index]?.id ?? null,
-										}))
-									}
-									onSelectResult={selectSearchResult}
-								/>
-							</>
+							<SearchResultsList
+								query={query}
+								isSearching={isSearching}
+								titleMatches={titleMatches}
+								contentMatches={contentMatches}
+								recentFiles={recentFiles}
+								selectedIndex={resolvedSelectedIndex}
+								onSetSelectedIndex={(index) =>
+									setState((curr) => ({
+										...curr,
+										selectedIndex: index,
+										selectedId: searchItems[index]?.id ?? null,
+									}))
+								}
+								onSelectResult={selectSearchResult}
+							/>
 						)}
 					</div>
 					{showPreviewColumn ? (
@@ -353,7 +345,16 @@ export function CommandPalette({
 						</aside>
 					) : null}
 				</div>
-				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
+				{canSearch ? (
+					<div className="commandPaletteModeHint">
+						<kbd>Tab</kbd>
+						<span>
+							{activeTab === "search"
+								? t("commandPalette.commands")
+								: t("commandPalette.search")}
+						</span>
+					</div>
+				) : null}
 			</DialogContent>
 		</Dialog>
 	);

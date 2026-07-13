@@ -1,11 +1,11 @@
 /* ── Palette container ── */
 
 .commandPalette {
-	width: min(560px, calc(100vw - 48px));
-	max-height: min(82vh, 760px);
+	width: min(540px, calc(100vw - 48px));
+	height: min(560px, 72vh);
+	max-height: min(560px, 72vh);
 	overflow: hidden;
 	border-radius: var(--radius-2xl);
-	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-float);
 	display: flex;
@@ -15,37 +15,11 @@
 
 .commandPalette[data-search-tab="true"] {
 	width: min(840px, calc(100vw - 48px));
-	height: min(560px, 72vh);
-	max-height: min(560px, 72vh);
 }
 
 .commandPaletteHeader {
-	position: sticky;
-	top: 0;
-	z-index: 3;
 	flex-shrink: 0;
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
-	padding: 10px 14px 0;
-	backdrop-filter: blur(12px) saturate(1.01);
-	-webkit-backdrop-filter: blur(12px) saturate(1.01);
-}
-
-.commandPaletteHeader::after {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	bottom: -22px;
-	height: 22px;
-	pointer-events: none;
-	background: linear-gradient(
-		to bottom,
-		color-mix(in srgb, var(--bg-primary) 72%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 28%, transparent) 52%,
-		transparent 100%
-	);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
+	padding: 6px 12px 0;
 }
 
 .commandPaletteBody {
@@ -76,76 +50,6 @@
 	background: var(--bg-primary);
 }
 
-.commandPaletteFooter {
-	position: relative;
-	z-index: 2;
-	flex-shrink: 0;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 8px 14px;
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
-	backdrop-filter: blur(12px) saturate(1.01);
-	-webkit-backdrop-filter: blur(12px) saturate(1.01);
-}
-
-.commandPaletteFooter::before {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: -22px;
-	height: 22px;
-	pointer-events: none;
-	background: linear-gradient(
-		to top,
-		color-mix(in srgb, var(--bg-primary) 72%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 28%, transparent) 52%,
-		transparent 100%
-	);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-}
-
-.commandPaletteFooterItem {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.commandPaletteFooterKeys {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	flex: 0 0 auto;
-}
-
-.commandPaletteFooterLabel {
-	font-size: var(--text-sm);
-	color: var(--text-secondary);
-	white-space: nowrap;
-}
-
-.commandPaletteFooter kbd {
-	min-width: calc(var(--text-base) * 1.6);
-	height: calc(var(--text-base) * 1.6);
-	padding: 0 calc(var(--text-base) * 0.43);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1;
-	font-weight: var(--font-medium);
-	font-family: var(--font-mono);
-	color: var(--text-tertiary);
-	background: var(--bg-tertiary);
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	border-radius: var(--radius-sm);
-	box-shadow: var(--shadow-sm);
-}
-
 /* ── Search input row ── */
 
 .commandPaletteInputWrapper {
@@ -154,20 +58,6 @@
 	gap: 8px;
 	height: 40px;
 	padding: 0 12px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
-	border-radius: var(--radius-lg);
-	background: var(--bg-primary);
-	transition: border-color var(--transition-fast), box-shadow
-		var(--transition-fast), background var(--transition-fast);
-}
-
-.commandPaletteInputWrapper:hover {
-	border-color: var(--border-strong);
-}
-
-.commandPaletteInputWrapper:focus-within {
-	border-color: var(--border-focus);
-	box-shadow: none;
 }
 
 .commandPaletteSearchIcon {
@@ -186,7 +76,7 @@
 	outline: 0;
 	appearance: none;
 	font: inherit;
-	font-size: var(--text-sm);
+	font-size: var(--text-md);
 	color: var(--text-primary);
 	background: transparent;
 	box-shadow: none;
@@ -198,7 +88,8 @@
 
 .commandPaletteInput:focus,
 .commandPaletteInput:focus-visible {
-	border-color: transparent;
+	border: 0;
+	outline: 0;
 	box-shadow: none;
 }
 
@@ -207,27 +98,25 @@
 	align-items: center;
 	justify-content: flex-start;
 	gap: 8px;
-	padding: 6px 0 6px;
+	padding: 4px 0 6px;
 }
 
 .commandSearchFilterBtn {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	border: 1px solid var(--border-light);
+	border: 0;
 	border-radius: var(--radius-md);
-	background: var(--bg-primary);
+	background: var(--bg-secondary);
 	color: var(--text-secondary);
 	height: 28px;
 	padding: 0 11px;
 	font-size: var(--text-xs);
-	box-shadow: var(--shadow-sm);
 }
 
 .commandSearchFilterBtn[data-active="true"] {
 	color: var(--text-primary);
-	border-color: var(--border-default);
-	background: var(--bg-primary);
+	background: var(--bg-hover);
 }
 
 /* ── Results list ── */
@@ -235,20 +124,16 @@
 .commandPaletteList {
 	flex: 1;
 	min-height: 0;
-	padding: 4px 8px 6px;
-	max-height: none;
+	padding: 4px 8px 10px;
 	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow-y: auto;
 	scrollbar-width: thin;
 	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent)
 		transparent;
-	scrollbar-gutter: stable;
-	scroll-padding: 4px;
-	position: relative;
-	padding-top: 12px;
+	scroll-padding: 8px;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 0;
 }
 
 .commandPaletteList[data-with-preview="true"] {
@@ -278,42 +163,22 @@
 	background-clip: padding-box;
 }
 
-.commandPaletteList > .commandPaletteItem {
-	flex-shrink: 0;
-}
-
-.commandPaletteResultCountPill {
-	position: sticky;
-	top: 4px;
-	z-index: 2;
-	margin: 0 auto 6px;
-	width: fit-content;
-	padding: 2px 10px;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
-	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.8);
-	line-height: 1.4;
-	backdrop-filter: blur(4px);
-}
-
 /* ── Individual item ── */
 
 .commandPaletteItem {
-	position: relative;
 	width: 100%;
+	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
 	min-height: 34px;
-	padding: 0 10px;
+	padding: 0 12px;
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-primary);
-	font-size: var(--text-sm);
+	font-size: var(--text-md);
 	text-align: left;
 	cursor: default;
 	user-select: none;
@@ -332,14 +197,14 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--icon-lg);
-	height: var(--icon-lg);
+	width: var(--icon-xl);
+	height: var(--icon-xl);
 	flex: 0 0 auto;
 	color: var(--text-secondary);
 }
 
 .commandPaletteItem[data-selected="true"]:not(.commandPaletteSearchRow) {
-	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	background: var(--bg-hover);
 }
 
 /* ── Search result layout ── */
@@ -350,19 +215,19 @@
 	gap: 8px;
 	flex-shrink: 0;
 	width: 100%;
-	min-height: 32px;
-	padding: 5px 10px;
+	min-height: 34px;
+	padding: 4px 12px;
 	border-radius: var(--radius-md);
 }
 
 .commandPaletteSearchRow[data-has-snippet="true"] {
 	align-items: center;
-	padding: 6px 10px 7px;
+	padding: 5px 12px 6px;
 }
 
 .commandPaletteSearchRow[data-selected="true"],
 .commandPaletteSearchRow:hover {
-	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
+	background: var(--bg-hover);
 }
 
 .commandPaletteSearchRowIcon {
@@ -420,7 +285,7 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: var(--text-xs);
-	font-weight: var(--font-regular);
+	font-weight: var(--font-normal);
 	line-height: 1.35;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -453,14 +318,13 @@
 .commandPaletteShortcut {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
 	margin-left: auto;
 }
 
 .commandPaletteShortcut kbd {
 	min-width: 20px;
-	height: 20px;
-	padding: 0 6px;
+	height: 22px;
+	padding: 0 7px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -469,9 +333,9 @@
 	font-weight: var(--font-medium);
 	font-family: var(--font-sans);
 	color: var(--text-tertiary);
-	background: var(--bg-tertiary);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
+	background: var(--bg-secondary);
+	border: 0;
+	border-radius: var(--radius-full);
 }
 
 .commandPaletteShortcutCombo {
@@ -488,8 +352,7 @@
 }
 
 .commandSearchFilterBtn:focus-visible,
-.commandPaletteItem:focus-visible,
-.commandPaletteShortcut kbd:focus-visible {
+.commandPaletteItem:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
@@ -497,21 +360,12 @@
 
 /* ── Group labels ── */
 
-.commandPaletteGroupLabel {
-	padding: 4px 10px 3px;
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	color: var(--text-tertiary);
-	user-select: none;
-}
-
+.commandPaletteGroupLabel,
 .commandPaletteSectionLabel {
-	padding: 6px 10px 3px;
-	font-size: calc(var(--text-base) * 0.8);
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	font-weight: var(--font-medium);
-	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	padding: 8px 12px 3px;
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	color: var(--text-tertiary);
 	user-select: none;
 }
 
@@ -524,11 +378,28 @@
 	color: var(--text-tertiary);
 }
 
+.commandPaletteModeHint {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 6px;
+	padding: 4px 12px 8px;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.commandPaletteModeHint kbd {
+	padding: 2px 6px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-secondary);
+	font: inherit;
+	line-height: 1;
+}
+
 @media (max-width: 920px) {
 	.commandPalette[data-search-tab="true"] {
 		width: min(560px, calc(100vw - 48px));
-		height: min(560px, 72vh);
-		max-height: min(560px, 72vh);
 	}
 
 	.commandPaletteBody[data-with-preview="true"] {
@@ -537,10 +408,5 @@
 
 	.commandPalettePreview {
 		display: none;
-	}
-
-	.commandPaletteFooter {
-		flex-wrap: wrap;
-		justify-content: flex-start;
 	}
 }

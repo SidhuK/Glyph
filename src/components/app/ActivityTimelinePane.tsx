@@ -39,6 +39,7 @@ import type {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
+import { Button } from "../ui/shadcn/button";
 import { AllDocsCard, prepareAllDocsCardProps } from "./AllDocsCard";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 
@@ -428,7 +429,6 @@ function ActivityHeatmap({
 									className="activityHeatmapCell"
 									data-level={level}
 									data-tooltip={tooltip}
-									title={tooltip}
 									aria-label={tooltip}
 									role="img"
 								/>
@@ -681,14 +681,16 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 				onOpenFile={onOpenFile}
 			/>
 			{notesQuery.hasNextPage ? (
-				<button
+				<Button
 					type="button"
-					className="activityLoadMore"
+					className="self-start"
+					variant="ghost"
+					size="sm"
 					disabled={notesQuery.isFetchingNextPage}
 					onClick={() => void notesQuery.fetchNextPage()}
 				>
 					{notesQuery.isFetchingNextPage ? "Loading..." : "Load older notes"}
-				</button>
+				</Button>
 			) : null}
 		</section>
 	);

@@ -53,35 +53,24 @@
 	transition: opacity 180ms ease, transform 220ms ease;
 }
 
-.markdownEditorToolbar {
-	display: inline-flex;
-	align-items: center;
-	height: 26px;
-	padding: 2px;
-	overflow: visible;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
-}
-
-.markdownEditorToolbarDivider {
-	flex: 0 0 1px;
-	align-self: stretch;
-	margin: 3px 2px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
+.markdownEditorToolbar,
 .markdownEditorToolbarActions {
 	display: inline-flex;
 	align-items: center;
+	gap: 2px;
 }
 
-.markdownEditorToolbarBtn {
+.markdownEditorToolbar {
+	overflow: visible;
+}
+
+.markdownEditorToolbarBtn,
+.markdownEditorModeBtn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 20px;
+	width: 28px;
+	height: 28px;
 	padding: 0;
 	border: 0;
 	border-radius: calc(var(--radius-md) - 2px);
@@ -89,20 +78,18 @@
 	color: var(--text-tertiary);
 	line-height: 0;
 	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition: color 120ms ease;
 }
 
-.markdownEditorToolbarBtn:hover {
+.markdownEditorToolbarBtn:hover,
+.markdownEditorToolbarBtn[data-active="true"],
+.markdownEditorModeBtn:hover,
+.markdownEditorModeBtn[data-active="true"] {
 	color: var(--text-primary);
 }
 
-.markdownEditorToolbarBtn[data-active="true"] {
-	background: var(--bg-primary);
-	color: var(--text-primary);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
-}
-
-.markdownEditorToolbarBtn:focus-visible {
+.markdownEditorToolbarBtn:focus-visible,
+.markdownEditorModeBtn:focus-visible {
 	outline: 2px solid var(--focus);
 	outline-offset: 2px;
 }
@@ -111,13 +98,13 @@
 	display: inline-grid;
 	grid-template-columns: repeat(3, minmax(0, auto));
 	align-items: center;
+	gap: 2px;
 	overflow: visible;
 }
 
 .markdownEditorModeBtnWrap {
 	position: relative;
 	display: inline-flex;
-	overflow: visible;
 }
 
 .markdownEditorModeBtnWrap .markdownEditorModeBtn:disabled {
@@ -132,16 +119,14 @@
 	width: max-content;
 	max-width: 168px;
 	padding: 4px 8px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	border-radius: var(--radius-sm);
-	background: var(--bg-primary);
+	border-radius: var(--radius-md);
+	background: var(--bg-tertiary);
 	color: var(--text-secondary);
 	font-size: calc(var(--text-base) * 0.66);
 	font-weight: var(--font-medium);
 	line-height: 1.25;
 	text-align: center;
 	text-wrap: balance;
-	box-shadow: var(--shadow-sm);
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
@@ -150,7 +135,6 @@
 }
 
 .markdownEditorModeBtnHint[data-warning="true"] {
-	border-color: color-mix(in srgb, var(--callout-warning) 34%, transparent);
 	background: color-mix(in srgb, var(--callout-warning) 14%, var(--bg-primary));
 	color: var(--status-warning-fg);
 }
@@ -162,43 +146,12 @@
 	transform: translateX(-50%) translateY(0);
 }
 
-.markdownEditorModeBtn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 20px;
-	padding: 0;
-	border: 0;
-	border-radius: calc(var(--radius-md) - 2px);
-	background: transparent;
-	color: var(--text-tertiary);
-	line-height: 0;
-	cursor: pointer;
-	transition: background-color 120ms ease, color 120ms ease;
-}
-
 .markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn {
 	color: color-mix(in srgb, var(--status-warning-fg) 72%, var(--text-tertiary));
 }
 
 .markdownEditorModeBtnWrap[data-caution="true"] .markdownEditorModeBtn:hover {
 	color: var(--status-warning-fg);
-}
-
-.markdownEditorModeBtn:hover {
-	color: var(--text-primary);
-}
-
-.markdownEditorModeBtn[data-active="true"] {
-	background: var(--bg-primary);
-	color: var(--text-primary);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
-}
-
-.markdownEditorModeBtn:focus-visible {
-	outline: 2px solid var(--focus);
-	outline-offset: 2px;
 }
 
 .markdownEditorTaskProgress {
@@ -411,49 +364,32 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	border: 0;
 	border-radius: var(--right-sidebar-island-radius, var(--radius-xl));
 	background: var(--right-sidebar-island-bg, var(--bg-primary));
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
-	box-shadow: none;
 }
 
 .markdownEditorInfoHeader {
 	position: sticky;
 	top: 0;
 	z-index: 2;
-	min-height: 42px;
-	padding: 8px 8px 5px 10px;
+	min-height: 40px;
+	padding: 6px 10px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	border-bottom: none;
-	background: transparent;
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
-}
-
-:root[data-translucent-sidebar="false"] .markdownEditorInfoHeader {
-	background: transparent;
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
 }
 
 :root[data-translucent-sidebar="false"] .notesInfoSidebarPanel {
-	border: 0;
 	border-radius: 0;
 	background: transparent;
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
 }
 
 .markdownEditorInfoClose {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 28px;
+	height: 28px;
 	border: none;
 	background: transparent;
 	color: var(--text-secondary);
@@ -463,7 +399,7 @@
 }
 
 .markdownEditorInfoClose:hover {
-	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
@@ -482,13 +418,10 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
-	padding: 2px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-secondary) 48%, transparent);
 }
 
 .markdownEditorInfoTab {
-	height: 24px;
+	height: 28px;
 	padding: 0 9px;
 	border: 0;
 	border-radius: var(--radius-sm);
@@ -506,13 +439,12 @@
 
 .markdownEditorInfoTab:hover {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-hover) 58%, transparent);
+	background: var(--bg-hover);
 }
 
 .markdownEditorInfoTab[data-active="true"] {
 	color: var(--text-primary);
-	background: var(--bg-primary);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--border-light) 34%, transparent);
+	background: var(--bg-active);
 }
 
 .markdownEditorInfoTab:focus-visible {
@@ -524,17 +456,15 @@
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
-	padding: 0 10px 14px;
-	background: transparent;
+	padding: 0 14px 16px;
 }
 
 .markdownEditorInfoSection {
 	position: relative;
-	padding: 10px 0 12px;
+	padding: 8px 0 10px;
 }
 
 .gitHistoryPanel {
-	background: transparent;
 	padding-top: 2px;
 }
 
@@ -544,7 +474,6 @@
 	align-items: flex-start;
 	width: 100%;
 	padding: 2px 12px 10px;
-	background: transparent;
 	color: var(--text-primary);
 	text-align: left;
 }
@@ -773,15 +702,12 @@
 
 .markdownEditorInfoSectionFile {
 	padding-top: 6px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
 }
 
 .markdownEditorInfoSectionLabel {
 	margin: 0 0 7px;
-	font-size: calc(var(--text-base) * 0.8);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.035em;
-	text-transform: uppercase;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
 	color: var(--text-tertiary);
 	line-height: 1.15;
 }
@@ -790,8 +716,6 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
-	text-transform: none;
-	letter-spacing: 0;
 	font-weight: var(--font-normal);
 	font-size: calc(var(--text-base) * 0.85);
 	color: var(--text-secondary);
@@ -901,7 +825,7 @@
 }
 
 .markdownEditorInfoOutlineItem[data-active="true"] {
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	background: var(--bg-active);
 	color: var(--text-primary);
 }
 

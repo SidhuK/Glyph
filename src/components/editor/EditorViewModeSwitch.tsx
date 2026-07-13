@@ -41,6 +41,7 @@ export function EditorViewModeSwitch({
 		>
 			{VIEW_MODES.map((item) => {
 				const label = t(item.labelKey);
+				const isActive = mode === item.id;
 				const showLargeNoteHint = largeNote && item.id !== "plain";
 				const hint = showLargeNoteHint ? t("mode.largeNoteHint") : label;
 
@@ -53,15 +54,15 @@ export function EditorViewModeSwitch({
 						<button
 							type="button"
 							className="markdownEditorModeBtn"
-							aria-pressed={mode === item.id}
+							aria-pressed={isActive}
 							aria-label={label}
-							data-active={mode === item.id || undefined}
+							data-active={isActive || undefined}
 							onClick={() => onModeChange(item.id)}
 						>
 							<HugeiconsIcon
 								icon={item.icon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={isActive ? 1.5 : 1}
 							/>
 						</button>
 						<span

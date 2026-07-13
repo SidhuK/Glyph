@@ -115,19 +115,10 @@
 
 .externalMarkdownFloatActions .markdownEditorToolbar {
 	flex: 0 0 auto;
-	overflow: visible;
 }
 
 .externalMarkdownFloatActions .markdownEditorModeSwitch {
-	display: inline-grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	align-items: center;
-	overflow: visible;
-}
-
-.externalMarkdownFloatActions .markdownEditorModeBtn {
-	width: 24px;
-	height: 20px;
 }
 
 .externalMarkdownSaveStatus {
