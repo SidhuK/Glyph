@@ -183,81 +183,49 @@ pub async fn run_with_codex(
     let input_text = as_text_input(system, messages);
     let root_str = root.to_string_lossy().to_string();
 
-    let thread_id = {
-        if let Some(existing) = thread_hint {
-            if !existing.trim().is_empty() {
-                let resumed = rpc_call(
-                    app.clone(),
-                    "thread/resume",
-                    json!({ "threadId": existing }),
-                    Duration::from_secs(20),
-                )
-                .await?;
-                if let Some(thread_id) = extract_thread_id(&resumed) {
-                    thread_id
-                } else {
-                    let started = rpc_call(
-                        app.clone(),
-                        "thread/start",
-                        json!({
-                            "model": model,
-                            "cwd": root_str.clone(),
-                            "approvalPolicy": "never"
-                        }),
-                        Duration::from_secs(20),
-                    )
-                    .await?;
-                    extract_thread_id(&started)
-                        .or_else(|| {
-                            started
-                                .get("id")
-                                .and_then(|v| v.as_str())
-                                .map(|s| s.to_string())
-                        })
-                        .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
-                }
-            } else {
-                let started = rpc_call(
-                    app.clone(),
-                    "thread/start",
-                    json!({
-                        "model": model,
-                        "cwd": root_str.clone(),
-                        "approvalPolicy": "never"
-                    }),
-                    Duration::from_secs(20),
-                )
-                .await?;
-                extract_thread_id(&started)
-                    .or_else(|| {
-                        started
-                            .get("id")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_string())
-                    })
-                    .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
-            }
-        } else {
-            let started = rpc_call(
+    async fn start_thread(app: AppHandle, model: &str, cwd: &str) -> Result<String, String> {
+        let started = rpc_call(
+            app,
+            "thread/start",
+            json!({
+                "model": model,
+                "cwd": cwd,
+                "approvalPolicy": "never"
+            }),
+            Duration::from_secs(20),
+        )
+        .await?;
+        extract_thread_id(&started)
+            .or_else(|| {
+                started
+                    .get("id")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string())
+            })
+            .ok_or_else(|| "missing thread id from codex thread/start".to_string())
+    }
+
+    let thread_id = match thread_hint.map(str::trim).filter(|id| !id.is_empty()) {
+        Some(existing) => {
+            let resumed = rpc_call(
                 app.clone(),
-                "thread/start",
-                json!({
-                    "model": model,
-                    "cwd": root_str.clone(),
-                    "approvalPolicy": "never"
-                }),
+                "thread/resume",
+                json!({ "threadId": existing }),
                 Duration::from_secs(20),
             )
-            .await?;
-            extract_thread_id(&started)
-                .or_else(|| {
-                    started
-                        .get("id")
-                        .and_then(|v| v.as_str())
-                        .map(|s| s.to_string())
-                })
-                .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
+            .await;
+            match resumed {
+                Ok(resumed) => {
+                    if let Some(thread_id) = extract_thread_id(&resumed) {
+                        thread_id
+                    } else {
+                        start_thread(app.clone(), model, &root_str).await?
+                    }
+                }
+                Err(_) => start_thread(app.clone(), model, &root_str).await?,
+            }
         }
+        None => start_thread(app.clone(), model, &root_str).await?,
     };
 
     let mut seq = latest_seq(app.clone()).await?;

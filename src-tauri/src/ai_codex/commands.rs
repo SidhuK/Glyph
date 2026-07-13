@@ -87,6 +87,10 @@ pub async fn codex_login_complete(
         };
         seq = notification.seq;
 
+        if notification.method == "codex/process/exited" {
+            return Err("codex app-server exited while waiting for login".to_string());
+        }
+
         if notification.method == "account/login/completed" {
             let login_id = notification
                 .params
