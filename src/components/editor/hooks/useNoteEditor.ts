@@ -275,6 +275,7 @@ function restoreSelectionSnapshot(
 	snapshot: SelectionSnapshot,
 	relPath: string,
 ): boolean {
+	if (editor.isDestroyed) return false;
 	if (snapshot.relPath !== relPath) return false;
 	const docSize = editor.state.doc.content.size;
 	const from = clampSelectionPosition(snapshot.from, docSize);
