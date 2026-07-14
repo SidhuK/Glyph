@@ -43,6 +43,17 @@ describe("wikiLinkMarkdownBridge", () => {
 		expect(postprocessMarkdownFromEditor(md)).toBe(md);
 	});
 
+	it("restores escaped callout markers with numeric kinds and folds", () => {
+		const serialized = [
+			String.raw`> \[!NOTE2\]-`,
+			String.raw`> \[!TIP\]+`,
+		].join("\n");
+
+		expect(postprocessMarkdownFromEditor(serialized)).toBe(
+			"> [!NOTE2]-\n> [!TIP]+",
+		);
+	});
+
 	it("leaves extra blank lines as normal markdown input", () => {
 		const md = "alpha\n\n\nbeta";
 		const preprocessed = preprocessMarkdownForEditor(md);

@@ -65,7 +65,7 @@ function canonicalizeWikiLinks(input: string): string {
 function restoreEscapedBracketSyntax(input: string): string {
 	return transformMarkdownOutsideCode(input, (text) =>
 		text
-			.replace(/^(\s*>\s*)\\\[!([A-Za-z_-]+)\\\](?=\s|$)/, "$1[!$2]")
+			.replace(/^(\s*>\s*)\\\[!([\w-]+)\\\]([+-]?)(?=\s|$)/, "$1[!$2]$3")
 			.replace(/\\\[\\\[([^\n]*?)\\\]\\\]/g, "[[$1]]"),
 	);
 }
