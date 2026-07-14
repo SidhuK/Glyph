@@ -51,20 +51,21 @@ export function useTableInlineControls({
 	);
 	const onCommand = useCallback(
 		(command: TableEditorCommand) => {
-			if (!editor) return;
+			if (!editor || editor.isDestroyed) return;
 			runTableEditorCommand(editor, command);
 		},
 		[editor],
 	);
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
+		if (!editor || editor.isDestroyed || mode !== "rich" || !canEdit) {
 			setCanDeleteRow(false);
 			setCanDeleteColumn(false);
 			return;
 		}
 
 		const syncDeleteCapabilities = () => {
+			if (editor.isDestroyed) return;
 			setCanDeleteRow(editor.can().deleteRow());
 			setCanDeleteColumn(editor.can().deleteColumn());
 		};
@@ -79,7 +80,7 @@ export function useTableInlineControls({
 	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
+		if (!editor || editor.isDestroyed || mode !== "rich" || !canEdit) {
 			setSelectedTable(null);
 			return;
 		}

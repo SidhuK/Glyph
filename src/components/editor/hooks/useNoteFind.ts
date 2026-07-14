@@ -96,7 +96,7 @@ export function useNoteFind({
 		if (mode === "plain") {
 			return findPlainTextSearchRanges(markdown, findQuery);
 		}
-		if (!editor) return [];
+		if (!editor || editor.isDestroyed) return [];
 		return findNoteSearchRanges(editor.state.doc, findQuery);
 	}, [editor, findOpen, findQuery, markdown, mode]);
 	const effectiveFindActiveIndex = findMatches.length
@@ -110,7 +110,7 @@ export function useNoteFind({
 
 	const selectRichFindMatch = useCallback(
 		(index: number) => {
-			if (!editor) return;
+			if (!editor || editor.isDestroyed) return;
 			const match = findMatches[index];
 			if (!match) return;
 			try {
@@ -186,7 +186,8 @@ export function useNoteFind({
 				rawEditorRef.current?.getSelectedText() ?? "",
 			);
 		}
-		if (!editor || editor.state.selection.empty) return "";
+		if (!editor || editor.isDestroyed || editor.state.selection.empty)
+			return "";
 		const selected = editor.state.doc.textBetween(
 			editor.state.selection.from,
 			editor.state.selection.to,
@@ -210,8 +211,10 @@ export function useNoteFind({
 			requestAnimationFrame(() => rawEditorRef.current?.focus());
 			return;
 		}
-		if (editor) {
-			requestAnimationFrame(() => editor.view.focus());
+		if (editor && !editor.isDestroyed) {
+			requestAnimationFrame(() => {
+				if (!editor.isDestroyed) editor.view.focus();
+			});
 		}
 	}, [editor, mode, rawEditorRef]);
 
@@ -269,7 +272,7 @@ export function useNoteFind({
 	}, [findOpen]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		if (mode === "plain" || !findOpen) {
 			editor.commands.setNoteSearch({ query: "", activeIndex: 0 });
 			return;

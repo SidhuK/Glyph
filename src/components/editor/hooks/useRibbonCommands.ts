@@ -61,9 +61,10 @@ export function useRibbonCommands({
 	onRegisterCalloutInserter,
 }: UseRibbonCommandsOptions) {
 	useEffect(() => {
-		if (!editor || mode !== "rich") return;
+		if (!editor || editor.isDestroyed || mode !== "rich") return;
 
 		const runEditorAction = (action: string) => {
+			if (editor.isDestroyed) return;
 			const host = tiptapHostRef.current;
 			if (!host || !isVisibleEditorHost(host)) return;
 			const activeElement = document.activeElement;
@@ -219,11 +220,12 @@ export function useRibbonCommands({
 
 	useEffect(() => {
 		if (!onRegisterCalloutInserter) return;
-		if (!editor || mode !== "rich") {
+		if (!editor || editor.isDestroyed || mode !== "rich") {
 			onRegisterCalloutInserter(null);
 			return;
 		}
 		onRegisterCalloutInserter((type: string) => {
+			if (editor.isDestroyed) return;
 			const host = tiptapHostRef.current?.closest(
 				".rfNodeNoteEditorBody",
 			) as HTMLElement | null;

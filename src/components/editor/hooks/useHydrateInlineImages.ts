@@ -248,6 +248,7 @@ async function resolveInlineImageDataUrl(
 }
 
 function getMountedEditorRoot(editor: Editor): HTMLElement | null {
+	if (editor.isDestroyed) return null;
 	try {
 		const root = editor.view.dom;
 		return root instanceof HTMLElement ? root : null;
@@ -262,6 +263,7 @@ function hydrateImageNodesInDocument(
 	originalSrc: string,
 	dataUrl: string,
 ) {
+	if (editor.isDestroyed) return;
 	let domPos: number;
 	try {
 		domPos = editor.view.posAtDOM(image, 0);
@@ -294,7 +296,7 @@ export function useHydrateInlineImages(
 	sourcePath: string,
 ) {
 	useEffect(() => {
-		if (!editor || !sourcePath) return;
+		if (!editor || editor.isDestroyed || !sourcePath) return;
 
 		let cancelled = false;
 		let rafId: number | null = null;
@@ -322,7 +324,7 @@ export function useHydrateInlineImages(
 				originalSrc,
 				resolverKind,
 			).then((dataUrl) => {
-				if (cancelled || !image.isConnected) return;
+				if (cancelled || editor.isDestroyed || !image.isConnected) return;
 				const currentOrigin =
 					image.getAttribute("data-glyph-origin-src")?.trim() ?? "";
 				const currentKey = currentOrigin

@@ -431,7 +431,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || chromeMinimal) {
+		if (!editor || editor.isDestroyed || mode !== "rich" || chromeMinimal) {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -456,6 +456,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		};
 
 		const syncSelectedCodeBlock = () => {
+			if (editor.isDestroyed) return;
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
 				clearSelectedCodeBlock();
@@ -561,7 +562,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const applyCodeBlockLanguage = useCallback(
 		(language: SupportedCodeBlockLanguage) => {
-			if (!editor) return;
+			if (!editor || editor.isDestroyed) return;
 			editor
 				.chain()
 				.focus(null, { scrollIntoView: false })
@@ -579,17 +580,17 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[],
 	);
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		if (mode === "rich" || mode === "preview") {
 			editor.commands.refreshMermaidPreviews();
 		}
 	}, [editor, mode]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		const root = document.documentElement;
 		const refresh = () => {
-			if (mode === "preview") {
+			if (!editor.isDestroyed && mode === "preview") {
 				editor.commands.refreshMermaidPreviews();
 			}
 		};
@@ -640,7 +641,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [selectedCodeBlock]);
 
 	const previewSelectedCodeBlock = useCallback(() => {
-		if (!editor || !selectedCodeBlock) return;
+		if (!editor || editor.isDestroyed || !selectedCodeBlock) return;
 		const node = editor.state.doc.nodeAt(selectedCodeBlock.pos);
 		if (!node || node.type.name !== "codeBlock") return;
 		enableCodeBlockPreviewAt(editor.view, selectedCodeBlock.pos);
