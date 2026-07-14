@@ -1,6 +1,7 @@
 import { MarkdownManager } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import { describe, expect, it } from "vitest";
+import { postprocessMarkdownFromEditor } from "../markdown/wikiLinkMarkdownBridge";
 import { WikiLink } from "./wikiLink";
 
 describe("WikiLink markdown manager integration", () => {
@@ -35,7 +36,7 @@ describe("WikiLink markdown manager integration", () => {
 			extensions: [StarterKit, WikiLink],
 		});
 		const json = manager.parse("Invalid [[#Heading]] text");
-		const out = manager.serialize(json);
+		const out = postprocessMarkdownFromEditor(manager.serialize(json));
 		expect(out).toContain("[[#Heading]]");
 	});
 
