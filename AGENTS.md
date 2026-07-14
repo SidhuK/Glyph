@@ -24,6 +24,8 @@ GLYPH_DEV_FORCE_TRIAL=1 pnpm tauri dev # Force trial mode to check licensing
 
 **Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check` # use this when you are ready to push your changes to the main branch, and the user has requested you to do so.
 
+Run the narrowest permitted verification during development and the full permitted verification suite once at the end. Do not announce every check separately, only when users asks you to.
+
 **Never run a dev server (Vite, `pnpm dev`, `pnpm tauri dev`, or otherwise) — the user handles dev.**
 
 ## Architecture
