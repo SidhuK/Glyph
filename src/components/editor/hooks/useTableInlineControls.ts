@@ -51,20 +51,27 @@ export function useTableInlineControls({
 	);
 	const onCommand = useCallback(
 		(command: TableEditorCommand) => {
-			if (!editor) return;
+			if (!editor || editor.isDestroyed) return;
 			runTableEditorCommand(editor, command);
 		},
 		[editor],
 	);
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
+		const clearDeleteCapabilities = () => {
 			setCanDeleteRow(false);
 			setCanDeleteColumn(false);
+		};
+		if (!editor || editor.isDestroyed || mode !== "rich" || !canEdit) {
+			clearDeleteCapabilities();
 			return;
 		}
 
 		const syncDeleteCapabilities = () => {
+			if (editor.isDestroyed) {
+				clearDeleteCapabilities();
+				return;
+			}
 			setCanDeleteRow(editor.can().deleteRow());
 			setCanDeleteColumn(editor.can().deleteColumn());
 		};
@@ -72,15 +79,20 @@ export function useTableInlineControls({
 		syncDeleteCapabilities();
 		editor.on("transaction", syncDeleteCapabilities);
 		editor.on("selectionUpdate", syncDeleteCapabilities);
+		editor.on("destroy", clearDeleteCapabilities);
 		return () => {
 			editor.off("transaction", syncDeleteCapabilities);
 			editor.off("selectionUpdate", syncDeleteCapabilities);
+			editor.off("destroy", clearDeleteCapabilities);
 		};
 	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) {
+		const clearSelectedTable = () => {
 			setSelectedTable(null);
+		};
+		if (!editor || editor.isDestroyed || mode !== "rich" || !canEdit) {
+			clearSelectedTable();
 			return;
 		}
 		const host = hostRef.current;
@@ -88,6 +100,10 @@ export function useTableInlineControls({
 		if (!host || !contentRoot) return;
 
 		const syncSelectedTable = () => {
+			if (editor.isDestroyed) {
+				clearSelectedTable();
+				return;
+			}
 			const selection = window.getSelection();
 			const anchorElement =
 				selection?.anchorNode instanceof HTMLElement
@@ -159,6 +175,7 @@ export function useTableInlineControls({
 		document.addEventListener("selectionchange", scheduleSyncSelectedTable);
 		editor.on("selectionUpdate", scheduleSyncSelectedTable);
 		editor.on("transaction", scheduleSyncSelectedTable);
+		editor.on("destroy", clearSelectedTable);
 		return () => {
 			if (syncRafRef.current !== null) {
 				window.cancelAnimationFrame(syncRafRef.current);
@@ -172,6 +189,7 @@ export function useTableInlineControls({
 			);
 			editor.off("selectionUpdate", scheduleSyncSelectedTable);
 			editor.off("transaction", scheduleSyncSelectedTable);
+			editor.off("destroy", clearSelectedTable);
 		};
 	}, [canEdit, editor, hostRef, mode]);
 

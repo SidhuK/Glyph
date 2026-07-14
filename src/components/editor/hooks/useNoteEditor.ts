@@ -275,6 +275,7 @@ function restoreSelectionSnapshot(
 	snapshot: SelectionSnapshot,
 	relPath: string,
 ): boolean {
+	if (editor.isDestroyed) return false;
 	if (snapshot.relPath !== relPath) return false;
 	const docSize = editor.state.doc.content.size;
 	const from = clampSelectionPosition(snapshot.from, docSize);
@@ -676,11 +677,12 @@ export function useNoteEditor({
 	editorRef.current = editor;
 
 	useEffect(() => {
+		if (editor?.isDestroyed) return;
 		applyEditorSpellCheck(editor, spellCheckEnabled);
 	}, [editor, spellCheckEnabled]);
 
 	useLayoutEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		const snapshot = pendingSelectionRestoreRef.current;
 		if (!snapshot) return;
 		pendingSelectionRestoreRef.current = null;
@@ -692,17 +694,17 @@ export function useNoteEditor({
 	}, [editor]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		editor.setEditable(mode === "rich");
 	}, [editor, mode]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		editor.commands.setHeadingCollapseEnabled(showCollapsibleHeadings);
 	}, [editor, showCollapsibleHeadings]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		const previousMode = previousModeRef.current;
 		previousModeRef.current = mode;
 		if (mode === "plain") return;

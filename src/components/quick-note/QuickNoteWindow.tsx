@@ -84,15 +84,17 @@ function quickNoteTarget(folder: string): QuickNoteTarget {
 }
 
 function focusEditor(editor: Editor | null) {
-	editor?.commands.focus(undefined, { scrollIntoView: false });
+	if (!editor || editor.isDestroyed) return;
+	editor.commands.focus(undefined, { scrollIntoView: false });
 }
 
 function editorHasText(editor: Editor | null): boolean {
-	return Boolean(editor?.getMarkdown().trim());
+	return Boolean(editor && !editor.isDestroyed && editor.getMarkdown().trim());
 }
 
 function clearDraft(editor: Editor | null) {
-	editor?.commands.setContent("", { contentType: "markdown" });
+	if (!editor || editor.isDestroyed) return;
+	editor.commands.setContent("", { contentType: "markdown" });
 }
 
 export function QuickNoteWindow() {

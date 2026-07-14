@@ -4,40 +4,7 @@ import {
 	DetailsSummary,
 } from "@tiptap/extension-details";
 
-const DetailsWithPersistedFirstToggle = Details.extend({
-	addNodeView() {
-		const renderDetails = this.parent?.();
-		if (!renderDetails) return null;
-		return (props) => {
-			const view = renderDetails(props);
-			const dom = view.dom;
-			if (!(dom instanceof HTMLElement)) return view;
-			const toggle = dom.querySelector(":scope > button");
-			if (!(toggle instanceof HTMLButtonElement)) return view;
-
-			toggle.addEventListener("click", () => {
-				if (!this.options.persist || !props.editor.isEditable) return;
-				if (typeof props.getPos !== "function") return;
-				const pos = props.getPos();
-				if (pos !== 0) return;
-				const node = props.editor.state.doc.nodeAt(pos);
-				if (node?.type !== this.type) return;
-				const open = !node.attrs.open;
-				props.editor
-					.chain()
-					.command(({ tr }) => {
-						tr.setNodeMarkup(pos, undefined, { ...node.attrs, open });
-						return true;
-					})
-					.run();
-			});
-
-			return view;
-		};
-	},
-});
-
-export const GlyphDetails = DetailsWithPersistedFirstToggle.configure({
+export const GlyphDetails = Details.configure({
 	persist: true,
 	openClassName: "is-open",
 	HTMLAttributes: {

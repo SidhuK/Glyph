@@ -229,9 +229,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		onChange,
 		onMathEditRequest: mathNodeEditor.open,
 	});
-	mathNodeEditor.connect(editor, mode === "rich" && !chromeMinimal);
+	const liveEditor = editor && !editor.isDestroyed ? editor : null;
+	mathNodeEditor.connect(liveEditor, mode === "rich" && !chromeMinimal);
 
-	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+	const canEdit = mode === "rich" && Boolean(liveEditor?.isEditable);
 	const showEditorChrome = canEdit && !chromeMinimal;
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
@@ -312,19 +313,19 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const tableControls = useTableInlineControls({
 		canEdit: showEditorChrome,
-		editor,
+		editor: liveEditor,
 		hostRef: tiptapHostRef,
 		mode,
 	});
 	const extractToNote = useExtractSelectionToNote({
 		actions: extractToNoteActions,
 		canEdit: showEditorChrome,
-		editor,
+		editor: liveEditor,
 		hostRef: tiptapHostRef,
 		relPath,
 	});
 	const noteFind = useNoteFind({
-		editor,
+		editor: liveEditor,
 		markdown,
 		mode,
 		relPath,
@@ -333,14 +334,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	});
 
 	useRibbonCommands({
-		editor,
+		editor: liveEditor,
 		canEdit: showEditorChrome,
 		mode,
 		tiptapHostRef,
 		tiptapHostNode,
 		onOpenLinkDialog: useCallback(
 			(href: string, target: "_self" | "_blank") => {
-				const selection = editor?.state.selection;
+				const selection = liveEditor?.state.selection;
 				if (!selection) return;
 				setLinkDialog({
 					href,
@@ -348,7 +349,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					target,
 				});
 			},
-			[editor],
+			[liveEditor],
 		),
 		onTriggerExtractToNote: extractToNote.canExtractToNote
 			? extractToNote.openExtractDialog
@@ -361,7 +362,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		setFrontmatterDraft(normalizedFrontmatter ?? "");
 		frontmatterRef.current = normalizedFrontmatter;
 		const currentBody = normalizeBody(
-			editor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
+			liveEditor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
 		);
 		const nextMarkdown = joinYamlFrontmatter(
 			normalizedFrontmatter,
@@ -431,7 +432,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || chromeMinimal) {
+		if (!editor || editor.isDestroyed || mode !== "rich" || chromeMinimal) {
 			selectedCodeBlockRef.current = null;
 			if (codeBlockCopyResetTimerRef.current !== null) {
 				window.clearTimeout(codeBlockCopyResetTimerRef.current);
@@ -456,6 +457,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		};
 
 		const syncSelectedCodeBlock = () => {
+			if (editor.isDestroyed) return;
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
 				clearSelectedCodeBlock();
@@ -561,7 +563,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const applyCodeBlockLanguage = useCallback(
 		(language: SupportedCodeBlockLanguage) => {
-			if (!editor) return;
+			if (!editor || editor.isDestroyed) return;
 			editor
 				.chain()
 				.focus(null, { scrollIntoView: false })
@@ -579,17 +581,17 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		[],
 	);
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		if (mode === "rich" || mode === "preview") {
 			editor.commands.refreshMermaidPreviews();
 		}
 	}, [editor, mode]);
 
 	useEffect(() => {
-		if (!editor) return;
+		if (!editor || editor.isDestroyed) return;
 		const root = document.documentElement;
 		const refresh = () => {
-			if (mode === "preview") {
+			if (!editor.isDestroyed && mode === "preview") {
 				editor.commands.refreshMermaidPreviews();
 			}
 		};
@@ -607,11 +609,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, []);
 	useEffect(() => {
 		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
-		const mountedEditor =
-			editor && !editor.isDestroyed && contentRoot ? editor : null;
+		const mountedEditor = liveEditor && contentRoot ? liveEditor : null;
 		onEditorReady?.(mountedEditor, mountedEditor ? contentRoot : null);
 		return () => onEditorReady?.(null, null);
-	}, [editor, onEditorReady, tiptapHostNode]);
+	}, [liveEditor, onEditorReady, tiptapHostNode]);
 
 	const copySelectedCodeBlock = useCallback(() => {
 		if (!selectedCodeBlock) return;
@@ -640,7 +641,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	}, [selectedCodeBlock]);
 
 	const previewSelectedCodeBlock = useCallback(() => {
-		if (!editor || !selectedCodeBlock) return;
+		if (!editor || editor.isDestroyed || !selectedCodeBlock) return;
 		const node = editor.state.doc.nodeAt(selectedCodeBlock.pos);
 		if (!node || node.type.name !== "codeBlock") return;
 		enableCodeBlockPreviewAt(editor.view, selectedCodeBlock.pos);
@@ -740,7 +741,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				{mode !== "plain" &&
 				(mathExtensionsReady || !markdown.includes("$")) ? (
 					<NoteEditorSurface
-						editor={editor}
+						editor={liveEditor}
 						mode={mode}
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
@@ -751,9 +752,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				) : null}
 			</div>
 			<AnimatePresence>
-				{showEditorChrome && editor ? (
+				{showEditorChrome && liveEditor ? (
 					<EditorRibbon
-						editor={editor}
+						editor={liveEditor}
 						canEdit={canEdit}
 						className="rfNodeNoteEditorRibbonBottom"
 						onExtractSelectionToNote={
@@ -775,7 +776,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			) : null}
 			{showEditorChrome ? (
 				<NoteLinkDialog
-					editor={editor}
+					editor={liveEditor}
 					canEdit={canEdit}
 					state={linkDialog}
 					onStateChange={setLinkDialog}

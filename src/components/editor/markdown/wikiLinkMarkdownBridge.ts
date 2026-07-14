@@ -62,6 +62,14 @@ function canonicalizeWikiLinks(input: string): string {
 	return transformMarkdownOutsideCode(input, canonicalizeWikiLinksText);
 }
 
+function restoreEscapedBracketSyntax(input: string): string {
+	return transformMarkdownOutsideCode(input, (text) =>
+		text
+			.replace(/^(\s*>\s*)\\\[!([\w-]+)\\\]([+-]?)(?=\s|$)/, "$1[!$2]$3")
+			.replace(/\\\[\\\[([^\n]*?)\\\]\\\]/g, "[[$1]]"),
+	);
+}
+
 const MARKDOWN_IMAGE_WITHOUT_TITLE_RE =
 	/!\[([^\]\n]*)\]\(([^)\n"]*\s[^)\n"]*)\)/g;
 
@@ -201,7 +209,9 @@ export function postprocessMarkdownFromEditor(markdown: string): string {
 				postprocessHighlightedText(
 					postprocessColoredText(
 						postprocessDetailsMarkdown(
-							postprocessHtmlEmbeds(canonicalizeWikiLinks(markdown)),
+							postprocessHtmlEmbeds(
+								canonicalizeWikiLinks(restoreEscapedBracketSyntax(markdown)),
+							),
 						),
 					),
 				),
