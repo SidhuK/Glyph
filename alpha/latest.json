@@ -1,15 +1,15 @@
 {
-  "version": "0.8.8-alpha.1",
-  "notes": "## What's Changed\n* Fix rich-text callouts and native code language picker by @SidhuK in https://github.com/SidhuK/Glyph/pull/336\n* Fix Codex app-server startup and rollout handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/337\n* Simplify command palette, editor, and notes UI by @SidhuK in https://github.com/SidhuK/Glyph/pull/338\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7...v0.8.8-alpha.1",
-  "pub_date": "2026-07-13T06:51:46.617Z",
+  "version": "0.8.8-alpha.2",
+  "notes": "## What's Changed\n* Patch vulnerable pnpm dependency graph by @SidhuK in https://github.com/SidhuK/Glyph/pull/358\n* Upgrade TipTap editor stack to 3.27.4 by @SidhuK in https://github.com/SidhuK/Glyph/pull/359\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.8-alpha.1...v0.8.8-alpha.2",
+  "pub_date": "2026-07-14T09:24:32.247Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrSmVHckFQZkFidGlNVE9vNU9PTkhpTlkzYitpeHFhSGdpZEFRRWRkU3ExelpTdlFZSDF2cjRMamVIalFTQ2hDN2FVY25OWng2RjdUWDBJMFhXa1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzOTI1NTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkb2ZrL1pCTVQyMFJzK0M3Zk1EcGptV0crUDdnNUllaEh5ZU1oaDZuNFBURmZoOWlwSEFCYUNtcmZZM0RVYzBoZDVTOVdpNG1la01lWFRyUGh1ckZBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDBra2hGdllEUm5DMWN0dW5TMittRTFVT2xsUW02Y0VyL1JvV2Nxb05zcVNMaGdybDhLZ3o4UXJBTklUV05PQmtFalQzNU1mQnlhcktkRUpDaHJYV3dnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MDIxMDY1CWZpbGU6R2x5cGguYXBwLnRhci5negphajhSc3d6QkppQXlhQmpXN0RuUXFVbEgwNmtlSEtCaWtPOW1EejBFZlZpL0NmSHlReHkrMU9qWDdabWhqQUlEVmJVVkxyVmIxTThHWHhKcU5Da1NBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.2/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDkrSmVHckFQZkFidGlNVE9vNU9PTkhpTlkzYitpeHFhSGdpZEFRRWRkU3ExelpTdlFZSDF2cjRMamVIalFTQ2hDN2FVY25OWng2RjdUWDBJMFhXa1E4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzgzOTI1NTAyCWZpbGU6R2x5cGguYXBwLnRhci5negpkb2ZrL1pCTVQyMFJzK0M3Zk1EcGptV0crUDdnNUllaEh5ZU1oaDZuNFBURmZoOWlwSEFCYUNtcmZZM0RVYzBoZDVTOVdpNG1la01lWFRyUGh1ckZBUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDBra2hGdllEUm5DMWN0dW5TMittRTFVT2xsUW02Y0VyL1JvV2Nxb05zcVNMaGdybDhLZ3o4UXJBTklUV05PQmtFalQzNU1mQnlhcktkRUpDaHJYV3dnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MDIxMDY1CWZpbGU6R2x5cGguYXBwLnRhci5negphajhSc3d6QkppQXlhQmpXN0RuUXFVbEgwNmtlSEtCaWtPOW1EejBFZlZpL0NmSHlReHkrMU9qWDdabWhqQUlEVmJVVkxyVmIxTThHWHhKcU5Da1NBZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8-alpha.2/Glyph_aarch64.app.tar.gz"
     }
   }
 }
