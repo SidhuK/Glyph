@@ -1,3 +1,5 @@
+import { Download04Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 
 interface WindowChromeUpdateButtonProps {
@@ -28,7 +30,8 @@ export function WindowChromeUpdateButton({
 						updateVersion ? `Install update ${updateVersion}` : "Install update"
 					}
 				>
-					<span>Update available</span>
+					<HugeiconsIcon icon={Download04Icon} />
+					<span>Update</span>
 				</m.button>
 			) : null}
 		</AnimatePresence>
