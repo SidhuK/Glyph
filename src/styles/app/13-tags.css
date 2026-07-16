@@ -32,8 +32,6 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: calc(var(--text-base) * 0.9);
-	letter-spacing: 0.07em;
 	color: var(--text-tertiary);
 }
 
@@ -51,10 +49,8 @@ button.tagsHeaderTitle {
 	flex: 1;
 	cursor: pointer;
 	text-align: left;
-	font: inherit;
+	font-family: inherit;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
-	letter-spacing: 0.07em;
 	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;
@@ -69,11 +65,6 @@ button.tagsHeaderTitle:active {
 	box-shadow: none;
 	color: var(--text-secondary);
 	outline: none;
-}
-
-.tagsHeaderChevron {
-	color: inherit;
-	flex-shrink: 0;
 }
 
 .tagsList {
@@ -94,7 +85,7 @@ button.tagsHeaderTitle:active {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: var(--space-3);
+	gap: 6px;
 	padding: 1px 8px;
 	min-height: 28px;
 	border-radius: var(--radius-8);
@@ -145,14 +136,15 @@ button.tagsHeaderTitle:active {
 }
 
 .tagsIcon {
-	width: var(--icon-sm);
-	height: var(--icon-sm);
+	width: var(--icon-md);
+	height: var(--icon-md);
 }
 
-.tagsIconPicker {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-	margin-left: -3px;
+button.tagsIconPicker {
+	width: var(--icon-md);
+	height: var(--icon-md);
+	padding: 0;
+	margin-left: 0;
 	color: currentcolor;
 }
 

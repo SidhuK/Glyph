@@ -222,6 +222,14 @@
 	flex-shrink: 0;
 }
 
+.sidebarStackHeaderToggle,
+.tagsHeaderTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-normal);
+	line-height: 1.3;
+	letter-spacing: normal;
+}
+
 .sidebarStackHeaderToggle {
 	appearance: none;
 	background: transparent;
@@ -234,8 +242,6 @@
 	text-align: left;
 	font: inherit;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
-	letter-spacing: 0.07em;
 	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;
@@ -324,11 +330,6 @@
 
 .sidebarStackHeaderSortSelect:focus {
 	box-shadow: none;
-}
-
-.sidebarStackHeaderChevron {
-	color: inherit;
-	flex-shrink: 0;
 }
 
 .sidebarStackItem {
