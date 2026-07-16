@@ -18,12 +18,15 @@
 	isolation: isolate;
 }
 
-.databaseHeadCell {
+.databaseTable .databaseHeadCell {
 	position: sticky;
 	top: 0;
 	z-index: 7;
+	height: var(--database-table-header-height);
 	background: var(--bg-primary);
 	text-align: left;
+	padding-top: 0;
+	padding-bottom: 0;
 	padding-right: 10px;
 	border-bottom: 1px solid var(--border-light);
 	font-size: calc(var(--text-base) * 0.9);
@@ -40,10 +43,6 @@
 
 .databaseHeadCell:last-child {
 	padding-right: 14px;
-}
-
-.databaseHeadCell:not(:last-child) {
-	border-right: none;
 }
 
 .databaseColumnResizeHandle {
@@ -105,14 +104,14 @@
 }
 
 .databaseHeaderButton {
-	font-weight: 700;
+	font-weight: var(--font-semibold);
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	line-height: 1.4;
+	line-height: 1.25;
 	transition: color 140ms ease;
 }
 
@@ -136,14 +135,14 @@
 .databaseHeaderLabel {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 	width: 100%;
 	min-width: 0;
 }
 
 .databaseHeaderIconPicker {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
+	width: var(--icon-md);
+	height: var(--icon-md);
 	color: var(--text-tertiary);
 }
 
@@ -170,7 +169,7 @@
 	padding-top: 0;
 	padding-bottom: 0;
 	padding-right: 10px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
 }
 
 .databaseBodyCell:has(.databaseTagSuggestions),
@@ -193,11 +192,6 @@
 
 .databaseBodyCell:last-child {
 	padding-right: 14px;
-}
-
-.databaseBodyCell:not(:last-child) {
-	border-right: 1px solid
-		color-mix(in srgb, var(--border-light) 82%, transparent);
 }
 
 .databaseCellInput,
@@ -250,8 +244,10 @@
 
 .databaseCellPills {
 	display: flex;
+	flex: 1 1 auto;
 	flex-wrap: nowrap;
-	gap: 6px;
+	gap: 4px;
+	width: 100%;
 	min-height: 0;
 	min-width: 0;
 	overflow: hidden;
@@ -341,11 +337,12 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
-	padding: 2px 8px;
-	border: 0;
-	border-radius: var(--radius-4);
-	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
-	font-size: calc(var(--text-base) * 0.9);
+	min-height: 22px;
+	padding: 0 7px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: var(--pill-radius);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--database-tone) 68%, var(--text-primary));
 	box-shadow: none;
@@ -366,7 +363,7 @@
 	top: -9999px;
 	left: -9999px;
 	display: flex;
-	gap: 6px;
+	gap: 4px;
 	visibility: hidden;
 	pointer-events: none;
 	white-space: nowrap;
@@ -386,6 +383,11 @@
 .databaseCellButton.is-pill-list {
 	width: 100%;
 	overflow: hidden;
+}
+
+.databaseCellButton .propertyValueText {
+	min-height: 24px;
+	line-height: 1.25;
 }
 
 .databaseCellButton.is-title {
@@ -462,7 +464,7 @@
 }
 
 .databaseRow:hover {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
 }
 
 .databaseRow[data-state="selected"] {
@@ -489,8 +491,8 @@
 	gap: 6px;
 	min-height: 34px;
 	padding: 10px 14px 6px;
-	background: color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary));
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 20%, var(--bg-primary));
+	color: var(--text-secondary);
 }
 
 .databaseGroupAddButton {
@@ -499,13 +501,15 @@
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	width: 24px;
-	height: 24px;
+	margin-left: auto;
+	width: 20px;
+	height: 20px;
 	border: none;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-	color: var(--interactive-accent);
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
 	cursor: pointer;
+	transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .databaseGroupAddButton svg {
@@ -515,8 +519,8 @@
 }
 
 .databaseGroupAddButton:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	color: var(--interactive-accent-hover);
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .databaseTable .databaseGroupCell {
@@ -530,12 +534,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--text-primary);
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: 750;
-	letter-spacing: 0.06em;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.02em;
 	line-height: 1.15;
-	text-transform: uppercase;
+	text-transform: none;
 }
 
 .databaseLoadingState,
@@ -918,8 +922,4 @@
 .createCollectionCta[data-slot="button"]:hover:not(:disabled) {
 	background: var(--interactive-accent-hover);
 	color: var(--text-inverse);
-}
-
-.databaseHeaderRow {
-	border-bottom: 1px solid var(--border-light);
 }
