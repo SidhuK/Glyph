@@ -5,6 +5,12 @@ import {
 	ATTACHMENT_MODE_UI,
 	DEFAULT_ATTACHMENT_FOLDER,
 } from "./attachmentStorage";
+import {
+	DEFAULT_EDITOR_VIEW_MODE,
+	type EditorViewMode,
+	isEditorViewMode,
+	setCachedDefaultEditorViewMode,
+} from "./editorMode";
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import {
@@ -181,6 +187,7 @@ interface EditorSettings {
 	colorfulHeadings: boolean;
 	beautifulTags: boolean;
 	editorWidthMode: EditorWidthMode;
+	defaultEditorMode: EditorViewMode;
 	attachmentStorageMode: AttachmentStorageMode;
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
@@ -220,6 +227,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	colorfulHeadings: false,
 	beautifulTags: false,
 	editorWidthMode: "compact",
+	defaultEditorMode: DEFAULT_EDITOR_VIEW_MODE,
 	attachmentStorageMode: "note-folder",
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
@@ -289,6 +297,12 @@ function asEditorWidthMode(value: unknown): EditorWidthMode {
 		EDITOR_WIDTH_MODES.has(value as EditorWidthMode)
 		? (value as EditorWidthMode)
 		: DEFAULT_EDITOR_SETTINGS.editorWidthMode;
+}
+
+function asDefaultEditorMode(value: unknown): EditorViewMode {
+	return isEditorViewMode(value)
+		? value
+		: DEFAULT_EDITOR_SETTINGS.defaultEditorMode;
 }
 
 function asUiAccent(value: unknown): UiAccent {
@@ -413,6 +427,7 @@ async function emitSettingsUpdated(payload: {
 		colorfulHeadings?: boolean;
 		beautifulTags?: boolean;
 		editorWidthMode?: EditorWidthMode;
+		defaultEditorMode?: EditorViewMode;
 		attachmentStorageMode?: AttachmentStorageMode;
 		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
@@ -553,6 +568,7 @@ const KEYS = {
 	editorColorfulHeadings: "editor.colorfulHeadings",
 	editorBeautifulTags: "editor.beautifulTags",
 	editorEditorWidthMode: "editor.editorWidthMode",
+	editorDefaultEditorMode: "editor.defaultEditorMode",
 	editorAttachmentStorageMode: "editor.attachmentStorageMode",
 	editorAttachmentFolder: "editor.attachmentFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
@@ -918,6 +934,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorEditorWidthMode,
 	);
+	const rawEditorDefaultEditorMode = getSettingValue(
+		entries,
+		KEYS.editorDefaultEditorMode,
+	);
 	const rawEditorAttachmentStorageMode = getSettingValue(
 		entries,
 		KEYS.editorAttachmentStorageMode,
@@ -1068,6 +1088,7 @@ export async function loadSettings(
 				? rawEditorBeautifulTags
 				: DEFAULT_EDITOR_SETTINGS.beautifulTags,
 		editorWidthMode: asEditorWidthMode(rawEditorWidthMode),
+		defaultEditorMode: asDefaultEditorMode(rawEditorDefaultEditorMode),
 		attachmentStorageMode,
 		attachmentFolder,
 		enablePeopleMentionsAsTags:
@@ -1089,6 +1110,7 @@ export async function loadSettings(
 				? rawDatabaseShowColumnColor
 				: DEFAULT_DATABASE_SETTINGS.showColumnColor,
 	};
+	setCachedDefaultEditorViewMode(editor.defaultEditorMode);
 	return {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
@@ -1508,6 +1530,19 @@ export async function setEditorShowFrontmatterInEditor(
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { showFrontmatterInEditor: enabled },
+	});
+}
+
+export async function setEditorDefaultEditorMode(
+	mode: EditorViewMode,
+): Promise<void> {
+	const store = await getSettingsStore();
+	const next = asDefaultEditorMode(mode);
+	await store.set(KEYS.editorDefaultEditorMode, next);
+	await saveSettingsStore(store);
+	setCachedDefaultEditorViewMode(next);
+	void emitSettingsUpdated({
+		editor: { defaultEditorMode: next },
 	});
 }
 

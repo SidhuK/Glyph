@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Controls for editing behavior and note structure inside Glyph.",
+		"defaultEditorMode": {
+			"label": "Default editor mode",
+			"description": "How notes open by default: Rich for editing, Preview for read-only viewing, or Raw for plain Markdown.",
+			"ariaLabel": "Default editor mode",
+			"options": {
+				"rich": "Rich (editing)",
+				"preview": "Preview (read-only)",
+				"plain": "Raw Markdown"
+			}
+		},
 		"tableOfContents": {
 			"label": "Table of contents",
 			"description": "Show a floating table of contents for each note.",
