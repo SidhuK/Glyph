@@ -85,7 +85,7 @@ button.tagsHeaderTitle:active {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: var(--space-3);
+	gap: 6px;
 	padding: 1px 8px;
 	min-height: 28px;
 	border-radius: var(--radius-8);
@@ -136,14 +136,15 @@ button.tagsHeaderTitle:active {
 }
 
 .tagsIcon {
-	width: var(--icon-sm);
-	height: var(--icon-sm);
+	width: var(--icon-md);
+	height: var(--icon-md);
 }
 
-.tagsIconPicker {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-	margin-left: -3px;
+button.tagsIconPicker {
+	width: var(--icon-md);
+	height: var(--icon-md);
+	padding: 0;
+	margin-left: 0;
 	color: currentcolor;
 }
 
