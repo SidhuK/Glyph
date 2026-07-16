@@ -191,7 +191,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								size="var(--icon-sm)"
 								strokeWidth={1}
 							/>
-							History
+							Version history
 						</button>
 					) : null}
 				</div>
@@ -444,6 +444,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 
 				{activeTab === "history" && hasGitHistoryTab && onSelectGitDiff ? (
 					<GitHistorySidebar
+						key={relPath}
 						open={open}
 						relPath={relPath}
 						selectedCommitHash={selectedGitCommitHash}
