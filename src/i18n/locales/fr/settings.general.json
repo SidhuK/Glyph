@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "Éditeur",
 		"sectionDescription": "Contrôles du comportement d’édition et de la structure des notes dans Glyph.",
+		"defaultEditorMode": {
+			"label": "Mode d’éditeur par défaut",
+			"description": "Comment les notes s’ouvrent par défaut : Enrichi pour modifier, Aperçu en lecture seule ou Brut pour le Markdown pur.",
+			"ariaLabel": "Mode d’éditeur par défaut",
+			"options": {
+				"rich": "Enrichi (édition)",
+				"preview": "Aperçu (lecture seule)",
+				"plain": "Markdown brut"
+			}
+		},
 		"tableOfContents": {
 			"label": "Table des matières",
 			"description": "Afficher une table des matières flottante pour chaque note.",

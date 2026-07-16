@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "편집기",
 		"sectionDescription": "Glyph 내 편집 동작과 노트 구조에 대한 제어입니다.",
+		"defaultEditorMode": {
+			"label": "기본 편집기 모드",
+			"description": "노트를 열 때 기본 모드: 편집용 리치, 읽기 전용 미리보기 또는 일반 Markdown용 Raw.",
+			"ariaLabel": "기본 편집기 모드",
+			"options": {
+				"rich": "리치(편집)",
+				"preview": "미리보기(읽기 전용)",
+				"plain": "Raw Markdown"
+			}
+		},
 		"tableOfContents": {
 			"label": "목차",
 			"description": "각 노트에 떠 있는 목차를 표시합니다.",

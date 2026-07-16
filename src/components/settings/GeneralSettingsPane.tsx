@@ -1,13 +1,19 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
+import {
+	type EditorViewMode,
+	getDefaultEditorViewMode,
+	isEditorViewMode,
+} from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
 	setEditorColorfulHeadings,
+	setEditorDefaultEditorMode,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
@@ -29,6 +35,12 @@ import {
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
+
+const DEFAULT_EDITOR_MODE_VALUES = [
+	"rich",
+	"preview",
+	"plain",
+] as const satisfies readonly EditorViewMode[];
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -63,6 +75,11 @@ export function GeneralSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
 	const [language, setLanguageState] = useState<AppLanguage>("en");
+	const [defaultEditorMode, setDefaultEditorModeState] =
+		useState<EditorViewMode>(getDefaultEditorViewMode);
+	const [isSavingDefaultEditorMode, setIsSavingDefaultEditorMode] =
+		useState(false);
+	const defaultEditorModeEpochRef = useRef(0);
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -113,11 +130,15 @@ export function GeneralSettingsPane() {
 
 	useEffect(() => {
 		let cancelled = false;
+		const defaultEditorModeEpoch = defaultEditorModeEpochRef.current;
 		setError("");
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
+				if (defaultEditorModeEpoch === defaultEditorModeEpochRef.current) {
+					setDefaultEditorModeState(settings.editor.defaultEditorMode);
+				}
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
@@ -154,6 +175,9 @@ export function GeneralSettingsPane() {
 			(payload) => {
 				if (payload.ui?.language) {
 					setLanguageState(payload.ui.language);
+				}
+				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
+					setDefaultEditorModeState(payload.editor.defaultEditorMode);
 				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
@@ -289,6 +313,42 @@ export function GeneralSettingsPane() {
 							ariaLabel={t("editor.spellCheck.ariaLabel")}
 							onCheckedChange={spellCheck.onCheckedChange}
 						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.defaultEditorMode.label")}
+						description={t("editor.defaultEditorMode.description")}
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label={t("editor.defaultEditorMode.ariaLabel")}
+							value={defaultEditorMode}
+							disabled={isSavingDefaultEditorMode}
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value;
+								if (!isEditorViewMode(nextMode)) return;
+								const previous = defaultEditorMode;
+								defaultEditorModeEpochRef.current += 1;
+								setError("");
+								setDefaultEditorModeState(nextMode);
+								setIsSavingDefaultEditorMode(true);
+								void setEditorDefaultEditorMode(nextMode)
+									.catch((cause) => {
+										setDefaultEditorModeState(previous);
+										setError(
+											cause instanceof Error ? cause.message : String(cause),
+										);
+									})
+									.finally(() => {
+										setIsSavingDefaultEditorMode(false);
+									});
+							}}
+						>
+							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editor.defaultEditorMode.options.${value}`)}
+								</option>
+							))}
+						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
 						title={t("editor.vimMode.title")}

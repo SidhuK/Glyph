@@ -1,8 +1,12 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
-import type { EditorViewMode } from "../../lib/editorMode";
+import {
+	type EditorViewMode,
+	getDefaultEditorViewMode,
+} from "../../lib/editorMode";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -41,7 +45,7 @@ export function ExternalMarkdownWindow() {
 	const [title, setTitle] = useState("Markdown File");
 	const [text, setText] = useState("");
 	const [savedText, setSavedText] = useState("");
-	const [mode, setMode] = useState<EditorViewMode>("rich");
+	const [mode, setMode] = useState<EditorViewMode>(getDefaultEditorViewMode);
 	const [error, setError] = useState("");
 	const textRef = useRef("");
 	const savedTextRef = useRef("");
@@ -140,6 +144,7 @@ export function ExternalMarkdownWindow() {
 		setLoading(true);
 
 		void (async () => {
+			const settingsPromise = loadSettings().catch(() => null);
 			try {
 				const absPath = await invoke("external_markdown_window_path");
 				if (cancelled) return;
@@ -159,6 +164,14 @@ export function ExternalMarkdownWindow() {
 					path: absPath,
 				});
 				if (cancelled) return;
+
+				const settings = await settingsPromise;
+				if (cancelled) return;
+				// Keep the built-in default when settings are unavailable.
+				if (settings) {
+					setMode(settings.editor.defaultEditorMode);
+				}
+
 				textRef.current = doc.text;
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
