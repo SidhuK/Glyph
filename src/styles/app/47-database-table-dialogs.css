@@ -647,9 +647,9 @@
 	align-items: center;
 	gap: 6px;
 	min-width: 0;
-	padding: 3px 10px 3px 8px;
-	border-radius: var(--radius-8);
-	background: color-mix(in srgb, var(--database-tone) 91%, var(--bg-primary));
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
 }
 
 .databaseBoardLaneDot {
