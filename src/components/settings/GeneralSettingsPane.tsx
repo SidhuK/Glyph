@@ -252,41 +252,6 @@ export function GeneralSettingsPane() {
 					description={t("editor.sectionDescription")}
 				>
 					<SettingsRow
-						label={t("editor.defaultEditorMode.label")}
-						description={t("editor.defaultEditorMode.description")}
-						interactive={false}
-					>
-						<SettingsSelect
-							aria-label={t("editor.defaultEditorMode.ariaLabel")}
-							value={defaultEditorMode}
-							disabled={isSavingDefaultEditorMode}
-							onChange={(event) => {
-								const nextMode = event.currentTarget.value;
-								if (!isEditorViewMode(nextMode)) return;
-								const previous = defaultEditorMode;
-								setError("");
-								setDefaultEditorModeState(nextMode);
-								setIsSavingDefaultEditorMode(true);
-								void setEditorDefaultEditorMode(nextMode)
-									.catch((cause) => {
-										setDefaultEditorModeState(previous);
-										setError(
-											cause instanceof Error ? cause.message : String(cause),
-										);
-									})
-									.finally(() => {
-										setIsSavingDefaultEditorMode(false);
-									});
-							}}
-						>
-							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
-								<option key={value} value={value}>
-									{t(`editor.defaultEditorMode.options.${value}`)}
-								</option>
-							))}
-						</SettingsSelect>
-					</SettingsRow>
-					<SettingsRow
 						label={t("editor.tableOfContents.label")}
 						description={t("editor.tableOfContents.description")}
 					>
@@ -340,6 +305,41 @@ export function GeneralSettingsPane() {
 							ariaLabel={t("editor.spellCheck.ariaLabel")}
 							onCheckedChange={spellCheck.onCheckedChange}
 						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.defaultEditorMode.label")}
+						description={t("editor.defaultEditorMode.description")}
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label={t("editor.defaultEditorMode.ariaLabel")}
+							value={defaultEditorMode}
+							disabled={isSavingDefaultEditorMode}
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value;
+								if (!isEditorViewMode(nextMode)) return;
+								const previous = defaultEditorMode;
+								setError("");
+								setDefaultEditorModeState(nextMode);
+								setIsSavingDefaultEditorMode(true);
+								void setEditorDefaultEditorMode(nextMode)
+									.catch((cause) => {
+										setDefaultEditorModeState(previous);
+										setError(
+											cause instanceof Error ? cause.message : String(cause),
+										);
+									})
+									.finally(() => {
+										setIsSavingDefaultEditorMode(false);
+									});
+							}}
+						>
+							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editor.defaultEditorMode.options.${value}`)}
+								</option>
+							))}
+						</SettingsSelect>
 					</SettingsRow>
 					<SettingsRow
 						title={t("editor.vimMode.title")}
