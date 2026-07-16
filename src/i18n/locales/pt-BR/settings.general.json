@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Controles do comportamento de edição e da estrutura das notas no Glyph.",
+		"defaultEditorMode": {
+			"label": "Modo de editor padrão",
+			"description": "Como as notas abrem por padrão: Rico para editar, Pré-visualização para somente leitura ou Bruto para Markdown puro.",
+			"ariaLabel": "Modo de editor padrão",
+			"options": {
+				"rich": "Rico (edição)",
+				"preview": "Pré-visualização (somente leitura)",
+				"plain": "Markdown bruto"
+			}
+		},
 		"tableOfContents": {
 			"label": "Sumário",
 			"description": "Mostrar um sumário flutuante em cada nota.",

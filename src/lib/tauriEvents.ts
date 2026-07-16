@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import type { EditorViewMode } from "./editorMode";
 import type {
 	AppLanguage,
 	AttachmentStorageMode,
@@ -104,6 +105,7 @@ type TauriEventMap = {
 			colorfulHeadings?: boolean;
 			beautifulTags?: boolean;
 			editorWidthMode?: EditorWidthMode;
+			defaultEditorMode?: EditorViewMode;
 			attachmentStorageMode?: AttachmentStorageMode;
 			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;

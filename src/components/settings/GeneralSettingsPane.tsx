@@ -4,10 +4,12 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
+import { type EditorViewMode, isEditorViewMode } from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
 	setEditorColorfulHeadings,
+	setEditorDefaultEditorMode,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
@@ -29,6 +31,12 @@ import {
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
+
+const DEFAULT_EDITOR_MODE_VALUES = [
+	"rich",
+	"preview",
+	"plain",
+] as const satisfies readonly EditorViewMode[];
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -63,6 +71,10 @@ export function GeneralSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
 	const [language, setLanguageState] = useState<AppLanguage>("en");
+	const [defaultEditorMode, setDefaultEditorModeState] =
+		useState<EditorViewMode>("rich");
+	const [isSavingDefaultEditorMode, setIsSavingDefaultEditorMode] =
+		useState(false);
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -118,6 +130,7 @@ export function GeneralSettingsPane() {
 			.then((settings) => {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
+				setDefaultEditorModeState(settings.editor.defaultEditorMode);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
@@ -154,6 +167,9 @@ export function GeneralSettingsPane() {
 			(payload) => {
 				if (payload.ui?.language) {
 					setLanguageState(payload.ui.language);
+				}
+				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
+					setDefaultEditorModeState(payload.editor.defaultEditorMode);
 				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
@@ -235,6 +251,41 @@ export function GeneralSettingsPane() {
 					title={t("editor.sectionTitle")}
 					description={t("editor.sectionDescription")}
 				>
+					<SettingsRow
+						label={t("editor.defaultEditorMode.label")}
+						description={t("editor.defaultEditorMode.description")}
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label={t("editor.defaultEditorMode.ariaLabel")}
+							value={defaultEditorMode}
+							disabled={isSavingDefaultEditorMode}
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value;
+								if (!isEditorViewMode(nextMode)) return;
+								const previous = defaultEditorMode;
+								setError("");
+								setDefaultEditorModeState(nextMode);
+								setIsSavingDefaultEditorMode(true);
+								void setEditorDefaultEditorMode(nextMode)
+									.catch((cause) => {
+										setDefaultEditorModeState(previous);
+										setError(
+											cause instanceof Error ? cause.message : String(cause),
+										);
+									})
+									.finally(() => {
+										setIsSavingDefaultEditorMode(false);
+									});
+							}}
+						>
+							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editor.defaultEditorMode.options.${value}`)}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
 					<SettingsRow
 						label={t("editor.tableOfContents.label")}
 						description={t("editor.tableOfContents.description")}

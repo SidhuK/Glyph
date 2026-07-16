@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Steuerung für Bearbeitungsverhalten und Notizstruktur in Glyph.",
+		"defaultEditorMode": {
+			"label": "Standard-Editormodus",
+			"description": "Wie Notizen standardmäßig geöffnet werden: Rich zum Bearbeiten, Vorschau als Nur-Lesen-Ansicht oder Raw für reines Markdown.",
+			"ariaLabel": "Standard-Editormodus",
+			"options": {
+				"rich": "Rich (Bearbeiten)",
+				"preview": "Vorschau (nur lesen)",
+				"plain": "Raw Markdown"
+			}
+		},
 		"tableOfContents": {
 			"label": "Inhaltsverzeichnis",
 			"description": "Ein schwebendes Inhaltsverzeichnis für jede Notiz anzeigen.",

@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "Editor",
 		"sectionDescription": "Controles del comportamiento de edición y la estructura de las notas en Glyph.",
+		"defaultEditorMode": {
+			"label": "Modo de editor predeterminado",
+			"description": "Cómo se abren las notas de forma predeterminada: Enriquecido para editar, Vista previa para solo lectura o Sin formato para Markdown puro.",
+			"ariaLabel": "Modo de editor predeterminado",
+			"options": {
+				"rich": "Enriquecido (edición)",
+				"preview": "Vista previa (solo lectura)",
+				"plain": "Markdown sin formato"
+			}
+		},
 		"tableOfContents": {
 			"label": "Tabla de contenidos",
 			"description": "Mostrar una tabla de contenidos flotante en cada nota.",

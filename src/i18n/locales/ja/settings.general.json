@@ -27,6 +27,16 @@
 	"editor": {
 		"sectionTitle": "エディタ",
 		"sectionDescription": "Glyph 内の編集動作とノート構造のコントロールです。",
+		"defaultEditorMode": {
+			"label": "デフォルトのエディタモード",
+			"description": "ノートを開くときのデフォルトモード：編集用のリッチ、読み取り専用のプレビュー、またはプレーンMarkdownのRaw。",
+			"ariaLabel": "デフォルトのエディタモード",
+			"options": {
+				"rich": "リッチ（編集）",
+				"preview": "プレビュー（読み取り専用）",
+				"plain": "Raw Markdown"
+			}
+		},
 		"tableOfContents": {
 			"label": "目次",
 			"description": "各ノートにフローティングの目次を表示します。",
