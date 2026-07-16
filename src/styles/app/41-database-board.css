@@ -376,8 +376,7 @@
 	flex: 0 0 auto;
 	min-height: 24px;
 	padding: 0 8px;
-	border: 1px solid
-		color-mix(in srgb, var(--border-default) 76%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
 	border-radius: var(--pill-radius);
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	font-size: calc(var(--text-base) * 0.8);
@@ -401,8 +400,7 @@
 	flex: 0 0 auto;
 	min-height: 24px;
 	padding: 0 8px;
-	border: 1px solid
-		color-mix(in srgb, var(--border-default) 76%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
 	border-radius: var(--pill-radius);
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	font-size: calc(var(--text-base) * 0.8);
