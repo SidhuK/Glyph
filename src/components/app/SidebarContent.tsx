@@ -31,7 +31,6 @@ import { isFileTreeSortMode } from "../../lib/settings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import type { FsEntry } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
-import { ChevronDown, ChevronRight } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
@@ -505,17 +504,6 @@ export const SidebarContent = memo(function SidebarContent({
 									}
 								>
 									<span>{t("sidebar.notes")}</span>
-									{notesExpanded ? (
-										<ChevronDown
-											size="var(--icon-xs)"
-											className="sidebarStackHeaderChevron"
-										/>
-									) : (
-										<ChevronRight
-											size="var(--icon-xs)"
-											className="sidebarStackHeaderChevron"
-										/>
-									)}
 								</button>
 								<div className="sidebarStackHeaderActions">
 									<label className="sidebarStackHeaderSortNative">

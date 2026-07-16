@@ -48,7 +48,7 @@ import {
 import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
-const DATABASE_CELL_PILL_GAP = 6;
+const DATABASE_CELL_PILL_GAP = 4;
 const DATABASE_CELL_TAG_SUGGESTION_LIMIT = 8;
 
 interface DatabaseCellProps {

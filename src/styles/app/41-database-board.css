@@ -1,5 +1,5 @@
 .databaseTableShell {
-	--database-table-header-height: 42px;
+	--database-table-header-height: 34px;
 
 	flex: 1;
 	min-height: 0;
@@ -158,7 +158,7 @@
 .databaseBoardLaneTitle {
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, white 92%, var(--text-primary));
+	color: color-mix(in srgb, var(--database-tone) 78%, var(--text-primary));
 	letter-spacing: 0.045em;
 	text-transform: uppercase;
 	line-height: 1;
@@ -166,7 +166,7 @@
 
 .databaseBoardLaneTitleIcon {
 	flex: 0 0 auto;
-	color: color-mix(in srgb, white 88%, var(--text-primary));
+	color: var(--database-tone);
 }
 
 .databaseBoardLaneTitleButton {
@@ -231,9 +231,9 @@
 	width: 100%;
 	min-width: 0;
 	height: auto;
-	gap: 7px;
-	padding: 11px 10px 10px;
-	border: none;
+	gap: 8px;
+	padding: 12px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
 	border-radius: var(--database-radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 	color: inherit;
@@ -243,7 +243,6 @@
 	justify-content: flex-start;
 	white-space: normal;
 	line-height: normal;
-	outline: 1px solid color-mix(in srgb, var(--text-primary) 8%, transparent);
 	overflow: hidden;
 	user-select: none;
 	-webkit-user-select: none;
@@ -252,17 +251,15 @@
 
 .databaseBoardCard[data-dragging="true"] {
 	opacity: 0.7;
-	outline-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
 }
 
 .databaseBoardCard[data-drop-target="true"] {
-	outline-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
-	box-shadow: inset 0 2px 0
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 }
 
 .dark .databaseBoardCard {
-	background: var(--bg-tertiary);
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
 }
 
 .dark .databaseBoardCard[data-state="selected"] {
@@ -279,7 +276,7 @@
 		var(--interactive-accent) 7%,
 		var(--bg-primary)
 	);
-	outline-color: color-mix(in srgb, var(--interactive-accent) 46%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 46%, transparent);
 }
 
 .databaseBoardCardTitle {
@@ -294,6 +291,7 @@
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	white-space: normal;
+	text-wrap: balance;
 }
 
 .databaseBoardCardTitleIcon {
@@ -345,7 +343,8 @@
 .databaseBoardCardMetaRow {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
+	flex-wrap: wrap;
 	gap: 8px;
 	min-width: 0;
 	overflow: hidden;
@@ -360,7 +359,7 @@
 }
 
 .databaseBoardCardMetaGroup.is-priority {
-	justify-content: flex-end;
+	justify-content: flex-start;
 }
 
 .databaseBoardCardTags {
@@ -375,7 +374,11 @@
 
 .databaseBoardCardStatus.propertyValueText {
 	flex: 0 0 auto;
-	height: auto;
+	min-height: 24px;
+	padding: 0 8px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+	border-radius: var(--pill-radius);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
@@ -395,10 +398,11 @@
 	gap: 3px;
 	max-width: 100%;
 	flex: 0 0 auto;
-	padding: 2px 6px;
-	border: 0;
-	border-radius: var(--radius-4);
-	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
+	min-height: 24px;
+	padding: 0 8px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+	border-radius: var(--pill-radius);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	font-size: calc(var(--text-base) * 0.8);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
@@ -409,7 +413,7 @@
 
 .databaseBoardTag.is-muted {
 	color: var(--text-tertiary);
-	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -438,6 +442,10 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.databaseBoardCardTimestamp svg {
+	transform: translateY(-1px);
 }
 
 .databaseBoardCardTitleMeta .databaseBoardCardTimestamp {
