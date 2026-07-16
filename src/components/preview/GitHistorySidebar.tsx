@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type GitCommitDiff,
@@ -39,6 +39,12 @@ export function GitHistorySidebar({
 	onSelectDiff,
 }: GitHistorySidebarProps) {
 	const latestDiffRequestId = useRef(0);
+	useEffect(
+		() => () => {
+			latestDiffRequestId.current += 1;
+		},
+		[],
+	);
 	const historyQuery = useQuery({
 		queryKey: ["git", "history", relPath],
 		queryFn: () =>
