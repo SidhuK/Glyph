@@ -1,10 +1,14 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
-import { type EditorViewMode, isEditorViewMode } from "../../lib/editorMode";
+import {
+	type EditorViewMode,
+	getDefaultEditorViewMode,
+	isEditorViewMode,
+} from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	loadSettings,
@@ -72,9 +76,10 @@ export function GeneralSettingsPane() {
 	const [error, setError] = useState("");
 	const [language, setLanguageState] = useState<AppLanguage>("en");
 	const [defaultEditorMode, setDefaultEditorModeState] =
-		useState<EditorViewMode>("rich");
+		useState<EditorViewMode>(getDefaultEditorViewMode);
 	const [isSavingDefaultEditorMode, setIsSavingDefaultEditorMode] =
 		useState(false);
+	const defaultEditorModeEpochRef = useRef(0);
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -125,12 +130,15 @@ export function GeneralSettingsPane() {
 
 	useEffect(() => {
 		let cancelled = false;
+		const defaultEditorModeEpoch = defaultEditorModeEpochRef.current;
 		setError("");
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
-				setDefaultEditorModeState(settings.editor.defaultEditorMode);
+				if (defaultEditorModeEpoch === defaultEditorModeEpochRef.current) {
+					setDefaultEditorModeState(settings.editor.defaultEditorMode);
+				}
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
@@ -319,6 +327,7 @@ export function GeneralSettingsPane() {
 								const nextMode = event.currentTarget.value;
 								if (!isEditorViewMode(nextMode)) return;
 								const previous = defaultEditorMode;
+								defaultEditorModeEpochRef.current += 1;
 								setError("");
 								setDefaultEditorModeState(nextMode);
 								setIsSavingDefaultEditorMode(true);

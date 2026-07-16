@@ -143,15 +143,8 @@ export function ExternalMarkdownWindow() {
 		let cancelled = false;
 		setLoading(true);
 
-		void loadSettings()
-			.then((settings) => {
-				if (!cancelled) setMode(settings.editor.defaultEditorMode);
-			})
-			.catch(() => {
-				// Keep the built-in default mode when settings are unavailable.
-			});
-
 		void (async () => {
+			const settingsPromise = loadSettings().catch(() => null);
 			try {
 				const absPath = await invoke("external_markdown_window_path");
 				if (cancelled) return;
@@ -171,6 +164,14 @@ export function ExternalMarkdownWindow() {
 					path: absPath,
 				});
 				if (cancelled) return;
+
+				const settings = await settingsPromise;
+				if (cancelled) return;
+				// Keep the built-in default when settings are unavailable.
+				if (settings) {
+					setMode(settings.editor.defaultEditorMode);
+				}
+
 				textRef.current = doc.text;
 				savedTextRef.current = doc.text;
 				mtimeRef.current = doc.mtime_ms;
