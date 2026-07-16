@@ -32,8 +32,6 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: calc(var(--text-base) * 0.9);
-	letter-spacing: 0.07em;
 	color: var(--text-tertiary);
 }
 
@@ -51,10 +49,8 @@ button.tagsHeaderTitle {
 	flex: 1;
 	cursor: pointer;
 	text-align: left;
-	font: inherit;
+	font-family: inherit;
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
-	letter-spacing: 0.07em;
 	transition: color var(--transition-fast);
 	display: flex;
 	align-items: center;
@@ -69,11 +65,6 @@ button.tagsHeaderTitle:active {
 	box-shadow: none;
 	color: var(--text-secondary);
 	outline: none;
-}
-
-.tagsHeaderChevron {
-	color: inherit;
-	flex-shrink: 0;
 }
 
 .tagsList {

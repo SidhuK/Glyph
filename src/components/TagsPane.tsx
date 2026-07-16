@@ -14,7 +14,6 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../lib/tagIcons";
 import type { PersonCount, TagAppearance, TagCount } from "../lib/tauri";
-import { ChevronDown, ChevronRight } from "./Icons";
 import { TagIconPicker } from "./TagIconPicker";
 import { springPresets } from "./ui/animations";
 
@@ -126,11 +125,6 @@ export const TagsPane = memo(function TagsPane({
 					aria-label={sectionExpanded ? t("tags.collapse") : t("tags.expand")}
 				>
 					<span>{t("tags.header")}</span>
-					{sectionExpanded ? (
-						<ChevronDown size="var(--icon-xs)" className="tagsHeaderChevron" />
-					) : (
-						<ChevronRight size="var(--icon-xs)" className="tagsHeaderChevron" />
-					)}
 				</button>
 			</div>
 			{!sectionExpanded ? null : rows.length ? (
