@@ -1,3 +1,5 @@
+import { GitCompareIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -23,6 +25,28 @@ function formatCommitDate(timestampMs: number): string {
 		hour: "numeric",
 		minute: "2-digit",
 	}).format(new Date(timestampMs));
+}
+
+function formatCommitAge(
+	timestampMs: number,
+	currentTimestampMs: number,
+): string {
+	if (!timestampMs) return "";
+	const elapsedMinutes = Math.max(
+		0,
+		Math.floor((currentTimestampMs - timestampMs) / 60_000),
+	);
+	if (elapsedMinutes < 1) return "now";
+	if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
+
+	const elapsedHours = Math.floor(elapsedMinutes / 60);
+	if (elapsedHours < 24) return `${elapsedHours}h`;
+
+	const elapsedDays = Math.floor(elapsedHours / 24);
+	if (elapsedDays < 7) return `${elapsedDays}d`;
+	if (elapsedDays < 30) return `${Math.floor(elapsedDays / 7)}w`;
+	if (elapsedDays < 365) return `${Math.floor(elapsedDays / 30)}mo`;
+	return `${Math.floor(elapsedDays / 365)}y`;
 }
 
 function changeCounts(commit: GitHistoryCommit) {
@@ -66,6 +90,7 @@ export function GitHistorySidebar({
 	});
 	const commits = historyQuery.data ?? [];
 	const error = historyQuery.error ?? diffMutation.error;
+	const currentTimestampMs = Date.now();
 
 	return (
 		<section className="markdownEditorInfoSection gitHistoryPanel">
@@ -104,29 +129,44 @@ export function GitHistorySidebar({
 										onClick={() => diffMutation.mutate(commit)}
 										aria-pressed={isSelected}
 									>
+										<span className="gitHistoryGraphIcon" aria-hidden>
+											<HugeiconsIcon
+												icon={GitCompareIcon}
+												size="var(--icon-sm)"
+												strokeWidth={1.6}
+											/>
+										</span>
 										<span className="gitHistoryContent">
 											<span className="gitHistorySubject">
 												{commit.subject || "Untitled version"}
 											</span>
-											<span className="gitHistoryMeta">
-												{isLoading
-													? "Opening changes…"
-													: formatCommitDate(commit.timestamp_ms)}
-											</span>
-											{changes.added > 0 || changes.deleted > 0 ? (
-												<span className="gitHistoryStats">
-													{changes.added > 0 ? (
-														<span className="gitHistoryStat gitHistoryStatAdd">
-															+{changes.added.toLocaleString()}
-														</span>
-													) : null}
-													{changes.deleted > 0 ? (
-														<span className="gitHistoryStat gitHistoryStatDelete">
-															-{changes.deleted.toLocaleString()}
-														</span>
-													) : null}
+											<span className="gitHistoryAside">
+												{changes.added > 0 || changes.deleted > 0 ? (
+													<span className="gitHistoryStats">
+														{changes.added > 0 ? (
+															<span className="gitHistoryStat gitHistoryStatAdd">
+																+{changes.added.toLocaleString()}
+															</span>
+														) : null}
+														{changes.deleted > 0 ? (
+															<span className="gitHistoryStat gitHistoryStatDelete">
+																-{changes.deleted.toLocaleString()}
+															</span>
+														) : null}
+													</span>
+												) : null}
+												<span
+													className="gitHistoryMeta"
+													title={formatCommitDate(commit.timestamp_ms)}
+												>
+													{isLoading
+														? "Opening…"
+														: formatCommitAge(
+																commit.timestamp_ms,
+																currentTimestampMs,
+															)}
 												</span>
-											) : null}
+											</span>
 										</span>
 									</button>
 								</li>
