@@ -333,7 +333,7 @@
 
 .gitDiffLine[data-kind="hunk"] {
 	margin-top: 12px;
-	background: color-mix(in srgb, var(--accent) 8%, transparent);
+	background: color-mix(in srgb, var(--accent-color) 8%, transparent);
 	color: var(--text-primary);
 	font-weight: var(--font-medium);
 }
@@ -494,13 +494,13 @@
 }
 
 .gitHistoryBody {
-	padding: 0 2px 4px;
+	padding: 0 0 4px;
 }
 
 .gitHistoryList {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 0;
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -514,9 +514,9 @@
 	position: relative;
 	display: flex;
 	width: 100%;
-	min-height: 40px;
+	min-height: 32px;
 	align-items: center;
-	padding: 6px 10px;
+	padding: 3px 8px;
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
@@ -527,7 +527,7 @@
 }
 
 .gitHistoryItem:hover {
-	background: color-mix(in srgb, var(--bg-hover) 38%, transparent);
+	background: color-mix(in srgb, var(--bg-hover) 68%, transparent);
 }
 
 .gitHistoryItem:focus-visible {
@@ -536,11 +536,11 @@
 }
 
 .gitHistoryItemSelected {
-	background: color-mix(in srgb, var(--accent) 7%, var(--bg-hover));
+	background: color-mix(in srgb, var(--accent-color) 7%, var(--bg-hover));
 }
 
 .gitHistoryItemSelected:hover {
-	background: color-mix(in srgb, var(--accent) 9%, var(--bg-hover));
+	background: color-mix(in srgb, var(--accent-color) 9%, var(--bg-hover));
 }
 
 .gitHistoryContent {
@@ -548,7 +548,7 @@
 	min-width: 0;
 	flex: 1;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 }
 
 .gitHistorySubject {
@@ -563,11 +563,24 @@
 	white-space: nowrap;
 }
 
+.gitHistoryAside {
+	display: grid;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-items: end;
+}
+
+.gitHistoryAside > * {
+	grid-area: 1 / 1;
+}
+
 .gitHistoryStats {
 	display: inline-flex;
 	flex: 0 0 auto;
 	align-items: center;
 	gap: 6px;
+	opacity: 1;
+	transition: opacity 120ms ease;
 }
 
 .gitHistoryStat {
@@ -591,6 +604,22 @@
 	font-size: calc(var(--text-base) * 0.82);
 	line-height: 1.2;
 	font-variant-numeric: tabular-nums;
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.gitHistoryAside:not(:has(.gitHistoryStats)) .gitHistoryMeta {
+	opacity: 1;
+}
+
+.gitHistoryItem:hover .gitHistoryStats,
+.gitHistoryItem:focus-visible .gitHistoryStats {
+	opacity: 0;
+}
+
+.gitHistoryItem:hover .gitHistoryMeta,
+.gitHistoryItem:focus-visible .gitHistoryMeta {
+	opacity: 1;
 }
 
 .markdownEditorInfoSection + .markdownEditorInfoSection {
