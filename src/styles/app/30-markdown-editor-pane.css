@@ -333,7 +333,7 @@
 
 .gitDiffLine[data-kind="hunk"] {
 	margin-top: 12px;
-	background: color-mix(in srgb, var(--accent) 8%, transparent);
+	background: color-mix(in srgb, var(--accent-color) 8%, transparent);
 	color: var(--text-primary);
 	font-weight: var(--font-medium);
 }
@@ -516,7 +516,6 @@
 	width: 100%;
 	min-height: 32px;
 	align-items: center;
-	gap: 8px;
 	padding: 3px 8px;
 	border: 0;
 	border-radius: var(--radius-md);
@@ -542,14 +541,6 @@
 
 .gitHistoryItemSelected:hover {
 	background: color-mix(in srgb, var(--accent-color) 9%, var(--bg-hover));
-}
-
-.gitHistoryGraphIcon {
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
-	color: var(--accent-color);
 }
 
 .gitHistoryContent {
@@ -615,6 +606,10 @@
 	font-variant-numeric: tabular-nums;
 	opacity: 0;
 	transition: opacity 120ms ease;
+}
+
+.gitHistoryAside:not(:has(.gitHistoryStats)) .gitHistoryMeta {
+	opacity: 1;
 }
 
 .gitHistoryItem:hover .gitHistoryStats,

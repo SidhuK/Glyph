@@ -1,5 +1,3 @@
-import { GitCompareIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -27,14 +25,11 @@ function formatCommitDate(timestampMs: number): string {
 	}).format(new Date(timestampMs));
 }
 
-function formatCommitAge(
-	timestampMs: number,
-	currentTimestampMs: number,
-): string {
+function formatCommitAge(timestampMs: number): string {
 	if (!timestampMs) return "";
 	const elapsedMinutes = Math.max(
 		0,
-		Math.floor((currentTimestampMs - timestampMs) / 60_000),
+		Math.floor((Date.now() - timestampMs) / 60_000),
 	);
 	if (elapsedMinutes < 1) return "now";
 	if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
@@ -90,7 +85,6 @@ export function GitHistorySidebar({
 	});
 	const commits = historyQuery.data ?? [];
 	const error = historyQuery.error ?? diffMutation.error;
-	const currentTimestampMs = Date.now();
 
 	return (
 		<section className="markdownEditorInfoSection gitHistoryPanel">
@@ -129,19 +123,13 @@ export function GitHistorySidebar({
 										onClick={() => diffMutation.mutate(commit)}
 										aria-pressed={isSelected}
 									>
-										<span className="gitHistoryGraphIcon" aria-hidden>
-											<HugeiconsIcon
-												icon={GitCompareIcon}
-												size="var(--icon-sm)"
-												strokeWidth={1.6}
-											/>
-										</span>
 										<span className="gitHistoryContent">
 											<span className="gitHistorySubject">
 												{commit.subject || "Untitled version"}
 											</span>
 											<span className="gitHistoryAside">
-												{changes.added > 0 || changes.deleted > 0 ? (
+												{!isLoading &&
+												(changes.added > 0 || changes.deleted > 0) ? (
 													<span className="gitHistoryStats">
 														{changes.added > 0 ? (
 															<span className="gitHistoryStat gitHistoryStatAdd">
@@ -161,10 +149,7 @@ export function GitHistorySidebar({
 												>
 													{isLoading
 														? "Opening…"
-														: formatCommitAge(
-																commit.timestamp_ms,
-																currentTimestampMs,
-															)}
+														: formatCommitAge(commit.timestamp_ms)}
 												</span>
 											</span>
 										</span>
