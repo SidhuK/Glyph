@@ -25,6 +25,25 @@ function formatCommitDate(timestampMs: number): string {
 	}).format(new Date(timestampMs));
 }
 
+function formatCommitAge(timestampMs: number): string {
+	if (!timestampMs) return "";
+	const elapsedMinutes = Math.max(
+		0,
+		Math.floor((Date.now() - timestampMs) / 60_000),
+	);
+	if (elapsedMinutes < 1) return "now";
+	if (elapsedMinutes < 60) return `${elapsedMinutes}m`;
+
+	const elapsedHours = Math.floor(elapsedMinutes / 60);
+	if (elapsedHours < 24) return `${elapsedHours}h`;
+
+	const elapsedDays = Math.floor(elapsedHours / 24);
+	if (elapsedDays < 7) return `${elapsedDays}d`;
+	if (elapsedDays < 30) return `${Math.floor(elapsedDays / 7)}w`;
+	if (elapsedDays < 365) return `${Math.floor(elapsedDays / 30)}mo`;
+	return `${Math.floor(elapsedDays / 365)}y`;
+}
+
 function changeCounts(commit: GitHistoryCommit) {
 	return {
 		added: commit.added_count + commit.modified_count,
@@ -108,25 +127,31 @@ export function GitHistorySidebar({
 											<span className="gitHistorySubject">
 												{commit.subject || "Untitled version"}
 											</span>
-											<span className="gitHistoryMeta">
-												{isLoading
-													? "Opening changes…"
-													: formatCommitDate(commit.timestamp_ms)}
-											</span>
-											{changes.added > 0 || changes.deleted > 0 ? (
-												<span className="gitHistoryStats">
-													{changes.added > 0 ? (
-														<span className="gitHistoryStat gitHistoryStatAdd">
-															+{changes.added.toLocaleString()}
-														</span>
-													) : null}
-													{changes.deleted > 0 ? (
-														<span className="gitHistoryStat gitHistoryStatDelete">
-															-{changes.deleted.toLocaleString()}
-														</span>
-													) : null}
+											<span className="gitHistoryAside">
+												{!isLoading &&
+												(changes.added > 0 || changes.deleted > 0) ? (
+													<span className="gitHistoryStats">
+														{changes.added > 0 ? (
+															<span className="gitHistoryStat gitHistoryStatAdd">
+																+{changes.added.toLocaleString()}
+															</span>
+														) : null}
+														{changes.deleted > 0 ? (
+															<span className="gitHistoryStat gitHistoryStatDelete">
+																-{changes.deleted.toLocaleString()}
+															</span>
+														) : null}
+													</span>
+												) : null}
+												<span
+													className="gitHistoryMeta"
+													title={formatCommitDate(commit.timestamp_ms)}
+												>
+													{isLoading
+														? "Opening…"
+														: formatCommitAge(commit.timestamp_ms)}
 												</span>
-											) : null}
+											</span>
 										</span>
 									</button>
 								</li>
