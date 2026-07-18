@@ -231,13 +231,15 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		}
 		await (tagsRefreshPromiseRef.current ?? refreshTags());
 		const nextSpace = currentSpacePathRef.current;
+		const applied = tagsAppliedRef.current;
 		if (
 			!nextSpace ||
-			isTagsFresh(tagsAppliedRef.current, nextSpace, tagsGenerationRef.current)
+			applied === null ||
+			isTagsFresh(applied, nextSpace, tagsGenerationRef.current)
 		) {
 			return;
 		}
-		await refreshTags();
+		await (tagsRefreshPromiseRef.current ?? refreshTags());
 	}, [refreshTags]);
 
 	const refreshTagAppearance = useCallback(async () => {
