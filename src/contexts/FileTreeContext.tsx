@@ -106,6 +106,21 @@ async function fetchAllPeople(): Promise<PersonCount[]> {
 	}
 }
 
+type TagsApplied = { space: string; generation: number };
+
+function isTagsFresh(
+	applied: TagsApplied | null,
+	space: string | null,
+	generation: number,
+): boolean {
+	return (
+		space !== null &&
+		applied !== null &&
+		applied.space === space &&
+		applied.generation === generation
+	);
+}
+
 export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const { spacePath, startIndexSync } = useSpace();
 
@@ -135,9 +150,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		useState(false);
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
-	const tagsLoadedSpaceRef = useRef<string | null>(null);
-	const tagsMetadataStaleRef = useRef(false);
-	const tagsMetadataVersionRef = useRef(0);
+	const tagsGenerationRef = useRef(0);
+	const tagsAppliedRef = useRef<TagsApplied | null>(null);
 	const tagsRefreshPromiseRef = useRef<Promise<void> | null>(null);
 	const tagAppearanceRequestIdRef = useRef(0);
 	const fileTreeSortModeRequestVersionRef = useRef(0);
@@ -161,7 +175,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		tagsRequestIdRef.current = requestId;
 		const peopleEnabled = peopleMentionsEnabledRef.current;
 		const originSpace = currentSpacePathRef.current;
-		const metadataVersion = tagsMetadataVersionRef.current;
+		const generation = tagsGenerationRef.current;
 		if (!originSpace) {
 			return Promise.resolve();
 		}
@@ -184,9 +198,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				}
 				setTags(nextTags);
 				setPeople(nextPeople);
-				tagsLoadedSpaceRef.current = originSpace;
-				tagsMetadataStaleRef.current =
-					metadataVersion !== tagsMetadataVersionRef.current;
+				tagsAppliedRef.current = { space: originSpace, generation };
 			} catch (e) {
 				if (
 					requestId !== tagsRequestIdRef.current ||
@@ -197,7 +209,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				setTags([]);
 				setPeople([]);
 				setTagsError(extractErrorMessage(e));
-				tagsMetadataStaleRef.current = true;
+				tagsAppliedRef.current = null;
 			}
 		})();
 		tagsRefreshPromiseRef.current = refreshPromise;
@@ -209,16 +221,23 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		return refreshPromise;
 	}, []);
 
-	const ensureTagsFresh = useCallback(() => {
-		const currentSpace = currentSpacePathRef.current;
+	const ensureTagsFresh = useCallback(async () => {
+		const space = currentSpacePathRef.current;
 		if (
-			!currentSpace ||
-			(tagsLoadedSpaceRef.current === currentSpace &&
-				!tagsMetadataStaleRef.current)
+			!space ||
+			isTagsFresh(tagsAppliedRef.current, space, tagsGenerationRef.current)
 		) {
-			return Promise.resolve();
+			return;
 		}
-		return tagsRefreshPromiseRef.current ?? refreshTags();
+		await (tagsRefreshPromiseRef.current ?? refreshTags());
+		const nextSpace = currentSpacePathRef.current;
+		if (
+			!nextSpace ||
+			isTagsFresh(tagsAppliedRef.current, nextSpace, tagsGenerationRef.current)
+		) {
+			return;
+		}
+		await refreshTags();
 	}, [refreshTags]);
 
 	const refreshTagAppearance = useCallback(async () => {
@@ -305,9 +324,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		tagsRequestIdRef.current += 1;
-		tagsLoadedSpaceRef.current = null;
-		tagsMetadataStaleRef.current = false;
-		tagsMetadataVersionRef.current = 0;
+		tagsGenerationRef.current = 0;
+		tagsAppliedRef.current = null;
 		tagsRefreshPromiseRef.current = null;
 		setRootEntries([]);
 		setChildrenByDir({});
@@ -394,8 +412,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		delayMs: 200,
 		enabled: Boolean(spacePath),
 		onChange: () => {
-			tagsMetadataStaleRef.current = true;
-			tagsMetadataVersionRef.current += 1;
+			tagsGenerationRef.current += 1;
 		},
 	});
 
