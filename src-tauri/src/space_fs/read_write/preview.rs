@@ -14,8 +14,11 @@ use super::super::types::{
 
 const TEXT_PREVIEW_DEFAULT_MAX_BYTES: u64 = 1_048_576;
 const TEXT_PREVIEW_MAX_BYTES_CAP: u64 = 5_242_880;
-// Visible virtual rows plus overscan stay well below this command boundary.
+// Callers must chunk above this bound (tall viewports / zoom can exceed it).
 const TEXT_PREVIEW_BATCH_MAX_PATHS: usize = 100;
+// Cap total requested preview bytes (paths × effective per-path max) before reads.
+const TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES: u64 =
+    TEXT_PREVIEW_BATCH_MAX_PATHS as u64 * TEXT_PREVIEW_DEFAULT_MAX_BYTES;
 const BINARY_PREVIEW_DEFAULT_MAX_BYTES: u64 = 20 * 1024 * 1024;
 const BINARY_PREVIEW_MAX_BYTES_CAP: u64 = 30 * 1024 * 1024;
 
@@ -97,6 +100,17 @@ pub async fn space_read_text_previews_batch(
     if paths.len() > TEXT_PREVIEW_BATCH_MAX_PATHS {
         return Err(format!(
             "too many preview paths (maximum {TEXT_PREVIEW_BATCH_MAX_PATHS})"
+        ));
+    }
+
+    let per_path_max = max_bytes
+        .map(|value| value as u64)
+        .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES)
+        .clamp(1, TEXT_PREVIEW_MAX_BYTES_CAP);
+    let aggregate_budget = per_path_max.saturating_mul(paths.len() as u64);
+    if aggregate_budget > TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES {
+        return Err(format!(
+            "preview batch byte budget exceeded (maximum {TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES})"
         ));
     }
 
