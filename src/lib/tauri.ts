@@ -98,6 +98,16 @@ interface TextFilePreviewDoc {
 	total_bytes: number;
 }
 
+interface TextFilePreviewDocBatch {
+	rel_path: string;
+	text: string | null;
+	mtime_ms: number | null;
+	truncated: boolean | null;
+	bytes_read: number | null;
+	total_bytes: number | null;
+	error: string | null;
+}
+
 interface BinaryFilePreviewDoc {
 	rel_path: string;
 	mime: string;
@@ -848,6 +858,10 @@ interface TauriCommands {
 	space_read_text_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },
 		TextFilePreviewDoc
+	>;
+	space_read_text_previews_batch: CommandDef<
+		{ paths: string[]; max_bytes?: number | null },
+		TextFilePreviewDocBatch[]
 	>;
 	space_read_binary_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },

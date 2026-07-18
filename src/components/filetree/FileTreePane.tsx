@@ -291,6 +291,7 @@ interface TreeEntriesProps {
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
+	onVisiblePreviewPathsChange?: (paths: string[]) => void;
 	sortMode: FileTreeSortMode;
 }
 
@@ -374,6 +375,7 @@ function TreeEntries({
 	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
+	onVisiblePreviewPathsChange,
 	sortMode,
 }: TreeEntriesProps) {
 	const virtualRows = useMemo(
@@ -422,6 +424,22 @@ function TreeEntries({
 		scrollMargin: listElement?.offsetTop ?? 0,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
+	const visiblePreviewPathKey = useMemo(() => {
+		if (!showFilePreviews) return "";
+		const paths = new Set<string>();
+		for (const virtualItem of virtualItems) {
+			const entry = virtualRows[virtualItem.index]?.entry;
+			if (entry?.kind === "file" && entry.is_markdown) {
+				paths.add(entry.rel_path);
+			}
+		}
+		return [...paths].sort().join("\0");
+	}, [showFilePreviews, virtualItems, virtualRows]);
+	useEffect(() => {
+		onVisiblePreviewPathsChange?.(
+			visiblePreviewPathKey ? visiblePreviewPathKey.split("\0") : [],
+		);
+	}, [onVisiblePreviewPathsChange, visiblePreviewPathKey]);
 	const handleVirtualArrowNavigate = useCallback(
 		(path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
 			const currentIndex = virtualRows.findIndex(
@@ -596,6 +614,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
 		Record<string, string | null | undefined>
 	>({});
+	const [filePreviewPaths, setFilePreviewPaths] = useState<string[]>([]);
 	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
@@ -612,6 +631,7 @@ export const FileTreePane = memo(function FileTreePane({
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
 		setFocusedDirPath(null);
+		setFilePreviewPaths([]);
 		setFilePreviewsByPath({});
 	}, [spacePath]);
 
@@ -763,15 +783,14 @@ export const FileTreePane = memo(function FileTreePane({
 		const relPath = normalizeRelPath(payload.rel_path);
 		if (!relPath || !isMarkdownPath(relPath)) return;
 		if (!taskSummaryPaths.includes(relPath)) return;
-		if (filePreviewPaths.includes(relPath)) {
-			setFilePreviewsByPath((current) => {
-				const next = { ...current };
-				delete next[relPath];
-				return next;
-			});
-			if (!payload.removed) {
-				setFilePreviewRefreshKey((key) => key + 1);
-			}
+		setFilePreviewsByPath((current) => {
+			if (!(relPath in current)) return current;
+			const next = { ...current };
+			delete next[relPath];
+			return next;
+		});
+		if (!payload.removed && filePreviewPaths.includes(relPath)) {
+			setFilePreviewRefreshKey((key) => key + 1);
 		}
 		if (payload.removed) {
 			setTaskSummaryRefreshKey((key) => key + 1);
@@ -881,6 +900,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 	const handleEnterDir = useCallback(
 		(dirPath: string) => {
+			setFilePreviewPaths([]);
 			setFocusedDirPath(dirPath);
 			onSelectDir(dirPath);
 			if (!onLoadDir && !childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
@@ -891,9 +911,21 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const handleExitFocusedDir = useCallback(() => {
+		setFilePreviewPaths([]);
 		setFocusedDirPath(null);
 		onSelectDir("");
 	}, [onSelectDir]);
+	const handleVisiblePreviewPathsChange = useCallback((paths: string[]) => {
+		setFilePreviewPaths((current) => {
+			if (
+				current.length === paths.length &&
+				current.every((path, index) => path === paths[index])
+			) {
+				return current;
+			}
+			return paths;
+		});
+	}, []);
 
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
@@ -920,13 +952,6 @@ export const FileTreePane = memo(function FileTreePane({
 		void onLoadDir(focusedDirPath);
 	}, [focusedDirPath, focusedEntries, onLoadDir]);
 
-	const filePreviewPaths = useMemo(() => {
-		if (!focusedEntries) return [];
-		return focusedEntries
-			.filter((entry) => entry.kind === "file" && entry.is_markdown)
-			.map((entry) => entry.rel_path)
-			.sort();
-	}, [focusedEntries]);
 	const filePreviewRequestKey = useMemo(
 		() => `${filePreviewRefreshKey}:${filePreviewPaths.join("\0")}`,
 		[filePreviewPaths, filePreviewRefreshKey],
@@ -946,45 +971,45 @@ export const FileTreePane = memo(function FileTreePane({
 		if (missingPaths.length === 0) return;
 
 		let cancelled = false;
-		void Promise.allSettled(
-			missingPaths.map(async (path) => {
-				const preview = await invoke("space_read_text_preview", {
-					path,
-					max_bytes: MARKDOWN_PREVIEW_MAX_BYTES,
-				});
-				return {
-					path,
-					snippet: markdownPreviewSnippet(preview.text),
-				};
-			}),
-		).then((results) => {
-			if (
-				cancelled ||
-				filePreviewRequestRef.current !== filePreviewRequestKey
-			) {
-				return;
-			}
-			setFilePreviewsByPath((prev) => {
-				let changed = false;
-				const next = { ...prev };
-				for (const [index, result] of results.entries()) {
-					if (result.status === "fulfilled") {
-						const snippet = result.value.snippet || null;
-						if (next[result.value.path] !== snippet) {
-							next[result.value.path] = snippet;
-							changed = true;
-						}
-					} else {
+		void invoke("space_read_text_previews_batch", {
+			paths: missingPaths,
+			max_bytes: MARKDOWN_PREVIEW_MAX_BYTES,
+		})
+			.then((results) => {
+				if (
+					cancelled ||
+					filePreviewRequestRef.current !== filePreviewRequestKey
+				) {
+					return;
+				}
+				setFilePreviewsByPath((prev) => {
+					let changed = false;
+					const next = { ...prev };
+					for (const [index, result] of results.entries()) {
 						const path = missingPaths[index];
-						if (path && path in next) {
+						if (!path) continue;
+						if (result.error === null && result.text !== null) {
+							const snippet = markdownPreviewSnippet(result.text) || null;
+							if (next[path] !== snippet) {
+								next[path] = snippet;
+								changed = true;
+							}
+						} else if (path in next) {
 							delete next[path];
 							changed = true;
 						}
 					}
+					return changed ? next : prev;
+				});
+			})
+			.catch((error: unknown) => {
+				if (
+					!cancelled &&
+					filePreviewRequestRef.current === filePreviewRequestKey
+				) {
+					console.warn("Failed to load file previews", error);
 				}
-				return changed ? next : prev;
 			});
-		});
 
 		return () => {
 			cancelled = true;
@@ -1098,6 +1123,7 @@ export const FileTreePane = memo(function FileTreePane({
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
+								onVisiblePreviewPathsChange={handleVisiblePreviewPathsChange}
 								sortMode={sortMode}
 							/>
 						) : (
