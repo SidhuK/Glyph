@@ -163,6 +163,8 @@ export const SidebarContent = memo(function SidebarContent({
 		people,
 		beautifulTags,
 		tagAppearance,
+		tagsError,
+		ensureTagsFresh,
 		setTagAppearance,
 	} = useFileTreeContext();
 	const { folioMode, folioScope, setFolioScope } = useUILayoutContext();
@@ -601,6 +603,8 @@ export const SidebarContent = memo(function SidebarContent({
 								onSelectPerson={handleSelectPerson}
 								beautifulTags={beautifulTags}
 								tagAppearance={tagAppearance}
+								tagsError={tagsError}
+								onEnsureTagsFresh={ensureTagsFresh}
 								onChangeTagIcon={handleChangeTagIcon}
 							/>
 						</section>

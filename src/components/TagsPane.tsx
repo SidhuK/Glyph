@@ -25,6 +25,8 @@ interface TagsPaneProps {
 	beautifulTags?: boolean;
 	tagAppearance?: Record<string, TagAppearance>;
 	onChangeTagIcon?: (tag: string, iconName: string | null) => Promise<void>;
+	tagsError?: string;
+	onEnsureTagsFresh: () => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -84,6 +86,8 @@ export const TagsPane = memo(function TagsPane({
 	beautifulTags = false,
 	tagAppearance = {},
 	onChangeTagIcon,
+	tagsError = "",
+	onEnsureTagsFresh,
 }: TagsPaneProps) {
 	const { t } = useTranslation("shell");
 	const onClick = useCallback(
@@ -97,6 +101,13 @@ export const TagsPane = memo(function TagsPane({
 	);
 	const [tagsExpanded, setTagsExpanded] = useState(false);
 	const [sectionExpanded, setSectionExpanded] = useState(false);
+	const handleSectionToggle = useCallback(() => {
+		const nextExpanded = !sectionExpanded;
+		setSectionExpanded(nextExpanded);
+		if (nextExpanded) {
+			void onEnsureTagsFresh();
+		}
+	}, [onEnsureTagsFresh, sectionExpanded]);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
 	const tagIconOverrides = useMemo(
@@ -120,14 +131,16 @@ export const TagsPane = memo(function TagsPane({
 				<button
 					type="button"
 					className="tagsHeaderTitle tagsHeaderToggle"
-					onClick={() => setSectionExpanded((v) => !v)}
+					onClick={handleSectionToggle}
 					aria-expanded={sectionExpanded}
 					aria-label={sectionExpanded ? t("tags.collapse") : t("tags.expand")}
 				>
 					<span>{t("tags.header")}</span>
 				</button>
 			</div>
-			{!sectionExpanded ? null : rows.length ? (
+			{!sectionExpanded ? null : tagsError ? (
+				<div className="tagsEmpty">{tagsError}</div>
+			) : rows.length ? (
 				<>
 					<m.ul
 						className="tagsList"
