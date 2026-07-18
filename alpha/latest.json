@@ -1,15 +1,15 @@
 {
-  "version": "0.8.8",
-  "notes": "## What's Changed\n* Fix rich-text callouts and native code language picker by @SidhuK in https://github.com/SidhuK/Glyph/pull/336\n* Fix Codex app-server startup and rollout handling by @SidhuK in https://github.com/SidhuK/Glyph/pull/337\n* Simplify command palette, editor, and notes UI by @SidhuK in https://github.com/SidhuK/Glyph/pull/338\n* Patch vulnerable pnpm dependency graph by @SidhuK in https://github.com/SidhuK/Glyph/pull/358\n* Upgrade TipTap editor stack to 3.27.4 by @SidhuK in https://github.com/SidhuK/Glyph/pull/359\n* chore: refresh frontend dependencies by @SidhuK in https://github.com/SidhuK/Glyph/pull/360\n* Upgrade to Vite 8 and remove CodSpeed by @SidhuK in https://github.com/SidhuK/Glyph/pull/361\n* Add default editor mode setting for opening notes (#363) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/363\n* Polish database and sidebar UI by @SidhuK in https://github.com/SidhuK/Glyph/pull/364\n* Polish git history sidebar UI for 0.8.8-alpha.5 (#366) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/366\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.7...v0.8.8",
-  "pub_date": "2026-07-17T06:45:19.581Z",
+  "version": "0.8.9-alpha.1",
+  "notes": "## What's Changed\n* Batch visible folder preview reads by @SidhuK in https://github.com/SidhuK/Glyph/pull/394\n* Avoid full tag reloads on every autosave by @SidhuK in https://github.com/SidhuK/Glyph/pull/395\n* Bridge to TypeScript 6 and start 0.8.9 alpha (#396) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/396\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.8...v0.8.9-alpha.1",
+  "pub_date": "2026-07-18T10:48:41.378Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFDMmJCVm1QQSt3czFtTHRzNXUzZnpFU1h0R0QwcmM5QXh5VlZBcG42U2w4bXlSZGdGNHJEbU5mVnlrVkFmclQyUWtsSWcwQTNCRnIxOEM3Rm12MFFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MjcwNzE0CWZpbGU6R2x5cGguYXBwLnRhci5negovMHFzSXpOekdWM0ZOTlNiUnNoaldnbEZvbEE5dUFRdUhSWW5zblJEK0ErNERmOWFFY2ZrdEtheFBSZndTT01EWWpKRkVHWmI0UGJxbFRLdzYvSDNCZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdKMDdlS0hYc1drVkJidkdGZWRZTVRXTWF3VUtrV1FacFZGMmRpMzB5WlZxTlhlUk5ublkyR2RKdEl6N1IrNGZGTjAvMGxVaDZxTU9VWGRqdmxGSXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MzcxNzE2CWZpbGU6R2x5cGguYXBwLnRhci5negpYMm5mQURQbmFhMnNNazhjL1FMRjlTV2tHQ2VaR285dk9pQndyWWhQZUttdlBKZ0VUL2QzTjZqdXg0a3BiOGYySUJNaVhSVGlVbWIva09wWmI5OWNDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.1/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDFDMmJCVm1QQSt3czFtTHRzNXUzZnpFU1h0R0QwcmM5QXh5VlZBcG42U2w4bXlSZGdGNHJEbU5mVnlrVkFmclQyUWtsSWcwQTNCRnIxOEM3Rm12MFFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MjcwNzE0CWZpbGU6R2x5cGguYXBwLnRhci5negovMHFzSXpOekdWM0ZOTlNiUnNoaldnbEZvbEE5dUFRdUhSWW5zblJEK0ErNERmOWFFY2ZrdEtheFBSZndTT01EWWpKRkVHWmI0UGJxbFRLdzYvSDNCZz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.8/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHdKMDdlS0hYc1drVkJidkdGZWRZTVRXTWF3VUtrV1FacFZGMmRpMzB5WlZxTlhlUk5ublkyR2RKdEl6N1IrNGZGTjAvMGxVaDZxTU9VWGRqdmxGSXdJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0MzcxNzE2CWZpbGU6R2x5cGguYXBwLnRhci5negpYMm5mQURQbmFhMnNNazhjL1FMRjlTV2tHQ2VaR285dk9pQndyWWhQZUttdlBKZ0VUL2QzTjZqdXg0a3BiOGYySUJNaVhSVGlVbWIva09wWmI5OWNDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.1/Glyph_aarch64.app.tar.gz"
     }
   }
 }
