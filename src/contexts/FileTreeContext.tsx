@@ -69,6 +69,7 @@ interface FileTreeContextValue {
 	tagAppearance: Record<string, TagAppearance>;
 	tagsError: string;
 	refreshTags: () => Promise<void>;
+	ensureTagsFresh: () => Promise<void>;
 	refreshTagAppearance: () => Promise<void>;
 	setTagAppearance: (tag: string, icon: string | null) => Promise<void>;
 	fileTreeSortMode: FileTreeSortMode;
@@ -134,6 +135,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		useState(false);
 	const peopleMentionsEnabledRef = useRef(false);
 	const tagsRequestIdRef = useRef(0);
+	const tagsLoadedSpaceRef = useRef<string | null>(null);
+	const tagsMetadataStaleRef = useRef(false);
+	const tagsMetadataVersionRef = useRef(0);
+	const tagsRefreshPromiseRef = useRef<Promise<void> | null>(null);
 	const tagAppearanceRequestIdRef = useRef(0);
 	const fileTreeSortModeRequestVersionRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
@@ -151,32 +156,70 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		[spacePath],
 	);
 
-	const refreshTags = useCallback(async () => {
+	const refreshTags = useCallback(() => {
 		const requestId = tagsRequestIdRef.current + 1;
 		tagsRequestIdRef.current = requestId;
 		const peopleEnabled = peopleMentionsEnabledRef.current;
-		try {
-			if (requestId === tagsRequestIdRef.current) {
-				setTagsError("");
-			}
-			const [nextTags, nextPeople] = await Promise.all([
-				fetchAllTags(),
-				peopleEnabled ? fetchAllPeople() : Promise.resolve([] as PersonCount[]),
-			]);
-			if (requestId !== tagsRequestIdRef.current) {
-				return;
-			}
-			setTags(nextTags);
-			setPeople(nextPeople);
-		} catch (e) {
-			if (requestId !== tagsRequestIdRef.current) {
-				return;
-			}
-			setTags([]);
-			setPeople([]);
-			setTagsError(extractErrorMessage(e));
+		const originSpace = currentSpacePathRef.current;
+		const metadataVersion = tagsMetadataVersionRef.current;
+		if (!originSpace) {
+			return Promise.resolve();
 		}
+		const refreshPromise = (async () => {
+			try {
+				if (requestId === tagsRequestIdRef.current) {
+					setTagsError("");
+				}
+				const [nextTags, nextPeople] = await Promise.all([
+					fetchAllTags(),
+					peopleEnabled
+						? fetchAllPeople()
+						: Promise.resolve([] as PersonCount[]),
+				]);
+				if (
+					requestId !== tagsRequestIdRef.current ||
+					originSpace !== currentSpacePathRef.current
+				) {
+					return;
+				}
+				setTags(nextTags);
+				setPeople(nextPeople);
+				tagsLoadedSpaceRef.current = originSpace;
+				tagsMetadataStaleRef.current =
+					metadataVersion !== tagsMetadataVersionRef.current;
+			} catch (e) {
+				if (
+					requestId !== tagsRequestIdRef.current ||
+					originSpace !== currentSpacePathRef.current
+				) {
+					return;
+				}
+				setTags([]);
+				setPeople([]);
+				setTagsError(extractErrorMessage(e));
+				tagsMetadataStaleRef.current = true;
+			}
+		})();
+		tagsRefreshPromiseRef.current = refreshPromise;
+		void refreshPromise.finally(() => {
+			if (tagsRefreshPromiseRef.current === refreshPromise) {
+				tagsRefreshPromiseRef.current = null;
+			}
+		});
+		return refreshPromise;
 	}, []);
+
+	const ensureTagsFresh = useCallback(() => {
+		const currentSpace = currentSpacePathRef.current;
+		if (
+			!currentSpace ||
+			(tagsLoadedSpaceRef.current === currentSpace &&
+				!tagsMetadataStaleRef.current)
+		) {
+			return Promise.resolve();
+		}
+		return tagsRefreshPromiseRef.current ?? refreshTags();
+	}, [refreshTags]);
 
 	const refreshTagAppearance = useCallback(async () => {
 		const requestId = tagAppearanceRequestIdRef.current + 1;
@@ -261,6 +304,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	});
 
 	useEffect(() => {
+		tagsRequestIdRef.current += 1;
+		tagsLoadedSpaceRef.current = null;
+		tagsMetadataStaleRef.current = false;
+		tagsMetadataVersionRef.current = 0;
+		tagsRefreshPromiseRef.current = null;
 		setRootEntries([]);
 		setChildrenByDir({});
 		setExpandedDirs(new Set());
@@ -345,7 +393,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	useDebouncedNoteChange({
 		delayMs: 200,
 		enabled: Boolean(spacePath),
-		onChange: () => void refreshTags(),
+		onChange: () => {
+			tagsMetadataStaleRef.current = true;
+			tagsMetadataVersionRef.current += 1;
+		},
 	});
 
 	useTauriEvent("space:fs_changed", (payload) => {
@@ -591,6 +642,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			tagAppearance,
 			tagsError,
 			refreshTags,
+			ensureTagsFresh,
 			refreshTagAppearance,
 			setTagAppearance,
 			fileTreeSortMode,
@@ -623,6 +675,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			tagAppearance,
 			tagsError,
 			refreshTags,
+			ensureTagsFresh,
 			refreshTagAppearance,
 			setTagAppearance,
 			fileTreeSortMode,
