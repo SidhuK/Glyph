@@ -29,7 +29,6 @@ import {
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
-import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import type {
 	DirChildSummary,
@@ -52,6 +51,7 @@ import {
 	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 } from "./fileTreeDnd";
 import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
+import { useVisibleFilePreviews } from "./useVisibleFilePreviews";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -85,8 +85,6 @@ interface FileTreePaneProps {
 }
 
 const springTransition = springPresets.bouncy;
-const MARKDOWN_PREVIEW_MAX_BYTES = 4096;
-const MARKDOWN_PREVIEW_LINE_LIMIT = 1;
 const FILE_TREE_ROW_ESTIMATE = 32;
 const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
 
@@ -116,41 +114,6 @@ function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 			})),
 	];
 	return parts;
-}
-
-function plainMarkdownLine(line: string): string {
-	return line
-		.replace(/^#{1,6}\s+/, "")
-		.replace(/^>\s?/, "")
-		.replace(/^[-*+]\s+\[[ xX]\]\s+/, "")
-		.replace(/^[-*+]\s+/, "")
-		.replace(/^\d+\.\s+/, "")
-		.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
-		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-		.replace(/[*_`~]/g, "")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
-function markdownPreviewSnippet(markdown: string): string {
-	const { body } = splitYamlFrontmatter(markdown);
-	const lines: string[] = [];
-	let inFence = false;
-
-	for (const rawLine of body.replace(/\r\n?/g, "\n").split("\n")) {
-		const trimmed = rawLine.trim();
-		if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
-			inFence = !inFence;
-			continue;
-		}
-		if (inFence || !trimmed) continue;
-		const line = plainMarkdownLine(trimmed);
-		if (!line) continue;
-		lines.push(line);
-		if (lines.length >= MARKDOWN_PREVIEW_LINE_LIMIT) break;
-	}
-
-	return lines.join(" ");
 }
 
 interface FileTreeRootDropProps {
@@ -291,6 +254,7 @@ interface TreeEntriesProps {
 	taskSummariesByPath?: Record<string, NoteTaskSummary>;
 	showFilePreviews?: boolean;
 	filePreviewsByPath?: Record<string, string | null | undefined>;
+	onVisiblePreviewPathsChange?: (paths: string[]) => void;
 	sortMode: FileTreeSortMode;
 }
 
@@ -374,6 +338,7 @@ function TreeEntries({
 	taskSummariesByPath = {},
 	showFilePreviews = false,
 	filePreviewsByPath = {},
+	onVisiblePreviewPathsChange,
 	sortMode,
 }: TreeEntriesProps) {
 	const virtualRows = useMemo(
@@ -422,6 +387,29 @@ function TreeEntries({
 		scrollMargin: listElement?.offsetTop ?? 0,
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
+	const visiblePreviewPathKey = useMemo(() => {
+		if (!showFilePreviews) return "";
+		const paths = new Set<string>();
+		for (const virtualItem of virtualItems) {
+			const entry = virtualRows[virtualItem.index]?.entry;
+			if (entry?.kind === "file" && entry.is_markdown) {
+				paths.add(entry.rel_path);
+			}
+		}
+		return [...paths].sort().join("\0");
+	}, [showFilePreviews, virtualItems, virtualRows]);
+	useEffect(() => {
+		onVisiblePreviewPathsChange?.(
+			visiblePreviewPathKey ? visiblePreviewPathKey.split("\0") : [],
+		);
+	}, [onVisiblePreviewPathsChange, visiblePreviewPathKey]);
+	const onVisiblePreviewPathsChangeRef = useRef(onVisiblePreviewPathsChange);
+	onVisiblePreviewPathsChangeRef.current = onVisiblePreviewPathsChange;
+	useEffect(() => {
+		return () => {
+			onVisiblePreviewPathsChangeRef.current?.([]);
+		};
+	}, []);
 	const handleVirtualArrowNavigate = useCallback(
 		(path: string, direction: -1 | 1, currentTarget: HTMLElement) => {
 			const currentIndex = virtualRows.findIndex(
@@ -593,13 +581,14 @@ export const FileTreePane = memo(function FileTreePane({
 	>({});
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(null);
-	const [filePreviewsByPath, setFilePreviewsByPath] = useState<
-		Record<string, string | null | undefined>
-	>({});
-	const [filePreviewRefreshKey, setFilePreviewRefreshKey] = useState(0);
+	const {
+		filePreviewsByPath,
+		clearVisiblePreviewPaths,
+		handleVisiblePreviewPathsChange,
+		invalidatePreviewForPath,
+	} = useVisibleFilePreviews(spacePath, focusedDirPath);
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
-	const filePreviewRequestRef = useRef("");
 	const moveClickSuppressRef = useRef(false);
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
@@ -612,7 +601,6 @@ export const FileTreePane = memo(function FileTreePane({
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
 		setFocusedDirPath(null);
-		setFilePreviewsByPath({});
 	}, [spacePath]);
 
 	useEffect(() => {
@@ -762,21 +750,8 @@ export const FileTreePane = memo(function FileTreePane({
 	useTauriEvent("notes:external_changed", (payload) => {
 		const relPath = normalizeRelPath(payload.rel_path);
 		if (!relPath || !isMarkdownPath(relPath)) return;
+		invalidatePreviewForPath(relPath, Boolean(payload.removed));
 		if (!taskSummaryPaths.includes(relPath)) return;
-		if (filePreviewPaths.includes(relPath)) {
-			setFilePreviewsByPath((current) => {
-				const next = { ...current };
-				delete next[relPath];
-				return next;
-			});
-			if (!payload.removed) {
-				setFilePreviewRefreshKey((key) => key + 1);
-			}
-		}
-		if (payload.removed) {
-			setTaskSummaryRefreshKey((key) => key + 1);
-			return;
-		}
 		setTaskSummaryRefreshKey((key) => key + 1);
 	});
 
@@ -881,19 +856,28 @@ export const FileTreePane = memo(function FileTreePane({
 
 	const handleEnterDir = useCallback(
 		(dirPath: string) => {
+			clearVisiblePreviewPaths();
 			setFocusedDirPath(dirPath);
 			onSelectDir(dirPath);
 			if (!onLoadDir && !childrenByDir[dirPath] && !expandedDirs.has(dirPath)) {
 				onToggleDir(dirPath);
 			}
 		},
-		[childrenByDir, expandedDirs, onLoadDir, onSelectDir, onToggleDir],
+		[
+			childrenByDir,
+			clearVisiblePreviewPaths,
+			expandedDirs,
+			onLoadDir,
+			onSelectDir,
+			onToggleDir,
+		],
 	);
 
 	const handleExitFocusedDir = useCallback(() => {
+		clearVisiblePreviewPaths();
 		setFocusedDirPath(null);
 		onSelectDir("");
-	}, [onSelectDir]);
+	}, [clearVisiblePreviewPaths, onSelectDir]);
 
 	const focusedEntries = focusedDirPath
 		? (childrenByDir[focusedDirPath] ?? null)
@@ -919,83 +903,6 @@ export const FileTreePane = memo(function FileTreePane({
 		if (!focusedDirPath || focusedEntries || !onLoadDir) return;
 		void onLoadDir(focusedDirPath);
 	}, [focusedDirPath, focusedEntries, onLoadDir]);
-
-	const filePreviewPaths = useMemo(() => {
-		if (!focusedEntries) return [];
-		return focusedEntries
-			.filter((entry) => entry.kind === "file" && entry.is_markdown)
-			.map((entry) => entry.rel_path)
-			.sort();
-	}, [focusedEntries]);
-	const filePreviewRequestKey = useMemo(
-		() => `${filePreviewRefreshKey}:${filePreviewPaths.join("\0")}`,
-		[filePreviewPaths, filePreviewRefreshKey],
-	);
-
-	useEffect(() => {
-		filePreviewRequestRef.current = filePreviewRequestKey;
-		if (!spacePath || !focusedDirPath || filePreviewPaths.length === 0) {
-			return;
-		}
-
-		const missingPaths = filePreviewPaths.filter(
-			(path) =>
-				filePreviewsByPath[path] === undefined ||
-				filePreviewsByPath[path] === "",
-		);
-		if (missingPaths.length === 0) return;
-
-		let cancelled = false;
-		void Promise.allSettled(
-			missingPaths.map(async (path) => {
-				const preview = await invoke("space_read_text_preview", {
-					path,
-					max_bytes: MARKDOWN_PREVIEW_MAX_BYTES,
-				});
-				return {
-					path,
-					snippet: markdownPreviewSnippet(preview.text),
-				};
-			}),
-		).then((results) => {
-			if (
-				cancelled ||
-				filePreviewRequestRef.current !== filePreviewRequestKey
-			) {
-				return;
-			}
-			setFilePreviewsByPath((prev) => {
-				let changed = false;
-				const next = { ...prev };
-				for (const [index, result] of results.entries()) {
-					if (result.status === "fulfilled") {
-						const snippet = result.value.snippet || null;
-						if (next[result.value.path] !== snippet) {
-							next[result.value.path] = snippet;
-							changed = true;
-						}
-					} else {
-						const path = missingPaths[index];
-						if (path && path in next) {
-							delete next[path];
-							changed = true;
-						}
-					}
-				}
-				return changed ? next : prev;
-			});
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [
-		filePreviewPaths,
-		filePreviewRequestKey,
-		filePreviewsByPath,
-		focusedDirPath,
-		spacePath,
-	]);
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
@@ -1098,6 +1005,7 @@ export const FileTreePane = memo(function FileTreePane({
 								taskSummariesByPath={taskSummariesByPath}
 								showFilePreviews
 								filePreviewsByPath={filePreviewsByPath}
+								onVisiblePreviewPathsChange={handleVisiblePreviewPathsChange}
 								sortMode={sortMode}
 							/>
 						) : (
