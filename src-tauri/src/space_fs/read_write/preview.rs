@@ -1,14 +1,24 @@
 use base64::Engine;
-use std::{io::Read, path::PathBuf};
+use std::{
+    io::Read,
+    path::{Path, PathBuf},
+};
 use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState};
 
 use super::super::helpers::{deny_hidden_rel_path, file_mtime_ms};
-use super::super::types::{BinaryFilePreviewDoc, TextFilePreviewDoc};
+use super::super::types::{
+    BinaryFilePreviewDoc, TextFilePreviewDoc, TextFilePreviewDocBatch,
+};
 
 const TEXT_PREVIEW_DEFAULT_MAX_BYTES: u64 = 1_048_576;
 const TEXT_PREVIEW_MAX_BYTES_CAP: u64 = 5_242_880;
+// Callers must chunk above this bound (tall viewports / zoom can exceed it).
+const TEXT_PREVIEW_BATCH_MAX_PATHS: usize = 100;
+// Cap total requested preview bytes (paths × effective per-path max) before reads.
+const TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES: u64 =
+    TEXT_PREVIEW_BATCH_MAX_PATHS as u64 * TEXT_PREVIEW_DEFAULT_MAX_BYTES;
 const BINARY_PREVIEW_DEFAULT_MAX_BYTES: u64 = 20 * 1024 * 1024;
 const BINARY_PREVIEW_MAX_BYTES_CAP: u64 = 30 * 1024 * 1024;
 
@@ -27,6 +37,46 @@ fn mime_for_preview_ext(ext: &str) -> Option<&'static str> {
     }
 }
 
+fn read_text_preview(
+    root: &Path,
+    path: &str,
+    max_bytes: Option<u32>,
+) -> Result<TextFilePreviewDoc, String> {
+    let rel = PathBuf::from(path);
+    deny_hidden_rel_path(&rel)?;
+    let abs = paths::join_under(root, &rel)?;
+    if !abs.exists() {
+        return Err("path does not exist".to_string());
+    }
+    if !abs.is_file() {
+        return Err("path is not a file".to_string());
+    }
+    let total_bytes = std::fs::metadata(&abs).map_err(|e| e.to_string())?.len();
+    let requested = max_bytes
+        .map(|value| value as u64)
+        .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES);
+    let max = requested.clamp(1, TEXT_PREVIEW_MAX_BYTES_CAP);
+
+    let file = std::fs::File::open(&abs).map_err(|e| e.to_string())?;
+    let mut bytes = Vec::new();
+    file.take(max + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| e.to_string())?;
+    let truncated = bytes.len() as u64 > max;
+    if truncated {
+        bytes.truncate(max as usize);
+    }
+
+    Ok(TextFilePreviewDoc {
+        rel_path: rel.to_string_lossy().to_string(),
+        text: String::from_utf8_lossy(&bytes).into_owned(),
+        mtime_ms: file_mtime_ms(&abs),
+        truncated,
+        bytes_read: bytes.len() as u64,
+        total_bytes,
+    })
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_read_text_preview(
     window: WebviewWindow,
@@ -35,43 +85,64 @@ pub async fn space_read_text_preview(
     max_bytes: Option<u32>,
 ) -> Result<TextFilePreviewDoc, String> {
     let root = state.root_for_window(&window)?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<TextFilePreviewDoc, String> {
-        let rel = PathBuf::from(&path);
-        deny_hidden_rel_path(&rel)?;
-        let abs = paths::join_under(&root, &rel)?;
-        if !abs.exists() {
-            return Err("path does not exist".to_string());
-        }
-        if !abs.is_file() {
-            return Err("path is not a file".to_string());
-        }
-        let total_bytes = std::fs::metadata(&abs).map_err(|e| e.to_string())?.len();
-        let requested = max_bytes
-            .map(|value| value as u64)
-            .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES);
-        let max = requested.clamp(1, TEXT_PREVIEW_MAX_BYTES_CAP);
-
-        let file = std::fs::File::open(&abs).map_err(|e| e.to_string())?;
-        let mut bytes = Vec::new();
-        file.take(max + 1)
-            .read_to_end(&mut bytes)
-            .map_err(|e| e.to_string())?;
-        let truncated = bytes.len() as u64 > max;
-        if truncated {
-            bytes.truncate(max as usize);
-        }
-
-        Ok(TextFilePreviewDoc {
-            rel_path: rel.to_string_lossy().to_string(),
-            text: String::from_utf8_lossy(&bytes).into_owned(),
-            mtime_ms: file_mtime_ms(&abs),
-            truncated,
-            bytes_read: bytes.len() as u64,
-            total_bytes,
-        })
-    })
+    tauri::async_runtime::spawn_blocking(move || read_text_preview(&root, &path, max_bytes))
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn space_read_text_previews_batch(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    paths: Vec<String>,
+    max_bytes: Option<u32>,
+) -> Result<Vec<TextFilePreviewDocBatch>, String> {
+    if paths.len() > TEXT_PREVIEW_BATCH_MAX_PATHS {
+        return Err(format!(
+            "too many preview paths (maximum {TEXT_PREVIEW_BATCH_MAX_PATHS})"
+        ));
+    }
+
+    let per_path_max = max_bytes
+        .map(|value| value as u64)
+        .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES)
+        .clamp(1, TEXT_PREVIEW_MAX_BYTES_CAP);
+    let aggregate_budget = per_path_max.saturating_mul(paths.len() as u64);
+    if aggregate_budget > TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES {
+        return Err(format!(
+            "preview batch byte budget exceeded (maximum {TEXT_PREVIEW_BATCH_MAX_TOTAL_BYTES})"
+        ));
+    }
+
+    let root = state.root_for_window(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut results = Vec::with_capacity(paths.len());
+        for path in paths {
+            match read_text_preview(&root, &path, max_bytes) {
+                Ok(preview) => results.push(TextFilePreviewDocBatch {
+                    rel_path: preview.rel_path,
+                    text: Some(preview.text),
+                    mtime_ms: Some(preview.mtime_ms),
+                    truncated: Some(preview.truncated),
+                    bytes_read: Some(preview.bytes_read),
+                    total_bytes: Some(preview.total_bytes),
+                    error: None,
+                }),
+                Err(error) => results.push(TextFilePreviewDocBatch {
+                    rel_path: path,
+                    text: None,
+                    mtime_ms: None,
+                    truncated: None,
+                    bytes_read: None,
+                    total_bytes: None,
+                    error: Some(error),
+                }),
+            }
+        }
+        results
+    })
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command(rename_all = "snake_case")]
