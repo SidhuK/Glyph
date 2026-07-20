@@ -612,7 +612,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         menu_shortcuts,
         "edit.paste_without_formatting",
         true,
-        None,
+        Some("CmdOrCtrl+Alt+Shift+V"),
     )?;
     let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces, menu_labels)?;
 
