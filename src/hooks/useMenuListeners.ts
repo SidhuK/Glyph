@@ -129,6 +129,8 @@ export function useMenuListeners({
 				highlight_green: () => onEditorAction("highlight_green"),
 				highlight_red: () => onEditorAction("highlight_red"),
 				highlight_clear: () => onEditorAction("highlight_clear"),
+				paste_without_formatting: () =>
+					onEditorAction("paste_without_formatting"),
 			})
 				.then((handled) => {
 					if (!handled) {

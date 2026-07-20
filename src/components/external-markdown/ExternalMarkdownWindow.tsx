@@ -1,6 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
+import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import {
 	type EditorViewMode,
 	getDefaultEditorViewMode,
@@ -121,8 +122,13 @@ export function ExternalMarkdownWindow() {
 	}, [saveNow]);
 
 	useTauriEvent("menu:app_command", (payload) => {
-		if (payload.command_id !== "close-active-tab") return;
-		void closeWindow();
+		if (payload.command_id === "close-active-tab") {
+			void closeWindow();
+			return;
+		}
+		if (payload.command_id === "paste_without_formatting") {
+			dispatchEditorMenuAction({ action: "paste_without_formatting" });
+		}
 	});
 	useTauriEvent("external-markdown:close_requested", () => {
 		void closeWindow();

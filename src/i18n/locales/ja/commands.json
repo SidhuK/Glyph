@@ -318,6 +318,10 @@
 			"label": "スペース設定を開く",
 			"description": "現在のスペースの設定を開きます。"
 		},
+		"paste_without_formatting": {
+			"label": "書式なしでペースト",
+			"description": "クリップボードのテキストを書式なしでペーストします。"
+		},
 		"previous-tab": {
 			"label": "前のタブ",
 			"description": "前のタブに移動します。"

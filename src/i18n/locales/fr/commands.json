@@ -318,6 +318,10 @@
 			"label": "Ouvrir les réglages de l’espace",
 			"description": "Ouvrir les réglages de l’espace actuel."
 		},
+		"paste_without_formatting": {
+			"label": "Coller sans mise en forme",
+			"description": "Coller le texte du presse-papiers sans mise en forme."
+		},
 		"previous-tab": {
 			"label": "Onglet précédent",
 			"description": "Passer à l’onglet précédent."

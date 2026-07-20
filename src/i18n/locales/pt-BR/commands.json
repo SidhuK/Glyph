@@ -318,6 +318,10 @@
 			"label": "Abrir configurações do espaço",
 			"description": "Abrir as configurações do espaço atual."
 		},
+		"paste_without_formatting": {
+			"label": "Colar sem formatação",
+			"description": "Colar o texto da área de transferência sem formatação."
+		},
 		"previous-tab": {
 			"label": "Aba anterior",
 			"description": "Ir para a aba anterior."

@@ -1,9 +1,10 @@
-import type { Editor } from "@tiptap/core";
+import type { Editor, JSONContent } from "@tiptap/core";
 import { useEffect } from "react";
 import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../../lib/appEvents";
+import { invoke } from "../../../lib/tauri";
 import { createDetailsBlockContent } from "../extensions/detailsBlock";
 import { isEditorTextColor } from "../textColors";
 import { isEditorTextHighlight } from "../textHighlights";
@@ -42,6 +43,35 @@ function createCalloutContent(type: string) {
 			{ type: "paragraph" },
 		],
 	};
+}
+
+function createPlainTextPasteContent(text: string): JSONContent[] {
+	const paragraphs: JSONContent[] = [];
+	let lines: string[] = [];
+
+	const appendParagraph = () => {
+		const content: JSONContent[] = [];
+		for (const [index, line] of lines.entries()) {
+			if (line.length) content.push({ type: "text", text: line });
+			if (index < lines.length - 1) content.push({ type: "hardBreak" });
+		}
+		paragraphs.push({
+			type: "paragraph",
+			...(content.length ? { content } : {}),
+		});
+		lines = [];
+	};
+
+	for (const line of text.split("\n")) {
+		if (!line.length) {
+			appendParagraph();
+			continue;
+		}
+		lines.push(line);
+	}
+	if (lines.length) appendParagraph();
+
+	return paragraphs;
 }
 
 /**
@@ -84,6 +114,46 @@ export function useRibbonCommands({
 			const isReadOnlySafeAction =
 				action === "collapse_all_headings" || action === "expand_all_headings";
 			if (!canEdit && !isReadOnlySafeAction) return;
+
+			if (action === "paste_without_formatting") {
+				void invoke("read_clipboard_plain_text")
+					.then((text) => {
+						if (text == null || editor.isDestroyed || !editor.isEditable) {
+							return;
+						}
+						const plain = text.replace(/\r\n?/g, "\n");
+						if (!plain.length) return;
+						const selection = {
+							from: editor.state.selection.from,
+							to: editor.state.selection.to,
+						};
+						if (plain.includes("\n") && !editor.isActive("codeBlock")) {
+							if (
+								!editor.commands.insertContentAt(
+									selection,
+									createPlainTextPasteContent(plain),
+								)
+							) {
+								return;
+							}
+						} else {
+							editor.view.dispatch(
+								editor.state.tr.insertText(plain, selection.from, selection.to),
+							);
+						}
+						editor.view.focus();
+						if (scrollHost) {
+							requestAnimationFrame(() => {
+								scrollHost.scrollTop = scrollTop;
+							});
+						}
+					})
+					.catch((cause) => {
+						console.warn("Paste without formatting failed", cause);
+					});
+				return;
+			}
+
 			const chain = editor
 				.chain()
 				.focus(null, { scrollIntoView: false })

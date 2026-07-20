@@ -922,6 +922,22 @@
 			"commandPalette": true,
 			"menuId": "space.settings"
 		},
+		"paste_without_formatting": {
+			"id": "paste_without_formatting",
+			"label": "Paste without Formatting",
+			"description": "Paste clipboard text without formatting.",
+			"category": "editor",
+			"context": "editor",
+			"defaultBinding": {
+				"meta": true,
+				"alt": true,
+				"shift": true,
+				"key": "v"
+			},
+			"allowInEditable": true,
+			"commandPalette": false,
+			"menuId": "edit.paste_without_formatting"
+		},
 		"previous-tab": {
 			"id": "previous-tab",
 			"label": "Previous Tab",
