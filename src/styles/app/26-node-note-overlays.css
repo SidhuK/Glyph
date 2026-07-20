@@ -91,7 +91,23 @@
 }
 
 .codeBlockActionBtn[data-copied] {
-	color: var(--success);
+	color: var(--status-success-fg);
+}
+
+.codeBlockActionBtn[data-failed] {
+	color: var(--status-danger-fg);
+}
+
+/* Preview/read-only: decoration widget pinned to the code block itself. */
+.codeBlockInlineCopy {
+	position: absolute;
+	top: 4px;
+	right: 10px;
+	z-index: 15;
+	display: inline-flex;
+	align-items: center;
+	user-select: none;
+	pointer-events: auto;
 }
 
 .mermaidCodeBlockHiddenInPreview {

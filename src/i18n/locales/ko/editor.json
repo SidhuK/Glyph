@@ -45,6 +45,7 @@
 		"runPreview": "미리보기 실행",
 		"copy": "코드 복사",
 		"copied": "코드 복사됨",
+		"copyFailed": "코드 복사 실패",
 		"editCode": "코드 편집",
 		"editMermaid": "Mermaid 코드 편집",
 		"editHtml": "HTML 코드 편집",

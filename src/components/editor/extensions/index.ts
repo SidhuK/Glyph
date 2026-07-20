@@ -21,6 +21,7 @@ import {
 	visitChangedNodes,
 	visitNodesInRanges,
 } from "./changedRanges";
+import { CodeBlockCopyControls } from "./codeBlockCopyControls";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
 import { glyphDetailsExtensions } from "./detailsBlock";
@@ -648,6 +649,7 @@ export function createEditorExtensions(
 		HighlightedText,
 		ColoredText,
 		SyntaxHighlightedCodeBlock,
+		CodeBlockCopyControls,
 		EditorLink,
 		TaskList,
 		TaskItem.configure({ nested: true }),
