@@ -1,13 +1,23 @@
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Extension } from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { i18n } from "../../../i18n";
 
 const FEEDBACK_MS = 1500;
+
+const pluginKey = new PluginKey<CodeBlockCopyPluginState>(
+	"code-block-copy-controls",
+);
+
+interface CodeBlockCopyPluginState {
+	decorations: DecorationSet;
+	editable: boolean;
+}
 
 function iconMarkup(copied: boolean): string {
 	return renderToStaticMarkup(
@@ -19,7 +29,21 @@ function iconMarkup(copied: boolean): string {
 	);
 }
 
-function copyButton(): HTMLButtonElement {
+function codeBlockTextAtWidget(
+	view: EditorView,
+	getPos: () => number | undefined,
+): string {
+	const pos = getPos();
+	if (typeof pos !== "number") return "";
+	const $pos = view.state.doc.resolve(pos);
+	if ($pos.parent.type.name !== "codeBlock") return "";
+	return $pos.parent.textContent ?? "";
+}
+
+function copyButton(
+	view: EditorView,
+	getPos: () => number | undefined,
+): HTMLButtonElement {
 	const btn = document.createElement("button");
 	btn.type = "button";
 	btn.className = "codeBlockActionBtn codeBlockInlineCopy";
@@ -48,11 +72,12 @@ function copyButton(): HTMLButtonElement {
 	btn.addEventListener("click", (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		const text = btn.closest("pre")?.querySelector("code")?.textContent ?? "";
+		const text = codeBlockTextAtWidget(view, getPos);
 		const clipboard = navigator.clipboard;
 		const finish = (ok: boolean) => {
 			if (timer !== null) window.clearTimeout(timer);
 			paint(ok ? "copied" : "failed");
+			// Keep success/fail visible briefly, then return the control to idle.
 			timer = window.setTimeout(() => {
 				timer = null;
 				paint("idle");
@@ -74,31 +99,74 @@ function copyButton(): HTMLButtonElement {
 	return btn;
 }
 
+function buildCopyDecorations(doc: ProseMirrorNode): DecorationSet {
+	const decos: Decoration[] = [];
+	doc.descendants((node, pos) => {
+		if (node.type.name !== "codeBlock") return;
+		decos.push(
+			Decoration.widget(
+				pos + 1,
+				(view, getPos) => {
+					const resolvePos =
+						typeof getPos === "function" ? getPos : () => undefined;
+					return copyButton(view, resolvePos);
+				},
+				{
+					side: -1,
+					ignoreSelection: true,
+					key: `code-block-copy-${pos}`,
+				},
+			),
+		);
+		return false;
+	});
+	return decos.length ? DecorationSet.create(doc, decos) : DecorationSet.empty;
+}
+
 /** Preview/read-only: copy control on each code block (widget on the block). */
 export const CodeBlockCopyControls = Extension.create({
 	name: "codeBlockCopyControls",
 	addProseMirrorPlugins() {
 		const editor = this.editor;
+		const getEditable = () => editor.isEditable;
+
 		return [
-			new Plugin({
-				key: new PluginKey("code-block-copy-controls"),
+			new Plugin<CodeBlockCopyPluginState>({
+				key: pluginKey,
+				state: {
+					init: (_config, state) => {
+						const editable = getEditable();
+						return {
+							editable,
+							decorations: editable
+								? DecorationSet.empty
+								: buildCopyDecorations(state.doc),
+						};
+					},
+					apply(transaction, value, _oldState, newState) {
+						const editable = getEditable();
+						if (editable) {
+							if (value.editable) return value;
+							return {
+								editable: true,
+								decorations: DecorationSet.empty,
+							};
+						}
+						if (!value.editable && !transaction.docChanged) {
+							return value;
+						}
+						return {
+							editable: false,
+							decorations: buildCopyDecorations(newState.doc),
+						};
+					},
+				},
 				props: {
 					decorations(state) {
 						if (editor.isEditable) return DecorationSet.empty;
-						const decos: Decoration[] = [];
-						state.doc.descendants((node, pos) => {
-							if (node.type.name !== "codeBlock") return;
-							decos.push(
-								Decoration.widget(pos + 1, copyButton, {
-									side: -1,
-									ignoreSelection: true,
-									key: `code-block-copy-${pos}`,
-								}),
-							);
-						});
-						return decos.length
-							? DecorationSet.create(state.doc, decos)
-							: DecorationSet.empty;
+						return (
+							pluginKey.getState(state)?.decorations ?? DecorationSet.empty
+						);
 					},
 				},
 			}),
