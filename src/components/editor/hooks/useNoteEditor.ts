@@ -349,7 +349,6 @@ export function useNoteEditor({
 	const pendingSelectionRestoreRef = useRef<SelectionSnapshot | null>(null);
 	const editorContentRelPathRef = useRef(relPath);
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
-	const markdownSyncFrameRef = useRef<number | null>(null);
 	const markdownManagerRef = useRef<MarkdownManager | null>(null);
 	const pasteMarkdownBehaviorRef = useRef(pasteMarkdownBehavior);
 	const extensions = useMemo(
@@ -398,10 +397,6 @@ export function useNoteEditor({
 			window.clearTimeout(markdownSyncTimeoutRef.current);
 			markdownSyncTimeoutRef.current = null;
 		}
-		if (markdownSyncFrameRef.current !== null) {
-			window.cancelAnimationFrame(markdownSyncFrameRef.current);
-			markdownSyncFrameRef.current = null;
-		}
 	}, []);
 
 	const flushMarkdownSync = useCallback(
@@ -445,12 +440,12 @@ export function useNoteEditor({
 				relPath: relPathRef.current,
 			};
 			clearScheduledMarkdownSync();
+			// No requestAnimationFrame hop here: macOS suspends rAF callbacks for
+			// occluded windows, which would strand the pending sync (and the text
+			// it carries) until the window is next painted.
 			markdownSyncTimeoutRef.current = window.setTimeout(() => {
 				markdownSyncTimeoutRef.current = null;
-				markdownSyncFrameRef.current = window.requestAnimationFrame(() => {
-					markdownSyncFrameRef.current = null;
-					flushMarkdownSync();
-				});
+				flushMarkdownSync();
 			}, MARKDOWN_SYNC_DEBOUNCE_MS);
 		},
 		[clearScheduledMarkdownSync, flushMarkdownSync],
@@ -739,6 +734,7 @@ export function useNoteEditor({
 
 	return {
 		editor,
+		flushMarkdownSync,
 		frontmatter,
 		colorfulHeadings,
 		showFrontmatterInEditor,
