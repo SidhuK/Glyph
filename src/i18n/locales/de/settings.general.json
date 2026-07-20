@@ -37,6 +37,16 @@
 				"plain": "Raw Markdown"
 			}
 		},
+		"focusMode": {
+			"label": "Fokusmodus",
+			"description": "Dimmt inaktiven Text im Rich-Editor und lässt die aktuelle Schreibeinheit klar sichtbar.",
+			"ariaLabel": "Fokusmodus",
+			"options": {
+				"off": "Aus",
+				"paragraph": "Absatz",
+				"sentence": "Satz"
+			}
+		},
 		"tableOfContents": {
 			"label": "Inhaltsverzeichnis",
 			"description": "Ein schwebendes Inhaltsverzeichnis für jede Notiz anzeigen.",

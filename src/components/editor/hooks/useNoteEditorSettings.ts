@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { DEFAULT_ATTACHMENT_FOLDER } from "../../../lib/attachmentStorage";
 import {
 	type AttachmentStorageMode,
+	type FocusMode,
+	isFocusMode,
 	loadSettings,
 } from "../../../lib/settings";
 import { useTauriEvent } from "../../../lib/tauriEvents";
@@ -11,6 +13,7 @@ export function useNoteEditorSettings() {
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
+	const [focusMode, setFocusMode] = useState<FocusMode>("off");
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 
@@ -25,6 +28,7 @@ export function useNoteEditorSettings() {
 				);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
+				setFocusMode(settings.editor.focusMode);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
 				attachmentFolderRef.current = settings.editor.attachmentFolder;
@@ -35,6 +39,7 @@ export function useNoteEditorSettings() {
 				setShowFrontmatterInEditor(false);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
+				setFocusMode("off");
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
@@ -56,6 +61,9 @@ export function useNoteEditorSettings() {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
+		if (isFocusMode(payload.editor?.focusMode)) {
+			setFocusMode(payload.editor.focusMode);
+		}
 		if (payload.editor?.attachmentStorageMode) {
 			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
 		}
@@ -68,6 +76,7 @@ export function useNoteEditorSettings() {
 		attachmentFolderRef,
 		attachmentStorageModeRef,
 		colorfulHeadings,
+		focusMode,
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
 		showFrontmatterInEditor,

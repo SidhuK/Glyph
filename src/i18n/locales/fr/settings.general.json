@@ -37,6 +37,16 @@
 				"plain": "Markdown brut"
 			}
 		},
+		"focusMode": {
+			"label": "Mode concentration",
+			"description": "Atténue le texte inactif dans l’éditeur enrichi principal tout en gardant l’unité d’écriture actuelle visible.",
+			"ariaLabel": "Mode concentration",
+			"options": {
+				"off": "Désactivé",
+				"paragraph": "Paragraphe",
+				"sentence": "Phrase"
+			}
+		},
 		"tableOfContents": {
 			"label": "Table des matières",
 			"description": "Afficher une table des matières flottante pour chaque note.",

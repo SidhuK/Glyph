@@ -37,6 +37,16 @@
 				"plain": "Markdown sin formato"
 			}
 		},
+		"focusMode": {
+			"label": "Modo de enfoque",
+			"description": "Atenúa el texto inactivo en el editor enriquecido principal y mantiene clara la unidad de escritura actual.",
+			"ariaLabel": "Modo de enfoque",
+			"options": {
+				"off": "Desactivado",
+				"paragraph": "Párrafo",
+				"sentence": "Oración"
+			}
+		},
 		"tableOfContents": {
 			"label": "Tabla de contenidos",
 			"description": "Mostrar una tabla de contenidos flotante en cada nota.",

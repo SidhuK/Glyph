@@ -11,9 +11,12 @@ import {
 } from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
+	type FocusMode,
+	isFocusMode,
 	loadSettings,
 	setEditorColorfulHeadings,
 	setEditorDefaultEditorMode,
+	setEditorFocusMode,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
@@ -41,6 +44,12 @@ const DEFAULT_EDITOR_MODE_VALUES = [
 	"preview",
 	"plain",
 ] as const satisfies readonly EditorViewMode[];
+
+const FOCUS_MODE_VALUES = [
+	"off",
+	"paragraph",
+	"sentence",
+] as const satisfies readonly FocusMode[];
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -80,6 +89,9 @@ export function GeneralSettingsPane() {
 	const [isSavingDefaultEditorMode, setIsSavingDefaultEditorMode] =
 		useState(false);
 	const defaultEditorModeEpochRef = useRef(0);
+	const [focusMode, setFocusModeState] = useState<FocusMode>("off");
+	const [isSavingFocusMode, setIsSavingFocusMode] = useState(false);
+	const focusModeEpochRef = useRef(0);
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -131,6 +143,7 @@ export function GeneralSettingsPane() {
 	useEffect(() => {
 		let cancelled = false;
 		const defaultEditorModeEpoch = defaultEditorModeEpochRef.current;
+		const focusModeEpoch = focusModeEpochRef.current;
 		setError("");
 		void loadSettings()
 			.then((settings) => {
@@ -138,6 +151,9 @@ export function GeneralSettingsPane() {
 				setLanguageState(settings.ui.language);
 				if (defaultEditorModeEpoch === defaultEditorModeEpochRef.current) {
 					setDefaultEditorModeState(settings.editor.defaultEditorMode);
+				}
+				if (focusModeEpoch === focusModeEpochRef.current) {
+					setFocusModeState(settings.editor.focusMode);
 				}
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
@@ -178,6 +194,9 @@ export function GeneralSettingsPane() {
 				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
 					setDefaultEditorModeState(payload.editor.defaultEditorMode);
+				}
+				if (isFocusMode(payload.editor?.focusMode)) {
+					setFocusModeState(payload.editor.focusMode);
 				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
@@ -346,6 +365,42 @@ export function GeneralSettingsPane() {
 							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
 								<option key={value} value={value}>
 									{t(`editor.defaultEditorMode.options.${value}`)}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.focusMode.label")}
+						description={t("editor.focusMode.description")}
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label={t("editor.focusMode.ariaLabel")}
+							value={focusMode}
+							disabled={isSavingFocusMode}
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value;
+								if (!isFocusMode(nextMode)) return;
+								const previous = focusMode;
+								focusModeEpochRef.current += 1;
+								setError("");
+								setFocusModeState(nextMode);
+								setIsSavingFocusMode(true);
+								void setEditorFocusMode(nextMode)
+									.catch((cause) => {
+										setFocusModeState(previous);
+										setError(
+											cause instanceof Error ? cause.message : String(cause),
+										);
+									})
+									.finally(() => {
+										setIsSavingFocusMode(false);
+									});
+							}}
+						>
+							{FOCUS_MODE_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editor.focusMode.options.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>

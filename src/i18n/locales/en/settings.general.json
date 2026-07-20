@@ -37,6 +37,16 @@
 				"plain": "Raw Markdown"
 			}
 		},
+		"focusMode": {
+			"label": "Focus mode",
+			"description": "Dim inactive text in the main Rich editor while keeping your current writing unit clear.",
+			"ariaLabel": "Focus mode",
+			"options": {
+				"off": "Off",
+				"paragraph": "Paragraph",
+				"sentence": "Sentence"
+			}
+		},
 		"tableOfContents": {
 			"label": "Table of contents",
 			"description": "Show a floating table of contents for each note.",

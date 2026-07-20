@@ -37,6 +37,16 @@
 				"plain": "Raw Markdown"
 			}
 		},
+		"focusMode": {
+			"label": "フォーカスモード",
+			"description": "メインのリッチエディタで非アクティブなテキストを淡くし、現在の入力単位を明瞭に保ちます。",
+			"ariaLabel": "フォーカスモード",
+			"options": {
+				"off": "オフ",
+				"paragraph": "段落",
+				"sentence": "文"
+			}
+		},
 		"tableOfContents": {
 			"label": "目次",
 			"description": "各ノートにフローティングの目次を表示します。",

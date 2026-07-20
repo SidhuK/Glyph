@@ -33,6 +33,7 @@ export interface NoteInlineEditorProps {
 	additionalExtensions?: AnyExtension[];
 	placeholder?: string;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
+	enableFocusMode?: boolean;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;

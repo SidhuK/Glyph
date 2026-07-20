@@ -37,6 +37,16 @@
 				"plain": "Raw Markdown"
 			}
 		},
+		"focusMode": {
+			"label": "집중 모드",
+			"description": "기본 리치 편집기에서 비활성 텍스트를 흐리게 하고 현재 작성 단위는 선명하게 유지합니다.",
+			"ariaLabel": "집중 모드",
+			"options": {
+				"off": "끔",
+				"paragraph": "문단",
+				"sentence": "문장"
+			}
+		},
 		"tableOfContents": {
 			"label": "목차",
 			"description": "각 노트에 떠 있는 목차를 표시합니다.",
