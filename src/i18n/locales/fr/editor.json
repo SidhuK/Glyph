@@ -45,6 +45,7 @@
 		"runPreview": "Exécuter l’aperçu",
 		"copy": "Copier le code",
 		"copied": "Code copié",
+		"copyFailed": "Échec de la copie du code",
 		"editCode": "Modifier le code",
 		"editMermaid": "Modifier le code Mermaid",
 		"editHtml": "Modifier le code HTML",
