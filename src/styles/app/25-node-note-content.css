@@ -692,6 +692,7 @@
 }
 
 .tiptapContentInline pre {
+	position: relative;
 	background: color-mix(in srgb, var(--bg-secondary) 86%, var(--bg-primary));
 	padding: var(--space-6) var(--space-4) var(--space-4);
 	border-radius: var(--radius-lg);

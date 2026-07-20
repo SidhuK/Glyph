@@ -45,6 +45,7 @@
 		"runPreview": "プレビューを実行",
 		"copy": "コードをコピー",
 		"copied": "コードをコピーしました",
+		"copyFailed": "コードのコピーに失敗しました",
 		"editCode": "コードを編集",
 		"editMermaid": "Mermaid コードを編集",
 		"editHtml": "HTML コードを編集",
