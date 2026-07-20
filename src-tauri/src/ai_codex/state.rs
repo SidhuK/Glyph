@@ -154,11 +154,26 @@ impl CodexState {
 
     fn spawn_process(&self) -> Result<RuntimeProcess, String> {
         let codex_bin = Self::resolve_codex_binary()?;
-        let mut child = Command::new(&codex_bin)
+        let mut command = Command::new(&codex_bin);
+        command
             .args(["app-server", "--listen", "stdio://"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        #[cfg(target_os = "macos")]
+        {
+            let existing_path = std::env::var_os("PATH").unwrap_or_default();
+            let path = std::env::join_paths(
+                [PathBuf::from("/opt/homebrew/bin"), PathBuf::from("/usr/local/bin")]
+                    .into_iter()
+                    .chain(std::env::split_paths(&existing_path)),
+            )
+            .map_err(|error| format!("failed to configure Codex PATH: {error}"))?;
+            command.env("PATH", path);
+        }
+
+        let mut child = command
             .spawn()
             .map_err(|e| {
                 format!(
