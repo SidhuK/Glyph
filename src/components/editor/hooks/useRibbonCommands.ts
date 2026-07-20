@@ -4,6 +4,7 @@ import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../../lib/appEvents";
+import { invoke } from "../../../lib/tauri";
 import { createDetailsBlockContent } from "../extensions/detailsBlock";
 import { isEditorTextColor } from "../textColors";
 import { isEditorTextHighlight } from "../textHighlights";
@@ -84,6 +85,35 @@ export function useRibbonCommands({
 			const isReadOnlySafeAction =
 				action === "collapse_all_headings" || action === "expand_all_headings";
 			if (!canEdit && !isReadOnlySafeAction) return;
+
+			if (action === "paste_without_formatting") {
+				const selection = {
+					from: editor.state.selection.from,
+					to: editor.state.selection.to,
+				};
+				void invoke("read_clipboard_plain_text")
+					.then((text) => {
+						if (text == null || editor.isDestroyed || !editor.isEditable) {
+							return;
+						}
+						const plain = text.replace(/\r\n?/g, "\n");
+						if (!plain.length) return;
+						editor.view.dispatch(
+							editor.state.tr.insertText(plain, selection.from, selection.to),
+						);
+						editor.view.focus();
+						if (scrollHost) {
+							requestAnimationFrame(() => {
+								scrollHost.scrollTop = scrollTop;
+							});
+						}
+					})
+					.catch((cause) => {
+						console.warn("Paste without formatting failed", cause);
+					});
+				return;
+			}
+
 			const chain = editor
 				.chain()
 				.focus(null, { scrollIntoView: false })

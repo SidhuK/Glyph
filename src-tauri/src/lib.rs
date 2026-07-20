@@ -14,6 +14,8 @@ mod index;
 mod io_atomic;
 mod license;
 #[cfg(target_os = "macos")]
+mod macos_clipboard;
+#[cfg(target_os = "macos")]
 mod macos_webkit_defaults;
 mod menu_manifest;
 mod net;
@@ -603,6 +605,15 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         None,
     )?;
+    #[cfg(target_os = "macos")]
+    let paste_without_formatting = menu_item_with_shortcut(
+        app,
+        menu_labels,
+        menu_shortcuts,
+        "edit.paste_without_formatting",
+        true,
+        None,
+    )?;
     let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces, menu_labels)?;
 
     let file_menu = Submenu::with_items(
@@ -735,6 +746,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &PredefinedMenuItem::cut(app, None)?,
             &PredefinedMenuItem::copy(app, None)?,
             &PredefinedMenuItem::paste(app, None)?,
+            #[cfg(target_os = "macos")]
+            &paste_without_formatting,
             &PredefinedMenuItem::select_all(app, None)?,
         ],
     )?;
@@ -930,6 +943,15 @@ fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::W
     })
 }
 
+fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
+    app.webview_windows().into_iter().find(|(label, window)| {
+        (is_space_host_window_label(label)
+            || label == QUICK_NOTE_WINDOW_LABEL
+            || external_markdown::is_external_markdown_window(label))
+            && window.is_focused().unwrap_or(false)
+    })
+}
+
 fn target_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
     focused_space_host_window(app).or_else(|| {
         let space_state = app.try_state::<space::SpaceState>()?;
@@ -1019,6 +1041,20 @@ fn hide_quick_note_window(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
     show_main_window_for_app(&app)
+}
+
+/// Plain-text pasteboard read for "Paste without Formatting".
+/// Kept as an invoke (not a menu event payload) so the editor owns insertion.
+#[tauri::command]
+fn read_clipboard_plain_text() -> Option<String> {
+    #[cfg(target_os = "macos")]
+    {
+        macos_clipboard::read_plain_text()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        None
+    }
 }
 
 fn open_external_markdown_from_finder(app: &tauri::AppHandle, path: std::path::PathBuf) {
@@ -1427,6 +1463,20 @@ pub fn run() {
                     );
                 }
             }
+            #[cfg(target_os = "macos")]
+            "edit.paste_without_formatting" => {
+                // Editor surfaces live in space hosts, quick note, and external markdown
+                // windows — target the focused one rather than only the space host.
+                if let Some((label, _window)) = focused_editor_window(app) {
+                    let _ = app.emit_to(
+                        label,
+                        "menu:app_command",
+                        AppCommandPayload {
+                            command_id: "paste_without_formatting".to_string(),
+                        },
+                    );
+                }
+            }
             id => {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
@@ -1529,6 +1579,7 @@ pub fn run() {
             show_quick_note_window,
             hide_quick_note_window,
             show_main_window,
+            read_clipboard_plain_text,
             set_quick_note_global_shortcut,
             set_markdown_menu_visible,
             set_recent_spaces_menu,

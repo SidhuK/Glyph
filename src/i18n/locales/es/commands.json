@@ -318,6 +318,10 @@
 			"label": "Abrir ajustes del espacio",
 			"description": "Abrir los ajustes del espacio actual."
 		},
+		"paste_without_formatting": {
+			"label": "Pegar sin formato",
+			"description": "Pegar el texto del portapapeles sin formato."
+		},
 		"previous-tab": {
 			"label": "Pestaña anterior",
 			"description": "Ir a la pestaña anterior."
