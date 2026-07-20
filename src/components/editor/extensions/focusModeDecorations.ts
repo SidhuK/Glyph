@@ -10,48 +10,55 @@ interface FocusRange {
 	to: number;
 }
 
+type WritingUnit = FocusRange[];
+
 interface FocusModePluginState {
 	decorations: DecorationSet;
 	focusMode: FocusMode;
 }
 
-interface SentenceSegment {
-	index: number;
-	segment: string;
-}
-
-interface SentenceSegmenter {
-	segment(input: string): Iterable<SentenceSegment>;
-}
-
-type SentenceSegmenterConstructor = new (
-	locales: string | undefined,
-	options: { granularity: "sentence" },
-) => SentenceSegmenter;
-
 const focusModePluginKey = new PluginKey<FocusModePluginState>(
 	"focus-mode-decorations",
 );
-
-function isSentenceSegmenterConstructor(
-	value: unknown,
-): value is SentenceSegmenterConstructor {
-	return typeof value === "function";
-}
 
 function rangesIntersect(first: FocusRange, second: FocusRange): boolean {
 	return first.from < second.to && second.from < first.to;
 }
 
-function isContainedBy(range: FocusRange, container: FocusRange): boolean {
-	return container.from <= range.from && range.to <= container.to;
+function isListItem(node: ProseMirrorNode): boolean {
+	return node.type.name === "listItem" || node.type.name === "taskItem";
+}
+
+function isListContainer(node: ProseMirrorNode): boolean {
+	const name = node.type.name;
+	return name === "bulletList" || name === "orderedList" || name === "taskList";
+}
+
+function hasListItemAncestor(doc: ProseMirrorNode, pos: number): boolean {
+	const resolved = doc.resolve(pos);
+	for (let depth = resolved.depth; depth > 0; depth -= 1) {
+		if (isListItem(resolved.node(depth))) return true;
+	}
+	return false;
+}
+
+function listItemRanges(node: ProseMirrorNode, pos: number): FocusRange[] {
+	const ranges: FocusRange[] = [];
+	node.forEach((child, offset) => {
+		if (isListContainer(child)) return;
+		const range = {
+			from: pos + offset + 2,
+			to: pos + offset + child.nodeSize,
+		};
+		if (range.from < range.to) ranges.push(range);
+	});
+	return ranges;
 }
 
 function sentenceRanges(text: string, from: number): FocusRange[] {
-	const Segmenter = Reflect.get(Intl, "Segmenter");
-	if (isSentenceSegmenterConstructor(Segmenter)) {
+	if (typeof Intl.Segmenter === "function") {
 		return Array.from(
-			new Segmenter(undefined, { granularity: "sentence" }).segment(text),
+			new Intl.Segmenter(undefined, { granularity: "sentence" }).segment(text),
 			({ index, segment }) => ({
 				from: from + index,
 				to: from + index + segment.length,
@@ -87,51 +94,39 @@ function codeLineRanges(node: ProseMirrorNode, from: number): FocusRange[] {
 function writingUnits(
 	doc: ProseMirrorNode,
 	focusMode: FocusMode,
-): FocusRange[] {
-	const listItems: FocusRange[] = [];
-	const blockquotes: FocusRange[] = [];
-	doc.descendants((node, pos) => {
-		const range = { from: pos + 1, to: pos + node.content.size + 1 };
-		if (node.type.name === "listItem" || node.type.name === "taskItem") {
-			listItems.push(range);
-		}
-		if (node.type.name === "blockquote") blockquotes.push(range);
-	});
-
-	const units: FocusRange[] = [];
-	doc.descendants((node, pos) => {
+): WritingUnit[] {
+	const units: WritingUnit[] = [];
+	doc.descendants((node, pos, parent) => {
 		const contentRange = { from: pos + 1, to: pos + node.content.size + 1 };
-		if (node.type.name === "listItem" || node.type.name === "taskItem") {
-			units.push(contentRange);
-			return false;
+		if (isListItem(node)) {
+			units.push(listItemRanges(node, pos));
+			return;
 		}
+		if (hasListItemAncestor(doc, pos)) return;
 		if (node.type.name === "blockquote" && focusMode === "paragraph") {
-			units.push(contentRange);
+			units.push([contentRange]);
 			return false;
 		}
 		if (node.type.name === "codeBlock") {
 			units.push(
 				...(focusMode === "sentence"
-					? codeLineRanges(node, pos + 1)
-					: [contentRange]),
+					? codeLineRanges(node, pos + 1).map((range) => [range])
+					: [[contentRange]]),
 			);
 			return false;
 		}
 		if (!node.isTextblock) return;
 		if (
-			listItems.some((listItem) => isContainedBy(contentRange, listItem)) ||
-			(focusMode === "paragraph" &&
-				blockquotes.some((blockquote) =>
-					isContainedBy(contentRange, blockquote),
-				))
+			focusMode === "sentence" &&
+			node.type.name === "paragraph" &&
+			parent?.type.name !== "blockquote"
 		) {
+			units.push(
+				...sentenceRanges(node.textContent, pos + 1).map((range) => [range]),
+			);
 			return;
 		}
-		if (focusMode === "sentence" && node.type.name === "paragraph") {
-			units.push(...sentenceRanges(node.textContent, pos + 1));
-			return;
-		}
-		units.push(contentRange);
+		units.push([contentRange]);
 	});
 	return units;
 }
@@ -143,45 +138,54 @@ function activeRanges(
 ): FocusRange[] {
 	const units = writingUnits(doc, focusMode);
 	if (selection.from !== selection.to) {
-		return units.filter((unit) => rangesIntersect(unit, selection));
+		return units
+			.filter((unit) => unit.some((range) => rangesIntersect(range, selection)))
+			.flat()
+			.sort((first, second) => first.from - second.from);
 	}
 
 	const caret = selection.from;
-	const containingUnit = units.find(
-		(unit) => unit.from <= caret && caret < unit.to,
+	const containingUnit = units.find((unit) =>
+		unit.some((range) => range.from <= caret && caret < range.to),
 	);
-	if (containingUnit) return [containingUnit];
-	let precedingUnit: FocusRange | null = null;
+	if (containingUnit) return containingUnit;
+	let precedingUnit: WritingUnit | null = null;
 	for (const unit of units) {
-		if (unit.from < caret && caret <= unit.to) precedingUnit = unit;
+		if (unit.some((range) => range.from < caret && caret <= range.to)) {
+			precedingUnit = unit;
+		}
 	}
-	return precedingUnit ? [precedingUnit] : [];
+	return precedingUnit ?? [];
 }
 
-function inactiveTextRanges(
+function inactiveDecorations(
 	doc: ProseMirrorNode,
 	active: FocusRange[],
-): FocusRange[] {
-	const inactive: FocusRange[] = [];
+): Decoration[] {
+	const decorations: Decoration[] = [];
+	let activeIndex = 0;
+	const addInactive = (from: number, to: number) => {
+		if (from < to)
+			decorations.push(
+				Decoration.inline(from, to, { class: "focusModeInactive" }),
+			);
+	};
 	doc.descendants((node, pos) => {
 		if (!node.isText || !node.text) return;
-		const textRange = { from: pos, to: pos + node.text.length };
-		const intersections = active
-			.map((range) => ({
-				from: Math.max(range.from, textRange.from),
-				to: Math.min(range.to, textRange.to),
-			}))
-			.filter((range) => range.from < range.to)
-			.sort((first, second) => first.from - second.from);
-		let cursor = textRange.from;
-		for (const range of intersections) {
-			if (cursor < range.from) inactive.push({ from: cursor, to: range.from });
-			cursor = Math.max(cursor, range.to);
+		const textEnd = pos + node.text.length;
+		while (active[activeIndex]?.to <= pos) activeIndex += 1;
+		let cursor = pos;
+		let index = activeIndex;
+		while (active[index] && active[index].from < textEnd) {
+			addInactive(cursor, Math.min(active[index].from, textEnd));
+			cursor = Math.max(cursor, Math.min(active[index].to, textEnd));
+			if (active[index].to > textEnd) break;
+			index += 1;
 		}
-		if (cursor < textRange.to)
-			inactive.push({ from: cursor, to: textRange.to });
+		addInactive(cursor, textEnd);
+		activeIndex = index;
 	});
-	return inactive;
+	return decorations;
 }
 
 function buildFocusDecorations(
@@ -192,12 +196,7 @@ function buildFocusDecorations(
 	if (focusMode === "off") return DecorationSet.empty;
 	return DecorationSet.create(
 		doc,
-		inactiveTextRanges(doc, activeRanges(doc, selection, focusMode)).map(
-			(range) =>
-				Decoration.inline(range.from, range.to, {
-					class: "focusModeInactive",
-				}),
-		),
+		inactiveDecorations(doc, activeRanges(doc, selection, focusMode)),
 	);
 }
 
