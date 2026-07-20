@@ -66,13 +66,28 @@ export function useMarkdownDocumentSession({
 
 	savingRef.current = saving;
 
-	const flushRawMarkdown = useCallback(() => {
+	const richEditorFlushRef = useRef<(() => void) | null>(null);
+
+	/**
+	 * Synchronously pushes any debounced editor edits (rich Markdown sync and
+	 * raw editor changes) into `textRef` so save snapshots and reload guards
+	 * never observe stale text.
+	 */
+	const flushPendingEdits = useCallback(() => {
+		richEditorFlushRef.current?.();
 		rawEditorRef.current?.flushPendingChange();
 	}, []);
 
 	const handleRawEditorReady = useCallback(
 		(editor: RawMarkdownEditorHandle | null) => {
 			rawEditorRef.current = editor;
+		},
+		[],
+	);
+
+	const handleRichEditorFlushReady = useCallback(
+		(flush: (() => void) | null) => {
+			richEditorFlushRef.current = flush;
 		},
 		[],
 	);
@@ -105,15 +120,15 @@ export function useMarkdownDocumentSession({
 	}, []);
 
 	useEffect(() => {
-		// `initialDoc` is a seed for the pane. Autosave also refreshes that cache,
-		// so do not treat the resulting object identity change as a new document.
-		flushRawMarkdown();
-		if (
-			activeRelPathRef.current === relPath &&
-			initialDoc?.text === textRef.current
-		) {
+		// `initialDoc` is only a seed for a newly opened note. Autosave and file
+		// tree refreshes also produce new cache objects for the *same* note; if
+		// those reset the session while the user kept typing, the text typed
+		// since the last save would be rolled back and lost (issue #399). Only a
+		// note identity change may reset the session.
+		if (activeRelPathRef.current === relPath) {
 			return;
 		}
+		flushPendingEdits();
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
@@ -136,16 +151,14 @@ export function useMarkdownDocumentSession({
 		clearPulse();
 		hasUserEditsRef.current = false;
 		setError(initialError);
-		if (activeRelPathRef.current !== relPath) {
-			setEditorMode(resolveEditorModeForNote(cached));
-		}
+		setEditorMode(resolveEditorModeForNote(cached));
 		activeRelPathRef.current = relPath;
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
 	}, [
 		clearPulse,
-		flushRawMarkdown,
+		flushPendingEdits,
 		initialDoc,
 		initialError,
 		relPath,
@@ -225,7 +238,7 @@ export function useMarkdownDocumentSession({
 
 	const loadDocFromExternalChange = useCallback(async () => {
 		const sessionId = documentSessionRef.current;
-		flushRawMarkdown();
+		flushPendingEdits();
 		if (
 			textRef.current !== savedTextRef.current ||
 			autosaveInFlightRef.current ||
@@ -238,7 +251,7 @@ export function useMarkdownDocumentSession({
 		try {
 			const doc = await invoke("space_read_text", { path: relPath });
 			if (!isCurrentSession(sessionId)) return;
-			flushRawMarkdown();
+			flushPendingEdits();
 			if (
 				textRef.current !== savedTextRef.current ||
 				autosaveInFlightRef.current ||
@@ -264,7 +277,7 @@ export function useMarkdownDocumentSession({
 			if (!isCurrentSession(sessionId)) return;
 			setError(extractErrorMessage(e));
 		}
-	}, [flushRawMarkdown, isCurrentSession, relPath, replaceText]);
+	}, [flushPendingEdits, isCurrentSession, relPath, replaceText]);
 
 	const loadedSpacePathRef = useRef(spacePath);
 
@@ -389,7 +402,7 @@ export function useMarkdownDocumentSession({
 		const sessionId = documentSessionRef.current;
 		const saveToken = saveRequestTokenRef.current + 1;
 		saveRequestTokenRef.current = saveToken;
-		flushRawMarkdown();
+		flushPendingEdits();
 		setSaving(true);
 		try {
 			await persistDoc(relPath, textRef.current, sessionId);
@@ -401,11 +414,11 @@ export function useMarkdownDocumentSession({
 				setSaving(false);
 			}
 		}
-	}, [flushRawMarkdown, isCurrentSession, persistDoc, relPath]);
+	}, [flushPendingEdits, isCurrentSession, persistDoc, relPath]);
 
 	const runAutosave = useCallback(async () => {
 		const sessionId = documentSessionRef.current;
-		flushRawMarkdown();
+		flushPendingEdits();
 		if (autosaveInFlightRef.current) {
 			autosaveQueuedRef.current = true;
 			return false;
@@ -432,7 +445,7 @@ export function useMarkdownDocumentSession({
 			return runAutosave();
 		}
 		return ok;
-	}, [flushRawMarkdown, isCurrentSession, persistDoc, relPath]);
+	}, [flushPendingEdits, isCurrentSession, persistDoc, relPath]);
 
 	const isDirty = text !== savedText;
 
@@ -461,7 +474,7 @@ export function useMarkdownDocumentSession({
 			}
 			externalSyncTimerRef.current = window.setTimeout(() => {
 				externalSyncTimerRef.current = null;
-				flushRawMarkdown();
+				flushPendingEdits();
 				if (
 					textRef.current !== savedTextRef.current ||
 					autosaveInFlightRef.current ||
@@ -473,7 +486,7 @@ export function useMarkdownDocumentSession({
 				void loadDocFromExternalChange();
 			}, EXTERNAL_RELOAD_DEBOUNCE_MS);
 		},
-		[flushRawMarkdown, loadDocFromExternalChange, relPath],
+		[flushPendingEdits, loadDocFromExternalChange, relPath],
 	);
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
@@ -507,8 +520,9 @@ export function useMarkdownDocumentSession({
 
 	return {
 		error,
-		flushRawMarkdown,
+		flushPendingEdits,
 		handleRawEditorReady,
+		handleRichEditorFlushReady,
 		isDirty,
 		lastSavedMtimeMs,
 		markUserEdit,

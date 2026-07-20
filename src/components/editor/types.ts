@@ -42,4 +42,10 @@ export interface NoteInlineEditorProps {
 	onRawEditorReady?:
 		| ((editor: RawMarkdownEditorHandle | null) => void)
 		| undefined;
+	/**
+	 * Registers a callback that synchronously flushes the rich editor's
+	 * debounced Markdown sync into `onChange`. Callers use it to make
+	 * autosave snapshots and reload guards see the newest typed text.
+	 */
+	onFlushPendingEditsReady?: ((flush: (() => void) | null) => void) | undefined;
 }

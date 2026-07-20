@@ -189,8 +189,9 @@ export function MarkdownEditorPane({
 	}, []);
 	const {
 		error,
-		flushRawMarkdown,
+		flushPendingEdits,
 		handleRawEditorReady,
+		handleRichEditorFlushReady,
 		isDirty,
 		lastSavedMtimeMs,
 		markUserEdit,
@@ -211,7 +212,7 @@ export function MarkdownEditorPane({
 	});
 	const requestEditorMode = useCallback(
 		async (nextMode: NoteInlineEditorMode) => {
-			flushRawMarkdown();
+			flushPendingEdits();
 			if (nextMode !== "plain" && requiresPlainEditorMode(textRef.current)) {
 				const modeLabel = nextMode === "rich" ? "Rich" : "Preview";
 				const { confirm } = await import("@tauri-apps/plugin-dialog");
@@ -227,7 +228,7 @@ export function MarkdownEditorPane({
 			}
 			applyEditorMode(nextMode);
 		},
-		[applyEditorMode, flushRawMarkdown, textRef],
+		[applyEditorMode, flushPendingEdits, textRef],
 	);
 	const {
 		headings: tocHeadings,
@@ -595,6 +596,7 @@ export function MarkdownEditorPane({
 								onFrontmatterCommit={runAutosave}
 								onEditorReady={handleEditorReady}
 								onRawEditorReady={handleRawEditorReady}
+								onFlushPendingEditsReady={handleRichEditorFlushReady}
 								extractToNoteActions={extractToNoteActions}
 							/>
 						)}

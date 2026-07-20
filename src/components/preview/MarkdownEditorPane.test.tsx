@@ -251,6 +251,49 @@ describe("MarkdownEditorPane", () => {
 		});
 	});
 
+	it("keeps newer typed text when the initialDoc cache refreshes mid-session", async () => {
+		// Regression test for issue #399: autosave and file-tree refreshes hand
+		// the pane a new `initialDoc` object for the same note. That must not
+		// reset the session, or text typed since the last save is rolled back
+		// and silently lost.
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/race.md"
+					initialDoc={makeDoc("notes/race.md", "initial text")}
+				/>,
+			);
+		});
+
+		const changeButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.includes("Type latest text"),
+		);
+		expect(changeButton).not.toBeNull();
+		await act(async () => {
+			changeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		// Same note, new cache object with the pre-edit text (as after a save).
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/race.md"
+					initialDoc={makeDoc("notes/race.md", "initial text", 1)}
+				/>,
+			);
+		});
+
+		await act(async () => {
+			vi.advanceTimersByTime(900);
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_write_text", {
+			path: "notes/race.md",
+			text: "latest typed text",
+			base_mtime_ms: 1,
+		});
+	});
+
 	it("opts the main note editor into smart Markdown paste", async () => {
 		await act(async () => {
 			root.render(
