@@ -776,6 +776,7 @@ interface TauriCommands {
 	show_quick_note_window: CommandDef<void, void>;
 	hide_quick_note_window: CommandDef<void, void>;
 	show_main_window: CommandDef<void, void>;
+	read_clipboard_plain_text: CommandDef<void, string | null>;
 	set_quick_note_global_shortcut: CommandDef<
 		{ accelerator?: string | null },
 		void

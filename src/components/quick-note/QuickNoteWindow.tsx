@@ -1,6 +1,7 @@
 import { emit } from "@tauri-apps/api/event";
 import type { Editor } from "@tiptap/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { loadSettings, reloadFromDisk } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -172,6 +173,11 @@ export function QuickNoteWindow() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.quickNotes?.folder === "string") {
 			setFolder(payload.quickNotes.folder);
+		}
+	});
+	useTauriEvent("menu:app_command", (payload) => {
+		if (payload.command_id === "paste_without_formatting") {
+			dispatchEditorMenuAction({ action: "paste_without_formatting" });
 		}
 	});
 

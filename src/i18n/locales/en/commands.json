@@ -318,6 +318,10 @@
 			"label": "Open Space Settings",
 			"description": "Open settings for the current space."
 		},
+		"paste_without_formatting": {
+			"label": "Paste without Formatting",
+			"description": "Paste clipboard text without formatting."
+		},
 		"previous-tab": {
 			"label": "Previous Tab",
 			"description": "Move to the previous tab."

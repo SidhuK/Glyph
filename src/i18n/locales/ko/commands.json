@@ -318,6 +318,10 @@
 			"label": "스페이스 설정 열기",
 			"description": "현재 스페이스의 설정을 엽니다."
 		},
+		"paste_without_formatting": {
+			"label": "서식 없이 붙여넣기",
+			"description": "클립보드의 텍스트를 서식 없이 붙여넣습니다."
+		},
 		"previous-tab": {
 			"label": "이전 탭",
 			"description": "이전 탭으로 이동합니다."

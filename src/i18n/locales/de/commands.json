@@ -318,6 +318,10 @@
 			"label": "Space-Einstellungen öffnen",
 			"description": "Einstellungen für den aktuellen Space öffnen."
 		},
+		"paste_without_formatting": {
+			"label": "Ohne Formatierung einfügen",
+			"description": "Text aus der Zwischenablage ohne Formatierung einfügen."
+		},
 		"previous-tab": {
 			"label": "Vorheriger Tab",
 			"description": "Zum vorherigen Tab wechseln."
