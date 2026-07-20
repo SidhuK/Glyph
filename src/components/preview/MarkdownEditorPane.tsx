@@ -589,6 +589,7 @@ export function MarkdownEditorPane({
 								markdown={text}
 								relPath={relPath}
 								mode={mode}
+								enableFocusMode
 								pasteMarkdownBehavior="smart-markdown"
 								onChange={(nextText) => {
 									markUserEdit(nextText);

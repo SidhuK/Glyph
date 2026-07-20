@@ -1,7 +1,7 @@
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { type AppLanguage, LANGUAGE_OPTIONS } from "../../i18n/locales";
 import {
@@ -11,9 +11,12 @@ import {
 } from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
+	type FocusMode,
+	isFocusMode,
 	loadSettings,
 	setEditorColorfulHeadings,
 	setEditorDefaultEditorMode,
+	setEditorFocusMode,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowFrontmatterInEditor,
@@ -35,12 +38,19 @@ import {
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
+import { useSettingsValue } from "./useSettingsValue";
 
 const DEFAULT_EDITOR_MODE_VALUES = [
 	"rich",
 	"preview",
 	"plain",
 ] as const satisfies readonly EditorViewMode[];
+
+const FOCUS_MODE_VALUES = [
+	"off",
+	"paragraph",
+	"sentence",
+] as const satisfies readonly FocusMode[];
 
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
@@ -75,11 +85,16 @@ export function GeneralSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
 	const [language, setLanguageState] = useState<AppLanguage>("en");
-	const [defaultEditorMode, setDefaultEditorModeState] =
-		useState<EditorViewMode>(getDefaultEditorViewMode);
-	const [isSavingDefaultEditorMode, setIsSavingDefaultEditorMode] =
-		useState(false);
-	const defaultEditorModeEpochRef = useRef(0);
+	const defaultEditorMode = useSettingsValue<EditorViewMode>(
+		getDefaultEditorViewMode,
+		setEditorDefaultEditorMode,
+		setError,
+	);
+	const focusMode = useSettingsValue<FocusMode>(
+		"off",
+		setEditorFocusMode,
+		setError,
+	);
 	const resumeLastSession = useSettingsBoolean(
 		false,
 		setResumeLastSession,
@@ -127,18 +142,20 @@ export function GeneralSettingsPane() {
 	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
 	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
+	const setInitialDefaultEditorMode = defaultEditorMode.setInitialValue;
+	const setDefaultEditorModeValue = defaultEditorMode.setValue;
+	const setInitialFocusMode = focusMode.setInitialValue;
+	const setFocusModeValue = focusMode.setValue;
 
 	useEffect(() => {
 		let cancelled = false;
-		const defaultEditorModeEpoch = defaultEditorModeEpochRef.current;
 		setError("");
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
-				if (defaultEditorModeEpoch === defaultEditorModeEpochRef.current) {
-					setDefaultEditorModeState(settings.editor.defaultEditorMode);
-				}
+				setInitialDefaultEditorMode(settings.editor.defaultEditorMode);
+				setInitialFocusMode(settings.editor.focusMode);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
@@ -167,6 +184,8 @@ export function GeneralSettingsPane() {
 		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
 		setNonMarkdownFilesChecked,
+		setInitialDefaultEditorMode,
+		setInitialFocusMode,
 	]);
 
 	useTauriEvent(
@@ -177,7 +196,10 @@ export function GeneralSettingsPane() {
 					setLanguageState(payload.ui.language);
 				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
-					setDefaultEditorModeState(payload.editor.defaultEditorMode);
+					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
+				}
+				if (isFocusMode(payload.editor?.focusMode)) {
+					setFocusModeValue(payload.editor.focusMode);
 				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
@@ -220,6 +242,8 @@ export function GeneralSettingsPane() {
 				setRawMarkdownVimModeChecked,
 				setFolderCountsChecked,
 				setNonMarkdownFilesChecked,
+				setDefaultEditorModeValue,
+				setFocusModeValue,
 			],
 		),
 	);
@@ -321,31 +345,39 @@ export function GeneralSettingsPane() {
 					>
 						<SettingsSelect
 							aria-label={t("editor.defaultEditorMode.ariaLabel")}
-							value={defaultEditorMode}
-							disabled={isSavingDefaultEditorMode}
+							value={defaultEditorMode.value}
+							disabled={defaultEditorMode.isSaving}
 							onChange={(event) => {
 								const nextMode = event.currentTarget.value;
 								if (!isEditorViewMode(nextMode)) return;
-								const previous = defaultEditorMode;
-								defaultEditorModeEpochRef.current += 1;
-								setError("");
-								setDefaultEditorModeState(nextMode);
-								setIsSavingDefaultEditorMode(true);
-								void setEditorDefaultEditorMode(nextMode)
-									.catch((cause) => {
-										setDefaultEditorModeState(previous);
-										setError(
-											cause instanceof Error ? cause.message : String(cause),
-										);
-									})
-									.finally(() => {
-										setIsSavingDefaultEditorMode(false);
-									});
+								defaultEditorMode.onChange(nextMode);
 							}}
 						>
 							{DEFAULT_EDITOR_MODE_VALUES.map((value) => (
 								<option key={value} value={value}>
 									{t(`editor.defaultEditorMode.options.${value}`)}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.focusMode.label")}
+						description={t("editor.focusMode.description")}
+						interactive={false}
+					>
+						<SettingsSelect
+							aria-label={t("editor.focusMode.ariaLabel")}
+							value={focusMode.value}
+							disabled={focusMode.isSaving}
+							onChange={(event) => {
+								const nextMode = event.currentTarget.value;
+								if (!isFocusMode(nextMode)) return;
+								focusMode.onChange(nextMode);
+							}}
+						>
+							{FOCUS_MODE_VALUES.map((value) => (
+								<option key={value} value={value}>
+									{t(`editor.focusMode.options.${value}`)}
 								</option>
 							))}
 						</SettingsSelect>

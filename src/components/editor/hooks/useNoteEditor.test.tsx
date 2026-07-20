@@ -202,6 +202,8 @@ vi.mock("../extensions", () => ({
 }));
 
 vi.mock("../../../lib/settings", () => ({
+	isFocusMode: (value: unknown) =>
+		value === "off" || value === "paragraph" || value === "sentence",
 	loadSettings: loadSettingsMock,
 }));
 

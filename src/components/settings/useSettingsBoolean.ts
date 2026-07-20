@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useOptimisticSettingsToggle } from "./useOptimisticSettingsToggle";
+import { useSettingsValue } from "./useSettingsValue";
 
 export function applyIfBoolean(
 	value: unknown,
@@ -13,14 +12,13 @@ export function useSettingsBoolean(
 	save: (checked: boolean) => Promise<void>,
 	setError: (message: string) => void,
 ) {
-	const [checked, setChecked] = useState(initial);
-	const { isSaving, onCheckedChange } = useOptimisticSettingsToggle(
-		checked,
-		setChecked,
-		save,
-		setError,
-	);
-	return { checked, setChecked, isSaving, onCheckedChange };
+	const setting = useSettingsValue(initial, save, setError);
+	return {
+		checked: setting.value,
+		setChecked: setting.setValue,
+		isSaving: setting.isSaving,
+		onCheckedChange: setting.onChange,
+	};
 }
 
 export type SettingsBoolean = ReturnType<typeof useSettingsBoolean>;

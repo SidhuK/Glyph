@@ -12,6 +12,8 @@ const { useLicenseStatusMock, useTauriEventMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("../../lib/settings", () => ({
+	isFocusMode: (value: unknown) =>
+		value === "off" || value === "paragraph" || value === "sentence",
 	loadSettings: vi.fn(() =>
 		Promise.resolve({
 			ui: {
@@ -40,6 +42,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorSpellCheck: vi.fn(() => Promise.resolve()),
 	setEditorRawMarkdownVimMode: vi.fn(() => Promise.resolve()),
 	setEditorDefaultEditorMode: vi.fn(() => Promise.resolve()),
+	setEditorFocusMode: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCounts: vi.fn(() => Promise.resolve()),
 	setShowNonMarkdownFiles: vi.fn(() => Promise.resolve()),
 }));
