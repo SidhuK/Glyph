@@ -353,6 +353,62 @@ When changing editor behavior:
 8. Flush the editor before operations that duplicate, sync, or export the current note.
 9. Keep image paste storage tied to a real space file.
 
+## Postmortem: Rich Editor Lost the Last Words Typed (Issue #399)
+
+Fixed on branch `fix/rich-editor-word-loss`. In Rich mode, the last couple of
+words occasionally disappeared, most often after pausing a few seconds and
+then resuming typing. The loss also reached disk because the rollback cleared
+the dirty flag.
+
+### Root cause
+
+`useMarkdownDocumentSession` reset the whole document session whenever the
+`initialDoc` prop changed identity, guarded only by
+`initialDoc?.text === textRef.current`. But `initialDoc` is read from the
+navigation prefetch cache in `MainContent`, and that cache gets a **new
+object for the same note on every autosave** (`persistDoc` calls
+`setPrefetchedNote` with the just-saved text). Any re-render that recomputed
+the `MainContent` memo (for example, the file-tree refresh that follows every
+save because the note is reindexed) then delivered a new `initialDoc` whose
+text was the *last saved* snapshot.
+
+The failure sequence:
+
+1. Type, pause. The 300ms Markdown sync flushes; 900ms later autosave writes
+   and refreshes the prefetch cache with a new object.
+2. Resume typing, so `textRef.current` moves ahead of the saved text.
+3. A `MainContent` re-render hands the pane the new `initialDoc` (saved
+   text). The equality guard fails, the session performs a full reset:
+   `text` rolls back to the saved snapshot and `hasUserEditsRef` clears.
+4. The rolled-back `markdown` prop no longer matches
+   `lastEmittedMarkdownRef` in `useNoteEditor`, so the hydration effect runs
+   `editor.commands.setContent(stale body)` — the words typed since the last
+   autosave visibly vanish, and nothing re-saves them.
+
+### Fix
+
+- The session reset in `useMarkdownDocumentSession` now runs only when the
+  note identity (`relPath`) changes. Same-note `initialDoc` refreshes are
+  cache noise and are ignored.
+- `flushRawMarkdown` became `flushPendingEdits` and now also flushes the
+  rich editor's debounced Markdown sync (registered through
+  `onFlushPendingEditsReady` on `NoteInlineEditor`). Autosave snapshots,
+  manual save, mode switches, and external-reload guards previously compared
+  `textRef` against saved text while up to ~300ms of typing lived only
+  inside TipTap; the guards can no longer observe falsely-clean text.
+- `scheduleMarkdownSync` no longer defers its flush through
+  `requestAnimationFrame`. macOS suspends rAF for occluded windows, which
+  could strand a pending sync — and the text it carried — indefinitely.
+
+A considered-and-rejected change: tagging the self-emitted
+`notes:external_changed` event from `space_write_text` so the session could
+ignore its own saves. AI actions and quick notes also write the open note
+via `space_write_text` in the same window, and the session must keep
+reloading for those, so the reload path stays guarded instead.
+
+Regression coverage: "keeps newer typed text when the initialDoc cache
+refreshes mid-session" in `MarkdownEditorPane.test.tsx`.
+
 ## Debugging Map
 
 - Text jumps to old content: inspect external reload path and dirty checks.

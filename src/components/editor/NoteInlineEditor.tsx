@@ -166,6 +166,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onRegisterCalloutInserter,
 	onEditorReady,
 	onRawEditorReady,
+	onFlushPendingEditsReady,
 	onChange,
 	onFrontmatterCommit,
 	extractToNoteActions,
@@ -210,6 +211,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	const {
 		editor,
+		flushMarkdownSync,
 		frontmatter,
 		frontmatterRef,
 		lastAppliedBodyRef,
@@ -248,6 +250,12 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
+	useEffect(() => {
+		if (!onFlushPendingEditsReady) return;
+		onFlushPendingEditsReady(() => flushMarkdownSync());
+		return () => onFlushPendingEditsReady(null);
+	}, [flushMarkdownSync, onFlushPendingEditsReady]);
+
 	const rawEditorRef = useRef<RawMarkdownEditorHandle | null>(null);
 	const handleRawEditorRef = useCallback(
 		(editor: RawMarkdownEditorHandle | null) => {
