@@ -163,11 +163,15 @@ impl CodexState {
 
         #[cfg(target_os = "macos")]
         {
-            let existing_path = std::env::var_os("PATH").unwrap_or_default();
+            let existing_path = std::env::var_os("PATH").filter(|path| !path.is_empty());
             let path = std::env::join_paths(
                 [PathBuf::from("/opt/homebrew/bin"), PathBuf::from("/usr/local/bin")]
                     .into_iter()
-                    .chain(std::env::split_paths(&existing_path)),
+                    .chain(
+                        existing_path
+                            .iter()
+                            .flat_map(|path| std::env::split_paths(path)),
+                    ),
             )
             .map_err(|error| format!("failed to configure Codex PATH: {error}"))?;
             command.env("PATH", path);
