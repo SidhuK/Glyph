@@ -163,10 +163,12 @@ export const CodeBlockCopyControls = Extension.create({
 				},
 				props: {
 					decorations(state) {
+						// setEditable does not run plugin apply, so after rich→preview
+						// the cache can still be the empty set from editable mode.
 						if (editor.isEditable) return DecorationSet.empty;
-						return (
-							pluginKey.getState(state)?.decorations ?? DecorationSet.empty
-						);
+						const cached = pluginKey.getState(state);
+						if (cached && !cached.editable) return cached.decorations;
+						return buildCopyDecorations(state.doc);
 					},
 				},
 			}),
