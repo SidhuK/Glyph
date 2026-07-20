@@ -162,6 +162,7 @@ function inactiveDecorations(
 	doc: ProseMirrorNode,
 	active: FocusRange[],
 ): Decoration[] {
+	if (active.length === 0) return [];
 	const decorations: Decoration[] = [];
 	let activeIndex = 0;
 	const addInactive = (from: number, to: number) => {
