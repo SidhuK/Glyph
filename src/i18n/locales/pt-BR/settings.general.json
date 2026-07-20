@@ -37,6 +37,16 @@
 				"plain": "Markdown bruto"
 			}
 		},
+		"focusMode": {
+			"label": "Modo de foco",
+			"description": "Atenua o texto inativo no editor Rico principal e mantém clara a unidade de escrita atual.",
+			"ariaLabel": "Modo de foco",
+			"options": {
+				"off": "Desativado",
+				"paragraph": "Parágrafo",
+				"sentence": "Frase"
+			}
+		},
 		"tableOfContents": {
 			"label": "Sumário",
 			"description": "Mostrar um sumário flutuante em cada nota.",

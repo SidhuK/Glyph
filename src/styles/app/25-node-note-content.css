@@ -232,6 +232,10 @@
 	text-rendering: optimizeLegibility;
 }
 
+.tiptapHostInline:not(.is-preview) .tiptapContentInline .focusModeInactive {
+	opacity: 0.45;
+}
+
 .noteSearchMatch {
 	border-radius: var(--radius-3);
 	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);

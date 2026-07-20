@@ -230,6 +230,7 @@ interface UseNoteEditorOptions {
 	mode: NoteInlineEditorMode;
 	relPath?: string;
 	interactive?: boolean;
+	enableFocusMode?: boolean;
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
@@ -307,6 +308,7 @@ export function useNoteEditor({
 	mode,
 	relPath = "",
 	interactive = true,
+	enableFocusMode = false,
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
 	pasteMarkdownBehavior = "plain-text",
@@ -338,6 +340,7 @@ export function useNoteEditor({
 		attachmentFolderRef,
 		attachmentStorageModeRef,
 		colorfulHeadings,
+		focusMode,
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
 		showFrontmatterInEditor,
@@ -359,12 +362,14 @@ export function useNoteEditor({
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
+				enableFocusMode,
 				onMathEditRequest,
 				placeholder,
 			}),
 		[
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
+			enableFocusMode,
 			onMathEditRequest,
 			peopleMentionsEnabled,
 			placeholder,
@@ -457,6 +462,7 @@ export function useNoteEditor({
 		void additionalExtensions;
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
+		void enableFocusMode;
 		void placeholder;
 		return () => {
 			const snapshot = snapshotFocusedSelection(
@@ -472,6 +478,7 @@ export function useNoteEditor({
 		additionalExtensions,
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
+		enableFocusMode,
 		placeholder,
 	]);
 
@@ -666,6 +673,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
+			enableFocusMode,
 			placeholder,
 		],
 	);
@@ -675,6 +683,11 @@ export function useNoteEditor({
 		if (editor?.isDestroyed) return;
 		applyEditorSpellCheck(editor, spellCheckEnabled);
 	}, [editor, spellCheckEnabled]);
+
+	useEffect(() => {
+		if (!enableFocusMode || !editor || editor.isDestroyed) return;
+		editor.commands.setFocusMode(mode === "rich" ? focusMode : "off");
+	}, [editor, enableFocusMode, focusMode, mode]);
 
 	useLayoutEffect(() => {
 		if (!editor || editor.isDestroyed) return;

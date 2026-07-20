@@ -7,6 +7,7 @@ import type {
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
 	FileTreeSortMode,
+	FocusMode,
 	ReleaseChannel,
 	UiAccent,
 	UiCornerRadiusStyle,
@@ -111,6 +112,7 @@ type TauriEventMap = {
 			enablePeopleMentionsAsTags?: boolean;
 			rawMarkdownVimMode?: boolean;
 			spellCheck?: boolean;
+			focusMode?: FocusMode;
 		};
 		shortcuts?: {
 			bindings?: Partial<

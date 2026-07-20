@@ -157,6 +157,8 @@ const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
 	"comfortable",
 	"wide",
 ]);
+export type FocusMode = "off" | "paragraph" | "sentence";
+const FOCUS_MODES = new Set<FocusMode>(["off", "paragraph", "sentence"]);
 export interface OnboardingSettings {
 	launcherSeen: boolean;
 	starterDismissed: boolean;
@@ -193,6 +195,7 @@ interface EditorSettings {
 	enablePeopleMentionsAsTags: boolean;
 	rawMarkdownVimMode: boolean;
 	spellCheck: boolean;
+	focusMode: FocusMode;
 }
 
 interface FileTreeSettings {
@@ -233,6 +236,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	enablePeopleMentionsAsTags: false,
 	rawMarkdownVimMode: false,
 	spellCheck: true,
+	focusMode: "off",
 };
 
 const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
@@ -303,6 +307,14 @@ function asDefaultEditorMode(value: unknown): EditorViewMode {
 	return isEditorViewMode(value)
 		? value
 		: DEFAULT_EDITOR_SETTINGS.defaultEditorMode;
+}
+
+export function isFocusMode(value: unknown): value is FocusMode {
+	return typeof value === "string" && FOCUS_MODES.has(value as FocusMode);
+}
+
+function asFocusMode(value: unknown): FocusMode {
+	return isFocusMode(value) ? value : DEFAULT_EDITOR_SETTINGS.focusMode;
 }
 
 function asUiAccent(value: unknown): UiAccent {
@@ -433,6 +445,7 @@ async function emitSettingsUpdated(payload: {
 		enablePeopleMentionsAsTags?: boolean;
 		rawMarkdownVimMode?: boolean;
 		spellCheck?: boolean;
+		focusMode?: FocusMode;
 	};
 	shortcuts?: {
 		bindings?: ShortcutBindings;
@@ -574,6 +587,7 @@ const KEYS = {
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	editorRawMarkdownVimMode: "editor.rawMarkdownVimMode",
 	editorSpellCheck: "editor.spellCheck",
+	editorFocusMode: "editor.focusMode",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	quickNotesFolder: "quickNotes.folder",
@@ -958,6 +972,7 @@ export async function loadSettings(
 		entries,
 		KEYS.editorSpellCheck,
 	);
+	const rawEditorFocusMode = getSettingValue(entries, KEYS.editorFocusMode);
 	const rawDatabaseShowColumnColor = getSettingValue<boolean | null>(
 		entries,
 		KEYS.databaseShowColumnColor,
@@ -1103,6 +1118,7 @@ export async function loadSettings(
 			typeof rawEditorSpellCheck === "boolean"
 				? rawEditorSpellCheck
 				: DEFAULT_EDITOR_SETTINGS.spellCheck,
+		focusMode: asFocusMode(rawEditorFocusMode),
 	};
 	const database: DatabaseSettings = {
 		showColumnColor:
@@ -1643,6 +1659,16 @@ export async function setEditorSpellCheck(enabled: boolean): Promise<void> {
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { spellCheck: enabled },
+	});
+}
+
+export async function setEditorFocusMode(mode: FocusMode): Promise<void> {
+	const store = await getSettingsStore();
+	const next = asFocusMode(mode);
+	await store.set(KEYS.editorFocusMode, next);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { focusMode: next },
 	});
 }
 

@@ -25,6 +25,7 @@ import { CodeBlockCopyControls } from "./codeBlockCopyControls";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
 import { glyphDetailsExtensions } from "./detailsBlock";
+import { FocusModeDecorations } from "./focusModeDecorations";
 import { FootnoteDecorations } from "./footnoteDecorations";
 import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
@@ -612,6 +613,7 @@ interface CreateEditorExtensionsOptions {
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	enablePeopleMentions?: boolean;
+	enableFocusMode?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
@@ -628,6 +630,7 @@ export function createEditorExtensions(
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
 		enablePeopleMentions = false,
+		enableFocusMode = false,
 		currentPath = "",
 		currentPathResolver = null,
 		placeholder = null,
@@ -710,5 +713,6 @@ export function createEditorExtensions(
 		}),
 		TagDecorations.configure({ enablePeopleMentions }),
 		FootnoteDecorations,
+		...(enableFocusMode ? [FocusModeDecorations] : []),
 	];
 }
