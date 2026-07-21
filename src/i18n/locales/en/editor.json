@@ -1,7 +1,6 @@
 {
 	"transclusion": {
 		"openSource": "Open source",
-		"refresh": "Refresh",
 		"loading": "Loading embedded note…",
 		"unavailable": "Embedded note unavailable",
 		"unresolved": "Source note not found.",

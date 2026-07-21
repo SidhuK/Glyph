@@ -1,16 +1,9 @@
-import { RefreshIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { useMutation } from "@tanstack/react-query";
 import { NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
 import { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { dispatchWikiLinkClick } from "../markdown/editorEvents";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
-import {
-	TransclusionBranch,
-	transclusionKey,
-	useTransclusion,
-} from "./TransclusionContext";
+import { TransclusionBranch, useTransclusion } from "./TransclusionContext";
 
 const NoteInlineEditor = lazy(() =>
 	import("../NoteInlineEditor").then((module) => ({
@@ -38,12 +31,8 @@ export function NoteTransclusionView({ node }: ReactNodeViewProps) {
 		unresolved: Boolean(node.attrs.unresolved),
 	};
 	const { t } = useTranslation("editor");
-	const { depthExceeded, isLoading, recursive, refresh, result } =
+	const { depthExceeded, isLoading, recursive, result } =
 		useTransclusion(attrs.target, attrs.anchorKind, attrs.anchor);
-	const refreshMutation = useMutation({
-		mutationFn: () =>
-			refresh(transclusionKey(attrs.target, attrs.anchorKind, attrs.anchor)),
-	});
 	const title = attrs.alias || attrs.target.replace(/\.md$/i, "");
 	const resultError = result?.error_kind
 		? t(TRANSCLUSION_ERROR_KEYS[result.error_kind])
@@ -52,9 +41,7 @@ export function NoteTransclusionView({ node }: ReactNodeViewProps) {
 		? t("transclusion.depthExceeded")
 		: recursive
 			? t("transclusion.recursive")
-			: refreshMutation.isError
-				? t("transclusion.readError")
-				: resultError;
+			: resultError;
 
 	return (
 		<NodeViewWrapper className="noteTransclusion" contentEditable={false}>
@@ -68,17 +55,6 @@ export function NoteTransclusionView({ node }: ReactNodeViewProps) {
 					{title}
 					{attrs.anchor ? ` · ${attrs.anchor}` : ""}
 				</button>
-				<div className="noteTransclusionActions">
-					<button
-						type="button"
-						onClick={() => refreshMutation.mutate()}
-						disabled={refreshMutation.isPending}
-						title={t("transclusion.refresh")}
-						aria-label={t("transclusion.refresh")}
-					>
-						<HugeiconsIcon icon={RefreshIcon} size="var(--icon-sm)" />
-					</button>
-				</div>
 			</header>
 			<div className="noteTransclusionBody">
 				{isLoading ? (

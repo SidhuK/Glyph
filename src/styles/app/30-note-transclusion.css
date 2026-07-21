@@ -2,6 +2,9 @@
 	display: block;
 	width: 100%;
 	margin: var(--space-2) 0 var(--space-3);
+	padding: 0 var(--space-2) var(--space-2);
+	border-radius: var(--radius-md);
+	box-shadow: inset 0 0 0 1px var(--border-light);
 }
 
 .noteTransclusionHeader {
@@ -26,45 +29,11 @@
 	line-height: 30px;
 	text-align: left;
 	cursor: pointer;
-	transition: color 120ms ease;
 }
 
-.noteTransclusionTitle:hover,
 .noteTransclusionTitle:focus-visible {
-	color: var(--interactive-accent);
-	outline: none;
-}
-
-.noteTransclusionActions {
-	display: flex;
-}
-
-.noteTransclusionActions button {
-	display: grid;
-	place-items: center;
-	width: 30px;
-	height: 30px;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: var(--text-tertiary);
-	cursor: pointer;
-	transition: color 120ms ease, scale 120ms ease;
-}
-
-.noteTransclusionActions button:hover,
-.noteTransclusionActions button:focus-visible {
-	color: var(--text-primary);
-	outline: none;
-}
-
-.noteTransclusionActions button:active {
-	scale: 0.96;
-}
-
-.noteTransclusionActions button:disabled {
-	cursor: progress;
-	opacity: 0.5;
+	outline: 1px solid var(--border-focus);
+	outline-offset: 1px;
 }
 
 .noteTransclusionBody {

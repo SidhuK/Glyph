@@ -1,7 +1,6 @@
 {
 	"transclusion": {
 		"openSource": "Abrir fuente",
-		"refresh": "Actualizar",
 		"loading": "Cargando nota incrustada…",
 		"unavailable": "Nota incrustada no disponible",
 		"unresolved": "No se encontró la nota de origen.",

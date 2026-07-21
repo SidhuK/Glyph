@@ -1,8 +1,7 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
 	type ReactNode,
 	createContext,
-	useCallback,
 	useContext,
 	useMemo,
 } from "react";
@@ -17,14 +16,12 @@ import { findWikiLinkSpans, parseWikiLink } from "../markdown/wikiLinkCodec";
 
 const MAX_TRANSCLUSION_DEPTH = 4;
 const EMPTY_RESULTS = new Map<string, TransclusionResult>();
-const noRefresh = async () => {};
 
 interface TransclusionContextValue {
 	ancestors: readonly string[];
 	depth: number;
 	results: ReadonlyMap<string, TransclusionResult>;
 	isLoading: boolean;
-	refresh: (key: string) => Promise<void>;
 }
 
 const TransclusionContext = createContext<TransclusionContextValue>({
@@ -32,7 +29,6 @@ const TransclusionContext = createContext<TransclusionContextValue>({
 	depth: 0,
 	results: EMPTY_RESULTS,
 	isLoading: false,
-	refresh: noRefresh,
 });
 
 export function transclusionKey(
@@ -75,7 +71,6 @@ export function TransclusionDataProvider({
 	children: ReactNode;
 }) {
 	const parent = useContext(TransclusionContext);
-	const queryClient = useQueryClient();
 	const requests = useMemo(() => requestsFromMarkdown(markdown), [markdown]);
 	const requestKey = useMemo(
 		() => requests.map((request) => request.key).sort(),
@@ -91,24 +86,6 @@ export function TransclusionDataProvider({
 		enabled: requests.length > 0,
 		staleTime: Number.POSITIVE_INFINITY,
 	});
-	const refresh = useCallback(
-		async (key: string) => {
-			const request = requests.find((candidate) => candidate.key === key);
-			if (!request) return;
-			const [result] = await invoke("space_transclusions_batch", {
-				requests: [request],
-			});
-			if (!result) return;
-			queryClient.setQueryData<TransclusionResult[]>(
-				queryKey,
-				(current = []) => [
-					...current.filter((item) => item.key !== result.key),
-					result,
-				],
-			);
-		},
-		[queryClient, queryKey, requests],
-	);
 	useTauriEvent("notes:external_changed", (payload) => {
 		if (
 			query.data?.some((result) => result.resolved_path === payload.rel_path)
@@ -130,9 +107,8 @@ export function TransclusionDataProvider({
 			depth: parent.depth,
 			results,
 			isLoading: query.isLoading,
-			refresh,
 		}),
-		[ancestors, parent.depth, query.isLoading, refresh, results],
+		[ancestors, parent.depth, query.isLoading, results],
 	);
 	return (
 		<TransclusionContext.Provider value={value}>

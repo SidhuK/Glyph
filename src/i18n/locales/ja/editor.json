@@ -1,7 +1,6 @@
 {
 	"transclusion": {
 		"openSource": "元のノートを開く",
-		"refresh": "更新",
 		"loading": "埋め込みノートを読み込み中…",
 		"unavailable": "埋め込みノートを利用できません",
 		"unresolved": "元のノートが見つかりません。",

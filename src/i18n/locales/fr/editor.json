@@ -1,7 +1,6 @@
 {
 	"transclusion": {
 		"openSource": "Ouvrir la source",
-		"refresh": "Actualiser",
 		"loading": "Chargement de la note intégrée…",
 		"unavailable": "Note intégrée indisponible",
 		"unresolved": "Note source introuvable.",
