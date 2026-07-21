@@ -1,6 +1,17 @@
 import { cn } from "@/lib/utils";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { nextCollectionName } from "../../lib/database/collection";
+import { extractErrorMessage } from "../../lib/errorUtils";
+import {
+	invalidateDatabaseSummariesPrefetch,
+	navigationQueryKeys,
+} from "../../lib/navigationPrefetch";
+import { invoke } from "../../lib/tauri";
+import { toast } from "../../lib/toast";
 import { Search } from "../Icons";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
@@ -95,6 +106,41 @@ export function CommandPalette({
 	const itemCount =
 		activeTab === "commands" ? filtered.length : searchItems.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
+	const databaseSummaries = useQuery({
+		queryKey: navigationQueryKeys.databaseSummaries(),
+		queryFn: () => invoke("databases_list"),
+		enabled: open && activeTab === "search" && canSearch,
+	});
+	const saveSearch = useMutation({
+		mutationFn: async (rawQuery: string) => {
+			const trimmed = rawQuery.trim();
+			const summaries = databaseSummaries.data;
+			if (!summaries) throw new Error(t("commandPalette.saveSearchFailed"));
+			const baseName =
+				trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
+			return invoke("databases_create", {
+				name: nextCollectionName(summaries, baseName),
+				folder: null,
+				source: { kind: "search", value: trimmed, recursive: false },
+				pinned: true,
+			});
+		},
+		onSuccess: () => {
+			invalidateDatabaseSummariesPrefetch();
+			toast.success(t("commandPalette.searchSaved"));
+		},
+		onError: (cause) => {
+			toast.error(t("commandPalette.saveSearchFailed"), {
+				description: extractErrorMessage(cause),
+			});
+		},
+	});
+	const normalizedQuery = query.trim();
+	const isCurrentSearchSaved = databaseSummaries.data?.some(
+		(collection) =>
+			collection.source.kind === "search" &&
+			collection.source.value === normalizedQuery,
+	);
 
 	const switchTab = useCallback(
 		(tab: Tab) => {
@@ -272,17 +318,47 @@ export function CommandPalette({
 						/>
 					</div>
 					{activeTab === "search" ? (
-						<CommandSearchFilters
-							request={parsedSearch.request}
-							onChangeQuery={(nextQuery) =>
-								setState((curr) => ({
-									...curr,
-									query: nextQuery,
-									selectedIndex: 0,
-									selectedId: null,
-								}))
-							}
-						/>
+						<div className="commandSearchActions">
+							<CommandSearchFilters
+								request={parsedSearch.request}
+								onChangeQuery={(nextQuery) =>
+									setState((curr) => ({
+										...curr,
+										query: nextQuery,
+										selectedIndex: 0,
+										selectedId: null,
+									}))
+								}
+							/>
+							<button
+								type="button"
+								className="commandSearchSaveButton"
+								data-saved={isCurrentSearchSaved ? "true" : "false"}
+								disabled={
+									!query.trim() ||
+									!databaseSummaries.data ||
+									saveSearch.isPending ||
+									isCurrentSearchSaved
+								}
+								onClick={() => saveSearch.mutate(query)}
+								title={t(
+									isCurrentSearchSaved
+										? "commandPalette.searchSaved"
+										: "commandPalette.saveSearch",
+								)}
+								aria-label={t(
+									isCurrentSearchSaved
+										? "commandPalette.searchSaved"
+										: "commandPalette.saveSearch",
+								)}
+							>
+								<HugeiconsIcon
+									icon={StarIcon}
+									size="var(--icon-md)"
+									strokeWidth={0.9}
+								/>
+							</button>
+						</div>
 					) : null}
 				</div>
 

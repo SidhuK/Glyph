@@ -24,7 +24,22 @@
 		"createdOldest": "Creadas más antiguas"
 	},
 	"pinned": {
-		"title": "Fijadas"
+		"title": "Fijadas",
+		"loading": "Cargando elementos fijados...",
+		"loadFailed": "No se pudieron cargar las colecciones fijadas",
+		"empty": "Aún no hay nada fijado. Fija una nota o colección para guardarla aquí.",
+		"collections": "Colecciones",
+		"notes": "Notas",
+		"savedSearch": "Búsqueda guardada",
+		"tagCollection": "Etiqueta · #{{tag}}",
+		"folderCollection": "Carpeta · {{folder}}",
+		"allNotesCollection": "Todas las notas"
+	},
+	"collections": {
+		"pin": "Fijar colección",
+		"unpin": "Desfijar colección",
+		"unpinNamed": "Desfijar {{name}}",
+		"unpinFailed": "No se pudo desfijar la colección"
 	},
 	"allNotes": {
 		"title": "Todas las notas",
@@ -74,6 +89,9 @@
 		"close": "Cerrar",
 		"filterTitle": "Título",
 		"filterTag": "Etiqueta",
+		"saveSearch": "Guardar y fijar búsqueda",
+		"searchSaved": "Búsqueda guardada en Fijadas",
+		"saveSearchFailed": "No se pudo guardar la búsqueda",
 		"searching": "Buscando…",
 		"results": "{{count}} resultados",
 		"recentlyOpened": "Abiertas recientemente",

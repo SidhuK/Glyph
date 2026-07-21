@@ -61,7 +61,10 @@ Collections are user-created databases. New spaces start with an empty store.
 - `databases: []`
 - `status_colors: {}`
 
-Creating a collection (`databases_create`) requires a folder. The backend rejects an empty folder path. New collections are created with:
+The standard collection dialog creates a folder-backed collection and rejects an
+empty folder path. The same `databases_create` command can also receive an
+explicit source for flows such as saving a search. Folder-backed collections are
+created with:
 
 - `source.kind = "folder"`
 - `source.value` = chosen folder (recursive)
@@ -82,6 +85,7 @@ Users can still change a collection source to `all_notes`, `tag`, or `search` la
 - `name`
 - `icon`
 - `color`
+- `pinned`
 - `source`
 - `new_note`
 - `schema`
@@ -94,6 +98,10 @@ Users can still change a collection source to `all_notes`, `tag`, or `search` la
 - `folder`
 - `tag`
 - `search`
+
+Pinned collections appear alongside pinned notes in the Pinned workspace. Saving a
+search from the command palette creates a pinned collection whose source kind is
+`search` and whose source value is the raw palette query.
 
 `new_note.folder` controls where `databases_create_row` creates a new note.
 

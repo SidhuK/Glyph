@@ -1394,6 +1394,7 @@ export function AppShell() {
 				onOpenDailyNote={requestOpenDailyNote}
 				onOpenActivity={openActivityTab}
 				onPrefetchActivity={prefetchActivityTab}
+				onOpenDatabase={(databaseId) => openDatabasesTab(databaseId)}
 				tabs={tabs}
 				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}

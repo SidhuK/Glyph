@@ -26,10 +26,11 @@ import {
 import {
 	allDocsCountQueryOptions,
 	formatAllDocsCountLabel,
+	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import { isFileTreeSortMode } from "../../lib/settings";
 import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
-import type { FsEntry } from "../../lib/tauri";
+import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
@@ -117,7 +118,15 @@ function AllNotesCountBadge() {
 	return <span className="sidebarQuickActionCount">{label}</span>;
 }
 
-function PinnedNotesCountBadge({ count }: { count: number }) {
+function PinnedCountBadge({ noteCount }: { noteCount: number }) {
+	const collectionsQuery = useQuery({
+		queryKey: navigationQueryKeys.databaseSummaries(),
+		queryFn: () => invoke("databases_list"),
+	});
+	const collectionCount =
+		collectionsQuery.data?.filter((collection) => collection.pinned).length ??
+		0;
+	const count = noteCount + collectionCount;
 	if (count === 0) return null;
 	return <span className="sidebarQuickActionCount">{count}</span>;
 }
@@ -406,7 +415,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.pinned")}
 							</span>
-							<PinnedNotesCountBadge count={pinnedFiles.length} />
+							<PinnedCountBadge noteCount={pinnedFiles.length} />
 						</button>
 						<button
 							type="button"

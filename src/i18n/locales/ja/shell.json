@@ -24,7 +24,22 @@
 		"createdOldest": "作成日（古い順）"
 	},
 	"pinned": {
-		"title": "ピン留め"
+		"title": "ピン留め",
+		"loading": "ピン留めした項目を読み込み中...",
+		"loadFailed": "ピン留めしたコレクションを読み込めませんでした",
+		"empty": "まだ何もピン留めされていません。ノートまたはコレクションをピン留めしてください。",
+		"collections": "コレクション",
+		"notes": "ノート",
+		"savedSearch": "保存済み検索",
+		"tagCollection": "タグ · #{{tag}}",
+		"folderCollection": "フォルダ · {{folder}}",
+		"allNotesCollection": "すべてのノート"
+	},
+	"collections": {
+		"pin": "コレクションをピン留め",
+		"unpin": "コレクションのピン留めを解除",
+		"unpinNamed": "{{name}}のピン留めを解除",
+		"unpinFailed": "コレクションのピン留めを解除できませんでした"
 	},
 	"allNotes": {
 		"title": "すべてのノート",
@@ -74,6 +89,9 @@
 		"close": "閉じる",
 		"filterTitle": "タイトル",
 		"filterTag": "タグ",
+		"saveSearch": "検索を保存してピン留め",
+		"searchSaved": "検索をピン留めに保存しました",
+		"saveSearchFailed": "検索を保存できませんでした",
 		"searching": "検索中…",
 		"results": "{{count}} 件の結果",
 		"recentlyOpened": "最近開いた項目",

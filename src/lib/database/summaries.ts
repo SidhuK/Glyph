@@ -8,6 +8,10 @@ export function shouldReloadSummaries(
 		prev.name !== next.name ||
 		prev.icon !== next.icon ||
 		prev.color !== next.color ||
-		prev.views.length !== next.views.length
+		prev.pinned !== next.pinned ||
+		prev.views.length !== next.views.length ||
+		prev.source.kind !== next.source.kind ||
+		prev.source.value !== next.source.value ||
+		prev.source.recursive !== next.source.recursive
 	);
 }

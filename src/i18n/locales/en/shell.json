@@ -24,7 +24,22 @@
 		"createdOldest": "Created oldest"
 	},
 	"pinned": {
-		"title": "Pinned"
+		"title": "Pinned",
+		"loading": "Loading pinned items...",
+		"loadFailed": "Could not load pinned collections",
+		"empty": "Nothing pinned yet. Pin a note or collection to keep it here.",
+		"collections": "Collections",
+		"notes": "Notes",
+		"savedSearch": "Saved search",
+		"tagCollection": "Tag · #{{tag}}",
+		"folderCollection": "Folder · {{folder}}",
+		"allNotesCollection": "All notes"
+	},
+	"collections": {
+		"pin": "Pin collection",
+		"unpin": "Unpin collection",
+		"unpinNamed": "Unpin {{name}}",
+		"unpinFailed": "Could not unpin collection"
 	},
 	"allNotes": {
 		"title": "All Notes",
@@ -74,6 +89,9 @@
 		"close": "Close",
 		"filterTitle": "Title",
 		"filterTag": "Tag",
+		"saveSearch": "Save and pin search",
+		"searchSaved": "Search saved to Pinned",
+		"saveSearchFailed": "Could not save search",
 		"searching": "Searching...",
 		"results": "{{count}} results",
 		"recentlyOpened": "Recently opened",

@@ -95,6 +95,7 @@ export function useDatabasesPane({
 			nameDraft: workspace.nameDraft,
 			setNameDraft: workspace.setNameDraft,
 			saveDatabase: workspace.saveDatabase,
+			setDatabasePinned: workspace.setDatabasePinned,
 			commitDatabaseRename: workspace.commitDatabaseRename,
 			handleDeleteDatabase: workspace.handleDeleteDatabase,
 			collectionFolderBreadcrumb: workspace.collectionFolderBreadcrumb,

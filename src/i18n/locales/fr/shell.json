@@ -24,7 +24,22 @@
 		"createdOldest": "Créées (plus anciennes)"
 	},
 	"pinned": {
-		"title": "Épinglées"
+		"title": "Épinglées",
+		"loading": "Chargement des éléments épinglés...",
+		"loadFailed": "Impossible de charger les collections épinglées",
+		"empty": "Aucun élément épinglé. Épinglez une note ou une collection pour la conserver ici.",
+		"collections": "Collections",
+		"notes": "Notes",
+		"savedSearch": "Recherche enregistrée",
+		"tagCollection": "Étiquette · #{{tag}}",
+		"folderCollection": "Dossier · {{folder}}",
+		"allNotesCollection": "Toutes les notes"
+	},
+	"collections": {
+		"pin": "Épingler la collection",
+		"unpin": "Désépingler la collection",
+		"unpinNamed": "Désépingler {{name}}",
+		"unpinFailed": "Impossible de désépingler la collection"
 	},
 	"allNotes": {
 		"title": "Toutes les notes",
@@ -74,6 +89,9 @@
 		"close": "Fermer",
 		"filterTitle": "Titre",
 		"filterTag": "Étiquette",
+		"saveSearch": "Enregistrer et épingler la recherche",
+		"searchSaved": "Recherche enregistrée dans Épinglées",
+		"saveSearchFailed": "Impossible d’enregistrer la recherche",
 		"searching": "Recherche…",
 		"results": "{{count}} résultats",
 		"recentlyOpened": "Ouvertes récemment",

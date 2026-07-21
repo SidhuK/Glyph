@@ -74,6 +74,32 @@ fn normalize_collection_folder(base_dir: &Path, folder: &str) -> Result<String, 
     Ok(normalized)
 }
 
+fn normalize_new_note_folder(base_dir: &Path, folder: &str) -> Result<String, String> {
+    let trimmed = folder.trim().replace('\\', "/");
+    if trimmed.trim_matches('/').is_empty() {
+        return Ok(String::new());
+    }
+    normalize_collection_folder(base_dir, &trimmed)
+}
+
+fn normalize_database_source(
+    base_dir: &Path,
+    mut source: super::types::DatabaseSource,
+) -> Result<super::types::DatabaseSource, String> {
+    match source.kind.as_str() {
+        "all_notes" => source.value.clear(),
+        "folder" => source.value = normalize_collection_folder(base_dir, &source.value)?,
+        "tag" | "search" => {
+            source.value = source.value.trim().to_string();
+            if source.value.is_empty() {
+                return Err(format!("{} source value is required", source.kind));
+            }
+        }
+        other => return Err(format!("unsupported database source kind '{other}'")),
+    }
+    Ok(source)
+}
+
 fn normalize_status_id(status: &str) -> Result<String, String> {
     let normalized = status
         .trim()
@@ -534,7 +560,9 @@ pub async fn databases_create(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     name: String,
-    folder: String,
+    folder: Option<String>,
+    source: Option<super::types::DatabaseSource>,
+    pinned: Option<bool>,
 ) -> Result<DatabaseDocument, String> {
     let root = state.root_for_window(&window)?;
     let db_store_mutex = state.db_store_mutex();
@@ -543,7 +571,22 @@ pub async fn databases_create(
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
         let normalized_name = normalize_database_name(&name)?;
-        let normalized_folder = normalize_collection_folder(&root, &folder)?;
+        let source = match source {
+            Some(source) => normalize_database_source(&root, source)?,
+            None => super::types::DatabaseSource {
+                kind: "folder".to_string(),
+                value: normalize_collection_folder(
+                    &root,
+                    folder.as_deref().ok_or_else(|| "folder is required".to_string())?,
+                )?,
+                recursive: true,
+            },
+        };
+        let new_note_folder = if source.kind == "folder" {
+            source.value.clone()
+        } else {
+            String::new()
+        };
         let mut store = load_store(&root)?;
         if database_name_exists(&store.databases, &normalized_name, None) {
             return Err("collection name already exists".to_string());
@@ -554,13 +597,10 @@ pub async fn databases_create(
             name: normalized_name,
             icon: None,
             color: None,
-            source: super::types::DatabaseSource {
-                kind: "folder".to_string(),
-                value: normalized_folder.clone(),
-                recursive: true,
-            },
+            pinned: pinned.unwrap_or(false),
+            source,
             new_note: super::types::DatabaseNewNoteConfig {
-                folder: normalized_folder,
+                folder: new_note_folder,
             },
             schema: Vec::new(),
             views: vec![default_view("View 1")],
@@ -597,17 +637,51 @@ pub async fn databases_update(
         if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
             return Err("collection name already exists".to_string());
         }
+        if store.databases[index].updated_at != database.updated_at {
+            return Err("collection changed since it was opened".to_string());
+        }
         let mut next = database.clone();
         next.name = normalized_name;
-        if next.source.kind == "folder" {
-            next.source.value = normalize_collection_folder(&root, &next.source.value)?;
-        }
-        next.new_note.folder = normalize_collection_folder(&root, &next.new_note.folder)?;
+        next.pinned = store.databases[index].pinned;
+        next.source = normalize_database_source(&root, next.source)?;
+        next.new_note.folder = if next.source.kind == "folder" {
+            next.source.value.clone()
+        } else {
+            normalize_new_note_folder(&root, &next.new_note.folder)?
+        };
         prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
         save_store(&root, &store)?;
         load_database_document(&root, &next)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn databases_set_pinned(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    database_id: String,
+    pinned: bool,
+) -> Result<DatabaseDocument, String> {
+    let root = state.root_for_window(&window)?;
+    let db_store_mutex = state.db_store_mutex();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
+        let mut store = load_store(&root)?;
+        let database = store
+            .databases
+            .iter_mut()
+            .find(|entry| entry.id == database_id)
+            .ok_or_else(|| "database not found".to_string())?;
+        database.pinned = pinned;
+        let database = database.clone();
+        save_store(&root, &store)?;
+        load_database_document(&root, &database)
     })
     .await
     .map_err(|e| e.to_string())?

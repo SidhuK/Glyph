@@ -134,6 +134,8 @@ pub struct DatabaseDefinition {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
+    #[serde(default)]
+    pub pinned: bool,
     pub source: DatabaseSource,
     pub new_note: DatabaseNewNoteConfig,
     #[serde(default)]
@@ -174,6 +176,9 @@ pub struct DatabaseSummary {
     pub icon: Option<String>,
     #[serde(default)]
     pub color: Option<String>,
+    #[serde(default)]
+    pub pinned: bool,
+    pub source: DatabaseSource,
     #[serde(default)]
     pub view_count: u32,
 }
