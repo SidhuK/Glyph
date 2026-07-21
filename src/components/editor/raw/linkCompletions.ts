@@ -3,14 +3,18 @@ import {
 	type CompletionContext,
 	type CompletionResult,
 	pickedCompletion,
+	selectedCompletion,
+	startCompletion,
 } from "@codemirror/autocomplete";
 import type { EditorView } from "@codemirror/view";
 import {
+	type EditorLinkSuggestion,
 	suggestMarkdownLinks,
 	suggestWikiLinks,
 } from "../../../lib/linkSuggestions";
 
 const COMPLETION_LIMIT = 8;
+const wikiLinkTargets = new WeakMap<Completion, EditorLinkSuggestion>();
 
 function completionApply(
 	markdown: string,
@@ -43,13 +47,13 @@ async function wikiLinkCompletions(
 	const query = match.text.slice(asEmbed ? 3 : 2).trim();
 	const results = await suggestWikiLinks({
 		query,
-		embedOnly: asEmbed,
+		forEmbed: asEmbed,
 		limit: COMPLETION_LIMIT,
 	});
 	if (context.aborted) return null;
 	const opening = asEmbed ? "![[" : "[[";
-	const options = results.map(
-		(item): Completion => ({
+	const options = results.map((item): Completion => {
+		const completion: Completion = {
 			label: item.title,
 			detail: item.path,
 			apply: completionApply(
@@ -59,9 +63,30 @@ async function wikiLinkCompletions(
 			),
 			type: asEmbed ? "keyword" : "text",
 			boost: item.title ? 1 : 0,
-		}),
-	);
+		};
+		wikiLinkTargets.set(completion, item);
+		return completion;
+	});
 	return { from: match.from, options, filter: false };
+}
+
+export function drillIntoSelectedWikiLink(view: EditorView): boolean {
+	const completion = selectedCompletion(view.state);
+	const item = completion ? wikiLinkTargets.get(completion) : undefined;
+	if (!item || !/\.md$/i.test(item.path) || item.insertText.includes("#")) {
+		return false;
+	}
+	const cursor = view.state.selection.main.head;
+	const line = view.state.doc.lineAt(cursor);
+	const match = line.text.slice(0, cursor - line.from).match(/!?\[\[[^\]\n]*$/);
+	if (!match) return false;
+	const from = cursor - match[0].length;
+	const opening = match[0].startsWith("![[") ? "![[" : "[[";
+	view.dispatch({
+		changes: { from, to: cursor, insert: `${opening}${item.insertText}#` },
+		selection: { anchor: from + opening.length + item.insertText.length + 1 },
+	});
+	return startCompletion(view);
 }
 
 async function markdownLinkCompletions(

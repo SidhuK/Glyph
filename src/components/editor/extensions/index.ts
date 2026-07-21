@@ -37,6 +37,7 @@ import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import type { MathEditRequest } from "./math/mathOptions";
 import { MermaidPreview } from "./mermaidPreview";
 import { NoteSearch } from "./noteSearch";
+import { NoteTransclusion } from "./noteTransclusion";
 import { PersonAutocomplete } from "./personAutocomplete";
 import { TagAutocomplete } from "./tagAutocomplete";
 import { TagDecorations } from "./tagDecorations";
@@ -673,6 +674,7 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		NoteTransclusion,
 		...glyphDetailsExtensions,
 		...additionalExtensions,
 		HtmlEmbedPreview,

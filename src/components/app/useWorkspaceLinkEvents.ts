@@ -18,6 +18,7 @@ import {
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
+	dispatchInternalAnchorClick,
 } from "../editor/markdown/editorEvents";
 
 interface UseWorkspaceLinkEventsArgs {
@@ -39,21 +40,21 @@ export function useWorkspaceLinkEvents({
 		async (rawTarget: string) => {
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
-			if (!normalizedTarget) return;
+			if (!normalizedTarget) return null;
 			if (isPdfPath(normalizedTarget)) {
 				const resolved = await invoke("space_resolve_wikilink", {
 					target: normalizedTarget,
 				});
 				if (resolved) {
 					await openWorkspaceFile(resolved);
-					return;
+					return resolved;
 				}
 				setError(`Could not resolve PDF wikilink: ${rawTarget}`);
-				return;
+				return null;
 			}
 			if (!isMarkdownCreatablePath(normalizedTarget)) {
 				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
-				return;
+				return null;
 			}
 
 			const resolved = await invoke("space_resolve_wikilink", {
@@ -61,7 +62,7 @@ export function useWorkspaceLinkEvents({
 			});
 			if (resolved) {
 				await openWorkspaceFile(resolved);
-				return;
+				return resolved;
 			}
 
 			const sourceDir = activeMarkdownTabPath
@@ -82,7 +83,7 @@ export function useWorkspaceLinkEvents({
 			});
 			if (createdPath) {
 				await openWorkspaceFile(createdPath);
-				return;
+				return createdPath;
 			}
 
 			setError("");
@@ -91,10 +92,11 @@ export function useWorkspaceLinkEvents({
 			});
 			if (fallbackResolved) {
 				await openWorkspaceFile(fallbackResolved);
-				return;
+				return fallbackResolved;
 			}
 
 			setError(`Could not resolve wikilink: ${rawTarget}`);
+			return null;
 		},
 		[activeMarkdownTabPath, fileTree, openWorkspaceFile, setError],
 	);
@@ -133,7 +135,13 @@ export function useWorkspaceLinkEvents({
 						);
 						return;
 					}
-					await openOrCreateWikiLinkTarget(detail.target);
+					const openedPath = await openOrCreateWikiLinkTarget(detail.target);
+					if (openedPath && detail.anchorKind === "heading" && detail.anchor) {
+						dispatchInternalAnchorClick({
+							anchor: detail.anchor,
+							sourcePath: openedPath,
+						});
+					}
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,

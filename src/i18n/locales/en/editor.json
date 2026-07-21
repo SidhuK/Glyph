@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "Open source",
+		"refresh": "Refresh",
+		"loading": "Loading embedded note…",
+		"unavailable": "Embedded note unavailable",
+		"unresolved": "Source note not found.",
+		"missingHeading": "Section heading not found.",
+		"unsupportedBlock": "Block transclusion is not supported yet.",
+		"readError": "The embedded note could not be read.",
+		"recursive": "This embed would create a recursive note loop.",
+		"depthExceeded": "This embed exceeds the maximum nesting depth.",
+		"backlinkLabel": "Embed"
+	},
 	"mode": {
 		"label": "Editor mode",
 		"raw": "Raw",

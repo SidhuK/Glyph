@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "Abrir fuente",
+		"refresh": "Actualizar",
+		"loading": "Cargando nota incrustada…",
+		"unavailable": "Nota incrustada no disponible",
+		"unresolved": "No se encontró la nota de origen.",
+		"missingHeading": "No se encontró el encabezado de la sección.",
+		"unsupportedBlock": "La transclusión de bloques aún no está disponible.",
+		"readError": "No se pudo leer la nota incrustada.",
+		"recursive": "Esta incrustación crearía un ciclo recursivo de notas.",
+		"depthExceeded": "Esta incrustación supera la profundidad máxima de anidamiento.",
+		"backlinkLabel": "Incrustación"
+	},
 	"mode": {
 		"label": "Modo del editor",
 		"raw": "Sin formato",

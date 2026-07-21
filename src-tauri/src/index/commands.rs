@@ -622,17 +622,19 @@ pub async fn backlinks(
             .to_string();
         let mut stmt = conn
             .prepare(
-                "SELECT DISTINCT n.id, n.title, n.updated
+                "SELECT n.id, n.title, n.updated,
+                        CASE WHEN MAX(refs.is_embed) = 1 THEN 'embed' ELSE 'link' END
                  FROM notes n
                  JOIN (
-                    SELECT l.from_id
+                    SELECT l.from_id, CASE WHEN l.kind = 'embed' THEN 1 ELSE 0 END AS is_embed
                     FROM links l
                     WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
                     UNION
-                    SELECT r.from_id
+                    SELECT r.from_id, 0 AS is_embed
                     FROM note_relationships r
                     WHERE r.to_id = ? OR r.to_title = ? OR r.target_title = ?
                  ) refs ON refs.from_id = n.id
+                 GROUP BY n.id, n.title, n.updated
                  ORDER BY n.updated DESC
                  LIMIT 100",
             )
@@ -646,6 +648,7 @@ pub async fn backlinks(
                 id: row.get(0).map_err(|e| e.to_string())?,
                 title: row.get(1).map_err(|e| e.to_string())?,
                 updated: row.get(2).map_err(|e| e.to_string())?,
+                kind: row.get(3).map_err(|e| e.to_string())?,
             });
         }
         Ok(out)

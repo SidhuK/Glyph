@@ -8,7 +8,7 @@ use std::sync::{Mutex, OnceLock};
 use super::checklists::checklist_counts;
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 7;
+const INDEX_DB_VERSION: i32 = 8;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -43,6 +43,14 @@ fn migrate_if_needed(conn: &rusqlite::Connection, space_root: &Path) -> Result<(
 
     if current_version < 7 {
         migrate_checklist_summary_columns(conn, space_root)?;
+    }
+
+    if current_version < 8 {
+        conn.execute("DELETE FROM links", [])
+            .map_err(|error| error.to_string())?;
+        conn.execute("DELETE FROM indexed_files", [])
+            .map_err(|error| error.to_string())?;
+        tracing::info!("Cleared indexed link rows to classify note transclusions");
     }
 
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)

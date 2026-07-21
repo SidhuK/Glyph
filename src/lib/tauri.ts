@@ -371,6 +371,27 @@ export interface BacklinkItem {
 	id: string;
 	title: string;
 	updated: string;
+	kind: "link" | "embed";
+}
+
+export interface TransclusionRequest {
+	key: string;
+	target: string;
+	anchor_kind: "none" | "heading" | "block";
+	anchor?: string | null;
+}
+
+export interface TransclusionResult {
+	key: string;
+	resolved_path: string | null;
+	markdown: string | null;
+	mtime_ms: number | null;
+	error_kind:
+		| "unresolved"
+		| "missing_heading"
+		| "unsupported_block"
+		| "read_error"
+		| null;
 }
 
 export interface NoteRelationship {
@@ -899,6 +920,14 @@ interface TauriCommands {
 	space_reveal_path: CommandDef<{ path: string }, void>;
 	space_relativize_path: CommandDef<{ abs_path: string }, string>;
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
+	space_suggest_wikilink_headings: CommandDef<
+		{ target: string; query: string; limit?: number | null },
+		{ path: string; title: string; insert_text: string }[]
+	>;
+	space_transclusions_batch: CommandDef<
+		{ requests: TransclusionRequest[] },
+		TransclusionResult[]
+	>;
 	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_markdown_link: CommandDef<
 		{ href: string; sourcePath: string },

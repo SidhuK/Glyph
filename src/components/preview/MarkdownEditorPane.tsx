@@ -77,6 +77,7 @@ interface LinkedNoteItem {
 interface SidebarBacklinkItem {
 	id: string;
 	label: string;
+	kind: "link" | "embed";
 }
 
 const UTF8_ENCODER = new TextEncoder();
@@ -298,6 +299,7 @@ export function MarkdownEditorPane({
 			merged.set(id, {
 				id,
 				label: noteLinkLabel(item.title, id),
+				kind: item.kind,
 			});
 		}
 
@@ -307,6 +309,7 @@ export function MarkdownEditorPane({
 			merged.set(id, {
 				id,
 				label: noteLabelFromPath(id),
+				kind: "link",
 			});
 		}
 

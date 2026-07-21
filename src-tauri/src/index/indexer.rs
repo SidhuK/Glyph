@@ -14,7 +14,7 @@ use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
 };
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
-use super::links::parse_outgoing_links;
+use super::links::{parse_outgoing_embeds, parse_outgoing_links};
 use super::properties::{delete_note_properties, reindex_note_properties};
 use super::relationships::{
     delete_note_relationships, ensure_note_relationships_indexed, insert_note_relationships,
@@ -238,6 +238,7 @@ fn index_note_with_conn(
     reindex_note_relationships(&tx, note_id, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
+    let (embed_ids, embed_titles) = parse_outgoing_embeds(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
 
     for to_id in to_ids {
@@ -250,6 +251,17 @@ fn index_note_with_conn(
             inserted.insert((Some(to_id), None, "note"));
         } else {
             inserted.insert((None, Some(to_title), "wikilink"));
+        }
+    }
+
+    for to_id in embed_ids {
+        inserted.insert((Some(to_id), None, "embed"));
+    }
+    for to_title in embed_titles {
+        if let Some(to_id) = resolve_title_to_id(&tx, &to_title)? {
+            inserted.insert((Some(to_id), None, "embed"));
+        } else {
+            inserted.insert((None, Some(to_title), "embed"));
         }
     }
 
@@ -357,8 +369,13 @@ where
         .map_err(|e| e.to_string())?;
 
     let note_paths = collect_markdown_files(space_root)?;
-    let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =
-        Vec::with_capacity(note_paths.len());
+    let mut link_data: Vec<(
+        String,
+        HashSet<String>,
+        HashSet<String>,
+        HashSet<String>,
+        HashSet<String>,
+    )> = Vec::with_capacity(note_paths.len());
     let mut relationship_data = Vec::with_capacity(note_paths.len());
     let count = note_paths.len();
     on_progress(0, count);
@@ -431,7 +448,8 @@ where
             );
         }
         let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
-        link_data.push((rel.clone(), to_ids, to_titles));
+        let (embed_ids, embed_titles) = parse_outgoing_embeds(rel, &markdown);
+        link_data.push((rel.clone(), to_ids, to_titles, embed_ids, embed_titles));
         relationship_data.push((rel.clone(), parse_frontmatter_relationships(&markdown)));
         let (modified_ns, size) = file_fingerprint(path)?;
         tx.execute(
@@ -444,7 +462,7 @@ where
         }
     }
 
-    for (rel, to_ids, to_titles) in &link_data {
+    for (rel, to_ids, to_titles, embed_ids, embed_titles) in &link_data {
         let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
         for to_id in to_ids {
             inserted.insert((Some(to_id.clone()), None, link_kind_for_id(to_id)));
@@ -454,6 +472,16 @@ where
                 inserted.insert((Some(to_id), None, "note"));
             } else {
                 inserted.insert((None, Some(to_title.clone()), "wikilink"));
+            }
+        }
+        for to_id in embed_ids {
+            inserted.insert((Some(to_id.clone()), None, "embed"));
+        }
+        for to_title in embed_titles {
+            if let Some(to_id) = resolve_title_to_id(&tx, to_title)? {
+                inserted.insert((Some(to_id), None, "embed"));
+            } else {
+                inserted.insert((None, Some(to_title.clone()), "embed"));
             }
         }
         for (to_id, to_title, kind) in inserted {

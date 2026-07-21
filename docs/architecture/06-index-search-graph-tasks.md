@@ -55,7 +55,7 @@ Opening or closing a space calls `reset_schema_cache()` so a different space get
 
 `db.rs` sets:
 
-- `INDEX_DB_VERSION = 7`
+- `INDEX_DB_VERSION = 8`
 - `journal_mode = WAL`
 - `journal_size_limit = 1_048_576`
 - `SQLITE_FCNTL_PERSIST_WAL`
@@ -67,6 +67,7 @@ Migrations are hard-coded by `user_version`:
 - version 5: infer status property kinds
 - version 6: infer priority property kinds
 - version 7: add `checklist_total` and `checklist_completed` on `notes`, backfill from markdown files
+- version 8: clear derived link fingerprints so note embeds are reindexed with `kind = embed`
 
 Schema creation still uses `CREATE TABLE IF NOT EXISTS`. Migrations fix existing databases that already have older tables.
 
@@ -97,9 +98,11 @@ Stores outgoing links:
 - `from_id`
 - `to_id`
 - `to_title`
-- `kind`
+- `kind` (`note`, `wikilink`, `file`, or `embed`)
 
 `to_id` is set when the link resolves to a known note or file path. `to_title` stores unresolved wiki titles.
+Markdown transclusions use `embed`. Backlink queries expose that attribution,
+while connection graphs continue to treat the row as a note connection.
 
 ### `note_relationships`
 

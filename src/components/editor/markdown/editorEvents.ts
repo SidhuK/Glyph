@@ -33,6 +33,8 @@ export interface InternalAnchorClickDetail {
 	sourcePath: string;
 }
 
+let pendingInternalAnchor: InternalAnchorClickDetail | null = null;
+
 export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }),
@@ -64,9 +66,27 @@ export function dispatchMarkdownLinkClick(
 export function dispatchInternalAnchorClick(
 	detail: InternalAnchorClickDetail,
 ): void {
+	pendingInternalAnchor = detail;
 	window.dispatchEvent(
 		new CustomEvent<InternalAnchorClickDetail>(INTERNAL_ANCHOR_CLICK_EVENT, {
 			detail,
 		}),
 	);
+}
+
+export function consumePendingInternalAnchor(
+	sourcePath: string,
+): InternalAnchorClickDetail | null {
+	if (pendingInternalAnchor?.sourcePath !== sourcePath) return null;
+	const pending = pendingInternalAnchor;
+	pendingInternalAnchor = null;
+	return pending;
+}
+
+export function getPendingInternalAnchor(
+	sourcePath: string,
+): InternalAnchorClickDetail | null {
+	return pendingInternalAnchor?.sourcePath === sourcePath
+		? pendingInternalAnchor
+		: null;
 }

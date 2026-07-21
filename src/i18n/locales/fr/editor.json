@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "Ouvrir la source",
+		"refresh": "Actualiser",
+		"loading": "Chargement de la note intégrée…",
+		"unavailable": "Note intégrée indisponible",
+		"unresolved": "Note source introuvable.",
+		"missingHeading": "Titre de section introuvable.",
+		"unsupportedBlock": "La transclusion de blocs n’est pas encore prise en charge.",
+		"readError": "La note intégrée n’a pas pu être lue.",
+		"recursive": "Cette intégration créerait une boucle récursive de notes.",
+		"depthExceeded": "Cette intégration dépasse la profondeur d’imbrication maximale.",
+		"backlinkLabel": "Intégration"
+	},
 	"mode": {
 		"label": "Mode de l’éditeur",
 		"raw": "Brut",

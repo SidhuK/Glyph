@@ -30,6 +30,24 @@ pub fn normalize_rel_path(raw: &str) -> Option<String> {
     }
 }
 
+fn insert_wikilink_target(target: &str, paths: &mut HashSet<String>, titles: &mut HashSet<String>) {
+    if target.is_empty() {
+        return;
+    }
+    if is_file_wikilink_target(target) {
+        let path = if should_append_markdown_extension(target) {
+            format!("{target}.md")
+        } else {
+            target.to_string()
+        };
+        if let Some(path) = normalize_rel_path(&path) {
+            paths.insert(path);
+        }
+    } else {
+        titles.insert(target.to_string());
+    }
+}
+
 pub fn parse_outgoing_links(
     from_rel_path: &str,
     markdown: &str,
@@ -45,26 +63,13 @@ pub fn parse_outgoing_links(
     let mut i = 0;
     let bytes = markdown.as_bytes();
     while i + 4 <= bytes.len() {
-        if bytes[i] == b'[' && bytes[i + 1] == b'[' {
+        if bytes[i] == b'[' && bytes[i + 1] == b'[' && (i == 0 || bytes[i - 1] != b'!') {
             if let Some(end) = markdown[i + 2..].find("]]") {
                 let inner = &markdown[i + 2..i + 2 + end];
                 let inner = inner.trim();
                 let inner = inner.split('|').next().unwrap_or(inner).trim();
                 let inner = inner.split('#').next().unwrap_or(inner).trim();
-                if !inner.is_empty() {
-                    if is_file_wikilink_target(inner) {
-                        let p = if should_append_markdown_extension(inner) {
-                            format!("{inner}.md")
-                        } else {
-                            inner.to_string()
-                        };
-                        if let Some(p) = normalize_rel_path(&p) {
-                            paths.insert(p);
-                        }
-                    } else {
-                        titles.insert(inner.to_string());
-                    }
-                }
+                insert_wikilink_target(inner, &mut paths, &mut titles);
                 i = i + 2 + end + 2;
                 continue;
             }
@@ -119,6 +124,37 @@ pub fn parse_outgoing_links(
     (paths, titles)
 }
 
+pub fn parse_outgoing_embeds(
+    _from_rel_path: &str,
+    markdown: &str,
+) -> (HashSet<String>, HashSet<String>) {
+    let mut paths = HashSet::new();
+    let mut titles = HashSet::new();
+    let bytes = markdown.as_bytes();
+    let mut i = 0;
+    while i + 5 <= bytes.len() {
+        if bytes[i] == b'!' && bytes[i + 1] == b'[' && bytes[i + 2] == b'[' {
+            if let Some(end) = markdown[i + 3..].find("]]") {
+                let inner = markdown[i + 3..i + 3 + end].trim();
+                let target = inner
+                    .split('|')
+                    .next()
+                    .unwrap_or(inner)
+                    .split('#')
+                    .next()
+                    .unwrap_or(inner)
+                    .trim();
+                insert_wikilink_target(target, &mut paths, &mut titles);
+                i += 3 + end + 2;
+                continue;
+            }
+        }
+        i += 1;
+    }
+
+    (paths, titles)
+}
+
 fn is_file_wikilink_target(target: &str) -> bool {
     is_linkable_file_target(target)
         || (target.contains('/') && !utils::has_explicit_file_extension(target))
@@ -134,7 +170,7 @@ fn is_linkable_file_target(target: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_outgoing_links;
+    use super::{parse_outgoing_embeds, parse_outgoing_links};
 
     #[test]
     fn parses_attachment_wikilinks_as_file_paths() {
@@ -145,8 +181,13 @@ mod tests {
 
         assert!(paths.contains("assets/logo.png"));
         assert!(paths.contains("spec.pdf"));
-        assert!(paths.contains("hero.webp"));
+        assert!(!paths.contains("hero.webp"));
         assert!(titles.contains("Project"));
+
+        let (embed_paths, embed_titles) =
+            parse_outgoing_embeds("notes/source.md", "![[hero.webp]]");
+        assert!(embed_paths.contains("hero.webp"));
+        assert!(embed_titles.is_empty());
     }
 
     #[test]

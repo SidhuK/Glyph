@@ -1,0 +1,151 @@
+.noteTransclusion {
+	display: block;
+	width: 100%;
+	margin: var(--space-2) 0 var(--space-3);
+}
+
+.noteTransclusionHeader {
+	display: flex;
+	align-items: center;
+	min-height: 30px;
+}
+
+.noteTransclusionTitle {
+	align-self: stretch;
+	min-width: 0;
+	flex: 1;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	line-height: 30px;
+	text-align: left;
+	cursor: pointer;
+	transition: color 120ms ease;
+}
+
+.noteTransclusionTitle:hover,
+.noteTransclusionTitle:focus-visible {
+	color: var(--interactive-accent);
+	outline: none;
+}
+
+.noteTransclusionActions {
+	display: flex;
+}
+
+.noteTransclusionActions button {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition: color 120ms ease, scale 120ms ease;
+}
+
+.noteTransclusionActions button:hover,
+.noteTransclusionActions button:focus-visible {
+	color: var(--text-primary);
+	outline: none;
+}
+
+.noteTransclusionActions button:active {
+	scale: 0.96;
+}
+
+.noteTransclusionActions button:disabled {
+	cursor: progress;
+	opacity: 0.5;
+}
+
+.noteTransclusionBody {
+	max-height: 320px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 0 0 var(--space-1);
+}
+
+.noteTransclusionBody .rfNodeNoteEditor,
+.noteTransclusionBody .rfNodeNoteEditorBody,
+.noteTransclusionBody .tiptapHostInline {
+	flex: none;
+	min-height: 0;
+	padding: 0;
+	background: transparent;
+}
+
+.noteTransclusionBody .rfNodeNoteEditorBody {
+	overflow: visible;
+}
+
+.noteTransclusionBody .tiptapContentInline {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	font-size: calc(var(--editor-font-size) * 0.88);
+	line-height: 1.55;
+}
+
+.noteTransclusionBody .tiptapContentInline p {
+	margin-bottom: var(--space-2);
+}
+
+.noteTransclusionBody .tiptapContentInline h1,
+.noteTransclusionBody .tiptapContentInline h2,
+.noteTransclusionBody .tiptapContentInline h3,
+.noteTransclusionBody .tiptapContentInline h4,
+.noteTransclusionBody .tiptapContentInline h5,
+.noteTransclusionBody .tiptapContentInline h6 {
+	margin-top: var(--space-3);
+	margin-bottom: var(--space-1);
+}
+
+.noteTransclusionBody
+	.tiptapContentInline
+	> :first-child:is(h1, h2, h3, h4, h5, h6) {
+	margin-top: 0;
+}
+
+.noteTransclusionBody .tiptapContentInline h1 {
+	font-size: calc(var(--editor-font-size) * 1.2);
+}
+
+.noteTransclusionBody .tiptapContentInline h2 {
+	font-size: calc(var(--editor-font-size) * 1.08);
+}
+
+.noteTransclusionBody .tiptapContentInline h3,
+.noteTransclusionBody .tiptapContentInline h4,
+.noteTransclusionBody .tiptapContentInline h5,
+.noteTransclusionBody .tiptapContentInline h6 {
+	font-size: var(--editor-font-size);
+}
+
+.noteTransclusionMessage {
+	padding: var(--space-4);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	text-wrap: pretty;
+}
+
+.noteTransclusionMessage.is-error {
+	color: var(--status-danger-fg);
+}
+
+.markdownEditorInfoLinkKind {
+	margin-left: var(--space-1);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	text-decoration: none;
+}

@@ -24,6 +24,7 @@ pub struct BacklinkItem {
     pub id: String,
     pub title: String,
     pub updated: String,
+    pub kind: String,
 }
 
 #[derive(Clone, Serialize)]

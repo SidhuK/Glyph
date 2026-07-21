@@ -22,6 +22,7 @@ interface TipTapSuggestionMenuOptions<T> {
 	lockEditorScroll?: boolean;
 	resetSelectionOnUpdate?: boolean;
 	onEscape?: (view: EditorView) => void;
+	onArrowRight?: (item: T, props: SuggestionProps<T>) => boolean;
 }
 
 function placeMenu(menu: HTMLElement, rect: DOMRect): void {
@@ -48,6 +49,7 @@ export function createTipTapSuggestionMenu<T>({
 	lockEditorScroll = true,
 	resetSelectionOnUpdate = false,
 	onEscape,
+	onArrowRight,
 }: TipTapSuggestionMenuOptions<T>) {
 	let menu: HTMLDivElement | null = null;
 	let selectedIndex = 0;
@@ -144,6 +146,13 @@ export function createTipTapSuggestionMenu<T>({
 				selectedIndex = nextSuggestionIndex(selectedIndex, items.length, -1);
 				updateSelection(items);
 				return true;
+			}
+			if (event.key === "ArrowRight" && current && onArrowRight) {
+				const item = items[selectedIndex] ?? items[0];
+				if (item && onArrowRight(item, current)) {
+					event.preventDefault();
+					return true;
+				}
 			}
 			if (event.key === "Enter" || event.key === "Tab") {
 				event.preventDefault();

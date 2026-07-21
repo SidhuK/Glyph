@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "Quelle öffnen",
+		"refresh": "Aktualisieren",
+		"loading": "Eingebettete Notiz wird geladen…",
+		"unavailable": "Eingebettete Notiz nicht verfügbar",
+		"unresolved": "Quellnotiz nicht gefunden.",
+		"missingHeading": "Abschnittsüberschrift nicht gefunden.",
+		"unsupportedBlock": "Blockeinbettungen werden noch nicht unterstützt.",
+		"readError": "Die eingebettete Notiz konnte nicht gelesen werden.",
+		"recursive": "Diese Einbettung würde eine rekursive Notizschleife erzeugen.",
+		"depthExceeded": "Diese Einbettung überschreitet die maximale Verschachtelungstiefe.",
+		"backlinkLabel": "Einbettung"
+	},
 	"mode": {
 		"label": "Editormodus",
 		"raw": "Raw",

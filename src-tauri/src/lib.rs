@@ -1662,6 +1662,8 @@ pub fn run() {
             space_fs::list::space_list_markdown_files,
             space_fs::list::space_list_non_markdown_files,
             space_fs::link_ops::space_resolve_wikilink,
+            space_fs::transclusion::space_suggest_wikilink_headings,
+            space_fs::transclusion::space_transclusions_batch,
             space_fs::link_ops::space_resolve_image_wikilink,
             space_fs::link_ops::space_resolve_markdown_link,
             space_fs::link_ops::space_suggest_links,

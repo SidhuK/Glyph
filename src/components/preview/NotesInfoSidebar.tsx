@@ -6,6 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../contexts";
 import {
 	type DateDisplayFormat,
@@ -39,6 +40,7 @@ type InfoSidebarTab = "info" | "history";
 interface SidebarBacklinkItem {
 	id: string;
 	label: string;
+	kind: "link" | "embed";
 }
 
 interface LinkedNoteItem {
@@ -128,6 +130,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
+	const { t } = useTranslation("editor");
 	const dateDisplayFormat = useDateDisplayFormat();
 	const [host, setHost] = useState<HTMLElement | null>(null);
 	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
@@ -302,6 +305,11 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 										>
 											<span className="wikiLinkIcon" aria-hidden="true" />
 											<span className="wikiLinkLabel">{item.label}</span>
+											{item.kind === "embed" ? (
+												<span className="markdownEditorInfoLinkKind">
+													{t("transclusion.backlinkLabel")}
+												</span>
+											) : null}
 										</button>
 									))}
 								</div>

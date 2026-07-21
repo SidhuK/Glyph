@@ -250,11 +250,11 @@ export const WikiLink = Node.create({
 	addProseMirrorPlugins() {
 		const getSuggestions = async (
 			query: string,
-			includeImagesOnly: boolean,
+			forEmbed: boolean,
 		): Promise<EditorLinkSuggestion[]> => {
 			return suggestWikiLinks({
 				query,
-				embedOnly: includeImagesOnly,
+				forEmbed,
 				limit: this.options.suggestionLimit,
 			});
 		};
@@ -295,23 +295,41 @@ export const WikiLink = Node.create({
 						: `[[${props.insertText}]]`;
 					const parsed = parseWikiLink(raw);
 					if (!parsed) return;
+					if (asEmbed && !isImageTarget(props.path)) {
+						editor
+							.chain()
+							.focus()
+							.deleteRange({ from: replaceFrom, to: range.to })
+							.insertContent([
+								{ type: "noteTransclusion", attrs: parsed },
+								{ type: "paragraph" },
+							])
+							.run();
+						return;
+					}
 					editor
 						.chain()
 						.focus()
-						.deleteRange({
-							from: replaceFrom,
-							to: range.to,
-						})
-						.insertContent({
-							type: "wikiLink",
-							attrs: parsed,
-						})
+						.deleteRange({ from: replaceFrom, to: range.to })
+						.insertContent({ type: "wikiLink", attrs: parsed })
 						.insertContent(" ")
 						.run();
 				},
 				render: () =>
 					createTipTapSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
+						onArrowRight: (item, props) => {
+							if (!/\.md$/i.test(item.path) || item.insertText.includes("#")) {
+								return false;
+							}
+							props.editor
+								.chain()
+								.focus()
+								.deleteRange(props.range)
+								.insertContent(`[[${item.insertText}#`)
+								.run();
+							return true;
+						},
 						renderItem: ({ item, isActive, select }) => {
 							const button = document.createElement("button");
 							button.type = "button";

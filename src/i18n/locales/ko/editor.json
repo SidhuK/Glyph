@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "원본 노트 열기",
+		"refresh": "새로 고침",
+		"loading": "임베드된 노트 불러오는 중…",
+		"unavailable": "임베드된 노트를 사용할 수 없음",
+		"unresolved": "원본 노트를 찾을 수 없습니다.",
+		"missingHeading": "섹션 제목을 찾을 수 없습니다.",
+		"unsupportedBlock": "블록 트랜스클루전은 아직 지원되지 않습니다.",
+		"readError": "임베드된 노트를 읽을 수 없습니다.",
+		"recursive": "이 임베드는 재귀적인 노트 순환을 만듭니다.",
+		"depthExceeded": "이 임베드는 최대 중첩 깊이를 초과합니다.",
+		"backlinkLabel": "임베드"
+	},
 	"mode": {
 		"label": "편집기 모드",
 		"raw": "Raw",

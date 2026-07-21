@@ -5,7 +5,7 @@ use tauri::{State, WebviewWindow};
 use crate::{paths, space::SpaceState, utils};
 
 #[derive(Clone)]
-struct FileEntry {
+pub(super) struct FileEntry {
     rel_path: String,
     is_markdown: bool,
 }
@@ -101,7 +101,11 @@ fn relative_path(from_dir: &str, to_path: &str) -> String {
     }
 }
 
-fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<FileEntry>, String> {
+pub(super) fn list_files(
+    root: &Path,
+    markdown_only: bool,
+    limit: usize,
+) -> Result<Vec<FileEntry>, String> {
     let mut out: Vec<FileEntry> = Vec::new();
     let mut stack: Vec<PathBuf> = vec![PathBuf::new()];
     while let Some(rel_dir) = stack.pop() {
@@ -233,7 +237,10 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
     choose_unambiguous_match(stem_matches)
 }
 
-fn resolve_standard_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
+pub(super) fn resolve_standard_wikilink_target(
+    entries: &[FileEntry],
+    target: &str,
+) -> Option<String> {
     let raw = target
         .split('#')
         .next()

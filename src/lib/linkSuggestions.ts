@@ -8,7 +8,7 @@ export interface EditorLinkSuggestion {
 }
 
 interface SuggestWikiLinksOptions {
-	embedOnly?: boolean;
+	forEmbed?: boolean;
 	includeAttachments?: boolean;
 	limit: number;
 	query: string;
@@ -46,27 +46,34 @@ function toEditorSuggestion(item: {
 }
 
 export async function suggestWikiLinks({
-	embedOnly = false,
+	forEmbed = false,
 	includeAttachments = true,
 	limit,
 	query,
 }: SuggestWikiLinksOptions): Promise<EditorLinkSuggestion[]> {
-	const requestLimit = embedOnly ? Math.min(limit * 4, 200) : limit;
+	const hashIndex = query.indexOf("#");
+	if (hashIndex >= 0) {
+		const target = query.slice(0, hashIndex).trim();
+		if (!target) return [];
+		const results = await invoke("space_suggest_wikilink_headings", {
+			target,
+			query: query.slice(hashIndex + 1),
+			limit,
+		});
+		return results.map(toEditorSuggestion);
+	}
 	const results = await invoke("space_suggest_links", {
 		request: {
 			query,
 			markdown_only: true,
-			include_pdf: !embedOnly && includeAttachments,
-			include_images: embedOnly || includeAttachments,
-			strip_markdown_ext: !embedOnly,
+			include_pdf: !forEmbed && includeAttachments,
+			include_images: forEmbed || includeAttachments,
+			strip_markdown_ext: true,
 			relative_to_source: false,
-			limit: requestLimit,
+			limit,
 		},
 	});
-	return results
-		.filter((item) => !embedOnly || isImageTarget(item.path))
-		.slice(0, limit)
-		.map(toEditorSuggestion);
+	return results.map(toEditorSuggestion);
 }
 
 export async function suggestMarkdownLinks({

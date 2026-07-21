@@ -10,6 +10,8 @@ Frontend:
 - `src/components/editor/NoteInlineEditor.tsx`: editor surface, toolbar overlays, frontmatter panel, backlinks, interactions
 - `src/components/editor/hooks/useNoteEditor.ts`: TipTap instance, Markdown conversion, paste handling, image paste
 - `src/components/editor/extensions/index.ts`: extension composition
+- `src/components/editor/extensions/noteTransclusion.ts`: block bridge for standalone note embeds
+- `src/components/editor/transclusions/`: read-only rendering, batch data, and recursion context
 - `src/components/editor/markdown/`: wiki link and Markdown bridge helpers
 - `src/components/editor/hooks/useHydrateInlineImages.ts`: image path hydration
 - `src/components/editor/hooks/useTaskInlineDates.ts`: inline task date editing
@@ -20,6 +22,8 @@ Backend:
 
 - `src-tauri/src/space_fs/read_write/text.rs`: read/write text docs
 - `src-tauri/src/space_fs/read_write/binary.rs`: pasted image persistence
+- `src-tauri/src/space_fs/transclusion.rs`: batch resolution and heading suggestions
+- `src-tauri/src/space_fs/markdown_sections.rs`: fenced-code-aware heading parsing and section extraction
 - `src-tauri/src/index/indexer.rs`: reindex note after write
 - `src-tauri/src/notes/frontmatter.rs`: parse and render frontmatter mappings
 - `src-tauri/src/notes/properties.rs`: property conversion
@@ -106,6 +110,20 @@ Wiki links need bridge logic because TipTap and Markdown need different represen
 Use the bridge helpers rather than ad hoc string replacement when changing wiki-link Markdown behavior.
 
 ## TipTap Extensions
+
+Standalone `![[Note]]` and `![[Note#Heading]]` tokens render as read-only
+transclusion blocks in Rich and Preview modes. Expanded content is never
+serialized into the containing note. The frontend batches visible requests
+through `space_transclusions_batch`; Rust resolves current-space files and
+extracts heading sections. Nested renders carry an ancestor path chain so
+direct and indirect cycles stop at a placeholder.
+
+Wiki-link completion suggests notes and attachments after `[[`, notes and
+images after `![[`, and headings from the resolved note after `#`. With a note
+selected, Right Arrow fills the note target and starts its heading query;
+Enter or Tab still selects the entire note. Heading navigation is queued
+across note opening so `[[Note#Heading]]` scrolls after the target editor has
+mounted and derived its table of contents.
 
 `createEditorExtensions()` composes:
 

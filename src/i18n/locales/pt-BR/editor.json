@@ -1,4 +1,17 @@
 {
+	"transclusion": {
+		"openSource": "Abrir origem",
+		"refresh": "Atualizar",
+		"loading": "Carregando nota incorporada…",
+		"unavailable": "Nota incorporada indisponível",
+		"unresolved": "Nota de origem não encontrada.",
+		"missingHeading": "Título da seção não encontrado.",
+		"unsupportedBlock": "A transclusão de blocos ainda não é compatível.",
+		"readError": "Não foi possível ler a nota incorporada.",
+		"recursive": "Esta incorporação criaria um ciclo recursivo de notas.",
+		"depthExceeded": "Esta incorporação excede a profundidade máxima de aninhamento.",
+		"backlinkLabel": "Incorporação"
+	},
 	"mode": {
 		"label": "Modo do editor",
 		"raw": "Bruto",

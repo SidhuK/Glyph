@@ -53,6 +53,7 @@ import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
+import { TransclusionDataProvider } from "./transclusions/TransclusionContext";
 import type { NoteInlineEditorProps } from "./types";
 
 const EMPTY_ADDITIONAL_EXTENSIONS: AnyExtension[] = [];
@@ -750,15 +751,17 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 				) : null}
 				{mode !== "plain" &&
 				(mathExtensionsReady || !markdown.includes("$")) ? (
-					<NoteEditorSurface
-						editor={liveEditor}
-						mode={mode}
-						colorfulHeadings={colorfulHeadings}
-						canEdit={canEdit}
-						hostRef={handleTiptapHostRef}
-						tableControls={tableControls}
-						codeBlock={codeBlockControls}
-					/>
+					<TransclusionDataProvider markdown={markdown} relPath={relPath}>
+						<NoteEditorSurface
+							editor={liveEditor}
+							mode={mode}
+							colorfulHeadings={colorfulHeadings}
+							canEdit={canEdit}
+							hostRef={handleTiptapHostRef}
+							tableControls={tableControls}
+							codeBlock={codeBlockControls}
+						/>
+					</TransclusionDataProvider>
 				) : null}
 			</div>
 			<AnimatePresence>
