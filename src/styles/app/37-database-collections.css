@@ -79,6 +79,19 @@
 	color: var(--text-primary);
 }
 
+.databasePinButton {
+	min-width: 40px;
+	min-height: 40px;
+}
+
+.databasePinButton[data-pinned="true"] {
+	color: var(--text-accent);
+}
+
+.databasePinButton[data-pinned="true"] svg path {
+	fill: currentColor;
+}
+
 .databasesTopActionButtonDanger:hover:not(:disabled),
 .databasesTopActionButtonDanger:focus-visible:not(:disabled) {
 	color: var(--text-error);

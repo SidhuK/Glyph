@@ -24,7 +24,22 @@
 		"createdOldest": "생성일 (오래된순)"
 	},
 	"pinned": {
-		"title": "고정됨"
+		"title": "고정됨",
+		"loading": "고정된 항목 불러오는 중...",
+		"loadFailed": "고정된 컬렉션을 불러올 수 없습니다",
+		"empty": "아직 고정된 항목이 없습니다. 노트나 컬렉션을 고정해 보세요.",
+		"collections": "컬렉션",
+		"notes": "노트",
+		"savedSearch": "저장된 검색",
+		"tagCollection": "태그 · #{{tag}}",
+		"folderCollection": "폴더 · {{folder}}",
+		"allNotesCollection": "모든 노트"
+	},
+	"collections": {
+		"pin": "컬렉션 고정",
+		"unpin": "컬렉션 고정 해제",
+		"unpinNamed": "{{name}} 고정 해제",
+		"unpinFailed": "컬렉션 고정을 해제할 수 없습니다"
 	},
 	"allNotes": {
 		"title": "모든 노트",
@@ -74,6 +89,9 @@
 		"close": "닫기",
 		"filterTitle": "제목",
 		"filterTag": "태그",
+		"saveSearch": "검색 저장 및 고정",
+		"searchSaved": "검색을 고정됨에 저장했습니다",
+		"saveSearchFailed": "검색을 저장할 수 없습니다",
 		"searching": "검색 중…",
 		"results": "결과 {{count}}개",
 		"recentlyOpened": "최근 열림",

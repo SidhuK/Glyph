@@ -271,6 +271,7 @@ export interface WorkspaceDatabaseDefinition {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
+	pinned: boolean;
 	source: {
 		kind: "all_notes" | "folder" | "tag" | "search";
 		value: string;
@@ -288,6 +289,8 @@ export interface WorkspaceDatabaseSummary {
 	name: string;
 	icon?: string | null;
 	color?: string | null;
+	pinned: boolean;
+	source: DatabaseSource;
 	view_count: number;
 }
 
@@ -930,11 +933,20 @@ interface TauriCommands {
 	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
 	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
 	databases_create: CommandDef<
-		{ name: string; folder: string },
+		{
+			name: string;
+			folder?: string | null;
+			source?: DatabaseSource | null;
+			pinned?: boolean | null;
+		},
 		WorkspaceDatabaseDocument
 	>;
 	databases_update: CommandDef<
 		{ database: WorkspaceDatabaseDefinition },
+		WorkspaceDatabaseDocument
+	>;
+	databases_set_pinned: CommandDef<
+		{ database_id: string; pinned: boolean },
 		WorkspaceDatabaseDocument
 	>;
 	databases_delete: CommandDef<{ database_id: string }, void>;

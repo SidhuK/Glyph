@@ -1,6 +1,7 @@
-import { LibraryIcon, NoteIcon } from "@hugeicons/core-free-icons";
+import { LibraryIcon, NoteIcon, StarIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
 import { buildCollectionMenuItems } from "../../lib/database/viewMenuItems";
 import { isNativeContextMenuAvailable } from "../../lib/nativeContextMenu";
@@ -16,6 +17,7 @@ interface CollectionTopBarProps {
 		| "nameDraft"
 		| "setNameDraft"
 		| "collectionFolderBreadcrumb"
+		| "setDatabasePinned"
 		| "commitDatabaseRename"
 		| "handleDeleteDatabase"
 	>;
@@ -36,6 +38,7 @@ export function CollectionTopBar({
 	views,
 	actions,
 }: CollectionTopBarProps) {
+	const { t } = useTranslation("shell");
 	const skipNextBlurCommitRef = useRef(false);
 	const collectionMenuItems = useMemo(
 		() =>
@@ -56,6 +59,7 @@ export function CollectionTopBar({
 	const collectionMenuLabel = doc.document
 		? "Switch collection"
 		: "Select collection";
+	const isPinned = doc.document?.database.pinned ?? false;
 
 	return (
 		<div className="databasesTopBar">
@@ -147,6 +151,27 @@ export function CollectionTopBar({
 
 			{doc.document ? (
 				<div className="databasesTopBarRight">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="databasesTopActionButton databasePinButton"
+						data-pinned={isPinned ? "true" : "false"}
+						onClick={() => void doc.setDatabasePinned(!isPinned)}
+						title={t(
+							isPinned ? "collections.unpin" : "collections.pin",
+						)}
+						aria-label={t(
+							isPinned ? "collections.unpin" : "collections.pin",
+						)}
+						aria-pressed={isPinned}
+					>
+						<HugeiconsIcon
+							icon={StarIcon}
+							size="var(--icon-md)"
+							strokeWidth={0.9}
+						/>
+					</Button>
 					<Button
 						type="button"
 						variant="ghost"

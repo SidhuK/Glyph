@@ -101,6 +101,51 @@
 	padding: 4px 0 6px;
 }
 
+.commandSearchActions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.commandSearchSaveButton {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-tertiary);
+	transition-property: color, background-color, scale;
+	transition-duration: 120ms;
+}
+
+.commandSearchSaveButton:hover:not(:disabled),
+.commandSearchSaveButton:focus-visible:not(:disabled) {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.commandSearchSaveButton:active:not(:disabled) {
+	scale: 0.96;
+}
+
+.commandSearchSaveButton[data-saved="true"] {
+	color: var(--text-accent);
+}
+
+.commandSearchSaveButton[data-saved="true"] svg path {
+	fill: currentColor;
+}
+
+.commandSearchSaveButton:disabled:not([data-saved="true"]) {
+	opacity: 0.42;
+}
+
 .commandSearchFilterBtn {
 	display: inline-flex;
 	align-items: center;

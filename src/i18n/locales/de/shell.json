@@ -24,7 +24,22 @@
 		"createdOldest": "Erstellt (älteste)"
 	},
 	"pinned": {
-		"title": "Angeheftet"
+		"title": "Angeheftet",
+		"loading": "Angeheftete Elemente werden geladen...",
+		"loadFailed": "Angeheftete Sammlungen konnten nicht geladen werden",
+		"empty": "Noch nichts angeheftet. Hefte eine Notiz oder Sammlung an.",
+		"collections": "Sammlungen",
+		"notes": "Notizen",
+		"savedSearch": "Gespeicherte Suche",
+		"tagCollection": "Tag · #{{tag}}",
+		"folderCollection": "Ordner · {{folder}}",
+		"allNotesCollection": "Alle Notizen"
+	},
+	"collections": {
+		"pin": "Sammlung anheften",
+		"unpin": "Sammlung lösen",
+		"unpinNamed": "{{name}} lösen",
+		"unpinFailed": "Sammlung konnte nicht gelöst werden"
 	},
 	"allNotes": {
 		"title": "Alle Notizen",
@@ -74,6 +89,9 @@
 		"close": "Schließen",
 		"filterTitle": "Titel",
 		"filterTag": "Tag",
+		"saveSearch": "Suche speichern und anheften",
+		"searchSaved": "Suche unter Angeheftet gespeichert",
+		"saveSearchFailed": "Suche konnte nicht gespeichert werden",
 		"searching": "Suche…",
 		"results": "{{count}} Ergebnisse",
 		"recentlyOpened": "Zuletzt geöffnet",

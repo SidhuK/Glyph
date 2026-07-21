@@ -283,6 +283,7 @@ interface MainContentProps {
 	onOpenDailyNote: () => void;
 	onOpenActivity: () => void;
 	onPrefetchActivity: () => void;
+	onOpenDatabase: (databaseId: string) => void;
 	tabs: WorkspaceTab[];
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
@@ -326,6 +327,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNote,
 	onOpenActivity,
 	onPrefetchActivity,
+	onOpenDatabase,
 	tabs,
 	rootEntries,
 	childrenByDir,
@@ -564,7 +566,10 @@ export const MainContent = memo(function MainContent({
 		if (viewerPath === PINNED_DOCS_TAB_ID) {
 			return (
 				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-					<PinnedDocsPane onOpenFile={onOpenFile} />
+					<PinnedDocsPane
+						onOpenFile={onOpenFile}
+						onOpenDatabase={onOpenDatabase}
+					/>
 				</Suspense>
 			);
 		}
@@ -633,6 +638,7 @@ export const MainContent = memo(function MainContent({
 		onOpenFileInNewTab,
 		onOpenActivity,
 		onPrefetchActivity,
+		onOpenDatabase,
 		databasesOpenRequest,
 		onConsumeDatabasesOpenRequest,
 		viewerPath,

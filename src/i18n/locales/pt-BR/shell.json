@@ -24,7 +24,22 @@
 		"createdOldest": "Criadas (mais antigas)"
 	},
 	"pinned": {
-		"title": "Fixadas"
+		"title": "Fixadas",
+		"loading": "Carregando itens fixados...",
+		"loadFailed": "Não foi possível carregar as coleções fixadas",
+		"empty": "Nada fixado ainda. Fixe uma nota ou coleção para mantê-la aqui.",
+		"collections": "Coleções",
+		"notes": "Notas",
+		"savedSearch": "Pesquisa salva",
+		"tagCollection": "Tag · #{{tag}}",
+		"folderCollection": "Pasta · {{folder}}",
+		"allNotesCollection": "Todas as notas"
+	},
+	"collections": {
+		"pin": "Fixar coleção",
+		"unpin": "Desafixar coleção",
+		"unpinNamed": "Desafixar {{name}}",
+		"unpinFailed": "Não foi possível desafixar a coleção"
 	},
 	"allNotes": {
 		"title": "Todas as notas",
@@ -74,6 +89,9 @@
 		"close": "Fechar",
 		"filterTitle": "Título",
 		"filterTag": "Tag",
+		"saveSearch": "Salvar e fixar pesquisa",
+		"searchSaved": "Pesquisa salva em Fixadas",
+		"saveSearchFailed": "Não foi possível salvar a pesquisa",
 		"searching": "Buscando…",
 		"results": "{{count}} resultados",
 		"recentlyOpened": "Abertas recentemente",
