@@ -642,6 +642,7 @@ pub async fn databases_update(
         }
         let mut next = database.clone();
         next.name = normalized_name;
+        next.pinned = store.databases[index].pinned;
         next.source = normalize_database_source(&root, next.source)?;
         next.new_note.folder = if next.source.kind == "folder" {
             next.source.value.clone()
@@ -653,6 +654,34 @@ pub async fn databases_update(
         store.databases[index] = next.clone();
         save_store(&root, &store)?;
         load_database_document(&root, &next)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn databases_set_pinned(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    database_id: String,
+    pinned: bool,
+) -> Result<DatabaseDocument, String> {
+    let root = state.root_for_window(&window)?;
+    let db_store_mutex = state.db_store_mutex();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
+        let mut store = load_store(&root)?;
+        let database = store
+            .databases
+            .iter_mut()
+            .find(|entry| entry.id == database_id)
+            .ok_or_else(|| "database not found".to_string())?;
+        database.pinned = pinned;
+        let database = database.clone();
+        save_store(&root, &store)?;
+        load_database_document(&root, &database)
     })
     .await
     .map_err(|e| e.to_string())?

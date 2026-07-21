@@ -300,6 +300,27 @@ export function useCollectionWorkspace({
 		void saveDatabase({ ...document.database, name: nameDraft.trim() });
 	}, [document, nameDraft, saveDatabase]);
 
+	const setDatabasePinned = useCallback(
+		async (pinned: boolean) => {
+			if (!document) return;
+			try {
+				const saved = await invoke("databases_set_pinned", {
+					database_id: document.database.id,
+					pinned,
+				});
+				clearError();
+				documentRef.current = saved;
+				setDocument(saved);
+				setPrefetchedDatabaseDocument(saved.database.id, saved);
+				invalidateDatabaseSummariesPrefetch();
+				await loadSummaries();
+			} catch (cause) {
+				setError(extractErrorMessage(cause));
+			}
+		},
+		[clearError, document, loadSummaries, setError],
+	);
+
 	const handleDeleteDatabase = useCallback(async () => {
 		if (!document) return;
 		const { confirm } = await import("@tauri-apps/plugin-dialog");
@@ -361,6 +382,7 @@ export function useCollectionWorkspace({
 		nameDraft,
 		setNameDraft,
 		saveDatabase,
+		setDatabasePinned,
 		commitDatabaseRename,
 		handleDeleteDatabase,
 		collectionFolderBreadcrumb,

@@ -1623,6 +1623,7 @@ pub fn run() {
             databases::commands::databases_get,
             databases::commands::databases_create,
             databases::commands::databases_update,
+            databases::commands::databases_set_pinned,
             databases::commands::databases_delete,
             databases::commands::databases_query_rows,
             databases::commands::databases_update_cell,

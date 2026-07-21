@@ -107,14 +107,15 @@ export function CommandPalette({
 		activeTab === "commands" ? filtered.length : searchItems.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
 	const databaseSummaries = useQuery({
-		queryKey: [...navigationQueryKeys.databaseSummaries(), spacePath],
+		queryKey: navigationQueryKeys.databaseSummaries(),
 		queryFn: () => invoke("databases_list"),
 		enabled: open && activeTab === "search" && canSearch,
 	});
 	const saveSearch = useMutation({
 		mutationFn: async (rawQuery: string) => {
 			const trimmed = rawQuery.trim();
-			const summaries = await invoke("databases_list");
+			const summaries = databaseSummaries.data;
+			if (!summaries) throw new Error(t("commandPalette.saveSearchFailed"));
 			const baseName =
 				trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
 			return invoke("databases_create", {
@@ -334,7 +335,10 @@ export function CommandPalette({
 								className="commandSearchSaveButton"
 								data-saved={isCurrentSearchSaved ? "true" : "false"}
 								disabled={
-									!query.trim() || saveSearch.isPending || isCurrentSearchSaved
+									!query.trim() ||
+									!databaseSummaries.data ||
+									saveSearch.isPending ||
+									isCurrentSearchSaved
 								}
 								onClick={() => saveSearch.mutate(query)}
 								title={t(

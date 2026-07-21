@@ -17,7 +17,7 @@ interface CollectionTopBarProps {
 		| "nameDraft"
 		| "setNameDraft"
 		| "collectionFolderBreadcrumb"
-		| "saveDatabase"
+		| "setDatabasePinned"
 		| "commitDatabaseRename"
 		| "handleDeleteDatabase"
 	>;
@@ -59,6 +59,7 @@ export function CollectionTopBar({
 	const collectionMenuLabel = doc.document
 		? "Switch collection"
 		: "Select collection";
+	const isPinned = doc.document?.database.pinned ?? false;
 
 	return (
 		<div className="databasesTopBar">
@@ -155,24 +156,15 @@ export function CollectionTopBar({
 						variant="ghost"
 						size="icon-sm"
 						className="databasesTopActionButton databasePinButton"
-						data-pinned={doc.document.database.pinned ? "true" : "false"}
-						onClick={() =>
-							void doc.saveDatabase((database) => ({
-								...database,
-								pinned: !database.pinned,
-							}))
-						}
+						data-pinned={isPinned ? "true" : "false"}
+						onClick={() => void doc.setDatabasePinned(!isPinned)}
 						title={t(
-							doc.document.database.pinned
-								? "collections.unpin"
-								: "collections.pin",
+							isPinned ? "collections.unpin" : "collections.pin",
 						)}
 						aria-label={t(
-							doc.document.database.pinned
-								? "collections.unpin"
-								: "collections.pin",
+							isPinned ? "collections.unpin" : "collections.pin",
 						)}
-						aria-pressed={doc.document.database.pinned}
+						aria-pressed={isPinned}
 					>
 						<HugeiconsIcon
 							icon={StarIcon}

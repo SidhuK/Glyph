@@ -945,6 +945,10 @@ interface TauriCommands {
 		{ database: WorkspaceDatabaseDefinition },
 		WorkspaceDatabaseDocument
 	>;
+	databases_set_pinned: CommandDef<
+		{ database_id: string; pinned: boolean },
+		WorkspaceDatabaseDocument
+	>;
 	databases_delete: CommandDef<{ database_id: string }, void>;
 	databases_query_rows: CommandDef<
 		{

@@ -50,14 +50,11 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		[collectionsQuery.data],
 	);
 	const unpinCollection = useMutation({
-		mutationFn: async (databaseId: string) => {
-			const document = await invoke("databases_get", {
+		mutationFn: (databaseId: string) =>
+			invoke("databases_set_pinned", {
 				database_id: databaseId,
-			});
-			return invoke("databases_update", {
-				database: { ...document.database, pinned: false },
-			});
-		},
+				pinned: false,
+			}),
 		onSuccess: (document) => {
 			invalidateDatabasePrefetch(document.database.id);
 			void queryClient.invalidateQueries({
