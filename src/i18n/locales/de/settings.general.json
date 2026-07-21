@@ -15,6 +15,15 @@
 		"ariaLabel": "Sprache",
 		"communityNotice": "Übersetzungen stammen aus der Community und können unvollständig sein. Fragen oder Verbesserungen? <discord>Discord beitreten</discord>."
 	},
+	"dateTime": {
+		"sectionTitle": "Datum & Uhrzeit",
+		"sectionDescription": "Lege fest, wie vollständige Daten in Glyph angezeigt werden.",
+		"dateFormat": {
+			"label": "Datumsformat",
+			"description": "Gilt sofort für vollständige Daten in Notizen, Metadaten, Datenbanken und Verlauf.",
+			"ariaLabel": "Datumsformat"
+		}
+	},
 	"startup": {
 		"sectionTitle": "Start",
 		"sectionDescription": "Wähle, was beim Start von Glyph geöffnet wird.",

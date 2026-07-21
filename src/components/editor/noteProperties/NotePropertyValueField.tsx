@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useDateDisplayFormat } from "../../../contexts";
 import {
 	priorityColorKey,
 	priorityOptionsWithCustomValues,
@@ -64,6 +65,7 @@ export function NotePropertyValueField({
 	onSetTagInputRef,
 	tagInputRef,
 }: NotePropertyValueFieldProps) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const textValue = property.value_text ?? "";
 	const [textDraft, setTextDraft] = useState(textValue);
 	const textInputRef = useRef<HTMLInputElement | null>(null);
@@ -134,7 +136,10 @@ export function NotePropertyValueField({
 			);
 		}
 		if (property.kind === "date") {
-			const formatted = formatPropertyDate(property.value_text ?? "");
+			const formatted = formatPropertyDate(
+				property.value_text ?? "",
+				dateDisplayFormat,
+			);
 			if (!formatted) {
 				return <span className="notePropertyEmptyValue">—</span>;
 			}

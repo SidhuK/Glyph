@@ -1,5 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import { useDateDisplayFormat } from "../../contexts";
+import {
+	type DateDisplayFormat,
+	formatDisplayDate,
+	formatLocalClockTime,
+	parseDisplayDateInput,
+} from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type GitCommitDiff,
@@ -15,14 +22,16 @@ interface GitHistorySidebarProps {
 	onSelectDiff: (diff: GitCommitDiff) => void;
 }
 
-function formatCommitDate(timestampMs: number): string {
+function formatCommitDate(
+	timestampMs: number,
+	dateFormat: DateDisplayFormat,
+): string {
 	if (!timestampMs) return "";
-	return new Intl.DateTimeFormat(undefined, {
-		month: "short",
-		day: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-	}).format(new Date(timestampMs));
+	const date = parseDisplayDateInput(timestampMs);
+	if (!date) return "";
+	return formatDisplayDate(date, dateFormat, {
+		time: formatLocalClockTime(date),
+	});
 }
 
 function formatCommitAge(timestampMs: number): string {
@@ -57,6 +66,7 @@ export function GitHistorySidebar({
 	selectedCommitHash = null,
 	onSelectDiff,
 }: GitHistorySidebarProps) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const latestDiffRequestId = useRef(0);
 	useEffect(
 		() => () => {
@@ -145,7 +155,10 @@ export function GitHistorySidebar({
 												) : null}
 												<span
 													className="gitHistoryMeta"
-													title={formatCommitDate(commit.timestamp_ms)}
+													title={formatCommitDate(
+														commit.timestamp_ms,
+														dateDisplayFormat,
+													)}
 												>
 													{isLoading
 														? "Opening…"

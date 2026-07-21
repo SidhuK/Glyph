@@ -99,6 +99,21 @@
 			"description": "Glyph の表示言語を選びます。",
 			"keywords": ["locale", "翻訳", "i18n", "言語", "language", "translation"]
 		},
+		"general-date-format": {
+			"title": "日付形式",
+			"section": "日付と時刻",
+			"description": "Glyph 全体での完全な日付の表示方法を選びます。",
+			"keywords": [
+				"日付",
+				"形式",
+				"カレンダー",
+				"US",
+				"European",
+				"Friendly",
+				"ISO",
+				"表示"
+			]
+		},
 		"general-resume-last-session": {
 			"title": "前回のタブを開く",
 			"section": "起動",

@@ -6,6 +6,13 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useDateDisplayFormat } from "../../contexts";
+import {
+	type DateDisplayFormat,
+	formatDisplayDate,
+	formatLocalClockTime,
+	parseDisplayDateInput,
+} from "../../lib/dateDisplayFormat";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
@@ -69,16 +76,15 @@ interface NotesInfoSidebarProps {
 	onClose: () => void;
 }
 
-function formatMetadataDate(value: string | null | undefined): string {
+function formatMetadataDate(
+	value: string | null | undefined,
+	dateFormat: DateDisplayFormat,
+): string {
 	if (!value) return "—";
-	const parsed = new Date(value);
-	if (Number.isNaN(parsed.getTime())) return value;
-	return parsed.toLocaleString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
+	const parsed = parseDisplayDateInput(value);
+	if (!parsed) return value;
+	return formatDisplayDate(parsed, dateFormat, {
+		time: formatLocalClockTime(parsed),
 	});
 }
 
@@ -122,6 +128,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	onSelectGitDiff,
 	onClose,
 }: NotesInfoSidebarProps) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const [host, setHost] = useState<HTMLElement | null>(null);
 	const [activeTab, setActiveTab] = useState<InfoSidebarTab>("info");
 	const hasGitHistoryTab =
@@ -408,13 +415,17 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 											lastSavedMtimeMs
 												? new Date(lastSavedMtimeMs).toISOString()
 												: (previewContext?.updated ?? null),
+											dateDisplayFormat,
 										)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">
 									<span>Created</span>
 									<span className="markdownEditorInfoValue">
-										{formatMetadataDate(previewContext?.created)}
+										{formatMetadataDate(
+											previewContext?.created,
+											dateDisplayFormat,
+										)}
 									</span>
 								</div>
 								<div className="markdownEditorInfoRow">

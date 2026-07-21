@@ -1,3 +1,8 @@
+import {
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	type DateDisplayFormat,
+	formatDisplayDate,
+} from "../../../lib/dateDisplayFormat";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 
 /** Keep in sync with `TAG_SEGMENT_PATTERN` / `INLINE_TAG_PATTERN` in `src-tauri/src/index/tags.rs`. */
@@ -20,15 +25,12 @@ export function tagHueFromName(name: string): number {
 	return Math.abs(hash) % 360;
 }
 
-export function formatPropertyDate(value: string): string {
+export function formatPropertyDate(
+	value: string,
+	format: DateDisplayFormat = DEFAULT_DATE_DISPLAY_FORMAT,
+): string {
 	if (!value) return "";
-	const parsed = new Date(value);
-	if (Number.isNaN(parsed.getTime())) return value;
-	return parsed.toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
+	return formatDisplayDate(value, format);
 }
 
 export function emptyProperty(): NoteProperty {

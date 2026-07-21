@@ -10,7 +10,8 @@ Backend:
 
 - `src-tauri/src/databases/types.rs`: database document, view, column, filter, row types
 - `src-tauri/src/databases/store.rs`: `.glyph/databases.json` load/save and default view helpers
-- `src-tauri/src/databases/query.rs`: source selection, filtering, sorting, row hydration
+- `src-tauri/src/databases/query.rs`: source selection, sorting, row hydration
+- `src-tauri/src/databases/filter.rs`: filter operators over hydrated rows
 - `src-tauri/src/databases/commands.rs`: Tauri commands and frontmatter mutations
 - `src-tauri/src/index/properties.rs`: indexed frontmatter property rows
 - `src-tauri/src/notes/frontmatter.rs`: YAML mapping parse/render
@@ -41,6 +42,7 @@ The store shape:
 
 ```rust
 pub struct DatabaseStore {
+    pub version: u32, // currently 1
     pub databases: Vec<DatabaseDefinition>,
     pub status_colors: BTreeMap<String, String>,
 }
@@ -48,7 +50,7 @@ pub struct DatabaseStore {
 
 The store contains collection definitions and view preferences. It does not contain row data. Row data comes from notes and the SQLite index.
 
-There is no store version field and no load-time migration. `load_store()` parses JSON as-is. Unknown JSON fields are ignored by serde.
+`load_store()` parses JSON and then runs `normalize_store_on_load()`, which sets a missing version to 1, normalizes property kinds and schema field defaults, prunes unsupported view layouts, and drops invalid status colors. Unknown JSON fields are ignored by serde.
 
 ## Collections
 
@@ -114,6 +116,7 @@ Users can still change a collection source to `all_notes`, `tag`, or `search` la
 - board lane colors
 - board lane order
 - board card order
+- board card fields
 - timestamps
 
 Unsupported layouts are pruned on `databases_update`. If all views disappear after pruning, the store adds a default board view named `View 1` grouped by `tags`.
@@ -203,7 +206,7 @@ The frontend receives rows with:
 
 ## Filtering
 
-Filters run in Rust over hydrated rows. Supported operators include:
+Filters run in Rust over hydrated rows in `filter.rs`. Supported operators include:
 
 - equals
 - not_equals
@@ -403,7 +406,7 @@ When changing databases:
 
 1. Decide whether the data belongs in note frontmatter or `.glyph/databases.json`.
 2. Update Rust types and TypeScript IPC types together.
-3. Use a hard cutover for store shape changes. Do not add version fields or load-time migration.
+3. Use a hard cutover for store shape changes. Bump the `version` field and normalize on load in `normalize_store_on_load()`; do not keep backward-compatibility shims.
 4. Keep row content derived from Markdown and index rows.
 5. Use `db_store_mutex()` for store writes.
 6. Use atomic writes for store saves and note writes.

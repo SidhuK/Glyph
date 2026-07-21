@@ -21,10 +21,18 @@ import {
 } from "date-fns";
 import { useReducedMotion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { useFileTreeContext, useUILayoutContext } from "../../contexts";
+import {
+	useDateDisplayFormat,
+	useFileTreeContext,
+	useUILayoutContext,
+} from "../../contexts";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { getDailyNotePath } from "../../lib/dailyNotes";
+import {
+	type DateDisplayFormat,
+	formatDisplayDate,
+} from "../../lib/dateDisplayFormat";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
 	allDocsListQueryOptions,
@@ -88,12 +96,16 @@ function dateKey(date: Date): string {
 	return format(date, "yyyy-MM-dd");
 }
 
-function dayLabel(date: Date): string {
+function dayLabel(date: Date, dateFormat: DateDisplayFormat): string {
 	const today = startOfDay(new Date());
 	const yesterday = subDays(today, 1);
 	if (isSameDay(date, today)) return "Today";
 	if (isSameDay(date, yesterday)) return "Yesterday";
-	return format(date, isSameYear(date, today) ? "EEEE, MMM d" : "MMM d, yyyy");
+	// Same-year headings omit the year (compact); only complete dates use the preference.
+	if (isSameYear(date, today)) {
+		return format(date, "EEEE, MMM d");
+	}
+	return formatDisplayDate(date, dateFormat);
 }
 
 function monthLabel(date: Date): string {
@@ -513,12 +525,13 @@ function ActivityFeed({
 }
 
 function ActivityDayHeaderRow({ day }: { day: ActivityDay }) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	return (
 		<section className="activityDayGroup activityDayHeaderRow">
 			<div className="activityDayRail" aria-hidden="true" />
 			<header className="activityDayHeader">
 				<div>
-					<h2>{dayLabel(day.date)}</h2>
+					<h2>{dayLabel(day.date, dateDisplayFormat)}</h2>
 				</div>
 				<div className="activityDayCounts">
 					<span>

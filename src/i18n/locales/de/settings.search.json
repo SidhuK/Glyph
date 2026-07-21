@@ -106,6 +106,21 @@
 				"translation"
 			]
 		},
+		"general-date-format": {
+			"title": "Datumsformat",
+			"section": "Datum & Uhrzeit",
+			"description": "Lege fest, wie vollständige Daten in Glyph angezeigt werden.",
+			"keywords": [
+				"Datum",
+				"Format",
+				"Kalender",
+				"US",
+				"European",
+				"Friendly",
+				"ISO",
+				"Anzeige"
+			]
+		},
 		"general-resume-last-session": {
 			"title": "Vorherige Tabs öffnen",
 			"section": "Start",

@@ -5,6 +5,7 @@ import type {
 	AppLanguage,
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
+	DateDisplayFormat,
 	EditorWidthMode,
 	FileTreeSortMode,
 	FocusMode,
@@ -86,6 +87,7 @@ type TauriEventMap = {
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			language?: AppLanguage;
+			dateDisplayFormat?: DateDisplayFormat;
 		};
 		dailyNotes?: {
 			folder?: string | null;

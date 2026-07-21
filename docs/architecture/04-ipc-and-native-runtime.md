@@ -70,17 +70,22 @@ If any of those steps are missing, the failure usually appears at runtime. TypeS
 
 The command map covers these groups:
 
-- App and native shell: app info, windows, menus, vibrancy, fonts
+- App and native shell: app info, windows, menus, vibrancy, fonts, clipboard, print
+- App exit: exit listener registration and confirm-exit flow (`app_confirm_exit`, `app_register_exit_listener`)
 - License: bootstrap, activate, clear local
-- Space lifecycle: create, open, close, onboarding
-- Space filesystem: list, read, write, preview, create, rename, duplicate, delete, link resolution
+- Updater: release channel check (`updater_check_release_channel`)
+- Space lifecycle: create, open, close, onboarding, open in new window (`space_open_window`)
+- Space filesystem: list, read, write, preview, batch reads, create, rename, duplicate, delete, link resolution, pasted image saving
+- External markdown: open, read, write, and close markdown files outside the space in dedicated windows (`external_markdown_*`, `open_external_markdown_path`)
+- Note metadata: frontmatter property parse/render, relationships, local connections (`note_*`)
 - Appearance stores: file tree, tags, pinned files
-- Index: rebuild, search, all docs, calendar, tags, people, tasks, backlinks, graph
-- Databases: list, get, create, update, delete, query rows, mutate cells, create rows, preview context
+- Index: rebuild, sync, search (plain, advanced, parse-and-run), all docs, calendar, tags, people, task summaries, backlinks, space connections
+- Databases: list, get, create, update, delete, query rows, mutate cells, create rows, status colors, preview context
 - Git sync: status, config, run, disconnect
-- AI: profiles, secrets, models, chat, context, history, Codex account
+- Git history: commit list and diffs (`git_history_list`, `git_history_diff`)
+- AI: profiles, secrets, models, chat, context, history, provider support, Codex account and rate limits
 
-Keep command names descriptive. Most existing commands use a module prefix: `space_`, `index_`, `databases_`, `ai_`, `codex_`, `git_sync_`.
+Keep command names descriptive. Most existing commands use a module prefix: `space_`, `index_`-style index names, `databases_`, `ai_`, `codex_`, `git_sync_`, `git_history_`, `external_markdown_`.
 
 ## Tauri Builder
 
@@ -102,6 +107,8 @@ Managed state:
 - `ai_codex::state::CodexState`
 - `git_sync::GitSyncState`
 - `space::SpaceState`
+- `app_exit::AppExitState`
+- `external_markdown::ExternalMarkdownState`
 - `MenuState`
 - `QuickNoteShortcutState`
 
@@ -109,7 +116,6 @@ Plugins:
 
 - global shortcut
 - dialog
-- notification
 - opener
 - process
 - store
@@ -134,7 +140,7 @@ This keeps native menus, keyboard shortcuts, and command palette behavior aligne
 - find default bindings
 - convert shortcut strings into native accelerators
 
-`set_menu_shortcuts` lets React push updated shortcut bindings into the native menu after settings load or change.
+`set_menu_shortcuts` lets React push updated shortcut bindings into the native menu after settings load or change. `set_menu_labels` does the same for translated menu labels when the UI language setting changes.
 
 When adding a user-configurable command:
 
@@ -157,16 +163,18 @@ The shell should update this only from active tab state, not from arbitrary file
 
 ## Windows
 
-`src-tauri/src/lib.rs` owns native windows:
+`src-tauri/src/lib.rs` owns native windows. Window labels live in `src/lib/windowLabels.ts`:
 
-- Main window
-- Settings window behavior when present
-- Quick note window
+- Main window (`main`)
+- Per-space windows (`space-` prefix) created through `space_open_window`
+- Quick note window (`quick-note`)
+- External markdown windows (`external-markdown-` prefix)
+- Settings and quick-task windows when present
 
 Close behavior:
 
-- Settings window close requests hide the window.
-- Quick note window close requests hide the window.
+- Settings, quick note, and quick-task window close requests hide the window.
+- External markdown windows emit `external-markdown:close_requested` so the frontend can flush unsaved content before `external_markdown_finish_close`.
 - On macOS, closing the main window hides it instead of exiting the app.
 
 Quick note window helpers:
@@ -189,7 +197,7 @@ The shortcut emits a native action that opens the quick note window. Keep this p
 During setup, Rust:
 
 - refreshes AI provider support metadata in the background
-- sizes and centers the main window to 80 percent of the current monitor
+- restores persisted main window geometry through `window_geometry`, falling back to 80 percent of the current monitor on first launch
 - applies macOS vibrancy when available
 
 Frontend startup then hydrates settings and space state. Do not assume React settings are available in Rust setup unless you pass them through a command later.
@@ -203,14 +211,17 @@ Backend-to-frontend events include:
 - `space:fs_changed`
 - `notes:external_changed`
 - `settings:updated`
+- `index:progress`
 - `ai:chunk`
 - `ai:done`
 - `ai:error`
 - `ai:status`
 - `ai:tool`
 - `ai:profiles-updated`
+- `codex:chunk`, `codex:done`, `codex:error`, `codex:status`, `codex:tool`
 - `git_sync:status`
 - `quick-note:open_note`
+- `external-markdown:close_requested`
 
 Use events for state changes that multiple frontend areas need to react to. Use command return values for direct request/response work.
 
