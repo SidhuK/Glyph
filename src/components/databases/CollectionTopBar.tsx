@@ -158,12 +158,8 @@ export function CollectionTopBar({
 						className="databasesTopActionButton databasePinButton"
 						data-pinned={isPinned ? "true" : "false"}
 						onClick={() => void doc.setDatabasePinned(!isPinned)}
-						title={t(
-							isPinned ? "collections.unpin" : "collections.pin",
-						)}
-						aria-label={t(
-							isPinned ? "collections.unpin" : "collections.pin",
-						)}
+						title={t(isPinned ? "collections.unpin" : "collections.pin")}
+						aria-label={t(isPinned ? "collections.unpin" : "collections.pin")}
 						aria-pressed={isPinned}
 					>
 						<HugeiconsIcon
