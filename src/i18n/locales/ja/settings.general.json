@@ -15,6 +15,15 @@
 		"ariaLabel": "言語",
 		"communityNotice": "翻訳はコミュニティによる貢献であり、不完全な場合があります。質問や改善案は <discord>Discord に参加</discord>してください。"
 	},
+	"dateTime": {
+		"sectionTitle": "日付と時刻",
+		"sectionDescription": "Glyph 全体での完全な日付の表示方法を選びます。",
+		"dateFormat": {
+			"label": "日付形式",
+			"description": "ノート、メタデータ、データベース、履歴の完全な日付にすぐ反映されます。",
+			"ariaLabel": "日付形式"
+		}
+	},
 	"startup": {
 		"sectionTitle": "起動",
 		"sectionDescription": "Glyph 起動時に開く内容を選択します。",

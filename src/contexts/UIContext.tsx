@@ -17,6 +17,11 @@ import {
 } from "../components/folio/folioScopes";
 import type { SettingsTab } from "../components/settings/settingsConfig";
 import {
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	type DateDisplayFormat,
+	isDateDisplayFormat,
+} from "../lib/dateDisplayFormat";
+import {
 	type AiAssistantMode,
 	loadSettings,
 	reloadFromDisk,
@@ -64,6 +69,9 @@ interface AISidebarContextValue {
 
 const UILayoutContext = createContext<UILayoutContextValue | null>(null);
 const AISidebarContext = createContext<AISidebarContextValue | null>(null);
+const DateDisplayFormatContext = createContext<DateDisplayFormat>(
+	DEFAULT_DATE_DISPLAY_FORMAT,
+);
 
 type UIState = {
 	sidebarCollapsed: boolean;
@@ -82,6 +90,7 @@ type UIState = {
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiAssistantMode: AiAssistantMode;
+	dateDisplayFormat: DateDisplayFormat;
 };
 
 type UIAction =
@@ -99,6 +108,7 @@ type UIAction =
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
+	| { type: "setDateDisplayFormat"; value: DateDisplayFormat }
 	| { type: "openSettings"; tab?: SettingsTab }
 	| { type: "closeSettings" }
 	| { type: "setSettingsTab"; value: SettingsTab }
@@ -112,6 +122,7 @@ type UIAction =
 			dailyNoteTemplatePath: string | null;
 			showToc: boolean;
 			folioMode: boolean;
+			dateDisplayFormat: DateDisplayFormat;
 	  };
 
 const initialUIState: UIState = {
@@ -131,6 +142,7 @@ const initialUIState: UIState = {
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiAssistantMode: "create",
+	dateDisplayFormat: DEFAULT_DATE_DISPLAY_FORMAT,
 };
 
 function uiReducer(state: UIState, action: UIAction): UIState {
@@ -184,6 +196,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			};
 		case "setAiAssistantMode":
 			return { ...state, aiAssistantMode: action.value };
+		case "setDateDisplayFormat":
+			return { ...state, dateDisplayFormat: action.value };
 		case "openSettings":
 			return {
 				...state,
@@ -217,6 +231,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
 				showToc: action.showToc,
 				folioMode: action.folioMode,
+				dateDisplayFormat: action.dateDisplayFormat,
 			};
 		default:
 			return state;
@@ -244,6 +259,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		aiEnabled,
 		aiPanelOpen,
 		aiAssistantMode,
+		dateDisplayFormat,
 	} = state;
 
 	useEffect(() => {
@@ -268,6 +284,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextFolioMode = payload.ui?.folioMode;
 		if (typeof nextFolioMode === "boolean") {
 			dispatch({ type: "setFolioMode", value: nextFolioMode });
+		}
+		if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
+			dispatch({
+				type: "setDateDisplayFormat",
+				value: payload.ui.dateDisplayFormat,
+			});
 		}
 		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
 			dispatch({
@@ -304,6 +326,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
 					showToc: s.ui.showToc,
 					folioMode: s.ui.folioMode,
+					dateDisplayFormat: s.ui.dateDisplayFormat,
 				});
 			} catch {
 				// best-effort settings hydration
@@ -504,7 +527,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	return (
 		<UILayoutContext.Provider value={layoutValue}>
 			<AISidebarContext.Provider value={aiSidebarValue}>
-				{children}
+				<DateDisplayFormatContext.Provider value={dateDisplayFormat}>
+					{children}
+				</DateDisplayFormatContext.Provider>
 			</AISidebarContext.Provider>
 		</UILayoutContext.Provider>
 	);
@@ -522,4 +547,9 @@ export function useAISidebarContext(): AISidebarContextValue {
 	if (!ctx)
 		throw new Error("useAISidebarContext must be used within UIProvider");
 	return ctx;
+}
+
+/** Current global complete-date display format (defaults to Friendly outside provider). */
+export function useDateDisplayFormat(): DateDisplayFormat {
+	return useContext(DateDisplayFormatContext);
 }

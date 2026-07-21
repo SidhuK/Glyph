@@ -1,6 +1,13 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	type DateDisplayFormat,
+	formatDisplayDate,
+	formatLocalClockTime,
+	parseDisplayDateInput,
+} from "./dateDisplayFormat";
+import {
 	type LicenseActivateResult,
 	type LicenseStatus,
 	invoke,
@@ -58,13 +65,16 @@ export function formatTrialRemaining(seconds: number | null): string {
 	return `${days}d ${remHours}h left`;
 }
 
-export function formatLicenseDate(timestampMs: number | null): string {
+export function formatLicenseDate(
+	timestampMs: number | null,
+	format: DateDisplayFormat = DEFAULT_DATE_DISPLAY_FORMAT,
+): string {
 	if (timestampMs == null) return "";
-	try {
-		return new Date(timestampMs).toLocaleString();
-	} catch {
-		return "";
-	}
+	const date = parseDisplayDateInput(timestampMs);
+	if (!date) return "";
+	return formatDisplayDate(date, format, {
+		time: formatLocalClockTime(date),
+	});
 }
 
 export function useLicenseStatus(reloadOnWindowFocus = true): {

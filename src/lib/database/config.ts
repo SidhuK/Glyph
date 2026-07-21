@@ -1,4 +1,11 @@
 import { parentDir } from "../../utils/path";
+import {
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	type DateDisplayFormat,
+	formatDatabaseClockTime,
+	formatDisplayDate,
+	parseDisplayDateInput,
+} from "../dateDisplayFormat";
 import { defaultDatabaseColumnIconName } from "./columnIcons";
 import type {
 	DatabaseCellValue,
@@ -95,38 +102,14 @@ export function databaseCellValueFromRow(
 	}
 }
 
-function ordinalSuffix(day: number): string {
-	if (day >= 11 && day <= 13) return "th";
-	switch (day % 10) {
-		case 1:
-			return "st";
-		case 2:
-			return "nd";
-		case 3:
-			return "rd";
-		default:
-			return "th";
-	}
-}
-
 export function formatDatabaseDateTime(
 	value: string | null | undefined,
+	format: DateDisplayFormat = DEFAULT_DATE_DISPLAY_FORMAT,
 ): string {
 	if (!value) return "";
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return value;
-
-	const month = date.toLocaleString("en-US", { month: "long" });
-	const day = date.getDate();
-	const year = date.getFullYear();
-	const time = date
-		.toLocaleString("en-US", {
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: true,
-		})
-		.toLowerCase()
-		.replace(" ", " ");
-
-	return `${month} ${day}${ordinalSuffix(day)}, ${year}, ${time}`;
+	const date = parseDisplayDateInput(value);
+	if (!date) return value;
+	return formatDisplayDate(date, format, {
+		time: formatDatabaseClockTime(date),
+	});
 }

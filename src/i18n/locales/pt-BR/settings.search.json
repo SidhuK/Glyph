@@ -106,6 +106,21 @@
 				"translation"
 			]
 		},
+		"general-date-format": {
+			"title": "Formato de data",
+			"section": "Data e hora",
+			"description": "Escolha como as datas completas são exibidas no Glyph.",
+			"keywords": [
+				"data",
+				"formato",
+				"calendário",
+				"US",
+				"European",
+				"Friendly",
+				"ISO",
+				"exibição"
+			]
+		},
 		"general-resume-last-session": {
 			"title": "Abrir abas anteriores",
 			"section": "Inicialização",

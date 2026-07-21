@@ -15,6 +15,15 @@
 		"ariaLabel": "Language",
 		"communityNotice": "Translations are community-contributed and may be incomplete. Questions or improvements? <discord>Join Discord</discord>."
 	},
+	"dateTime": {
+		"sectionTitle": "Date & time",
+		"sectionDescription": "Choose how complete dates appear across Glyph.",
+		"dateFormat": {
+			"label": "Date format",
+			"description": "Applies immediately to complete dates in notes, metadata, databases, and history.",
+			"ariaLabel": "Date format"
+		}
+	},
 	"startup": {
 		"sectionTitle": "Startup",
 		"sectionDescription": "Choose what opens when you start Glyph.",

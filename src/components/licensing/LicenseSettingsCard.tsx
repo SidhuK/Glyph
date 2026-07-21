@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useDateDisplayFormat } from "../../contexts";
 import {
 	activateLicenseKey,
 	clearLocalLicense,
@@ -40,6 +41,7 @@ function statusLabel(status: LicenseStatus): string {
 }
 
 export function LicenseSettingsCard() {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const { status, error, reload } = useLicenseStatus(false);
 	const [licenseKey, setLicenseKey] = useState("");
 	const [actionError, setActionError] = useState("");
@@ -146,7 +148,7 @@ export function LicenseSettingsCard() {
 				<>
 					<SettingsRow label="Activated" interactive={false}>
 						<div className="settingsValue">
-							{formatLicenseDate(status.activated_at_ms)}
+							{formatLicenseDate(status.activated_at_ms, dateDisplayFormat)}
 						</div>
 					</SettingsRow>
 					<SettingsRow label="License key" interactive={false}>

@@ -14,6 +14,10 @@ import {
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import {
+	type DateDisplayFormat,
+	normalizeDateDisplayFormat,
+} from "./dateDisplayFormat";
+import {
 	getSettingsStore,
 	invalidateSettingsCache,
 	loadSettingsEntries,
@@ -56,6 +60,13 @@ export type {
 } from "./themeColors";
 
 export type { AiAssistantMode } from "./tauri";
+export type { DateDisplayFormat } from "./dateDisplayFormat";
+export {
+	DATE_DISPLAY_FORMAT_OPTIONS,
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	isDateDisplayFormat,
+	normalizeDateDisplayFormat,
+} from "./dateDisplayFormat";
 export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 export type { AppLanguage } from "../i18n/locales";
 
@@ -419,6 +430,7 @@ async function emitSettingsUpdated(payload: {
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		language?: AppLanguage;
+		dateDisplayFormat?: DateDisplayFormat;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -499,6 +511,7 @@ interface AppSettings {
 		classicAllNotesByDefault: boolean;
 		resumeLastSession: boolean;
 		aiAssistantMode: AiAssistantMode;
+		dateDisplayFormat: DateDisplayFormat;
 	};
 	dailyNotes: {
 		folder: string | null;
@@ -551,6 +564,7 @@ const KEYS = {
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
 	language: "ui.language",
+	dateDisplayFormat: "ui.dateDisplayFormat",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
@@ -876,6 +890,7 @@ export async function loadSettings(
 	);
 	const rawAiEnabled = getSettingValue<boolean | null>(entries, KEYS.aiEnabled);
 	const rawLanguage = getSettingValue(entries, KEYS.language);
+	const rawDateDisplayFormat = getSettingValue(entries, KEYS.dateDisplayFormat);
 	const rawAiAssistantMode = getSettingValue(entries, KEYS.aiAssistantMode);
 	const rawTheme = getSettingValue(entries, KEYS.theme);
 	const rawAutoUpdateCheckInterval = getSettingValue(
@@ -1008,6 +1023,7 @@ export async function loadSettings(
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
 	const language = normalizeAppLanguage(rawLanguage);
+	const dateDisplayFormat = normalizeDateDisplayFormat(rawDateDisplayFormat);
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
 	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
@@ -1157,6 +1173,7 @@ export async function loadSettings(
 			classicAllNotesByDefault,
 			resumeLastSession,
 			aiAssistantMode,
+			dateDisplayFormat,
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
@@ -1313,6 +1330,16 @@ export async function setLanguage(language: AppLanguage): Promise<void> {
 	await store.set(KEYS.language, normalized);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { language: normalized } });
+}
+
+export async function setDateDisplayFormat(
+	format: DateDisplayFormat,
+): Promise<void> {
+	const store = await getSettingsStore();
+	const next = normalizeDateDisplayFormat(format);
+	await store.set(KEYS.dateDisplayFormat, next);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { dateDisplayFormat: next } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {

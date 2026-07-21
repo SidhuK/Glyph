@@ -39,17 +39,20 @@ Git sync:
 
 Settings include:
 
-- current and recent spaces
-- theme mode, accent, font families, font sizes
-- auto-update check interval
+- current and recent spaces, restore-last-session behavior
+- theme mode, light/dark theme ids, custom theme colors, accent, corner radius style, translucency
+- font families (UI, editor, mono) and font sizes
+- auto-update check interval and release channel
+- UI language (i18n)
 - AI enabled and assistant mode
 - daily notes folder
 - quick notes folder
 - template folder and daily note template
-- task source
+- attachment folder and attachment storage mode
+- date display format
+- editor settings: default editor mode, focus mode, spell check, editor width, raw Markdown Vim mode, frontmatter visibility, collapsible headings, TOC
+- file tree settings: sort mode, folder counts, non-Markdown file visibility, beautiful tags, people mentions
 - database UI settings
-- editor settings
-- file tree settings
 - shortcut bindings
 - onboarding flags
 
@@ -146,12 +149,13 @@ This lets native menus call the same functions as keyboard shortcuts and command
 
 ## Window Runtime
 
-`lib.rs` owns window setup and close behavior:
+`lib.rs` owns window setup and close behavior. Window labels live in `src/lib/windowLabels.ts` (`main`, `space-` prefix, `quick-note`, `external-markdown-` prefix):
 
-- The main window is centered and sized to 80 percent of the current monitor.
+- Main window geometry persists across launches (`window_geometry`); first launch centers at 80 percent of the current monitor.
+- `space_open_window` opens another space in its own `space-` window, so multiple spaces can be open at once.
+- External markdown files open in dedicated `external-markdown-` windows managed by `external_markdown`.
 - macOS vibrancy applies during setup and can change later through command.
-- Settings window close requests hide the window.
-- Quick note window close requests hide the window.
+- Settings, quick note, and quick-task window close requests hide the window.
 - macOS main window close requests hide the window.
 
 Quick note commands:
@@ -270,15 +274,14 @@ Manual Git operations remain the escape hatch for complex conflicts.
 
 It also starts an interval using `status.interval_minutes`, clamped to at least one minute in the frontend and one to 1,440 minutes in the backend.
 
-## Native Notifications
+## Git History
 
-Rust sends notifications for:
+Beyond sync, the backend exposes read-only Git history commands:
 
-- index rebuild complete
-- AI response ready
-- AI request failed
+- `git_history_list`: commits touching a note path (default limit 30)
+- `git_history_diff`: per-file diff for a selected commit
 
-Git sync status uses app events instead of system notifications.
+Both validate the space-relative path and require the repo at the space root. The frontend uses these for note version history and restore flows.
 
 ## Change Checklist
 
