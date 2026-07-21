@@ -8,6 +8,7 @@ export function shouldReloadSummaries(
 		prev.name !== next.name ||
 		prev.icon !== next.icon ||
 		prev.color !== next.color ||
+		prev.pinned !== next.pinned ||
 		prev.views.length !== next.views.length
 	);
 }

@@ -103,6 +103,8 @@ export function CreateCollectionDialog({
 					name.trim() || folderNameFromPath(normalizedFolder),
 				),
 				folder: normalizedFolder,
+				source: null,
+				pinned: false,
 			});
 			onCreated(created);
 			onOpenChange(false);

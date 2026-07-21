@@ -254,6 +254,8 @@ pub fn list_summaries(store: &DatabaseStore) -> Vec<DatabaseSummary> {
             name: database.name.clone(),
             icon: database.icon.clone(),
             color: database.color.clone(),
+            pinned: database.pinned,
+            source: database.source.clone(),
             view_count: database.views.len() as u32,
         })
         .collect::<Vec<_>>();
