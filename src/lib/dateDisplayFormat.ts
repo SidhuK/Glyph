@@ -90,7 +90,9 @@ export function parseDisplayDateInput(
 		const year = Number(dateOnly[1]);
 		const month = Number(dateOnly[2]);
 		const day = Number(dateOnly[3]);
+		// Date(year, …) maps 0–99 → 1900–1999; setFullYear keeps 0000–0099 as-is.
 		const local = new Date(year, month - 1, day);
+		local.setFullYear(year);
 		if (
 			local.getFullYear() !== year ||
 			local.getMonth() !== month - 1 ||
