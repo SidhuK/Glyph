@@ -46,7 +46,7 @@ export function useUnlinkedMentions({
 			setLinkedCount(result.linked_count);
 			setSkippedCount(result.skipped_count);
 			invalidateMentions();
-			if (result.linked_count > 0) onLinked(result);
+			if (result.linked_count > 0) onLinked();
 		},
 	});
 	const linkMention = useCallback(
