@@ -10,7 +10,11 @@ export { useUpdaterContext } from "./UpdaterContext";
 
 export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";
-export { useAISidebarContext, useUILayoutContext } from "./UIContext";
+export {
+	useAISidebarContext,
+	useDateDisplayFormat,
+	useUILayoutContext,
+} from "./UIContext";
 export { useEditorContext, useEditorRegistration } from "./EditorContext";
 export { useGitSyncContext } from "./GitSyncContext";
 

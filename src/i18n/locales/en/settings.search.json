@@ -99,6 +99,22 @@
 			"description": "Choose the display language for Glyph.",
 			"keywords": ["locale", "translation", "i18n", "language"]
 		},
+		"general-date-format": {
+			"title": "Date format",
+			"section": "Date & time",
+			"description": "Choose how complete dates are displayed across Glyph.",
+			"keywords": [
+				"date",
+				"format",
+				"calendar",
+				"US",
+				"European",
+				"Friendly",
+				"ISO",
+				"locale",
+				"display"
+			]
+		},
 		"general-resume-last-session": {
 			"title": "Open previous tabs",
 			"section": "Startup",

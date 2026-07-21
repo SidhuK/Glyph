@@ -14,10 +14,23 @@ const { useLicenseStatusMock, useTauriEventMock } = vi.hoisted(() => ({
 vi.mock("../../lib/settings", () => ({
 	isFocusMode: (value: unknown) =>
 		value === "off" || value === "paragraph" || value === "sentence",
+	DATE_DISPLAY_FORMAT_OPTIONS: [
+		{ value: "us", label: "US — 08/23/2026" },
+		{ value: "european", label: "European — 23/08/2026" },
+		{ value: "friendly", label: "Friendly — August 23, 2026" },
+		{ value: "iso", label: "ISO — 2026-08-23" },
+	],
+	DEFAULT_DATE_DISPLAY_FORMAT: "friendly",
+	isDateDisplayFormat: (value: unknown) =>
+		value === "us" ||
+		value === "european" ||
+		value === "friendly" ||
+		value === "iso",
 	loadSettings: vi.fn(() =>
 		Promise.resolve({
 			ui: {
 				language: "en",
+				dateDisplayFormat: "friendly",
 				resumeLastSession: false,
 				showToc: true,
 				showFileTreeFolderCounts: false,
@@ -34,6 +47,7 @@ vi.mock("../../lib/settings", () => ({
 		}),
 	),
 	setLanguage: vi.fn(() => Promise.resolve()),
+	setDateDisplayFormat: vi.fn(() => Promise.resolve()),
 	setResumeLastSession: vi.fn(() => Promise.resolve()),
 	setShowToc: vi.fn(() => Promise.resolve()),
 	setEditorShowFrontmatterInEditor: vi.fn(() => Promise.resolve()),

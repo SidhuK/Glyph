@@ -11,9 +11,14 @@ import {
 } from "../../lib/editorMode";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
+	DATE_DISPLAY_FORMAT_OPTIONS,
+	DEFAULT_DATE_DISPLAY_FORMAT,
+	type DateDisplayFormat,
 	type FocusMode,
+	isDateDisplayFormat,
 	isFocusMode,
 	loadSettings,
+	setDateDisplayFormat,
 	setEditorColorfulHeadings,
 	setEditorDefaultEditorMode,
 	setEditorFocusMode,
@@ -85,6 +90,11 @@ export function GeneralSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [error, setError] = useState("");
 	const [language, setLanguageState] = useState<AppLanguage>("en");
+	const dateFormat = useSettingsValue<DateDisplayFormat>(
+		DEFAULT_DATE_DISPLAY_FORMAT,
+		setDateDisplayFormat,
+		setError,
+	);
 	const defaultEditorMode = useSettingsValue<EditorViewMode>(
 		getDefaultEditorViewMode,
 		setEditorDefaultEditorMode,
@@ -146,6 +156,8 @@ export function GeneralSettingsPane() {
 	const setDefaultEditorModeValue = defaultEditorMode.setValue;
 	const setInitialFocusMode = focusMode.setInitialValue;
 	const setFocusModeValue = focusMode.setValue;
+	const setInitialDateFormat = dateFormat.setInitialValue;
+	const setDateFormatValue = dateFormat.setValue;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -154,6 +166,7 @@ export function GeneralSettingsPane() {
 			.then((settings) => {
 				if (cancelled) return;
 				setLanguageState(settings.ui.language);
+				setInitialDateFormat(settings.ui.dateDisplayFormat);
 				setInitialDefaultEditorMode(settings.editor.defaultEditorMode);
 				setInitialFocusMode(settings.editor.focusMode);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
@@ -184,6 +197,7 @@ export function GeneralSettingsPane() {
 		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
 		setNonMarkdownFilesChecked,
+		setInitialDateFormat,
 		setInitialDefaultEditorMode,
 		setInitialFocusMode,
 	]);
@@ -194,6 +208,9 @@ export function GeneralSettingsPane() {
 			(payload) => {
 				if (payload.ui?.language) {
 					setLanguageState(payload.ui.language);
+				}
+				if (isDateDisplayFormat(payload.ui?.dateDisplayFormat)) {
+					setDateFormatValue(payload.ui.dateDisplayFormat);
 				}
 				if (isEditorViewMode(payload.editor?.defaultEditorMode)) {
 					setDefaultEditorModeValue(payload.editor.defaultEditorMode);
@@ -242,6 +259,7 @@ export function GeneralSettingsPane() {
 				setRawMarkdownVimModeChecked,
 				setFolderCountsChecked,
 				setNonMarkdownFilesChecked,
+				setDateFormatValue,
 				setDefaultEditorModeValue,
 				setFocusModeValue,
 			],
@@ -443,6 +461,36 @@ export function GeneralSettingsPane() {
 							{LANGUAGE_OPTIONS.map((option) => (
 								<option key={option.id} value={option.id}>
 									{option.nativeLabel}
+								</option>
+							))}
+						</SettingsSelect>
+					</SettingsRow>
+				</SettingsSection>
+				<SettingsSection
+					title={t("dateTime.sectionTitle")}
+					description={t("dateTime.sectionDescription")}
+				>
+					<SettingsRow
+						title={t("dateTime.dateFormat.label")}
+						label={t("dateTime.dateFormat.label")}
+						description={t("dateTime.dateFormat.description")}
+						htmlFor="settings-date-format-select"
+						interactive={false}
+					>
+						<SettingsSelect
+							id="settings-date-format-select"
+							aria-label={t("dateTime.dateFormat.ariaLabel")}
+							value={dateFormat.value}
+							disabled={dateFormat.isSaving}
+							onChange={(event) => {
+								const next = event.currentTarget.value;
+								if (!isDateDisplayFormat(next)) return;
+								dateFormat.onChange(next);
+							}}
+						>
+							{DATE_DISPLAY_FORMAT_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
 								</option>
 							))}
 						</SettingsSelect>

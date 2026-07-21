@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useFileTreeContext } from "../../contexts";
+import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -8,6 +8,7 @@ import {
 } from "../../lib/database/config";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
+import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	priorityColorKey,
@@ -1108,6 +1109,7 @@ export function DatabaseCell({
 	onRenameTitle,
 	onSave,
 }: DatabaseCellProps) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
@@ -1122,8 +1124,10 @@ export function DatabaseCell({
 	const [editing, setEditing] = useState(false);
 	const displayText =
 		cellValue.kind === "datetime"
-			? formatDatabaseDateTime(cellValue.value_text)
-			: (cellValue.value_text ?? "");
+			? formatDatabaseDateTime(cellValue.value_text, dateDisplayFormat)
+			: cellValue.kind === "date" && cellValue.value_text
+				? formatDisplayDate(cellValue.value_text, dateDisplayFormat)
+				: (cellValue.value_text ?? "");
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],

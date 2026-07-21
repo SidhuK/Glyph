@@ -15,6 +15,15 @@
 		"ariaLabel": "Idioma",
 		"communityNotice": "As traduções são contribuições da comunidade e podem estar incompletas. Dúvidas ou melhorias? <discord>Entre no Discord</discord>."
 	},
+	"dateTime": {
+		"sectionTitle": "Data e hora",
+		"sectionDescription": "Escolha como as datas completas aparecem no Glyph.",
+		"dateFormat": {
+			"label": "Formato de data",
+			"description": "Aplica-se imediatamente às datas completas em notas, metadados, bancos de dados e histórico.",
+			"ariaLabel": "Formato de data"
+		}
+	},
 	"startup": {
 		"sectionTitle": "Inicialização",
 		"sectionDescription": "Escolha o que abre ao iniciar o Glyph.",

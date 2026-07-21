@@ -15,6 +15,15 @@
 		"ariaLabel": "언어",
 		"communityNotice": "번역은 커뮤니티 기여이며 불완전할 수 있습니다. 질문이나 개선 사항이 있나요? <discord>Discord 참여</discord>."
 	},
+	"dateTime": {
+		"sectionTitle": "날짜 및 시간",
+		"sectionDescription": "Glyph 전체에서 완전한 날짜가 표시되는 방식을 선택합니다.",
+		"dateFormat": {
+			"label": "날짜 형식",
+			"description": "노트, 메타데이터, 데이터베이스, 기록의 완전한 날짜에 즉시 적용됩니다.",
+			"ariaLabel": "날짜 형식"
+		}
+	},
 	"startup": {
 		"sectionTitle": "시작",
 		"sectionDescription": "Glyph를 시작할 때 열 내용을 선택합니다.",

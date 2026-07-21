@@ -3,7 +3,7 @@ import { Calendar03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useFileTreeContext } from "../../contexts";
+import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { useSentinelLoadMore } from "../../hooks/useLoadMoreTriggers";
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
@@ -22,6 +22,7 @@ import {
 	formatDatabaseDateTime,
 } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
+import type { DateDisplayFormat } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import {
@@ -159,9 +160,14 @@ function boardCardTextPropertyValues(
 	return values;
 }
 
-function formatCompactBoardDateTime(value: string): string {
+function formatCompactBoardDateTime(
+	value: string,
+	dateFormat: DateDisplayFormat,
+): string {
 	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return formatDatabaseDateTime(value);
+	if (Number.isNaN(date.getTime())) {
+		return formatDatabaseDateTime(value, dateFormat);
+	}
 	const month = date.toLocaleString("en-US", { month: "short" });
 	const day = date.getDate();
 	const time = date
@@ -207,6 +213,7 @@ export function DatabaseBoard({
 		},
 		[boardCardFields],
 	);
+	const dateDisplayFormat = useDateDisplayFormat();
 	const { beautifulTags, itemAppearance, tagAppearance } = useFileTreeContext();
 	const shouldReduceMotion = useReducedMotion();
 	const {
@@ -577,9 +584,13 @@ export function DatabaseBoard({
 												priorityValues.length - maxVisiblePriorities,
 												0,
 											);
-											const updatedLabel = formatDatabaseDateTime(row.updated);
+											const updatedLabel = formatDatabaseDateTime(
+												row.updated,
+												dateDisplayFormat,
+											);
 											const compactUpdatedLabel = formatCompactBoardDateTime(
 												row.updated,
+												dateDisplayFormat,
 											);
 											const taskSummary =
 												taskSummariesByPath?.[row.note_path] ??

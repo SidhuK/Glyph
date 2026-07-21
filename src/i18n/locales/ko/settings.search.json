@@ -99,6 +99,21 @@
 			"description": "Glyph 표시 언어를 선택합니다.",
 			"keywords": ["locale", "번역", "i18n", "언어", "language", "translation"]
 		},
+		"general-date-format": {
+			"title": "날짜 형식",
+			"section": "날짜 및 시간",
+			"description": "Glyph 전체에서 완전한 날짜가 표시되는 방식을 선택합니다.",
+			"keywords": [
+				"날짜",
+				"형식",
+				"달력",
+				"US",
+				"European",
+				"Friendly",
+				"ISO",
+				"표시"
+			]
+		},
 		"general-resume-last-session": {
 			"title": "이전 탭 열기",
 			"section": "시작",

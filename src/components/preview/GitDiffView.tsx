@@ -1,3 +1,9 @@
+import { useDateDisplayFormat } from "../../contexts";
+import {
+	formatDisplayDate,
+	formatLocalClockTime,
+	parseDisplayDateInput,
+} from "../../lib/dateDisplayFormat";
 import type { GitCommitDiff } from "../../lib/tauri";
 
 interface GitDiffViewProps {
@@ -47,20 +53,16 @@ function diffLineDisplay(line: string): DiffLineDisplay {
 	return { kind, marker: "", text: line || " " };
 }
 
-function formatCommitDate(timestampMs: number): string {
-	if (!timestampMs) return "";
-	return new Intl.DateTimeFormat(undefined, {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-	}).format(new Date(timestampMs));
-}
-
 export function GitDiffView({ diff, onBack }: GitDiffViewProps) {
+	const dateDisplayFormat = useDateDisplayFormat();
 	const lines = diff.diff.length ? diff.diff.trimEnd().split("\n") : [];
-	const dateLabel = formatCommitDate(diff.commit.timestamp_ms);
+	const timestampMs = diff.commit.timestamp_ms;
+	const commitDate = timestampMs ? parseDisplayDateInput(timestampMs) : null;
+	const dateLabel = commitDate
+		? formatDisplayDate(commitDate, dateDisplayFormat, {
+				time: formatLocalClockTime(commitDate),
+			})
+		: "";
 
 	return (
 		<div className="gitDiffView">
