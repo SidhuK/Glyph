@@ -120,7 +120,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		[onOpenFile],
 	);
 
-	if (loading || collectionsQuery.isLoading) {
+	if (loading || (pinnedFiles.length === 0 && collectionsQuery.isLoading)) {
 		return (
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
@@ -131,21 +131,11 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		);
 	}
 
-	if (collectionsQuery.error) {
-		return (
-			<section className="allDocsPane">
-				<header className="allDocsHeader">
-					<h1 className="allDocsTitle">{t("pinned.title")}</h1>
-				</header>
-				<div className="databaseLoadingState">
-					{t("pinned.loadFailed")}:{" "}
-					{extractErrorMessage(collectionsQuery.error)}
-				</div>
-			</section>
-		);
-	}
-
-	if (pinnedFiles.length === 0 && pinnedCollections.length === 0) {
+	if (
+		!collectionsQuery.error &&
+		pinnedFiles.length === 0 &&
+		pinnedCollections.length === 0
+	) {
 		return (
 			<section className="allDocsPane">
 				<header className="allDocsHeader">
@@ -162,6 +152,12 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 				<h1 className="allDocsTitle">{t("pinned.title")}</h1>
 			</header>
 			<div className="allDocsSections">
+				{collectionsQuery.error ? (
+					<div className="databaseLoadingState">
+						{t("pinned.loadFailed")}:{" "}
+						{extractErrorMessage(collectionsQuery.error)}
+					</div>
+				) : null}
 				{pinnedCollections.length > 0 ? (
 					<section className="pinnedCollectionsSection">
 						<h2 className="allDocsSectionTitle">{t("pinned.collections")}</h2>

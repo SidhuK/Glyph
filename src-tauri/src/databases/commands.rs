@@ -637,10 +637,17 @@ pub async fn databases_update(
         if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
             return Err("collection name already exists".to_string());
         }
+        if store.databases[index].updated_at != database.updated_at {
+            return Err("collection changed since it was opened".to_string());
+        }
         let mut next = database.clone();
         next.name = normalized_name;
         next.source = normalize_database_source(&root, next.source)?;
-        next.new_note.folder = normalize_new_note_folder(&root, &next.new_note.folder)?;
+        next.new_note.folder = if next.source.kind == "folder" {
+            next.source.value.clone()
+        } else {
+            normalize_new_note_folder(&root, &next.new_note.folder)?
+        };
         prune_unsupported_database_view_layouts(&mut next);
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();

@@ -1,14 +1,14 @@
 import { cn } from "@/lib/utils";
 import { StarIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { nextCollectionName } from "../../lib/database/collection";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	invalidateDatabaseSummariesPrefetch,
-	prefetchDatabaseSummaries,
+	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -106,10 +106,15 @@ export function CommandPalette({
 	const itemCount =
 		activeTab === "commands" ? filtered.length : searchItems.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
+	const databaseSummaries = useQuery({
+		queryKey: [...navigationQueryKeys.databaseSummaries(), spacePath],
+		queryFn: () => invoke("databases_list"),
+		enabled: open && activeTab === "search" && canSearch,
+	});
 	const saveSearch = useMutation({
 		mutationFn: async (rawQuery: string) => {
 			const trimmed = rawQuery.trim();
-			const summaries = await prefetchDatabaseSummaries();
+			const summaries = await invoke("databases_list");
 			const baseName =
 				trimmed.length > 56 ? `${trimmed.slice(0, 53)}…` : trimmed;
 			return invoke("databases_create", {
@@ -129,9 +134,12 @@ export function CommandPalette({
 			});
 		},
 	});
-	const isCurrentSearchSaved =
-		saveSearch.data?.database.source.kind === "search" &&
-		saveSearch.data.database.source.value === query.trim();
+	const normalizedQuery = query.trim();
+	const isCurrentSearchSaved = databaseSummaries.data?.some(
+		(collection) =>
+			collection.source.kind === "search" &&
+			collection.source.value === normalizedQuery,
+	);
 
 	const switchTab = useCallback(
 		(tab: Tab) => {

@@ -9,6 +9,9 @@ export function shouldReloadSummaries(
 		prev.icon !== next.icon ||
 		prev.color !== next.color ||
 		prev.pinned !== next.pinned ||
-		prev.views.length !== next.views.length
+		prev.views.length !== next.views.length ||
+		prev.source.kind !== next.source.kind ||
+		prev.source.value !== next.source.value ||
+		prev.source.recursive !== next.source.recursive
 	);
 }
