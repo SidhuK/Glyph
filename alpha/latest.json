@@ -1,15 +1,15 @@
 {
-  "version": "0.8.9-alpha.6",
-  "notes": "## What's Changed\n* Add a global date display format preference by @SidhuK in https://github.com/SidhuK/Glyph/pull/409\n* Prevent startup session restore from overriding navigation (#410) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/410\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.9-alpha.5...v0.8.9-alpha.6",
-  "pub_date": "2026-07-21T08:45:00.859Z",
+  "version": "0.8.9-alpha.7",
+  "notes": "## What's Changed\n* Add pinned collections and saved searches (#413) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/413\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.9-alpha.6...v0.8.9-alpha.7",
+  "pub_date": "2026-07-21T13:49:14.906Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdMSnBiRmVZUW1uYmFJUVpiZkdzQjhBVC9mUHNwenVHUmhxY0VEVVdld2J6SmpNS09mQ0Q0OEVYMHZ4R0JFdjk3UzdRNUlrMDg4RitTL3JDWkEyR2d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0NjIzNDkzCWZpbGU6R2x5cGguYXBwLnRhci5negpZaUMyTlhoOGxHbWxWOUVKdVNodXJRMUY1MnhIWmN1dWwvNmFEdjkxcTBHaG8zeFViOGpmVm1hVGlCOVlxeGRVWHZrMkhteElwZ1VTVHMvYTFPeHJEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCt6eDBjcmtrTVdDSE55VUcxZzFySmhKeUFpMkJIZ0lCaDV1eEdCU1UzbnoxbHpCb0JVMFZHRDhpM1g2aDJGeGxpMlEycGpnd2VZVC8yZE00Z3ViM2dNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0NjQxNzQ5CWZpbGU6R2x5cGguYXBwLnRhci5negovNDk0MmUxem5ZN1RtOFA1Ym8wRllZeTFNR3R3bTVIaE85a0M3c3VXcXA2RllPaWd3VGFUWlBVWExCdEJNeDdVUTIrUlhPMG1odTJIOHRyVitMWUJEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.7/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDdMSnBiRmVZUW1uYmFJUVpiZkdzQjhBVC9mUHNwenVHUmhxY0VEVVdld2J6SmpNS09mQ0Q0OEVYMHZ4R0JFdjk3UzdRNUlrMDg4RitTL3JDWkEyR2d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0NjIzNDkzCWZpbGU6R2x5cGguYXBwLnRhci5negpZaUMyTlhoOGxHbWxWOUVKdVNodXJRMUY1MnhIWmN1dWwvNmFEdjkxcTBHaG8zeFViOGpmVm1hVGlCOVlxeGRVWHZrMkhteElwZ1VTVHMvYTFPeHJEdz09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.6/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNCt6eDBjcmtrTVdDSE55VUcxZzFySmhKeUFpMkJIZ0lCaDV1eEdCU1UzbnoxbHpCb0JVMFZHRDhpM1g2aDJGeGxpMlEycGpnd2VZVC8yZE00Z3ViM2dNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0NjQxNzQ5CWZpbGU6R2x5cGguYXBwLnRhci5negovNDk0MmUxem5ZN1RtOFA1Ym8wRllZeTFNR3R3bTVIaE85a0M3c3VXcXA2RllPaWd3VGFUWlBVWExCdEJNeDdVUTIrUlhPMG1odTJIOHRyVitMWUJEZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.9-alpha.7/Glyph_aarch64.app.tar.gz"
     }
   }
 }
