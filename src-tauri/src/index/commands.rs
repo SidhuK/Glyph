@@ -21,6 +21,7 @@ use super::types::{
     SearchResult, SpaceConnectionKind, SpaceConnections, SpaceConnectionsEdge,
     SpaceConnectionsNode, SpaceConnectionsTagEdge, SpaceConnectionsTagNode, TagCount,
 };
+use super::unlinked_mentions::{find_unlinked_mentions, UnlinkedMentionsResult};
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
 #[derive(Serialize)]
@@ -652,6 +653,21 @@ pub async fn backlinks(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn unlinked_mentions(
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    note_id: String,
+) -> Result<UnlinkedMentionsResult, String> {
+    let root = state.root_for_window(&window)?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<UnlinkedMentionsResult, String> {
+        let conn = open_db(&root)?;
+        find_unlinked_mentions(&conn, &root, &note_id)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command(rename_all = "snake_case")]

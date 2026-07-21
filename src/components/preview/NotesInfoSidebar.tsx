@@ -6,6 +6,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { useDateDisplayFormat } from "../../contexts";
 import {
 	type DateDisplayFormat,
@@ -13,6 +14,7 @@ import {
 	formatLocalClockTime,
 	parseDisplayDateInput,
 } from "../../lib/dateDisplayFormat";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { canShowGitHistory } from "../../lib/gitSyncUi";
 import {
 	type RelationshipGroup,
@@ -22,6 +24,7 @@ import type {
 	GitCommitDiff,
 	GitSyncStatus,
 	NoteTaskSummary,
+	UnlinkedMention,
 	WorkspaceDatabasePreviewContext,
 } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -47,6 +50,17 @@ interface LinkedNoteItem {
 	kind: "wiki" | "markdown";
 }
 
+interface UnlinkedMentionsSectionProps {
+	mentions: UnlinkedMention[];
+	isLoading: boolean;
+	isLinking: boolean;
+	linkedCount: number;
+	skippedCount: number;
+	error: unknown;
+	onLink: (mention: UnlinkedMention) => void;
+	onLinkAll: () => void;
+}
+
 interface NotesInfoSidebarProps {
 	open: boolean;
 	hasError: boolean;
@@ -63,6 +77,7 @@ interface NotesInfoSidebarProps {
 	tocActiveId: string | null;
 	onSelectHeading: (heading: TOCHeading) => void;
 	backlinks: SidebarBacklinkItem[];
+	unlinkedMentions: UnlinkedMentionsSectionProps;
 	linkedNotes: LinkedNoteItem[];
 	relationshipGroups: RelationshipGroup[];
 	previewContext: WorkspaceDatabasePreviewContext | null;
@@ -74,6 +89,101 @@ interface NotesInfoSidebarProps {
 	selectedGitCommitHash?: string | null;
 	onSelectGitDiff?: (diff: GitCommitDiff) => void;
 	onClose: () => void;
+}
+
+function UnlinkedMentionsSection({
+	mentions,
+	isLoading,
+	isLinking,
+	linkedCount,
+	skippedCount,
+	error,
+	onLink,
+	onLinkAll,
+}: UnlinkedMentionsSectionProps) {
+	const { t } = useTranslation("editor");
+
+	return (
+		<section className="markdownEditorInfoSection">
+			<div className="unlinkedMentionsHeader">
+				<h3 className="markdownEditorInfoSectionLabel">
+					{t("unlinkedMentions.heading", { count: mentions.length })}
+				</h3>
+				{mentions.length > 0 ? (
+					<button
+						type="button"
+						className="unlinkedMentionsLinkAll"
+						onClick={onLinkAll}
+						disabled={isLinking}
+					>
+						{t("unlinkedMentions.linkAll")}
+					</button>
+				) : null}
+			</div>
+			{isLoading ? (
+				<div className="markdownEditorInfoEmpty">
+					{t("unlinkedMentions.loading")}
+				</div>
+			) : null}
+			{error ? (
+				<div className="markdownEditorInfoEmpty">
+					{extractErrorMessage(error)}
+				</div>
+			) : null}
+			{skippedCount > 0 ? (
+				<div className="markdownEditorInfoEmpty">
+					{t("unlinkedMentions.skipped")}
+				</div>
+			) : null}
+			{linkedCount > 0 ? (
+				<div className="markdownEditorInfoEmpty">
+					{t("unlinkedMentions.linked", { count: linkedCount })}
+				</div>
+			) : null}
+			{!isLoading && !error && mentions.length === 0 && skippedCount === 0 ? (
+				<div className="markdownEditorInfoEmpty">
+					{t("unlinkedMentions.empty")}
+				</div>
+			) : null}
+			{mentions.length > 0 ? (
+				<div className="unlinkedMentionsList">
+					{mentions.map((mention) => (
+						<div
+							className="unlinkedMentionItem"
+							key={`${mention.source_id}:${mention.start}`}
+						>
+							<button
+								type="button"
+								className="unlinkedMentionSource"
+								onClick={() =>
+									dispatchWikiLinkClick({
+										raw: `[[${mention.source_id}]]`,
+										target: mention.source_id,
+										alias: null,
+										anchorKind: "none",
+										anchor: null,
+										unresolved: false,
+									})
+								}
+								title={mention.source_id}
+							>
+								{mention.source_title}
+							</button>
+							<p className="unlinkedMentionContext">{mention.context}</p>
+							<button
+								type="button"
+								className="unlinkedMentionLink"
+								onClick={() => onLink(mention)}
+								disabled={isLinking}
+							>
+								{t("unlinkedMentions.link")}
+							</button>
+						</div>
+					))}
+				</div>
+			) : null}
+		</section>
+	);
 }
 
 function formatMetadataDate(
@@ -116,6 +226,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 	tocActiveId,
 	onSelectHeading,
 	backlinks,
+	unlinkedMentions,
 	linkedNotes,
 	relationshipGroups,
 	previewContext,
@@ -307,6 +418,8 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								</div>
 							</section>
 						) : null}
+
+						<UnlinkedMentionsSection {...unlinkedMentions} />
 
 						{relationshipGroups.length > 0 ? (
 							<section className="markdownEditorInfoSection">

@@ -1,8 +1,16 @@
 use serde::Serialize;
-use std::{ffi::OsStr, path::PathBuf};
+use std::{
+    collections::{HashMap, HashSet},
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 use tauri::{Emitter, State, WebviewWindow};
 
-use crate::space::state::mark_recent_local_change;
+use crate::index::unlinked_mentions::{
+    mention_target, replace_mentions, selected_mentions_are_valid, LinkUnlinkedMentionsResult,
+    UnlinkedMention,
+};
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
@@ -15,6 +23,35 @@ struct NoteChangeEvent {
     space_path: String,
     rel_path: String,
     removed: bool,
+}
+
+fn write_text_under_root(
+    root: &Path,
+    recent_local_changes: &RecentLocalChanges,
+    rel: &Path,
+    text: &str,
+) -> Result<TextFileWriteResult, String> {
+    deny_hidden_rel_path(rel)?;
+    let abs = paths::join_under(root, rel)?;
+    if let Some(parent) = abs.parent() {
+        std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+
+    let rel_path = rel.to_string_lossy().to_string();
+    let should_index = rel.extension() == Some(OsStr::new("md"));
+    let bytes = text.as_bytes();
+    if should_index {
+        mark_recent_local_change(recent_local_changes, &rel_path);
+    }
+    io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
+    if should_index {
+        index::index_note(root, &rel_path, text)?;
+    }
+
+    Ok(TextFileWriteResult {
+        etag: etag_for(bytes),
+        mtime_ms: file_mtime_ms(&abs),
+    })
 }
 
 #[tauri::command]
@@ -110,27 +147,7 @@ pub async fn space_write_text(
                     return Err("conflict: on-disk file changed since it was opened".to_string());
                 }
             }
-            if let Some(parent) = abs.parent() {
-                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-            }
-
-            let rel_path = rel.to_string_lossy().to_string();
-            let should_index = rel.extension() == Some(OsStr::new("md"));
-            let bytes = text.into_bytes();
-            if should_index {
-                mark_recent_local_change(&recent_local_changes, &rel_path);
-            }
-            io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
-            if should_index {
-                if let Ok(markdown) = std::str::from_utf8(&bytes) {
-                    let _ = index::index_note(&root, &rel_path, markdown);
-                }
-            }
-
-            Ok(TextFileWriteResult {
-                etag: etag_for(&bytes),
-                mtime_ms: file_mtime_ms(&abs),
-            })
+            write_text_under_root(&root, &recent_local_changes, &rel, &text)
         })
         .await
         .map_err(|e| e.to_string())??;
@@ -144,6 +161,90 @@ pub async fn space_write_text(
             NoteChangeEvent {
                 space_path,
                 rel_path: event_rel_path,
+                removed: false,
+            },
+        );
+    }
+
+    Ok(result)
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn space_link_unlinked_mentions(
+    app: tauri::AppHandle,
+    window: WebviewWindow,
+    state: State<'_, SpaceState>,
+    target_note_id: String,
+    mentions: Vec<UnlinkedMention>,
+) -> Result<LinkUnlinkedMentionsResult, String> {
+    let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let (result, changed_paths) = tauri::async_runtime::spawn_blocking(move || {
+        let conn = index::open_db(&root)?;
+        let target = mention_target(&conn, &target_note_id)?;
+        let mut grouped = HashMap::<String, Vec<UnlinkedMention>>::new();
+        for mention in mentions {
+            grouped
+                .entry(mention.source_id.clone())
+                .or_default()
+                .push(mention);
+        }
+        let mut changed_paths = HashSet::new();
+        let mut linked_count = 0;
+        let mut skipped_count = 0;
+
+        for (source_id, source_mentions) in grouped {
+            let rel = PathBuf::from(&source_id);
+            if rel.extension() != Some(OsStr::new("md")) {
+                skipped_count += source_mentions.len();
+                continue;
+            }
+            deny_hidden_rel_path(&rel)?;
+            let abs = paths::join_under(&root, &rel)?;
+            let markdown = match std::fs::read_to_string(&abs) {
+                Ok(markdown) => markdown,
+                Err(_) => {
+                    skipped_count += source_mentions.len();
+                    continue;
+                }
+            };
+            if !selected_mentions_are_valid(&markdown, &target, &source_mentions) {
+                skipped_count += source_mentions.len();
+                continue;
+            }
+            let next_markdown = match replace_mentions(&markdown, &target, &source_mentions) {
+                Ok(markdown) => markdown,
+                Err(_) => {
+                    skipped_count += source_mentions.len();
+                    continue;
+                }
+            };
+
+            write_text_under_root(&root, &recent_local_changes, &rel, &next_markdown)?;
+            linked_count += source_mentions.len();
+            changed_paths.insert(source_id);
+        }
+
+        Ok::<_, String>((
+            LinkUnlinkedMentionsResult {
+                linked_count,
+                skipped_count,
+            },
+            changed_paths,
+        ))
+    })
+    .await
+    .map_err(|error| error.to_string())??;
+
+    for rel_path in changed_paths {
+        let _ = app.emit_to(
+            &window_label,
+            "notes:external_changed",
+            NoteChangeEvent {
+                space_path: space_path.clone(),
+                rel_path,
                 removed: false,
             },
         );

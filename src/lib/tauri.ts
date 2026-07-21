@@ -376,6 +376,24 @@ export interface BacklinkItem {
 	updated: string;
 }
 
+export interface UnlinkedMention {
+	source_id: string;
+	source_title: string;
+	start: number;
+	end: number;
+	text: string;
+	context: string;
+}
+
+export interface UnlinkedMentionsResult {
+	mentions: UnlinkedMention[];
+}
+
+export interface LinkUnlinkedMentionsResult {
+	linked_count: number;
+	skipped_count: number;
+}
+
 export interface NoteRelationship {
 	from_id: string;
 	field_key: string;
@@ -884,6 +902,10 @@ interface TauriCommands {
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
+	space_link_unlinked_mentions: CommandDef<
+		{ target_note_id: string; mentions: UnlinkedMention[] },
+		LinkUnlinkedMentionsResult
+	>;
 	space_open_or_create_text: CommandDef<
 		{ path: string; text: string },
 		OpenOrCreateTextResult
@@ -1040,6 +1062,7 @@ interface TauriCommands {
 		{ note_id: string; space_path?: string | null },
 		BacklinkItem[]
 	>;
+	unlinked_mentions: CommandDef<{ note_id: string }, UnlinkedMentionsResult>;
 	note_relationships: CommandDef<{ note_id: string }, NoteRelationship[]>;
 	note_local_connections: CommandDef<{ note_id: string }, LocalNoteConnections>;
 	space_connections: CommandDef<void, SpaceConnections>;

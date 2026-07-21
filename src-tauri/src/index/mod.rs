@@ -14,6 +14,7 @@ pub(crate) mod search_advanced;
 mod search_hybrid;
 pub(crate) mod tags;
 mod types;
+pub(crate) mod unlinked_mentions;
 
 pub use db::open_db;
 #[cfg(test)]
