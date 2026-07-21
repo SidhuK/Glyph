@@ -132,6 +132,7 @@ export function useWorkspaceSession({
 			!spacePath ||
 			!settingsLoaded ||
 			resumeLastSession === null ||
+			tabsRevision !== 0 ||
 			restoredSessionSpaceRef.current === spacePath
 		) {
 			return;
@@ -178,6 +179,7 @@ export function useWorkspaceSession({
 		resumeLastSession,
 		settingsLoaded,
 		spacePath,
+		tabsRevision,
 	]);
 
 	useEffect(() => {
