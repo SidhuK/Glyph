@@ -57,6 +57,7 @@ export function useMarkdownDocumentSession({
 	const mountedRef = useRef(true);
 	const saveRequestTokenRef = useRef(0);
 	const autosaveInFlightRef = useRef(false);
+	const autosavePromiseRef = useRef<Promise<boolean> | null>(null);
 	const autosaveQueuedRef = useRef(false);
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
@@ -137,6 +138,7 @@ export function useMarkdownDocumentSession({
 		savedTextRef.current = cached;
 		mtimeRef.current = initialDoc?.mtime_ms ?? null;
 		autosaveInFlightRef.current = false;
+		autosavePromiseRef.current = null;
 		autosaveQueuedRef.current = false;
 		if (externalSyncTimerRef.current !== null) {
 			window.clearTimeout(externalSyncTimerRef.current);
@@ -180,6 +182,7 @@ export function useMarkdownDocumentSession({
 		savedTextRef.current = "";
 		mtimeRef.current = null;
 		autosaveInFlightRef.current = false;
+		autosavePromiseRef.current = null;
 		autosaveQueuedRef.current = false;
 		hasUserEditsRef.current = false;
 		setText("");
@@ -421,7 +424,7 @@ export function useMarkdownDocumentSession({
 		flushPendingEdits();
 		if (autosaveInFlightRef.current) {
 			autosaveQueuedRef.current = true;
-			return false;
+			return autosavePromiseRef.current ?? false;
 		}
 
 		const path = relPath;
@@ -430,21 +433,28 @@ export function useMarkdownDocumentSession({
 
 		autosaveInFlightRef.current = true;
 		setAutosaveBusy(true);
-		const ok = await persistDoc(path, snapshot, sessionId);
-		if (!isCurrentSession(sessionId)) {
+		const autosave = (async () => {
+			const ok = await persistDoc(path, snapshot, sessionId);
+			if (!isCurrentSession(sessionId)) {
+				autosaveInFlightRef.current = false;
+				return ok;
+			}
 			autosaveInFlightRef.current = false;
+			setAutosaveBusy(false);
+			if (autosaveQueuedRef.current) {
+				autosaveQueuedRef.current = false;
+			}
+			if (ok && textRef.current !== savedTextRef.current) {
+				return runAutosave();
+			}
 			return ok;
+		})();
+		autosavePromiseRef.current = autosave;
+		const result = await autosave;
+		if (autosavePromiseRef.current === autosave) {
+			autosavePromiseRef.current = null;
 		}
-		autosaveInFlightRef.current = false;
-		setAutosaveBusy(false);
-		if (autosaveQueuedRef.current) {
-			autosaveQueuedRef.current = false;
-			return runAutosave();
-		}
-		if (ok && textRef.current !== savedTextRef.current) {
-			return runAutosave();
-		}
-		return ok;
+		return result;
 	}, [flushPendingEdits, isCurrentSession, persistDoc, relPath]);
 
 	const saveBeforeExternalMutation = useCallback(async () => {

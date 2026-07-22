@@ -20,6 +20,13 @@ struct MarkdownLine {
     start: usize,
     indent: usize,
     blank: bool,
+    inside_fence: bool,
+}
+
+#[derive(Clone, Copy)]
+struct Fence {
+    marker: char,
+    length: usize,
 }
 
 fn task_line(line: &str) -> Option<(usize, bool, bool, String, Option<String>)> {
@@ -68,13 +75,23 @@ fn marker_date<'a>(line: &'a str, prefix: &str) -> Option<&'a str> {
     valid_date(date).then_some(date)
 }
 
-fn fence_marker(line: &str) -> Option<char> {
+fn fence_marker(line: &str) -> Option<Fence> {
     let trimmed = line.trim_start();
     let marker = trimmed.chars().next()?;
-    if !matches!(marker, '`' | '~') || trimmed.chars().take_while(|ch| *ch == marker).count() < 3 {
+    let length = trimmed.chars().take_while(|ch| *ch == marker).count();
+    if !matches!(marker, '`' | '~') || length < 3 {
         return None;
     }
-    Some(marker)
+    Some(Fence { marker, length })
+}
+
+fn closes_fence(line: &str, fence: Fence) -> bool {
+    let Some(candidate) = fence_marker(line) else {
+        return false;
+    };
+    candidate.marker == fence.marker
+        && candidate.length >= fence.length
+        && line.trim_start()[candidate.length..].trim().is_empty()
 }
 
 pub fn parse_candidates(
@@ -97,21 +114,22 @@ pub fn parse_candidates(
             .chars()
             .take_while(|ch| *ch == ' ' || *ch == '\t')
             .count();
+        let inside_fence = fence.is_some();
         lines.push(MarkdownLine {
             start: offset,
             indent,
             blank: line.trim().is_empty(),
+            inside_fence,
         });
-        if let Some(marker) = fence_marker(line) {
-            if fence == Some(marker) {
+        if let Some(open) = fence {
+            if closes_fence(line, open) {
                 fence = None;
-            } else if fence.is_none() {
-                fence = Some(marker);
             }
             offset += segment.len();
             continue;
         }
-        if fence.is_some() {
+        if let Some(open) = fence_marker(line) {
+            fence = Some(open);
             offset += segment.len();
             continue;
         }
@@ -141,7 +159,7 @@ pub fn parse_candidates(
             .unwrap_or(0);
         let end = lines[first_line + 1..]
             .iter()
-            .find(|line| !line.blank && line.indent <= task.indent)
+            .find(|line| !line.inside_fence && !line.blank && line.indent <= task.indent)
             .map(|line| line.start)
             .unwrap_or(markdown.len());
         next_outer_start = end;
@@ -180,16 +198,14 @@ pub fn mark_moved(block: &str, destination_date: &str) -> Result<String, String>
     for segment in block.split_inclusive('\n') {
         let line = segment.strip_suffix('\n').unwrap_or(segment);
         let line = line.strip_suffix('\r').unwrap_or(line);
-        if let Some(marker) = fence_marker(line) {
-            if fence == Some(marker) {
+        if let Some(open) = fence {
+            if closes_fence(line, open) {
                 fence = None;
-            } else if fence.is_none() {
-                fence = Some(marker);
             }
-        } else if fence.is_none() {
-            if let Some((indent, _, _, _, _)) = task_line(line) {
-                checkbox_offsets.push(offset + indent + 3);
-            }
+        } else if let Some(open) = fence_marker(line) {
+            fence = Some(open);
+        } else if let Some((indent, _, _, _, _)) = task_line(line) {
+            checkbox_offsets.push(offset + indent + 3);
         }
         offset += segment.len();
     }
@@ -261,43 +277,60 @@ fn mark_moved_from(block: &str, original_date: &str) -> String {
 }
 
 fn heading_offset(markdown: &str, heading: &str) -> Option<usize> {
-    markdown
-        .match_indices(heading)
-        .find(|(index, _)| {
-            (*index == 0 || markdown.as_bytes()[index - 1] == b'\n')
-                && markdown
-                    .as_bytes()
-                    .get(index + heading.len())
-                    .is_none_or(|byte| *byte == b'\n' || *byte == b'\r')
-        })
-        .map(|(index, _)| index)
+    lines_outside_fences(markdown)
+        .find(|(_, line)| *line == heading)
+        .map(|(offset, _)| offset)
 }
 
 fn next_h2_offset(markdown: &str, after: usize) -> usize {
-    markdown[after..]
-        .match_indices("\n## ")
-        .next()
-        .map(|(index, _)| after + index + 1)
+    lines_outside_fences(markdown)
+        .find(|(offset, line)| *offset >= after && line.starts_with("## "))
+        .map(|(offset, _)| offset)
         .unwrap_or(markdown.len())
 }
 
 fn divider_offset(markdown: &str, after: usize, before: usize) -> Option<usize> {
-    markdown[after..before]
-        .match_indices("\n---")
-        .find(|(index, _)| {
-            markdown
-                .as_bytes()
-                .get(after + index + 4)
-                .is_none_or(|byte| *byte == b'\n' || *byte == b'\r')
-        })
-        .map(|(index, _)| after + index + 1)
+    lines_outside_fences(markdown)
+        .find(|(offset, line)| *offset >= after && *offset < before && *line == "---")
+        .map(|(offset, _)| offset)
+}
+
+fn lines_outside_fences(markdown: &str) -> impl Iterator<Item = (usize, &str)> {
+    let mut offset = 0usize;
+    let mut fence = None;
+    markdown.split_inclusive('\n').filter_map(move |segment| {
+        let start = offset;
+        offset += segment.len();
+        let without_newline = segment.strip_suffix('\n').unwrap_or(segment);
+        let line = without_newline.strip_suffix('\r').unwrap_or(without_newline);
+        if let Some(open) = fence {
+            if closes_fence(line, open) {
+                fence = None;
+            }
+            return None;
+        }
+        if let Some(open) = fence_marker(line) {
+            fence = Some(open);
+            return None;
+        }
+        Some((start, line))
+    })
 }
 
 fn top_insertion_offset(markdown: &str) -> usize {
     let mut offset = 0usize;
-    if markdown.starts_with("---\n") {
-        if let Some(end) = markdown[4..].find("\n---") {
-            offset = 4 + end + 4;
+    let mut lines = markdown.split_inclusive('\n');
+    if let Some(first) = lines
+        .next()
+        .filter(|line| line.trim_end_matches(['\r', '\n']) == "---")
+    {
+        let mut scanned = first.len();
+        for line in lines {
+            scanned += line.len();
+            if line.trim_end_matches(['\r', '\n']) == "---" {
+                offset = scanned;
+                break;
+            }
         }
     }
     let tail = &markdown[offset..];
@@ -327,5 +360,13 @@ fn insert_at(markdown: &str, offset: usize, addition: &str) -> String {
 }
 
 pub fn valid_date(value: &str) -> bool {
-    chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").is_ok()
+    let bytes = value.as_bytes();
+    bytes.len() == 10
+        && bytes[4] == b'-'
+        && bytes[7] == b'-'
+        && bytes
+            .iter()
+            .enumerate()
+            .all(|(index, byte)| matches!(index, 4 | 7) || byte.is_ascii_digit())
+        && chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d").is_ok()
 }

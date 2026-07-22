@@ -1,6 +1,7 @@
 import { NextWeekIcon, Sun02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../ui/shadcn/button";
@@ -13,6 +14,21 @@ interface CandidateTask {
 	top: number;
 }
 
+const MOVED_TO_DATE_PATTERN = /\bMoved to\s*\[\[\d{4}-\d{2}-\d{2}\]\]/;
+
+function hasMovedMarker(node: ProseMirrorNode): boolean {
+	let markdown = "";
+	node.descendants((child) => {
+		if (child.isText) {
+			markdown += child.text ?? "";
+		} else if (child.type.name === "wikiLink") {
+			const target: unknown = child.attrs.target;
+			if (typeof target === "string") markdown += `[[${target}]]`;
+		}
+	});
+	return MOVED_TO_DATE_PATTERN.test(markdown);
+}
+
 function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 	const positions: number[] = [];
 	editor.state.doc.descendants((node, position) => {
@@ -23,7 +39,7 @@ function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 				unfinished = true;
 			}
 		});
-		if (unfinished && !node.textContent.includes("Moved to ")) {
+		if (unfinished && !hasMovedMarker(node)) {
 			positions.push(position);
 		}
 		return false;

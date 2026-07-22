@@ -99,8 +99,11 @@ pub async fn daily_note_rollover_move(
     destination_initial_text: String,
     items: Vec<RolloverMoveItem>,
 ) -> Result<RolloverMoveResult, String> {
-    if items.is_empty() || !markdown::valid_date(&destination_date) {
+    if items.is_empty() {
         return Err("select at least one rollover candidate".to_string());
+    }
+    if !markdown::valid_date(&destination_date) {
+        return Err("invalid rollover destination date".to_string());
     }
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
@@ -213,25 +216,63 @@ pub async fn daily_note_rollover_move(
         originals.insert(destination_path.clone(), destination_original);
         rewritten.insert(destination_path.clone(), destination_next);
 
+        let absolute_paths = rewritten
+            .keys()
+            .map(|path| {
+                paths::join_under(&root, &PathBuf::from(path))
+                    .map(|absolute| (path.clone(), absolute))
+            })
+            .collect::<Result<BTreeMap<_, _>, _>>()?;
+
         let mut committed = Vec::<String>::new();
         for (path, text) in &rewritten {
-            let abs = paths::join_under(&root, &PathBuf::from(path))?;
-            if let Err(error) = io_atomic::write_atomic(&abs, text.as_bytes()) {
+            let abs = &absolute_paths[path];
+            let persist_result = (|| -> Result<(), String> {
+                let current = match std::fs::read_to_string(abs) {
+                    Ok(value) => Some(value),
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+                    Err(error) => return Err(error.to_string()),
+                };
+                if current.as_ref() != originals[path].as_ref() {
+                    return Err(format!(
+                        "conflict: {path} changed while rollover was being saved"
+                    ));
+                }
+                io_atomic::write_atomic(abs, text.as_bytes())
+                    .map_err(|error| format!("failed to persist rollover: {error}"))
+            })();
+            if let Err(error) = persist_result {
+                let mut rollback_failed = false;
                 for committed_path in committed.iter().rev() {
-                    let committed_abs = paths::join_under(&root, &PathBuf::from(committed_path))?;
-                    match originals
-                        .get(committed_path)
-                        .and_then(|value| value.as_ref())
-                    {
-                        Some(original) => {
-                            let _ = io_atomic::write_atomic(&committed_abs, original.as_bytes());
+                    let committed_abs = &absolute_paths[committed_path];
+                    let rollback_result = match std::fs::read_to_string(committed_abs) {
+                        Ok(current) if Some(&current) == rewritten.get(committed_path) => {
+                            match originals[committed_path].as_ref() {
+                                Some(original) => {
+                                    io_atomic::write_atomic(committed_abs, original.as_bytes())
+                                }
+                                None => std::fs::remove_file(committed_abs),
+                            }
                         }
-                        None => {
-                            let _ = std::fs::remove_file(&committed_abs);
-                        }
+                        Ok(_) => Err(std::io::Error::other(
+                            "file changed again after rollover wrote it",
+                        )),
+                        Err(read_error) => Err(read_error),
+                    };
+                    if let Err(rollback_error) = rollback_result {
+                        rollback_failed = true;
+                        tracing::error!(
+                            note_id = %committed_path,
+                            error = %rollback_error,
+                            "failed to roll back partially persisted rollover"
+                        );
                     }
                 }
-                return Err(format!("failed to persist rollover: {error}"));
+                return Err(if rollback_failed {
+                    format!("{error}; rollback was incomplete")
+                } else {
+                    error
+                });
             }
             committed.push(path.clone());
         }

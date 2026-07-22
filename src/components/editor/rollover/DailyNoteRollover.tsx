@@ -220,11 +220,15 @@ export function DailyNoteRollover({
 			},
 		);
 		if (destination === cancelLabel || destination === "Cancel") return;
+		const target =
+			destination === moveTodayLabel || destination === "Yes"
+				? "today"
+				: destination === moveTomorrowLabel || destination === "No"
+					? "tomorrow"
+					: null;
+		if (!target) return;
 		moveMutation.mutate({
-			target:
-				destination === moveTodayLabel || destination === "Yes"
-					? "today"
-					: "tomorrow",
+			target,
 			candidates: selected,
 		});
 	};
@@ -234,13 +238,20 @@ export function DailyNoteRollover({
 	const taskActions: RolloverTaskActions = {
 		targets: noteDate === today ? ["tomorrow"] : ["today", "tomorrow"],
 		onMoveCandidate: (index, target) => {
+			const candidateId = noteQuery.data?.[index]?.id;
 			void (async () => {
+				if (!candidateId) {
+					await showMoveError(t("rollover.itemChanged"));
+					return;
+				}
 				if (!(await onBeforeReview())) {
 					await showMoveError(t("rollover.saveBeforeMove"));
 					return;
 				}
 				const refreshed = await noteQuery.refetch();
-				const candidate = refreshed.data?.[index];
+				const candidate = refreshed.data?.find(
+					(item) => item.id === candidateId,
+				);
 				if (!candidate) {
 					await showMoveError(t("rollover.itemChanged"));
 					return;
