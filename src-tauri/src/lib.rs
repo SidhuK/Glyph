@@ -6,6 +6,7 @@ mod ai_pi;
 mod ai_rig;
 mod app_exit;
 mod databases;
+mod daily_note_rollover;
 mod external_markdown;
 mod file_tree_appearance;
 mod git_sync;
@@ -1631,6 +1632,8 @@ pub fn run() {
             databases::commands::databases_preview_context,
             databases::commands::databases_status_colors_get,
             databases::commands::databases_status_color_set,
+            daily_note_rollover::commands::daily_note_rollover_candidates,
+            daily_note_rollover::commands::daily_note_rollover_move,
             file_tree_appearance::commands::file_tree_appearance_list,
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,
