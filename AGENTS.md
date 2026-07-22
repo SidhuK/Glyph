@@ -32,7 +32,7 @@ Run the narrowest permitted verification during development and the full permitt
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: Markdown and space metadata in `.glyph/`; derived SQLite index in app support.
 
-Repo extras: internal product and engineering docs live in `docs/`. This is for user only. It is not the source of truth. If you are an AI agent, do not use docs/ folder to understand or work with the code. This is forbidden.  
+Repo extras: internal product and engineering docs live in `docs/`. The docs folder is for human user only. It is not the source of truth. If you are an AI agent, do not use docs/ folder to understand or work with the code. 
 
 ## Frontend Overview (`src/`)
 
