@@ -109,7 +109,11 @@ pub async fn daily_note_rollover_move(
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_changes = state.recent_local_changes_for_window(window.label());
+    let note_mutation_mutex = state.note_mutation_mutex();
     let result = tauri::async_runtime::spawn_blocking(move || {
+        let _note_mutation_guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
         let folder_rel = PathBuf::from(folder);
         deny_hidden_rel_path(&folder_rel)?;
         let destination_rel = PathBuf::from(&destination_path);

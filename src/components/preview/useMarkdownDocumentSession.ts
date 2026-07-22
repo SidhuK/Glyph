@@ -441,8 +441,10 @@ export function useMarkdownDocumentSession({
 			}
 			autosaveInFlightRef.current = false;
 			setAutosaveBusy(false);
-			if (autosaveQueuedRef.current) {
-				autosaveQueuedRef.current = false;
+			const retryQueued = autosaveQueuedRef.current;
+			autosaveQueuedRef.current = false;
+			if (retryQueued && textRef.current !== snapshot) {
+				return runAutosave();
 			}
 			if (ok && textRef.current !== savedTextRef.current) {
 				return runAutosave();
