@@ -36,7 +36,7 @@ fn write_text_under_root(
     let abs = paths::join_under(root, rel)?;
     if let Some(expected) = expected_mtime_ms {
         let actual = file_mtime_ms(&abs);
-        if actual != 0 && actual != expected {
+        if actual == 0 || actual != expected {
             return Err("conflict: on-disk file changed since it was opened".to_string());
         }
     }
