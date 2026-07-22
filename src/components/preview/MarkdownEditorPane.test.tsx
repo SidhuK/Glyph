@@ -117,6 +117,19 @@ vi.mock("./NotesInfoSidebar", () => ({
 		) : null,
 }));
 
+vi.mock("./useUnlinkedMentions", () => ({
+	useUnlinkedMentions: () => ({
+		mentions: [],
+		isLoading: false,
+		isLinking: false,
+		linkedCount: 0,
+		skippedCount: 0,
+		error: null,
+		linkMention: vi.fn(),
+		linkAll: vi.fn(),
+	}),
+}));
+
 vi.mock("@hugeicons/react", () => ({
 	HugeiconsIcon: () => null,
 }));

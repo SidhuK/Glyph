@@ -6,6 +6,15 @@
 		"preview": "Preview",
 		"largeNoteHint": "May be slow on large notes"
 	},
+	"unlinkedMentions": {
+		"heading": "Unlinked mentions ({{count}})",
+		"loading": "Checking unlinked mentions…",
+		"empty": "No unlinked mentions found.",
+		"linked": "Linked {{count}} mention(s).",
+		"skipped": "Some mentions could not be linked because their notes changed. Refresh and try again.",
+		"link": "Link",
+		"linkAll": "Link all"
+	},
 	"ribbon": {
 		"bold": "Bold",
 		"italic": "Italic",

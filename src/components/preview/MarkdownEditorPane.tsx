@@ -54,6 +54,7 @@ import { analyzeNoteInfo } from "./noteInfoAnalysis";
 import { useDeferredTocSource } from "./useDeferredTocSource";
 import { useInternalAnchorNavigation } from "./useInternalAnchorNavigation";
 import { useMarkdownDocumentSession } from "./useMarkdownDocumentSession";
+import { useUnlinkedMentions } from "./useUnlinkedMentions";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -183,6 +184,9 @@ export function MarkdownEditorPane({
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
+	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
+	const activeNoteKeyRef = useRef(activeNoteKey);
+	activeNoteKeyRef.current = activeNoteKey;
 	const { tocSource, handleEditorReady } = useDeferredTocSource();
 	const handleDocumentTextReplaced = useCallback((nextText: string) => {
 		if (infoPanelOpenRef.current) setInfoPanelText(nextText);
@@ -241,10 +245,37 @@ export function MarkdownEditorPane({
 	);
 	const [previewContext, setPreviewContext] =
 		useState<WorkspaceDatabasePreviewContext | null>(null);
+	const [linkRefreshKey, setLinkRefreshKey] = useState(0);
 	const { openSettings, showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const { status: gitSyncStatus } = useGitSyncContext();
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
+	const refreshBacklinks = useCallback(async () => {
+		if (!infoPanelOpen) return;
+		const requestNoteKey = activeNoteKey;
+		try {
+			const backlinks = await invoke("backlinks", {
+				note_id: relPath,
+				space_path: spacePath,
+			});
+			if (requestNoteKey === activeNoteKeyRef.current) {
+				setLinkedMentions(backlinks);
+			}
+		} catch {
+			if (requestNoteKey === activeNoteKeyRef.current) {
+				setLinkedMentions([]);
+			}
+		}
+	}, [activeNoteKey, infoPanelOpen, relPath, spacePath]);
+	const handleUnlinkedMentionsLinked = useCallback(() => {
+		setLinkRefreshKey((key) => key + 1);
+		void refreshBacklinks();
+	}, [refreshBacklinks]);
+	const unlinkedMentions = useUnlinkedMentions({
+		enabled: infoPanelOpen,
+		noteId: relPath,
+		onLinked: handleUnlinkedMentionsLinked,
+	});
 	infoPanelOpenRef.current = infoPanelOpen;
 
 	useEffect(() => {
@@ -253,7 +284,6 @@ export function MarkdownEditorPane({
 	}, [hasSupportedGit, onGitDiffChange]);
 
 	// Reset note-local sidebar state when the active note identity changes.
-	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
 	const [sidebarNoteKey, setSidebarNoteKey] = useState(activeNoteKey);
 	if (sidebarNoteKey !== activeNoteKey) {
 		setSidebarNoteKey(activeNoteKey);
@@ -442,21 +472,8 @@ export function MarkdownEditorPane({
 	}, [infoPanelOpen, relPath, spacePath]);
 
 	useEffect(() => {
-		if (!infoPanelOpen) return;
-		let cancelled = false;
-		void invoke("backlinks", { note_id: relPath, space_path: spacePath })
-			.then((items) => {
-				if (cancelled) return;
-				setLinkedMentions(items);
-			})
-			.catch(() => {
-				if (cancelled) return;
-				setLinkedMentions([]);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [infoPanelOpen, relPath, spacePath]);
+		void refreshBacklinks();
+	}, [refreshBacklinks]);
 
 	useEffect(() => {
 		if (!infoPanelOpen) return;
@@ -626,6 +643,11 @@ export function MarkdownEditorPane({
 				tocActiveId={visibleActiveHeadingId}
 				onSelectHeading={selectVisibleHeading}
 				backlinks={sidebarBacklinks}
+				unlinkedMentions={{
+					...unlinkedMentions,
+					onLink: unlinkedMentions.linkMention,
+					onLinkAll: unlinkedMentions.linkAll,
+				}}
 				linkedNotes={linkedNotes}
 				relationshipGroups={relationshipGroups}
 				previewContext={previewContext}
@@ -644,7 +666,7 @@ export function MarkdownEditorPane({
 				open={localConnectionsOpen}
 				onOpenChange={setLocalConnectionsOpen}
 				noteId={relPath}
-				connectionsRefreshKey={lastSavedMtimeMs ?? 0}
+				connectionsRefreshKey={(lastSavedMtimeMs ?? 0) + linkRefreshKey}
 			/>
 		</section>
 	);

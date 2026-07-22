@@ -774,6 +774,128 @@
 	font-size: calc(var(--text-base) * 0.8);
 }
 
+.unlinkedMentionsHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.unlinkedMentionsHeader .markdownEditorInfoSectionLabel {
+	margin-bottom: 7px;
+}
+
+.unlinkedMentionsToggle {
+	gap: 4px;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+.unlinkedMentionsToggle:hover,
+.unlinkedMentionsToggle:active {
+	background: transparent;
+	color: inherit;
+}
+
+.unlinkedMentionsToggle svg {
+	transition: transform var(--transition-fast);
+}
+
+.unlinkedMentionsToggle svg.is-collapsed {
+	transform: rotate(-90deg);
+}
+
+.unlinkedMentionsLinkAll,
+.unlinkedMentionLink {
+	border: 0;
+	border-radius: var(--radius-4);
+	background: transparent;
+	color: var(--accent-color);
+	font: inherit;
+	font-size: calc(var(--text-base) * 0.82);
+	font-weight: var(--font-medium);
+	cursor: pointer;
+}
+
+.unlinkedMentionsLinkAll:hover,
+.unlinkedMentionLink:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+}
+
+.unlinkedMentionsLinkAll:focus-visible,
+.unlinkedMentionLink:focus-visible,
+.unlinkedMentionSource:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 1px;
+}
+
+.unlinkedMentionsLinkAll:disabled,
+.unlinkedMentionLink:disabled {
+	cursor: default;
+	opacity: 0.5;
+}
+
+.unlinkedMentionsList {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.unlinkedMentionItem {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 3px 8px;
+	padding: 6px 7px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-hover) 52%, transparent);
+}
+
+.unlinkedMentionSource {
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	font-size: calc(var(--text-base) * 0.88);
+	font-weight: var(--font-medium);
+	text-align: left;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.unlinkedMentionSource:hover,
+.unlinkedMentionSource:active {
+	background: transparent;
+	color: var(--text-primary);
+}
+
+.unlinkedMentionLink {
+	align-self: center;
+	padding: 3px 5px;
+}
+
+.unlinkedMentionContext {
+	grid-column: 1 / -1;
+	margin: 0;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.35;
+}
+
 .markdownEditorInfoRelationshipGroup {
 	display: flex;
 	flex-direction: column;
