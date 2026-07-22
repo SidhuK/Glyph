@@ -6,20 +6,18 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 interface UseUnlinkedMentionsOptions {
 	enabled: boolean;
 	noteId: string;
-	refreshKey: number;
 	onLinked: () => void;
 }
 
 export function useUnlinkedMentions({
 	enabled,
 	noteId,
-	refreshKey,
 	onLinked,
 }: UseUnlinkedMentionsOptions) {
 	const queryClient = useQueryClient();
 	const [linkedCount, setLinkedCount] = useState(0);
 	const [skippedCount, setSkippedCount] = useState(0);
-	const queryKey = ["unlinked-mentions", noteId, refreshKey] as const;
+	const queryKey = ["unlinked-mentions", noteId] as const;
 	const invalidateMentions = useCallback(() => {
 		if (!enabled) return;
 		void queryClient.invalidateQueries({ queryKey });

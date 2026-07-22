@@ -274,7 +274,6 @@ export function MarkdownEditorPane({
 	const unlinkedMentions = useUnlinkedMentions({
 		enabled: infoPanelOpen,
 		noteId: relPath,
-		refreshKey: (lastSavedMtimeMs ?? 0) + linkRefreshKey,
 		onLinked: handleUnlinkedMentionsLinked,
 	});
 	infoPanelOpenRef.current = infoPanelOpen;
