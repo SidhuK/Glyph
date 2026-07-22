@@ -419,7 +419,7 @@ export function useMarkdownDocumentSession({
 		}
 	}, [flushPendingEdits, isCurrentSession, persistDoc, relPath]);
 
-	const runAutosave = useCallback(async () => {
+	const runAutosave = useCallback(async (): Promise<boolean> => {
 		const sessionId = documentSessionRef.current;
 		flushPendingEdits();
 		if (autosaveInFlightRef.current) {
@@ -433,7 +433,7 @@ export function useMarkdownDocumentSession({
 
 		autosaveInFlightRef.current = true;
 		setAutosaveBusy(true);
-		const autosave = (async () => {
+		const autosave: Promise<boolean> = (async (): Promise<boolean> => {
 			const ok = await persistDoc(path, snapshot, sessionId);
 			if (!isCurrentSession(sessionId)) {
 				autosaveInFlightRef.current = false;
