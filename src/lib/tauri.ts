@@ -785,6 +785,33 @@ interface CodexRateLimits {
 
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
+export interface RolloverCandidate {
+	id: string;
+	source_path: string;
+	source_date: string;
+	original_date: string;
+	text: string;
+	nested_count: number;
+	unfinished_nested_count: number;
+	start: number;
+	end: number;
+	source_mtime_ms: number;
+}
+
+export interface RolloverMoveItem {
+	id: string;
+	source_path: string;
+	start: number;
+	end: number;
+	source_mtime_ms: number;
+}
+
+export interface RolloverMoveResult {
+	moved_count: number;
+	destination_path: string;
+	changed_paths: string[];
+}
+
 interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	updater_check_release_channel: CommandDef<
@@ -877,6 +904,20 @@ interface TauriCommands {
 	>;
 	space_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	space_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
+	daily_note_rollover_candidates: CommandDef<
+		{ folder: string; before_date: string; source_date?: string | null },
+		RolloverCandidate[]
+	>;
+	daily_note_rollover_move: CommandDef<
+		{
+			folder: string;
+			destination_path: string;
+			destination_date: string;
+			destination_initial_text: string;
+			items: RolloverMoveItem[];
+		},
+		RolloverMoveResult
+	>;
 	space_read_text_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },
 		TextFilePreviewDoc

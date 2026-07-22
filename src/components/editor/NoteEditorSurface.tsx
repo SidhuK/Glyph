@@ -5,6 +5,8 @@ import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { TableInlineControls } from "./TableInlineControls";
+import { RolloverTaskActions } from "./rollover/RolloverTaskActions";
+import type { RolloverTaskActions as RolloverTaskActionsConfig } from "./types";
 import {
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageOptions,
@@ -20,6 +22,8 @@ interface NoteEditorSurfaceProps {
 	colorfulHeadings: boolean;
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
+	hostNode: HTMLDivElement | null;
+	rolloverTaskActions?: RolloverTaskActionsConfig | null;
 
 	tableControls: TableInlineControlsProps | null;
 
@@ -41,6 +45,8 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	colorfulHeadings,
 	canEdit,
 	hostRef,
+	hostNode,
+	rolloverTaskActions,
 	tableControls,
 	codeBlock,
 }: NoteEditorSurfaceProps) {
@@ -65,6 +71,13 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			}
 		>
 			<EditorContent editor={editor} />
+			{canEdit && editor && hostNode && rolloverTaskActions ? (
+				<RolloverTaskActions
+					actions={rolloverTaskActions}
+					editor={editor}
+					host={hostNode}
+				/>
+			) : null}
 			{canEdit && tableControls ? (
 				<TableInlineControls {...tableControls} />
 			) : null}

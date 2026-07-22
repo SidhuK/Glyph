@@ -1,0 +1,16 @@
+.rolloverReviewTrigger {
+	position: absolute;
+	top: var(--space-3);
+	right: max(
+		var(--editor-readable-content-gutter),
+		calc((100% - var(--editor-readable-content-max-width)) / 2)
+	);
+	z-index: 20;
+}
+
+.rolloverTaskActionButtons {
+	position: absolute;
+	display: flex;
+	gap: var(--space-1);
+	transform: translate(-100%, -2px);
+}

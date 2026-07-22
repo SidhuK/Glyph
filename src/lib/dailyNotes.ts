@@ -62,3 +62,24 @@ export function getDailyNotePath(folder: string, date?: string): string {
 export function getDailyNoteContent(date: string): string {
 	return `# ${date}\n`;
 }
+
+export function getDailyNoteDateFromPath(
+	path: string,
+	folder: string,
+): string | null {
+	const normalizedPath = path.replace(/\\/g, "/");
+	const normalizedFolder = folder.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+	const prefix = normalizedFolder ? `${normalizedFolder}/` : "";
+	if (!normalizedPath.startsWith(prefix)) return null;
+	const filename = normalizedPath.slice(prefix.length);
+	if (filename.includes("/")) return null;
+	const date = filename.endsWith(".md") ? filename.slice(0, -3) : "";
+	return parseIsoDate(date) ? date : null;
+}
+
+export function getNextDateString(date: string): string | null {
+	const parsed = parseIsoDate(date);
+	if (!parsed) return null;
+	parsed.setDate(parsed.getDate() + 1);
+	return getTodayDateString(parsed);
+}

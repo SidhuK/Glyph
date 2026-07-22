@@ -447,6 +447,13 @@ export function useMarkdownDocumentSession({
 		return ok;
 	}, [flushPendingEdits, isCurrentSession, persistDoc, relPath]);
 
+	const saveBeforeExternalMutation = useCallback(async () => {
+		flushPendingEdits();
+		if (textRef.current === savedTextRef.current) return true;
+		const saved = await runAutosave();
+		return saved && textRef.current === savedTextRef.current;
+	}, [flushPendingEdits, runAutosave]);
+
 	const isDirty = text !== savedText;
 
 	useEffect(() => {
@@ -529,6 +536,7 @@ export function useMarkdownDocumentSession({
 		onSave,
 		rawEditorRef,
 		runAutosave,
+		saveBeforeExternalMutation,
 		saveLabel,
 		text,
 		textRef,

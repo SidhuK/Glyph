@@ -34,6 +34,7 @@
 @import "./styles/app/26-node-note-overlays.css";
 @import "./styles/app/27-editor-math.css";
 @import "./styles/app/30-markdown-editor-pane.css";
+@import "./styles/app/30-daily-note-rollover.css";
 @import "./styles/app/31-responsive.css";
 @import "./styles/app/32-command-palette.css";
 @import "./styles/app/48-calendar-palette.css";

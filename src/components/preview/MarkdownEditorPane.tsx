@@ -35,6 +35,7 @@ import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import type {
@@ -202,6 +203,7 @@ export function MarkdownEditorPane({
 		onSave,
 		rawEditorRef,
 		runAutosave,
+		saveBeforeExternalMutation,
 		saveLabel,
 		text,
 		textRef,
@@ -602,21 +604,30 @@ export function MarkdownEditorPane({
 								onBack={() => onGitDiffChange?.(null)}
 							/>
 						) : (
-							<NoteInlineEditor
-								markdown={text}
-								relPath={relPath}
+							<DailyNoteRollover
 								mode={mode}
-								enableFocusMode
-								pasteMarkdownBehavior="smart-markdown"
-								onChange={(nextText) => {
-									markUserEdit(nextText);
-								}}
-								onFrontmatterCommit={runAutosave}
-								onEditorReady={handleEditorReady}
-								onRawEditorReady={handleRawEditorReady}
-								onFlushPendingEditsReady={handleRichEditorFlushReady}
-								extractToNoteActions={extractToNoteActions}
-							/>
+								relPath={relPath}
+								onBeforeReview={saveBeforeExternalMutation}
+							>
+								{(rolloverTaskActions) => (
+									<NoteInlineEditor
+										markdown={text}
+										relPath={relPath}
+										mode={mode}
+										enableFocusMode
+										pasteMarkdownBehavior="smart-markdown"
+										onChange={(nextText) => {
+											markUserEdit(nextText);
+										}}
+										onFrontmatterCommit={runAutosave}
+										onEditorReady={handleEditorReady}
+										onRawEditorReady={handleRawEditorReady}
+										onFlushPendingEditsReady={handleRichEditorFlushReady}
+										extractToNoteActions={extractToNoteActions}
+										rolloverTaskActions={rolloverTaskActions}
+									/>
+								)}
+							</DailyNoteRollover>
 						)}
 					</div>
 				</div>
