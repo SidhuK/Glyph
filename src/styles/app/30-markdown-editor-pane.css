@@ -855,9 +855,11 @@
 	padding: 6px 7px;
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-hover) 52%, transparent);
+	text-align: left;
 }
 
 .unlinkedMentionSource {
+	justify-content: flex-start;
 	min-width: 0;
 	padding: 0;
 	border: 0;

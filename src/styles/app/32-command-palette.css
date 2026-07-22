@@ -15,6 +15,7 @@
 
 .commandPalette[data-search-tab="true"] {
 	width: min(840px, calc(100vw - 48px));
+	height: auto;
 }
 
 .commandPaletteHeader {
@@ -31,18 +32,22 @@
 }
 
 .commandPaletteBody[data-with-preview="true"] {
-	flex-direction: row;
-	flex: 1 1 0;
+	--command-palette-preview-width: min(360px, 42%);
+	position: relative;
+	display: block;
+	flex: 0 1 auto;
 	min-height: 0;
 	overflow: hidden;
 }
 
 .commandPalettePreview {
-	flex: 0 0 min(360px, 42%);
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: var(--command-palette-preview-width);
 	min-width: 0;
 	min-height: 0;
-	max-height: 100%;
-	align-self: stretch;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -182,10 +187,10 @@
 }
 
 .commandPaletteList[data-with-preview="true"] {
-	flex: 1 1 0;
+	flex: 0 1 auto;
 	min-width: 0;
-	min-height: 0;
-	max-height: 100%;
+	width: calc(100% - var(--command-palette-preview-width));
+	max-height: min(448px, calc(72vh - 112px));
 }
 
 .commandPaletteList::-webkit-scrollbar {
@@ -448,7 +453,7 @@
 	}
 
 	.commandPaletteBody[data-with-preview="true"] {
-		flex-direction: column;
+		--command-palette-preview-width: 0px;
 	}
 
 	.commandPalettePreview {
