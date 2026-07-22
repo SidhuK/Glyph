@@ -30,9 +30,16 @@ fn write_text_under_root(
     recent_local_changes: &RecentLocalChanges,
     rel: &Path,
     text: &str,
+    expected_mtime_ms: Option<u64>,
 ) -> Result<TextFileWriteResult, String> {
     deny_hidden_rel_path(rel)?;
     let abs = paths::join_under(root, rel)?;
+    if let Some(expected) = expected_mtime_ms {
+        let actual = file_mtime_ms(&abs);
+        if actual != 0 && actual != expected {
+            return Err("conflict: on-disk file changed since it was opened".to_string());
+        }
+    }
     if let Some(parent) = abs.parent() {
         std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     }
@@ -40,12 +47,13 @@ fn write_text_under_root(
     let rel_path = rel.to_string_lossy().to_string();
     let should_index = rel.extension() == Some(OsStr::new("md"));
     let bytes = text.as_bytes();
-    if should_index {
-        mark_recent_local_change(recent_local_changes, &rel_path);
-    }
     io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
     if should_index {
-        index::index_note(root, &rel_path, text)?;
+        if let Err(error) = index::index_note(root, &rel_path, text) {
+            tracing::warn!(note_id = %rel_path, %error, "saved note could not be indexed");
+        } else {
+            mark_recent_local_change(recent_local_changes, &rel_path);
+        }
     }
 
     Ok(TextFileWriteResult {
@@ -140,21 +148,15 @@ pub async fn space_write_text(
         tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
             let rel = PathBuf::from(&path);
             deny_hidden_rel_path(&rel)?;
-            let abs = paths::join_under(&root, &rel)?;
-            if let Some(expected) = base_mtime_ms {
-                let actual = file_mtime_ms(&abs);
-                if actual != 0 && actual != expected {
-                    return Err("conflict: on-disk file changed since it was opened".to_string());
-                }
-            }
-            write_text_under_root(&root, &recent_local_changes, &rel, &text)
+            write_text_under_root(&root, &recent_local_changes, &rel, &text, base_mtime_ms)
         })
         .await
         .map_err(|e| e.to_string())??;
 
     if should_emit_note_change {
         // Local writes are filtered out by the filesystem watcher, so publish the
-        // same note-change event here after the note has been indexed.
+        // same note-change event here. If indexing failed, the unmarked watcher
+        // event retries it without making the saved document appear to fail.
         let _ = app.emit_to(
             window_label,
             "notes:external_changed",
@@ -201,8 +203,15 @@ pub async fn space_link_unlinked_mentions(
                 skipped_count += source_mentions.len();
                 continue;
             }
-            deny_hidden_rel_path(&rel)?;
-            let abs = paths::join_under(&root, &rel)?;
+            if deny_hidden_rel_path(&rel).is_err() {
+                skipped_count += source_mentions.len();
+                continue;
+            }
+            let Ok(abs) = paths::join_under(&root, &rel) else {
+                skipped_count += source_mentions.len();
+                continue;
+            };
+            let source_mtime_before_read = file_mtime_ms(&abs);
             let markdown = match std::fs::read_to_string(&abs) {
                 Ok(markdown) => markdown,
                 Err(_) => {
@@ -210,6 +219,11 @@ pub async fn space_link_unlinked_mentions(
                     continue;
                 }
             };
+            let source_mtime_ms = file_mtime_ms(&abs);
+            if source_mtime_ms != source_mtime_before_read {
+                skipped_count += source_mentions.len();
+                continue;
+            }
             if !selected_mentions_are_valid(&markdown, &target, &source_mentions) {
                 skipped_count += source_mentions.len();
                 continue;
@@ -222,7 +236,18 @@ pub async fn space_link_unlinked_mentions(
                 }
             };
 
-            write_text_under_root(&root, &recent_local_changes, &rel, &next_markdown)?;
+            if write_text_under_root(
+                &root,
+                &recent_local_changes,
+                &rel,
+                &next_markdown,
+                Some(source_mtime_ms),
+            )
+            .is_err()
+            {
+                skipped_count += source_mentions.len();
+                continue;
+            }
             linked_count += source_mentions.len();
             changed_paths.insert(source_id);
         }

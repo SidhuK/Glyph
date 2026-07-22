@@ -65,7 +65,9 @@ pub fn find_unlinked_mentions(
     while let Some(row) = rows.next().map_err(|error| error.to_string())? {
         let source_id: String = row.get(0).map_err(|error| error.to_string())?;
         let source_title: String = row.get(1).map_err(|error| error.to_string())?;
-        let source_path = crate::paths::join_under(space_root, Path::new(&source_id))?;
+        let Ok(source_path) = crate::paths::join_under(space_root, Path::new(&source_id)) else {
+            continue;
+        };
         let Ok(markdown) = std::fs::read_to_string(&source_path) else {
             continue;
         };
@@ -275,10 +277,10 @@ fn find_mentions_in_markdown(
 
 fn wikilink_for_target(target: &UnlinkedMentionTarget) -> Result<String, String> {
     let path = target.id.strip_suffix(".md").unwrap_or(&target.id);
-    if path.contains("[[")
-        || path.contains("]]")
-        || target.title.contains("[[")
-        || target.title.contains("]]")
+    if path.contains('[')
+        || path.contains(']')
+        || target.title.contains('[')
+        || target.title.contains(']')
     {
         return Err("This note title cannot be represented as a wikilink.".to_string());
     }
@@ -313,16 +315,20 @@ fn fenced_and_indented_code_ranges(markdown: &str) -> Vec<Range<usize>> {
     for line in markdown.split_inclusive('\n') {
         let line_end = offset + line.len();
         let trimmed = line.trim_start();
-        if let Some((marker, length)) = fence_marker(trimmed) {
-            match active_fence {
-                Some((open_marker, open_length, start))
-                    if marker == open_marker && length >= open_length =>
-                {
-                    ranges.push(start..line_end);
-                    active_fence = None;
+        let indentation = line.len() - trimmed.len();
+        let indentation_prefix = &line[..indentation];
+        if indentation <= 3 && !indentation_prefix.contains('\t') {
+            if let Some((marker, length)) = fence_marker(trimmed) {
+                match active_fence {
+                    Some((open_marker, open_length, start))
+                        if marker == open_marker && length >= open_length =>
+                    {
+                        ranges.push(start..line_end);
+                        active_fence = None;
+                    }
+                    None => active_fence = Some((marker, length, offset)),
+                    _ => {}
                 }
-                None => active_fence = Some((marker, length, offset)),
-                _ => {}
             }
         } else if active_fence.is_none() && (line.starts_with("    ") || line.starts_with('\t')) {
             ranges.push(offset..line_end);
@@ -416,21 +422,46 @@ fn wikilink_ranges(markdown: &str) -> Vec<Range<usize>> {
 fn markdown_link_ranges(markdown: &str) -> Vec<Range<usize>> {
     let mut ranges = Vec::new();
     let mut cursor = 0;
-    while let Some(relative_start) = markdown[cursor..].find("](") {
-        let close_bracket = cursor + relative_start;
-        let Some(open_bracket) = markdown[..close_bracket].rfind('[') else {
-            cursor = close_bracket + 2;
-            continue;
-        };
-        let Some(relative_end) = markdown[close_bracket + 2..].find(')') else {
+    while let Some(relative_open_bracket) = markdown[cursor..].find('[') {
+        let open_bracket = cursor + relative_open_bracket;
+        let Some(relative_close_bracket) = markdown[open_bracket..].find(']') else {
             break;
         };
+        let close_bracket = open_bracket + relative_close_bracket;
         let start = if open_bracket > 0 && markdown.as_bytes()[open_bracket - 1] == b'!' {
             open_bracket - 1
         } else {
             open_bracket
         };
-        let end = close_bracket + 2 + relative_end + 1;
+        let after_label = close_bracket + 1;
+        let Some(next) = markdown.as_bytes().get(after_label) else {
+            ranges.push(start..after_label);
+            break;
+        };
+        let end = match *next {
+            b'(' => {
+                let Some(relative_end) = markdown[after_label + 1..].find(')') else {
+                    cursor = after_label + 1;
+                    continue;
+                };
+                after_label + 1 + relative_end + 1
+            }
+            b'[' => {
+                let Some(relative_end) = markdown[after_label + 1..].find(']') else {
+                    cursor = after_label + 1;
+                    continue;
+                };
+                after_label + 1 + relative_end + 1
+            }
+            _ => after_label,
+        };
+        if end == after_label && *next != b':' {
+            // A shortcut reference link is indistinguishable from bracketed text
+            // without resolving definitions, so leave bracketed text untouched.
+            ranges.push(start..end);
+            cursor = end;
+            continue;
+        }
         ranges.push(start..end);
         cursor = end;
     }

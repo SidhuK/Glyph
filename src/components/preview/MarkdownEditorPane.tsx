@@ -184,6 +184,9 @@ export function MarkdownEditorPane({
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
+	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
+	const activeNoteKeyRef = useRef(activeNoteKey);
+	activeNoteKeyRef.current = activeNoteKey;
 	const { tocSource, handleEditorReady } = useDeferredTocSource();
 	const handleDocumentTextReplaced = useCallback((nextText: string) => {
 		if (infoPanelOpenRef.current) setInfoPanelText(nextText);
@@ -249,14 +252,21 @@ export function MarkdownEditorPane({
 	const hasSupportedGit = canShowGitHistory(gitSyncStatus);
 	const refreshBacklinks = useCallback(async () => {
 		if (!infoPanelOpen) return;
+		const requestNoteKey = activeNoteKey;
 		try {
-			setLinkedMentions(
-				await invoke("backlinks", { note_id: relPath, space_path: spacePath }),
-			);
+			const backlinks = await invoke("backlinks", {
+				note_id: relPath,
+				space_path: spacePath,
+			});
+			if (requestNoteKey === activeNoteKeyRef.current) {
+				setLinkedMentions(backlinks);
+			}
 		} catch {
-			setLinkedMentions([]);
+			if (requestNoteKey === activeNoteKeyRef.current) {
+				setLinkedMentions([]);
+			}
 		}
-	}, [infoPanelOpen, relPath, spacePath]);
+	}, [activeNoteKey, infoPanelOpen, relPath, spacePath]);
 	const handleUnlinkedMentionsLinked = useCallback(() => {
 		setLinkRefreshKey((key) => key + 1);
 		void refreshBacklinks();
@@ -275,7 +285,6 @@ export function MarkdownEditorPane({
 	}, [hasSupportedGit, onGitDiffChange]);
 
 	// Reset note-local sidebar state when the active note identity changes.
-	const activeNoteKey = `${spacePath ?? ""}\0${relPath}`;
 	const [sidebarNoteKey, setSidebarNoteKey] = useState(activeNoteKey);
 	if (sidebarNoteKey !== activeNoteKey) {
 		setSidebarNoteKey(activeNoteKey);
