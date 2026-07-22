@@ -35,9 +35,9 @@ import { normalizeRelPath } from "../../utils/path";
 import { LocalNoteConnectionsDialog } from "../connections/LocalNoteConnectionsDialog";
 import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
-import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import { useTableOfContents } from "../editor/hooks/useTableOfContents";
 import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
+import { DailyNoteRollover } from "../editor/rollover/DailyNoteRollover";
 import type {
 	ExtractToNoteActions,
 	NoteInlineEditorMode,

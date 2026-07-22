@@ -13,9 +13,9 @@ import {
 	parseIsoDate,
 } from "../../../lib/dailyNotes";
 import { isMissingFileError } from "../../../lib/fsErrors";
-import { toast } from "../../../lib/toast";
 import { type RolloverCandidate, invoke } from "../../../lib/tauri";
 import { renderTemplate } from "../../../lib/templates";
+import { toast } from "../../../lib/toast";
 import { Button } from "../../ui/shadcn/button";
 import {
 	Popover,
@@ -84,7 +84,10 @@ export function DailyNoteRollover({
 			if (!destinationDate) {
 				throw new Error(t("rollover.invalidDailyNote"));
 			}
-			const destinationPath = getDailyNotePath(dailyNotesFolder, destinationDate);
+			const destinationPath = getDailyNotePath(
+				dailyNotesFolder,
+				destinationDate,
+			);
 			let initialText = getDailyNoteContent(destinationDate);
 			if (dailyNoteTemplatePath) {
 				try {

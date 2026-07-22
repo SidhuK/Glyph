@@ -5,8 +5,6 @@ import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { TableInlineControls } from "./TableInlineControls";
-import { RolloverTaskActions } from "./rollover/RolloverTaskActions";
-import type { RolloverTaskActions as RolloverTaskActionsConfig } from "./types";
 import {
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageOptions,
@@ -15,6 +13,8 @@ import type {
 	SelectedCodeBlockState,
 	TableInlineControlsProps,
 } from "./noteEditorOverlayTypes";
+import { RolloverTaskActions } from "./rollover/RolloverTaskActions";
+import type { RolloverTaskActions as RolloverTaskActionsConfig } from "./types";
 
 interface NoteEditorSurfaceProps {
 	editor: Editor | null;

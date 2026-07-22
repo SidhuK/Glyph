@@ -91,9 +91,7 @@ export function RolloverTaskActions({
 					onMouseDown={(event) => event.preventDefault()}
 					onClick={() => actions.onMoveCandidate(active.index, target)}
 				>
-					<HugeiconsIcon
-						icon={target === "today" ? Sun02Icon : NextWeekIcon}
-					/>
+					<HugeiconsIcon icon={target === "today" ? Sun02Icon : NextWeekIcon} />
 				</Button>
 			))}
 		</div>
