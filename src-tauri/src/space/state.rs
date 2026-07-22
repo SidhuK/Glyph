@@ -76,6 +76,7 @@ pub struct SpaceState {
     pub(crate) sessions: Mutex<HashMap<String, SpaceSession>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
+    note_mutation_mutex: Arc<Mutex<()>>,
     pinned_files_mutex: Arc<Mutex<()>>,
 }
 
@@ -86,6 +87,7 @@ impl Default for SpaceState {
             sessions: Mutex::new(HashMap::new()),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
+            note_mutation_mutex: Arc::new(Mutex::new(())),
             pinned_files_mutex: Arc::new(Mutex::new(())),
         }
     }
@@ -203,6 +205,10 @@ impl SpaceState {
 
     pub(crate) fn file_tree_appearance_mutex(&self) -> Arc<Mutex<()>> {
         Arc::clone(&self.file_tree_appearance_mutex)
+    }
+
+    pub(crate) fn note_mutation_mutex(&self) -> Arc<Mutex<()>> {
+        Arc::clone(&self.note_mutation_mutex)
     }
 
     pub(crate) fn pinned_files_mutex(&self) -> Arc<Mutex<()>> {

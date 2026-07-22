@@ -5,6 +5,12 @@ import type { RawMarkdownEditorHandle } from "./raw/types";
 export type NoteInlineEditorMode = EditorViewMode;
 export type NoteInlineEditorChrome = "full" | "minimal";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
+export type RolloverMoveTarget = "today" | "tomorrow";
+
+export interface RolloverTaskActions {
+	targets: RolloverMoveTarget[];
+	onMoveCandidate: (index: number, target: RolloverMoveTarget) => void;
+}
 
 export interface CreateMarkdownFileOptions {
 	openParentDir?: string | null;
@@ -27,6 +33,7 @@ export interface NoteInlineEditorProps {
 	onChange: (nextMarkdown: string) => void;
 	onFrontmatterCommit?: () => void;
 	extractToNoteActions?: ExtractToNoteActions;
+	rolloverTaskActions?: RolloverTaskActions | null;
 	interactive?: boolean;
 	deferHeavyFeatures?: boolean;
 	chrome?: NoteInlineEditorChrome;

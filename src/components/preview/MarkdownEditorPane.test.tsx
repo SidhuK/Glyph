@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
+import { type ReactNode, act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
@@ -80,6 +80,14 @@ vi.mock("../editor/NoteInlineEditor", () => ({
 			Type latest text
 		</button>
 	),
+}));
+
+vi.mock("../editor/rollover/DailyNoteRollover", () => ({
+	DailyNoteRollover: ({
+		children,
+	}: {
+		children: (actions: null) => ReactNode;
+	}) => children(null),
 }));
 
 vi.mock("../editor/FloatingTOC", () => ({

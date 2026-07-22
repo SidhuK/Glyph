@@ -142,10 +142,14 @@ pub async fn space_write_text(
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let note_mutation_mutex = state.note_mutation_mutex();
     let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
     let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
     let result =
         tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
+            let _guard = note_mutation_mutex
+                .lock()
+                .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
             deny_hidden_rel_path(&rel)?;
             write_text_under_root(&root, &recent_local_changes, &rel, &text, base_mtime_ms)
@@ -183,7 +187,11 @@ pub async fn space_link_unlinked_mentions(
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let note_mutation_mutex = state.note_mutation_mutex();
     let (result, changed_paths) = tauri::async_runtime::spawn_blocking(move || {
+        let _guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
         let conn = index::open_db(&root)?;
         let target = mention_target(&conn, &target_note_id)?;
         let mut grouped = HashMap::<String, Vec<UnlinkedMention>>::new();

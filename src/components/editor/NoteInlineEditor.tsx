@@ -171,6 +171,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	onChange,
 	onFrontmatterCommit,
 	extractToNoteActions,
+	rolloverTaskActions,
 }: NoteInlineEditorProps) {
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
@@ -756,6 +757,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						colorfulHeadings={colorfulHeadings}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
+						hostNode={tiptapHostNode}
+						rolloverTaskActions={rolloverTaskActions}
 						tableControls={tableControls}
 						codeBlock={codeBlockControls}
 					/>
