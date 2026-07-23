@@ -24,6 +24,7 @@ import {
 	setEditorFocusMode,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
+	setEditorShowCollapsibleLists,
 	setEditorShowFrontmatterInEditor,
 	setEditorSpellCheck,
 	setLanguage,
@@ -126,6 +127,11 @@ export function GeneralSettingsPane() {
 		setEditorShowCollapsibleHeadings,
 		setError,
 	);
+	const collapsibleLists = useSettingsBoolean(
+		false,
+		setEditorShowCollapsibleLists,
+		setError,
+	);
 	const spellCheck = useSettingsBoolean(true, setEditorSpellCheck, setError);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
@@ -148,6 +154,7 @@ export function GeneralSettingsPane() {
 	const setShowFrontmatterChecked = showFrontmatter.setChecked;
 	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
 	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
+	const setCollapsibleListsChecked = collapsibleLists.setChecked;
 	const setSpellCheckChecked = spellCheck.setChecked;
 	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
@@ -174,6 +181,7 @@ export function GeneralSettingsPane() {
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
 				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
 				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
+				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
 				setSpellCheckChecked(settings.editor.spellCheck);
 				setRawMarkdownVimModeChecked(settings.editor.rawMarkdownVimMode);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
@@ -193,6 +201,7 @@ export function GeneralSettingsPane() {
 		setShowFrontmatterChecked,
 		setColorfulHeadingsChecked,
 		setCollapsibleHeadingsChecked,
+		setCollapsibleListsChecked,
 		setSpellCheckChecked,
 		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
@@ -235,6 +244,10 @@ export function GeneralSettingsPane() {
 					payload.editor?.showCollapsibleHeadings,
 					setCollapsibleHeadingsChecked,
 				);
+				applyIfBoolean(
+					payload.editor?.showCollapsibleLists,
+					setCollapsibleListsChecked,
+				);
 				applyIfBoolean(payload.editor?.spellCheck, setSpellCheckChecked);
 				applyIfBoolean(
 					payload.editor?.rawMarkdownVimMode,
@@ -255,6 +268,7 @@ export function GeneralSettingsPane() {
 				setShowFrontmatterChecked,
 				setColorfulHeadingsChecked,
 				setCollapsibleHeadingsChecked,
+				setCollapsibleListsChecked,
 				setSpellCheckChecked,
 				setRawMarkdownVimModeChecked,
 				setFolderCountsChecked,
@@ -310,6 +324,17 @@ export function GeneralSettingsPane() {
 							disabled={showToc.isSaving}
 							ariaLabel={t("editor.tableOfContents.ariaLabel")}
 							onCheckedChange={showToc.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.collapsibleLists.label")}
+						description={t("editor.collapsibleLists.description")}
+					>
+						<SettingsToggle
+							checked={collapsibleLists.checked}
+							disabled={collapsibleLists.isSaving}
+							ariaLabel={t("editor.collapsibleLists.ariaLabel")}
+							onCheckedChange={collapsibleLists.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

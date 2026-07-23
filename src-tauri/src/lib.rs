@@ -14,6 +14,7 @@ mod glyph_paths;
 mod index;
 mod io_atomic;
 mod license;
+mod list_collapse_state;
 #[cfg(target_os = "macos")]
 mod macos_clipboard;
 #[cfg(target_os = "macos")]
@@ -1638,6 +1639,8 @@ pub fn run() {
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,
             file_tree_appearance::commands::file_tree_appearance_delete_path,
+            list_collapse_state::commands::list_collapse_state_get,
+            list_collapse_state::commands::list_collapse_state_set,
             tag_appearance::commands::tag_appearance_list,
             tag_appearance::commands::tag_appearance_set,
             pinned_files::commands::pinned_files_list,

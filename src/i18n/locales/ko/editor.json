@@ -66,6 +66,10 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "목록 가지 접기",
+		"expandBranch": "목록 가지 펼치기"
+	},
 	"slash": {
 		"heading1": {
 			"title": "제목 1",

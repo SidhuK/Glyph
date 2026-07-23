@@ -66,6 +66,10 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "リストの枝を折りたたむ",
+		"expandBranch": "リストの枝を展開する"
+	},
 	"slash": {
 		"heading1": {
 			"title": "見出し 1",

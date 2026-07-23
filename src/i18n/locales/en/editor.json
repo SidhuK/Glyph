@@ -101,6 +101,12 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "Collapse list branch",
+		"expandBranch": "Expand list branch",
+		"loadFailed": "Could not load list collapse state",
+		"saveFailed": "Could not save list collapse state"
+	},
 	"slash": {
 		"heading1": {
 			"title": "Heading 1",

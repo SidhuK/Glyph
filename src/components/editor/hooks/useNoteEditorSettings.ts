@@ -10,6 +10,7 @@ import { useTauriEvent } from "../../../lib/tauriEvents";
 
 export function useNoteEditorSettings() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [showCollapsibleLists, setShowCollapsibleLists] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
@@ -23,6 +24,7 @@ export function useNoteEditorSettings() {
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setShowCollapsibleLists(settings.editor.showCollapsibleLists);
 				setShowFrontmatterInEditor(
 					settings.editor.showFrontmatterInEditor === true,
 				);
@@ -36,6 +38,7 @@ export function useNoteEditorSettings() {
 			.catch(() => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(false);
+				setShowCollapsibleLists(false);
 				setShowFrontmatterInEditor(false);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
@@ -51,6 +54,9 @@ export function useNoteEditorSettings() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.showCollapsibleLists === "boolean") {
+			setShowCollapsibleLists(payload.editor.showCollapsibleLists);
 		}
 		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
 			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
@@ -79,6 +85,7 @@ export function useNoteEditorSettings() {
 		focusMode,
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
+		showCollapsibleLists,
 		showFrontmatterInEditor,
 	};
 }

@@ -66,6 +66,10 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "Réduire la branche de liste",
+		"expandBranch": "Développer la branche de liste"
+	},
 	"slash": {
 		"heading1": {
 			"title": "Titre 1",

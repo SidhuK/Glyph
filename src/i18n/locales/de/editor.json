@@ -66,6 +66,10 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "Listenast einklappen",
+		"expandBranch": "Listenast ausklappen"
+	},
 	"slash": {
 		"heading1": {
 			"title": "Überschrift 1",

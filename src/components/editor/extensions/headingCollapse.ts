@@ -1,7 +1,13 @@
 import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { Plugin, PluginKey, type Transaction } from "@tiptap/pm/state";
+import { PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
+import {
+	createFoldingPlugin,
+	type FoldingState,
+	type FoldingStateUpdate,
+	type FoldingUpdate,
+} from "./folding";
 
 interface HeadingRange {
 	pos: number;
@@ -10,20 +16,13 @@ interface HeadingRange {
 	nodeSize: number;
 }
 
-interface HeadingCollapseState {
-	enabled: boolean;
-	collapsedPositions: Set<number>;
-	decorations: DecorationSet;
-	headings: HeadingRange[];
-}
-
 type HeadingCollapseMeta =
 	| { type: "toggle"; pos: number }
 	| { type: "expand-ancestors"; pos: number }
 	| { type: "set-enabled"; enabled: boolean }
 	| { type: "set-all-collapsed"; collapsed: boolean };
 
-const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
+const headingCollapsePluginKey = new PluginKey<FoldingState>(
 	"heading-collapse",
 );
 
@@ -195,18 +194,33 @@ function expandAncestorPositions(
 	return next;
 }
 
-function applyMappedPositions(
-	positions: Set<number>,
-	transaction: Transaction,
-): Set<number> {
-	const mapped = new Set<number>();
-	for (const pos of positions) {
-		const result = transaction.mapping.mapResult(pos, -1);
-		if (!result.deleted) {
-			mapped.add(result.pos);
+function reduceHeadingCollapse({
+	collapsedPositions,
+	enabled,
+	meta,
+	ranges,
+}: FoldingUpdate<HeadingRange, HeadingCollapseMeta>): FoldingStateUpdate {
+	let nextPositions = collapsedPositions;
+	if (meta?.type === "toggle") {
+		nextPositions = new Set(collapsedPositions);
+		if (nextPositions.has(meta.pos)) {
+			nextPositions.delete(meta.pos);
+		} else if (ranges.some((heading) => heading.pos === meta.pos)) {
+			nextPositions.add(meta.pos);
 		}
 	}
-	return mapped;
+	if (meta?.type === "expand-ancestors") {
+		nextPositions = expandAncestorPositions(ranges, nextPositions, meta.pos);
+	}
+	if (meta?.type === "set-all-collapsed") {
+		nextPositions = meta.collapsed
+			? new Set(ranges.map((heading) => heading.pos))
+			: new Set<number>();
+	}
+	return {
+		collapsedPositions: nextPositions,
+		enabled: meta?.type === "set-enabled" ? meta.enabled : enabled,
+	};
 }
 
 declare module "@tiptap/core" {
@@ -284,96 +298,13 @@ export const HeadingCollapse = Extension.create({
 	},
 	addProseMirrorPlugins() {
 		return [
-			new Plugin<HeadingCollapseState>({
+			createFoldingPlugin({
+				buildDecorations,
+				extractRanges: extractHeadingRanges,
 				key: headingCollapsePluginKey,
-				state: {
-					init: (_config, state) => {
-						const headings = extractHeadingRanges(state.doc);
-						const collapsedPositions = new Set<number>();
-						return {
-							enabled: false,
-							collapsedPositions,
-							headings,
-							decorations: buildDecorations(
-								state.doc,
-								false,
-								collapsedPositions,
-								headings,
-							),
-						};
-					},
-					apply: (transaction, pluginState, _oldState, newState) => {
-						const meta = transaction.getMeta(
-							headingCollapsePluginKey,
-						) as HeadingCollapseMeta | null;
-						if (
-							!pluginState.enabled &&
-							pluginState.collapsedPositions.size === 0 &&
-							!meta
-						) {
-							return pluginState;
-						}
-						const headings = extractHeadingRanges(newState.doc);
-						const headingPositions = new Set(
-							headings.map((heading) => heading.pos),
-						);
-						let enabled = pluginState.enabled;
-						let collapsedPositions = applyMappedPositions(
-							pluginState.collapsedPositions,
-							transaction,
-						);
-						collapsedPositions = new Set(
-							[...collapsedPositions].filter((pos) =>
-								headingPositions.has(pos),
-							),
-						);
-
-						if (meta?.type === "toggle") {
-							const next = new Set(collapsedPositions);
-							if (next.has(meta.pos)) {
-								next.delete(meta.pos);
-							} else if (headingPositions.has(meta.pos)) {
-								next.add(meta.pos);
-							}
-							collapsedPositions = next;
-						}
-						if (meta?.type === "expand-ancestors") {
-							collapsedPositions = expandAncestorPositions(
-								headings,
-								collapsedPositions,
-								meta.pos,
-							);
-						}
-						if (meta?.type === "set-enabled") {
-							enabled = meta.enabled;
-						}
-						if (meta?.type === "set-all-collapsed") {
-							collapsedPositions = meta.collapsed
-								? new Set(headings.map((heading) => heading.pos))
-								: new Set<number>();
-						}
-
-						return {
-							enabled,
-							collapsedPositions,
-							headings,
-							decorations: buildDecorations(
-								newState.doc,
-								enabled,
-								collapsedPositions,
-								headings,
-							),
-						};
-					},
-				},
-				props: {
-					decorations(state) {
-						return (
-							headingCollapsePluginKey.getState(state)?.decorations ??
-							DecorationSet.empty
-						);
-					},
-				},
+				mappingBias: -1,
+				positionOf: (heading) => heading.pos,
+				reduce: reduceHeadingCollapse,
 			}),
 		];
 	},

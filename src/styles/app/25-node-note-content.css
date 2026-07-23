@@ -574,7 +574,13 @@
 	position: relative;
 }
 
-.tiptapContentInline .headingCollapseHidden {
+.tiptapContentInline .listCollapseAnchor {
+	margin-bottom: 0;
+	position: relative;
+}
+
+.tiptapContentInline .headingCollapseHidden,
+.tiptapContentInline .listCollapseHidden {
 	display: none;
 }
 
@@ -735,6 +741,11 @@
 
 .tiptapContentInline ul ul ul {
 	list-style: square;
+}
+
+.tiptapContentInline li:has(.listCollapseAnchor) > ul,
+.tiptapContentInline li:has(.listCollapseAnchor) > ol {
+	margin-bottom: 0;
 }
 
 .tiptapContentInline ol ol {

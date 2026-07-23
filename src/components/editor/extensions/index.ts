@@ -31,6 +31,7 @@ import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
 import { HtmlEmbedPreview } from "./htmlEmbedPreview";
 import { InlineTableOfContents } from "./inlineTableOfContents";
+import { ListCollapse } from "./listCollapse";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
@@ -618,6 +619,7 @@ interface CreateEditorExtensionsOptions {
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
 	onMathEditRequest?: (request: MathEditRequest) => void;
+	onListCollapseToggle?: (branches: string[]) => void;
 }
 
 export function createEditorExtensions(
@@ -635,7 +637,11 @@ export function createEditorExtensions(
 		currentPathResolver = null,
 		placeholder = null,
 		onMathEditRequest,
+		onListCollapseToggle,
 	} = options ?? {};
+	const listCollapse = onListCollapseToggle
+		? ListCollapse.configure({ onCollapseToggle: onListCollapseToggle })
+		: ListCollapse;
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -678,7 +684,8 @@ export function createEditorExtensions(
 		HtmlEmbedPreview,
 		MermaidPreview,
 		InlineTableOfContents,
-		...(enableEditingExtensions ? [HeadingCollapse] : []),
+		HeadingCollapse,
+		listCollapse,
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

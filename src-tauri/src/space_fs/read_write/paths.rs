@@ -331,6 +331,7 @@ pub async fn space_rename_path(
 ) -> Result<LinkRewriteResult, String> {
     let root = state.root_for_window(&window)?;
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let list_collapse_state_mutex = state.list_collapse_state_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<LinkRewriteResult, String> {
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
@@ -406,6 +407,28 @@ pub async fn space_rename_path(
         } else {
             LinkRewriteResult::default()
         };
+        match list_collapse_state_mutex.lock() {
+            Ok(_guard) => {
+                if let Err(error) = crate::list_collapse_state::store::rename_path(
+                    &root, &from_path, &to_path,
+                ) {
+                    tracing::warn!(
+                        %from_path,
+                        %to_path,
+                        %error,
+                        "failed to update list collapse state after rename"
+                    );
+                }
+            }
+            Err(error) => {
+                tracing::warn!(
+                    %from_path,
+                    %to_path,
+                    %error,
+                    "failed to lock list collapse state after rename"
+                );
+            }
+        }
         Ok(rewrite_result)
     })
     .await
@@ -468,6 +491,7 @@ pub async fn space_delete_path(
 ) -> Result<(), String> {
     let root = state.root_for_window(&window)?;
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let list_collapse_state_mutex = state.list_collapse_state_mutex();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
         if rel.as_os_str().is_empty() {
@@ -476,7 +500,6 @@ pub async fn space_delete_path(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
-        remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
         if meta.is_dir() {
             if recursive.unwrap_or(false) {
                 move_path_to_trash(&abs)
@@ -485,7 +508,27 @@ pub async fn space_delete_path(
             }
         } else {
             move_path_to_trash(&abs)
+        }?;
+        remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
+        match list_collapse_state_mutex.lock() {
+            Ok(_guard) => {
+                if let Err(error) = crate::list_collapse_state::store::delete_path(&root, &path) {
+                    tracing::warn!(
+                        %path,
+                        %error,
+                        "failed to update list collapse state after delete"
+                    );
+                }
+            }
+            Err(error) => {
+                tracing::warn!(
+                    %path,
+                    %error,
+                    "failed to lock list collapse state after delete"
+                );
+            }
         }
+        Ok(())
     })
     .await
     .map_err(|e| e.to_string())?
