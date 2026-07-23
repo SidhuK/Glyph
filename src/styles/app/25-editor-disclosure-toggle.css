@@ -1,4 +1,5 @@
 .tiptapContentInline .headingCollapseToggle,
+.tiptapContentInline .listCollapseToggle,
 .tiptapContentInline div[data-type="details"].detailsBlock > button {
 	display: inline-flex;
 	align-items: center;
@@ -16,12 +17,14 @@
 }
 
 .tiptapContentInline .headingCollapseToggle:hover,
+.tiptapContentInline .listCollapseToggle:hover,
 .tiptapContentInline div[data-type="details"].detailsBlock > button:hover {
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	color: var(--text-secondary);
 }
 
 .tiptapContentInline .headingCollapseToggle:focus-visible,
+.tiptapContentInline .listCollapseToggle:focus-visible,
 .tiptapContentInline
 	div[data-type="details"].detailsBlock
 	> button:focus-visible {
@@ -30,6 +33,7 @@
 }
 
 .tiptapContentInline .headingCollapseChevron,
+.tiptapContentInline .listCollapseChevron,
 .tiptapContentInline div[data-type="details"].detailsBlock > button::before {
 	display: inline-block;
 	width: 6px;
@@ -39,14 +43,21 @@
 	transition: transform 140ms ease;
 }
 
-.tiptapContentInline .headingCollapseChevron {
+.tiptapContentInline .headingCollapseChevron,
+.tiptapContentInline .listCollapseChevron {
 	transform: rotate(45deg) translateY(-1px);
 	transform-origin: 50% 50%;
 }
 
 .tiptapContentInline
-	.headingCollapseHeading[data-heading-collapsed="true"]
+	.headingCollapseToggle[data-collapsed="true"]
 	.headingCollapseChevron {
+	transform: rotate(-45deg) translate(-1px, 1px);
+}
+
+.tiptapContentInline
+	.listCollapseToggle[data-collapsed="true"]
+	.listCollapseChevron {
 	transform: rotate(-45deg) translate(-1px, 1px);
 }
 
@@ -55,6 +66,19 @@
 	top: 50%;
 	left: calc(-1 * var(--space-5));
 	transform: translateY(-50%);
+	transition: color 140ms ease, background-color 140ms ease, transform 140ms
+		ease;
+}
+
+.tiptapContentInline .listCollapseToggle {
+	position: absolute;
+	left: calc(
+		-1 *
+		(var(--space-5) + var(--heading-toggle-rail-width) + var(--space-1))
+	);
+	top: calc((1.68em - var(--heading-toggle-rail-width)) / 2);
+	z-index: 1;
+	transform: none;
 	transition: color 140ms ease, background-color 140ms ease, transform 140ms
 		ease;
 }

@@ -196,6 +196,7 @@ interface QuickNotesSettings {
 
 interface EditorSettings {
 	showCollapsibleHeadings: boolean;
+	showCollapsibleLists: boolean;
 	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
 	beautifulTags: boolean;
@@ -237,6 +238,7 @@ const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 
 const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
+	showCollapsibleLists: false,
 	showFrontmatterInEditor: false,
 	colorfulHeadings: false,
 	beautifulTags: false,
@@ -447,6 +449,7 @@ async function emitSettingsUpdated(payload: {
 	};
 	editor?: {
 		showCollapsibleHeadings?: boolean;
+		showCollapsibleLists?: boolean;
 		showFrontmatterInEditor?: boolean;
 		colorfulHeadings?: boolean;
 		beautifulTags?: boolean;
@@ -591,6 +594,7 @@ const KEYS = {
 	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	resumeLastSession: "ui.resumeLastSession",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
+	editorShowCollapsibleLists: "editor.showCollapsibleLists",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
 	editorBeautifulTags: "editor.beautifulTags",
@@ -947,6 +951,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorShowCollapsibleHeadings,
 	);
+	const rawEditorShowCollapsibleLists = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorShowCollapsibleLists,
+	);
 	const rawEditorShowFrontmatterInEditor = getSettingValue<boolean | null>(
 		entries,
 		KEYS.editorShowFrontmatterInEditor,
@@ -1106,6 +1114,10 @@ export async function loadSettings(
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
 				? rawEditorShowCollapsibleHeadings
 				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
+		showCollapsibleLists:
+			typeof rawEditorShowCollapsibleLists === "boolean"
+				? rawEditorShowCollapsibleLists
+				: DEFAULT_EDITOR_SETTINGS.showCollapsibleLists,
 		showFrontmatterInEditor:
 			typeof rawEditorShowFrontmatterInEditor === "boolean"
 				? rawEditorShowFrontmatterInEditor
@@ -1542,6 +1554,17 @@ export async function setEditorShowCollapsibleHeadings(
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { showCollapsibleHeadings: enabled },
+	});
+}
+
+export async function setEditorShowCollapsibleLists(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getSettingsStore();
+	await store.set(KEYS.editorShowCollapsibleLists, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { showCollapsibleLists: enabled },
 	});
 }
 
