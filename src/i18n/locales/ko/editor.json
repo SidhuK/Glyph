@@ -50,6 +50,9 @@
 		"editMermaid": "Mermaid 코드 편집",
 		"editHtml": "HTML 코드 편집",
 		"editSvg": "SVG 코드 편집",
+		"focusedViewer": {
+			"open": "집중 보기 열기"
+		},
 		"languages": {
 			"plaintext": "일반 텍스트",
 			"bash": "Bash",

@@ -31,7 +31,8 @@ interface MermaidCanvasState {
 interface MermaidCanvasOptions {
 	svgHtml: string;
 	editMode: boolean;
-	onEditCode: () => void;
+	onEditCode?: () => void;
+	onOpenFocusedPreview?: () => void;
 }
 
 interface MermaidCanvasMount {
@@ -169,10 +170,14 @@ export function createMermaidCanvas(
 
 	viewport.append(stage);
 	frame.append(viewport);
-	if (options.editMode) {
+	if (options.editMode && options.onEditCode) {
 		appendEditCodeControls(frame, {
 			label: i18n.t("editor:codeBlock.editMermaid"),
 			onEditCode: options.onEditCode,
+			openPreviewLabel: options.onOpenFocusedPreview
+				? i18n.t("editor:codeBlock.focusedViewer.open")
+				: undefined,
+			onOpenFocusedPreview: options.onOpenFocusedPreview,
 		});
 	}
 	root.append(frame);
@@ -375,7 +380,7 @@ export function createMermaidCanvas(
 				event.preventDefault();
 				return;
 			case "Enter":
-				options.onEditCode();
+				options.onEditCode?.();
 				event.preventDefault();
 				return;
 			default:

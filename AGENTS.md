@@ -94,3 +94,7 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 ## Version Control
 
 - Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
+
+## Tool Restrictions
+
+- Browser and computer-use tools are completely forbidden. Do not use them under any circumstances.

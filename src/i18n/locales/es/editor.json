@@ -50,6 +50,9 @@
 		"editMermaid": "Editar código Mermaid",
 		"editHtml": "Editar código HTML",
 		"editSvg": "Editar código SVG",
+		"focusedViewer": {
+			"open": "Abrir vista enfocada"
+		},
 		"languages": {
 			"plaintext": "Texto sin formato",
 			"bash": "Bash",
