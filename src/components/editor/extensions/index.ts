@@ -618,6 +618,7 @@ interface CreateEditorExtensionsOptions {
 	currentPathResolver?: (() => string) | null;
 	placeholder?: string | null;
 	onMathEditRequest?: (request: MathEditRequest) => void;
+	onListCollapseToggle?: (branches: string[]) => void;
 }
 
 export function createEditorExtensions(
@@ -635,7 +636,11 @@ export function createEditorExtensions(
 		currentPathResolver = null,
 		placeholder = null,
 		onMathEditRequest,
+		onListCollapseToggle,
 	} = options ?? {};
+	const headingCollapse = onListCollapseToggle
+		? HeadingCollapse.configure({ onListCollapseToggle })
+		: HeadingCollapse;
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -678,7 +683,7 @@ export function createEditorExtensions(
 		HtmlEmbedPreview,
 		MermaidPreview,
 		InlineTableOfContents,
-		...(enableEditingExtensions ? [HeadingCollapse] : []),
+		headingCollapse,
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

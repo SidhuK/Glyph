@@ -8,12 +8,14 @@ import {
 	useMemo,
 	useRef,
 } from "react";
+import { i18n } from "../../../i18n";
 import { resolveAttachmentTargetDir } from "../../../lib/attachmentStorage";
 import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
+import { toast } from "../../../lib/toast";
 import { handleEditorClick } from "../editorClickHandlers";
 import { createEditorExtensions } from "../extensions";
 import type { MathEditRequest } from "../extensions/math/mathOptions";
@@ -343,6 +345,7 @@ export function useNoteEditor({
 		focusMode,
 		peopleMentionsEnabled,
 		showCollapsibleHeadings,
+		showCollapsibleLists,
 		showFrontmatterInEditor,
 	} = useNoteEditorSettings();
 	const spellCheckEnabled = useEditorSpellCheck();
@@ -354,6 +357,22 @@ export function useNoteEditor({
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownManagerRef = useRef<MarkdownManager | null>(null);
 	const pasteMarkdownBehaviorRef = useRef(pasteMarkdownBehavior);
+	const listCollapseLoadVersionRef = useRef(0);
+	const listCollapseSaveRef = useRef(Promise.resolve());
+	const listCollapseEnabled = showCollapsibleLists && mode !== "plain";
+	const handleListCollapseChange = useCallback((branches: string[]) => {
+		const path = relPathRef.current;
+		if (!path) return;
+		listCollapseLoadVersionRef.current += 1;
+		listCollapseSaveRef.current = listCollapseSaveRef.current.then(() =>
+			invoke("list_collapse_state_set", { path, branches }).catch((error) => {
+				console.error("Failed to save list collapse state", error);
+				toast.error(i18n.t("editor:listCollapse.saveFailed"), {
+					description: error instanceof Error ? error.message : String(error),
+				});
+			}),
+		);
+	}, []);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -363,6 +382,7 @@ export function useNoteEditor({
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableFocusMode,
+				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
 				placeholder,
 			}),
@@ -370,6 +390,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
+			handleListCollapseChange,
 			onMathEditRequest,
 			peopleMentionsEnabled,
 			placeholder,
@@ -713,6 +734,11 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
+		editor.commands.setListCollapseEnabled(listCollapseEnabled);
+	}, [editor, listCollapseEnabled]);
+
+	useEffect(() => {
+		if (!editor || editor.isDestroyed) return;
 		const previousMode = previousModeRef.current;
 		previousModeRef.current = mode;
 		if (mode === "plain") return;
@@ -736,6 +762,40 @@ export function useNoteEditor({
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, flushMarkdownSync, markdown, mode, relPath]);
+
+	useEffect(() => {
+		if (!editor || editor.isDestroyed) return;
+		const loadVersion = ++listCollapseLoadVersionRef.current;
+		if (!listCollapseEnabled || !relPath) {
+			editor.commands.setListCollapseKeys([]);
+			return;
+		}
+
+		let cancelled = false;
+		editor.commands.setListCollapseKeys([]);
+		void invoke("list_collapse_state_get", { path: relPath })
+			.then((keys) => {
+				if (
+					!cancelled &&
+					loadVersion === listCollapseLoadVersionRef.current &&
+					!editor.isDestroyed
+				) {
+					editor.commands.setListCollapseKeys(keys);
+				}
+			})
+			.catch((error) => {
+				if (cancelled || loadVersion !== listCollapseLoadVersionRef.current) {
+					return;
+				}
+				console.error("Failed to load list collapse state", error);
+				toast.error(i18n.t("editor:listCollapse.loadFailed"), {
+					description: error instanceof Error ? error.message : String(error),
+				});
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [editor, listCollapseEnabled, relPath]);
 
 	useEffect(() => {
 		return () => {

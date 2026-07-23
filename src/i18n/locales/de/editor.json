@@ -66,6 +66,12 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "Listenast einklappen",
+		"expandBranch": "Listenast ausklappen",
+		"loadFailed": "Listenklappzustand konnte nicht geladen werden",
+		"saveFailed": "Listenklappzustand konnte nicht gespeichert werden"
+	},
 	"slash": {
 		"heading1": {
 			"title": "Überschrift 1",

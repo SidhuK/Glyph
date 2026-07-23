@@ -76,6 +76,11 @@
 			"description": "Show collapse toggles on note headings in editor and preview.",
 			"ariaLabel": "Collapsible headings"
 		},
+		"collapsibleLists": {
+			"label": "Collapsible lists",
+			"description": "Show collapse toggles on nested lists in editor and preview.",
+			"ariaLabel": "Collapsible lists"
+		},
 		"spellCheck": {
 			"label": "Spell check",
 			"description": "Underline typos as you type. Right-click a word to see spelling suggestions.",

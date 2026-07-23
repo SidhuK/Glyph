@@ -878,6 +878,11 @@ interface TauriCommands {
 		void
 	>;
 	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
+	list_collapse_state_get: CommandDef<{ path: string }, string[]>;
+	list_collapse_state_set: CommandDef<
+		{ path: string; branches: string[] },
+		void
+	>;
 	tag_appearance_list: CommandDef<void, Record<string, TagAppearance>>;
 	tag_appearance_set: CommandDef<
 		{ tag: string; icon?: string | null },

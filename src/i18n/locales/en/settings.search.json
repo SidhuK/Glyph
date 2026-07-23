@@ -435,6 +435,11 @@
 			"section": "Editor",
 			"keywords": ["fold", "collapse", "expand"]
 		},
+		"general-editor-collapsible-lists": {
+			"title": "Collapsible lists",
+			"section": "Editor",
+			"keywords": ["fold", "collapse", "expand", "bullet", "task", "ordered"]
+		},
 		"general-editor-spell-check": {
 			"title": "Spell check",
 			"section": "Editor",

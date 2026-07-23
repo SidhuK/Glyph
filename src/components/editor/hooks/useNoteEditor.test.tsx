@@ -55,6 +55,8 @@ const {
 		commands: {
 			setContent: vi.fn(),
 			setHeadingCollapseEnabled: vi.fn(),
+			setListCollapseEnabled: vi.fn(),
+			setListCollapseKeys: vi.fn(),
 			setTextSelection: vi.fn(() => true),
 		},
 		state: {
@@ -342,6 +344,8 @@ describe("useNoteEditor", () => {
 		mockEditor.can.mockClear();
 		mockEditor.commands.setContent.mockReset();
 		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
+		mockEditor.commands.setListCollapseEnabled.mockReset();
+		mockEditor.commands.setListCollapseKeys.mockReset();
 		mockEditor.commands.setTextSelection.mockReset();
 		mockEditor.commands.setTextSelection.mockReturnValue(true);
 		mockEditor.state.doc.content.size = 42;

@@ -66,6 +66,12 @@
 			"yaml": "YAML"
 		}
 	},
+	"listCollapse": {
+		"collapseBranch": "リストの枝を折りたたむ",
+		"expandBranch": "リストの枝を展開する",
+		"loadFailed": "リストの折りたたみ状態を読み込めませんでした",
+		"saveFailed": "リストの折りたたみ状態を保存できませんでした"
+	},
 	"slash": {
 		"heading1": {
 			"title": "見出し 1",
