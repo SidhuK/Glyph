@@ -565,10 +565,14 @@ export const HeadingCollapse = Extension.create<{
 						update(view, previousState) {
 							if (view.state.doc.eq(previousState.doc)) return;
 							const state = headingCollapsePluginKey.getState(view.state);
+							const previous = headingCollapsePluginKey.getState(previousState);
 							if (
 								!state?.listsEnabled ||
 								state.collapsedListPositions.size === 0
 							) {
+								if (previous?.collapsedListPositions.size) {
+									onListCollapseToggle([]);
+								}
 								collapsedKeys = "";
 								return;
 							}
