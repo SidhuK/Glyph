@@ -31,7 +31,6 @@ import { HeadingCollapse } from "./headingCollapse";
 import { HighlightedText } from "./highlightedText";
 import { HtmlEmbedPreview } from "./htmlEmbedPreview";
 import { InlineTableOfContents } from "./inlineTableOfContents";
-import { ListCollapse } from "./listCollapse";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownImageLivePreview } from "./markdownImageLivePreview";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
@@ -639,9 +638,9 @@ export function createEditorExtensions(
 		onMathEditRequest,
 		onListCollapseToggle,
 	} = options ?? {};
-	const listCollapse = onListCollapseToggle
-		? ListCollapse.configure({ onCollapseToggle: onListCollapseToggle })
-		: ListCollapse;
+	const headingCollapse = onListCollapseToggle
+		? HeadingCollapse.configure({ onListCollapseToggle })
+		: HeadingCollapse;
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -684,8 +683,7 @@ export function createEditorExtensions(
 		HtmlEmbedPreview,
 		MermaidPreview,
 		InlineTableOfContents,
-		HeadingCollapse,
-		listCollapse,
+		headingCollapse,
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

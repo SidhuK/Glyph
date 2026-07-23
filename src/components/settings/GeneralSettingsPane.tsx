@@ -327,17 +327,6 @@ export function GeneralSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label={t("editor.collapsibleLists.label")}
-						description={t("editor.collapsibleLists.description")}
-					>
-						<SettingsToggle
-							checked={collapsibleLists.checked}
-							disabled={collapsibleLists.isSaving}
-							ariaLabel={t("editor.collapsibleLists.ariaLabel")}
-							onCheckedChange={collapsibleLists.onCheckedChange}
-						/>
-					</SettingsRow>
-					<SettingsRow
 						label={t("editor.showFrontmatter.label")}
 						description={t("editor.showFrontmatter.description")}
 					>
@@ -368,6 +357,17 @@ export function GeneralSettingsPane() {
 							disabled={collapsibleHeadings.isSaving}
 							ariaLabel={t("editor.collapsibleHeadings.ariaLabel")}
 							onCheckedChange={collapsibleHeadings.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.collapsibleLists.label")}
+						description={t("editor.collapsibleLists.description")}
+					>
+						<SettingsToggle
+							checked={collapsibleLists.checked}
+							disabled={collapsibleLists.isSaving}
+							ariaLabel={t("editor.collapsibleLists.ariaLabel")}
+							onCheckedChange={collapsibleLists.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

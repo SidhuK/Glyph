@@ -1,13 +1,8 @@
 import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
-import { PluginKey } from "@tiptap/pm/state";
+import { Plugin, PluginKey, type Transaction } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, type EditorView } from "@tiptap/pm/view";
-import {
-	createFoldingPlugin,
-	type FoldingState,
-	type FoldingStateUpdate,
-	type FoldingUpdate,
-} from "./folding";
+import { i18n } from "../../../i18n";
 
 interface HeadingRange {
 	pos: number;
@@ -16,15 +11,35 @@ interface HeadingRange {
 	nodeSize: number;
 }
 
-type HeadingCollapseMeta =
-	| { type: "toggle"; pos: number }
-	| { type: "expand-ancestors"; pos: number }
-	| { type: "set-enabled"; enabled: boolean }
-	| { type: "set-all-collapsed"; collapsed: boolean };
+interface ListBranch {
+	key: string;
+	nestedListEnd: number;
+	nestedListPos: number;
+	pos: number;
+}
 
-const headingCollapsePluginKey = new PluginKey<FoldingState>(
+interface HeadingCollapseState {
+	headingsEnabled: boolean;
+	collapsedHeadingPositions: Set<number>;
+	listsEnabled: boolean;
+	collapsedListPositions: Set<number>;
+	decorations: DecorationSet;
+}
+
+type HeadingCollapseMeta =
+	| { type: "heading-toggle"; pos: number }
+	| { type: "heading-expand-ancestors"; pos: number }
+	| { type: "headings-enabled"; enabled: boolean }
+	| { type: "headings-collapsed"; collapsed: boolean }
+	| { type: "list-toggle"; pos: number }
+	| { type: "lists-enabled"; enabled: boolean }
+	| { type: "lists-collapsed"; keys: string[] };
+
+const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
 	"heading-collapse",
 );
+const LIST_NODE_NAMES = new Set(["bulletList", "orderedList", "taskList"]);
+const LIST_ITEM_NODE_NAMES = new Set(["listItem", "taskItem"]);
 
 function extractHeadingRanges(doc: ProseMirrorNode): HeadingRange[] {
 	const headings: HeadingRange[] = [];
@@ -58,6 +73,37 @@ function extractHeadingRanges(doc: ProseMirrorNode): HeadingRange[] {
 	return headings;
 }
 
+function listBranchKey(doc: ProseMirrorNode, pos: number, nodeName: string) {
+	const resolved = doc.resolve(pos);
+	return `${nodeName}:${Array.from(
+		{ length: resolved.depth + 1 },
+		(_, depth) => resolved.index(depth),
+	).join(".")}`;
+}
+
+function extractListBranches(doc: ProseMirrorNode): ListBranch[] {
+	const branches: ListBranch[] = [];
+	doc.descendants((node, pos) => {
+		if (!LIST_ITEM_NODE_NAMES.has(node.type.name)) return;
+		let offset = 0;
+		for (let index = 0; index < node.childCount; index += 1) {
+			const child = node.child(index);
+			if (LIST_NODE_NAMES.has(child.type.name)) {
+				const nestedListPos = pos + 1 + offset;
+				branches.push({
+					key: listBranchKey(doc, pos, node.type.name),
+					nestedListEnd: nestedListPos + child.nodeSize,
+					nestedListPos,
+					pos,
+				});
+				break;
+			}
+			offset += child.nodeSize;
+		}
+	});
+	return branches;
+}
+
 function collapseDecorationsForRange(
 	doc: ProseMirrorNode,
 	from: number,
@@ -84,15 +130,12 @@ function collapseDecorationsForRange(
 
 function createToggleButton(
 	pos: number,
-	level: number,
 	collapsed: boolean,
 ): (view: EditorView) => HTMLElement {
 	return (view) => {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.className = "headingCollapseToggle";
-		button.setAttribute("data-heading-collapse-toggle", "true");
-		button.setAttribute("data-heading-level", String(level));
 		button.setAttribute("data-collapsed", collapsed ? "true" : "false");
 		button.setAttribute(
 			"aria-label",
@@ -117,7 +160,7 @@ function createToggleButton(
 			event.stopPropagation();
 			view.dispatch(
 				view.state.tr.setMeta(headingCollapsePluginKey, {
-					type: "toggle",
+					type: "heading-toggle",
 					pos,
 				} satisfies HeadingCollapseMeta),
 			);
@@ -127,44 +170,116 @@ function createToggleButton(
 	};
 }
 
+function createListToggleButton(
+	pos: number,
+	collapsed: boolean,
+	onListCollapseToggle: (branches: string[]) => void,
+): (view: EditorView) => HTMLElement {
+	return (view) => {
+		const button = document.createElement("button");
+		const label = i18n.t(
+			collapsed
+				? "editor:listCollapse.expandBranch"
+				: "editor:listCollapse.collapseBranch",
+		);
+		button.type = "button";
+		button.className = "listCollapseToggle";
+		button.setAttribute("data-collapsed", String(collapsed));
+		button.setAttribute("aria-label", label);
+		button.setAttribute("title", label);
+		button.contentEditable = "false";
+
+		const chevron = document.createElement("span");
+		chevron.className = "listCollapseChevron";
+		button.appendChild(chevron);
+		button.addEventListener("mousedown", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		});
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			view.dispatch(
+				view.state.tr.setMeta(headingCollapsePluginKey, {
+					type: "list-toggle",
+					pos,
+				} satisfies HeadingCollapseMeta),
+			);
+			const state = headingCollapsePluginKey.getState(view.state);
+			if (!state) return;
+			onListCollapseToggle(
+				extractListBranches(view.state.doc)
+					.filter((branch) => state.collapsedListPositions.has(branch.pos))
+					.map((branch) => branch.key),
+			);
+		});
+		return button;
+	};
+}
+
 function buildDecorations(
 	doc: ProseMirrorNode,
-	enabled: boolean,
-	collapsedPositions: Set<number>,
+	state: HeadingCollapseState,
 	headings: HeadingRange[],
+	branches: ListBranch[],
+	onListCollapseToggle: (branches: string[]) => void,
 ): DecorationSet {
-	if (!enabled) {
-		return DecorationSet.empty;
-	}
 	const decorations: Decoration[] = [];
 
-	for (const heading of headings) {
-		const collapsed = collapsedPositions.has(heading.pos);
-		decorations.push(
-			Decoration.node(heading.pos, heading.pos + heading.nodeSize, {
-				class: "headingCollapseHeading",
-				"data-heading-collapsed": collapsed ? "true" : "false",
-			}),
-		);
-		decorations.push(
-			Decoration.widget(
-				heading.pos + 1,
-				createToggleButton(heading.pos, heading.level, collapsed),
-				{
-					side: -1,
-					key: `heading-collapse-toggle-${heading.pos}`,
-				},
-			),
-		);
+	if (state.headingsEnabled) {
+		for (const heading of headings) {
+			const collapsed = state.collapsedHeadingPositions.has(heading.pos);
+			decorations.push(
+				Decoration.node(heading.pos, heading.pos + heading.nodeSize, {
+					class: "headingCollapseHeading",
+				}),
+				Decoration.widget(
+					heading.pos + 1,
+					createToggleButton(heading.pos, collapsed),
+					{
+						side: -1,
+						key: `heading-collapse-toggle-${heading.pos}-${collapsed}`,
+					},
+				),
+			);
+			if (collapsed) {
+				decorations.push(
+					...collapseDecorationsForRange(
+						doc,
+						heading.pos + heading.nodeSize,
+						heading.end,
+					),
+				);
+			}
+		}
+	}
 
-		if (!collapsed) continue;
-		decorations.push(
-			...collapseDecorationsForRange(
-				doc,
-				heading.pos + heading.nodeSize,
-				heading.end,
-			),
-		);
+	if (state.listsEnabled) {
+		for (const branch of branches) {
+			const firstChild = doc.nodeAt(branch.pos)?.firstChild;
+			if (!firstChild) continue;
+			const collapsed = state.collapsedListPositions.has(branch.pos);
+			decorations.push(
+				Decoration.node(branch.pos + 1, branch.pos + 1 + firstChild.nodeSize, {
+					class: "listCollapseAnchor",
+				}),
+				Decoration.widget(
+					branch.pos + 2,
+					createListToggleButton(branch.pos, collapsed, onListCollapseToggle),
+					{
+						side: -1,
+						key: `list-collapse-toggle-${branch.pos}-${collapsed}`,
+					},
+				),
+			);
+			if (collapsed) {
+				decorations.push(
+					Decoration.node(branch.nestedListPos, branch.nestedListEnd, {
+						class: "listCollapseHidden",
+					}),
+				);
+			}
+		}
 	}
 
 	return DecorationSet.create(doc, decorations);
@@ -194,33 +309,18 @@ function expandAncestorPositions(
 	return next;
 }
 
-function reduceHeadingCollapse({
-	collapsedPositions,
-	enabled,
-	meta,
-	ranges,
-}: FoldingUpdate<HeadingRange, HeadingCollapseMeta>): FoldingStateUpdate {
-	let nextPositions = collapsedPositions;
-	if (meta?.type === "toggle") {
-		nextPositions = new Set(collapsedPositions);
-		if (nextPositions.has(meta.pos)) {
-			nextPositions.delete(meta.pos);
-		} else if (ranges.some((heading) => heading.pos === meta.pos)) {
-			nextPositions.add(meta.pos);
-		}
+function mapPositions(
+	positions: Set<number>,
+	transaction: Transaction,
+	validPositions: Set<number>,
+	bias: -1 | 1,
+): Set<number> {
+	const mapped = new Set<number>();
+	for (const position of positions) {
+		const result = transaction.mapping.mapResult(position, bias);
+		if (!result.deleted && validPositions.has(result.pos)) mapped.add(result.pos);
 	}
-	if (meta?.type === "expand-ancestors") {
-		nextPositions = expandAncestorPositions(ranges, nextPositions, meta.pos);
-	}
-	if (meta?.type === "set-all-collapsed") {
-		nextPositions = meta.collapsed
-			? new Set(ranges.map((heading) => heading.pos))
-			: new Set<number>();
-	}
-	return {
-		collapsedPositions: nextPositions,
-		enabled: meta?.type === "set-enabled" ? meta.enabled : enabled,
-	};
+	return mapped;
 }
 
 declare module "@tiptap/core" {
@@ -231,12 +331,19 @@ declare module "@tiptap/core" {
 			setHeadingCollapseEnabled: (enabled: boolean) => ReturnType;
 			collapseAllHeadings: () => ReturnType;
 			expandAllHeadings: () => ReturnType;
+			setListCollapseEnabled: (enabled: boolean) => ReturnType;
+			setListCollapseKeys: (keys: string[]) => ReturnType;
 		};
 	}
 }
 
-export const HeadingCollapse = Extension.create({
+export const HeadingCollapse = Extension.create<{
+	onListCollapseToggle: (branches: string[]) => void;
+}>({
 	name: "headingCollapse",
+	addOptions() {
+		return { onListCollapseToggle: () => {} };
+	},
 	addCommands() {
 		return {
 			toggleHeadingCollapse:
@@ -244,7 +351,7 @@ export const HeadingCollapse = Extension.create({
 				({ state, dispatch }) => {
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
-							type: "toggle",
+							type: "heading-toggle",
 							pos,
 						} satisfies HeadingCollapseMeta),
 					);
@@ -255,7 +362,7 @@ export const HeadingCollapse = Extension.create({
 				({ state, dispatch }) => {
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
-							type: "expand-ancestors",
+							type: "heading-expand-ancestors",
 							pos,
 						} satisfies HeadingCollapseMeta),
 					);
@@ -266,7 +373,7 @@ export const HeadingCollapse = Extension.create({
 				({ state, dispatch }) => {
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
-							type: "set-enabled",
+							type: "headings-enabled",
 							enabled,
 						} satisfies HeadingCollapseMeta),
 					);
@@ -277,7 +384,7 @@ export const HeadingCollapse = Extension.create({
 				({ state, dispatch }) => {
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
-							type: "set-all-collapsed",
+							type: "headings-collapsed",
 							collapsed: true,
 						} satisfies HeadingCollapseMeta),
 					);
@@ -288,8 +395,30 @@ export const HeadingCollapse = Extension.create({
 				({ state, dispatch }) => {
 					dispatch?.(
 						state.tr.setMeta(headingCollapsePluginKey, {
-							type: "set-all-collapsed",
+							type: "headings-collapsed",
 							collapsed: false,
+						} satisfies HeadingCollapseMeta),
+					);
+					return true;
+				},
+			setListCollapseEnabled:
+				(enabled: boolean) =>
+				({ state, dispatch }) => {
+					dispatch?.(
+						state.tr.setMeta(headingCollapsePluginKey, {
+							type: "lists-enabled",
+							enabled,
+						} satisfies HeadingCollapseMeta),
+					);
+					return true;
+				},
+			setListCollapseKeys:
+				(keys: string[]) =>
+				({ state, dispatch }) => {
+					dispatch?.(
+						state.tr.setMeta(headingCollapsePluginKey, {
+							type: "lists-collapsed",
+							keys,
 						} satisfies HeadingCollapseMeta),
 					);
 					return true;
@@ -297,14 +426,123 @@ export const HeadingCollapse = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
+		const onListCollapseToggle = this.options.onListCollapseToggle;
 		return [
-			createFoldingPlugin({
-				buildDecorations,
-				extractRanges: extractHeadingRanges,
+			new Plugin<HeadingCollapseState>({
 				key: headingCollapsePluginKey,
-				mappingBias: -1,
-				positionOf: (heading) => heading.pos,
-				reduce: reduceHeadingCollapse,
+				state: {
+					init: () => ({
+						headingsEnabled: false,
+						collapsedHeadingPositions: new Set<number>(),
+						listsEnabled: false,
+						collapsedListPositions: new Set<number>(),
+						decorations: DecorationSet.empty,
+					}),
+					apply: (transaction, previous, _oldState, nextState) => {
+						const meta = transaction.getMeta(headingCollapsePluginKey) as
+							| HeadingCollapseMeta
+							| undefined;
+						if (
+							!previous.headingsEnabled &&
+							!previous.listsEnabled &&
+							previous.collapsedHeadingPositions.size === 0 &&
+							previous.collapsedListPositions.size === 0 &&
+							!meta
+						) {
+							return previous;
+						}
+
+						const headings = extractHeadingRanges(nextState.doc);
+						const branches = extractListBranches(nextState.doc);
+						const headingPositions = new Set(headings.map((heading) => heading.pos));
+						const listPositions = new Set(branches.map((branch) => branch.pos));
+						let headingsEnabled = previous.headingsEnabled;
+						let listsEnabled = previous.listsEnabled;
+						let collapsedHeadingPositions = mapPositions(
+							previous.collapsedHeadingPositions,
+							transaction,
+							headingPositions,
+							-1,
+						);
+						let collapsedListPositions = mapPositions(
+							previous.collapsedListPositions,
+							transaction,
+							listPositions,
+							1,
+						);
+
+						switch (meta?.type) {
+							case "heading-toggle":
+								if (headingPositions.has(meta.pos)) {
+									collapsedHeadingPositions = new Set(collapsedHeadingPositions);
+									if (collapsedHeadingPositions.has(meta.pos)) {
+										collapsedHeadingPositions.delete(meta.pos);
+									} else {
+										collapsedHeadingPositions.add(meta.pos);
+									}
+								}
+								break;
+							case "heading-expand-ancestors":
+								collapsedHeadingPositions = expandAncestorPositions(
+									headings,
+									collapsedHeadingPositions,
+									meta.pos,
+								);
+								break;
+							case "headings-enabled":
+								headingsEnabled = meta.enabled;
+								break;
+							case "headings-collapsed":
+								collapsedHeadingPositions = meta.collapsed
+									? new Set(headings.map((heading) => heading.pos))
+									: new Set<number>();
+								break;
+							case "list-toggle":
+								if (listPositions.has(meta.pos)) {
+									collapsedListPositions = new Set(collapsedListPositions);
+									if (collapsedListPositions.has(meta.pos)) {
+										collapsedListPositions.delete(meta.pos);
+									} else {
+										collapsedListPositions.add(meta.pos);
+									}
+								}
+								break;
+							case "lists-enabled":
+								listsEnabled = meta.enabled;
+								break;
+							case "lists-collapsed": {
+								const keys = new Set(meta.keys);
+								collapsedListPositions = new Set(
+									branches.filter((branch) => keys.has(branch.key)).map((branch) => branch.pos),
+								);
+								break;
+							}
+						}
+
+						const state = {
+							headingsEnabled,
+							collapsedHeadingPositions,
+							listsEnabled,
+							collapsedListPositions,
+							decorations: DecorationSet.empty,
+						};
+						return {
+							...state,
+							decorations: buildDecorations(
+								nextState.doc,
+								state,
+								headings,
+								branches,
+								onListCollapseToggle,
+							),
+						};
+					},
+				},
+				props: {
+					decorations(state) {
+						return headingCollapsePluginKey.getState(state)?.decorations;
+					},
+				},
 			}),
 		];
 	},

@@ -409,7 +409,7 @@ pub async fn space_rename_path(
         };
         match list_collapse_state_mutex.lock() {
             Ok(_guard) => {
-                if let Err(error) = crate::list_collapse_state::store::rename_path(
+                if let Err(error) = crate::list_collapse_state::rename_path(
                     &root, &from_path, &to_path,
                 ) {
                     tracing::warn!(
@@ -512,7 +512,7 @@ pub async fn space_delete_path(
         remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
         match list_collapse_state_mutex.lock() {
             Ok(_guard) => {
-                if let Err(error) = crate::list_collapse_state::store::delete_path(&root, &path) {
+                if let Err(error) = crate::list_collapse_state::delete_path(&root, &path) {
                     tracing::warn!(
                         %path,
                         %error,

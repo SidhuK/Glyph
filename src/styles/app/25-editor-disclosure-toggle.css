@@ -50,7 +50,7 @@
 }
 
 .tiptapContentInline
-	.headingCollapseHeading[data-heading-collapsed="true"]
+	.headingCollapseToggle[data-collapsed="true"]
 	.headingCollapseChevron {
 	transform: rotate(-45deg) translate(-1px, 1px);
 }
