@@ -28,6 +28,10 @@ function buildHtmlEmbedSrcDoc(source: string, kind: HtmlEmbedKind): string {
 	const body = wrapHtmlEmbedBody(source, kind);
 	const escapedCsp = HTML_EMBED_CSP.replace(/"/g, "&quot;");
 	const postMessageOrigin = JSON.stringify(window.location.origin);
+	const textColor =
+		getComputedStyle(document.documentElement)
+			.getPropertyValue("--text-primary")
+			.trim() || "#171717";
 
 	return `<!doctype html>
 <html>
@@ -36,7 +40,7 @@ function buildHtmlEmbedSrcDoc(source: string, kind: HtmlEmbedKind): string {
 <meta http-equiv="Content-Security-Policy" content="${escapedCsp}">
 <style>
   html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
-  body { font: 14px system-ui, sans-serif; color: #171717; }
+  body { font: 14px system-ui, sans-serif; color: ${textColor}; }
   main { display: block; }
   main svg { display: block; max-width: 100%; height: auto; }
 </style>
@@ -148,11 +152,13 @@ export function createHtmlEmbedWidget({
 	kind,
 	editable,
 	onEditCode,
+	onOpenFocusedPreview,
 }: {
 	source: string;
 	kind: HtmlEmbedKind;
 	editable: boolean;
 	onEditCode: () => void;
+	onOpenFocusedPreview?: () => void;
 }): { element: HTMLElement; destroy: () => void } {
 	const root = document.createElement("div");
 	root.className = "htmlEmbedWidget";
@@ -211,6 +217,10 @@ export function createHtmlEmbedWidget({
 					? i18n.t("editor:codeBlock.editSvg")
 					: i18n.t("editor:codeBlock.editHtml"),
 			onEditCode,
+			openPreviewLabel: onOpenFocusedPreview
+				? i18n.t("editor:codeBlock.focusedViewer.open")
+				: undefined,
+			onOpenFocusedPreview,
 		});
 	}
 

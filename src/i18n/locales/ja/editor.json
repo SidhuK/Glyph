@@ -50,6 +50,9 @@
 		"editMermaid": "Mermaid コードを編集",
 		"editHtml": "HTML コードを編集",
 		"editSvg": "SVG コードを編集",
+		"focusedViewer": {
+			"open": "フォーカスビューを開く"
+		},
 		"languages": {
 			"plaintext": "プレーンテキスト",
 			"bash": "Bash",

@@ -3,9 +3,13 @@ export function appendEditCodeControls(
 	{
 		label,
 		onEditCode,
+		openPreviewLabel,
+		onOpenFocusedPreview,
 	}: {
 		label: string;
 		onEditCode: () => void;
+		openPreviewLabel?: string;
+		onOpenFocusedPreview?: () => void;
 	},
 ): void {
 	const controls = document.createElement("div");
@@ -26,6 +30,25 @@ export function appendEditCodeControls(
 		event.stopPropagation();
 		onEditCode();
 	});
+
+	if (openPreviewLabel && onOpenFocusedPreview) {
+		const openButton = document.createElement("button");
+		openButton.type = "button";
+		openButton.className = "codeBlockPreviewEditBtn codeBlockPreviewOpenBtn";
+		openButton.textContent = openPreviewLabel;
+		openButton.title = openPreviewLabel;
+		openButton.setAttribute("aria-label", openPreviewLabel);
+		openButton.addEventListener("mousedown", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		});
+		openButton.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			onOpenFocusedPreview();
+		});
+		controls.append(openButton);
+	}
 
 	controls.append(editButton);
 	frame.append(controls);

@@ -24,10 +24,12 @@ function buildMermaidCanvasWidget({
 	editable,
 	source,
 	selectSource,
+	openFocusedPreview,
 }: {
 	editable: boolean;
 	source: string;
 	selectSource: () => void;
+	openFocusedPreview: () => void;
 }) {
 	const result = renderMermaidCanvasSvg(source);
 	if (!result.ok) {
@@ -39,6 +41,8 @@ function buildMermaidCanvasWidget({
 			appendEditCodeControls(frame, {
 				label: i18n.t("editor:codeBlock.editMermaid"),
 				onEditCode: selectSource,
+				openPreviewLabel: i18n.t("editor:codeBlock.focusedViewer.open"),
+				onOpenFocusedPreview: openFocusedPreview,
 			});
 		}
 		return { element, destroy: () => {} };
@@ -48,6 +52,7 @@ function buildMermaidCanvasWidget({
 		svgHtml: result.svgHtml,
 		editMode: editable,
 		onEditCode: selectSource,
+		onOpenFocusedPreview: editable ? openFocusedPreview : undefined,
 	});
 }
 
@@ -57,7 +62,7 @@ export const MermaidPreview = createCodeBlockPreviewExtension({
 	hiddenClass: "mermaidCodeBlockHiddenInPreview",
 	widgetKeyPrefix: "mermaid-canvas",
 	matchLanguage: (language) => isMermaidCodeBlockLanguage(language),
-	createWidget: ({ source, editable, selectSource }) =>
+	createWidget: ({ source, editable, selectSource, openFocusedPreview }) =>
 		createLazyCodeBlockPreviewWidget({
 			placeholderClassName: "mermaidCanvasWidget mermaidCanvasPlaceholder",
 			frameClassName: "mermaidCanvasFrame",
@@ -66,6 +71,7 @@ export const MermaidPreview = createCodeBlockPreviewExtension({
 					editable,
 					source,
 					selectSource,
+					openFocusedPreview,
 				}),
 		}),
 	destroyWidget: destroyLazyCodeBlockPreviewWidget,

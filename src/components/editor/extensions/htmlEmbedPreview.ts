@@ -19,7 +19,13 @@ export const HtmlEmbedPreview = createCodeBlockPreviewExtension({
 	widgetKeyPrefix: "html-embed",
 	matchLanguage: (language) => isHtmlEmbedCodeBlockLanguage(language) !== null,
 	getSource: (node) => stripHtmlEmbedRawSentinel(node.textContent ?? ""),
-	createWidget: ({ source, language, editable, selectSource }) => {
+	createWidget: ({
+		source,
+		language,
+		editable,
+		selectSource,
+		openFocusedPreview,
+	}) => {
 		const kind = isHtmlEmbedCodeBlockLanguage(language);
 		if (!kind) {
 			return document.createElement("div");
@@ -34,6 +40,7 @@ export const HtmlEmbedPreview = createCodeBlockPreviewExtension({
 					kind,
 					editable,
 					onEditCode: selectSource,
+					onOpenFocusedPreview: editable ? openFocusedPreview : undefined,
 				}),
 		});
 	},
