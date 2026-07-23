@@ -20,6 +20,10 @@ import { isMermaidCodeBlockLanguage } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { EditorRibbon } from "./EditorRibbon";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
+import {
+	type FocusedCodeBlockPreview,
+	FocusedCodeBlockPreviewDialog,
+} from "./FocusedCodeBlockPreviewDialog";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
 import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
@@ -30,6 +34,8 @@ import {
 } from "./extensions/codeBlockHighlighting";
 import {
 	CODE_BLOCK_PREVIEW_REFRESH_META,
+	type FocusedCodeBlockPreviewRequest,
+	OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
 	clearCodeBlockPreviews,
 	enableCodeBlockPreviewAt,
 } from "./extensions/codeBlockPreviewPlugin";
@@ -77,6 +83,25 @@ function isPreviewableCodeBlockLanguage(language: string | null): boolean {
 	return (
 		isHtmlEmbedCodeBlockLanguage(language) !== null ||
 		isMermaidCodeBlockLanguage(language)
+	);
+}
+
+function isFocusedCodeBlockPreviewRequest(
+	value: unknown,
+): value is FocusedCodeBlockPreviewRequest {
+	if (
+		!value ||
+		typeof value !== "object" ||
+		!("pos" in value) ||
+		!("source" in value) ||
+		!("language" in value)
+	) {
+		return false;
+	}
+	return (
+		typeof value.pos === "number" &&
+		typeof value.source === "string" &&
+		(value.language === null || typeof value.language === "string")
 	);
 }
 
@@ -250,6 +275,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
 	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
 	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
+	const [focusedCodeBlockPreview, setFocusedCodeBlockPreview] =
+		useState<FocusedCodeBlockPreview | null>(null);
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
@@ -292,6 +319,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 		};
 		if (previousRelPathRef.current !== relPath) {
+			setFocusedCodeBlockPreview(null);
 			if (editor && !editor.isDestroyed) {
 				clearCodeBlockPreviews(editor.view);
 				editor.view.dispatch(
@@ -302,12 +330,45 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			previousRelPathRef.current = relPath;
 		}
 		return () => {
+			setFocusedCodeBlockPreview(null);
 			blurHostSelection(host);
 			if (editor && !editor.isDestroyed) {
 				clearCodeBlockPreviews(editor.view);
 			}
 		};
 	}, [editor, relPath]);
+
+	useEffect(() => {
+		if (!editor || editor.isDestroyed || mode !== "rich" || !tiptapHostNode) {
+			setFocusedCodeBlockPreview(null);
+			return;
+		}
+		const openFocusedPreview = (event: Event) => {
+			if (!(event instanceof CustomEvent)) return;
+			const request: unknown = event.detail;
+			if (!isFocusedCodeBlockPreviewRequest(request)) return;
+			if (!isPreviewableCodeBlockLanguage(request.language)) return;
+			setFocusedCodeBlockPreview(request);
+		};
+		tiptapHostNode.addEventListener(
+			OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
+			openFocusedPreview,
+		);
+		return () =>
+			tiptapHostNode.removeEventListener(
+				OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
+				openFocusedPreview,
+			);
+	}, [editor, mode, tiptapHostNode]);
+
+	useEffect(() => {
+		if (!focusedCodeBlockPreview || !editor || editor.isDestroyed) return;
+		const closeOnSourceChange = () => setFocusedCodeBlockPreview(null);
+		editor.on("update", closeOnSourceChange);
+		return () => {
+			editor.off("update", closeOnSourceChange);
+		};
+	}, [editor, focusedCodeBlockPreview]);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
@@ -669,6 +730,23 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		editor.view.focus();
 	}, [editor, selectedCodeBlock]);
 
+	const returnToFocusedPreview = useCallback(() => {
+		if (!editor || editor.isDestroyed || !focusedCodeBlockPreview) return;
+		const node = editor.state.doc.nodeAt(focusedCodeBlockPreview.pos);
+		setFocusedCodeBlockPreview(null);
+		if (!node || node.type.name !== "codeBlock") return;
+		const afterBlock = Math.min(
+			focusedCodeBlockPreview.pos + node.nodeSize,
+			editor.state.doc.content.size,
+		);
+		editor.view.dispatch(
+			editor.state.tr.setSelection(
+				Selection.near(editor.state.doc.resolve(afterBlock)),
+			),
+		);
+		editor.view.focus();
+	}, [editor, focusedCodeBlockPreview]);
+
 	const selectedCodeBlockCanPreview = useMemo(
 		() => isPreviewableCodeBlockLanguage(selectedCodeBlock?.language ?? null),
 		[selectedCodeBlock?.language],
@@ -807,6 +885,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				</Suspense>
 			) : null}
+			<FocusedCodeBlockPreviewDialog
+				preview={focusedCodeBlockPreview}
+				onClose={returnToFocusedPreview}
+			/>
 		</div>
 	);
 });

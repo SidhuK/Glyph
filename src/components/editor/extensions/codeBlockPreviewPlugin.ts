@@ -55,6 +55,15 @@ export interface CodeBlockPreviewWidgetContext {
 	language: string | null;
 	editable: boolean;
 	selectSource: () => void;
+	openFocusedPreview: () => void;
+}
+
+export const OPEN_FOCUSED_CODE_BLOCK_PREVIEW = "glyph:open-code-block-preview";
+
+export interface FocusedCodeBlockPreviewRequest {
+	pos: number;
+	source: string;
+	language: string | null;
 }
 
 export interface CodeBlockPreviewExtensionOptions {
@@ -138,6 +147,22 @@ function buildCodeBlockPreviewDecorations(
 						selectSource: () => {
 							if (!editable) return;
 							selectCodeBlockSource(view, pos, node.nodeSize);
+						},
+						openFocusedPreview: () => {
+							if (!editable) return;
+							view.dom.dispatchEvent(
+								new CustomEvent<FocusedCodeBlockPreviewRequest>(
+									OPEN_FOCUSED_CODE_BLOCK_PREVIEW,
+									{
+										bubbles: true,
+										detail: {
+											pos,
+											source,
+											language,
+										},
+									},
+								),
+							);
 						},
 					}),
 				{
