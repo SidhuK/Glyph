@@ -68,7 +68,9 @@
 	},
 	"listCollapse": {
 		"collapseBranch": "Recolher ramificação da lista",
-		"expandBranch": "Expandir ramificação da lista"
+		"expandBranch": "Expandir ramificação da lista",
+		"loadFailed": "Não foi possível carregar o estado das listas recolhidas",
+		"saveFailed": "Não foi possível salvar o estado das listas recolhidas"
 	},
 	"slash": {
 		"heading1": {

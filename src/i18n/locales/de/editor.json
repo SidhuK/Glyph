@@ -68,7 +68,9 @@
 	},
 	"listCollapse": {
 		"collapseBranch": "Listenast einklappen",
-		"expandBranch": "Listenast ausklappen"
+		"expandBranch": "Listenast ausklappen",
+		"loadFailed": "Listenklappzustand konnte nicht geladen werden",
+		"saveFailed": "Listenklappzustand konnte nicht gespeichert werden"
 	},
 	"slash": {
 		"heading1": {

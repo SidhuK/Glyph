@@ -68,7 +68,9 @@
 	},
 	"listCollapse": {
 		"collapseBranch": "Contraer rama de lista",
-		"expandBranch": "Expandir rama de lista"
+		"expandBranch": "Expandir rama de lista",
+		"loadFailed": "No se pudo cargar el estado de las listas contraídas",
+		"saveFailed": "No se pudo guardar el estado de las listas contraídas"
 	},
 	"slash": {
 		"heading1": {

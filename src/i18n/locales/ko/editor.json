@@ -68,7 +68,9 @@
 	},
 	"listCollapse": {
 		"collapseBranch": "목록 가지 접기",
-		"expandBranch": "목록 가지 펼치기"
+		"expandBranch": "목록 가지 펼치기",
+		"loadFailed": "접힌 목록 상태를 불러오지 못했습니다",
+		"saveFailed": "접힌 목록 상태를 저장하지 못했습니다"
 	},
 	"slash": {
 		"heading1": {

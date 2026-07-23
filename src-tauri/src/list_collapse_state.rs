@@ -31,7 +31,7 @@ fn empty_store() -> Store {
 }
 
 fn normalize_path(path: &str) -> Option<String> {
-    let path = PathBuf::from(path.trim());
+    let path = PathBuf::from(path);
     if path.as_os_str().is_empty() || path.is_absolute() || deny_hidden_rel_path(&path).is_err() {
         return None;
     }

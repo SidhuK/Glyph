@@ -13,8 +13,7 @@ interface HeadingRange {
 
 interface ListBranch {
 	key: string;
-	nestedListEnd: number;
-	nestedListPos: number;
+	nestedLists: Array<{ end: number; pos: number }>;
 	pos: number;
 }
 
@@ -75,9 +74,8 @@ function extractHeadingRanges(doc: ProseMirrorNode): HeadingRange[] {
 
 function listBranchKey(doc: ProseMirrorNode, pos: number, nodeName: string) {
 	const resolved = doc.resolve(pos);
-	return `${nodeName}:${Array.from(
-		{ length: resolved.depth + 1 },
-		(_, depth) => resolved.index(depth),
+	return `${nodeName}:${Array.from({ length: resolved.depth + 1 }, (_, depth) =>
+		resolved.index(depth),
 	).join(".")}`;
 }
 
@@ -86,20 +84,24 @@ function extractListBranches(doc: ProseMirrorNode): ListBranch[] {
 	doc.descendants((node, pos) => {
 		if (!LIST_ITEM_NODE_NAMES.has(node.type.name)) return;
 		let offset = 0;
+		const nestedLists: Array<{ end: number; pos: number }> = [];
 		for (let index = 0; index < node.childCount; index += 1) {
 			const child = node.child(index);
 			if (LIST_NODE_NAMES.has(child.type.name)) {
 				const nestedListPos = pos + 1 + offset;
-				branches.push({
-					key: listBranchKey(doc, pos, node.type.name),
-					nestedListEnd: nestedListPos + child.nodeSize,
-					nestedListPos,
-					pos,
+				nestedLists.push({
+					end: nestedListPos + child.nodeSize,
+					pos: nestedListPos,
 				});
-				break;
 			}
 			offset += child.nodeSize;
 		}
+		if (nestedLists.length === 0) return;
+		branches.push({
+			key: listBranchKey(doc, pos, node.type.name),
+			nestedLists,
+			pos,
+		});
 	});
 	return branches;
 }
@@ -126,6 +128,15 @@ function collapseDecorationsForRange(
 	});
 
 	return decorations;
+}
+
+function collapsedListBranchKeys(
+	doc: ProseMirrorNode,
+	state: HeadingCollapseState,
+): string[] {
+	return extractListBranches(doc)
+		.filter((branch) => state.collapsedListPositions.has(branch.pos))
+		.map((branch) => branch.key);
 }
 
 function createToggleButton(
@@ -207,11 +218,7 @@ function createListToggleButton(
 			);
 			const state = headingCollapsePluginKey.getState(view.state);
 			if (!state) return;
-			onListCollapseToggle(
-				extractListBranches(view.state.doc)
-					.filter((branch) => state.collapsedListPositions.has(branch.pos))
-					.map((branch) => branch.key),
-			);
+			onListCollapseToggle(collapsedListBranchKeys(view.state.doc, state));
 		});
 		return button;
 	};
@@ -273,11 +280,13 @@ function buildDecorations(
 				),
 			);
 			if (collapsed) {
-				decorations.push(
-					Decoration.node(branch.nestedListPos, branch.nestedListEnd, {
-						class: "listCollapseHidden",
-					}),
-				);
+				for (const nestedList of branch.nestedLists) {
+					decorations.push(
+						Decoration.node(nestedList.pos, nestedList.end, {
+							class: "listCollapseHidden",
+						}),
+					);
+				}
 			}
 		}
 	}
@@ -318,7 +327,8 @@ function mapPositions(
 	const mapped = new Set<number>();
 	for (const position of positions) {
 		const result = transaction.mapping.mapResult(position, bias);
-		if (!result.deleted && validPositions.has(result.pos)) mapped.add(result.pos);
+		if (!result.deleted && validPositions.has(result.pos))
+			mapped.add(result.pos);
 	}
 	return mapped;
 }
@@ -454,7 +464,9 @@ export const HeadingCollapse = Extension.create<{
 
 						const headings = extractHeadingRanges(nextState.doc);
 						const branches = extractListBranches(nextState.doc);
-						const headingPositions = new Set(headings.map((heading) => heading.pos));
+						const headingPositions = new Set(
+							headings.map((heading) => heading.pos),
+						);
 						const listPositions = new Set(branches.map((branch) => branch.pos));
 						let headingsEnabled = previous.headingsEnabled;
 						let listsEnabled = previous.listsEnabled;
@@ -474,7 +486,9 @@ export const HeadingCollapse = Extension.create<{
 						switch (meta?.type) {
 							case "heading-toggle":
 								if (headingPositions.has(meta.pos)) {
-									collapsedHeadingPositions = new Set(collapsedHeadingPositions);
+									collapsedHeadingPositions = new Set(
+										collapsedHeadingPositions,
+									);
 									if (collapsedHeadingPositions.has(meta.pos)) {
 										collapsedHeadingPositions.delete(meta.pos);
 									} else {
@@ -513,7 +527,9 @@ export const HeadingCollapse = Extension.create<{
 							case "lists-collapsed": {
 								const keys = new Set(meta.keys);
 								collapsedListPositions = new Set(
-									branches.filter((branch) => keys.has(branch.key)).map((branch) => branch.pos),
+									branches
+										.filter((branch) => keys.has(branch.key))
+										.map((branch) => branch.pos),
 								);
 								break;
 							}
@@ -542,6 +558,27 @@ export const HeadingCollapse = Extension.create<{
 					decorations(state) {
 						return headingCollapsePluginKey.getState(state)?.decorations;
 					},
+				},
+				view: () => {
+					let collapsedKeys = "";
+					return {
+						update(view, previousState) {
+							if (view.state.doc.eq(previousState.doc)) return;
+							const state = headingCollapsePluginKey.getState(view.state);
+							if (
+								!state?.listsEnabled ||
+								state.collapsedListPositions.size === 0
+							) {
+								collapsedKeys = "";
+								return;
+							}
+							const keys = collapsedListBranchKeys(view.state.doc, state);
+							const nextCollapsedKeys = keys.join("\0");
+							if (nextCollapsedKeys === collapsedKeys) return;
+							collapsedKeys = nextCollapsedKeys;
+							onListCollapseToggle(keys);
+						},
+					};
 				},
 			}),
 		];

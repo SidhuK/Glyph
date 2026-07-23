@@ -357,16 +357,21 @@ export function useNoteEditor({
 	const markdownSyncTimeoutRef = useRef<number | null>(null);
 	const markdownManagerRef = useRef<MarkdownManager | null>(null);
 	const pasteMarkdownBehaviorRef = useRef(pasteMarkdownBehavior);
+	const listCollapseLoadVersionRef = useRef(0);
+	const listCollapseSaveRef = useRef(Promise.resolve());
 	const listCollapseEnabled = showCollapsibleLists && mode !== "plain";
 	const handleListCollapseChange = useCallback((branches: string[]) => {
 		const path = relPathRef.current;
 		if (!path) return;
-		void invoke("list_collapse_state_set", { path, branches }).catch((error) => {
-			console.error("Failed to save list collapse state", error);
-			toast.error(i18n.t("editor:listCollapse.saveFailed"), {
-				description: error instanceof Error ? error.message : String(error),
-			});
-		});
+		listCollapseLoadVersionRef.current += 1;
+		listCollapseSaveRef.current = listCollapseSaveRef.current.then(() =>
+			invoke("list_collapse_state_set", { path, branches }).catch((error) => {
+				console.error("Failed to save list collapse state", error);
+				toast.error(i18n.t("editor:listCollapse.saveFailed"), {
+					description: error instanceof Error ? error.message : String(error),
+				});
+			}),
+		);
 	}, []);
 	const extensions = useMemo(
 		() =>
@@ -760,6 +765,7 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor || editor.isDestroyed) return;
+		const loadVersion = ++listCollapseLoadVersionRef.current;
 		if (!listCollapseEnabled || !relPath) {
 			editor.commands.setListCollapseKeys([]);
 			return;
@@ -769,12 +775,18 @@ export function useNoteEditor({
 		editor.commands.setListCollapseKeys([]);
 		void invoke("list_collapse_state_get", { path: relPath })
 			.then((keys) => {
-				if (!cancelled && !editor.isDestroyed) {
+				if (
+					!cancelled &&
+					loadVersion === listCollapseLoadVersionRef.current &&
+					!editor.isDestroyed
+				) {
 					editor.commands.setListCollapseKeys(keys);
 				}
 			})
 			.catch((error) => {
-				if (cancelled) return;
+				if (cancelled || loadVersion !== listCollapseLoadVersionRef.current) {
+					return;
+				}
 				console.error("Failed to load list collapse state", error);
 				toast.error(i18n.t("editor:listCollapse.loadFailed"), {
 					description: error instanceof Error ? error.message : String(error),

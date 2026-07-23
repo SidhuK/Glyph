@@ -73,7 +73,8 @@
 .tiptapContentInline .listCollapseToggle {
 	position: absolute;
 	left: calc(
-		-1 * (var(--space-5) + var(--heading-toggle-rail-width) + var(--space-1))
+		-1 *
+		(var(--space-5) + var(--heading-toggle-rail-width) + var(--space-1))
 	);
 	top: calc((1.68em - var(--heading-toggle-rail-width)) / 2);
 	z-index: 1;
