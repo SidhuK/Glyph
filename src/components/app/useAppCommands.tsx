@@ -50,7 +50,6 @@ import type { SettingsTab } from "../settings/settingsConfig";
 import type { Command } from "./CommandPalette";
 import { buildEditorCommands } from "./editorCommands";
 import { buildMovePickerCommands } from "./movePickerCommands";
-import { buildSettingsSearchCommands } from "./settingsSearchCommands";
 
 interface GitSyncCommandActions {
 	syncNow: () => Promise<unknown>;
@@ -298,8 +297,6 @@ export function useAppCommands({
 			setCurrentEditorMode,
 			showCollapsibleHeadings,
 		});
-		const settingsSearchCommands = buildSettingsSearchCommands(openSettings);
-
 		const baseCommands: Command[] = [
 			{
 				id: "new-note",
@@ -849,12 +846,7 @@ export function useAppCommands({
 			},
 		];
 		return resolveCommandShortcuts(
-			[
-				...baseCommands,
-				...settingsSearchCommands,
-				...aiCommands,
-				...editorCommands,
-			],
+			[...baseCommands, ...aiCommands, ...editorCommands],
 			getBinding,
 			language,
 		);

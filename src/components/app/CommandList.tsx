@@ -1,114 +1,210 @@
-import { Fragment, useMemo } from "react";
+import {
+	Folder01Icon,
+	TableIcon,
+	Tag01Icon,
+	UserIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Fragment, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	formatShortcutForPlatform,
 	formatShortcutPartsForPlatform,
 } from "../../lib/shortcuts/platform";
-import type { Command } from "./commandPaletteHelpers";
+import { FileText } from "../Icons";
+import type { PaletteResult, PaletteResultKind } from "./paletteResults";
+import { getPaletteSettingIcon } from "./settingsPaletteIcons";
 
 interface CommandListProps {
-	filtered: Command[];
+	results: PaletteResult[];
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
-	onRunCommand: (index: number) => void;
+	onSelectResult: (index: number) => void;
+}
+
+function HighlightedSnippet({ snippet }: { snippet: string }) {
+	const parts = snippet.split(/([⟦⟧])/);
+	const output: ReactNode[] = [];
+	let highlighted = false;
+	for (const [index, part] of parts.entries()) {
+		if (part === "⟦") {
+			highlighted = true;
+		} else if (part === "⟧") {
+			highlighted = false;
+		} else if (part) {
+			output.push(
+				<Fragment key={`${index}:${part.slice(0, 8)}`}>
+					{highlighted ? <mark>{part}</mark> : part}
+				</Fragment>,
+			);
+		}
+	}
+	return <>{output}</>;
+}
+
+function ResultIcon({ result }: { result: PaletteResult }) {
+	if (result.kind === "command") return result.command?.icon ?? null;
+	const icon =
+		result.kind === "setting"
+			? getPaletteSettingIcon(result.settingId)
+			: result.kind === "folder"
+				? Folder01Icon
+				: result.kind === "tag"
+					? Tag01Icon
+					: result.kind === "person"
+						? UserIcon
+						: result.kind === "database"
+							? TableIcon
+							: null;
+	return icon ? (
+		<HugeiconsIcon icon={icon} size="var(--icon-md)" strokeWidth={0.9} />
+	) : (
+		<FileText size="var(--icon-md)" />
+	);
+}
+
+function Shortcut({ result }: { result: PaletteResult }) {
+	const shortcut = result.command?.shortcut;
+	if (!shortcut) return null;
+	return (
+		<span
+			className="commandPaletteShortcut"
+			aria-label={formatShortcutForPlatform(shortcut)}
+		>
+			<kbd>
+				<span className="commandPaletteShortcutCombo">
+					{formatShortcutPartsForPlatform(shortcut).map((part) => (
+						<span
+							key={`${result.id}-${part}`}
+							className="commandPaletteShortcutPart"
+						>
+							{part}
+						</span>
+					))}
+				</span>
+			</kbd>
+		</span>
+	);
 }
 
 export function CommandList({
-	filtered,
+	results,
 	selectedIndex,
 	onSetSelectedIndex,
-	onRunCommand,
+	onSelectResult,
 }: CommandListProps) {
 	const { t } = useTranslation("shell");
-	const generalCategory = t("commandPalette.sectionGeneral");
-	const sections = useMemo(() => {
-		const order: string[] = [];
-		const grouped = new Map<
-			string,
-			Array<{
-				command: Command;
-				index: number;
-			}>
-		>();
-
-		filtered.forEach((command, index) => {
-			const category = command.category?.trim() || generalCategory;
-			if (!grouped.has(category)) {
-				grouped.set(category, []);
-				order.push(category);
-			}
-			grouped.get(category)?.push({ command, index });
-		});
-
-		return order.map((category) => ({
-			category,
-			items: grouped.get(category) ?? [],
-		}));
-	}, [filtered, generalCategory]);
-
-	if (filtered.length === 0) {
+	const scrollSelectedIntoView = useCallback(
+		(node: HTMLButtonElement | null) =>
+			node?.scrollIntoView({ block: "nearest" }),
+		[],
+	);
+	if (!results.length) {
 		return (
-			<div className="commandPaletteEmpty">
-				{t("commandPalette.noCommands")}
-			</div>
+			<div className="commandPaletteEmpty">{t("commandPalette.noResults")}</div>
 		);
 	}
 
-	const showSectionLabels =
-		sections.length > 1 ||
-		(sections.length === 1 && sections[0]?.category !== generalCategory);
-
+	let previousKind: PaletteResultKind | null = null;
 	return (
-		<>
-			{sections.map((section) => (
-				<Fragment key={section.category}>
-					{showSectionLabels ? (
-						<div className="commandPaletteSectionLabel">{section.category}</div>
-					) : null}
-					{section.items.map(({ command, index }) => (
+		<div aria-label={t("commandPalette.resultsLabel")}>
+			{results.map((result, index) => {
+				const showGroup = result.kind !== previousKind;
+				previousKind = result.kind;
+				const selected = index === selectedIndex;
+				return (
+					<Fragment key={result.id}>
+						{showGroup ? (
+							<div className="commandPaletteGroupLabel">
+								{t(`commandPalette.groups.${result.kind}`)}
+							</div>
+						) : null}
 						<button
-							key={command.id}
+							ref={selected ? scrollSelectedIntoView : undefined}
+							id={result.id}
 							type="button"
-							className="commandPaletteItem"
-							data-command-index={index}
-							data-selected={index === selectedIndex}
+							aria-current={selected}
+							aria-pressed={result.checked}
+							className="commandPaletteItem commandPaletteUniversalRow"
+							data-selected={selected}
+							data-kind={result.kind}
+							data-control={result.settingControl}
+							disabled={result.enabled === false}
 							onMouseEnter={() => onSetSelectedIndex(index)}
-							onMouseDown={(e) => {
-								e.preventDefault();
-								onRunCommand(index);
+							onMouseDown={(event) => {
+								event.preventDefault();
 							}}
+							onClick={() => onSelectResult(index)}
 						>
 							<span className="commandPaletteItemMain">
-								{command.icon ? (
-									<span className="commandPaletteItemIcon">{command.icon}</span>
-								) : null}
-								<span>{command.label}</span>
-							</span>
-							{command.shortcut ? (
-								<span
-									className="commandPaletteShortcut"
-									aria-label={formatShortcutForPlatform(command.shortcut)}
-								>
-									<kbd>
-										<span className="commandPaletteShortcutCombo">
-											{formatShortcutPartsForPlatform(command.shortcut).map(
-												(part) => (
-													<span
-														key={`${command.id}-${part}`}
-														className="commandPaletteShortcutPart"
-													>
-														{part}
-													</span>
-												),
-											)}
-										</span>
-									</kbd>
+								<span className="commandPaletteItemIcon" aria-hidden="true">
+									<ResultIcon result={result} />
 								</span>
-							) : null}
+								<span className="commandPaletteUniversalContent">
+									<span className="commandPaletteResultLine">
+										<span className="commandPaletteResultTitle">
+											{result.label}
+										</span>
+										{result.description ? (
+											<>
+												<span
+													className="commandPaletteResultLineSep"
+													aria-hidden="true"
+												>
+													·
+												</span>
+												<span
+													className="commandPaletteResultPath"
+													title={result.description}
+												>
+													{result.description}
+												</span>
+											</>
+										) : null}
+									</span>
+									{result.snippet ? (
+										<span className="commandPaletteResultSnippet">
+											<HighlightedSnippet snippet={result.snippet} />
+										</span>
+									) : null}
+								</span>
+							</span>
+							{typeof result.checked === "boolean" ? (
+								<span className="commandPaletteInlineSettingValue">
+									<span>{result.trailing}</span>
+									<span
+										className="commandPaletteInlineToggle"
+										data-checked={result.checked}
+										aria-hidden="true"
+									>
+										<span />
+									</span>
+								</span>
+							) : result.settingControl === "choice" && result.trailing ? (
+								<span className="commandPaletteInlineSettingValue">
+									<span aria-hidden="true">‹</span>
+									<span
+										className="commandPaletteResultValue"
+										title={result.trailing}
+									>
+										{result.trailing}
+									</span>
+									<span aria-hidden="true">›</span>
+								</span>
+							) : result.trailing ? (
+								<span
+									className="commandPaletteResultValue"
+									title={result.trailing}
+								>
+									{result.trailing}
+								</span>
+							) : (
+								<Shortcut result={result} />
+							)}
 						</button>
-					))}
-				</Fragment>
-			))}
-		</>
+					</Fragment>
+				);
+			})}
+		</div>
 	);
 }

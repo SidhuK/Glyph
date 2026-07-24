@@ -484,7 +484,7 @@ export interface RecentFile {
 	openedAt: number;
 }
 
-interface AppSettings {
+export interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
