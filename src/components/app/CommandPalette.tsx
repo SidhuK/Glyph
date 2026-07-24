@@ -71,6 +71,7 @@ const SETTINGS_QUERY_ROOT = "command-palette-settings";
 const BROAD_GROUP_LIMIT = 8;
 
 function displaySettingValue(
+	definition: PaletteSettingDefinition,
 	value: string | number | boolean | null,
 	t: (key: string, options?: Record<string, unknown>) => string,
 ) {
@@ -78,6 +79,12 @@ function displaySettingValue(
 		return t(value ? "commandPalette.on" : "commandPalette.off");
 	}
 	if (value === null || value === "") return t("commandPalette.notSet");
+	if (definition.control === "choice") {
+		const option = definition.options?.find(
+			(candidate) => candidate.value === value,
+		);
+		if (option) return option.label;
+	}
 	return String(value);
 }
 
@@ -314,7 +321,7 @@ export function CommandPalette({
 							? undefined
 							: definition.sensitive
 								? t("commandPalette.secretMasked")
-								: displaySettingValue(value, t),
+								: displaySettingValue(definition, value, t),
 					settingId: definition.id,
 					settingControl: definition.control,
 				});
