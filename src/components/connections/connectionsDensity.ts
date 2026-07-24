@@ -188,7 +188,8 @@ export function sigmaSettingsForVariant(
 			zoomingRatio: LOCAL_SIGMA.zoomingRatio,
 			minEdgeThickness: 0.52,
 			zIndex: true,
-			allowInvalidContainer: false,
+			// Panels/dialogs can briefly report 0×0 while hidden or mid-layout.
+			allowInvalidContainer: true,
 		};
 	}
 
@@ -211,6 +212,7 @@ export function sigmaSettingsForVariant(
 		zoomingRatio: 1.6,
 		minEdgeThickness: sigmaTier.minEdgeThickness,
 		zIndex: true,
-		allowInvalidContainer: false,
+		// Panels/dialogs can briefly report 0×0 while hidden or mid-layout.
+		allowInvalidContainer: true,
 	};
 }

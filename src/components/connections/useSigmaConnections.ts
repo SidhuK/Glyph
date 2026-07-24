@@ -44,6 +44,10 @@ function isEdgeConnectedToFocus(
 	return source === focusId || target === focusId;
 }
 
+function hasValidContainerSize(container: HTMLElement): boolean {
+	return container.clientWidth > 0 && container.clientHeight > 0;
+}
+
 function fitGraphToViewport(
 	renderer: Sigma<ConnectionsNodeAttributes, ConnectionsEdgeAttributes>,
 ) {
@@ -104,7 +108,7 @@ export function useSigmaConnections({
 
 		const setup = () => {
 			if (disposed) return;
-			if (container.clientWidth <= 0 || container.clientHeight <= 0) {
+			if (!hasValidContainerSize(container)) {
 				fitFrame = window.requestAnimationFrame(setup);
 				return;
 			}
@@ -267,6 +271,9 @@ export function useSigmaConnections({
 			mouseCaptor.on("mouseup", handleMouseUp);
 
 			resizeObserver = new ResizeObserver(() => {
+				// Container can collapse to 0x0 when the panel/dialog is hidden.
+				// Sigma throws if resize() runs against an empty container.
+				if (disposed || !hasValidContainerSize(container)) return;
 				activeRenderer.resize();
 				fitToView();
 			});
