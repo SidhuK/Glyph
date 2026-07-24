@@ -1,25 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import type { SearchResult } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { isPreviewableNotePath } from "../../utils/path";
-import { type Tab, parseSearchQueryWithPeople } from "./commandPaletteHelpers";
-
-export interface CommandSearchItem {
-	id: string;
-	previewable: boolean;
-}
+import { parseSearchQueryWithPeople } from "./commandPaletteHelpers";
 
 export function useCommandSearch(
-	activeTab: Tab,
 	query: string,
 	spacePath: string | null,
+	enabled: boolean,
+	peopleMentionsEnabled: boolean,
 ) {
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
-	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const requestIdRef = useRef(0);
 	const { recentFiles } = useRecentFiles(spacePath, 8);
@@ -29,30 +22,7 @@ export function useCommandSearch(
 	);
 
 	useEffect(() => {
-		let cancelled = false;
-		void loadSettings()
-			.then((settings) => {
-				if (cancelled) return;
-				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-			})
-			.catch(() => {
-				if (cancelled) return;
-				setPeopleMentionsEnabled(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
-			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
-		}
-	});
-
-	useEffect(() => {
-		if (activeTab !== "search") return;
-		if (!spacePath) {
+		if (!enabled || !spacePath) {
 			requestIdRef.current += 1;
 			setSearchResults([]);
 			setIsSearching(false);
@@ -110,10 +80,10 @@ export function useCommandSearch(
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [query, activeTab, spacePath, peopleMentionsEnabled]);
+	}, [query, enabled, spacePath, peopleMentionsEnabled]);
 
 	const { titleMatches, contentMatches } = useMemo(() => {
-		if (activeTab !== "search" || !query.trim())
+		if (!enabled || !query.trim())
 			return { titleMatches: [], contentMatches: [] };
 		const parsed = parseSearchQueryWithPeople(
 			query.trim(),
@@ -133,34 +103,12 @@ export function useCommandSearch(
 			}
 		}
 		return { titleMatches: title, contentMatches: content };
-	}, [searchResults, query, activeTab, peopleMentionsEnabled]);
-
-	const searchItems = useMemo((): CommandSearchItem[] => {
-		if (activeTab !== "search") return [];
-		if (!query.trim()) {
-			return recentPreviewableFiles.map((file) => ({
-				id: file.path,
-				previewable: true,
-			}));
-		}
-		return [...titleMatches, ...contentMatches].map((result) => ({
-			id: result.id,
-			previewable: isPreviewableNotePath(result.id),
-		}));
-	}, [activeTab, contentMatches, query, recentPreviewableFiles, titleMatches]);
-
-	const reset = useCallback(() => {
-		requestIdRef.current += 1;
-		setSearchResults([]);
-		setIsSearching(false);
-	}, []);
+	}, [searchResults, query, enabled, peopleMentionsEnabled]);
 
 	return {
 		recentFiles: recentPreviewableFiles,
 		isSearching,
 		titleMatches,
 		contentMatches,
-		searchItems,
-		reset,
 	};
 }

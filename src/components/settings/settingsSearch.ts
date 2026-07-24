@@ -14,7 +14,7 @@ interface SettingsSearchMatch extends SettingsSearchEntry {
 	tabLabel: string;
 }
 
-interface SettingsSearchDef {
+export interface SettingsSearchDef {
 	id: string;
 	tab: SettingsTab;
 }
