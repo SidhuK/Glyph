@@ -141,7 +141,7 @@ function buildAiCommands({
 			icon: (
 				<HugeiconsIcon
 					icon={AiBrain04Icon}
-					size="var(--icon-lg)"
+					className="size-[var(--icon-lg)]"
 					strokeWidth={0.9}
 				/>
 			),
@@ -154,7 +154,7 @@ function buildAiCommands({
 			icon: (
 				<HugeiconsIcon
 					icon={Link01Icon}
-					size="var(--icon-lg)"
+					className="size-[var(--icon-lg)]"
 					strokeWidth={0.9}
 				/>
 			),
@@ -167,7 +167,7 @@ function buildAiCommands({
 			icon: (
 				<HugeiconsIcon
 					icon={Link01Icon}
-					size="var(--icon-lg)"
+					className="size-[var(--icon-lg)]"
 					strokeWidth={0.9}
 				/>
 			),
@@ -303,7 +303,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={PencilEdit02Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -316,7 +316,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -329,7 +329,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={ColorsIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -342,7 +342,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={CursorInWindowIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -376,7 +376,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={TableIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -388,7 +388,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Folder01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -404,7 +404,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -418,7 +418,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={CalendarAdd01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -439,7 +439,7 @@ export function useAppCommands({
 								? PinOffIcon
 								: PinIcon
 						}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -455,7 +455,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -469,7 +469,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={ChartRelationshipIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -486,7 +486,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -503,7 +503,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -518,7 +518,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Link01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -536,7 +536,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Link01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -553,7 +553,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={MoveIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -570,7 +570,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={ArrowLeft}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -584,7 +584,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={ArrowRight}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -598,7 +598,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={SearchIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -612,7 +612,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Archive04Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -625,7 +625,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={ChartRelationshipIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -637,7 +637,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={LibraryIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -650,7 +650,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Calendar03Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -662,7 +662,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Folder01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -677,7 +677,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={FolderOpenIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -689,7 +689,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={FolderOpenIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -701,7 +701,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={FolderRemoveIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -713,7 +713,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Link01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -731,7 +731,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={SidebarLeftIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -743,7 +743,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={SquareLock02Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -767,7 +767,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Settings01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -779,7 +779,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Settings01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -791,7 +791,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={SquareLock02Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -802,7 +802,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Settings01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -814,7 +814,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={Settings01Icon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -825,7 +825,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),
@@ -837,7 +837,7 @@ export function useAppCommands({
 				icon: (
 					<HugeiconsIcon
 						icon={NoteIcon}
-						size="var(--icon-lg)"
+						className="size-[var(--icon-lg)]"
 						strokeWidth={0.9}
 					/>
 				),

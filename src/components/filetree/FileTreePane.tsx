@@ -209,8 +209,7 @@ function FolderBreadcrumb({
 						</button>
 						{!isLast ? (
 							<ChevronRight
-								size="var(--icon-xs)"
-								className="fileTreeBreadcrumbSeparator"
+								className="fileTreeBreadcrumbSeparator size-[var(--icon-xs)]"
 								aria-hidden="true"
 							/>
 						) : null}

@@ -150,7 +150,7 @@ export function NoteLinkDialog({
 					</label>
 					<DialogFooter className="editorLinkDialogActions">
 						<Button type="button" variant="ghost" onClick={remove}>
-							<X size="var(--icon-md)" />
+							<X className="size-[var(--icon-md)]" />
 							Remove
 						</Button>
 						<Button type="submit">Apply</Button>

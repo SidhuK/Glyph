@@ -564,7 +564,7 @@ export function MarkdownEditorPane({
 						>
 							<HugeiconsIcon
 								icon={AiBrain04Icon}
-								size="var(--icon-md)"
+								className="size-[var(--icon-md)]"
 								strokeWidth={isAiPanelActive ? 1.5 : 1}
 							/>
 						</button>
@@ -579,7 +579,7 @@ export function MarkdownEditorPane({
 						>
 							<HugeiconsIcon
 								icon={LayoutAlignRightIcon}
-								size="var(--icon-md)"
+								className="size-[var(--icon-md)]"
 								strokeWidth={infoPanelOpen ? 1.5 : 1}
 							/>
 						</button>

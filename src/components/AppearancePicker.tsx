@@ -121,8 +121,7 @@ export function AppearancePicker({
 					<div className="commandPaletteHeader">
 						<div className="commandPaletteInputWrapper">
 							<Search
-								size="var(--icon-sm)"
-								className="commandPaletteSearchIcon"
+								className="commandPaletteSearchIcon size-[var(--icon-sm)]"
 								aria-hidden="true"
 							/>
 							<Input
@@ -186,7 +185,7 @@ export function AppearancePicker({
 									>
 										<DatabaseColumnIcon
 											iconName={defaultIconName}
-											size="var(--icon-lg)"
+											className="size-[var(--icon-lg)]"
 										/>
 									</Button>
 								</div>
@@ -213,7 +212,7 @@ export function AppearancePicker({
 											>
 												<DatabaseColumnIcon
 													iconName={option.id}
-													size="var(--icon-lg)"
+													className="size-[var(--icon-lg)]"
 												/>
 											</Button>
 										);
@@ -253,7 +252,7 @@ export function AppearancePicker({
 															>
 																<DatabaseColumnIcon
 																	iconName={option.id}
-																	size="var(--icon-lg)"
+																	className="size-[var(--icon-lg)]"
 																/>
 															</Button>
 														);
@@ -298,7 +297,10 @@ export function AppearancePickerIconTrigger({
 				onClick();
 			}}
 		>
-			<DatabaseColumnIcon iconName={iconName} size="var(--icon-md)" />
+			<DatabaseColumnIcon
+				iconName={iconName}
+				className="size-[var(--icon-md)]"
+			/>
 		</Button>
 	);
 }

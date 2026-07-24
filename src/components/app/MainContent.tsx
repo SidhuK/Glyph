@@ -139,7 +139,7 @@ function ContextualEmptyState({
 		if (!onboarding.createdFirstNote) {
 			t.push({
 				key: "note",
-				icon: <FileText size="var(--icon-lg)" />,
+				icon: <FileText className="size-[var(--icon-lg)]" />,
 				text: "Create your first note",
 				action: "New note",
 				onClick: onCreateNote,
@@ -148,7 +148,7 @@ function ContextualEmptyState({
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
 			t.push({
 				key: "daily",
-				icon: <Calendar size="var(--icon-lg)" />,
+				icon: <Calendar className="size-[var(--icon-lg)]" />,
 				text: "Try a daily note — saved to your daily notes folder",
 				action: "Open daily note",
 				onClick: onOpenDailyNote,

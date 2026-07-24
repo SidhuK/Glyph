@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	type EffectiveShortcutBindings,
@@ -12,7 +11,11 @@ import {
 	type ShortcutActionDefinition,
 	type ShortcutActionId,
 } from "../lib/shortcuts/registry";
-import { useTauriEvent } from "../lib/tauriEvents";
+import {
+	listenWindowFocusChanged,
+	safeUnlisten,
+	useTauriEvent,
+} from "../lib/tauriEvents";
 
 const DEFAULT_EFFECTIVE_BINDINGS = getEffectiveShortcutBindings({});
 const FOCUS_REFRESH_DELAY_MS = 200;
@@ -34,22 +37,30 @@ export function useShortcutBindings() {
 
 	useEffect(() => {
 		let cancelled = false;
+		let cleanup: (() => void) | null = null;
 		let focusRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
 		mountedRef.current = true;
 		void refresh().catch(() => {});
-		const win = getCurrentWindow();
-		const unlistenPromise = win.onFocusChanged(({ payload: focused }) => {
+		void listenWindowFocusChanged((focused) => {
 			if (!focused || cancelled) return;
 			if (focusRefreshTimeout) clearTimeout(focusRefreshTimeout);
 			focusRefreshTimeout = setTimeout(() => {
 				if (!cancelled) void refresh(true).catch(() => {});
 			}, FOCUS_REFRESH_DELAY_MS);
-		});
+		})
+			.then((unlisten) => {
+				if (cancelled) {
+					safeUnlisten(unlisten);
+					return;
+				}
+				cleanup = unlisten;
+			})
+			.catch(() => {});
 		return () => {
 			cancelled = true;
 			mountedRef.current = false;
 			if (focusRefreshTimeout) clearTimeout(focusRefreshTimeout);
-			unlistenPromise.then((unlisten) => unlisten()).catch(() => {});
+			safeUnlisten(cleanup);
 		};
 	}, [refresh]);
 

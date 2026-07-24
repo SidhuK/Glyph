@@ -140,14 +140,12 @@ export function DatabaseViewTabs({
 							) : null}
 							{view.layout === "board" ? (
 								<Kanban
-									size="var(--icon-sm)"
-									className="databasesViewTabIcon"
+									className="databasesViewTabIcon size-[var(--icon-sm)]"
 									aria-hidden
 								/>
 							) : (
 								<Table
-									size="var(--icon-sm)"
-									className="databasesViewTabIcon"
+									className="databasesViewTabIcon size-[var(--icon-sm)]"
 									aria-hidden
 								/>
 							)}
@@ -176,8 +174,7 @@ export function DatabaseViewTabs({
 				>
 					<HugeiconsIcon
 						icon={MoreVerticalIcon}
-						className="databasesViewTabMenuIcon"
-						size="var(--icon-md)"
+						className="databasesViewTabMenuIcon size-[var(--icon-md)]"
 						strokeWidth={0.9}
 						color="currentColor"
 						aria-hidden
@@ -190,7 +187,7 @@ export function DatabaseViewTabs({
 					title="Add view"
 					aria-label="Add view"
 				>
-					<Plus size="var(--icon-sm)" />
+					<Plus className="size-[var(--icon-sm)]" />
 				</button>
 			</div>
 		</div>

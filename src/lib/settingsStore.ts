@@ -1,5 +1,6 @@
 import { type UnlistenFn, listen } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { safeUnlisten } from "./tauriEvents";
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
@@ -8,15 +9,6 @@ let settingsEntriesPromise: Promise<Map<string, unknown>> | null = null;
 let settingsEntriesGeneration = 0;
 let settingsInvalidationUnlisten: UnlistenFn | null = null;
 let settingsInvalidationUnlistenPromise: Promise<UnlistenFn> | null = null;
-
-function runSettingsInvalidationUnlisten(unlisten: UnlistenFn): void {
-	try {
-		const result = unlisten() as unknown;
-		void Promise.resolve(result).catch(() => {});
-	} catch {
-		// Ignore listener cleanup races during Tauri window teardown.
-	}
-}
 
 function ensureSettingsInvalidationListener() {
 	if (settingsInvalidationUnlisten || settingsInvalidationUnlistenPromise)
@@ -46,11 +38,11 @@ export function disposeSettingsInvalidationListener(): void {
 	settingsInvalidationUnlistenPromise = null;
 
 	if (unlisten) {
-		runSettingsInvalidationUnlisten(unlisten);
+		safeUnlisten(unlisten);
 		return;
 	}
 	if (unlistenPromise) {
-		void unlistenPromise.then(runSettingsInvalidationUnlisten).catch(() => {});
+		void unlistenPromise.then(safeUnlisten).catch(() => {});
 	}
 }
 

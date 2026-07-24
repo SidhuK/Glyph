@@ -48,8 +48,7 @@ export function PriorityPropertyPill({
 		>
 			<HugeiconsIcon
 				icon={priorityPropertyIconForValue(value)}
-				className="propertyValueTextIcon"
-				size="var(--icon-sm)"
+				className="propertyValueTextIcon size-[var(--icon-sm)]"
 				strokeWidth={1.3}
 			/>
 			<span>{label}</span>

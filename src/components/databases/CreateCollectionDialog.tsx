@@ -43,8 +43,8 @@ const COLLECTION_TIPS = [
 		text: "View them as a table or Kanban board.",
 		icons: (
 			<span className="createCollectionTipIcons" aria-hidden="true">
-				<Table size="var(--icon-sm)" />
-				<Kanban size="var(--icon-sm)" />
+				<Table className="size-[var(--icon-sm)]" />
+				<Kanban className="size-[var(--icon-sm)]" />
 			</span>
 		),
 	},
@@ -127,7 +127,7 @@ export function CreateCollectionDialog({
 					<div className="createCollectionIcon" aria-hidden="true">
 						<HugeiconsIcon
 							icon={LibraryIcon}
-							size="var(--icon-xl)"
+							className="size-[var(--icon-xl)]"
 							strokeWidth={0.9}
 						/>
 					</div>

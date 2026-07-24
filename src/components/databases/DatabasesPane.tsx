@@ -173,7 +173,7 @@ function DatabasesPaneContent({
 					) : null}
 					<HugeiconsIcon
 						icon={LibraryIcon}
-						size="var(--icon-3xl)"
+						className="size-[var(--icon-3xl)]"
 						strokeWidth={0.9}
 					/>
 					<div className="databasesEmptyTitle">
@@ -207,7 +207,7 @@ function DatabasesPaneContent({
 								className="createCollectionCta"
 								onClick={selection.openCreateCollectionDialog}
 							>
-								<Plus size="var(--icon-sm)" />
+								<Plus className="size-[var(--icon-sm)]" />
 								Create Collection
 							</Button>
 						</>

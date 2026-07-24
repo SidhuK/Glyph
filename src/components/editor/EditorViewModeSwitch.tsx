@@ -61,7 +61,7 @@ export function EditorViewModeSwitch({
 						>
 							<HugeiconsIcon
 								icon={item.icon}
-								size="var(--icon-md)"
+								className="size-[var(--icon-md)]"
 								strokeWidth={isActive ? 1.5 : 1}
 							/>
 						</button>

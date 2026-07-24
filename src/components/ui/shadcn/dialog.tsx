@@ -67,7 +67,7 @@ function DialogContent({
 					>
 						<HugeiconsIcon
 							icon={Close}
-							size="var(--icon-lg)"
+							className="size-[var(--icon-lg)]"
 							strokeWidth={0.9}
 						/>
 						<span className="sr-only">Close</span>

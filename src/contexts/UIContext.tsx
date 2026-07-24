@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type Dispatch,
 	type ReactNode,
@@ -29,7 +28,11 @@ import {
 	setFolioMode as saveFolioMode,
 	setShowToc as saveShowToc,
 } from "../lib/settings";
-import { useTauriEvent } from "../lib/tauriEvents";
+import {
+	listenWindowFocusChanged,
+	safeUnlisten,
+	useTauriEvent,
+} from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
 interface UILayoutContextValue {
@@ -334,8 +337,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		};
 
 		void loadAndApplySettings();
-		const win = getCurrentWindow();
-		const unlisten = win.onFocusChanged(({ payload: focused }) => {
+		let cleanup: (() => void) | null = null;
+		void listenWindowFocusChanged((focused) => {
 			if (!focused || cancelled) return;
 			void (async () => {
 				try {
@@ -346,11 +349,19 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					// best-effort refresh
 				}
 			})();
-		});
+		})
+			.then((unlisten) => {
+				if (cancelled) {
+					safeUnlisten(unlisten);
+					return;
+				}
+				cleanup = unlisten;
+			})
+			.catch(() => {});
 
 		return () => {
 			cancelled = true;
-			unlisten.then((fn) => fn()).catch(() => {});
+			safeUnlisten(cleanup);
 		};
 	}, []);
 

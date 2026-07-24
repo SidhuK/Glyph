@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
 import { invoke } from "../../lib/tauri";
+import { safeUnlisten } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
 import {
 	type WorkspaceSessionSnapshot,
@@ -241,7 +242,7 @@ export function useWorkspaceSession({
 			})
 			.then((stopListening) => {
 				if (disposed) {
-					stopListening();
+					safeUnlisten(stopListening);
 					return;
 				}
 				unlisten = stopListening;
@@ -255,7 +256,7 @@ export function useWorkspaceSession({
 			});
 		return () => {
 			disposed = true;
-			unlisten?.();
+			safeUnlisten(unlisten);
 		};
 	}, [flushPendingSave]);
 
@@ -277,7 +278,7 @@ export function useWorkspaceSession({
 		})
 			.then(async (stopListening) => {
 				if (disposed) {
-					stopListening();
+					safeUnlisten(stopListening);
 					return;
 				}
 				unlisten = stopListening;
@@ -298,7 +299,7 @@ export function useWorkspaceSession({
 			});
 		return () => {
 			disposed = true;
-			unlisten?.();
+			safeUnlisten(unlisten);
 		};
 	}, [flushPendingSave]);
 

@@ -289,8 +289,7 @@ function TagRowIcon({
 	return (
 		<HugeiconsIcon
 			icon={Tag01Icon}
-			className="tagsIcon"
-			size="var(--icon-sm)"
+			className="tagsIcon size-[var(--icon-sm)]"
 			strokeWidth={0.9}
 		/>
 	);

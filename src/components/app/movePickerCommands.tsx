@@ -28,7 +28,7 @@ export function buildMovePickerCommands({
 			icon: (
 				<HugeiconsIcon
 					icon={Folder01Icon}
-					size="var(--icon-lg)"
+					className="size-[var(--icon-lg)]"
 					strokeWidth={0.9}
 				/>
 			),
@@ -41,7 +41,7 @@ export function buildMovePickerCommands({
 			icon: (
 				<HugeiconsIcon
 					icon={Folder01Icon}
-					size="var(--icon-lg)"
+					className="size-[var(--icon-lg)]"
 					strokeWidth={0.9}
 				/>
 			),

@@ -167,8 +167,7 @@ export function SpaceConnectionsView() {
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
 						<HugeiconsIcon
 							icon={LoaderCircle}
-							className="animate-spin"
-							size="var(--icon-sm)"
+							className="animate-spin size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 						Loading notes and links…
@@ -193,8 +192,7 @@ export function SpaceConnectionsView() {
 					<div className="flex items-center gap-2 text-sm text-muted-foreground">
 						<HugeiconsIcon
 							icon={LoaderCircle}
-							className="animate-spin"
-							size="var(--icon-sm)"
+							className="animate-spin size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 						Arranging connections…
@@ -215,7 +213,7 @@ export function SpaceConnectionsView() {
 						<HugeiconsIcon
 							icon={Refresh01Icon}
 							data-icon="inline-start"
-							size="var(--icon-md)"
+							className="size-[var(--icon-md)]"
 							strokeWidth={0.9}
 						/>
 						Retry

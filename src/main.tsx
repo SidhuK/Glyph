@@ -34,7 +34,11 @@ import {
 	reloadFromDisk,
 } from "./lib/settings";
 import { invoke } from "./lib/tauri";
-import { useTauriEvent } from "./lib/tauriEvents";
+import {
+	listenWindowFocusChanged,
+	safeUnlisten,
+	useTauriEvent,
+} from "./lib/tauriEvents";
 import {
 	DEFAULT_UI_THEME_COLOR_OVERRIDES,
 	asThemeColorOverridesPatch,
@@ -121,14 +125,19 @@ function ThemeAndTypographyBridge() {
 
 		let cleanup: (() => void) | null = null;
 		try {
-			const win = getCurrentWindow();
-			void win
-				.onFocusChanged(({ payload: focused }) => {
-					if (!focused || cancelled) return;
-					void applyFromSettings(true);
-				})
+			void listenWindowFocusChanged((focused) => {
+				if (!focused || cancelled) return;
+				void applyFromSettings(true);
+			})
 				.then((unlisten) => {
+					if (cancelled) {
+						safeUnlisten(unlisten);
+						return;
+					}
 					cleanup = unlisten;
+				})
+				.catch(() => {
+					// not running inside tauri window context
 				});
 		} catch {
 			// not running inside tauri window context
@@ -136,7 +145,7 @@ function ThemeAndTypographyBridge() {
 
 		return () => {
 			cancelled = true;
-			cleanup?.();
+			safeUnlisten(cleanup);
 		};
 	}, [setTheme]);
 

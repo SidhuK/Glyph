@@ -513,13 +513,11 @@ export const FolioNoteListItem = memo(
 		const fileIcon = appearance?.icon ? (
 			<DatabaseColumnIcon
 				iconName={appearance.icon}
-				size="var(--icon-lg)"
-				className="folioNoteFileIcon"
+				className="folioNoteFileIcon size-[var(--icon-lg)]"
 			/>
 		) : (
 			<Icon
-				size="var(--icon-lg)"
-				className="folioNoteFileIcon"
+				className="folioNoteFileIcon size-[var(--icon-lg)]"
 				style={{ color: iconColor }}
 				aria-hidden="true"
 			/>
@@ -554,8 +552,7 @@ export const FolioNoteListItem = memo(
 							>
 								<DatabaseColumnIcon
 									iconName="link"
-									className="folioNoteUrlIcon"
-									size="var(--icon-xs)"
+									className="folioNoteUrlIcon size-[var(--icon-xs)]"
 									strokeWidth={1.2}
 								/>
 								{firstUrlLabel}
@@ -570,8 +567,7 @@ export const FolioNoteListItem = memo(
 								>
 									<DatabaseColumnIcon
 										iconName={iconNameForTag(tag)}
-										className="folioNoteTagIcon"
-										size="var(--icon-xs)"
+										className="folioNoteTagIcon size-[var(--icon-xs)]"
 										strokeWidth={1.2}
 									/>
 									{formatDatabaseTagLabel(tag)}

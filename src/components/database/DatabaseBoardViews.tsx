@@ -165,8 +165,7 @@ export function DatabaseBoardLaneView({
 								? priorityPropertyIconForValue(lane.label)
 								: Tag01Icon
 					}
-					className="databaseBoardLaneTitleIcon"
-					size="var(--icon-sm)"
+					className="databaseBoardLaneTitleIcon size-[var(--icon-sm)]"
 					strokeWidth={1.2}
 					aria-hidden="true"
 				/>

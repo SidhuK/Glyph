@@ -340,7 +340,7 @@ export function NotePropertyValueField({
 								aria-label={`Remove ${label}`}
 							>
 								<span>{label}</span>
-								<X size="var(--icon-xs)" />
+								<X className="size-[var(--icon-xs)]" />
 							</button>
 						);
 					})}

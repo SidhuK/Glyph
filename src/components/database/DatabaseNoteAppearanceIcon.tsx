@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { FileTreeAppearance } from "../../lib/tauri";
+import { cn } from "../../lib/utils";
 import { isMarkdownPath } from "../../utils/path";
 import { isEditorTextColor } from "../editor/textColors";
 import { getFileTypeInfo } from "../filetree/fileTypeUtils";
@@ -25,7 +26,7 @@ export function DatabaseNoteAppearanceIcon({
 	notePath,
 	appearance,
 	className,
-	size = "var(--icon-md)",
+	size,
 }: {
 	notePath: string;
 	appearance?: FileTreeAppearance | null;
@@ -33,13 +34,17 @@ export function DatabaseNoteAppearanceIcon({
 	size?: string | number;
 }) {
 	const { Icon, color } = getFileTypeInfo(notePath, isMarkdownPath(notePath));
+	const iconClassName = cn(
+		size === undefined && "size-[var(--icon-md)]",
+		className,
+	);
 
 	if (appearance?.icon) {
 		return (
 			<DatabaseColumnIcon
 				iconName={appearance.icon}
 				size={size}
-				className={className}
+				className={iconClassName}
 			/>
 		);
 	}
@@ -47,7 +52,7 @@ export function DatabaseNoteAppearanceIcon({
 	return (
 		<Icon
 			size={size}
-			className={className}
+			className={iconClassName}
 			style={{ color: `var(--database-note-appearance-color, ${color})` }}
 			aria-hidden="true"
 		/>

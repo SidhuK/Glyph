@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { listenTauriEvent } from "../lib/tauriEvents";
+import { listenTauriEvent, safeUnlisten } from "../lib/tauriEvents";
 
 interface NoteChangePayload {
 	rel_path: string;
@@ -14,17 +14,6 @@ interface UseDebouncedNoteChangeOptions {
 
 function isMarkdownNote(path: string): boolean {
 	return path.toLowerCase().endsWith(".md");
-}
-
-function runUnlisten(unlisten: () => void): void {
-	try {
-		const result = unlisten() as unknown;
-		void Promise.resolve(result).catch(() => {
-			// Tauri may already have cleaned up the listener during window teardown.
-		});
-	} catch {
-		// Ignore teardown races from Tauri listener cleanup.
-	}
 }
 
 export function useDebouncedNoteChange({
@@ -61,7 +50,7 @@ export function useDebouncedNoteChange({
 		])
 			.then((stops) => {
 				if (cancelled) {
-					for (const stop of stops) runUnlisten(stop);
+					for (const stop of stops) safeUnlisten(stop);
 					return;
 				}
 				unlisteners = stops;
@@ -76,7 +65,7 @@ export function useDebouncedNoteChange({
 				window.clearTimeout(timerRef.current);
 				timerRef.current = null;
 			}
-			for (const stop of unlisteners) runUnlisten(stop);
+			for (const stop of unlisteners) safeUnlisten(stop);
 			unlisteners = [];
 		};
 	}, [enabled, schedule]);

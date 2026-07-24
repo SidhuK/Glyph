@@ -92,7 +92,7 @@ export function NotePropertiesToolbar({
 							transition={springPresets.gentle}
 						/>
 					) : null}
-					<List size="var(--icon-md)" className="notePropertiesModePillIcon" />
+					<List className="notePropertiesModePillIcon size-[var(--icon-md)]" />
 				</m.button>
 				<m.button
 					ref={rawButtonRef}
@@ -117,7 +117,7 @@ export function NotePropertiesToolbar({
 							transition={springPresets.gentle}
 						/>
 					) : null}
-					<Code size="var(--icon-md)" className="notePropertiesModePillIcon" />
+					<Code className="notePropertiesModePillIcon size-[var(--icon-md)]" />
 				</m.button>
 			</div>
 		</div>

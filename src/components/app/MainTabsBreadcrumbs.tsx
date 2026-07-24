@@ -292,8 +292,7 @@ export function MainTabsBreadcrumbs({
 						<span key="breadcrumb-overflow" className="mainTabsBreadcrumbItem">
 							{displayIndex > 0 ? (
 								<ChevronRight
-									size="var(--icon-xs)"
-									className="mainTabsBreadcrumbSep"
+									className="mainTabsBreadcrumbSep size-[var(--icon-xs)]"
 									aria-hidden="true"
 								/>
 							) : null}
@@ -456,8 +455,7 @@ function BreadcrumbEntryMenu({
 					aria-label={`Browse ${menuTitleForDir(dirPath)}`}
 				>
 					<ChevronRight
-						size="var(--icon-xs)"
-						className="mainTabsBreadcrumbSep"
+						className="mainTabsBreadcrumbSep size-[var(--icon-xs)]"
 						aria-hidden="true"
 					/>
 				</button>

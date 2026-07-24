@@ -135,7 +135,7 @@ export function AboutSettingsPane() {
 						>
 							<HugeiconsIcon
 								icon={GlobeIcon}
-								size="var(--icon-lg)"
+								className="size-[var(--icon-lg)]"
 								strokeWidth={1.6}
 							/>
 							Website
@@ -149,7 +149,7 @@ export function AboutSettingsPane() {
 						>
 							<HugeiconsIcon
 								icon={DiscordIcon}
-								size="var(--icon-lg)"
+								className="size-[var(--icon-lg)]"
 								strokeWidth={1.6}
 							/>
 							Discord
@@ -163,7 +163,7 @@ export function AboutSettingsPane() {
 						>
 							<HugeiconsIcon
 								icon={File01Icon}
-								size="var(--icon-lg)"
+								className="size-[var(--icon-lg)]"
 								strokeWidth={1.6}
 							/>
 							Terms
@@ -177,7 +177,7 @@ export function AboutSettingsPane() {
 						>
 							<HugeiconsIcon
 								icon={Shield01Icon}
-								size="var(--icon-lg)"
+								className="size-[var(--icon-lg)]"
 								strokeWidth={1.6}
 							/>
 							Privacy
@@ -310,7 +310,7 @@ export function AboutSettingsPane() {
 							>
 								<HugeiconsIcon
 									icon={ListViewIcon}
-									size="var(--icon-md)"
+									className="size-[var(--icon-md)]"
 									strokeWidth={1.6}
 								/>
 								View Changelog

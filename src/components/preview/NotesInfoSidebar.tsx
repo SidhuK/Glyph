@@ -121,8 +121,11 @@ function UnlinkedMentionsSection({
 							{t("unlinkedMentions.heading", { count: mentions.length })}
 						</span>
 						<ChevronDown
-							className={expanded ? undefined : "is-collapsed"}
-							size="var(--icon-xs)"
+							className={
+								expanded
+									? "size-[var(--icon-xs)]"
+									: "is-collapsed size-[var(--icon-xs)]"
+							}
 							aria-hidden="true"
 						/>
 					</button>
@@ -201,7 +204,7 @@ function UnlinkedMentionsSection({
 									>
 										<HugeiconsIcon
 											icon={Link04Icon}
-											size="var(--icon-sm)"
+											className="size-[var(--icon-sm)]"
 											aria-hidden="true"
 										/>
 									</button>
@@ -320,7 +323,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 					>
 						<HugeiconsIcon
 							icon={BadgeInfoIcon}
-							size="var(--icon-sm)"
+							className="size-[var(--icon-sm)]"
 							strokeWidth={1}
 						/>
 						Info
@@ -336,7 +339,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						>
 							<HugeiconsIcon
 								icon={GitBranchIcon}
-								size="var(--icon-sm)"
+								className="size-[var(--icon-sm)]"
 								strokeWidth={1}
 							/>
 							Version history
@@ -545,7 +548,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 							<h3 className="markdownEditorInfoSectionLabel markdownEditorInfoSectionLabelSubtle">
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
-									size="var(--icon-sm)"
+									className="size-[var(--icon-sm)]"
 									strokeWidth={1}
 								/>
 								Info

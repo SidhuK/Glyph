@@ -266,15 +266,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							{appearance?.icon ? (
 								<DatabaseColumnIcon
 									iconName={appearance.icon}
-									size="var(--icon-md)"
-									className="fileTreeChevron fileTreeFolderIcon"
+									className="fileTreeChevron fileTreeFolderIcon size-[var(--icon-md)]"
 								/>
 							) : (
 								<HugeiconsIcon
 									icon={isExpanded ? Folder03Icon : Folder01Icon}
-									size="var(--icon-sm)"
 									strokeWidth={0.9}
-									className="fileTreeChevron fileTreeFolderIcon"
+									className="fileTreeChevron fileTreeFolderIcon size-[var(--icon-sm)]"
 								/>
 							)}
 							<span className="fileTreeName">{displayDirName}</span>
@@ -300,7 +298,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 											}
 										}}
 									>
-										<Plus size="var(--icon-sm)" />
+										<Plus className="size-[var(--icon-sm)]" />
 									</span>
 									{/* biome-ignore lint/a11y/useSemanticElements: nested inside button row */}
 									<span
@@ -324,7 +322,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 									>
 										<HugeiconsIcon
 											icon={ArrowRight02Icon}
-											size="var(--icon-sm)"
+											className="size-[var(--icon-sm)]"
 											strokeWidth={0.9}
 										/>
 									</span>

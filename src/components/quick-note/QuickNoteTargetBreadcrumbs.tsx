@@ -226,8 +226,7 @@ function TargetBreadcrumbEntryMenu({
 					aria-label={`Browse ${menuTitleForDir(dirPath)}`}
 				>
 					<ChevronRight
-						size="var(--icon-xs)"
-						className="quickNoteTargetSep"
+						className="quickNoteTargetSep size-[var(--icon-xs)]"
 						aria-hidden="true"
 					/>
 				</button>

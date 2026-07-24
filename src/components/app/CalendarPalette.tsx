@@ -330,7 +330,7 @@ export function CalendarPalette({
 											<span className="calendarPaletteNoteIcon">
 												<HugeiconsIcon
 													icon={NoteIcon}
-													size="var(--icon-md)"
+													className="size-[var(--icon-md)]"
 													strokeWidth={0.9}
 												/>
 											</span>
@@ -354,7 +354,7 @@ export function CalendarPalette({
 								>
 									<HugeiconsIcon
 										icon={NoteIcon}
-										size="var(--icon-xl)"
+										className="size-[var(--icon-xl)]"
 										strokeWidth={0.9}
 									/>
 								</span>

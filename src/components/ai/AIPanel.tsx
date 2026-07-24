@@ -361,7 +361,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					>
 						<HugeiconsIcon
 							icon={ChatAdd01Icon}
-							size="var(--icon-sm)"
+							className="size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 					</Button>
@@ -375,7 +375,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Settings"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<SettingsIcon size="var(--icon-sm)" />
+						<SettingsIcon className="size-[var(--icon-sm)]" />
 					</Button>
 					<Button
 						type="button"
@@ -389,7 +389,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					>
 						<HugeiconsIcon
 							icon={Logout05Icon}
-							size="var(--icon-sm)"
+							className="size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 					</Button>
@@ -446,14 +446,14 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						aria-label="Scroll to bottom"
 						title="Scroll to latest"
 					>
-						<ChevronDown size="var(--icon-md)" />
+						<ChevronDown className="size-[var(--icon-md)]" />
 					</Button>
 				)}
 				{chat.error ? (
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>
 						<button type="button" onClick={() => chat.clearError()}>
-							<X size="var(--icon-xs)" />
+							<X className="size-[var(--icon-xs)]" />
 						</button>
 					</div>
 				) : null}
@@ -464,7 +464,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 							type="button"
 							onClick={() => actions.setAssistantActionError("")}
 						>
-							<X size="var(--icon-xs)" />
+							<X className="size-[var(--icon-xs)]" />
 						</button>
 					</div>
 				) : null}

@@ -45,7 +45,7 @@ export function RibbonHighlightPopover({
 				>
 					<HugeiconsIcon
 						icon={HighlighterIcon}
-						size="var(--icon-md)"
+						className="size-[var(--icon-md)]"
 						strokeWidth={0.9}
 					/>
 				</m.button>
@@ -91,7 +91,7 @@ export function RibbonHighlightPopover({
 						onMouseDown={preventMouseDown}
 						onClick={button.onClear}
 					>
-						<X size="var(--icon-sm)" />
+						<X className="size-[var(--icon-sm)]" />
 					</button>
 				</div>
 			</DropdownMenuContent>

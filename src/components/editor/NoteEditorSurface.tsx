@@ -127,7 +127,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						>
 							<HugeiconsIcon
 								icon={PlayIcon}
-								size="var(--icon-sm)"
+								className="size-[var(--icon-sm)]"
 								strokeWidth={0.9}
 							/>
 						</button>
@@ -147,7 +147,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 					>
 						<HugeiconsIcon
 							icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
-							size="var(--icon-sm)"
+							className="size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 					</button>

@@ -23,7 +23,7 @@ function iconMarkup(copied: boolean): string {
 	return renderToStaticMarkup(
 		createElement(HugeiconsIcon, {
 			icon: copied ? Tick02Icon : Copy01Icon,
-			size: "var(--icon-sm)",
+			className: "size-[var(--icon-sm)]",
 			strokeWidth: 0.9,
 		}),
 	);

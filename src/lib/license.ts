@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	DEFAULT_DATE_DISPLAY_FORMAT,
@@ -12,6 +11,7 @@ import {
 	type LicenseStatus,
 	invoke,
 } from "./tauri";
+import { listenWindowFocusChanged, safeUnlisten } from "./tauriEvents";
 
 const LICENSE_UPDATED_EVENT = "glyph:license-updated";
 
@@ -134,13 +134,12 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 
 		let disposed = false;
 		try {
-			void getCurrentWindow()
-				.onFocusChanged(({ payload }) => {
-					if (payload) void reload();
-				})
+			void listenWindowFocusChanged((focused) => {
+				if (focused) void reload();
+			})
 				.then((unlisten) => {
 					if (disposed) {
-						unlisten();
+						safeUnlisten(unlisten);
 						return;
 					}
 					focusUnlistenRef.current = unlisten;
@@ -155,7 +154,7 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 		return () => {
 			disposed = true;
 			window.removeEventListener("focus", onFocus);
-			focusUnlistenRef.current?.();
+			safeUnlisten(focusUnlistenRef.current);
 			focusUnlistenRef.current = null;
 		};
 	}, [reload, reloadOnWindowFocus]);

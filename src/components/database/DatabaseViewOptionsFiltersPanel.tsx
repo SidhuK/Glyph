@@ -219,7 +219,7 @@ function FilterJoiner({ index }: { index: number }) {
 	return (
 		<span className="databaseViewOptionJoiner">
 			{index === 0 ? "Where" : "And"}
-			<ChevronDown size="var(--icon-sm)" aria-hidden="true" />
+			<ChevronDown className="size-[var(--icon-sm)]" aria-hidden="true" />
 		</span>
 	);
 }
@@ -334,7 +334,7 @@ export function FiltersPanel({
 						)
 					}
 				>
-					<Plus size="var(--icon-md)" aria-hidden="true" />
+					<Plus className="size-[var(--icon-md)]" aria-hidden="true" />
 					Add a condition
 				</button>
 			) : (
@@ -360,7 +360,7 @@ export function FiltersPanel({
 								<span className="databaseViewFilterColumn">
 									<DatabaseColumnIcon
 										column={selectedColumn ?? undefined}
-										size="var(--icon-lg)"
+										className="size-[var(--icon-lg)]"
 									/>
 									<select
 										className="databaseViewInlineSelect"
@@ -492,7 +492,7 @@ export function FiltersPanel({
 									title="Remove filter"
 									aria-label="Remove filter"
 								>
-									<Trash2 size="var(--icon-lg)" />
+									<Trash2 className="size-[var(--icon-lg)]" />
 								</button>
 							</div>
 						);
@@ -507,7 +507,7 @@ export function FiltersPanel({
 							)
 						}
 					>
-						<Plus size="var(--icon-md)" aria-hidden="true" />
+						<Plus className="size-[var(--icon-md)]" aria-hidden="true" />
 						Add another condition
 					</button>
 				</div>

@@ -38,7 +38,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Settings01Icon}
-				size="var(--icon-md)"
+				className="size-[var(--icon-md)]"
 				strokeWidth={0.9}
 			/>
 		),
@@ -47,7 +47,11 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "appearance",
 		label: "Appearance",
 		renderIcon: () => (
-			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={Sun03Icon}
+				className="size-[var(--icon-md)]"
+				strokeWidth={0.9}
+			/>
 		),
 	},
 	{
@@ -56,7 +60,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={CommandIcon}
-				size="var(--icon-md)"
+				className="size-[var(--icon-md)]"
 				strokeWidth={0.9}
 			/>
 		),
@@ -67,7 +71,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={AiBrain04Icon}
-				size="var(--icon-md)"
+				className="size-[var(--icon-md)]"
 				strokeWidth={0.9}
 			/>
 		),
@@ -75,7 +79,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "space",
 		label: "Space",
-		renderIcon: () => <FolderOpen size="var(--icon-md)" />,
+		renderIcon: () => <FolderOpen className="size-[var(--icon-md)]" />,
 	},
 	{
 		id: "git",
@@ -83,7 +87,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={GitBranchIcon}
-				size="var(--icon-md)"
+				className="size-[var(--icon-md)]"
 				strokeWidth={0.9}
 			/>
 		),
@@ -94,7 +98,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Archive02Icon}
-				size="var(--icon-md)"
+				className="size-[var(--icon-md)]"
 				strokeWidth={0.9}
 			/>
 		),

@@ -231,8 +231,7 @@ export function AllDocsCard({
 						<DatabaseNoteAppearanceIcon
 							notePath={notePath}
 							appearance={noteAppearance}
-							className="allDocsCardTitleIcon"
-							size="var(--icon-md)"
+							className="allDocsCardTitleIcon size-[var(--icon-md)]"
 						/>
 						{title}
 					</span>

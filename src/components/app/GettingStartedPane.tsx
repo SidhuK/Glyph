@@ -126,7 +126,7 @@ function ProgressRing({
 					>
 						<HugeiconsIcon
 							icon={CheckmarkCircle02Icon}
-							size="var(--icon-xl)"
+							className="size-[var(--icon-xl)]"
 							strokeWidth={0.9}
 							color="var(--interactive-accent)"
 						/>
@@ -193,7 +193,7 @@ export function GettingStartedPane({
 						onClick={onDismiss}
 						aria-label="Dismiss getting started"
 					>
-						<X size="var(--icon-md)" />
+						<X className="size-[var(--icon-md)]" />
 					</button>
 				</div>
 			</div>
@@ -225,7 +225,7 @@ export function GettingStartedPane({
 						<div className="starterStepIcon">
 							{(() => {
 								const Icon = steps[currentStep].icon;
-								return <Icon size="var(--icon-2xl)" />;
+								return <Icon className="size-[var(--icon-2xl)]" />;
 							})()}
 						</div>
 						<div>

@@ -50,25 +50,25 @@ export function getFormatButtons(
 			title: i18n.t("editor:ribbon.bold"),
 			isActive: () => editor.isActive("bold"),
 			onClick: () => runCommand(() => focusChain().toggleBold().run()),
-			icon: <Bold size="var(--icon-md)" />,
+			icon: <Bold className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.italic"),
 			isActive: () => editor.isActive("italic"),
 			onClick: () => runCommand(() => focusChain().toggleItalic().run()),
-			icon: <Italic size="var(--icon-md)" />,
+			icon: <Italic className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.underline"),
 			isActive: () => editor.isActive("underline"),
 			onClick: () => runCommand(() => focusChain().toggleUnderline().run()),
-			icon: <Underline size="var(--icon-md)" />,
+			icon: <Underline className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.strikethrough"),
 			isActive: () => editor.isActive("strike"),
 			onClick: () => runCommand(() => focusChain().toggleStrike().run()),
-			icon: <Strikethrough size="var(--icon-md)" />,
+			icon: <Strikethrough className="size-[var(--icon-md)]" />,
 		},
 	];
 }
@@ -142,21 +142,21 @@ export function getHeadingButtons(
 			isActive: () => editor.isActive("heading", { level: 1 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 1 }).run()),
-			icon: <Heading1 size="var(--icon-md)" />,
+			icon: <Heading1 className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.heading2"),
 			isActive: () => editor.isActive("heading", { level: 2 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 2 }).run()),
-			icon: <Heading2 size="var(--icon-md)" />,
+			icon: <Heading2 className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.heading3"),
 			isActive: () => editor.isActive("heading", { level: 3 }),
 			onClick: () =>
 				runCommand(() => focusChain().toggleHeading({ level: 3 }).run()),
-			icon: <Heading3 size="var(--icon-md)" />,
+			icon: <Heading3 className="size-[var(--icon-md)]" />,
 		},
 	];
 }
@@ -171,19 +171,19 @@ export function getListButtons(
 			title: i18n.t("editor:ribbon.bulletList"),
 			isActive: () => editor.isActive("bulletList"),
 			onClick: () => runCommand(() => focusChain().toggleBulletList().run()),
-			icon: <List size="var(--icon-md)" />,
+			icon: <List className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.numberedList"),
 			isActive: () => editor.isActive("orderedList"),
 			onClick: () => runCommand(() => focusChain().toggleOrderedList().run()),
-			icon: <ListOrdered size="var(--icon-md)" />,
+			icon: <ListOrdered className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.taskList"),
 			isActive: () => editor.isActive("taskList"),
 			onClick: () => runCommand(() => focusChain().toggleTaskList().run()),
-			icon: <ListChecks size="var(--icon-md)" />,
+			icon: <ListChecks className="size-[var(--icon-md)]" />,
 		},
 	];
 }
@@ -198,13 +198,13 @@ export function getBlockButtons(
 			title: i18n.t("editor:ribbon.quote"),
 			isActive: () => editor.isActive("blockquote"),
 			onClick: () => runCommand(() => focusChain().toggleBlockquote().run()),
-			icon: <Quote size="var(--icon-md)" />,
+			icon: <Quote className="size-[var(--icon-md)]" />,
 		},
 		{
 			title: i18n.t("editor:ribbon.codeBlock"),
 			isActive: () => editor.isActive("codeBlock"),
 			onClick: () => runCommand(() => focusChain().toggleCodeBlock().run()),
-			icon: <Code size="var(--icon-md)" />,
+			icon: <Code className="size-[var(--icon-md)]" />,
 		},
 	];
 }

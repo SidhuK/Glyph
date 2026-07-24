@@ -43,7 +43,7 @@ export function PropertyKindBadge({
 					>
 						<HugeiconsIcon
 							icon={icon}
-							size="var(--icon-sm)"
+							className="size-[var(--icon-sm)]"
 							strokeWidth={0.9}
 						/>
 					</Button>
@@ -66,7 +66,7 @@ export function PropertyKindBadge({
 								<span className="notePropertyKindOptionIcon">
 									<HugeiconsIcon
 										icon={PROPERTY_KIND_ICONS[menuKind]}
-										size="var(--icon-sm)"
+										className="size-[var(--icon-sm)]"
 										strokeWidth={0.9}
 									/>
 								</span>
@@ -83,7 +83,11 @@ export function PropertyKindBadge({
 
 	return (
 		<div className="notePropertyKindBadge">
-			<HugeiconsIcon icon={icon} size="var(--icon-sm)" strokeWidth={0.9} />
+			<HugeiconsIcon
+				icon={icon}
+				className="size-[var(--icon-sm)]"
+				strokeWidth={0.9}
+			/>
 		</div>
 	);
 }

@@ -64,8 +64,7 @@ export function StatusPropertyPill({
 		>
 			<HugeiconsIcon
 				icon={statusPropertyIconForValue(value)}
-				className="propertyValueTextIcon"
-				size="var(--icon-sm)"
+				className="propertyValueTextIcon size-[var(--icon-sm)]"
 				strokeWidth={1.3}
 			/>
 			<span>{label}</span>

@@ -11,14 +11,20 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
+import { cn } from "../../lib/utils";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 
 export function withDefaultIconSize({
-	size = "var(--icon-md)",
+	size,
+	className,
 	...props
 }: IconProps): IconProps {
-	return { size, ...props };
+	return {
+		size,
+		className: cn(size === undefined && "size-[var(--icon-md)]", className),
+		...props,
+	};
 }
 
 export const Search = (props: IconProps) => (

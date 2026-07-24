@@ -654,8 +654,7 @@ export function DatabaseBoard({
 																<DatabaseNoteAppearanceIcon
 																	notePath={row.note_path}
 																	appearance={noteAppearance}
-																	className="databaseBoardCardTitleIcon"
-																	size="var(--icon-md)"
+																	className="databaseBoardCardTitleIcon size-[var(--icon-md)]"
 																/>
 																{title}
 															</span>
@@ -667,7 +666,7 @@ export function DatabaseBoard({
 																	>
 																		<HugeiconsIcon
 																			icon={Calendar03Icon}
-																			size="var(--icon-xs)"
+																			className="size-[var(--icon-xs)]"
 																			strokeWidth={1}
 																			aria-hidden="true"
 																		/>
@@ -740,8 +739,7 @@ export function DatabaseBoard({
 																>
 																	<DatabaseColumnIcon
 																		iconName={iconNameForTag(tag)}
-																		className="databaseTagPillIcon"
-																		size="var(--icon-xs)"
+																		className="databaseTagPillIcon size-[var(--icon-xs)]"
 																		strokeWidth={1.2}
 																	/>
 																	{formatDatabaseTagLabel(tag)}
@@ -776,7 +774,10 @@ export function DatabaseBoard({
 											title={`Add note to ${lane.label}`}
 											aria-label={`Add note to ${lane.label}`}
 										>
-											<Plus size="var(--icon-sm)" aria-hidden="true" />
+											<Plus
+												className="size-[var(--icon-sm)]"
+												aria-hidden="true"
+											/>
 											<span>New</span>
 										</button>
 									) : null}
@@ -790,7 +791,7 @@ export function DatabaseBoard({
 									title="Add lane"
 									aria-label="Add board lane"
 								>
-									<Plus size="var(--icon-md)" aria-hidden="true" />
+									<Plus className="size-[var(--icon-md)]" aria-hidden="true" />
 								</button>
 							) : null}
 						</div>

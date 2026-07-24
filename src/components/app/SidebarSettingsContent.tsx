@@ -57,7 +57,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 					>
 						<HugeiconsIcon
 							icon={ArrowLeft02Icon}
-							size="var(--icon-md)"
+							className="size-[var(--icon-md)]"
 							strokeWidth={0.9}
 						/>
 						<span className="sidebarQuickActionLabel">Back</span>
@@ -65,7 +65,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 				</div>
 
 				<div className="settingsSidebarSearch">
-					<Search size="var(--icon-md)" className="settingsSidebarSearchIcon" />
+					<Search className="settingsSidebarSearchIcon size-[var(--icon-md)]" />
 					<input
 						type="search"
 						className="settingsSidebarSearchInput"
@@ -95,7 +95,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							onClick={clearSettingsSearch}
 							aria-label={tGeneral("nav.clearSearchAriaLabel")}
 						>
-							<X size="var(--icon-sm)" />
+							<X className="size-[var(--icon-sm)]" />
 						</button>
 					) : null}
 				</div>
@@ -197,7 +197,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							Buy official license
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size="var(--icon-sm)"
+								className="size-[var(--icon-sm)]"
 								strokeWidth={1.5}
 							/>
 						</Button>
@@ -220,7 +220,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							Send feedback
 							<HugeiconsIcon
 								icon={ArrowUpRight01Icon}
-								size="var(--icon-sm)"
+								className="size-[var(--icon-sm)]"
 								strokeWidth={1.5}
 							/>
 						</Button>

@@ -20,20 +20,20 @@ import {
 function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 	switch (iconKey) {
 		case "table":
-			return <Table size="var(--icon-sm)" />;
+			return <Table className="size-[var(--icon-sm)]" />;
 		case "board":
-			return <Kanban size="var(--icon-sm)" />;
+			return <Kanban className="size-[var(--icon-sm)]" />;
 		case "edit":
-			return <Edit size="var(--icon-sm)" />;
+			return <Edit className="size-[var(--icon-sm)]" />;
 		case "trash":
-			return <Trash2 size="var(--icon-sm)" />;
+			return <Trash2 className="size-[var(--icon-sm)]" />;
 		case "plus":
-			return <Plus size="var(--icon-sm)" />;
+			return <Plus className="size-[var(--icon-sm)]" />;
 		case "library":
 			return (
 				<HugeiconsIcon
 					icon={LibraryIcon}
-					size="var(--icon-sm)"
+					className="size-[var(--icon-sm)]"
 					strokeWidth={0.9}
 				/>
 			);

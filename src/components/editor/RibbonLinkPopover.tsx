@@ -108,7 +108,7 @@ export function RibbonLinkPopover({
 					whileTap={canEdit ? { scale: 0.97 } : undefined}
 					transition={springPresets.snappy}
 				>
-					<Link2 size="var(--icon-md)" />
+					<Link2 className="size-[var(--icon-md)]" />
 				</m.button>
 			</PopoverTrigger>
 			<PopoverContent
@@ -143,7 +143,7 @@ export function RibbonLinkPopover({
 				</label>
 				<div className="editorLinkPopoverActions">
 					<Button type="button" variant="ghost" size="sm" onClick={removeLink}>
-						<X size="var(--icon-md)" />
+						<X className="size-[var(--icon-md)]" />
 						Remove
 					</Button>
 					<Button type="button" size="sm" onClick={applyLink}>

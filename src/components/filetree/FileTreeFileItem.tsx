@@ -376,13 +376,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{appearance?.icon ? (
 							<DatabaseColumnIcon
 								iconName={appearance.icon}
-								size="var(--icon-md)"
-								className="fileTreeIcon"
+								className="fileTreeIcon size-[var(--icon-md)]"
 							/>
 						) : (
 							<Icon
-								size="var(--icon-md)"
-								className="fileTreeIcon"
+								className="fileTreeIcon size-[var(--icon-md)]"
 								style={{ color: iconColor }}
 								aria-hidden="true"
 							/>
@@ -396,9 +394,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						{isPinned ? (
 							<HugeiconsIcon
 								icon={StarIcon}
-								size="var(--icon-sm)"
 								strokeWidth={0.9}
-								className="fileTreePinIcon"
+								className="fileTreePinIcon size-[var(--icon-sm)]"
 							/>
 						) : null}
 						{taskSummary && taskSummary.total_count > 0 ? (

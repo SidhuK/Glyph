@@ -545,7 +545,7 @@ export function CommandPalette({
 									>
 										<HugeiconsIcon
 											icon={StarIcon}
-											size="var(--icon-md)"
+											className="size-[var(--icon-md)]"
 											strokeWidth={0.9}
 										/>
 									</button>

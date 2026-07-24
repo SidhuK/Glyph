@@ -180,7 +180,7 @@ export function GitSettingsPane() {
 							icon={
 								<HugeiconsIcon
 									icon={CheckmarkCircle02Icon}
-									size="var(--icon-md)"
+									className="size-[var(--icon-md)]"
 									strokeWidth={0.9}
 								/>
 							}
@@ -197,7 +197,7 @@ export function GitSettingsPane() {
 							icon={
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
-									size="var(--icon-md)"
+									className="size-[var(--icon-md)]"
 									strokeWidth={0.9}
 								/>
 							}
@@ -214,7 +214,7 @@ export function GitSettingsPane() {
 							icon={
 								<HugeiconsIcon
 									icon={Link01Icon}
-									size="var(--icon-md)"
+									className="size-[var(--icon-md)]"
 									strokeWidth={0.9}
 								/>
 							}
@@ -236,7 +236,7 @@ export function GitSettingsPane() {
 								icon={
 									<HugeiconsIcon
 										icon={GitBranchIcon}
-										size="var(--icon-md)"
+										className="size-[var(--icon-md)]"
 										strokeWidth={0.9}
 									/>
 								}

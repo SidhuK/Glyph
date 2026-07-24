@@ -650,7 +650,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 					<h1 className="activityTimelineTitle">
 						<HugeiconsIcon
 							icon={Archive04Icon}
-							size="var(--icon-2xl)"
+							className="size-[var(--icon-2xl)]"
 							strokeWidth={0.9}
 						/>
 						<span>All Notes</span>

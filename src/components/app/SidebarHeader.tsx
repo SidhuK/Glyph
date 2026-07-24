@@ -44,7 +44,7 @@ export function SidebarHeader({
 								: ""
 						}`}
 					>
-						<LayoutAlignLeft size="var(--icon-md)" />
+						<LayoutAlignLeft className="size-[var(--icon-md)]" />
 					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}

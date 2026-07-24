@@ -351,7 +351,7 @@ export function TemplateSettingsSections() {
 									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 									onClick={handleBrowseFolder}
 								>
-									<FolderOpen size="var(--icon-md)" />
+									<FolderOpen className="size-[var(--icon-md)]" />
 									Browse
 								</Button>
 								{templatesFolder !== null ? (
@@ -364,7 +364,7 @@ export function TemplateSettingsSections() {
 										aria-label="Clear template folder"
 										title="Clear template folder"
 									>
-										<Trash2 size="var(--icon-md)" />
+										<Trash2 className="size-[var(--icon-md)]" />
 									</Button>
 								) : null}
 							</div>

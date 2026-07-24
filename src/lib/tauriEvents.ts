@@ -1,4 +1,5 @@
-import { listen } from "@tauri-apps/api/event";
+import { type UnlistenFn, listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef } from "react";
 import type { EditorViewMode } from "./editorMode";
 import type {
@@ -160,7 +161,15 @@ export async function listenTauriEvent<K extends keyof TauriEventMap>(
 	});
 }
 
-function runUnlisten(unlisten: (() => void) | null): void {
+/**
+ * Safely invoke a Tauri UnlistenFn.
+ *
+ * Unlisten can reject when the listener was already removed (window teardown,
+ * double-cleanup, HMR). Call sites must not leave that rejection unhandled.
+ */
+export function safeUnlisten(
+	unlisten: UnlistenFn | (() => void) | null | undefined,
+): void {
 	if (!unlisten) return;
 
 	try {
@@ -171,6 +180,39 @@ function runUnlisten(unlisten: (() => void) | null): void {
 	} catch {
 		// Ignore teardown races from Tauri listener cleanup.
 	}
+}
+
+/**
+ * Listen for the current window gaining/losing focus.
+ *
+ * Prefer this over `Window.onFocusChanged`. Tauri's helper returns a sync
+ * unlisten that fire-and-forgets two async unlistens, which surfaces as
+ * unhandled rejections (`listeners[eventId].handlerId`) on teardown.
+ */
+export async function listenWindowFocusChanged(
+	handler: (focused: boolean) => void,
+): Promise<UnlistenFn> {
+	const win = getCurrentWindow();
+	const unlistenFocus = await win.listen("tauri://focus", () => {
+		handler(true);
+	});
+	let unlistenBlur: UnlistenFn;
+	try {
+		unlistenBlur = await win.listen("tauri://blur", () => {
+			handler(false);
+		});
+	} catch (error) {
+		safeUnlisten(unlistenFocus);
+		throw error;
+	}
+
+	let didUnlisten = false;
+	return () => {
+		if (didUnlisten) return;
+		didUnlisten = true;
+		safeUnlisten(unlistenFocus);
+		safeUnlisten(unlistenBlur);
+	};
 }
 
 export function useTauriEvent<K extends keyof TauriEventMap>(
@@ -189,7 +231,7 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 		const cleanup = () => {
 			if (didUnlisten) return;
 			if (unlisten) {
-				runUnlisten(unlisten);
+				safeUnlisten(unlisten);
 				unlisten = null;
 				didUnlisten = true;
 				pendingTeardown = false;
@@ -214,7 +256,7 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 			}
 			unlisten = stop;
 			if (pendingTeardown && !didUnlisten) {
-				runUnlisten(unlisten);
+				safeUnlisten(unlisten);
 				unlisten = null;
 				didUnlisten = true;
 				pendingTeardown = false;

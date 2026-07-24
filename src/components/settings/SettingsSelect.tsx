@@ -15,8 +15,7 @@ export function SettingsSelect({
 				{children}
 			</select>
 			<ChevronDown
-				className="settingsSelectChevron"
-				size="var(--icon-sm)"
+				className="settingsSelectChevron size-[var(--icon-sm)]"
 				aria-hidden="true"
 			/>
 		</span>

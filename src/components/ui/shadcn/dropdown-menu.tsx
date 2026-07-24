@@ -94,8 +94,7 @@ function DropdownMenuRadioItem({
 				<DropdownMenuPrimitive.ItemIndicator>
 					<HugeiconsIcon
 						icon={Circle}
-						size="var(--icon-xs)"
-						className="fill-current"
+						className="fill-current size-[var(--icon-xs)]"
 						strokeWidth={0.9}
 					/>
 				</DropdownMenuPrimitive.ItemIndicator>
@@ -166,8 +165,7 @@ function DropdownMenuSubTrigger({
 			<span className="pointer-events-none absolute right-2 flex size-[var(--icon-sm)] items-center justify-center">
 				<HugeiconsIcon
 					icon={ArrowRight01Icon}
-					size="var(--icon-xs)"
-					className="text-muted-foreground"
+					className="text-muted-foreground size-[var(--icon-xs)]"
 					strokeWidth={0.9}
 					aria-hidden="true"
 				/>

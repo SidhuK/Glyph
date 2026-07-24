@@ -275,7 +275,7 @@ export function ShortcutsSettingsPane() {
 												aria-label="Disable shortcut"
 												title="Disable shortcut"
 											>
-												<Trash2 size="var(--icon-md)" />
+												<Trash2 className="size-[var(--icon-md)]" />
 											</Button>
 											<Button
 												type="button"
@@ -289,7 +289,7 @@ export function ShortcutsSettingsPane() {
 											>
 												<HugeiconsIcon
 													icon={ReloadIcon}
-													size="var(--icon-md)"
+													className="size-[var(--icon-md)]"
 													strokeWidth={0.9}
 												/>
 											</Button>

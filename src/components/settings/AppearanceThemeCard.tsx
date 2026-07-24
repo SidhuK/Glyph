@@ -114,7 +114,7 @@ function ThemeSelector<T extends string>({
 								open && "is-open",
 							)}
 						>
-							<ChevronDown size="var(--icon-md)" />
+							<ChevronDown className="size-[var(--icon-md)]" />
 						</span>
 					</button>
 				</PopoverTrigger>

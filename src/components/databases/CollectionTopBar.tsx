@@ -109,8 +109,7 @@ export function CollectionTopBar({
 									>
 										{index > 0 ? (
 											<ChevronRight
-												size="var(--icon-xs)"
-												className="databasesCollectionBreadcrumbSep"
+												className="databasesCollectionBreadcrumbSep size-[var(--icon-xs)]"
 												aria-hidden
 											/>
 										) : null}
@@ -139,13 +138,13 @@ export function CollectionTopBar({
 				>
 					<HugeiconsIcon
 						icon={LibraryIcon}
-						size="var(--icon-sm)"
+						className="size-[var(--icon-sm)]"
 						strokeWidth={0.9}
 					/>
 					<span className="databasesCollectionSwitcherLabel">
 						{collectionMenuLabel}
 					</span>
-					<ChevronDown size="var(--icon-sm)" />
+					<ChevronDown className="size-[var(--icon-sm)]" />
 				</ActionMenuTrigger>
 			</div>
 
@@ -164,7 +163,7 @@ export function CollectionTopBar({
 					>
 						<HugeiconsIcon
 							icon={StarIcon}
-							size="var(--icon-md)"
+							className="size-[var(--icon-md)]"
 							strokeWidth={0.9}
 						/>
 					</Button>
@@ -177,7 +176,7 @@ export function CollectionTopBar({
 						title="Delete collection"
 						aria-label="Delete collection"
 					>
-						<Trash2 size="var(--icon-md)" />
+						<Trash2 className="size-[var(--icon-md)]" />
 					</Button>
 					<button
 						type="button"
@@ -187,7 +186,7 @@ export function CollectionTopBar({
 					>
 						<HugeiconsIcon
 							icon={NoteIcon}
-							size="var(--icon-md)"
+							className="size-[var(--icon-md)]"
 							strokeWidth={0.9}
 						/>
 						New Note

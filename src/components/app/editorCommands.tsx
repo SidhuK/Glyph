@@ -54,7 +54,7 @@ export function buildEditorCommands({
 	const headingCommands: Command[] = [
 		{
 			id: "collapse_all_headings",
-			icon: <ChevronUp size="var(--icon-lg)" />,
+			icon: <ChevronUp className="size-[var(--icon-lg)]" />,
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
 			action: () =>
@@ -62,7 +62,7 @@ export function buildEditorCommands({
 		},
 		{
 			id: "expand_all_headings",
-			icon: <ChevronDown size="var(--icon-lg)" />,
+			icon: <ChevronDown className="size-[var(--icon-lg)]" />,
 			enabled: enabled && showCollapsibleHeadings,
 			allowInEditable: true,
 			action: () => dispatchEditorMenuAction({ action: "expand_all_headings" }),
@@ -74,7 +74,7 @@ export function buildEditorCommands({
 		icon: (
 			<HugeiconsIcon
 				icon={command.icon}
-				size="var(--icon-lg)"
+				className="size-[var(--icon-lg)]"
 				strokeWidth={0.9}
 			/>
 		),

@@ -57,9 +57,13 @@ function ResultIcon({ result }: { result: PaletteResult }) {
 							? TableIcon
 							: null;
 	return icon ? (
-		<HugeiconsIcon icon={icon} size="var(--icon-md)" strokeWidth={0.9} />
+		<HugeiconsIcon
+			icon={icon}
+			className="size-[var(--icon-md)]"
+			strokeWidth={0.9}
+		/>
 	) : (
-		<FileText size="var(--icon-md)" />
+		<FileText className="size-[var(--icon-md)]" />
 	);
 }
 

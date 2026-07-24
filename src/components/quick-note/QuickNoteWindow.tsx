@@ -284,7 +284,7 @@ export function QuickNoteWindow() {
 						title="Today's quick note"
 						onClick={() => chooseTarget(quickNoteTarget(folder))}
 					>
-						<FileText size="var(--icon-md)" aria-hidden="true" />
+						<FileText className="size-[var(--icon-md)]" aria-hidden="true" />
 					</button>
 					<QuickNoteTargetBreadcrumbs
 						selectedTarget={selectedTarget}
@@ -309,7 +309,7 @@ export function QuickNoteWindow() {
 						disabled={saving || !hasText}
 						onClick={() => void save()}
 					>
-						<Save size="var(--icon-lg)" />
+						<Save className="size-[var(--icon-lg)]" />
 						<span className="quickNoteSaveLabel">Save</span>
 						<span className="commandPaletteShortcut" aria-hidden="true">
 							<kbd>

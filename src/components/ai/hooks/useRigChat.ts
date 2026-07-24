@@ -5,7 +5,7 @@ import {
 	type AiProviderKind,
 	invoke,
 } from "../../../lib/tauri";
-import { listenTauriEvent } from "../../../lib/tauriEvents";
+import { listenTauriEvent, safeUnlisten } from "../../../lib/tauriEvents";
 
 type UIMessagePart = { type: "text"; text: string };
 
@@ -80,7 +80,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 
 	const cleanupListeners = useCallback(() => {
 		for (const stop of stopListenersRef.current) {
-			stop();
+			safeUnlisten(stop);
 		}
 		stopListenersRef.current = [];
 	}, []);

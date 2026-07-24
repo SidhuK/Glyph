@@ -353,7 +353,7 @@ export function SpaceSettingsPane() {
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleBrowseFolder}
 									>
-										<FolderOpen size="var(--icon-md)" />
+										<FolderOpen className="size-[var(--icon-md)]" />
 										Browse
 									</Button>
 									{dailyNotesFolder ? (
@@ -366,7 +366,7 @@ export function SpaceSettingsPane() {
 											aria-label="Clear daily notes folder"
 											title="Clear daily notes folder"
 										>
-											<Trash2 size="var(--icon-md)" />
+											<Trash2 className="size-[var(--icon-md)]" />
 										</Button>
 									) : null}
 								</div>
@@ -398,7 +398,7 @@ export function SpaceSettingsPane() {
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={() => void handleBrowseQuickNotesFolder()}
 									>
-										<FolderOpen size="var(--icon-md)" />
+										<FolderOpen className="size-[var(--icon-md)]" />
 										Browse
 									</Button>
 									<Button
@@ -410,7 +410,7 @@ export function SpaceSettingsPane() {
 										aria-label="Reset quick notes folder"
 										title="Reset quick notes folder"
 									>
-										<Trash2 size="var(--icon-md)" />
+										<Trash2 className="size-[var(--icon-md)]" />
 									</Button>
 								</div>
 							</div>
@@ -465,7 +465,7 @@ export function SpaceSettingsPane() {
 											className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 											onClick={handleBrowseAttachmentFolder}
 										>
-											<FolderOpen size="var(--icon-md)" />
+											<FolderOpen className="size-[var(--icon-md)]" />
 											Browse
 										</Button>
 										<Button
@@ -479,7 +479,7 @@ export function SpaceSettingsPane() {
 											aria-label="Reset attachments folder"
 											title="Reset attachments folder"
 										>
-											<Trash2 size="var(--icon-md)" />
+											<Trash2 className="size-[var(--icon-md)]" />
 										</Button>
 									</div>
 								</div>
@@ -519,7 +519,7 @@ export function SpaceSettingsPane() {
 											aria-label="Reset attachment subfolder"
 											title="Reset attachment subfolder"
 										>
-											<Trash2 size="var(--icon-md)" />
+											<Trash2 className="size-[var(--icon-md)]" />
 										</Button>
 									</div>
 								</div>

@@ -45,7 +45,7 @@ export function PinnedCollectionCard({
 					<span className="pinnedCollectionCardTitle">
 						<HugeiconsIcon
 							icon={LibraryIcon}
-							size="var(--icon-md)"
+							className="size-[var(--icon-md)]"
 							strokeWidth={0.9}
 						/>
 						<strong>{collection.name}</strong>
@@ -62,7 +62,7 @@ export function PinnedCollectionCard({
 			>
 				<HugeiconsIcon
 					icon={StarIcon}
-					size="var(--icon-md)"
+					className="size-[var(--icon-md)]"
 					strokeWidth={0.9}
 				/>
 			</button>
