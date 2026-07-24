@@ -30,6 +30,7 @@ import { PaletteSettingEditor } from "./PaletteSettingEditor";
 import {
 	type Command,
 	type PaletteLaunchMode,
+	buildSearchQuery,
 	movePaletteSelection,
 	parsePaletteQuery,
 	rankPaletteResult,
@@ -615,8 +616,25 @@ export function CommandPalette({
 					onRevealFolder(result.target);
 					return;
 				case "tag":
+					setQuery(
+						buildSearchQuery({
+							tags: [result.target ?? result.label],
+							people: [],
+							title_only: false,
+							tag_only: false,
+						}),
+					);
+					setSelectedId(null);
+					return;
 				case "person":
-					setQuery(result.target ?? result.label);
+					setQuery(
+						buildSearchQuery({
+							tags: [],
+							people: [result.target ?? result.label],
+							title_only: false,
+							tag_only: false,
+						}),
+					);
 					setSelectedId(null);
 					return;
 				case "database":
