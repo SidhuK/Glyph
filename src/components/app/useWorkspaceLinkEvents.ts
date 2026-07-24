@@ -23,7 +23,7 @@ import {
 interface UseWorkspaceLinkEventsArgs {
 	activeMarkdownTabPath: string | null;
 	fileTree: UseFileTreeResult;
-	openPalette: (tab: "commands" | "search", query?: string) => void;
+	openPalette: (mode: "commands" | "search", query?: string) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
 	setError: (error: string) => void;
 }

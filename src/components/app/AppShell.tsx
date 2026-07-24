@@ -164,7 +164,7 @@ export function AppShell() {
 	const { getCurrentMarkdown, saveCurrentEditor, setCurrentEditorMode } =
 		useEditorContext();
 
-	const [paletteInitialTab, setPaletteInitialTab] = useState<
+	const [paletteLaunchMode, setPaletteLaunchMode] = useState<
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
@@ -658,8 +658,8 @@ export function AppShell() {
 	const moveTargetDirsRequestIdRef = useRef(0);
 
 	const openPalette = useCallback(
-		(tab: "commands" | "search", query = "") => {
-			setPaletteInitialTab(tab);
+		(mode: "commands" | "search", query = "") => {
+			setPaletteLaunchMode(mode);
 			setPaletteInitialQuery(query);
 			setCommandPaletteSessionId((value) => value + 1);
 			setCommandPaletteMounted(true);
@@ -1425,14 +1425,22 @@ export function AppShell() {
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette
-						key={`${commandPaletteSessionId}:${paletteInitialTab}:${paletteInitialQuery}`}
+						key={`${commandPaletteSessionId}:${paletteLaunchMode}:${paletteInitialQuery}`}
 						open={paletteOpen}
-						initialTab={paletteInitialTab}
+						initialMode={paletteLaunchMode}
 						initialQuery={paletteInitialQuery}
 						commands={commands}
 						onClose={closePalette}
 						spacePath={spacePath}
+						tabs={tabs}
+						onActivateTab={setActiveTabId}
 						onSelectSearchResult={(id) => void openWorkspaceFile(id)}
+						onRevealFolder={handleNavigateBreadcrumbPath}
+						onOpenDatabase={(id) => openDatabasesTab(id)}
+						templateFolder={templateFolder}
+						onCreateFromTemplate={(template) =>
+							void handlePickTemplate(template)
+						}
 					/>
 				</Suspense>
 			) : null}
