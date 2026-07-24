@@ -5,7 +5,7 @@ import {
 	UserIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	formatShortcutForPlatform,
@@ -94,6 +94,11 @@ export function CommandList({
 	onSelectResult,
 }: CommandListProps) {
 	const { t } = useTranslation("shell");
+	const scrollSelectedIntoView = useCallback(
+		(node: HTMLButtonElement | null) =>
+			node?.scrollIntoView({ block: "nearest" }),
+		[],
+	);
 	if (!results.length) {
 		return (
 			<div className="commandPaletteEmpty">{t("commandPalette.noResults")}</div>
@@ -115,16 +120,16 @@ export function CommandList({
 							</div>
 						) : null}
 						<button
+							ref={selected ? scrollSelectedIntoView : undefined}
 							id={result.id}
 							type="button"
 							aria-current={selected}
 							aria-pressed={result.checked}
 							className="commandPaletteItem commandPaletteUniversalRow"
-							data-command-index={index}
 							data-selected={selected}
 							data-kind={result.kind}
 							data-control={result.settingControl}
-							disabled={!result.enabled}
+							disabled={result.enabled === false}
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onMouseDown={(event) => {
 								event.preventDefault();

@@ -148,7 +148,7 @@ export function movePaletteSelection(
 	selectedId: string | null,
 	direction: -1 | 1,
 ): string | null {
-	if (!results.some((result) => result.enabled)) return null;
+	if (!results.some((result) => result.enabled !== false)) return null;
 	const selectedIndex = results.findIndex((result) => result.id === selectedId);
 	const startIndex =
 		selectedIndex >= 0 ? selectedIndex : direction === 1 ? -1 : 0;
@@ -156,7 +156,7 @@ export function movePaletteSelection(
 		const index =
 			(startIndex + direction * offset + results.length) % results.length;
 		const result = results[index];
-		if (result?.enabled) return result.id;
+		if (result?.enabled !== false) return result?.id ?? null;
 	}
 	return null;
 }

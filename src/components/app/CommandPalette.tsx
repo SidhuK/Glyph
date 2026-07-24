@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { StarIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFileTreeContext } from "../../contexts";
@@ -11,19 +11,13 @@ import {
 	invalidateDatabaseSummariesPrefetch,
 	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
-import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates } from "../../lib/templates";
 import { toast } from "../../lib/toast";
-import { displayFolderFromPath, displayNameFromPath } from "../../utils/path";
 import { NotePreviewContent } from "../preview/NotePreviewContent";
 import { NOTE_PREVIEW_OPEN_DELAY_MS } from "../preview/notePreviewShared";
 import { useNotePreview } from "../preview/useNotePreview";
-import {
-	localizeSettingsSearchEntry,
-	localizedSettingsTabLabel,
-} from "../settings/settingsSearch";
+import { localizeSettingsSearchEntry } from "../settings/settingsSearch";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
 import { PaletteSettingEditor } from "./PaletteSettingEditor";
@@ -33,16 +27,12 @@ import {
 	buildSearchQuery,
 	movePaletteSelection,
 	parsePaletteQuery,
-	rankPaletteResult,
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
-import { PALETTE_GROUP_ORDER, type PaletteResult } from "./paletteResults";
-import {
-	PALETTE_SETTINGS_REGISTRY,
-	PALETTE_SETTING_BY_ID,
-	type PaletteSettingDefinition,
-} from "./settingsPaletteRegistry";
+import { buildPaletteResults } from "./paletteResults";
+import { PALETTE_SETTING_BY_ID } from "./settingsPaletteRegistry";
 import { useCommandSearch } from "./useCommandSearch";
+import { usePaletteSettings } from "./usePaletteSettings";
 import type { WorkspaceTab } from "./useTabManager";
 
 export type { Command } from "./commandPaletteHelpers";
@@ -61,39 +51,6 @@ interface CommandPaletteProps {
 	onOpenDatabase: (id: string) => void;
 	templateFolder: string | null;
 	onCreateFromTemplate: (template: { relPath: string; label: string }) => void;
-}
-
-interface SettingMutationVariables {
-	definition: PaletteSettingDefinition;
-	value: string | number | boolean | null;
-}
-
-const SETTINGS_QUERY_ROOT = "command-palette-settings";
-const BROAD_GROUP_LIMIT = 8;
-
-function displaySettingValue(
-	definition: PaletteSettingDefinition,
-	value: string | number | boolean | null,
-	t: (key: string, options?: Record<string, unknown>) => string,
-) {
-	if (typeof value === "boolean") {
-		return t(value ? "commandPalette.on" : "commandPalette.off");
-	}
-	if (value === null || value === "") return t("commandPalette.notSet");
-	if (definition.control === "choice") {
-		const option = definition.options?.find(
-			(candidate) => candidate.value === value,
-		);
-		if (option) return option.label;
-	}
-	return String(value);
-}
-
-function hasOwnValue(
-	values: Record<string, string | number | boolean | null>,
-	id: string,
-) {
-	return Object.prototype.hasOwnProperty.call(values, id);
 }
 
 function flattenFolders(
@@ -128,7 +85,6 @@ export function CommandPalette({
 	onCreateFromTemplate,
 }: CommandPaletteProps) {
 	const { t, i18n } = useTranslation("shell");
-	const queryClient = useQueryClient();
 	const { rootEntries, childrenByDir, tags, people, ensureTagsFresh } =
 		useFileTreeContext();
 	const [query, setQuery] = useState(initialQuery);
@@ -137,25 +93,17 @@ export function CommandPalette({
 	const [activeTemplatePath, setActiveTemplatePath] = useState<string | null>(
 		null,
 	);
-	const [optimisticValues, setOptimisticValues] = useState<
-		Record<string, string | number | boolean | null>
-	>({});
-	const [mutationError, setMutationError] = useState<string | null>(null);
-	const [settingAnnouncement, setSettingAnnouncement] = useState("");
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const listRef = useRef<HTMLDivElement | null>(null);
 	const restoreFocusRef = useRef<HTMLElement | null>(null);
 	const parsedQuery = useMemo(() => parsePaletteQuery(query), [query]);
-	const settingsQueryKey = [SETTINGS_QUERY_ROOT, spacePath] as const;
-
-	const settingsQuery = useQuery({
-		queryKey: settingsQueryKey,
-		queryFn: () => loadSettings({ spacePath }),
-		enabled: open,
-	});
-	useTauriEvent("settings:updated", () => {
-		void queryClient.invalidateQueries({ queryKey: [SETTINGS_QUERY_ROOT] });
-	});
+	const {
+		settings,
+		valueFor: settingValue,
+		update: updateSetting,
+		pending: settingPending,
+		error: settingError,
+		announcement: settingAnnouncement,
+	} = usePaletteSettings(open, spacePath);
 	useEffect(() => {
 		if (!open) return;
 		restoreFocusRef.current =
@@ -183,7 +131,7 @@ export function CommandPalette({
 			searchQuery,
 			spacePath,
 			searchEnabled,
-			settingsQuery.data?.editor.enablePeopleMentionsAsTags ?? false,
+			settings?.editor.enablePeopleMentionsAsTags ?? false,
 		);
 
 	const databaseSummaries = useQuery({
@@ -221,300 +169,39 @@ export function CommandPalette({
 		},
 	});
 
-	const settingMutation = useMutation({
-		mutationFn: async ({ definition, value }: SettingMutationVariables) => {
-			if (definition.scope === "space" && !spacePath) {
-				throw new Error(t("commandPalette.spaceRequired"));
-			}
-			await definition.write(value, spacePath);
-		},
-		onMutate: ({ definition, value }) => {
-			setMutationError(null);
-			setSettingAnnouncement("");
-			setOptimisticValues((current) => ({
-				...current,
-				[definition.id]: value,
-			}));
-		},
-		onSuccess: async (_, { definition }) => {
-			await queryClient.invalidateQueries({ queryKey: settingsQueryKey });
-			setSettingAnnouncement(t("commandPalette.settingUpdated"));
-			setOptimisticValues((current) => {
-				const next = { ...current };
-				delete next[definition.id];
-				return next;
-			});
-		},
-		onError: (cause, { definition }) => {
-			const message = extractErrorMessage(cause);
-			setMutationError(message);
-			setOptimisticValues((current) => {
-				const next = { ...current };
-				delete next[definition.id];
-				return next;
-			});
-			toast.error(t("commandPalette.settingUpdateFailed"), {
-				description: message,
-			});
-		},
-	});
-
 	const folders = useMemo(
 		() => flattenFolders(rootEntries, childrenByDir),
 		[rootEntries, childrenByDir],
 	);
-	const candidates = useMemo(() => {
-		const next: PaletteResult[] = [];
-		for (const [index, command] of commands.entries()) {
-			if (command.enabled === false) continue;
-			next.push({
-				id: `command:${command.id}`,
-				kind: "command",
-				label: command.label ?? command.id,
-				category: command.category ?? t("commandPalette.sectionGeneral"),
-				keywords: [command.id, ...(command.searchTerms ?? [])],
-				enabled: true,
-				defaultVisible:
-					!command.hideWhenQueryEmpty && index < BROAD_GROUP_LIMIT,
-				rankBoost: initialMode === "commands" ? 20 : 0,
-				command,
-			});
-		}
-
-		const settings = settingsQuery.data;
-		if (settings) {
-			for (const definition of PALETTE_SETTINGS_REGISTRY) {
-				if (definition.scope === "space" && !spacePath) {
-					continue;
-				}
-				const entry = localizeSettingsSearchEntry(
-					{
-						id: definition.id,
-						tab: definition.tab,
-					},
-					i18n.language,
-				);
-				const hasOptimisticValue = hasOwnValue(optimisticValues, definition.id);
-				const value = hasOptimisticValue
-					? (optimisticValues[definition.id] ?? null)
-					: definition.read(settings);
-				next.push({
-					id: `setting:${definition.id}`,
-					kind: "setting",
-					label: entry.title,
-					description: [
-						localizedSettingsTabLabel(entry.tab, i18n.language),
-						entry.section,
-					]
-						.filter(Boolean)
-						.join(" / "),
-					category: t("commandPalette.groups.setting"),
-					keywords: [
-						"settings",
-						entry.description ?? "",
-						...(entry.keywords ?? []),
-					],
-					enabled: true,
-					defaultVisible: definition.defaultVisible,
-					rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
-					checked: typeof value === "boolean" ? value : undefined,
-					trailing:
-						definition.control === "action"
-							? undefined
-							: displaySettingValue(definition, value, t),
-					settingId: definition.id,
-					settingControl: definition.control,
-				});
-			}
-		}
-
-		for (const tab of tabs) {
-			if (tab.kind !== "file" || !tab.target) continue;
-			next.push({
-				id: `open-tab:${tab.id}`,
-				kind: "open-tab",
-				label: displayNameFromPath(tab.target),
-				description: displayFolderFromPath(tab.target),
-				category: t("commandPalette.groups.open-tab"),
-				keywords: [tab.target],
-				enabled: true,
-				defaultVisible: true,
-				rankBoost: 35,
-				previewPath: tab.target,
-				target: tab.id,
-			});
-		}
-
-		const noteSource = query.trim()
-			? [
-					...titleMatches.map((result) => ({ result, kind: "note" as const })),
-					...contentMatches.map((result) => ({
-						result,
-						kind: "content" as const,
-					})),
-				]
-			: recentFiles.map((file) => ({
-					result: {
-						id: file.path,
-						title: displayNameFromPath(file.path),
-						snippet: "",
-					},
-					kind: "note" as const,
-				}));
-		for (const { result, kind } of noteSource) {
-			next.push({
-				id: `${kind}:${result.id}`,
-				kind,
-				label: result.title || displayNameFromPath(result.id),
-				description: displayFolderFromPath(result.id),
-				category: t(`commandPalette.groups.${kind}`),
-				keywords: [result.id, parsedQuery.text],
-				enabled: true,
-				defaultVisible: !query.trim(),
-				rankBoost: initialMode === "search" ? 25 : 0,
-				previewPath: result.id,
-				target: result.id,
-				snippet: kind === "content" ? result.snippet : undefined,
-			});
-		}
-
-		for (const folder of folders) {
-			next.push({
-				id: `folder:${folder}`,
-				kind: "folder",
-				label: folder,
-				category: t("commandPalette.groups.folder"),
-				keywords: [folder],
-				enabled: true,
-				target: folder,
-			});
-		}
-		for (const tag of tags) {
-			next.push({
-				id: `tag:${tag.tag}`,
-				kind: "tag",
-				label: tag.tag,
-				category: t("commandPalette.groups.tag"),
-				keywords: [tag.tag.replace(/^#/, "")],
-				enabled: true,
-				trailing: String(tag.total_count),
-				target: tag.tag,
-			});
-		}
-		for (const person of people) {
-			next.push({
-				id: `person:${person.handle}`,
-				kind: "person",
-				label: person.handle,
-				category: t("commandPalette.groups.person"),
-				keywords: [person.handle.replace(/^@/, "")],
-				enabled: true,
-				trailing: String(person.count),
-				target: person.handle,
-			});
-		}
-		for (const database of databaseSummaries.data ?? []) {
-			next.push({
-				id: `database:${database.id}`,
-				kind: "database",
-				label: database.name,
-				description: database.source.value,
-				category: t("commandPalette.groups.database"),
-				keywords: [database.source.kind, database.source.value],
-				enabled: true,
-				rankBoost: database.pinned ? 20 : 0,
-				target: database.id,
-			});
-		}
-		for (const template of templatesQuery.data ?? []) {
-			const label = template.relPath.startsWith(`${templateFolder}/`)
-				? template.relPath.slice((templateFolder?.length ?? 0) + 1)
-				: template.relPath;
-			next.push({
-				id: `template:${template.relPath}`,
-				kind: "template",
-				label: label.replace(/\.md$/i, ""),
-				description: template.relPath,
-				category: t("commandPalette.groups.template"),
-				keywords: [template.name, template.relPath],
-				enabled: true,
-				target: template.relPath,
-			});
-		}
-		return next;
-	}, [
-		commands,
-		settingsQuery.data,
-		optimisticValues,
-		tabs,
+	const results = buildPaletteResults({
 		query,
-		titleMatches,
-		contentMatches,
-		recentFiles,
-		folders,
-		tags,
-		people,
-		databaseSummaries.data,
-		templatesQuery.data,
-		templateFolder,
-		i18n.language,
-		initialMode,
-		parsedQuery.text,
+		mode: initialMode,
 		spacePath,
+		templateFolder,
+		language: i18n.language,
 		t,
-	]);
-
-	const results = useMemo(() => {
-		const ranked = candidates
-			.map((result) => ({
-				result,
-				score: rankPaletteResult(result, parsedQuery),
-			}))
-			.filter(
-				(item): item is { result: PaletteResult; score: number } =>
-					item.score !== null,
-			);
-		const scoped = parsedQuery.scope !== "all";
-		const byKind = new Map<string, typeof ranked>();
-		for (const item of ranked) {
-			const group = byKind.get(item.result.kind) ?? [];
-			group.push(item);
-			byKind.set(item.result.kind, group);
-		}
-		const ordered: PaletteResult[] = [];
-		const groupOrder =
-			initialMode === "search"
-				? [
-						"open-tab",
-						"note",
-						"content",
-						...PALETTE_GROUP_ORDER.filter(
-							(kind) =>
-								kind !== "open-tab" && kind !== "note" && kind !== "content",
-						),
-					]
-				: PALETTE_GROUP_ORDER;
-		for (const kind of groupOrder) {
-			const group = byKind.get(kind) ?? [];
-			group.sort(
-				(a, b) =>
-					b.score - a.score || a.result.label.localeCompare(b.result.label),
-			);
-			ordered.push(
-				...group
-					.slice(0, scoped ? undefined : BROAD_GROUP_LIMIT)
-					.map(({ result }) => result),
-			);
-		}
-		return ordered;
-	}, [candidates, initialMode, parsedQuery]);
+		sources: {
+			commands,
+			settings,
+			settingValue,
+			tabs,
+			titleMatches,
+			contentMatches,
+			recentFiles,
+			folders,
+			tags,
+			people,
+			databases: databaseSummaries.data ?? [],
+			templates: templatesQuery.data ?? [],
+		},
+	});
 
 	const resolvedSelectedIndex = useMemo(() => {
 		if (!results.length) return 0;
 		const preservedIndex = selectedId
 			? results.findIndex((result) => result.id === selectedId)
 			: -1;
-		if (preservedIndex >= 0 && results[preservedIndex]?.enabled) {
+		if (preservedIndex >= 0 && results[preservedIndex]?.enabled !== false) {
 			return preservedIndex;
 		}
 		const firstEnabledId = movePaletteSelection(results, null, 1);
@@ -530,41 +217,23 @@ export function CommandPalette({
 		delayMs: NOTE_PREVIEW_OPEN_DELAY_MS,
 	});
 
-	useEffect(() => {
-		const selected = listRef.current?.querySelector<HTMLElement>(
-			`[data-command-index="${resolvedSelectedIndex}"]`,
-		);
-		selected?.scrollIntoView({ block: "nearest" });
-	}, [resolvedSelectedIndex]);
-
-	const updateSetting = useCallback(
-		(
-			definition: PaletteSettingDefinition,
-			value: string | number | boolean | null,
-		) => settingMutation.mutate({ definition, value }),
-		[settingMutation],
-	);
-
 	const adjustSetting = useCallback(
 		(index: number, direction: -1 | 1) => {
 			const result = results[index];
 			const definition = result?.settingId
 				? PALETTE_SETTING_BY_ID.get(result.settingId)
 				: undefined;
-			const snapshot = settingsQuery.data;
-			if (!result?.enabled || !definition || !snapshot) {
+			if (!result || result.enabled === false || !definition || !settings) {
 				return false;
 			}
-			if (settingMutation.isPending) {
+			if (settingPending) {
 				return (
 					definition.control === "toggle" || definition.control === "choice"
 				);
 			}
-			const current = hasOwnValue(optimisticValues, definition.id)
-				? optimisticValues[definition.id]
-				: definition.read(snapshot);
+			const current = settingValue(definition);
 			if (definition.control === "toggle" && typeof current === "boolean") {
-				updateSetting(definition, !current);
+				updateSetting({ definition, value: !current });
 				return true;
 			}
 			if (definition.control === "choice") {
@@ -574,25 +243,19 @@ export function CommandPalette({
 					direction,
 				);
 				if (nextValue !== null) {
-					updateSetting(definition, nextValue);
+					updateSetting({ definition, value: nextValue });
 					return true;
 				}
 			}
 			return false;
 		},
-		[
-			results,
-			settingsQuery.data,
-			settingMutation.isPending,
-			optimisticValues,
-			updateSetting,
-		],
+		[results, settings, settingPending, settingValue, updateSetting],
 	);
 
 	const selectResult = useCallback(
 		(index: number, direction: -1 | 1 = 1) => {
 			const result = results[index];
-			if (!result?.enabled) return;
+			if (!result || result.enabled === false) return;
 			switch (result.kind) {
 				case "command":
 					closeAndRestoreFocus();
@@ -649,9 +312,7 @@ export function CommandPalette({
 					const definition = result.settingId
 						? PALETTE_SETTING_BY_ID.get(result.settingId)
 						: undefined;
-					const snapshot = settingsQuery.data;
-					if (!definition || !snapshot) return;
-					setMutationError(null);
+					if (!definition || !settings) return;
 					setActiveSettingId(definition.id);
 				}
 			}
@@ -664,7 +325,7 @@ export function CommandPalette({
 			onRevealFolder,
 			onOpenDatabase,
 			adjustSetting,
-			settingsQuery.data,
+			settings,
 		],
 	);
 
@@ -741,12 +402,7 @@ export function CommandPalette({
 				i18n.language,
 			)
 		: null;
-	const activeSettingValue =
-		activeSetting && settingsQuery.data
-			? hasOwnValue(optimisticValues, activeSetting.id)
-				? (optimisticValues[activeSetting.id] ?? null)
-				: activeSetting.read(settingsQuery.data)
-			: null;
+	const activeSettingValue = activeSetting ? settingValue(activeSetting) : null;
 	const activeTemplate = templatesQuery.data?.find(
 		(template) => template.relPath === activeTemplatePath,
 	);
@@ -789,14 +445,15 @@ export function CommandPalette({
 						definition={activeSetting}
 						value={activeSettingValue}
 						folders={folders}
-						pending={settingMutation.isPending}
-						error={mutationError}
+						pending={settingPending}
+						error={settingError}
 						onBack={() => {
 							setActiveSettingId(null);
-							setMutationError(null);
 							window.requestAnimationFrame(() => inputRef.current?.focus());
 						}}
-						onChange={(value) => updateSetting(activeSetting, value)}
+						onChange={(value) =>
+							updateSetting({ definition: activeSetting, value })
+						}
 					/>
 				) : activeTemplate ? (
 					<div
@@ -898,7 +555,6 @@ export function CommandPalette({
 								id="command-palette-results"
 								className="commandPaletteList"
 								data-with-preview={selectedPreviewPath ? "true" : "false"}
-								ref={listRef}
 							>
 								{query.trim() ? (
 									<output className="sr-only" aria-live="polite">

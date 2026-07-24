@@ -36,15 +36,9 @@ export function PaletteSettingEditor({
 	const [draft, setDraft] = useState(() => displayValue(value));
 	const [pathQuery, setPathQuery] = useState("");
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
 	const backButtonRef = useRef<HTMLButtonElement | null>(null);
-	useEffect(() => {
-		(
-			inputRef.current ??
-			selectedOptionRef.current ??
-			backButtonRef.current
-		)?.focus();
-	}, []);
+	const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
+	const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
 	const pathOptions: readonly PaletteSettingOption[] = folders.map(
 		(folder) => ({
 			value: folder,
@@ -59,9 +53,14 @@ export function PaletteSettingEditor({
 					option.label.toLowerCase().includes(pathQuery.trim().toLowerCase()),
 				)
 			: options;
-	const hasSelectedOption = visibleOptions.some(
-		(option) => option.value === value,
-	);
+	useEffect(() => {
+		(
+			inputRef.current ??
+			selectedOptionRef.current ??
+			optionRefs.current[0] ??
+			backButtonRef.current
+		)?.focus();
+	}, []);
 
 	const handleKeyDown = (event: React.KeyboardEvent) => {
 		const target = event.target;
@@ -72,10 +71,8 @@ export function PaletteSettingEditor({
 			(definition.control === "choice" || definition.control === "path")
 		) {
 			event.preventDefault();
-			const options = Array.from(
-				event.currentTarget.querySelectorAll<HTMLButtonElement>(
-					"[data-setting-option]",
-				),
+			const options = optionRefs.current.filter(
+				(option): option is HTMLButtonElement => option !== null,
 			);
 			if (!options.length) return;
 			const currentIndex = options.findIndex((option) => option === target);
@@ -139,8 +136,10 @@ export function PaletteSettingEditor({
 					) : null}
 					{definition.control === "path" ? (
 						<button
+							ref={(node) => {
+								optionRefs.current[0] = node;
+							}}
 							type="button"
-							data-setting-option
 							className="commandPaletteItem commandPaletteSettingOption"
 							aria-pressed={value === null || value === ""}
 							data-selected={value === null || value === ""}
@@ -155,16 +154,16 @@ export function PaletteSettingEditor({
 					) : null}
 					{visibleOptions.map((option, index) => {
 						const selected = option.value === value;
+						const optionIndex =
+							definition.control === "path" ? index + 1 : index;
 						return (
 							<button
-								ref={
-									selected || (!hasSelectedOption && index === 0)
-										? selectedOptionRef
-										: undefined
-								}
+								ref={(node) => {
+									optionRefs.current[optionIndex] = node;
+									if (selected) selectedOptionRef.current = node;
+								}}
 								key={String(option.value)}
 								type="button"
-								data-setting-option
 								aria-pressed={selected}
 								className="commandPaletteItem commandPaletteSettingOption"
 								data-selected={selected}
