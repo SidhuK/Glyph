@@ -277,6 +277,9 @@ export function CommandPalette({
 		const settings = settingsQuery.data;
 		if (settings) {
 			for (const definition of PALETTE_SETTINGS_REGISTRY) {
+				if (!definition.write || (definition.scope === "space" && !spacePath)) {
+					continue;
+				}
 				const entry = localizeSettingsSearchEntry(
 					{
 						id: definition.id,
@@ -302,17 +305,16 @@ export function CommandPalette({
 					keywords: definition.sensitive
 						? ["settings", ...(entry.keywords ?? [])]
 						: ["settings", entry.description ?? "", ...(entry.keywords ?? [])],
-					enabled:
-						Boolean(definition.write) &&
-						(definition.scope === "application" || Boolean(spacePath)),
+					enabled: true,
 					defaultVisible: definition.defaultVisible,
 					rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
 					checked: typeof value === "boolean" ? value : undefined,
-					trailing: definition.sensitive
-						? t("commandPalette.secretMasked")
-						: definition.scope === "space" && !spacePath
-							? t("commandPalette.spaceRequired")
-							: displaySettingValue(value, t),
+					trailing:
+						definition.control === "action"
+							? undefined
+							: definition.sensitive
+								? t("commandPalette.secretMasked")
+								: displaySettingValue(value, t),
 					settingId: definition.id,
 					settingControl: definition.control,
 				});
