@@ -66,6 +66,10 @@ export function PaletteSettingEditor({
 		const target = event.target;
 		const emptyChildInput =
 			target instanceof HTMLInputElement ? !target.value : !draft;
+		const cursorAtStart =
+			target instanceof HTMLInputElement
+				? target.selectionStart === 0 && target.selectionEnd === 0
+				: true;
 		if (
 			(event.key === "ArrowDown" || event.key === "ArrowUp") &&
 			(definition.control === "choice" || definition.control === "path")
@@ -86,7 +90,7 @@ export function PaletteSettingEditor({
 		}
 		if (
 			event.key === "Escape" ||
-			event.key === "ArrowLeft" ||
+			(event.key === "ArrowLeft" && cursorAtStart) ||
 			(event.key === "Backspace" && emptyChildInput)
 		) {
 			event.preventDefault();

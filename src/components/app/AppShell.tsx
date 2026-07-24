@@ -548,15 +548,18 @@ export function AppShell() {
 	);
 
 	const handlePickTemplate = useCallback(
-		async (template: TemplatePickerItem) => {
+		async (
+			template: TemplatePickerItem,
+			destinationDirPath = templatePickerDirPath,
+		) => {
 			if (!spacePath) return;
 			setTemplatePickerOpen(false);
 			try {
 				const { save } = await import("@tauri-apps/plugin-dialog");
 				const suggestedFileName =
 					template.relPath.split("/").pop()?.trim() || "Untitled.md";
-				const defaultPath = templatePickerDirPath
-					? await join(spacePath, templatePickerDirPath, suggestedFileName)
+				const defaultPath = destinationDirPath
+					? await join(spacePath, destinationDirPath, suggestedFileName)
 					: await join(spacePath, suggestedFileName);
 				const selection = await save({
 					title: "Create note from template",
@@ -574,11 +577,11 @@ export function AppShell() {
 					? relPath
 					: `${relPath}.md`;
 				if (
-					templatePickerDirPath &&
-					normalizedRelPath !== templatePickerDirPath &&
-					!normalizedRelPath.startsWith(`${templatePickerDirPath}/`)
+					destinationDirPath &&
+					normalizedRelPath !== destinationDirPath &&
+					!normalizedRelPath.startsWith(`${destinationDirPath}/`)
 				) {
-					setError(`Choose a file path inside "${templatePickerDirPath}"`);
+					setError(`Choose a file path inside "${destinationDirPath}"`);
 					return;
 				}
 				const templateDoc = await invoke("space_read_text", {
@@ -591,7 +594,7 @@ export function AppShell() {
 				const createdPath = await fileTree.createMarkdownFileAtPath({
 					path: normalizedRelPath,
 					text: rendered,
-					openParentDir: templatePickerDirPath,
+					openParentDir: destinationDirPath,
 				});
 				if (createdPath) {
 					await openWorkspaceFile(createdPath);
@@ -1439,7 +1442,7 @@ export function AppShell() {
 						onOpenDatabase={(id) => openDatabasesTab(id)}
 						templateFolder={templateFolder}
 						onCreateFromTemplate={(template) =>
-							void handlePickTemplate(template)
+							void handlePickTemplate(template, "")
 						}
 					/>
 				</Suspense>

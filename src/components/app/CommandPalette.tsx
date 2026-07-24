@@ -130,7 +130,7 @@ export function CommandPalette({
 		useCommandSearch(
 			searchQuery,
 			spacePath,
-			searchEnabled,
+			open && searchEnabled,
 			settings?.editor.enablePeopleMentionsAsTags ?? false,
 		);
 
@@ -331,6 +331,7 @@ export function CommandPalette({
 
 	const handleRootKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLElement>) => {
+			if (event.target !== inputRef.current) return;
 			if (
 				event.nativeEvent.isComposing ||
 				event.altKey ||
@@ -412,6 +413,10 @@ export function CommandPalette({
 		}
 	}, [activeSettingId, activeTemplatePath, open]);
 	const normalizedQuery = query.trim();
+	const canSaveSearch =
+		parsedQuery.scope === "all" ||
+		parsedQuery.scope === "tags" ||
+		parsedQuery.scope === "people";
 	const isCurrentSearchSaved = databaseSummaries.data?.some(
 		(collection) =>
 			collection.source.kind === "search" &&
@@ -515,7 +520,7 @@ export function CommandPalette({
 									spellCheck={false}
 								/>
 							</div>
-							{normalizedQuery ? (
+							{normalizedQuery && canSaveSearch ? (
 								<div className="commandSearchActions">
 									<button
 										type="button"

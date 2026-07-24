@@ -3,6 +3,7 @@ import { LANGUAGE_OPTIONS } from "../../i18n/locales";
 import {
 	type AppSettings,
 	DATE_DISPLAY_FORMAT_OPTIONS,
+	DEFAULT_QUICK_NOTES_FOLDER,
 	MAX_EDITOR_FONT_SIZE,
 	MAX_UI_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
@@ -10,14 +11,12 @@ import {
 	setAiAssistantMode,
 	setAiEnabled,
 	setClassicAllNotesByDefault,
-	setDailyNoteTemplate,
 	setDailyNotesFolder,
 	setDatabaseShowColumnColor,
 	setDateDisplayFormat,
 	setEditorAttachmentStorageMode,
 	setEditorBeautifulTags,
 	setEditorColorfulHeadings,
-	setEditorEnablePeopleMentionsAsTags,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowCollapsibleLists,
@@ -301,7 +300,10 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "path",
 		read: (settings) => settings.quickNotes.folder,
 		write: (value, spacePath) =>
-			setQuickNotesFolder(requireString(value), scope(spacePath)),
+			setQuickNotesFolder(
+				value === null ? DEFAULT_QUICK_NOTES_FOLDER : requireString(value),
+				scope(spacePath),
+			),
 	},
 	{
 		id: "space-attachments-location",
@@ -338,17 +340,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			),
 	},
 	{
-		id: "space-default-daily-template",
-		scope: "space",
-		control: "path",
-		read: (settings) => settings.templates.dailyNoteTemplate,
-		write: (value, spacePath) =>
-			setDailyNoteTemplate(
-				value === null ? null : requireString(value),
-				scope(spacePath),
-			),
-	},
-	{
 		id: "space-search-index-status",
 		scope: "space",
 		control: "action",
@@ -356,14 +347,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		write: async () => {
 			await invoke("index_rebuild");
 		},
-	},
-	{
-		id: "space-search-index-people-tags",
-		scope: "application",
-		control: "toggle",
-		read: (settings) => settings.editor.enablePeopleMentionsAsTags,
-		write: (value) =>
-			setEditorEnablePeopleMentionsAsTags(requireBoolean(value)),
 	},
 	{
 		id: "general-editor-table-of-contents",

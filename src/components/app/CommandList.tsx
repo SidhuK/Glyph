@@ -133,8 +133,8 @@ export function CommandList({
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onMouseDown={(event) => {
 								event.preventDefault();
-								onSelectResult(index);
 							}}
+							onClick={() => onSelectResult(index)}
 						>
 							<span className="commandPaletteItemMain">
 								<span className="commandPaletteItemIcon" aria-hidden="true">
