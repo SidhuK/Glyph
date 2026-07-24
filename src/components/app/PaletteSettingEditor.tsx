@@ -179,9 +179,7 @@ export function PaletteSettingEditor({
 				</div>
 			) : null}
 
-			{definition.control === "number" ||
-			definition.control === "text" ||
-			(definition.control === "secret" && definition.write) ? (
+			{definition.control === "number" || definition.control === "text" ? (
 				<form
 					className="commandPaletteSettingForm"
 					onSubmit={(event) => {
@@ -193,13 +191,7 @@ export function PaletteSettingEditor({
 				>
 					<input
 						ref={inputRef}
-						type={
-							definition.control === "number"
-								? "number"
-								: definition.control === "secret"
-									? "password"
-									: "text"
-						}
+						type={definition.control === "number" ? "number" : "text"}
 						className="commandPaletteSettingInput"
 						value={draft}
 						min={definition.min}
@@ -216,31 +208,19 @@ export function PaletteSettingEditor({
 				</form>
 			) : null}
 
-			{definition.control === "information" ||
-			definition.control === "secret" ||
-			definition.control === "account" ||
-			definition.control === "action" ? (
+			{definition.control === "action" ? (
 				<div className="commandPaletteSettingStatus">
 					<strong>{entry.title}</strong>
-					{definition.control !== "action" || !definition.write ? (
-						<span>
-							{definition.sensitive
-								? t("commandPalette.secretMasked")
-								: t("commandPalette.statusUnavailable")}
-						</span>
-					) : null}
-					{definition.control === "action" && definition.write ? (
-						<button
-							type="button"
-							className="commandPaletteSettingSave"
-							disabled={pending}
-							onClick={() => onChange(true)}
-						>
-							{pending
-								? t("commandPalette.running")
-								: t("commandPalette.runAction")}
-						</button>
-					) : null}
+					<button
+						type="button"
+						className="commandPaletteSettingSave"
+						disabled={pending}
+						onClick={() => onChange(true)}
+					>
+						{pending
+							? t("commandPalette.running")
+							: t("commandPalette.runAction")}
+					</button>
 				</div>
 			) : null}
 		</div>

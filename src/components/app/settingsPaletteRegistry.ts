@@ -56,10 +56,7 @@ export type PaletteSettingControl =
 	| "number"
 	| "text"
 	| "path"
-	| "secret"
-	| "account"
-	| "action"
-	| "information";
+	| "action";
 
 export interface PaletteSettingOption {
 	value: string | number;
@@ -71,13 +68,12 @@ export interface PaletteSettingDefinition {
 	tab: SettingsTab;
 	scope: "application" | "space";
 	control: PaletteSettingControl;
-	sensitive?: boolean;
 	defaultVisible?: boolean;
 	min?: number;
 	max?: number;
 	options?: readonly PaletteSettingOption[];
 	read: (settings: AppSettings) => string | number | boolean | null;
-	write?: (
+	write: (
 		value: string | number | boolean | null,
 		spacePath: string | null,
 	) => Promise<void>;
@@ -518,71 +514,19 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	},
 ];
 
-const editableById = new Map(
-	editableDefinitions.map((definition) => [definition.id, definition]),
+const settingsTabById = new Map(
+	SETTINGS_SEARCH_ENTRIES.map(({ id, tab }) => [id, tab]),
 );
 
-const sensitiveIds = new Set([
-	"general-license-key",
-	"ai-api-key",
-	"ai-chatgpt-identity",
-]);
-const accountIds = new Set([
-	"ai-chatgpt-account",
-	"ai-chatgpt-authentication",
-	"ai-chatgpt-rate-limits",
-]);
-const actionIds = new Set([
-	"general-activate-glyph",
-	"space-search-index-status",
-	"git-sync-actions",
-	"about-updates",
-	"about-update-status",
-]);
-
 export const PALETTE_SETTINGS_REGISTRY: readonly PaletteSettingDefinition[] =
-	SETTINGS_SEARCH_ENTRIES.map(({ id, tab }) => {
-		const editable = editableById.get(id);
-		if (editable) return { ...editable, tab };
-		return {
-			id,
-			tab,
-			scope:
-				tab === "space" || tab === "git" || tab === "ai"
-					? "space"
-					: "application",
-			control: sensitiveIds.has(id)
-				? "secret"
-				: accountIds.has(id)
-					? "account"
-					: actionIds.has(id)
-						? "action"
-						: "information",
-			sensitive: sensitiveIds.has(id),
-			read: () => null,
-		};
+	editableDefinitions.map((definition) => {
+		const tab = settingsTabById.get(definition.id);
+		if (!tab) {
+			throw new Error(`Missing settings search entry: ${definition.id}`);
+		}
+		return { ...definition, tab };
 	});
 
 export const PALETTE_SETTING_BY_ID = new Map(
 	PALETTE_SETTINGS_REGISTRY.map((definition) => [definition.id, definition]),
 );
-
-if (import.meta.env.DEV) {
-	const ids = new Set<string>();
-	for (const definition of PALETTE_SETTINGS_REGISTRY) {
-		if (ids.has(definition.id)) {
-			throw new Error(`Duplicate palette setting ID: ${definition.id}`);
-		}
-		ids.add(definition.id);
-		if (definition.write && definition.control === "information") {
-			throw new Error(
-				`Writable palette setting lacks a control: ${definition.id}`,
-			);
-		}
-	}
-	for (const entry of SETTINGS_SEARCH_ENTRIES) {
-		if (!ids.has(entry.id)) {
-			throw new Error(`Missing palette setting definition: ${entry.id}`);
-		}
-	}
-}

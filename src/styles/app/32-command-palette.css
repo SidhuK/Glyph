@@ -176,8 +176,7 @@
 	background-clip: padding-box;
 }
 
-.commandPaletteGroupLabel,
-.commandPaletteSectionLabel {
+.commandPaletteGroupLabel {
 	padding: 9px 9px 3px;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
 	font-size: var(--text-xs);

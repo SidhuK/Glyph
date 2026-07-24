@@ -4,7 +4,7 @@ import {
 	buildSearchQuery,
 	movePaletteSelection,
 	parsePaletteQuery,
-	parseSearchQuery,
+	parseSearchQueryWithPeople,
 	rankPaletteResult,
 	stepPaletteOption,
 } from "./commandPaletteHelpers";
@@ -13,16 +13,18 @@ import { PALETTE_SETTINGS_REGISTRY } from "./settingsPaletteRegistry";
 
 describe("commandPaletteHelpers", () => {
 	it("parses people and tags from a mixed query", () => {
-		expect(parseSearchQuery("@alice #project roadmap")).toEqual({
-			request: {
-				tags: ["#project"],
-				people: ["@alice"],
-				title_only: false,
-				tag_only: false,
-				query: "roadmap",
+		expect(parseSearchQueryWithPeople("@alice #project roadmap", true)).toEqual(
+			{
+				request: {
+					tags: ["#project"],
+					people: ["@alice"],
+					title_only: false,
+					tag_only: false,
+					query: "roadmap",
+				},
+				text: "roadmap",
 			},
-			text: "roadmap",
-		});
+		);
 	});
 
 	it("builds people and tag tokens back into a query", () => {
@@ -92,12 +94,11 @@ describe("commandPaletteHelpers", () => {
 		]);
 	});
 
-	it("classifies every searchable setting exactly once", () => {
+	it("keeps palette settings unique and searchable", () => {
 		const registryIds = PALETTE_SETTINGS_REGISTRY.map(({ id }) => id);
 		expect(new Set(registryIds).size).toBe(registryIds.length);
-		expect(new Set(registryIds)).toEqual(
-			new Set(SETTINGS_SEARCH_ENTRIES.map(({ id }) => id)),
-		);
+		const searchableIds = new Set(SETTINGS_SEARCH_ENTRIES.map(({ id }) => id));
+		expect(registryIds.every((id) => searchableIds.has(id))).toBe(true);
 	});
 
 	it("wraps keyboard selection and skips unavailable results", () => {

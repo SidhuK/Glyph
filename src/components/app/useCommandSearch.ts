@@ -1,14 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { invoke } from "../../lib/tauri";
 import type { SearchResult } from "../../lib/tauri";
 import { isPreviewableNotePath } from "../../utils/path";
 import { parseSearchQueryWithPeople } from "./commandPaletteHelpers";
-
-export interface CommandSearchItem {
-	id: string;
-	previewable: boolean;
-}
 
 export function useCommandSearch(
 	query: string,
@@ -110,31 +105,10 @@ export function useCommandSearch(
 		return { titleMatches: title, contentMatches: content };
 	}, [searchResults, query, enabled, peopleMentionsEnabled]);
 
-	const searchItems = useMemo((): CommandSearchItem[] => {
-		if (!query.trim()) {
-			return recentPreviewableFiles.map((file) => ({
-				id: file.path,
-				previewable: true,
-			}));
-		}
-		return [...titleMatches, ...contentMatches].map((result) => ({
-			id: result.id,
-			previewable: isPreviewableNotePath(result.id),
-		}));
-	}, [contentMatches, query, recentPreviewableFiles, titleMatches]);
-
-	const reset = useCallback(() => {
-		requestIdRef.current += 1;
-		setSearchResults([]);
-		setIsSearching(false);
-	}, []);
-
 	return {
 		recentFiles: recentPreviewableFiles,
 		isSearching,
 		titleMatches,
 		contentMatches,
-		searchItems,
-		reset,
 	};
 }

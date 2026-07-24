@@ -20,7 +20,7 @@ export interface Command {
 
 export type PaletteLaunchMode = "commands" | "search";
 
-export type PaletteQueryScope =
+type PaletteQueryScope =
 	| "all"
 	| "commands"
 	| "settings"
@@ -29,7 +29,7 @@ export type PaletteQueryScope =
 	| "people"
 	| "templates";
 
-export interface ParsedPaletteQuery {
+interface ParsedPaletteQuery {
 	raw: string;
 	text: string;
 	scope: PaletteQueryScope;
@@ -105,7 +105,7 @@ function kindsForScope(scope: PaletteQueryScope): readonly PaletteResultKind[] {
 	}
 }
 
-export function paletteResultMatchesScope(
+function paletteResultMatchesScope(
 	result: PaletteResult,
 	scope: PaletteQueryScope,
 ): boolean {
@@ -174,10 +174,6 @@ export function stepPaletteOption(
 		currentIndex >= 0 ? currentIndex : direction === 1 ? -1 : 0;
 	const nextIndex = (startIndex + direction + options.length) % options.length;
 	return options[nextIndex]?.value ?? null;
-}
-
-export function parseSearchQuery(raw: string): ParsedSearchQuery {
-	return parseSearchQueryWithPeople(raw, true);
 }
 
 export function parseSearchQueryWithPeople(

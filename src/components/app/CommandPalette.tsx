@@ -223,7 +223,6 @@ export function CommandPalette({
 
 	const settingMutation = useMutation({
 		mutationFn: async ({ definition, value }: SettingMutationVariables) => {
-			if (!definition.write) throw new Error(t("commandPalette.readOnly"));
 			if (definition.scope === "space" && !spacePath) {
 				throw new Error(t("commandPalette.spaceRequired"));
 			}
@@ -285,7 +284,7 @@ export function CommandPalette({
 		const settings = settingsQuery.data;
 		if (settings) {
 			for (const definition of PALETTE_SETTINGS_REGISTRY) {
-				if (!definition.write || (definition.scope === "space" && !spacePath)) {
+				if (definition.scope === "space" && !spacePath) {
 					continue;
 				}
 				const entry = localizeSettingsSearchEntry(
@@ -310,9 +309,11 @@ export function CommandPalette({
 						.filter(Boolean)
 						.join(" / "),
 					category: t("commandPalette.groups.setting"),
-					keywords: definition.sensitive
-						? ["settings", ...(entry.keywords ?? [])]
-						: ["settings", entry.description ?? "", ...(entry.keywords ?? [])],
+					keywords: [
+						"settings",
+						entry.description ?? "",
+						...(entry.keywords ?? []),
+					],
 					enabled: true,
 					defaultVisible: definition.defaultVisible,
 					rankBoost: definition.scope === "space" && spacePath ? 10 : 0,
@@ -320,9 +321,7 @@ export function CommandPalette({
 					trailing:
 						definition.control === "action"
 							? undefined
-							: definition.sensitive
-								? t("commandPalette.secretMasked")
-								: displaySettingValue(definition, value, t),
+							: displaySettingValue(definition, value, t),
 					settingId: definition.id,
 					settingControl: definition.control,
 				});
