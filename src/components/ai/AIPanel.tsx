@@ -450,6 +450,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 					input={input}
 					setInput={setInput}
 					isAwaitingResponse={toolEvents.isAwaitingResponse}
+					isStreamingResponse={toolEvents.responsePhase === "streaming"}
 					canSend={canSend}
 					onSend={() => void handleSend()}
 					onStop={() => chat.stop()}

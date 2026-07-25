@@ -71,14 +71,19 @@
 	background: transparent;
 }
 
+.aiComposerBeam,
 .aiComposerInputShell {
 	position: relative;
-	padding: 0;
-	background: transparent;
+	border-radius: var(--radius-lg);
 }
 
-.aiComposerInputShell:focus-within .aiComposerInput {
-	background: var(--bg-primary);
+.aiComposerBeam {
+	width: 100%;
+}
+
+.aiComposerInputShell {
+	padding: 0;
+	background: transparent;
 }
 
 .aiComposerInput {
@@ -94,8 +99,7 @@
 	background: var(--bg-primary);
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, var(--border-default) 35%, transparent);
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast);
+	transition: border-color var(--transition-fast);
 	white-space: pre-wrap;
 	word-break: normal;
 	overflow-wrap: anywhere;
@@ -105,10 +109,6 @@
 
 .aiComposerInput:focus {
 	border-color: color-mix(in srgb, var(--border-default) 60%, transparent);
-}
-
-.aiComposerInput::placeholder {
-	color: color-mix(in srgb, var(--text-tertiary) 95%, transparent);
 }
 
 .aiComposerInput:empty::before {
