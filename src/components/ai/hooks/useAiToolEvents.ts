@@ -50,7 +50,7 @@ type ToolStateAction =
 			tool: string;
 			phase: ToolPhase;
 			payload?: unknown;
-			error: string;
+			error?: string;
 			at: number;
 	  }
 	| {
@@ -166,7 +166,9 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 									{
 										id: `error-${action.at}-${crypto.randomUUID()}`,
 										kind: "error",
-										message: action.error,
+										message:
+											action.error ??
+											i18n.t("shell:ai.toolFailed", { tool: action.tool }),
 										at: action.at,
 									},
 								]
@@ -247,7 +249,8 @@ export function useAiToolEvents({
 			tool,
 			phase,
 			payload: payload.payload,
-			error: i18n.t("shell:ai.toolFailed", { tool }),
+			error:
+				phase === "error" ? i18n.t("shell:ai.toolFailed", { tool }) : undefined,
 			at:
 				typeof payload.at_ms === "number" && payload.at_ms > 0
 					? payload.at_ms
