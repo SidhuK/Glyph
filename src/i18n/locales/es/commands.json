@@ -382,6 +382,22 @@
 			"label": "Seguir en X",
 			"description": "Abrir Karat Sidhu en X."
 		},
+		"split-editor-above": {
+			"label": "Dividir editor arriba",
+			"description": "Crear un panel de editor vacío encima del panel enfocado."
+		},
+		"split-editor-below": {
+			"label": "Dividir editor abajo",
+			"description": "Crear un panel de editor vacío debajo del panel enfocado."
+		},
+		"split-editor-left": {
+			"label": "Dividir editor a la izquierda",
+			"description": "Crear un panel de editor vacío a la izquierda del panel enfocado."
+		},
+		"split-editor-right": {
+			"label": "Dividir editor a la derecha",
+			"description": "Crear un panel de editor vacío a la derecha del panel enfocado."
+		},
 		"strikethrough": {
 			"label": "Tachado",
 			"description": "Alternar tachado en la selección actual."

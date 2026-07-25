@@ -382,6 +382,22 @@
 			"label": "X でフォロー",
 			"description": "X で Karat Sidhu を開きます。"
 		},
+		"split-editor-above": {
+			"label": "エディターを上に分割",
+			"description": "フォーカス中のペインの上に空のエディターペインを作成します。"
+		},
+		"split-editor-below": {
+			"label": "エディターを下に分割",
+			"description": "フォーカス中のペインの下に空のエディターペインを作成します。"
+		},
+		"split-editor-left": {
+			"label": "エディターを左に分割",
+			"description": "フォーカス中のペインの左に空のエディターペインを作成します。"
+		},
+		"split-editor-right": {
+			"label": "エディターを右に分割",
+			"description": "フォーカス中のペインの右に空のエディターペインを作成します。"
+		},
 		"strikethrough": {
 			"label": "取り消し線",
 			"description": "選択範囲の取り消し線を切り替えます。"

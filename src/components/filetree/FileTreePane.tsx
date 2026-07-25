@@ -1,6 +1,7 @@
 import {
 	DragDropProvider,
 	type DragEndEvent,
+	type DragMoveEvent,
 	useDroppable,
 } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -42,6 +43,11 @@ import { isDeleteKey } from "../../utils/keyboard";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
+import {
+	cancelSplitEditorDrag,
+	endSplitEditorDrag,
+	moveSplitEditorDrag,
+} from "../app/splitEditorDnd";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -910,8 +916,6 @@ export const FileTreePane = memo(function FileTreePane({
 			window.setTimeout(() => {
 				moveClickSuppressRef.current = false;
 			}, 0);
-			if (event.canceled) return;
-
 			const { source, target } = event.operation;
 			const sourcePath =
 				typeof source?.data.path === "string" ? source.data.path : null;
@@ -919,6 +923,17 @@ export const FileTreePane = memo(function FileTreePane({
 				source?.data.kind === "dir" || source?.data.kind === "file"
 					? source.data.kind
 					: null;
+			if (event.canceled || !sourcePath || !sourceKind) {
+				cancelSplitEditorDrag();
+				return;
+			}
+			if (sourceKind === "file" && isMarkdownPath(sourcePath)) {
+				const { x, y } = event.operation.position.current;
+				const splitDragSource = { kind: "file" as const, path: sourcePath };
+				moveSplitEditorDrag(splitDragSource, x, y);
+				if (endSplitEditorDrag(splitDragSource)) return;
+			}
+			cancelSplitEditorDrag();
 			const targetDirPath =
 				typeof target?.data.targetDirPath === "string"
 					? target.data.targetDirPath
@@ -929,9 +944,21 @@ export const FileTreePane = memo(function FileTreePane({
 		},
 		[onMovePath],
 	);
+	const handleDragMove = useCallback((event: DragMoveEvent) => {
+		const source = event.operation.source;
+		if (
+			source?.data.kind !== "file" ||
+			typeof source.data.path !== "string" ||
+			!isMarkdownPath(source.data.path)
+		) {
+			return;
+		}
+		const { x, y } = event.operation.position.current;
+		moveSplitEditorDrag({ kind: "file", path: source.data.path }, x, y);
+	}, []);
 
 	return (
-		<DragDropProvider onDragEnd={handleDragEnd}>
+		<DragDropProvider onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
 			<m.aside
 				className="fileTreePane"
 				initial={{ y: 10 }}

@@ -382,6 +382,22 @@
 			"label": "Suivre sur X",
 			"description": "Ouvrir Karat Sidhu sur X."
 		},
+		"split-editor-above": {
+			"label": "Scinder l’éditeur au-dessus",
+			"description": "Créer un volet d’éditeur vide au-dessus du volet actif."
+		},
+		"split-editor-below": {
+			"label": "Scinder l’éditeur en dessous",
+			"description": "Créer un volet d’éditeur vide sous le volet actif."
+		},
+		"split-editor-left": {
+			"label": "Scinder l’éditeur à gauche",
+			"description": "Créer un volet d’éditeur vide à gauche du volet actif."
+		},
+		"split-editor-right": {
+			"label": "Scinder l’éditeur à droite",
+			"description": "Créer un volet d’éditeur vide à droite du volet actif."
+		},
 		"strikethrough": {
 			"label": "Barré",
 			"description": "Activer ou désactiver le barré pour la sélection actuelle."

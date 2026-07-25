@@ -66,6 +66,7 @@ interface MarkdownEditorPaneProps {
 	initialDoc?: TextFileDoc | null;
 	initialError?: string;
 	extractToNoteActions?: ExtractToNoteActions;
+	active?: boolean;
 }
 
 type LinkedNoteKind = "wiki" | "markdown";
@@ -159,6 +160,7 @@ export function MarkdownEditorPane({
 	initialDoc = null,
 	initialError = "",
 	extractToNoteActions,
+	active = true,
 }: MarkdownEditorPaneProps) {
 	const [infoPanelText, setInfoPanelText] = useState("");
 	const preferredEditorModeRef = useRef<NoteInlineEditorMode | null>(null);
@@ -435,7 +437,11 @@ export function MarkdownEditorPane({
 		}),
 		[isDirty, onSave, relPath, requestEditorMode, textRef],
 	);
-	useEditorRegistration(editorState);
+	useEditorRegistration(editorState, active);
+
+	useEffect(() => {
+		if (!active) setInfoPanelOpen(false);
+	}, [active]);
 
 	useEffect(() => {
 		onDirtyChange?.(isDirty);

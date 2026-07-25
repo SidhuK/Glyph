@@ -1,12 +1,37 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type SetStateAction,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import {
+	PRIMARY_EDITOR_PANE_ID,
+	type SplitEditorNode,
+	createInitialSplitEditorLayout,
+	paneIdsInLayout,
+	removeEditorPane,
+} from "../../lib/splitEditor";
 import { isMarkdownPath } from "../../utils/path";
+import { useSplitEditorTabs } from "./useSplitEditorTabs";
 
 export interface WorkspaceTab {
 	id: string;
+	paneId: string;
 	kind: "blank" | "file" | "special";
 	target: string | null;
+}
+
+export interface WorkspaceEditorPane {
+	id: string;
+	tabs: WorkspaceTab[];
+	activeTabId: string | null;
+	activeTabPath: string | null;
+	canGoBack: boolean;
+	canGoForward: boolean;
 }
 
 type NoteHistoryEntry = {
@@ -18,11 +43,12 @@ type TabNoteHistory = {
 	index: number;
 };
 
-type TabHistoryById = Record<string, TabNoteHistory>;
+export type TabHistoryById = Record<string, TabNoteHistory>;
 
 interface RestoredWorkspaceTab {
 	kind: "file" | "special";
 	target: string;
+	paneId: string;
 }
 
 function matchesRemovedPath(
@@ -35,6 +61,29 @@ function matchesRemovedPath(
 	return recursive && tab.target.startsWith(`${path}/`);
 }
 
+function nearestTabIdInPane(
+	currentTabs: WorkspaceTab[],
+	nextTabs: WorkspaceTab[],
+	removedIndex: number,
+	paneId: string,
+): string | null {
+	const next = nextTabs.find(
+		(tab) => tab.paneId === paneId && currentTabs.indexOf(tab) > removedIndex,
+	);
+	if (next) return next.id;
+	for (let index = nextTabs.length - 1; index >= 0; index -= 1) {
+		const tab = nextTabs[index];
+		if (tab?.paneId === paneId && currentTabs.indexOf(tab) < removedIndex) {
+			return tab.id;
+		}
+	}
+	return null;
+}
+
+function paneIdForTab(tabs: WorkspaceTab[], tabId: string | null): string {
+	return tabs.find((tab) => tab.id === tabId)?.paneId ?? PRIMARY_EDITOR_PANE_ID;
+}
+
 export function useTabManager(spacePath: string | null) {
 	const { setActiveFilePath } = useFileTreeContext();
 	const { addRecentFile } = useRecentFiles(spacePath, 7);
@@ -43,21 +92,46 @@ export function useTabManager(spacePath: string | null) {
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
 	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
+	const [splitLayout, setSplitLayoutState] = useState<SplitEditorNode>(
+		createInitialSplitEditorLayout,
+	);
+	const [activeTabByPane, setActiveTabByPane] = useState<
+		Record<string, string | null>
+	>({ [PRIMARY_EDITOR_PANE_ID]: null });
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const [historyByTabId, setHistoryByTabId] = useState<TabHistoryById>({});
 	const [tabsRevision, setTabsRevision] = useState(0);
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
+	const splitLayoutRef = useRef(splitLayout);
+	const activeTabByPaneRef = useRef<Record<string, string | null>>({
+		[PRIMARY_EDITOR_PANE_ID]: null,
+	});
 	const historyByTabIdRef = useRef<TabHistoryById>({});
 
 	tabsRef.current = tabs;
 	activeTabIdRef.current = activeTabId;
 	historyByTabIdRef.current = historyByTabId;
 
+	const setSplitLayout = useCallback(
+		(action: SetStateAction<SplitEditorNode>) => {
+			const nextLayout =
+				typeof action === "function" ? action(splitLayoutRef.current) : action;
+			splitLayoutRef.current = nextLayout;
+			setSplitLayoutState(nextLayout);
+		},
+		[],
+	);
+
 	const createTab = useCallback(
-		(kind: WorkspaceTab["kind"], target: string | null): WorkspaceTab => ({
+		(
+			kind: WorkspaceTab["kind"],
+			target: string | null,
+			paneId = paneIdForTab(tabsRef.current, activeTabIdRef.current),
+		): WorkspaceTab => ({
 			id: `workspace-tab-${++tabIdCounterRef.current}`,
+			paneId,
 			kind,
 			target,
 		}),
@@ -70,6 +144,7 @@ export function useTabManager(spacePath: string | null) {
 	);
 	const activeTabPath =
 		activeTab && activeTab.kind !== "blank" ? activeTab.target : null;
+	const focusedPaneId = activeTab?.paneId ?? PRIMARY_EDITOR_PANE_ID;
 
 	const syncWorkspaceState = useCallback(
 		(
@@ -83,14 +158,17 @@ export function useTabManager(spacePath: string | null) {
 				nextActiveTab?.kind === "file" && nextActiveTab.target
 					? nextActiveTab.target
 					: null;
-			const nextMarkdownTabs = nextTabs
-				.filter(
-					(tab) =>
+			const nextMarkdownTabs = [
+				...new Set(
+					nextTabs.flatMap((tab) =>
 						tab.kind === "file" &&
 						tab.target !== null &&
-						isMarkdownPath(tab.target),
-				)
-				.map((tab) => tab.target as string);
+						isMarkdownPath(tab.target)
+							? [tab.target]
+							: [],
+					),
+				),
+			];
 			const nextActiveMarkdownPath =
 				nextActiveTab?.kind === "file" &&
 				nextActiveTab.target !== null &&
@@ -131,8 +209,28 @@ export function useTabManager(spacePath: string | null) {
 			const previousActiveTarget = previousActiveTab?.target ?? null;
 			tabsRef.current = nextTabs;
 			activeTabIdRef.current = nextActiveTabId;
+			const nextActivePaneId =
+				nextTabs.find((tab) => tab.id === nextActiveTabId)?.paneId ??
+				PRIMARY_EDITOR_PANE_ID;
+			const nextActiveByPane: Record<string, string | null> = {};
+			for (const tab of nextTabs) {
+				if (tab.paneId in nextActiveByPane) continue;
+				const currentActiveId = activeTabByPaneRef.current[tab.paneId];
+				nextActiveByPane[tab.paneId] =
+					currentActiveId &&
+					nextTabs.some(
+						(candidate) =>
+							candidate.id === currentActiveId &&
+							candidate.paneId === tab.paneId,
+					)
+						? currentActiveId
+						: tab.id;
+			}
+			nextActiveByPane[nextActivePaneId] = nextActiveTabId;
+			activeTabByPaneRef.current = nextActiveByPane;
 			setTabs(nextTabs);
 			setActiveTabIdState(nextActiveTabId);
+			setActiveTabByPane(nextActiveByPane);
 			setTabsRevision((revision) => revision + 1);
 			syncWorkspaceState(nextTabs, nextActiveTabId, previousActiveTarget);
 		},
@@ -146,13 +244,28 @@ export function useTabManager(spacePath: string | null) {
 		[commitTabsChange],
 	);
 
+	const focusPane = useCallback(
+		(paneId: string) => {
+			if (paneIdForTab(tabsRef.current, activeTabIdRef.current) === paneId)
+				return;
+			const paneTabs = tabsRef.current.filter((tab) => tab.paneId === paneId);
+			const nextActiveTabId =
+				activeTabByPaneRef.current[paneId] ?? paneTabs[0]?.id ?? null;
+			commitTabsChange(tabsRef.current, nextActiveTabId);
+		},
+		[commitTabsChange],
+	);
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset tab state when the active space changes.
 	useEffect(() => {
 		tabsRef.current = [];
 		activeTabIdRef.current = null;
 		historyByTabIdRef.current = {};
+		activeTabByPaneRef.current = { [PRIMARY_EDITOR_PANE_ID]: null };
 		setTabs([]);
 		setActiveTabIdState(null);
+		setSplitLayout(createInitialSplitEditorLayout());
+		setActiveTabByPane({ [PRIMARY_EDITOR_PANE_ID]: null });
 		setDirtyByPath({});
 		setHistoryByTabId({});
 		setTabsRevision(0);
@@ -160,12 +273,17 @@ export function useTabManager(spacePath: string | null) {
 
 	const focusExistingTab = useCallback(
 		(target: string) => {
-			const existing = tabs.find((tab) => tab.target === target);
+			const existing = tabsRef.current.find(
+				(tab) =>
+					tab.paneId ===
+						paneIdForTab(tabsRef.current, activeTabIdRef.current) &&
+					tab.target === target,
+			);
 			if (!existing) return false;
 			setActiveTabId(existing.id);
 			return true;
 		},
-		[setActiveTabId, tabs],
+		[setActiveTabId],
 	);
 
 	const clearDirtyForTarget = useCallback((target: string | null) => {
@@ -288,21 +406,25 @@ export function useTabManager(spacePath: string | null) {
 		[updateHistoryState],
 	);
 
+	const navigateTabHistory = useCallback(
+		(tabId: string, delta: -1 | 1) => {
+			const path = stepHistory(tabId, delta);
+			if (!path) return;
+			activeTabIdRef.current = tabId;
+			updateActiveTabInPlace("file", path);
+		},
+		[stepHistory, updateActiveTabInPlace],
+	);
+
 	const goBack = useCallback(() => {
 		const activeId = activeTabIdRef.current;
-		if (!activeId) return;
-		const path = stepHistory(activeId, -1);
-		if (!path) return;
-		updateActiveTabInPlace("file", path);
-	}, [stepHistory, updateActiveTabInPlace]);
+		if (activeId) navigateTabHistory(activeId, -1);
+	}, [navigateTabHistory]);
 
 	const goForward = useCallback(() => {
 		const activeId = activeTabIdRef.current;
-		if (!activeId) return;
-		const path = stepHistory(activeId, 1);
-		if (!path) return;
-		updateActiveTabInPlace("file", path);
-	}, [stepHistory, updateActiveTabInPlace]);
+		if (activeId) navigateTabHistory(activeId, 1);
+	}, [navigateTabHistory]);
 
 	const activeHistory =
 		activeTabId !== null ? (historyByTabId[activeTabId] ?? null) : null;
@@ -320,7 +442,13 @@ export function useTabManager(spacePath: string | null) {
 	const openFileTab = useCallback(
 		(path: string) => {
 			if (!canOpenInMainPane(path)) return false;
-			if (focusExistingTab(path)) return true;
+			const existing = tabsRef.current.find(
+				(tab) => tab.kind === "file" && tab.target === path,
+			);
+			if (existing) {
+				setActiveTabId(existing.id);
+				return true;
+			}
 
 			const currentActiveId = activeTabIdRef.current;
 			const currentTabs = tabsRef.current;
@@ -345,8 +473,8 @@ export function useTabManager(spacePath: string | null) {
 		[
 			canOpenInMainPane,
 			clearHistoryForTab,
-			focusExistingTab,
 			pushNoteHistory,
+			setActiveTabId,
 			updateActiveTabInPlace,
 		],
 	);
@@ -373,15 +501,32 @@ export function useTabManager(spacePath: string | null) {
 	);
 
 	const restoreWorkspaceTabs = useCallback(
-		(tabSnapshots: RestoredWorkspaceTab[], activeTabTarget: string | null) => {
+		(
+			tabSnapshots: RestoredWorkspaceTab[],
+			activeTabTarget: string | null,
+			restoredLayout: SplitEditorNode | null,
+			restoredFocusedPaneId: string | null,
+			activeTabTargetByPane: Record<string, string | null>,
+		) => {
+			const nextLayout = restoredLayout ?? createInitialSplitEditorLayout();
+			const layoutPaneIds = new Set(paneIdsInLayout(nextLayout));
+			const fallbackPaneId =
+				paneIdsInLayout(nextLayout)[0] ?? PRIMARY_EDITOR_PANE_ID;
 			const seenTargets = new Set<string>();
 			const nextTabs: WorkspaceTab[] = [];
 			const nextHistory: TabHistoryById = {};
 
 			for (const snapshot of tabSnapshots) {
-				if (seenTargets.has(snapshot.target)) continue;
-				seenTargets.add(snapshot.target);
-				const tab = createTab(snapshot.kind, snapshot.target);
+				const paneId = layoutPaneIds.has(snapshot.paneId)
+					? snapshot.paneId
+					: fallbackPaneId;
+				const targetKey =
+					snapshot.kind === "file"
+						? `file\0${snapshot.target}`
+						: `special\0${paneId}\0${snapshot.target}`;
+				if (seenTargets.has(targetKey)) continue;
+				seenTargets.add(targetKey);
+				const tab = createTab(snapshot.kind, snapshot.target, paneId);
 				nextTabs.push(tab);
 				if (snapshot.kind === "file" && isMarkdownPath(snapshot.target)) {
 					nextHistory[tab.id] = {
@@ -390,18 +535,40 @@ export function useTabManager(spacePath: string | null) {
 					};
 				}
 			}
+			for (const paneId of layoutPaneIds) {
+				if (!nextTabs.some((tab) => tab.paneId === paneId)) {
+					nextTabs.push(createTab("blank", null, paneId));
+				}
+			}
 
+			const nextActiveByPane: Record<string, string | null> = {};
+			for (const paneId of layoutPaneIds) {
+				const target = activeTabTargetByPane[paneId];
+				nextActiveByPane[paneId] =
+					nextTabs.find((tab) => tab.paneId === paneId && tab.target === target)
+						?.id ??
+					nextTabs.find((tab) => tab.paneId === paneId)?.id ??
+					null;
+			}
+			const nextFocusedPaneId =
+				restoredFocusedPaneId && layoutPaneIds.has(restoredFocusedPaneId)
+					? restoredFocusedPaneId
+					: fallbackPaneId;
 			const nextActiveTabId =
+				nextActiveByPane[nextFocusedPaneId] ??
 				nextTabs.find((tab) => tab.target === activeTabTarget)?.id ??
 				nextTabs[0]?.id ??
 				null;
 
 			historyByTabIdRef.current = nextHistory;
+			activeTabByPaneRef.current = nextActiveByPane;
+			setSplitLayout(nextLayout);
+			setActiveTabByPane(nextActiveByPane);
 			setHistoryByTabId(nextHistory);
 			setDirtyByPath({});
 			commitTabsChange(nextTabs, nextActiveTabId);
 		},
-		[commitTabsChange, createTab],
+		[commitTabsChange, createTab, setSplitLayout],
 	);
 
 	const openBlankTab = useCallback(() => {
@@ -425,18 +592,42 @@ export function useTabManager(spacePath: string | null) {
 			if (index === -1) return;
 			const removed = currentTabs[index];
 			const removedTarget = removed?.kind === "file" ? removed.target : null;
+			const removedWasFocused =
+				removed?.paneId === paneIdForTab(currentTabs, activeTabIdRef.current);
 			const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
+			const removedPaneId = removed?.paneId;
+			const replacementTabId = removedPaneId
+				? nearestTabIdInPane(currentTabs, nextTabs, index, removedPaneId)
+				: null;
 			const nextActiveTabId =
 				activeTabIdRef.current !== tabId
 					? activeTabIdRef.current
-					: (nextTabs[index]?.id ?? nextTabs[index - 1]?.id ?? null);
-			if (removedTarget) {
-				setDirtyByPath((prev) => {
-					if (!(removedTarget in prev)) return prev;
-					const next = { ...prev };
-					delete next[removedTarget];
-					return next;
-				});
+					: replacementTabId;
+			const currentLayout = splitLayoutRef.current;
+			const paneIsEmpty =
+				removedPaneId &&
+				!nextTabs.some((tab) => tab.paneId === removedPaneId) &&
+				paneIdsInLayout(currentLayout).length > 1;
+			let committedActiveTabId = nextActiveTabId;
+			if (paneIsEmpty && removedPaneId) {
+				const nextLayout = removeEditorPane(currentLayout, removedPaneId);
+				if (nextLayout) {
+					setSplitLayout(nextLayout);
+					if (removedWasFocused) {
+						const fallbackPaneId =
+							paneIdsInLayout(nextLayout)[0] ?? PRIMARY_EDITOR_PANE_ID;
+						committedActiveTabId =
+							activeTabByPaneRef.current[fallbackPaneId] ??
+							nextTabs.find((tab) => tab.paneId === fallbackPaneId)?.id ??
+							null;
+					}
+				}
+			}
+			if (
+				removedTarget &&
+				!nextTabs.some((tab) => tab.target === removedTarget)
+			) {
+				clearDirtyForTarget(removedTarget);
 			}
 			updateHistoryState((prev) => {
 				if (!(tabId in prev)) return prev;
@@ -444,33 +635,18 @@ export function useTabManager(spacePath: string | null) {
 				delete next[tabId];
 				return next;
 			});
-			commitTabsChange(nextTabs, nextActiveTabId);
-			setDirtyByPath((prev) => {
-				let changed = false;
-				const next: Record<string, boolean> = {};
-				for (const [tabPath, dirty] of Object.entries(prev)) {
-					if (
-						removedTarget &&
-						(tabPath === removedTarget ||
-							tabPath.startsWith(`${removedTarget}/`))
-					) {
-						changed = true;
-						continue;
-					}
-					next[tabPath] = dirty;
-				}
-				return changed ? next : prev;
-			});
+			commitTabsChange(nextTabs, committedActiveTabId);
 		},
-		[commitTabsChange, updateHistoryState],
+		[clearDirtyForTarget, commitTabsChange, setSplitLayout, updateHistoryState],
 	);
 
 	const closeAllTabs = useCallback(() => {
+		setSplitLayout(createInitialSplitEditorLayout());
 		commitTabsChange([], null);
 		setDirtyByPath({});
 		historyByTabIdRef.current = {};
 		setHistoryByTabId({});
-	}, [commitTabsChange]);
+	}, [commitTabsChange, setSplitLayout]);
 
 	const closeActiveTab = useCallback(() => {
 		if (!activeTabId) return;
@@ -480,7 +656,7 @@ export function useTabManager(spacePath: string | null) {
 	const closeTabsForPathRemoval = useCallback(
 		(path: string, recursive = false) => {
 			const currentTabs = tabsRef.current;
-			const nextTabs = currentTabs.filter(
+			let nextTabs = currentTabs.filter(
 				(tab) => !matchesRemovedPath(tab, path, recursive),
 			);
 			const tabsRemoved = nextTabs.length < currentTabs.length;
@@ -492,32 +668,28 @@ export function useTabManager(spacePath: string | null) {
 
 			const currentActiveTabId = activeTabIdRef.current;
 			let nextActiveTabId = currentActiveTabId;
+			if (tabsRemoved) {
+				for (const paneId of paneIdsInLayout(splitLayoutRef.current)) {
+					if (!nextTabs.some((tab) => tab.paneId === paneId)) {
+						nextTabs = [...nextTabs, createTab("blank", null, paneId)];
+					}
+				}
+			}
 			if (tabsRemoved && currentActiveTabId) {
 				const removedIndex = currentTabs.findIndex(
 					(tab) => tab.id === currentActiveTabId,
 				);
 				const removedTab = removedIndex >= 0 ? currentTabs[removedIndex] : null;
 				if (removedTab && matchesRemovedPath(removedTab, path, recursive)) {
-					const survivingTabIds = new Set(nextTabs.map((tab) => tab.id));
-					nextActiveTabId = null;
-					for (
-						let index = removedIndex + 1;
-						index < currentTabs.length;
-						index++
-					) {
-						const candidate = currentTabs[index];
-						if (!survivingTabIds.has(candidate.id)) continue;
-						nextActiveTabId = candidate.id;
-						break;
-					}
-					if (!nextActiveTabId) {
-						for (let index = removedIndex - 1; index >= 0; index--) {
-							const candidate = currentTabs[index];
-							if (!survivingTabIds.has(candidate.id)) continue;
-							nextActiveTabId = candidate.id;
-							break;
-						}
-					}
+					nextActiveTabId =
+						nearestTabIdInPane(
+							currentTabs,
+							nextTabs,
+							removedIndex,
+							removedTab.paneId,
+						) ??
+						nextTabs.find((tab) => tab.paneId === removedTab.paneId)?.id ??
+						null;
 				}
 			}
 			updateHistoryState((prev) => {
@@ -575,7 +747,7 @@ export function useTabManager(spacePath: string | null) {
 				return changed ? next : prev;
 			});
 		},
-		[commitTabsChange, updateHistoryState],
+		[commitTabsChange, createTab, updateHistoryState],
 	);
 
 	const renameTabsForPath = useCallback(
@@ -650,6 +822,8 @@ export function useTabManager(spacePath: string | null) {
 			const fromIndex = currentTabs.findIndex((tab) => tab.id === fromTabId);
 			const toIndex = currentTabs.findIndex((tab) => tab.id === toTabId);
 			if (fromIndex === -1 || toIndex === -1) return;
+			if (currentTabs[fromIndex]?.paneId !== currentTabs[toIndex]?.paneId)
+				return;
 			const next = [...currentTabs];
 			const [moved] = next.splice(fromIndex, 1);
 			next.splice(toIndex, 0, moved);
@@ -659,27 +833,33 @@ export function useTabManager(spacePath: string | null) {
 	);
 
 	const activateNextTab = useCallback(() => {
-		if (!tabsRef.current.length) return;
+		const paneId = paneIdForTab(tabsRef.current, activeTabIdRef.current);
+		const paneTabs = tabsRef.current.filter((tab) => tab.paneId === paneId);
+		if (!paneTabs.length) return;
 		const currentIndex = activeTabIdRef.current
-			? tabsRef.current.findIndex((tab) => tab.id === activeTabIdRef.current)
+			? paneTabs.findIndex((tab) => tab.id === activeTabIdRef.current)
 			: -1;
-		const nextIndex = (Math.max(currentIndex, -1) + 1) % tabsRef.current.length;
-		setActiveTabId(tabsRef.current[nextIndex]?.id ?? null);
+		const nextIndex = (Math.max(currentIndex, -1) + 1) % paneTabs.length;
+		setActiveTabId(paneTabs[nextIndex]?.id ?? null);
 	}, [setActiveTabId]);
 
 	const activatePreviousTab = useCallback(() => {
-		if (!tabsRef.current.length) return;
+		const paneId = paneIdForTab(tabsRef.current, activeTabIdRef.current);
+		const paneTabs = tabsRef.current.filter((tab) => tab.paneId === paneId);
+		if (!paneTabs.length) return;
 		const currentIndex = activeTabIdRef.current
-			? tabsRef.current.findIndex((tab) => tab.id === activeTabIdRef.current)
+			? paneTabs.findIndex((tab) => tab.id === activeTabIdRef.current)
 			: 0;
-		const nextIndex =
-			(currentIndex - 1 + tabsRef.current.length) % tabsRef.current.length;
-		setActiveTabId(tabsRef.current[nextIndex]?.id ?? null);
+		const nextIndex = (currentIndex - 1 + paneTabs.length) % paneTabs.length;
+		setActiveTabId(paneTabs[nextIndex]?.id ?? null);
 	}, [setActiveTabId]);
 
 	const activateTabByIndex = useCallback(
 		(index: number) => {
-			const tab = tabsRef.current[index];
+			const paneId = paneIdForTab(tabsRef.current, activeTabIdRef.current);
+			const tab = tabsRef.current.filter(
+				(candidate) => candidate.paneId === paneId,
+			)[index];
 			if (!tab) return false;
 			setActiveTabId(tab.id);
 			return true;
@@ -687,12 +867,44 @@ export function useTabManager(spacePath: string | null) {
 		[setActiveTabId],
 	);
 
+	const {
+		panes,
+		openBlankTabInPane,
+		openFileInPane,
+		splitPaneWithFile,
+		splitPaneWithBlank,
+		moveTabToPane,
+		resizeSplit,
+		goBackInPane,
+		goForwardInPane,
+	} = useSplitEditorTabs({
+		tabs,
+		historyByTabId,
+		splitLayout,
+		splitLayoutRef,
+		focusedPaneId,
+		setSplitLayout,
+		activeTabByPane,
+		tabsRef,
+		activeTabByPaneRef,
+		createTab,
+		commitTabsChange,
+		setActiveTabId,
+		clearHistoryForTab,
+		pushNoteHistory,
+		navigateTabHistory,
+	});
+
 	return {
 		tabs,
+		panes,
+		splitLayout,
+		focusedPaneId,
 		activeTab,
 		activeTabId,
 		activeTabPath,
 		setActiveTabId,
+		focusPane,
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
@@ -702,6 +914,12 @@ export function useTabManager(spacePath: string | null) {
 		renameTabsForPath,
 		reorderTabs,
 		openBlankTab,
+		openBlankTabInPane,
+		openFileInPane,
+		splitPaneWithFile,
+		splitPaneWithBlank,
+		moveTabToPane,
+		resizeSplit,
 		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
@@ -710,6 +928,8 @@ export function useTabManager(spacePath: string | null) {
 		canGoForward,
 		goBack,
 		goForward,
+		goBackInPane,
+		goForwardInPane,
 		activateNextTab,
 		activatePreviousTab,
 		activateTabByIndex,

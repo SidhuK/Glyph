@@ -12,7 +12,7 @@ import { useTauriEvent } from "../lib/tauriEvents";
 
 interface UseGitSyncOptions {
 	spacePath: string | null;
-	saveCurrentEditor: () => Promise<boolean>;
+	saveEditors: () => Promise<boolean>;
 }
 
 interface GitSyncController {
@@ -39,7 +39,7 @@ async function buildRunContext() {
 
 export function useGitSync({
 	spacePath,
-	saveCurrentEditor,
+	saveEditors,
 }: UseGitSyncOptions): GitSyncController {
 	const { openSettings } = useUILayoutContext();
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
@@ -85,7 +85,7 @@ export function useGitSync({
 	const runSync = useCallback(
 		async (mode: GitSyncRunMode) => {
 			const runSpacePath = activeSpacePathRef.current;
-			await saveCurrentEditor();
+			await saveEditors();
 			const context = await buildRunContext();
 			const nextStatus = await invoke("git_sync_run", {
 				request: { mode, context },
@@ -96,7 +96,7 @@ export function useGitSync({
 			}
 			return nextStatus;
 		},
-		[saveCurrentEditor],
+		[saveEditors],
 	);
 
 	const syncNow = useCallback(async () => runSync("manual"), [runSync]);

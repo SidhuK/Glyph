@@ -382,6 +382,22 @@
 			"label": "Follow on X",
 			"description": "Open Karat Sidhu on X."
 		},
+		"split-editor-above": {
+			"label": "Split Editor Above",
+			"description": "Create a blank editor pane above the focused pane."
+		},
+		"split-editor-below": {
+			"label": "Split Editor Below",
+			"description": "Create a blank editor pane below the focused pane."
+		},
+		"split-editor-left": {
+			"label": "Split Editor Left",
+			"description": "Create a blank editor pane to the left of the focused pane."
+		},
+		"split-editor-right": {
+			"label": "Split Editor Right",
+			"description": "Create a blank editor pane to the right of the focused pane."
+		},
 		"strikethrough": {
 			"label": "Strikethrough",
 			"description": "Toggle strikethrough formatting for the current selection."

@@ -18,8 +18,8 @@ const GitSyncContext = createContext<GitSyncController | null>(null);
 
 export function GitSyncProvider({ children }: { children: ReactNode }) {
 	const { spacePath } = useSpace();
-	const { saveCurrentEditor } = useEditorContext();
-	const gitSync = useGitSync({ spacePath, saveCurrentEditor });
+	const { saveAllEditors } = useEditorContext();
+	const gitSync = useGitSync({ spacePath, saveEditors: saveAllEditors });
 	return (
 		<GitSyncContext.Provider value={gitSync}>
 			{children}

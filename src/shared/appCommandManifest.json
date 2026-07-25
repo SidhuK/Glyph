@@ -1111,6 +1111,46 @@
 			"commandPalette": false,
 			"menuId": "help.x"
 		},
+		"split-editor-above": {
+			"id": "split-editor-above",
+			"label": "Split Editor Above",
+			"description": "Create a blank editor pane above the focused pane.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"split-editor-below": {
+			"id": "split-editor-below",
+			"label": "Split Editor Below",
+			"description": "Create a blank editor pane below the focused pane.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"split-editor-left": {
+			"id": "split-editor-left",
+			"label": "Split Editor Left",
+			"description": "Create a blank editor pane to the left of the focused pane.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
+		"split-editor-right": {
+			"id": "split-editor-right",
+			"label": "Split Editor Right",
+			"description": "Create a blank editor pane to the right of the focused pane.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"strikethrough": {
 			"id": "strikethrough",
 			"label": "Strikethrough",
