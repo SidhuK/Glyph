@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import type { OrbState } from "thinking-orbs";
+import { i18n } from "../../../i18n";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 import type { AIActivityTimelineEvent } from "../AIActivityTimeline";
 import {
@@ -49,6 +50,8 @@ type ToolStateAction =
 			tool: string;
 			phase: ToolPhase;
 			payload?: unknown;
+			error: string;
+			at: number;
 	  }
 	| {
 			type: "record-chunk";
@@ -157,7 +160,17 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 								...state.activityTimeline,
 								{ kind: "citation", payload: action.payload },
 							]
-						: state.activityTimeline,
+						: action.phase === "error"
+							? [
+									...state.activityTimeline,
+									{
+										id: `error-${action.at}-${crypto.randomUUID()}`,
+										kind: "error",
+										message: action.error,
+										at: action.at,
+									},
+								]
+							: state.activityTimeline,
 			};
 		}
 		case "record-chunk": {
@@ -234,6 +247,11 @@ export function useAiToolEvents({
 			tool,
 			phase,
 			payload: payload.payload,
+			error: i18n.t("shell:ai.toolFailed", { tool }),
+			at:
+				typeof payload.at_ms === "number" && payload.at_ms > 0
+					? payload.at_ms
+					: Date.now(),
 		});
 	});
 

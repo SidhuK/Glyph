@@ -14,7 +14,17 @@ interface TimelineTextEvent {
 	at: number;
 }
 
-export type AIActivityTimelineEvent = TimelineCitationEvent | TimelineTextEvent;
+interface TimelineErrorEvent {
+	id: string;
+	kind: "error";
+	message: string;
+	at: number;
+}
+
+export type AIActivityTimelineEvent =
+	| TimelineCitationEvent
+	| TimelineTextEvent
+	| TimelineErrorEvent;
 
 interface AIActivityTimelineProps {
 	events: AIActivityTimelineEvent[];
@@ -29,15 +39,15 @@ export function AIActivityTimeline({
 	activityState,
 	statusText,
 }: AIActivityTimelineProps) {
-	const textEvents = events
-		.filter((event): event is TimelineTextEvent => event.kind === "text")
+	const visibleEvents = events
+		.filter((event) => event.kind !== "citation")
 		.sort((a, b) => a.at - b.at);
-	if (textEvents.length === 0 && !streaming) return null;
+	if (visibleEvents.length === 0 && !streaming) return null;
 
 	return (
 		<m.div className="aiActivityTimelineInline" aria-live="polite">
 			<AnimatePresence initial={false}>
-				{textEvents.map((event) => (
+				{visibleEvents.map((event) => (
 					<m.div
 						key={event.id}
 						layout
@@ -45,9 +55,18 @@ export function AIActivityTimeline({
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -6 }}
 						transition={{ type: "spring", stiffness: 340, damping: 27 }}
-						className="aiActivityText"
+						className={
+							event.kind === "text" ? "aiActivityText" : "aiInlineError"
+						}
 					>
-						<AIMessageMarkdown markdown={event.text} streaming={streaming} />
+						{event.kind === "text" ? (
+							<AIMessageMarkdown markdown={event.text} streaming={streaming} />
+						) : (
+							<>
+								<span className="aiInlineErrorDot" />
+								<span className="aiInlineErrorText">{event.message}</span>
+							</>
+						)}
 					</m.div>
 				))}
 			</AnimatePresence>
