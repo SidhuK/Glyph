@@ -4,8 +4,8 @@ import {
 	MAX_SPLIT_RATIO,
 	MIN_SPLIT_RATIO,
 	PRIMARY_EDITOR_PANE_ID,
-	paneIdsInLayout,
 	type SplitEditorNode,
+	paneIdsInLayout,
 } from "./splitEditor";
 
 const WORKSPACE_SESSION_BY_SPACE_KEY = "workspace.sessionBySpace";

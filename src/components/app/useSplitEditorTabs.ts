@@ -20,11 +20,15 @@ import type {
 	WorkspaceTab,
 } from "./useTabManager";
 
-interface SplitEditorTabController {
+interface UseSplitEditorTabsArgs {
+	tabs: WorkspaceTab[];
+	historyByTabId: TabHistoryById;
+	splitLayout: SplitEditorNode;
+	focusedPaneId: string;
+	setSplitLayout: Dispatch<SetStateAction<SplitEditorNode>>;
+	activeTabByPane: Record<string, string | null>;
 	tabsRef: RefObject<WorkspaceTab[]>;
-	focusedPaneIdRef: RefObject<string>;
 	activeTabByPaneRef: RefObject<Record<string, string | null>>;
-	setFocusedPaneId: Dispatch<SetStateAction<string>>;
 	createTab: (
 		kind: WorkspaceTab["kind"],
 		target: string | null,
@@ -37,20 +41,7 @@ interface SplitEditorTabController {
 	setActiveTabId: (tabId: string | null) => void;
 	clearHistoryForTab: (tabId: string) => void;
 	pushNoteHistory: (tabId: string, path: string) => void;
-	stepHistory: (tabId: string, delta: -1 | 1) => string | null;
-	updateActiveTabInPlace: (
-		kind: WorkspaceTab["kind"],
-		target: string | null,
-	) => string;
-}
-
-interface UseSplitEditorTabsArgs {
-	tabs: WorkspaceTab[];
-	historyByTabId: TabHistoryById;
-	splitLayout: SplitEditorNode;
-	setSplitLayout: Dispatch<SetStateAction<SplitEditorNode>>;
-	activeTabByPane: Record<string, string | null>;
-	controller: SplitEditorTabController;
+	navigateTabHistory: (tabId: string, delta: -1 | 1) => void;
 }
 
 function createSplit(
@@ -69,67 +60,33 @@ function createSplit(
 	return { newPaneId, nextLayout };
 }
 
-function reconcilePaneActiveTab(
-	activeTabByPaneRef: RefObject<Record<string, string | null>>,
-	tabs: WorkspaceTab[],
-	paneId: string,
-) {
-	const activeTabId = activeTabByPaneRef.current[paneId];
-	if (
-		activeTabId &&
-		tabs.some((tab) => tab.id === activeTabId && tab.paneId === paneId)
-	) {
-		return;
-	}
-	activeTabByPaneRef.current = {
-		...activeTabByPaneRef.current,
-		[paneId]: tabs.find((tab) => tab.paneId === paneId)?.id ?? null,
-	};
-}
-
 export function useSplitEditorTabs({
 	tabs,
 	historyByTabId,
 	splitLayout,
+	focusedPaneId,
 	setSplitLayout,
 	activeTabByPane,
-	controller,
+	tabsRef,
+	activeTabByPaneRef,
+	createTab,
+	commitTabsChange,
+	setActiveTabId,
+	clearHistoryForTab,
+	pushNoteHistory,
+	navigateTabHistory,
 }: UseSplitEditorTabsArgs) {
-	const {
-		tabsRef,
-		focusedPaneIdRef,
-		activeTabByPaneRef,
-		setFocusedPaneId,
-		createTab,
-		commitTabsChange,
-		setActiveTabId,
-		clearHistoryForTab,
-		pushNoteHistory,
-		stepHistory,
-		updateActiveTabInPlace,
-	} = controller;
-
-	const focusPaneState = useCallback(
-		(paneId: string) => {
-			focusedPaneIdRef.current = paneId;
-			setFocusedPaneId(paneId);
-		},
-		[focusedPaneIdRef, setFocusedPaneId],
-	);
-
 	const openBlankTabInPane = useCallback(
 		(paneId: string) => {
-			focusPaneState(paneId);
 			const blankTab = createTab("blank", null, paneId);
 			commitTabsChange([...tabsRef.current, blankTab], blankTab.id);
 		},
-		[commitTabsChange, createTab, focusPaneState, tabsRef],
+		[commitTabsChange, createTab, tabsRef],
 	);
 
 	const openFileInPane = useCallback(
 		(path: string, paneId: string) => {
 			if (!isMarkdownPath(path)) return false;
-			focusPaneState(paneId);
 			const existing = tabsRef.current.find(
 				(tab) => tab.paneId === paneId && tab.target === path,
 			);
@@ -162,7 +119,6 @@ export function useSplitEditorTabs({
 			clearHistoryForTab,
 			commitTabsChange,
 			createTab,
-			focusPaneState,
 			pushNoteHistory,
 			tabsRef,
 		],
@@ -175,22 +131,16 @@ export function useSplitEditorTabs({
 			kind: WorkspaceTab["kind"],
 			target: string | null,
 		) => {
-			const { newPaneId, nextLayout } = createSplit(
-				splitLayout,
-				paneId,
-				edge,
-			);
+			const { newPaneId, nextLayout } = createSplit(splitLayout, paneId, edge);
 			if (nextLayout === splitLayout) return;
 			const tab = createTab(kind, target, newPaneId);
 			setSplitLayout(nextLayout);
-			focusPaneState(newPaneId);
 			if (kind === "file" && target) pushNoteHistory(tab.id, target);
 			commitTabsChange([...tabsRef.current, tab], tab.id);
 		},
 		[
 			commitTabsChange,
 			createTab,
-			focusPaneState,
 			pushNoteHistory,
 			setSplitLayout,
 			splitLayout,
@@ -207,22 +157,13 @@ export function useSplitEditorTabs({
 
 	const splitPaneWithBlank = useCallback(
 		(edge: SplitDropEdge) => {
-			splitPaneWithTab(
-				focusedPaneIdRef.current,
-				edge,
-				"blank",
-				null,
-			);
+			splitPaneWithTab(focusedPaneId, edge, "blank", null);
 		},
-		[focusedPaneIdRef, splitPaneWithTab],
+		[focusedPaneId, splitPaneWithTab],
 	);
 
 	const moveTabToPane = useCallback(
-		(
-			tabId: string,
-			targetPaneId: string,
-			edge: SplitDropEdge | "center",
-		) => {
+		(tabId: string, targetPaneId: string, edge: SplitDropEdge | "center") => {
 			const sourceTab = tabsRef.current.find((tab) => tab.id === tabId);
 			if (!sourceTab) return;
 
@@ -251,22 +192,9 @@ export function useSplitEditorTabs({
 					(tab) => tab.paneId === sourceTab.paneId,
 				);
 				if (sourcePaneIsEmpty && paneIdsInLayout(splitLayout).length > 1) {
-					const nextLayout = removeEditorPane(
-						splitLayout,
-						sourceTab.paneId,
-					);
+					const nextLayout = removeEditorPane(splitLayout, sourceTab.paneId);
 					if (nextLayout) setSplitLayout(nextLayout);
-					const nextActiveByPane = { ...activeTabByPaneRef.current };
-					delete nextActiveByPane[sourceTab.paneId];
-					activeTabByPaneRef.current = nextActiveByPane;
-				} else {
-					reconcilePaneActiveTab(
-						activeTabByPaneRef,
-						nextTabs,
-						sourceTab.paneId,
-					);
 				}
-				focusPaneState(targetPaneId);
 				commitTabsChange(nextTabs, tabId);
 				return;
 			}
@@ -288,20 +216,12 @@ export function useSplitEditorTabs({
 				const blankTab = createTab("blank", null, sourceTab.paneId);
 				nextTabs = [...nextTabs, blankTab];
 			}
-			reconcilePaneActiveTab(
-				activeTabByPaneRef,
-				nextTabs,
-				sourceTab.paneId,
-			);
 			setSplitLayout(nextLayout);
-			focusPaneState(newPaneId);
 			commitTabsChange(nextTabs, movedTab.id);
 		},
 		[
-			activeTabByPaneRef,
 			commitTabsChange,
 			createTab,
-			focusPaneState,
 			setActiveTabId,
 			setSplitLayout,
 			splitLayout,
@@ -311,9 +231,7 @@ export function useSplitEditorTabs({
 
 	const resizeSplit = useCallback(
 		(splitId: string, ratio: number) => {
-			setSplitLayout((current) =>
-				updateSplitRatio(current, splitId, ratio),
-			);
+			setSplitLayout((current) => updateSplitRatio(current, splitId, ratio));
 		},
 		[setSplitLayout],
 	);
@@ -322,19 +240,9 @@ export function useSplitEditorTabs({
 		(paneId: string, delta: -1 | 1) => {
 			const tabId = activeTabByPaneRef.current[paneId];
 			if (!tabId) return;
-			focusPaneState(paneId);
-			const path = stepHistory(tabId, delta);
-			if (!path) return;
-			setActiveTabId(tabId);
-			updateActiveTabInPlace("file", path);
+			navigateTabHistory(tabId, delta);
 		},
-		[
-			activeTabByPaneRef,
-			focusPaneState,
-			setActiveTabId,
-			stepHistory,
-			updateActiveTabInPlace,
-		],
+		[activeTabByPaneRef, navigateTabHistory],
 	);
 	const goBackInPane = useCallback(
 		(paneId: string) => navigatePaneHistory(paneId, -1),

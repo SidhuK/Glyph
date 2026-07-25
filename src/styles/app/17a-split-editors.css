@@ -111,13 +111,30 @@
 .splitEditorDropPreview {
 	position: absolute;
 	z-index: 3000;
+	inset: 8px;
 	box-sizing: border-box;
 	pointer-events: none;
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	box-shadow:
-		inset 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 92%, transparent),
-		0 12px 36px
+	box-shadow: inset 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 92%, transparent), 0 12px 36px
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.splitEditorDropPreview[data-edge="left"],
+.splitEditorDropPreview[data-edge="right"] {
+	width: calc(50% - 14px);
+}
+
+.splitEditorDropPreview[data-edge="right"] {
+	left: calc(50% + 6px);
+}
+
+.splitEditorDropPreview[data-edge="top"],
+.splitEditorDropPreview[data-edge="bottom"] {
+	height: calc(50% - 14px);
+}
+
+.splitEditorDropPreview[data-edge="bottom"] {
+	top: calc(50% + 6px);
 }

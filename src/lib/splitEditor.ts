@@ -54,21 +54,9 @@ export function splitEditorPane(
 		};
 	}
 
-	const first = splitEditorPane(
-		node.first,
-		paneId,
-		newPaneId,
-		splitId,
-		edge,
-	);
+	const first = splitEditorPane(node.first, paneId, newPaneId, splitId, edge);
 	if (first !== node.first) return { ...node, first };
-	const second = splitEditorPane(
-		node.second,
-		paneId,
-		newPaneId,
-		splitId,
-		edge,
-	);
+	const second = splitEditorPane(node.second, paneId, newPaneId, splitId, edge);
 	return second === node.second ? node : { ...node, second };
 }
 

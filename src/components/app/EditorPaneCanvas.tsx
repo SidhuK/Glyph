@@ -305,9 +305,7 @@ function EditorPaneContent({
 			initialDoc={getPrefetchedNote(viewerPath)}
 			extractToNoteActions={extractToNoteActions}
 			active={focused}
-			onInfoSidebarOpenChange={
-				focused ? onInfoSidebarOpenChange : undefined
-			}
+			onInfoSidebarOpenChange={focused ? onInfoSidebarOpenChange : undefined}
 			gitDiff={gitDiff}
 			onGitDiffChange={setGitDiff}
 			onDirtyChange={(dirty) =>

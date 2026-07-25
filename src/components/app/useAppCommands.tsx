@@ -368,11 +368,7 @@ export function useAppCommands({
 			).map(([id, icon, edge]) => ({
 				id,
 				icon: (
-					<HugeiconsIcon
-						icon={icon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
+					<HugeiconsIcon icon={icon} size="var(--icon-lg)" strokeWidth={0.9} />
 				),
 				enabled: Boolean(spacePath),
 				action: () => splitPaneWithBlank(edge),

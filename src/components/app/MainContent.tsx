@@ -62,10 +62,7 @@ import type {
 	SplitEditorDragSource,
 	SplitEditorDropTarget,
 } from "./splitEditorDnd";
-import type {
-	WorkspaceEditorPane,
-	WorkspaceTab,
-} from "./useTabManager";
+import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
 const ShortcutsSettingsPane = lazy(() =>

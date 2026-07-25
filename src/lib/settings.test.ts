@@ -218,20 +218,52 @@ describe("settings workspace session restore", () => {
 			version: 1,
 			savedAt: 123.5,
 			tabs: [
-				{ kind: "file", target: "Notes/A.md" },
-				{ kind: "special", target: "all-docs" },
+				{
+					kind: "file",
+					target: "Notes/A.md",
+					paneId: "editor-pane-primary",
+				},
+				{
+					kind: "special",
+					target: "all-docs",
+					paneId: "editor-pane-primary",
+				},
 			],
 			activeTabTarget: "all-docs",
+			activeTabTargetByPane: {
+				"editor-pane-primary": "all-docs",
+			},
+			focusedPaneId: "editor-pane-primary",
+			splitLayout: {
+				type: "pane",
+				paneId: "editor-pane-primary",
+			},
 		});
 
 		expect(await loadWorkspaceSessionSnapshot("/tmp/space")).toEqual({
 			version: 1,
 			savedAt: 123,
 			tabs: [
-				{ kind: "file", target: "Notes/A.md" },
-				{ kind: "special", target: "all-docs" },
+				{
+					kind: "file",
+					target: "Notes/A.md",
+					paneId: "editor-pane-primary",
+				},
+				{
+					kind: "special",
+					target: "all-docs",
+					paneId: "editor-pane-primary",
+				},
 			],
 			activeTabTarget: "all-docs",
+			activeTabTargetByPane: {
+				"editor-pane-primary": "all-docs",
+			},
+			focusedPaneId: "editor-pane-primary",
+			splitLayout: {
+				type: "pane",
+				paneId: "editor-pane-primary",
+			},
 		});
 	});
 
@@ -260,11 +292,28 @@ describe("settings workspace session restore", () => {
 			version: 1,
 			savedAt: 0,
 			tabs: [
-				{ kind: "file", target: "Notes/A.md" },
-				{ kind: "file", target: "Notes/B.markdown" },
-				{ kind: "special", target: "all-docs" },
+				{
+					kind: "file",
+					target: "Notes/A.md",
+					paneId: "editor-pane-primary",
+				},
+				{
+					kind: "file",
+					target: "Notes/B.markdown",
+					paneId: "editor-pane-primary",
+				},
+				{
+					kind: "special",
+					target: "all-docs",
+					paneId: "editor-pane-primary",
+				},
 			],
 			activeTabTarget: null,
+			activeTabTargetByPane: {
+				"editor-pane-primary": null,
+			},
+			focusedPaneId: null,
+			splitLayout: null,
 		});
 	});
 });

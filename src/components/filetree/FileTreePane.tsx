@@ -2,7 +2,6 @@ import {
 	DragDropProvider,
 	type DragEndEvent,
 	type DragMoveEvent,
-	type DragStartEvent,
 	useDroppable,
 } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -48,7 +47,6 @@ import {
 	cancelSplitEditorDrag,
 	endSplitEditorDrag,
 	moveSplitEditorDrag,
-	startSplitEditorDrag,
 } from "../app/splitEditorDnd";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
@@ -929,14 +927,11 @@ export const FileTreePane = memo(function FileTreePane({
 				cancelSplitEditorDrag();
 				return;
 			}
-			const { x, y } = event.operation.position.current;
-			moveSplitEditorDrag(x, y);
-			if (
-				sourceKind === "file" &&
-				isMarkdownPath(sourcePath) &&
-				endSplitEditorDrag({ kind: "file", path: sourcePath })
-			) {
-				return;
+			if (sourceKind === "file" && isMarkdownPath(sourcePath)) {
+				const { x, y } = event.operation.position.current;
+				const splitDragSource = { kind: "file" as const, path: sourcePath };
+				moveSplitEditorDrag(splitDragSource, x, y);
+				if (endSplitEditorDrag(splitDragSource)) return;
 			}
 			cancelSplitEditorDrag();
 			const targetDirPath =
@@ -949,20 +944,6 @@ export const FileTreePane = memo(function FileTreePane({
 		},
 		[onMovePath],
 	);
-	const handleDragStart = useCallback((event: DragStartEvent) => {
-		const { source } = event.operation;
-		const sourcePath =
-			typeof source?.data.path === "string" ? source.data.path : null;
-		if (
-			source?.data.kind === "file" &&
-			sourcePath &&
-			isMarkdownPath(sourcePath)
-		) {
-			startSplitEditorDrag({ kind: "file", path: sourcePath });
-			const { x, y } = event.operation.position.current;
-			moveSplitEditorDrag(x, y);
-		}
-	}, []);
 	const handleDragMove = useCallback((event: DragMoveEvent) => {
 		const source = event.operation.source;
 		if (
@@ -973,15 +954,11 @@ export const FileTreePane = memo(function FileTreePane({
 			return;
 		}
 		const { x, y } = event.operation.position.current;
-		moveSplitEditorDrag(x, y);
+		moveSplitEditorDrag({ kind: "file", path: source.data.path }, x, y);
 	}, []);
 
 	return (
-		<DragDropProvider
-			onDragStart={handleDragStart}
-			onDragMove={handleDragMove}
-			onDragEnd={handleDragEnd}
-		>
+		<DragDropProvider onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
 			<m.aside
 				className="fileTreePane"
 				initial={{ y: 10 }}

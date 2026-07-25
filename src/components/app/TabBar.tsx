@@ -3,7 +3,6 @@ import {
 	DragDropProvider,
 	type DragEndEvent,
 	type DragMoveEvent,
-	type DragStartEvent,
 	PointerSensor,
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
@@ -27,7 +26,6 @@ import {
 	cancelSplitEditorDrag,
 	endSplitEditorDrag,
 	moveSplitEditorDrag,
-	startSplitEditorDrag,
 } from "./splitEditorDnd";
 import type { WorkspaceTab } from "./useTabManager";
 
@@ -153,14 +151,13 @@ export function TabBar({
 				return;
 			}
 			const { x, y } = event.operation.position.current;
-			moveSplitEditorDrag(x, y);
-			if (
-				endSplitEditorDrag({
-					kind: "tab",
-					paneId: sourcePaneId,
-					tabId: sourceTabId,
-				})
-			) {
+			const sourceDrag = {
+				kind: "tab" as const,
+				paneId: sourcePaneId,
+				tabId: sourceTabId,
+			};
+			moveSplitEditorDrag(sourceDrag, x, y);
+			if (endSplitEditorDrag(sourceDrag)) {
 				return;
 			}
 			const targetTabId =
@@ -171,21 +168,16 @@ export function TabBar({
 		},
 		[onReorder],
 	);
-	const handleDragStart = useCallback((event: DragStartEvent) => {
+	const handleDragMove = useCallback((event: DragMoveEvent) => {
 		const { source } = event.operation;
 		const tabId =
 			typeof source?.data.tabId === "string" ? source.data.tabId : null;
 		const paneId =
 			typeof source?.data.paneId === "string" ? source.data.paneId : null;
 		if (tabId && paneId) {
-			startSplitEditorDrag({ kind: "tab", paneId, tabId });
 			const { x, y } = event.operation.position.current;
-			moveSplitEditorDrag(x, y);
+			moveSplitEditorDrag({ kind: "tab", paneId, tabId }, x, y);
 		}
-	}, []);
-	const handleDragMove = useCallback((event: DragMoveEvent) => {
-		const { x, y } = event.operation.position.current;
-		moveSplitEditorDrag(x, y);
 	}, []);
 
 	return (
@@ -226,7 +218,6 @@ export function TabBar({
 				/>
 				{showTabs ? (
 					<DragDropProvider
-						onDragStart={handleDragStart}
 						onDragMove={handleDragMove}
 						onDragEnd={handleDragEnd}
 					>

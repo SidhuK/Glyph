@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
+import type { SplitEditorNode } from "../../lib/splitEditor";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import {
@@ -9,7 +10,6 @@ import {
 	loadWorkspaceSessionSnapshot,
 	saveWorkspaceSessionSnapshot,
 } from "../../lib/workspaceSession";
-import type { SplitEditorNode } from "../../lib/splitEditor";
 import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 const WORKSPACE_SESSION_SAVE_DEBOUNCE_MS = 250;
@@ -158,10 +158,7 @@ export function useWorkspaceSession({
 		const requestId = ++restoreSessionRequestIdRef.current;
 		void (async () => {
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
-			if (
-				requestId !== restoreSessionRequestIdRef.current ||
-				!snapshot
-			) {
+			if (requestId !== restoreSessionRequestIdRef.current || !snapshot) {
 				return;
 			}
 

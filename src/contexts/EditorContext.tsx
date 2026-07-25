@@ -29,10 +29,8 @@ export interface EditorSaveState {
  */
 interface EditorContextValue {
 	/** Register an editor's save state */
-	registerEditor: (state: EditorSaveState) => void;
-	unregisterEditor: (state: EditorSaveState) => void;
-	activateEditor: (state: EditorSaveState) => void;
-	deactivateEditor: (state: EditorSaveState) => void;
+	registerEditor: (state: EditorSaveState) => () => void;
+	activateEditor: (state: EditorSaveState) => () => void;
 	/** Get the current editor's save state */
 	getEditorState: () => EditorSaveState | null;
 	/** Save the current editor if dirty */
@@ -57,20 +55,19 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
 	const registerEditor = useCallback((state: EditorSaveState) => {
 		registeredEditorsRef.current.add(state);
-	}, []);
-
-	const unregisterEditor = useCallback((state: EditorSaveState) => {
-		registeredEditorsRef.current.delete(state);
-		if (editorStateRef.current === state) {
-			editorStateRef.current = null;
-		}
+		return () => {
+			registeredEditorsRef.current.delete(state);
+			if (editorStateRef.current === state) {
+				editorStateRef.current = null;
+			}
+		};
 	}, []);
 
 	const activateEditor = useCallback((state: EditorSaveState) => {
 		editorStateRef.current = state;
-	}, []);
-	const deactivateEditor = useCallback((state: EditorSaveState) => {
-		if (editorStateRef.current === state) editorStateRef.current = null;
+		return () => {
+			if (editorStateRef.current === state) editorStateRef.current = null;
+		};
 	}, []);
 
 	const getEditorState = useCallback(() => {
@@ -113,9 +110,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		<EditorContext.Provider
 			value={{
 				registerEditor,
-				unregisterEditor,
 				activateEditor,
-				deactivateEditor,
 				getEditorState,
 				saveCurrentEditor,
 				hasUnsavedChanges,
@@ -146,25 +141,15 @@ export function useEditorRegistration(
 	state: EditorSaveState | null,
 	active = true,
 ): void {
-	const {
-		activateEditor,
-		deactivateEditor,
-		registerEditor,
-		unregisterEditor,
-	} =
-		useEditorContext();
+	const { activateEditor, registerEditor } = useEditorContext();
 
 	useEffect(() => {
 		if (!state) return;
-		registerEditor(state);
-		return () => {
-			unregisterEditor(state);
-		};
-	}, [registerEditor, state, unregisterEditor]);
+		return registerEditor(state);
+	}, [registerEditor, state]);
 
 	useEffect(() => {
 		if (!state || !active) return;
-		activateEditor(state);
-		return () => deactivateEditor(state);
-	}, [activateEditor, active, deactivateEditor, state]);
+		return activateEditor(state);
+	}, [activateEditor, active, state]);
 }

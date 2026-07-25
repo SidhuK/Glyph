@@ -10,11 +10,12 @@ export interface SplitEditorDropTarget {
 }
 
 type SplitEditorDragEvent =
-	| { type: "start"; source: SplitEditorDragSource }
-	| { type: "move"; x: number; y: number }
+	| { type: "move"; source: SplitEditorDragSource; x: number; y: number }
 	| { type: "end"; source: SplitEditorDragSource | null };
 
-type SplitEditorDragListener = (event: SplitEditorDragEvent) => boolean | void;
+type SplitEditorDragListener = (
+	event: SplitEditorDragEvent,
+) => boolean | undefined;
 
 const listeners = new Set<SplitEditorDragListener>();
 
@@ -33,12 +34,12 @@ export function subscribeToSplitEditorDrag(
 	return () => listeners.delete(listener);
 }
 
-export function startSplitEditorDrag(source: SplitEditorDragSource): void {
-	publish({ type: "start", source });
-}
-
-export function moveSplitEditorDrag(x: number, y: number): void {
-	publish({ type: "move", x, y });
+export function moveSplitEditorDrag(
+	source: SplitEditorDragSource,
+	x: number,
+	y: number,
+): void {
+	publish({ type: "move", source, x, y });
 }
 
 export function endSplitEditorDrag(source: SplitEditorDragSource): boolean {
