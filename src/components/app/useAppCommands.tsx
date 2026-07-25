@@ -12,6 +12,10 @@ import {
 	FolderOpenIcon,
 	FolderRemoveIcon,
 	InformationCircleIcon,
+	LayoutBottomIcon,
+	LayoutLeftIcon,
+	LayoutRightIcon,
+	LayoutTopIcon,
 	LibraryIcon,
 	Link01Icon,
 	MoveIcon,
@@ -22,10 +26,6 @@ import {
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
-	LayoutBottomIcon,
-	LayoutLeftIcon,
-	LayoutRightIcon,
-	LayoutTopIcon,
 	SquareLock02Icon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
@@ -48,10 +48,10 @@ import {
 	type ShortcutActionId,
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
+import type { SplitDropEdge } from "../../lib/splitEditor";
 import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
-import type { SplitDropEdge } from "./splitEditorModel";
 import type { Command } from "./CommandPalette";
 import { buildEditorCommands } from "./editorCommands";
 import { buildMovePickerCommands } from "./movePickerCommands";
@@ -358,54 +358,25 @@ export function useAppCommands({
 				allowInEditable: true,
 				action: openBlankTab,
 			},
-			{
-				id: "split-editor-left",
+			...(
+				[
+					["split-editor-left", LayoutLeftIcon, "left"],
+					["split-editor-right", LayoutRightIcon, "right"],
+					["split-editor-above", LayoutTopIcon, "top"],
+					["split-editor-below", LayoutBottomIcon, "bottom"],
+				] as const
+			).map(([id, icon, edge]) => ({
+				id,
 				icon: (
 					<HugeiconsIcon
-						icon={LayoutLeftIcon}
+						icon={icon}
 						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
 				),
 				enabled: Boolean(spacePath),
-				action: () => splitPaneWithBlank("left"),
-			},
-			{
-				id: "split-editor-right",
-				icon: (
-					<HugeiconsIcon
-						icon={LayoutRightIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				enabled: Boolean(spacePath),
-				action: () => splitPaneWithBlank("right"),
-			},
-			{
-				id: "split-editor-above",
-				icon: (
-					<HugeiconsIcon
-						icon={LayoutTopIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				enabled: Boolean(spacePath),
-				action: () => splitPaneWithBlank("top"),
-			},
-			{
-				id: "split-editor-below",
-				icon: (
-					<HugeiconsIcon
-						icon={LayoutBottomIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				enabled: Boolean(spacePath),
-				action: () => splitPaneWithBlank("bottom"),
-			},
+				action: () => splitPaneWithBlank(edge),
+			})),
 			{
 				id: "close-active-tab",
 				enabled: tabsLength > 0,

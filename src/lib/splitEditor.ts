@@ -4,6 +4,7 @@ export type SplitDropEdge = "top" | "right" | "bottom" | "left";
 export const MIN_SPLIT_RATIO = 0.1;
 export const MAX_SPLIT_RATIO = 0.9;
 export const DEFAULT_SPLIT_RATIO = 0.5;
+export const PRIMARY_EDITOR_PANE_ID = "editor-pane-primary";
 
 export interface SplitEditorPaneNode {
 	type: "pane";
@@ -20,8 +21,6 @@ export interface SplitEditorBranchNode {
 }
 
 export type SplitEditorNode = SplitEditorPaneNode | SplitEditorBranchNode;
-
-export const PRIMARY_EDITOR_PANE_ID = "editor-pane-primary";
 
 export function createInitialSplitEditorLayout(): SplitEditorPaneNode {
 	return { type: "pane", paneId: PRIMARY_EDITOR_PANE_ID };
@@ -93,7 +92,12 @@ export function updateSplitRatio(
 	ratio: number,
 ): SplitEditorNode {
 	if (node.type === "pane") return node;
-	if (node.id === splitId) return { ...node, ratio };
+	if (node.id === splitId) {
+		return {
+			...node,
+			ratio: Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, ratio)),
+		};
+	}
 	const first = updateSplitRatio(node.first, splitId, ratio);
 	const second = updateSplitRatio(node.second, splitId, ratio);
 	return first === node.first && second === node.second

@@ -8,21 +8,16 @@ import {
 	useState,
 } from "react";
 import {
-	listenForSplitEditorDragEnd,
-	listenForSplitEditorDragMove,
-	listenForSplitEditorDragStart,
-	splitEditorDropTargetAtPoint,
-} from "./splitEditorDnd";
+	DEFAULT_SPLIT_RATIO,
+	MAX_SPLIT_RATIO,
+	MIN_SPLIT_RATIO,
+	type SplitEditorNode,
+} from "../../lib/splitEditor";
+import { subscribeToSplitEditorDrag } from "./splitEditorDnd";
 import type {
 	SplitEditorDragSource,
 	SplitEditorDropTarget,
 } from "./splitEditorDnd";
-import {
-	DEFAULT_SPLIT_RATIO,
-	MAX_SPLIT_RATIO,
-	MIN_SPLIT_RATIO,
-} from "./splitEditorModel";
-import type { SplitEditorNode } from "./splitEditorModel";
 
 const KEYBOARD_RESIZE_STEP = 0.02;
 const KEYBOARD_RESIZE_LARGE_STEP = 0.05;
@@ -37,8 +32,24 @@ interface DropPreviewBounds {
 }
 
 interface DropPreview {
+	source: SplitEditorDragSource;
 	target: SplitEditorDropTarget;
 	bounds: DropPreviewBounds;
+}
+
+function dropEdgeAtPoint(
+	rect: DOMRect,
+	clientX: number,
+	clientY: number,
+): SplitEditorDropTarget["edge"] {
+	const x = (clientX - rect.left) / rect.width;
+	const y = (clientY - rect.top) / rect.height;
+	const edgeSize = 0.3;
+	if (y < edgeSize) return "top";
+	if (y > 1 - edgeSize) return "bottom";
+	if (x < edgeSize) return "left";
+	if (x > 1 - edgeSize) return "right";
+	return "center";
 }
 
 function splitDropPreviewBounds(
@@ -50,55 +61,30 @@ function splitDropPreviewBounds(
 	const paneTop = paneRect.top - layoutRect.top;
 	const halfWidth = paneRect.width / 2;
 	const halfHeight = paneRect.height / 2;
-	const fullWidth = Math.max(0, paneRect.width - DROP_PREVIEW_INSET * 2);
-	const fullHeight = Math.max(0, paneRect.height - DROP_PREVIEW_INSET * 2);
-	const splitWidth = Math.max(
-		0,
-		halfWidth - DROP_PREVIEW_INSET - DROP_PREVIEW_SPLIT_GAP,
-	);
-	const splitHeight = Math.max(
-		0,
-		halfHeight - DROP_PREVIEW_INSET - DROP_PREVIEW_SPLIT_GAP,
-	);
-
-	if (edge === "left") {
-		return {
-			left: paneLeft + DROP_PREVIEW_INSET,
-			top: paneTop + DROP_PREVIEW_INSET,
-			width: splitWidth,
-			height: fullHeight,
-		};
-	}
-	if (edge === "right") {
-		return {
-			left: paneLeft + halfWidth + DROP_PREVIEW_SPLIT_GAP,
-			top: paneTop + DROP_PREVIEW_INSET,
-			width: splitWidth,
-			height: fullHeight,
-		};
-	}
-	if (edge === "top") {
-		return {
-			left: paneLeft + DROP_PREVIEW_INSET,
-			top: paneTop + DROP_PREVIEW_INSET,
-			width: fullWidth,
-			height: splitHeight,
-		};
-	}
-	if (edge === "bottom") {
-		return {
-			left: paneLeft + DROP_PREVIEW_INSET,
-			top: paneTop + halfHeight + DROP_PREVIEW_SPLIT_GAP,
-			width: fullWidth,
-			height: splitHeight,
-		};
-	}
-	return {
+	const bounds = {
 		left: paneLeft + DROP_PREVIEW_INSET,
 		top: paneTop + DROP_PREVIEW_INSET,
-		width: fullWidth,
-		height: fullHeight,
+		width: Math.max(0, paneRect.width - DROP_PREVIEW_INSET * 2),
+		height: Math.max(0, paneRect.height - DROP_PREVIEW_INSET * 2),
 	};
+	if (edge === "left" || edge === "right") {
+		bounds.width = Math.max(
+			0,
+			halfWidth - DROP_PREVIEW_INSET - DROP_PREVIEW_SPLIT_GAP,
+		);
+		if (edge === "right") {
+			bounds.left = paneLeft + halfWidth + DROP_PREVIEW_SPLIT_GAP;
+		}
+	} else if (edge === "top" || edge === "bottom") {
+		bounds.height = Math.max(
+			0,
+			halfHeight - DROP_PREVIEW_INSET - DROP_PREVIEW_SPLIT_GAP,
+		);
+		if (edge === "bottom") {
+			bounds.top = paneTop + halfHeight + DROP_PREVIEW_SPLIT_GAP;
+		}
+	}
+	return bounds;
 }
 
 interface SplitEditorLayoutProps {
@@ -121,68 +107,87 @@ export function SplitEditorLayout({
 	onResizeSplit,
 	renderPane,
 }: SplitEditorLayoutProps) {
-	const [dragSource, setDragSource] =
-		useState<SplitEditorDragSource | null>(null);
 	const [dropPreview, setDropPreview] = useState<DropPreview | null>(null);
 	const pointerRef = useRef({ x: 0, y: 0 });
 	const dragSourceRef = useRef<SplitEditorDragSource | null>(null);
+	const dropTargetRef = useRef<SplitEditorDropTarget | null>(null);
 	const layoutRef = useRef<HTMLDivElement | null>(null);
 	const paneElementsRef = useRef(new Map<string, HTMLElement>());
 
 	const updateDropPreview = useCallback((x: number, y: number) => {
 		pointerRef.current = { x, y };
 		if (!dragSourceRef.current) return;
-		const target = splitEditorDropTargetAtPoint(x, y);
 		const layoutElement = layoutRef.current;
-		const paneElement = target
-			? paneElementsRef.current.get(target.paneId)
-			: null;
-		if (!target || !layoutElement || !paneElement) {
+		let paneEntry: [string, HTMLElement] | null = null;
+		for (const entry of paneElementsRef.current) {
+			const rect = entry[1].getBoundingClientRect();
+			if (
+				x >= rect.left &&
+				x <= rect.right &&
+				y >= rect.top &&
+				y <= rect.bottom
+			) {
+				paneEntry = entry;
+				break;
+			}
+		}
+		if (!layoutElement || !paneEntry) {
+			dropTargetRef.current = null;
 			setDropPreview(null);
 			return;
 		}
+		const [paneId, paneElement] = paneEntry;
+		const paneRect = paneElement.getBoundingClientRect();
+		const target = {
+			paneId,
+			edge: dropEdgeAtPoint(paneRect, x, y),
+		};
+		if (
+			dropTargetRef.current?.paneId === target.paneId &&
+			dropTargetRef.current.edge === target.edge
+		) {
+			return;
+		}
+		dropTargetRef.current = target;
 		setDropPreview({
+			source: dragSourceRef.current,
 			target,
 			bounds: splitDropPreviewBounds(
 				layoutElement.getBoundingClientRect(),
-				paneElement.getBoundingClientRect(),
+				paneRect,
 				target.edge,
 			),
 		});
 	}, []);
 
 	useEffect(() => {
-		const stopStart = listenForSplitEditorDragStart((source) => {
-			dragSourceRef.current = source;
-			setDragSource(source);
-			const { x, y } = pointerRef.current;
-			updateDropPreview(x, y);
-		});
-		const stopMove = listenForSplitEditorDragMove((x, y) => {
-			updateDropPreview(x, y);
-		});
-		const stopEnd = listenForSplitEditorDragEnd((source, event) => {
-			const { x, y } = pointerRef.current;
-			const target = splitEditorDropTargetAtPoint(x, y);
+		return subscribeToSplitEditorDrag((event) => {
+			if (event.type === "start") {
+				dragSourceRef.current = event.source;
+				const { x, y } = pointerRef.current;
+				updateDropPreview(x, y);
+				return;
+			}
+			if (event.type === "move") {
+				updateDropPreview(event.x, event.y);
+				return;
+			}
+
+			const target = dropTargetRef.current;
+			const source = event.source;
 			const shouldHandleDrop =
 				source &&
 				target &&
 				(source.kind === "file" ||
 					target.edge !== "center" ||
 					source.paneId !== target.paneId);
-			if (source && target && shouldHandleDrop) {
-				event.preventDefault();
-				onDrop(source, target);
-			}
 			dragSourceRef.current = null;
-			setDragSource(null);
+			dropTargetRef.current = null;
 			setDropPreview(null);
+			if (!source || !target || !shouldHandleDrop) return false;
+			onDrop(source, target);
+			return true;
 		});
-		return () => {
-			stopStart();
-			stopMove();
-			stopEnd();
-		};
 	}, [onDrop, updateDropPreview]);
 
 	const renderNode = useCallback(
@@ -245,9 +250,9 @@ export function SplitEditorLayout({
 	);
 
 	const suppressSamePaneCenterPreview =
-		dragSource?.kind === "tab" &&
+		dropPreview?.source.kind === "tab" &&
 		dropPreview?.target.edge === "center" &&
-		dragSource.paneId === dropPreview.target.paneId;
+		dropPreview.source.paneId === dropPreview.target.paneId;
 
 	return (
 		<div ref={layoutRef} className="splitEditorLayout">
@@ -273,6 +278,7 @@ function SplitDivider({
 	onResize: (ratio: number) => void;
 }) {
 	const [isResizing, setIsResizing] = useState(false);
+	const resizeRef = useRef<{ pointerId: number; rect: DOMRect } | null>(null);
 	const handlePointerDown = useCallback(
 		(event: ReactPointerEvent<HTMLDivElement>) => {
 			const divider = event.currentTarget;
@@ -281,25 +287,32 @@ function SplitDivider({
 			event.preventDefault();
 			setIsResizing(true);
 			divider.setPointerCapture(event.pointerId);
-			const rect = branch.getBoundingClientRect();
-			const handlePointerMove = (moveEvent: PointerEvent) => {
-				const ratio =
-					direction === "horizontal"
-						? (moveEvent.clientX - rect.left) / rect.width
-						: (moveEvent.clientY - rect.top) / rect.height;
-				onResize(ratio);
+			resizeRef.current = {
+				pointerId: event.pointerId,
+				rect: branch.getBoundingClientRect(),
 			};
-			const handlePointerUp = () => {
-				setIsResizing(false);
-				divider.removeEventListener("pointermove", handlePointerMove);
-				divider.removeEventListener("pointerup", handlePointerUp);
-				divider.removeEventListener("pointercancel", handlePointerUp);
-			};
-			divider.addEventListener("pointermove", handlePointerMove);
-			divider.addEventListener("pointerup", handlePointerUp);
-			divider.addEventListener("pointercancel", handlePointerUp);
+		},
+		[],
+	);
+	const handlePointerMove = useCallback(
+		(event: ReactPointerEvent<HTMLDivElement>) => {
+			const resize = resizeRef.current;
+			if (!resize || resize.pointerId !== event.pointerId) return;
+			const ratio =
+				direction === "horizontal"
+					? (event.clientX - resize.rect.left) / resize.rect.width
+					: (event.clientY - resize.rect.top) / resize.rect.height;
+			onResize(ratio);
 		},
 		[direction, onResize],
+	);
+	const handlePointerEnd = useCallback(
+		(event: ReactPointerEvent<HTMLDivElement>) => {
+			if (resizeRef.current?.pointerId !== event.pointerId) return;
+			resizeRef.current = null;
+			setIsResizing(false);
+		},
+		[],
 	);
 
 	const handleKeyDown = useCallback(
@@ -338,6 +351,9 @@ function SplitDivider({
 			data-direction={direction}
 			data-resizing={isResizing ? "true" : undefined}
 			onPointerDown={handlePointerDown}
+			onPointerMove={handlePointerMove}
+			onPointerUp={handlePointerEnd}
+			onPointerCancel={handlePointerEnd}
 			onDoubleClick={() => onResize(DEFAULT_SPLIT_RATIO)}
 			onKeyDown={handleKeyDown}
 			role="separator"

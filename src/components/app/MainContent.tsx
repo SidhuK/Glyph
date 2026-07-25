@@ -21,8 +21,6 @@ import {
 } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import { ACTIVITY_TIMELINE_TAB_ID } from "../../lib/activityTimeline";
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
 	PATH_RENAMED_EVENT,
@@ -31,17 +29,6 @@ import {
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
-import { DATABASES_TAB_ID } from "../../lib/databases";
-import {
-	ACTIVITY_DOCS_PAGE_SIZE,
-	getPrefetchedAllDocs,
-	getPrefetchedDatabaseDocument,
-	getPrefetchedNote,
-	prefetchAllDocs,
-	prefetchDatabasesLanding,
-	prefetchNote,
-} from "../../lib/navigationPrefetch";
-import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -49,20 +36,15 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
-import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
-import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
+import type { SplitEditorNode } from "../../lib/splitEditor";
+import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
 import { cn } from "../../lib/utils";
-import { onWindowDragMouseDown } from "../../utils/window";
 import { Calendar, FileText } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
-import type {
-	CreateMarkdownFileOptions,
-	ExtractToNoteActions,
-} from "../editor/types";
+import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
-import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
 import { AiSettingsPane } from "../settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
@@ -72,55 +54,28 @@ import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
 import { springPresets } from "../ui/animations";
-import { CanvasPaneAwait } from "./CanvasPaneAwait";
+import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { SplitEditorLayout } from "./SplitEditorLayout";
-import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
-import {
-	loadActivityTimelinePane,
-	loadAllDocsPane,
-	loadDatabasesPane,
-} from "./prefetchablePanes";
 import type {
 	SplitEditorDragSource,
 	SplitEditorDropTarget,
 } from "./splitEditorDnd";
-import type { SplitEditorNode } from "./splitEditorModel";
 import type {
 	WorkspaceEditorPane,
 	WorkspaceTab,
 } from "./useTabManager";
 
-const PinnedDocsPane = lazy(() =>
-	import("./PinnedDocsPane").then((module) => ({
-		default: module.PinnedDocsPane,
-	})),
-);
-
-const DatabasesPane = lazy(loadDatabasesPane);
-const AllDocsPane = lazy(loadAllDocsPane);
-const ActivityTimelinePane = lazy(loadActivityTimelinePane);
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
 const ShortcutsSettingsPane = lazy(() =>
 	import("../settings/ShortcutsSettingsPane").then((module) => ({
 		default: module.ShortcutsSettingsPane,
 	})),
 );
-const SpaceConnectionsView = lazy(() =>
-	import("../connections/SpaceConnectionsView").then((module) => ({
-		default: module.SpaceConnectionsView,
-	})),
-);
-
-interface ActiveGitDiffState {
-	path: string;
-	diff: GitCommitDiff;
-}
-
 interface EmptyTip {
 	key: string;
-	icon: React.ReactNode;
+	icon: ReactNode;
 	text: string;
 	action: string;
 	onClick: () => void;
@@ -269,302 +224,6 @@ function ContextualEmptyState({
 		</div>
 	);
 }
-
-interface EditorPaneCanvasProps {
-	fileTree: MainContentProps["fileTree"];
-	pane: WorkspaceEditorPane;
-	focused: boolean;
-	allowWindowDrag: boolean;
-	rootEntries: FsEntry[];
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	onOpenFile: (relPath: string) => Promise<void>;
-	onOpenFileInNewTab: (relPath: string) => Promise<void>;
-	onOpenActivity: () => void;
-	onPrefetchActivity: () => void;
-	onOpenDatabase: (databaseId: string) => void;
-	onCreateNote: () => void;
-	onOpenCommandPalette: () => void;
-	onOpenDailyNote: () => void;
-	onStartRenamePath: (path: string) => void;
-	onNavigateBreadcrumbPath: (dirPath: string) => void;
-	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
-	onSelectTab: (tabId: string) => void;
-	onCloseTab: (tabId: string) => void;
-	onReorderTabs: (fromTabId: string, toTabId: string) => void;
-	onOpenBlankTab: (paneId: string) => void;
-	onGoBack: (paneId: string) => void;
-	onGoForward: (paneId: string) => void;
-	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
-	onInfoSidebarOpenChange: (open: boolean) => void;
-	onboarding: OnboardingSettings;
-	commandShortcutParts: string[];
-	showDailyNoteAction: boolean;
-	showStarterPane: boolean;
-	onDismissStarter: () => void;
-	databasesOpenRequest: DatabasesOpenRequest;
-	onConsumeDatabasesOpenRequest?: () => void;
-}
-
-const EditorPaneCanvas = memo(function EditorPaneCanvas({
-	fileTree,
-	pane,
-	focused,
-	allowWindowDrag,
-	rootEntries,
-	childrenByDir,
-	onOpenFile,
-	onOpenFileInNewTab,
-	onOpenActivity,
-	onPrefetchActivity,
-	onOpenDatabase,
-	onCreateNote,
-	onOpenCommandPalette,
-	onOpenDailyNote,
-	onStartRenamePath,
-	onNavigateBreadcrumbPath,
-	onLoadBreadcrumbDir,
-	onSelectTab,
-	onCloseTab,
-	onReorderTabs,
-	onOpenBlankTab,
-	onGoBack,
-	onGoForward,
-	setDirtyByPath,
-	onInfoSidebarOpenChange,
-	onboarding,
-	commandShortcutParts,
-	showDailyNoteAction,
-	showStarterPane,
-	onDismissStarter,
-	databasesOpenRequest,
-	onConsumeDatabasesOpenRequest,
-}: EditorPaneCanvasProps) {
-	const [activeGitDiffState, setActiveGitDiffState] =
-		useState<ActiveGitDiffState | null>(null);
-	const viewerPath = pane.activeTabPath;
-	const currentMarkdownPath = viewerPath?.toLowerCase().endsWith(".md")
-		? viewerPath
-		: null;
-	const activeGitDiff =
-		activeGitDiffState?.path === currentMarkdownPath
-			? activeGitDiffState.diff
-			: null;
-
-	useEffect(() => {
-		setActiveGitDiffState(null);
-	}, [viewerPath]);
-
-	const handleGitDiffChange = useCallback(
-		(diff: GitCommitDiff | null) => {
-			setActiveGitDiffState(
-				diff && currentMarkdownPath
-					? { path: currentMarkdownPath, diff }
-					: null,
-			);
-		},
-		[currentMarkdownPath],
-	);
-
-	const handlePrefetchTab = useCallback(
-		(target: string | null) => {
-			if (!target) return;
-			if (target.toLowerCase().endsWith(".md")) {
-				prefetchNote(target);
-				return;
-			}
-			if (target === ALL_DOCS_TAB_ID) {
-				void loadAllDocsPane();
-				void prefetchAllDocs(null);
-				return;
-			}
-			if (target === ACTIVITY_TIMELINE_TAB_ID) {
-				void loadActivityTimelinePane();
-				void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
-				return;
-			}
-			if (target === DATABASES_TAB_ID) {
-				void loadDatabasesPane();
-				void prefetchDatabasesLanding(databasesOpenRequest.databaseId);
-			}
-		},
-		[databasesOpenRequest.databaseId],
-	);
-
-	const content = useMemo(() => {
-		if (!viewerPath) return null;
-		if (viewerPath === ALL_DOCS_TAB_ID) {
-			return (
-				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-					<AllDocsPane
-						onOpenFile={onOpenFile}
-						onOpenActivity={onOpenActivity}
-						onPrefetchActivity={onPrefetchActivity}
-						initialNotes={getPrefetchedAllDocs(null)}
-					/>
-				</Suspense>
-			);
-		}
-		if (viewerPath === PINNED_DOCS_TAB_ID) {
-			return (
-				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-					<PinnedDocsPane
-						onOpenFile={onOpenFile}
-						onOpenDatabase={onOpenDatabase}
-					/>
-				</Suspense>
-			);
-		}
-		if (viewerPath === ACTIVITY_TIMELINE_TAB_ID) {
-			return (
-				<Suspense fallback={<CanvasPaneAwait variant="all-docs" />}>
-					<ActivityTimelinePane onOpenFile={onOpenFile} />
-				</Suspense>
-			);
-		}
-		if (viewerPath === DATABASES_TAB_ID) {
-			const initialDatabaseId = databasesOpenRequest.databaseId;
-			return (
-				<Suspense fallback={<CanvasPaneAwait variant="databases" />}>
-					<DatabasesPane
-						onOpenFile={onOpenFile}
-						onRenameNotePath={(notePath, nextName) =>
-							fileTree.onRenameDir(notePath, nextName, "file")
-						}
-						databasesOpenRequest={databasesOpenRequest}
-						onConsumeOpenRequest={onConsumeDatabasesOpenRequest}
-						initialDocument={
-							initialDatabaseId
-								? getPrefetchedDatabaseDocument(initialDatabaseId)
-								: null
-						}
-					/>
-				</Suspense>
-			);
-		}
-		if (viewerPath === SPACE_CONNECTIONS_TAB_ID) {
-			return (
-				<Suspense fallback={<CanvasPaneAwait variant="connections" />}>
-					<SpaceConnectionsView />
-				</Suspense>
-			);
-		}
-		if (!viewerPath.toLowerCase().endsWith(".md")) return null;
-		const extractToNoteActions = {
-			createMarkdownFile: fileTree.createMarkdownFileAtPath,
-			openNote: onOpenFile,
-			openNoteInNewTab: onOpenFileInNewTab,
-		} satisfies ExtractToNoteActions;
-		return (
-			<NotePane
-				relPath={viewerPath}
-				initialDoc={getPrefetchedNote(viewerPath)}
-				extractToNoteActions={extractToNoteActions}
-				active={focused}
-				onInfoSidebarOpenChange={
-					focused ? onInfoSidebarOpenChange : undefined
-				}
-				gitDiff={activeGitDiff}
-				onGitDiffChange={handleGitDiffChange}
-				onDirtyChange={(dirty) =>
-					setDirtyByPath((previous) =>
-						previous[viewerPath] === dirty
-							? previous
-							: { ...previous, [viewerPath]: dirty },
-					)
-				}
-			/>
-		);
-	}, [
-		activeGitDiff,
-		databasesOpenRequest,
-		fileTree,
-		focused,
-		handleGitDiffChange,
-		onConsumeDatabasesOpenRequest,
-		onInfoSidebarOpenChange,
-		onOpenActivity,
-		onOpenDatabase,
-		onOpenFile,
-		onOpenFileInNewTab,
-		onPrefetchActivity,
-		setDirtyByPath,
-		viewerPath,
-	]);
-
-	const isSpaceConnectionsTab = viewerPath === SPACE_CONNECTIONS_TAB_ID;
-	const isAllDocsTab = viewerPath === ALL_DOCS_TAB_ID;
-	const isActivityTab = viewerPath === ACTIVITY_TIMELINE_TAB_ID;
-	const isDatabasesTab = viewerPath === DATABASES_TAB_ID;
-
-	return (
-		<div
-			className="canvasPaneHost"
-			data-space-connections={isSpaceConnectionsTab ? "true" : undefined}
-			data-all-docs={isAllDocsTab || isActivityTab ? "true" : undefined}
-			data-databases={isDatabasesTab ? "true" : undefined}
-		>
-			{pane.tabs.length > 0 ? (
-				<div className="mainTabBarTransition">
-					<TabBar
-						tabs={pane.tabs}
-						rootEntries={rootEntries}
-						childrenByDir={childrenByDir}
-						activeTabId={pane.activeTabId}
-						activeTabPath={pane.activeTabPath}
-						useWindowBackground={!content}
-						allowWindowDrag={allowWindowDrag}
-						canGoBack={pane.canGoBack}
-						canGoForward={pane.canGoForward}
-						onGoBack={() => onGoBack(pane.id)}
-						onGoForward={() => onGoForward(pane.id)}
-						onOpenBlankTab={() => onOpenBlankTab(pane.id)}
-						onPrefetchTab={handlePrefetchTab}
-						onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
-						onLoadBreadcrumbDir={onLoadBreadcrumbDir}
-						onOpenBreadcrumbFile={onOpenFile}
-						onRenameFile={(path, nextName) =>
-							fileTree.onRenameDir(path, nextName, "file")
-						}
-						onSelectTab={onSelectTab}
-						onCloseTab={onCloseTab}
-						onStartRenamePath={onStartRenamePath}
-						onReorder={onReorderTabs}
-					/>
-				</div>
-			) : (
-				<div
-					aria-hidden="true"
-					className="mainTabsEmptyDragRegion"
-					data-tauri-drag-region={allowWindowDrag ? "" : undefined}
-					onMouseDown={allowWindowDrag ? onWindowDragMouseDown : undefined}
-				/>
-			)}
-			{content ?? (
-				<div className="mainEmptyState">
-					{showStarterPane ? (
-						<GettingStartedPane
-							commandShortcutParts={commandShortcutParts}
-							showDailyNoteAction={showDailyNoteAction}
-							onCreateNote={onCreateNote}
-							onOpenCommandPalette={onOpenCommandPalette}
-							onOpenDailyNote={onOpenDailyNote}
-							onDismiss={onDismissStarter}
-						/>
-					) : (
-						<ContextualEmptyState
-							onboarding={onboarding}
-							commandShortcutParts={commandShortcutParts}
-							showDailyNoteAction={showDailyNoteAction}
-							onCreateNote={onCreateNote}
-							onOpenCommandPalette={onOpenCommandPalette}
-							onOpenDailyNote={onOpenDailyNote}
-						/>
-					)}
-				</div>
-			)}
-		</div>
-	);
-});
 
 interface MainContentProps {
 	fileTree: {
@@ -869,15 +528,19 @@ export const MainContent = memo(function MainContent({
 		activeSettingsTabMeta.id,
 		i18n.language,
 	);
+	const handleRenameFile = useCallback(
+		(path: string, nextName: string) =>
+			fileTree.onRenameDir(path, nextName, "file"),
+		[fileTree.onRenameDir],
+	);
+	const handleDismissStarter = useCallback(() => {
+		setStarterOverrideVisible(false);
+		void updateOnboardingSettings({ starterDismissed: true });
+	}, []);
 	const handleSplitDrop = useCallback(
 		(source: SplitEditorDragSource, target: SplitEditorDropTarget) => {
 			if (source.kind === "tab") {
 				moveTabToPane(source.tabId, target.paneId, target.edge);
-				return;
-			}
-			const existingTab = tabs.find((tab) => tab.target === source.path);
-			if (existingTab) {
-				moveTabToPane(existingTab.id, target.paneId, target.edge);
 				return;
 			}
 			if (target.edge === "center") {
@@ -886,30 +549,49 @@ export const MainContent = memo(function MainContent({
 			}
 			splitPaneWithFile(target.paneId, target.edge, source.path);
 		},
-		[moveTabToPane, openFileInPane, splitPaneWithFile, tabs],
+		[moveTabToPane, openFileInPane, splitPaneWithFile],
 	);
 
 	const renderEditorPane = useCallback(
 		(paneId: string, focused: boolean) => {
 			const pane = panes[paneId];
 			if (!pane) return null;
+			const emptyState =
+				focused && showStarterPane ? (
+					<GettingStartedPane
+						commandShortcutParts={commandShortcutParts}
+						showDailyNoteAction={Boolean(dailyNotesFolder)}
+						onCreateNote={onCreateNote}
+						onOpenCommandPalette={onOpenCommandPalette}
+						onOpenDailyNote={onOpenDailyNote}
+						onDismiss={handleDismissStarter}
+					/>
+				) : (
+					<ContextualEmptyState
+						onboarding={onboarding}
+						commandShortcutParts={commandShortcutParts}
+						showDailyNoteAction={Boolean(dailyNotesFolder)}
+						onCreateNote={onCreateNote}
+						onOpenCommandPalette={onOpenCommandPalette}
+						onOpenDailyNote={onOpenDailyNote}
+					/>
+				);
 			return (
 				<EditorPaneCanvas
 					key={paneId}
-					fileTree={fileTree}
 					pane={pane}
 					focused={focused}
-					allowWindowDrag={Object.keys(panes).length === 1}
+					allowWindowDrag={splitLayout.type === "pane"}
 					rootEntries={rootEntries}
 					childrenByDir={childrenByDir}
+					emptyState={emptyState}
+					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
+					onRenameFile={handleRenameFile}
 					onOpenFile={onOpenFile}
 					onOpenFileInNewTab={onOpenFileInNewTab}
 					onOpenActivity={onOpenActivity}
 					onPrefetchActivity={onPrefetchActivity}
 					onOpenDatabase={onOpenDatabase}
-					onCreateNote={onCreateNote}
-					onOpenCommandPalette={onOpenCommandPalette}
-					onOpenDailyNote={onOpenDailyNote}
 					onStartRenamePath={onStartRenamePath}
 					onNavigateBreadcrumbPath={onNavigateBreadcrumbPath}
 					onLoadBreadcrumbDir={onLoadBreadcrumbDir}
@@ -921,14 +603,6 @@ export const MainContent = memo(function MainContent({
 					onGoForward={onGoForwardInPane}
 					setDirtyByPath={setDirtyByPath}
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
-					onboarding={onboarding}
-					commandShortcutParts={commandShortcutParts}
-					showDailyNoteAction={Boolean(dailyNotesFolder)}
-					showStarterPane={focused && showStarterPane}
-					onDismissStarter={() => {
-						setStarterOverrideVisible(false);
-						void updateOnboardingSettings({ starterDismissed: true });
-					}}
 					databasesOpenRequest={databasesOpenRequest}
 					onConsumeDatabasesOpenRequest={onConsumeDatabasesOpenRequest}
 				/>
@@ -941,6 +615,8 @@ export const MainContent = memo(function MainContent({
 			dailyNotesFolder,
 			databasesOpenRequest,
 			fileTree,
+			handleDismissStarter,
+			handleRenameFile,
 			onConsumeDatabasesOpenRequest,
 			onLoadBreadcrumbDir,
 			onNavigateBreadcrumbPath,
@@ -963,7 +639,7 @@ export const MainContent = memo(function MainContent({
 			setActiveTabId,
 			setDirtyByPath,
 			showStarterPane,
-			starterOverrideVisible,
+			splitLayout.type,
 		],
 	);
 	const editorCanvas = (

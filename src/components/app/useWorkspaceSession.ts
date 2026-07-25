@@ -9,7 +9,7 @@ import {
 	loadWorkspaceSessionSnapshot,
 	saveWorkspaceSessionSnapshot,
 } from "../../lib/workspaceSession";
-import type { SplitEditorNode } from "./splitEditorModel";
+import type { SplitEditorNode } from "../../lib/splitEditor";
 import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 const WORKSPACE_SESSION_SAVE_DEBOUNCE_MS = 250;
@@ -160,7 +160,7 @@ export function useWorkspaceSession({
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
-				!snapshot?.tabs.length
+				!snapshot
 			) {
 				return;
 			}
@@ -169,7 +169,7 @@ export function useWorkspaceSession({
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
 				restorableTabs === null ||
-				!restorableTabs.length
+				(!restorableTabs.length && !snapshot.splitLayout)
 			) {
 				return;
 			}
@@ -182,9 +182,9 @@ export function useWorkspaceSession({
 			restoreWorkspaceTabs(
 				restorableTabs,
 				activeTabTarget,
-				snapshot.splitLayout ?? null,
-				snapshot.focusedPaneId ?? null,
-				snapshot.activeTabTargetByPane ?? {},
+				snapshot.splitLayout,
+				snapshot.focusedPaneId,
+				snapshot.activeTabTargetByPane,
 			);
 			restoredSessionSpaceRef.current = spacePath;
 		})().catch((cause) => {

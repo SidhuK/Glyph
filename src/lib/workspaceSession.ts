@@ -1,22 +1,19 @@
-import {
-	paneIdsInLayout,
-	type SplitEditorNode,
-} from "../components/app/splitEditorModel";
 import { isMarkdownPath, normalizeRelPath } from "../utils/path";
 import { getSettingsStore, saveSettingsStore } from "./settingsStore";
+import {
+	MAX_SPLIT_RATIO,
+	MIN_SPLIT_RATIO,
+	PRIMARY_EDITOR_PANE_ID,
+	paneIdsInLayout,
+	type SplitEditorNode,
+} from "./splitEditor";
 
 const WORKSPACE_SESSION_BY_SPACE_KEY = "workspace.sessionBySpace";
 
 export interface WorkspaceSessionTabSnapshot {
 	kind: "file" | "special";
 	target: string;
-	paneId?: string;
-}
-
-interface WorkspaceSessionTabInput {
-	kind: "file" | "special";
-	target: string;
-	paneId?: string;
+	paneId: string;
 }
 
 export interface WorkspaceSessionSnapshot {
@@ -24,23 +21,10 @@ export interface WorkspaceSessionSnapshot {
 	savedAt: number;
 	tabs: WorkspaceSessionTabSnapshot[];
 	activeTabTarget: string | null;
-	activeTabTargetByPane?: Record<string, string | null>;
-	focusedPaneId?: string | null;
-	splitLayout?: SplitEditorNode | null;
+	activeTabTargetByPane: Record<string, string | null>;
+	focusedPaneId: string | null;
+	splitLayout: SplitEditorNode | null;
 }
-
-type WorkspaceSessionSnapshotInput = Omit<
-	WorkspaceSessionSnapshot,
-	| "tabs"
-	| "activeTabTargetByPane"
-	| "focusedPaneId"
-	| "splitLayout"
-> & {
-	tabs: WorkspaceSessionTabInput[];
-	activeTabTargetByPane?: Record<string, string | null>;
-	focusedPaneId?: string | null;
-	splitLayout?: SplitEditorNode | null;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -57,11 +41,7 @@ function normalizeWorkspaceSessionTab(
 	const paneId =
 		typeof value.paneId === "string" && value.paneId.trim()
 			? value.paneId.trim()
-			: "editor-pane-primary";
-	const paneSnapshot =
-		typeof value.paneId === "string" && value.paneId.trim()
-			? { paneId }
-			: {};
+			: PRIMARY_EDITOR_PANE_ID;
 
 	if (value.kind === "file") {
 		const target = normalizeRelPath(value.target);
@@ -69,7 +49,7 @@ function normalizeWorkspaceSessionTab(
 		const key = `${paneId}\0${target}`;
 		if (seenTargets.has(key)) return null;
 		seenTargets.add(key);
-		return { kind: "file", target, ...paneSnapshot };
+		return { kind: "file", target, paneId };
 	}
 
 	const target = value.target.trim();
@@ -77,7 +57,7 @@ function normalizeWorkspaceSessionTab(
 	const key = `${paneId}\0${target}`;
 	if (seenTargets.has(key)) return null;
 	seenTargets.add(key);
-	return { kind: "special", target, ...paneSnapshot };
+	return { kind: "special", target, paneId };
 }
 
 function normalizeSplitEditorNode(
@@ -123,7 +103,7 @@ function normalizeSplitEditorNode(
 		type: "split",
 		id,
 		direction: value.direction,
-		ratio: Math.min(0.8, Math.max(0.2, value.ratio)),
+		ratio: Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, value.ratio)),
 		first,
 		second,
 	};
@@ -150,23 +130,19 @@ function normalizeWorkspaceSessionSnapshot(
 		new Set(),
 	);
 	const layoutPaneIds = new Set(
-		splitLayout ? paneIdsInLayout(splitLayout) : ["editor-pane-primary"],
+		splitLayout ? paneIdsInLayout(splitLayout) : [PRIMARY_EDITOR_PANE_ID],
 	);
 	const activeTabTargetByPane: Record<string, string | null> = {};
-	if (isRecord(value.activeTabTargetByPane)) {
-		for (const [paneId, target] of Object.entries(
-			value.activeTabTargetByPane,
-		)) {
-			activeTabTargetByPane[paneId] =
-				typeof target === "string" &&
-				tabs.some(
-					(tab) =>
-						(tab.paneId ?? "editor-pane-primary") === paneId &&
-						tab.target === target,
-				)
-					? target
-					: null;
-		}
+	const rawActiveTargets = isRecord(value.activeTabTargetByPane)
+		? value.activeTabTargetByPane
+		: {};
+	for (const paneId of layoutPaneIds) {
+		const target = rawActiveTargets[paneId];
+		activeTabTargetByPane[paneId] =
+			typeof target === "string" &&
+			tabs.some((tab) => tab.paneId === paneId && tab.target === target)
+				? target
+				: null;
 	}
 	const focusedPaneId =
 		typeof value.focusedPaneId === "string" &&
@@ -177,23 +153,14 @@ function normalizeWorkspaceSessionSnapshot(
 		typeof value.savedAt === "number" && Number.isFinite(value.savedAt)
 			? Math.floor(value.savedAt)
 			: 0;
-	const hasSplitEditorState =
-		"splitLayout" in value ||
-		"focusedPaneId" in value ||
-		"activeTabTargetByPane" in value ||
-		value.tabs.some((tab) => isRecord(tab) && "paneId" in tab);
 	return {
 		version: 1,
 		savedAt,
 		tabs,
 		activeTabTarget,
-		...(hasSplitEditorState
-			? {
-					activeTabTargetByPane,
-					focusedPaneId,
-					splitLayout,
-				}
-			: {}),
+		activeTabTargetByPane,
+		focusedPaneId,
+		splitLayout,
 	};
 }
 
@@ -223,21 +190,15 @@ export async function loadWorkspaceSessionSnapshot(
 
 export async function saveWorkspaceSessionSnapshot(
 	spacePath: string,
-	snapshot: WorkspaceSessionSnapshotInput,
+	snapshot: WorkspaceSessionSnapshot,
 ): Promise<void> {
 	const store = await getSettingsStore();
 	const sessionBySpace = normalizeWorkspaceSessionMap(
 		await store.get<unknown>(WORKSPACE_SESSION_BY_SPACE_KEY),
 	);
-	sessionBySpace[spacePath] = normalizeWorkspaceSessionSnapshot(snapshot) ?? {
-		version: 1,
-		savedAt: Date.now(),
-		tabs: [],
-		activeTabTarget: null,
-		activeTabTargetByPane: {},
-		focusedPaneId: null,
-		splitLayout: null,
-	};
+	const normalized = normalizeWorkspaceSessionSnapshot(snapshot);
+	if (!normalized) throw new Error("Invalid workspace session snapshot");
+	sessionBySpace[spacePath] = normalized;
 	await store.set(WORKSPACE_SESSION_BY_SPACE_KEY, sessionBySpace);
 	await saveSettingsStore(store);
 }

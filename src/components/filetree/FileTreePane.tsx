@@ -44,6 +44,12 @@ import { isDeleteKey } from "../../utils/keyboard";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
+import {
+	cancelSplitEditorDrag,
+	endSplitEditorDrag,
+	moveSplitEditorDrag,
+	startSplitEditorDrag,
+} from "../app/splitEditorDnd";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -52,12 +58,6 @@ import {
 	FILE_TREE_ENTRY_TYPE,
 	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 } from "./fileTreeDnd";
-import {
-	cancelSplitEditorDrag,
-	endSplitEditorDrag,
-	moveSplitEditorDrag,
-	startSplitEditorDrag,
-} from "../app/splitEditorDnd";
 import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
 import { useVisibleFilePreviews } from "./useVisibleFilePreviews";
 
@@ -933,6 +933,7 @@ export const FileTreePane = memo(function FileTreePane({
 			moveSplitEditorDrag(x, y);
 			if (
 				sourceKind === "file" &&
+				isMarkdownPath(sourcePath) &&
 				endSplitEditorDrag({ kind: "file", path: sourcePath })
 			) {
 				return;
@@ -952,13 +953,25 @@ export const FileTreePane = memo(function FileTreePane({
 		const { source } = event.operation;
 		const sourcePath =
 			typeof source?.data.path === "string" ? source.data.path : null;
-		if (source?.data.kind === "file" && sourcePath) {
+		if (
+			source?.data.kind === "file" &&
+			sourcePath &&
+			isMarkdownPath(sourcePath)
+		) {
 			startSplitEditorDrag({ kind: "file", path: sourcePath });
 			const { x, y } = event.operation.position.current;
 			moveSplitEditorDrag(x, y);
 		}
 	}, []);
 	const handleDragMove = useCallback((event: DragMoveEvent) => {
+		const source = event.operation.source;
+		if (
+			source?.data.kind !== "file" ||
+			typeof source.data.path !== "string" ||
+			!isMarkdownPath(source.data.path)
+		) {
+			return;
+		}
 		const { x, y } = event.operation.position.current;
 		moveSplitEditorDrag(x, y);
 	}, []);

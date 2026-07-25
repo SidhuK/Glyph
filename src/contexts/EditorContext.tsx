@@ -29,9 +29,10 @@ export interface EditorSaveState {
  */
 interface EditorContextValue {
 	/** Register an editor's save state */
-	registerEditor: (state: EditorSaveState | null) => void;
+	registerEditor: (state: EditorSaveState) => void;
 	unregisterEditor: (state: EditorSaveState) => void;
 	activateEditor: (state: EditorSaveState) => void;
+	deactivateEditor: (state: EditorSaveState) => void;
 	/** Get the current editor's save state */
 	getEditorState: () => EditorSaveState | null;
 	/** Save the current editor if dirty */
@@ -52,16 +53,14 @@ const EditorContext = createContext<EditorContextValue | null>(null);
  */
 export function EditorProvider({ children }: { children: ReactNode }) {
 	const editorStateRef = useRef<EditorSaveState | null>(null);
+	const registeredEditorsRef = useRef(new Set<EditorSaveState>());
 
-	const registerEditor = useCallback((state: EditorSaveState | null) => {
-		if (!state) {
-			editorStateRef.current = null;
-			return;
-		}
-		editorStateRef.current ??= state;
+	const registerEditor = useCallback((state: EditorSaveState) => {
+		registeredEditorsRef.current.add(state);
 	}, []);
 
 	const unregisterEditor = useCallback((state: EditorSaveState) => {
+		registeredEditorsRef.current.delete(state);
 		if (editorStateRef.current === state) {
 			editorStateRef.current = null;
 		}
@@ -69,6 +68,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
 	const activateEditor = useCallback((state: EditorSaveState) => {
 		editorStateRef.current = state;
+	}, []);
+	const deactivateEditor = useCallback((state: EditorSaveState) => {
+		if (editorStateRef.current === state) editorStateRef.current = null;
 	}, []);
 
 	const getEditorState = useCallback(() => {
@@ -83,13 +85,21 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const hasUnsavedChanges = useCallback(() => {
-		return editorStateRef.current?.isDirty ?? false;
+		for (const editor of registeredEditorsRef.current) {
+			if (editor.isDirty) return true;
+		}
+		return false;
 	}, []);
 
 	const getCurrentMarkdown = useCallback((relPath: string) => {
-		const state = editorStateRef.current;
-		if (!state || state.relPath !== relPath) return null;
-		return state.getMarkdown?.() ?? null;
+		const activeEditor = editorStateRef.current;
+		if (activeEditor?.relPath === relPath) {
+			return activeEditor.getMarkdown?.() ?? null;
+		}
+		for (const editor of registeredEditorsRef.current) {
+			if (editor.relPath === relPath) return editor.getMarkdown?.() ?? null;
+		}
+		return null;
 	}, []);
 
 	const setCurrentEditorMode = useCallback((mode: EditorViewMode) => {
@@ -105,6 +115,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				registerEditor,
 				unregisterEditor,
 				activateEditor,
+				deactivateEditor,
 				getEditorState,
 				saveCurrentEditor,
 				hasUnsavedChanges,
@@ -135,7 +146,12 @@ export function useEditorRegistration(
 	state: EditorSaveState | null,
 	active = true,
 ): void {
-	const { activateEditor, registerEditor, unregisterEditor } =
+	const {
+		activateEditor,
+		deactivateEditor,
+		registerEditor,
+		unregisterEditor,
+	} =
 		useEditorContext();
 
 	useEffect(() => {
@@ -147,6 +163,8 @@ export function useEditorRegistration(
 	}, [registerEditor, state, unregisterEditor]);
 
 	useEffect(() => {
-		if (state && active) activateEditor(state);
-	}, [activateEditor, active, state]);
+		if (!state || !active) return;
+		activateEditor(state);
+		return () => deactivateEditor(state);
+	}, [activateEditor, active, deactivateEditor, state]);
 }
