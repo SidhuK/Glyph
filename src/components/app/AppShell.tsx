@@ -343,9 +343,13 @@ export function AppShell() {
 
 	const {
 		tabs,
+		panes,
+		splitLayout,
+		focusedPaneId,
 		activeTabId,
 		activeTabPath,
 		setActiveTabId,
+		focusPane,
 		setDirtyByPath,
 		closeTab,
 		closeAllTabs,
@@ -354,6 +358,12 @@ export function AppShell() {
 		renameTabsForPath,
 		reorderTabs,
 		openBlankTab,
+		openBlankTabInPane,
+		openFileInPane,
+		splitPaneWithFile,
+		splitPaneWithBlank,
+		moveTabToPane,
+		resizeSplit,
 		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
@@ -362,6 +372,8 @@ export function AppShell() {
 		canGoForward,
 		goBack,
 		goForward,
+		goBackInPane,
+		goForwardInPane,
 		activateNextTab,
 		activatePreviousTab,
 		activateTabByIndex,
@@ -374,6 +386,9 @@ export function AppShell() {
 		resumeLastSession,
 		onboardingNotePath,
 		tabs,
+		panes,
+		splitLayout,
+		focusedPaneId,
 		activeTabPath,
 		tabsRevision,
 		restoreWorkspaceTabs,
@@ -458,14 +473,15 @@ export function AppShell() {
 				await openWorkspaceFile(path);
 				return;
 			}
-			if (tabs.some((tab) => tab.target === path)) {
-				await openWorkspaceFile(path);
+			const existingTab = tabs.find((tab) => tab.target === path);
+			if (existingTab) {
+				setActiveTabId(existingTab.id);
 				return;
 			}
 			openBlankTab();
 			await openWorkspaceFile(path);
 		},
-		[openBlankTab, openWorkspaceFile, tabs],
+		[openBlankTab, openWorkspaceFile, setActiveTabId, tabs],
 	);
 
 	const openFolioWorkspaceFileInNewTab = useCallback(
@@ -475,14 +491,15 @@ export function AppShell() {
 				await openFolioWorkspaceFile(path);
 				return;
 			}
-			if (tabs.some((tab) => tab.target === path)) {
-				await openFolioWorkspaceFile(path);
+			const existingTab = tabs.find((tab) => tab.target === path);
+			if (existingTab) {
+				setActiveTabId(existingTab.id);
 				return;
 			}
 			openBlankTab();
 			await openFolioWorkspaceFile(path);
 		},
-		[openBlankTab, openFolioWorkspaceFile, tabs],
+		[openBlankTab, openFolioWorkspaceFile, setActiveTabId, tabs],
 	);
 
 	const openQuickNoteWindow = useCallback(() => {
@@ -1176,6 +1193,7 @@ export function AppShell() {
 		onOpenSpace,
 		openAllDocsTab,
 		openBlankTab,
+		splitPaneWithBlank,
 		openDatabasesTab,
 		openGettingStarted,
 		openCalendar,
@@ -1399,25 +1417,31 @@ export function AppShell() {
 				onPrefetchActivity={prefetchActivityTab}
 				onOpenDatabase={(databaseId) => openDatabasesTab(databaseId)}
 				tabs={tabs}
+				panes={panes}
+				splitLayout={splitLayout}
+				focusedPaneId={focusedPaneId}
 				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}
 				activeTabId={activeTabId}
 				activeTabPath={activeTabPath}
 				setActiveTabId={setActiveTabId}
+				focusPane={focusPane}
 				setDirtyByPath={setDirtyByPath}
 				closeTab={closeTab}
 				closeTabsForPathRemoval={closeTabsForPathRemoval}
 				renameTabsForPath={renameTabsForPath}
 				reorderTabs={reorderTabs}
-				openBlankTab={openBlankTab}
+				openBlankTabInPane={openBlankTabInPane}
+				openFileInPane={openFileInPane}
+				splitPaneWithFile={splitPaneWithFile}
+				moveTabToPane={moveTabToPane}
+				resizeSplit={resizeSplit}
 				onStartRenamePath={handleStartRenameFromTab}
 				onNavigateBreadcrumbPath={handleNavigateBreadcrumbPath}
 				onLoadBreadcrumbDir={fileTree.loadDir}
 				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
-				canGoBack={canGoBack}
-				canGoForward={canGoForward}
-				onGoBack={goBack}
-				onGoForward={goForward}
+				onGoBackInPane={goBackInPane}
+				onGoForwardInPane={goForwardInPane}
 				showGettingStartedRequest={showGettingStartedRequest}
 				databasesOpenRequest={databasesOpenRequest}
 				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}

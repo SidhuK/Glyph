@@ -1,0 +1,154 @@
+.splitEditorLayout,
+.splitEditorBranch,
+.splitEditorBranchChild,
+.splitEditorPane {
+	min-width: 0;
+	min-height: 0;
+}
+
+.splitEditorLayout {
+	position: relative;
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+	background: var(--bg-canvas, var(--bg-primary));
+}
+
+.splitEditorBranch {
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+}
+
+.splitEditorBranch[data-direction="vertical"] {
+	flex-direction: column;
+}
+
+.splitEditorBranchChild {
+	display: flex;
+	flex-grow: 1;
+	overflow: hidden;
+}
+
+.splitEditorPane {
+	position: relative;
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+	box-shadow: inset 0 0 0 1px transparent;
+	transition: box-shadow 140ms ease-out;
+}
+
+.splitEditorPane[data-focused="true"] {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+}
+
+.splitEditorDivider {
+	position: relative;
+	z-index: 4;
+	flex: 0 0 11px;
+	background: transparent;
+	touch-action: none;
+	outline: none;
+}
+
+.splitEditorDivider::before,
+.splitEditorDivider::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	border-radius: var(--radius-full);
+	transform: translate(-50%, -50%);
+}
+
+.splitEditorDivider::before {
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+	transition: background-color 140ms ease-out;
+}
+
+.splitEditorDivider::after {
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--interactive-accent));
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--border-light) 72%, transparent),
+		0 2px 8px color-mix(in srgb, var(--bg-primary) 42%, transparent);
+	opacity: 0.46;
+	transition:
+		background-color 140ms ease-out,
+		box-shadow 140ms ease-out,
+		opacity 140ms ease-out,
+		transform 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.splitEditorDivider[data-direction="horizontal"] {
+	margin: 0 -5px;
+	cursor: col-resize;
+}
+
+.splitEditorDivider[data-direction="horizontal"]::before {
+	width: 1px;
+	height: 100%;
+}
+
+.splitEditorDivider[data-direction="horizontal"]::after {
+	width: 5px;
+	height: 44px;
+}
+
+.splitEditorDivider[data-direction="vertical"] {
+	margin: -5px 0;
+	cursor: row-resize;
+}
+
+.splitEditorDivider[data-direction="vertical"]::before {
+	width: 100%;
+	height: 1px;
+}
+
+.splitEditorDivider[data-direction="vertical"]::after {
+	width: 44px;
+	height: 5px;
+}
+
+.splitEditorDivider:hover::before,
+.splitEditorDivider[data-resizing="true"]::before,
+.splitEditorDivider:focus-visible::before {
+	background: color-mix(in srgb, var(--interactive-accent) 58%, transparent);
+}
+
+.splitEditorDivider:hover::after,
+.splitEditorDivider[data-resizing="true"]::after,
+.splitEditorDivider:focus-visible::after {
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--interactive-accent));
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--interactive-accent) 62%, transparent),
+		0 3px 12px color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	opacity: 1;
+}
+
+.splitEditorDivider[data-direction="horizontal"]:hover::after,
+.splitEditorDivider[data-direction="horizontal"][data-resizing="true"]::after,
+.splitEditorDivider[data-direction="horizontal"]:focus-visible::after {
+	transform: translate(-50%, -50%) scaleX(1.18);
+}
+
+.splitEditorDivider[data-direction="vertical"]:hover::after,
+.splitEditorDivider[data-direction="vertical"][data-resizing="true"]::after,
+.splitEditorDivider[data-direction="vertical"]:focus-visible::after {
+	transform: translate(-50%, -50%) scaleY(1.18);
+}
+
+.splitEditorDropPreview {
+	position: absolute;
+	z-index: 3000;
+	box-sizing: border-box;
+	pointer-events: none;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	box-shadow:
+		inset 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 92%, transparent),
+		0 12px 36px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}

@@ -22,6 +22,10 @@ import {
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
+	LayoutBottomIcon,
+	LayoutLeftIcon,
+	LayoutRightIcon,
+	LayoutTopIcon,
 	SquareLock02Icon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
@@ -47,6 +51,7 @@ import {
 import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
+import type { SplitDropEdge } from "./splitEditorModel";
 import type { Command } from "./CommandPalette";
 import { buildEditorCommands } from "./editorCommands";
 import { buildMovePickerCommands } from "./movePickerCommands";
@@ -90,6 +95,7 @@ interface UseAppCommandsDeps {
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
 	openBlankTab: () => void;
+	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
 	openCalendar: () => void;
@@ -248,6 +254,7 @@ export function useAppCommands({
 	onOpenSpace,
 	openAllDocsTab,
 	openBlankTab,
+	splitPaneWithBlank,
 	openDatabasesTab,
 	openGettingStarted,
 	openCalendar,
@@ -350,6 +357,54 @@ export function useAppCommands({
 				enabled: Boolean(spacePath),
 				allowInEditable: true,
 				action: openBlankTab,
+			},
+			{
+				id: "split-editor-left",
+				icon: (
+					<HugeiconsIcon
+						icon={LayoutLeftIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: () => splitPaneWithBlank("left"),
+			},
+			{
+				id: "split-editor-right",
+				icon: (
+					<HugeiconsIcon
+						icon={LayoutRightIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: () => splitPaneWithBlank("right"),
+			},
+			{
+				id: "split-editor-above",
+				icon: (
+					<HugeiconsIcon
+						icon={LayoutTopIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: () => splitPaneWithBlank("top"),
+			},
+			{
+				id: "split-editor-below",
+				icon: (
+					<HugeiconsIcon
+						icon={LayoutBottomIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: () => splitPaneWithBlank("bottom"),
 			},
 			{
 				id: "close-active-tab",
@@ -892,6 +947,7 @@ export function useAppCommands({
 		openCalendar,
 		openConnectionsView,
 		openBlankTab,
+		splitPaneWithBlank,
 		openQuickNoteWindow,
 		openWorkspaceFile,
 		showWelcomeNote,

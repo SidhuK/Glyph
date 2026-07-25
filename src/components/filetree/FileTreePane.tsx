@@ -1,6 +1,8 @@
 import {
 	DragDropProvider,
 	type DragEndEvent,
+	type DragMoveEvent,
+	type DragStartEvent,
 	useDroppable,
 } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -50,6 +52,12 @@ import {
 	FILE_TREE_ENTRY_TYPE,
 	FILE_TREE_ROOT_DROP_COLLISION_PRIORITY,
 } from "./fileTreeDnd";
+import {
+	cancelSplitEditorDrag,
+	endSplitEditorDrag,
+	moveSplitEditorDrag,
+	startSplitEditorDrag,
+} from "../app/splitEditorDnd";
 import { useFileTreeCreateFolderScroll } from "./useFileTreeCreateFolderScroll";
 import { useVisibleFilePreviews } from "./useVisibleFilePreviews";
 
@@ -910,8 +918,6 @@ export const FileTreePane = memo(function FileTreePane({
 			window.setTimeout(() => {
 				moveClickSuppressRef.current = false;
 			}, 0);
-			if (event.canceled) return;
-
 			const { source, target } = event.operation;
 			const sourcePath =
 				typeof source?.data.path === "string" ? source.data.path : null;
@@ -919,6 +925,19 @@ export const FileTreePane = memo(function FileTreePane({
 				source?.data.kind === "dir" || source?.data.kind === "file"
 					? source.data.kind
 					: null;
+			if (event.canceled || !sourcePath || !sourceKind) {
+				cancelSplitEditorDrag();
+				return;
+			}
+			const { x, y } = event.operation.position.current;
+			moveSplitEditorDrag(x, y);
+			if (
+				sourceKind === "file" &&
+				endSplitEditorDrag({ kind: "file", path: sourcePath })
+			) {
+				return;
+			}
+			cancelSplitEditorDrag();
 			const targetDirPath =
 				typeof target?.data.targetDirPath === "string"
 					? target.data.targetDirPath
@@ -929,9 +948,27 @@ export const FileTreePane = memo(function FileTreePane({
 		},
 		[onMovePath],
 	);
+	const handleDragStart = useCallback((event: DragStartEvent) => {
+		const { source } = event.operation;
+		const sourcePath =
+			typeof source?.data.path === "string" ? source.data.path : null;
+		if (source?.data.kind === "file" && sourcePath) {
+			startSplitEditorDrag({ kind: "file", path: sourcePath });
+			const { x, y } = event.operation.position.current;
+			moveSplitEditorDrag(x, y);
+		}
+	}, []);
+	const handleDragMove = useCallback((event: DragMoveEvent) => {
+		const { x, y } = event.operation.position.current;
+		moveSplitEditorDrag(x, y);
+	}, []);
 
 	return (
-		<DragDropProvider onDragEnd={handleDragEnd}>
+		<DragDropProvider
+			onDragStart={handleDragStart}
+			onDragMove={handleDragMove}
+			onDragEnd={handleDragEnd}
+		>
 			<m.aside
 				className="fileTreePane"
 				initial={{ y: 10 }}

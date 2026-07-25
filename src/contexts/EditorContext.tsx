@@ -30,6 +30,8 @@ export interface EditorSaveState {
 interface EditorContextValue {
 	/** Register an editor's save state */
 	registerEditor: (state: EditorSaveState | null) => void;
+	unregisterEditor: (state: EditorSaveState) => void;
+	activateEditor: (state: EditorSaveState) => void;
 	/** Get the current editor's save state */
 	getEditorState: () => EditorSaveState | null;
 	/** Save the current editor if dirty */
@@ -52,6 +54,20 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 	const editorStateRef = useRef<EditorSaveState | null>(null);
 
 	const registerEditor = useCallback((state: EditorSaveState | null) => {
+		if (!state) {
+			editorStateRef.current = null;
+			return;
+		}
+		editorStateRef.current ??= state;
+	}, []);
+
+	const unregisterEditor = useCallback((state: EditorSaveState) => {
+		if (editorStateRef.current === state) {
+			editorStateRef.current = null;
+		}
+	}, []);
+
+	const activateEditor = useCallback((state: EditorSaveState) => {
 		editorStateRef.current = state;
 	}, []);
 
@@ -87,6 +103,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		<EditorContext.Provider
 			value={{
 				registerEditor,
+				unregisterEditor,
+				activateEditor,
 				getEditorState,
 				saveCurrentEditor,
 				hasUnsavedChanges,
@@ -113,13 +131,22 @@ export function useEditorContext(): EditorContextValue {
 /**
  * Hook for editor components to register their save state
  */
-export function useEditorRegistration(state: EditorSaveState | null): void {
-	const { getEditorState, registerEditor } = useEditorContext();
+export function useEditorRegistration(
+	state: EditorSaveState | null,
+	active = true,
+): void {
+	const { activateEditor, registerEditor, unregisterEditor } =
+		useEditorContext();
 
 	useEffect(() => {
+		if (!state) return;
 		registerEditor(state);
 		return () => {
-			if (getEditorState() === state) registerEditor(null);
+			unregisterEditor(state);
 		};
-	}, [getEditorState, registerEditor, state]);
+	}, [registerEditor, state, unregisterEditor]);
+
+	useEffect(() => {
+		if (state && active) activateEditor(state);
+	}, [activateEditor, active, state]);
 }

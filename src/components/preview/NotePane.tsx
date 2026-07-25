@@ -10,6 +10,7 @@ interface NotePaneProps {
 	onGitDiffChange?: (diff: GitCommitDiff | null) => void;
 	initialDoc?: TextFileDoc | null;
 	extractToNoteActions?: ExtractToNoteActions;
+	active?: boolean;
 }
 
 export function NotePane({
@@ -20,6 +21,7 @@ export function NotePane({
 	onGitDiffChange,
 	initialDoc = null,
 	extractToNoteActions,
+	active = true,
 }: NotePaneProps) {
 	return (
 		<MarkdownEditorPane
@@ -30,6 +32,7 @@ export function NotePane({
 			gitDiff={gitDiff}
 			onGitDiffChange={onGitDiffChange}
 			extractToNoteActions={extractToNoteActions}
+			active={active}
 		/>
 	);
 }

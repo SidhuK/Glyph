@@ -9,7 +9,8 @@ import {
 	loadWorkspaceSessionSnapshot,
 	saveWorkspaceSessionSnapshot,
 } from "../../lib/workspaceSession";
-import type { WorkspaceTab } from "./useTabManager";
+import type { SplitEditorNode } from "./splitEditorModel";
+import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
 
 const WORKSPACE_SESSION_SAVE_DEBOUNCE_MS = 250;
 
@@ -22,12 +23,16 @@ function buildWorkspaceSessionTabs(
 		if (
 			(tab.kind !== "file" && tab.kind !== "special") ||
 			tab.target === null ||
-			seenTargets.has(tab.target)
+			seenTargets.has(`${tab.paneId}\0${tab.target}`)
 		) {
 			continue;
 		}
-		seenTargets.add(tab.target);
-		snapshotTabs.push({ kind: tab.kind, target: tab.target });
+		seenTargets.add(`${tab.paneId}\0${tab.target}`);
+		snapshotTabs.push({
+			kind: tab.kind,
+			target: tab.target,
+			paneId: tab.paneId,
+		});
 	}
 	return snapshotTabs;
 }
@@ -60,11 +65,17 @@ interface UseWorkspaceSessionArgs {
 	resumeLastSession: boolean | null;
 	onboardingNotePath: string | null;
 	tabs: WorkspaceTab[];
+	panes: Record<string, WorkspaceEditorPane>;
+	splitLayout: SplitEditorNode;
+	focusedPaneId: string;
 	activeTabPath: string | null;
 	tabsRevision: number;
 	restoreWorkspaceTabs: (
 		tabSnapshots: WorkspaceSessionTabSnapshot[],
 		activeTabTarget: string | null,
+		splitLayout: SplitEditorNode | null,
+		focusedPaneId: string | null,
+		activeTabTargetByPane: Record<string, string | null>,
 	) => void;
 }
 
@@ -79,6 +90,9 @@ export function useWorkspaceSession({
 	resumeLastSession,
 	onboardingNotePath,
 	tabs,
+	panes,
+	splitLayout,
+	focusedPaneId,
 	activeTabPath,
 	tabsRevision,
 	restoreWorkspaceTabs,
@@ -165,7 +179,13 @@ export function useWorkspaceSession({
 			)
 				? snapshot.activeTabTarget
 				: null;
-			restoreWorkspaceTabs(restorableTabs, activeTabTarget);
+			restoreWorkspaceTabs(
+				restorableTabs,
+				activeTabTarget,
+				snapshot.splitLayout ?? null,
+				snapshot.focusedPaneId ?? null,
+				snapshot.activeTabTargetByPane ?? {},
+			);
 			restoredSessionSpaceRef.current = spacePath;
 		})().catch((cause) => {
 			console.error("Failed to restore workspace session", cause);
@@ -195,6 +215,9 @@ export function useWorkspaceSession({
 		const snapshotTabs = buildWorkspaceSessionTabs(tabs);
 		const activeTarget =
 			snapshotTabs.find((tab) => tab.target === activeTabPath)?.target ?? null;
+		const activeTabTargetByPane = Object.fromEntries(
+			Object.values(panes).map((pane) => [pane.id, pane.activeTabPath]),
+		);
 		pendingSaveRef.current = {
 			spacePath,
 			snapshot: {
@@ -202,6 +225,9 @@ export function useWorkspaceSession({
 				savedAt: Date.now(),
 				tabs: snapshotTabs,
 				activeTabTarget: activeTarget,
+				activeTabTargetByPane,
+				focusedPaneId,
+				splitLayout,
 			},
 		};
 		clearSaveTimer();
@@ -214,8 +240,11 @@ export function useWorkspaceSession({
 	}, [
 		activeTabPath,
 		clearSaveTimer,
+		focusedPaneId,
 		flushPendingSave,
+		panes,
 		spacePath,
+		splitLayout,
 		tabs,
 		tabsRevision,
 	]);

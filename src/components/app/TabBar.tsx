@@ -2,6 +2,8 @@ import { PointerActivationConstraints } from "@dnd-kit/dom";
 import {
 	DragDropProvider,
 	type DragEndEvent,
+	type DragMoveEvent,
+	type DragStartEvent,
 	PointerSensor,
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
@@ -21,6 +23,12 @@ import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ActiveFileTitle } from "./ActiveFileTitle";
 import { MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
+import {
+	cancelSplitEditorDrag,
+	endSplitEditorDrag,
+	moveSplitEditorDrag,
+	startSplitEditorDrag,
+} from "./splitEditorDnd";
 import type { WorkspaceTab } from "./useTabManager";
 
 interface TabBarProps {
@@ -30,6 +38,7 @@ interface TabBarProps {
 	activeTabId: string | null;
 	activeTabPath: string | null;
 	useWindowBackground?: boolean;
+	allowWindowDrag?: boolean;
 	canGoBack: boolean;
 	canGoForward: boolean;
 	onGoBack: () => void;
@@ -73,6 +82,7 @@ export function TabBar({
 	activeTabId,
 	activeTabPath,
 	useWindowBackground = false,
+	allowWindowDrag = true,
 	canGoBack,
 	canGoForward,
 	onGoBack,
@@ -119,7 +129,7 @@ export function TabBar({
 		[compactLabel, stripFileExtension, t],
 	);
 
-	const showTabs = tabs.length > 1;
+	const showTabs = tabs.length > 0;
 	const newTabShortcut = getBinding("new-tab");
 	const activeMarkdownPath =
 		activeTabPath &&
@@ -133,11 +143,26 @@ export function TabBar({
 			window.setTimeout(() => {
 				suppressClickRef.current = false;
 			}, 0);
-			if (event.canceled) return;
-
 			const { source, target } = event.operation;
 			const sourceTabId =
 				typeof source?.data.tabId === "string" ? source.data.tabId : null;
+			const sourcePaneId =
+				typeof source?.data.paneId === "string" ? source.data.paneId : null;
+			if (event.canceled || !sourceTabId || !sourcePaneId) {
+				cancelSplitEditorDrag();
+				return;
+			}
+			const { x, y } = event.operation.position.current;
+			moveSplitEditorDrag(x, y);
+			if (
+				endSplitEditorDrag({
+					kind: "tab",
+					paneId: sourcePaneId,
+					tabId: sourceTabId,
+				})
+			) {
+				return;
+			}
 			const targetTabId =
 				typeof target?.data.tabId === "string" ? target.data.tabId : null;
 			if (!sourceTabId || !targetTabId || sourceTabId === targetTabId) return;
@@ -146,12 +171,28 @@ export function TabBar({
 		},
 		[onReorder],
 	);
+	const handleDragStart = useCallback((event: DragStartEvent) => {
+		const { source } = event.operation;
+		const tabId =
+			typeof source?.data.tabId === "string" ? source.data.tabId : null;
+		const paneId =
+			typeof source?.data.paneId === "string" ? source.data.paneId : null;
+		if (tabId && paneId) {
+			startSplitEditorDrag({ kind: "tab", paneId, tabId });
+			const { x, y } = event.operation.position.current;
+			moveSplitEditorDrag(x, y);
+		}
+	}, []);
+	const handleDragMove = useCallback((event: DragMoveEvent) => {
+		const { x, y } = event.operation.position.current;
+		moveSplitEditorDrag(x, y);
+	}, []);
 
 	return (
 		<div
 			className="mainTabsBarWrap"
-			data-tauri-drag-region
-			onMouseDown={onWindowDragMouseDown}
+			data-tauri-drag-region={allowWindowDrag ? "" : undefined}
+			onMouseDown={allowWindowDrag ? onWindowDragMouseDown : undefined}
 		>
 			<div
 				className="mainTabsBar"
@@ -184,7 +225,11 @@ export function TabBar({
 					onRenameFile={onRenameFile}
 				/>
 				{showTabs ? (
-					<DragDropProvider onDragEnd={handleDragEnd}>
+					<DragDropProvider
+						onDragStart={handleDragStart}
+						onDragMove={handleDragMove}
+						onDragEnd={handleDragEnd}
+					>
 						<div className="mainTabsStrip">
 							<div className="mainTabsStripTabs">
 								{tabs.map((tab, index) => (
@@ -259,7 +304,7 @@ const TabItem = memo(function TabItem({
 		type: MAIN_TAB_DND_TYPE,
 		accept: MAIN_TAB_DND_TYPE,
 		sensors: MAIN_TAB_SENSORS,
-		data: { tabId: tab.id },
+		data: { paneId: tab.paneId, tabId: tab.id },
 		transition: { duration: 160, easing: "ease" },
 	});
 	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {
