@@ -78,6 +78,14 @@ pub struct AiProfile {
 pub struct AiMessage {
     pub role: String,
     pub content: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub context: Option<Vec<AiMessageContextItem>>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AiMessageContextItem {
+    pub kind: String,
+    pub label: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]

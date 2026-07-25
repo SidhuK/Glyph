@@ -34,6 +34,7 @@ function toUIMessages(
 			id: `${jobId}:${i}`,
 			role: msg.role,
 			parts: [{ type: "text", text: msg.content }],
+			context: msg.context,
 		});
 	}
 	return out;

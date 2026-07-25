@@ -3,6 +3,7 @@ import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -118,13 +119,15 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			if (!sanitized || !profiles.activeProfileId) return false;
 			toolEvents.setResponsePhase("submitted");
 			toolEvents.resetToolState();
-			const built = await context.ensurePayload();
-			if (context.payloadError) {
+			let built: Awaited<ReturnType<typeof context.ensurePayload>>;
+			try {
+				built = await context.ensurePayload();
+			} catch {
 				toolEvents.setResponsePhase("idle");
 				return false;
 			}
 			void chat.sendMessage(
-				{ text: sanitized },
+				{ text: sanitized, context: built.attachments },
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
@@ -158,19 +161,23 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		) {
 			return;
 		}
+		actions.setAssistantActionError("");
 		toolEvents.setResponsePhase("submitted");
 		toolEvents.resetToolState();
 		setInput("");
 		scheduleResize();
-		const built = await context.ensurePayload();
-		if (context.payloadError) {
+		let built: Awaited<ReturnType<typeof context.ensurePayload>>;
+		try {
+			built = await context.ensurePayload();
+		} catch (error) {
 			toolEvents.setResponsePhase("idle");
+			actions.setAssistantActionError(extractErrorMessage(error));
 			setInput(text);
 			scheduleResize();
 			return;
 		}
 		void chat.sendMessage(
-			{ text: sanitized },
+			{ text: sanitized, context: built.attachments },
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
@@ -183,6 +190,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			},
 		);
 	}, [
+		actions,
 		aiAssistantMode,
 		chat,
 		context,
@@ -450,6 +458,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 					input={input}
 					setInput={setInput}
 					isAwaitingResponse={toolEvents.isAwaitingResponse}
+					isStreamingResponse={toolEvents.responsePhase === "streaming"}
 					canSend={canSend}
 					onSend={() => void handleSend()}
 					onStop={() => chat.stop()}

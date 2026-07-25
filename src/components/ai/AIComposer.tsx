@@ -1,5 +1,6 @@
 import { ArrowUp02Icon, AtIcon, StopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { BorderBeam } from "border-beam";
 import {
 	type Dispatch,
 	type ClipboardEvent as ReactClipboardEvent,
@@ -11,6 +12,7 @@ import {
 	useMemo,
 	useRef,
 } from "react";
+import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { APP_TAGLINE } from "../../lib/copy";
 import { normalizeRelPath } from "../../utils/path";
 import { File, X } from "../Icons";
@@ -44,6 +46,7 @@ interface AIComposerProps {
 	input: string;
 	setInput: Dispatch<SetStateAction<string>>;
 	isAwaitingResponse: boolean;
+	isStreamingResponse: boolean;
 	canSend: boolean;
 	onSend: () => void;
 	onStop: () => void;
@@ -229,6 +232,7 @@ export function AIComposer({
 	input,
 	setInput,
 	isAwaitingResponse,
+	isStreamingResponse,
 	canSend,
 	onSend,
 	onStop,
@@ -245,6 +249,11 @@ export function AIComposer({
 	onAddContext,
 	onRemoveContext,
 }: AIComposerProps) {
+	const isDarkTheme = useIsDarkTheme();
+	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
+	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
+	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
+
 	const handleInsertMentionTrigger = useCallback(() => {
 		if (isAwaitingResponse) return;
 		setInput((prev) => {
@@ -306,19 +315,18 @@ export function AIComposer({
 		return segments;
 	}, [input]);
 
-	const lastInputRef = useRef(input);
 	const isUserInputRef = useRef(false);
 
 	useLayoutEffect(() => {
 		const el = composerInputRef.current;
 		if (!el) return;
-		if (isUserInputRef.current) {
+		const currentInput = domToInput(el);
+		if (isUserInputRef.current && currentInput === input) {
 			isUserInputRef.current = false;
-			lastInputRef.current = input;
 			return;
 		}
-		if (lastInputRef.current === input) return;
-		lastInputRef.current = input;
+		isUserInputRef.current = false;
+		if (currentInput === input) return;
 		const caret = readCaretOffset(el);
 		el.innerHTML = "";
 		for (const seg of renderSegments) {
@@ -471,102 +479,114 @@ export function AIComposer({
 				</div>
 			) : null}
 			<div className="aiComposer">
-				<div className="aiComposerInputShell">
-					{showActiveFileSuggestion ? (
-						<div className="aiComposerSuggestionHint" aria-label="Active file">
-							<button
-								type="button"
-								className="aiComposerSuggestionButton"
-								onClick={() => onAddContext("file", suggestedFilePath)}
-								aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
-								title={`Add ${suggestedFilePath} to context`}
-								disabled={isAwaitingResponse}
+				<BorderBeam
+					className="aiComposerBeam"
+					size={beamSize}
+					colorVariant="colorful"
+					theme={isDarkTheme ? "dark" : "light"}
+					strength={beamStrength}
+					duration={isStreamingResponse ? 3.4 : 5.2}
+				>
+					<div className="aiComposerInputShell">
+						{showActiveFileSuggestion ? (
+							<div
+								className="aiComposerSuggestionHint"
+								aria-label="Active file"
 							>
-								<span className="aiComposerSuggestionIcon">
-									<File size="var(--icon-sm)" />
-								</span>
-								<span className="aiComposerSuggestionLabel">
-									{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
-								</span>
-							</button>
-						</div>
-					) : null}
-					<div
-						ref={composerInputRef}
-						className="aiComposerInput"
-						contentEditable={!isAwaitingResponse}
-						suppressContentEditableWarning
-						role="textbox"
-						tabIndex={0}
-						aria-multiline="true"
-						aria-label="Message"
-						data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
-						spellCheck
-						onInput={handleInput}
-						onPaste={handlePaste}
-						onClick={handleClick}
-						onKeyDown={handleKeyDown}
-					/>
-					<div className="aiComposerBar">
-						<div className="aiComposerControls">
-							<div className="aiComposerLeftControls">
+								<button
+									type="button"
+									className="aiComposerSuggestionButton"
+									onClick={() => onAddContext("file", suggestedFilePath)}
+									aria-label={`Add ${fileNameFromPath(suggestedFilePath)} to context`}
+									title={`Add ${suggestedFilePath} to context`}
+									disabled={isAwaitingResponse}
+								>
+									<span className="aiComposerSuggestionIcon">
+										<File size="var(--icon-sm)" />
+									</span>
+									<span className="aiComposerSuggestionLabel">
+										{truncateLabel(fileNameFromPath(suggestedFilePath), 28)}
+									</span>
+								</button>
+							</div>
+						) : null}
+						<div
+							ref={composerInputRef}
+							className="aiComposerInput"
+							contentEditable={!isAwaitingResponse}
+							suppressContentEditableWarning
+							role="textbox"
+							tabIndex={0}
+							aria-multiline="true"
+							aria-label="Message"
+							data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
+							spellCheck
+							onInput={handleInput}
+							onPaste={handlePaste}
+							onClick={handleClick}
+							onKeyDown={handleKeyDown}
+						/>
+						<div className="aiComposerBar">
+							<div className="aiComposerControls">
+								<div className="aiComposerLeftControls">
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon-sm"
+										className="aiComposerMentionButton"
+										aria-label="Add note with @"
+										title="Add note with @"
+										onClick={handleInsertMentionTrigger}
+										disabled={isAwaitingResponse}
+									>
+										<HugeiconsIcon
+											icon={AtIcon}
+											size="var(--icon-sm)"
+											strokeWidth={0.9}
+										/>
+									</Button>
+								</div>
+								<div className="aiComposerRight">
+									<ModelSelector
+										key={profiles.activeProfileId ?? "no-profile"}
+										profileId={profiles.activeProfileId}
+										value={profiles.activeProfile?.model ?? ""}
+										provider={profiles.activeProfile?.provider ?? null}
+										onChange={(modelId) => void profiles.setModel(modelId)}
+									/>
+								</div>
+							</div>
+							{isAwaitingResponse ? (
+								<button
+									type="button"
+									className="aiComposerStop"
+									onClick={onStop}
+									aria-label="Stop"
+									title="Stop"
+								>
+									<HugeiconsIcon
+										icon={StopIcon}
+										size="var(--icon-md)"
+										strokeWidth={0.9}
+									/>
+								</button>
+							) : (
 								<Button
 									type="button"
 									variant="ghost"
 									size="icon-sm"
-									className="aiComposerMentionButton"
-									aria-label="Add note with @"
-									title="Add note with @"
-									onClick={handleInsertMentionTrigger}
-									disabled={isAwaitingResponse}
+									className="aiComposerSend"
+									disabled={!canSend}
+									onClick={onSend}
+									aria-label="Send"
+									title="Send"
 								>
-									<HugeiconsIcon
-										icon={AtIcon}
-										size="var(--icon-sm)"
-										strokeWidth={0.9}
-									/>
+									<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
 								</Button>
-							</div>
-							<div className="aiComposerRight">
-								<ModelSelector
-									key={profiles.activeProfileId ?? "no-profile"}
-									profileId={profiles.activeProfileId}
-									value={profiles.activeProfile?.model ?? ""}
-									provider={profiles.activeProfile?.provider ?? null}
-									onChange={(modelId) => void profiles.setModel(modelId)}
-								/>
-							</div>
+							)}
 						</div>
-						{isAwaitingResponse ? (
-							<button
-								type="button"
-								className="aiComposerStop"
-								onClick={onStop}
-								aria-label="Stop"
-								title="Stop"
-							>
-								<HugeiconsIcon
-									icon={StopIcon}
-									size="var(--icon-md)"
-									strokeWidth={0.9}
-								/>
-							</button>
-						) : (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								className="aiComposerSend"
-								disabled={!canSend}
-								onClick={onSend}
-								aria-label="Send"
-								title="Send"
-							>
-								<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
-							</Button>
-						)}
 					</div>
-				</div>
+				</BorderBeam>
 			</div>
 		</>
 	);
