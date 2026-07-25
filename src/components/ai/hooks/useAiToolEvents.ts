@@ -350,6 +350,7 @@ export function useAiToolEvents({
 		phaseStatusText,
 		activityState,
 		isAwaitingResponse,
+		responsePhase: state.responsePhase,
 		setResponsePhase,
 		resetToolState,
 	};

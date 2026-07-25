@@ -3,7 +3,14 @@ import { m, useReducedMotion } from "motion/react";
 import { Fragment, memo, useMemo, useState } from "react";
 import { type OrbState, ThinkingOrb } from "thinking-orbs";
 import { isMarkdownPath } from "../../utils/path";
-import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
+import {
+	ChevronDown,
+	File,
+	Files,
+	FolderOpen,
+	RefreshCw,
+	Save,
+} from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -181,7 +188,26 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 					<AIMessageMarkdown markdown={text} />
 				)
 			) : (
-				<div className="aiChatContent">{text}</div>
+				<>
+					{msg.context?.length ? (
+						<div className="aiChatContextPills">
+							{msg.context.map((item) => (
+								<span
+									className="aiChatContextPill"
+									key={`${item.kind}:${item.label}`}
+								>
+									{item.kind === "file" ? (
+										<File size="var(--icon-xs)" />
+									) : (
+										<FolderOpen size="var(--icon-xs)" />
+									)}
+									<span>{item.label}</span>
+								</span>
+							))}
+						</div>
+					) : null}
+					<div className="aiChatContent">{text}</div>
+				</>
 			)}
 			{isFailedAssistant ? (
 				<div className="aiInlineError">

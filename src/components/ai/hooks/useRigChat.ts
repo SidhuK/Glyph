@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type AiAssistantMode,
 	type AiMessage,
+	type AiMessageContextItem,
 	type AiProviderKind,
 	invoke,
 } from "../../../lib/tauri";
@@ -9,13 +10,19 @@ import { listenTauriEvent } from "../../../lib/tauriEvents";
 
 type UIMessagePart = { type: "text"; text: string };
 
+export type UIMessageContextItem = AiMessageContextItem;
+
 export interface UIMessage {
 	id: string;
 	role: "system" | "user" | "assistant";
 	parts: UIMessagePart[];
+	context?: UIMessageContextItem[];
 }
 
-type SendMessageArgs = { text: string };
+type SendMessageArgs = {
+	text: string;
+	context?: UIMessageContextItem[];
+};
 type ChunkPayload = { job_id: string; delta: string };
 type DonePayload = { job_id: string; cancelled: boolean };
 type ErrorPayload = { job_id: string; message: string };
@@ -49,7 +56,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 			.join("")
 			.trim();
 		if (!content) continue;
-		out.push({ role: message.role, content });
+		out.push({ role: message.role, content, context: message.context });
 	}
 	return out;
 }
@@ -118,7 +125,10 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, [cleanupListeners, clearDoneTimer]);
 
 	const sendMessage = useCallback(
-		async ({ text }: SendMessageArgs, options?: SendMessageOptions) => {
+		async (
+			{ text, context }: SendMessageArgs,
+			options?: SendMessageOptions,
+		) => {
 			const trimmed = text.trim();
 			if (!trimmed) return;
 			const profileId = options?.body?.profile_id?.trim() ?? "";
@@ -138,6 +148,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				id: userId,
 				role: "user",
 				parts: [{ type: "text", text: trimmed }],
+				context,
 			};
 			const assistantMessage: UIMessage = {
 				id: assistantId,
