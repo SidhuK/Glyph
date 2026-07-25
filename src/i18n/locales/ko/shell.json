@@ -121,5 +121,8 @@
 		"allNotes": "모든 노트",
 		"collections": "컬렉션",
 		"pinned": "고정됨"
+	},
+	"ai": {
+		"toolFailed": "{{tool}} 실패"
 	}
 }

@@ -121,5 +121,8 @@
 		"allNotes": "すべてのノート",
 		"collections": "コレクション",
 		"pinned": "ピン留め"
+	},
+	"ai": {
+		"toolFailed": "{{tool}} に失敗しました"
 	}
 }

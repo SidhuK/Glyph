@@ -121,5 +121,8 @@
 		"allNotes": "Alle Notizen",
 		"collections": "Sammlungen",
 		"pinned": "Angeheftet"
+	},
+	"ai": {
+		"toolFailed": "{{tool}} ist fehlgeschlagen"
 	}
 }

@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import type { OrbState } from "thinking-orbs";
+import { i18n } from "../../../i18n";
 import { useTauriEvent } from "../../../lib/tauriEvents";
-import type { ToolTimelineEvent } from "../AIToolTimeline";
+import type { AIActivityTimelineEvent } from "../AIActivityTimeline";
 import {
-	FINALIZING_MS,
 	type ResponsePhase,
 	SLOW_START_MS,
 	type ToolPhase,
-	type ToolStatusEvent,
-	formatToolName,
 } from "../aiPanelConstants";
 import type { RigChatStatus } from "./useRigChat";
 
@@ -18,8 +17,7 @@ interface UseAiToolEventsOptions {
 
 type ToolState = {
 	activeTools: string[];
-	lastToolEvent: ToolStatusEvent | null;
-	toolTimeline: ToolTimelineEvent[];
+	activityTimeline: AIActivityTimelineEvent[];
 	responsePhase: ResponsePhase;
 	showSlowStart: boolean;
 	chatStatus: RigChatStatus;
@@ -44,38 +42,36 @@ type ToolStateAction =
 			showSlowStart: boolean;
 	  }
 	| {
-			type: "set-tool-timeline";
-			toolTimeline: ToolTimelineEvent[];
+			type: "set-activity-timeline";
+			activityTimeline: AIActivityTimelineEvent[];
 	  }
 	| {
 			type: "record-tool";
 			tool: string;
 			phase: ToolPhase;
-			error?: string;
-			callId?: string | null;
 			payload?: unknown;
+			error?: string;
 			at: number;
 	  }
 	| {
 			type: "record-chunk";
 			delta: string;
 			at: number;
-	  }
-	| {
-			type: "finalize-complete";
 	  };
 
 const INITIAL_STATE: ToolState = {
 	activeTools: [],
-	lastToolEvent: null,
-	toolTimeline: [],
+	activityTimeline: [],
 	responsePhase: "idle",
 	showSlowStart: false,
 	chatStatus: "ready",
 	isChatMode: false,
 };
 
-function buildTextTimelineEntry(delta: string, at: number): ToolTimelineEvent {
+function buildTextTimelineEntry(
+	delta: string,
+	at: number,
+): AIActivityTimelineEvent {
 	return {
 		id: `text-${at}-${crypto.randomUUID()}`,
 		kind: "text",
@@ -103,7 +99,6 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 
 			if (action.chatStatus !== "streaming") {
 				next.activeTools = [];
-				next.lastToolEvent = null;
 			}
 
 			if (action.chatStatus === "submitted" && state.responsePhase === "idle") {
@@ -117,9 +112,10 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 			}
 
 			if (action.chatStatus === "ready") {
-				if (state.chatStatus === "streaming") {
-					next.responsePhase = "finalizing";
-				} else if (state.chatStatus === "submitted") {
+				if (
+					state.chatStatus === "streaming" ||
+					state.chatStatus === "submitted"
+				) {
 					next.responsePhase = "idle";
 				}
 				next.showSlowStart = false;
@@ -136,21 +132,16 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 			return {
 				...state,
 				activeTools: [],
-				lastToolEvent: null,
-				toolTimeline: [],
+				activityTimeline: [],
+				showSlowStart: false,
 			};
 		case "set-response-phase":
 			return { ...state, responsePhase: action.responsePhase };
 		case "set-show-slow-start":
 			return { ...state, showSlowStart: action.showSlowStart };
-		case "set-tool-timeline":
-			return { ...state, toolTimeline: action.toolTimeline };
+		case "set-activity-timeline":
+			return { ...state, activityTimeline: action.activityTimeline };
 		case "record-tool": {
-			const toolEvent: ToolStatusEvent = {
-				tool: action.tool,
-				phase: action.phase,
-				error: action.error,
-			};
 			return {
 				...state,
 				activeTools:
@@ -159,54 +150,53 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 							? state.activeTools
 							: [...state.activeTools, action.tool]
 						: state.activeTools.filter((name) => name !== action.tool),
-				lastToolEvent: toolEvent,
 				responsePhase:
 					action.phase === "call" && state.responsePhase !== "streaming"
 						? "tooling"
 						: state.responsePhase,
-				toolTimeline: [
-					...state.toolTimeline,
-					{
-						id: `${action.callId ?? crypto.randomUUID()}-${action.phase}-${Date.now()}`,
-						kind: "tool",
-						tool: action.tool,
-						phase: action.phase,
-						callId: action.callId ?? undefined,
-						payload: action.payload,
-						error: action.error,
-						at: action.at,
-					},
-				],
+				activityTimeline:
+					action.phase === "result"
+						? [
+								...state.activityTimeline,
+								{ kind: "citation", payload: action.payload },
+							]
+						: action.phase === "error"
+							? [
+									...state.activityTimeline,
+									{
+										id: `error-${action.at}-${crypto.randomUUID()}`,
+										kind: "error",
+										message:
+											action.error ??
+											i18n.t("shell:ai.toolFailed", { tool: action.tool }),
+										at: action.at,
+									},
+								]
+							: state.activityTimeline,
 			};
 		}
 		case "record-chunk": {
-			const last = state.toolTimeline[state.toolTimeline.length - 1];
+			const last = state.activityTimeline[state.activityTimeline.length - 1];
 			const nextTimeline =
 				last &&
 				last.kind === "text" &&
 				action.at - last.at <= 900 &&
 				last.text.length < 6000
 					? [
-							...state.toolTimeline.slice(0, -1),
+							...state.activityTimeline.slice(0, -1),
 							{ ...last, text: `${last.text}${action.delta}`, at: action.at },
 						]
 					: [
-							...state.toolTimeline,
+							...state.activityTimeline,
 							buildTextTimelineEntry(action.delta, action.at),
 						];
 			return {
 				...state,
 				showSlowStart: false,
 				responsePhase: "streaming",
-				toolTimeline: nextTimeline,
+				activityTimeline: nextTimeline,
 			};
 		}
-		case "finalize-complete":
-			return {
-				...state,
-				responsePhase: "idle",
-				showSlowStart: false,
-			};
 		default:
 			return state;
 	}
@@ -219,18 +209,11 @@ export function useAiToolEvents({
 	const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 	const activeToolJobIdRef = useRef<string | null>(null);
 	const slowStartTimerRef = useRef<number | null>(null);
-	const finalizingTimerRef = useRef<number | null>(null);
 
 	const clearSlowStartTimer = useCallback(() => {
 		if (slowStartTimerRef.current == null) return;
 		window.clearTimeout(slowStartTimerRef.current);
 		slowStartTimerRef.current = null;
-	}, []);
-
-	const clearFinalizingTimer = useCallback(() => {
-		if (finalizingTimerRef.current == null) return;
-		window.clearTimeout(finalizingTimerRef.current);
-		finalizingTimerRef.current = null;
 	}, []);
 
 	const isAwaitingResponse =
@@ -265,9 +248,9 @@ export function useAiToolEvents({
 			type: "record-tool",
 			tool,
 			phase,
-			error: typeof payload.error === "string" ? payload.error : undefined,
-			callId: payload.call_id,
 			payload: payload.payload,
+			error:
+				phase === "error" ? i18n.t("shell:ai.toolFailed", { tool }) : undefined,
 			at:
 				typeof payload.at_ms === "number" && payload.at_ms > 0
 					? payload.at_ms
@@ -294,57 +277,38 @@ export function useAiToolEvents({
 		});
 	});
 
-	const toolStatusText = useMemo(() => {
-		if (state.activeTools.length > 0) {
-			return `Using ${state.activeTools.map(formatToolName).join(", ")}…`;
-		}
-		if (state.lastToolEvent?.phase === "result") {
-			return `Finished ${formatToolName(state.lastToolEvent.tool)}. Writing response…`;
-		}
-		if (state.lastToolEvent?.phase === "error") {
-			return `Tool ${formatToolName(state.lastToolEvent.tool)} failed. Continuing…`;
-		}
-		return "Thinking…";
-	}, [state.activeTools, state.lastToolEvent]);
-
 	const phaseStatusText = useMemo(() => {
 		if (state.responsePhase === "submitted") {
-			return state.showSlowStart ? "Still thinking…" : "Preparing response…";
+			return state.showSlowStart ? "Still thinking…" : "Thinking…";
 		}
 		if (state.responsePhase === "tooling") {
-			return state.showSlowStart ? "Still working…" : "Working with tools…";
+			return state.showSlowStart ? "Still working…" : "Working…";
 		}
 		if (state.responsePhase === "streaming") {
-			return state.activeTools.length > 0
-				? toolStatusText
-				: "Writing response…";
+			return state.activeTools.length > 0 ? "Working…" : "Writing response…";
 		}
-		if (state.responsePhase === "finalizing") return "Finalizing…";
 		return "";
-	}, [
-		state.activeTools.length,
-		state.responsePhase,
-		state.showSlowStart,
-		toolStatusText,
-	]);
+	}, [state.activeTools.length, state.responsePhase, state.showSlowStart]);
 
-	useEffect(() => {
-		clearFinalizingTimer();
-		if (state.responsePhase !== "finalizing") return;
-		finalizingTimerRef.current = window.setTimeout(() => {
-			dispatch({ type: "finalize-complete" });
-			finalizingTimerRef.current = null;
-		}, FINALIZING_MS);
-		return () => clearFinalizingTimer();
-	}, [clearFinalizingTimer, state.responsePhase]);
+	const activityState = useMemo<OrbState>(() => {
+		if (
+			state.responsePhase === "tooling" ||
+			(state.responsePhase === "streaming" && state.activeTools.length > 0)
+		) {
+			return "working";
+		}
+		if (state.responsePhase === "streaming") {
+			return "composing";
+		}
+		return "solving";
+	}, [state.activeTools.length, state.responsePhase]);
 
 	useEffect(() => {
 		clearSlowStartTimer();
 		if (
 			!isAwaitingResponse ||
 			state.responsePhase === "idle" ||
-			state.responsePhase === "streaming" ||
-			state.responsePhase === "finalizing"
+			state.responsePhase === "streaming"
 		) {
 			dispatch({ type: "set-show-slow-start", showSlowStart: false });
 			return;
@@ -359,39 +323,34 @@ export function useAiToolEvents({
 	useEffect(
 		() => () => {
 			clearSlowStartTimer();
-			clearFinalizingTimer();
 		},
-		[clearFinalizingTimer, clearSlowStartTimer],
+		[clearSlowStartTimer],
 	);
 
 	const resetToolState = useCallback(() => {
+		clearSlowStartTimer();
 		dispatch({ type: "reset-tool-state" });
 		activeToolJobIdRef.current = null;
-	}, []);
+	}, [clearSlowStartTimer]);
 
 	const setResponsePhase = useCallback((responsePhase: ResponsePhase) => {
 		dispatch({ type: "set-response-phase", responsePhase });
 	}, []);
 
-	const setShowSlowStart = useCallback((showSlowStart: boolean) => {
-		dispatch({ type: "set-show-slow-start", showSlowStart });
-	}, []);
-
-	const setToolTimeline = useCallback((toolTimeline: ToolTimelineEvent[]) => {
-		dispatch({ type: "set-tool-timeline", toolTimeline });
-	}, []);
+	const setActivityTimeline = useCallback(
+		(activityTimeline: AIActivityTimelineEvent[]) => {
+			dispatch({ type: "set-activity-timeline", activityTimeline });
+		},
+		[],
+	);
 
 	return {
-		lastToolEvent: state.lastToolEvent,
-		toolTimeline: state.toolTimeline,
-		setToolTimeline,
-		toolStatusText,
+		activityTimeline: state.activityTimeline,
+		setActivityTimeline,
 		phaseStatusText,
+		activityState,
 		isAwaitingResponse,
 		setResponsePhase,
-		setShowSlowStart,
-		clearSlowStartTimer,
-		clearFinalizingTimer,
 		resetToolState,
 	};
 }

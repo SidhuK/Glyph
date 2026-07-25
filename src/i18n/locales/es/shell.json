@@ -121,5 +121,8 @@
 		"allNotes": "Todas las notas",
 		"collections": "Colecciones",
 		"pinned": "Fijadas"
+	},
+	"ai": {
+		"toolFailed": "Falló {{tool}}"
 	}
 }
