@@ -6,15 +6,15 @@ import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import type { AIActivityTimelineEvent } from "./AIActivityTimeline";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
 import { AIHistoryPanel } from "./AIHistoryPanel";
-import type { ToolTimelineEvent } from "./AIToolTimeline";
 import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
 } from "./aiContextEvents";
-import { parseAddTrigger } from "./aiPanelConstants";
+import { messageText, parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
@@ -25,7 +25,6 @@ import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 const CHIP_MARKER_RE = /\uE000[^\uE001]*\uE001|\uE000|\uE001/g;
 
 interface AIPanelProps {
-	isOpen: boolean;
 	onClose: () => void;
 }
 
@@ -41,7 +40,7 @@ function stripChipMarkers(text: string): string {
 	return text.replace(CHIP_MARKER_RE, "");
 }
 
-export function AIPanel({ isOpen, onClose }: AIPanelProps) {
+export function AIPanel({ onClose }: AIPanelProps) {
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -102,14 +101,21 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		!toolEvents.isAwaitingResponse &&
 		Boolean(stripChipMarkers(input).trim()) &&
 		Boolean(profiles.activeProfileId);
+	const showIdleActivity =
+		!toolEvents.isAwaitingResponse &&
+		(Boolean(stripChipMarkers(input).trim()) ||
+			(chat.status === "ready" &&
+				chat.messages.some(
+					(message) =>
+						message.role === "assistant" &&
+						Boolean(messageText(message).trim()),
+				)));
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
 			const sanitized = stripChipMarkers(trimmed).trim();
 			if (!sanitized || !profiles.activeProfileId) return false;
-			toolEvents.clearFinalizingTimer();
-			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("submitted");
 			toolEvents.resetToolState();
 			const built = await context.ensurePayload();
@@ -152,8 +158,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		) {
 			return;
 		}
-		toolEvents.clearFinalizingTimer();
-		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("submitted");
 		toolEvents.resetToolState();
 		setInput("");
@@ -245,40 +249,24 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			}
 			const loaded = await history.loadChatMessages(jobId);
 			if (!loaded) return;
-			toolEvents.clearSlowStartTimer();
-			toolEvents.clearFinalizingTimer();
 			toolEvents.resetToolState();
-			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("idle");
-			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
-				id: `${event.call_id?.trim() ? `${event.call_id}-${event.phase}` : `${event.tool}-${event.phase}-${index}`}-${event.at_ms ?? 0}`,
-				kind: "tool" as const,
-				tool: event.tool || "tool",
-				phase:
-					event.phase === "result" || event.phase === "error"
-						? event.phase
-						: "call",
-				callId: event.call_id ?? undefined,
-				payload: event.payload,
-				error: typeof event.error === "string" ? event.error : undefined,
-				at:
-					typeof event.at_ms === "number" && event.at_ms > 0
-						? event.at_ms
-						: Date.now(),
-			})) as ToolTimelineEvent[];
-			toolEvents.setToolTimeline(restoredTimeline);
+			const restoredTimeline: AIActivityTimelineEvent[] = loaded.toolEvents
+				.filter((event) => event.phase === "result")
+				.map((event) => ({
+					kind: "citation",
+					payload: event.payload,
+				}));
+			toolEvents.setActivityTimeline(restoredTimeline);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 		},
 		[
 			chat,
 			history.loadChatMessages,
-			toolEvents.clearFinalizingTimer,
-			toolEvents.clearSlowStartTimer,
 			toolEvents.resetToolState,
 			toolEvents.setResponsePhase,
-			toolEvents.setShowSlowStart,
-			toolEvents.setToolTimeline,
+			toolEvents.setActivityTimeline,
 		],
 	);
 
@@ -286,10 +274,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		if (chat.status === "streaming" || chat.status === "submitted") {
 			chat.stop();
 		}
-		toolEvents.clearSlowStartTimer();
-		toolEvents.clearFinalizingTimer();
 		toolEvents.resetToolState();
-		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("idle");
 		setInput("");
 		scheduleResize();
@@ -324,7 +309,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	return (
 		<div
 			className="aiPanel"
-			data-open={isOpen}
 			data-ai-mode={aiAssistantMode}
 			data-window-drag-ignore
 		>
@@ -413,25 +397,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						isAwaitingResponse={toolEvents.isAwaitingResponse}
 						chatStatus={chat.status}
 						phaseStatusText={toolEvents.phaseStatusText}
-						toolTimeline={toolEvents.toolTimeline}
+						activityState={toolEvents.activityState}
+						showIdleActivity={showIdleActivity}
+						activityTimeline={toolEvents.activityTimeline}
 						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
 						onRetry={(i) => void handleRetry(i)}
 					/>
-					{!isChatMode && chat.status === "streaming" && (
-						<div
-							className={cn(
-								"aiToolStatus",
-								toolEvents.lastToolEvent?.phase === "error" &&
-									"aiToolStatusError",
-							)}
-							aria-live="polite"
-							aria-label="Tool status"
-						>
-							<span className="aiToolStatusDot" />
-							<span>{toolEvents.toolStatusText}</span>
-						</div>
-					)}
 				</div>
 				{showScrollFab && (
 					<Button

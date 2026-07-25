@@ -1,5 +1,6 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
+	Activity,
 	type CSSProperties,
 	type Dispatch,
 	type ReactNode,
@@ -681,12 +682,9 @@ export const MainContent = memo(function MainContent({
 				data-open={rightSidebarOpen ? "true" : undefined}
 				style={notesInfoSidebarHostStyle}
 			>
-				{aiSidebarVisible ? (
-					<AIFloatingHost
-						isOpen={aiPanelOpen}
-						onToggle={() => setAiPanelOpen((open) => !open)}
-					/>
-				) : null}
+				<Activity mode={aiSidebarVisible ? "visible" : "hidden"}>
+					<AIFloatingHost onToggle={() => setAiPanelOpen((open) => !open)} />
+				</Activity>
 			</div>
 		</>
 	);

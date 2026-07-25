@@ -125,5 +125,8 @@
 	"workspace": {
 		"openSpace": "Open space",
 		"openAnotherSpace": "Open another space"
+	},
+	"ai": {
+		"toolFailed": "{{tool}} failed"
 	}
 }

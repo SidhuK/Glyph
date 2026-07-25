@@ -121,5 +121,8 @@
 		"allNotes": "Toutes les notes",
 		"collections": "Collections",
 		"pinned": "Épinglées"
+	},
+	"ai": {
+		"toolFailed": "Échec de {{tool}}"
 	}
 }

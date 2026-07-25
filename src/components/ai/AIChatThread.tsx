@@ -1,12 +1,16 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, memo, useMemo, useState } from "react";
+import { type OrbState, ThinkingOrb } from "thinking-orbs";
 import { isMarkdownPath } from "../../utils/path";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
+import {
+	AIActivityTimeline,
+	type AIActivityTimelineEvent,
+} from "./AIActivityTimeline";
 import { AIMessageMarkdown } from "./AIMessageMarkdown";
-import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
 import type { RigChatStatus, UIMessage } from "./hooks/useRigChat";
 
@@ -16,7 +20,9 @@ interface AIChatThreadProps {
 	isAwaitingResponse: boolean;
 	chatStatus: RigChatStatus;
 	phaseStatusText: string;
-	toolTimeline: ToolTimelineEvent[];
+	activityState: OrbState;
+	showIdleActivity: boolean;
+	activityTimeline: AIActivityTimelineEvent[];
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
 	onRetry: (index: number) => void;
@@ -69,11 +75,10 @@ function collectFromEntries(entries: unknown[]): CitationItem[] {
 	return out;
 }
 
-function extractCitations(events: ToolTimelineEvent[]): CitationItem[] {
+function extractCitations(events: AIActivityTimelineEvent[]): CitationItem[] {
 	const byPath = new Map<string, CitationItem>();
 	for (const event of events) {
-		if (event.kind === "text") continue;
-		if (event.phase !== "result") continue;
+		if (event.kind !== "citation") continue;
 		let payload = parseJsonLoose(event.payload);
 		if (payload && typeof payload === "object") {
 			const root = payload as Record<string, unknown>;
@@ -118,6 +123,7 @@ interface AIChatMessageBodyProps {
 	isStreamingAssistant: boolean;
 	isLastAssistantWithTimeline: boolean;
 	phaseStatusText: string;
+	activityState: OrbState;
 	shouldReduceMotion: boolean;
 	chatStatus: RigChatStatus;
 	onCopy: (text: string) => void;
@@ -135,6 +141,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 	isStreamingAssistant,
 	isLastAssistantWithTimeline,
 	phaseStatusText,
+	activityState,
 	shouldReduceMotion,
 	chatStatus,
 	onCopy,
@@ -145,7 +152,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 		<>
 			{isPendingAssistant ? (
 				<m.div
-					className="aiPendingAssistant"
+					className="aiPendingHeader"
 					initial={
 						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.99 }
 					}
@@ -156,14 +163,12 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 							: { duration: 0.18, ease: "easeOut" }
 					}
 				>
-					<div className="aiPendingHeader">
-						<span className="aiPendingDot" />
-						<span>{phaseStatusText || "Preparing response..."}</span>
-					</div>
-					<div className="aiPendingSkeleton">
-						<span className="aiPendingLine aiPendingLine-1" />
-						<span className="aiPendingLine aiPendingLine-2" />
-					</div>
+					<ThinkingOrb
+						state={activityState}
+						size={20}
+						aria-label={phaseStatusText}
+					/>
+					<span>{phaseStatusText}</span>
 				</m.div>
 			) : msg.role === "assistant" ? (
 				!isChatMode &&
@@ -240,18 +245,20 @@ export function AIChatThread({
 	isAwaitingResponse,
 	chatStatus,
 	phaseStatusText,
-	toolTimeline,
+	activityState,
+	showIdleActivity,
+	activityTimeline,
 	onCopy,
 	onSave,
 	onRetry,
 }: AIChatThreadProps) {
 	const shouldReduceMotion = useReducedMotion();
 	const citations = useMemo(
-		() => extractCitations(toolTimeline),
-		[toolTimeline],
+		() => extractCitations(activityTimeline),
+		[activityTimeline],
 	);
 	const [citationsOpen, setCitationsOpen] = useState(false);
-	const hasInterleavedTextTimeline = toolTimeline.some(
+	const hasInterleavedTextTimeline = activityTimeline.some(
 		(e) => e.kind === "text",
 	);
 	const lastAssistantMessageIndex = (() => {
@@ -265,6 +272,14 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
+					{showIdleActivity ? (
+						<ThinkingOrb
+							className="aiChatEmptyActivity"
+							state="shaping"
+							size={20}
+							aria-label="Shaping your thought"
+						/>
+					) : null}
 					<div className="aiChatEmptyTitle">Talk to your notes</div>
 					<div className="aiChatEmptyMeta">
 						Ask naturally, or use <code>@</code> to add notes and folders to the
@@ -310,6 +325,7 @@ export function AIChatThread({
 									hasInterleavedTextTimeline
 								}
 								phaseStatusText={phaseStatusText}
+								activityState={activityState}
 								shouldReduceMotion={shouldReduceMotion === true}
 								chatStatus={chatStatus}
 								onCopy={onCopy}
@@ -387,16 +403,39 @@ export function AIChatThread({
 							) : null}
 						</div>
 						{!isChatMode && index === lastAssistantMessageIndex ? (
-							<AIToolTimeline
-								events={toolTimeline}
+							<AIActivityTimeline
+								events={activityTimeline}
 								streaming={
-									chatStatus === "streaming" || chatStatus === "submitted"
+									hasInterleavedTextTimeline &&
+									(chatStatus === "streaming" || chatStatus === "submitted")
 								}
+								activityState={activityState}
+								statusText={phaseStatusText}
 							/>
 						) : null}
 					</Fragment>
 				);
 			})}
+			{messages.length > 0 && showIdleActivity ? (
+				<m.div
+					className="aiIdleAssistant"
+					initial={
+						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.98 }
+					}
+					animate={{ opacity: 1, y: 0, scale: 1 }}
+					transition={
+						shouldReduceMotion
+							? { duration: 0 }
+							: { duration: 0.18, ease: "easeOut" }
+					}
+				>
+					<ThinkingOrb
+						state="shaping"
+						size={20}
+						aria-label="Shaping your thought"
+					/>
+				</m.div>
+			) : null}
 		</>
 	);
 }
