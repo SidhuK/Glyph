@@ -35,6 +35,8 @@ interface EditorContextValue {
 	getEditorState: () => EditorSaveState | null;
 	/** Save the current editor if dirty */
 	saveCurrentEditor: () => Promise<boolean>;
+	/** Save all dirty editors */
+	saveAllEditors: () => Promise<boolean>;
 	/** Check if current editor has unsaved changes */
 	hasUnsavedChanges: () => boolean;
 	/** Get the current editor content as markdown for a specific note */
@@ -81,6 +83,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		return true;
 	}, []);
 
+	const saveAllEditors = useCallback(async () => {
+		const dirtyEditors = [...registeredEditorsRef.current].filter(
+			(editor) => editor.isDirty,
+		);
+		if (dirtyEditors.length === 0) return false;
+		await Promise.all(dirtyEditors.map((editor) => editor.save()));
+		return true;
+	}, []);
+
 	const hasUnsavedChanges = useCallback(() => {
 		for (const editor of registeredEditorsRef.current) {
 			if (editor.isDirty) return true;
@@ -113,6 +124,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				activateEditor,
 				getEditorState,
 				saveCurrentEditor,
+				saveAllEditors,
 				hasUnsavedChanges,
 				getCurrentMarkdown,
 				setCurrentEditorMode,

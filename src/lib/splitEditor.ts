@@ -81,6 +81,7 @@ export function updateSplitRatio(
 ): SplitEditorNode {
 	if (node.type === "pane") return node;
 	if (node.id === splitId) {
+		if (!Number.isFinite(ratio)) return node;
 		return {
 			...node,
 			ratio: Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, ratio)),

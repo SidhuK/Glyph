@@ -46,9 +46,11 @@ function normalizeWorkspaceSessionTab(
 	if (value.kind === "file") {
 		const target = normalizeRelPath(value.target);
 		if (!isMarkdownPath(target)) return null;
-		const key = `${paneId}\0${target}`;
-		if (seenTargets.has(key)) return null;
+		const key = `file\0${target}`;
+		const paneKey = `${paneId}\0${target}`;
+		if (seenTargets.has(key) || seenTargets.has(paneKey)) return null;
 		seenTargets.add(key);
+		seenTargets.add(paneKey);
 		return { kind: "file", target, paneId };
 	}
 

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type SetStateAction,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import {
@@ -85,7 +92,7 @@ export function useTabManager(spacePath: string | null) {
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
 	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
-	const [splitLayout, setSplitLayout] = useState<SplitEditorNode>(
+	const [splitLayout, setSplitLayoutState] = useState<SplitEditorNode>(
 		createInitialSplitEditorLayout,
 	);
 	const [activeTabByPane, setActiveTabByPane] = useState<
@@ -97,6 +104,7 @@ export function useTabManager(spacePath: string | null) {
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
+	const splitLayoutRef = useRef(splitLayout);
 	const activeTabByPaneRef = useRef<Record<string, string | null>>({
 		[PRIMARY_EDITOR_PANE_ID]: null,
 	});
@@ -105,6 +113,16 @@ export function useTabManager(spacePath: string | null) {
 	tabsRef.current = tabs;
 	activeTabIdRef.current = activeTabId;
 	historyByTabIdRef.current = historyByTabId;
+
+	const setSplitLayout = useCallback(
+		(action: SetStateAction<SplitEditorNode>) => {
+			const nextLayout =
+				typeof action === "function" ? action(splitLayoutRef.current) : action;
+			splitLayoutRef.current = nextLayout;
+			setSplitLayoutState(nextLayout);
+		},
+		[],
+	);
 
 	const createTab = useCallback(
 		(
@@ -195,12 +213,16 @@ export function useTabManager(spacePath: string | null) {
 				nextTabs.find((tab) => tab.id === nextActiveTabId)?.paneId ??
 				PRIMARY_EDITOR_PANE_ID;
 			const nextActiveByPane: Record<string, string | null> = {};
-			const nextTabIds = new Set(nextTabs.map((tab) => tab.id));
 			for (const tab of nextTabs) {
 				if (tab.paneId in nextActiveByPane) continue;
 				const currentActiveId = activeTabByPaneRef.current[tab.paneId];
 				nextActiveByPane[tab.paneId] =
-					currentActiveId && nextTabIds.has(currentActiveId)
+					currentActiveId &&
+					nextTabs.some(
+						(candidate) =>
+							candidate.id === currentActiveId &&
+							candidate.paneId === tab.paneId,
+					)
 						? currentActiveId
 						: tab.id;
 			}
@@ -420,7 +442,13 @@ export function useTabManager(spacePath: string | null) {
 	const openFileTab = useCallback(
 		(path: string) => {
 			if (!canOpenInMainPane(path)) return false;
-			if (focusExistingTab(path)) return true;
+			const existing = tabsRef.current.find(
+				(tab) => tab.kind === "file" && tab.target === path,
+			);
+			if (existing) {
+				setActiveTabId(existing.id);
+				return true;
+			}
 
 			const currentActiveId = activeTabIdRef.current;
 			const currentTabs = tabsRef.current;
@@ -445,8 +473,8 @@ export function useTabManager(spacePath: string | null) {
 		[
 			canOpenInMainPane,
 			clearHistoryForTab,
-			focusExistingTab,
 			pushNoteHistory,
+			setActiveTabId,
 			updateActiveTabInPlace,
 		],
 	);
@@ -492,7 +520,10 @@ export function useTabManager(spacePath: string | null) {
 				const paneId = layoutPaneIds.has(snapshot.paneId)
 					? snapshot.paneId
 					: fallbackPaneId;
-				const targetKey = `${paneId}\0${snapshot.target}`;
+				const targetKey =
+					snapshot.kind === "file"
+						? `file\0${snapshot.target}`
+						: `special\0${paneId}\0${snapshot.target}`;
 				if (seenTargets.has(targetKey)) continue;
 				seenTargets.add(targetKey);
 				const tab = createTab(snapshot.kind, snapshot.target, paneId);
@@ -537,7 +568,7 @@ export function useTabManager(spacePath: string | null) {
 			setDirtyByPath({});
 			commitTabsChange(nextTabs, nextActiveTabId);
 		},
-		[commitTabsChange, createTab],
+		[commitTabsChange, createTab, setSplitLayout],
 	);
 
 	const openBlankTab = useCallback(() => {
@@ -572,13 +603,14 @@ export function useTabManager(spacePath: string | null) {
 				activeTabIdRef.current !== tabId
 					? activeTabIdRef.current
 					: replacementTabId;
+			const currentLayout = splitLayoutRef.current;
 			const paneIsEmpty =
 				removedPaneId &&
 				!nextTabs.some((tab) => tab.paneId === removedPaneId) &&
-				paneIdsInLayout(splitLayout).length > 1;
+				paneIdsInLayout(currentLayout).length > 1;
 			let committedActiveTabId = nextActiveTabId;
 			if (paneIsEmpty && removedPaneId) {
-				const nextLayout = removeEditorPane(splitLayout, removedPaneId);
+				const nextLayout = removeEditorPane(currentLayout, removedPaneId);
 				if (nextLayout) {
 					setSplitLayout(nextLayout);
 					if (removedWasFocused) {
@@ -605,7 +637,7 @@ export function useTabManager(spacePath: string | null) {
 			});
 			commitTabsChange(nextTabs, committedActiveTabId);
 		},
-		[clearDirtyForTarget, commitTabsChange, splitLayout, updateHistoryState],
+		[clearDirtyForTarget, commitTabsChange, setSplitLayout, updateHistoryState],
 	);
 
 	const closeAllTabs = useCallback(() => {
@@ -614,7 +646,7 @@ export function useTabManager(spacePath: string | null) {
 		setDirtyByPath({});
 		historyByTabIdRef.current = {};
 		setHistoryByTabId({});
-	}, [commitTabsChange]);
+	}, [commitTabsChange, setSplitLayout]);
 
 	const closeActiveTab = useCallback(() => {
 		if (!activeTabId) return;
@@ -637,7 +669,7 @@ export function useTabManager(spacePath: string | null) {
 			const currentActiveTabId = activeTabIdRef.current;
 			let nextActiveTabId = currentActiveTabId;
 			if (tabsRemoved) {
-				for (const paneId of paneIdsInLayout(splitLayout)) {
+				for (const paneId of paneIdsInLayout(splitLayoutRef.current)) {
 					if (!nextTabs.some((tab) => tab.paneId === paneId)) {
 						nextTabs = [...nextTabs, createTab("blank", null, paneId)];
 					}
@@ -715,7 +747,7 @@ export function useTabManager(spacePath: string | null) {
 				return changed ? next : prev;
 			});
 		},
-		[commitTabsChange, createTab, splitLayout, updateHistoryState],
+		[commitTabsChange, createTab, updateHistoryState],
 	);
 
 	const renameTabsForPath = useCallback(
@@ -849,6 +881,7 @@ export function useTabManager(spacePath: string | null) {
 		tabs,
 		historyByTabId,
 		splitLayout,
+		splitLayoutRef,
 		focusedPaneId,
 		setSplitLayout,
 		activeTabByPane,

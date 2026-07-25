@@ -24,6 +24,7 @@ import {
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import type { FsEntry, GitCommitDiff } from "../../lib/tauri";
+import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type {
 	CreateMarkdownFileOptions,
@@ -115,7 +116,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	const handlePrefetchTab = useCallback(
 		(target: string | null) => {
 			if (!target) return;
-			if (target.toLowerCase().endsWith(".md")) {
+			if (isMarkdownPath(target)) {
 				prefetchNote(target);
 			} else if (target === ALL_DOCS_TAB_ID) {
 				void loadAllDocsPane();
@@ -291,7 +292,7 @@ function EditorPaneContent({
 			</Suspense>
 		);
 	}
-	if (!viewerPath.toLowerCase().endsWith(".md")) return null;
+	if (!isMarkdownPath(viewerPath)) return null;
 
 	const extractToNoteActions = {
 		createMarkdownFile: createMarkdownFileAtPath,

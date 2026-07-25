@@ -28,7 +28,10 @@ import {
 	type PathRenamedDetail,
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
-import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
+import {
+	type DatabasesOpenRequest,
+	INITIAL_DATABASES_OPEN_REQUEST,
+} from "../../lib/database/openDatabasesRequest";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -553,6 +556,11 @@ export const MainContent = memo(function MainContent({
 		(paneId: string, focused: boolean) => {
 			const pane = panes[paneId];
 			if (!pane) return null;
+			const handlesDatabasesOpenRequest =
+				databasesOpenRequest.paneId === paneId;
+			const paneDatabasesOpenRequest = handlesDatabasesOpenRequest
+				? databasesOpenRequest
+				: INITIAL_DATABASES_OPEN_REQUEST;
 			const emptyState =
 				focused && showStarterPane ? (
 					<GettingStartedPane
@@ -600,8 +608,12 @@ export const MainContent = memo(function MainContent({
 					onGoForward={onGoForwardInPane}
 					setDirtyByPath={setDirtyByPath}
 					onInfoSidebarOpenChange={setInfoSidebarOpen}
-					databasesOpenRequest={databasesOpenRequest}
-					onConsumeDatabasesOpenRequest={onConsumeDatabasesOpenRequest}
+					databasesOpenRequest={paneDatabasesOpenRequest}
+					onConsumeDatabasesOpenRequest={
+						handlesDatabasesOpenRequest
+							? onConsumeDatabasesOpenRequest
+							: undefined
+					}
 				/>
 			);
 		},

@@ -475,13 +475,13 @@ export function AppShell() {
 			}
 			const existingTab = tabs.find((tab) => tab.target === path);
 			if (existingTab) {
-				setActiveTabId(existingTab.id);
+				await openWorkspaceFile(path);
 				return;
 			}
 			openBlankTab();
 			await openWorkspaceFile(path);
 		},
-		[openBlankTab, openWorkspaceFile, setActiveTabId, tabs],
+		[openBlankTab, openWorkspaceFile, tabs],
 	);
 
 	const openFolioWorkspaceFileInNewTab = useCallback(
@@ -493,13 +493,13 @@ export function AppShell() {
 			}
 			const existingTab = tabs.find((tab) => tab.target === path);
 			if (existingTab) {
-				setActiveTabId(existingTab.id);
+				await openFolioWorkspaceFile(path);
 				return;
 			}
 			openBlankTab();
 			await openFolioWorkspaceFile(path);
 		},
-		[openBlankTab, openFolioWorkspaceFile, setActiveTabId, tabs],
+		[openBlankTab, openFolioWorkspaceFile, tabs],
 	);
 
 	const openQuickNoteWindow = useCallback(() => {
@@ -922,11 +922,12 @@ export function AppShell() {
 				nextDatabasesOpenRequest(current, {
 					databaseId: databaseId ?? null,
 					openCreateDialog: options?.openCreateDialog ?? false,
+					paneId: focusedPaneId,
 				}),
 			);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
-		[openSpecialTab],
+		[focusedPaneId, openSpecialTab],
 	);
 	const openConnectionsView = useCallback(() => {
 		openSpecialTab(SPACE_CONNECTIONS_TAB_ID);
