@@ -3,6 +3,7 @@ import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -160,6 +161,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		) {
 			return;
 		}
+		actions.setAssistantActionError("");
 		toolEvents.setResponsePhase("submitted");
 		toolEvents.resetToolState();
 		setInput("");
@@ -167,8 +169,9 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		let built: Awaited<ReturnType<typeof context.ensurePayload>>;
 		try {
 			built = await context.ensurePayload();
-		} catch {
+		} catch (error) {
 			toolEvents.setResponsePhase("idle");
+			actions.setAssistantActionError(extractErrorMessage(error));
 			setInput(text);
 			scheduleResize();
 			return;
@@ -187,6 +190,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			},
 		);
 	}, [
+		actions,
 		aiAssistantMode,
 		chat,
 		context,
