@@ -101,25 +101,21 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		!toolEvents.isAwaitingResponse &&
 		Boolean(stripChipMarkers(input).trim()) &&
 		Boolean(profiles.activeProfileId);
-	const idleActivityState = toolEvents.isAwaitingResponse
-		? null
-		: stripChipMarkers(input).trim()
-			? "shaping"
-			: chat.status === "ready" &&
-					chat.messages.some(
-						(message) =>
-							message.role === "assistant" &&
-							Boolean(messageText(message).trim()),
-					)
-				? "shaping"
-				: null;
+	const showIdleActivity =
+		!toolEvents.isAwaitingResponse &&
+		(Boolean(stripChipMarkers(input).trim()) ||
+			(chat.status === "ready" &&
+				chat.messages.some(
+					(message) =>
+						message.role === "assistant" &&
+						Boolean(messageText(message).trim()),
+				)));
 	const activeProvider = profiles.activeProfile?.provider;
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
 			const sanitized = stripChipMarkers(trimmed).trim();
 			if (!sanitized || !profiles.activeProfileId) return false;
-			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("submitted");
 			toolEvents.resetToolState();
 			const built = await context.ensurePayload();
@@ -162,7 +158,6 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		) {
 			return;
 		}
-		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("submitted");
 		toolEvents.resetToolState();
 		setInput("");
@@ -254,9 +249,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			}
 			const loaded = await history.loadChatMessages(jobId);
 			if (!loaded) return;
-			toolEvents.clearSlowStartTimer();
 			toolEvents.resetToolState();
-			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("idle");
 			const restoredTimeline: AIActivityTimelineEvent[] = loaded.toolEvents
 				.filter((event) => event.phase === "result")
@@ -271,10 +264,8 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		[
 			chat,
 			history.loadChatMessages,
-			toolEvents.clearSlowStartTimer,
 			toolEvents.resetToolState,
 			toolEvents.setResponsePhase,
-			toolEvents.setShowSlowStart,
 			toolEvents.setActivityTimeline,
 		],
 	);
@@ -283,9 +274,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		if (chat.status === "streaming" || chat.status === "submitted") {
 			chat.stop();
 		}
-		toolEvents.clearSlowStartTimer();
 		toolEvents.resetToolState();
-		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("idle");
 		setInput("");
 		scheduleResize();
@@ -409,7 +398,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						chatStatus={chat.status}
 						phaseStatusText={toolEvents.phaseStatusText}
 						activityState={toolEvents.activityState}
-						idleActivityState={idleActivityState}
+						showIdleActivity={showIdleActivity}
 						activityTimeline={toolEvents.activityTimeline}
 						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}

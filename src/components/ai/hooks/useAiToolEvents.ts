@@ -130,6 +130,7 @@ function reducer(state: ToolState, action: ToolStateAction): ToolState {
 				...state,
 				activeTools: [],
 				activityTimeline: [],
+				showSlowStart: false,
 			};
 		case "set-response-phase":
 			return { ...state, responsePhase: action.responsePhase };
@@ -306,16 +307,13 @@ export function useAiToolEvents({
 	);
 
 	const resetToolState = useCallback(() => {
+		clearSlowStartTimer();
 		dispatch({ type: "reset-tool-state" });
 		activeToolJobIdRef.current = null;
-	}, []);
+	}, [clearSlowStartTimer]);
 
 	const setResponsePhase = useCallback((responsePhase: ResponsePhase) => {
 		dispatch({ type: "set-response-phase", responsePhase });
-	}, []);
-
-	const setShowSlowStart = useCallback((showSlowStart: boolean) => {
-		dispatch({ type: "set-show-slow-start", showSlowStart });
 	}, []);
 
 	const setActivityTimeline = useCallback(
@@ -332,8 +330,6 @@ export function useAiToolEvents({
 		activityState,
 		isAwaitingResponse,
 		setResponsePhase,
-		setShowSlowStart,
-		clearSlowStartTimer,
 		resetToolState,
 	};
 }

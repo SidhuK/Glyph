@@ -45,7 +45,7 @@ export function AIActivityTimeline({
 						animate={{ opacity: 1, y: 0 }}
 						exit={{ opacity: 0, y: -6 }}
 						transition={{ type: "spring", stiffness: 340, damping: 27 }}
-						className="aiToolInlineText"
+						className="aiActivityText"
 					>
 						<AIMessageMarkdown markdown={event.text} streaming={streaming} />
 					</m.div>

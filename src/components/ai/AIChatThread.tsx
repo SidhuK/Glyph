@@ -21,7 +21,7 @@ interface AIChatThreadProps {
 	chatStatus: RigChatStatus;
 	phaseStatusText: string;
 	activityState: OrbState;
-	idleActivityState: "shaping" | null;
+	showIdleActivity: boolean;
 	activityTimeline: AIActivityTimelineEvent[];
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
@@ -152,7 +152,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 		<>
 			{isPendingAssistant ? (
 				<m.div
-					className="aiPendingAssistant"
+					className="aiPendingHeader"
 					initial={
 						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.99 }
 					}
@@ -163,14 +163,12 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 							: { duration: 0.18, ease: "easeOut" }
 					}
 				>
-					<div className="aiPendingHeader">
-						<ThinkingOrb
-							state={activityState}
-							size={20}
-							aria-label={phaseStatusText}
-						/>
-						<span>{phaseStatusText}</span>
-					</div>
+					<ThinkingOrb
+						state={activityState}
+						size={20}
+						aria-label={phaseStatusText}
+					/>
+					<span>{phaseStatusText}</span>
 				</m.div>
 			) : msg.role === "assistant" ? (
 				!isChatMode &&
@@ -248,7 +246,7 @@ export function AIChatThread({
 	chatStatus,
 	phaseStatusText,
 	activityState,
-	idleActivityState,
+	showIdleActivity,
 	activityTimeline,
 	onCopy,
 	onSave,
@@ -274,7 +272,7 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
-					{idleActivityState === "shaping" ? (
+					{showIdleActivity ? (
 						<ThinkingOrb
 							className="aiChatEmptyActivity"
 							state="shaping"
@@ -418,9 +416,8 @@ export function AIChatThread({
 					</Fragment>
 				);
 			})}
-			{messages.length > 0 && idleActivityState ? (
+			{messages.length > 0 && showIdleActivity ? (
 				<m.div
-					key={idleActivityState}
 					className="aiIdleAssistant"
 					initial={
 						shouldReduceMotion ? false : { opacity: 0, y: 4, scale: 0.98 }
@@ -433,7 +430,7 @@ export function AIChatThread({
 					}
 				>
 					<ThinkingOrb
-						state={idleActivityState}
+						state="shaping"
 						size={20}
 						aria-label="Shaping your thought"
 					/>

@@ -435,11 +435,6 @@
 	overflow-x: auto;
 }
 
-.aiPendingAssistant {
-	display: inline-flex;
-	align-items: center;
-}
-
 .aiPendingHeader,
 .aiActivity {
 	display: inline-flex;
@@ -461,7 +456,7 @@
 	gap: 8px;
 }
 
-.aiToolInlineText {
+.aiActivityText {
 	align-self: flex-start;
 	max-width: 100%;
 	padding: 0;
