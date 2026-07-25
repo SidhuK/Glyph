@@ -9,13 +9,22 @@ import { listenTauriEvent } from "../../../lib/tauriEvents";
 
 type UIMessagePart = { type: "text"; text: string };
 
+export type UIMessageContextItem = {
+	kind: "file" | "folder";
+	label: string;
+};
+
 export interface UIMessage {
 	id: string;
 	role: "system" | "user" | "assistant";
 	parts: UIMessagePart[];
+	context?: UIMessageContextItem[];
 }
 
-type SendMessageArgs = { text: string };
+type SendMessageArgs = {
+	text: string;
+	context?: UIMessageContextItem[];
+};
 type ChunkPayload = { job_id: string; delta: string };
 type DonePayload = { job_id: string; cancelled: boolean };
 type ErrorPayload = { job_id: string; message: string };
@@ -118,7 +127,10 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, [cleanupListeners, clearDoneTimer]);
 
 	const sendMessage = useCallback(
-		async ({ text }: SendMessageArgs, options?: SendMessageOptions) => {
+		async (
+			{ text, context }: SendMessageArgs,
+			options?: SendMessageOptions,
+		) => {
 			const trimmed = text.trim();
 			if (!trimmed) return;
 			const profileId = options?.body?.profile_id?.trim() ?? "";
@@ -138,6 +150,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				id: userId,
 				role: "user",
 				parts: [{ type: "text", text: trimmed }],
+				context,
 			};
 			const assistantMessage: UIMessage = {
 				id: assistantId,

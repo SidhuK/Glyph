@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { queryClient } from "../../lib/queryClient";
 import { invoke } from "../../lib/tauri";
@@ -74,6 +74,7 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData | null
 
 export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
+	const attachedContextRef = useRef<ContextEntry[]>([]);
 	const indexQuery = useQuery({
 		queryKey: aiContextIndexQueryKey,
 		queryFn: async () => {
@@ -103,19 +104,27 @@ export function useAiContext(contextSearch = "") {
 		const path = normalizeRelPath(rawPath);
 		if (kind === "file" && !path) return;
 		const label = kind === "folder" ? folderLabel(path) : fileLabel(path);
-		setAttachedContext((prev) => {
-			const key = contextKey(kind, path);
-			if (prev.some((it) => contextKey(it.kind, it.path) === key)) return prev;
-			return [...prev, { kind, path, label }];
-		});
+		const key = contextKey(kind, path);
+		if (
+			attachedContextRef.current.some(
+				(entry) => contextKey(entry.kind, entry.path) === key,
+			)
+		) {
+			return;
+		}
+		const next = [...attachedContextRef.current, { kind, path, label }];
+		attachedContextRef.current = next;
+		setAttachedContext(next);
 	}, []);
 
 	const removeContext = useCallback(
 		(kind: ContextEntryKind, rawPath: string) => {
 			const path = normalizeRelPath(rawPath);
-			setAttachedContext((prev) =>
-				prev.filter((it) => !(it.kind === kind && it.path === path)),
+			const next = attachedContextRef.current.filter(
+				(entry) => !(entry.kind === kind && entry.path === path),
 			);
+			attachedContextRef.current = next;
+			setAttachedContext(next);
 		},
 		[],
 	);
@@ -173,9 +182,10 @@ export function useAiContext(contextSearch = "") {
 
 	const buildPayloadMutation = useMutation({
 		mutationFn: async () => {
+			const attachments = attachedContextRef.current;
 			const built = await invoke("ai_context_build", {
 				request: {
-					attachments: attachedFolders,
+					attachments,
 					char_budget: DEFAULT_CHAR_BUDGET,
 				},
 			});
@@ -190,7 +200,7 @@ export function useAiContext(contextSearch = "") {
 				totalChars: built.manifest.total_chars,
 				estTokens: built.manifest.est_tokens,
 			};
-			return { payload: built.payload, manifest };
+			return { payload: built.payload, manifest, attachments };
 		},
 	});
 
@@ -198,7 +208,7 @@ export function useAiContext(contextSearch = "") {
 		try {
 			return await buildPayloadMutation.mutateAsync();
 		} catch {
-			return { payload: "", manifest: null };
+			return { payload: "", manifest: null, attachments: [] };
 		}
 	}, [buildPayloadMutation]);
 

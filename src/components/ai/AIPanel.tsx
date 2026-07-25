@@ -124,7 +124,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				return false;
 			}
 			void chat.sendMessage(
-				{ text: sanitized },
+				{ text: sanitized, context: built.attachments },
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
@@ -170,7 +170,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			return;
 		}
 		void chat.sendMessage(
-			{ text: sanitized },
+			{ text: sanitized, context: built.attachments },
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,

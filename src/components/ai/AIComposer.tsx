@@ -315,19 +315,18 @@ export function AIComposer({
 		return segments;
 	}, [input]);
 
-	const lastInputRef = useRef(input);
 	const isUserInputRef = useRef(false);
 
 	useLayoutEffect(() => {
 		const el = composerInputRef.current;
 		if (!el) return;
-		if (isUserInputRef.current) {
+		const currentInput = domToInput(el);
+		if (isUserInputRef.current && currentInput === input) {
 			isUserInputRef.current = false;
-			lastInputRef.current = input;
 			return;
 		}
-		if (lastInputRef.current === input) return;
-		lastInputRef.current = input;
+		isUserInputRef.current = false;
+		if (currentInput === input) return;
 		const caret = readCaretOffset(el);
 		el.innerHTML = "";
 		for (const seg of renderSegments) {
