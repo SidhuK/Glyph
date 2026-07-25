@@ -1,15 +1,15 @@
 {
-  "version": "0.8.10-alpha.3",
-  "notes": "## What's Changed\n* Add split editor panes (#429) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/429\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.10-alpha.2...v0.8.10-alpha.3",
-  "pub_date": "2026-07-25T07:22:25.315Z",
+  "version": "0.8.10-alpha.4",
+  "notes": "## What's Changed\n* Fix daily note rollover task move errors by @SidhuK in https://github.com/SidhuK/Glyph/pull/430\n* AI Tool Calls UI Overhaul by @SidhuK in https://github.com/SidhuK/Glyph/pull/431\n* Subtle AI composer animations and context attachment cleanup (#432) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/432\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.10-alpha.3...v0.8.10-alpha.4",
+  "pub_date": "2026-07-25T14:46:18.641Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDh5eXVOQXB2T1VVZE8xc1JMOS9manladGVGQkNPSkgzVk0xbzZnTXVTKzJ2b1JVYlBGWWJJb0taSDR4KytiMDBabGZCQTd1QytCVmpRMXFIQUpGTGc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTY0MTM4CWZpbGU6R2x5cGguYXBwLnRhci5negptZ3Bod0IzQ0c2NlFTZ015T0xTY1RxV0tiRlRUTDBtVUJBcXBnY01WemUwZHBUSnJoTEFOeERqUmhsNTRvZEVxMTkzY0NKeEtvWkVlYXNEWXhFaEtBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.10-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpvTStIWCs0aXJjY0lGaHNjZGltRHZYaFVjcEJpYUdLeFlTaS9XSUZOSGV6a21jWGFqajZpTmVINmRVd2ZNUVloNVcwYmRnb3VxOUZydTNYT3FYdndvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTkwNzczCWZpbGU6R2x5cGguYXBwLnRhci5negpONVU1Z2g3OEUyR29zMDJvYk93WG5WWDJKL3lTems2SVUva2x2d2dGSktnY0pwQXNtL2FKNE9WVytQTWcxcjBBbWJZeTh4bldSRmNUaFFkckVkaEpDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.10-alpha.4/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDh5eXVOQXB2T1VVZE8xc1JMOS9manladGVGQkNPSkgzVk0xbzZnTXVTKzJ2b1JVYlBGWWJJb0taSDR4KytiMDBabGZCQTd1QytCVmpRMXFIQUpGTGc4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTY0MTM4CWZpbGU6R2x5cGguYXBwLnRhci5negptZ3Bod0IzQ0c2NlFTZ015T0xTY1RxV0tiRlRUTDBtVUJBcXBnY01WemUwZHBUSnJoTEFOeERqUmhsNTRvZEVxMTkzY0NKeEtvWkVlYXNEWXhFaEtBQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.10-alpha.3/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpvTStIWCs0aXJjY0lGaHNjZGltRHZYaFVjcEJpYUdLeFlTaS9XSUZOSGV6a21jWGFqajZpTmVINmRVd2ZNUVloNVcwYmRnb3VxOUZydTNYT3FYdndvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg0OTkwNzczCWZpbGU6R2x5cGguYXBwLnRhci5negpONVU1Z2g3OEUyR29zMDJvYk93WG5WWDJKL3lTems2SVUva2x2d2dGSktnY0pwQXNtL2FKNE9WVytQTWcxcjBBbWJZeTh4bldSRmNUaFFkckVkaEpDZz09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.10-alpha.4/Glyph_aarch64.app.tar.gz"
     }
   }
 }
