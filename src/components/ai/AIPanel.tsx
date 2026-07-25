@@ -118,8 +118,10 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			if (!sanitized || !profiles.activeProfileId) return false;
 			toolEvents.setResponsePhase("submitted");
 			toolEvents.resetToolState();
-			const built = await context.ensurePayload();
-			if (context.payloadError) {
+			let built: Awaited<ReturnType<typeof context.ensurePayload>>;
+			try {
+				built = await context.ensurePayload();
+			} catch {
 				toolEvents.setResponsePhase("idle");
 				return false;
 			}
@@ -162,8 +164,10 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		toolEvents.resetToolState();
 		setInput("");
 		scheduleResize();
-		const built = await context.ensurePayload();
-		if (context.payloadError) {
+		let built: Awaited<ReturnType<typeof context.ensurePayload>>;
+		try {
+			built = await context.ensurePayload();
+		} catch {
 			toolEvents.setResponsePhase("idle");
 			setInput(text);
 			scheduleResize();

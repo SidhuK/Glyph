@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type AiAssistantMode,
 	type AiMessage,
+	type AiMessageContextItem,
 	type AiProviderKind,
 	invoke,
 } from "../../../lib/tauri";
@@ -9,10 +10,7 @@ import { listenTauriEvent } from "../../../lib/tauriEvents";
 
 type UIMessagePart = { type: "text"; text: string };
 
-export type UIMessageContextItem = {
-	kind: "file" | "folder";
-	label: string;
-};
+export type UIMessageContextItem = AiMessageContextItem;
 
 export interface UIMessage {
 	id: string;
@@ -58,7 +56,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 			.join("")
 			.trim();
 		if (!content) continue;
-		out.push({ role: message.role, content });
+		out.push({ role: message.role, content, context: message.context });
 	}
 	return out;
 }

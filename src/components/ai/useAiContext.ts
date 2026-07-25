@@ -204,17 +204,9 @@ export function useAiContext(contextSearch = "") {
 		},
 	});
 
-	const buildPayload = useCallback(async () => {
-		try {
-			return await buildPayloadMutation.mutateAsync();
-		} catch {
-			return { payload: "", manifest: null, attachments: [] };
-		}
-	}, [buildPayloadMutation]);
-
 	const ensurePayload = useCallback(async () => {
-		return buildPayload();
-	}, [buildPayload]);
+		return buildPayloadMutation.mutateAsync();
+	}, [buildPayloadMutation]);
 
 	return {
 		addContext,

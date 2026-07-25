@@ -703,6 +703,12 @@ export interface AiProfile {
 export interface AiMessage {
 	role: "system" | "user" | "assistant";
 	content: string;
+	context?: AiMessageContextItem[];
+}
+
+export interface AiMessageContextItem {
+	kind: "file" | "folder";
+	label: string;
 }
 
 interface AiChatStartResult {

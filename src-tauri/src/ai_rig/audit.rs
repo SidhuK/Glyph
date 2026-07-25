@@ -85,6 +85,7 @@ fn write_chat_history(params: &AuditLogParams<'_>, response: &str, created_at_ms
         messages.push(AiMessage {
             role: "assistant".to_string(),
             content: response.to_string(),
+            context: None,
         });
     }
     let title = params
