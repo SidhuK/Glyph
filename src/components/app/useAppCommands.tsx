@@ -12,6 +12,10 @@ import {
 	FolderOpenIcon,
 	FolderRemoveIcon,
 	InformationCircleIcon,
+	LayoutBottomIcon,
+	LayoutLeftIcon,
+	LayoutRightIcon,
+	LayoutTopIcon,
 	LibraryIcon,
 	Link01Icon,
 	MoveIcon,
@@ -44,6 +48,7 @@ import {
 	type ShortcutActionId,
 	isShortcutActionId,
 } from "../../lib/shortcuts/registry";
+import type { SplitDropEdge } from "../../lib/splitEditor";
 import { toast } from "../../lib/toast";
 import { isMarkdownPath, parentDir } from "../../utils/path";
 import type { SettingsTab } from "../settings/settingsConfig";
@@ -90,6 +95,7 @@ interface UseAppCommandsDeps {
 	onOpenSpace: () => void;
 	openAllDocsTab: () => void;
 	openBlankTab: () => void;
+	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
 	openGettingStarted: () => void;
 	openCalendar: () => void;
@@ -248,6 +254,7 @@ export function useAppCommands({
 	onOpenSpace,
 	openAllDocsTab,
 	openBlankTab,
+	splitPaneWithBlank,
 	openDatabasesTab,
 	openGettingStarted,
 	openCalendar,
@@ -351,6 +358,21 @@ export function useAppCommands({
 				allowInEditable: true,
 				action: openBlankTab,
 			},
+			...(
+				[
+					["split-editor-left", LayoutLeftIcon, "left"],
+					["split-editor-right", LayoutRightIcon, "right"],
+					["split-editor-above", LayoutTopIcon, "top"],
+					["split-editor-below", LayoutBottomIcon, "bottom"],
+				] as const
+			).map(([id, icon, edge]) => ({
+				id,
+				icon: (
+					<HugeiconsIcon icon={icon} size="var(--icon-lg)" strokeWidth={0.9} />
+				),
+				enabled: Boolean(spacePath),
+				action: () => splitPaneWithBlank(edge),
+			})),
 			{
 				id: "close-active-tab",
 				enabled: tabsLength > 0,
@@ -892,6 +914,7 @@ export function useAppCommands({
 		openCalendar,
 		openConnectionsView,
 		openBlankTab,
+		splitPaneWithBlank,
 		openQuickNoteWindow,
 		openWorkspaceFile,
 		showWelcomeNote,

@@ -382,6 +382,22 @@
 			"label": "Auf X folgen",
 			"description": "Karat Sidhu auf X öffnen."
 		},
+		"split-editor-above": {
+			"label": "Editor oben teilen",
+			"description": "Oberhalb des fokussierten Bereichs einen leeren Editorbereich erstellen."
+		},
+		"split-editor-below": {
+			"label": "Editor unten teilen",
+			"description": "Unterhalb des fokussierten Bereichs einen leeren Editorbereich erstellen."
+		},
+		"split-editor-left": {
+			"label": "Editor links teilen",
+			"description": "Links vom fokussierten Bereich einen leeren Editorbereich erstellen."
+		},
+		"split-editor-right": {
+			"label": "Editor rechts teilen",
+			"description": "Rechts vom fokussierten Bereich einen leeren Editorbereich erstellen."
+		},
 		"strikethrough": {
 			"label": "Durchgestrichen",
 			"description": "Durchgestrichen-Formatierung für die aktuelle Auswahl umschalten."

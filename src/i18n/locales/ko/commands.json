@@ -382,6 +382,22 @@
 			"label": "X에서 팔로우",
 			"description": "X에서 Karat Sidhu를 엽니다."
 		},
+		"split-editor-above": {
+			"label": "편집기를 위로 분할",
+			"description": "포커스된 창 위에 빈 편집기 창을 만듭니다."
+		},
+		"split-editor-below": {
+			"label": "편집기를 아래로 분할",
+			"description": "포커스된 창 아래에 빈 편집기 창을 만듭니다."
+		},
+		"split-editor-left": {
+			"label": "편집기를 왼쪽으로 분할",
+			"description": "포커스된 창 왼쪽에 빈 편집기 창을 만듭니다."
+		},
+		"split-editor-right": {
+			"label": "편집기를 오른쪽으로 분할",
+			"description": "포커스된 창 오른쪽에 빈 편집기 창을 만듭니다."
+		},
 		"strikethrough": {
 			"label": "취소선",
 			"description": "현재 선택 영역의 취소선 서식을 전환합니다."

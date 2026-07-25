@@ -1,0 +1,140 @@
+.splitEditorLayout,
+.splitEditorBranch,
+.splitEditorBranchChild,
+.splitEditorPane {
+	min-width: 0;
+	min-height: 0;
+}
+
+.splitEditorLayout {
+	position: relative;
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+	background: var(--bg-canvas, var(--bg-primary));
+}
+
+.splitEditorBranch {
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+}
+
+.splitEditorBranch[data-direction="vertical"] {
+	flex-direction: column;
+}
+
+.splitEditorBranchChild,
+.splitEditorPane {
+	display: flex;
+	flex: 1;
+	overflow: hidden;
+}
+
+.splitEditorPane {
+	position: relative;
+	box-shadow: inset 0 0 0 1px transparent;
+	transition: box-shadow 140ms ease-out;
+}
+
+.splitEditorPane[data-focused="true"] {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+}
+
+.splitEditorDivider {
+	position: relative;
+	z-index: 4;
+	flex: 0 0 11px;
+	background: transparent;
+	touch-action: none;
+	outline: none;
+}
+
+.splitEditorDivider::before,
+.splitEditorDivider::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+	transform: translate(-50%, -50%);
+	transition-property: background-color, box-shadow, opacity;
+	transition-duration: 140ms;
+	transition-timing-function: ease-out;
+}
+
+.splitEditorDivider::after {
+	opacity: 0.46;
+}
+
+.splitEditorDivider[data-direction="horizontal"] {
+	margin: 0 -5px;
+	cursor: col-resize;
+}
+
+.splitEditorDivider[data-direction="horizontal"]::before {
+	width: 1px;
+	height: 100%;
+}
+
+.splitEditorDivider[data-direction="horizontal"]::after {
+	width: 5px;
+	height: 44px;
+}
+
+.splitEditorDivider[data-direction="vertical"] {
+	margin: -5px 0;
+	cursor: row-resize;
+}
+
+.splitEditorDivider[data-direction="vertical"]::before {
+	width: 100%;
+	height: 1px;
+}
+
+.splitEditorDivider[data-direction="vertical"]::after {
+	width: 44px;
+	height: 5px;
+}
+
+.splitEditorDivider:hover::after,
+.splitEditorDivider[data-resizing="true"]::after,
+.splitEditorDivider:focus-visible::after {
+	background: var(--interactive-accent);
+	box-shadow: 0 2px 8px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	opacity: 1;
+}
+
+.splitEditorDropPreview {
+	position: absolute;
+	z-index: 3000;
+	inset: 8px;
+	box-sizing: border-box;
+	pointer-events: none;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	box-shadow: inset 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 92%, transparent), 0 12px 36px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.splitEditorDropPreview[data-edge="left"],
+.splitEditorDropPreview[data-edge="right"] {
+	width: calc(50% - 14px);
+}
+
+.splitEditorDropPreview[data-edge="right"] {
+	left: calc(50% + 6px);
+}
+
+.splitEditorDropPreview[data-edge="top"],
+.splitEditorDropPreview[data-edge="bottom"] {
+	height: calc(50% - 14px);
+}
+
+.splitEditorDropPreview[data-edge="bottom"] {
+	top: calc(50% + 6px);
+}
