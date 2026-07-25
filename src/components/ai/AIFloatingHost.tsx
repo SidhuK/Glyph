@@ -1,5 +1,5 @@
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { m, useReducedMotion } from "motion/react";
+import { Suspense, lazy, useEffect } from "react";
 
 const importAIPanel = () => import("./AIPanel");
 
@@ -11,17 +11,13 @@ const loadAIPanel = () =>
 const LazyAIPanel = lazy(loadAIPanel);
 
 interface AIFloatingHostProps {
-	isOpen: boolean;
 	onToggle: () => void;
 }
 
-export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
+export function AIFloatingHost({ onToggle }: AIFloatingHostProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const [shouldRenderHost, setShouldRenderHost] = useState(isOpen);
 
 	useEffect(() => {
-		if (!isOpen) return;
-		setShouldRenderHost(true);
 		let cancelled = false;
 		void importAIPanel()
 			.then((module) => {
@@ -34,40 +30,26 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [isOpen]);
-
-	if (!isOpen && !shouldRenderHost) return null;
+	}, []);
 
 	return (
 		<div className="aiFloatingWindowHost" data-window-drag-ignore>
-			<AnimatePresence
-				onExitComplete={() => {
-					if (!isOpen) setShouldRenderHost(false);
-				}}
+			<m.div
+				className="aiFloatingWindow"
+				initial={shouldReduceMotion ? false : { opacity: 0, x: 8, scale: 0.99 }}
+				animate={{ opacity: 1, x: 0, scale: 1 }}
+				transition={
+					shouldReduceMotion
+						? { duration: 0 }
+						: { type: "spring", stiffness: 360, damping: 28 }
+				}
 			>
-				{isOpen && (
-					<m.div
-						key="ai-floating-window"
-						className="aiFloatingWindow"
-						initial={
-							shouldReduceMotion ? false : { opacity: 0, x: 8, scale: 0.99 }
-						}
-						animate={{ opacity: 1, x: 0, scale: 1 }}
-						exit={shouldReduceMotion ? {} : { opacity: 0, x: 8, scale: 0.99 }}
-						transition={
-							shouldReduceMotion
-								? { duration: 0 }
-								: { type: "spring", stiffness: 360, damping: 28 }
-						}
-					>
-						<Suspense fallback={<div className="aiFloatingWindowInner" />}>
-							<div className="aiFloatingWindowInner">
-								<LazyAIPanel isOpen={isOpen} onClose={onToggle} />
-							</div>
-						</Suspense>
-					</m.div>
-				)}
-			</AnimatePresence>
+				<Suspense fallback={<div className="aiFloatingWindowInner" />}>
+					<div className="aiFloatingWindowInner">
+						<LazyAIPanel onClose={onToggle} />
+					</div>
+				</Suspense>
+			</m.div>
 		</div>
 	);
 }

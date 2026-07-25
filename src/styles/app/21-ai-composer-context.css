@@ -316,9 +316,6 @@ button.aiComposerSend:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.aiPendingDot,
-	.aiPendingLine,
-	.aiToolStatusDot,
 	.aiStreamingCaret {
 		animation: none !important;
 	}

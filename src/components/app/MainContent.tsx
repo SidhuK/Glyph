@@ -682,10 +682,7 @@ export const MainContent = memo(function MainContent({
 				style={notesInfoSidebarHostStyle}
 			>
 				{aiSidebarVisible ? (
-					<AIFloatingHost
-						isOpen={aiPanelOpen}
-						onToggle={() => setAiPanelOpen((open) => !open)}
-					/>
+					<AIFloatingHost onToggle={() => setAiPanelOpen((open) => !open)} />
 				) : null}
 			</div>
 		</>

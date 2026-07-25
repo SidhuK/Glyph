@@ -1,7 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import DOMPurify from "dompurify";
 import hljs from "highlight.js/lib/core";
-import { marked } from "marked";
+import { Marked } from "marked";
 import { memo, useEffect, useMemo, useRef } from "react";
 import {
 	GRAMMAR_ALIASES,
@@ -23,6 +23,7 @@ type CopyButtonElement = HTMLButtonElement & {
 const CODE_BLOCK_PROCESSED_ATTR = "data-ai-code-block-enhanced";
 const UNPROCESSED_CODE_BLOCK_SELECTOR = `pre:not([${CODE_BLOCK_PROCESSED_ATTR}])`;
 const COPY_RESET_MS = 1500;
+const aiMarked = new Marked();
 
 // Grammars load lazily via ensureGrammar; aliases are just a name map and are
 // safe to register before the grammars they point at.
@@ -41,7 +42,7 @@ async function ensureGrammar(language: string): Promise<void> {
 }
 
 function renderMarkdown(markdown: string): string {
-	const html = marked.parse(markdown, {
+	const html = aiMarked.parse(markdown, {
 		async: false,
 		breaks: false,
 		gfm: true,
