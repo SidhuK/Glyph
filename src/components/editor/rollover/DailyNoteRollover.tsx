@@ -237,21 +237,21 @@ export function DailyNoteRollover({
 	const overdue = overdueQuery.data ?? [];
 	const taskActions: RolloverTaskActions = {
 		targets: noteDate === today ? ["tomorrow"] : ["today", "tomorrow"],
-		onMoveCandidate: (index, target) => {
-			const candidateId = noteQuery.data?.[index]?.id;
+		onMoveCandidate: ({ index, total }, target) => {
 			void (async () => {
-				if (!candidateId) {
-					await showMoveError(t("rollover.itemChanged"));
-					return;
-				}
+				// Save first: candidates are parsed from disk, so the index only
+				// lines up once the editor's edits have been persisted.
 				if (!(await onBeforeReview())) {
 					await showMoveError(t("rollover.saveBeforeMove"));
 					return;
 				}
 				const refreshed = await noteQuery.refetch();
-				const candidate = refreshed.data?.find(
-					(item) => item.id === candidateId,
-				);
+				if (refreshed.error) {
+					await showMoveError(t("rollover.moveFailedDescription"));
+					return;
+				}
+				const candidate =
+					refreshed.data?.length === total ? refreshed.data[index] : undefined;
 				if (!candidate) {
 					await showMoveError(t("rollover.itemChanged"));
 					return;
