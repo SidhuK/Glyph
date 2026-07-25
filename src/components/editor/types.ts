@@ -7,9 +7,18 @@ export type NoteInlineEditorChrome = "full" | "minimal";
 export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 export type RolloverMoveTarget = "today" | "tomorrow";
 
+/** Position of a task within the editor's unfinished-task list. */
+export interface RolloverTaskPosition {
+	index: number;
+	total: number;
+}
+
 export interface RolloverTaskActions {
 	targets: RolloverMoveTarget[];
-	onMoveCandidate: (index: number, target: RolloverMoveTarget) => void;
+	onMoveCandidate: (
+		position: RolloverTaskPosition,
+		target: RolloverMoveTarget,
+	) => void;
 }
 
 export interface CreateMarkdownFileOptions {

@@ -10,15 +10,22 @@ import type { RolloverTaskActions as TaskActions } from "../types";
 
 interface CandidateTask {
 	index: number;
+	total: number;
 	left: number;
 	top: number;
 }
 
 const MOVED_TO_DATE_PATTERN = /\bMoved to\s*\[\[\d{4}-\d{2}-\d{2}\]\]/;
 
+/**
+ * The backend only looks for the marker on the task's own line, so nested
+ * subtasks must be ignored here or the two candidate lists drift apart.
+ */
 function hasMovedMarker(node: ProseMirrorNode): boolean {
+	const ownLine = node.firstChild;
+	if (!ownLine) return false;
 	let markdown = "";
-	node.descendants((child) => {
+	ownLine.descendants((child) => {
 		if (child.isText) {
 			markdown += child.text ?? "";
 		} else if (child.type.name === "wikiLink") {
@@ -32,6 +39,9 @@ function hasMovedMarker(node: ProseMirrorNode): boolean {
 function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 	const positions: number[] = [];
 	editor.state.doc.descendants((node, position) => {
+		// The backend never parses `> - [ ] …` as a task, so blockquoted tasks
+		// must stay out of this list to keep both orderings identical.
+		if (node.type.name === "blockquote") return false;
 		if (node.type.name !== "taskItem") return true;
 		let unfinished = node.attrs.checked !== true;
 		node.descendants((child) => {
@@ -58,7 +68,12 @@ function activeTask(editor: Editor, host: HTMLElement): CandidateTask | null {
 	const element = editor.view.nodeDOM(positions[index]);
 	if (!(element instanceof HTMLElement)) return null;
 	const offset = getOffsetWithinAncestor(element, host);
-	return { index, left: offset.left + element.offsetWidth, top: offset.top };
+	return {
+		index,
+		total: positions.length,
+		left: offset.left + element.offsetWidth,
+		top: offset.top,
+	};
 }
 
 export function RolloverTaskActions({
@@ -105,7 +120,12 @@ export function RolloverTaskActions({
 							: t("rollover.moveTomorrow")
 					}
 					onMouseDown={(event) => event.preventDefault()}
-					onClick={() => actions.onMoveCandidate(active.index, target)}
+					onClick={() =>
+						actions.onMoveCandidate(
+							{ index: active.index, total: active.total },
+							target,
+						)
+					}
 				>
 					<HugeiconsIcon icon={target === "today" ? Sun02Icon : NextWeekIcon} />
 				</Button>
