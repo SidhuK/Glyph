@@ -70,7 +70,9 @@ fn init_tracing() {
 }
 
 fn space_is_open(state: &space::SpaceState) -> bool {
-    !state.session_roots().is_empty()
+    state
+        .root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
+        .is_ok()
 }
 
 fn set_menu_item_enabled<R: tauri::Runtime>(
@@ -908,8 +910,8 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     Ok(window)
 }
 
-fn is_space_host_window_label(label: &str) -> bool {
-    label == "main" || space::commands::is_space_window(label)
+fn is_main_window_label(label: &str) -> bool {
+    label == window_geometry::MAIN_WINDOW_LABEL
 }
 
 fn is_auxiliary_persisted_window(label: &str) -> bool {
@@ -924,64 +926,16 @@ fn destroy_auxiliary_persisted_windows(app: &tauri::AppHandle) {
     }
 }
 
-fn prepare_host_window_close(window: &tauri::Window) {
-    if !is_space_host_window_label(window.label()) {
-        return;
-    }
-    let app = window.app_handle();
-    let host_count = app
-        .webview_windows()
-        .into_iter()
-        .filter(|(label, _)| is_space_host_window_label(label))
-        .count();
-    if host_count <= 1 {
-        destroy_auxiliary_persisted_windows(&app);
-    }
-}
-
-fn focused_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
-    app.webview_windows().into_iter().find(|(label, window)| {
-        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
-    })
-}
-
 fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
     app.webview_windows().into_iter().find(|(label, window)| {
-        (is_space_host_window_label(label)
+        (is_main_window_label(label)
             || label == QUICK_NOTE_WINDOW_LABEL
             || external_markdown::is_external_markdown_window(label))
             && window.is_focused().unwrap_or(false)
     })
 }
 
-fn target_space_host_window(app: &tauri::AppHandle) -> Option<(String, tauri::WebviewWindow)> {
-    focused_space_host_window(app).or_else(|| {
-        let space_state = app.try_state::<space::SpaceState>()?;
-        let current_root = space_state.current_root().ok()?;
-        app.webview_windows().into_iter().find(|(label, _window)| {
-            is_space_host_window_label(label)
-                && space_state
-                    .root_for_window_label(label)
-                    .map(|root| root == current_root)
-                    .unwrap_or(false)
-        })
-    })
-}
-
-fn sync_fallback_space_to_focused_window(app: &tauri::AppHandle) {
-    let Some(space_state) = app.try_state::<space::SpaceState>() else {
-        return;
-    };
-    let focused_root = focused_space_host_window(app)
-        .and_then(|(_label, window)| space_state.root_for_window(&window).ok());
-    let Some(root) = focused_root else {
-        return;
-    };
-    let _ = space_state.set_current_root(root);
-}
-
 fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
-    sync_fallback_space_to_focused_window(app);
     let window = quick_note_window(app)?;
     let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
@@ -1088,7 +1042,7 @@ fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
 
 fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
     !app.webview_windows().keys().any(|label| {
-        external_markdown::is_external_markdown_window(label) || is_space_host_window_label(label)
+        external_markdown::is_external_markdown_window(label) || is_main_window_label(label)
     })
 }
 
@@ -1187,11 +1141,10 @@ fn set_recent_spaces_menu(
     recent_spaces: Vec<String>,
 ) -> Result<(), String> {
     let current_space_path = app.try_state::<space::SpaceState>().and_then(|state| {
-        state.current.lock().ok().and_then(|guard| {
-            guard
-                .as_ref()
-                .map(|path| path.to_string_lossy().to_string())
-        })
+        state
+            .root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
+            .ok()
+            .map(|path| path.to_string_lossy().to_string())
     });
     let filtered: Vec<String> = recent_spaces
         .into_iter()
@@ -1431,44 +1384,32 @@ pub fn run() {
                 let Some(space_state) = app.try_state::<space::SpaceState>() else {
                     return;
                 };
-                let current_path = app
-                    .webview_windows()
-                    .into_iter()
-                    .find(|(label, window)| {
-                        is_space_host_window_label(label) && window.is_focused().unwrap_or(false)
-                    })
-                    .and_then(|(label, _window)| {
-                        space_state
-                            .root_for_window_label(&label)
-                            .ok()
-                            .map(|path| path.to_string_lossy().to_string())
-                    });
+                let current_path = space_state
+                    .root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
+                    .ok()
+                    .map(|path| path.to_string_lossy().to_string());
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }
-                if let Some((label, _window)) = target_space_host_window(app) {
-                    let _ = app.emit_to(
-                        label,
-                        "menu:open_recent_space",
-                        OpenRecentSpacePayload { path },
-                    );
-                }
+                let _ = app.emit_to(
+                    window_geometry::MAIN_WINDOW_LABEL,
+                    "menu:open_recent_space",
+                    OpenRecentSpacePayload { path },
+                );
             }
             "file.print_note" => {
-                if let Some((label, _window)) = target_space_host_window(app) {
-                    let _ = app.emit_to(
-                        label,
-                        "menu:app_command",
-                        AppCommandPayload {
-                            command_id: "print-note".to_string(),
-                        },
-                    );
-                }
+                let _ = app.emit_to(
+                    window_geometry::MAIN_WINDOW_LABEL,
+                    "menu:app_command",
+                    AppCommandPayload {
+                        command_id: "print-note".to_string(),
+                    },
+                );
             }
             #[cfg(target_os = "macos")]
             "edit.paste_without_formatting" => {
-                // Editor surfaces live in space hosts, quick note, and external markdown
-                // windows — target the focused one rather than only the space host.
+                // Editor surfaces live in the main, quick note, and external markdown
+                // windows, so paste targets whichever one is focused.
                 if let Some((label, _window)) = focused_editor_window(app) {
                     let _ = app.emit_to(
                         label,
@@ -1483,15 +1424,13 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                if let Some((label, _window)) = target_space_host_window(app) {
-                    let _ = app.emit_to(
-                        label,
-                        "menu:app_command",
-                        AppCommandPayload {
-                            command_id: command.id,
-                        },
-                    );
-                }
+                let _ = app.emit_to(
+                    window_geometry::MAIN_WINDOW_LABEL,
+                    "menu:app_command",
+                    AppCommandPayload {
+                        command_id: command.id,
+                    },
+                );
             }
         })
         .setup(|app| {
@@ -1541,21 +1480,9 @@ pub fn run() {
                 }
             }
 
-            if space::commands::is_space_window(window.label()) {
-                if let WindowEvent::Destroyed = event {
-                    let state = window.state::<space::SpaceState>();
-                    match state.remove_window_session(window.label()) {
-                        Ok(()) => {
-                            space::commands::update_close_space_menu(window.app_handle(), &state)
-                        }
-                        Err(error) => warn!("Failed to forget space window session: {error}"),
-                    }
-                }
-            }
-
-            if is_space_host_window_label(window.label()) {
+            if is_main_window_label(window.label()) {
                 if let WindowEvent::CloseRequested { .. } = event {
-                    prepare_host_window_close(window);
+                    destroy_auxiliary_persisted_windows(window.app_handle());
                 }
             }
         })
@@ -1701,7 +1628,6 @@ pub fn run() {
             git_sync::commands::git_history_diff,
             space::commands::space_create,
             space::commands::space_open,
-            space::commands::space_open_window,
             space::commands::space_get_current,
             space::commands::space_get_current_info,
             space::commands::space_show_onboarding_note,

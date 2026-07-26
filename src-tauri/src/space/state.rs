@@ -5,6 +5,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crate::window_geometry;
+
 const RECENT_LOCAL_CHANGE_TTL: Duration = Duration::from_secs(2);
 pub(crate) const NO_SPACE_SESSION_FOR_WINDOW: &str = "no space session for window";
 
@@ -72,7 +74,6 @@ impl SpaceSession {
 }
 
 pub struct SpaceState {
-    pub(crate) current: Mutex<Option<PathBuf>>,
     pub(crate) sessions: Mutex<HashMap<String, SpaceSession>>,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
@@ -84,7 +85,6 @@ pub struct SpaceState {
 impl Default for SpaceState {
     fn default() -> Self {
         Self {
-            current: Mutex::new(None),
             sessions: Mutex::new(HashMap::new()),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
@@ -107,14 +107,8 @@ impl SpaceState {
         if let Some(session) = sessions.get(window_label) {
             return Arc::clone(&session.recent_local_changes);
         }
-        let current_root = self.current.lock().ok().and_then(|guard| guard.clone());
-        if let Some(current_root) = current_root {
-            if let Some(session) = sessions
-                .values()
-                .find(|session| session.root == current_root)
-            {
-                return Arc::clone(&session.recent_local_changes);
-            }
+        if let Some(session) = sessions.get(window_geometry::MAIN_WINDOW_LABEL) {
+            return Arc::clone(&session.recent_local_changes);
         }
         Arc::new(Mutex::new(HashMap::new()))
     }
@@ -136,30 +130,11 @@ impl SpaceState {
         Ok(())
     }
 
-    pub(crate) fn set_current_root(&self, root: PathBuf) -> Result<(), String> {
-        let mut current = self
-            .current
-            .lock()
-            .map_err(|_| "space state poisoned".to_string())?;
-        *current = Some(root);
-        Ok(())
-    }
-
     pub(crate) fn remove_window_session(&self, window_label: &str) -> Result<(), String> {
-        let removed_root = {
-            let mut sessions = self
-                .sessions
-                .lock()
-                .map_err(|_| "space sessions state poisoned".to_string())?;
-            sessions.remove(window_label).map(|session| session.root)
-        };
-        let mut current = self
-            .current
+        self.sessions
             .lock()
-            .map_err(|_| "space state poisoned".to_string())?;
-        if removed_root.as_ref() == current.as_ref() {
-            *current = None;
-        }
+            .map_err(|_| "space sessions state poisoned".to_string())?
+            .remove(window_label);
         Ok(())
     }
 
@@ -183,22 +158,10 @@ impl SpaceState {
                 if matches!(window.label(), "quick-note" | "quick-task")
                     && is_no_space_session_error(&error) =>
             {
-                self.current_root()
+                self.root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
             }
             Err(error) => Err(error),
         }
-    }
-
-    pub(crate) fn session_roots(&self) -> Vec<PathBuf> {
-        self.sessions
-            .lock()
-            .map(|sessions| {
-                sessions
-                    .values()
-                    .map(|session| session.root.clone())
-                    .collect::<Vec<_>>()
-            })
-            .unwrap_or_default()
     }
 
     pub(crate) fn db_store_mutex(&self) -> Arc<Mutex<()>> {
@@ -219,16 +182,6 @@ impl SpaceState {
 
     pub(crate) fn pinned_files_mutex(&self) -> Arc<Mutex<()>> {
         Arc::clone(&self.pinned_files_mutex)
-    }
-
-    pub fn current_root(&self) -> Result<PathBuf, String> {
-        let guard = self
-            .current
-            .lock()
-            .map_err(|_| "space state poisoned".to_string())?;
-        guard
-            .clone()
-            .ok_or_else(|| "no space open (select or create a space first)".to_string())
     }
 }
 

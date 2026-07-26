@@ -13,7 +13,11 @@
 		"sortNotes": "Sort notes",
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
-		"collapseAllFolders": "Collapse all folders"
+		"collapseAllFolders": "Collapse all folders",
+		"spaceSwitcher": "Switch space",
+		"spaces": "Spaces",
+		"openAnotherSpace": "Open another space…",
+		"createSpace": "Create a space…"
 	},
 	"sort": {
 		"nameAsc": "Name A-Z",
@@ -127,7 +131,8 @@
 	},
 	"workspace": {
 		"openSpace": "Open space",
-		"openAnotherSpace": "Open another space"
+		"openAnotherSpace": "Open another space",
+		"switchSaveFailed": "The current space could not be saved. Please try again."
 	},
 	"ai": {
 		"toolFailed": "{{tool}} failed"
