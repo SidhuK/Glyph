@@ -14,6 +14,7 @@
 		"clearColor": "Farbe entfernen",
 		"textHighlight": "Texthervorhebung",
 		"clearHighlight": "Hervorhebung entfernen",
+		"askAi": "KI zur Auswahl fragen",
 		"extractToNote": "In Notiz extrahieren",
 		"heading1": "Überschrift 1",
 		"heading2": "Überschrift 2",
@@ -23,6 +24,22 @@
 		"taskList": "Aufgabenliste",
 		"quote": "Zitat",
 		"codeBlock": "Codeblock"
+	},
+	"inlineAi": {
+		"title": "KI zur Auswahl fragen",
+		"close": "Schließen",
+		"summarize": "Zusammenfassen",
+		"summarizePrompt": "Fasse diese Auswahl kurz zusammen.",
+		"rephrase": "Umformulieren",
+		"rephrasePrompt": "Formuliere diese Auswahl klarer, ohne ihre Bedeutung zu verändern.",
+		"thinking": "Denkt nach…",
+		"replace": "Auswahl ersetzen",
+		"insertBelow": "Darunter einfügen",
+		"placeholder": "Diese Auswahl besprechen oder bearbeiten…",
+		"stop": "Stoppen",
+		"send": "Senden",
+		"applyFailed": "Die KI-Antwort konnte nicht angewendet werden.",
+		"selectionChanged": "Der ausgewählte Text hat sich geändert. Wähle ihn erneut aus und versuche es noch einmal."
 	},
 	"colors": {
 		"gray": "Grau",

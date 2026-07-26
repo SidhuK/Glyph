@@ -33,6 +33,7 @@ interface AIChatThreadProps {
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
 	onRetry: (index: number) => void;
+	showAssistantActions?: boolean;
 }
 
 type CitationItem = {
@@ -136,6 +137,7 @@ interface AIChatMessageBodyProps {
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
 	onRetry: (index: number) => void;
+	showAssistantActions: boolean;
 }
 
 const AIChatMessageBody = memo(function AIChatMessageBody({
@@ -154,6 +156,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 	onCopy,
 	onSave,
 	onRetry,
+	showAssistantActions,
 }: AIChatMessageBodyProps) {
 	return (
 		<>
@@ -209,7 +212,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 					<div className="aiChatContent">{text}</div>
 				</>
 			)}
-			{isFailedAssistant ? (
+			{showAssistantActions && isFailedAssistant ? (
 				<div className="aiInlineError">
 					<span className="aiInlineErrorDot" />
 					<span className="aiInlineErrorText">Response failed</span>
@@ -223,7 +226,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 					</button>
 				</div>
 			) : null}
-			{msg.role === "assistant" && text ? (
+			{showAssistantActions && msg.role === "assistant" && text ? (
 				<div className="aiAssistantActions">
 					<Button
 						type="button"
@@ -277,6 +280,7 @@ export function AIChatThread({
 	onCopy,
 	onSave,
 	onRetry,
+	showAssistantActions = true,
 }: AIChatThreadProps) {
 	const shouldReduceMotion = useReducedMotion();
 	const citations = useMemo(
@@ -357,6 +361,7 @@ export function AIChatThread({
 								onCopy={onCopy}
 								onSave={onSave}
 								onRetry={onRetry}
+								showAssistantActions={showAssistantActions}
 							/>
 							{msg.role === "assistant" &&
 							text &&

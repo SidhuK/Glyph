@@ -14,6 +14,7 @@
 		"clearColor": "Effacer la couleur",
 		"textHighlight": "Surlignage du texte",
 		"clearHighlight": "Effacer le surlignage",
+		"askAi": "Interroger l’IA sur la sélection",
 		"extractToNote": "Extraire vers une note",
 		"heading1": "Titre 1",
 		"heading2": "Titre 2",
@@ -23,6 +24,22 @@
 		"taskList": "Liste de tâches",
 		"quote": "Citation",
 		"codeBlock": "Bloc de code"
+	},
+	"inlineAi": {
+		"title": "Interroger l’IA sur la sélection",
+		"close": "Fermer",
+		"summarize": "Résumer",
+		"summarizePrompt": "Résume cette sélection de façon concise.",
+		"rephrase": "Reformuler",
+		"rephrasePrompt": "Reformule cette sélection clairement sans en changer le sens.",
+		"thinking": "Réflexion…",
+		"replace": "Remplacer la sélection",
+		"insertBelow": "Insérer dessous",
+		"placeholder": "Interrogez ou modifiez cette sélection…",
+		"stop": "Arrêter",
+		"send": "Envoyer",
+		"applyFailed": "Impossible d’appliquer la réponse de l’IA.",
+		"selectionChanged": "Le texte sélectionné a changé. Sélectionnez-le à nouveau et réessayez."
 	},
 	"colors": {
 		"gray": "Gris",

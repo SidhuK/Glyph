@@ -1,6 +1,10 @@
-import { NoteAddIcon } from "@hugeicons/core-free-icons";
+import {
+	AiBrain04Icon,
+	NoteAddIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
+import { useEditorState } from "@tiptap/react";
 import { m } from "motion/react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +25,7 @@ interface EditorRibbonProps {
 	canEdit: boolean;
 	className?: string;
 	onExtractSelectionToNote?: () => void;
+	onOpenInlineAI?: () => void;
 }
 
 interface RibbonButtonListProps {
@@ -57,10 +62,21 @@ export const EditorRibbon = memo(function EditorRibbon({
 	canEdit,
 	className,
 	onExtractSelectionToNote,
+	onOpenInlineAI,
 }: EditorRibbonProps) {
 	const { t } = useTranslation("editor");
 	const focusChain = () =>
 		editor.chain().focus(undefined, { scrollIntoView: false });
+	const hasTextSelection = useEditorState({
+		editor,
+		selector: ({ editor: currentEditor }) => {
+			const { from, to, empty } = currentEditor.state.selection;
+			return (
+				!empty &&
+				Boolean(currentEditor.state.doc.textBetween(from, to, "\n").trim())
+			);
+		},
+	});
 
 	const preventMouseDown = (e: React.MouseEvent) => e.preventDefault();
 
@@ -116,6 +132,25 @@ export const EditorRibbon = memo(function EditorRibbon({
 						focusChain={focusChain}
 						preventMouseDown={preventMouseDown}
 					/>
+					{onOpenInlineAI ? (
+						<m.button
+							type="button"
+							className="ribbonBtn"
+							title={t("ribbon.askAi")}
+							aria-label={t("ribbon.askAi")}
+							disabled={!canEdit || !hasTextSelection}
+							onMouseDown={preventMouseDown}
+							onClick={() => canEdit && hasTextSelection && onOpenInlineAI()}
+							whileTap={canEdit ? { scale: 0.97 } : undefined}
+							transition={springPresets.snappy}
+						>
+							<HugeiconsIcon
+								icon={AiBrain04Icon}
+								size="var(--icon-lg)"
+								strokeWidth={0.9}
+							/>
+						</m.button>
+					) : null}
 					{onExtractSelectionToNote ? (
 						<m.button
 							type="button"

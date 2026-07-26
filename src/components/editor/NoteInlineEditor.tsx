@@ -75,6 +75,12 @@ const MathNodeEditor = lazy(() =>
 	})),
 );
 
+const InlineAIEditor = lazy(() =>
+	import("./InlineAIEditor").then((module) => ({
+		default: module.InlineAIEditor,
+	})),
+);
+
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
 }
@@ -280,6 +286,9 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
+	const [inlineAISelection, setInlineAISelection] = useState<
+		import("./InlineAIEditor").InlineAISelection | null
+	>(null);
 	useEffect(() => {
 		if (!onFlushPendingEditsReady) return;
 		onFlushPendingEditsReady(() => flushMarkdownSync());
@@ -300,6 +309,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		void mode;
 		void relPath;
 		mathNodeEditor.close();
+		setInlineAISelection(null);
 	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
@@ -679,6 +689,14 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
+	const openInlineAI = useCallback(() => {
+		if (!liveEditor || liveEditor.isDestroyed || !liveEditor.isEditable) return;
+		const { from, to, empty } = liveEditor.state.selection;
+		if (empty) return;
+		const text = liveEditor.state.doc.textBetween(from, to, "\n").trim();
+		if (!text) return;
+		setInlineAISelection({ from, to, text });
+	}, [liveEditor]);
 	useEffect(() => {
 		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
 		const mountedEditor = liveEditor && contentRoot ? liveEditor : null;
@@ -848,6 +866,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						editor={liveEditor}
 						canEdit={canEdit}
 						className="rfNodeNoteEditorRibbonBottom"
+						onOpenInlineAI={openInlineAI}
 						onExtractSelectionToNote={
 							extractToNote.canExtractToNote
 								? extractToNote.openExtractDialog
@@ -856,6 +875,15 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</AnimatePresence>
+			{showEditorChrome && liveEditor && inlineAISelection ? (
+				<Suspense fallback={null}>
+					<InlineAIEditor
+						editor={liveEditor}
+						selection={inlineAISelection}
+						onClose={() => setInlineAISelection(null)}
+					/>
+				</Suspense>
+			) : null}
 			{showEditorChrome ? (
 				<ExtractToNoteDialog
 					state={extractToNote.dialogState}

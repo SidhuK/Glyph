@@ -62,6 +62,12 @@ interface AIComposerProps {
 	setAddPanelQuery: (query: string) => void;
 	onAddContext: (kind: "folder" | "file", path: string) => void;
 	onRemoveContext: (kind: "folder" | "file", path: string) => void;
+	allowContext?: boolean;
+	autoFocus?: boolean;
+	inputLabel?: string;
+	placeholder?: string;
+	sendLabel?: string;
+	stopLabel?: string;
 }
 
 function readCaretOffset(el: HTMLElement): number | null {
@@ -248,6 +254,12 @@ export function AIComposer({
 	setAddPanelQuery,
 	onAddContext,
 	onRemoveContext,
+	allowContext = true,
+	autoFocus = false,
+	inputLabel = "Message",
+	placeholder = APP_TAGLINE,
+	sendLabel = "Send",
+	stopLabel = "Stop",
 }: AIComposerProps) {
 	const isDarkTheme = useIsDarkTheme();
 	const hasDraftText = Boolean(input.replace(CHIP_RE, "").trim());
@@ -275,6 +287,7 @@ export function AIComposer({
 		? normalizeRelPath(activeFilePath)
 		: "";
 	const showActiveFileSuggestion =
+		allowContext &&
 		Boolean(suggestedFilePath) &&
 		!context.hasContext("file", suggestedFilePath);
 
@@ -434,7 +447,7 @@ export function AIComposer({
 
 	return (
 		<>
-			{showAddPanel ? (
+			{allowContext && showAddPanel ? (
 				<div className="aiAddPanel">
 					<input
 						type="search"
@@ -514,12 +527,13 @@ export function AIComposer({
 							ref={composerInputRef}
 							className="aiComposerInput"
 							contentEditable={!isAwaitingResponse}
+							autoFocus={autoFocus}
 							suppressContentEditableWarning
 							role="textbox"
 							tabIndex={0}
 							aria-multiline="true"
-							aria-label="Message"
-							data-placeholder={activeFilePath ? undefined : APP_TAGLINE}
+							aria-label={inputLabel}
+							data-placeholder={activeFilePath ? undefined : placeholder}
 							spellCheck
 							onInput={handleInput}
 							onPaste={handlePaste}
@@ -528,24 +542,26 @@ export function AIComposer({
 						/>
 						<div className="aiComposerBar">
 							<div className="aiComposerControls">
-								<div className="aiComposerLeftControls">
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										className="aiComposerMentionButton"
-										aria-label="Add note with @"
-										title="Add note with @"
-										onClick={handleInsertMentionTrigger}
-										disabled={isAwaitingResponse}
-									>
-										<HugeiconsIcon
-											icon={AtIcon}
-											size="var(--icon-sm)"
-											strokeWidth={0.9}
-										/>
-									</Button>
-								</div>
+								{allowContext ? (
+									<div className="aiComposerLeftControls">
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-sm"
+											className="aiComposerMentionButton"
+											aria-label="Add note with @"
+											title="Add note with @"
+											onClick={handleInsertMentionTrigger}
+											disabled={isAwaitingResponse}
+										>
+											<HugeiconsIcon
+												icon={AtIcon}
+												size="var(--icon-sm)"
+												strokeWidth={0.9}
+											/>
+										</Button>
+									</div>
+								) : null}
 								<div className="aiComposerRight">
 									<ModelSelector
 										key={profiles.activeProfileId ?? "no-profile"}
@@ -561,8 +577,8 @@ export function AIComposer({
 									type="button"
 									className="aiComposerStop"
 									onClick={onStop}
-									aria-label="Stop"
-									title="Stop"
+									aria-label={stopLabel}
+									title={stopLabel}
 								>
 									<HugeiconsIcon
 										icon={StopIcon}
@@ -578,8 +594,8 @@ export function AIComposer({
 									className="aiComposerSend"
 									disabled={!canSend}
 									onClick={onSend}
-									aria-label="Send"
-									title="Send"
+									aria-label={sendLabel}
+									title={sendLabel}
 								>
 									<HugeiconsIcon icon={ArrowUp02Icon} size="var(--icon-md)" />
 								</Button>

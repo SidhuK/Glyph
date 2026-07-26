@@ -72,7 +72,7 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData | null
 	});
 }
 
-export function useAiContext(contextSearch = "") {
+export function useAiContext(contextSearch = "", enabled = true) {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const attachedContextRef = useRef<ContextEntry[]>([]);
 	const indexQuery = useQuery({
@@ -84,6 +84,7 @@ export function useAiContext(contextSearch = "") {
 				files: index.files,
 			} satisfies AiContextIndexData;
 		},
+		enabled,
 	});
 	const folderIndex = indexQuery.data?.folders ?? [];
 	const fileIndex = indexQuery.data?.files ?? [];

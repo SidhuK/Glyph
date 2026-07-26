@@ -14,6 +14,7 @@
 		"clearColor": "색상 지우기",
 		"textHighlight": "텍스트 강조",
 		"clearHighlight": "강조 지우기",
+		"askAi": "선택 영역에 대해 AI에게 질문",
 		"extractToNote": "노트로 추출",
 		"heading1": "제목 1",
 		"heading2": "제목 2",
@@ -23,6 +24,22 @@
 		"taskList": "작업 목록",
 		"quote": "인용",
 		"codeBlock": "코드 블록"
+	},
+	"inlineAi": {
+		"title": "선택 영역에 대해 AI에게 질문",
+		"close": "닫기",
+		"summarize": "요약",
+		"summarizePrompt": "이 선택 영역을 간결하게 요약해 주세요.",
+		"rephrase": "바꿔 쓰기",
+		"rephrasePrompt": "의미를 유지하면서 이 선택 영역을 명확하게 바꿔 써 주세요.",
+		"thinking": "생각 중…",
+		"replace": "선택 영역 바꾸기",
+		"insertBelow": "아래에 삽입",
+		"placeholder": "이 선택 영역에 대해 질문하거나 편집하세요…",
+		"stop": "중지",
+		"send": "보내기",
+		"applyFailed": "AI 응답을 적용할 수 없습니다.",
+		"selectionChanged": "선택한 텍스트가 변경되었습니다. 다시 선택하고 재시도하세요."
 	},
 	"colors": {
 		"gray": "회색",
