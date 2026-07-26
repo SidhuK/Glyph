@@ -1223,6 +1223,16 @@
 			"allowInEditable": true,
 			"commandPalette": true
 		},
+		"toggle-pin-active-tab": {
+			"id": "toggle-pin-active-tab",
+			"label": "Pin or Unpin Active Tab",
+			"description": "Keep the active tab open until it is unpinned.",
+			"category": "tabs",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true
+		},
 		"toggle-sidebar": {
 			"id": "toggle-sidebar",
 			"label": "Toggle Sidebar",

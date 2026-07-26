@@ -32,6 +32,7 @@ function buildWorkspaceSessionTabs(
 			kind: tab.kind,
 			target: tab.target,
 			paneId: tab.paneId,
+			isPinned: tab.isPinned,
 		});
 	}
 	return snapshotTabs;
@@ -39,7 +40,7 @@ function buildWorkspaceSessionTabs(
 
 async function validateRestorableSessionTabs(
 	tabs: WorkspaceSessionTabSnapshot[],
-): Promise<WorkspaceSessionTabSnapshot[] | null> {
+): Promise<WorkspaceSessionTabSnapshot[]> {
 	const fileTargets = tabs
 		.filter((tab) => tab.kind === "file")
 		.map((tab) => tab.target);
@@ -55,7 +56,7 @@ async function validateRestorableSessionTabs(
 			(tab) => tab.kind === "special" || existingTargets.has(tab.target),
 		);
 	} catch {
-		return null;
+		return tabs.filter((tab) => tab.kind === "special");
 	}
 }
 
@@ -153,8 +154,6 @@ export function useWorkspaceSession({
 		}
 
 		if (onboardingNotePath) return;
-		if (!resumeLastSession) return;
-
 		const requestId = ++restoreSessionRequestIdRef.current;
 		void (async () => {
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
@@ -162,11 +161,19 @@ export function useWorkspaceSession({
 				return;
 			}
 
-			const restorableTabs = await validateRestorableSessionTabs(snapshot.tabs);
+			const requestedTabs = resumeLastSession
+				? snapshot.tabs
+				: snapshot.tabs.filter((tab) => tab.isPinned);
+			if (
+				!requestedTabs.length &&
+				!(resumeLastSession && snapshot.splitLayout)
+			) {
+				return;
+			}
+			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
-				restorableTabs === null ||
-				(!restorableTabs.length && !snapshot.splitLayout)
+				(!restorableTabs.length && !(resumeLastSession && snapshot.splitLayout))
 			) {
 				return;
 			}
@@ -179,9 +186,9 @@ export function useWorkspaceSession({
 			restoreWorkspaceTabs(
 				restorableTabs,
 				activeTabTarget,
-				snapshot.splitLayout,
-				snapshot.focusedPaneId,
-				snapshot.activeTabTargetByPane,
+				resumeLastSession ? snapshot.splitLayout : null,
+				resumeLastSession ? snapshot.focusedPaneId : null,
+				resumeLastSession ? snapshot.activeTabTargetByPane : {},
 			);
 			restoredSessionSpaceRef.current = spacePath;
 		})().catch((cause) => {

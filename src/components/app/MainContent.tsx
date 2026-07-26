@@ -260,6 +260,7 @@ interface MainContentProps {
 	setActiveTabId: (tabId: string | null) => void;
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	closeTab: (tabId: string) => void;
+	toggleTabPinned: (tabId: string) => void;
 	closeTabsForPathRemoval: (path: string, recursive?: boolean) => void;
 	renameTabsForPath: (
 		fromPath: string,
@@ -318,6 +319,7 @@ export const MainContent = memo(function MainContent({
 	setActiveTabId,
 	setDirtyByPath,
 	closeTab,
+	toggleTabPinned,
 	closeTabsForPathRemoval,
 	renameTabsForPath,
 	reorderTabs,
@@ -603,6 +605,7 @@ export const MainContent = memo(function MainContent({
 					onLoadBreadcrumbDir={onLoadBreadcrumbDir}
 					onSelectTab={setActiveTabId}
 					onCloseTab={closeTab}
+					onToggleTabPinned={toggleTabPinned}
 					onReorderTabs={reorderTabs}
 					onOpenBlankTab={openBlankTabInPane}
 					onGoBack={onGoBackInPane}
@@ -621,6 +624,7 @@ export const MainContent = memo(function MainContent({
 		[
 			childrenByDir,
 			closeTab,
+			toggleTabPinned,
 			commandShortcutParts,
 			dailyNotesFolder,
 			databasesOpenRequest,

@@ -120,7 +120,10 @@
 	"tabs": {
 		"allNotes": "All Notes",
 		"collections": "Collections",
-		"pinned": "Pinned"
+		"pinned": "Pinned",
+		"pinTab": "Pin Active Tab",
+		"unpinTab": "Unpin Active Tab",
+		"unpinNamed": "Unpin {{label}}"
 	},
 	"workspace": {
 		"openSpace": "Open space",
