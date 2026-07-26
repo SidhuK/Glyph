@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "Encabezados con color",
-			"description": "Usar colores integrados distintos para H1-H6 al editar notas.",
-			"ariaLabel": "Encabezados con color"
+			"description": "Usar una paleta de colores seleccionada para H1-H6 al editar notas.",
+			"ariaLabel": "Encabezados con color",
+			"palette": {
+				"label": "Paleta de encabezados",
+				"options": {
+					"classy": "Elegante",
+					"seaside": "Costa",
+					"woodland": "Bosque",
+					"sunset": "Atardecer",
+					"candy": "Caramelo"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "Encabezados plegables",

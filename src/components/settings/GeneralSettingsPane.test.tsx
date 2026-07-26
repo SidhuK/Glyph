@@ -39,6 +39,7 @@ vi.mock("../../lib/settings", () => ({
 			editor: {
 				showFrontmatterInEditor: false,
 				colorfulHeadings: false,
+				headingPaletteId: "classy",
 				showCollapsibleHeadings: false,
 				showCollapsibleLists: false,
 				spellCheck: true,
@@ -53,6 +54,7 @@ vi.mock("../../lib/settings", () => ({
 	setShowToc: vi.fn(() => Promise.resolve()),
 	setEditorShowFrontmatterInEditor: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadings: vi.fn(() => Promise.resolve()),
+	setEditorHeadingPaletteId: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadings: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleLists: vi.fn(() => Promise.resolve()),
 	setEditorSpellCheck: vi.fn(() => Promise.resolve()),

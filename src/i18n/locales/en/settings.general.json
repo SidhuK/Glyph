@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "Colorful headings",
-			"description": "Use distinct built-in colors for H1-H6 while editing notes.",
-			"ariaLabel": "Colorful headings"
+			"description": "Use a selected color palette for H1-H6 while editing notes.",
+			"ariaLabel": "Colorful headings",
+			"palette": {
+				"label": "Heading palette",
+				"options": {
+					"classy": "Classy",
+					"seaside": "Seaside",
+					"woodland": "Woodland",
+					"sunset": "Sunset",
+					"candy": "Candy"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "Collapsible headings",

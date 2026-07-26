@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "Farbige Überschriften",
-			"description": "Beim Bearbeiten von Notizen eingebaute Farben für H1–H6 verwenden.",
-			"ariaLabel": "Farbige Überschriften"
+			"description": "Beim Bearbeiten von Notizen eine ausgewählte Farbpalette für H1–H6 verwenden.",
+			"ariaLabel": "Farbige Überschriften",
+			"palette": {
+				"label": "Überschriftenpalette",
+				"options": {
+					"classy": "Klassisch",
+					"seaside": "Meeresküste",
+					"woodland": "Waldland",
+					"sunset": "Sonnenuntergang",
+					"candy": "Bonbon"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "Einklappbare Überschriften",

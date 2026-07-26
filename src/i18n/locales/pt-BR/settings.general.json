@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "Títulos coloridos",
-			"description": "Usar cores integradas distintas para H1-H6 ao editar notas.",
-			"ariaLabel": "Títulos coloridos"
+			"description": "Usar uma paleta de cores selecionada para H1-H6 ao editar notas.",
+			"ariaLabel": "Títulos coloridos",
+			"palette": {
+				"label": "Paleta dos títulos",
+				"options": {
+					"classy": "Clássica",
+					"seaside": "Litoral",
+					"woodland": "Bosque",
+					"sunset": "Pôr do sol",
+					"candy": "Doce"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "Títulos recolhíveis",
