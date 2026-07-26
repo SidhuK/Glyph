@@ -6,6 +6,8 @@ import {
 	PointerSensor,
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,6 +51,7 @@ interface TabBarProps {
 	onRenameFile: (path: string, nextName: string) => Promise<string | null>;
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
+	onToggleTabPinned: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
 	onReorder: (fromTabId: string, toTabId: string) => void;
 }
@@ -93,6 +96,7 @@ export function TabBar({
 	onRenameFile,
 	onSelectTab,
 	onCloseTab,
+	onToggleTabPinned,
 	onStartRenamePath,
 	onReorder,
 }: TabBarProps) {
@@ -234,6 +238,7 @@ export function TabBar({
 										onPrefetchTab={onPrefetchTab}
 										onSelectTab={onSelectTab}
 										onCloseTab={onCloseTab}
+										onToggleTabPinned={onToggleTabPinned}
 										onStartRenamePath={onStartRenamePath}
 									/>
 								))}
@@ -276,6 +281,7 @@ const TabItem = memo(function TabItem({
 	onSelectTab,
 	onPrefetchTab,
 	onCloseTab,
+	onToggleTabPinned,
 	onStartRenamePath,
 }: {
 	tab: WorkspaceTab;
@@ -286,8 +292,10 @@ const TabItem = memo(function TabItem({
 	onSelectTab: (tabId: string) => void;
 	onPrefetchTab: (target: string | null) => void;
 	onCloseTab: (tabId: string) => void;
+	onToggleTabPinned: (tabId: string) => void;
 	onStartRenamePath: (path: string) => void;
 }) {
+	const { t } = useTranslation("shell");
 	const { ref, handleRef, isDragging, isDropTarget } = useSortable({
 		id: tab.id,
 		index,
@@ -313,6 +321,13 @@ const TabItem = memo(function TabItem({
 		},
 		[onCloseTab, tab.id],
 	);
+	const handleUnpin = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation();
+			onToggleTabPinned(tab.id);
+		},
+		[onToggleTabPinned, tab.id],
+	);
 	const handleDoubleClick = useCallback(() => {
 		if (!tab.target || tab.kind === "blank" || isPathSpecial(tab.target))
 			return;
@@ -330,19 +345,46 @@ const TabItem = memo(function TabItem({
 		<div
 			ref={ref}
 			className="mainTabWrap"
+			data-pinned={tab.isPinned ? "true" : undefined}
 			data-dragging={isDragging ? "true" : undefined}
 			data-drop-target={isDropTarget ? "true" : undefined}
 		>
-			<button
-				type="button"
-				className="mainTabClose"
-				onClick={handleClose}
-				aria-label={`Close ${label}`}
-			>
-				<span className="mainTabCloseGlyph" aria-hidden>
-					×
-				</span>
-			</button>
+			{tab.isPinned ? (
+				<button
+					type="button"
+					className="mainTabPin"
+					onClick={handleUnpin}
+					title={t("tabs.unpinNamed", { label })}
+					aria-label={t("tabs.unpinNamed", { label })}
+				>
+					<HugeiconsIcon
+						icon={PinIcon}
+						size={13}
+						strokeWidth={1.5}
+						className="mainTabPinIcon mainTabPinIconPinned"
+					/>
+					<HugeiconsIcon
+						icon={PinOffIcon}
+						size={13}
+						strokeWidth={1.5}
+						className="mainTabPinIcon mainTabPinIconUnpin"
+					/>
+				</button>
+			) : (
+				<button
+					type="button"
+					className="mainTabClose"
+					onClick={handleClose}
+					aria-label={`Close ${label}`}
+				>
+					<HugeiconsIcon
+						icon={Cancel01Icon}
+						size={13}
+						strokeWidth={1.5}
+						aria-hidden="true"
+					/>
+				</button>
+			)}
 			<button
 				ref={handleRef}
 				type="button"

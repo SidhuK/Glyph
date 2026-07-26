@@ -32,6 +32,7 @@ function buildWorkspaceSessionTabs(
 			kind: tab.kind,
 			target: tab.target,
 			paneId: tab.paneId,
+			isPinned: tab.isPinned,
 		});
 	}
 	return snapshotTabs;
@@ -153,8 +154,6 @@ export function useWorkspaceSession({
 		}
 
 		if (onboardingNotePath) return;
-		if (!resumeLastSession) return;
-
 		const requestId = ++restoreSessionRequestIdRef.current;
 		void (async () => {
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
@@ -162,11 +161,15 @@ export function useWorkspaceSession({
 				return;
 			}
 
-			const restorableTabs = await validateRestorableSessionTabs(snapshot.tabs);
+			const requestedTabs = resumeLastSession
+				? snapshot.tabs
+				: snapshot.tabs.filter((tab) => tab.isPinned);
+			if (!requestedTabs.length) return;
+			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
 				restorableTabs === null ||
-				(!restorableTabs.length && !snapshot.splitLayout)
+				!restorableTabs.length
 			) {
 				return;
 			}
@@ -179,9 +182,9 @@ export function useWorkspaceSession({
 			restoreWorkspaceTabs(
 				restorableTabs,
 				activeTabTarget,
-				snapshot.splitLayout,
-				snapshot.focusedPaneId,
-				snapshot.activeTabTargetByPane,
+				resumeLastSession ? snapshot.splitLayout : null,
+				resumeLastSession ? snapshot.focusedPaneId : null,
+				resumeLastSession ? snapshot.activeTabTargetByPane : {},
 			);
 			restoredSessionSpaceRef.current = spacePath;
 		})().catch((cause) => {

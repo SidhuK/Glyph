@@ -70,6 +70,8 @@ interface UseAppCommandsDeps {
 	attachCurrentNoteToAi: () => Promise<void>;
 	activateNextTab: () => void;
 	activatePreviousTab: () => void;
+	activeTabCanPin: boolean;
+	activeTabIsPinned: boolean;
 	canGoBack: boolean;
 	canGoForward: boolean;
 	closeActiveTab: () => void;
@@ -118,6 +120,8 @@ interface UseAppCommandsDeps {
 	sidebarCollapsed: boolean;
 	spacePath: string | null;
 	tabsLength: number;
+	unpinnedTabsLength: number;
+	toggleActiveTabPinned: () => void;
 	togglePinnedFile: (path: string) => Promise<void>;
 	refreshMoveTargetDirs: (sourcePath: string) => Promise<void>;
 }
@@ -229,6 +233,8 @@ export function useAppCommands({
 	attachCurrentNoteToAi,
 	activateNextTab,
 	activatePreviousTab,
+	activeTabCanPin,
+	activeTabIsPinned,
 	canGoBack,
 	canGoForward,
 	closeActiveTab,
@@ -277,6 +283,8 @@ export function useAppCommands({
 	sidebarCollapsed,
 	spacePath,
 	tabsLength,
+	unpinnedTabsLength,
+	toggleActiveTabPinned,
 	togglePinnedFile,
 	refreshMoveTargetDirs,
 }: UseAppCommandsDeps): Command[] {
@@ -375,13 +383,28 @@ export function useAppCommands({
 			})),
 			{
 				id: "close-active-tab",
-				enabled: tabsLength > 0,
+				enabled: tabsLength > 0 && !activeTabIsPinned,
 				action: closeActiveTab,
 			},
 			{
 				id: "close-all-tabs",
-				enabled: tabsLength > 0,
+				enabled: unpinnedTabsLength > 0,
 				action: closeAllTabs,
+			},
+			{
+				id: "toggle-pin-active-tab",
+				labelKey: activeTabIsPinned
+					? "shell:tabs.unpinTab"
+					: "shell:tabs.pinTab",
+				icon: (
+					<HugeiconsIcon
+						icon={activeTabIsPinned ? PinOffIcon : PinIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: activeTabCanPin,
+				action: toggleActiveTabPinned,
 			},
 			{
 				id: "next-tab",
@@ -875,6 +898,8 @@ export function useAppCommands({
 	}, [
 		activeMarkdownTabPath,
 		activeFilePath,
+		activeTabCanPin,
+		activeTabIsPinned,
 		activateNextTab,
 		activatePreviousTab,
 		pinnedFiles,
@@ -927,6 +952,8 @@ export function useAppCommands({
 		openPalette,
 		setMovePickerSourcePath,
 		tabsLength,
+		unpinnedTabsLength,
+		toggleActiveTabPinned,
 		canGoBack,
 		canGoForward,
 		goBack,

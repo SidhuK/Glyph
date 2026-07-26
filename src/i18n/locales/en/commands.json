@@ -422,6 +422,10 @@
 			"label": "Pin or Unpin Current File",
 			"description": "Pin or unpin the active file."
 		},
+		"toggle-pin-active-tab": {
+			"label": "Pin or Unpin Active Tab",
+			"description": "Keep the active tab open until it is unpinned."
+		},
 		"toggle-sidebar": {
 			"label": "Toggle Sidebar",
 			"description": "Show or hide the file tree sidebar."

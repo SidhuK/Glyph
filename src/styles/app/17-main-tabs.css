@@ -412,6 +412,7 @@
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	gap: 7px;
 	padding: 0 10px 0 26px;
 	border-radius: var(--radius-2xl);
@@ -458,6 +459,7 @@
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	text-align: left;
 	white-space: nowrap;
 }
 
@@ -467,7 +469,8 @@
 	font-weight: var(--font-medium);
 }
 
-.mainTabClose {
+.mainTabClose,
+.mainTabPin {
 	position: absolute;
 	top: 50%;
 	left: 6px;
@@ -479,8 +482,10 @@
 	justify-content: center;
 	width: 18px;
 	height: 18px;
+	padding: 0;
 	border-radius: var(--radius-2xl);
 	border: 1px solid transparent;
+	background: transparent;
 	color: var(--text-secondary);
 	opacity: 0;
 	transition: background var(--transition-fast), border-color
@@ -493,17 +498,46 @@
 	color: var(--text-primary);
 }
 
-.mainTabCloseGlyph {
-	font-size: calc(var(--text-base) * 0.9);
-	line-height: 1;
-	font-weight: var(--font-semibold);
+.mainTabPin {
+	opacity: 0.82;
+	color: var(--text-secondary);
+}
+
+.mainTabClose > svg,
+.mainTabPin > .mainTabPinIcon {
+	display: block;
+	width: 14px;
+	height: 14px;
+	flex: 0 0 auto;
+}
+
+.mainTabPin > .mainTabPinIconUnpin {
+	display: none;
+}
+
+.mainTabPin:hover > .mainTabPinIconPinned {
+	display: none;
+}
+
+.mainTabPin:hover > .mainTabPinIconUnpin {
+	display: block;
+}
+
+.mainTabPin:hover {
+	background: transparent;
+	border-color: transparent;
+	color: var(--text-primary);
+	opacity: 1;
+	box-shadow: none;
+	transform: translateY(-50%);
 }
 
 .mainTabClose:hover {
-	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: transparent;
+	border-color: transparent;
 	color: var(--text-primary);
 	opacity: 1;
+	box-shadow: none;
 	transform: translateY(-50%);
 }
 
@@ -537,7 +571,8 @@
 }
 
 .mainTab:focus-visible,
-.mainTabClose:focus-visible {
+.mainTabClose:focus-visible,
+.mainTabPin:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;
@@ -554,6 +589,7 @@
 	.mainTab,
 	.mainTab::before,
 	.mainTabClose,
+	.mainTabPin,
 	.mainTabAdd,
 	.mainTabActiveTitle,
 	.mainTabsBreadcrumbSep,
@@ -569,6 +605,10 @@
 	}
 
 	.mainTabClose:hover {
+		transform: translateY(-50%);
+	}
+
+	.mainTabPin:hover {
 		transform: translateY(-50%);
 	}
 }

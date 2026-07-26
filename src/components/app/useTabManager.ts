@@ -23,6 +23,7 @@ export interface WorkspaceTab {
 	paneId: string;
 	kind: "blank" | "file" | "special";
 	target: string | null;
+	isPinned: boolean;
 }
 
 export interface WorkspaceEditorPane {
@@ -49,6 +50,7 @@ interface RestoredWorkspaceTab {
 	kind: "file" | "special";
 	target: string;
 	paneId: string;
+	isPinned: boolean;
 }
 
 function matchesRemovedPath(
@@ -129,11 +131,13 @@ export function useTabManager(spacePath: string | null) {
 			kind: WorkspaceTab["kind"],
 			target: string | null,
 			paneId = paneIdForTab(tabsRef.current, activeTabIdRef.current),
+			isPinned = false,
 		): WorkspaceTab => ({
 			id: `workspace-tab-${++tabIdCounterRef.current}`,
 			paneId,
 			kind,
 			target,
+			isPinned,
 		}),
 		[],
 	);
@@ -309,7 +313,11 @@ export function useTabManager(spacePath: string | null) {
 	);
 
 	const updateActiveTabInPlace = useCallback(
-		(kind: WorkspaceTab["kind"], target: string | null): string => {
+		(
+			kind: WorkspaceTab["kind"],
+			target: string | null,
+			replacePinned = false,
+		): string => {
 			const currentTabs = tabsRef.current;
 			const previousActiveTabId = activeTabIdRef.current;
 
@@ -330,6 +338,13 @@ export function useTabManager(spacePath: string | null) {
 			}
 
 			const currentTab = currentTabs[activeIndex];
+			if (currentTab?.isPinned && !replacePinned) {
+				const nextTab = createTab(kind, target, currentTab.paneId);
+				const nextTabs = [...currentTabs];
+				nextTabs.splice(activeIndex + 1, 0, nextTab);
+				commitTabsChange(nextTabs, nextTab.id);
+				return nextTab.id;
+			}
 			if (currentTab?.kind === "file") {
 				clearDirtyForTarget(currentTab.target);
 			}
@@ -411,7 +426,7 @@ export function useTabManager(spacePath: string | null) {
 			const path = stepHistory(tabId, delta);
 			if (!path) return;
 			activeTabIdRef.current = tabId;
-			updateActiveTabInPlace("file", path);
+			updateActiveTabInPlace("file", path, true);
 		},
 		[stepHistory, updateActiveTabInPlace],
 	);
@@ -526,7 +541,12 @@ export function useTabManager(spacePath: string | null) {
 						: `special\0${paneId}\0${snapshot.target}`;
 				if (seenTargets.has(targetKey)) continue;
 				seenTargets.add(targetKey);
-				const tab = createTab(snapshot.kind, snapshot.target, paneId);
+				const tab = createTab(
+					snapshot.kind,
+					snapshot.target,
+					paneId,
+					snapshot.isPinned,
+				);
 				nextTabs.push(tab);
 				if (snapshot.kind === "file" && isMarkdownPath(snapshot.target)) {
 					nextHistory[tab.id] = {
@@ -579,11 +599,36 @@ export function useTabManager(spacePath: string | null) {
 	const replaceActiveTabWithBlank = useCallback(() => {
 		if (activeTab?.kind === "blank") return;
 		const currentActiveId = activeTabIdRef.current;
-		if (currentActiveId) {
+		if (currentActiveId && !activeTab?.isPinned) {
 			clearHistoryForTab(currentActiveId);
 		}
 		updateActiveTabInPlace("blank", null);
-	}, [activeTab?.kind, clearHistoryForTab, updateActiveTabInPlace]);
+	}, [
+		activeTab?.isPinned,
+		activeTab?.kind,
+		clearHistoryForTab,
+		updateActiveTabInPlace,
+	]);
+
+	const toggleTabPinned = useCallback(
+		(tabId: string) => {
+			const currentTabs = tabsRef.current;
+			const tab = currentTabs.find((candidate) => candidate.id === tabId);
+			if (!tab || tab.kind === "blank") return;
+			const nextTabs = currentTabs.map((candidate) =>
+				candidate.id === tabId
+					? { ...candidate, isPinned: !candidate.isPinned }
+					: candidate,
+			);
+			commitTabsChange(nextTabs, activeTabIdRef.current);
+		},
+		[commitTabsChange],
+	);
+
+	const toggleActiveTabPinned = useCallback(() => {
+		const currentActiveTabId = activeTabIdRef.current;
+		if (currentActiveTabId) toggleTabPinned(currentActiveTabId);
+	}, [toggleTabPinned]);
 
 	const closeTab = useCallback(
 		(tabId: string) => {
@@ -591,6 +636,7 @@ export function useTabManager(spacePath: string | null) {
 			const index = currentTabs.findIndex((tab) => tab.id === tabId);
 			if (index === -1) return;
 			const removed = currentTabs[index];
+			if (removed?.isPinned) return;
 			const removedTarget = removed?.kind === "file" ? removed.target : null;
 			const removedWasFocused =
 				removed?.paneId === paneIdForTab(currentTabs, activeTabIdRef.current);
@@ -642,11 +688,28 @@ export function useTabManager(spacePath: string | null) {
 
 	const closeAllTabs = useCallback(() => {
 		setSplitLayout(createInitialSplitEditorLayout());
-		commitTabsChange([], null);
-		setDirtyByPath({});
-		historyByTabIdRef.current = {};
-		setHistoryByTabId({});
-	}, [commitTabsChange, setSplitLayout]);
+		const pinnedTabs = tabsRef.current
+			.filter((tab) => tab.isPinned)
+			.map((tab) => ({ ...tab, paneId: PRIMARY_EDITOR_PANE_ID }));
+		const pinnedTabIds = new Set(pinnedTabs.map((tab) => tab.id));
+		const pinnedTargets = new Set(
+			pinnedTabs.flatMap((tab) => (tab.target ? [tab.target] : [])),
+		);
+		const nextActiveTabId = pinnedTabIds.has(activeTabIdRef.current ?? "")
+			? activeTabIdRef.current
+			: (pinnedTabs[0]?.id ?? null);
+		commitTabsChange(pinnedTabs, nextActiveTabId);
+		setDirtyByPath((previous) =>
+			Object.fromEntries(
+				Object.entries(previous).filter(([path]) => pinnedTargets.has(path)),
+			),
+		);
+		updateHistoryState((previous) =>
+			Object.fromEntries(
+				Object.entries(previous).filter(([tabId]) => pinnedTabIds.has(tabId)),
+			),
+		);
+	}, [commitTabsChange, setSplitLayout, updateHistoryState]);
 
 	const closeActiveTab = useCallback(() => {
 		if (!activeTabId) return;
@@ -907,6 +970,8 @@ export function useTabManager(spacePath: string | null) {
 		focusPane,
 		dirtyByPath,
 		setDirtyByPath,
+		toggleTabPinned,
+		toggleActiveTabPinned,
 		closeTab,
 		closeAllTabs,
 		closeActiveTab,
