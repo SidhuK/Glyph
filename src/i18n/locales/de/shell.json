@@ -13,11 +13,7 @@
 		"sortNotes": "Notizen sortieren",
 		"sort": "Sortieren",
 		"expandAllFolders": "Alle Ordner ausklappen",
-		"collapseAllFolders": "Alle Ordner einklappen",
-		"spaceSwitcher": "Space wechseln",
-		"spaces": "Spaces",
-		"openAnotherSpace": "Anderen Space öffnen…",
-		"createSpace": "Space erstellen…"
+		"collapseAllFolders": "Alle Ordner einklappen"
 	},
 	"sort": {
 		"nameAsc": "Name A-Z",

@@ -1041,9 +1041,7 @@
 	padding-inline: clamp(8px, 1.4vw, 14px);
 }
 
-:root[data-editor-width-mode="wide"]
-	.markdownEditorPane
-	.frontmatterPreview {
+:root[data-editor-width-mode="wide"] .markdownEditorPane .frontmatterPreview {
 	width: calc(100% - 24px);
 }
 
