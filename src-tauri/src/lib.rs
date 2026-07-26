@@ -909,7 +909,7 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
 }
 
 fn is_space_host_window_label(label: &str) -> bool {
-    label == "main" || space::commands::is_space_window(label)
+    label == "main"
 }
 
 fn is_auxiliary_persisted_window(label: &str) -> bool {
@@ -1541,18 +1541,6 @@ pub fn run() {
                 }
             }
 
-            if space::commands::is_space_window(window.label()) {
-                if let WindowEvent::Destroyed = event {
-                    let state = window.state::<space::SpaceState>();
-                    match state.remove_window_session(window.label()) {
-                        Ok(()) => {
-                            space::commands::update_close_space_menu(window.app_handle(), &state)
-                        }
-                        Err(error) => warn!("Failed to forget space window session: {error}"),
-                    }
-                }
-            }
-
             if is_space_host_window_label(window.label()) {
                 if let WindowEvent::CloseRequested { .. } = event {
                     prepare_host_window_close(window);
@@ -1701,7 +1689,6 @@ pub fn run() {
             git_sync::commands::git_history_diff,
             space::commands::space_create,
             space::commands::space_open,
-            space::commands::space_open_window,
             space::commands::space_get_current,
             space::commands::space_get_current_info,
             space::commands::space_show_onboarding_note,

@@ -33,6 +33,10 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
+	recentSpaces: string[];
+	onSelectSpace: (path: string) => Promise<void>;
+	onOpenSpace: () => Promise<void>;
+	onCreateSpace: () => Promise<void>;
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
@@ -67,6 +71,10 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
+	recentSpaces,
+	onSelectSpace,
+	onOpenSpace,
+	onCreateSpace,
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
@@ -148,6 +156,10 @@ export const Sidebar = memo(function Sidebar({
 									onOpenPinnedDocs={onOpenPinnedDocs}
 									onOpenConnections={onOpenConnections}
 									spacePath={spacePath}
+									recentSpaces={recentSpaces}
+									onSelectSpace={onSelectSpace}
+									onOpenSpace={onOpenSpace}
+									onCreateSpace={onCreateSpace}
 									activeTopSection={activeTopSection}
 								/>
 							</>

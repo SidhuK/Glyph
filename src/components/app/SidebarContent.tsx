@@ -35,6 +35,7 @@ import { toast } from "../../lib/toast";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
 import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
+import { SpaceSwitcher } from "./SpaceSwitcher";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -68,6 +69,10 @@ interface SidebarContentProps {
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
 	spacePath: string | null;
+	recentSpaces: string[];
+	onSelectSpace: (path: string) => Promise<void>;
+	onOpenSpace: () => Promise<void>;
+	onCreateSpace: () => Promise<void>;
 	activeTopSection:
 		| "all-notes"
 		| "connections"
@@ -155,6 +160,10 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenPinnedDocs,
 	onOpenConnections,
 	spacePath,
+	recentSpaces,
+	onSelectSpace,
+	onOpenSpace,
+	onCreateSpace,
 	activeTopSection,
 }: SidebarContentProps) {
 	const { t } = useTranslation("shell");
@@ -620,6 +629,13 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
+			<SpaceSwitcher
+				spacePath={spacePath}
+				recentSpaces={recentSpaces}
+				onSelectSpace={onSelectSpace}
+				onOpenSpace={onOpenSpace}
+				onCreateSpace={onCreateSpace}
+			/>
 			<LicenseStatusFooter />
 		</>
 	);

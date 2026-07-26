@@ -11,6 +11,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useEditorContext,
@@ -111,13 +112,15 @@ function showGitSyncErrorToast(message: string) {
 }
 
 export function AppShell() {
+	const { t } = useTranslation("shell");
 	const space = useSpace();
 	const {
 		spacePath,
+		recentSpaces,
 		setError,
-		onOpenSpace,
-		onOpenSpaceAtPath,
-		onCreateSpace,
+		onOpenSpace: openSpace,
+		onOpenSpaceAtPath: openSpaceAtPath,
+		onCreateSpace: createSpace,
 		closeSpace,
 		onboardingNotePath,
 		consumeOnboardingNotePath,
@@ -161,8 +164,12 @@ export function AppShell() {
 		closeSettings,
 	} = useUILayoutContext();
 	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
-	const { getCurrentMarkdown, saveCurrentEditor, setCurrentEditorMode } =
-		useEditorContext();
+	const {
+		getCurrentMarkdown,
+		saveCurrentEditor,
+		saveAllEditors,
+		setCurrentEditorMode,
+	} = useEditorContext();
 
 	const [paletteLaunchMode, setPaletteLaunchMode] = useState<
 		"commands" | "search"
@@ -396,6 +403,36 @@ export function AppShell() {
 		tabsRevision,
 		restoreWorkspaceTabs,
 	});
+
+	const prepareForSpaceChange = useCallback(async (): Promise<boolean> => {
+		try {
+			await saveAllEditors();
+			await flushWorkspaceSession();
+			return true;
+		} catch (cause) {
+			console.error("Failed to save the current space before switching", cause);
+			setError(t("workspace.switchSaveFailed"));
+			return false;
+		}
+	}, [flushWorkspaceSession, saveAllEditors, setError, t]);
+
+	const handleOpenSpace = useCallback(async () => {
+		if (spacePath && !(await prepareForSpaceChange())) return;
+		await openSpace();
+	}, [openSpace, prepareForSpaceChange, spacePath]);
+
+	const handleCreateSpace = useCallback(async () => {
+		if (spacePath && !(await prepareForSpaceChange())) return;
+		await createSpace();
+	}, [createSpace, prepareForSpaceChange, spacePath]);
+
+	const handleSelectSpace = useCallback(
+		async (path: string) => {
+			if (path === spacePath || !(await prepareForSpaceChange())) return;
+			await openSpaceAtPath(path);
+		},
+		[openSpaceAtPath, prepareForSpaceChange, spacePath],
+	);
 
 	const handleCloseSpace = useCallback(async () => {
 		try {
@@ -1142,9 +1179,9 @@ export function AppShell() {
 		onSaveNote: handleSaveNoteFromMenu,
 		onPrintNote: handlePrintActiveNote,
 		onCloseTab: () => void handleCloseTabOrWindow(),
-		onOpenSpace,
-		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,
-		onCreateSpace,
+		onOpenSpace: handleOpenSpace,
+		onOpenRecentSpaceAtPath: handleSelectSpace,
+		onCreateSpace: handleCreateSpace,
 		closeSpace: handleCloseSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
@@ -1195,8 +1232,8 @@ export function AppShell() {
 		handleRevealSpaceFromMenu,
 		movePickerSourcePath,
 		moveTargetDirs,
-		onCreateSpace,
-		onOpenSpace,
+		onCreateSpace: handleCreateSpace,
+		onOpenSpace: handleOpenSpace,
 		openAllDocsTab,
 		openBlankTab,
 		splitPaneWithBlank,
@@ -1389,6 +1426,10 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
+				recentSpaces={recentSpaces}
+				onSelectSpace={handleSelectSpace}
+				onOpenSpace={handleOpenSpace}
+				onCreateSpace={handleCreateSpace}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenPinnedDocs={openPinnedDocsTab}
 				onOpenConnections={openConnectionsView}

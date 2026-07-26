@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type ReactNode,
 	createContext,
@@ -20,15 +19,6 @@ import {
 } from "../lib/settings";
 import { type AppInfo, invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
-import { SPACE_WINDOW_PREFIX } from "../lib/windowLabels";
-
-function isSpaceWindow(): boolean {
-	try {
-		return getCurrentWindow().label.startsWith(SPACE_WINDOW_PREFIX);
-	} catch {
-		return false;
-	}
-}
 
 interface SpaceContextValue {
 	info: AppInfo | null;
@@ -172,7 +162,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 							currentWindowSpaceInfo.onboarding_note_path ?? null,
 						);
 					}
-				} else if (settings.currentSpacePath && !isSpaceWindow()) {
+				} else if (settings.currentSpacePath) {
 					try {
 						const spaceInfo = await invoke("space_open", {
 							path: settings.currentSpacePath,
@@ -239,16 +229,17 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
 			try {
-				const sessionSpacePath = await invoke("space_get_current");
-				const spaceInfo = sessionSpacePath
-					? await invoke("space_open_window", {
-							path,
-							create: mode === "create",
-						})
-					: mode === "create"
+				if (path === currentSpacePathRef.current) return;
+				const spaceInfo =
+					mode === "create"
 						? await invoke("space_create", { path })
 						: await invoke("space_open", { path });
-				await setCurrentSpacePath(spaceInfo.root);
+				clearAiPanelCaches();
+				clearInlineImageHydrationCache();
+				invalidateNavigationPrefetch();
+				setSpacePath(spaceInfo.root);
+				setSpaceSchemaVersion(spaceInfo.schema_version);
+				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
 				setRecentSpaces((prev) =>
 					normalizeRecentSpaces(
 						[spaceInfo.root, ...prev.filter((p) => p !== spaceInfo.root)],
@@ -257,11 +248,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				);
 				void updateOnboardingSettings({ launcherSeen: true });
 				setLastSpacePath(spaceInfo.root);
-				if (!sessionSpacePath) {
-					setSpacePath(spaceInfo.root);
-					setSpaceSchemaVersion(spaceInfo.schema_version);
-					setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
-				}
+				await setCurrentSpacePath(spaceInfo.root);
 			} catch (err) {
 				setError(extractErrorMessage(err));
 			} finally {

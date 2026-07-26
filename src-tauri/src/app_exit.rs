@@ -134,7 +134,7 @@ pub(crate) fn handle_exit_requested(app: &tauri::AppHandle, api: &tauri::ExitReq
     inner.status = AppExitStatus::Waiting(labels.clone());
     drop(inner);
 
-    // Every space window confirms only after its open tabs reach disk.
+    // The main space host confirms only after its open tabs reach disk.
     for label in labels.intersection(&registered_windows) {
         if let Err(error) = app.emit_to(label, "app:exit_requested", ()) {
             warn!("Failed to request workspace save from {label}: {error}");

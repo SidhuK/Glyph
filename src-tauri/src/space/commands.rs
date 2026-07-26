@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
-use tauri::{Manager, State, WebviewUrl, WebviewWindowBuilder};
+use tauri::State;
 
 use crate::{
     index::{self, db::reset_schema_cache},
-    paths, utils, window_geometry,
+    paths,
 };
 
 use super::helpers::{
@@ -11,17 +11,6 @@ use super::helpers::{
 };
 use super::state::SpaceState;
 use super::watcher::create_notes_watcher;
-
-pub(crate) const SPACE_WINDOW_PREFIX: &str = "space-";
-
-pub(crate) fn is_space_window(label: &str) -> bool {
-    label.starts_with(SPACE_WINDOW_PREFIX)
-}
-
-fn space_window_label(root: &Path) -> String {
-    let hash = utils::sha256_hex(root.to_string_lossy().as_bytes());
-    format!("{SPACE_WINDOW_PREFIX}{}", &hash[..16])
-}
 
 fn space_window_title(root: &Path) -> String {
     root.file_name()
@@ -45,12 +34,6 @@ fn install_window_session(
         recent_local_changes.clone(),
     )?;
     state.set_window_session(window_label, root, watcher, recent_local_changes)
-}
-
-fn focus_window(window: &tauri::WebviewWindow) -> Result<(), String> {
-    window.show().map_err(|error| error.to_string())?;
-    window.unminimize().map_err(|error| error.to_string())?;
-    window.set_focus().map_err(|error| error.to_string())
 }
 
 pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState) {
@@ -82,6 +65,7 @@ pub async fn space_create(
     )?;
     if window.label() == "main" {
         state.set_current_root(PathBuf::from(&info.root))?;
+        let _ = window.set_title(&space_window_title(Path::new(&info.root)));
     }
     update_close_space_menu(&app, &state);
     Ok(info)
@@ -111,6 +95,7 @@ pub async fn space_open(
     )?;
     if window.label() == "main" {
         state.set_current_root(PathBuf::from(&info.root))?;
+        let _ = window.set_title(&space_window_title(Path::new(&info.root)));
     }
     update_close_space_menu(&app, &state);
     Ok(info)
@@ -165,67 +150,10 @@ pub fn space_close(
     state: State<'_, SpaceState>,
 ) -> Result<(), String> {
     state.remove_window_session(window.label())?;
+    if window.label() == "main" {
+        let _ = window.set_title("Glyph");
+    }
     reset_schema_cache();
     update_close_space_menu(&app, &state);
     Ok(())
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn space_open_window(
-    app: tauri::AppHandle,
-    state: State<'_, SpaceState>,
-    path: String,
-    create: Option<bool>,
-) -> Result<SpaceInfo, String> {
-    let root = PathBuf::from(path);
-    let should_create = create.unwrap_or(false);
-    let info = tauri::async_runtime::spawn_blocking(move || -> Result<SpaceInfo, String> {
-        if should_create {
-            std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
-        }
-        let root = canonicalize_dir(&root)?;
-        create_or_open_impl(&root)
-    })
-    .await
-    .map_err(|e| e.to_string())??;
-
-    let root = PathBuf::from(&info.root);
-    let label = space_window_label(&root);
-
-    if let Some(window) = app.get_webview_window(&label) {
-        focus_window(&window)?;
-        return Ok(info);
-    }
-
-    install_window_session(app.clone(), &state, label.clone(), root.clone())?;
-
-    let window = match WebviewWindowBuilder::new(
-        &app,
-        &label,
-        WebviewUrl::App(format!("index.html?window={label}").into()),
-    )
-    .title(space_window_title(&root))
-    .inner_size(800.0, 600.0)
-    .min_inner_size(
-        window_geometry::MIN_INNER_WIDTH as f64,
-        window_geometry::MIN_INNER_HEIGHT as f64,
-    )
-    .decorations(true)
-    .title_bar_style(tauri::TitleBarStyle::Overlay)
-    .hidden_title(true)
-    .transparent(true)
-    .shadow(true)
-    .center()
-    .build()
-    {
-        Ok(window) => window,
-        Err(error) => {
-            let _ = state.remove_window_session(&label);
-            return Err(error.to_string());
-        }
-    };
-
-    focus_window(&window)?;
-    update_close_space_menu(&app, &state);
-    Ok(info)
 }
