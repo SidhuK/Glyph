@@ -4,7 +4,7 @@ import {
 	Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronUp } from "../Icons";
 import {
@@ -54,24 +54,20 @@ export function SpaceSwitcher({
 	onCreateSpace,
 }: SpaceSwitcherProps) {
 	const { t } = useTranslation("shell");
-	const [pendingPath, setPendingPath] = useState<string | null>(null);
+	const [isPending, setIsPending] = useState(false);
 	const current = spacePathParts(spacePath);
-	const spaces = useMemo(
-		() =>
-			[spacePath, ...recentSpaces].filter(
-				(path, index, values) =>
-					path.trim().length > 0 && values.indexOf(path) === index,
-			),
-		[recentSpaces, spacePath],
-	);
+	const spaces = [
+		spacePath,
+		...recentSpaces.filter((path) => path !== spacePath),
+	];
 
-	const run = async (path: string, action: () => Promise<void>) => {
-		if (pendingPath) return;
-		setPendingPath(path);
+	const run = async (action: () => Promise<void>) => {
+		if (isPending) return;
+		setIsPending(true);
 		try {
 			await action();
 		} finally {
-			setPendingPath(null);
+			setIsPending(false);
 		}
 	};
 
@@ -83,7 +79,7 @@ export function SpaceSwitcher({
 						type="button"
 						className="spaceSwitcherTrigger"
 						aria-label={t("sidebar.spaceSwitcher")}
-						disabled={pendingPath !== null}
+						disabled={isPending}
 					>
 						<span className="spaceSwitcherIcon" aria-hidden="true">
 							{spaceMonogram(current.name)}
@@ -119,7 +115,7 @@ export function SpaceSwitcher({
 								aria-current={isCurrent ? "true" : undefined}
 								onSelect={() => {
 									if (isCurrent) return;
-									void run(path, () => onSelectSpace(path));
+									void run(() => onSelectSpace(path));
 								}}
 							>
 								<span
@@ -150,7 +146,7 @@ export function SpaceSwitcher({
 					<DropdownMenuSeparator className="spaceSwitcherMenuSeparator" />
 					<DropdownMenuItem
 						className="spaceSwitcherMenuAction"
-						onSelect={() => void run("open", onOpenSpace)}
+						onSelect={() => void run(onOpenSpace)}
 					>
 						<span className="spaceSwitcherMenuActionIcon" aria-hidden="true">
 							<HugeiconsIcon
@@ -163,7 +159,7 @@ export function SpaceSwitcher({
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						className="spaceSwitcherMenuAction"
-						onSelect={() => void run("create", onCreateSpace)}
+						onSelect={() => void run(onCreateSpace)}
 					>
 						<span className="spaceSwitcherMenuActionIcon" aria-hidden="true">
 							<HugeiconsIcon

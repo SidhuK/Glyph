@@ -122,7 +122,7 @@ pub(crate) fn handle_exit_requested(app: &tauri::AppHandle, api: &tauri::ExitReq
     let labels = app
         .webview_windows()
         .into_keys()
-        .filter(|label| super::is_space_host_window_label(label))
+        .filter(|label| super::is_main_window_label(label))
         .filter(|label| !inner.unavailable_windows.contains(label))
         .collect::<HashSet<_>>();
     if labels.is_empty() {
@@ -134,7 +134,7 @@ pub(crate) fn handle_exit_requested(app: &tauri::AppHandle, api: &tauri::ExitReq
     inner.status = AppExitStatus::Waiting(labels.clone());
     drop(inner);
 
-    // The main space host confirms only after its open tabs reach disk.
+    // The main window confirms only after its open tabs reach disk.
     for label in labels.intersection(&registered_windows) {
         if let Err(error) = app.emit_to(label, "app:exit_requested", ()) {
             warn!("Failed to request workspace save from {label}: {error}");

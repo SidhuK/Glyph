@@ -3,7 +3,7 @@ use tauri::State;
 
 use crate::{
     index::{self, db::reset_schema_cache},
-    paths,
+    paths, window_geometry,
 };
 
 use super::helpers::{
@@ -11,14 +11,6 @@ use super::helpers::{
 };
 use super::state::SpaceState;
 use super::watcher::create_notes_watcher;
-
-fn space_window_title(root: &Path) -> String {
-    root.file_name()
-        .and_then(|name| name.to_str())
-        .filter(|name| !name.trim().is_empty())
-        .map(|name| format!("{name} - Glyph"))
-        .unwrap_or_else(|| "Glyph".to_string())
-}
 
 fn install_window_session(
     app: tauri::AppHandle,
@@ -37,7 +29,10 @@ fn install_window_session(
 }
 
 pub(crate) fn update_close_space_menu(app: &tauri::AppHandle, state: &SpaceState) {
-    let _ = crate::set_space_close_menu_enabled(app, !state.session_roots().is_empty());
+    let enabled = state
+        .root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
+        .is_ok();
+    let _ = crate::set_space_close_menu_enabled(app, enabled);
 }
 
 #[tauri::command]
@@ -63,10 +58,6 @@ pub async fn space_create(
         window.label().to_string(),
         PathBuf::from(&info.root),
     )?;
-    if window.label() == "main" {
-        state.set_current_root(PathBuf::from(&info.root))?;
-        let _ = window.set_title(&space_window_title(Path::new(&info.root)));
-    }
     update_close_space_menu(&app, &state);
     Ok(info)
 }
@@ -93,10 +84,6 @@ pub async fn space_open(
         window.label().to_string(),
         PathBuf::from(&info.root),
     )?;
-    if window.label() == "main" {
-        state.set_current_root(PathBuf::from(&info.root))?;
-        let _ = window.set_title(&space_window_title(Path::new(&info.root)));
-    }
     update_close_space_menu(&app, &state);
     Ok(info)
 }
@@ -150,9 +137,6 @@ pub fn space_close(
     state: State<'_, SpaceState>,
 ) -> Result<(), String> {
     state.remove_window_session(window.label())?;
-    if window.label() == "main" {
-        let _ = window.set_title("Glyph");
-    }
     reset_schema_cache();
     update_close_space_menu(&app, &state);
     Ok(())

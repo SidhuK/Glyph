@@ -17,15 +17,12 @@ import {
 	setCurrentSpacePath,
 	updateOnboardingSettings,
 } from "../lib/settings";
-import { type AppInfo, invoke } from "../lib/tauri";
+import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
 
 interface SpaceContextValue {
-	info: AppInfo | null;
 	setError: (error: string) => void;
 	spacePath: string | null;
-	lastSpacePath: string | null;
-	spaceSchemaVersion: number | null;
 	onboardingNotePath: string | null;
 	recentSpaces: string[];
 	isIndexing: boolean;
@@ -35,7 +32,6 @@ interface SpaceContextValue {
 	startIndexSync: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
 	onOpenSpaceAtPath: (path: string) => Promise<void>;
-	onContinueLastSpace: () => Promise<void>;
 	onCreateSpace: () => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
@@ -60,28 +56,24 @@ function normalizeRecentSpaces(
 	return out.slice(0, 20);
 }
 
-function recentSpacesForMenu(
-	recentSpaces: string[],
-	currentSpacePath: string | null,
-): string[] {
-	return recentSpaces
-		.map((path) => path.trim())
-		.filter((path) => path && path !== currentSpacePath)
-		.slice(0, 20);
-}
-
 // Space-level errors surface as top toasts; there is no persistent error state.
 function setError(message: string) {
 	if (message) toast.error(message, { id: "glyph-space-error" });
 }
 
+async function selectSpaceFolder(): Promise<string | null> {
+	const { open } = await import("@tauri-apps/plugin-dialog");
+	const selection = await open({
+		title: "Select a space folder",
+		directory: true,
+		multiple: false,
+	});
+	if (!selection) return null;
+	return Array.isArray(selection) ? (selection[0] ?? null) : selection;
+}
+
 export function SpaceProvider({ children }: { children: ReactNode }) {
-	const [info, setInfo] = useState<AppInfo | null>(null);
 	const [spacePath, setSpacePath] = useState<string | null>(null);
-	const [lastSpacePath, setLastSpacePath] = useState<string | null>(null);
-	const [spaceSchemaVersion, setSpaceSchemaVersion] = useState<number | null>(
-		null,
-	);
 	const [onboardingNotePath, setOnboardingNotePath] = useState<string | null>(
 		null,
 	);
@@ -108,22 +100,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			try {
-				const appInfo = await invoke("app_info");
-				if (!cancelled) setInfo(appInfo);
-			} catch (err) {
-				if (!cancelled) setError(extractErrorMessage(err));
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useEffect(() => {
-		syncRecentSpacesMenu(recentSpacesForMenu(recentSpaces, spacePath));
+		syncRecentSpacesMenu(
+			recentSpaces.filter((path) => path !== spacePath).slice(0, 20),
+		);
 	}, [recentSpaces, spacePath, syncRecentSpacesMenu]);
 
 	useEffect(() => {
@@ -137,9 +116,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						settings.recentSpaces,
 						settings.currentSpacePath ?? null,
 					),
-				);
-				setLastSpacePath(
-					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
 				);
 				try {
 					await invoke("index_set_people_mentions_as_tags_enabled", {
@@ -156,8 +132,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				if (currentWindowSpaceInfo) {
 					if (!cancelled) {
 						setSpacePath(currentWindowSpaceInfo.root);
-						setLastSpacePath(currentWindowSpaceInfo.root);
-						setSpaceSchemaVersion(currentWindowSpaceInfo.schema_version);
 						setOnboardingNotePath(
 							currentWindowSpaceInfo.onboarding_note_path ?? null,
 						);
@@ -169,7 +143,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						});
 						if (!cancelled) {
 							setSpacePath(spaceInfo.root);
-							setSpaceSchemaVersion(spaceInfo.schema_version);
 							setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
 						}
 					} catch {}
@@ -238,16 +211,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				clearInlineImageHydrationCache();
 				invalidateNavigationPrefetch();
 				setSpacePath(spaceInfo.root);
-				setSpaceSchemaVersion(spaceInfo.schema_version);
 				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
 				setRecentSpaces((prev) =>
-					normalizeRecentSpaces(
-						[spaceInfo.root, ...prev.filter((p) => p !== spaceInfo.root)],
-						spaceInfo.root,
-					),
+					normalizeRecentSpaces(prev, spaceInfo.root),
 				);
 				void updateOnboardingSettings({ launcherSeen: true });
-				setLastSpacePath(spaceInfo.root);
 				await setCurrentSpacePath(spaceInfo.root);
 			} catch (err) {
 				setError(extractErrorMessage(err));
@@ -265,7 +233,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			clearInlineImageHydrationCache();
 			invalidateNavigationPrefetch();
 			setSpacePath(null);
-			setSpaceSchemaVersion(null);
 			setOnboardingNotePath(null);
 		} catch (err) {
 			setError(extractErrorMessage(err));
@@ -277,14 +244,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const onOpenSpace = useCallback(async () => {
-		const { open } = await import("@tauri-apps/plugin-dialog");
-		const selection = await open({
-			title: "Select a space folder",
-			directory: true,
-			multiple: false,
-		});
-		if (!selection) return;
-		const path = Array.isArray(selection) ? selection[0] : selection;
+		const path = await selectSpaceFolder();
 		if (path) await applySpaceSelection(path, "open");
 	}, [applySpaceSelection]);
 
@@ -293,29 +253,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		[applySpaceSelection],
 	);
 
-	const onContinueLastSpace = useCallback(async () => {
-		if (lastSpacePath) await applySpaceSelection(lastSpacePath, "open");
-	}, [lastSpacePath, applySpaceSelection]);
-
 	const onCreateSpace = useCallback(async () => {
-		const { open } = await import("@tauri-apps/plugin-dialog");
-		const selection = await open({
-			title: "Select a space folder",
-			directory: true,
-			multiple: false,
-		});
-		if (!selection) return;
-		const path = Array.isArray(selection) ? selection[0] : selection;
+		const path = await selectSpaceFolder();
 		if (path) await applySpaceSelection(path, "create");
 	}, [applySpaceSelection]);
 
 	const value = useMemo<SpaceContextValue>(
 		() => ({
-			info,
 			setError,
 			spacePath,
-			lastSpacePath,
-			spaceSchemaVersion,
 			onboardingNotePath,
 			recentSpaces,
 			isIndexing,
@@ -325,15 +271,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
-			onContinueLastSpace,
 			onCreateSpace,
 			closeSpace,
 		}),
 		[
-			info,
 			spacePath,
-			lastSpacePath,
-			spaceSchemaVersion,
 			onboardingNotePath,
 			recentSpaces,
 			isIndexing,
@@ -343,7 +285,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			startIndexSync,
 			onOpenSpace,
 			onOpenSpaceAtPath,
-			onContinueLastSpace,
 			onCreateSpace,
 			closeSpace,
 		],
