@@ -40,7 +40,7 @@ function buildWorkspaceSessionTabs(
 
 async function validateRestorableSessionTabs(
 	tabs: WorkspaceSessionTabSnapshot[],
-): Promise<WorkspaceSessionTabSnapshot[] | null> {
+): Promise<WorkspaceSessionTabSnapshot[]> {
 	const fileTargets = tabs
 		.filter((tab) => tab.kind === "file")
 		.map((tab) => tab.target);
@@ -56,7 +56,7 @@ async function validateRestorableSessionTabs(
 			(tab) => tab.kind === "special" || existingTargets.has(tab.target),
 		);
 	} catch {
-		return null;
+		return tabs.filter((tab) => tab.kind === "special");
 	}
 }
 
@@ -164,12 +164,16 @@ export function useWorkspaceSession({
 			const requestedTabs = resumeLastSession
 				? snapshot.tabs
 				: snapshot.tabs.filter((tab) => tab.isPinned);
-			if (!requestedTabs.length) return;
+			if (
+				!requestedTabs.length &&
+				!(resumeLastSession && snapshot.splitLayout)
+			) {
+				return;
+			}
 			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
-				restorableTabs === null ||
-				!restorableTabs.length
+				(!restorableTabs.length && !(resumeLastSession && snapshot.splitLayout))
 			) {
 				return;
 			}
