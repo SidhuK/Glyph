@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "カラフルな見出し",
-			"description": "ノート編集時に H1〜H6 に組み込みの異なる色を使います。",
-			"ariaLabel": "カラフルな見出し"
+			"description": "ノート編集時に H1〜H6 へ選択したカラーパレットを使います。",
+			"ariaLabel": "カラフルな見出し",
+			"palette": {
+				"label": "見出しパレット",
+				"options": {
+					"classy": "クラッシー",
+					"seaside": "シーサイド",
+					"woodland": "ウッドランド",
+					"sunset": "サンセット",
+					"candy": "キャンディ"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "折りたたみ可能な見出し",

@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 import type { EditorViewMode } from "./editorMode";
+import type { HeadingPaletteId } from "./headingPalettes";
 import type {
 	AppLanguage,
 	AttachmentStorageMode,
@@ -107,6 +108,7 @@ type TauriEventMap = {
 			showCollapsibleLists?: boolean;
 			showFrontmatterInEditor?: boolean;
 			colorfulHeadings?: boolean;
+			headingPaletteId?: HeadingPaletteId;
 			beautifulTags?: boolean;
 			editorWidthMode?: EditorWidthMode;
 			defaultEditorMode?: EditorViewMode;

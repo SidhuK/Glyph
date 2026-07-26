@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "컬러풀 제목",
-			"description": "노트 편집 시 H1-H6에 내장된 서로 다른 색상을 사용합니다.",
-			"ariaLabel": "컬러풀 제목"
+			"description": "노트 편집 시 H1-H6에 선택한 색상 팔레트를 사용합니다.",
+			"ariaLabel": "컬러풀 제목",
+			"palette": {
+				"label": "제목 팔레트",
+				"options": {
+					"classy": "클래시",
+					"seaside": "해변",
+					"woodland": "숲",
+					"sunset": "노을",
+					"candy": "캔디"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "접을 수 있는 제목",

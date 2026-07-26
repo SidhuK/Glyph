@@ -9,6 +9,11 @@ import {
 	getDefaultEditorViewMode,
 	isEditorViewMode,
 } from "../../lib/editorMode";
+import {
+	DEFAULT_HEADING_PALETTE_ID,
+	type HeadingPaletteId,
+	isHeadingPaletteId,
+} from "../../lib/headingPalettes";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import {
 	DATE_DISPLAY_FORMAT_OPTIONS,
@@ -22,6 +27,7 @@ import {
 	setEditorColorfulHeadings,
 	setEditorDefaultEditorMode,
 	setEditorFocusMode,
+	setEditorHeadingPaletteId,
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowCollapsibleLists,
@@ -37,6 +43,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { FileTreeSettingsSection } from "./FileTreeSettingsSection";
+import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -122,6 +129,11 @@ export function GeneralSettingsPane() {
 		setEditorColorfulHeadings,
 		setError,
 	);
+	const headingPalette = useSettingsValue<HeadingPaletteId>(
+		DEFAULT_HEADING_PALETTE_ID,
+		setEditorHeadingPaletteId,
+		setError,
+	);
 	const collapsibleHeadings = useSettingsBoolean(
 		false,
 		setEditorShowCollapsibleHeadings,
@@ -163,6 +175,8 @@ export function GeneralSettingsPane() {
 	const setDefaultEditorModeValue = defaultEditorMode.setValue;
 	const setInitialFocusMode = focusMode.setInitialValue;
 	const setFocusModeValue = focusMode.setValue;
+	const setInitialHeadingPalette = headingPalette.setInitialValue;
+	const setHeadingPaletteValue = headingPalette.setValue;
 	const setInitialDateFormat = dateFormat.setInitialValue;
 	const setDateFormatValue = dateFormat.setValue;
 
@@ -180,6 +194,7 @@ export function GeneralSettingsPane() {
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
 				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
+				setInitialHeadingPalette(settings.editor.headingPaletteId);
 				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
 				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
 				setSpellCheckChecked(settings.editor.spellCheck);
@@ -209,6 +224,7 @@ export function GeneralSettingsPane() {
 		setInitialDateFormat,
 		setInitialDefaultEditorMode,
 		setInitialFocusMode,
+		setInitialHeadingPalette,
 	]);
 
 	useTauriEvent(
@@ -226,6 +242,9 @@ export function GeneralSettingsPane() {
 				}
 				if (isFocusMode(payload.editor?.focusMode)) {
 					setFocusModeValue(payload.editor.focusMode);
+				}
+				if (isHeadingPaletteId(payload.editor?.headingPaletteId)) {
+					setHeadingPaletteValue(payload.editor.headingPaletteId);
 				}
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
@@ -276,6 +295,7 @@ export function GeneralSettingsPane() {
 				setDateFormatValue,
 				setDefaultEditorModeValue,
 				setFocusModeValue,
+				setHeadingPaletteValue,
 			],
 		),
 	);
@@ -340,13 +360,23 @@ export function GeneralSettingsPane() {
 					<SettingsRow
 						label={t("editor.colorfulHeadings.label")}
 						description={t("editor.colorfulHeadings.description")}
+						interactive={false}
 					>
-						<SettingsToggle
-							checked={colorfulHeadings.checked}
-							disabled={colorfulHeadings.isSaving}
-							ariaLabel={t("editor.colorfulHeadings.ariaLabel")}
-							onCheckedChange={colorfulHeadings.onCheckedChange}
-						/>
+						<div className="colorfulHeadingsControls">
+							{colorfulHeadings.checked ? (
+								<HeadingPalettePicker
+									value={headingPalette.value}
+									disabled={headingPalette.isSaving}
+									onChange={headingPalette.onChange}
+								/>
+							) : null}
+							<SettingsToggle
+								checked={colorfulHeadings.checked}
+								disabled={colorfulHeadings.isSaving}
+								ariaLabel={t("editor.colorfulHeadings.ariaLabel")}
+								onCheckedChange={colorfulHeadings.onCheckedChange}
+							/>
+						</div>
 					</SettingsRow>
 					<SettingsRow
 						label={t("editor.collapsibleHeadings.label")}

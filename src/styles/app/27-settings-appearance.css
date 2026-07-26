@@ -169,9 +169,60 @@
 	scrollbar-gutter: stable;
 }
 
+.colorfulHeadingsControls {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.headingPaletteTrigger {
+	min-width: 286px;
+}
+
+.headingPaletteTrigger:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
+.headingPalettePreview {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.headingPaletteSwatch {
+	font-size: calc(var(--text-base) * 0.66);
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.06em;
+	line-height: 1;
+}
+
+.headingPaletteOption.is-selected::after {
+	order: 1;
+	margin-left: 0;
+}
+
+.headingPaletteContent {
+	width: min(360px, calc(100vw - 24px));
+}
+
+.headingPaletteOption .headingPalettePreview {
+	order: 2;
+	margin-left: auto;
+}
+
 @media (max-width: 680px) {
 	.appearanceThemeDropdownContent {
 		width: min(100vw - 16px, 360px);
+	}
+
+	.colorfulHeadingsControls {
+		flex-wrap: wrap-reverse;
+	}
+
+	.headingPaletteTrigger {
+		min-width: 0;
 	}
 }
 
