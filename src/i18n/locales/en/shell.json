@@ -13,11 +13,7 @@
 		"sortNotes": "Sort notes",
 		"sort": "Sort",
 		"expandAllFolders": "Expand all folders",
-		"collapseAllFolders": "Collapse all folders",
-		"spaceSwitcher": "Switch space",
-		"spaces": "Spaces",
-		"openAnotherSpace": "Open another space…",
-		"createSpace": "Create a space…"
+		"collapseAllFolders": "Collapse all folders"
 	},
 	"sort": {
 		"nameAsc": "Name A-Z",

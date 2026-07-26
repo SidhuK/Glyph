@@ -13,11 +13,7 @@
 		"sortNotes": "Trier les notes",
 		"sort": "Trier",
 		"expandAllFolders": "Développer tous les dossiers",
-		"collapseAllFolders": "Réduire tous les dossiers",
-		"spaceSwitcher": "Changer d’espace",
-		"spaces": "Espaces",
-		"openAnotherSpace": "Ouvrir un autre espace…",
-		"createSpace": "Créer un espace…"
+		"collapseAllFolders": "Réduire tous les dossiers"
 	},
 	"sort": {
 		"nameAsc": "Nom A-Z",

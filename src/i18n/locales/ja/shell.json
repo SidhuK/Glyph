@@ -13,11 +13,7 @@
 		"sortNotes": "ノートを並べ替え",
 		"sort": "並べ替え",
 		"expandAllFolders": "すべてのフォルダを展開",
-		"collapseAllFolders": "すべてのフォルダを折りたたむ",
-		"spaceSwitcher": "スペースを切り替え",
-		"spaces": "スペース",
-		"openAnotherSpace": "別のスペースを開く…",
-		"createSpace": "スペースを作成…"
+		"collapseAllFolders": "すべてのフォルダを折りたたむ"
 	},
 	"sort": {
 		"nameAsc": "名前 A-Z",
