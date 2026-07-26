@@ -1023,16 +1023,18 @@
 	padding: 18px var(--editor-readable-content-gutter) 50vh;
 }
 
-:root[data-editor-width-mode="wide"]
-	.markdownEditorPane
-	.tiptapHostInline:not(.is-preview)
-	.tiptapContentInline {
-	padding-right: calc(
-		var(--editor-readable-content-gutter-compact) +
-		var(--heading-toggle-rail-width) +
-		var(--heading-level-rail-width) +
-		(var(--heading-rail-gap) * 2)
-	);
+@media (min-width: 761px) {
+	:root[data-editor-width-mode="wide"]
+		.markdownEditorPane
+		.tiptapHostInline:not(.is-preview)
+		.tiptapContentInline {
+		padding-right: calc(
+			var(--editor-readable-content-gutter-compact) +
+			var(--heading-toggle-rail-width) +
+			var(--heading-level-rail-width) +
+			(var(--heading-rail-gap) * 2)
+		);
+	}
 }
 
 .markdownEditorPane .frontmatterPreview {
