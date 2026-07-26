@@ -118,16 +118,11 @@ export function SpaceSwitcher({
 									void run(() => onSelectSpace(path));
 								}}
 							>
-								<span
-									className="spaceSwitcherMenuMonogram"
-									aria-hidden="true"
-								>
+								<span className="spaceSwitcherMenuMonogram" aria-hidden="true">
 									{spaceMonogram(item.name)}
 								</span>
 								<span className="spaceSwitcherMenuItemText">
-									<span className="spaceSwitcherMenuItemName">
-										{item.name}
-									</span>
+									<span className="spaceSwitcherMenuItemName">{item.name}</span>
 									<span className="spaceSwitcherMenuItemPath">
 										{item.parent}
 									</span>

@@ -212,9 +212,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				invalidateNavigationPrefetch();
 				setSpacePath(spaceInfo.root);
 				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
-				setRecentSpaces((prev) =>
-					normalizeRecentSpaces(prev, spaceInfo.root),
-				);
+				setRecentSpaces((prev) => normalizeRecentSpaces(prev, spaceInfo.root));
 				void updateOnboardingSettings({ launcherSeen: true });
 				await setCurrentSpacePath(spaceInfo.root);
 			} catch (err) {
