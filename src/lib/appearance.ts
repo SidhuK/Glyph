@@ -258,11 +258,12 @@ export function applyUiSurfacePreferences(options: {
 
 export function applyEditorWidthMode(mode: EditorWidthMode): void {
 	const root = document.documentElement;
+	root.dataset.editorWidthMode = mode;
 
 	if (mode === "wide") {
 		root.style.setProperty("--editor-readable-content-max-width", "100%");
-		root.style.setProperty("--editor-readable-content-gutter", "0px");
-		root.style.setProperty("--editor-readable-content-gutter-compact", "0px");
+		root.style.setProperty("--editor-readable-content-gutter", "12px");
+		root.style.setProperty("--editor-readable-content-gutter-compact", "12px");
 		return;
 	}
 

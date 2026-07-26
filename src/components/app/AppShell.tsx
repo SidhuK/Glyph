@@ -116,7 +116,6 @@ export function AppShell() {
 	const space = useSpace();
 	const {
 		spacePath,
-		recentSpaces,
 		setError,
 		onOpenSpace: openSpace,
 		onOpenSpaceAtPath: openSpaceAtPath,
@@ -1417,10 +1416,6 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				spacePath={spacePath}
-				recentSpaces={recentSpaces}
-				onSelectSpace={handleSelectSpace}
-				onOpenSpace={handleOpenSpace}
-				onCreateSpace={handleCreateSpace}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenPinnedDocs={openPinnedDocsTab}
 				onOpenConnections={openConnectionsView}
