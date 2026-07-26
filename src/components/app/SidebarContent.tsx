@@ -34,7 +34,6 @@ import { type FsEntry, invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
 import { TagsPane } from "../TagsPane";
 import { FileTreePane } from "../filetree";
-import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -349,15 +348,12 @@ export const SidebarContent = memo(function SidebarContent({
 
 	if (!spacePath) {
 		return (
-			<>
-				<div className="sidebarSection sidebarSectionGrow sidebarEmpty">
-					<div className="sidebarEmptyTitle">No space open</div>
-					<div className="sidebarEmptyHint">
-						Open or create a space to get started.
-					</div>
+			<div className="sidebarSection sidebarSectionGrow sidebarEmpty">
+				<div className="sidebarEmptyTitle">No space open</div>
+				<div className="sidebarEmptyHint">
+					Open or create a space to get started.
 				</div>
-				<LicenseStatusFooter />
-			</>
+			</div>
 		);
 	}
 
@@ -620,7 +616,6 @@ export const SidebarContent = memo(function SidebarContent({
 					</div>
 				</div>
 			</div>
-			<LicenseStatusFooter />
 		</>
 	);
 });

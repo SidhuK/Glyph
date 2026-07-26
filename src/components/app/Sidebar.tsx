@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
+import { LicenseStatusFooter } from "../licensing/LicenseStatusFooter";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
+import { SpaceSwitcher } from "./SpaceSwitcher";
 
 interface SidebarProps {
 	onToggleDir: (dirPath: string) => void;
@@ -33,6 +35,10 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	spacePath: string | null;
+	recentSpaces: string[];
+	onSelectSpace: (path: string) => Promise<void>;
+	onOpenSpace: () => Promise<void>;
+	onCreateSpace: () => Promise<void>;
 	onOpenAllDocs: () => void;
 	onOpenPinnedDocs: () => void;
 	onOpenConnections: () => void;
@@ -67,6 +73,10 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	spacePath,
+	recentSpaces,
+	onSelectSpace,
+	onOpenSpace,
+	onCreateSpace,
 	onOpenAllDocs,
 	onOpenPinnedDocs,
 	onOpenConnections,
@@ -150,6 +160,16 @@ export const Sidebar = memo(function Sidebar({
 									spacePath={spacePath}
 									activeTopSection={activeTopSection}
 								/>
+								{spacePath ? (
+									<SpaceSwitcher
+										spacePath={spacePath}
+										recentSpaces={recentSpaces}
+										onSelectSpace={onSelectSpace}
+										onOpenSpace={onOpenSpace}
+										onCreateSpace={onCreateSpace}
+									/>
+								) : null}
+								<LicenseStatusFooter />
 							</>
 						)}
 					</m.div>
