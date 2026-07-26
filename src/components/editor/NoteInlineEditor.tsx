@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import type { AnyExtension } from "@tiptap/core";
+import type { AnyExtension, Editor, JSONContent } from "@tiptap/core";
+import { MarkdownManager } from "@tiptap/markdown";
 import { Selection } from "@tiptap/pm/state";
 import { AnimatePresence } from "motion/react";
 import {
@@ -15,16 +16,19 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
+import { useAISidebarContext } from "../../contexts";
 import { isHtmlEmbedCodeBlockLanguage } from "../../lib/htmlEmbed";
 import { isMermaidCodeBlockLanguage } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
+import { toast } from "../../lib/toast";
+import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import { EditorRibbon } from "./EditorRibbon";
 import { ExtractToNoteDialog } from "./ExtractToNoteDialog";
 import {
 	type FocusedCodeBlockPreview,
 	FocusedCodeBlockPreviewDialog,
 } from "./FocusedCodeBlockPreviewDialog";
-import type { InlineAISelection } from "./InlineAIEditor";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
 import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
@@ -56,6 +60,7 @@ import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
+import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
@@ -76,14 +81,32 @@ const MathNodeEditor = lazy(() =>
 	})),
 );
 
-const InlineAIEditor = lazy(() =>
-	import("./InlineAIEditor").then((module) => ({
-		default: module.InlineAIEditor,
-	})),
-);
-
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
+function parseAiResponse(
+	editor: Editor,
+	markdown: string,
+	unwrapSingleParagraph: boolean,
+): JSONContent[] {
+	const manager = new MarkdownManager({
+		extensions: editor.extensionManager.extensions,
+		markedOptions: {
+			gfm: true,
+			breaks: false,
+		},
+	});
+	const parsed = manager.parse(preprocessMarkdownForEditor(markdown));
+	const content = Array.isArray(parsed.content) ? parsed.content : [];
+	if (
+		unwrapSingleParagraph &&
+		content.length === 1 &&
+		content[0]?.type === "paragraph"
+	) {
+		return Array.isArray(content[0].content) ? content[0].content : [];
+	}
+	return content;
 }
 
 function isPreviewableCodeBlockLanguage(language: string | null): boolean {
@@ -205,6 +228,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	extractToNoteActions,
 	rolloverTaskActions,
 }: NoteInlineEditorProps) {
+	const { t } = useTranslation("editor");
+	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
 	const [mathExtensions, setMathExtensions] = useState<
@@ -287,8 +312,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
-	const [inlineAISelection, setInlineAISelection] =
-		useState<InlineAISelection | null>(null);
 	useEffect(() => {
 		if (!onFlushPendingEditsReady) return;
 		onFlushPendingEditsReady(() => flushMarkdownSync());
@@ -309,7 +332,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		void mode;
 		void relPath;
 		mathNodeEditor.close();
-		setInlineAISelection(null);
 	}, [mathNodeEditor.close, mode, relPath]);
 
 	useEffect(() => {
@@ -433,6 +455,68 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			},
 			[liveEditor],
 		),
+		onSendSelectionToAi: useCallback(() => {
+			if (
+				!aiEnabled ||
+				!liveEditor ||
+				liveEditor.isDestroyed ||
+				!liveEditor.isEditable
+			) {
+				return;
+			}
+			const { from, to, empty } = liveEditor.state.selection;
+			if (empty) {
+				toast.error(t("selectionAi.noSelection"));
+				return;
+			}
+			const text = liveEditor.state.doc.textBetween(from, to, "\n").trim();
+			if (!text) {
+				toast.error(t("selectionAi.noSelection"));
+				return;
+			}
+			setAiPanelOpen(true);
+			dispatchAiContextAttach({
+				selection: {
+					label: relPath,
+					text,
+					applyResponse: (applyMode, markdown) => {
+						if (liveEditor.isDestroyed || !liveEditor.isEditable) {
+							return "failed";
+						}
+						const docEnd = liveEditor.state.doc.content.size;
+						const currentText =
+							from >= 0 && to <= docEnd
+								? liveEditor.state.doc.textBetween(from, to, "\n").trim()
+								: "";
+						if (currentText !== text) return "selection-changed";
+						try {
+							const content = parseAiResponse(
+								liveEditor,
+								markdown,
+								applyMode === "replace",
+							);
+							if (!content.length) return "failed";
+							const resolvedEnd = liveEditor.state.doc.resolve(to);
+							const range =
+								applyMode === "replace"
+									? { from, to }
+									: resolvedEnd.depth > 0
+										? resolvedEnd.after(1)
+										: to;
+							return liveEditor
+								.chain()
+								.focus(undefined, { scrollIntoView: false })
+								.insertContentAt(range, content)
+								.run()
+								? "applied"
+								: "failed";
+						} catch {
+							return "failed";
+						}
+					},
+				},
+			});
+		}, [aiEnabled, liveEditor, relPath, setAiPanelOpen, t]),
 		onTriggerExtractToNote: extractToNote.canExtractToNote
 			? extractToNote.openExtractDialog
 			: undefined,
@@ -689,14 +773,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
-	const openInlineAI = useCallback(() => {
-		if (!liveEditor || liveEditor.isDestroyed || !liveEditor.isEditable) return;
-		const { from, to, empty } = liveEditor.state.selection;
-		if (empty) return;
-		const text = liveEditor.state.doc.textBetween(from, to, "\n").trim();
-		if (!text) return;
-		setInlineAISelection({ from, to, text });
-	}, [liveEditor]);
 	useEffect(() => {
 		const contentRoot = getMountedEditorContentRoot(tiptapHostNode);
 		const mountedEditor = liveEditor && contentRoot ? liveEditor : null;
@@ -866,7 +942,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						editor={liveEditor}
 						canEdit={canEdit}
 						className="rfNodeNoteEditorRibbonBottom"
-						onOpenInlineAI={openInlineAI}
 						onExtractSelectionToNote={
 							extractToNote.canExtractToNote
 								? extractToNote.openExtractDialog
@@ -875,15 +950,6 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 					/>
 				) : null}
 			</AnimatePresence>
-			{showEditorChrome && liveEditor && inlineAISelection ? (
-				<Suspense fallback={null}>
-					<InlineAIEditor
-						editor={liveEditor}
-						selection={inlineAISelection}
-						onClose={() => setInlineAISelection(null)}
-					/>
-				</Suspense>
-			) : null}
 			{showEditorChrome ? (
 				<ExtractToNoteDialog
 					state={extractToNote.dialogState}

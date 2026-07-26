@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -14,6 +15,8 @@ import { AIHistoryPanel } from "./AIHistoryPanel";
 import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
+	type AiSelectionContext,
+	consumePendingAiSelectionContext,
 } from "./aiContextEvents";
 import { messageText, parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
@@ -42,6 +45,7 @@ function stripChipMarkers(text: string): string {
 }
 
 export function AIPanel({ onClose }: AIPanelProps) {
+	const { t } = useTranslation("editor");
 	const { aiAssistantMode } = useAISidebarContext();
 	const { activeMarkdownTabPath, openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -51,6 +55,9 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	const [addPanelQuery, setAddPanelQuery] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
 	const [showScrollFab, setShowScrollFab] = useState(false);
+	const [selectionContext, setSelectionContext] =
+		useState<AiSelectionContext | null>(null);
+	const [selectionMessageBaseline, setSelectionMessageBaseline] = useState(0);
 
 	const history = useAiHistory(14, { enabled: historyExpanded });
 	const chat = useRigChat({
@@ -77,10 +84,17 @@ export function AIPanel({ onClose }: AIPanelProps) {
 	}, []);
 
 	useEffect(() => {
+		const attachSelection = (selection: AiSelectionContext) => {
+			setSelectionContext(selection);
+			setSelectionMessageBaseline(chat.messages.length);
+		};
 		const onAttach = (event: Event) => {
 			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
+			if (detail?.selection) {
+				consumePendingAiSelectionContext();
+				attachSelection(detail.selection);
+			}
 			const paths = detail?.paths ?? [];
-			if (!paths.length) return;
 			for (const path of paths) {
 				context.addContext("file", path);
 				const marker = `\uE000file${path}\uE001`;
@@ -95,8 +109,10 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			window.requestAnimationFrame(() => composerInputRef.current?.focus());
 		};
 		window.addEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
+		const pendingSelection = consumePendingAiSelectionContext();
+		if (pendingSelection) attachSelection(pendingSelection);
 		return () => window.removeEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
-	}, [context.addContext]);
+	}, [chat.messages.length, context.addContext]);
 
 	const canSend =
 		!toolEvents.isAwaitingResponse &&
@@ -121,7 +137,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			toolEvents.resetToolState();
 			let built: Awaited<ReturnType<typeof context.ensurePayload>>;
 			try {
-				built = await context.ensurePayload();
+				built = await context.ensurePayload(selectionContext ?? undefined);
 			} catch {
 				toolEvents.setResponsePhase("idle");
 				return false;
@@ -147,6 +163,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			chat,
 			context,
 			profiles.activeProfileId,
+			selectionContext,
 			toolEvents,
 		],
 	);
@@ -168,7 +185,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		scheduleResize();
 		let built: Awaited<ReturnType<typeof context.ensurePayload>>;
 		try {
-			built = await context.ensurePayload();
+			built = await context.ensurePayload(selectionContext ?? undefined);
 		} catch (error) {
 			toolEvents.setResponsePhase("idle");
 			actions.setAssistantActionError(extractErrorMessage(error));
@@ -198,6 +215,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		profiles.activeProfileId,
 		activeProvider,
 		scheduleResize,
+		selectionContext,
 		toolEvents,
 	]);
 
@@ -290,7 +308,42 @@ export function AIPanel({ onClose }: AIPanelProps) {
 		chat.setThreadId(null);
 		chat.setMessages([]);
 		chat.clearError();
+		setSelectionMessageBaseline(0);
 	}, [actions, chat, scheduleResize, toolEvents]);
+
+	const latestSelectionAssistantText = useMemo(() => {
+		for (
+			let index = chat.messages.length - 1;
+			index >= selectionMessageBaseline;
+			index -= 1
+		) {
+			const message = chat.messages[index];
+			if (message?.role === "assistant") return messageText(message).trim();
+		}
+		return "";
+	}, [chat.messages, selectionMessageBaseline]);
+
+	const applySelectionResponse = useCallback(
+		(mode: "replace" | "insert") => {
+			if (!selectionContext || !latestSelectionAssistantText) return;
+			const result = selectionContext.applyResponse(
+				mode,
+				latestSelectionAssistantText,
+			);
+			if (result === "applied") {
+				setSelectionContext(null);
+				return;
+			}
+			actions.setAssistantActionError(
+				t(
+					result === "selection-changed"
+						? "selectionAi.selectionChanged"
+						: "selectionAi.applyFailed",
+				),
+			);
+		},
+		[actions, latestSelectionAssistantText, selectionContext, t],
+	);
 
 	const threadRef = useRef<HTMLDivElement>(null);
 	const handleThreadScroll = useCallback(() => {
@@ -453,6 +506,75 @@ export function AIPanel({ onClose }: AIPanelProps) {
 				) : null}
 				{history.error ? (
 					<div className="aiPanelError">{history.error}</div>
+				) : null}
+				{selectionContext ? (
+					<div className="aiSelectionContext">
+						<div className="aiSelectionContextHeader">
+							<span>{t("selectionAi.title")}</span>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								onClick={() => setSelectionContext(null)}
+								aria-label={t("selectionAi.close")}
+								title={t("selectionAi.close")}
+							>
+								<X size="var(--icon-xs)" />
+							</Button>
+						</div>
+						<div className="aiSelectionContextText">
+							{selectionContext.text}
+						</div>
+						<div className="aiSelectionActions">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={toolEvents.isAwaitingResponse}
+								onClick={() =>
+									void sendWithCurrentContext(
+										t("selectionAi.summarizePrompt"),
+									)
+								}
+							>
+								{t("selectionAi.summarize")}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={toolEvents.isAwaitingResponse}
+								onClick={() =>
+									void sendWithCurrentContext(
+										t("selectionAi.rephrasePrompt"),
+									)
+								}
+							>
+								{t("selectionAi.rephrase")}
+							</Button>
+							{latestSelectionAssistantText &&
+							!toolEvents.isAwaitingResponse ? (
+								<>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => applySelectionResponse("replace")}
+									>
+										{t("selectionAi.replace")}
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => applySelectionResponse("insert")}
+									>
+										{t("selectionAi.insertBelow")}
+									</Button>
+								</>
+							) : null}
+						</div>
+					</div>
 				) : null}
 				<AIComposer
 					input={input}

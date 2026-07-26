@@ -54,6 +54,10 @@
 			"label": "IA : Joindre la note actuelle",
 			"description": "Joindre la note actuelle à l’IA."
 		},
+		"ai_selection_to_context": {
+			"label": "IA : Utiliser la sélection comme contexte",
+			"description": "Envoyer le texte sélectionné au panneau IA comme contexte principal."
+		},
 		"bold": {
 			"label": "Gras",
 			"description": "Activer ou désactiver le gras pour la sélection actuelle."

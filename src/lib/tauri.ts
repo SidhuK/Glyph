@@ -707,7 +707,7 @@ export interface AiMessage {
 }
 
 export interface AiMessageContextItem {
-	kind: "file" | "folder";
+	kind: "file" | "folder" | "selection";
 	label: string;
 }
 

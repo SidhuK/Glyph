@@ -14,7 +14,6 @@
 		"clearColor": "Effacer la couleur",
 		"textHighlight": "Surlignage du texte",
 		"clearHighlight": "Effacer le surlignage",
-		"askAi": "Interroger l’IA sur la sélection",
 		"extractToNote": "Extraire vers une note",
 		"heading1": "Titre 1",
 		"heading2": "Titre 2",
@@ -25,19 +24,16 @@
 		"quote": "Citation",
 		"codeBlock": "Bloc de code"
 	},
-	"inlineAi": {
+	"selectionAi": {
 		"title": "Interroger l’IA sur la sélection",
 		"close": "Fermer",
+		"noSelection": "Sélectionnez d’abord du texte dans l’éditeur.",
 		"summarize": "Résumer",
 		"summarizePrompt": "Résume cette sélection de façon concise.",
 		"rephrase": "Reformuler",
 		"rephrasePrompt": "Reformule cette sélection clairement sans en changer le sens.",
-		"thinking": "Réflexion…",
 		"replace": "Remplacer la sélection",
 		"insertBelow": "Insérer dessous",
-		"placeholder": "Interrogez ou modifiez cette sélection…",
-		"stop": "Arrêter",
-		"send": "Envoyer",
 		"applyFailed": "Impossible d’appliquer la réponse de l’IA.",
 		"selectionChanged": "Le texte sélectionné a changé. Sélectionnez-le à nouveau et réessayez."
 	},

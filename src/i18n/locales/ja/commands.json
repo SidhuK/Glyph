@@ -54,6 +54,10 @@
 			"label": "AI: 現在のノートを添付",
 			"description": "現在のノートを AI に添付します。"
 		},
+		"ai_selection_to_context": {
+			"label": "AI: 選択範囲をコンテキストに使用",
+			"description": "選択したテキストをメインコンテキストとして AI パネルに送ります。"
+		},
 		"bold": {
 			"label": "太字",
 			"description": "選択範囲の太字を切り替えます。"

@@ -14,7 +14,6 @@
 		"clearColor": "色をクリア",
 		"textHighlight": "テキストハイライト",
 		"clearHighlight": "ハイライトをクリア",
-		"askAi": "選択範囲について AI に質問",
 		"extractToNote": "ノートに抽出",
 		"heading1": "見出し 1",
 		"heading2": "見出し 2",
@@ -25,19 +24,16 @@
 		"quote": "引用",
 		"codeBlock": "コードブロック"
 	},
-	"inlineAi": {
+	"selectionAi": {
 		"title": "選択範囲について AI に質問",
 		"close": "閉じる",
+		"noSelection": "まずエディターでテキストを選択してください。",
 		"summarize": "要約",
 		"summarizePrompt": "この選択範囲を簡潔に要約してください。",
 		"rephrase": "言い換え",
 		"rephrasePrompt": "意味を保ったまま、この選択範囲を明確に言い換えてください。",
-		"thinking": "考えています…",
 		"replace": "選択範囲を置換",
 		"insertBelow": "下に挿入",
-		"placeholder": "この選択範囲について質問または編集…",
-		"stop": "停止",
-		"send": "送信",
 		"applyFailed": "AI の回答を適用できませんでした。",
 		"selectionChanged": "選択したテキストが変更されました。もう一度選択して再試行してください。"
 	},

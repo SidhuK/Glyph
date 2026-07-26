@@ -12,6 +12,7 @@ import type { Command } from "./commandPaletteHelpers";
 
 interface BuildEditorCommandsOptions {
 	activeMarkdownTabPath: string | null;
+	aiEnabled: boolean;
 	setCurrentEditorMode: (mode: EditorViewMode) => boolean;
 	showCollapsibleHeadings: boolean;
 }
@@ -36,6 +37,7 @@ const VIEW_MODE_COMMANDS = [
 
 export function buildEditorCommands({
 	activeMarkdownTabPath,
+	aiEnabled,
 	setCurrentEditorMode,
 	showCollapsibleHeadings,
 }: BuildEditorCommandsOptions): Command[] {
@@ -43,7 +45,8 @@ export function buildEditorCommands({
 	const formattingCommands = EDITOR_ACTIONS.filter(
 		(action) =>
 			action.id !== "collapse_all_headings" &&
-			action.id !== "expand_all_headings",
+			action.id !== "expand_all_headings" &&
+			(aiEnabled || action.id !== "ai_selection_to_context"),
 	).map((action) => ({
 		id: action.id,
 		enabled,

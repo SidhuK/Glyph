@@ -14,7 +14,6 @@
 		"clearColor": "Quitar color",
 		"textHighlight": "Resaltado de texto",
 		"clearHighlight": "Quitar resaltado",
-		"askAi": "Preguntar a la IA sobre la selección",
 		"extractToNote": "Extraer a nota",
 		"heading1": "Encabezado 1",
 		"heading2": "Encabezado 2",
@@ -25,19 +24,16 @@
 		"quote": "Cita",
 		"codeBlock": "Bloque de código"
 	},
-	"inlineAi": {
+	"selectionAi": {
 		"title": "Preguntar a la IA sobre la selección",
 		"close": "Cerrar",
+		"noSelection": "Selecciona primero texto en el editor.",
 		"summarize": "Resumir",
 		"summarizePrompt": "Resume esta selección de forma concisa.",
 		"rephrase": "Reformular",
 		"rephrasePrompt": "Reformula esta selección con claridad sin cambiar su significado.",
-		"thinking": "Pensando…",
 		"replace": "Reemplazar selección",
 		"insertBelow": "Insertar debajo",
-		"placeholder": "Pregunta o edita esta selección…",
-		"stop": "Detener",
-		"send": "Enviar",
 		"applyFailed": "No se pudo aplicar la respuesta de la IA.",
 		"selectionChanged": "El texto seleccionado cambió. Selecciónalo de nuevo e inténtalo otra vez."
 	},

@@ -72,7 +72,7 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData | null
 	});
 }
 
-export function useAiContext(contextSearch = "", enabled = true) {
+export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const attachedContextRef = useRef<ContextEntry[]>([]);
 	const indexQuery = useQuery({
@@ -84,7 +84,6 @@ export function useAiContext(contextSearch = "", enabled = true) {
 				files: index.files,
 			} satisfies AiContextIndexData;
 		},
-		enabled,
 	});
 	const folderIndex = indexQuery.data?.folders ?? [];
 	const fileIndex = indexQuery.data?.files ?? [];
@@ -205,8 +204,42 @@ export function useAiContext(contextSearch = "", enabled = true) {
 		},
 	});
 
-	const ensurePayload = useCallback(async () => {
-		return buildPayloadMutation.mutateAsync();
+	const ensurePayload = useCallback(async (selection?: {
+		label: string;
+		text: string;
+	}) => {
+		const built = await buildPayloadMutation.mutateAsync();
+		if (!selection) return built;
+		const selectedPassage = [
+			"# Selected passage",
+			`Source: ${selection.label}`,
+			"",
+			selection.text,
+		].join("\n");
+		const payload = built.payload
+			? `${selectedPassage}\n\n---\n\n${built.payload}`
+			: selectedPassage;
+		return {
+			payload,
+			manifest: {
+				items: [
+					{
+						kind: "selection",
+						label: selection.label,
+						chars: selection.text.length,
+						estTokens: Math.ceil(selection.text.length / 4),
+						truncated: false,
+					},
+					...built.manifest.items,
+				],
+				totalChars: payload.length,
+				estTokens: Math.ceil(payload.length / 4),
+			},
+			attachments: [
+				{ kind: "selection" as const, label: selection.label },
+				...built.attachments,
+			],
+		};
 	}, [buildPayloadMutation]);
 
 	return {

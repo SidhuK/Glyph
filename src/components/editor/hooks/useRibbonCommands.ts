@@ -19,6 +19,7 @@ interface UseRibbonCommandsOptions {
 	tiptapHostNode: HTMLDivElement | null;
 	/** Callback to open the link dialog with initial href/target from the editor selection */
 	onOpenLinkDialog: (href: string, target: "_self" | "_blank") => void;
+	onSendSelectionToAi?: () => void;
 	onTriggerExtractToNote?: () => void;
 	onRegisterCalloutInserter?: (
 		inserter: ((type: string) => void) | null,
@@ -87,6 +88,7 @@ export function useRibbonCommands({
 	tiptapHostNode,
 	tiptapHostRef,
 	onOpenLinkDialog,
+	onSendSelectionToAi,
 	onTriggerExtractToNote,
 	onRegisterCalloutInserter,
 }: UseRibbonCommandsOptions) {
@@ -212,6 +214,9 @@ export function useRibbonCommands({
 					case "extract_selection_to_note":
 						onTriggerExtractToNote?.();
 						return true;
+					case "ai_selection_to_context":
+						onSendSelectionToAi?.();
+						return true;
 					case "callout_info":
 						return chain.insertContent(createCalloutContent("info")).run();
 					case "callout_warning":
@@ -284,6 +289,7 @@ export function useRibbonCommands({
 		editor,
 		mode,
 		onOpenLinkDialog,
+		onSendSelectionToAi,
 		onTriggerExtractToNote,
 		tiptapHostRef,
 	]);
@@ -324,9 +330,18 @@ export function useRibbonCommands({
 		const handleFocusOut = () => {
 			const currentHost = host;
 			window.setTimeout(() => {
+				const activeElement = document.activeElement;
+				// Palette editor actions run before focus is restored, so retain the
+				// editor that opened the palette until its command has been dispatched.
+				if (
+					activeElement instanceof HTMLElement &&
+					activeElement.closest(".commandPalette")
+				) {
+					return;
+				}
 				if (
 					lastFocusedNoteEditorHost === currentHost &&
-					!currentHost.contains(document.activeElement)
+					!currentHost.contains(activeElement)
 				) {
 					lastFocusedNoteEditorHost = null;
 				}

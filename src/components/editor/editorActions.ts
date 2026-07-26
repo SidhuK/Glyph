@@ -10,6 +10,10 @@ interface EditorActionDefinition {
 
 const BASE_EDITOR_ACTIONS: EditorActionDefinition[] = [
 	{
+		id: "ai_selection_to_context",
+		label: "Send Selection to AI",
+	},
+	{
 		id: "bold",
 		label: "Bold",
 	},

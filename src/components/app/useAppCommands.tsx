@@ -309,6 +309,7 @@ export function useAppCommands({
 		});
 		const editorCommands = buildEditorCommands({
 			activeMarkdownTabPath,
+			aiEnabled,
 			setCurrentEditorMode,
 			showCollapsibleHeadings,
 		});

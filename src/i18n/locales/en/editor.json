@@ -49,7 +49,6 @@
 		"clearColor": "Clear color",
 		"textHighlight": "Text highlight",
 		"clearHighlight": "Clear highlight",
-		"askAi": "Ask AI about selection",
 		"extractToNote": "Extract to note",
 		"heading1": "Heading 1",
 		"heading2": "Heading 2",
@@ -60,19 +59,16 @@
 		"quote": "Quote",
 		"codeBlock": "Code block"
 	},
-	"inlineAi": {
+	"selectionAi": {
 		"title": "Ask AI about selection",
 		"close": "Close",
+		"noSelection": "Select text in the editor first.",
 		"summarize": "Summarize",
 		"summarizePrompt": "Summarize this selection concisely.",
 		"rephrase": "Rephrase",
 		"rephrasePrompt": "Rephrase this selection for clarity while preserving its meaning.",
-		"thinking": "Thinking…",
 		"replace": "Replace selection",
 		"insertBelow": "Insert below",
-		"placeholder": "Ask about or edit this selection…",
-		"stop": "Stop",
-		"send": "Send",
 		"applyFailed": "Could not apply the AI response.",
 		"selectionChanged": "The selected text changed. Select it again and retry."
 	},

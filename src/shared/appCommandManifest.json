@@ -157,6 +157,16 @@
 			"commandPalette": true,
 			"menuId": "ai.attach_current_note"
 		},
+		"ai_selection_to_context": {
+			"id": "ai_selection_to_context",
+			"label": "AI: Use Selection as Context",
+			"description": "Send the selected text to the AI panel as its main context.",
+			"category": "ai",
+			"context": "editor",
+			"defaultBinding": null,
+			"allowInEditable": true,
+			"commandPalette": true
+		},
 		"bold": {
 			"id": "bold",
 			"label": "Bold",

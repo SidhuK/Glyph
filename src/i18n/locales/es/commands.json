@@ -54,6 +54,10 @@
 			"label": "IA: Adjuntar nota actual",
 			"description": "Adjuntar la nota actual a la IA."
 		},
+		"ai_selection_to_context": {
+			"label": "IA: Usar selección como contexto",
+			"description": "Enviar el texto seleccionado al panel de IA como contexto principal."
+		},
 		"bold": {
 			"label": "Negrita",
 			"description": "Alternar negrita en la selección actual."
