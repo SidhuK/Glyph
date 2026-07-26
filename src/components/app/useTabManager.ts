@@ -655,7 +655,9 @@ export function useTabManager(spacePath: string | null) {
 				!nextTabs.some((tab) => tab.paneId === removedPaneId) &&
 				paneIdsInLayout(currentLayout).length > 1;
 			let committedActiveTabId = nextActiveTabId;
-			if (paneIsEmpty && removedPaneId) {
+			if (nextTabs.length === 0) {
+				setSplitLayout(createInitialSplitEditorLayout());
+			} else if (paneIsEmpty && removedPaneId) {
 				const nextLayout = removeEditorPane(currentLayout, removedPaneId);
 				if (nextLayout) {
 					setSplitLayout(nextLayout);
