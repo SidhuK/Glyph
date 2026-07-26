@@ -11,6 +11,11 @@ import {
 	isEditorViewMode,
 	setCachedDefaultEditorViewMode,
 } from "./editorMode";
+import {
+	DEFAULT_HEADING_PALETTE_ID,
+	type HeadingPaletteId,
+	asHeadingPaletteId,
+} from "./headingPalettes";
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import {
@@ -199,6 +204,7 @@ interface EditorSettings {
 	showCollapsibleLists: boolean;
 	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
+	headingPaletteId: HeadingPaletteId;
 	beautifulTags: boolean;
 	editorWidthMode: EditorWidthMode;
 	defaultEditorMode: EditorViewMode;
@@ -241,6 +247,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleLists: false,
 	showFrontmatterInEditor: false,
 	colorfulHeadings: false,
+	headingPaletteId: DEFAULT_HEADING_PALETTE_ID,
 	beautifulTags: false,
 	editorWidthMode: "compact",
 	defaultEditorMode: DEFAULT_EDITOR_VIEW_MODE,
@@ -452,6 +459,7 @@ async function emitSettingsUpdated(payload: {
 		showCollapsibleLists?: boolean;
 		showFrontmatterInEditor?: boolean;
 		colorfulHeadings?: boolean;
+		headingPaletteId?: HeadingPaletteId;
 		beautifulTags?: boolean;
 		editorWidthMode?: EditorWidthMode;
 		defaultEditorMode?: EditorViewMode;
@@ -597,6 +605,7 @@ const KEYS = {
 	editorShowCollapsibleLists: "editor.showCollapsibleLists",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
+	editorHeadingPaletteId: "editor.headingPaletteId",
 	editorBeautifulTags: "editor.beautifulTags",
 	editorEditorWidthMode: "editor.editorWidthMode",
 	editorDefaultEditorMode: "editor.defaultEditorMode",
@@ -963,6 +972,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorColorfulHeadings,
 	);
+	const rawEditorHeadingPaletteId = getSettingValue(
+		entries,
+		KEYS.editorHeadingPaletteId,
+	);
 	const rawEditorBeautifulTags = getSettingValue<boolean | null>(
 		entries,
 		KEYS.editorBeautifulTags,
@@ -1126,6 +1139,7 @@ export async function loadSettings(
 			typeof rawEditorColorfulHeadings === "boolean"
 				? rawEditorColorfulHeadings
 				: DEFAULT_EDITOR_SETTINGS.colorfulHeadings,
+		headingPaletteId: asHeadingPaletteId(rawEditorHeadingPaletteId),
 		beautifulTags:
 			typeof rawEditorBeautifulTags === "boolean"
 				? rawEditorBeautifulTags
@@ -1576,6 +1590,18 @@ export async function setEditorColorfulHeadings(
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
+	});
+}
+
+export async function setEditorHeadingPaletteId(
+	headingPaletteId: HeadingPaletteId,
+): Promise<void> {
+	const store = await getSettingsStore();
+	const next = asHeadingPaletteId(headingPaletteId);
+	await store.set(KEYS.editorHeadingPaletteId, next);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { headingPaletteId: next },
 	});
 }
 

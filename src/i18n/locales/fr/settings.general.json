@@ -68,8 +68,18 @@
 		},
 		"colorfulHeadings": {
 			"label": "Titres colorés",
-			"description": "Utiliser des couleurs intégrées distinctes pour H1-H6 lors de l’édition des notes.",
-			"ariaLabel": "Titres colorés"
+			"description": "Utiliser une palette sélectionnée pour H1-H6 lors de l’édition des notes.",
+			"ariaLabel": "Titres colorés",
+			"palette": {
+				"label": "Palette des titres",
+				"options": {
+					"classy": "Élégante",
+					"seaside": "Bord de mer",
+					"woodland": "Sous-bois",
+					"sunset": "Coucher de soleil",
+					"candy": "Confiserie"
+				}
+			}
 		},
 		"collapsibleHeadings": {
 			"label": "Titres repliables",

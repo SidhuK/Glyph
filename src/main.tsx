@@ -20,6 +20,10 @@ import {
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
+import {
+	applyEditorHeadingPalette,
+	isHeadingPaletteId,
+} from "./lib/headingPalettes";
 import type {
 	UiAccent,
 	UiCornerRadiusStyle,
@@ -108,6 +112,7 @@ function ThemeAndTypographyBridge() {
 				setTranslucentApp(settings.ui.translucentApp);
 				setCornerRadiusStyle(settings.ui.cornerRadiusStyle);
 				setThemeColors(settings.ui.themeColors);
+				applyEditorHeadingPalette(settings.editor.headingPaletteId);
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
@@ -205,6 +210,9 @@ function ThemeAndTypographyBridge() {
 			void invoke("index_set_people_mentions_as_tags_enabled", {
 				enabled: payload.editor.enablePeopleMentionsAsTags,
 			}).catch(() => {});
+		}
+		if (isHeadingPaletteId(payload.editor?.headingPaletteId)) {
+			applyEditorHeadingPalette(payload.editor.headingPaletteId);
 		}
 	});
 

@@ -303,12 +303,21 @@
 }
 
 .tiptapHostInline[data-colorful-headings="true"]:not(.is-preview) {
-	--editor-heading-h1-color: #c84d6f;
-	--editor-heading-h2-color: #b86f18;
-	--editor-heading-h3-color: #2d8f58;
-	--editor-heading-h4-color: #2a74c9;
-	--editor-heading-h5-color: #7a57d1;
-	--editor-heading-h6-color: #9b5b2f;
+	--editor-heading-h1-color: var(--editor-heading-h1-color-light, #be3d61);
+	--editor-heading-h2-color: var(--editor-heading-h2-color-light, #a45f12);
+	--editor-heading-h3-color: var(--editor-heading-h3-color-light, #267d4c);
+	--editor-heading-h4-color: var(--editor-heading-h4-color-light, #2a74c9);
+	--editor-heading-h5-color: var(--editor-heading-h5-color-light, #7a57d1);
+	--editor-heading-h6-color: var(--editor-heading-h6-color-light, #9b5b2f);
+}
+
+:root.dark .tiptapHostInline[data-colorful-headings="true"]:not(.is-preview) {
+	--editor-heading-h1-color: var(--editor-heading-h1-color-dark, #ed86a2);
+	--editor-heading-h2-color: var(--editor-heading-h2-color-dark, #e6a457);
+	--editor-heading-h3-color: var(--editor-heading-h3-color-dark, #67c58d);
+	--editor-heading-h4-color: var(--editor-heading-h4-color-dark, #72a9e8);
+	--editor-heading-h5-color: var(--editor-heading-h5-color-dark, #a891eb);
+	--editor-heading-h6-color: var(--editor-heading-h6-color-dark, #d99a6d);
 }
 
 .tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
