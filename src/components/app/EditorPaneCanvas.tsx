@@ -75,6 +75,7 @@ interface EditorPaneCanvasProps {
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
+	onToggleTabPinned: (tabId: string) => void;
 	onReorderTabs: (fromTabId: string, toTabId: string) => void;
 	onOpenBlankTab: (paneId: string) => void;
 	onGoBack: (paneId: string) => void;
@@ -104,6 +105,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	onLoadBreadcrumbDir,
 	onSelectTab,
 	onCloseTab,
+	onToggleTabPinned,
 	onReorderTabs,
 	onOpenBlankTab,
 	onGoBack,
@@ -188,6 +190,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 						onRenameFile={onRenameFile}
 						onSelectTab={onSelectTab}
 						onCloseTab={onCloseTab}
+						onToggleTabPinned={onToggleTabPinned}
 						onStartRenamePath={onStartRenamePath}
 						onReorder={onReorderTabs}
 					/>

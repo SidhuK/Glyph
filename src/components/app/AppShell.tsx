@@ -346,11 +346,14 @@ export function AppShell() {
 		panes,
 		splitLayout,
 		focusedPaneId,
+		activeTab,
 		activeTabId,
 		activeTabPath,
 		setActiveTabId,
 		focusPane,
 		setDirtyByPath,
+		toggleTabPinned,
+		toggleActiveTabPinned,
 		closeTab,
 		closeAllTabs,
 		closeActiveTab,
@@ -1169,6 +1172,8 @@ export function AppShell() {
 		activatePreviousTab,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
+		activeTabCanPin: activeTab !== null && activeTab.kind !== "blank",
+		activeTabIsPinned: activeTab?.isPinned ?? false,
 		canGoBack,
 		canGoForward,
 		closeActiveTab,
@@ -1217,6 +1222,8 @@ export function AppShell() {
 		sidebarCollapsed,
 		spacePath,
 		tabsLength: tabs.length,
+		unpinnedTabsLength: tabs.filter((tab) => !tab.isPinned).length,
+		toggleActiveTabPinned,
 		togglePinnedFile,
 		refreshMoveTargetDirs,
 	});
@@ -1429,6 +1436,7 @@ export function AppShell() {
 				focusPane={focusPane}
 				setDirtyByPath={setDirtyByPath}
 				closeTab={closeTab}
+				toggleTabPinned={toggleTabPinned}
 				closeTabsForPathRemoval={closeTabsForPathRemoval}
 				renameTabsForPath={renameTabsForPath}
 				reorderTabs={reorderTabs}

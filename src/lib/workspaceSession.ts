@@ -14,6 +14,7 @@ export interface WorkspaceSessionTabSnapshot {
 	kind: "file" | "special";
 	target: string;
 	paneId: string;
+	isPinned: boolean;
 }
 
 export interface WorkspaceSessionSnapshot {
@@ -51,7 +52,7 @@ function normalizeWorkspaceSessionTab(
 		if (seenTargets.has(key) || seenTargets.has(paneKey)) return null;
 		seenTargets.add(key);
 		seenTargets.add(paneKey);
-		return { kind: "file", target, paneId };
+		return { kind: "file", target, paneId, isPinned: value.isPinned === true };
 	}
 
 	const target = value.target.trim();
@@ -59,7 +60,7 @@ function normalizeWorkspaceSessionTab(
 	const key = `${paneId}\0${target}`;
 	if (seenTargets.has(key)) return null;
 	seenTargets.add(key);
-	return { kind: "special", target, paneId };
+	return { kind: "special", target, paneId, isPinned: value.isPinned === true };
 }
 
 function normalizeSplitEditorNode(
