@@ -266,6 +266,10 @@ export function AIComposer({
 	const beamSize = isStreamingResponse ? "pulse-inner" : "md";
 	const beamStrength = isStreamingResponse ? 0.3 : hasDraftText ? 0.28 : 0.7;
 
+	useLayoutEffect(() => {
+		if (autoFocus) composerInputRef.current?.focus();
+	}, [autoFocus, composerInputRef]);
+
 	const handleInsertMentionTrigger = useCallback(() => {
 		if (isAwaitingResponse) return;
 		setInput((prev) => {
@@ -527,7 +531,6 @@ export function AIComposer({
 							ref={composerInputRef}
 							className="aiComposerInput"
 							contentEditable={!isAwaitingResponse}
-							autoFocus={autoFocus}
 							suppressContentEditableWarning
 							role="textbox"
 							tabIndex={0}

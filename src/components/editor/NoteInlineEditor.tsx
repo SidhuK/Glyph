@@ -24,6 +24,7 @@ import {
 	type FocusedCodeBlockPreview,
 	FocusedCodeBlockPreviewDialog,
 } from "./FocusedCodeBlockPreviewDialog";
+import type { InlineAISelection } from "./InlineAIEditor";
 import { NoteEditorSurface } from "./NoteEditorSurface";
 import { NoteFindBar } from "./NoteFindBar";
 import { NoteLinkDialog, type NoteLinkDialogState } from "./NoteLinkDialog";
@@ -286,9 +287,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [linkDialog, setLinkDialog] = useState<NoteLinkDialogState | null>(
 		null,
 	);
-	const [inlineAISelection, setInlineAISelection] = useState<
-		import("./InlineAIEditor").InlineAISelection | null
-	>(null);
+	const [inlineAISelection, setInlineAISelection] =
+		useState<InlineAISelection | null>(null);
 	useEffect(() => {
 		if (!onFlushPendingEditsReady) return;
 		onFlushPendingEditsReady(() => flushMarkdownSync());

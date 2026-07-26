@@ -4,14 +4,15 @@ import type { Editor, JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { X } from "../Icons";
 import { AIChatThread } from "../ai/AIChatThread";
 import { AIComposer } from "../ai/AIComposer";
 import { messageText } from "../ai/aiPanelConstants";
 import { useRigChat } from "../ai/hooks/useRigChat";
 import { useAiContext } from "../ai/useAiContext";
 import { useAiProfiles } from "../ai/useAiProfiles";
-import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
 
 export interface InlineAISelection {
 	from: number;
@@ -37,7 +38,7 @@ function parseMarkdown(
 			breaks: false,
 		},
 	});
-	const parsed = manager.parse(markdown);
+	const parsed = manager.parse(preprocessMarkdownForEditor(markdown));
 	const content = Array.isArray(parsed.content) ? parsed.content : [];
 	if (
 		unwrapSingleParagraph &&
@@ -90,38 +91,27 @@ export function InlineAIEditor({
 			element.style.height = "0px";
 			const nextHeight = Math.max(40, Math.min(element.scrollHeight, 120));
 			element.style.height = `${nextHeight.toString()}px`;
-			element.style.overflowY =
-				element.scrollHeight > 120 ? "auto" : "hidden";
+			element.style.overflowY = element.scrollHeight > 120 ? "auto" : "hidden";
 		});
 	}, []);
 
-	const send = useCallback(
-		(text: string) => {
-			const prompt = text.trim();
-			if (!prompt || isAwaiting || !profiles.activeProfileId) return;
-			setInput("");
-			setApplyError("");
-			void chat.sendMessage(
-				{ text: prompt },
-				{
-					body: {
-						profile_id: profiles.activeProfileId,
-						provider: profiles.activeProfile?.provider,
-						mode: "chat",
-						system_prompt: selectionSystemPrompt(selection.text),
-						audit: true,
-					},
+	const send = (text: string) => {
+		const prompt = text.trim();
+		if (!prompt || isAwaiting || !profiles.activeProfileId) return;
+		setInput("");
+		setApplyError("");
+		void chat.sendMessage(
+			{ text: prompt },
+			{
+				body: {
+					profile_id: profiles.activeProfileId,
+					mode: "chat",
+					system_prompt: selectionSystemPrompt(selection.text),
+					audit: true,
 				},
-			);
-		},
-		[
-			chat,
-			isAwaiting,
-			profiles.activeProfile?.provider,
-			profiles.activeProfileId,
-			selection.text,
-		],
-	);
+			},
+		);
+	};
 
 	const applyResponse = (mode: "replace" | "insert") => {
 		if (!latestAssistantText || editor.isDestroyed || !editor.isEditable) {
@@ -173,9 +163,9 @@ export function InlineAIEditor({
 	};
 
 	return (
-		<div
+		<dialog
+			open
 			className="inlineAiEditor nodrag nopan nowheel"
-			role="dialog"
 			aria-label={t("inlineAi.title")}
 			onKeyDown={(event) => {
 				event.stopPropagation();
@@ -206,18 +196,22 @@ export function InlineAIEditor({
 			<div className="inlineAiThread" aria-live="polite">
 				{chat.messages.length === 0 ? (
 					<div className="inlineAiQuickActions">
-						<button
+						<Button
 							type="button"
+							variant="outline"
+							size="sm"
 							onClick={() => send(t("inlineAi.summarizePrompt"))}
 						>
 							{t("inlineAi.summarize")}
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
+							variant="outline"
+							size="sm"
 							onClick={() => send(t("inlineAi.rephrasePrompt"))}
 						>
 							{t("inlineAi.rephrase")}
-						</button>
+						</Button>
 					</div>
 				) : (
 					<AIChatThread
@@ -237,12 +231,12 @@ export function InlineAIEditor({
 				)}
 			</div>
 			{chat.error ? (
-				<div className="inlineAiError">{chat.error.message}</div>
+				<div className="aiPanelError">{chat.error.message}</div>
 			) : null}
 			{profiles.error ? (
-				<div className="inlineAiError">{profiles.error}</div>
+				<div className="aiPanelError">{profiles.error}</div>
 			) : null}
-			{applyError ? <div className="inlineAiError">{applyError}</div> : null}
+			{applyError ? <div className="aiPanelError">{applyError}</div> : null}
 			{latestAssistantText && !isAwaiting ? (
 				<div className="inlineAiApplyActions">
 					<Button
@@ -294,6 +288,6 @@ export function InlineAIEditor({
 				sendLabel={t("inlineAi.send")}
 				stopLabel={t("inlineAi.stop")}
 			/>
-		</div>
+		</dialog>
 	);
 }

@@ -1,7 +1,4 @@
-import {
-	AiBrain04Icon,
-	NoteAddIcon,
-} from "@hugeicons/core-free-icons";
+import { AiBrain04Icon, NoteAddIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
