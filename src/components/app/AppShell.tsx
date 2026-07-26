@@ -435,18 +435,9 @@ export function AppShell() {
 	);
 
 	const handleCloseSpace = useCallback(async () => {
-		try {
-			// Native space teardown happens only after the open-note snapshot is durable.
-			await flushWorkspaceSession();
-			await closeSpace();
-		} catch (cause) {
-			console.error(
-				"Failed to save workspace session before closing space",
-				cause,
-			);
-			setError("The open tabs could not be saved. Please try again.");
-		}
-	}, [closeSpace, flushWorkspaceSession, setError]);
+		if (!(await prepareForSpaceChange())) return;
+		await closeSpace();
+	}, [closeSpace, prepareForSpaceChange]);
 
 	useEffect(() => {
 		const visible =
