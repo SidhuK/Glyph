@@ -196,7 +196,7 @@ const AIChatMessageBody = memo(function AIChatMessageBody({
 									className="aiChatContextPill"
 									key={`${item.kind}:${item.label}`}
 								>
-									{item.kind === "file" ? (
+									{item.kind === "file" || item.kind === "selection" ? (
 										<File size="var(--icon-xs)" />
 									) : (
 										<FolderOpen size="var(--icon-xs)" />

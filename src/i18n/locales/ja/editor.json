@@ -24,6 +24,19 @@
 		"quote": "引用",
 		"codeBlock": "コードブロック"
 	},
+	"selectionAi": {
+		"title": "選択範囲について AI に質問",
+		"close": "閉じる",
+		"noSelection": "まずエディターでテキストを選択してください。",
+		"summarize": "要約",
+		"summarizePrompt": "この選択範囲を簡潔に要約してください。",
+		"rephrase": "言い換え",
+		"rephrasePrompt": "意味を保ったまま、この選択範囲を明確に言い換えてください。",
+		"replace": "選択範囲を置換",
+		"insertBelow": "下に挿入",
+		"applyFailed": "AI の回答を適用できませんでした。",
+		"selectionChanged": "選択したテキストが変更されました。もう一度選択して再試行してください。"
+	},
 	"colors": {
 		"gray": "グレー",
 		"brown": "茶",

@@ -204,9 +204,54 @@ export function useAiContext(contextSearch = "") {
 		},
 	});
 
-	const ensurePayload = useCallback(async () => {
-		return buildPayloadMutation.mutateAsync();
-	}, [buildPayloadMutation]);
+	const ensurePayload = useCallback(
+		async (selection?: {
+			label: string;
+			text: string;
+		}) => {
+			const built = await buildPayloadMutation.mutateAsync();
+			if (!selection) return built;
+			const selectionHeader = [
+				"# Selected passage",
+				`Source: ${selection.label}`,
+				"",
+			].join("\n");
+			const contextSuffix = built.payload ? `\n\n---\n\n${built.payload}` : "";
+			const availableSelectionChars = Math.max(
+				0,
+				DEFAULT_CHAR_BUDGET - selectionHeader.length - contextSuffix.length,
+			);
+			const selectionText = selection.text.slice(0, availableSelectionChars);
+			const selectionTruncated = selectionText.length < selection.text.length;
+			const payload =
+				`${selectionHeader}${selectionText}${contextSuffix}`.slice(
+					0,
+					DEFAULT_CHAR_BUDGET,
+				);
+			return {
+				payload,
+				manifest: {
+					items: [
+						{
+							kind: "selection",
+							label: selection.label,
+							chars: selectionText.length,
+							estTokens: Math.ceil(selectionText.length / 4),
+							truncated: selectionTruncated,
+						},
+						...built.manifest.items,
+					],
+					totalChars: payload.length,
+					estTokens: Math.ceil(payload.length / 4),
+				},
+				attachments: [
+					{ kind: "selection" as const, label: selection.label },
+					...built.attachments,
+				],
+			};
+		},
+		[buildPayloadMutation],
+	);
 
 	return {
 		addContext,

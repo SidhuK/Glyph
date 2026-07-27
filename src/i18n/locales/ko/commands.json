@@ -54,6 +54,10 @@
 			"label": "AI: 현재 노트 첨부",
 			"description": "현재 노트를 AI에 첨부합니다."
 		},
+		"ai_selection_to_context": {
+			"label": "AI: 선택 영역을 컨텍스트로 사용",
+			"description": "선택한 텍스트를 기본 컨텍스트로 AI 패널에 보냅니다."
+		},
 		"bold": {
 			"label": "굵게",
 			"description": "현재 선택 영역의 굵게 서식을 전환합니다."

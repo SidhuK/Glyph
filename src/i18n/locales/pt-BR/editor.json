@@ -24,6 +24,19 @@
 		"quote": "Citação",
 		"codeBlock": "Bloco de código"
 	},
+	"selectionAi": {
+		"title": "Perguntar à IA sobre a seleção",
+		"close": "Fechar",
+		"noSelection": "Selecione primeiro um texto no editor.",
+		"summarize": "Resumir",
+		"summarizePrompt": "Resuma esta seleção de forma concisa.",
+		"rephrase": "Reformular",
+		"rephrasePrompt": "Reformule esta seleção com clareza, preservando seu significado.",
+		"replace": "Substituir seleção",
+		"insertBelow": "Inserir abaixo",
+		"applyFailed": "Não foi possível aplicar a resposta da IA.",
+		"selectionChanged": "O texto selecionado mudou. Selecione-o novamente e tente outra vez."
+	},
 	"colors": {
 		"gray": "Cinza",
 		"brown": "Marrom",

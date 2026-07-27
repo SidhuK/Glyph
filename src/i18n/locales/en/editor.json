@@ -59,6 +59,19 @@
 		"quote": "Quote",
 		"codeBlock": "Code block"
 	},
+	"selectionAi": {
+		"title": "Ask AI about selection",
+		"close": "Close",
+		"noSelection": "Select text in the editor first.",
+		"summarize": "Summarize",
+		"summarizePrompt": "Summarize this selection concisely.",
+		"rephrase": "Rephrase",
+		"rephrasePrompt": "Rephrase this selection for clarity while preserving its meaning.",
+		"replace": "Replace selection",
+		"insertBelow": "Insert below",
+		"applyFailed": "Could not apply the AI response.",
+		"selectionChanged": "The selected text changed. Select it again and retry."
+	},
 	"colors": {
 		"gray": "Gray",
 		"brown": "Brown",

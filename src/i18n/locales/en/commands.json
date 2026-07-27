@@ -54,6 +54,10 @@
 			"label": "AI: Attach Current Note",
 			"description": "Attach the current note to AI."
 		},
+		"ai_selection_to_context": {
+			"label": "AI: Use Selection as Context",
+			"description": "Send the selected text to the AI panel as its main context."
+		},
 		"bold": {
 			"label": "Bold",
 			"description": "Toggle bold formatting for the current selection."

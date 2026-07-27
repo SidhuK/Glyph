@@ -54,6 +54,10 @@
 			"label": "KI: Aktuelle Notiz anhängen",
 			"description": "Die aktuelle Notiz an die KI anhängen."
 		},
+		"ai_selection_to_context": {
+			"label": "KI: Auswahl als Kontext verwenden",
+			"description": "Den ausgewählten Text als Hauptkontext an das KI-Panel senden."
+		},
 		"bold": {
 			"label": "Fett",
 			"description": "Fettformatierung für die aktuelle Auswahl umschalten."

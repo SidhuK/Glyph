@@ -24,6 +24,19 @@
 		"quote": "Zitat",
 		"codeBlock": "Codeblock"
 	},
+	"selectionAi": {
+		"title": "KI zur Auswahl fragen",
+		"close": "Schließen",
+		"noSelection": "Wähle zuerst Text im Editor aus.",
+		"summarize": "Zusammenfassen",
+		"summarizePrompt": "Fasse diese Auswahl kurz zusammen.",
+		"rephrase": "Umformulieren",
+		"rephrasePrompt": "Formuliere diese Auswahl klarer, ohne ihre Bedeutung zu verändern.",
+		"replace": "Auswahl ersetzen",
+		"insertBelow": "Darunter einfügen",
+		"applyFailed": "Die KI-Antwort konnte nicht angewendet werden.",
+		"selectionChanged": "Der ausgewählte Text hat sich geändert. Wähle ihn erneut aus und versuche es noch einmal."
+	},
 	"colors": {
 		"gray": "Grau",
 		"brown": "Braun",

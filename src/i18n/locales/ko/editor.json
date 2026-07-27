@@ -24,6 +24,19 @@
 		"quote": "인용",
 		"codeBlock": "코드 블록"
 	},
+	"selectionAi": {
+		"title": "선택 영역에 대해 AI에게 질문",
+		"close": "닫기",
+		"noSelection": "먼저 편집기에서 텍스트를 선택하세요.",
+		"summarize": "요약",
+		"summarizePrompt": "이 선택 영역을 간결하게 요약해 주세요.",
+		"rephrase": "바꿔 쓰기",
+		"rephrasePrompt": "의미를 유지하면서 이 선택 영역을 명확하게 바꿔 써 주세요.",
+		"replace": "선택 영역 바꾸기",
+		"insertBelow": "아래에 삽입",
+		"applyFailed": "AI 응답을 적용할 수 없습니다.",
+		"selectionChanged": "선택한 텍스트가 변경되었습니다. 다시 선택하고 재시도하세요."
+	},
 	"colors": {
 		"gray": "회색",
 		"brown": "갈색",
