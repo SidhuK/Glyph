@@ -1,9 +1,6 @@
 export const AI_CONTEXT_ATTACH_EVENT = "glyph:ai-context-attach";
 
-export type AiSelectionApplyResult =
-	| "applied"
-	| "selection-changed"
-	| "failed";
+export type AiSelectionApplyResult = "applied" | "selection-changed" | "failed";
 
 export interface AiSelectionContext {
 	label: string;

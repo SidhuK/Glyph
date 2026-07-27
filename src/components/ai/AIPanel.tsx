@@ -286,6 +286,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 			toolEvents.setActivityTimeline(restoredTimeline);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
+			setSelectionContext(null);
 		},
 		[
 			chat,
@@ -532,9 +533,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
 								onClick={() =>
-									void sendWithCurrentContext(
-										t("selectionAi.summarizePrompt"),
-									)
+									void sendWithCurrentContext(t("selectionAi.summarizePrompt"))
 								}
 							>
 								{t("selectionAi.summarize")}
@@ -545,9 +544,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 								size="sm"
 								disabled={toolEvents.isAwaitingResponse}
 								onClick={() =>
-									void sendWithCurrentContext(
-										t("selectionAi.rephrasePrompt"),
-									)
+									void sendWithCurrentContext(t("selectionAi.rephrasePrompt"))
 								}
 							>
 								{t("selectionAi.rephrase")}

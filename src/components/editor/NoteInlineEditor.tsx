@@ -60,8 +60,8 @@ import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
-import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { preprocessMarkdownForEditor } from "./markdown/wikiLinkMarkdownBridge";
 import { loadMathExtensionFactory } from "./math/loadMathExtensions";
 import type { SelectedCodeBlockState } from "./noteEditorOverlayTypes";
 import type { RawMarkdownEditorHandle } from "./raw/types";
@@ -477,7 +477,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			setAiPanelOpen(true);
 			dispatchAiContextAttach({
 				selection: {
-					label: relPath,
+					label: relPath ?? "",
 					text,
 					applyResponse: (applyMode, markdown) => {
 						if (liveEditor.isDestroyed || !liveEditor.isEditable) {
