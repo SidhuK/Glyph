@@ -621,6 +621,8 @@ export function MarkdownEditorPane({
 										relPath={relPath}
 										mode={mode}
 										enableFocusMode
+										aiEnabled={aiEnabled}
+										onOpenAiPanel={() => setAiPanelOpen(true)}
 										pasteMarkdownBehavior="smart-markdown"
 										onChange={(nextText) => {
 											markUserEdit(nextText);

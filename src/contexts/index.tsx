@@ -13,7 +13,6 @@ export { useFileTreeContext } from "./FileTreeContext";
 export {
 	useAISidebarContext,
 	useDateDisplayFormat,
-	useOptionalAISidebarContext,
 	useUILayoutContext,
 } from "./UIContext";
 export { useEditorContext, useEditorRegistration } from "./EditorContext";

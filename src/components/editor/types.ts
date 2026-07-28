@@ -50,6 +50,9 @@ export interface NoteInlineEditorProps {
 	placeholder?: string;
 	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	enableFocusMode?: boolean;
+	/** Selection→AI is only wired when the host provides both of these. */
+	aiEnabled?: boolean;
+	onOpenAiPanel?: () => void;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
