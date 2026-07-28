@@ -138,13 +138,6 @@ vi.mock("motion/react", () => ({
 	AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-vi.mock("../../contexts", () => ({
-	useAISidebarContext: () => ({
-		aiEnabled: false,
-		setAiPanelOpen: vi.fn(),
-	}),
-}));
-
 vi.mock("../../lib/tauri", () => ({
 	invoke: vi.fn(),
 }));
