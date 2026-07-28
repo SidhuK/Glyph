@@ -2,7 +2,8 @@
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
-	--window-control-toggle-offset: 90px;
+	--window-control-toggle-offset: 78px;
+	--window-control-toggle-top: calc((var(--header-height) + 6px) / 2);
 	--collapsed-sidebar-top-reserve: calc(
 		var(--window-control-toggle-offset) +
 		38px
@@ -246,7 +247,7 @@ body:has(.indexingNotice) [data-sileo-viewport][data-position="top-center"] {
 
 .sidebarCollapsedToggle {
 	position: absolute;
-	top: calc((var(--header-height) + 6px) / 2);
+	top: var(--window-control-toggle-top);
 	left: var(--window-control-toggle-offset);
 	transform: translateY(-50%);
 	z-index: 3;
