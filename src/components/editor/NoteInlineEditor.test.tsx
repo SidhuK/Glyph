@@ -139,7 +139,7 @@ vi.mock("motion/react", () => ({
 }));
 
 vi.mock("../../contexts", () => ({
-	useAISidebarContext: () => ({
+	useOptionalAISidebarContext: () => ({
 		aiEnabled: false,
 		setAiPanelOpen: vi.fn(),
 	}),

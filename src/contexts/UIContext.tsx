@@ -549,6 +549,11 @@ export function useAISidebarContext(): AISidebarContextValue {
 	return ctx;
 }
 
+/** Safe for windows that mount NoteInlineEditor without AppProviders (external markdown, quick note). */
+export function useOptionalAISidebarContext(): AISidebarContextValue | null {
+	return useContext(AISidebarContext);
+}
+
 /** Current global complete-date display format (defaults to Friendly outside provider). */
 export function useDateDisplayFormat(): DateDisplayFormat {
 	return useContext(DateDisplayFormatContext);

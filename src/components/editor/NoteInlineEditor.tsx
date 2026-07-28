@@ -17,7 +17,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { useAISidebarContext } from "../../contexts";
+import { useOptionalAISidebarContext } from "../../contexts";
 import { isHtmlEmbedCodeBlockLanguage } from "../../lib/htmlEmbed";
 import { isMermaidCodeBlockLanguage } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
@@ -229,7 +229,10 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	rolloverTaskActions,
 }: NoteInlineEditorProps) {
 	const { t } = useTranslation("editor");
-	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
+	// External markdown / quick-note windows mount without UIProvider.
+	const aiSidebar = useOptionalAISidebarContext();
+	const aiEnabled = aiSidebar?.aiEnabled ?? false;
+	const setAiPanelOpen = aiSidebar?.setAiPanelOpen;
 	const chromeMinimal = chrome === "minimal";
 	const mathNodeEditor = useMathNodeEditor();
 	const [mathExtensions, setMathExtensions] = useState<
@@ -458,6 +461,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		onSendSelectionToAi: useCallback(() => {
 			if (
 				!aiEnabled ||
+				!setAiPanelOpen ||
 				!liveEditor ||
 				liveEditor.isDestroyed ||
 				!liveEditor.isEditable
