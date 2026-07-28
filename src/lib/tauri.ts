@@ -64,6 +64,19 @@ interface TextFileWriteResult {
 	mtime_ms: number;
 }
 
+export type ImportConflictPolicy = "keep_both" | "replace" | "skip";
+
+export type SpaceImportResult =
+	| {
+			status: "conflicts";
+			conflict_count: number;
+	  }
+	| {
+			status: "imported";
+			imported_count: number;
+			markdown_paths: string[];
+	  };
+
 interface ExternalMarkdownDoc {
 	path: string;
 	text: string;
@@ -945,6 +958,14 @@ interface TauriCommands {
 			original_filename?: string | null;
 		},
 		SavedPastedImage
+	>;
+	space_import_paths: CommandDef<
+		{
+			source_paths: string[];
+			target_dir: string;
+			conflict_policy?: ImportConflictPolicy | null;
+		},
+		SpaceImportResult
 	>;
 	space_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },

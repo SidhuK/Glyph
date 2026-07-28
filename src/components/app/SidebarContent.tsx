@@ -45,6 +45,9 @@ interface SidebarContentProps {
 	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
+	onImportFilesInDir: (dirPath: string) => void;
+	onImportFolderInDir: (dirPath: string) => void;
+	onImportPathsInDir: (paths: string[], dirPath: string) => void;
 	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onRenameDir: (
@@ -140,6 +143,9 @@ export const SidebarContent = memo(function SidebarContent({
 	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
+	onImportFilesInDir,
+	onImportFolderInDir,
+	onImportPathsInDir,
 	onRequestCreateFolder,
 	onDuplicateFile,
 	onRenameDir,
@@ -586,6 +592,9 @@ export const SidebarContent = memo(function SidebarContent({
 									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+									onImportFilesInDir={onImportFilesInDir}
+									onImportFolderInDir={onImportFolderInDir}
+									onImportPathsInDir={onImportPathsInDir}
 									onRequestCreateFolder={onRequestCreateFolder}
 									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}

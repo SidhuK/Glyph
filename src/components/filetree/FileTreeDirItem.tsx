@@ -106,6 +106,8 @@ interface FileTreeDirItemProps {
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
+	onImportFilesInDir: (dirPath: string) => unknown;
+	onImportFolderInDir: (dirPath: string) => unknown;
 	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	onEnterDir?: (dirPath: string) => void;
@@ -131,6 +133,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCancelRename,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
+	onImportFilesInDir,
+	onImportFolderInDir,
 	onRequestCreateFolder,
 	onDeletePath,
 	onEnterDir,
@@ -189,6 +193,14 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					label: t("fileTree.addFolder"),
 					action: () => void onRequestCreateFolder(entry.rel_path),
 				},
+				{
+					label: t("fileTree.importFilesHere"),
+					action: () => void onImportFilesInDir(entry.rel_path),
+				},
+				{
+					label: t("fileTree.importFolderHere"),
+					action: () => void onImportFolderInDir(entry.rel_path),
+				},
 				{ type: "separator" },
 				...buildPathCopyMenuItems(spacePath, entry.rel_path),
 				{ type: "separator" },
@@ -211,6 +223,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			onOpenAppearancePicker,
 			onCreateFromTemplateInDir,
 			onDeletePath,
+			onImportFilesInDir,
+			onImportFolderInDir,
 			onNewFileInDir,
 			onRequestCreateFolder,
 			onStartRename,

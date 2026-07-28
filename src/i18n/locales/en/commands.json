@@ -222,6 +222,14 @@
 			"label": "Highlight: Yellow",
 			"description": "Apply yellow text highlight."
 		},
+		"import-files": {
+			"label": "Import Files…",
+			"description": "Copy Markdown files into the current folder."
+		},
+		"import-folder": {
+			"label": "Import Folder…",
+			"description": "Copy a folder into the current folder."
+		},
 		"italic": {
 			"label": "Italic",
 			"description": "Toggle italic formatting for the current selection."

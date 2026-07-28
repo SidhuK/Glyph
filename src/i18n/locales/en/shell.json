@@ -72,8 +72,25 @@
 		"addFile": "Add file",
 		"createFromTemplate": "Create from template",
 		"addFolder": "Add folder",
+		"importFilesHere": "Import Files Here…",
+		"importFolderHere": "Import Folder Here…",
 		"deleteFile": "Delete file",
 		"deleteFolder": "Delete folder"
+	},
+	"import": {
+		"filesTitle": "Import Files",
+		"folderTitle": "Import Folder",
+		"markdownFilter": "Markdown files",
+		"conflictTitle": "Items Already Exist",
+		"conflictMessage_one": "1 item already exists in this folder. Apply the selected action to this conflict.",
+		"conflictMessage_other": "{{count}} items already exist in this folder. Apply the selected action to all conflicts.",
+		"keepBoth": "Keep Both",
+		"replace": "Replace",
+		"skip": "Skip",
+		"errorTitle": "Import Failed",
+		"success_one": "Imported 1 file.",
+		"success_other": "Imported {{count}} files.",
+		"noneImported": "No files were imported."
 	},
 	"commandPalette": {
 		"title": "Command Palette",
