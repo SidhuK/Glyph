@@ -123,6 +123,14 @@ vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
 }));
 
+vi.mock("@tauri-apps/api/window", () => ({
+	getCurrentWindow: () => ({
+		label: "main",
+		onDragDropEvent: vi.fn().mockResolvedValue(vi.fn()),
+		scaleFactor: vi.fn().mockResolvedValue(1),
+	}),
+}));
+
 (
 	globalThis as typeof globalThis & {
 		IS_REACT_ACT_ENVIRONMENT?: boolean;
@@ -214,6 +222,9 @@ describe("FileTreePane", () => {
 						onCommitFileRename={vi.fn()}
 						onCommitDirRename={vi.fn()}
 						onMovePath={vi.fn()}
+						onImportFilesInDir={vi.fn()}
+						onImportFolderInDir={vi.fn()}
+						onImportPathsInDir={vi.fn()}
 						pinnedFiles={["notes/alpha.md", "docs/beta.md"]}
 						onTogglePinnedFile={vi.fn()}
 					/>
@@ -262,6 +273,9 @@ describe("FileTreePane", () => {
 						onCommitFileRename={vi.fn()}
 						onCommitDirRename={vi.fn()}
 						onMovePath={vi.fn()}
+						onImportFilesInDir={vi.fn()}
+						onImportFolderInDir={vi.fn()}
+						onImportPathsInDir={vi.fn()}
 						pinnedFiles={[]}
 						onTogglePinnedFile={vi.fn()}
 					/>
@@ -317,6 +331,9 @@ describe("FileTreePane", () => {
 						onCommitFileRename={vi.fn()}
 						onCommitDirRename={vi.fn()}
 						onMovePath={vi.fn()}
+						onImportFilesInDir={vi.fn()}
+						onImportFolderInDir={vi.fn()}
+						onImportPathsInDir={vi.fn()}
 						pinnedFiles={[]}
 						onTogglePinnedFile={vi.fn()}
 					/>

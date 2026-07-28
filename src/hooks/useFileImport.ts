@@ -13,17 +13,16 @@ interface UseFileImportOptions {
 	openWorkspaceFile: (path: string) => Promise<void>;
 }
 
-function policyForDialogResult(result: string): ImportConflictPolicy | null {
-	switch (result) {
-		case "Yes":
-			return "keep_both";
-		case "No":
-			return "replace";
-		case "Cancel":
-			return "skip";
-		default:
-			return null;
-	}
+function policyForDialogResult(
+	result: string,
+	keepBoth: string,
+	replace: string,
+	skip: string,
+): ImportConflictPolicy | null {
+	if (result === keepBoth || result === "Yes") return "keep_both";
+	if (result === replace || result === "No") return "replace";
+	if (result === skip || result === "Cancel") return "skip";
+	return null;
 }
 
 export function useFileImport({
@@ -49,19 +48,22 @@ export function useFileImport({
 			result: Extract<SpaceImportResult, { status: "conflicts" }>,
 		): Promise<ImportConflictPolicy | null> => {
 			const { message } = await import("@tauri-apps/plugin-dialog");
+			const keepBoth = t("import.keepBoth");
+			const replace = t("import.replace");
+			const skip = t("import.skip");
 			const dialogResult = await message(
 				t("import.conflictMessage", { count: result.conflict_count }),
 				{
 					title: t("import.conflictTitle"),
 					kind: "warning",
 					buttons: {
-						yes: t("import.keepBoth"),
-						no: t("import.replace"),
-						cancel: t("import.skip"),
+						yes: keepBoth,
+						no: replace,
+						cancel: skip,
 					},
 				},
 			);
-			return policyForDialogResult(dialogResult);
+			return policyForDialogResult(dialogResult, keepBoth, replace, skip);
 		},
 		[t],
 	);
@@ -69,8 +71,10 @@ export function useFileImport({
 	const importPathsInto = useCallback(
 		async (sourcePaths: string[], targetDir: string) => {
 			if (sourcePaths.length === 0) return;
+
+			let result: SpaceImportResult;
 			try {
-				let result = await invoke("space_import_paths", {
+				result = await invoke("space_import_paths", {
 					source_paths: sourcePaths,
 					target_dir: targetDir,
 					conflict_policy: null,
@@ -84,20 +88,27 @@ export function useFileImport({
 						conflict_policy: conflictPolicy,
 					});
 				}
-				if (result.status !== "imported") return;
+			} catch (error) {
+				await showImportError(error);
+				return;
+			}
 
+			if (result.status !== "imported") return;
+
+			if (result.imported_count === 0) {
+				toast.info(t("import.noneImported"));
+			} else {
+				toast.success(t("import.success", { count: result.imported_count }));
+			}
+
+			try {
 				await loadDir(targetDir, true);
-				if (result.imported_count === 0) {
-					toast.info(t("import.noneImported"));
-				} else {
-					toast.success(t("import.success", { count: result.imported_count }));
-				}
 				if (result.markdown_paths.length === 1) {
 					const markdownPath = result.markdown_paths[0];
 					if (markdownPath) await openWorkspaceFile(markdownPath);
 				}
 			} catch (error) {
-				await showImportError(error);
+				toast.error(extractErrorMessage(error));
 			}
 		},
 		[loadDir, openWorkspaceFile, resolveConflicts, showImportError, t],

@@ -9,6 +9,7 @@ use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
 use super::super::helpers::deny_hidden_rel_path;
+use super::paths::remove_markdown_notes_from_index;
 
 #[derive(Clone, Copy, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -52,14 +53,40 @@ fn source_file_name(path: &Path) -> Result<PathBuf, String> {
         .ok_or_else(|| "import source has no file name".to_string())
 }
 
+fn ensure_within_space(canonical_root: &Path, abs: &Path) -> Result<(), String> {
+    let canonical = if abs.exists() {
+        abs.canonicalize().map_err(|error| error.to_string())?
+    } else {
+        let parent = abs
+            .parent()
+            .ok_or_else(|| "import destination has no parent directory".to_string())?;
+        let file_name = abs
+            .file_name()
+            .ok_or_else(|| "import destination has no file name".to_string())?;
+        parent
+            .canonicalize()
+            .map_err(|error| error.to_string())?
+            .join(file_name)
+    };
+    if !canonical.starts_with(canonical_root) {
+        return Err("import destination is outside the space".to_string());
+    }
+    Ok(())
+}
+
+fn reject_symlink(path: &Path, label: &str) -> Result<(), String> {
+    let metadata = std::fs::symlink_metadata(path).map_err(|error| error.to_string())?;
+    if metadata.file_type().is_symlink() {
+        return Err(format!("{label} cannot be a symbolic link: {}", path.display()));
+    }
+    Ok(())
+}
+
 fn validate_source(source: &Path, target_abs: &Path) -> Result<PathBuf, String> {
     if !source.is_absolute() {
         return Err("import source path must be absolute".to_string());
     }
-    let source_metadata = std::fs::symlink_metadata(source).map_err(|error| error.to_string())?;
-    if source_metadata.file_type().is_symlink() {
-        return Err("symbolic links cannot be imported".to_string());
-    }
+    reject_symlink(source, "import source")?;
     let canonical = source.canonicalize().map_err(|error| error.to_string())?;
     let metadata = std::fs::symlink_metadata(&canonical).map_err(|error| error.to_string())?;
     if !metadata.is_file() && !metadata.is_dir() {
@@ -71,11 +98,36 @@ fn validate_source(source: &Path, target_abs: &Path) -> Result<PathBuf, String> 
     Ok(canonical)
 }
 
+fn validate_source_tree(source: &Path) -> Result<(), String> {
+    let metadata = std::fs::symlink_metadata(source).map_err(|error| error.to_string())?;
+    if metadata.file_type().is_symlink() {
+        return Err(format!(
+            "symbolic links cannot be imported: {}",
+            source.display()
+        ));
+    }
+    if metadata.is_dir() {
+        for entry in std::fs::read_dir(source).map_err(|error| error.to_string())? {
+            let entry = entry.map_err(|error| error.to_string())?;
+            let child = entry.path();
+            if should_skip_source_entry(&child) {
+                continue;
+            }
+            validate_source_tree(&child)?;
+        }
+        return Ok(());
+    }
+    if metadata.is_file() {
+        return Ok(());
+    }
+    Err(format!("unsupported import source: {}", source.display()))
+}
+
 fn plan_import(
     root: &Path,
     source_paths: &[String],
     target_dir: &str,
-) -> Result<Vec<ImportRoot>, String> {
+) -> Result<(PathBuf, Vec<ImportRoot>), String> {
     if source_paths.is_empty() {
         return Err("at least one import source is required".to_string());
     }
@@ -83,17 +135,25 @@ fn plan_import(
     let target_rel = PathBuf::from(target_dir);
     deny_hidden_rel_path(&target_rel)?;
     let target_abs = paths::join_under(root, &target_rel)?;
-    if !target_abs.is_dir() {
+    reject_symlink(&target_abs, "import destination")?;
+    let target_metadata =
+        std::fs::symlink_metadata(&target_abs).map_err(|error| error.to_string())?;
+    if !target_metadata.is_dir() {
         return Err("import destination must be an existing folder".to_string());
     }
+    let canonical_root = root.canonicalize().map_err(|error| error.to_string())?;
     let canonical_target = target_abs
         .canonicalize()
         .map_err(|error| error.to_string())?;
+    if !canonical_target.starts_with(&canonical_root) {
+        return Err("import destination is outside the space".to_string());
+    }
 
-    source_paths
+    let imports = source_paths
         .iter()
         .map(|source_path| {
             let source_abs = validate_source(Path::new(source_path), &canonical_target)?;
+            validate_source_tree(&source_abs)?;
             let destination_rel = target_rel.join(source_file_name(&source_abs)?);
             deny_hidden_rel_path(&destination_rel)?;
             Ok(ImportRoot {
@@ -101,7 +161,8 @@ fn plan_import(
                 destination_rel,
             })
         })
-        .collect()
+        .collect::<Result<Vec<_>, String>>()?;
+    Ok((canonical_root, imports))
 }
 
 fn count_conflicts(root: &Path, imports: &[ImportRoot]) -> Result<usize, String> {
@@ -152,8 +213,38 @@ fn should_skip_source_entry(path: &Path) -> bool {
         .is_some_and(|name| name.starts_with('.'))
 }
 
+fn remove_destination_for_replace(
+    root: &Path,
+    destination_rel: &Path,
+    recent_local_changes: &RecentLocalChanges,
+) -> Result<(), String> {
+    let destination_abs = paths::join_under(root, destination_rel)?;
+    if !destination_abs.exists() {
+        return Ok(());
+    }
+    reject_symlink(&destination_abs, "import destination")?;
+    let metadata =
+        std::fs::symlink_metadata(&destination_abs).map_err(|error| error.to_string())?;
+    let is_dir = metadata.is_dir();
+    let rel_path = utils::to_slash(destination_rel);
+    remove_markdown_notes_from_index(
+        root,
+        &rel_path,
+        &destination_abs,
+        recent_local_changes,
+        is_dir,
+    );
+    if is_dir {
+        std::fs::remove_dir_all(&destination_abs).map_err(|error| error.to_string())?;
+    } else {
+        std::fs::remove_file(&destination_abs).map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
+
 fn copy_source(
     root: &Path,
+    canonical_root: &Path,
     source: &Path,
     destination_rel: &Path,
     recent_local_changes: &RecentLocalChanges,
@@ -170,6 +261,11 @@ fn copy_source(
     }
 
     let destination_abs = paths::join_under(root, destination_rel)?;
+    if destination_abs.exists() {
+        reject_symlink(&destination_abs, "import destination")?;
+    }
+    ensure_within_space(canonical_root, &destination_abs)?;
+
     if metadata.is_dir() {
         if destination_abs.exists() && !destination_abs.is_dir() {
             return Err(format!(
@@ -178,6 +274,7 @@ fn copy_source(
             ));
         }
         std::fs::create_dir_all(&destination_abs).map_err(|error| error.to_string())?;
+        ensure_within_space(canonical_root, &destination_abs)?;
         for entry in std::fs::read_dir(source).map_err(|error| error.to_string())? {
             let entry = entry.map_err(|error| error.to_string())?;
             let child_source = entry.path();
@@ -186,6 +283,7 @@ fn copy_source(
             }
             copy_source(
                 root,
+                canonical_root,
                 &child_source,
                 &destination_rel.join(entry.file_name()),
                 recent_local_changes,
@@ -253,7 +351,8 @@ pub async fn space_import_paths(
         let _guard = note_mutation_mutex
             .lock()
             .map_err(|_| "note mutation mutex poisoned".to_string())?;
-        let imports = plan_import(&root_for_import, &source_paths, &target_dir)?;
+        let (canonical_root, imports) =
+            plan_import(&root_for_import, &source_paths, &target_dir)?;
         let conflict_count = count_conflicts(&root_for_import, &imports)?;
         if conflict_count > 0 && conflict_policy.is_none() {
             return Ok(SpaceImportResult::Conflicts { conflict_count });
@@ -278,13 +377,23 @@ pub async fn space_import_paths(
                         &reserved,
                         import.source_abs.is_file(),
                     )?,
-                    ImportConflictPolicy::Replace => import.destination_rel,
+                    ImportConflictPolicy::Replace => {
+                        if requested_abs.exists() {
+                            remove_destination_for_replace(
+                                &root_for_import,
+                                &import.destination_rel,
+                                &recent_local_changes,
+                            )?;
+                        }
+                        import.destination_rel
+                    }
                     ImportConflictPolicy::Skip => continue,
                 }
             };
             reserved.insert(path_key(&destination_rel));
             copy_source(
                 &root_for_import,
+                &canonical_root,
                 &import.source_abs,
                 &destination_rel,
                 &recent_local_changes,
