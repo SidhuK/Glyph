@@ -7,6 +7,8 @@ import { useTauriEvent } from "../lib/tauriEvents";
 interface UseMenuListenersProps {
 	onNewNote: () => void;
 	onCreateFromTemplate: () => void;
+	onImportFiles: () => void;
+	onImportFolder: () => void;
 	onOpenDailyNote: () => void;
 	onSaveNote: () => void;
 	onPrintNote: () => void;
@@ -31,6 +33,8 @@ interface UseMenuListenersProps {
 export function useMenuListeners({
 	onNewNote,
 	onCreateFromTemplate,
+	onImportFiles,
+	onImportFolder,
 	onOpenDailyNote,
 	onSaveNote,
 	onPrintNote,
@@ -72,6 +76,8 @@ export function useMenuListeners({
 			void dispatchAppCommand(payload.command_id, {
 				"new-note": onNewNote,
 				"create-from-template": onCreateFromTemplate,
+				"import-files": onImportFiles,
+				"import-folder": onImportFolder,
 				"open-daily-note": onOpenDailyNote,
 				"save-note": onSaveNote,
 				"print-note": onPrintNote,
@@ -156,6 +162,8 @@ export function useMenuListeners({
 			onCreateSpace,
 			onEditorAction,
 			onGitSyncNow,
+			onImportFiles,
+			onImportFolder,
 			onNewNote,
 			onOpenAiSettings,
 			onOpenDailyNote,

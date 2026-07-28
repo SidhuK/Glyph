@@ -437,6 +437,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+Shift+M"),
     )?;
+    let import_files = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.import_files",
+        space_open,
+        None,
+    )?;
+    let import_folder = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.import_folder",
+        space_open,
+        None,
+    )?;
     let open_daily_note = menu_item_with_shortcut(app, menu_labels, menu_shortcuts, "file.open_daily_note",
         true,
         Some("CmdOrCtrl+Shift+D"),
@@ -628,6 +636,9 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &new_note,
             &create_from_template,
             &open_daily_note,
+            &PredefinedMenuItem::separator(app)?,
+            &import_files,
+            &import_folder,
             &PredefinedMenuItem::separator(app)?,
             &save_note,
             &print_note,
@@ -1607,6 +1618,7 @@ pub fn run() {
             space_fs::read_write::preview::space_read_text_previews_batch,
             space_fs::read_write::preview::space_read_binary_preview,
             space_fs::read_write::binary::space_save_pasted_image,
+            space_fs::read_write::import::space_import_paths,
             space_fs::read_write::text::space_write_text,
             space_fs::read_write::text::space_link_unlinked_mentions,
             space_fs::read_write::text::space_open_or_create_text,

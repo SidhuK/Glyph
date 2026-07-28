@@ -71,9 +71,9 @@
 	align-items: center;
 	gap: 6px;
 	position: absolute;
-	top: 14px;
-	right: 8px;
-	transform: none;
+	top: var(--window-control-toggle-top);
+	left: var(--window-control-toggle-offset);
+	transform: translateY(-50%);
 	z-index: 30;
 }
 

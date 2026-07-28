@@ -23,6 +23,7 @@ import {
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
+import { useFileImport } from "../../hooks/useFileImport";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
@@ -456,6 +457,18 @@ export function AppShell() {
 		},
 		[fileTree, openFileTab, setActiveDirPath],
 	);
+	const { importFilesInto, importFolderInto, importPathsInto } = useFileImport({
+		loadDir: fileTree.loadDir,
+		openWorkspaceFile,
+	});
+	const selectedImportDir =
+		activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+	const handleImportFilesFromMenu = useCallback(() => {
+		void importFilesInto(selectedImportDir);
+	}, [importFilesInto, selectedImportDir]);
+	const handleImportFolderFromMenu = useCallback(() => {
+		void importFolderInto(selectedImportDir);
+	}, [importFolderInto, selectedImportDir]);
 
 	useEffect(() => {
 		if (!spacePath || !onboardingNotePath) return;
@@ -1165,6 +1178,8 @@ export function AppShell() {
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
+		onImportFiles: handleImportFilesFromMenu,
+		onImportFolder: handleImportFolderFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
 		onPrintNote: handlePrintActiveNote,
@@ -1215,6 +1230,8 @@ export function AppShell() {
 		goForward,
 		handleCopyOpenNoteAsMarkdown,
 		handleCreateFromTemplateFromMenu,
+		handleImportFilesFromMenu,
+		handleImportFolderFromMenu,
 		handleDuplicateActiveMarkdown,
 		handleGitSyncFailure,
 		handleOpenAiSettings,
@@ -1399,6 +1416,9 @@ export function AppShell() {
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
+				onImportFilesInDir={importFilesInto}
+				onImportFolderInDir={importFolderInto}
+				onImportPathsInDir={importPathsInto}
 				onRequestCreateFolder={(dirPath) =>
 					fileTree.requestCreateFolder(dirPath)
 				}

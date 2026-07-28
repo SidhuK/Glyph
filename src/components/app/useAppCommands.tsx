@@ -8,7 +8,9 @@ import {
 	ChartRelationshipIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
+	FileImportIcon,
 	Folder01Icon,
+	FolderImportIcon,
 	FolderOpenIcon,
 	FolderRemoveIcon,
 	InformationCircleIcon,
@@ -86,6 +88,8 @@ interface UseAppCommandsDeps {
 	goForward: () => void;
 	handleCopyOpenNoteAsMarkdown: () => Promise<void>;
 	handleCreateFromTemplateFromMenu: () => void;
+	handleImportFilesFromMenu: () => void;
+	handleImportFolderFromMenu: () => void;
 	handleDuplicateActiveMarkdown: () => Promise<void>;
 	handleGitSyncFailure: (cause: unknown) => void;
 	handleOpenAiSettings: () => void;
@@ -249,6 +253,8 @@ export function useAppCommands({
 	goForward,
 	handleCopyOpenNoteAsMarkdown,
 	handleCreateFromTemplateFromMenu,
+	handleImportFilesFromMenu,
+	handleImportFolderFromMenu,
 	handleDuplicateActiveMarkdown,
 	handleGitSyncFailure,
 	handleOpenAiSettings,
@@ -352,6 +358,30 @@ export function useAppCommands({
 				shortcut: { meta: true, shift: true, key: "m" },
 				enabled: Boolean(spacePath),
 				action: handleCreateFromTemplateFromMenu,
+			},
+			{
+				id: "import-files",
+				icon: (
+					<HugeiconsIcon
+						icon={FileImportIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: handleImportFilesFromMenu,
+			},
+			{
+				id: "import-folder",
+				icon: (
+					<HugeiconsIcon
+						icon={FolderImportIcon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
+				enabled: Boolean(spacePath),
+				action: handleImportFolderFromMenu,
 			},
 			{
 				id: "new-tab",
@@ -913,6 +943,8 @@ export function useAppCommands({
 		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
 		handleDuplicateActiveMarkdown,
+		handleImportFilesFromMenu,
+		handleImportFolderFromMenu,
 		handleOpenAiSettings,
 		handleOpenSpaceSettings,
 		handleRevealSpaceFromMenu,

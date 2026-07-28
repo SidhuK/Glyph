@@ -175,7 +175,7 @@ fn duplicate_file_under_root(
     }
 }
 
-fn remove_markdown_notes_from_index(
+pub(crate) fn remove_markdown_notes_from_index(
     root: &Path,
     rel_path: &str,
     abs_path: &Path,

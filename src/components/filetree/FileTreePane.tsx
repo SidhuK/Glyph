@@ -5,11 +5,13 @@ import {
 	useDroppable,
 } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { m } from "motion/react";
 import {
 	type CSSProperties,
 	type KeyboardEvent,
+	type MouseEvent,
 	type MutableRefObject,
 	type ReactNode,
 	memo,
@@ -19,6 +21,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useFileTreeContext, useSpace } from "../../contexts";
 import { toast } from "../../lib/toast";
 
@@ -30,6 +33,7 @@ import {
 import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
+import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import type {
 	DirChildSummary,
@@ -72,6 +76,9 @@ interface FileTreePaneProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
+	onImportFilesInDir: (dirPath: string) => void;
+	onImportFolderInDir: (dirPath: string) => void;
+	onImportPathsInDir: (paths: string[], dirPath: string) => void;
 	onRequestCreateFolder: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
@@ -242,6 +249,8 @@ interface TreeEntriesProps {
 	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
+	onImportFilesInDir: (dirPath: string) => void;
+	onImportFolderInDir: (dirPath: string) => void;
 	onRequestCreateFolder: (dirPath: string) => void;
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
@@ -326,6 +335,8 @@ function TreeEntries({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
+	onImportFilesInDir,
+	onImportFolderInDir,
 	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
@@ -489,6 +500,8 @@ function TreeEntries({
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+							onImportFilesInDir={onImportFilesInDir}
+							onImportFolderInDir={onImportFolderInDir}
 							onRequestCreateFolder={onRequestCreateFolder}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[entry.rel_path] ?? null}
@@ -559,6 +572,9 @@ export const FileTreePane = memo(function FileTreePane({
 	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
+	onImportFilesInDir,
+	onImportFolderInDir,
+	onImportPathsInDir,
 	onRequestCreateFolder,
 	onDuplicateFile,
 	onDeletePath,
@@ -572,6 +588,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onTogglePinnedFile,
 	children,
 }: FileTreePaneProps) {
+	const { t } = useTranslation("shell");
 	const {
 		itemAppearance,
 		setItemAppearance,
@@ -596,9 +613,12 @@ export const FileTreePane = memo(function FileTreePane({
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
 	const moveClickSuppressRef = useRef(false);
+	const paneRef = useRef<HTMLElement | null>(null);
+	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
+	focusedDirPathRef.current = focusedDirPath;
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
 	}, [itemAppearance]);
@@ -956,14 +976,94 @@ export const FileTreePane = memo(function FileTreePane({
 		const { x, y } = event.operation.position.current;
 		moveSplitEditorDrag({ kind: "file", path: source.data.path }, x, y);
 	}, []);
+	const handlePaneContextMenu = useCallback(
+		(event: MouseEvent<HTMLElement>) => {
+			if (
+				!(event.target instanceof Element) ||
+				event.target.closest("[data-file-tree-path][data-file-tree-kind]")
+			) {
+				return;
+			}
+			const targetDir = focusedDirPath ?? "";
+			void showNativeContextMenu(event, [
+				{
+					label: t("fileTree.importFilesHere"),
+					action: () => onImportFilesInDir(targetDir),
+				},
+				{
+					label: t("fileTree.importFolderHere"),
+					action: () => onImportFolderInDir(targetDir),
+				},
+			]).catch((error: unknown) => {
+				console.error("Failed to show file tree context menu", error);
+			});
+		},
+		[focusedDirPath, onImportFilesInDir, onImportFolderInDir, t],
+	);
+
+	useEffect(() => {
+		const currentWindow = getCurrentWindow();
+		let unlisten: (() => void) | undefined;
+		let disposed = false;
+		void currentWindow
+			.onDragDropEvent(async ({ payload }) => {
+				if (payload.type !== "drop" || payload.paths.length === 0) return;
+				const pane = paneRef.current;
+				if (!pane) return;
+				const scaleFactor = await currentWindow.scaleFactor();
+				const position = payload.position.toLogical(scaleFactor);
+				const bounds = pane.getBoundingClientRect();
+				if (
+					position.x < bounds.left ||
+					position.x > bounds.right ||
+					position.y < bounds.top ||
+					position.y > bounds.bottom
+				) {
+					return;
+				}
+
+				const hit = document.elementFromPoint(position.x, position.y);
+				const row =
+					hit instanceof Element
+						? hit.closest<HTMLElement>(
+								"[data-file-tree-path][data-file-tree-kind]",
+							)
+						: null;
+				const rowPath =
+					row && pane.contains(row) ? row.dataset.fileTreePath : undefined;
+				const targetDir =
+					rowPath && row?.dataset.fileTreeKind === "dir"
+						? rowPath
+						: rowPath
+							? parentDir(rowPath)
+							: (focusedDirPathRef.current ?? "");
+				await onImportPathsInDir(payload.paths, targetDir);
+			})
+			.then((stopListening) => {
+				if (disposed) {
+					stopListening();
+					return;
+				}
+				unlisten = stopListening;
+			})
+			.catch((error: unknown) => {
+				console.error("Failed to listen for imported file drops", error);
+			});
+		return () => {
+			disposed = true;
+			unlisten?.();
+		};
+	}, [onImportPathsInDir]);
 
 	return (
 		<DragDropProvider onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
 			<m.aside
+				ref={paneRef}
 				className="fileTreePane"
 				initial={{ y: 10 }}
 				animate={{ y: 0 }}
 				transition={springTransition}
+				onContextMenu={handlePaneContextMenu}
 				onKeyDown={handleTreeKeyDown}
 			>
 				<AppearancePicker
@@ -1014,6 +1114,8 @@ export const FileTreePane = memo(function FileTreePane({
 								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+								onImportFilesInDir={onImportFilesInDir}
+								onImportFolderInDir={onImportFolderInDir}
 								onRequestCreateFolder={handleRequestCreateFolder}
 								onDuplicateFile={handleDuplicateFile}
 								onDeletePath={handleDeletePath}
@@ -1062,6 +1164,8 @@ export const FileTreePane = memo(function FileTreePane({
 							onPrefetchFile={onPrefetchFile}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+							onImportFilesInDir={onImportFilesInDir}
+							onImportFolderInDir={onImportFolderInDir}
 							onRequestCreateFolder={handleRequestCreateFolder}
 							onDuplicateFile={handleDuplicateFile}
 							onDeletePath={handleDeletePath}

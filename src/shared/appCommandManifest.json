@@ -636,6 +636,28 @@
 			"commandPalette": true,
 			"menuId": "editor.highlight_yellow"
 		},
+		"import-files": {
+			"id": "import-files",
+			"label": "Import Files…",
+			"description": "Copy Markdown files into the current folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.import_files"
+		},
+		"import-folder": {
+			"id": "import-folder",
+			"label": "Import Folder…",
+			"description": "Copy a folder into the current folder.",
+			"category": "file",
+			"context": "space",
+			"defaultBinding": null,
+			"allowInEditable": false,
+			"commandPalette": true,
+			"menuId": "file.import_folder"
+		},
 		"italic": {
 			"id": "italic",
 			"label": "Italic",
