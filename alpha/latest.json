@@ -1,15 +1,15 @@
 {
-  "version": "0.8.11-alpha.1",
-  "notes": "## What's Changed\n* Fix blank external markdown and quick note editors (#442) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/442\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.10...v0.8.11-alpha.1",
-  "pub_date": "2026-07-28T14:48:07.061Z",
+  "version": "0.8.11",
+  "notes": "## What's Changed\n* Fix blank external markdown and quick note editors (#442) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/442\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.10...v0.8.11",
+  "pub_date": "2026-07-29T03:21:02.588Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhCMTdjOTAyWUJ3c0VXNm4yZDFXZGoxSHRXT1hIcW9QMk1SL084cTZUOG40dGJrQTFkK1hLa2haTFgvQ3krQmtlZHNNN2I4UGhkQ2pLVnl1aE80TmdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjUwMDgxCWZpbGU6R2x5cGguYXBwLnRhci5nego2NWRNSFJGT1lHVEtva3BuYXRrOGlmSG5GRytIRFdMQ2VDeFNIekdHV2NjUWZxd2V4VUQxdlV5MjkxODNxWlFVK09YRis1aE9PUXE3MThUeGN5NEREQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpweW45S1VKQ3NaN1pmSVdGejkwQUlkYXdnemE5alpyYms1MDg1Q0xaOUVCa3RtY1BNTENEdW9yL3dDZG15S280WUJjZUs5RUw5MGtRaWJRcVJ4eEFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1Mjk1MjU3CWZpbGU6R2x5cGguYXBwLnRhci5negpwcXhpRENJR0F2U256dFJmNklKQ1UrVEpqT2hLa0paNGJHUzgzUDJTck55TlYzZkdSb0hOZmRyMXkrclUvVitKYjlYQitJV0Rla3F6dlNRVkpGaVRDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDhCMTdjOTAyWUJ3c0VXNm4yZDFXZGoxSHRXT1hIcW9QMk1SL084cTZUOG40dGJrQTFkK1hLa2haTFgvQ3krQmtlZHNNN2I4UGhkQ2pLVnl1aE80TmdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjUwMDgxCWZpbGU6R2x5cGguYXBwLnRhci5nego2NWRNSFJGT1lHVEtva3BuYXRrOGlmSG5GRytIRFdMQ2VDeFNIekdHV2NjUWZxd2V4VUQxdlV5MjkxODNxWlFVK09YRis1aE9PUXE3MThUeGN5NEREQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11-alpha.1/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpweW45S1VKQ3NaN1pmSVdGejkwQUlkYXdnemE5alpyYms1MDg1Q0xaOUVCa3RtY1BNTENEdW9yL3dDZG15S280WUJjZUs5RUw5MGtRaWJRcVJ4eEFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1Mjk1MjU3CWZpbGU6R2x5cGguYXBwLnRhci5negpwcXhpRENJR0F2U256dFJmNklKQ1UrVEpqT2hLa0paNGJHUzgzUDJTck55TlYzZkdSb0hOZmRyMXkrclUvVitKYjlYQitJV0Rla3F6dlNRVkpGaVRDUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11/Glyph_aarch64.app.tar.gz"
     }
   }
 }
