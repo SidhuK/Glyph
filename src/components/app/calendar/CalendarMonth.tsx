@@ -8,13 +8,11 @@ import {
 	parseISO,
 	startOfMonth,
 } from "date-fns";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type CalendarDayTone,
-	activityTone,
-} from "../../../lib/calendarActivity";
+import { activityTone } from "../../../lib/calendarActivity";
 import type { CalendarDayActivity } from "../../../lib/tauri";
+import { CalendarDayCell } from "./CalendarDayCell";
 import {
 	buildMonthWeeks,
 	dateForNavigationKey,
@@ -30,60 +28,6 @@ interface CalendarMonthProps {
 	onMonthChange: (month: Date) => void;
 	onSelect: (date: Date) => void;
 	onGoToToday: () => void;
-}
-
-interface DayCellProps {
-	date: Date;
-	dateKey: string;
-	label: string;
-	tone: CalendarDayTone;
-	isSelected: boolean;
-	isToday: boolean;
-	isOutside: boolean;
-	isTabStop: boolean;
-	shouldFocus: boolean;
-	onSelect: (date: Date) => void;
-}
-
-function DayCell({
-	date,
-	dateKey,
-	label,
-	tone,
-	isSelected,
-	isToday,
-	isOutside,
-	isTabStop,
-	shouldFocus,
-	onSelect,
-}: DayCellProps) {
-	const ref = useRef<HTMLButtonElement>(null);
-
-	useEffect(() => {
-		if (shouldFocus) ref.current?.focus();
-	}, [shouldFocus]);
-
-	return (
-		<td className="calendarDayCell">
-			<button
-				ref={ref}
-				type="button"
-				className="calendarDay"
-				data-date={dateKey}
-				data-selected={isSelected}
-				data-today={isToday}
-				data-outside={isOutside}
-				tabIndex={isTabStop ? 0 : -1}
-				aria-pressed={isSelected}
-				aria-current={isToday ? "date" : undefined}
-				aria-label={label}
-				onClick={() => onSelect(date)}
-			>
-				<span className="calendarDayNumber">{date.getDate()}</span>
-				<span className="calendarDayMarker" data-tone={tone ?? "none"} />
-			</button>
-		</td>
-	);
 }
 
 export function CalendarMonth({
@@ -202,7 +146,7 @@ export function CalendarMonth({
 				onKeyDown={handleKeyDown}
 			>
 				<thead>
-					<tr className="calendarWeekdays">
+					<tr>
 						{weekdays.map((weekday) => (
 							<th key={weekday.long} scope="col" className="calendarWeekday">
 								<abbr title={weekday.long}>{weekday.short}</abbr>
@@ -212,11 +156,11 @@ export function CalendarMonth({
 				</thead>
 				<tbody>
 					{weeks.map((week) => (
-						<tr key={format(week[0], "yyyy-MM-dd")} className="calendarWeek">
+						<tr key={format(week[0], "yyyy-MM-dd")}>
 							{week.map((date) => {
 								const dateKey = format(date, "yyyy-MM-dd");
 								return (
-									<DayCell
+									<CalendarDayCell
 										key={dateKey}
 										date={date}
 										dateKey={dateKey}

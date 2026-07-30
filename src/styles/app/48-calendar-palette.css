@@ -1,7 +1,6 @@
 /* ── Surface ── */
 
 .calendarPalette {
-	--calendar-day-size: 34px;
 	width: min(420px, calc(100vw - 48px));
 	max-height: min(620px, calc(100vh - 96px));
 	display: flex;
@@ -136,8 +135,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--calendar-day-size);
-	height: var(--calendar-day-size);
+	width: 34px;
+	height: 34px;
 	border: 0;
 	border-radius: var(--radius-full);
 	background: transparent;

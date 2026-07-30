@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useState } from "react";
 
 const loadCalendarPalette = () =>
 	import("./CalendarPalette").then((module) => ({
@@ -28,11 +28,9 @@ export function CalendarPaletteController({
 	onOpenNote,
 	onOpenDailyNoteAtDate,
 }: CalendarPaletteControllerProps) {
+	// Keep the palette mounted after its first open so reopening is instant.
 	const [mounted, setMounted] = useState(open);
-
-	useEffect(() => {
-		if (open) setMounted(true);
-	}, [open]);
+	if (open && !mounted) setMounted(true);
 
 	if (!mounted) return null;
 

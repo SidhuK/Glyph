@@ -6,8 +6,8 @@ import {
 	startOfWeek,
 } from "date-fns";
 
-export const WEEKS_IN_GRID = 6;
-export const DAYS_IN_WEEK = 7;
+const WEEKS_IN_GRID = 6;
+const DAYS_IN_WEEK = 7;
 
 /** Six fixed weeks so the grid height never shifts between months. */
 export function buildMonthWeeks(month: Date): Date[][] {
