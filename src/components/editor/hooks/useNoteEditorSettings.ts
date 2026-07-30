@@ -12,6 +12,7 @@ export function useNoteEditorSettings() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showCollapsibleLists, setShowCollapsibleLists] = useState(false);
 	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
+	const [showHeadingPrefixes, setShowHeadingPrefixes] = useState(true);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const [focusMode, setFocusMode] = useState<FocusMode>("off");
@@ -28,6 +29,7 @@ export function useNoteEditorSettings() {
 				setShowFrontmatterInEditor(
 					settings.editor.showFrontmatterInEditor === true,
 				);
+				setShowHeadingPrefixes(settings.editor.showHeadingPrefixes);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
 				setFocusMode(settings.editor.focusMode);
@@ -40,6 +42,7 @@ export function useNoteEditorSettings() {
 				setShowCollapsibleHeadings(false);
 				setShowCollapsibleLists(false);
 				setShowFrontmatterInEditor(false);
+				setShowHeadingPrefixes(true);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
 				setFocusMode("off");
@@ -60,6 +63,9 @@ export function useNoteEditorSettings() {
 		}
 		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
 			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
+		}
+		if (typeof payload.editor?.showHeadingPrefixes === "boolean") {
+			setShowHeadingPrefixes(payload.editor.showHeadingPrefixes);
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
@@ -87,5 +93,6 @@ export function useNoteEditorSettings() {
 		showCollapsibleHeadings,
 		showCollapsibleLists,
 		showFrontmatterInEditor,
+		showHeadingPrefixes,
 	};
 }

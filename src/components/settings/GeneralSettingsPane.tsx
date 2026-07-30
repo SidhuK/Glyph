@@ -32,6 +32,7 @@ import {
 	setEditorShowCollapsibleHeadings,
 	setEditorShowCollapsibleLists,
 	setEditorShowFrontmatterInEditor,
+	setEditorShowHeadingPrefixes,
 	setEditorSpellCheck,
 	setLanguage,
 	setResumeLastSession,
@@ -129,6 +130,11 @@ export function GeneralSettingsPane() {
 		setEditorColorfulHeadings,
 		setError,
 	);
+	const headingPrefixes = useSettingsBoolean(
+		true,
+		setEditorShowHeadingPrefixes,
+		setError,
+	);
 	const headingPalette = useSettingsValue<HeadingPaletteId>(
 		DEFAULT_HEADING_PALETTE_ID,
 		setEditorHeadingPaletteId,
@@ -165,6 +171,7 @@ export function GeneralSettingsPane() {
 	const setShowTocChecked = showToc.setChecked;
 	const setShowFrontmatterChecked = showFrontmatter.setChecked;
 	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
+	const setHeadingPrefixesChecked = headingPrefixes.setChecked;
 	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
 	const setCollapsibleListsChecked = collapsibleLists.setChecked;
 	const setSpellCheckChecked = spellCheck.setChecked;
@@ -194,6 +201,7 @@ export function GeneralSettingsPane() {
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
 				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
+				setHeadingPrefixesChecked(settings.editor.showHeadingPrefixes);
 				setInitialHeadingPalette(settings.editor.headingPaletteId);
 				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
 				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
@@ -215,6 +223,7 @@ export function GeneralSettingsPane() {
 		setShowTocChecked,
 		setShowFrontmatterChecked,
 		setColorfulHeadingsChecked,
+		setHeadingPrefixesChecked,
 		setCollapsibleHeadingsChecked,
 		setCollapsibleListsChecked,
 		setSpellCheckChecked,
@@ -260,6 +269,10 @@ export function GeneralSettingsPane() {
 					setColorfulHeadingsChecked,
 				);
 				applyIfBoolean(
+					payload.editor?.showHeadingPrefixes,
+					setHeadingPrefixesChecked,
+				);
+				applyIfBoolean(
 					payload.editor?.showCollapsibleHeadings,
 					setCollapsibleHeadingsChecked,
 				);
@@ -286,6 +299,7 @@ export function GeneralSettingsPane() {
 				setShowTocChecked,
 				setShowFrontmatterChecked,
 				setColorfulHeadingsChecked,
+				setHeadingPrefixesChecked,
 				setCollapsibleHeadingsChecked,
 				setCollapsibleListsChecked,
 				setSpellCheckChecked,
@@ -355,6 +369,17 @@ export function GeneralSettingsPane() {
 							disabled={showFrontmatter.isSaving}
 							ariaLabel={t("editor.showFrontmatter.ariaLabel")}
 							onCheckedChange={showFrontmatter.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.headingPrefixes.label")}
+						description={t("editor.headingPrefixes.description")}
+					>
+						<SettingsToggle
+							checked={headingPrefixes.checked}
+							disabled={headingPrefixes.isSaving}
+							ariaLabel={t("editor.headingPrefixes.ariaLabel")}
+							onCheckedChange={headingPrefixes.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

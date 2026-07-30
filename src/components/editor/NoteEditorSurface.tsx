@@ -20,6 +20,7 @@ interface NoteEditorSurfaceProps {
 	editor: Editor | null;
 	mode: "rich" | "preview" | "plain";
 	colorfulHeadings: boolean;
+	showHeadingPrefixes: boolean;
 	canEdit: boolean;
 	hostRef: (node: HTMLDivElement | null) => void;
 	hostNode: HTMLDivElement | null;
@@ -43,6 +44,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 	editor,
 	mode,
 	colorfulHeadings,
+	showHeadingPrefixes,
 	canEdit,
 	hostRef,
 	hostNode,
@@ -68,6 +70,9 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 			className={hostClassName}
 			data-colorful-headings={
 				mode === "rich" && colorfulHeadings ? "true" : undefined
+			}
+			data-heading-prefixes={
+				mode === "rich" && showHeadingPrefixes ? "true" : undefined
 			}
 		>
 			<EditorContent editor={editor} />

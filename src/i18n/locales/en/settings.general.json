@@ -66,6 +66,11 @@
 			"description": "Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases.",
 			"ariaLabel": "Show frontmatter in editor"
 		},
+		"headingPrefixes": {
+			"label": "Heading prefixes",
+			"description": "Show H1-H6 labels beside headings in the rich text editor.",
+			"ariaLabel": "Show heading prefixes"
+		},
 		"colorfulHeadings": {
 			"label": "Colorful headings",
 			"description": "Use a selected color palette for H1-H6 while editing notes.",
