@@ -879,7 +879,15 @@ interface TauriCommands {
 	app_confirm_exit: CommandDef<void, void>;
 	app_register_exit_listener: CommandDef<void, void>;
 	app_report_exit_listener_failure: CommandDef<void, void>;
-	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	space_list_dir: CommandDef<
+		{
+			dir?: string | null;
+			recursive?: boolean | null;
+			directories_only?: boolean | null;
+			limit?: number | null;
+		},
+		FsEntry[]
+	>;
 	file_tree_appearance_list: CommandDef<
 		void,
 		Record<string, FileTreeAppearance>
@@ -918,10 +926,7 @@ interface TauriCommands {
 		{ dir?: string | null; limit?: number | null },
 		FsEntryList
 	>;
-	space_dir_children_summary: CommandDef<
-		{ dir?: string | null; preview_limit?: number | null },
-		DirChildSummary[]
-	>;
+	space_dir_children_summary: CommandDef<{ dirs: string[] }, DirChildSummary[]>;
 	space_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	space_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
 	daily_note_rollover_candidates: CommandDef<

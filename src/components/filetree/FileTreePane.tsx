@@ -36,7 +36,6 @@ import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
 import type {
-	DirChildSummary,
 	FileTreeAppearance,
 	FsEntry,
 	NoteTaskSummary,
@@ -704,38 +703,26 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 
 		let cancelled = false;
-		const summaryRequests: Array<Promise<DirChildSummary[]>> =
-			summaryParentDirs.map((dirPath) =>
-				invoke("space_dir_children_summary", dirPath ? { dir: dirPath } : {}),
-			);
-
-		void Promise.allSettled(summaryRequests).then((results) => {
-			if (cancelled) return;
-			const nextCounts: Record<string, number> = {};
-			let hasSuccessfulResult = false;
-
-			for (const result of results) {
-				if (result.status !== "fulfilled") {
-					console.warn(
-						"Failed to load folder file counts for part of the tree",
-						result.reason,
-					);
-					continue;
-				}
-				hasSuccessfulResult = true;
-				for (const summary of result.value) {
+		void invoke("space_dir_children_summary", {
+			dirs: summaryParentDirs,
+		})
+			.then((summaries) => {
+				if (cancelled) return;
+				const nextCounts: Record<string, number> = {};
+				for (const summary of summaries) {
 					nextCounts[summary.dir_rel_path] = showNonMarkdownFiles
 						? summary.total_files_recursive
 						: summary.total_markdown_recursive;
 				}
-			}
-
-			if (!hasSuccessfulResult) return;
-			setFolderFileCounts((prev) => ({
-				...prev,
-				...nextCounts,
-			}));
-		});
+				setFolderFileCounts((prev) => ({
+					...prev,
+					...nextCounts,
+				}));
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.warn("Failed to load folder file counts", error);
+			});
 
 		return () => {
 			cancelled = true;

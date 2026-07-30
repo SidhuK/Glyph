@@ -631,30 +631,52 @@ function taskSummariesEqual(left: NoteTaskSummary, right: NoteTaskSummary) {
 	);
 }
 
-export async function invalidateTaskSummariesPrefetchForNote(
-	path: string,
-	options: { removed?: boolean } = {},
+export async function invalidateTaskSummariesPrefetchForNotes(
+	changes: ReadonlyMap<string, boolean>,
 ) {
-	const normalizedPath = normalizeAllDocsPath(path);
-	if (!normalizedPath) return;
-
-	const cachedSummary = cachedTaskSummaryForPath(normalizedPath);
-	if (options.removed) {
-		if (cachedSummary) invalidateTaskSummariesPrefetch();
-		return;
+	const paths: string[] = [];
+	for (const [path, removed] of changes) {
+		const normalizedPath = normalizeAllDocsPath(path);
+		if (!normalizedPath) continue;
+		const cachedSummary = cachedTaskSummaryForPath(normalizedPath);
+		if (removed) {
+			if (cachedSummary) {
+				invalidateTaskSummariesPrefetch();
+				return;
+			}
+			continue;
+		}
+		paths.push(normalizedPath);
 	}
+	if (paths.length === 0) return;
 
-	try {
-		const doc = await invoke("space_read_text", { path: normalizedPath });
-		const nextSummary = summarizeChecklistsFromMarkdown(doc.text);
-		const shouldInvalidate = cachedSummary
-			? !taskSummariesEqual(cachedSummary, nextSummary)
-			: nextSummary.total_count > 0;
-		if (shouldInvalidate) {
+	const docs = await invoke("space_read_texts_batch", { paths }).catch(
+		() => null,
+	);
+	if (!docs) {
+		if (paths.some((path) => cachedTaskSummaryForPath(path))) {
 			invalidateTaskSummariesPrefetch();
 		}
-	} catch {
-		if (cachedSummary) invalidateTaskSummariesPrefetch();
+		return;
+	}
+	for (const doc of docs) {
+		const cachedSummary = cachedTaskSummaryForPath(doc.rel_path);
+		if (doc.error || doc.text === null) {
+			if (cachedSummary) {
+				invalidateTaskSummariesPrefetch();
+				return;
+			}
+			continue;
+		}
+		const nextSummary = summarizeChecklistsFromMarkdown(doc.text);
+		if (
+			cachedSummary
+				? !taskSummariesEqual(cachedSummary, nextSummary)
+				: nextSummary.total_count > 0
+		) {
+			invalidateTaskSummariesPrefetch();
+			return;
+		}
 	}
 }
 

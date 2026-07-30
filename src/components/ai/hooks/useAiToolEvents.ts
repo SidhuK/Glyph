@@ -209,6 +209,8 @@ export function useAiToolEvents({
 	const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 	const activeToolJobIdRef = useRef<string | null>(null);
 	const slowStartTimerRef = useRef<number | null>(null);
+	const pendingChunkRef = useRef("");
+	const chunkFrameRef = useRef<number | null>(null);
 
 	const clearSlowStartTimer = useCallback(() => {
 		if (slowStartTimerRef.current == null) return;
@@ -216,15 +218,35 @@ export function useAiToolEvents({
 		slowStartTimerRef.current = null;
 	}, []);
 
+	const clearPendingChunk = useCallback(() => {
+		if (chunkFrameRef.current !== null) {
+			window.cancelAnimationFrame(chunkFrameRef.current);
+		}
+		chunkFrameRef.current = null;
+		pendingChunkRef.current = "";
+	}, []);
+
+	const flushPendingChunk = useCallback(() => {
+		const delta = pendingChunkRef.current;
+		clearPendingChunk();
+		if (!delta) return;
+		dispatch({
+			type: "record-chunk",
+			delta,
+			at: Date.now(),
+		});
+	}, [clearPendingChunk]);
+
 	const isAwaitingResponse =
 		chatStatus === "submitted" || chatStatus === "streaming";
 
 	useEffect(() => {
 		if (isChatMode || chatStatus !== "streaming") {
+			flushPendingChunk();
 			activeToolJobIdRef.current = null;
 		}
 		dispatch({ type: "sync-context", chatStatus, isChatMode });
-	}, [chatStatus, isChatMode]);
+	}, [chatStatus, flushPendingChunk, isChatMode]);
 
 	useTauriEvent("ai:tool", (payload) => {
 		if (isChatMode) return;
@@ -270,11 +292,10 @@ export function useAiToolEvents({
 			activeToolJobIdRef.current = payload.job_id;
 		}
 		if (!payload.delta) return;
-		dispatch({
-			type: "record-chunk",
-			delta: payload.delta,
-			at: Date.now(),
-		});
+		pendingChunkRef.current += payload.delta;
+		if (chunkFrameRef.current === null) {
+			chunkFrameRef.current = window.requestAnimationFrame(flushPendingChunk);
+		}
 	});
 
 	const phaseStatusText = useMemo(() => {
@@ -323,15 +344,17 @@ export function useAiToolEvents({
 	useEffect(
 		() => () => {
 			clearSlowStartTimer();
+			clearPendingChunk();
 		},
-		[clearSlowStartTimer],
+		[clearPendingChunk, clearSlowStartTimer],
 	);
 
 	const resetToolState = useCallback(() => {
 		clearSlowStartTimer();
+		clearPendingChunk();
 		dispatch({ type: "reset-tool-state" });
 		activeToolJobIdRef.current = null;
-	}, [clearSlowStartTimer]);
+	}, [clearPendingChunk, clearSlowStartTimer]);
 
 	const setResponsePhase = useCallback((responsePhase: ResponsePhase) => {
 		dispatch({ type: "set-response-phase", responsePhase });
@@ -339,9 +362,10 @@ export function useAiToolEvents({
 
 	const setActivityTimeline = useCallback(
 		(activityTimeline: AIActivityTimelineEvent[]) => {
+			clearPendingChunk();
 			dispatch({ type: "set-activity-timeline", activityTimeline });
 		},
-		[],
+		[clearPendingChunk],
 	);
 
 	return {

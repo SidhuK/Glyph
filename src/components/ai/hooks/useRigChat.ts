@@ -72,15 +72,15 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	const awaitingStartRef = useRef(false);
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
+	const flushStreamingRef = useRef<(() => void) | null>(null);
 	const onComplete = options.onComplete;
 
 	const updateMessages = useCallback(
 		(next: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => {
-			setMessages((prev) => {
-				const resolved = typeof next === "function" ? next(prev) : next;
-				messagesRef.current = resolved;
-				return resolved;
-			});
+			const resolved =
+				typeof next === "function" ? next(messagesRef.current) : next;
+			messagesRef.current = resolved;
+			setMessages(resolved);
 		},
 		[],
 	);
@@ -99,6 +99,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 	}, []);
 
 	const completeActiveJob = useCallback(() => {
+		flushStreamingRef.current?.();
+		flushStreamingRef.current = null;
 		clearDoneTimer();
 		activeJobIdRef.current = null;
 		awaitingStartRef.current = false;
@@ -117,6 +119,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 		if (jobId) {
 			void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
 		}
+		flushStreamingRef.current?.();
+		flushStreamingRef.current = null;
 		clearDoneTimer();
 		activeJobIdRef.current = null;
 		awaitingStartRef.current = false;
@@ -179,31 +183,52 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				const pendingChunks: ChunkPayload[] = [];
 				let pendingDone: DonePayload | null = null;
 				let pendingError: ErrorPayload | null = null;
+				let pendingDelta = "";
+				let chunkFrame: number | null = null;
+				let streamingStarted = false;
 				const shouldBufferEvent = (jobId: string) =>
 					awaitingStartRef.current && !activeJobIdRef.current && !!jobId;
 				const isActiveJob = (jobId: string) => jobId === activeJobIdRef.current;
-				const handleChunk = (payload: ChunkPayload) => {
-					if (!isActiveJob(payload.job_id)) return;
-					clearDoneTimer();
-					setStatus("streaming");
+				const flushChunks = () => {
+					if (chunkFrame !== null) {
+						window.cancelAnimationFrame(chunkFrame);
+						chunkFrame = null;
+					}
+					if (!pendingDelta) return;
+					const delta = pendingDelta;
+					pendingDelta = "";
 					updateMessages((prev) =>
-						prev.map((m) => {
-							if (m.id !== assistantId) return m;
-							const first = m.parts[0];
+						prev.map((message) => {
+							if (message.id !== assistantId) return message;
+							const first = message.parts[0];
 							return {
-								...m,
+								...message,
 								parts: [
 									{
 										type: "text",
-										text: `${first?.text ?? ""}${payload.delta}`,
+										text: `${first?.text ?? ""}${delta}`,
 									},
 								],
 							};
 						}),
 					);
 				};
+				flushStreamingRef.current = flushChunks;
+				const handleChunk = (payload: ChunkPayload) => {
+					if (!isActiveJob(payload.job_id)) return;
+					clearDoneTimer();
+					if (!streamingStarted) {
+						streamingStarted = true;
+						setStatus("streaming");
+					}
+					pendingDelta += payload.delta;
+					if (chunkFrame === null) {
+						chunkFrame = window.requestAnimationFrame(flushChunks);
+					}
+				};
 				const handleDone = (payload: DonePayload) => {
 					if (!isActiveJob(payload.job_id)) return;
+					flushChunks();
 					awaitingStartRef.current = false;
 					clearDoneTimer();
 					doneTimerRef.current = window.setTimeout(() => {
@@ -213,6 +238,8 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 				};
 				const handleError = (payload: ErrorPayload) => {
 					if (!isActiveJob(payload.job_id)) return;
+					flushChunks();
+					flushStreamingRef.current = null;
 					clearDoneTimer();
 					activeJobIdRef.current = null;
 					awaitingStartRef.current = false;
@@ -245,7 +272,18 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					handleError(payload);
 				});
 
-				stopListenersRef.current = [onChunk, onDone, onError];
+				stopListenersRef.current = [
+					onChunk,
+					onDone,
+					onError,
+					() => {
+						if (chunkFrame !== null) {
+							window.cancelAnimationFrame(chunkFrame);
+							chunkFrame = null;
+						}
+						pendingDelta = "";
+					},
+				];
 
 				const { job_id: jobId } = await invoke("ai_chat_start", {
 					request: {
@@ -270,6 +308,7 @@ export function useRigChat(options: UseRigChatOptions = {}) {
 					handleDone(pendingDone);
 				}
 			} catch (err) {
+				flushStreamingRef.current = null;
 				clearDoneTimer();
 				activeJobIdRef.current = null;
 				awaitingStartRef.current = false;

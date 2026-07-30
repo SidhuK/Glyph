@@ -52,16 +52,23 @@ pub fn create_notes_watcher(
             }
 
             let mut events = Vec::new();
+            let conn = match index::open_db(&root_idx) {
+                Ok(conn) => conn,
+                Err(error) => {
+                    tracing::warn!(%error, "could not open note index for watcher batch");
+                    continue;
+                }
+            };
             for (rel_s, is_remove) in pending {
                 let result = if is_remove {
-                    index::remove_note(&root_idx, &rel_s)
+                    index::remove_note_with_conn(&conn, &rel_s)
                 } else {
                     let abs = match paths::join_under(&root_idx, Path::new(&rel_s)) {
                         Ok(abs) => abs,
                         Err(_) => continue,
                     };
                     if let Ok(markdown) = std::fs::read_to_string(&abs) {
-                        index::index_note(&root_idx, &rel_s, &markdown)
+                        index::index_note_with_conn(&conn, &rel_s, &markdown, &abs)
                     } else {
                         continue;
                     }
