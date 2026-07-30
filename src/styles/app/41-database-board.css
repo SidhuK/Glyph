@@ -5,7 +5,7 @@
 	min-height: 0;
 	position: relative;
 	overflow: auto;
-	padding: 0 18px 18px;
+	padding: 4px 18px 18px;
 }
 
 .databaseTableShell [data-slot="table-container"] {
@@ -57,9 +57,9 @@
 .databaseBoardScroller {
 	display: grid;
 	grid-auto-flow: column;
-	grid-auto-columns: minmax(240px, 290px);
+	grid-auto-columns: minmax(248px, 300px);
 	width: max-content;
-	gap: 18px;
+	gap: 14px;
 	min-height: min-content;
 	height: auto;
 	align-items: start;
@@ -74,17 +74,18 @@
 	min-height: 0;
 	height: auto;
 	border-radius: var(--database-radius-lg);
-	border: none;
-	background: color-mix(in srgb, var(--database-tone) 6%, var(--bg-secondary));
+	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
 	box-shadow: none;
 }
 
 .databaseBoardLane[data-show-column-color="false"] {
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--border-light) 48%, transparent);
 }
 
 .databaseBoardLane[data-show-column-color="true"][data-workflow-state="done"] {
-	background: color-mix(in srgb, var(--database-tone) 5%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--database-tone) 4%, var(--bg-secondary));
 }
 
 .databaseBoardLane[data-workflow-state="archived"] {
@@ -92,17 +93,22 @@
 }
 
 .databaseBoardLane[data-show-column-color="true"][data-workflow-state="archived"] {
-	background: color-mix(in srgb, var(--text-tertiary) 7%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--text-tertiary) 6%, var(--bg-secondary));
 }
 
 .databaseBoardLane[data-active="true"] {
-	background: color-mix(in srgb, var(--database-tone) 9%, var(--bg-secondary));
-	outline: 1px solid color-mix(in srgb, var(--database-tone) 24%, transparent);
+	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--database-tone) 28%, transparent);
+	outline: none;
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--database-tone) 16%, transparent);
 }
 
 .databaseBoardLane[data-show-column-color="false"][data-active="true"] {
-	background: var(--bg-hover);
-	outline-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-hover) 80%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 28%, transparent);
 }
 
 .databaseBoardLaneHeader {
@@ -110,7 +116,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: 12px 14px 8px;
+	padding: 11px 12px 8px;
 	border-bottom: none;
 }
 
@@ -118,31 +124,50 @@
 .databaseBoardColorRibbon {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 }
 
-.databaseBoardLaneTitleButton,
+.databaseBoardLaneCount {
+	flex: 0 0 auto;
+	min-width: 1.25em;
+	font-size: calc(var(--text-base) * 0.78);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	color: var(--text-tertiary);
+	text-align: right;
+}
+
 .databaseBoardLaneHandle,
 .databaseBoardCard {
-	transition: none;
+	transition: background-color 140ms ease, border-color 140ms ease, box-shadow
+		140ms ease;
 }
 
 .databaseBoardLaneHandle {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 22px;
+	height: 22px;
 	padding: 0;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border: 1px solid transparent;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+	background: transparent;
 	color: var(--text-tertiary);
 	cursor: context-menu;
+	opacity: 0.55;
+}
+
+.databaseBoardLaneHandle:hover:not(:disabled) {
+	opacity: 1;
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 70%, transparent);
+	color: var(--text-secondary);
 }
 
 .databaseBoardLaneHandle:disabled {
-	opacity: 0.42;
+	opacity: 0.28;
 	cursor: not-allowed;
 }
 
@@ -156,30 +181,35 @@
 }
 
 .databaseBoardLaneTitle {
-	font-size: calc(var(--text-base) * 0.8);
+	font-size: calc(var(--text-base) * 0.88);
 	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, var(--database-tone) 78%, var(--text-primary));
-	letter-spacing: 0.045em;
-	text-transform: uppercase;
-	line-height: 1;
+	color: color-mix(in srgb, var(--database-tone) 42%, var(--text-primary));
+	letter-spacing: -0.01em;
+	text-transform: none;
+	line-height: 1.15;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .databaseBoardLaneTitleIcon {
 	flex: 0 0 auto;
 	color: var(--database-tone);
+	opacity: 0.92;
 }
 
 .databaseBoardLaneTitleButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: 6px;
+	gap: 7px;
 	width: auto;
 	height: auto;
 	min-height: 0;
 	max-width: 100%;
-	padding: 3px 10px 3px 8px;
-	border-radius: var(--radius-8);
+	padding: 3px 6px 3px 4px;
+	margin-left: -4px;
+	border-radius: var(--radius-6);
 	border: none;
 	cursor: pointer;
 	font-size: inherit;
@@ -187,15 +217,20 @@
 	line-height: 1;
 	color: inherit;
 	white-space: nowrap;
-	background: color-mix(in srgb, var(--database-tone) 88%, var(--bg-primary));
+	background: transparent;
+	transition: background-color 140ms ease;
+}
+
+.databaseBoardLaneTitleButton:hover {
+	background: color-mix(in srgb, var(--database-tone) 10%, transparent);
 }
 
 .databaseBoardLaneBody {
 	display: flex;
 	flex: 0 0 auto;
 	flex-direction: column;
-	gap: 12px;
-	padding: 8px 12px 12px;
+	gap: 8px;
+	padding: 4px 10px 12px;
 	min-height: auto;
 	overflow: visible;
 }
@@ -204,23 +239,52 @@
 	appearance: none;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	gap: 6px;
+	justify-content: flex-start;
+	gap: 7px;
 	min-height: 32px;
 	width: 100%;
-	border: 1px dashed color-mix(in srgb, var(--database-tone) 24%, transparent);
+	padding: 0 10px;
+	border: 1px solid transparent;
 	border-radius: var(--database-radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 52%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 48%, transparent);
 	color: var(--text-tertiary);
-	font-size: calc(var(--text-base) * 0.9);
+	font-size: calc(var(--text-base) * 0.86);
 	font-weight: var(--font-medium);
+	letter-spacing: -0.01em;
 	cursor: pointer;
+	transition: background-color 140ms ease, border-color 140ms ease, color 140ms
+		ease;
+}
+
+.databaseBoardAddCardIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--database-tone) 12%, transparent);
+	color: color-mix(in srgb, var(--database-tone) 55%, var(--text-secondary));
+	flex: 0 0 auto;
+}
+
+.databaseBoardAddCardLabel {
+	line-height: 1;
 }
 
 .databaseBoardAddCardButton:hover {
-	border-color: color-mix(in srgb, var(--database-tone) 38%, transparent);
 	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--database-tone) 16%, transparent);
 	color: var(--text-primary);
+}
+
+.databaseBoardAddCardButton:hover .databaseBoardAddCardIcon {
+	background: color-mix(in srgb, var(--database-tone) 18%, transparent);
+	color: color-mix(in srgb, var(--database-tone) 72%, var(--text-primary));
+}
+
+.databaseBoardAddCardButton:active {
+	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-primary));
 }
 
 .databaseBoardCard {
@@ -232,10 +296,11 @@
 	min-width: 0;
 	height: auto;
 	gap: 8px;
-	padding: 12px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
+	padding: 11px 12px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 52%, transparent);
 	border-radius: var(--database-radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	background: var(--bg-primary);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 4%, transparent);
 	color: inherit;
 	cursor: pointer;
 	font: inherit;
@@ -249,23 +314,54 @@
 	-webkit-user-drag: none;
 }
 
-.databaseBoardCard[data-dragging="true"] {
-	opacity: 0.7;
-	border-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+.databaseBoardCard:hover {
+	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+	box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
+.databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
+	overflow: visible;
+	cursor: grabbing;
+	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	rotate: 3deg;
+}
+
+.databaseBoardCard[data-dnd-placeholder] {
+	visibility: visible !important;
+	opacity: 0.34;
+	pointer-events: none;
+	box-shadow: none;
+	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
 }
 
 .databaseBoardCard[data-drop-target="true"] {
 	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 }
 
+@media (prefers-reduced-motion: reduce) {
+	.databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
+	.databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
+		rotate: none;
+	}
+}
+
 .dark .databaseBoardCard {
-	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	box-shadow: 0 1px 2px color-mix(in srgb, black 18%, transparent);
+}
+
+.dark .databaseBoardCard:hover {
+	box-shadow: 0 6px 16px color-mix(in srgb, black 18%, transparent);
 }
 
 .dark .databaseBoardCard[data-state="selected"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 7%,
+		var(--interactive-accent) 8%,
 		var(--bg-tertiary)
 	);
 }
@@ -273,18 +369,19 @@
 .databaseBoardCard[data-state="selected"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 7%,
+		var(--interactive-accent) 6%,
 		var(--bg-primary)
 	);
-	border-color: color-mix(in srgb, var(--interactive-accent) 46%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 
 .databaseBoardCardTitle {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: calc(var(--text-base) * 1.1);
+	font-size: calc(var(--text-base) * 1.02);
 	font-weight: var(--font-semibold);
-	line-height: 1.24;
+	line-height: 1.28;
+	letter-spacing: -0.01em;
 	color: var(--database-note-appearance-color, var(--text-primary));
 	overflow: hidden;
 	display: -webkit-box;
@@ -374,12 +471,12 @@
 
 .databaseBoardCardStatus.propertyValueText {
 	flex: 0 0 auto;
-	min-height: 24px;
-	padding: 0 8px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+	min-height: 22px;
+	padding: 0 7px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
 	border-radius: var(--pill-radius);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	font-size: calc(var(--text-base) * 0.8);
+	background: color-mix(in srgb, var(--bg-secondary) 40%, var(--bg-primary));
+	font-size: calc(var(--text-base) * 0.76);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
 }
@@ -398,15 +495,15 @@
 	gap: 3px;
 	max-width: 100%;
 	flex: 0 0 auto;
-	min-height: 24px;
-	padding: 0 8px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 76%, transparent);
+	min-height: 22px;
+	padding: 0 7px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
 	border-radius: var(--pill-radius);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	font-size: calc(var(--text-base) * 0.8);
+	background: color-mix(in srgb, var(--bg-secondary) 40%, var(--bg-primary));
+	font-size: calc(var(--text-base) * 0.76);
 	font-weight: var(--font-medium);
 	line-height: 1.2;
-	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-primary));
+	color: color-mix(in srgb, var(--database-tone) 50%, var(--text-primary));
 	box-shadow: none;
 	white-space: nowrap;
 }
@@ -435,8 +532,14 @@
 	flex: 0 1 auto;
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
-	font-size: calc(var(--text-base) * 0.8);
+	gap: 4px;
+	min-height: 22px;
+	padding: 0 7px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 48%, transparent);
+	border-radius: var(--pill-radius);
+	background: color-mix(in srgb, var(--bg-secondary) 45%, var(--bg-primary));
+	font-size: calc(var(--text-base) * 0.76);
+	font-weight: var(--font-medium);
 	line-height: 1.2;
 	color: var(--text-tertiary);
 	overflow: hidden;

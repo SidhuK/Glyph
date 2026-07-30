@@ -250,6 +250,12 @@ export function DatabaseBoardLaneView({
 					<div className="databaseBoardLaneTitleGroup">{laneTitleContent}</div>
 				)}
 				<div className="databaseBoardLaneHeaderActions">
+					<span
+						className="databaseBoardLaneCount"
+						aria-label={`${lane.cardCount} cards`}
+					>
+						{lane.cardCount}
+					</span>
 					<button
 						type="button"
 						className="databaseBoardLaneHandle"
