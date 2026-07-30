@@ -277,6 +277,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		lastEmittedMarkdownRef,
 		colorfulHeadings,
 		showFrontmatterInEditor,
+		showHeadingPrefixes,
 	} = useNoteEditor({
 		additionalExtensions: mergedAdditionalExtensions,
 		markdown,
@@ -928,6 +929,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 						editor={liveEditor}
 						mode={mode}
 						colorfulHeadings={colorfulHeadings}
+						showHeadingPrefixes={showHeadingPrefixes}
 						canEdit={canEdit}
 						hostRef={handleTiptapHostRef}
 						hostNode={tiptapHostNode}

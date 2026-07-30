@@ -85,6 +85,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "general-editor-table-of-contents", tab: "general" },
 	{ id: "space-search-index-people-tags", tab: "space" },
 	{ id: "general-editor-frontmatter", tab: "general" },
+	{ id: "general-editor-heading-prefixes", tab: "general" },
 	{ id: "general-editor-colorful-headings", tab: "general" },
 	{ id: "appearance-editor-presentation-beautiful-tags", tab: "appearance" },
 	{ id: "appearance-editor-presentation-width", tab: "appearance" },

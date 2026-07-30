@@ -347,6 +347,7 @@ export function useNoteEditor({
 		showCollapsibleHeadings,
 		showCollapsibleLists,
 		showFrontmatterInEditor,
+		showHeadingPrefixes,
 	} = useNoteEditorSettings();
 	const spellCheckEnabled = useEditorSpellCheck();
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -811,6 +812,7 @@ export function useNoteEditor({
 		frontmatter,
 		colorfulHeadings,
 		showFrontmatterInEditor,
+		showHeadingPrefixes,
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,

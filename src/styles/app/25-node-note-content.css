@@ -364,7 +364,8 @@
 	--heading-rail-gap: 6px;
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline {
 	position: relative;
 	padding-left: calc(
 		var(--editor-readable-content-gutter-compact) +
@@ -374,25 +375,50 @@
 	);
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline::before {
 	content: none;
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h1,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h2,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h3,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h4,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h5,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h6 {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h1,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h2,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h3,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h4,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h5,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h6 {
 	position: relative;
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h1::before,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h2::before,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h3::before,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h4::before,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h5::before,
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h6::before {
 	display: inline-block;
 	width: var(--heading-level-rail-width);
 	margin-left: calc(
@@ -409,27 +435,39 @@
 	pointer-events: none;
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h1::before {
 	content: "H1";
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h2::before {
 	content: "H2";
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h3::before {
 	content: "H3";
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h4::before {
 	content: "H4";
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h5::before {
 	content: "H5";
 }
 
-.tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
+.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
+	.tiptapContentInline
+	h6::before {
 	content: "H6";
 }
 

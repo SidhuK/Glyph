@@ -203,6 +203,7 @@ interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	showCollapsibleLists: boolean;
 	showFrontmatterInEditor: boolean;
+	showHeadingPrefixes: boolean;
 	colorfulHeadings: boolean;
 	headingPaletteId: HeadingPaletteId;
 	beautifulTags: boolean;
@@ -246,6 +247,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
 	showCollapsibleLists: false,
 	showFrontmatterInEditor: false,
+	showHeadingPrefixes: true,
 	colorfulHeadings: false,
 	headingPaletteId: DEFAULT_HEADING_PALETTE_ID,
 	beautifulTags: false,
@@ -458,6 +460,7 @@ async function emitSettingsUpdated(payload: {
 		showCollapsibleHeadings?: boolean;
 		showCollapsibleLists?: boolean;
 		showFrontmatterInEditor?: boolean;
+		showHeadingPrefixes?: boolean;
 		colorfulHeadings?: boolean;
 		headingPaletteId?: HeadingPaletteId;
 		beautifulTags?: boolean;
@@ -604,6 +607,7 @@ const KEYS = {
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowCollapsibleLists: "editor.showCollapsibleLists",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
+	editorShowHeadingPrefixes: "editor.showHeadingPrefixes",
 	editorColorfulHeadings: "editor.colorfulHeadings",
 	editorHeadingPaletteId: "editor.headingPaletteId",
 	editorBeautifulTags: "editor.beautifulTags",
@@ -968,6 +972,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorShowFrontmatterInEditor,
 	);
+	const rawEditorShowHeadingPrefixes = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorShowHeadingPrefixes,
+	);
 	const rawEditorColorfulHeadings = getSettingValue<boolean | null>(
 		entries,
 		KEYS.editorColorfulHeadings,
@@ -1135,6 +1143,10 @@ export async function loadSettings(
 			typeof rawEditorShowFrontmatterInEditor === "boolean"
 				? rawEditorShowFrontmatterInEditor
 				: DEFAULT_EDITOR_SETTINGS.showFrontmatterInEditor,
+		showHeadingPrefixes:
+			typeof rawEditorShowHeadingPrefixes === "boolean"
+				? rawEditorShowHeadingPrefixes
+				: DEFAULT_EDITOR_SETTINGS.showHeadingPrefixes,
 		colorfulHeadings:
 			typeof rawEditorColorfulHeadings === "boolean"
 				? rawEditorColorfulHeadings
@@ -1590,6 +1602,17 @@ export async function setEditorColorfulHeadings(
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
+	});
+}
+
+export async function setEditorShowHeadingPrefixes(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getSettingsStore();
+	await store.set(KEYS.editorShowHeadingPrefixes, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { showHeadingPrefixes: enabled },
 	});
 }
 

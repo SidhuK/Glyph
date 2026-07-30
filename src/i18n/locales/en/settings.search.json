@@ -415,6 +415,11 @@
 			"section": "Editor",
 			"keywords": ["properties", "yaml", "metadata"]
 		},
+		"general-editor-heading-prefixes": {
+			"title": "Heading prefixes",
+			"section": "Editor",
+			"keywords": ["heading", "h1", "h2", "h3", "label"]
+		},
 		"general-editor-colorful-headings": {
 			"title": "Colorful headings",
 			"section": "Editor",
