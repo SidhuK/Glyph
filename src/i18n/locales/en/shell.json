@@ -134,6 +134,19 @@
 			"template": "Templates"
 		}
 	},
+	"calendar": {
+		"title": "Calendar",
+		"today": "Today",
+		"previousMonth": "Previous month",
+		"nextMonth": "Next month",
+		"openDailyNote": "Open daily note",
+		"loading": "Loading…",
+		"noteCount_one": "1 note",
+		"noteCount_other": "{{count}} notes",
+		"noNotes": "No notes on this day",
+		"loadFailed": "Could not load notes: {{message}}",
+		"loadFailedShort": "Could not load notes"
+	},
 	"tabs": {
 		"allNotes": "All Notes",
 		"collections": "Collections",

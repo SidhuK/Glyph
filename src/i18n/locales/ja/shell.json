@@ -117,6 +117,18 @@
 			"template": "テンプレート"
 		}
 	},
+	"calendar": {
+		"title": "カレンダー",
+		"today": "今日",
+		"previousMonth": "前の月",
+		"nextMonth": "次の月",
+		"openDailyNote": "デイリーノートを開く",
+		"loading": "読み込み中…",
+		"noteCount_other": "ノート {{count}} 件",
+		"noNotes": "この日のノートはありません",
+		"loadFailed": "ノートを読み込めませんでした: {{message}}",
+		"loadFailedShort": "ノートを読み込めませんでした"
+	},
 	"tabs": {
 		"allNotes": "すべてのノート",
 		"collections": "コレクション",
