@@ -159,7 +159,7 @@ function DatabasesPaneContent({
 										]
 									: undefined
 							}
-							onCardOrderChange={views.boardHandlers?.onCardOrderChange}
+							onCardOrderChange={views.persistCardOrder}
 							onSelectRow={rows.setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onCreateRow={actions.handleCreateRow}

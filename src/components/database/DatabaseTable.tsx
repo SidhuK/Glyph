@@ -11,8 +11,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualLoadMore } from "../../hooks/useLoadMoreTriggers";
 import {
 	type DatabaseRowGroup,
+	boardCreateValue,
 	boardDropValue,
-	boardRowHasLane,
 	createDatabaseRowGroups,
 	moveBoardCardToLane,
 } from "../../lib/database/board";
@@ -140,6 +140,26 @@ function orderDatabaseRowGroups(
 	});
 }
 
+function databaseGroupDropValue(
+	row: DatabaseRow,
+	column: DatabaseColumn,
+	targetGroupId: string,
+	sourceGroupId?: string | null,
+) {
+	const value = boardDropValue(row, column, targetGroupId, sourceGroupId);
+	const targetValue = boardCreateValue(column, targetGroupId)?.value_list[0];
+	if (!targetValue) return value;
+	return {
+		...value,
+		value_list: [
+			targetValue,
+			...value.value_list.filter(
+				(entry) => entry !== targetValue && entry !== sourceGroupId,
+			),
+		],
+	};
+}
+
 function createDatabaseDisplayItems(
 	displayRows: Row<DatabaseRow>[],
 	rowGroups: DatabaseRowGroup[],
@@ -215,17 +235,15 @@ export function DatabaseTable({
 }: DatabaseTableProps) {
 	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
-	const [localCardOrder, setLocalCardOrder] =
-		useState<Record<string, string[]>>(cardOrderByGroup);
+	const [optimisticCardOrder, setOptimisticCardOrder] = useState<Record<
+		string,
+		string[]
+	> | null>(null);
 	const tableContainerRef = useRef<HTMLDivElement>(null);
 	const suppressClickRef = useRef(false);
-	const displayedCardOrderRef = useRef(cardOrderByGroup);
-
-	useEffect(() => {
-		if (displayedCardOrderRef.current === cardOrderByGroup) return;
-		displayedCardOrderRef.current = cardOrderByGroup;
-		setLocalCardOrder(cardOrderByGroup);
-	}, [cardOrderByGroup]);
+	const displayedCardOrder = optimisticCardOrder ?? cardOrderByGroup;
+	const displayedCardOrderRef = useRef(displayedCardOrder);
+	displayedCardOrderRef.current = displayedCardOrder;
 
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
 		const next: Record<string, EditorTextColor> = {};
@@ -338,9 +356,24 @@ export function DatabaseTable({
 		[rows, groupColumn],
 	);
 	const rowGroups = useMemo(
-		() => orderDatabaseRowGroups(rawRowGroups, localCardOrder),
-		[localCardOrder, rawRowGroups],
+		() =>
+			activeSort
+				? rawRowGroups
+				: orderDatabaseRowGroups(rawRowGroups, displayedCardOrder),
+		[activeSort, displayedCardOrder, rawRowGroups],
 	);
+	const laneRowsById = useMemo(
+		() =>
+			Object.fromEntries(
+				rowGroups.map((group) => [
+					group.id,
+					group.rows.map((entry) => entry.note_path),
+				]),
+			),
+		[rowGroups],
+	);
+	const laneRowsByIdRef = useRef(laneRowsById);
+	laneRowsByIdRef.current = laneRowsById;
 	const displayRows = table.getRowModel().rows;
 	const visibleColumnCount = table.getVisibleLeafColumns().length || 1;
 	const hasGroups = groupColumn != null && rowGroups.length > 0;
@@ -377,14 +410,27 @@ export function DatabaseTable({
 	}, [activeResizingColumnId, commitColumnResize, resizingColumnId]);
 
 	const commitCardOrder = useCallback(
-		(nextOrder: Record<string, string[]>) => {
-			setLocalCardOrder(nextOrder);
+		async (nextOrder: Record<string, string[]>) => {
 			displayedCardOrderRef.current = nextOrder;
-			if (groupColumn && onCardOrderChange) {
-				void onCardOrderChange(groupColumn.id, nextOrder);
+			laneRowsByIdRef.current = nextOrder;
+			setOptimisticCardOrder(nextOrder);
+			if (!groupColumn || !onCardOrderChange) return;
+			try {
+				await onCardOrderChange(groupColumn.id, nextOrder);
+				setOptimisticCardOrder((current) =>
+					current === nextOrder ? null : current,
+				);
+			} catch (error) {
+				if (displayedCardOrderRef.current === nextOrder) {
+					displayedCardOrderRef.current = cardOrderByGroup;
+					setOptimisticCardOrder((current) =>
+						current === nextOrder ? null : current,
+					);
+				}
+				throw error;
 			}
 		},
-		[groupColumn, onCardOrderChange],
+		[cardOrderByGroup, groupColumn, onCardOrderChange],
 	);
 
 	const handleGroupDrop = useCallback(
@@ -398,58 +444,51 @@ export function DatabaseTable({
 			const row = rows.find((entry) => entry.note_path === notePath);
 			if (!row) return;
 
-			const laneRowsById = Object.fromEntries(
-				rowGroups.map((group) => [
-					group.id,
-					group.rows.map((entry) => entry.note_path),
-				]),
-			);
-
-			const applyOrder = () => {
+			const applyOrder = async () => {
 				const nextOrder = moveBoardCardToLane(
-					localCardOrder,
-					laneRowsById,
+					displayedCardOrderRef.current,
+					laneRowsByIdRef.current,
 					notePath,
 					targetGroupId,
 					targetNotePath,
 					sourceGroupId,
 				);
-				commitCardOrder(nextOrder);
+				await commitCardOrder(nextOrder);
 			};
-
-			if (targetGroupId === sourceGroupId) {
-				if (targetNotePath && targetNotePath !== notePath) {
-					applyOrder();
-				} else if (!targetNotePath) {
-					const targetGroup = rowGroups.find(
-						(group) => group.id === targetGroupId,
-					);
-					const lastRow = targetGroup?.rows[targetGroup.rows.length - 1];
-					if (lastRow?.note_path !== notePath) {
-						applyOrder();
-					}
-				}
-				return;
-			}
-
-			if (boardRowHasLane(row, groupColumn, targetGroupId)) {
-				applyOrder();
-				return;
-			}
 
 			try {
 				setMoveError("");
+				if (targetGroupId === sourceGroupId) {
+					if (targetNotePath && targetNotePath !== notePath) {
+						await applyOrder();
+					} else if (!targetNotePath) {
+						const targetGroup = rowGroups.find(
+							(group) => group.id === targetGroupId,
+						);
+						const lastRow = targetGroup?.rows[targetGroup.rows.length - 1];
+						if (lastRow?.note_path !== notePath) {
+							await applyOrder();
+						}
+					}
+					return;
+				}
+
 				await onSaveCell(
 					row.note_path,
 					groupColumn,
-					boardDropValue(row, groupColumn, targetGroupId, sourceGroupId),
+					databaseGroupDropValue(
+						row,
+						groupColumn,
+						targetGroupId,
+						sourceGroupId,
+					),
 				);
-				applyOrder();
+				await applyOrder();
 			} catch (error) {
 				setMoveError(extractErrorMessage(error));
 			}
 		},
-		[commitCardOrder, groupColumn, localCardOrder, onSaveCell, rowGroups, rows],
+		[commitCardOrder, groupColumn, onSaveCell, rowGroups, rows],
 	);
 
 	const handleDragEnd = useCallback(
@@ -583,7 +622,7 @@ export function DatabaseTable({
 								{flexRender(cell.column.columnDef.cell, cell.getContext())}
 							</TableCell>
 						));
-						if (hasGroups && groupId) {
+						if (hasGroups && groupId && !activeSort) {
 							return (
 								<DatabaseTableDraggableRow
 									key={virtualRow.key}
@@ -641,7 +680,7 @@ export function DatabaseTable({
 			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}`}
 		>
 			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
-			{hasGroups ? (
+			{hasGroups && !activeSort ? (
 				<DragDropProvider onDragEnd={handleDragEnd}>
 					{tableBody}
 				</DragDropProvider>

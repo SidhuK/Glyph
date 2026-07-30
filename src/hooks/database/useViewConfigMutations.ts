@@ -82,9 +82,9 @@ export function useViewConfigMutations({
 		[patchActiveConfig],
 	);
 
-	const handleCardOrderChange = useCallback(
+	const persistCardOrder = useCallback(
 		(groupColumnId: string, cardOrder: Record<string, string[]>) => {
-			patchActiveConfig((config) =>
+			return handleSaveConfig((config) =>
 				patchBoardMapField(
 					config,
 					"board_card_order",
@@ -93,7 +93,14 @@ export function useViewConfigMutations({
 				),
 			);
 		},
-		[patchActiveConfig],
+		[handleSaveConfig],
+	);
+
+	const handleCardOrderChange = useCallback(
+		(groupColumnId: string, cardOrder: Record<string, string[]>) => {
+			void persistCardOrder(groupColumnId, cardOrder).catch(() => undefined);
+		},
+		[persistCardOrder],
 	);
 
 	const handleLaneColorChange = useCallback(
@@ -206,6 +213,7 @@ export function useViewConfigMutations({
 		handleSaveConfig,
 		patchActiveView,
 		boardHandlers,
+		persistCardOrder,
 		handleResizeColumn,
 		handleChangeColumnIcon,
 		handleToggleSort,
