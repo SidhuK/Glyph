@@ -107,6 +107,7 @@ type TauriEventMap = {
 			showCollapsibleHeadings?: boolean;
 			showCollapsibleLists?: boolean;
 			showFrontmatterInEditor?: boolean;
+			showHeadingPrefixes?: boolean;
 			colorfulHeadings?: boolean;
 			headingPaletteId?: HeadingPaletteId;
 			beautifulTags?: boolean;

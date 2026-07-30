@@ -364,8 +364,7 @@
 	--heading-rail-gap: 6px;
 }
 
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline {
+.tiptapHostInline:not(.is-preview) .tiptapContentInline {
 	position: relative;
 	padding-left: calc(
 		var(--editor-readable-content-gutter-compact) +
@@ -375,29 +374,16 @@
 	);
 }
 
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline::before {
+.tiptapHostInline:not(.is-preview) .tiptapContentInline::before {
 	content: none;
 }
 
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h1,
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h2,
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h3,
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h4,
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h5,
-.tiptapHostInline[data-heading-prefixes="true"]:not(.is-preview)
-	.tiptapContentInline
-	h6 {
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h1,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h2,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h3,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h4,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h5,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h6 {
 	position: relative;
 }
 
