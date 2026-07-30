@@ -4,6 +4,8 @@ use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState, utils};
 
+use super::link_rewrite::percent_decode_utf8;
+
 #[derive(Clone)]
 struct FileEntry {
     rel_path: String,
@@ -352,15 +354,19 @@ pub async fn space_resolve_markdown_link(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
-        let raw = href
+        let encoded_raw = href
             .split('#')
             .next()
             .unwrap_or("")
             .trim()
             .replace('\\', "/");
-        if raw.is_empty() || raw.starts_with("http://") || raw.starts_with("https://") {
+        if encoded_raw.is_empty()
+            || encoded_raw.starts_with("http://")
+            || encoded_raw.starts_with("https://")
+        {
             return Ok(None);
         }
+        let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
         let source_dir = parent_dir(&source_path);
         let normalized_raw = raw.trim_start_matches("./");
         let mut candidates = Vec::<String>::new();

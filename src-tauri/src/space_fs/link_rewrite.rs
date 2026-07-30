@@ -298,7 +298,7 @@ fn rewrite_markdown_target_path(
     None
 }
 
-fn percent_decode_utf8(value: &str) -> Option<String> {
+pub(super) fn percent_decode_utf8(value: &str) -> Option<String> {
     if !value.as_bytes().contains(&b'%') {
         return None;
     }
