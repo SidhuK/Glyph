@@ -482,18 +482,13 @@
 	background: color-mix(in srgb, var(--interactive-accent) 11%, var(--bg-hover));
 }
 
-/* Floating list-row drag feedback: slight tilt + soft lift (list mock) */
 .databaseRow[data-dragging="true"]:not([data-dnd-placeholder]),
 .databaseRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
-	opacity: 1;
 	cursor: grabbing;
 	background: var(--bg-primary);
-	border-color: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 22%, transparent), 0 2px 6px
-		color-mix(in srgb, var(--text-primary) 8%, transparent), 0 14px 32px
+		color-mix(in srgb, var(--interactive-accent) 22%, transparent), 0 12px 28px
 		color-mix(in srgb, var(--text-primary) 14%, transparent);
-	/* Composes with dnd-kit's `translate` (independent transform properties) */
 	rotate: 2.5deg;
 }
 
@@ -507,14 +502,11 @@
 		color-mix(in srgb, var(--interactive-accent) 30%, transparent);
 }
 
-/* Faint stand-in left in the group while the row is lifted */
 .databaseRow[data-dnd-placeholder] {
 	visibility: visible !important;
 	opacity: 0.3;
 	pointer-events: none;
 	box-shadow: none;
-	rotate: none;
-	cursor: default;
 }
 
 .databaseGroupHeaderRow {
@@ -611,7 +603,6 @@
 	text-align: right;
 }
 
-/* Soften row dividers so grouped lists feel more card-like */
 .databaseTable .databaseBodyCell {
 	border-top-color: color-mix(in srgb, var(--border-light) 36%, transparent);
 }

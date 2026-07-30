@@ -138,7 +138,6 @@
 	text-align: right;
 }
 
-.databaseBoardLaneTitleButton,
 .databaseBoardLaneHandle,
 .databaseBoardCard {
 	transition: background-color 140ms ease, border-color 140ms ease, box-shadow
@@ -219,6 +218,7 @@
 	color: inherit;
 	white-space: nowrap;
 	background: transparent;
+	transition: background-color 140ms ease;
 }
 
 .databaseBoardLaneTitleButton:hover {
@@ -239,23 +239,52 @@
 	appearance: none;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	min-height: 30px;
+	justify-content: flex-start;
+	gap: 7px;
+	min-height: 32px;
 	width: 100%;
-	border: 1px dashed color-mix(in srgb, var(--database-tone) 20%, transparent);
+	padding: 0 10px;
+	border: 1px solid transparent;
 	border-radius: var(--database-radius-md);
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 48%, transparent);
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.86);
 	font-weight: var(--font-medium);
+	letter-spacing: -0.01em;
 	cursor: pointer;
+	transition: background-color 140ms ease, border-color 140ms ease, color 140ms
+		ease;
+}
+
+.databaseBoardAddCardIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--database-tone) 12%, transparent);
+	color: color-mix(in srgb, var(--database-tone) 55%, var(--text-secondary));
+	flex: 0 0 auto;
+}
+
+.databaseBoardAddCardLabel {
+	line-height: 1;
 }
 
 .databaseBoardAddCardButton:hover {
-	border-color: color-mix(in srgb, var(--database-tone) 36%, transparent);
-	background: color-mix(in srgb, var(--database-tone) 7%, var(--bg-primary));
+	background: color-mix(in srgb, var(--database-tone) 8%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--database-tone) 16%, transparent);
 	color: var(--text-primary);
+}
+
+.databaseBoardAddCardButton:hover .databaseBoardAddCardIcon {
+	background: color-mix(in srgb, var(--database-tone) 18%, transparent);
+	color: color-mix(in srgb, var(--database-tone) 72%, var(--text-primary));
+}
+
+.databaseBoardAddCardButton:active {
+	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-primary));
 }
 
 .databaseBoardCard {
@@ -287,39 +316,26 @@
 
 .databaseBoardCard:hover {
 	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 5%, transparent),
-		0 4px 12px color-mix(in srgb, var(--text-primary) 6%, transparent);
+	box-shadow: 0 4px 14px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
-/* Floating drag feedback: slight tilt, accent ring, soft lift (matches board mock).
-   Exclude placeholders — dnd-kit may mirror `data-dragging` onto the stand-in. */
 .databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
 .databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
-	opacity: 1;
 	overflow: visible;
 	cursor: grabbing;
 	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
 	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 2px 4px
-		color-mix(in srgb, var(--text-primary) 6%, transparent), 0 10px 24px
-		color-mix(in srgb, var(--text-primary) 12%, transparent), 0 18px 40px
-		color-mix(in srgb, var(--text-primary) 8%, transparent);
-	/* Composes with dnd-kit's `translate` (independent transform properties) */
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
 	rotate: 3deg;
 }
 
-/* Space-reserving ghost left behind while the real card is lifted.
-   dnd-kit injects `visibility: hidden` for placeholders; override so the
-   board keeps a faint stand-in like the product mock. */
 .databaseBoardCard[data-dnd-placeholder] {
 	visibility: visible !important;
 	opacity: 0.34;
 	pointer-events: none;
-	filter: grayscale(0.05);
 	box-shadow: none;
 	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
-	rotate: none;
-	cursor: default;
 }
 
 .databaseBoardCard[data-drop-target="true"] {
@@ -339,8 +355,7 @@
 }
 
 .dark .databaseBoardCard:hover {
-	box-shadow: 0 1px 2px color-mix(in srgb, black 18%, transparent), 0 6px 16px
-		color-mix(in srgb, black 16%, transparent);
+	box-shadow: 0 6px 16px color-mix(in srgb, black 18%, transparent);
 }
 
 .dark .databaseBoardCard[data-state="selected"] {
@@ -358,9 +373,6 @@
 		var(--bg-primary)
 	);
 	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 12%, transparent), 0 1px 2px
-		color-mix(in srgb, var(--text-primary) 4%, transparent);
 }
 
 .databaseBoardCardTitle {

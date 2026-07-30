@@ -776,8 +776,13 @@ export function DatabaseBoard({
 											title={`Add note to ${lane.label}`}
 											aria-label={`Add note to ${lane.label}`}
 										>
-											<Plus size="var(--icon-sm)" aria-hidden="true" />
-											<span>New</span>
+											<span
+												className="databaseBoardAddCardIcon"
+												aria-hidden="true"
+											>
+												<Plus size="var(--icon-sm)" strokeWidth={1.8} />
+											</span>
+											<span className="databaseBoardAddCardLabel">New</span>
 										</button>
 									) : null}
 								</DatabaseBoardLaneView>

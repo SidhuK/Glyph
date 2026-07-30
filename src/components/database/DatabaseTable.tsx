@@ -23,7 +23,7 @@ import type {
 	DatabaseSort,
 } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { ChevronDown, ChevronUp, Plus } from "../Icons";
+import { ChevronDown, ChevronUp } from "../Icons";
 import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import {
 	Table,
@@ -464,19 +464,13 @@ export function DatabaseTable({
 			const notePath =
 				typeof source?.data.notePath === "string" ? source.data.notePath : null;
 			const targetGroupId =
-				typeof target?.data.laneId === "string"
-					? target.data.laneId
-					: typeof target?.data.groupId === "string"
-						? target.data.groupId
-						: null;
+				typeof target?.data.laneId === "string" ? target.data.laneId : null;
 			const targetNotePath =
 				typeof target?.data.notePath === "string" ? target.data.notePath : null;
 			const sourceGroupId =
 				typeof source?.data.sourceLaneId === "string"
 					? source.data.sourceLaneId
-					: typeof source?.data.sourceGroupId === "string"
-						? source.data.sourceGroupId
-						: null;
+					: null;
 			if (!targetGroupId) return;
 
 			void handleGroupDrop(
@@ -551,60 +545,29 @@ export function DatabaseTable({
 						const transform = `translateY(${virtualRow.start}px)`;
 						if (item.kind === "group") {
 							const { group } = item;
-							if (hasGroups) {
-								return (
-									<DatabaseTableGroupHeader
-										key={virtualRow.key}
-										groupId={group.id}
-										label={group.label}
-										rowCount={group.rowCount}
-										visibleColumnCount={visibleColumnCount}
-										style={{
-											height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
-											transform,
-										}}
-										canCreateInGroup={canCreateInGroup}
-										onCreateInGroup={
-											groupColumn
-												? () => {
-														void onCreateRow?.({
-															column: groupColumn,
-															laneId: group.id,
-														});
-													}
-												: undefined
-										}
-									>
-										<Plus
-											size="var(--icon-sm)"
-											strokeWidth={1.6}
-											aria-hidden="true"
-										/>
-									</DatabaseTableGroupHeader>
-								);
-							}
 							return (
-								<tr
+								<DatabaseTableGroupHeader
 									key={virtualRow.key}
-									className="databaseGroupHeaderRow"
+									groupId={group.id}
+									label={group.label}
+									rowCount={group.rowCount}
+									visibleColumnCount={visibleColumnCount}
 									style={{
 										height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
 										transform,
 									}}
-								>
-									<td
-										colSpan={visibleColumnCount}
-										className="databaseGroupCell"
-									>
-										<span className="databaseGroupLabel">{group.label}</span>
-										<span
-											className="databaseGroupCount"
-											aria-label={`${group.rowCount} ${group.rowCount === 1 ? "note" : "notes"}`}
-										>
-											{group.rowCount}
-										</span>
-									</td>
-								</tr>
+									canCreateInGroup={canCreateInGroup}
+									onCreateInGroup={
+										groupColumn
+											? () => {
+													void onCreateRow?.({
+														column: groupColumn,
+														laneId: group.id,
+													});
+												}
+											: undefined
+									}
+								/>
 							);
 						}
 						const { row, groupId } = item;

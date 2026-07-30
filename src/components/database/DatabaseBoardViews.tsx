@@ -252,7 +252,7 @@ export function DatabaseBoardLaneView({
 				<div className="databaseBoardLaneHeaderActions">
 					<span
 						className="databaseBoardLaneCount"
-						aria-label={`${lane.cardCount} ${lane.cardCount === 1 ? "card" : "cards"}`}
+						aria-label={`${lane.cardCount} cards`}
 					>
 						{lane.cardCount}
 					</span>

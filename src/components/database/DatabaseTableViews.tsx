@@ -13,6 +13,7 @@ import {
 	useCallback,
 } from "react";
 import type { DatabaseRow } from "../../lib/database/types";
+import { Plus } from "../Icons";
 
 const DATABASE_TABLE_ROW_SENSORS = [
 	PointerSensor.configure({
@@ -23,8 +24,14 @@ const DATABASE_TABLE_ROW_SENSORS = [
 	KeyboardSensor,
 ];
 
-function tableRowDragId(notePath: string, groupId: string): string {
-	return `${groupId}:${notePath}`;
+const INTERACTIVE_CELL_SELECTOR =
+	"button, a, input, textarea, select, [contenteditable='true'], [role='button'], [role='menuitem'], [role='option']";
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+	return (
+		target instanceof Element &&
+		Boolean(target.closest(INTERACTIVE_CELL_SELECTOR))
+	);
 }
 
 interface DatabaseTableGroupHeaderProps {
@@ -35,7 +42,6 @@ interface DatabaseTableGroupHeaderProps {
 	style: CSSProperties;
 	canCreateInGroup: boolean;
 	onCreateInGroup?: () => void;
-	children?: ReactNode;
 }
 
 export function DatabaseTableGroupHeader({
@@ -46,11 +52,10 @@ export function DatabaseTableGroupHeader({
 	style,
 	canCreateInGroup,
 	onCreateInGroup,
-	children,
 }: DatabaseTableGroupHeaderProps) {
 	const { ref, isDropTarget } = useDroppable({
 		id: `group:${groupId}`,
-		data: { groupId, laneId: groupId },
+		data: { laneId: groupId },
 		accept: "database-table-row",
 	});
 
@@ -63,10 +68,7 @@ export function DatabaseTableGroupHeader({
 		>
 			<td colSpan={visibleColumnCount} className="databaseGroupCell">
 				<span className="databaseGroupLabel">{label}</span>
-				<span
-					className="databaseGroupCount"
-					aria-label={`${rowCount} ${rowCount === 1 ? "note" : "notes"}`}
-				>
+				<span className="databaseGroupCount" aria-label={`${rowCount} notes`}>
 					{rowCount}
 				</span>
 				{canCreateInGroup && onCreateInGroup ? (
@@ -77,7 +79,7 @@ export function DatabaseTableGroupHeader({
 						title={`Add note to ${label}`}
 						aria-label={`Add note to ${label}`}
 					>
-						{children}
+						<Plus size="var(--icon-sm)" strokeWidth={1.6} aria-hidden="true" />
 					</button>
 				) : null}
 			</td>
@@ -106,25 +108,17 @@ export function DatabaseTableDraggableRow({
 	onOpenRow,
 	children,
 }: DatabaseTableDraggableRowProps) {
-	const dragId = tableRowDragId(row.note_path, groupId);
+	const dragId = `${groupId}:${row.note_path}`;
 	const { ref: droppableRef, isDropTarget } = useDroppable({
 		id: `row:${dragId}`,
-		data: {
-			groupId,
-			laneId: groupId,
-			notePath: row.note_path,
-		},
+		data: { laneId: groupId, notePath: row.note_path },
 		accept: "database-table-row",
 	});
 	const { ref, handleRef, isDragging } = useDraggable({
 		id: dragId,
 		type: "database-table-row",
 		sensors: DATABASE_TABLE_ROW_SENSORS,
-		data: {
-			notePath: row.note_path,
-			sourceLaneId: groupId,
-			sourceGroupId: groupId,
-		},
+		data: { notePath: row.note_path, sourceLaneId: groupId },
 	});
 	const setRowRef = useCallback(
 		(element: HTMLTableRowElement | null) => {
@@ -137,17 +131,7 @@ export function DatabaseTableDraggableRow({
 
 	const handleClick = useCallback(
 		(event: MouseEvent<HTMLTableRowElement>) => {
-			if (suppressClickRef.current) return;
-			// Avoid stealing clicks from interactive cell controls.
-			const target = event.target;
-			if (
-				target instanceof Element &&
-				target.closest(
-					"button, a, input, textarea, select, [contenteditable='true'], [role='button'], [role='menuitem'], [role='option']",
-				)
-			) {
-				return;
-			}
+			if (suppressClickRef.current || isInteractiveTarget(event.target)) return;
 			onSelectRow(row.note_path);
 		},
 		[onSelectRow, row.note_path, suppressClickRef],
@@ -155,16 +139,7 @@ export function DatabaseTableDraggableRow({
 
 	const handleDoubleClick = useCallback(
 		(event: MouseEvent<HTMLTableRowElement>) => {
-			if (suppressClickRef.current) return;
-			const target = event.target;
-			if (
-				target instanceof Element &&
-				target.closest(
-					"button, a, input, textarea, select, [contenteditable='true'], [role='button'], [role='menuitem'], [role='option']",
-				)
-			) {
-				return;
-			}
+			if (suppressClickRef.current || isInteractiveTarget(event.target)) return;
 			onOpenRow(row.note_path);
 		},
 		[onOpenRow, row.note_path, suppressClickRef],

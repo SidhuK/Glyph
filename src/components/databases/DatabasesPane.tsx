@@ -154,9 +154,9 @@ function DatabasesPaneContent({
 							groupColumn={views.activeGroupColumn}
 							cardOrderByGroup={
 								views.activeGroupColumn
-									? (activeCollection.config.view.board_card_order?.[
+									? activeCollection.config.view.board_card_order?.[
 											views.activeGroupColumn.id
-										] ?? {})
+										]
 									: undefined
 							}
 							onCardOrderChange={views.boardHandlers?.onCardOrderChange}
