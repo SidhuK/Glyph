@@ -29,6 +29,9 @@ struct Fence {
     length: usize,
 }
 
+/// Byte length of the checkbox prefix (`- [ ] ` / `- [x] `) after indent.
+const CHECKBOX_PREFIX_LEN: usize = 6;
+
 fn task_line(line: &str) -> Option<(usize, bool, bool, String, Option<String>)> {
     let indent = line
         .chars()
@@ -36,7 +39,7 @@ fn task_line(line: &str) -> Option<(usize, bool, bool, String, Option<String>)> 
         .count();
     let rest = &line[indent..];
     let bytes = rest.as_bytes();
-    if bytes.len() < 6
+    if bytes.len() < CHECKBOX_PREFIX_LEN
         || !matches!(bytes[0], b'-' | b'*' | b'+')
         || bytes[1] != b' '
         || bytes[2] != b'['
@@ -46,6 +49,10 @@ fn task_line(line: &str) -> Option<(usize, bool, bool, String, Option<String>)> 
     {
         return None;
     }
+    // Markers include a leading space (e.g. ` ***Moved from*** [[`). When the
+    // task has no body text, that leading space is the same byte as the
+    // required space after `]`, so find() returns an index before
+    // CHECKBOX_PREFIX_LEN — clamp so we never slice with begin > end.
     let marker_start = [
         MOVED_TO_MARKER_PREFIX,
         MOVED_FROM_MARKER_PREFIX,
@@ -55,8 +62,9 @@ fn task_line(line: &str) -> Option<(usize, bool, bool, String, Option<String>)> 
     .into_iter()
     .filter_map(|marker| rest.find(marker))
     .min()
-    .unwrap_or(rest.len());
-    let text = rest[6..marker_start].trim().to_string();
+    .unwrap_or(rest.len())
+    .max(CHECKBOX_PREFIX_LEN);
+    let text = rest[CHECKBOX_PREFIX_LEN..marker_start].trim().to_string();
     let original_date = marker_date(rest, MOVED_FROM_MARKER_PREFIX)
         .or_else(|| marker_date(rest, LEGACY_MOVED_FROM_MARKER_PREFIX))
         .map(str::to_string);
