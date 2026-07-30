@@ -1,21 +1,19 @@
 use std::{
-    collections::{HashMap, HashSet},
-    ffi::OsStr,
+    collections::{HashMap, HashSet, VecDeque},
     path::{Path, PathBuf},
 };
 use tauri::{State, WebviewWindow};
 
-use crate::{paths, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::DirChildSummary;
 
-const MAX_SCAN_FILES: usize = 200_000;
+const MAX_SCAN_ENTRIES: usize = 200_000;
 const MAX_SUMMARY_PARENTS: usize = 5_000;
 
 struct SummaryAccumulator {
     summary: DirChildSummary,
-    scanned_files: usize,
 }
 
 impl SummaryAccumulator {
@@ -28,27 +26,15 @@ impl SummaryAccumulator {
                 total_markdown_recursive: 0,
                 truncated: false,
             },
-            scanned_files: 0,
         }
     }
 
     fn record_file(&mut self, rel_path: &Path) {
-        if self.summary.truncated {
-            return;
-        }
-
         self.summary.total_files_recursive = self.summary.total_files_recursive.saturating_add(1);
-        self.scanned_files += 1;
-        if self.scanned_files >= MAX_SCAN_FILES {
-            self.summary.truncated = true;
-            return;
+        if utils::is_markdown_path(rel_path) {
+            self.summary.total_markdown_recursive =
+                self.summary.total_markdown_recursive.saturating_add(1);
         }
-        if rel_path.extension() != Some(OsStr::new("md")) {
-            return;
-        }
-
-        self.summary.total_markdown_recursive =
-            self.summary.total_markdown_recursive.saturating_add(1);
     }
 }
 
@@ -89,8 +75,10 @@ pub async fn space_dir_children_summary(
             .cloned()
             .collect();
         let mut summaries = HashMap::new();
-        let mut stack = traversal_roots;
-        while let Some(rel_dir) = stack.pop() {
+        let mut queue = VecDeque::from(traversal_roots);
+        let mut scanned_entries = 0;
+        let mut truncated = false;
+        'traversal: while let Some(rel_dir) = queue.pop_front() {
             let abs_dir = match paths::join_under(&root, &rel_dir) {
                 Ok(path) => path,
                 Err(_) => continue,
@@ -100,12 +88,23 @@ pub async fn space_dir_children_summary(
                 Err(_) => continue,
             };
             for entry in entries {
+                if scanned_entries >= MAX_SCAN_ENTRIES {
+                    truncated = true;
+                    break 'traversal;
+                }
+                scanned_entries += 1;
                 let entry = match entry {
                     Ok(entry) => entry,
                     Err(_) => continue,
                 };
                 let name = entry.file_name().to_string_lossy().to_string();
                 if should_hide(&name) {
+                    continue;
+                }
+                let Ok(file_type) = entry.file_type() else {
+                    continue;
+                };
+                if file_type.is_symlink() {
                     continue;
                 }
                 let metadata = match entry.metadata() {
@@ -119,7 +118,7 @@ pub async fn space_dir_children_summary(
                             .entry(child_rel.clone())
                             .or_insert_with(|| SummaryAccumulator::new(&child_rel, name));
                     }
-                    stack.push(child_rel);
+                    queue.push_back(child_rel);
                     continue;
                 }
                 if !metadata.is_file() {
@@ -133,6 +132,11 @@ pub async fn space_dir_children_summary(
                     }
                     ancestor = dir.parent();
                 }
+            }
+        }
+        if truncated {
+            for accumulator in summaries.values_mut() {
+                accumulator.summary.truncated = true;
             }
         }
 

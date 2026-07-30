@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    collections::VecDeque,
+    path::{Path, PathBuf},
+};
 use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState, utils};
@@ -243,15 +246,34 @@ pub async fn space_list_dir(
         deny_hidden_rel_path(&start_rel)?;
         let start_abs = paths::join_under(&root, &start_rel)?;
         let mut entries: Vec<FsEntry> = Vec::new();
-        let mut stack = vec![(start_rel, start_abs)];
-        while let Some((rel, abs)) = stack.pop() {
-            for entry in std::fs::read_dir(&abs).map_err(|e| e.to_string())? {
-                let entry = entry.map_err(|e| e.to_string())?;
+        let mut queue = VecDeque::from([(start_rel, start_abs)]);
+        let mut is_start = true;
+        while let Some((rel, abs)) = queue.pop_front() {
+            let dir_entries = match std::fs::read_dir(&abs) {
+                Ok(entries) => entries,
+                Err(error) if is_start => return Err(error.to_string()),
+                Err(_) => continue,
+            };
+            is_start = false;
+            for entry in dir_entries {
+                let Ok(entry) = entry else {
+                    continue;
+                };
                 let name = entry.file_name().to_string_lossy().to_string();
                 if should_hide(&name) {
                     continue;
                 }
-                let meta = entry.metadata().map_err(|e| e.to_string())?;
+                if recursive {
+                    let Ok(file_type) = entry.file_type() else {
+                        continue;
+                    };
+                    if file_type.is_symlink() {
+                        continue;
+                    }
+                }
+                let Ok(meta) = entry.metadata() else {
+                    continue;
+                };
                 let kind = if meta.is_dir() {
                     "dir"
                 } else if meta.is_file() {
@@ -261,7 +283,7 @@ pub async fn space_list_dir(
                 };
                 let rel_path = rel.join(&name);
                 if recursive && kind == "dir" {
-                    stack.push((rel_path.clone(), entry.path()));
+                    queue.push_back((rel_path.clone(), entry.path()));
                 }
                 if directories_only && kind != "dir" {
                     continue;

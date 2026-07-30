@@ -17,6 +17,7 @@ struct ExternalChangeEvent {
 }
 
 const DEBOUNCE_MS: u64 = 100;
+const INDEX_OPEN_RETRY_MS: u64 = 1_000;
 
 pub fn create_notes_watcher(
     app: tauri::AppHandle,
@@ -32,9 +33,14 @@ pub fn create_notes_watcher(
     let index_space_path = root.to_string_lossy().to_string();
     std::thread::spawn(move || {
         let debounce = std::time::Duration::from_millis(DEBOUNCE_MS);
-        while let Ok(first) = idx_rx.recv() {
-            let mut pending = HashMap::new();
-            pending.insert(first.0, first.1);
+        let mut pending = HashMap::new();
+        loop {
+            if pending.is_empty() {
+                let Ok((rel, remove)) = idx_rx.recv() else {
+                    return;
+                };
+                pending.insert(rel, remove);
+            }
 
             let deadline = std::time::Instant::now() + debounce;
             loop {
@@ -47,19 +53,20 @@ pub fn create_notes_watcher(
                         pending.insert(rel, remove);
                     }
                     Err(std_mpsc::RecvTimeoutError::Timeout) => break,
-                    Err(std_mpsc::RecvTimeoutError::Disconnected) => return,
+                    Err(std_mpsc::RecvTimeoutError::Disconnected) => break,
                 }
             }
 
-            let mut events = Vec::new();
             let conn = match index::open_db(&root_idx) {
                 Ok(conn) => conn,
                 Err(error) => {
                     tracing::warn!(%error, "could not open note index for watcher batch");
+                    std::thread::sleep(std::time::Duration::from_millis(INDEX_OPEN_RETRY_MS));
                     continue;
                 }
             };
-            for (rel_s, is_remove) in pending {
+            let mut events = Vec::new();
+            for (rel_s, is_remove) in std::mem::take(&mut pending) {
                 let result = if is_remove {
                     index::remove_note_with_conn(&conn, &rel_s)
                 } else {

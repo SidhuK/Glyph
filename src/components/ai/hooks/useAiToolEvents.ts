@@ -259,6 +259,7 @@ export function useAiToolEvents({
 		if (!activeToolJobIdRef.current) {
 			activeToolJobIdRef.current = payload.job_id;
 		}
+		flushPendingChunk();
 		const tool = payload.tool?.trim() || "tool";
 		const phase: ToolPhase =
 			payload.phase === "call" ||
