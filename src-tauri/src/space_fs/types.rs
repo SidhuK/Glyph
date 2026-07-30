@@ -36,20 +36,12 @@ pub struct OpenOrCreateTextResult {
     pub mtime_ms: u64,
 }
 
-#[derive(Serialize, Clone)]
-pub struct RecentMarkdown {
-    pub rel_path: String,
-    pub name: String,
-    pub mtime_ms: u64,
-}
-
 #[derive(Serialize)]
 pub struct DirChildSummary {
     pub dir_rel_path: String,
     pub name: String,
     pub total_files_recursive: u32,
     pub total_markdown_recursive: u32,
-    pub recent_markdown: Vec<RecentMarkdown>,
     pub truncated: bool,
 }
 

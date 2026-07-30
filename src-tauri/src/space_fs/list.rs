@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    collections::VecDeque,
+    path::{Path, PathBuf},
+};
 use tauri::{State, WebviewWindow};
 
 use crate::{paths, space::SpaceState, utils};
@@ -218,53 +221,102 @@ pub async fn space_list_non_markdown_files(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn space_list_dir(
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     dir: Option<String>,
+    recursive: Option<bool>,
+    directories_only: Option<bool>,
+    limit: Option<u32>,
 ) -> Result<Vec<FsEntry>, String> {
     let root = state.root_for_window(&window)?;
     let dir = dir.unwrap_or_default();
+    let recursive = recursive.unwrap_or(false);
+    let directories_only = directories_only.unwrap_or(false);
+    let limit = limit
+        .map(|value| value.clamp(1, 50_000) as usize)
+        .unwrap_or(if recursive { 5_000 } else { usize::MAX });
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
-        let rel = if dir.trim().is_empty() {
+        let start_rel = if dir.trim().is_empty() {
             PathBuf::new()
         } else {
             PathBuf::from(&dir)
         };
-        deny_hidden_rel_path(&rel)?;
-        let abs = paths::join_under(&root, &rel)?;
+        deny_hidden_rel_path(&start_rel)?;
+        let start_abs = paths::join_under(&root, &start_rel)?;
         let mut entries: Vec<FsEntry> = Vec::new();
-        for entry in std::fs::read_dir(&abs).map_err(|e| e.to_string())? {
-            let entry = entry.map_err(|e| e.to_string())?;
-            let name_os = entry.file_name();
-            let name = name_os.to_string_lossy().to_string();
-            if should_hide(&name) {
-                continue;
-            }
-            let meta = entry.metadata().map_err(|e| e.to_string())?;
-            let kind = if meta.is_dir() {
-                "dir"
-            } else if meta.is_file() {
-                "file"
-            } else {
-                continue;
+        let mut queue = VecDeque::from([(start_rel, start_abs)]);
+        let mut is_start = true;
+        while let Some((rel, abs)) = queue.pop_front() {
+            let dir_entries = match std::fs::read_dir(&abs) {
+                Ok(entries) => entries,
+                Err(error) if is_start => return Err(error.to_string()),
+                Err(_) => continue,
             };
-            let rel_path = rel.join(&name);
-            let is_markdown = utils::is_markdown_path(&rel_path);
-            let (created, updated) = metadata_timestamps(&meta);
-            entries.push(FsEntry {
-                name,
-                rel_path: rel_path.to_string_lossy().to_string(),
-                kind: kind.to_string(),
-                is_markdown,
-                created,
-                updated,
-            });
+            is_start = false;
+            for entry in dir_entries {
+                let Ok(entry) = entry else {
+                    continue;
+                };
+                let name = entry.file_name().to_string_lossy().to_string();
+                if should_hide(&name) {
+                    continue;
+                }
+                if recursive {
+                    let Ok(file_type) = entry.file_type() else {
+                        continue;
+                    };
+                    if file_type.is_symlink() {
+                        continue;
+                    }
+                }
+                let Ok(meta) = entry.metadata() else {
+                    continue;
+                };
+                let kind = if meta.is_dir() {
+                    "dir"
+                } else if meta.is_file() {
+                    "file"
+                } else {
+                    continue;
+                };
+                let rel_path = rel.join(&name);
+                if recursive && kind == "dir" {
+                    queue.push_back((rel_path.clone(), entry.path()));
+                }
+                if directories_only && kind != "dir" {
+                    continue;
+                }
+                let is_markdown = utils::is_markdown_path(&rel_path);
+                let (created, updated) = metadata_timestamps(&meta);
+                entries.push(FsEntry {
+                    name,
+                    rel_path: rel_path.to_string_lossy().to_string(),
+                    kind: kind.to_string(),
+                    is_markdown,
+                    created,
+                    updated,
+                });
+                if entries.len() >= limit {
+                    break;
+                }
+            }
+            if !recursive || entries.len() >= limit {
+                break;
+            }
         }
 
-        entries
-            .sort_by_cached_key(|e| (if e.kind == "dir" { 0u8 } else { 1 }, e.name.to_lowercase()));
+        entries.sort_by_cached_key(|entry| {
+            (
+                if entry.kind == "dir" { 0u8 } else { 1 },
+                if recursive {
+                    entry.rel_path.to_lowercase()
+                } else {
+                    entry.name.to_lowercase()
+                },
+            )
+        });
 
         Ok(entries)
     })

@@ -141,7 +141,7 @@ pub fn index_note(space_root: &Path, note_id: &str, markdown: &str) -> Result<()
     index_note_with_conn(&conn, note_id, markdown, &file_path)
 }
 
-fn index_note_with_conn(
+pub(crate) fn index_note_with_conn(
     conn: &rusqlite::Connection,
     note_id: &str,
     markdown: &str,
@@ -303,6 +303,13 @@ fn refresh_indexed_timestamps_if_needed(
 
 pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
     let conn = open_db(space_root)?;
+    remove_note_with_conn(&conn, note_id)
+}
+
+pub(crate) fn remove_note_with_conn(
+    conn: &rusqlite::Connection,
+    note_id: &str,
+) -> Result<(), String> {
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;

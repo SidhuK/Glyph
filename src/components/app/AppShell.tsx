@@ -47,7 +47,7 @@ import {
 	invalidateAllDocsPrefetch,
 	invalidateDatabaseRowsPrefetch,
 	invalidatePrefetchedNote,
-	invalidateTaskSummariesPrefetchForNote,
+	invalidateTaskSummariesPrefetchForNotes,
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
 	prefetchNote,
@@ -103,6 +103,8 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760;
+const FILE_TREE_REFRESH_BATCH_MS = 150;
+const NOTE_INVALIDATION_BATCH_MS = 50;
 const GIT_SYNC_ERROR_TOAST_ID = "glyph-git-sync-error";
 
 function showGitSyncErrorToast(message: string) {
@@ -718,6 +720,8 @@ export function AppShell() {
 
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
+	const noteInvalidationQueueRef = useRef<Map<string, boolean>>(new Map());
+	const noteInvalidationTimerRef = useRef<number | null>(null);
 	const moveTargetDirsRequestIdRef = useRef(0);
 
 	const openPalette = useCallback(
@@ -740,23 +744,18 @@ export function AppShell() {
 		const requestId = ++moveTargetDirsRequestIdRef.current;
 		setMoveTargetDirs([]);
 		try {
-			const out: string[] = [];
-			const seen = new Set<string>([""]);
-			const queue: string[] = [""];
-			while (queue.length > 0 && out.length < 5000) {
-				const dir = queue.shift() ?? "";
-				const entries = await invoke("space_list_dir", dir ? { dir } : {});
-				for (const entry of entries) {
-					if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
-					seen.add(entry.rel_path);
-					out.push(entry.rel_path);
-					queue.push(entry.rel_path);
-				}
-			}
+			const entries = await invoke("space_list_dir", {
+				recursive: true,
+				directories_only: true,
+				limit: 5000,
+			});
 			if (moveTargetDirsRequestIdRef.current !== requestId) return;
 			const fromDir = parentDir(sourcePath);
 			setMoveTargetDirs(
-				out.filter((d) => d !== fromDir).sort((a, b) => a.localeCompare(b)),
+				entries
+					.map((entry) => entry.rel_path)
+					.filter((dir) => dir !== fromDir)
+					.sort((left, right) => left.localeCompare(right)),
 			);
 		} catch {
 			if (moveTargetDirsRequestIdRef.current === requestId) {
@@ -897,7 +896,7 @@ export function AppShell() {
 					if (expandedDirs.has(rel)) dirs.add(rel);
 				}
 				for (const dir of dirs) void fileTree.loadDir(dir, true);
-			}, 150);
+			}, FILE_TREE_REFRESH_BATCH_MS);
 		},
 		[expandedDirs, fileTree.loadDir, spacePath],
 	);
@@ -905,20 +904,29 @@ export function AppShell() {
 	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
 	useTauriEvent("notes:external_changed", (payload) => {
 		const relPath = normalizeRelPath(payload.rel_path);
-		invalidateCalendarPrefetch();
-		invalidateAllDocsPrefetch();
-		invalidateDatabaseRowsPrefetch();
-		if (relPath) {
-			void invalidateTaskSummariesPrefetchForNote(relPath, {
-				removed: payload.removed,
-			});
-			invalidatePrefetchedNote(relPath);
-		}
+		if (!relPath) return;
+		noteInvalidationQueueRef.current.set(relPath, payload.removed);
+		if (noteInvalidationTimerRef.current !== null) return;
+		noteInvalidationTimerRef.current = window.setTimeout(() => {
+			noteInvalidationTimerRef.current = null;
+			const changes = new Map(noteInvalidationQueueRef.current);
+			noteInvalidationQueueRef.current.clear();
+			if (changes.size === 0) return;
+			invalidateCalendarPrefetch();
+			invalidateAllDocsPrefetch();
+			invalidateDatabaseRowsPrefetch();
+			void invalidateTaskSummariesPrefetchForNotes(changes);
+			for (const path of changes.keys()) {
+				invalidatePrefetchedNote(path);
+			}
+		}, NOTE_INVALIDATION_BATCH_MS);
 	});
 	useEffect(
 		() => () => {
 			if (fsRefreshTimerRef.current !== null)
 				window.clearTimeout(fsRefreshTimerRef.current);
+			if (noteInvalidationTimerRef.current !== null)
+				window.clearTimeout(noteInvalidationTimerRef.current);
 		},
 		[],
 	);
