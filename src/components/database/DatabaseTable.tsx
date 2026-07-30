@@ -557,6 +557,7 @@ export function DatabaseTable({
 										key={virtualRow.key}
 										groupId={group.id}
 										label={group.label}
+										rowCount={group.rowCount}
 										visibleColumnCount={visibleColumnCount}
 										style={{
 											height: `${DATABASE_TABLE_GROUP_ROW_HEIGHT}px`,
@@ -596,6 +597,12 @@ export function DatabaseTable({
 										className="databaseGroupCell"
 									>
 										<span className="databaseGroupLabel">{group.label}</span>
+										<span
+											className="databaseGroupCount"
+											aria-label={`${group.rowCount} ${group.rowCount === 1 ? "note" : "notes"}`}
+										>
+											{group.rowCount}
+										</span>
 									</td>
 								</tr>
 							);

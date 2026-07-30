@@ -30,6 +30,7 @@ function tableRowDragId(notePath: string, groupId: string): string {
 interface DatabaseTableGroupHeaderProps {
 	groupId: string;
 	label: string;
+	rowCount: number;
 	visibleColumnCount: number;
 	style: CSSProperties;
 	canCreateInGroup: boolean;
@@ -40,6 +41,7 @@ interface DatabaseTableGroupHeaderProps {
 export function DatabaseTableGroupHeader({
 	groupId,
 	label,
+	rowCount,
 	visibleColumnCount,
 	style,
 	canCreateInGroup,
@@ -61,6 +63,12 @@ export function DatabaseTableGroupHeader({
 		>
 			<td colSpan={visibleColumnCount} className="databaseGroupCell">
 				<span className="databaseGroupLabel">{label}</span>
+				<span
+					className="databaseGroupCount"
+					aria-label={`${rowCount} ${rowCount === 1 ? "note" : "notes"}`}
+				>
+					{rowCount}
+				</span>
 				{canCreateInGroup && onCreateInGroup ? (
 					<button
 						type="button"

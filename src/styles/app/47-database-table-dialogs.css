@@ -458,6 +458,7 @@
 	transition: background-color 120ms ease;
 	user-select: none;
 	-webkit-user-select: none;
+	background: var(--bg-primary);
 }
 
 .databaseRow:has(.databaseTagSuggestions),
@@ -466,19 +467,19 @@
 }
 
 .databaseRow:hover {
-	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-hover) 55%, var(--bg-primary));
 }
 
 .databaseRow[data-state="selected"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 8%,
+		var(--interactive-accent) 7%,
 		var(--bg-primary)
 	);
 }
 
 .databaseRow[data-state="selected"]:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+	background: color-mix(in srgb, var(--interactive-accent) 11%, var(--bg-hover));
 }
 
 /* Floating list-row drag feedback: slight tilt + soft lift (list mock) */
@@ -486,7 +487,7 @@
 .databaseRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
 	opacity: 1;
 	cursor: grabbing;
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
 	box-shadow: 0 0 0 1px
 		color-mix(in srgb, var(--interactive-accent) 22%, transparent), 0 2px 6px
@@ -499,11 +500,11 @@
 .databaseRow[data-drop-target="true"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 10%,
+		var(--interactive-accent) 9%,
 		var(--bg-primary)
 	);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 30%, transparent);
 }
 
 /* Faint stand-in left in the group while the row is lifted */
@@ -519,17 +520,17 @@
 .databaseGroupHeaderRow {
 	position: relative;
 	z-index: 0;
-	background: var(--bg-primary);
+	background: transparent;
 }
 
 .databaseGroupHeaderRow[data-drop-target="true"] .databaseGroupCell {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 12%,
-		var(--bg-primary)
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
 	);
 	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -541,12 +542,13 @@
 
 .databaseGroupCell {
 	display: flex;
-	align-items: baseline;
-	gap: 6px;
+	align-items: center;
+	gap: 8px;
 	min-height: 34px;
-	padding: 10px 14px 6px;
-	background: color-mix(in srgb, var(--bg-secondary) 20%, var(--bg-primary));
+	padding: 8px 14px;
+	background: color-mix(in srgb, var(--bg-secondary) 55%, var(--bg-primary));
 	color: var(--text-secondary);
+	border-radius: var(--database-radius-md);
 }
 
 .databaseGroupAddButton {
@@ -555,16 +557,16 @@
 	align-items: center;
 	justify-content: center;
 	flex: 0 0 auto;
-	margin-left: auto;
-	width: 20px;
-	height: 20px;
+	width: 22px;
+	height: 22px;
 	border: none;
-	border-radius: var(--radius-sm);
+	border-radius: 999px;
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
+	opacity: 0.7;
 	transition: color var(--transition-fast), background-color
-		var(--transition-fast);
+		var(--transition-fast), opacity var(--transition-fast);
 }
 
 .databaseGroupAddButton svg {
@@ -574,14 +576,14 @@
 }
 
 .databaseGroupAddButton:hover {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
 	color: var(--text-primary);
+	opacity: 1;
 }
 
 .databaseTable .databaseGroupCell {
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 52%, transparent);
+	border-top: none;
+	border-bottom: none;
 }
 
 .databaseGroupLabel {
@@ -589,12 +591,29 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 0.88);
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.02em;
-	line-height: 1.15;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
 	text-transform: none;
+}
+
+.databaseGroupCount {
+	flex: 0 0 auto;
+	margin-left: auto;
+	min-width: 1.25em;
+	font-size: calc(var(--text-base) * 0.78);
+	font-weight: var(--font-medium);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	color: var(--text-tertiary);
+	text-align: right;
+}
+
+/* Soften row dividers so grouped lists feel more card-like */
+.databaseTable .databaseBodyCell {
+	border-top-color: color-mix(in srgb, var(--border-light) 36%, transparent);
 }
 
 .databaseLoadingState,
@@ -702,9 +721,9 @@
 }
 
 .databaseBoardLaneTitleGroup {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: 7px;
 	min-width: 0;
 	padding: 0;
 	border-radius: 0;
@@ -712,23 +731,23 @@
 }
 
 .databaseBoardLaneDot {
-	width: 13px;
-	height: 13px;
-	border-radius: 999px;
-	background: transparent;
-	border: 2px solid color-mix(in srgb, white 93%, var(--database-tone));
-	box-shadow: inset 0 0 0 1.5px
-		color-mix(in srgb, var(--database-tone) 78%, white);
 	flex: 0 0 auto;
-	opacity: 1;
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--database-tone);
+	border: none;
+	box-shadow: none;
+	opacity: 0.9;
 }
 
 .databaseBoardLaneEmptyCard {
-	padding: 18px 12px;
-	border: 1px dashed color-mix(in srgb, var(--border-light) 72%, transparent);
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	font-size: var(--text-xs);
+	padding: 16px 12px;
+	border: 1px dashed color-mix(in srgb, var(--border-light) 62%, transparent);
+	border-radius: var(--database-radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+	font-size: calc(var(--text-base) * 0.82);
+	line-height: 1.35;
 	color: var(--text-tertiary);
 	text-align: center;
 }
