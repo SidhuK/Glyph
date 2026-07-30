@@ -152,6 +152,14 @@ function DatabasesPaneContent({
 							selectedRowPath={rows.selectedRowPath}
 							activeSort={activeCollection.config.sorts[0] ?? null}
 							groupColumn={views.activeGroupColumn}
+							cardOrderByGroup={
+								views.activeGroupColumn
+									? (activeCollection.config.view.board_card_order?.[
+											views.activeGroupColumn.id
+										] ?? {})
+									: undefined
+							}
+							onCardOrderChange={views.boardHandlers?.onCardOrderChange}
 							onSelectRow={rows.setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onCreateRow={actions.handleCreateRow}

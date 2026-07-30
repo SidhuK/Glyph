@@ -456,6 +456,8 @@
 	z-index: 0;
 	cursor: default;
 	transition: background-color 120ms ease;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 .databaseRow:has(.databaseTagSuggestions),
@@ -479,10 +481,62 @@
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 }
 
+/* Floating list-row drag feedback: slight tilt + soft lift (list mock) */
+.databaseRow[data-dragging="true"]:not([data-dnd-placeholder]),
+.databaseRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
+	opacity: 1;
+	cursor: grabbing;
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--interactive-accent) 55%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 22%, transparent), 0 2px 6px
+		color-mix(in srgb, var(--text-primary) 8%, transparent), 0 14px 32px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	/* Composes with dnd-kit's `translate` (independent transform properties) */
+	rotate: 2.5deg;
+}
+
+.databaseRow[data-drop-target="true"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+}
+
+/* Faint stand-in left in the group while the row is lifted */
+.databaseRow[data-dnd-placeholder] {
+	visibility: visible !important;
+	opacity: 0.3;
+	pointer-events: none;
+	box-shadow: none;
+	rotate: none;
+	cursor: default;
+}
+
 .databaseGroupHeaderRow {
 	position: relative;
 	z-index: 0;
 	background: var(--bg-primary);
+}
+
+.databaseGroupHeaderRow[data-drop-target="true"] .databaseGroupCell {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 12%,
+		var(--bg-primary)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.databaseRow[data-dragging="true"]:not([data-dnd-placeholder]),
+	.databaseRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
+		rotate: none;
+	}
 }
 
 .databaseGroupCell {

@@ -249,13 +249,46 @@
 	-webkit-user-drag: none;
 }
 
-.databaseBoardCard[data-dragging="true"] {
-	opacity: 0.7;
-	border-color: color-mix(in srgb, var(--interactive-accent) 38%, transparent);
+/* Floating drag feedback: slight tilt, accent ring, soft lift (matches board mock).
+   Exclude placeholders — dnd-kit may mirror `data-dragging` onto the stand-in. */
+.databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
+.databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
+	opacity: 1;
+	overflow: visible;
+	cursor: grabbing;
+	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 2px 4px
+		color-mix(in srgb, var(--text-primary) 6%, transparent), 0 10px 24px
+		color-mix(in srgb, var(--text-primary) 12%, transparent), 0 18px 40px
+		color-mix(in srgb, var(--text-primary) 8%, transparent);
+	/* Composes with dnd-kit's `translate` (independent transform properties) */
+	rotate: 3deg;
+}
+
+/* Space-reserving ghost left behind while the real card is lifted.
+   dnd-kit injects `visibility: hidden` for placeholders; override so the
+   board keeps a faint stand-in like the product mock. */
+.databaseBoardCard[data-dnd-placeholder] {
+	visibility: visible !important;
+	opacity: 0.34;
+	pointer-events: none;
+	filter: grayscale(0.05);
+	box-shadow: none;
+	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
+	rotate: none;
+	cursor: default;
 }
 
 .databaseBoardCard[data-drop-target="true"] {
 	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.databaseBoardCard[data-dragging="true"]:not([data-dnd-placeholder]),
+	.databaseBoardCard[data-dnd-dragging]:not([data-dnd-placeholder]) {
+		rotate: none;
+	}
 }
 
 .dark .databaseBoardCard {
