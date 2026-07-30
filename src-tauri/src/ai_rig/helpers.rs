@@ -16,7 +16,7 @@ use crate::net;
 
 pub use crate::utils::now_ms;
 
-const NOTE_LINK_PREAMBLE: &str = "When referring to an existing note, format its name as a Markdown link whose destination is the note's exact space-relative path: [Displayed note title](folder/note-name.md). Only link a note when its exact path is present in the provided context or was returned by a tool. Never guess or invent note paths. Do not use [[wikilinks]] in responses.";
+const NOTE_LINK_PREAMBLE: &str = "When referring to an existing note, format its name as a Markdown link whose destination begins with / and uses the note's exact space-root-relative path: [Displayed note title](/folder/note-name.md). Reserve ./ for source-relative links, and never use ambiguous bare relative paths. Only link a note when its exact path is present in the provided context or was returned by a tool. Never guess or invent note paths. Do not use [[wikilinks]] in responses.";
 
 pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
     match provider {

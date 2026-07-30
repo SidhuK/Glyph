@@ -360,13 +360,10 @@ pub async fn space_resolve_markdown_link(
             .unwrap_or("")
             .trim()
             .replace('\\', "/");
-        if encoded_raw.is_empty()
-            || encoded_raw.starts_with("http://")
-            || encoded_raw.starts_with("https://")
-        {
+        let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
+        if raw.is_empty() || raw.starts_with("http://") || raw.starts_with("https://") {
             return Ok(None);
         }
-        let raw = percent_decode_utf8(&encoded_raw).unwrap_or(encoded_raw);
         let source_dir = parent_dir(&source_path);
         let normalized_raw = raw.trim_start_matches("./");
         let mut candidates = Vec::<String>::new();
