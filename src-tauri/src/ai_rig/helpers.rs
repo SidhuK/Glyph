@@ -16,6 +16,8 @@ use crate::net;
 
 pub use crate::utils::now_ms;
 
+const NOTE_LINK_PREAMBLE: &str = "When referring to an existing note, format its name as a Markdown link whose destination begins with / and uses the note's exact space-root-relative path: [Displayed note title](/folder/note-name.md). Reserve ./ for source-relative links, and never use ambiguous bare relative paths. Only link a note when its exact path is present in the provided context or was returned by a tool. Never guess or invent note paths. Do not use [[wikilinks]] in responses.";
+
 pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
     match provider {
         AiProviderKind::Openai => "https://api.openai.com/v1",
@@ -125,7 +127,8 @@ pub fn split_system_and_messages(
     mut messages: Vec<AiMessage>,
     context: Option<String>,
 ) -> (String, Vec<AiMessage>) {
-    let mut sys = String::new();
+    let mut sys = String::from(NOTE_LINK_PREAMBLE);
+    sys.push('\n');
     if let Some(ctx) = context {
         if !ctx.trim().is_empty() {
             sys.push_str("Context (user-approved):\n");
