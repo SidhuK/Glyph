@@ -1,6 +1,7 @@
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+	type Day,
 	addMonths,
 	format,
 	isSameDay,
@@ -42,12 +43,24 @@ export function CalendarMonth({
 }: CalendarMonthProps) {
 	const { t } = useTranslation("shell");
 	const [focusedKey, setFocusedKey] = useState<string | null>(null);
+	const weekStartsOn: Day =
+		locale === "de" || locale === "es" || locale === "fr" ? 1 : 0;
 
-	const weeks = useMemo(() => buildMonthWeeks(month), [month]);
-	const weekdays = useMemo(() => weekdayLabels(locale), [locale]);
+	const weeks = useMemo(
+		() => buildMonthWeeks(month, weekStartsOn),
+		[month, weekStartsOn],
+	);
+	const weekdays = useMemo(
+		() => weekdayLabels(locale, weekStartsOn),
+		[locale, weekStartsOn],
+	);
 
-	const monthLabel = useMemo(
-		() => new Intl.DateTimeFormat(locale, { month: "long" }).format(month),
+	const monthYearLabel = useMemo(
+		() =>
+			new Intl.DateTimeFormat(locale, {
+				month: "long",
+				year: "numeric",
+			}).format(month),
 		[locale, month],
 	);
 	const dayLabelFormat = useMemo(
@@ -69,13 +82,13 @@ export function CalendarMonth({
 					: undefined;
 			if (!origin) return;
 			const from = parseISO(origin);
-			const next = dateForNavigationKey(event.key, from);
+			const next = dateForNavigationKey(event.key, from, weekStartsOn);
 			if (!next) return;
 			event.preventDefault();
 			setFocusedKey(format(next, "yyyy-MM-dd"));
 			if (!isSameMonth(next, month)) onMonthChange(next);
 		},
-		[month, onMonthChange],
+		[month, onMonthChange, weekStartsOn],
 	);
 
 	const goToMonth = useCallback(
@@ -98,10 +111,7 @@ export function CalendarMonth({
 	return (
 		<div className="calendarMonth">
 			<header className="calendarMonthHeader">
-				<h2 className="calendarMonthTitle">
-					{monthLabel}
-					<span className="calendarMonthYear">{month.getFullYear()}</span>
-				</h2>
+				<h2 className="calendarMonthTitle">{monthYearLabel}</h2>
 				<div className="calendarMonthControls">
 					<button
 						type="button"
@@ -142,7 +152,7 @@ export function CalendarMonth({
 
 			<table
 				className="calendarGrid"
-				aria-label={`${monthLabel} ${month.getFullYear()}`}
+				aria-label={monthYearLabel}
 				onKeyDown={handleKeyDown}
 			>
 				<thead>
