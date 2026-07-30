@@ -43,11 +43,15 @@ export function monthDateRange(month: Date): {
 	};
 }
 
-export function dateHasNotes(
+/** Marker strength for a day cell: a daily note outranks incidental activity. */
+export type CalendarDayTone = "daily" | "note" | null;
+
+export function activityTone(
 	activity: CalendarDayActivity | undefined,
-): boolean {
-	if (!activity) return false;
-	return activity.hasDailyNote || activity.hasCreated || activity.hasEdited;
+): CalendarDayTone {
+	if (!activity) return null;
+	if (activity.hasDailyNote) return "daily";
+	return activity.hasCreated || activity.hasEdited ? "note" : null;
 }
 
 export function activityMapFromRows(

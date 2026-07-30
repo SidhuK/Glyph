@@ -117,6 +117,19 @@
 			"template": "Modelos"
 		}
 	},
+	"calendar": {
+		"title": "Calendário",
+		"today": "Hoje",
+		"previousMonth": "Mês anterior",
+		"nextMonth": "Próximo mês",
+		"openDailyNote": "Abrir nota diária",
+		"loading": "Carregando…",
+		"noteCount_one": "1 nota",
+		"noteCount_other": "{{count}} notas",
+		"noNotes": "Nenhuma nota neste dia",
+		"loadFailed": "Não foi possível carregar as notas: {{message}}",
+		"loadFailedShort": "Não foi possível carregar as notas"
+	},
 	"tabs": {
 		"allNotes": "Todas as notas",
 		"collections": "Coleções",

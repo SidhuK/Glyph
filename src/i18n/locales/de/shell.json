@@ -117,6 +117,19 @@
 			"template": "Vorlagen"
 		}
 	},
+	"calendar": {
+		"title": "Kalender",
+		"today": "Heute",
+		"previousMonth": "Vorheriger Monat",
+		"nextMonth": "Nächster Monat",
+		"openDailyNote": "Tagesnotiz öffnen",
+		"loading": "Wird geladen…",
+		"noteCount_one": "1 Notiz",
+		"noteCount_other": "{{count}} Notizen",
+		"noNotes": "Keine Notizen an diesem Tag",
+		"loadFailed": "Notizen konnten nicht geladen werden: {{message}}",
+		"loadFailedShort": "Notizen konnten nicht geladen werden"
+	},
 	"tabs": {
 		"allNotes": "Alle Notizen",
 		"collections": "Sammlungen",
