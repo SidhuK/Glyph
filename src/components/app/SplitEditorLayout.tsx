@@ -1,9 +1,15 @@
 import {
+	type DragEndEvent,
+	type DragMoveEvent,
+	useDragDropMonitor,
+	useDroppable,
+} from "@dnd-kit/react";
+import {
 	type KeyboardEvent as ReactKeyboardEvent,
 	type ReactNode,
 	type PointerEvent as ReactPointerEvent,
 	useCallback,
-	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -13,7 +19,11 @@ import {
 	MIN_SPLIT_RATIO,
 	type SplitEditorNode,
 } from "../../lib/splitEditor";
-import { subscribeToSplitEditorDrag } from "./splitEditorDnd";
+import {
+	resolveSplitDragSource,
+	splitPaneDroppable,
+	splitPaneIdOf,
+} from "./splitEditorDnd";
 import type {
 	SplitEditorDragSource,
 	SplitEditorDropTarget,
@@ -57,107 +67,71 @@ export function SplitEditorLayout({
 	onResizeSplit,
 	renderPane,
 }: SplitEditorLayoutProps) {
-	const [dropPreviewTarget, setDropPreviewTarget] =
-		useState<SplitEditorDropTarget | null>(null);
-	const dragSourceRef = useRef<SplitEditorDragSource | null>(null);
-	const dropTargetRef = useRef<SplitEditorDropTarget | null>(null);
-	const paneElementsRef = useRef(new Map<string, HTMLElement>());
+	const [dropPreview, setDropPreview] = useState<SplitEditorDropTarget | null>(
+		null,
+	);
+	// Mirrors the preview so drag end reads the resolved target without
+	// depending on when React last re-rendered.
+	const dropPreviewRef = useRef<SplitEditorDropTarget | null>(null);
 
-	const updateDropPreview = useCallback((x: number, y: number) => {
-		if (!dragSourceRef.current) return;
-		let paneEntry: [string, HTMLElement] | null = null;
-		for (const entry of paneElementsRef.current) {
-			const rect = entry[1].getBoundingClientRect();
-			if (
-				x >= rect.left &&
-				x <= rect.right &&
-				y >= rect.top &&
-				y <= rect.bottom
-			) {
-				paneEntry = entry;
-				break;
-			}
-		}
-		if (!paneEntry) {
-			dropTargetRef.current = null;
-			setDropPreviewTarget(null);
+	const setPreview = useCallback((next: SplitEditorDropTarget | null) => {
+		const current = dropPreviewRef.current;
+		if (current?.paneId === next?.paneId && current?.edge === next?.edge) {
 			return;
 		}
-		const [paneId, paneElement] = paneEntry;
-		const paneRect = paneElement.getBoundingClientRect();
-		const target = {
-			paneId,
-			edge: dropEdgeAtPoint(paneRect, x, y),
-		};
-		if (
-			dropTargetRef.current?.paneId === target.paneId &&
-			dropTargetRef.current.edge === target.edge
-		) {
-			return;
-		}
-		dropTargetRef.current = target;
-		setDropPreviewTarget(
-			dragSourceRef.current.kind === "tab" &&
-				dragSourceRef.current.paneId === paneId &&
-				target.edge === "center"
-				? null
-				: target,
-		);
+		dropPreviewRef.current = next;
+		setDropPreview(next);
 	}, []);
 
-	useEffect(() => {
-		return subscribeToSplitEditorDrag((event) => {
-			if (event.type === "move") {
-				dragSourceRef.current = event.source;
-				updateDropPreview(event.x, event.y);
-				return;
-			}
-
-			const target = dropTargetRef.current;
-			const source = event.source;
-			const shouldHandleDrop =
-				source &&
-				target &&
-				(source.kind === "file" ||
-					target.edge !== "center" ||
-					source.paneId !== target.paneId);
-			dragSourceRef.current = null;
-			dropTargetRef.current = null;
-			setDropPreviewTarget(null);
-			if (!source || !target || !shouldHandleDrop) return false;
-			onDrop(source, target);
-			return true;
-		});
-	}, [onDrop, updateDropPreview]);
+	const dragDropHandlers = useMemo(
+		() => ({
+			onDragMove(event: DragMoveEvent) {
+				const source = resolveSplitDragSource(event.operation.source?.data);
+				const target = event.operation.target;
+				const paneId = splitPaneIdOf(target?.data);
+				const element = target?.element;
+				if (!source || !paneId || !element) {
+					setPreview(null);
+					return;
+				}
+				const { x, y } = event.operation.position.current;
+				const edge = dropEdgeAtPoint(element.getBoundingClientRect(), x, y);
+				// Dropping a tab back into the centre of its own pane is a no-op.
+				const isSelfDrop =
+					source.kind === "tab" &&
+					source.paneId === paneId &&
+					edge === "center";
+				setPreview(isSelfDrop ? null : { paneId, edge });
+			},
+			onDragEnd(event: DragEndEvent) {
+				const target = dropPreviewRef.current;
+				setPreview(null);
+				if (event.canceled || !target) return;
+				const source = resolveSplitDragSource(event.operation.source?.data);
+				if (!source) return;
+				onDrop(source, target);
+			},
+		}),
+		[onDrop, setPreview],
+	);
+	useDragDropMonitor(dragDropHandlers);
 
 	const renderNode = useCallback(
 		(node: SplitEditorNode): ReactNode => {
 			if (node.type === "pane") {
 				const focused = node.paneId === focusedPaneId;
 				return (
-					<section
+					<SplitEditorPaneSection
 						key={node.paneId}
-						ref={(element) => {
-							if (element) {
-								paneElementsRef.current.set(node.paneId, element);
-							} else {
-								paneElementsRef.current.delete(node.paneId);
-							}
-						}}
-						className="splitEditorPane"
-						data-focused={focused ? "true" : undefined}
-						onFocusCapture={() => onFocusPane(node.paneId)}
-						onPointerDownCapture={() => onFocusPane(node.paneId)}
+						paneId={node.paneId}
+						focused={focused}
+						dropEdge={
+							dropPreview?.paneId === node.paneId ? dropPreview.edge : null
+						}
+						onFocusPane={onFocusPane}
 					>
 						{renderPane(node.paneId, focused)}
-						{dropPreviewTarget?.paneId === node.paneId ? (
-							<div
-								className="splitEditorDropPreview"
-								data-edge={dropPreviewTarget.edge}
-								aria-hidden="true"
-							/>
-						) : null}
-					</section>
+					</SplitEditorPaneSection>
 				);
 			}
 
@@ -187,10 +161,45 @@ export function SplitEditorLayout({
 				</div>
 			);
 		},
-		[focusedPaneId, dropPreviewTarget, onFocusPane, onResizeSplit, renderPane],
+		[focusedPaneId, dropPreview, onFocusPane, onResizeSplit, renderPane],
 	);
 
 	return <div className="splitEditorLayout">{renderNode(layout)}</div>;
+}
+
+function SplitEditorPaneSection({
+	paneId,
+	focused,
+	dropEdge,
+	onFocusPane,
+	children,
+}: {
+	paneId: string;
+	focused: boolean;
+	dropEdge: SplitEditorDropTarget["edge"] | null;
+	onFocusPane: (paneId: string) => void;
+	children: ReactNode;
+}) {
+	const { ref } = useDroppable(splitPaneDroppable(paneId));
+
+	return (
+		<section
+			ref={ref}
+			className="splitEditorPane"
+			data-focused={focused ? "true" : undefined}
+			onFocusCapture={() => onFocusPane(paneId)}
+			onPointerDownCapture={() => onFocusPane(paneId)}
+		>
+			{children}
+			{dropEdge ? (
+				<div
+					className="splitEditorDropPreview"
+					data-edge={dropEdge}
+					aria-hidden="true"
+				/>
+			) : null}
+		</section>
+	);
 }
 
 function SplitDivider({

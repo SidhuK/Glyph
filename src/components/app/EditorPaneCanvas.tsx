@@ -171,6 +171,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 			{pane.tabs.length > 0 ? (
 				<div className="mainTabBarTransition">
 					<TabBar
+						paneId={pane.id}
 						tabs={pane.tabs}
 						rootEntries={rootEntries}
 						childrenByDir={childrenByDir}

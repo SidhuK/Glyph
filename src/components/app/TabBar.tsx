@@ -1,14 +1,14 @@
+import type { Draggable } from "@dnd-kit/dom";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import {
-	DragDropProvider,
 	type DragEndEvent,
-	type DragMoveEvent,
 	PointerSensor,
+	useDragDropMonitor,
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useRef } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -24,14 +24,11 @@ import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ActiveFileTitle } from "./ActiveFileTitle";
 import { MainTabsBreadcrumbs } from "./MainTabsBreadcrumbs";
-import {
-	cancelSplitEditorDrag,
-	endSplitEditorDrag,
-	moveSplitEditorDrag,
-} from "./splitEditorDnd";
+import { MAIN_TAB_DND_TYPE } from "./splitEditorDnd";
 import type { WorkspaceTab } from "./useTabManager";
 
 interface TabBarProps {
+	paneId: string;
 	tabs: WorkspaceTab[];
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
@@ -56,8 +53,6 @@ interface TabBarProps {
 	onReorder: (fromTabId: string, toTabId: string) => void;
 }
 
-const MAIN_TAB_DND_TYPE = "main-tab";
-const MAIN_TAB_DND_GROUP = "main-tabs";
 const MAIN_TAB_SENSORS = [
 	PointerSensor.configure({
 		activationConstraints: [
@@ -65,6 +60,7 @@ const MAIN_TAB_SENSORS = [
 		],
 	}),
 ];
+const DRAG_CLICK_SUPPRESSION_DELAY_MS = 0;
 
 function isPathSpecial(path: string): boolean {
 	return (
@@ -77,6 +73,7 @@ function isPathSpecial(path: string): boolean {
 }
 
 export function TabBar({
+	paneId,
 	tabs,
 	rootEntries,
 	childrenByDir,
@@ -139,50 +136,38 @@ export function TabBar({
 		isMarkdownPath(activeTabPath)
 			? activeTabPath
 			: null;
-	const handleDragEnd = useCallback(
-		(event: DragEndEvent) => {
-			suppressClickRef.current = true;
-			window.setTimeout(() => {
-				suppressClickRef.current = false;
-			}, 0);
-			const { source, target } = event.operation;
-			const sourceTabId =
-				typeof source?.data.tabId === "string" ? source.data.tabId : null;
-			const sourcePaneId =
-				typeof source?.data.paneId === "string" ? source.data.paneId : null;
-			if (event.canceled || !sourceTabId || !sourcePaneId) {
-				cancelSplitEditorDrag();
-				return;
-			}
-			const { x, y } = event.operation.position.current;
-			const sourceDrag = {
-				kind: "tab" as const,
-				paneId: sourcePaneId,
-				tabId: sourceTabId,
-			};
-			moveSplitEditorDrag(sourceDrag, x, y);
-			if (endSplitEditorDrag(sourceDrag)) {
-				return;
-			}
-			const targetTabId =
-				typeof target?.data.tabId === "string" ? target.data.tabId : null;
-			if (!sourceTabId || !targetTabId || sourceTabId === targetTabId) return;
+	// Reorder only when one of this pane's tabs is dropped onto another tab in
+	// the same pane. Drops onto the editor body resolve to a pane droppable
+	// instead, which SplitEditorLayout handles.
+	const dragDropHandlers = useMemo(
+		() => ({
+			onDragEnd(event: DragEndEvent) {
+				const { source, target } = event.operation;
+				const sourceTabId =
+					typeof source?.data.tabId === "string" ? source.data.tabId : null;
+				const sourcePaneId =
+					typeof source?.data.paneId === "string" ? source.data.paneId : null;
+				if (!sourceTabId || sourcePaneId !== paneId) return;
 
-			onReorder(sourceTabId, targetTabId);
-		},
-		[onReorder],
+				suppressClickRef.current = true;
+				window.setTimeout(() => {
+					suppressClickRef.current = false;
+				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
+				if (event.canceled) return;
+
+				const targetTabId =
+					typeof target?.data.tabId === "string" ? target.data.tabId : null;
+				const targetPaneId =
+					typeof target?.data.paneId === "string" ? target.data.paneId : null;
+				if (!targetTabId || targetPaneId !== paneId) return;
+				if (targetTabId === sourceTabId) return;
+
+				onReorder(sourceTabId, targetTabId);
+			},
+		}),
+		[onReorder, paneId],
 	);
-	const handleDragMove = useCallback((event: DragMoveEvent) => {
-		const { source } = event.operation;
-		const tabId =
-			typeof source?.data.tabId === "string" ? source.data.tabId : null;
-		const paneId =
-			typeof source?.data.paneId === "string" ? source.data.paneId : null;
-		if (tabId && paneId) {
-			const { x, y } = event.operation.position.current;
-			moveSplitEditorDrag({ kind: "tab", paneId, tabId }, x, y);
-		}
-	}, []);
+	useDragDropMonitor(dragDropHandlers);
 
 	return (
 		<div
@@ -221,43 +206,39 @@ export function TabBar({
 					onRenameFile={onRenameFile}
 				/>
 				{showTabs ? (
-					<DragDropProvider
-						onDragMove={handleDragMove}
-						onDragEnd={handleDragEnd}
-					>
-						<div className="mainTabsStrip">
-							<div className="mainTabsStripTabs">
-								{tabs.map((tab, index) => (
-									<TabItem
-										key={tab.id}
-										tab={tab}
-										index={index}
-										label={tabLabel(tab)}
-										isActive={tab.id === activeTabId}
-										suppressClickRef={suppressClickRef}
-										onPrefetchTab={onPrefetchTab}
-										onSelectTab={onSelectTab}
-										onCloseTab={onCloseTab}
-										onToggleTabPinned={onToggleTabPinned}
-										onStartRenamePath={onStartRenamePath}
-									/>
-								))}
-							</div>
-							<button
-								type="button"
-								className="mainTabAdd"
-								onClick={onOpenBlankTab}
-								title={`Open blank tab${
-									newTabShortcut
-										? ` (${formatShortcutForPlatform(newTabShortcut)})`
-										: ""
-								}`}
-								aria-label="Open blank tab"
-							>
-								+
-							</button>
+					<div className="mainTabsStrip">
+						<div className="mainTabsStripTabs">
+							{tabs.map((tab, index) => (
+								<TabItem
+									key={tab.id}
+									paneId={paneId}
+									tab={tab}
+									index={index}
+									label={tabLabel(tab)}
+									isActive={tab.id === activeTabId}
+									suppressClickRef={suppressClickRef}
+									onPrefetchTab={onPrefetchTab}
+									onSelectTab={onSelectTab}
+									onCloseTab={onCloseTab}
+									onToggleTabPinned={onToggleTabPinned}
+									onStartRenamePath={onStartRenamePath}
+								/>
+							))}
 						</div>
-					</DragDropProvider>
+						<button
+							type="button"
+							className="mainTabAdd"
+							onClick={onOpenBlankTab}
+							title={`Open blank tab${
+								newTabShortcut
+									? ` (${formatShortcutForPlatform(newTabShortcut)})`
+									: ""
+							}`}
+							aria-label="Open blank tab"
+						>
+							+
+						</button>
+					</div>
 				) : null}
 			</div>
 			<MainTabsBreadcrumbs
@@ -273,6 +254,7 @@ export function TabBar({
 }
 
 const TabItem = memo(function TabItem({
+	paneId,
 	tab,
 	index,
 	label,
@@ -284,6 +266,7 @@ const TabItem = memo(function TabItem({
 	onToggleTabPinned,
 	onStartRenamePath,
 }: {
+	paneId: string;
 	tab: WorkspaceTab;
 	index: number;
 	label: string;
@@ -296,14 +279,21 @@ const TabItem = memo(function TabItem({
 	onStartRenamePath: (path: string) => void;
 }) {
 	const { t } = useTranslation("shell");
+	// Only accept tabs from this pane, so a tab dragged in from another pane
+	// falls through to the pane droppable and moves panes instead of sorting.
+	const acceptSamePaneTab = useCallback(
+		(source: Draggable) => source.data?.paneId === paneId,
+		[paneId],
+	);
 	const { ref, handleRef, isDragging, isDropTarget } = useSortable({
 		id: tab.id,
 		index,
-		group: MAIN_TAB_DND_GROUP,
+		// Per-pane group: a single shared group would collide indices across panes.
+		group: `main-tabs:${paneId}`,
 		type: MAIN_TAB_DND_TYPE,
-		accept: MAIN_TAB_DND_TYPE,
+		accept: acceptSamePaneTab,
 		sensors: MAIN_TAB_SENSORS,
-		data: { paneId: tab.paneId, tabId: tab.id },
+		data: { paneId, tabId: tab.id },
 		transition: { duration: 160, easing: "ease" },
 	});
 	const { cancelHoverPrefetch, hoverPrefetchProps } = useHoverPrefetch(() => {

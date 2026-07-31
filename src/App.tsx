@@ -1,4 +1,5 @@
 import "./App.css";
+import { DragDropProvider } from "@dnd-kit/react";
 import { LazyMotion, domAnimation } from "motion/react";
 import { AppShell } from "./components/app/AppShell";
 import { LicenseGate } from "./components/licensing/LicenseGate";
@@ -9,7 +10,9 @@ function App() {
 		<LazyMotion features={domAnimation}>
 			<AppProviders>
 				<LicenseGate>
-					<AppShell />
+					<DragDropProvider>
+						<AppShell />
+					</DragDropProvider>
 				</LicenseGate>
 			</AppProviders>
 		</LazyMotion>
