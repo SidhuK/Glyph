@@ -1,4 +1,3 @@
-import type { Draggable } from "@dnd-kit/dom";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import {
 	type DragEndEvent,
@@ -60,8 +59,6 @@ const MAIN_TAB_SENSORS = [
 		],
 	}),
 ];
-const DRAG_CLICK_SUPPRESSION_DELAY_MS = 0;
-
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
@@ -150,9 +147,6 @@ export function TabBar({
 				if (!sourceTabId || sourcePaneId !== paneId) return;
 
 				suppressClickRef.current = true;
-				window.setTimeout(() => {
-					suppressClickRef.current = false;
-				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
 				if (event.canceled) return;
 
 				const targetTabId =
@@ -281,17 +275,13 @@ const TabItem = memo(function TabItem({
 	const { t } = useTranslation("shell");
 	// Only accept tabs from this pane, so a tab dragged in from another pane
 	// falls through to the pane droppable and moves panes instead of sorting.
-	const acceptSamePaneTab = useCallback(
-		(source: Draggable) => source.data?.paneId === paneId,
-		[paneId],
-	);
 	const { ref, handleRef, isDragging, isDropTarget } = useSortable({
 		id: tab.id,
 		index,
 		// Per-pane group: a single shared group would collide indices across panes.
 		group: `main-tabs:${paneId}`,
 		type: MAIN_TAB_DND_TYPE,
-		accept: acceptSamePaneTab,
+		accept: (source) => source.data?.paneId === paneId,
 		sensors: MAIN_TAB_SENSORS,
 		data: { paneId, tabId: tab.id },
 		transition: { duration: 160, easing: "ease" },
@@ -301,7 +291,10 @@ const TabItem = memo(function TabItem({
 	});
 	const handleSelect = useCallback(() => {
 		cancelHoverPrefetch();
-		if (suppressClickRef.current) return;
+		if (suppressClickRef.current) {
+			suppressClickRef.current = false;
+			return;
+		}
 		onSelectTab(tab.id);
 	}, [cancelHoverPrefetch, onSelectTab, suppressClickRef, tab.id]);
 	const handleClose = useCallback(

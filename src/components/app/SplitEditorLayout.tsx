@@ -70,17 +70,13 @@ export function SplitEditorLayout({
 	const [dropPreview, setDropPreview] = useState<SplitEditorDropTarget | null>(
 		null,
 	);
-	// Mirrors the preview so drag end reads the resolved target without
-	// depending on when React last re-rendered.
-	const dropPreviewRef = useRef<SplitEditorDropTarget | null>(null);
-
 	const setPreview = useCallback((next: SplitEditorDropTarget | null) => {
-		const current = dropPreviewRef.current;
-		if (current?.paneId === next?.paneId && current?.edge === next?.edge) {
-			return;
-		}
-		dropPreviewRef.current = next;
-		setDropPreview(next);
+		setDropPreview((current) => {
+			if (current?.paneId === next?.paneId && current?.edge === next?.edge) {
+				return current;
+			}
+			return next;
+		});
 	}, []);
 
 	const dragDropHandlers = useMemo(
@@ -104,12 +100,23 @@ export function SplitEditorLayout({
 				setPreview(isSelfDrop ? null : { paneId, edge });
 			},
 			onDragEnd(event: DragEndEvent) {
-				const target = dropPreviewRef.current;
 				setPreview(null);
-				if (event.canceled || !target) return;
+				if (event.canceled) return;
 				const source = resolveSplitDragSource(event.operation.source?.data);
-				if (!source) return;
-				onDrop(source, target);
+				const target = event.operation.target;
+				const paneId = splitPaneIdOf(target?.data);
+				const element = target?.element;
+				if (!source || !paneId || !element) return;
+
+				const { x, y } = event.operation.position.current;
+				const edge = dropEdgeAtPoint(element.getBoundingClientRect(), x, y);
+				const isSelfDrop =
+					source.kind === "tab" &&
+					source.paneId === paneId &&
+					edge === "center";
+				if (isSelfDrop) return;
+
+				onDrop(source, { paneId, edge });
 			},
 		}),
 		[onDrop, setPreview],

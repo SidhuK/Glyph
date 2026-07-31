@@ -93,8 +93,6 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const FILE_TREE_ROW_ESTIMATE = 32;
 const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
-const DRAG_CLICK_SUPPRESSION_DELAY_MS = 0;
-
 interface AppearancePickerTarget {
 	entry: FsEntry;
 }
@@ -927,9 +925,6 @@ export const FileTreePane = memo(function FileTreePane({
 				if (!sourcePath || !sourceKind) return;
 
 				moveClickSuppressRef.current = true;
-				window.setTimeout(() => {
-					moveClickSuppressRef.current = false;
-				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
 				if (event.canceled) return;
 
 				const targetDirPath =

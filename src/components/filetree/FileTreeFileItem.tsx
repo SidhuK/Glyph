@@ -352,7 +352,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						}
 						onClick={() => {
 							cancelHoverPrefetch();
-							if (onMoveClickSuppressRef.current) return;
+							if (onMoveClickSuppressRef.current) {
+								onMoveClickSuppressRef.current = false;
+								return;
+							}
 							onOpenFile(entry.rel_path);
 						}}
 						onContextMenu={handleContextMenu}
