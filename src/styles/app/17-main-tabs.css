@@ -395,9 +395,52 @@
 	min-width: 0;
 }
 
-.mainTabWrap[data-dragging="true"] {
+.mainTabWrap[data-dragging="true"]:not([data-dnd-placeholder]),
+.mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) {
 	z-index: 2;
-	opacity: 0.82;
+	cursor: grabbing;
+	rotate: 2deg;
+}
+
+/* Chrome lives on the inner pill, so the lift is painted there. Specificity
+   must clear .mainTab.is-active, and the :active/zoom transforms are
+   neutralized so they don't fight the drag. */
+.mainTabWrap[data-dragging="true"]:not([data-dnd-placeholder]) .mainTab,
+.mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) .mainTab {
+	background: var(--bg-primary);
+	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	color: var(--text-primary);
+	transform: none;
+	animation: none;
+}
+
+.mainTabWrap[data-dnd-placeholder] {
+	visibility: visible !important;
+	opacity: 0.34;
+	pointer-events: none;
+}
+
+.mainTabWrap[data-dnd-placeholder] .mainTab {
+	box-shadow: none;
+	animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mainTabWrap[data-dragging="true"]:not([data-dnd-placeholder]),
+	.mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) {
+		rotate: none;
+	}
+}
+
+.dark .mainTabWrap[data-dragging="true"]:not([data-dnd-placeholder]) .mainTab,
+.dark .mainTabWrap[data-dnd-dragging]:not([data-dnd-placeholder]) .mainTab {
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, black 30%, transparent);
 }
 
 .mainTabWrap[data-drop-target="true"] .mainTab {
