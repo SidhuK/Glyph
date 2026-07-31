@@ -258,7 +258,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							type="button"
 							className="fileTreeRow"
 							onClick={() => {
-								if (onMoveClickSuppressRef.current) return;
+								if (onMoveClickSuppressRef.current) {
+									onMoveClickSuppressRef.current = false;
+									return;
+								}
 								onSelectDir(entry.rel_path);
 								onToggleDir(entry.rel_path);
 							}}

@@ -1,7 +1,6 @@
 import {
-	DragDropProvider,
 	type DragEndEvent,
-	type DragMoveEvent,
+	useDragDropMonitor,
 	useDroppable,
 } from "@dnd-kit/react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -46,11 +45,6 @@ import { isDeleteKey } from "../../utils/keyboard";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
-import {
-	cancelSplitEditorDrag,
-	endSplitEditorDrag,
-	moveSplitEditorDrag,
-} from "../app/splitEditorDnd";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -99,6 +93,7 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const FILE_TREE_ROW_ESTIMATE = 32;
 const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
+const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
 
 interface AppearancePickerTarget {
 	entry: FsEntry;
@@ -612,12 +607,22 @@ export const FileTreePane = memo(function FileTreePane({
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
 	const moveClickSuppressRef = useRef(false);
+	const moveClickSuppressResetTimerRef = useRef<ReturnType<
+		typeof window.setTimeout
+	> | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
 	focusedDirPathRef.current = focusedDirPath;
+	useEffect(() => {
+		return () => {
+			if (moveClickSuppressResetTimerRef.current !== null) {
+				window.clearTimeout(moveClickSuppressResetTimerRef.current);
+			}
+		};
+	}, []);
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
 	}, [itemAppearance]);
@@ -917,52 +922,44 @@ export const FileTreePane = memo(function FileTreePane({
 		void onLoadDir(focusedDirPath);
 	}, [focusedDirPath, focusedEntries, onLoadDir]);
 
-	const handleDragEnd = useCallback(
-		(event: DragEndEvent) => {
-			moveClickSuppressRef.current = true;
-			window.setTimeout(() => {
-				moveClickSuppressRef.current = false;
-			}, 0);
-			const { source, target } = event.operation;
-			const sourcePath =
-				typeof source?.data.path === "string" ? source.data.path : null;
-			const sourceKind =
-				source?.data.kind === "dir" || source?.data.kind === "file"
-					? source.data.kind
-					: null;
-			if (event.canceled || !sourcePath || !sourceKind) {
-				cancelSplitEditorDrag();
-				return;
-			}
-			if (sourceKind === "file" && isMarkdownPath(sourcePath)) {
-				const { x, y } = event.operation.position.current;
-				const splitDragSource = { kind: "file" as const, path: sourcePath };
-				moveSplitEditorDrag(splitDragSource, x, y);
-				if (endSplitEditorDrag(splitDragSource)) return;
-			}
-			cancelSplitEditorDrag();
-			const targetDirPath =
-				typeof target?.data.targetDirPath === "string"
-					? target.data.targetDirPath
-					: null;
-			if (!sourcePath || !sourceKind || targetDirPath == null) return;
+	// Move only when a tree entry lands on a tree drop target. Drops onto an
+	// editor pane resolve to a pane droppable, which SplitEditorLayout handles.
+	const dragDropHandlers = useMemo(
+		() => ({
+			onDragEnd(event: DragEndEvent) {
+				const { source, target } = event.operation;
+				const sourcePath =
+					typeof source?.data.path === "string" ? source.data.path : null;
+				const sourceKind =
+					source?.data.kind === "dir" || source?.data.kind === "file"
+						? source.data.kind
+						: null;
+				if (!sourcePath || !sourceKind) return;
 
-			void onMovePath(sourcePath, targetDirPath, sourceKind);
-		},
+				moveClickSuppressRef.current = true;
+				if (moveClickSuppressResetTimerRef.current !== null) {
+					window.clearTimeout(moveClickSuppressResetTimerRef.current);
+				}
+				// The row click clears this sooner when a post-drag click arrives;
+				// the fallback handles canceled and non-tree drops with no click event.
+				moveClickSuppressResetTimerRef.current = window.setTimeout(() => {
+					moveClickSuppressRef.current = false;
+					moveClickSuppressResetTimerRef.current = null;
+				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
+				if (event.canceled) return;
+
+				const targetDirPath =
+					typeof target?.data.targetDirPath === "string"
+						? target.data.targetDirPath
+						: null;
+				if (targetDirPath == null) return;
+
+				void onMovePath(sourcePath, targetDirPath, sourceKind);
+			},
+		}),
 		[onMovePath],
 	);
-	const handleDragMove = useCallback((event: DragMoveEvent) => {
-		const source = event.operation.source;
-		if (
-			source?.data.kind !== "file" ||
-			typeof source.data.path !== "string" ||
-			!isMarkdownPath(source.data.path)
-		) {
-			return;
-		}
-		const { x, y } = event.operation.position.current;
-		moveSplitEditorDrag({ kind: "file", path: source.data.path }, x, y);
-	}, []);
+	useDragDropMonitor(dragDropHandlers);
 	const handlePaneContextMenu = useCallback(
 		(event: MouseEvent<HTMLElement>) => {
 			if (
@@ -1043,101 +1040,50 @@ export const FileTreePane = memo(function FileTreePane({
 	}, [onImportPathsInDir]);
 
 	return (
-		<DragDropProvider onDragMove={handleDragMove} onDragEnd={handleDragEnd}>
-			<m.aside
-				ref={paneRef}
-				className="fileTreePane"
-				initial={{ y: 10 }}
-				animate={{ y: 0 }}
-				transition={springTransition}
-				onContextMenu={handlePaneContextMenu}
-				onKeyDown={handleTreeKeyDown}
-			>
-				<AppearancePicker
-					title="Choose file tree appearance"
-					open={appearancePickerTarget !== null}
-					onOpenChange={(open) => {
-						if (!open) setAppearancePickerTarget(null);
-					}}
-					iconValue={appearancePickerIcon}
-					defaultIconName={appearancePickerDefaultIcon}
-					showDefaultIcon
-					onIconChange={(icon) => {
-						updatePickerAppearance({
-							icon,
-						});
-					}}
-					showColors
-					colorValue={appearancePickerColor}
-					colorOptions={EDITOR_TEXT_COLORS}
-					onColorChange={(color) => {
-						updatePickerAppearance({
-							color,
-						});
-					}}
-				/>
-				{!hasLoadedFileVisibility ? null : focusedDirPath ? (
-					<FileTreeRootDrop targetDirPath={focusedDirPath}>
-						<FolderBreadcrumb
-							spacePath={spacePath}
-							dirPath={focusedDirPath}
-							onNavigate={handleEnterDir}
-							onExit={handleExitFocusedDir}
-						/>
-						{hasVisibleFocusedEntries ===
-						null ? null : hasVisibleFocusedEntries ? (
-							<TreeEntries
-								entries={focusedEntries ?? []}
-								parentDepth={-1}
-								childrenByDir={childrenByDir}
-								expandedDirs={expandedDirs}
-								activeFilePath={activeFilePath}
-								activeDirPath={activeDirPath}
-								renamingPath={renamingPath}
-								onToggleDir={onToggleDir}
-								onEnterDir={handleEnterDir}
-								onSelectDir={onSelectDir}
-								onOpenFile={onOpenFile}
-								onPrefetchFile={onPrefetchFile}
-								onNewFileInDir={onNewFileInDir}
-								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-								onImportFilesInDir={onImportFilesInDir}
-								onImportFolderInDir={onImportFolderInDir}
-								onRequestCreateFolder={handleRequestCreateFolder}
-								onDuplicateFile={handleDuplicateFile}
-								onDeletePath={handleDeletePath}
-								onStartRename={onStartRename}
-								onCommitDirRename={onCommitDirRename}
-								onCommitFileRename={onCommitFileRename}
-								onCancelRename={onCancelRename}
-								itemAppearance={itemAppearance}
-								folderFileCounts={folderFileCounts}
-								showFolderFileCounts={showFolderFileCounts}
-								showNonMarkdownFiles={showNonMarkdownFilesSetting}
-								onOpenAppearancePicker={handleOpenAppearancePicker}
-								pinnedFiles={pinnedFiles}
-								onTogglePinnedFile={onTogglePinnedFile}
-								onMoveClickSuppressRef={moveClickSuppressRef}
-								taskSummariesByPath={taskSummariesByPath}
-								showFilePreviews
-								filePreviewsByPath={filePreviewsByPath}
-								onVisiblePreviewPathsChange={handleVisiblePreviewPathsChange}
-								sortMode={sortMode}
-							/>
-						) : (
-							<m.div
-								className="fileTreeEmpty"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-							>
-								No files found.
-							</m.div>
-						)}
-					</FileTreeRootDrop>
-				) : hasVisibleRootEntries ? (
-					<FileTreeRootDrop>
+		<m.aside
+			ref={paneRef}
+			className="fileTreePane"
+			initial={{ y: 10 }}
+			animate={{ y: 0 }}
+			transition={springTransition}
+			onContextMenu={handlePaneContextMenu}
+			onKeyDown={handleTreeKeyDown}
+		>
+			<AppearancePicker
+				title="Choose file tree appearance"
+				open={appearancePickerTarget !== null}
+				onOpenChange={(open) => {
+					if (!open) setAppearancePickerTarget(null);
+				}}
+				iconValue={appearancePickerIcon}
+				defaultIconName={appearancePickerDefaultIcon}
+				showDefaultIcon
+				onIconChange={(icon) => {
+					updatePickerAppearance({
+						icon,
+					});
+				}}
+				showColors
+				colorValue={appearancePickerColor}
+				colorOptions={EDITOR_TEXT_COLORS}
+				onColorChange={(color) => {
+					updatePickerAppearance({
+						color,
+					});
+				}}
+			/>
+			{!hasLoadedFileVisibility ? null : focusedDirPath ? (
+				<FileTreeRootDrop targetDirPath={focusedDirPath}>
+					<FolderBreadcrumb
+						spacePath={spacePath}
+						dirPath={focusedDirPath}
+						onNavigate={handleEnterDir}
+						onExit={handleExitFocusedDir}
+					/>
+					{hasVisibleFocusedEntries ===
+					null ? null : hasVisibleFocusedEntries ? (
 						<TreeEntries
-							entries={rootEntries}
+							entries={focusedEntries ?? []}
 							parentDepth={-1}
 							childrenByDir={childrenByDir}
 							expandedDirs={expandedDirs}
@@ -1169,21 +1115,70 @@ export const FileTreePane = memo(function FileTreePane({
 							onTogglePinnedFile={onTogglePinnedFile}
 							onMoveClickSuppressRef={moveClickSuppressRef}
 							taskSummariesByPath={taskSummariesByPath}
+							showFilePreviews
+							filePreviewsByPath={filePreviewsByPath}
+							onVisiblePreviewPathsChange={handleVisiblePreviewPathsChange}
 							sortMode={sortMode}
 						/>
-					</FileTreeRootDrop>
-				) : (
-					<m.div
-						className="fileTreeEmpty"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						transition={{ delay: 0.2 }}
-					>
-						No files found.
-					</m.div>
-				)}
-				{children}
-			</m.aside>
-		</DragDropProvider>
+					) : (
+						<m.div
+							className="fileTreeEmpty"
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+						>
+							No files found.
+						</m.div>
+					)}
+				</FileTreeRootDrop>
+			) : hasVisibleRootEntries ? (
+				<FileTreeRootDrop>
+					<TreeEntries
+						entries={rootEntries}
+						parentDepth={-1}
+						childrenByDir={childrenByDir}
+						expandedDirs={expandedDirs}
+						activeFilePath={activeFilePath}
+						activeDirPath={activeDirPath}
+						renamingPath={renamingPath}
+						onToggleDir={onToggleDir}
+						onEnterDir={handleEnterDir}
+						onSelectDir={onSelectDir}
+						onOpenFile={onOpenFile}
+						onPrefetchFile={onPrefetchFile}
+						onNewFileInDir={onNewFileInDir}
+						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+						onImportFilesInDir={onImportFilesInDir}
+						onImportFolderInDir={onImportFolderInDir}
+						onRequestCreateFolder={handleRequestCreateFolder}
+						onDuplicateFile={handleDuplicateFile}
+						onDeletePath={handleDeletePath}
+						onStartRename={onStartRename}
+						onCommitDirRename={onCommitDirRename}
+						onCommitFileRename={onCommitFileRename}
+						onCancelRename={onCancelRename}
+						itemAppearance={itemAppearance}
+						folderFileCounts={folderFileCounts}
+						showFolderFileCounts={showFolderFileCounts}
+						showNonMarkdownFiles={showNonMarkdownFilesSetting}
+						onOpenAppearancePicker={handleOpenAppearancePicker}
+						pinnedFiles={pinnedFiles}
+						onTogglePinnedFile={onTogglePinnedFile}
+						onMoveClickSuppressRef={moveClickSuppressRef}
+						taskSummariesByPath={taskSummariesByPath}
+						sortMode={sortMode}
+					/>
+				</FileTreeRootDrop>
+			) : (
+				<m.div
+					className="fileTreeEmpty"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 0.2 }}
+				>
+					No files found.
+				</m.div>
+			)}
+			{children}
+		</m.aside>
 	);
 });
