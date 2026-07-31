@@ -93,6 +93,8 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 const FILE_TREE_ROW_ESTIMATE = 32;
 const FILE_TREE_PREVIEW_ROW_ESTIMATE = 52;
+const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
+
 interface AppearancePickerTarget {
 	entry: FsEntry;
 }
@@ -605,12 +607,22 @@ export const FileTreePane = memo(function FileTreePane({
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
 	const moveClickSuppressRef = useRef(false);
+	const moveClickSuppressResetTimerRef = useRef<ReturnType<
+		typeof window.setTimeout
+	> | null>(null);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const focusedDirPathRef = useRef(focusedDirPath);
 	const settingsVersionRef = useRef(0);
 	const previousSpacePathRef = useRef(spacePath);
 	const itemAppearanceRef = useRef(itemAppearance);
 	focusedDirPathRef.current = focusedDirPath;
+	useEffect(() => {
+		return () => {
+			if (moveClickSuppressResetTimerRef.current !== null) {
+				window.clearTimeout(moveClickSuppressResetTimerRef.current);
+			}
+		};
+	}, []);
 	useEffect(() => {
 		itemAppearanceRef.current = itemAppearance;
 	}, [itemAppearance]);
@@ -925,6 +937,15 @@ export const FileTreePane = memo(function FileTreePane({
 				if (!sourcePath || !sourceKind) return;
 
 				moveClickSuppressRef.current = true;
+				if (moveClickSuppressResetTimerRef.current !== null) {
+					window.clearTimeout(moveClickSuppressResetTimerRef.current);
+				}
+				// The row click clears this sooner when a post-drag click arrives;
+				// the fallback handles canceled and non-tree drops with no click event.
+				moveClickSuppressResetTimerRef.current = window.setTimeout(() => {
+					moveClickSuppressRef.current = false;
+					moveClickSuppressResetTimerRef.current = null;
+				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
 				if (event.canceled) return;
 
 				const targetDirPath =

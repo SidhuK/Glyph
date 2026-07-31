@@ -7,7 +7,7 @@ import {
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { memo, useCallback, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -59,6 +59,8 @@ const MAIN_TAB_SENSORS = [
 		],
 	}),
 ];
+const DRAG_CLICK_SUPPRESSION_DELAY_MS = 100;
+
 function isPathSpecial(path: string): boolean {
 	return (
 		path === ALL_DOCS_TAB_ID ||
@@ -97,6 +99,16 @@ export function TabBar({
 	const { t } = useTranslation("shell");
 	const { getBinding } = useShortcutBindings();
 	const suppressClickRef = useRef(false);
+	const suppressClickResetTimerRef = useRef<ReturnType<
+		typeof window.setTimeout
+	> | null>(null);
+	useEffect(() => {
+		return () => {
+			if (suppressClickResetTimerRef.current !== null) {
+				window.clearTimeout(suppressClickResetTimerRef.current);
+			}
+		};
+	}, []);
 	const stripFileExtension = useCallback((name: string) => {
 		if (!name || name.startsWith(".")) return name;
 		const withoutExt = name.replace(/\.[^./]+$/, "");
@@ -147,6 +159,15 @@ export function TabBar({
 				if (!sourceTabId || sourcePaneId !== paneId) return;
 
 				suppressClickRef.current = true;
+				if (suppressClickResetTimerRef.current !== null) {
+					window.clearTimeout(suppressClickResetTimerRef.current);
+				}
+				// The click handler clears this sooner when a post-drag click arrives;
+				// the fallback handles canceled and non-tab drops with no click event.
+				suppressClickResetTimerRef.current = window.setTimeout(() => {
+					suppressClickRef.current = false;
+					suppressClickResetTimerRef.current = null;
+				}, DRAG_CLICK_SUPPRESSION_DELAY_MS);
 				if (event.canceled) return;
 
 				const targetTabId =
