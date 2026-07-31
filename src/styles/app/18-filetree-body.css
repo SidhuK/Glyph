@@ -230,9 +230,51 @@
 
 /* hierarchy connector lines intentionally removed */
 
-.fileTreeRow[data-dragging="true"] {
-	opacity: 0.62;
-	cursor: pointer;
+/* Dragged row is promoted to the top layer as a popover, where dnd-kit reverts
+   button background/border to UA defaults — both must be set explicitly.
+   Scoped through .fileTreeRowShell to outrank the row hover/active background,
+   which the row keeps while it holds pointer capture during a drag. */
+.fileTreeRowShell
+	> .fileTreeRow[data-dragging="true"]:not([data-dnd-placeholder]),
+.fileTreeRowShell
+	> .fileTreeRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
+	overflow: visible;
+	cursor: grabbing;
+	background: var(--bg-primary);
+	border-color: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
+	rotate: 2deg;
+}
+
+.fileTreeRow[data-dnd-placeholder] {
+	visibility: visible !important;
+	opacity: 0.34;
+	pointer-events: none;
+	box-shadow: none;
+	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fileTreeRowShell
+		> .fileTreeRow[data-dragging="true"]:not([data-dnd-placeholder]),
+	.fileTreeRowShell
+		> .fileTreeRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
+		rotate: none;
+	}
+}
+
+.dark
+	.fileTreeRowShell
+	> .fileTreeRow[data-dragging="true"]:not([data-dnd-placeholder]),
+.dark
+	.fileTreeRowShell
+	> .fileTreeRow[data-dnd-dragging]:not([data-dnd-placeholder]) {
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent), 0 12px 28px
+		color-mix(in srgb, black 30%, transparent);
 }
 
 .fileTreeRow[data-drop-target="true"] {
