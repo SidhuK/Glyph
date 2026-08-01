@@ -160,6 +160,8 @@ export function handleEditorClick(
 		}
 		if (editable) {
 			expandMarkdownLinkForEditing(view, link);
+		} else {
+			void openUrl(href);
 		}
 		return true;
 	}

@@ -25,6 +25,7 @@ const EXTERNAL_LINK_PREVIEW_KEY = new PluginKey<LinkPreviewState>(
 	"external-link-previews",
 );
 const PREVIEW_UPDATE_META = "external-link-preview-update";
+const MAX_PREVIEW_REQUESTS = 3;
 
 function externalUrl(href: string): URL | null {
 	try {
@@ -39,7 +40,7 @@ function singleExternalLink(
 	node: ProseMirrorNode,
 	pos: number,
 ): ExternalLink | null {
-	if (!node.isTextblock || node.childCount !== 1) return null;
+	if (node.type.name !== "paragraph" || node.childCount !== 1) return null;
 	const child = node.firstChild;
 	if (!child?.isText || !child.text?.trim()) return null;
 	const link = child.marks.find((mark) => mark.type.name === "link");
@@ -157,10 +158,12 @@ function mapPreviewDecorations(
 	decorations: DecorationSet,
 	previews: ReadonlyMap<string, ExternalLinkPreview | null>,
 ): DecorationSet {
+	const blocks = changedTextblocks(transaction);
+	if (blocks.length === 0) return previewDecorations(transaction.doc, previews);
 	let mapped = decorations.map(transaction.mapping, transaction.doc);
 	const additions: Decoration[] = [];
 	const removals: Decoration[] = [];
-	for (const { node, pos } of changedTextblocks(transaction)) {
+	for (const { node, pos } of blocks) {
 		removals.push(...mapped.find(pos + 1, pos + node.content.size));
 		const link = singleExternalLink(node, pos);
 		if (link)
@@ -243,11 +246,13 @@ export const ExternalLinkPreviews = Extension.create({
 				},
 				view(editorView) {
 					const requested = new Set<string>();
+					let inFlight = 0;
 					let active = true;
 					const requestPreviews = () => {
 						const state = EXTERNAL_LINK_PREVIEW_KEY.getState(editorView.state);
 						if (!state) return;
 						for (const decoration of state.decorations.find()) {
+							if (inFlight >= MAX_PREVIEW_REQUESTS) return;
 							const href = decoration.spec.href;
 							if (
 								typeof href !== "string" ||
@@ -257,6 +262,7 @@ export const ExternalLinkPreviews = Extension.create({
 								continue;
 							}
 							requested.add(href);
+							inFlight += 1;
 							void invoke("external_link_preview", { url: href })
 								.then((preview) => {
 									if (!active) return;
@@ -275,6 +281,10 @@ export const ExternalLinkPreviews = Extension.create({
 											preview: null,
 										} satisfies PreviewUpdate),
 									);
+								})
+								.finally(() => {
+									inFlight -= 1;
+									if (active) requestPreviews();
 								});
 						}
 					};

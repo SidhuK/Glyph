@@ -6,9 +6,10 @@ use reqwest::{header, redirect::Policy, Client, StatusCode};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::{Cursor, Read};
+use std::net::SocketAddr;
 use std::sync::{Mutex, OnceLock};
 use std::time::Duration;
-use url::Url;
+use url::{Host, Url};
 
 use crate::net;
 
@@ -16,8 +17,9 @@ const MAX_REDIRECTS: usize = 4;
 const MAX_RESPONSE_BYTES: usize = 512 * 1024;
 const MAX_FAVICON_BYTES: usize = 128 * 1024;
 const MAX_PREVIEW_IMAGE_BYTES: usize = 256 * 1024;
+const MAX_DECODED_IMAGE_BYTES: u64 = 4 * 1024 * 1024;
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(8);
-const MAX_CACHED_PREVIEWS: usize = 200;
+const MAX_CACHED_PREVIEWS: usize = 20;
 
 #[derive(Clone, Serialize)]
 pub struct ExternalLinkPreview {
@@ -212,27 +214,63 @@ fn color_is_light(color: &str) -> bool {
     u32::from(red) * 299 + u32::from(green) * 587 + u32::from(blue) * 114 > 160_000
 }
 
+fn image_dimensions_fit(width: u32, height: u32) -> bool {
+    width > 0
+        && height > 0
+        && u64::from(width)
+            .saturating_mul(u64::from(height))
+            .saturating_mul(4)
+            <= MAX_DECODED_IMAGE_BYTES
+}
+
+fn png_dimensions_fit(bytes: &[u8]) -> bool {
+    const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
+    if bytes.len() < 24 || &bytes[..8] != PNG_SIGNATURE || &bytes[12..16] != b"IHDR" {
+        return false;
+    }
+    let width = u32::from_be_bytes(bytes[16..20].try_into().unwrap_or_default());
+    let height = u32::from_be_bytes(bytes[20..24].try_into().unwrap_or_default());
+    image_dimensions_fit(width, height)
+}
+
+fn icon_dimensions_fit(entry: &ico::IconDirEntry) -> bool {
+    if entry.is_png() {
+        return png_dimensions_fit(entry.data());
+    }
+    let bytes = entry.data();
+    if bytes.len() < 12 {
+        return false;
+    }
+    let width = i32::from_le_bytes(bytes[4..8].try_into().unwrap_or_default());
+    let height = i32::from_le_bytes(bytes[8..12].try_into().unwrap_or_default());
+    width > 0
+        && height > 1
+        && image_dimensions_fit(width as u32, (height as u32) / 2)
+}
+
 fn prominent_image_color(content_type: &str, bytes: &[u8]) -> Option<String> {
-    let rgba = match content_type {
-        "image/png" => ico::IconImage::read_png(Cursor::new(bytes))
-            .ok()?
-            .rgba_data()
-            .to_vec(),
+    let image = match content_type {
+        "image/png" if png_dimensions_fit(bytes) => {
+            ico::IconImage::read_png(Cursor::new(bytes)).ok()?
+        }
+        "image/png" => return None,
         "image/vnd.microsoft.icon" | "image/x-icon" => {
             let icon_dir = ico::IconDir::read(Cursor::new(bytes)).ok()?;
             icon_dir
                 .entries()
                 .iter()
+                .filter(|entry| {
+                    image_dimensions_fit(entry.width(), entry.height())
+                        && icon_dimensions_fit(entry)
+                })
                 .max_by_key(|entry| entry.width().saturating_mul(entry.height()))?
                 .decode()
                 .ok()?
-                .rgba_data()
-                .to_vec()
         }
         _ => return None,
     };
     let mut buckets = [0_u32; 512];
-    for pixel in rgba.chunks_exact(4) {
+    for pixel in image.rgba_data().chunks_exact(4) {
         let alpha = u32::from(pixel[3]);
         if alpha < 192 {
             continue;
@@ -297,13 +335,30 @@ fn preview_from_html(
     }
 }
 
-async fn validate_public_url(url: Url) -> Result<Url, String> {
+struct CheckedUrl {
+    url: Url,
+    addresses: Vec<SocketAddr>,
+}
+
+async fn validate_public_url(url: Url) -> Result<CheckedUrl, String> {
     tauri::async_runtime::spawn_blocking(move || {
-        net::validate_url_host(&url, false)?;
-        Ok(url)
+        let addresses = net::public_url_addresses(&url, false)?;
+        Ok(CheckedUrl { url, addresses })
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+fn preview_client(checked: &CheckedUrl) -> Result<Client, String> {
+    let mut builder = Client::builder()
+        .redirect(Policy::none())
+        .no_proxy()
+        .timeout(REQUEST_TIMEOUT)
+        .user_agent("Glyph Link Preview");
+    if let Some(Host::Domain(host)) = checked.url.host() {
+        builder = builder.resolve_to_addrs(host, &checked.addresses);
+    }
+    builder.build().map_err(|error| error.to_string())
 }
 
 fn decode_html_bytes(content_encoding: Option<&str>, bytes: Vec<u8>) -> Result<String, String> {
@@ -324,22 +379,17 @@ fn decode_html_bytes(content_encoding: Option<&str>, bytes: Vec<u8>) -> Result<S
     } else {
         bytes
     };
-    String::from_utf8(bytes).map_err(|error| error.to_string())
+    Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
 async fn fetch_html(url: Url) -> Result<(Url, String), String> {
-    let client = Client::builder()
-        .redirect(Policy::none())
-        .timeout(REQUEST_TIMEOUT)
-        .user_agent("Glyph Link Preview")
-        .build()
-        .map_err(|error| error.to_string())?;
     let mut current = url;
 
     for _ in 0..=MAX_REDIRECTS {
         let checked = validate_public_url(current).await?;
+        let client = preview_client(&checked)?;
         let response = client
-            .get(checked.clone())
+            .get(checked.url.clone())
             .header(header::ACCEPT, "text/html,application/xhtml+xml")
             .send()
             .await
@@ -351,7 +401,7 @@ async fn fetch_html(url: Url) -> Result<(Url, String), String> {
                 .get(header::LOCATION)
                 .and_then(|value| value.to_str().ok())
                 .ok_or_else(|| "redirect without a location".to_string())?;
-            current = checked.join(location).map_err(|error| error.to_string())?;
+            current = checked.url.join(location).map_err(|error| error.to_string())?;
             continue;
         }
         if response.status() != StatusCode::OK {
@@ -387,25 +437,20 @@ async fn fetch_html(url: Url) -> Result<(Url, String), String> {
             bytes.extend_from_slice(&chunk);
         }
         return decode_html_bytes(content_encoding.as_deref(), bytes)
-            .map(|html| (checked, html));
+            .map(|html| (checked.url, html));
     }
 
     Err("too many redirects".to_string())
 }
 
 async fn fetch_image(url: Url, max_bytes: usize) -> Option<FetchedImage> {
-    let client = Client::builder()
-        .redirect(Policy::none())
-        .timeout(REQUEST_TIMEOUT)
-        .user_agent("Glyph Link Preview")
-        .build()
-        .ok()?;
     let mut current = url;
 
     for _ in 0..=MAX_REDIRECTS {
         let checked = validate_public_url(current).await.ok()?;
+        let client = preview_client(&checked).ok()?;
         let response = client
-            .get(checked.clone())
+            .get(checked.url.clone())
             .header(header::ACCEPT, "image/avif,image/webp,image/png,image/jpeg,image/gif,image/x-icon,*/*;q=0.8")
             .send()
             .await
@@ -415,7 +460,7 @@ async fn fetch_image(url: Url, max_bytes: usize) -> Option<FetchedImage> {
                 .headers()
                 .get(header::LOCATION)
                 .and_then(|value| value.to_str().ok())?;
-            current = checked.join(location).ok()?;
+            current = checked.url.join(location).ok()?;
             continue;
         }
         if response.status() != StatusCode::OK {
