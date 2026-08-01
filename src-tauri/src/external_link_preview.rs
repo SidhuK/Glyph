@@ -434,7 +434,12 @@ async fn fetch_html(url: Url) -> Result<(Url, String), String> {
             .and_then(|value| value.to_str().ok())
             .map(str::to_string);
         let is_html = content_type.as_deref().is_none_or(|value| {
-            value.starts_with("text/html") || value.starts_with("application/xhtml+xml")
+            matches!(
+                value.split(';').next().map(str::trim),
+                Some(media_type)
+                    if media_type.eq_ignore_ascii_case("text/html")
+                        || media_type.eq_ignore_ascii_case("application/xhtml+xml")
+            )
         });
         if !is_html {
             return Err("response is not HTML".to_string());
@@ -508,9 +513,16 @@ async fn fetch_image(url: Url, max_bytes: usize) -> Option<FetchedImage> {
         if bytes.is_empty() {
             return None;
         }
+        let data_url = format!("data:{content_type};base64,{}", BASE64.encode(&bytes));
+        let accent_color = tauri::async_runtime::spawn_blocking(move || {
+            prominent_image_color(content_type, &bytes)
+        })
+        .await
+        .ok()
+        .flatten();
         return Some(FetchedImage {
-            accent_color: prominent_image_color(content_type, &bytes),
-            data_url: format!("data:{content_type};base64,{}", BASE64.encode(bytes)),
+            accent_color,
+            data_url,
         });
     }
 

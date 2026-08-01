@@ -362,6 +362,8 @@ export function useNoteEditor({
 	const listCollapseLoadVersionRef = useRef(0);
 	const listCollapseSaveRef = useRef(Promise.resolve());
 	const listCollapseEnabled = showCollapsibleLists && mode !== "plain";
+	const externalLinkPreviewsEnabled =
+		showExternalLinkPreviews && mode !== "plain";
 	const handleListCollapseChange = useCallback((branches: string[]) => {
 		const path = relPathRef.current;
 		if (!path) return;
@@ -384,8 +386,7 @@ export function useNoteEditor({
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableFocusMode,
-				enableExternalLinkPreviews:
-					showExternalLinkPreviews && mode !== "plain",
+				enableExternalLinkPreviews: externalLinkPreviewsEnabled,
 				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
 				placeholder,
@@ -394,8 +395,7 @@ export function useNoteEditor({
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
-			mode,
-			showExternalLinkPreviews,
+			externalLinkPreviewsEnabled,
 			handleListCollapseChange,
 			onMathEditRequest,
 			peopleMentionsEnabled,
