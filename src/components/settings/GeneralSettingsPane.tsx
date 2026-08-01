@@ -31,6 +31,7 @@ import {
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowCollapsibleLists,
+	setEditorShowExternalLinkPreviews,
 	setEditorShowFrontmatterInEditor,
 	setEditorShowHeadingPrefixes,
 	setEditorSpellCheck,
@@ -151,6 +152,11 @@ export function GeneralSettingsPane() {
 		setError,
 	);
 	const spellCheck = useSettingsBoolean(true, setEditorSpellCheck, setError);
+	const externalLinkPreviews = useSettingsBoolean(
+		false,
+		setEditorShowExternalLinkPreviews,
+		setError,
+	);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
 		setEditorRawMarkdownVimMode,
@@ -175,6 +181,7 @@ export function GeneralSettingsPane() {
 	const setCollapsibleHeadingsChecked = collapsibleHeadings.setChecked;
 	const setCollapsibleListsChecked = collapsibleLists.setChecked;
 	const setSpellCheckChecked = spellCheck.setChecked;
+	const setExternalLinkPreviewsChecked = externalLinkPreviews.setChecked;
 	const setRawMarkdownVimModeChecked = rawMarkdownVimMode.setChecked;
 	const setFolderCountsChecked = folderCounts.setChecked;
 	const setNonMarkdownFilesChecked = nonMarkdownFiles.setChecked;
@@ -206,6 +213,9 @@ export function GeneralSettingsPane() {
 				setCollapsibleHeadingsChecked(settings.editor.showCollapsibleHeadings);
 				setCollapsibleListsChecked(settings.editor.showCollapsibleLists);
 				setSpellCheckChecked(settings.editor.spellCheck);
+				setExternalLinkPreviewsChecked(
+					settings.editor.showExternalLinkPreviews,
+				);
 				setRawMarkdownVimModeChecked(settings.editor.rawMarkdownVimMode);
 				setFolderCountsChecked(settings.ui.showFileTreeFolderCounts);
 				setNonMarkdownFilesChecked(settings.ui.showNonMarkdownFiles);
@@ -227,6 +237,7 @@ export function GeneralSettingsPane() {
 		setCollapsibleHeadingsChecked,
 		setCollapsibleListsChecked,
 		setSpellCheckChecked,
+		setExternalLinkPreviewsChecked,
 		setRawMarkdownVimModeChecked,
 		setFolderCountsChecked,
 		setNonMarkdownFilesChecked,
@@ -282,6 +293,10 @@ export function GeneralSettingsPane() {
 				);
 				applyIfBoolean(payload.editor?.spellCheck, setSpellCheckChecked);
 				applyIfBoolean(
+					payload.editor?.showExternalLinkPreviews,
+					setExternalLinkPreviewsChecked,
+				);
+				applyIfBoolean(
 					payload.editor?.rawMarkdownVimMode,
 					setRawMarkdownVimModeChecked,
 				);
@@ -303,6 +318,7 @@ export function GeneralSettingsPane() {
 				setCollapsibleHeadingsChecked,
 				setCollapsibleListsChecked,
 				setSpellCheckChecked,
+				setExternalLinkPreviewsChecked,
 				setRawMarkdownVimModeChecked,
 				setFolderCountsChecked,
 				setNonMarkdownFilesChecked,
@@ -434,6 +450,17 @@ export function GeneralSettingsPane() {
 							disabled={spellCheck.isSaving}
 							ariaLabel={t("editor.spellCheck.ariaLabel")}
 							onCheckedChange={spellCheck.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("editor.externalLinkPreviews.label")}
+						description={t("editor.externalLinkPreviews.description")}
+					>
+						<SettingsToggle
+							checked={externalLinkPreviews.checked}
+							disabled={externalLinkPreviews.isSaving}
+							ariaLabel={t("editor.externalLinkPreviews.ariaLabel")}
+							onCheckedChange={externalLinkPreviews.onCheckedChange}
 						/>
 					</SettingsRow>
 					<SettingsRow

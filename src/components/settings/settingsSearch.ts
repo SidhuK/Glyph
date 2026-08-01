@@ -92,6 +92,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "general-editor-collapsible-headings", tab: "general" },
 	{ id: "general-editor-collapsible-lists", tab: "general" },
 	{ id: "general-editor-spell-check", tab: "general" },
+	{ id: "general-editor-external-link-previews", tab: "general" },
 	{ id: "general-editor-vim-mode", tab: "general" },
 	{ id: "ai-assistant-behavior-tools", tab: "ai" },
 	{ id: "appearance-layout-folio-mode", tab: "appearance" },

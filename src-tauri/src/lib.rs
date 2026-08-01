@@ -8,6 +8,7 @@ mod app_exit;
 mod databases;
 mod daily_note_rollover;
 mod external_markdown;
+mod external_link_preview;
 mod file_tree_appearance;
 mod git_sync;
 mod glyph_paths;
@@ -1532,6 +1533,7 @@ pub fn run() {
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
             external_markdown::external_markdown_finish_close,
+            external_link_preview::external_link_preview,
             print::print_write_html,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,

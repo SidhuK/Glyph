@@ -7,6 +7,15 @@ export interface AppInfo {
 	identifier: string;
 }
 
+export interface ExternalLinkPreview {
+	title: string;
+	site_name: string;
+	favicon_data_url?: string | null;
+	image_data_url?: string | null;
+	accent_color?: string | null;
+	accent_is_light?: boolean;
+}
+
 export interface ReleaseChannelUpdate {
 	rid: number;
 	currentVersion: string;
@@ -857,6 +866,7 @@ interface TauriCommands {
 	>;
 	set_menu_labels: CommandDef<{ labels: Record<string, string> }, void>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
+	external_link_preview: CommandDef<{ url: string }, ExternalLinkPreview>;
 	open_external_markdown_path: CommandDef<{ path: string }, void>;
 	external_markdown_window_path: CommandDef<void, string>;
 	external_markdown_window_rel_path: CommandDef<void, string | null>;

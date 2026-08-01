@@ -118,6 +118,7 @@ type TauriEventMap = {
 			enablePeopleMentionsAsTags?: boolean;
 			rawMarkdownVimMode?: boolean;
 			spellCheck?: boolean;
+			showExternalLinkPreviews?: boolean;
 			focusMode?: FocusMode;
 		};
 		shortcuts?: {

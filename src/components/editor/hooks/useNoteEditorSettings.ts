@@ -15,6 +15,8 @@ export function useNoteEditorSettings() {
 	const [showHeadingPrefixes, setShowHeadingPrefixes] = useState(true);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
+	const [showExternalLinkPreviews, setShowExternalLinkPreviews] =
+		useState(false);
 	const [focusMode, setFocusMode] = useState<FocusMode>("off");
 	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
@@ -32,6 +34,7 @@ export function useNoteEditorSettings() {
 				setShowHeadingPrefixes(settings.editor.showHeadingPrefixes);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
+				setShowExternalLinkPreviews(settings.editor.showExternalLinkPreviews);
 				setFocusMode(settings.editor.focusMode);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
@@ -45,6 +48,7 @@ export function useNoteEditorSettings() {
 				setShowHeadingPrefixes(true);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
+				setShowExternalLinkPreviews(false);
 				setFocusMode("off");
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
@@ -73,6 +77,9 @@ export function useNoteEditorSettings() {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
+		if (typeof payload.editor?.showExternalLinkPreviews === "boolean") {
+			setShowExternalLinkPreviews(payload.editor.showExternalLinkPreviews);
+		}
 		if (isFocusMode(payload.editor?.focusMode)) {
 			setFocusMode(payload.editor.focusMode);
 		}
@@ -94,5 +101,6 @@ export function useNoteEditorSettings() {
 		showCollapsibleLists,
 		showFrontmatterInEditor,
 		showHeadingPrefixes,
+		showExternalLinkPreviews,
 	};
 }

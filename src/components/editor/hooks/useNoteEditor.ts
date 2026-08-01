@@ -344,6 +344,7 @@ export function useNoteEditor({
 		colorfulHeadings,
 		focusMode,
 		peopleMentionsEnabled,
+		showExternalLinkPreviews,
 		showCollapsibleHeadings,
 		showCollapsibleLists,
 		showFrontmatterInEditor,
@@ -383,6 +384,8 @@ export function useNoteEditor({
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
 				enableFocusMode,
+				enableExternalLinkPreviews:
+					showExternalLinkPreviews && mode !== "plain",
 				onListCollapseToggle: handleListCollapseChange,
 				onMathEditRequest,
 				placeholder,
@@ -391,6 +394,8 @@ export function useNoteEditor({
 			additionalExtensions,
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
+			mode,
+			showExternalLinkPreviews,
 			handleListCollapseChange,
 			onMathEditRequest,
 			peopleMentionsEnabled,
@@ -485,6 +490,8 @@ export function useNoteEditor({
 		void peopleMentionsEnabled;
 		void enableMarkdownLinkAutocomplete;
 		void enableFocusMode;
+		void showExternalLinkPreviews;
+		void mode;
 		void placeholder;
 		return () => {
 			const snapshot = snapshotFocusedSelection(
@@ -501,6 +508,8 @@ export function useNoteEditor({
 		peopleMentionsEnabled,
 		enableMarkdownLinkAutocomplete,
 		enableFocusMode,
+		showExternalLinkPreviews,
+		mode,
 		placeholder,
 	]);
 
@@ -696,6 +705,8 @@ export function useNoteEditor({
 			peopleMentionsEnabled,
 			enableMarkdownLinkAutocomplete,
 			enableFocusMode,
+			showExternalLinkPreviews,
+			mode,
 			placeholder,
 		],
 	);

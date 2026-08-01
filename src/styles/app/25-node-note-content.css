@@ -3,6 +3,89 @@
 	text-decoration: underline;
 }
 
+.tiptapContentInline .externalLinkPreviewCard {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	width: min(60%, 580px);
+	max-width: 100%;
+	min-height: 104px;
+	box-sizing: border-box;
+	padding: var(--space-2) var(--space-4);
+	border: 1px solid color-mix(in srgb, var(--border-default) 82%, transparent);
+	border-radius: var(--radius-md);
+	background-color: color-mix(
+		in srgb,
+		var(--external-link-preview-accent, var(--bg-secondary)) 82%,
+		var(--bg-primary)
+	);
+	box-shadow: 0 1px 2px color-mix(in srgb, #000 10%, transparent);
+	color: transparent;
+	font-size: 0;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.tiptapContentInline
+	.externalLinkPreviewCard[data-link-preview-light-accent="true"]::before {
+	color: #242424;
+}
+
+.tiptapContentInline
+	.externalLinkPreviewCard[data-link-preview-light-accent="true"]::after {
+	color: #606060;
+}
+
+.tiptapContentInline
+	.externalLinkPreviewCard[data-link-preview-has-accent="true"][data-link-preview-light-accent="false"]::before {
+	color: #f7f7f7;
+}
+
+.tiptapContentInline
+	.externalLinkPreviewCard[data-link-preview-has-accent="true"][data-link-preview-light-accent="false"]::after {
+	color: color-mix(in srgb, #fff 72%, transparent);
+}
+
+.tiptapContentInline
+	.externalLinkPreviewCard[data-link-preview-has-media="true"] {
+	padding-right: 7.5rem;
+	background-image: var(--external-link-preview-media);
+	background-position: right var(--space-3) center;
+	background-repeat: no-repeat;
+	background-size: 5rem auto;
+}
+
+.tiptapContentInline p:has(> a > .externalLinkPreviewCard) > a {
+	display: block;
+	text-decoration: none;
+}
+
+.tiptapContentInline .externalLinkPreviewCard::before {
+	content: attr(data-link-preview-title);
+	display: -webkit-box;
+	overflow: hidden;
+	color: var(--text-primary);
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	line-height: 1.35;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+}
+
+.tiptapContentInline .externalLinkPreviewCard::after {
+	content: attr(data-link-preview-site);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+	.tiptapContentInline .externalLinkPreviewCard {
+		width: 100%;
+	}
+}
+
 .tiptapContentInline img,
 .tiptapContentInline .markdownImage {
 	display: block;
