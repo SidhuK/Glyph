@@ -450,6 +450,11 @@
 			"section": "Editor",
 			"keywords": ["spelling", "typo", "dictionary"]
 		},
+		"general-editor-external-link-previews": {
+			"title": "External link previews",
+			"section": "Editor",
+			"keywords": ["link", "web", "website", "card", "open graph", "metadata"]
+		},
 		"general-editor-vim-mode": {
 			"title": "Vim Mode",
 			"section": "Editor",

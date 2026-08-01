@@ -214,6 +214,7 @@ interface EditorSettings {
 	enablePeopleMentionsAsTags: boolean;
 	rawMarkdownVimMode: boolean;
 	spellCheck: boolean;
+	showExternalLinkPreviews: boolean;
 	focusMode: FocusMode;
 }
 
@@ -258,6 +259,7 @@ const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	enablePeopleMentionsAsTags: false,
 	rawMarkdownVimMode: false,
 	spellCheck: true,
+	showExternalLinkPreviews: false,
 	focusMode: "off",
 };
 
@@ -471,6 +473,7 @@ async function emitSettingsUpdated(payload: {
 		enablePeopleMentionsAsTags?: boolean;
 		rawMarkdownVimMode?: boolean;
 		spellCheck?: boolean;
+		showExternalLinkPreviews?: boolean;
 		focusMode?: FocusMode;
 	};
 	shortcuts?: {
@@ -618,6 +621,7 @@ const KEYS = {
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	editorRawMarkdownVimMode: "editor.rawMarkdownVimMode",
 	editorSpellCheck: "editor.spellCheck",
+	editorShowExternalLinkPreviews: "editor.showExternalLinkPreviews",
 	editorFocusMode: "editor.focusMode",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
@@ -1016,6 +1020,10 @@ export async function loadSettings(
 		entries,
 		KEYS.editorSpellCheck,
 	);
+	const rawEditorShowExternalLinkPreviews = getSettingValue<boolean | null>(
+		entries,
+		KEYS.editorShowExternalLinkPreviews,
+	);
 	const rawEditorFocusMode = getSettingValue(entries, KEYS.editorFocusMode);
 	const rawDatabaseShowColumnColor = getSettingValue<boolean | null>(
 		entries,
@@ -1172,6 +1180,10 @@ export async function loadSettings(
 			typeof rawEditorSpellCheck === "boolean"
 				? rawEditorSpellCheck
 				: DEFAULT_EDITOR_SETTINGS.spellCheck,
+		showExternalLinkPreviews:
+			typeof rawEditorShowExternalLinkPreviews === "boolean"
+				? rawEditorShowExternalLinkPreviews
+				: DEFAULT_EDITOR_SETTINGS.showExternalLinkPreviews,
 		focusMode: asFocusMode(rawEditorFocusMode),
 	};
 	const database: DatabaseSettings = {
@@ -1758,6 +1770,17 @@ export async function setEditorSpellCheck(enabled: boolean): Promise<void> {
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({
 		editor: { spellCheck: enabled },
+	});
+}
+
+export async function setEditorShowExternalLinkPreviews(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getSettingsStore();
+	await store.set(KEYS.editorShowExternalLinkPreviews, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({
+		editor: { showExternalLinkPreviews: enabled },
 	});
 }
 

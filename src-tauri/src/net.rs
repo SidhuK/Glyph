@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, ToSocketAddrs};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
 
 use url::Url;
 
@@ -54,9 +54,15 @@ fn is_forbidden_ip(ip: IpAddr) -> bool {
     }
 }
 
-pub fn validate_url_host(url: &Url, allow_private_hosts: bool) -> Result<(), String> {
+pub fn public_url_addresses(
+    url: &Url,
+    allow_private_hosts: bool,
+) -> Result<Vec<SocketAddr>, String> {
+    if !matches!(url.scheme(), "http" | "https") {
+        return Err("only http(s) urls are allowed".to_string());
+    }
     if allow_private_hosts {
-        return Ok(());
+        return Ok(Vec::new());
     }
 
     let host = url
@@ -73,31 +79,28 @@ pub fn validate_url_host(url: &Url, allow_private_hosts: bool) -> Result<(), Str
         .strip_prefix('[')
         .and_then(|s| s.strip_suffix(']'))
         .unwrap_or(host);
-    if let Ok(ip) = ip_candidate.parse::<IpAddr>() {
-        if is_forbidden_ip(ip) {
-            return Err("forbidden host".to_string());
-        }
-        return Ok(());
-    }
-
-    // Best-effort DNS check to avoid obvious SSRF to private ranges.
-    let port = match url.scheme() {
-        "http" => 80,
-        "https" => 443,
-        _ => return Err("only http(s) urls are allowed".to_string()),
+    let port = url
+        .port_or_known_default()
+        .ok_or_else(|| "only http(s) urls are allowed".to_string())?;
+    let addrs = if let Ok(ip) = ip_candidate.parse::<IpAddr>() {
+        vec![SocketAddr::new(ip, port)]
+    } else {
+        (host, port)
+            .to_socket_addrs()
+            .map_err(|_| "dns lookup failed".to_string())?
+            .collect()
     };
-    let addrs: Vec<IpAddr> = (host, port)
-        .to_socket_addrs()
-        .map_err(|_| "dns lookup failed".to_string())?
-        .map(|a| a.ip())
-        .collect();
     if addrs.is_empty() {
         return Err("dns lookup failed".to_string());
     }
-    if addrs.into_iter().any(is_forbidden_ip) {
+    if addrs.iter().any(|address| is_forbidden_ip(address.ip())) {
         return Err("forbidden host".to_string());
     }
-    Ok(())
+    Ok(addrs)
+}
+
+pub fn validate_url_host(url: &Url, allow_private_hosts: bool) -> Result<(), String> {
+    public_url_addresses(url, allow_private_hosts).map(|_| ())
 }
 
 #[cfg(test)]

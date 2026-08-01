@@ -20,6 +20,7 @@ import {
 	setEditorRawMarkdownVimMode,
 	setEditorShowCollapsibleHeadings,
 	setEditorShowCollapsibleLists,
+	setEditorShowExternalLinkPreviews,
 	setEditorShowFrontmatterInEditor,
 	setEditorSpellCheck,
 	setEditorWidthMode,
@@ -415,6 +416,13 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		defaultVisible: true,
 		read: (settings) => settings.editor.spellCheck,
 		write: (value) => setEditorSpellCheck(requireBoolean(value)),
+	},
+	{
+		id: "general-editor-external-link-previews",
+		scope: "application",
+		control: "toggle",
+		read: (settings) => settings.editor.showExternalLinkPreviews,
+		write: (value) => setEditorShowExternalLinkPreviews(requireBoolean(value)),
 	},
 	{
 		id: "general-editor-vim-mode",

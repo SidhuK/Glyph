@@ -149,6 +149,19 @@ export function handleEditorClick(
 		dispatchInternalAnchorClick({ anchor: href, sourcePath: relPath });
 		return true;
 	}
+	if (
+		target?.closest(".externalLinkPreviewCard") &&
+		(href.startsWith("http://") || href.startsWith("https://"))
+	) {
+		event.preventDefault();
+		if (event.metaKey || event.ctrlKey) {
+			void openUrl(href);
+			return true;
+		}
+		if (editable && expandMarkdownLinkForEditing(view, link)) return true;
+		void openUrl(href);
+		return true;
+	}
 	event.preventDefault();
 	if (
 		editable &&

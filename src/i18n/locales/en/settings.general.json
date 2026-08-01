@@ -101,6 +101,11 @@
 			"description": "Underline typos as you type. Right-click a word to see spelling suggestions.",
 			"ariaLabel": "Spell check"
 		},
+		"externalLinkPreviews": {
+			"label": "External link previews",
+			"description": "Show standalone web links as cards in Rich and Preview modes. Glyph fetches preview details directly from each linked site.",
+			"ariaLabel": "Show external link previews"
+		},
 		"vimMode": {
 			"title": "Vim Mode",
 			"label": "Vim Mode",
