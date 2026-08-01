@@ -1582,6 +1582,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "core-text",
+ "encoding_rs",
  "flate2",
  "futures-util",
  "hex",

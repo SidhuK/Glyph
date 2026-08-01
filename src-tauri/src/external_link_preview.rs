@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use encoding_rs::{Encoding, UTF_8};
 use flate2::read::GzDecoder;
 use futures_util::StreamExt;
 use regex::{Captures, Regex};
@@ -341,11 +342,15 @@ struct CheckedUrl {
 }
 
 async fn validate_public_url(url: Url) -> Result<CheckedUrl, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        let addresses = net::public_url_addresses(&url, false)?;
-        Ok(CheckedUrl { url, addresses })
-    })
+    tokio::time::timeout(
+        REQUEST_TIMEOUT,
+        tauri::async_runtime::spawn_blocking(move || {
+            let addresses = net::public_url_addresses(&url, false)?;
+            Ok(CheckedUrl { url, addresses })
+        }),
+    )
     .await
+    .map_err(|_| "dns lookup timed out".to_string())?
     .map_err(|error| error.to_string())?
 }
 
@@ -361,7 +366,20 @@ fn preview_client(checked: &CheckedUrl) -> Result<Client, String> {
     builder.build().map_err(|error| error.to_string())
 }
 
-fn decode_html_bytes(content_encoding: Option<&str>, bytes: Vec<u8>) -> Result<String, String> {
+fn charset(content_type: Option<&str>) -> Option<&str> {
+    content_type?.split(';').skip(1).find_map(|parameter| {
+        let (name, value) = parameter.trim().split_once('=')?;
+        name.trim()
+            .eq_ignore_ascii_case("charset")
+            .then_some(value.trim().trim_matches(['\"', '\'']))
+    })
+}
+
+fn decode_html_bytes(
+    content_encoding: Option<&str>,
+    content_type: Option<&str>,
+    bytes: Vec<u8>,
+) -> Result<String, String> {
     let is_gzip = content_encoding
         .is_some_and(|value| value.eq_ignore_ascii_case("gzip"));
     let bytes = if is_gzip {
@@ -379,7 +397,10 @@ fn decode_html_bytes(content_encoding: Option<&str>, bytes: Vec<u8>) -> Result<S
     } else {
         bytes
     };
-    Ok(String::from_utf8_lossy(&bytes).into_owned())
+    let encoding = charset(content_type)
+        .and_then(|value| Encoding::for_label(value.as_bytes()))
+        .unwrap_or(UTF_8);
+    Ok(encoding.decode(&bytes).0.into_owned())
 }
 
 async fn fetch_html(url: Url) -> Result<(Url, String), String> {
@@ -407,17 +428,14 @@ async fn fetch_html(url: Url) -> Result<(Url, String), String> {
         if response.status() != StatusCode::OK {
             return Err(format!("unexpected response status {}", response.status()));
         }
-        let is_html = match response
+        let content_type = response
             .headers()
             .get(header::CONTENT_TYPE)
             .and_then(|value| value.to_str().ok())
-        {
-            Some(content_type) => {
-                content_type.starts_with("text/html")
-                    || content_type.starts_with("application/xhtml+xml")
-            }
-            None => true,
-        };
+            .map(str::to_string);
+        let is_html = content_type.as_deref().is_none_or(|value| {
+            value.starts_with("text/html") || value.starts_with("application/xhtml+xml")
+        });
         if !is_html {
             return Err("response is not HTML".to_string());
         }
@@ -436,7 +454,7 @@ async fn fetch_html(url: Url) -> Result<(Url, String), String> {
             }
             bytes.extend_from_slice(&chunk);
         }
-        return decode_html_bytes(content_encoding.as_deref(), bytes)
+        return decode_html_bytes(content_encoding.as_deref(), content_type.as_deref(), bytes)
             .map(|html| (checked.url, html));
     }
 
