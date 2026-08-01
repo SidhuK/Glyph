@@ -159,7 +159,7 @@ fn favicon_url(page_url: &Url, html: &str) -> Option<Url> {
             .iter()
             .find_map(|(name, value)| (name == "href").then_some(value.clone()))
     });
-    href.and_then(|value| page_url.join(&value).ok())
+    href.and_then(|value| page_url.join(&decode_html(&value)).ok())
 }
 
 fn preview_image_url(page_url: &Url, html: &str) -> Option<Url> {
@@ -167,7 +167,7 @@ fn preview_image_url(page_url: &Url, html: &str) -> Option<Url> {
     let image_url = values.iter().find_map(|(key, value)| {
         matches!(key.as_str(), "og:image" | "twitter:image").then_some(value)
     })?;
-    page_url.join(image_url).ok()
+    page_url.join(&decode_html(image_url)).ok()
 }
 
 fn supported_favicon_content_type(content_type: &str) -> Option<&'static str> {

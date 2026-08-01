@@ -58,6 +58,9 @@ pub fn public_url_addresses(
     url: &Url,
     allow_private_hosts: bool,
 ) -> Result<Vec<SocketAddr>, String> {
+    if !matches!(url.scheme(), "http" | "https") {
+        return Err("only http(s) urls are allowed".to_string());
+    }
     if allow_private_hosts {
         return Ok(Vec::new());
     }

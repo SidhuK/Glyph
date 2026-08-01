@@ -158,11 +158,8 @@ export function handleEditorClick(
 			void openUrl(href);
 			return true;
 		}
-		if (editable) {
-			expandMarkdownLinkForEditing(view, link);
-		} else {
-			void openUrl(href);
-		}
+		if (editable && expandMarkdownLinkForEditing(view, link)) return true;
+		void openUrl(href);
 		return true;
 	}
 	event.preventDefault();
