@@ -2,9 +2,9 @@ import {
 	Archive04Icon,
 	ArrowShrinkIcon,
 	ChartRelationshipIcon,
+	CursorAddSelection02Icon,
 	ExpandParagraphIcon,
 	LibraryIcon,
-	NoteIcon,
 	Sorting01Icon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
@@ -381,8 +381,8 @@ export const SidebarContent = memo(function SidebarContent({
 							}`}
 						>
 							<HugeiconsIcon
-								icon={NoteIcon}
-								size="var(--icon-md)"
+								icon={CursorAddSelection02Icon}
+								size="var(--icon-lg)"
 								strokeWidth={0.9}
 							/>
 							<span className="sidebarQuickActionLabel">

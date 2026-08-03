@@ -96,10 +96,6 @@
 	opacity: 1;
 }
 
-.sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionShortcut {
-	color: var(--text-inverse);
-}
-
 .sidebarQuickActionCount {
 	flex: 0 0 auto;
 	margin-left: auto;
@@ -139,6 +135,15 @@
 	fill: currentColor;
 }
 
+/* ── New note: filled accent icon ── */
+.sidebarNavBtn[data-kind="new-note"] > svg {
+	color: var(--interactive-accent);
+}
+
+.sidebarNavBtn[data-kind="new-note"] > svg path {
+	fill: currentColor;
+}
+
 .sidebarNavBtn .sidebarQuickActionLabel {
 	min-width: 0;
 	overflow: hidden;
@@ -146,23 +151,4 @@
 	white-space: nowrap;
 	font-weight: var(--font-normal);
 	line-height: 1;
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"] {
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	margin-bottom: 2px;
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"] > svg {
-	color: var(--text-inverse);
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"]:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"]:hover > svg {
-	color: var(--text-inverse);
 }
