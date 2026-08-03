@@ -158,7 +158,14 @@ export function QuickNoteWindow() {
 
 	const chooseTarget = useCallback((target: QuickNoteTarget) => {
 		setTargetValue(target.value);
-		window.setTimeout(() => focusEditor(editorRef.current), REFOCUS_DELAY_MS);
+		setConfirmation("");
+		if (focusTimerRef.current !== null) {
+			window.clearTimeout(focusTimerRef.current);
+		}
+		focusTimerRef.current = window.setTimeout(
+			() => focusEditor(editorRef.current),
+			REFOCUS_DELAY_MS,
+		);
 	}, []);
 
 	useEffect(() => {
@@ -288,6 +295,11 @@ export function QuickNoteWindow() {
 
 	const handleDraftChange = useCallback((nextMarkdown: string) => {
 		setDraft(nextMarkdown);
+		// Only clear on real input — empty updates after save must not wipe
+		// the "Saved to …" confirmation.
+		if (nextMarkdown.trim()) {
+			setConfirmation("");
+		}
 	}, []);
 
 	return (

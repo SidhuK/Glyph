@@ -152,7 +152,9 @@ export function ExternalMarkdownWindow() {
 		if (!path) return;
 		const saved = await saveNow();
 		if (!saved && textRef.current !== savedTextRef.current) return;
-		void emitTo("main", "app:open_note", { path }).catch(() => {});
+		void emitTo("main", "app:open_note", { path }).catch((cause) => {
+			setError(extractErrorMessage(cause));
+		});
 	}, [saveNow]);
 
 	useTauriEvent("menu:app_command", (payload) => {

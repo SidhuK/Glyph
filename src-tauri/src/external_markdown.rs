@@ -286,7 +286,7 @@ pub async fn external_markdown_write(
 }
 
 #[tauri::command]
-pub fn external_markdown_reveal(
+pub async fn external_markdown_reveal(
     window: tauri::WebviewWindow,
     state: State<'_, ExternalMarkdownState>,
 ) -> Result<(), String> {
@@ -297,7 +297,11 @@ pub fn external_markdown_reveal(
         .get(window.label())
         .map(|entry| PathBuf::from(&entry.abs_path))
         .ok_or_else(|| "external markdown file is not registered for this window".to_string())?;
-    crate::space_fs::read_write::paths::reveal_file_manager_path(&path)
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::space_fs::read_write::paths::reveal_file_manager_path(&path)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]

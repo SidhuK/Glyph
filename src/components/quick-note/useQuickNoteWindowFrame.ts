@@ -109,13 +109,28 @@ export function useQuickNoteWindowFrame({
 						HEIGHT_MATCH_TOLERANCE_PX;
 				if (isAutoResize) return;
 				manualSizeRef.current = true;
-				const previous = storedFrameRef.current ?? { x: 0, y: 0 };
-				storedFrameRef.current = {
-					...previous,
-					width: window.innerWidth,
-					height: window.innerHeight,
-				};
-				writeStoredFrame(storedFrameRef.current);
+				void (async () => {
+					let x = storedFrameRef.current?.x;
+					let y = storedFrameRef.current?.y;
+					// Never invent (0, 0) — that pins the next launch to the
+					// desktop origin when the user resizes before moving.
+					if (!isFiniteNumber(x) || !isFiniteNumber(y)) {
+						try {
+							const position = await appWindow.outerPosition();
+							x = position.x;
+							y = position.y;
+						} catch {
+							return;
+						}
+					}
+					storedFrameRef.current = {
+						x,
+						y,
+						width: window.innerWidth,
+						height: window.innerHeight,
+					};
+					writeStoredFrame(storedFrameRef.current);
+				})();
 			}),
 			appWindow.onFocusChanged(({ payload }) => setWindowFocused(payload)),
 		];
@@ -134,8 +149,10 @@ export function useQuickNoteWindowFrame({
 		const fitWindowToContent = () => {
 			if (manualSizeRef.current) return;
 			const chromeHeight = window.innerHeight - editorAreaElement.clientHeight;
+			// Measure content, not the scroll host — scrollHeight of a host that
+			// already fits content equals clientHeight, so the window never shrinks.
 			const nextHeight = clampWindowHeight(
-				chromeHeight + editorAreaElement.scrollHeight,
+				chromeHeight + contentElement.scrollHeight,
 			);
 			if (
 				Math.abs(nextHeight - window.innerHeight) <= HEIGHT_MATCH_TOLERANCE_PX
