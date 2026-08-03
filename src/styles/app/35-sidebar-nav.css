@@ -141,7 +141,7 @@
 }
 
 .sidebarNavBtn[data-kind="new-note"] > svg path {
-	fill: currentColor;
+	fill: currentcolor;
 }
 
 .sidebarNavBtn .sidebarQuickActionLabel {
