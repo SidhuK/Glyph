@@ -1,15 +1,15 @@
 {
-  "version": "0.8.11",
-  "notes": "## What's Changed\n* Fix blank external markdown and quick note editors (#442) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/442\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.10...v0.8.11",
-  "pub_date": "2026-07-29T03:21:02.588Z",
+  "version": "0.8.12",
+  "notes": "## What's Changed\n* Add toggle for rich editor heading prefixes by @SidhuK in https://github.com/SidhuK/Glyph/pull/443\n* Fix daily note rollover panic when moving tasks (#444) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/444\n* Improve database board and list drag-and-drop polish (#445) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/445\n* Batch repeated filesystem, indexing, and UI work by @SidhuK in https://github.com/SidhuK/Glyph/pull/446\n* UI cleanups: rebuild calendar palette without react-day-picker by @SidhuK in https://github.com/SidhuK/Glyph/pull/447\n* Make AI note references openable (#448) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/448\n* Fix shared drag-and-drop handling (#449) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/449\n* Add external link preview cards in the editor (#457) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/457\n* readme updated by @SidhuK in https://github.com/SidhuK/Glyph/pull/458\n* Polish Quick Note and external markdown floating editors (#459) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/459\n* Restyle new note button with accent-filled icon (#460) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/460\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.11...v0.8.12",
+  "pub_date": "2026-08-03T09:34:38.723Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpweW45S1VKQ3NaN1pmSVdGejkwQUlkYXdnemE5alpyYms1MDg1Q0xaOUVCa3RtY1BNTENEdW9yL3dDZG15S280WUJjZUs5RUw5MGtRaWJRcVJ4eEFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1Mjk1MjU3CWZpbGU6R2x5cGguYXBwLnRhci5negpwcXhpRENJR0F2U256dFJmNklKQ1UrVEpqT2hLa0paNGJHUzgzUDJTck55TlYzZkdSb0hOZmRyMXkrclUvVitKYjlYQitJV0Rla3F6dlNRVkpGaVRDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDk2SUgxUFlkYlJjSUt5eWIvcjZWVzE1M08vRXgvS3lYUXNWNFlBczVQOVhVcTdsTjJvWHRXSXZXM1lLT21xdWJ1NlQvc3Y1eThibERNNDVxd2hHZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1NzQ5NjczCWZpbGU6R2x5cGguYXBwLnRhci5negpuZWdiMkxDMHRPN0R3SHJPY052L0FlTnVoZkJSQ0V3b3BRNG9jdnlETVluZFJURjEwVWZ2TUxWTEdDclI4WmtFV2hvUXc3NnFYWGtRYnFOZks4ZC9CUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.12/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHpweW45S1VKQ3NaN1pmSVdGejkwQUlkYXdnemE5alpyYms1MDg1Q0xaOUVCa3RtY1BNTENEdW9yL3dDZG15S280WUJjZUs5RUw5MGtRaWJRcVJ4eEFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1Mjk1MjU3CWZpbGU6R2x5cGguYXBwLnRhci5negpwcXhpRENJR0F2U256dFJmNklKQ1UrVEpqT2hLa0paNGJHUzgzUDJTck55TlYzZkdSb0hOZmRyMXkrclUvVitKYjlYQitJV0Rla3F6dlNRVkpGaVRDUT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.11/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDk2SUgxUFlkYlJjSUt5eWIvcjZWVzE1M08vRXgvS3lYUXNWNFlBczVQOVhVcTdsTjJvWHRXSXZXM1lLT21xdWJ1NlQvc3Y1eThibERNNDVxd2hHZ2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1NzQ5NjczCWZpbGU6R2x5cGguYXBwLnRhci5negpuZWdiMkxDMHRPN0R3SHJPY052L0FlTnVoZkJSQ0V3b3BRNG9jdnlETVluZFJURjEwVWZ2TUxWTEdDclI4WmtFV2hvUXc3NnFYWGtRYnFOZks4ZC9CUT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.12/Glyph_aarch64.app.tar.gz"
     }
   }
 }
