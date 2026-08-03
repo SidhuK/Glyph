@@ -6,10 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { type ComponentType, useMemo, useState } from "react";
 import { Calendar, Command, X } from "../Icons";
-import {
-	type IconProps,
-	withDefaultIconSize,
-} from "../Icons/NavigationIcons";
+import { type IconProps, withDefaultIconSize } from "../Icons/NavigationIcons";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 
