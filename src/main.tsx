@@ -1,3 +1,4 @@
+import { QueryClientProvider } from "@tanstack/react-query";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
@@ -24,6 +25,7 @@ import {
 	applyEditorHeadingPalette,
 	isHeadingPaletteId,
 } from "./lib/headingPalettes";
+import { queryClient } from "./lib/queryClient";
 import type {
 	UiAccent,
 	UiCornerRadiusStyle,
@@ -344,7 +346,9 @@ void initI18n()
 						<LanguageBridge />
 						<ThemeAndTypographyBridge />
 						{isQuickNoteWindow ? (
-							<QuickNoteWindow />
+							<QueryClientProvider client={queryClient}>
+								<QuickNoteWindow />
+							</QueryClientProvider>
 						) : isExternalMarkdownWindow ? (
 							<ExternalMarkdownWindow />
 						) : (

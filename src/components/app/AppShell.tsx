@@ -554,11 +554,11 @@ export function AppShell() {
 		});
 	}, [setError]);
 
-	useTauriEvent("quick-note:open_note", (payload) => {
+	useTauriEvent("app:open_note", (payload) => {
 		void openWorkspaceFile(payload.path).catch((cause) => {
-			console.error("Failed to open quick note", cause);
+			console.error("Failed to open note requested by another window", cause);
 			const message = cause instanceof Error ? cause.message : String(cause);
-			toast.error("Could not open quick note", { description: message });
+			toast.error("Could not open note", { description: message });
 		});
 	});
 

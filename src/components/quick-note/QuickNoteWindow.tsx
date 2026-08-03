@@ -1,12 +1,16 @@
-import { emit } from "@tauri-apps/api/event";
+import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { emitTo } from "@tauri-apps/api/event";
 import type { Editor } from "@tiptap/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import { isMissingFileError } from "../../lib/fsErrors";
-import { loadSettings, reloadFromDisk } from "../../lib/settings";
+import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { basename, parentDir } from "../../utils/path";
+import { countWords } from "../../lib/textStats";
+import { basename } from "../../utils/path";
 import { FileText, Save } from "../Icons";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { createEditorShortcutsExtension } from "../editor/extensions/editorShortcuts";
@@ -15,8 +19,15 @@ import {
 	type QuickNoteTarget,
 	QuickNoteTargetBreadcrumbs,
 } from "./QuickNoteTargetBreadcrumbs";
+import {
+	QUICK_NOTE_TARGET_SUMMARY_KEY,
+	QuickNoteTargetSummary,
+} from "./QuickNoteTargetSummary";
+import { useQuickNoteWindowFrame } from "./useQuickNoteWindowFrame";
 
 const QUICK_NOTE_PLACEHOLDER = "Write a quick note or press / for commands";
+const SAVE_CONFIRMATION_MS = 1600;
+const REFOCUS_DELAY_MS = 20;
 
 function pad(value: number): string {
 	return value.toString().padStart(2, "0");
@@ -39,11 +50,6 @@ function appendMarkdown(existing: string, entry: string): string {
 	const trimmedExisting = existing.trimEnd();
 	if (!trimmedExisting) return `${entry}\n`;
 	return `${trimmedExisting}\n\n${entry}\n`;
-}
-
-async function appendQuickNote(folder: string, text: string): Promise<string> {
-	const path = quickNotePath(folder);
-	return appendQuickNoteToPath(path, text);
 }
 
 async function appendQuickNoteToPath(
@@ -80,7 +86,6 @@ function quickNoteTarget(folder: string): QuickNoteTarget {
 		value: QUICK_NOTE_TARGET_VALUE,
 		path,
 		label: "Today's quick note",
-		detail: parentDir(path) || "Space root",
 	};
 }
 
@@ -102,9 +107,15 @@ export function QuickNoteWindow() {
 	const [folder, setFolder] = useState("Quick Notes");
 	const [draft, setDraft] = useState("");
 	const [hasText, setHasText] = useState(false);
-	const [status, setStatus] = useState("");
+	const [error, setError] = useState("");
+	const [confirmation, setConfirmation] = useState("");
 	const [saving, setSaving] = useState(false);
 	const [targetValue, setTargetValue] = useState(QUICK_NOTE_TARGET_VALUE);
+	const [editorAreaElement, setEditorAreaElement] =
+		useState<HTMLDivElement | null>(null);
+	const [contentElement, setContentElement] = useState<HTMLElement | null>(
+		null,
+	);
 	const editorRef = useRef<Editor | null>(null);
 	const unsubscribeRef = useRef<(() => void) | null>(null);
 	const shortcutsRef = useRef({
@@ -113,8 +124,13 @@ export function QuickNoteWindow() {
 		},
 		onSave: () => {},
 	});
-	const statusTimerRef = useRef<number | null>(null);
+	const confirmationTimerRef = useRef<number | null>(null);
 	const focusTimerRef = useRef<number | null>(null);
+	const queryClient = useQueryClient();
+	const { windowFocused } = useQuickNoteWindowFrame({
+		editorAreaElement,
+		contentElement,
+	});
 
 	const todayQuickNotePath = useMemo(() => quickNotePath(folder), [folder]);
 	const selectedTarget = useMemo((): QuickNoteTarget => {
@@ -125,7 +141,6 @@ export function QuickNoteWindow() {
 			value: targetValue,
 			path: targetValue,
 			label: savedLabel(targetValue),
-			detail: parentDir(targetValue) || "Space root",
 		};
 	}, [folder, targetValue]);
 	const isMac =
@@ -133,6 +148,8 @@ export function QuickNoteWindow() {
 		navigator.userAgent.includes("Mac");
 	const shortcutLabel = isMac ? "⌘+Enter" : "Ctrl+Enter";
 	const shortcutModifierLabel = isMac ? "⌘" : "Ctrl";
+	const wordCount = countWords(draft);
+	const charCount = draft.trim().length;
 
 	const readDraft = useCallback(
 		() => editorRef.current?.getMarkdown().trim() ?? "",
@@ -141,28 +158,24 @@ export function QuickNoteWindow() {
 
 	const chooseTarget = useCallback((target: QuickNoteTarget) => {
 		setTargetValue(target.value);
-		window.setTimeout(() => focusEditor(editorRef.current), 20);
-	}, []);
-
-	const refreshSettings = useCallback(async (withReload = false) => {
-		if (withReload) await reloadFromDisk();
-		const settings = await loadSettings();
-		const nextFolder = settings.quickNotes.folder;
-		setFolder(nextFolder);
-		return nextFolder;
+		window.setTimeout(() => focusEditor(editorRef.current), REFOCUS_DELAY_MS);
 	}, []);
 
 	useEffect(() => {
-		void refreshSettings().catch((cause) => {
-			console.error("Failed to load quick note settings", cause);
-		});
-	}, [refreshSettings]);
+		void loadSettings()
+			.then((settings) => {
+				setFolder(settings.quickNotes.folder);
+			})
+			.catch((cause) => {
+				console.error("Failed to load quick note settings", cause);
+			});
+	}, []);
 
 	useEffect(() => {
 		return () => {
 			unsubscribeRef.current?.();
-			if (statusTimerRef.current !== null) {
-				window.clearTimeout(statusTimerRef.current);
+			if (confirmationTimerRef.current !== null) {
+				window.clearTimeout(confirmationTimerRef.current);
 			}
 			if (focusTimerRef.current !== null) {
 				window.clearTimeout(focusTimerRef.current);
@@ -185,34 +198,49 @@ export function QuickNoteWindow() {
 		const text = readDraft();
 		if (!text || saving) return;
 		setSaving(true);
-		setStatus("");
+		setError("");
 		try {
-			const path =
+			const path = await appendQuickNoteToPath(
 				selectedTarget.value === QUICK_NOTE_TARGET_VALUE
-					? await appendQuickNote(folder, text)
-					: await appendQuickNoteToPath(selectedTarget.path, text);
+					? quickNotePath(folder)
+					: selectedTarget.path,
+				text,
+			);
 			clearDraft(editorRef.current);
 			setDraft("");
 			setHasText(false);
-			setStatus(`Saved ${savedLabel(path)}`);
-			void emit("quick-note:open_note", { path }).catch(() => {});
-			if (statusTimerRef.current !== null) {
-				window.clearTimeout(statusTimerRef.current);
+			setConfirmation(savedLabel(path));
+			void emitTo("main", "app:open_note", { path }).catch(() => {});
+			void queryClient.invalidateQueries({
+				queryKey: [QUICK_NOTE_TARGET_SUMMARY_KEY],
+			});
+			if (confirmationTimerRef.current !== null) {
+				window.clearTimeout(confirmationTimerRef.current);
 			}
 			if (focusTimerRef.current !== null) {
 				window.clearTimeout(focusTimerRef.current);
 			}
-			statusTimerRef.current = window.setTimeout(() => setStatus(""), 1600);
+			confirmationTimerRef.current = window.setTimeout(
+				() => setConfirmation(""),
+				SAVE_CONFIRMATION_MS,
+			);
 			focusTimerRef.current = window.setTimeout(
 				() => focusEditor(editorRef.current),
-				20,
+				REFOCUS_DELAY_MS,
 			);
 		} catch (cause) {
-			setStatus(cause instanceof Error ? cause.message : String(cause));
+			setError(cause instanceof Error ? cause.message : String(cause));
 		} finally {
 			setSaving(false);
 		}
-	}, [folder, readDraft, saving, selectedTarget.path, selectedTarget.value]);
+	}, [
+		folder,
+		queryClient,
+		readDraft,
+		saving,
+		selectedTarget.path,
+		selectedTarget.value,
+	]);
 
 	shortcutsRef.current = {
 		onEscape: () => {
@@ -232,50 +260,42 @@ export function QuickNoteWindow() {
 		[shortcutExtension],
 	);
 
-	const handleEditorReady = useCallback((editor: Editor | null) => {
-		unsubscribeRef.current?.();
-		unsubscribeRef.current = null;
-		editorRef.current = editor;
-		if (!editor) {
-			setHasText(false);
-			return;
-		}
-		focusEditor(editor);
-		const syncHasText = () => {
-			const nextHasText = editorHasText(editor);
-			setHasText((current) =>
-				current === nextHasText ? current : nextHasText,
-			);
-		};
-		syncHasText();
-		editor.on("update", syncHasText);
-		unsubscribeRef.current = () => {
-			editor.off("update", syncHasText);
-		};
-	}, []);
+	const handleEditorReady = useCallback(
+		(editor: Editor | null, contentRoot: HTMLElement | null) => {
+			unsubscribeRef.current?.();
+			unsubscribeRef.current = null;
+			editorRef.current = editor;
+			setContentElement(contentRoot);
+			if (!editor) {
+				setHasText(false);
+				return;
+			}
+			focusEditor(editor);
+			const syncHasText = () => {
+				const nextHasText = editorHasText(editor);
+				setHasText((current) =>
+					current === nextHasText ? current : nextHasText,
+				);
+			};
+			syncHasText();
+			editor.on("update", syncHasText);
+			unsubscribeRef.current = () => {
+				editor.off("update", syncHasText);
+			};
+		},
+		[],
+	);
 
 	const handleDraftChange = useCallback((nextMarkdown: string) => {
 		setDraft(nextMarkdown);
 	}, []);
 
 	return (
-		<div className="quickNoteRoot">
-			<div className="quickNoteDragHandle" data-tauri-drag-region />
-			<div className="quickNoteEditorArea">
-				<NoteInlineEditor
-					markdown={draft}
-					relPath={selectedTarget.path}
-					mode="rich"
-					chrome="minimal"
-					deferHeavyFeatures
-					additionalExtensions={editorAdditionalExtensions}
-					placeholder={QUICK_NOTE_PLACEHOLDER}
-					pasteMarkdownBehavior="smart-markdown"
-					onChange={handleDraftChange}
-					onEditorReady={handleEditorReady}
-				/>
-			</div>
-			<div className="quickNoteEditorChrome">
+		<div
+			className="quickNoteRoot"
+			data-window-focused={windowFocused ? "true" : "false"}
+		>
+			<header className="quickNoteHeader" data-tauri-drag-region>
 				<div className="quickNoteTargetGroup">
 					<button
 						type="button"
@@ -293,37 +313,79 @@ export function QuickNoteWindow() {
 						onSelectTarget={chooseTarget}
 					/>
 				</div>
-				<div className="quickNoteActionGroup">
-					<div className="quickNoteStatus" aria-live="polite">
-						{status}
-					</div>
-					<button
-						type="button"
-						className="quickNoteSaveButton"
-						aria-label={saving ? "Saving quick note" : "Save quick note"}
-						title={
-							saving
-								? "Saving quick note"
-								: `Save quick note (${shortcutLabel})`
-						}
-						disabled={saving || !hasText}
-						onClick={() => void save()}
-					>
-						<Save size="var(--icon-lg)" />
-						<span className="quickNoteSaveLabel">Save</span>
-						<span className="commandPaletteShortcut" aria-hidden="true">
-							<kbd>
-								<span className="commandPaletteShortcutCombo">
-									<span className="commandPaletteShortcutPart">
-										{shortcutModifierLabel}
-									</span>
-									<span className="commandPaletteShortcutPart">↵</span>
-								</span>
-							</kbd>
-						</span>
-					</button>
-				</div>
+				<QuickNoteTargetSummary path={selectedTarget.path} />
+			</header>
+			<div className="quickNoteEditorArea" ref={setEditorAreaElement}>
+				<NoteInlineEditor
+					markdown={draft}
+					relPath={selectedTarget.path}
+					mode="rich"
+					chrome="minimal"
+					deferHeavyFeatures
+					additionalExtensions={editorAdditionalExtensions}
+					placeholder={QUICK_NOTE_PLACEHOLDER}
+					pasteMarkdownBehavior="smart-markdown"
+					onChange={handleDraftChange}
+					onEditorReady={handleEditorReady}
+				/>
 			</div>
+			<footer className="quickNoteFooter">
+				<div className="quickNoteFooterStatus" aria-live="polite">
+					{error ? (
+						<span className="quickNoteFooterError">{error}</span>
+					) : hasText ? (
+						<span>
+							{wordCount === 1 ? "1 word" : `${wordCount} words`}
+							{" · "}
+							{charCount === 1 ? "1 character" : `${charCount} characters`}
+						</span>
+					) : (
+						<span className="quickNoteFooterHint">
+							{shortcutLabel} to save · Esc to dismiss
+						</span>
+					)}
+				</div>
+				<button
+					type="button"
+					className="quickNoteSaveButton"
+					data-state={confirmation ? "saved" : undefined}
+					aria-label={saving ? "Saving quick note" : "Save quick note"}
+					title={
+						saving ? "Saving quick note" : `Save quick note (${shortcutLabel})`
+					}
+					disabled={saving || (!hasText && !confirmation)}
+					onClick={() => void save()}
+				>
+					{confirmation ? (
+						<>
+							<HugeiconsIcon
+								icon={CheckmarkCircle02Icon}
+								size="var(--icon-lg)"
+								strokeWidth={1.6}
+								aria-hidden="true"
+							/>
+							<span className="quickNoteSaveLabel">
+								Saved to {confirmation}
+							</span>
+						</>
+					) : (
+						<>
+							<Save size="var(--icon-lg)" />
+							<span className="quickNoteSaveLabel">Save</span>
+							<span className="commandPaletteShortcut" aria-hidden="true">
+								<kbd>
+									<span className="commandPaletteShortcutCombo">
+										<span className="commandPaletteShortcutPart">
+											{shortcutModifierLabel}
+										</span>
+										<span className="commandPaletteShortcutPart">↵</span>
+									</span>
+								</kbd>
+							</span>
+						</>
+					)}
+				</button>
+			</footer>
 		</div>
 	);
 }

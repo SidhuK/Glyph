@@ -20,7 +20,7 @@ import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 type TauriEventMap = {
 	"menu:app_command": { command_id: string };
 	"menu:open_recent_space": { path: string };
-	"quick-note:open_note": { path: string };
+	"app:open_note": { path: string };
 	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };

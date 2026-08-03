@@ -370,9 +370,13 @@ export function useNoteEditor({
 		listCollapseLoadVersionRef.current += 1;
 		listCollapseSaveRef.current = listCollapseSaveRef.current.then(() =>
 			invoke("list_collapse_state_set", { path, branches }).catch((error) => {
+				const message = error instanceof Error ? error.message : String(error);
+				// Auxiliary windows without a private space session inherit main;
+				// if even that is unavailable, collapse is session-only — no toast.
+				if (message.startsWith("no space session for window")) return;
 				console.error("Failed to save list collapse state", error);
 				toast.error(i18n.t("editor:listCollapse.saveFailed"), {
-					description: error instanceof Error ? error.message : String(error),
+					description: message,
 				});
 			}),
 		);
@@ -799,9 +803,12 @@ export function useNoteEditor({
 				if (cancelled || loadVersion !== listCollapseLoadVersionRef.current) {
 					return;
 				}
+				const message = error instanceof Error ? error.message : String(error);
+				// No space session means collapse state simply isn't available here.
+				if (message.startsWith("no space session for window")) return;
 				console.error("Failed to load list collapse state", error);
 				toast.error(i18n.t("editor:listCollapse.loadFailed"), {
-					description: error instanceof Error ? error.message : String(error),
+					description: message,
 				});
 			});
 		return () => {
