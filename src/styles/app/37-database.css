@@ -212,20 +212,13 @@
 	color: var(--text-primary);
 }
 
-.databaseToolbarChip.is-accent {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--border-strong)
-	);
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+/* New note: filled accent icon */
+.databaseToolbarChip[data-kind="new-note"] > svg {
+	color: var(--interactive-accent);
 }
 
-.databaseToolbarChip.is-accent:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
+.databaseToolbarChip[data-kind="new-note"] > svg path {
+	fill: currentcolor;
 }
 
 .databaseToolbarGroupBy {

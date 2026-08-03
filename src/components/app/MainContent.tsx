@@ -1,3 +1,5 @@
+import { CursorAddSelection02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	Activity,
@@ -45,7 +47,7 @@ import type { FsEntry } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
 import { cn } from "../../lib/utils";
-import { Calendar, FileText } from "../Icons";
+import { Calendar } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
@@ -104,7 +106,13 @@ function ContextualEmptyState({
 		if (!onboarding.createdFirstNote) {
 			t.push({
 				key: "note",
-				icon: <FileText size="var(--icon-lg)" />,
+				icon: (
+					<HugeiconsIcon
+						icon={CursorAddSelection02Icon}
+						size="var(--icon-lg)"
+						strokeWidth={0.9}
+					/>
+				),
 				text: "Create your first note",
 				action: "New note",
 				onClick: onCreateNote,

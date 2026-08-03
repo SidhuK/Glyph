@@ -1,4 +1,8 @@
-import { LibraryIcon, NoteIcon, StarIcon } from "@hugeicons/core-free-icons";
+import {
+	CursorAddSelection02Icon,
+	LibraryIcon,
+	StarIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -181,13 +185,14 @@ export function CollectionTopBar({
 					</Button>
 					<button
 						type="button"
-						className="databaseToolbarChip is-accent"
+						className="databaseToolbarChip"
+						data-kind="new-note"
 						onClick={() => void actions.handleCreateRow()}
 						title="New note"
 					>
 						<HugeiconsIcon
-							icon={NoteIcon}
-							size="var(--icon-md)"
+							icon={CursorAddSelection02Icon}
+							size="var(--icon-lg)"
 							strokeWidth={0.9}
 						/>
 						New Note

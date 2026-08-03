@@ -7,6 +7,7 @@ import {
 	CalendarAdd01Icon,
 	ChartRelationshipIcon,
 	ColorsIcon,
+	CursorAddSelection02Icon,
 	CursorInWindowIcon,
 	FileImportIcon,
 	Folder01Icon,
@@ -22,7 +23,6 @@ import {
 	Link01Icon,
 	MoveIcon,
 	NoteIcon,
-	PencilEdit02Icon,
 	PinIcon,
 	PinOffIcon,
 	SearchIcon,
@@ -324,7 +324,7 @@ export function useAppCommands({
 				id: "new-note",
 				icon: (
 					<HugeiconsIcon
-						icon={PencilEdit02Icon}
+						icon={CursorAddSelection02Icon}
 						size="var(--icon-lg)"
 						strokeWidth={0.9}
 					/>
