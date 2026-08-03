@@ -1,11 +1,27 @@
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import {
+	CheckmarkCircle02Icon,
+	CursorAddSelection02Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { type ComponentType, useMemo, useState } from "react";
-import { Calendar, Command, FileText, X } from "../Icons";
-import type { IconProps } from "../Icons/NavigationIcons";
+import { Calendar, Command, X } from "../Icons";
+import {
+	type IconProps,
+	withDefaultIconSize,
+} from "../Icons/NavigationIcons";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
+
+function CreateNoteIcon(props: IconProps) {
+	return (
+		<HugeiconsIcon
+			icon={CursorAddSelection02Icon}
+			strokeWidth={0.9}
+			{...withDefaultIconSize(props)}
+		/>
+	);
+}
 
 interface GettingStartedPaneProps {
 	commandShortcutParts: string[];
@@ -35,7 +51,7 @@ function buildSteps(showDailyNote: boolean): Step[] {
 			title: "Create your first note",
 			description:
 				"Start writing here, and when you're ready you can also point Glyph at an existing folder of Markdown notes. Your files stay as plain .md in your folder.",
-			icon: FileText,
+			icon: CreateNoteIcon,
 		},
 		{
 			key: "command",
