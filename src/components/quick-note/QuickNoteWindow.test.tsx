@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickNoteWindow } from "./QuickNoteWindow";
 
 const {
-	emitMock,
+	emitToMock,
 	invokeMock,
 	loadSettingsMock,
 	editorReadyCallbackRef,
@@ -40,7 +41,7 @@ const {
 	};
 
 	return {
-		emitMock: vi.fn(() => Promise.resolve()),
+		emitToMock: vi.fn(() => Promise.resolve()),
 		invokeMock: vi.fn(),
 		loadSettingsMock: vi.fn(() =>
 			Promise.resolve({
@@ -77,12 +78,11 @@ const {
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 vi.mock("@tauri-apps/api/event", () => ({
-	emit: emitMock,
+	emitTo: emitToMock,
 }));
 
 vi.mock("../../lib/settings", () => ({
 	loadSettings: loadSettingsMock,
-	reloadFromDisk: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("../../lib/tauri", () => ({
@@ -151,9 +151,22 @@ vi.mock("./QuickNoteTargetBreadcrumbs", () => ({
 	QuickNoteTargetBreadcrumbs: () => null,
 }));
 
+vi.mock("./QuickNoteTargetSummary", () => ({
+	QUICK_NOTE_TARGET_SUMMARY_KEY: "quick-note-target-summary",
+	QuickNoteTargetSummary: () => null,
+}));
+
+vi.mock("./useQuickNoteWindowFrame", () => ({
+	useQuickNoteWindowFrame: () => ({ windowFocused: true }),
+}));
+
 vi.mock("../Icons", () => ({
 	FileText: () => null,
 	Save: () => null,
+}));
+
+vi.mock("@hugeicons/react", () => ({
+	HugeiconsIcon: () => null,
 }));
 
 describe("QuickNoteWindow", () => {
@@ -171,7 +184,7 @@ describe("QuickNoteWindow", () => {
 				__quickNoteAdditionalExtensionsChanged?: boolean;
 			}
 		).__quickNoteAdditionalExtensionsChanged = false;
-		emitMock.mockClear();
+		emitToMock.mockClear();
 		invokeMock.mockReset();
 		loadSettingsMock.mockClear();
 		invokeMock.mockImplementation((command: string) => {
@@ -193,8 +206,15 @@ describe("QuickNoteWindow", () => {
 	});
 
 	async function renderWindow() {
+		const queryClient = new QueryClient({
+			defaultOptions: { queries: { retry: false } },
+		});
 		await act(async () => {
-			root.render(<QuickNoteWindow />);
+			root.render(
+				<QueryClientProvider client={queryClient}>
+					<QuickNoteWindow />
+				</QueryClientProvider>,
+			);
 		});
 		await act(async () => {
 			editorReadyCallbackRef.current?.(mockEditor, null);
@@ -282,8 +302,9 @@ describe("QuickNoteWindow", () => {
 		expect(mockEditor.commands.setContent).toHaveBeenCalledWith("", {
 			contentType: "markdown",
 		});
-		expect(emitMock).toHaveBeenCalledWith(
-			"quick-note:open_note",
+		expect(emitToMock).toHaveBeenCalledWith(
+			"main",
+			"app:open_note",
 			expect.objectContaining({ path: expect.stringContaining("Quick Note") }),
 		);
 	});

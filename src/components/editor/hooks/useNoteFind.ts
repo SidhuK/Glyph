@@ -45,6 +45,23 @@ function selectedTextForQuery(text: string): string {
 	return normalized;
 }
 
+/**
+ * The editor is embedded in surfaces that scroll at different levels (the note
+ * body, the external markdown window, the quick note panel), so the scroll host
+ * is resolved from the DOM instead of assuming one container.
+ */
+function scrollHostFor(
+	element: Element | null | undefined,
+): HTMLElement | null {
+	let current = element?.parentElement ?? null;
+	while (current) {
+		const overflowY = window.getComputedStyle(current).overflowY;
+		if (overflowY === "auto" || overflowY === "scroll") return current;
+		current = current.parentElement;
+	}
+	return null;
+}
+
 function centerElementInScrollHost(element: Element, scrollHost: HTMLElement) {
 	const elementRect = element.getBoundingClientRect();
 	const hostRect = scrollHost.getBoundingClientRect();
@@ -57,9 +74,7 @@ function centerElementInScrollHost(element: Element, scrollHost: HTMLElement) {
 }
 
 function centerEditorPosition(editor: Editor, pos: number) {
-	const scrollHost = editor.view.dom.closest(
-		".rfNodeNoteEditorBody",
-	) as HTMLElement | null;
+	const scrollHost = scrollHostFor(editor.view.dom);
 	if (!scrollHost) return;
 
 	try {
@@ -125,9 +140,7 @@ export function useNoteFind({
 				const activeMatch = tiptapHostRef.current?.querySelector(
 					".noteSearchMatchActive",
 				);
-				const scrollHost = tiptapHostRef.current?.closest(
-					".rfNodeNoteEditorBody",
-				) as HTMLElement | null;
+				const scrollHost = scrollHostFor(tiptapHostRef.current);
 				if (activeMatch && scrollHost) {
 					centerElementInScrollHost(activeMatch, scrollHost);
 				}
@@ -287,9 +300,7 @@ export function useNoteFind({
 		if (!findOpen || !findQuery || !findMatches.length) return;
 		if (mode === "plain") return;
 		const frame = requestAnimationFrame(() => {
-			const scrollHost = tiptapHostRef.current?.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
+			const scrollHost = scrollHostFor(tiptapHostRef.current);
 			const activeMatch = tiptapHostRef.current?.querySelector(
 				".noteSearchMatchActive",
 			);

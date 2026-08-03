@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type FsEntry, invoke } from "../../lib/tauri";
-import { parentDir } from "../../utils/path";
-import { ChevronRight } from "../Icons";
+import { ChevronDown, ChevronRight } from "../Icons";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -19,13 +18,11 @@ export interface QuickNoteTarget {
 	value: string;
 	path: string;
 	label: string;
-	detail: string;
 }
 
 interface BreadcrumbPart {
 	label: string;
 	path: string;
-	kind: "folder" | "file";
 }
 
 interface QuickNoteTargetBreadcrumbsProps {
@@ -46,10 +43,6 @@ function stripFileExtension(name: string) {
 function savedLabel(path: string) {
 	const name = path.split("/").filter(Boolean).pop() ?? path;
 	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
-}
-
-function targetDetail(path: string) {
-	return parentDir(path) || "Space root";
 }
 
 function sortTargetEntries(entries: FsEntry[]) {
@@ -73,7 +66,7 @@ function breadcrumbPartsForTarget(
 	todayQuickNotePath: string,
 ): BreadcrumbPart[] {
 	return [
-		{ label: "Space", path: "", kind: "folder" },
+		{ label: "Space", path: "" },
 		...path
 			.split("/")
 			.filter(Boolean)
@@ -88,11 +81,7 @@ function breadcrumbPartsForTarget(
 				) {
 					label = "Today's quick note";
 				}
-				return {
-					label,
-					path: segmentPath,
-					kind: isFile ? "file" : "folder",
-				};
+				return { label, path: segmentPath };
 			}),
 	];
 }
@@ -102,7 +91,6 @@ function fileTarget(path: string): QuickNoteTarget {
 		value: path,
 		path,
 		label: savedLabel(path),
-		detail: targetDetail(path),
 	};
 }
 
@@ -111,7 +99,6 @@ function todayQuickNoteTarget(todayQuickNotePath: string): QuickNoteTarget {
 		value: QUICK_NOTE_TARGET_VALUE,
 		path: todayQuickNotePath,
 		label: "Today's quick note",
-		detail: targetDetail(todayQuickNotePath),
 	};
 }
 
@@ -189,6 +176,9 @@ function TargetBreadcrumbEntryMenu({
 	dirPath,
 	entries,
 	loading,
+	label,
+	showSeparator,
+	isCurrent,
 	quickNotesFolder,
 	todayQuickNotePath,
 	selectedTargetValue,
@@ -201,6 +191,9 @@ function TargetBreadcrumbEntryMenu({
 	dirPath: string;
 	entries: FsEntry[];
 	loading: boolean;
+	label: string;
+	showSeparator: boolean;
+	isCurrent: boolean;
 	quickNotesFolder: string;
 	todayQuickNotePath: string;
 	selectedTargetValue: string;
@@ -222,19 +215,31 @@ function TargetBreadcrumbEntryMenu({
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
-					className="quickNoteTargetSepButton"
-					aria-label={`Browse ${menuTitleForDir(dirPath)}`}
+					className="quickNoteTargetButton"
+					aria-label={`Change destination — browse ${menuTitleForDir(dirPath)}`}
+					aria-current={isCurrent ? "page" : undefined}
+					data-current={isCurrent ? "true" : undefined}
 				>
-					<ChevronRight
-						size="var(--icon-xs)"
-						className="quickNoteTargetSep"
-						aria-hidden="true"
-					/>
+					{showSeparator ? (
+						<ChevronRight
+							size="var(--icon-xs)"
+							className="quickNoteTargetSep"
+							aria-hidden="true"
+						/>
+					) : null}
+					<span className="quickNoteTargetLabel">{label}</span>
+					{isCurrent ? (
+						<ChevronDown
+							size="var(--icon-xs)"
+							className="quickNoteTargetCaret"
+							aria-hidden="true"
+						/>
+					) : null}
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="start"
-				side="top"
+				side="bottom"
 				className="quickNoteTargetMenu"
 			>
 				<DropdownMenuLabel className="quickNoteTargetMenuLabel">
@@ -338,7 +343,6 @@ export function QuickNoteTargetBreadcrumbs({
 	return (
 		<nav
 			className="quickNoteTargetBreadcrumb"
-			data-open="true"
 			aria-label="Quick note destination"
 		>
 			{breadcrumbParts.map((part, index) => {
@@ -349,36 +353,25 @@ export function QuickNoteTargetBreadcrumbs({
 				const menuKey = `${index}:${menuDirPath || ROOT_PATH_KEY}`;
 
 				return (
-					<span
+					<TargetBreadcrumbEntryMenu
 						key={part.path || ROOT_PATH_KEY}
-						className="quickNoteTargetItem"
-						data-current={isCurrent ? "true" : undefined}
-					>
-						{index > 0 ? (
-							<TargetBreadcrumbEntryMenu
-								open={openMenuKey === menuKey}
-								dirPath={menuDirPath}
-								entries={menuItems}
-								loading={menuEntries === undefined}
-								quickNotesFolder={quickNotesFolder}
-								todayQuickNotePath={todayQuickNotePath}
-								selectedTargetValue={selectedTarget.value}
-								onOpenChange={(open) => {
-									setOpenMenuKey(open ? menuKey : null);
-								}}
-								onLoadDir={loadDir}
-								onSelectTarget={handleSelectTarget}
-								childrenByDir={childrenByDir}
-							/>
-						) : null}
-						<span
-							className="quickNoteTargetButton"
-							aria-current={isCurrent ? "page" : undefined}
-							title={part.path || "Space"}
-						>
-							<span className="quickNoteTargetLabel">{part.label}</span>
-						</span>
-					</span>
+						open={openMenuKey === menuKey}
+						dirPath={menuDirPath}
+						entries={menuItems}
+						loading={menuEntries === undefined}
+						label={part.label}
+						showSeparator={index > 0}
+						isCurrent={isCurrent}
+						quickNotesFolder={quickNotesFolder}
+						todayQuickNotePath={todayQuickNotePath}
+						selectedTargetValue={selectedTarget.value}
+						onOpenChange={(open) => {
+							setOpenMenuKey(open ? menuKey : null);
+						}}
+						onLoadDir={loadDir}
+						onSelectTarget={handleSelectTarget}
+						childrenByDir={childrenByDir}
+					/>
 				);
 			})}
 		</nav>

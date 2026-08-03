@@ -1,5 +1,12 @@
 .externalMarkdownWindow {
 	--external-markdown-chrome-height: 56px;
+	--external-markdown-status-height: 28px;
+	--external-markdown-editor-min-height: calc(
+		100vh -
+		var(--external-markdown-chrome-height) -
+		var(--external-markdown-status-height) -
+		24px
+	);
 
 	position: relative;
 	display: flex;
@@ -29,18 +36,30 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	z-index: 4;
+	z-index: 6;
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
+	gap: 12px;
 	min-height: var(--external-markdown-chrome-height);
-	padding: 8px 16px 10px 82px;
+	padding: 10px 16px 10px 82px;
 	background: linear-gradient(
 		to bottom,
 		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 96%, transparent) 0%,
-		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 84%, transparent) 72%,
+		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 70%, transparent) 62%,
 		transparent 100%
 	);
 	pointer-events: none;
+	transition: opacity 220ms ease;
+}
+
+.externalMarkdownWindow[data-chrome-dimmed="true"]
+	.externalMarkdownOverlayChrome {
+	opacity: 0.18;
+}
+
+.externalMarkdownWindow[data-chrome-dimmed="true"]
+	.externalMarkdownOverlayChrome:hover {
+	opacity: 1;
 }
 
 .externalMarkdownTitleBlock {
@@ -48,9 +67,7 @@
 	z-index: 1;
 	min-width: 0;
 	flex: 1 1 auto;
-	max-width: calc(100% - 112px);
-	padding-top: 2px;
-	padding-right: 12px;
+	padding-right: 8px;
 	pointer-events: none;
 }
 
@@ -60,20 +77,139 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: calc(var(--text-base) * 0.9);
-	font-weight: var(--font-medium);
-	line-height: 1.35;
-	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 1.05);
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+	color: var(--text-primary);
 }
 
-.externalMarkdownMeta {
-	margin: 2px 0 0;
+.externalMarkdownMetaRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	margin-top: 2px;
+	pointer-events: auto;
+	-webkit-app-region: no-drag;
+}
+
+.externalMarkdownMetaButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	min-width: 0;
+	max-width: 100%;
+	margin: 0;
+	padding: 1px 4px 1px 2px;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	font: inherit;
+	font-size: calc(var(--text-base) * 0.78);
+	line-height: 1.35;
+	cursor: pointer;
+	transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.externalMarkdownMetaButton:hover,
+.externalMarkdownMetaButton:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.externalMarkdownMetaLabel {
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-size: calc(var(--text-base) * 0.76);
-	line-height: 1.35;
-	color: var(--text-tertiary);
+}
+
+.externalMarkdownBadge {
+	flex: 0 0 auto;
+	padding: 1px 6px;
+	border: 1px solid
+		color-mix(in srgb, var(--status-warning-fg) 28%, transparent);
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--status-warning-fg) 10%, transparent);
+	color: color-mix(in srgb, var(--status-warning-fg) 88%, var(--text-primary));
+	font-size: calc(var(--text-base) * 0.7);
+	font-weight: var(--font-medium);
+	line-height: 1.4;
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.externalMarkdownHeaderActions {
+	position: relative;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	pointer-events: auto;
+	-webkit-app-region: no-drag;
+}
+
+.externalMarkdownHeaderButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 28px;
+	padding: 0 10px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.78);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.externalMarkdownHeaderButton:hover,
+.externalMarkdownHeaderButton:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+	color: var(--text-primary);
+	outline: none;
+}
+
+.externalMarkdownModeSwitch {
+	display: inline-flex;
+	align-items: center;
+	min-height: 28px;
+	padding: 2px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 62%, transparent);
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+}
+
+.externalMarkdownModeSwitch .markdownEditorModeSwitch {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1px;
+}
+
+.externalMarkdownModeSwitch .markdownEditorModeBtn {
+	width: 26px;
+	height: 24px;
+	min-width: 26px;
+	padding: 0;
+	border-radius: var(--radius-full);
+}
+
+.externalMarkdownModeSwitch .markdownEditorModeBtn[data-active="true"] {
+	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+	color: var(--text-primary);
+}
+
+.externalMarkdownModeSwitch .markdownEditorModeBtnHint {
+	top: calc(100% + 8px);
 }
 
 .externalMarkdownBody {
@@ -84,44 +220,9 @@
 	background: transparent;
 }
 
-.externalMarkdownEditorPane {
-	position: relative;
-	width: 100%;
-	min-height: 100%;
-}
-
-.externalMarkdownFloatActions {
-	position: sticky;
-	top: calc(var(--external-markdown-chrome-height) - 34px);
-	z-index: 6;
-	display: inline-flex;
-	align-items: center;
-	justify-content: flex-end;
-	gap: 10px;
-	width: min(
-		var(--editor-readable-content-max-width),
-		calc(100% - (2 * var(--editor-readable-content-gutter-compact)))
-	);
-	margin: 0 auto;
-	padding-right: 2px;
-	overflow: visible;
-	pointer-events: none;
-	-webkit-app-region: no-drag;
-}
-
-.externalMarkdownFloatActions > * {
-	pointer-events: auto;
-}
-
-.externalMarkdownFloatActions .markdownEditorToolbar {
-	flex: 0 0 auto;
-}
-
-.externalMarkdownFloatActions .markdownEditorModeSwitch {
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .externalMarkdownSaveStatus {
+	min-width: 4.5rem;
+	text-align: right;
 	color: var(--text-tertiary);
 	font-size: calc(var(--text-base) * 0.76);
 	font-weight: var(--font-medium);
@@ -143,23 +244,70 @@
 	color: color-mix(in srgb, var(--status-success-fg) 78%, var(--text-tertiary));
 }
 
-.externalMarkdownError {
-	position: absolute;
-	top: calc(var(--external-markdown-chrome-height) + 8px);
-	left: 50%;
-	z-index: 4;
-	width: min(
-		var(--editor-readable-content-max-width),
-		calc(100vw - (2 * var(--editor-readable-content-gutter-compact)))
+.externalMarkdownStatusBar {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: var(--external-markdown-status-height);
+	padding: 0 16px;
+	border-top: 1px solid
+		color-mix(in srgb, var(--border-default) 36%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--bg-canvas, var(--bg-primary)) 88%,
+		transparent
 	);
-	padding: 8px 10px;
-	border: 1px solid var(--status-danger-border);
-	border-radius: var(--radius-md);
-	background: var(--status-danger-bg);
+	color: var(--text-tertiary);
+	font-size: calc(var(--text-base) * 0.76);
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.externalMarkdownStatusBar[data-error="true"] {
+	border-top-color: color-mix(in srgb, var(--status-danger-fg) 32%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 88%, transparent);
 	color: var(--status-danger-fg);
-	font-size: calc(var(--text-base) * 0.9);
-	line-height: 1.4;
-	transform: translateX(-50%);
+}
+
+.externalMarkdownStatusCounts {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.externalMarkdownStatusError {
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: var(--font-medium);
+}
+
+.externalMarkdownStatusDismiss {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: currentcolor;
+	cursor: pointer;
+	opacity: 0.8;
+}
+
+.externalMarkdownStatusDismiss:hover,
+.externalMarkdownStatusDismiss:focus-visible {
+	background: color-mix(in srgb, var(--status-danger-fg) 12%, transparent);
+	opacity: 1;
+	outline: none;
 }
 
 .externalMarkdownEditorShell {
@@ -175,12 +323,13 @@
 	min-height: 100%;
 	margin: 0 auto;
 	padding: calc(var(--external-markdown-chrome-height) + 6px)
-		var(--editor-readable-content-gutter) 50vh;
+		var(--editor-readable-content-gutter)
+		calc(50vh + var(--external-markdown-status-height));
 }
 
 .externalMarkdownEditorShell .rfNodeNoteEditor {
 	width: 100%;
-	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
+	min-height: var(--external-markdown-editor-min-height);
 	margin: 0 auto;
 	border: 0;
 	background: transparent;
@@ -198,7 +347,7 @@
 }
 
 .externalMarkdownEditorShell .rfNodeNoteEditorRaw {
-	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
+	min-height: var(--external-markdown-editor-min-height);
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -207,7 +356,7 @@
 
 .externalMarkdownEditorShell .tiptapHostInline,
 .externalMarkdownEditorShell .tiptapContentInline {
-	min-height: calc(100vh - var(--external-markdown-chrome-height) - 24px);
+	min-height: var(--external-markdown-editor-min-height);
 }
 
 .externalMarkdownEditorShell .tiptapContentInline {

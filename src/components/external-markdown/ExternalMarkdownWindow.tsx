@@ -1,5 +1,6 @@
+import { emitTo } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import {
@@ -10,13 +11,17 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { countWords } from "../../lib/textStats";
 import {
 	displayFolderFromPath,
 	displayNameFromPath,
 	normalizeRelPath,
+	parentDir,
 } from "../../utils/path";
-import { EditorViewModeSwitch } from "../editor/EditorViewModeSwitch";
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
+import { ExternalMarkdownHeader } from "./ExternalMarkdownHeader";
+import { ExternalMarkdownStatusBar } from "./ExternalMarkdownStatusBar";
+import { useDimChromeWhileTyping } from "./useDimChromeWhileTyping";
 
 const AUTOSAVE_DELAY_MS = 700;
 
@@ -24,6 +29,15 @@ function fallbackRelPathFromAbs(absPath: string): string {
 	const normalized = normalizeRelPath(absPath);
 	const parts = normalized.split("/").filter(Boolean);
 	return parts[parts.length - 1] ?? normalized;
+}
+
+function folderLabelFromAbs(absPath: string): string {
+	const normalized = absPath.replace(/\\/g, "/");
+	const parent = parentDir(normalized);
+	if (!parent) return "";
+	const parts = parent.split("/").filter(Boolean);
+	if (parts.length <= 2) return parts.join(" / ");
+	return parts.slice(-2).join(" / ");
 }
 
 async function resolveRelPath(absPath: string): Promise<string> {
@@ -43,6 +57,7 @@ async function resolveRelPath(absPath: string): Promise<string> {
 
 export function ExternalMarkdownWindow() {
 	const [relPath, setRelPath] = useState("");
+	const [absPath, setAbsPath] = useState("");
 	const [title, setTitle] = useState("Markdown File");
 	const [text, setText] = useState("");
 	const [savedText, setSavedText] = useState("");
@@ -51,10 +66,12 @@ export function ExternalMarkdownWindow() {
 	const textRef = useRef("");
 	const savedTextRef = useRef("");
 	const absPathRef = useRef("");
+	const relPathRef = useRef("");
 	const mtimeRef = useRef<number | null>(null);
 	const saveTokenRef = useRef(0);
 	const autosaveTimerRef = useRef<number | null>(null);
 	const mountedRef = useRef(true);
+	const chromeDimmed = useDimChromeWhileTyping();
 	const {
 		setSaving,
 		setLoading,
@@ -64,13 +81,16 @@ export function ExternalMarkdownWindow() {
 		resolveState,
 	} = useEditorSaveIndicator();
 
-	const folderLabel = useMemo(
-		() => (relPath ? displayFolderFromPath(relPath) : ""),
-		[relPath],
-	);
+	const isInsideSpace = Boolean(relPath);
+	const folderLabel = relPath
+		? displayFolderFromPath(relPath)
+		: absPath
+			? folderLabelFromAbs(absPath)
+			: "";
 	const isDirty = text !== savedText;
 	const visibleSaveStatus = resolveLabel({ isDirty, idleLabel: null });
 	const saveStatusState = resolveState({ isDirty });
+	const wordCount = countWords(text);
 
 	const saveNow = useCallback(async (): Promise<boolean> => {
 		const currentPath = absPathRef.current;
@@ -121,6 +141,22 @@ export function ExternalMarkdownWindow() {
 		await invoke("external_markdown_finish_close").catch(() => {});
 	}, [saveNow]);
 
+	const handleReveal = useCallback(() => {
+		void invoke("external_markdown_reveal").catch((cause) => {
+			setError(extractErrorMessage(cause));
+		});
+	}, []);
+
+	const handleOpenInGlyph = useCallback(async () => {
+		const path = relPathRef.current;
+		if (!path) return;
+		const saved = await saveNow();
+		if (!saved && textRef.current !== savedTextRef.current) return;
+		void emitTo("main", "app:open_note", { path }).catch((cause) => {
+			setError(extractErrorMessage(cause));
+		});
+	}, [saveNow]);
+
 	useTauriEvent("menu:app_command", (payload) => {
 		if (payload.command_id === "close-active-tab") {
 			void closeWindow();
@@ -152,28 +188,29 @@ export function ExternalMarkdownWindow() {
 		void (async () => {
 			const settingsPromise = loadSettings().catch(() => null);
 			try {
-				const absPath = await invoke("external_markdown_window_path");
+				const nextAbsPath = await invoke("external_markdown_window_path");
 				if (cancelled) return;
-				absPathRef.current = absPath;
+				absPathRef.current = nextAbsPath;
+				setAbsPath(nextAbsPath);
 
-				const nextRelPath = await resolveRelPath(absPath);
+				const nextRelPath = await resolveRelPath(nextAbsPath);
 				if (cancelled) return;
 
 				const nextTitle = displayNameFromPath(
-					nextRelPath || fallbackRelPathFromAbs(absPath),
+					nextRelPath || fallbackRelPathFromAbs(nextAbsPath),
 				);
+				relPathRef.current = nextRelPath;
 				setRelPath(nextRelPath);
 				setTitle(nextTitle);
 				await getCurrentWindow().setTitle(`${nextTitle} - Glyph`);
 
 				const doc = await invoke("external_markdown_read", {
-					path: absPath,
+					path: nextAbsPath,
 				});
 				if (cancelled) return;
 
 				const settings = await settingsPromise;
 				if (cancelled) return;
-				// Keep the built-in default when settings are unavailable.
 				if (settings) {
 					setMode(settings.editor.defaultEditorMode);
 				}
@@ -215,53 +252,45 @@ export function ExternalMarkdownWindow() {
 	);
 
 	return (
-		<div className="externalMarkdownWindow">
-			<div className="externalMarkdownOverlayChrome">
-				<div
-					className="externalMarkdownDragRegion"
-					data-tauri-drag-region
-					aria-hidden="true"
-				/>
-				<div className="externalMarkdownTitleBlock">
-					<h1 className="externalMarkdownTitle">{title}</h1>
-					{folderLabel ? (
-						<p className="externalMarkdownMeta">{folderLabel}</p>
-					) : null}
-				</div>
-			</div>
-
-			{error ? <div className="externalMarkdownError">{error}</div> : null}
+		<div
+			className="externalMarkdownWindow"
+			data-chrome-dimmed={chromeDimmed ? "true" : "false"}
+		>
+			<ExternalMarkdownHeader
+				title={title}
+				folderLabel={folderLabel}
+				isInsideSpace={isInsideSpace}
+				mode={mode}
+				onModeChange={setMode}
+				onReveal={handleReveal}
+				onOpenInGlyph={() => void handleOpenInGlyph()}
+			/>
 
 			<main className="externalMarkdownBody">
-				<div className="externalMarkdownEditorPane">
-					<div className="externalMarkdownFloatActions">
-						{visibleSaveStatus ? (
-							<span
-								className="externalMarkdownSaveStatus"
-								data-state={saveStatusState}
-								aria-live="polite"
-							>
-								{visibleSaveStatus}
-							</span>
-						) : null}
-						<div className="markdownEditorToolbar">
-							<EditorViewModeSwitch mode={mode} onModeChange={setMode} />
-						</div>
-					</div>
-					<div className="externalMarkdownEditorShell">
-						<NoteInlineEditor
-							markdown={text}
-							relPath={relPath}
-							mode={mode}
-							chrome="minimal"
-							deferHeavyFeatures
-							pasteMarkdownBehavior="smart-markdown"
-							onChange={handleChange}
-							onFrontmatterCommit={saveNow}
-						/>
-					</div>
+				<div className="externalMarkdownEditorShell">
+					<NoteInlineEditor
+						markdown={text}
+						// Only real space-relative paths; inventing one from the abs
+						// path makes space-scoped features (list collapse, etc.) fire
+						// against the wrong note or toast when no session exists.
+						relPath={relPath}
+						mode={mode}
+						chrome="minimal"
+						deferHeavyFeatures
+						pasteMarkdownBehavior="smart-markdown"
+						onChange={handleChange}
+						onFrontmatterCommit={saveNow}
+					/>
 				</div>
 			</main>
+
+			<ExternalMarkdownStatusBar
+				wordCount={wordCount}
+				error={error}
+				saveStatus={visibleSaveStatus}
+				saveState={saveStatusState}
+				onDismissError={() => setError("")}
+			/>
 		</div>
 	);
 }

@@ -155,9 +155,11 @@ impl SpaceState {
         match self.root_for_window_label(window.label()) {
             Ok(root) => Ok(root),
             Err(error)
-                if matches!(window.label(), "quick-note" | "quick-task")
-                    && is_no_space_session_error(&error) =>
+                if is_no_space_session_error(&error)
+                    && shares_main_space_session(window.label()) =>
             {
+                // Auxiliary editor windows (quick note, external markdown, …)
+                // inherit the main window's active space rather than owning one.
                 self.root_for_window_label(window_geometry::MAIN_WINDOW_LABEL)
             }
             Err(error) => Err(error),
@@ -187,4 +189,10 @@ impl SpaceState {
 
 pub(crate) fn is_no_space_session_error(error: &str) -> bool {
     error.starts_with(NO_SPACE_SESSION_FOR_WINDOW)
+}
+
+/// Windows that edit notes against the main space without a private session.
+fn shares_main_space_session(window_label: &str) -> bool {
+    matches!(window_label, "quick-note" | "quick-task")
+        || window_label.starts_with("external-markdown-")
 }

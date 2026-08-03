@@ -875,6 +875,7 @@ interface TauriCommands {
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		ExternalMarkdownWriteResult
 	>;
+	external_markdown_reveal: CommandDef<void, void>;
 	external_markdown_finish_close: CommandDef<void, void>;
 	print_write_html: CommandDef<{ file_stem: string; html: string }, string>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;

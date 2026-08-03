@@ -901,7 +901,9 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
         WebviewUrl::App(format!("index.html?window={QUICK_NOTE_WINDOW_LABEL}").into()),
     )
     .title("Quick Note")
-    .inner_size(680.0, 440.0)
+    // Starts compact; the webview grows the window to fit what is typed.
+    .inner_size(680.0, 240.0)
+    .min_inner_size(420.0, 180.0)
     .resizable(true)
     .decorations(true)
     .title_bar_style(TitleBarStyle::Overlay)
@@ -916,10 +918,32 @@ fn quick_note_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, Str
     .build()
     .map_err(|error| error.to_string())?;
 
+    // Match the floating card's CSS radius so vibrancy doesn't leave square
+    // frosted corners with desktop leaking through the rounded clip.
     #[cfg(target_os = "macos")]
-    apply_main_window_vibrancy(&window, None)?;
+    apply_quick_note_vibrancy(&window)?;
 
     Ok(window)
+}
+
+/// Corner radius for the Quick Note floating card (CSS + macOS vibrancy).
+const QUICK_NOTE_CORNER_RADIUS: f64 = 20.0;
+
+#[cfg(target_os = "macos")]
+fn apply_quick_note_vibrancy(window: &tauri::WebviewWindow) -> Result<(), String> {
+    clear_main_window_vibrancy(window)?;
+    apply_vibrancy(
+        window,
+        NSVisualEffectMaterial::HudWindow,
+        None,
+        Some(QUICK_NOTE_CORNER_RADIUS),
+    )
+    .map_err(|error| error.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn apply_quick_note_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), String> {
+    Ok(())
 }
 
 fn is_main_window_label(label: &str) -> bool {
@@ -948,8 +972,8 @@ fn focused_editor_window(app: &tauri::AppHandle) -> Option<(String, tauri::Webvi
 }
 
 fn show_quick_note_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+    // Deliberately not re-centered: the panel stays where the user parked it.
     let window = quick_note_window(app)?;
-    let _ = window.center();
     window.show().map_err(|error| error.to_string())?;
     window.unminimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
@@ -1341,30 +1365,45 @@ fn clear_main_window_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), Stri
 #[tauri::command(rename_all = "snake_case")]
 fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Result<(), String> {
     let normalized = theme.trim().to_ascii_lowercase();
+    let is_quick_note = window.label() == QUICK_NOTE_WINDOW_LABEL;
+    let apply = |theme: Option<&str>| -> Result<(), String> {
+        if is_quick_note {
+            // Keep the floating card's larger corner radius when theme re-applies.
+            apply_quick_note_vibrancy(&window)
+        } else {
+            apply_main_window_vibrancy(&window, theme)
+        }
+    };
     match normalized.as_str() {
         "dark" => {
             window
                 .set_theme(Some(Theme::Dark))
                 .map_err(|error| error.to_string())?;
-            apply_main_window_vibrancy(&window, Some("dark"))
+            apply(Some("dark"))
         }
         "light" => {
             window
                 .set_theme(Some(Theme::Light))
                 .map_err(|error| error.to_string())?;
-            apply_main_window_vibrancy(&window, Some("light"))
+            apply(Some("light"))
         }
         "system-dark" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
-            apply_main_window_vibrancy(&window, Some("dark"))
+            apply(Some("dark"))
         }
         "system-light" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
-            apply_main_window_vibrancy(&window, Some("light"))
+            apply(Some("light"))
         }
         "none" | "" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
-            clear_main_window_vibrancy(&window)
+            if is_quick_note {
+                // Quick Note is always a frosted floating card, even when the
+                // main window turns vibrancy off.
+                apply_quick_note_vibrancy(&window)
+            } else {
+                clear_main_window_vibrancy(&window)
+            }
         }
         _ => Err(format!("unknown vibrancy theme: {normalized}")),
     }
@@ -1532,6 +1571,7 @@ pub fn run() {
             external_markdown::external_markdown_window_rel_path,
             external_markdown::external_markdown_read,
             external_markdown::external_markdown_write,
+            external_markdown::external_markdown_reveal,
             external_markdown::external_markdown_finish_close,
             external_link_preview::external_link_preview,
             print::print_write_html,

@@ -281,7 +281,7 @@ pub async fn space_resolve_abs_path(
 }
 
 #[cfg(target_os = "macos")]
-fn reveal_file_manager_path(abs: &Path) -> Result<(), String> {
+pub(crate) fn reveal_file_manager_path(abs: &Path) -> Result<(), String> {
     let status = std::process::Command::new("open")
         .arg("-R")
         .arg(abs)
@@ -295,7 +295,7 @@ fn reveal_file_manager_path(abs: &Path) -> Result<(), String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn reveal_file_manager_path(_abs: &Path) -> Result<(), String> {
+pub(crate) fn reveal_file_manager_path(_abs: &Path) -> Result<(), String> {
     Err("revealing paths in Finder is only available on macOS".to_string())
 }
 
