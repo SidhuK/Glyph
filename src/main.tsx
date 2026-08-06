@@ -14,38 +14,33 @@ import { isAppLanguage } from "./i18n/locales";
 import { syncNativeMenuLabels } from "./i18n/nativeMenu";
 import {
 	applyEditorWidthMode,
-	applyUiAccent,
 	applyUiCornerRadius,
 	applyUiSurfacePreferences,
-	applyUiThemeColors,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
+import {
+	type CustomTheme,
+	applyCustomThemes,
+	normalizeCustomThemes,
+} from "./lib/customThemes";
 import {
 	applyEditorHeadingPalette,
 	isHeadingPaletteId,
 } from "./lib/headingPalettes";
 import { queryClient } from "./lib/queryClient";
 import type {
-	UiAccent,
 	UiCornerRadiusStyle,
 	UiDarkThemeId,
 	UiLightThemeId,
-	UiThemeColorOverrides,
 } from "./lib/settings";
 import {
-	isUiAccent,
 	isUiCornerRadiusStyle,
 	loadSettings,
 	reloadFromDisk,
 } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
-import {
-	DEFAULT_UI_THEME_COLOR_OVERRIDES,
-	asThemeColorOverridesPatch,
-	mergeThemeColorOverrides,
-} from "./lib/themeColors";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 import {
 	EXTERNAL_MARKDOWN_WINDOW_PREFIX,
@@ -66,7 +61,6 @@ function LanguageBridge() {
 
 function ThemeAndTypographyBridge() {
 	const { setTheme, resolvedTheme, theme } = useTheme();
-	const [accent, setAccent] = React.useState<UiAccent | null>(null);
 	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
 		null,
 	);
@@ -89,8 +83,9 @@ function ThemeAndTypographyBridge() {
 	);
 	const [cornerRadiusStyle, setCornerRadiusStyle] =
 		React.useState<UiCornerRadiusStyle | null>(null);
-	const [themeColors, setThemeColors] =
-		React.useState<UiThemeColorOverrides | null>(null);
+	const [customThemes, setCustomThemes] = React.useState<CustomTheme[] | null>(
+		null,
+	);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -103,9 +98,9 @@ function ThemeAndTypographyBridge() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setTheme(settings.ui.theme);
+				setCustomThemes(settings.ui.customThemes);
 				setLightThemeId(settings.ui.lightThemeId);
 				setDarkThemeId(settings.ui.darkThemeId);
-				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
 				setEditorFontFamily(settings.ui.editorFontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
@@ -113,7 +108,6 @@ function ThemeAndTypographyBridge() {
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
 				setCornerRadiusStyle(settings.ui.cornerRadiusStyle);
-				setThemeColors(settings.ui.themeColors);
 				applyEditorHeadingPalette(settings.editor.headingPaletteId);
 				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
@@ -156,14 +150,14 @@ function ThemeAndTypographyBridge() {
 		) {
 			setTheme(nextTheme);
 		}
+		if (payload.ui?.customThemes) {
+			setCustomThemes(normalizeCustomThemes(payload.ui.customThemes));
+		}
 		if (isUiLightThemeId(payload.ui?.lightThemeId)) {
 			setLightThemeId(payload.ui.lightThemeId);
 		}
 		if (isUiDarkThemeId(payload.ui?.darkThemeId)) {
 			setDarkThemeId(payload.ui.darkThemeId);
-		}
-		if (isUiAccent(payload.ui?.accent)) {
-			setAccent(payload.ui.accent);
 		}
 		if (typeof payload.ui?.fontFamily === "string") {
 			setFontFamily(payload.ui.fontFamily);
@@ -191,15 +185,6 @@ function ThemeAndTypographyBridge() {
 		}
 		if (isUiCornerRadiusStyle(payload.ui?.cornerRadiusStyle)) {
 			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
-		}
-		const themeColorPatch = asThemeColorOverridesPatch(payload.ui?.themeColors);
-		if (themeColorPatch) {
-			setThemeColors((current) =>
-				mergeThemeColorOverrides(
-					current ?? DEFAULT_UI_THEME_COLOR_OVERRIDES,
-					themeColorPatch,
-				),
-			);
 		}
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
@@ -251,9 +236,9 @@ function ThemeAndTypographyBridge() {
 	]);
 
 	React.useEffect(() => {
-		if (!accent) return;
-		applyUiAccent(accent);
-	}, [accent]);
+		if (!customThemes) return;
+		applyCustomThemes(customThemes);
+	}, [customThemes]);
 
 	React.useEffect(() => {
 		if (!lightThemeId || !darkThemeId) return;
@@ -269,11 +254,6 @@ function ThemeAndTypographyBridge() {
 		if (cornerRadiusStyle === null) return;
 		applyUiCornerRadius(cornerRadiusStyle);
 	}, [cornerRadiusStyle]);
-
-	React.useEffect(() => {
-		if (!themeColors) return;
-		applyUiThemeColors(themeColors);
-	}, [themeColors]);
 
 	React.useEffect(() => {
 		if (typeof translucentApp !== "boolean") return;

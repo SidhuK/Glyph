@@ -1,5 +1,3 @@
-import { InformationCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -43,10 +41,10 @@ import {
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { FileTreeSettingsSection } from "./FileTreeSettingsSection";
 import { HeadingPalettePicker } from "./HeadingPalettePicker";
 import {
+	SettingsInfoHint,
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
@@ -70,29 +68,9 @@ const FOCUS_MODE_VALUES = [
 function VimModeInfo() {
 	const { t } = useTranslation("settings.general");
 	return (
-		<Popover>
-			<PopoverTrigger asChild>
-				<button
-					type="button"
-					className="vimModeInfoButton"
-					aria-label={t("editor.vimMode.helpAriaLabel")}
-				>
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size="var(--icon-md)"
-						strokeWidth={0.9}
-					/>
-				</button>
-			</PopoverTrigger>
-			<PopoverContent
-				align="start"
-				side="right"
-				sideOffset={8}
-				className="vimModeInfoPopover"
-			>
-				{t("editor.vimMode.info")}
-			</PopoverContent>
-		</Popover>
+		<SettingsInfoHint ariaLabel={t("editor.vimMode.helpAriaLabel")}>
+			{t("editor.vimMode.info")}
+		</SettingsInfoHint>
 	);
 }
 

@@ -35,7 +35,6 @@ import {
 	setShowToc,
 	setTemplatesFolder,
 	setThemeMode,
-	setUiAccent,
 	setUiDarkThemeId,
 	setUiEditorFontFamily,
 	setUiEditorFontSize,
@@ -196,31 +195,6 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 		read: (settings) => settings.ui.translucentApp,
 		write: (value) => setUiTranslucentApp(requireBoolean(value)),
-	},
-	{
-		id: "appearance-accent",
-		scope: "application",
-		control: "choice",
-		options: [
-			{ value: "neutral", label: "Neutral" },
-			{ value: "glyph-orange", label: "Glyph Orange" },
-			{ value: "glyph-red", label: "Glyph Red" },
-			{ value: "cerulean", label: "Cerulean" },
-			{ value: "tropical-teal", label: "Tropical Teal" },
-		],
-		read: (settings) => settings.ui.accent,
-		write: async (value) => {
-			const accent = requireString(value);
-			if (
-				accent !== "neutral" &&
-				accent !== "glyph-orange" &&
-				accent !== "glyph-red" &&
-				accent !== "cerulean" &&
-				accent !== "tropical-teal"
-			)
-				invalidValue();
-			await setUiAccent(accent);
-		},
 	},
 	{
 		id: "appearance-interface-font",

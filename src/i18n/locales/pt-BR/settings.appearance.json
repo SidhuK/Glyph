@@ -4,7 +4,7 @@
 		"panelTitle": "Aparência"
 	},
 	"theme": {
-		"sectionTitle": "Tema",
+		"sectionTitle": "Temas",
 		"sectionDescription": "Combine famílias de temas claros e escuros.",
 		"appearance": {
 			"label": "Aparência",
@@ -30,56 +30,34 @@
 			"ariaLabel": "Barra lateral translúcida"
 		}
 	},
-	"accent": {
-		"sectionTitle": "Destaque",
-		"sectionDescription": "Aplica-se aos temas claro e escuro do Glyph.",
-		"palette": {
-			"label": "Paleta",
-			"description": "Define o destaque para realces, anéis de foco e ênfase.",
-			"ariaLabel": "Cor de destaque",
-			"resetAriaLabel": "Redefinir destaque"
-		},
-		"options": {
-			"neutral": "Neutro",
-			"glyphOrange": "Laranja",
-			"glyphRed": "Glyph Red",
-			"cerulean": "Cerúleo",
-			"tropicalTeal": "Verde-azulado tropical"
-		}
-	},
 	"lightTheme": {
-		"sectionTitle": "Tema claro",
-		"preset": {
-			"label": "Predefinição",
-			"hint": "Escolha a paleta que o Glyph usa no modo claro."
-		},
-		"background": {
-			"label": "Fundo",
-			"ariaLabel": "Cor de fundo do tema claro",
-			"resetAriaLabel": "Redefinir fundo do tema claro"
-		},
-		"foreground": {
-			"label": "Primeiro plano",
-			"ariaLabel": "Cor de primeiro plano do tema claro",
-			"resetAriaLabel": "Redefinir primeiro plano do tema claro"
-		}
+		"label": "Claro",
+		"hint": "Escolha a paleta que o Glyph usa no modo claro."
 	},
 	"darkTheme": {
-		"sectionTitle": "Tema escuro",
-		"preset": {
-			"label": "Predefinição",
-			"hint": "Escolha a paleta que o Glyph usa no modo escuro."
+		"label": "Escuro",
+		"hint": "Escolha a paleta que o Glyph usa no modo escuro."
+	},
+	"customThemes": {
+		"sectionTitle": "Temas personalizados",
+		"sectionDescription": "Importe uma paleta JSON e use-a como qualquer tema nativo.",
+		"template": {
+			"label": "Modelo de tema",
+			"description": "Parte das cores claras e escuras padrão do Glyph — edite os códigos hex e o nome.",
+			"copy": "Copiar JSON",
+			"save": "Salvar arquivo"
 		},
-		"background": {
-			"label": "Fundo",
-			"ariaLabel": "Cor de fundo do tema escuro",
-			"resetAriaLabel": "Redefinir fundo do tema escuro"
+		"import": {
+			"label": "Importar tema",
+			"description": "Escolha um arquivo JSON editado. O nome não pode ser igual ao de um tema existente.",
+			"action": "Escolher arquivo",
+			"helpAriaLabel": "Sobre a importação de temas"
 		},
-		"foreground": {
-			"label": "Primeiro plano",
-			"ariaLabel": "Cor de primeiro plano do tema escuro",
-			"resetAriaLabel": "Redefinir primeiro plano do tema escuro"
-		}
+		"installedDescription": "Disponível nos seletores de tema claro e escuro.",
+		"removeAriaLabel": "Remover {{name}}",
+		"nameTaken": "Já existe um tema chamado \"{{name}}\". Escolha outro nome.",
+		"saveDialogTitle": "Salvar modelo de tema",
+		"importDialogTitle": "Importar JSON do tema"
 	},
 	"shape": {
 		"sectionTitle": "Forma",

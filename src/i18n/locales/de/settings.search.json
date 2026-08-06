@@ -138,25 +138,25 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Design auswählen",
-			"section": "Design",
+			"section": "Designs",
 			"description": "System-, Hell- oder Dunkelmodus wählen.",
 			"keywords": ["modus", "system", "hell", "dunkel", "mode", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Voreinstellung",
-			"section": "Helles Design",
+			"title": "Hell",
+			"section": "Designs",
 			"description": "Die Palette wählen, die Glyph im Hellmodus verwendet.",
 			"keywords": ["design", "farbe", "hell", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Voreinstellung",
-			"section": "Dunkles Design",
+			"title": "Dunkel",
+			"section": "Designs",
 			"description": "Die Palette wählen, die Glyph im Dunkelmodus verwendet.",
 			"keywords": ["design", "farbe", "dunkel", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Durchscheinende Seitenleiste",
-			"section": "Design",
+			"section": "Designs",
 			"keywords": [
 				"fenster",
 				"glas",
@@ -168,45 +168,11 @@
 				"translucent"
 			]
 		},
-		"appearance-accent": {
-			"title": "Palette",
-			"section": "Akzent",
-			"description": "Den Akzent für die hellen und dunklen Glyph-Designs festlegen.",
-			"keywords": ["akzent", "farbe", "palette", "accent", "color"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "Standardfarben",
-			"section": "Helles Design",
-			"description": "Hintergrund- und Textfarben des hellen Glyph-Designs anpassen.",
-			"keywords": [
-				"design",
-				"farbe",
-				"hell",
-				"hintergrund",
-				"vordergrund",
-				"text",
-				"theme",
-				"light",
-				"background",
-				"foreground"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "Standardfarben",
-			"section": "Dunkles Design",
-			"description": "Hintergrund- und Textfarben des dunklen Glyph-Designs anpassen.",
-			"keywords": [
-				"design",
-				"farbe",
-				"dunkel",
-				"hintergrund",
-				"vordergrund",
-				"text",
-				"theme",
-				"dark",
-				"background",
-				"foreground"
-			]
+		"appearance-custom-themes": {
+			"title": "Theme importieren",
+			"section": "Eigene Themes",
+			"description": "Eine JSON-Palette als neues Theme importieren.",
+			"keywords": ["Theme", "JSON", "Import", "eigen"]
 		},
 		"appearance-interface-font": {
 			"title": "Oberflächenschrift",

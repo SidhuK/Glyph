@@ -139,7 +139,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Sélectionner le thème",
-			"section": "Thème",
+			"section": "Thèmes",
 			"description": "Choisir le mode système, clair ou sombre.",
 			"keywords": [
 				"mode",
@@ -152,20 +152,20 @@
 			]
 		},
 		"appearance-light-theme": {
-			"title": "Préréglage",
-			"section": "Thème clair",
+			"title": "Clair",
+			"section": "Thèmes",
 			"description": "Choisir la palette utilisée par Glyph en mode clair.",
 			"keywords": ["thème", "couleur", "clair", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Préréglage",
-			"section": "Thème sombre",
+			"title": "Sombre",
+			"section": "Thèmes",
 			"description": "Choisir la palette utilisée par Glyph en mode sombre.",
 			"keywords": ["thème", "couleur", "sombre", "theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Barre latérale translucide",
-			"section": "Thème",
+			"section": "Thèmes",
 			"keywords": [
 				"fenêtre",
 				"verre",
@@ -177,47 +177,11 @@
 				"translucent"
 			]
 		},
-		"appearance-accent": {
-			"title": "Palette",
-			"section": "Accent",
-			"description": "Définir l’accent des thèmes clair et sombre de Glyph.",
-			"keywords": ["accent", "couleur", "palette", "color"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "Couleurs par défaut",
-			"section": "Thème clair",
-			"description": "Personnaliser les couleurs d’arrière-plan et de texte du thème clair Glyph.",
-			"keywords": [
-				"thème",
-				"couleur",
-				"clair",
-				"arrière-plan",
-				"premier plan",
-				"texte",
-				"theme",
-				"light",
-				"background",
-				"foreground",
-				"text"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "Couleurs par défaut",
-			"section": "Thème sombre",
-			"description": "Personnaliser les couleurs d’arrière-plan et de texte du thème sombre Glyph.",
-			"keywords": [
-				"thème",
-				"couleur",
-				"sombre",
-				"arrière-plan",
-				"premier plan",
-				"texte",
-				"theme",
-				"dark",
-				"background",
-				"foreground",
-				"text"
-			]
+		"appearance-custom-themes": {
+			"title": "Importer un thème",
+			"section": "Thèmes personnalisés",
+			"description": "Importer une palette JSON comme nouveau thème.",
+			"keywords": ["thème", "json", "importer", "personnalisé"]
 		},
 		"appearance-interface-font": {
 			"title": "Police d’interface",

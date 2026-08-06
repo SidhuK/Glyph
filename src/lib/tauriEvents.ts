@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import type { CustomTheme } from "./customThemes";
 import type { EditorViewMode } from "./editorMode";
 import type { HeadingPaletteId } from "./headingPalettes";
 import type {
@@ -11,10 +12,8 @@ import type {
 	FileTreeSortMode,
 	FocusMode,
 	ReleaseChannel,
-	UiAccent,
 	UiCornerRadiusStyle,
 } from "./settings";
-import type { UiThemeColorOverridesPatch } from "./themeColors";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
@@ -69,8 +68,7 @@ type TauriEventMap = {
 			releaseChannel?: ReleaseChannel;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
-			accent?: UiAccent;
-			themeColors?: UiThemeColorOverridesPatch;
+			customThemes?: CustomTheme[];
 			fontFamily?: string;
 			editorFontFamily?: string;
 			monoFontFamily?: string;

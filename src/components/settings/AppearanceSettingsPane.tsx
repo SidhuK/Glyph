@@ -6,6 +6,12 @@ import {
 	applyUiThemeSelection,
 } from "../../lib/appearance";
 import {
+	type CustomTheme,
+	applyCustomThemes,
+	customThemeId,
+	customThemeOptions,
+} from "../../lib/customThemes";
+import {
 	DEFAULT_UI_TRANSLUCENT_APP,
 	type EditorWidthMode,
 	type ThemeMode,
@@ -18,6 +24,7 @@ import {
 	setEditorWidthMode,
 	setFolioMode,
 	setThemeMode,
+	setUiCustomThemes,
 	setUiDarkThemeId,
 	setUiLightThemeId,
 	setUiTranslucentApp,
@@ -28,12 +35,14 @@ import {
 	GLYPH_DEFAULT_DARK_THEME_ID,
 	GLYPH_DEFAULT_LIGHT_THEME_ID,
 	LIGHT_THEME_OPTIONS,
+	type UiThemeOption,
 	asUiDarkThemeId,
 	asUiLightThemeId,
 	getUiDarkThemeOption,
 	getUiLightThemeOption,
 } from "../../lib/uiThemes";
 import { AppearanceCornerRadiusCard } from "./AppearanceCornerRadiusCard";
+import { AppearanceCustomThemesCard } from "./AppearanceCustomThemesCard";
 import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
@@ -43,7 +52,6 @@ import {
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
-import { useAppearanceThemeColors } from "./useAppearanceThemeColors";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
 
@@ -66,6 +74,7 @@ export function AppearanceSettingsPane() {
 	const [translucentApp, setTranslucentAppState] = useState(
 		DEFAULT_UI_TRANSLUCENT_APP,
 	);
+	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
 	const [editorWidthMode, setEditorWidthModeState] =
 		useState<EditorWidthMode>("compact");
 	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
@@ -88,22 +97,6 @@ export function AppearanceSettingsPane() {
 	);
 	const { cornerRadiusStyle, onCornerRadiusStyleChange } =
 		useAppearanceCornerRadius({ setError });
-	const themeAppearance = useAppearanceThemeColors({
-		setError,
-		lightThemeId,
-		darkThemeId,
-	});
-	const {
-		accent,
-		themeColors,
-		showLightColorPickers,
-		showDarkColorPickers,
-		showAccentPicker,
-		onAppearanceSettingsLoaded,
-		onAccentChange,
-		onAccentReset,
-		onThemeColorChange,
-	} = themeAppearance;
 	const {
 		fontFamily,
 		editorFontFamily,
@@ -134,12 +127,13 @@ export function AppearanceSettingsPane() {
 				setLightThemeIdState(settings.ui.lightThemeId);
 				setDarkThemeIdState(settings.ui.darkThemeId);
 				setTranslucentAppState(settings.ui.translucentApp);
+				setCustomThemesState(settings.ui.customThemes);
+				applyCustomThemes(settings.ui.customThemes);
 				setBeautifulTagsChecked(settings.editor.beautifulTags);
 				setEditorWidthModeState(settings.editor.editorWidthMode);
 				setFolioModeChecked(settings.ui.folioMode);
 				setClassicAllNotesChecked(settings.ui.classicAllNotesByDefault);
 				setShowColumnColorChecked(settings.database.showColumnColor);
-				onAppearanceSettingsLoaded(settings.ui.accent, settings.ui.themeColors);
 				setTheme(settings.ui.theme);
 				applyUiThemeSelection(
 					settings.ui.lightThemeId,
@@ -158,7 +152,6 @@ export function AppearanceSettingsPane() {
 			cancelled = true;
 		};
 	}, [
-		onAppearanceSettingsLoaded,
 		setBeautifulTagsChecked,
 		setClassicAllNotesChecked,
 		setFolioModeChecked,
@@ -167,6 +160,9 @@ export function AppearanceSettingsPane() {
 	]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (payload.ui?.customThemes) {
+			setCustomThemesState(payload.ui.customThemes);
+		}
 		applyIfBoolean(payload.editor?.beautifulTags, setBeautifulTagsChecked);
 		if (
 			payload.editor?.editorWidthMode === "compact" ||
@@ -249,8 +245,60 @@ export function AppearanceSettingsPane() {
 		}
 	}, []);
 
-	const lightTheme = getUiLightThemeOption(lightThemeId);
-	const darkTheme = getUiDarkThemeOption(darkThemeId);
+	const persistCustomThemes = useCallback(async (next: CustomTheme[]) => {
+		setCustomThemesState(next);
+		applyCustomThemes(next);
+		await setUiCustomThemes(next);
+	}, []);
+
+	const onCustomThemeImport = useCallback(
+		async (theme: CustomTheme) => {
+			setError("");
+			await persistCustomThemes([...customThemes, theme]);
+		},
+		[customThemes, persistCustomThemes],
+	);
+
+	const onCustomThemeRemove = useCallback(
+		async (theme: CustomTheme) => {
+			setError("");
+			const removedId = customThemeId(theme.name);
+			if (lightThemeId === removedId) {
+				await onLightThemeChange(GLYPH_DEFAULT_LIGHT_THEME_ID);
+			}
+			if (darkThemeId === removedId) {
+				await onDarkThemeChange(GLYPH_DEFAULT_DARK_THEME_ID);
+			}
+			await persistCustomThemes(
+				customThemes.filter(
+					(existing) => customThemeId(existing.name) !== removedId,
+				),
+			);
+		},
+		[
+			customThemes,
+			darkThemeId,
+			lightThemeId,
+			onDarkThemeChange,
+			onLightThemeChange,
+			persistCustomThemes,
+		],
+	);
+
+	const lightOptions: readonly UiThemeOption<UiLightThemeId>[] = [
+		...LIGHT_THEME_OPTIONS,
+		...customThemeOptions(customThemes, "light"),
+	];
+	const darkOptions: readonly UiThemeOption<UiDarkThemeId>[] = [
+		...DARK_THEME_OPTIONS,
+		...customThemeOptions(customThemes, "dark"),
+	];
+	const lightTheme =
+		lightOptions.find((option) => option.id === lightThemeId) ??
+		getUiLightThemeOption(lightThemeId);
+	const darkTheme =
+		darkOptions.find((option) => option.id === darkThemeId) ??
+		getUiDarkThemeOption(darkThemeId);
 
 	return (
 		<div className="settingsPane">
@@ -260,21 +308,18 @@ export function AppearanceSettingsPane() {
 					themeMode={themeMode}
 					lightTheme={lightTheme}
 					darkTheme={darkTheme}
-					lightOptions={LIGHT_THEME_OPTIONS}
-					darkOptions={DARK_THEME_OPTIONS}
+					lightOptions={lightOptions}
+					darkOptions={darkOptions}
 					translucentApp={translucentApp}
-					appearance={{
-						accent,
-						themeColors,
-						showLightColorPickers,
-						showDarkColorPickers,
-						showAccentPicker,
-					}}
-					actions={{ onAccentChange, onAccentReset, onThemeColorChange }}
 					onThemeModeChange={onThemeModeChange}
 					onLightThemeChange={onLightThemeChange}
 					onDarkThemeChange={onDarkThemeChange}
 					onTranslucentAppChange={onTranslucentAppChange}
+				/>
+				<AppearanceCustomThemesCard
+					customThemes={customThemes}
+					onImport={onCustomThemeImport}
+					onRemove={onCustomThemeRemove}
 				/>
 				<AppearanceCornerRadiusCard
 					cornerRadiusStyle={cornerRadiusStyle}
