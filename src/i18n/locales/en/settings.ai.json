@@ -1,0 +1,31 @@
+{
+	"connection": {
+		"sectionTitle": "Connection",
+		"sectionDescription": "Choose how Glyph connects to AI, then configure the provider and model.",
+		"type": {
+			"label": "Connection type",
+			"description": "Use an installed agent, a private model on this Mac, or a provider API.",
+			"ariaLabel": "AI connection type"
+		},
+		"provider": {
+			"label": "Provider"
+		},
+		"types": {
+			"agents": {
+				"label": "Agents",
+				"description": "Use an AI agent or account connected to this Mac.",
+				"providerDescription": "Choose the agent Glyph should use. Each agent keeps its own saved setup."
+			},
+			"local": {
+				"label": "Local",
+				"description": "Run models privately on this Mac.",
+				"providerDescription": "Choose the local model runtime Glyph should connect to."
+			},
+			"api": {
+				"label": "API",
+				"description": "Connect directly with a provider API key.",
+				"providerDescription": "Choose the provider whose API and models Glyph should use."
+			}
+		}
+	}
+}

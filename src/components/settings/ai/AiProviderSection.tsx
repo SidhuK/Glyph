@@ -1,5 +1,5 @@
+import { useTranslation } from "react-i18next";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
-import { ProviderLogo } from "../../ai/modelSelectorConstants";
 import { Input } from "../../ui/shadcn/input";
 import {
 	SettingsRow,
@@ -7,55 +7,8 @@ import {
 	SettingsToggle,
 } from "../SettingsScaffold";
 import { SettingsSelect } from "../SettingsSelect";
+import { AiConnectionPicker } from "./AiConnectionPicker";
 import { AiModelCombobox } from "./AiModelCombobox";
-
-interface AiProviderOption {
-	value: AiProviderKind;
-	label: string;
-}
-
-interface AiProviderOptionGroup {
-	label: string;
-	options: AiProviderOption[];
-}
-
-const aiProviderGroups: AiProviderOptionGroup[] = [
-	{
-		label: "Agents",
-		options: [
-			{ value: "codex_chatgpt", label: "Codex" },
-			{ value: "opencode", label: "OpenCode" },
-			{ value: "amp", label: "Amp" },
-			{ value: "claude_code", label: "Claude Code" },
-			{ value: "pi", label: "PI" },
-		],
-	},
-	{
-		label: "API",
-		options: [
-			{ value: "openai", label: "OpenAI" },
-			{ value: "anthropic", label: "Anthropic" },
-			{ value: "gemini", label: "Google" },
-			{ value: "openrouter", label: "OpenRouter" },
-			{ value: "openai_compat", label: "OpenAI compatible" },
-		],
-	},
-	{
-		label: "Local",
-		options: [
-			{ value: "llama_cpp", label: "llama.cpp" },
-			{ value: "ollama", label: "Ollama" },
-		],
-	},
-];
-
-function findProviderOption(provider: AiProviderKind): AiProviderOption {
-	for (const group of aiProviderGroups) {
-		const option = group.options.find((entry) => entry.value === provider);
-		if (option) return option;
-	}
-	return { value: provider, label: provider };
-}
 
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
@@ -76,6 +29,7 @@ export function AiProviderSection({
 	onUpdateDraft,
 	onPersistDraft,
 }: AiProviderSectionProps) {
+	const { t } = useTranslation("settings.ai");
 	const selectedModel =
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
@@ -85,49 +39,16 @@ export function AiProviderSection({
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
 			: "https://api.example.com/v1";
-	const selectedProvider = findProviderOption(profileDraft.provider);
 
 	return (
 		<SettingsSection
-			title="Provider"
-			description="Choose the service, model, and advanced connection fields. Provider changes switch to that provider's saved setup; other edits save automatically."
+			title={t("connection.sectionTitle")}
+			description={t("connection.sectionDescription")}
 		>
-			<SettingsRow
-				label="Service"
-				htmlFor="aiProvider"
-				description="Switch between provider configurations."
-			>
-				<div className="settingsInline settingsInlineWide">
-					<div
-						className="settingsProviderNativeLogo"
-						aria-hidden="true"
-						data-provider={selectedProvider.value}
-					>
-						<ProviderLogo
-							provider={selectedProvider.value}
-							className="settingsProviderNativeLogoImage"
-						/>
-					</div>
-					<SettingsSelect
-						id="aiProvider"
-						className="settingsProviderNativeSelect"
-						value={profileDraft.provider}
-						onChange={(event) =>
-							void onProviderChange(event.target.value as AiProviderKind)
-						}
-					>
-						{aiProviderGroups.map((group) => (
-							<optgroup key={group.label} label={group.label}>
-								{group.options.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</optgroup>
-						))}
-					</SettingsSelect>
-				</div>
-			</SettingsRow>
+			<AiConnectionPicker
+				provider={profileDraft.provider}
+				onProviderChange={onProviderChange}
+			/>
 
 			<SettingsRow
 				label="Model"

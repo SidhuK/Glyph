@@ -275,29 +275,34 @@
 			"section": "Availability",
 			"keywords": ["providers", "models", "account"]
 		},
+		"ai-connection-type": {
+			"title": "Tipo de conexión",
+			"section": "Conexión",
+			"keywords": ["agentes", "local", "api", "proveedor"]
+		},
 		"ai-provider-service": {
-			"title": "Service",
-			"section": "Provider",
-			"keywords": ["provider", "openai", "anthropic", "ollama"]
+			"title": "Proveedor",
+			"section": "Conexión",
+			"keywords": ["codex", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",
-			"section": "Provider",
+			"section": "Conexión",
 			"keywords": ["provider", "model", "assistant"]
 		},
 		"ai-reasoning-level": {
 			"title": "Reasoning level",
-			"section": "Provider",
+			"section": "Conexión",
 			"keywords": ["effort", "thinking"]
 		},
 		"ai-base-url": {
 			"title": "Base URL",
-			"section": "Provider",
+			"section": "Conexión",
 			"keywords": ["endpoint", "local", "server"]
 		},
 		"ai-local-network": {
 			"title": "Allow local network",
-			"section": "Provider",
+			"section": "Conexión",
 			"keywords": ["localhost", "lan", "network"]
 		},
 		"ai-api-key": {

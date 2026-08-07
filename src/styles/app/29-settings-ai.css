@@ -1,0 +1,49 @@
+.aiConnectionPreview {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	width: 60px;
+	height: 42px;
+}
+
+.aiConnectionPreviewLogo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.aiConnectionPreviewLogoImage,
+.aiProviderDropdownLogoImage {
+	display: block;
+	width: var(--icon-lg);
+	height: var(--icon-lg);
+	object-fit: contain;
+}
+
+.aiConnectionPreviewLogo[data-provider="ollama"] .aiConnectionPreviewLogoImage,
+.aiProviderDropdownLogo[data-provider="ollama"] .aiProviderDropdownLogoImage {
+	width: calc(var(--icon-lg) * 0.72);
+}
+
+:root.dark
+	.aiConnectionPreviewLogo[data-provider="openrouter"]
+	.aiConnectionPreviewLogoImage,
+:root.dark
+	.aiProviderDropdownLogo[data-provider="openrouter"]
+	.aiProviderDropdownLogoImage {
+	filter: brightness(0) invert(1);
+}
+
+.aiProviderDropdownLogo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex: 0 0 auto;
+}
+
+.aiProviderDropdownContent {
+	width: min(320px, calc(100vw - 24px), var(--radix-popover-trigger-width));
+}

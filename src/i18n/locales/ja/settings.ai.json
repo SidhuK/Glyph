@@ -1,0 +1,29 @@
+{
+	"connection": {
+		"sectionTitle": "接続",
+		"sectionDescription": "Glyph を AI に接続する方法を選び、プロバイダーとモデルを設定します。",
+		"type": {
+			"label": "接続タイプ",
+			"description": "インストール済みエージェント、この Mac 上のプライベートモデル、またはプロバイダー API を使用します。",
+			"ariaLabel": "AI 接続タイプ"
+		},
+		"provider": { "label": "プロバイダー" },
+		"types": {
+			"agents": {
+				"label": "エージェント",
+				"description": "この Mac に接続された AI エージェントまたはアカウントを使用します。",
+				"providerDescription": "Glyph が使用するエージェントを選びます。各エージェントの設定は個別に保存されます。"
+			},
+			"local": {
+				"label": "ローカル",
+				"description": "この Mac 上でモデルをプライベートに実行します。",
+				"providerDescription": "Glyph が接続するローカルモデルのランタイムを選びます。"
+			},
+			"api": {
+				"label": "API",
+				"description": "プロバイダーの API キーで直接接続します。",
+				"providerDescription": "Glyph が使用する API とモデルのプロバイダーを選びます。"
+			}
+		}
+	}
+}

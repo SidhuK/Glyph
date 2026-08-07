@@ -1,0 +1,29 @@
+{
+	"connection": {
+		"sectionTitle": "연결",
+		"sectionDescription": "Glyph가 AI에 연결하는 방식을 선택한 다음 공급자와 모델을 설정하세요.",
+		"type": {
+			"label": "연결 유형",
+			"description": "설치된 에이전트, 이 Mac의 비공개 모델 또는 공급자 API를 사용합니다.",
+			"ariaLabel": "AI 연결 유형"
+		},
+		"provider": { "label": "공급자" },
+		"types": {
+			"agents": {
+				"label": "에이전트",
+				"description": "이 Mac에 연결된 AI 에이전트나 계정을 사용합니다.",
+				"providerDescription": "Glyph가 사용할 에이전트를 선택하세요. 각 에이전트의 설정은 개별적으로 저장됩니다."
+			},
+			"local": {
+				"label": "로컬",
+				"description": "이 Mac에서 모델을 비공개로 실행합니다.",
+				"providerDescription": "Glyph가 연결할 로컬 모델 런타임을 선택하세요."
+			},
+			"api": {
+				"label": "API",
+				"description": "공급자 API 키로 직접 연결합니다.",
+				"providerDescription": "Glyph가 사용할 API와 모델의 공급자를 선택하세요."
+			}
+		}
+	}
+}

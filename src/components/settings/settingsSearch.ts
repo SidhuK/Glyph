@@ -53,6 +53,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "shortcuts-editor", tab: "shortcuts" },
 	{ id: "ai-features", tab: "ai" },
 	{ id: "ai-configuration", tab: "ai" },
+	{ id: "ai-connection-type", tab: "ai" },
 	{ id: "ai-provider-service", tab: "ai" },
 	{ id: "ai-provider-model", tab: "ai" },
 	{ id: "ai-reasoning-level", tab: "ai" },

@@ -269,29 +269,34 @@
 			"section": "Availability",
 			"keywords": ["providers", "models", "account"]
 		},
+		"ai-connection-type": {
+			"title": "연결 유형",
+			"section": "연결",
+			"keywords": ["에이전트", "로컬", "api", "공급자"]
+		},
 		"ai-provider-service": {
-			"title": "Service",
-			"section": "Provider",
-			"keywords": ["provider", "openai", "anthropic", "ollama"]
+			"title": "공급자",
+			"section": "연결",
+			"keywords": ["codex", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",
-			"section": "Provider",
+			"section": "연결",
 			"keywords": ["provider", "model", "assistant"]
 		},
 		"ai-reasoning-level": {
 			"title": "Reasoning level",
-			"section": "Provider",
+			"section": "연결",
 			"keywords": ["effort", "thinking"]
 		},
 		"ai-base-url": {
 			"title": "Base URL",
-			"section": "Provider",
+			"section": "연결",
 			"keywords": ["endpoint", "local", "server"]
 		},
 		"ai-local-network": {
 			"title": "Allow local network",
-			"section": "Provider",
+			"section": "연결",
 			"keywords": ["localhost", "lan", "network"]
 		},
 		"ai-api-key": {

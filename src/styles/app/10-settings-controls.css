@@ -286,64 +286,6 @@
 	align-items: stretch;
 }
 
-.settingsProviderNativeLogo {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	height: 34px;
-	flex: 0 0 auto;
-}
-
-.settingsProviderNativeLogoImage {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-	object-fit: contain;
-	border-radius: var(--radius-3);
-	display: block;
-}
-
-.settingsProviderNativeLogo[data-provider="amp"]
-	.settingsProviderNativeLogoImage,
-.settingsProviderNativeLogo[data-provider="gemini"]
-	.settingsProviderNativeLogoImage,
-.settingsProviderNativeLogo[data-provider="openrouter"]
-	.settingsProviderNativeLogoImage {
-	width: 19px;
-	height: 19px;
-}
-
-.settingsProviderNativeLogo[data-provider="opencode"]
-	.settingsProviderNativeLogoImage {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-}
-
-.settingsProviderNativeLogo[data-provider="pi"]
-	.settingsProviderNativeLogoImage {
-	width: var(--icon-xl);
-	height: var(--icon-xl);
-}
-
-.settingsProviderNativeLogo[data-provider="ollama"]
-	.settingsProviderNativeLogoImage {
-	width: calc(var(--icon-xl) * 0.75);
-	height: var(--icon-xl);
-}
-
-:root.dark
-	.settingsProviderNativeLogo[data-provider="openrouter"]
-	.settingsProviderNativeLogoImage {
-	filter: brightness(0) invert(1);
-}
-
-.settingsFieldControl
-	.settingsInline
-	> .settingsSelectWrap:has(.settingsProviderNativeSelect) {
-	flex-basis: 178px;
-	max-width: none;
-}
-
 .settingsActions {
 	display: inline-flex;
 	align-items: center;
