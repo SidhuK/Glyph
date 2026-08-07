@@ -276,29 +276,34 @@
 			"section": "Availability",
 			"keywords": ["providers", "models", "account"]
 		},
+		"ai-connection-type": {
+			"title": "接続タイプ",
+			"section": "接続",
+			"keywords": ["エージェント", "ローカル", "api", "プロバイダー"]
+		},
 		"ai-provider-service": {
-			"title": "Service",
-			"section": "Provider",
-			"keywords": ["provider", "openai", "anthropic", "ollama"]
+			"title": "プロバイダー",
+			"section": "接続",
+			"keywords": ["codex", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",
-			"section": "Provider",
+			"section": "接続",
 			"keywords": ["provider", "model", "assistant"]
 		},
 		"ai-reasoning-level": {
 			"title": "Reasoning level",
-			"section": "Provider",
+			"section": "接続",
 			"keywords": ["effort", "thinking"]
 		},
 		"ai-base-url": {
 			"title": "Base URL",
-			"section": "Provider",
+			"section": "接続",
 			"keywords": ["endpoint", "local", "server"]
 		},
 		"ai-local-network": {
 			"title": "Allow local network",
-			"section": "Provider",
+			"section": "接続",
 			"keywords": ["localhost", "lan", "network"]
 		},
 		"ai-api-key": {

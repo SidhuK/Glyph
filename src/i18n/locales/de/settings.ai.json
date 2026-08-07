@@ -1,0 +1,29 @@
+{
+	"connection": {
+		"sectionTitle": "Verbindung",
+		"sectionDescription": "Wähle, wie Glyph eine KI-Verbindung herstellt, und konfiguriere Anbieter und Modell.",
+		"type": {
+			"label": "Verbindungstyp",
+			"description": "Verwende einen installierten Agenten, ein privates Modell auf diesem Mac oder eine Anbieter-API.",
+			"ariaLabel": "KI-Verbindungstyp"
+		},
+		"provider": { "label": "Anbieter" },
+		"types": {
+			"agents": {
+				"label": "Agenten",
+				"description": "Verwende einen KI-Agenten oder ein mit diesem Mac verbundenes Konto.",
+				"providerDescription": "Wähle den Agenten für Glyph. Jeder Agent behält seine gespeicherte Einrichtung."
+			},
+			"local": {
+				"label": "Lokal",
+				"description": "Führe Modelle privat auf diesem Mac aus.",
+				"providerDescription": "Wähle die lokale Modelllaufzeit, mit der sich Glyph verbinden soll."
+			},
+			"api": {
+				"label": "API",
+				"description": "Stelle mit einem API-Schlüssel eine direkte Verbindung her.",
+				"providerDescription": "Wähle den Anbieter, dessen API und Modelle Glyph verwenden soll."
+			}
+		}
+	}
+}
