@@ -82,7 +82,7 @@ export function customThemeSlug(name: string): string {
 	return name
 		.trim()
 		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/[^\p{L}\p{N}]+/gu, "-")
 		.replace(/^-+|-+$/g, "");
 }
 

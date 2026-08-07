@@ -82,6 +82,8 @@ export function SettingsRow({
 	) => {
 		const el = target as HTMLElement | null;
 		if (!el) return false;
+		// Portaled content (popovers, dialogs) still bubbles through React's tree.
+		if (!currentTarget.contains(el)) return false;
 		if (el.closest(".uiToggle")) return false;
 		if (el.closest("button, a, input, select, textarea")) return false;
 		if (el.closest("label")) return false;

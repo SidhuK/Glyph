@@ -246,9 +246,9 @@ export function AppearanceSettingsPane() {
 	}, []);
 
 	const persistCustomThemes = useCallback(async (next: CustomTheme[]) => {
+		await setUiCustomThemes(next);
 		setCustomThemesState(next);
 		applyCustomThemes(next);
-		await setUiCustomThemes(next);
 	}, []);
 
 	const onCustomThemeImport = useCallback(
@@ -263,26 +263,28 @@ export function AppearanceSettingsPane() {
 		async (theme: CustomTheme) => {
 			setError("");
 			const removedId = customThemeId(theme.name);
-			if (lightThemeId === removedId) {
-				await onLightThemeChange(GLYPH_DEFAULT_LIGHT_THEME_ID);
+			const nextLight =
+				lightThemeId === removedId
+					? GLYPH_DEFAULT_LIGHT_THEME_ID
+					: lightThemeId;
+			const nextDark =
+				darkThemeId === removedId ? GLYPH_DEFAULT_DARK_THEME_ID : darkThemeId;
+			if (nextLight !== lightThemeId) {
+				await setUiLightThemeId(nextLight);
+				setLightThemeIdState(nextLight);
 			}
-			if (darkThemeId === removedId) {
-				await onDarkThemeChange(GLYPH_DEFAULT_DARK_THEME_ID);
+			if (nextDark !== darkThemeId) {
+				await setUiDarkThemeId(nextDark);
+				setDarkThemeIdState(nextDark);
 			}
+			applyUiThemeSelection(nextLight, nextDark);
 			await persistCustomThemes(
 				customThemes.filter(
 					(existing) => customThemeId(existing.name) !== removedId,
 				),
 			);
 		},
-		[
-			customThemes,
-			darkThemeId,
-			lightThemeId,
-			onDarkThemeChange,
-			onLightThemeChange,
-			persistCustomThemes,
-		],
+		[customThemes, darkThemeId, lightThemeId, persistCustomThemes],
 	);
 
 	const lightOptions: readonly UiThemeOption<UiLightThemeId>[] = [
