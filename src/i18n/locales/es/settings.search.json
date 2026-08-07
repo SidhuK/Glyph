@@ -139,7 +139,7 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Seleccionar tema",
-			"section": "Tema",
+			"section": "Temas",
 			"description": "Elige modo sistema, claro u oscuro.",
 			"keywords": [
 				"modo",
@@ -153,20 +153,20 @@
 			]
 		},
 		"appearance-light-theme": {
-			"title": "Preajuste",
-			"section": "Tema claro",
+			"title": "Claro",
+			"section": "Temas",
 			"description": "Elige la paleta que Glyph usa en modo claro.",
 			"keywords": ["tema", "color", "claro", "theme", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Preajuste",
-			"section": "Tema oscuro",
+			"title": "Oscuro",
+			"section": "Temas",
 			"description": "Elige la paleta que Glyph usa en modo oscuro.",
 			"keywords": ["tema", "color", "oscuro", "theme", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Barra lateral translúcida",
-			"section": "Tema",
+			"section": "Temas",
 			"keywords": [
 				"ventana",
 				"cristal",
@@ -178,47 +178,11 @@
 				"translucent"
 			]
 		},
-		"appearance-accent": {
-			"title": "Paleta",
-			"section": "Acento",
-			"description": "Define el acento de los temas claro y oscuro de Glyph.",
-			"keywords": ["acento", "color", "paleta", "accent", "palette"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "Colores predeterminados",
-			"section": "Tema claro",
-			"description": "Personaliza los colores de fondo y texto del tema claro de Glyph.",
-			"keywords": [
-				"tema",
-				"color",
-				"claro",
-				"fondo",
-				"primer plano",
-				"texto",
-				"theme",
-				"light",
-				"background",
-				"foreground",
-				"text"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "Colores predeterminados",
-			"section": "Tema oscuro",
-			"description": "Personaliza los colores de fondo y texto del tema oscuro de Glyph.",
-			"keywords": [
-				"tema",
-				"color",
-				"oscuro",
-				"fondo",
-				"primer plano",
-				"texto",
-				"theme",
-				"dark",
-				"background",
-				"foreground",
-				"text"
-			]
+		"appearance-custom-themes": {
+			"title": "Importar tema",
+			"section": "Temas personalizados",
+			"description": "Importa una paleta JSON como tema nuevo.",
+			"keywords": ["tema", "json", "importar", "personalizado"]
 		},
 		"appearance-interface-font": {
 			"title": "Fuente de la interfaz",

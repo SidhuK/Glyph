@@ -196,8 +196,7 @@
 
 .settingsField input:focus-visible,
 .settingsField textarea:focus-visible,
-.settingsField button:focus-visible,
-.settingsAccentDot:focus-visible {
+.settingsField button:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 2px;
@@ -422,7 +421,7 @@
 	min-width: 0;
 }
 
-.vimModeInfoButton {
+.settingsInfoButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -438,13 +437,13 @@
 	transition: all var(--transition-base);
 }
 
-.vimModeInfoButton:hover {
+.settingsInfoButton:hover {
 	color: var(--text-primary);
 	border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
 }
 
-.vimModeInfoButton svg {
+.settingsInfoButton svg {
 	display: block;
 	width: var(--icon-md);
 	height: var(--icon-md);
@@ -452,7 +451,7 @@
 	flex-shrink: 0;
 }
 
-.vimModeInfoPopover {
+.settingsInfoPopover {
 	width: min(360px, calc(100vw - 32px));
 	padding: 14px;
 	border-radius: var(--radius-md);

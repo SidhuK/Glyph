@@ -30,56 +30,34 @@
 			"ariaLabel": "반투명 사이드바"
 		}
 	},
-	"accent": {
-		"sectionTitle": "액센트",
-		"sectionDescription": "Glyph 라이트 및 다크 테마에 적용됩니다.",
-		"palette": {
-			"label": "팔레트",
-			"description": "강조, 포커스 링, 강조 표시의 액센트를 설정합니다.",
-			"ariaLabel": "액센트 색상",
-			"resetAriaLabel": "액센트 재설정"
-		},
-		"options": {
-			"neutral": "뉴트럴",
-			"glyphOrange": "주황",
-			"glyphRed": "Glyph Red",
-			"cerulean": "세룰리안",
-			"tropicalTeal": "트로피컬 틸"
-		}
-	},
 	"lightTheme": {
-		"sectionTitle": "라이트 테마",
-		"preset": {
-			"label": "프리셋",
-			"hint": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
-		},
-		"background": {
-			"label": "배경",
-			"ariaLabel": "라이트 테마 배경색",
-			"resetAriaLabel": "라이트 테마 배경 재설정"
-		},
-		"foreground": {
-			"label": "전경",
-			"ariaLabel": "라이트 테마 전경색",
-			"resetAriaLabel": "라이트 테마 전경 재설정"
-		}
+		"label": "라이트",
+		"hint": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
 	},
 	"darkTheme": {
-		"sectionTitle": "다크 테마",
-		"preset": {
-			"label": "프리셋",
-			"hint": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
+		"label": "다크",
+		"hint": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다."
+	},
+	"customThemes": {
+		"sectionTitle": "사용자 지정 테마",
+		"sectionDescription": "JSON 팔레트를 가져오면 기본 테마처럼 사용할 수 있습니다.",
+		"template": {
+			"label": "테마 템플릿",
+			"description": "Glyph 기본 라이트·다크 색상에서 시작합니다. 헥스 코드와 이름을 수정하세요.",
+			"copy": "JSON 복사",
+			"save": "파일 저장"
 		},
-		"background": {
-			"label": "배경",
-			"ariaLabel": "다크 테마 배경색",
-			"resetAriaLabel": "다크 테마 배경 재설정"
+		"import": {
+			"label": "테마 가져오기",
+			"description": "수정한 JSON 파일을 선택하세요. 기존 테마와 이름이 같으면 안 됩니다.",
+			"action": "파일 선택",
+			"helpAriaLabel": "테마 가져오기 정보"
 		},
-		"foreground": {
-			"label": "전경",
-			"ariaLabel": "다크 테마 전경색",
-			"resetAriaLabel": "다크 테마 전경 재설정"
-		}
+		"installedDescription": "라이트 및 다크 테마 선택기에 표시됩니다.",
+		"removeAriaLabel": "{{name}} 삭제",
+		"nameTaken": "이름이 \"{{name}}\"인 테마가 이미 있습니다. 다른 이름을 사용하세요.",
+		"saveDialogTitle": "테마 템플릿 저장",
+		"importDialogTitle": "테마 JSON 가져오기"
 	},
 	"shape": {
 		"sectionTitle": "형태",

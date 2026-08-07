@@ -19,6 +19,12 @@ import {
 export { DEFAULT_ATTACHMENT_FOLDER } from "./attachmentStorage";
 import { type AppLanguage, normalizeAppLanguage } from "../i18n/locales";
 import {
+	type CustomTheme,
+	customThemeId,
+	isCustomThemeId,
+	normalizeCustomThemes,
+} from "./customThemes";
+import {
 	type DateDisplayFormat,
 	normalizeDateDisplayFormat,
 } from "./dateDisplayFormat";
@@ -43,26 +49,13 @@ import {
 import { invoke } from "./tauri";
 import type { AiAssistantMode } from "./tauri";
 import {
-	type UiThemeColorField,
-	type UiThemeColorMode,
-	type UiThemeColorOverrides,
-	type UiThemeColorOverridesPatch,
-	asNullableThemeColorValue,
-	tryNormalizeThemeColorHex,
-} from "./themeColors";
-import {
+	GLYPH_DEFAULT_DARK_THEME_ID,
+	GLYPH_DEFAULT_LIGHT_THEME_ID,
 	type UiDarkThemeId,
 	type UiLightThemeId,
 	asUiDarkThemeId,
 	asUiLightThemeId,
 } from "./uiThemes";
-
-export type {
-	UiThemeColorField,
-	UiThemeColorMode,
-	UiThemeColorOverrides,
-	UiThemeColorOverridesPatch,
-} from "./themeColors";
 
 export type { AiAssistantMode } from "./tauri";
 export type { DateDisplayFormat } from "./dateDisplayFormat";
@@ -111,23 +104,6 @@ export type AttachmentStorageMode =
 const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>(
 	Object.keys(ATTACHMENT_MODE_UI) as AttachmentStorageMode[],
 );
-export type UiAccent =
-	| "neutral"
-	| "glyph-orange"
-	| "glyph-red"
-	| "cerulean"
-	| "tropical-teal";
-const UI_ACCENTS = new Set<UiAccent>([
-	"neutral",
-	"glyph-orange",
-	"glyph-red",
-	"cerulean",
-	"tropical-teal",
-]);
-
-export function isUiAccent(value: unknown): value is UiAccent {
-	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent);
-}
 export type UiCornerRadiusStyle = "default" | "sharp" | "round";
 const UI_CORNER_RADIUS_STYLES = new Set<UiCornerRadiusStyle>([
 	"default",
@@ -150,7 +126,6 @@ function asUiCornerRadiusStyle(value: unknown): UiCornerRadiusStyle {
 	return isUiCornerRadiusStyle(value) ? value : DEFAULT_UI_CORNER_RADIUS_STYLE;
 }
 
-const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Geist";
 const DEFAULT_UI_EDITOR_FONT_FAMILY = DEFAULT_UI_FONT_FAMILY;
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
@@ -341,31 +316,16 @@ function asFocusMode(value: unknown): FocusMode {
 	return isFocusMode(value) ? value : DEFAULT_EDITOR_SETTINGS.focusMode;
 }
 
-function asUiAccent(value: unknown): UiAccent {
-	return isUiAccent(value) ? value : DEFAULT_UI_ACCENT;
-}
-
-function loadUiThemeColorOverrides(
-	entries: Map<string, unknown>,
-): UiThemeColorOverrides {
-	return {
-		light: {
-			background: asNullableThemeColorValue(
-				getSettingValue(entries, KEYS.lightThemeBackground),
-			),
-			foreground: asNullableThemeColorValue(
-				getSettingValue(entries, KEYS.lightThemeForeground),
-			),
-		},
-		dark: {
-			background: asNullableThemeColorValue(
-				getSettingValue(entries, KEYS.darkThemeBackground),
-			),
-			foreground: asNullableThemeColorValue(
-				getSettingValue(entries, KEYS.darkThemeForeground),
-			),
-		},
-	};
+/** Falls back to the Glyph preset when a selected custom theme no longer exists. */
+function resolveSelectedThemeId<T extends string>(
+	themeId: T,
+	customThemes: readonly CustomTheme[],
+	fallback: T,
+): T {
+	if (!isCustomThemeId(themeId)) return themeId;
+	return customThemes.some((theme) => customThemeId(theme.name) === themeId)
+		? themeId
+		: fallback;
 }
 
 function asUiFontFamily(
@@ -424,8 +384,7 @@ async function emitSettingsUpdated(payload: {
 		releaseChannel?: ReleaseChannel;
 		lightThemeId?: UiLightThemeId;
 		darkThemeId?: UiDarkThemeId;
-		accent?: UiAccent;
-		themeColors?: UiThemeColorOverridesPatch;
+		customThemes?: CustomTheme[];
 		fontFamily?: UiFontFamily;
 		editorFontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
@@ -511,8 +470,7 @@ export interface AppSettings {
 		releaseChannel: ReleaseChannel;
 		lightThemeId: UiLightThemeId;
 		darkThemeId: UiDarkThemeId;
-		accent: UiAccent;
-		themeColors: UiThemeColorOverrides;
+		customThemes: CustomTheme[];
 		fontFamily: UiFontFamily;
 		editorFontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
@@ -588,11 +546,7 @@ const KEYS = {
 	releaseChannel: "updates.releaseChannel",
 	lightThemeId: "ui.lightThemeId",
 	darkThemeId: "ui.darkThemeId",
-	accent: "ui.accent",
-	lightThemeBackground: "ui.lightThemeBackground",
-	lightThemeForeground: "ui.lightThemeForeground",
-	darkThemeBackground: "ui.darkThemeBackground",
-	darkThemeForeground: "ui.darkThemeForeground",
+	customThemes: "ui.customThemes",
 	fontFamily: "ui.fontFamily",
 	editorFontFamily: "ui.editorFontFamily",
 	monoFontFamily: "ui.monoFontFamily",
@@ -921,7 +875,6 @@ export async function loadSettings(
 	const rawReleaseChannel = getSettingValue(entries, KEYS.releaseChannel);
 	const rawLightThemeId = getSettingValue(entries, KEYS.lightThemeId);
 	const rawDarkThemeId = getSettingValue(entries, KEYS.darkThemeId);
-	const rawAccent = getSettingValue(entries, KEYS.accent);
 	const rawFontFamily = getSettingValue(entries, KEYS.fontFamily);
 	const rawEditorFontFamily = getSettingValue(entries, KEYS.editorFontFamily);
 	const rawMonoFontFamily = getSettingValue(entries, KEYS.monoFontFamily);
@@ -1067,10 +1020,19 @@ export async function loadSettings(
 		rawAutoUpdateCheckInterval,
 	);
 	const releaseChannel = asReleaseChannel(rawReleaseChannel);
-	const lightThemeId = asUiLightThemeId(rawLightThemeId);
-	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
-	const accent = asUiAccent(rawAccent);
-	const themeColors = loadUiThemeColorOverrides(entries);
+	const customThemes = normalizeCustomThemes(
+		getSettingValue(entries, KEYS.customThemes),
+	);
+	const lightThemeId = resolveSelectedThemeId(
+		asUiLightThemeId(rawLightThemeId),
+		customThemes,
+		GLYPH_DEFAULT_LIGHT_THEME_ID,
+	);
+	const darkThemeId = resolveSelectedThemeId(
+		asUiDarkThemeId(rawDarkThemeId),
+		customThemes,
+		GLYPH_DEFAULT_DARK_THEME_ID,
+	);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const editorFontFamily =
@@ -1206,8 +1168,7 @@ export async function loadSettings(
 			releaseChannel,
 			lightThemeId,
 			darkThemeId,
-			accent,
-			themeColors,
+			customThemes,
 			fontFamily,
 			editorFontFamily,
 			monoFontFamily,
@@ -1419,53 +1380,14 @@ export async function setUiDarkThemeId(
 	void emitSettingsUpdated({ ui: { darkThemeId: next } });
 }
 
-export async function setUiAccent(accent: UiAccent): Promise<void> {
+export async function setUiCustomThemes(
+	customThemes: readonly CustomTheme[],
+): Promise<void> {
 	const store = await getSettingsStore();
-	const next = asUiAccent(accent);
-	await store.set(KEYS.accent, next);
+	const next = normalizeCustomThemes(customThemes);
+	await store.set(KEYS.customThemes, next);
 	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { accent: next } });
-}
-
-const THEME_COLOR_SETTING_KEYS = {
-	light: {
-		background: KEYS.lightThemeBackground,
-		foreground: KEYS.lightThemeForeground,
-	},
-	dark: {
-		background: KEYS.darkThemeBackground,
-		foreground: KEYS.darkThemeForeground,
-	},
-} as const;
-
-export async function setUiThemeColorOverride({
-	mode,
-	field,
-	color,
-}: {
-	mode: UiThemeColorMode;
-	field: UiThemeColorField;
-	color: string | null;
-}): Promise<void> {
-	const store = await getSettingsStore();
-	const next = color === null ? null : tryNormalizeThemeColorHex(color);
-	if (color !== null && next === null) {
-		throw new Error("Invalid theme color");
-	}
-	const key = THEME_COLOR_SETTING_KEYS[mode][field];
-	if (next === null) {
-		await store.delete(key);
-	} else {
-		await store.set(key, next);
-	}
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
-		ui: {
-			themeColors: {
-				[mode]: { [field]: next },
-			},
-		},
-	});
+	void emitSettingsUpdated({ ui: { customThemes: next } });
 }
 
 export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {

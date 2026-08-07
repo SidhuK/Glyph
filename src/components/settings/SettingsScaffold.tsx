@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 interface SettingsSectionProps {
 	title: string;
@@ -79,6 +82,8 @@ export function SettingsRow({
 	) => {
 		const el = target as HTMLElement | null;
 		if (!el) return false;
+		// Portaled content (popovers, dialogs) still bubbles through React's tree.
+		if (!currentTarget.contains(el)) return false;
 		if (el.closest(".uiToggle")) return false;
 		if (el.closest("button, a, input, select, textarea")) return false;
 		if (el.closest("label")) return false;
@@ -132,6 +137,41 @@ export function SettingsRow({
 				{children}
 			</div>
 		</div>
+	);
+}
+
+/** Small "i" button that reveals longer guidance without crowding the row. */
+export function SettingsInfoHint({
+	ariaLabel,
+	children,
+}: {
+	ariaLabel: string;
+	children: ReactNode;
+}) {
+	return (
+		<Popover>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					className="settingsInfoButton"
+					aria-label={ariaLabel}
+				>
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						size="var(--icon-md)"
+						strokeWidth={0.9}
+					/>
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="start"
+				side="right"
+				sideOffset={8}
+				className="settingsInfoPopover"
+			>
+				{children}
+			</PopoverContent>
+		</Popover>
 	);
 }
 

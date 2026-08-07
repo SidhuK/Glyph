@@ -144,76 +144,6 @@
 	line-height: 1;
 }
 
-.settingsAccentPicker {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	width: 100%;
-}
-
-.settingsAccentOptions {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	flex-shrink: 0;
-}
-
-.settingsAccentDot {
-	--settings-accent-swatch: var(--text-primary);
-	height: 28px;
-	width: 28px;
-	padding: 0;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
-	background: transparent;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	position: relative;
-	transition: border-color var(--transition-base), box-shadow
-		var(--transition-base), background var(--transition-base);
-}
-
-.settingsAccentInput {
-	position: absolute;
-	opacity: 0;
-	pointer-events: none;
-}
-
-.settingsAccentDotInner {
-	height: 18px;
-	width: 18px;
-	border-radius: var(--radius-full);
-	background: var(--settings-accent-swatch);
-	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 8%, transparent);
-	transition: transform var(--transition-base), box-shadow
-		var(--transition-base);
-}
-
-.settingsAccentDot:hover {
-	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
-}
-
-.settingsAccentDot.is-active {
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
-}
-
-.settingsAccentDot.is-active .settingsAccentDotInner {
-	transform: scale(1.02);
-}
-
-.settingsAccentInput:focus-visible + .settingsAccentDotInner {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 8%, transparent), 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-}
-
 .settingsSegmentedPicker {
 	display: flex;
 	align-items: center;
@@ -561,18 +491,9 @@
 		right: 12px;
 	}
 
-	.settingsAccentPicker {
-		align-items: flex-start;
-		justify-content: flex-start;
-	}
-
 	.settingsSegmentedPicker {
 		align-items: flex-start;
 		justify-content: flex-start;
-	}
-
-	.settingsAccentOptions {
-		flex-wrap: wrap;
 	}
 
 	.settingsSegmentedTrack {
@@ -582,17 +503,12 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.settingsField,
-	.settingsAccentDot,
 	.settingsSegmentedOption,
 	.settingsAppearancePreviewPane,
 	.settingsAppearancePreviewFrame,
 	.settingsKeySaved {
 		transition: none;
 		animation: none;
-	}
-
-	.settingsAccentDot:hover {
-		transform: none;
 	}
 
 	.settingsSegmentedOption:active,

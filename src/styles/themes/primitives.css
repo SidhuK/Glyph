@@ -99,11 +99,4 @@
 
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
 	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-
-	--glyph-user-accent: initial;
-	--glyph-user-accent-hover: initial;
-	--glyph-user-light-background: initial;
-	--glyph-user-light-foreground: initial;
-	--glyph-user-dark-background: initial;
-	--glyph-user-dark-foreground: initial;
 }

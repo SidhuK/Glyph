@@ -104,6 +104,9 @@ vi.mock("../ui/shadcn/button", () => ({
 }));
 
 vi.mock("./SettingsScaffold", () => ({
+	SettingsInfoHint: ({ children }: { children: React.ReactNode }) => (
+		<span>{children}</span>
+	),
 	SettingsSection: ({
 		children,
 		title,

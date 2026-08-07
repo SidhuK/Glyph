@@ -2,13 +2,10 @@ import {
 	type EditorWidthMode,
 	MAX_EDITOR_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
-	type UiAccent,
 	type UiCornerRadiusStyle,
 	type UiFontFamily,
 	type UiFontSize,
-	isUiAccent,
 } from "./settings";
-import type { UiThemeColorOverrides } from "./themeColors";
 import {
 	type UiDarkThemeId,
 	type UiLightThemeId,
@@ -50,28 +47,6 @@ const DERIVED_UI_FONT_SIZE_PROPERTIES = [
 	"--text-base",
 	"--text-md",
 ] as const;
-
-const UI_ACCENT_COLORS: Record<Exclude<UiAccent, "neutral">, string> = {
-	"glyph-orange": "#de7356",
-	"glyph-red": "#e84d42",
-	cerulean: "#0081a7",
-	"tropical-teal": "#00afb9",
-};
-
-function clampColorChannel(value: number): number {
-	return Math.max(0, Math.min(255, Math.round(value)));
-}
-
-function shiftHexColor(hex: string, amount: number): string {
-	const clean = hex.replace("#", "");
-	const r = Number.parseInt(clean.slice(0, 2), 16);
-	const g = Number.parseInt(clean.slice(2, 4), 16);
-	const b = Number.parseInt(clean.slice(4, 6), 16);
-	const nextR = clampColorChannel(r + amount);
-	const nextG = clampColorChannel(g + amount);
-	const nextB = clampColorChannel(b + amount);
-	return `#${nextR.toString(16).padStart(2, "0")}${nextG.toString(16).padStart(2, "0")}${nextB.toString(16).padStart(2, "0")}`;
-}
 
 function scaledPx(px: number, scale: number): string {
 	return `${Math.round(px * scale)}px`;
@@ -200,42 +175,6 @@ export function applyUiCornerRadius(style: UiCornerRadiusStyle): void {
 		return;
 	}
 	root.dataset.cornerRadiusStyle = style;
-}
-
-export function applyUiAccent(
-	accent: UiAccent | string | null | undefined,
-): void {
-	const root = document.documentElement;
-	if (!isUiAccent(accent) || accent === "neutral") {
-		root.style.removeProperty("--accent-color");
-		root.style.removeProperty("--glyph-user-accent");
-		root.style.removeProperty("--glyph-user-accent-hover");
-		return;
-	}
-	const accentColor = UI_ACCENT_COLORS[accent];
-	root.style.setProperty("--glyph-user-accent", accentColor);
-	root.style.setProperty(
-		"--glyph-user-accent-hover",
-		shiftHexColor(accentColor, -18),
-	);
-}
-
-export function applyUiThemeColors(themeColors: UiThemeColorOverrides): void {
-	const root = document.documentElement;
-	const assignments: Array<[string, string | null]> = [
-		["--glyph-user-light-background", themeColors.light.background],
-		["--glyph-user-light-foreground", themeColors.light.foreground],
-		["--glyph-user-dark-background", themeColors.dark.background],
-		["--glyph-user-dark-foreground", themeColors.dark.foreground],
-	];
-
-	for (const [property, value] of assignments) {
-		if (value) {
-			root.style.setProperty(property, value);
-		} else {
-			root.style.removeProperty(property);
-		}
-	}
 }
 
 export function applyUiThemeSelection(

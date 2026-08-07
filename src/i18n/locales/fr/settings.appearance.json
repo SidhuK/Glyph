@@ -4,7 +4,7 @@
 		"panelTitle": "Apparence"
 	},
 	"theme": {
-		"sectionTitle": "Thème",
+		"sectionTitle": "Thèmes",
 		"sectionDescription": "Combinez les familles de thèmes clairs et sombres.",
 		"appearance": {
 			"label": "Apparence",
@@ -30,56 +30,34 @@
 			"ariaLabel": "Barre latérale translucide"
 		}
 	},
-	"accent": {
-		"sectionTitle": "Accent",
-		"sectionDescription": "S’applique aux thèmes clair et sombre de Glyph.",
-		"palette": {
-			"label": "Palette",
-			"description": "Définit l’accent pour les surlignages, anneaux de focus et emphases.",
-			"ariaLabel": "Couleur d’accent",
-			"resetAriaLabel": "Réinitialiser l’accent"
-		},
-		"options": {
-			"neutral": "Neutre",
-			"glyphOrange": "Orange",
-			"glyphRed": "Glyph Red",
-			"cerulean": "Céruléen",
-			"tropicalTeal": "Sarcelle tropicale"
-		}
-	},
 	"lightTheme": {
-		"sectionTitle": "Thème clair",
-		"preset": {
-			"label": "Préréglage",
-			"hint": "Choisissez la palette utilisée par Glyph en mode clair."
-		},
-		"background": {
-			"label": "Arrière-plan",
-			"ariaLabel": "Couleur d’arrière-plan du thème clair",
-			"resetAriaLabel": "Réinitialiser l’arrière-plan du thème clair"
-		},
-		"foreground": {
-			"label": "Premier plan",
-			"ariaLabel": "Couleur de premier plan du thème clair",
-			"resetAriaLabel": "Réinitialiser le premier plan du thème clair"
-		}
+		"label": "Clair",
+		"hint": "Choisissez la palette utilisée par Glyph en mode clair."
 	},
 	"darkTheme": {
-		"sectionTitle": "Thème sombre",
-		"preset": {
-			"label": "Préréglage",
-			"hint": "Choisissez la palette utilisée par Glyph en mode sombre."
+		"label": "Sombre",
+		"hint": "Choisissez la palette utilisée par Glyph en mode sombre."
+	},
+	"customThemes": {
+		"sectionTitle": "Thèmes personnalisés",
+		"sectionDescription": "Importez une palette JSON et utilisez-la comme n'importe quel thème intégré.",
+		"template": {
+			"label": "Modèle de thème",
+			"description": "Basé sur les couleurs claires et sombres par défaut de Glyph — modifiez les codes hex et le nom.",
+			"copy": "Copier le JSON",
+			"save": "Enregistrer le fichier"
 		},
-		"background": {
-			"label": "Arrière-plan",
-			"ariaLabel": "Couleur d’arrière-plan du thème sombre",
-			"resetAriaLabel": "Réinitialiser l’arrière-plan du thème sombre"
+		"import": {
+			"label": "Importer un thème",
+			"description": "Choisissez un fichier JSON modifié. Son nom ne peut pas correspondre à un thème existant.",
+			"action": "Choisir un fichier",
+			"helpAriaLabel": "À propos de l'importation de thèmes"
 		},
-		"foreground": {
-			"label": "Premier plan",
-			"ariaLabel": "Couleur de premier plan du thème sombre",
-			"resetAriaLabel": "Réinitialiser le premier plan du thème sombre"
-		}
+		"installedDescription": "Disponible dans les sélecteurs de thème clair et sombre.",
+		"removeAriaLabel": "Supprimer {{name}}",
+		"nameTaken": "Un thème nommé « {{name}} » existe déjà. Choisissez un autre nom.",
+		"saveDialogTitle": "Enregistrer le modèle de thème",
+		"importDialogTitle": "Importer un JSON de thème"
 	},
 	"shape": {
 		"sectionTitle": "Forme",

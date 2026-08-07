@@ -1,5 +1,8 @@
-import type { UiAccent } from "./settings";
-import { getAccentPreviewColor } from "./uiAccent";
+import {
+	type CustomUiThemeId,
+	customThemeSlug,
+	isCustomThemeId,
+} from "./customThemes";
 
 export interface UiThemePreview {
 	badgeBackground: string;
@@ -450,16 +453,18 @@ export const DARK_THEME_OPTIONS = [
 	},
 ] as const satisfies readonly UiThemeOption<string>[];
 
-export type UiLightThemeId = (typeof LIGHT_THEME_OPTIONS)[number]["id"];
-export type UiDarkThemeId = (typeof DARK_THEME_OPTIONS)[number]["id"];
+export type UiBuiltInLightThemeId = (typeof LIGHT_THEME_OPTIONS)[number]["id"];
+export type UiBuiltInDarkThemeId = (typeof DARK_THEME_OPTIONS)[number]["id"];
+export type UiLightThemeId = UiBuiltInLightThemeId | CustomUiThemeId;
+export type UiDarkThemeId = UiBuiltInDarkThemeId | CustomUiThemeId;
 
 export const GLYPH_DEFAULT_LIGHT_THEME_ID: UiLightThemeId = "glyph-default";
 export const GLYPH_DEFAULT_DARK_THEME_ID: UiDarkThemeId = "glyph-default-dark";
 
-const LIGHT_THEME_IDS = new Set<UiLightThemeId>(
+const LIGHT_THEME_IDS = new Set<string>(
 	LIGHT_THEME_OPTIONS.map((option) => option.id),
 );
-const DARK_THEME_IDS = new Set<UiDarkThemeId>(
+const DARK_THEME_IDS = new Set<string>(
 	DARK_THEME_OPTIONS.map((option) => option.id),
 );
 const LIGHT_THEME_MAP = new Map<UiLightThemeId, UiThemeOption<UiLightThemeId>>(
@@ -472,16 +477,11 @@ const DEFAULT_LIGHT_THEME_OPTION = LIGHT_THEME_OPTIONS[0];
 const DEFAULT_DARK_THEME_OPTION = DARK_THEME_OPTIONS[0];
 
 export function asUiLightThemeId(value: unknown): UiLightThemeId {
-	return typeof value === "string" &&
-		LIGHT_THEME_IDS.has(value as UiLightThemeId)
-		? (value as UiLightThemeId)
-		: GLYPH_DEFAULT_LIGHT_THEME_ID;
+	return isUiLightThemeId(value) ? value : GLYPH_DEFAULT_LIGHT_THEME_ID;
 }
 
 export function asUiDarkThemeId(value: unknown): UiDarkThemeId {
-	return typeof value === "string" && DARK_THEME_IDS.has(value as UiDarkThemeId)
-		? (value as UiDarkThemeId)
-		: GLYPH_DEFAULT_DARK_THEME_ID;
+	return isUiDarkThemeId(value) ? value : GLYPH_DEFAULT_DARK_THEME_ID;
 }
 
 export function getUiLightThemeOption(
@@ -497,28 +497,22 @@ export function getUiDarkThemeOption(
 }
 
 export function isUiLightThemeId(value: unknown): value is UiLightThemeId {
-	return (
-		typeof value === "string" && LIGHT_THEME_IDS.has(value as UiLightThemeId)
-	);
+	if (isCustomThemeId(value)) return true;
+	return typeof value === "string" && LIGHT_THEME_IDS.has(value);
 }
 
 export function isUiDarkThemeId(value: unknown): value is UiDarkThemeId {
-	return (
-		typeof value === "string" && DARK_THEME_IDS.has(value as UiDarkThemeId)
-	);
+	if (isCustomThemeId(value)) return true;
+	return typeof value === "string" && DARK_THEME_IDS.has(value);
 }
 
-export function isGlyphDefaultLightTheme(themeId: UiLightThemeId): boolean {
-	return themeId === GLYPH_DEFAULT_LIGHT_THEME_ID;
-}
-
-export function isGlyphDefaultDarkTheme(themeId: UiDarkThemeId): boolean {
-	return themeId === GLYPH_DEFAULT_DARK_THEME_ID;
-}
-
-export function isGlyphDefaultThemeId(id: string): boolean {
-	return (
-		id === GLYPH_DEFAULT_LIGHT_THEME_ID || id === GLYPH_DEFAULT_DARK_THEME_ID
+/** Guards custom theme names against colliding with a shipped preset. */
+export function isReservedUiThemeName(name: string): boolean {
+	const slug = customThemeSlug(name);
+	if (LIGHT_THEME_IDS.has(slug) || DARK_THEME_IDS.has(slug)) return true;
+	const label = name.trim().toLowerCase();
+	return [...LIGHT_THEME_OPTIONS, ...DARK_THEME_OPTIONS].some(
+		(option) => option.label.toLowerCase() === label,
 	);
 }
 
@@ -528,45 +522,6 @@ export function getGlyphDefaultThemeId(
 	return mode === "light"
 		? GLYPH_DEFAULT_LIGHT_THEME_ID
 		: GLYPH_DEFAULT_DARK_THEME_ID;
-}
-
-export function resolveGlyphDefaultThemePreview(
-	preview: UiThemePreview,
-	accent: UiAccent,
-	mode: "light" | "dark",
-): UiThemePreview {
-	if (accent === "neutral") {
-		return preview;
-	}
-
-	const accentColor = getAccentPreviewColor(accent, mode);
-	return {
-		...preview,
-		badgeText: accentColor,
-		badgeBackground: `color-mix(in srgb, ${accentColor} 14%, ${preview.surface})`,
-		badgeBorder: `color-mix(in srgb, ${accentColor} 24%, ${preview.badgeBorder})`,
-	};
-}
-
-export function resolveUiThemePreview<T extends string>(
-	option: UiThemeOption<T>,
-	mode: "light" | "dark",
-	accent: UiAccent,
-	resolvedColors?: { background: string; foreground: string },
-): UiThemePreview {
-	const preview = resolvedColors
-		? {
-				...option.preview,
-				surface: resolvedColors.background,
-				text: resolvedColors.foreground,
-			}
-		: option.preview;
-
-	if (!isGlyphDefaultThemeId(option.id)) {
-		return preview;
-	}
-
-	return resolveGlyphDefaultThemePreview(preview, accent, mode);
 }
 
 export function sortUiThemeOptions<T extends string>(

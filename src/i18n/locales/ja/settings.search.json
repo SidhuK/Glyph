@@ -146,14 +146,14 @@
 			]
 		},
 		"appearance-light-theme": {
-			"title": "プリセット",
-			"section": "ライトテーマ",
+			"title": "ライト",
+			"section": "テーマ",
 			"description": "ライトモードで Glyph が使うパレットを選びます。",
 			"keywords": ["テーマ", "色", "ライト", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "プリセット",
-			"section": "ダークテーマ",
+			"title": "ダーク",
+			"section": "テーマ",
 			"description": "ダークモードで Glyph が使うパレットを選びます。",
 			"keywords": ["テーマ", "色", "ダーク", "theme", "color", "dark"]
 		},
@@ -171,47 +171,11 @@
 				"translucent"
 			]
 		},
-		"appearance-accent": {
-			"title": "パレット",
-			"section": "アクセント",
-			"description": "Glyph のライト／ダークテーマのアクセントを設定します。",
-			"keywords": ["アクセント", "色", "パレット", "accent", "color", "palette"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "デフォルトの色",
-			"section": "ライトテーマ",
-			"description": "Glyph ライトテーマの背景色と文字色をカスタマイズします。",
-			"keywords": [
-				"テーマ",
-				"色",
-				"ライト",
-				"背景",
-				"前景",
-				"テキスト",
-				"theme",
-				"light",
-				"background",
-				"foreground",
-				"text"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "デフォルトの色",
-			"section": "ダークテーマ",
-			"description": "Glyph ダークテーマの背景色と文字色をカスタマイズします。",
-			"keywords": [
-				"テーマ",
-				"色",
-				"ダーク",
-				"背景",
-				"前景",
-				"テキスト",
-				"theme",
-				"dark",
-				"background",
-				"foreground",
-				"text"
-			]
+		"appearance-custom-themes": {
+			"title": "テーマをインポート",
+			"section": "カスタムテーマ",
+			"description": "JSON のパレットを新しいテーマとしてインポートします。",
+			"keywords": ["テーマ", "JSON", "インポート", "カスタム"]
 		},
 		"appearance-interface-font": {
 			"title": "インターフェースフォント",

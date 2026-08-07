@@ -5,6 +5,7 @@ mod ai_opencode;
 mod ai_pi;
 mod ai_rig;
 mod app_exit;
+mod custom_theme;
 mod databases;
 mod daily_note_rollover;
 mod external_markdown;
@@ -1574,6 +1575,8 @@ pub fn run() {
             external_markdown::external_markdown_reveal,
             external_markdown::external_markdown_finish_close,
             external_link_preview::external_link_preview,
+            custom_theme::custom_theme_read,
+            custom_theme::custom_theme_write,
             print::print_write_html,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,

@@ -30,56 +30,34 @@
 			"ariaLabel": "半透明サイドバー"
 		}
 	},
-	"accent": {
-		"sectionTitle": "アクセント",
-		"sectionDescription": "Glyph のライト／ダークテーマに適用されます。",
-		"palette": {
-			"label": "パレット",
-			"description": "ハイライト、フォーカスリング、強調のアクセントを設定します。",
-			"ariaLabel": "アクセントカラー",
-			"resetAriaLabel": "アクセントをリセット"
-		},
-		"options": {
-			"neutral": "ニュートラル",
-			"glyphOrange": "オレンジ",
-			"glyphRed": "Glyph Red",
-			"cerulean": "セルリアン",
-			"tropicalTeal": "トロピカルティール"
-		}
-	},
 	"lightTheme": {
-		"sectionTitle": "ライトテーマ",
-		"preset": {
-			"label": "プリセット",
-			"hint": "ライトモードで Glyph が使うパレットを選びます。"
-		},
-		"background": {
-			"label": "背景",
-			"ariaLabel": "ライトテーマの背景色",
-			"resetAriaLabel": "ライトテーマの背景をリセット"
-		},
-		"foreground": {
-			"label": "前景",
-			"ariaLabel": "ライトテーマの前景色",
-			"resetAriaLabel": "ライトテーマの前景をリセット"
-		}
+		"label": "ライト",
+		"hint": "ライトモードで Glyph が使うパレットを選びます。"
 	},
 	"darkTheme": {
-		"sectionTitle": "ダークテーマ",
-		"preset": {
-			"label": "プリセット",
-			"hint": "ダークモードで Glyph が使うパレットを選びます。"
+		"label": "ダーク",
+		"hint": "ダークモードで Glyph が使うパレットを選びます。"
+	},
+	"customThemes": {
+		"sectionTitle": "カスタムテーマ",
+		"sectionDescription": "JSON のパレットをインポートすると、組み込みテーマと同じように使えます。",
+		"template": {
+			"label": "テーマテンプレート",
+			"description": "Glyph 標準のライト・ダークカラーがベースです。16 進カラーと名前を編集してください。",
+			"copy": "JSON をコピー",
+			"save": "ファイルを保存"
 		},
-		"background": {
-			"label": "背景",
-			"ariaLabel": "ダークテーマの背景色",
-			"resetAriaLabel": "ダークテーマの背景をリセット"
+		"import": {
+			"label": "テーマをインポート",
+			"description": "編集した JSON ファイルを選びます。既存のテーマと同じ名前は使えません。",
+			"action": "ファイルを選択",
+			"helpAriaLabel": "テーマのインポートについて"
 		},
-		"foreground": {
-			"label": "前景",
-			"ariaLabel": "ダークテーマの前景色",
-			"resetAriaLabel": "ダークテーマの前景をリセット"
-		}
+		"installedDescription": "ライトとダークのテーマ選択に表示されます。",
+		"removeAriaLabel": "{{name}} を削除",
+		"nameTaken": "「{{name}}」というテーマは既にあります。別の名前を指定してください。",
+		"saveDialogTitle": "テーマテンプレートを保存",
+		"importDialogTitle": "テーマ JSON をインポート"
 	},
 	"shape": {
 		"sectionTitle": "形状",

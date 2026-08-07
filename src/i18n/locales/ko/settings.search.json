@@ -146,14 +146,14 @@
 			]
 		},
 		"appearance-light-theme": {
-			"title": "프리셋",
-			"section": "라이트 테마",
+			"title": "라이트",
+			"section": "테마",
 			"description": "라이트 모드에서 Glyph가 사용하는 팔레트를 선택합니다.",
 			"keywords": ["테마", "색상", "라이트", "theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "프리셋",
-			"section": "다크 테마",
+			"title": "다크",
+			"section": "테마",
 			"description": "다크 모드에서 Glyph가 사용하는 팔레트를 선택합니다.",
 			"keywords": ["테마", "색상", "다크", "theme", "color", "dark"]
 		},
@@ -171,47 +171,11 @@
 				"translucent"
 			]
 		},
-		"appearance-accent": {
-			"title": "팔레트",
-			"section": "액센트",
-			"description": "Glyph 라이트 및 다크 테마의 액센트를 설정합니다.",
-			"keywords": ["액센트", "색상", "팔레트", "accent", "color", "palette"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "기본 색상",
-			"section": "라이트 테마",
-			"description": "Glyph 라이트 테마의 배경 및 텍스트 색상을 사용자 지정합니다.",
-			"keywords": [
-				"테마",
-				"색상",
-				"라이트",
-				"배경",
-				"전경",
-				"텍스트",
-				"theme",
-				"light",
-				"background",
-				"foreground",
-				"text"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "기본 색상",
-			"section": "다크 테마",
-			"description": "Glyph 다크 테마의 배경 및 텍스트 색상을 사용자 지정합니다.",
-			"keywords": [
-				"테마",
-				"색상",
-				"다크",
-				"배경",
-				"전경",
-				"텍스트",
-				"theme",
-				"dark",
-				"background",
-				"foreground",
-				"text"
-			]
+		"appearance-custom-themes": {
+			"title": "테마 가져오기",
+			"section": "사용자 지정 테마",
+			"description": "JSON 팔레트를 새 테마로 가져옵니다.",
+			"keywords": ["테마", "JSON", "가져오기", "사용자 지정"]
 		},
 		"appearance-interface-font": {
 			"title": "인터페이스 글꼴",

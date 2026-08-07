@@ -8,34 +8,18 @@ import type {
 	UiLightThemeId,
 } from "../../lib/settings";
 import {
-	type UiThemeColorMode,
-	type UiThemeColorOverrides,
-	resolveUiThemeModeColors,
-} from "../../lib/themeColors";
-import {
 	type UiThemeOption,
 	type UiThemePreview,
-	isGlyphDefaultThemeId,
-	resolveUiThemePreview,
 	sortUiThemeOptions,
 } from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { AppearanceAccentPicker } from "./AppearanceAccentPicker";
-import {
-	AppearanceThemeColorControl,
-	AppearanceThemeColorResetButton,
-} from "./AppearanceThemeColorField";
 import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
 import {
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
-import type {
-	AppearanceThemeColorsActions,
-	AppearanceThemeColorsState,
-} from "./useAppearanceThemeColors";
 
 interface AppearanceThemeCardProps {
 	themeMode: ThemeMode;
@@ -44,8 +28,6 @@ interface AppearanceThemeCardProps {
 	lightOptions: readonly UiThemeOption<UiLightThemeId>[];
 	darkOptions: readonly UiThemeOption<UiDarkThemeId>[];
 	translucentApp: boolean;
-	appearance: AppearanceThemeColorsState;
-	actions: AppearanceThemeColorsActions;
 	onThemeModeChange: (mode: ThemeMode) => Promise<void>;
 	onLightThemeChange: (themeId: UiLightThemeId) => Promise<void>;
 	onDarkThemeChange: (themeId: UiDarkThemeId) => Promise<void>;
@@ -66,8 +48,6 @@ function ThemeSelector<T extends string>({
 	mode,
 	selected,
 	options,
-	accent,
-	resolvedColors,
 	onSelect,
 }: {
 	label: string;
@@ -75,18 +55,9 @@ function ThemeSelector<T extends string>({
 	mode: "light" | "dark";
 	selected: UiThemeOption<T>;
 	options: readonly UiThemeOption<T>[];
-	accent: AppearanceThemeColorsState["accent"];
-	resolvedColors?: { background: string; foreground: string };
 	onSelect: (themeId: T) => Promise<void>;
 }) {
 	const [open, setOpen] = useState(false);
-	const resolvedSelected = useMemo(
-		() => ({
-			...selected,
-			preview: resolveUiThemePreview(selected, mode, accent, resolvedColors),
-		}),
-		[accent, mode, resolvedColors, selected],
-	);
 	const sortedOptions = useMemo(
 		() => sortUiThemeOptions(options, mode),
 		[mode, options],
@@ -99,13 +70,13 @@ function ThemeSelector<T extends string>({
 					<button
 						type="button"
 						className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
-						style={getBadgeStyle(resolvedSelected.preview)}
+						style={getBadgeStyle(selected.preview)}
 						aria-expanded={open}
 					>
 						<span className="appearanceThemeDropdownLeading">
 							<span className="appearanceThemeBadge">Aa</span>
 							<span className="appearanceThemeDropdownTitle">
-								{resolvedSelected.label}
+								{selected.label}
 							</span>
 						</span>
 						<span
@@ -132,15 +103,6 @@ function ThemeSelector<T extends string>({
 					</div>
 					<div className="appearanceThemeDropdownList">
 						{sortedOptions.map((option) => {
-							const resolved = {
-								...option,
-								preview: resolveUiThemePreview(
-									option,
-									mode,
-									accent,
-									isGlyphDefaultThemeId(option.id) ? resolvedColors : undefined,
-								),
-							};
 							const selectedOption = selected.id === option.id;
 							return (
 								<button
@@ -150,7 +112,7 @@ function ThemeSelector<T extends string>({
 										"appearanceThemeDropdownOption",
 										selectedOption && "is-selected",
 									)}
-									style={getBadgeStyle(resolved.preview)}
+									style={getBadgeStyle(option.preview)}
 									onClick={() => {
 										void onSelect(option.id);
 										setOpen(false);
@@ -173,93 +135,6 @@ function ThemeSelector<T extends string>({
 	);
 }
 
-interface ThemeModeSectionProps<T extends string> {
-	title: string;
-	mode: UiThemeColorMode;
-	theme: UiThemeOption<T>;
-	themeOptions: readonly UiThemeOption<T>[];
-	accent: AppearanceThemeColorsState["accent"];
-	showColorPickers: boolean;
-	backgroundColor: string;
-	foregroundColor: string;
-	themeColors: UiThemeColorOverrides;
-	resolvedColors?: { background: string; foreground: string };
-	onThemeChange: (themeId: T) => Promise<void>;
-	onThemeColorChange: AppearanceThemeColorsActions["onThemeColorChange"];
-}
-
-function ThemeModeSection<T extends string>({
-	title,
-	mode,
-	theme,
-	themeOptions,
-	accent,
-	showColorPickers,
-	backgroundColor,
-	foregroundColor,
-	themeColors,
-	resolvedColors,
-	onThemeChange,
-	onThemeColorChange,
-}: ThemeModeSectionProps<T>) {
-	const { t } = useTranslation("settings.appearance");
-	const modeOverrides = themeColors[mode];
-	const presetKey = mode === "light" ? "lightTheme" : "darkTheme";
-
-	return (
-		<SettingsSection title={title}>
-			<ThemeSelector
-				label={t(`${presetKey}.preset.label`)}
-				hint={t(`${presetKey}.preset.hint`)}
-				mode={mode}
-				selected={theme}
-				options={themeOptions}
-				accent={accent}
-				resolvedColors={showColorPickers ? resolvedColors : undefined}
-				onSelect={onThemeChange}
-			/>
-
-			{showColorPickers ? (
-				<>
-					<SettingsRow
-						label={t(`${presetKey}.background.label`)}
-						interactive={false}
-					>
-						<AppearanceThemeColorControl
-							color={backgroundColor}
-							editable
-							canReset={modeOverrides.background !== null}
-							onChange={(color) =>
-								void onThemeColorChange(mode, "background", color)
-							}
-							onReset={() => void onThemeColorChange(mode, "background", null)}
-							resetAriaLabel={t(`${presetKey}.background.resetAriaLabel`)}
-							aria-label={t(`${presetKey}.background.ariaLabel`)}
-						/>
-					</SettingsRow>
-
-					<SettingsRow
-						label={t(`${presetKey}.foreground.label`)}
-						interactive={false}
-					>
-						<AppearanceThemeColorControl
-							color={foregroundColor}
-							editable
-							canReset={modeOverrides.foreground !== null}
-							onChange={(color) =>
-								void onThemeColorChange(mode, "foreground", color)
-							}
-							onReset={() => void onThemeColorChange(mode, "foreground", null)}
-							resetAriaLabel={t(`${presetKey}.foreground.resetAriaLabel`)}
-							aria-label={t(`${presetKey}.foreground.ariaLabel`)}
-						/>
-					</SettingsRow>
-				</>
-			) : null}
-		</SettingsSection>
-	);
-}
-
 export function AppearanceThemeCard({
 	themeMode,
 	lightTheme,
@@ -267,129 +142,53 @@ export function AppearanceThemeCard({
 	lightOptions,
 	darkOptions,
 	translucentApp,
-	appearance,
-	actions,
 	onThemeModeChange,
 	onLightThemeChange,
 	onDarkThemeChange,
 	onTranslucentAppChange,
 }: AppearanceThemeCardProps) {
 	const { t } = useTranslation("settings.appearance");
-	const {
-		accent,
-		themeColors,
-		showLightColorPickers,
-		showDarkColorPickers,
-		showAccentPicker,
-	} = appearance;
-	const { onAccentChange, onAccentReset, onThemeColorChange } = actions;
-	const canResetAccent = accent !== "neutral";
-	const lightPreview = useMemo(
-		() => resolveUiThemePreview(lightTheme, "light", accent, undefined),
-		[accent, lightTheme],
-	);
-	const darkPreview = useMemo(
-		() => resolveUiThemePreview(darkTheme, "dark", accent, undefined),
-		[accent, darkTheme],
-	);
-	const lightColors = useMemo(
-		() =>
-			resolveUiThemeModeColors(themeColors.light, {
-				background: lightPreview.surface,
-				foreground: lightPreview.text,
-			}),
-		[lightPreview.surface, lightPreview.text, themeColors.light],
-	);
-	const darkColors = useMemo(
-		() =>
-			resolveUiThemeModeColors(themeColors.dark, {
-				background: darkPreview.surface,
-				foreground: darkPreview.text,
-			}),
-		[darkPreview.surface, darkPreview.text, themeColors.dark],
-	);
-
 	return (
-		<>
-			<SettingsSection
-				title={t("theme.sectionTitle")}
-				description={t("theme.sectionDescription")}
+		<SettingsSection
+			title={t("theme.sectionTitle")}
+			description={t("theme.sectionDescription")}
+		>
+			<SettingsRow
+				label={t("theme.appearance.label")}
+				description={t("theme.appearance.description")}
+				interactive={false}
 			>
-				<SettingsRow
-					label={t("theme.appearance.label")}
-					description={t("theme.appearance.description")}
-					interactive={false}
-				>
-					<AppearanceThemeModePicker
-						themeMode={themeMode}
-						onThemeModeChange={onThemeModeChange}
-					/>
-				</SettingsRow>
+				<AppearanceThemeModePicker
+					themeMode={themeMode}
+					onThemeModeChange={onThemeModeChange}
+				/>
+			</SettingsRow>
 
-				<SettingsRow label={t("theme.translucentSidebar.label")}>
-					<SettingsToggle
-						ariaLabel={t("theme.translucentSidebar.ariaLabel")}
-						checked={translucentApp}
-						onCheckedChange={(checked) => void onTranslucentAppChange(checked)}
-					/>
-				</SettingsRow>
-			</SettingsSection>
-
-			{showAccentPicker ? (
-				<SettingsSection
-					title={t("accent.sectionTitle")}
-					description={t("accent.sectionDescription")}
-				>
-					<SettingsRow
-						label={t("accent.palette.label")}
-						description={t("accent.palette.description")}
-						interactive={false}
-					>
-						<div className="appearanceThemeColorControl">
-							<AppearanceAccentPicker
-								accent={accent}
-								onAccentChange={onAccentChange}
-								aria-label={t("accent.palette.ariaLabel")}
-							/>
-							<AppearanceThemeColorResetButton
-								disabled={!canResetAccent}
-								onClick={() => void onAccentReset()}
-								ariaLabel={t("accent.palette.resetAriaLabel")}
-							/>
-						</div>
-					</SettingsRow>
-				</SettingsSection>
-			) : null}
-
-			<ThemeModeSection
-				title={t("lightTheme.sectionTitle")}
+			<ThemeSelector
+				label={t("lightTheme.label")}
+				hint={t("lightTheme.hint")}
 				mode="light"
-				theme={lightTheme}
-				themeOptions={lightOptions}
-				accent={accent}
-				showColorPickers={showLightColorPickers}
-				backgroundColor={lightColors.background}
-				foregroundColor={lightColors.foreground}
-				themeColors={themeColors}
-				resolvedColors={lightColors}
-				onThemeChange={onLightThemeChange}
-				onThemeColorChange={onThemeColorChange}
+				selected={lightTheme}
+				options={lightOptions}
+				onSelect={onLightThemeChange}
 			/>
 
-			<ThemeModeSection
-				title={t("darkTheme.sectionTitle")}
+			<ThemeSelector
+				label={t("darkTheme.label")}
+				hint={t("darkTheme.hint")}
 				mode="dark"
-				theme={darkTheme}
-				themeOptions={darkOptions}
-				accent={accent}
-				showColorPickers={showDarkColorPickers}
-				backgroundColor={darkColors.background}
-				foregroundColor={darkColors.foreground}
-				themeColors={themeColors}
-				resolvedColors={darkColors}
-				onThemeChange={onDarkThemeChange}
-				onThemeColorChange={onThemeColorChange}
+				selected={darkTheme}
+				options={darkOptions}
+				onSelect={onDarkThemeChange}
 			/>
-		</>
+
+			<SettingsRow label={t("theme.translucentSidebar.label")}>
+				<SettingsToggle
+					ariaLabel={t("theme.translucentSidebar.ariaLabel")}
+					checked={translucentApp}
+					onCheckedChange={(checked) => void onTranslucentAppChange(checked)}
+				/>
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

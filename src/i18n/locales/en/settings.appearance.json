@@ -4,7 +4,7 @@
 		"panelTitle": "Appearance"
 	},
 	"theme": {
-		"sectionTitle": "Theme",
+		"sectionTitle": "Themes",
 		"sectionDescription": "Mix and match light and dark theme families.",
 		"appearance": {
 			"label": "Appearance",
@@ -30,56 +30,34 @@
 			"ariaLabel": "Translucent sidebar"
 		}
 	},
-	"accent": {
-		"sectionTitle": "Accent",
-		"sectionDescription": "Applies to the Glyph light and dark themes.",
-		"palette": {
-			"label": "Palette",
-			"description": "Sets the accent for highlights, focus rings, and emphasis.",
-			"ariaLabel": "Accent color",
-			"resetAriaLabel": "Reset accent"
-		},
-		"options": {
-			"neutral": "Neutral",
-			"glyphOrange": "Orange",
-			"glyphRed": "Glyph Red",
-			"cerulean": "Cerulean",
-			"tropicalTeal": "Tropical Teal"
-		}
-	},
 	"lightTheme": {
-		"sectionTitle": "Light theme",
-		"preset": {
-			"label": "Preset",
-			"hint": "Pick the palette Glyph uses in light mode."
-		},
-		"background": {
-			"label": "Background",
-			"ariaLabel": "Light theme background color",
-			"resetAriaLabel": "Reset light theme background"
-		},
-		"foreground": {
-			"label": "Foreground",
-			"ariaLabel": "Light theme foreground color",
-			"resetAriaLabel": "Reset light theme foreground"
-		}
+		"label": "Light",
+		"hint": "Pick the palette Glyph uses in light mode."
 	},
 	"darkTheme": {
-		"sectionTitle": "Dark theme",
-		"preset": {
-			"label": "Preset",
-			"hint": "Pick the palette Glyph uses in dark mode."
+		"label": "Dark",
+		"hint": "Pick the palette Glyph uses in dark mode."
+	},
+	"customThemes": {
+		"sectionTitle": "Custom themes",
+		"sectionDescription": "Import a JSON palette and use it like any built-in theme.",
+		"template": {
+			"label": "Theme template",
+			"description": "Starts from Glyph's default light and dark colors — edit the hex codes and the name.",
+			"copy": "Copy JSON",
+			"save": "Save file"
 		},
-		"background": {
-			"label": "Background",
-			"ariaLabel": "Dark theme background color",
-			"resetAriaLabel": "Reset dark theme background"
+		"import": {
+			"label": "Import theme",
+			"description": "Pick an edited JSON file. Its name cannot match an existing theme.",
+			"action": "Choose file",
+			"helpAriaLabel": "About importing themes"
 		},
-		"foreground": {
-			"label": "Foreground",
-			"ariaLabel": "Dark theme foreground color",
-			"resetAriaLabel": "Reset dark theme foreground"
-		}
+		"installedDescription": "Available in the light and dark theme pickers.",
+		"removeAriaLabel": "Remove {{name}}",
+		"nameTaken": "A theme named \"{{name}}\" already exists. Pick a different name.",
+		"saveDialogTitle": "Save theme template",
+		"importDialogTitle": "Import theme JSON"
 	},
 	"shape": {
 		"sectionTitle": "Shape",

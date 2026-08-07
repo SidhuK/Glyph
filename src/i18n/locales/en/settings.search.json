@@ -130,51 +130,32 @@
 		},
 		"appearance-theme-mode": {
 			"title": "Select Theme",
-			"section": "Theme",
+			"section": "Themes",
 			"description": "Choose system, light, or dark mode.",
 			"keywords": ["mode", "system", "light", "dark"]
 		},
 		"appearance-light-theme": {
-			"title": "Preset",
-			"section": "Light theme",
+			"title": "Light",
+			"section": "Themes",
 			"description": "Choose the palette Glyph uses in light mode.",
 			"keywords": ["theme", "color", "light"]
 		},
 		"appearance-dark-theme": {
-			"title": "Preset",
-			"section": "Dark theme",
+			"title": "Dark",
+			"section": "Themes",
 			"description": "Choose the palette Glyph uses in dark mode.",
 			"keywords": ["theme", "color", "dark"]
 		},
 		"appearance-translucent-app": {
 			"title": "Translucent sidebar",
-			"section": "Theme",
+			"section": "Themes",
 			"keywords": ["window", "glass", "blur", "translucent"]
 		},
-		"appearance-accent": {
-			"title": "Palette",
-			"section": "Accent",
-			"description": "Set the accent for the Glyph light and dark themes.",
-			"keywords": ["accent", "color", "palette"]
-		},
-		"appearance-light-theme-colors": {
-			"title": "Default colors",
-			"section": "Light theme",
-			"description": "Customize the Glyph light theme background and text colors.",
-			"keywords": [
-				"theme",
-				"color",
-				"light",
-				"background",
-				"foreground",
-				"text"
-			]
-		},
-		"appearance-dark-theme-colors": {
-			"title": "Default colors",
-			"section": "Dark theme",
-			"description": "Customize the Glyph dark theme background and text colors.",
-			"keywords": ["theme", "color", "dark", "background", "foreground", "text"]
+		"appearance-custom-themes": {
+			"title": "Import theme",
+			"section": "Custom themes",
+			"description": "Import a JSON palette as a new theme.",
+			"keywords": ["theme", "json", "import", "custom"]
 		},
 		"appearance-interface-font": {
 			"title": "Interface font",
