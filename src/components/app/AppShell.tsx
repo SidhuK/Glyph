@@ -1551,6 +1551,9 @@ export function AppShell() {
 									path: id,
 									query: options.query.trim(),
 									matchIndex: options.matchIndex,
+									targetPaneId:
+										tabs.find((tab) => tab.kind === "file" && tab.target === id)
+											?.paneId ?? focusedPaneId,
 								});
 							}
 							void openWorkspaceFile(id);

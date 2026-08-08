@@ -54,7 +54,7 @@ pub fn expand_text_matches(
 
         // A note whose title also matches keeps its note-level row so it still
         // appears under the palette's title group alongside its body rows.
-        if note.title.to_lowercase().contains(&needle_lc) {
+        if out.len() < limit && note.title.to_lowercase().contains(&needle_lc) {
             out.push(note.clone());
         }
 
@@ -189,7 +189,11 @@ fn snippet_around(text: &str, start: usize, end: usize) -> String {
 
 fn push_flattened(out: &mut String, part: &str) {
     for ch in part.chars() {
-        out.push(if ch.is_whitespace() { ' ' } else { ch });
+        match ch {
+            '⟦' => out.push_str("⟦⟦"),
+            '⟧' => out.push_str("⟧⟧"),
+            _ => out.push(if ch.is_whitespace() { ' ' } else { ch }),
+        }
     }
 }
 

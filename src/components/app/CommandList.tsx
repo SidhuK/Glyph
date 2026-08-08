@@ -23,22 +23,35 @@ interface CommandListProps {
 }
 
 function HighlightedSnippet({ snippet }: { snippet: string }) {
-	const parts = snippet.split(/([⟦⟧])/);
 	const output: ReactNode[] = [];
 	let highlighted = false;
-	for (const [index, part] of parts.entries()) {
-		if (part === "⟦") {
+	let text = "";
+	const pushText = (index: number) => {
+		if (!text) return;
+		output.push(
+			<Fragment key={`${index}:${text.slice(0, 8)}`}>
+				{highlighted ? <mark>{text}</mark> : text}
+			</Fragment>,
+		);
+		text = "";
+	};
+	for (let index = 0; index < snippet.length; index += 1) {
+		const char = snippet[index];
+		const next = snippet[index + 1];
+		if ((char === "⟦" || char === "⟧") && next === char) {
+			text += char;
+			index += 1;
+		} else if (char === "⟦") {
+			pushText(index);
 			highlighted = true;
-		} else if (part === "⟧") {
+		} else if (char === "⟧") {
+			pushText(index);
 			highlighted = false;
-		} else if (part) {
-			output.push(
-				<Fragment key={`${index}:${part.slice(0, 8)}`}>
-					{highlighted ? <mark>{part}</mark> : part}
-				</Fragment>,
-			);
+		} else {
+			text += char;
 		}
 	}
+	pushText(snippet.length);
 	return <>{output}</>;
 }
 

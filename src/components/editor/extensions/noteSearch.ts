@@ -53,7 +53,7 @@ export function findPlainTextSearchRanges(
 	}
 
 	const haystack = folded.join("");
-	const needle = query.toLowerCase();
+	const needle = Array.from(query, (char) => char.toLowerCase()).join("");
 	let cursor = 0;
 	while (cursor <= haystack.length - needle.length) {
 		const found = haystack.indexOf(needle, cursor);

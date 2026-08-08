@@ -300,6 +300,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const noteEditorHostRef = useRef<HTMLDivElement | null>(null);
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
 	);
@@ -434,6 +435,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		markdown,
 		mode,
 		relPath,
+		hostRef: noteEditorHostRef,
 		rawEditorRef,
 		tiptapHostRef,
 	});
@@ -873,6 +875,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	return (
 		<div
+			ref={noteEditorHostRef}
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",

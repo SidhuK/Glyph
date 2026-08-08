@@ -30,6 +30,7 @@ interface UseNoteFindOptions {
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
+	hostRef: RefObject<HTMLDivElement | null>;
 	rawEditorRef: RefObject<RawMarkdownEditorHandle | null>;
 	tiptapHostRef: RefObject<HTMLDivElement | null>;
 }
@@ -104,6 +105,7 @@ export function useNoteFind({
 	markdown,
 	mode,
 	relPath,
+	hostRef,
 	rawEditorRef,
 	tiptapHostRef,
 }: UseNoteFindOptions) {
@@ -330,13 +332,25 @@ export function useNoteFind({
 		setFindOpen(true);
 	}, []);
 
+	const isSearchJumpTarget = useCallback(
+		(jump: SearchJumpRequest) =>
+			hostRef.current
+				?.closest("[data-editor-pane-id]")
+				?.getAttribute("data-editor-pane-id") === jump.targetPaneId,
+		[hostRef],
+	);
+
 	useEffect(() => {
 		// A jump is claimed before the path check, because opening a search result
 		// in a new tab mounts this hook already pointed at the target note.
-		const jump = relPath ? consumeSearchJump(relPath) : null;
+		const targetPaneId = hostRef.current
+			?.closest("[data-editor-pane-id]")
+			?.getAttribute("data-editor-pane-id");
+		const jump =
+			relPath && targetPaneId ? consumeSearchJump(relPath, targetPaneId) : null;
 		const pathChanged = previousRelPathRef.current !== relPath;
 		previousRelPathRef.current = relPath;
-		if (jump) {
+		if (jump && isSearchJumpTarget(jump)) {
 			applySearchJump(jump);
 			return;
 		}
@@ -345,20 +359,21 @@ export function useNoteFind({
 		setFindOpen(false);
 		setFindQuery("");
 		setFindActiveIndex(0);
-	}, [applySearchJump, relPath]);
+	}, [applySearchJump, hostRef, isSearchJumpTarget, relPath]);
 
 	// Jump while this note is already open (palette → same tab).
 	useEffect(() => {
 		if (!relPath) return;
 		const onJump = (event: Event) => {
 			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
-			if (!detail || detail.path !== relPath) return;
-			consumeSearchJump(relPath);
+			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail))
+				return;
+			consumeSearchJump(relPath, detail.targetPaneId);
 			applySearchJump(detail);
 		};
 		window.addEventListener(SEARCH_JUMP_EVENT, onJump);
 		return () => window.removeEventListener(SEARCH_JUMP_EVENT, onJump);
-	}, [applySearchJump, relPath]);
+	}, [applySearchJump, isSearchJumpTarget, relPath]);
 
 	useEffect(() => {
 		if (!findOpen) return;
