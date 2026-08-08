@@ -103,6 +103,9 @@ export function useTabManager(spacePath: string | null) {
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const [historyByTabId, setHistoryByTabId] = useState<TabHistoryById>({});
 	const [tabsRevision, setTabsRevision] = useState(0);
+	// Synchronous twin of tabsRevision so in-flight session restore can see tab
+	// opens that have not re-rendered yet (e.g. cold-start deeplinks).
+	const tabsRevisionRef = useRef(0);
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
@@ -232,10 +235,11 @@ export function useTabManager(spacePath: string | null) {
 			}
 			nextActiveByPane[nextActivePaneId] = nextActiveTabId;
 			activeTabByPaneRef.current = nextActiveByPane;
+			tabsRevisionRef.current += 1;
 			setTabs(nextTabs);
 			setActiveTabIdState(nextActiveTabId);
 			setActiveTabByPane(nextActiveByPane);
-			setTabsRevision((revision) => revision + 1);
+			setTabsRevision(tabsRevisionRef.current);
 			syncWorkspaceState(nextTabs, nextActiveTabId, previousActiveTarget);
 		},
 		[syncWorkspaceState],
@@ -266,6 +270,7 @@ export function useTabManager(spacePath: string | null) {
 		activeTabIdRef.current = null;
 		historyByTabIdRef.current = {};
 		activeTabByPaneRef.current = { [PRIMARY_EDITOR_PANE_ID]: null };
+		tabsRevisionRef.current = 0;
 		setTabs([]);
 		setActiveTabIdState(null);
 		setSplitLayout(createInitialSplitEditorLayout());
@@ -523,6 +528,11 @@ export function useTabManager(spacePath: string | null) {
 			restoredFocusedPaneId: string | null,
 			activeTabTargetByPane: Record<string, string | null>,
 		) => {
+			// Yield to any tab open that landed while the snapshot was loading
+			// (cold-start deeplink, onboarding note, user click). Check the ref so
+			// this sees commits that have not re-rendered yet.
+			if (tabsRevisionRef.current !== 0) return;
+
 			const nextLayout = restoredLayout ?? createInitialSplitEditorLayout();
 			const layoutPaneIds = new Set(paneIdsInLayout(nextLayout));
 			const fallbackPaneId =
