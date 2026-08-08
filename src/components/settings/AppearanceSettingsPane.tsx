@@ -83,7 +83,7 @@ export function AppearanceSettingsPane() {
 		setUiDarkThemeId,
 		setError,
 	);
-	const translucentApp = useSettingsValue(
+	const translucentApp = useSettingsValue<boolean>(
 		DEFAULT_UI_TRANSLUCENT_APP,
 		setUiTranslucentApp,
 		setError,
