@@ -82,6 +82,22 @@ fn drain<T>(queue: &Mutex<VecDeque<T>>) -> Vec<T> {
 }
 
 impl DeeplinkState {
+    pub(crate) fn has_pending(&self) -> bool {
+        if !self
+            .actions
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .is_empty()
+        {
+            return true;
+        }
+        !self
+            .errors
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .is_empty()
+    }
+
     pub(crate) fn mark_startup_complete(&self) {
         self.startup_complete.store(true, Ordering::Release);
     }
