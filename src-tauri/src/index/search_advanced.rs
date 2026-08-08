@@ -132,6 +132,9 @@ fn select_candidates(
                 title: row.get(1).map_err(|e| e.to_string())?,
                 snippet: row.get(2).map_err(|e| e.to_string())?,
                 score: 0.0,
+                match_index: None,
+                match_query: None,
+                line: None,
             },
         });
     }

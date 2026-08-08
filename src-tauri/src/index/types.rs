@@ -1,11 +1,22 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct SearchResult {
     pub id: String,
     pub title: String,
     pub snippet: String,
     pub score: f64,
+    /// 0-based occurrence index within the note body (frontmatter excluded), for
+    /// jump-to-match. Absent on note-level rows.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub match_index: Option<u32>,
+    /// The literal text `match_index` counts, after search operators are parsed
+    /// off. The frontend opens find-in-note with exactly this.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub match_query: Option<String>,
+    /// 1-based line number of the match in the note's source markdown.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<u32>,
 }
 
 #[derive(Serialize)]

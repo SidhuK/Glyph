@@ -46,7 +46,10 @@ interface CommandPaletteProps {
 	spacePath: string | null;
 	tabs: WorkspaceTab[];
 	onActivateTab: (id: string) => void;
-	onSelectSearchResult: (id: string) => void;
+	onSelectSearchResult: (
+		id: string,
+		options?: { query?: string; matchIndex?: number },
+	) => void;
 	onRevealFolder: (path: string) => void;
 	onOpenDatabase: (id: string) => void;
 	templateFolder: string | null;
@@ -265,7 +268,10 @@ export function CommandPalette({
 				case "content":
 					if (!result.target) return;
 					closeAndRestoreFocus();
-					onSelectSearchResult(result.target);
+					onSelectSearchResult(result.target, {
+						query: result.searchQuery,
+						matchIndex: result.matchIndex,
+					});
 					return;
 				case "open-tab":
 					if (!result.target) return;

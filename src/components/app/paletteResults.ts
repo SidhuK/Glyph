@@ -55,11 +55,20 @@ export interface PaletteResult {
 	command?: Command;
 	target?: string;
 	snippet?: string;
+	/** 0-based occurrence index when this row is a body match. */
+	matchIndex?: number;
+	/** Query text to open find-in-note for. */
+	searchQuery?: string;
+	/** 1-based line number for display. */
+	matchLine?: number;
 	settingId?: string;
 	settingControl?: PaletteSettingControl;
 }
 
 const BROAD_GROUP_LIMIT = 8;
+/** Content rows are one per occurrence, so this group is a match list, not a
+ * note list, and needs room to show several hits from the same note. */
+const CONTENT_GROUP_LIMIT = 50;
 
 interface PaletteResultSources {
 	commands: readonly Command[];
@@ -193,20 +202,34 @@ export function buildPaletteResults({
 					kind: "content" as const,
 				})),
 			]
-		: sources.recentFiles.map((file) => ({
-				result: {
+		: sources.recentFiles.map((file) => {
+				const result: SearchResult = {
 					id: file.path,
 					title: displayNameFromPath(file.path),
 					snippet: "",
-				},
-				kind: "note" as const,
-			}));
+					score: 0,
+				};
+				return { result, kind: "note" as const };
+			});
 	for (const { result, kind } of noteSource) {
+		const matchIndex =
+			typeof result.match_index === "number" ? result.match_index : undefined;
+		const matchLine = typeof result.line === "number" ? result.line : undefined;
+		const folder = displayFolderFromPath(result.id);
+		const description =
+			kind === "content" && matchLine != null
+				? folder
+					? `${folder} · L${matchLine}`
+					: `L${matchLine}`
+				: folder;
 		candidates.push({
-			id: `${kind}:${result.id}`,
+			id:
+				kind === "content" && matchIndex != null
+					? `${kind}:${result.id}:${matchIndex}`
+					: `${kind}:${result.id}`,
 			kind,
 			label: result.title || displayNameFromPath(result.id),
-			description: displayFolderFromPath(result.id),
+			description,
 			category: t(`commandPalette.groups.${kind}`),
 			keywords: [result.id, parsedQuery.text],
 			defaultVisible: !query.trim(),
@@ -214,6 +237,11 @@ export function buildPaletteResults({
 			previewPath: result.id,
 			target: result.id,
 			snippet: kind === "content" ? result.snippet : undefined,
+			matchIndex,
+			matchLine,
+			// The backend owns query parsing, so it reports the literal text its
+			// match index counts; reparsing here would drift on quotes and operators.
+			searchQuery: result.match_query ?? undefined,
 		});
 	}
 
@@ -311,8 +339,13 @@ export function buildPaletteResults({
 			(a, b) =>
 				b.score - a.score || a.result.label.localeCompare(b.result.label),
 		);
+		// Only the search surface is a match list; the command palette stays tight.
+		const groupLimit =
+			kind === "content" && mode === "search"
+				? CONTENT_GROUP_LIMIT
+				: BROAD_GROUP_LIMIT;
 		return group
-			.slice(0, scoped ? undefined : BROAD_GROUP_LIMIT)
+			.slice(0, scoped ? undefined : groupLimit)
 			.map(({ result }) => result);
 	});
 }

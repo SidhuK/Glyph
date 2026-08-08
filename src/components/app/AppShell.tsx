@@ -54,6 +54,7 @@ import {
 } from "../../lib/navigationPrefetch";
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
+import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
@@ -1525,7 +1526,19 @@ export function AppShell() {
 						spacePath={spacePath}
 						tabs={tabs}
 						onActivateTab={setActiveTabId}
-						onSelectSearchResult={(id) => void openWorkspaceFile(id)}
+						onSelectSearchResult={(id, options) => {
+							if (
+								options?.query?.trim() &&
+								typeof options.matchIndex === "number"
+							) {
+								requestSearchJump({
+									path: id,
+									query: options.query.trim(),
+									matchIndex: options.matchIndex,
+								});
+							}
+							void openWorkspaceFile(id);
+						}}
 						onRevealFolder={handleNavigateBreadcrumbPath}
 						onOpenDatabase={(id) => openDatabasesTab(id)}
 						templateFolder={templateFolder}

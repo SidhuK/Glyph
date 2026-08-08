@@ -1,5 +1,6 @@
 import { TextSelection } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
+import { useEditorState } from "@tiptap/react";
 import {
 	type KeyboardEvent as ReactKeyboardEvent,
 	type RefObject,
@@ -9,6 +10,12 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { splitYamlFrontmatter } from "../../../lib/notePreview";
+import {
+	SEARCH_JUMP_EVENT,
+	type SearchJumpRequest,
+	consumeSearchJump,
+} from "../../../lib/searchJump";
 import {
 	findNoteSearchRanges,
 	findPlainTextSearchRanges,
@@ -103,20 +110,64 @@ export function useNoteFind({
 	const [findOpen, setFindOpen] = useState(false);
 	const [findQuery, setFindQuery] = useState("");
 	const [findActiveIndex, setFindActiveIndex] = useState(0);
+	// A jump requested from search. Held separately from `findActiveIndex`
+	// because the note's text and editor mode both load after the jump arrives,
+	// and the target index can only be resolved once they have.
+	const [searchJump, setSearchJump] = useState<SearchJumpRequest | null>(null);
 	const findInputRef = useRef<HTMLInputElement | null>(null);
 	const previousRelPathRef = useRef(relPath);
+
+	/**
+	 * `useEditor` deliberately does not re-render on transactions, and a note's
+	 * content is applied after mount, so the document has to be subscribed to
+	 * explicitly or matches would be computed against an empty doc and never
+	 * recomputed. Selecting `null` while find is closed keeps typing off React's
+	 * render path.
+	 */
+	const editorDoc = useEditorState({
+		editor,
+		selector: ({ editor: instance }) =>
+			findOpen && mode !== "plain" && instance && !instance.isDestroyed
+				? instance.state.doc
+				: null,
+		equalityFn: (a, b) => a === b,
+	});
 
 	const findMatches = useMemo(() => {
 		if (!findOpen || !findQuery) return [];
 		if (mode === "plain") {
 			return findPlainTextSearchRanges(markdown, findQuery);
 		}
-		if (!editor || editor.isDestroyed) return [];
-		return findNoteSearchRanges(editor.state.doc, findQuery);
-	}, [editor, findOpen, findQuery, markdown, mode]);
-	const effectiveFindActiveIndex = findMatches.length
-		? Math.min(findActiveIndex, findMatches.length - 1)
-		: 0;
+		if (!editorDoc) return [];
+		return findNoteSearchRanges(editorDoc, findQuery);
+	}, [editorDoc, findOpen, findQuery, markdown, mode]);
+	/**
+	 * Search counts occurrences from the note body, but the two editor modes
+	 * search different text: the rich editor's document is the body alone, while
+	 * the raw editor holds the whole file. So raw mode has to add the
+	 * frontmatter's own occurrences back onto the body ordinal.
+	 */
+	const jumpTargetIndex = useMemo(() => {
+		if (!searchJump || searchJump.query !== findQuery) return null;
+		if (mode !== "plain") return searchJump.matchIndex;
+		const { frontmatter } = splitYamlFrontmatter(markdown);
+		if (!frontmatter) return searchJump.matchIndex;
+		return (
+			searchJump.matchIndex +
+			findPlainTextSearchRanges(frontmatter, searchJump.query).length
+		);
+	}, [findQuery, markdown, mode, searchJump]);
+
+	const effectiveFindActiveIndex = useMemo(() => {
+		if (!findMatches.length) return 0;
+		if (jumpTargetIndex !== null) {
+			// Out of range means the occurrence has no counterpart the editor can
+			// select — a hit inside link syntax the renderer hides, say. Start at
+			// the first match rather than asserting a confidently wrong one.
+			return jumpTargetIndex < findMatches.length ? jumpTargetIndex : 0;
+		}
+		return Math.min(findActiveIndex, findMatches.length - 1);
+	}, [findActiveIndex, findMatches.length, jumpTargetIndex]);
 	const findCountLabel = !findQuery
 		? ""
 		: findMatches.length
@@ -176,6 +227,7 @@ export function useNoteFind({
 			const nextIndex =
 				(effectiveFindActiveIndex + direction + findMatches.length) %
 				findMatches.length;
+			setSearchJump(null);
 			setFindActiveIndex(nextIndex);
 			selectFindMatch(nextIndex);
 		},
@@ -219,6 +271,7 @@ export function useNoteFind({
 	}, [getSelectedSearchText]);
 
 	const closeFind = useCallback(() => {
+		setSearchJump(null);
 		setFindOpen(false);
 		if (mode === "plain") {
 			requestAnimationFrame(() => rawEditorRef.current?.focus());
@@ -263,17 +316,49 @@ export function useNoteFind({
 	);
 
 	const updateFindQuery = useCallback((nextQuery: string) => {
+		setSearchJump(null);
 		setFindQuery(nextQuery);
 		setFindActiveIndex(0);
 	}, []);
 
+	const applySearchJump = useCallback((jump: SearchJumpRequest) => {
+		// The active index is derived from the jump by `jumpTargetIndex`; this is
+		// only the fallback for when the jump stops applying.
+		setSearchJump(jump);
+		setFindQuery(jump.query);
+		setFindActiveIndex(0);
+		setFindOpen(true);
+	}, []);
+
 	useEffect(() => {
-		if (previousRelPathRef.current === relPath) return;
+		// A jump is claimed before the path check, because opening a search result
+		// in a new tab mounts this hook already pointed at the target note.
+		const jump = relPath ? consumeSearchJump(relPath) : null;
+		const pathChanged = previousRelPathRef.current !== relPath;
 		previousRelPathRef.current = relPath;
+		if (jump) {
+			applySearchJump(jump);
+			return;
+		}
+		if (!pathChanged) return;
+		setSearchJump(null);
 		setFindOpen(false);
 		setFindQuery("");
 		setFindActiveIndex(0);
-	}, [relPath]);
+	}, [applySearchJump, relPath]);
+
+	// Jump while this note is already open (palette → same tab).
+	useEffect(() => {
+		if (!relPath) return;
+		const onJump = (event: Event) => {
+			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
+			if (!detail || detail.path !== relPath) return;
+			consumeSearchJump(relPath);
+			applySearchJump(detail);
+		};
+		window.addEventListener(SEARCH_JUMP_EVENT, onJump);
+		return () => window.removeEventListener(SEARCH_JUMP_EVENT, onJump);
+	}, [applySearchJump, relPath]);
 
 	useEffect(() => {
 		if (!findOpen) return;
