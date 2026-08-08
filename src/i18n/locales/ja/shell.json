@@ -73,7 +73,17 @@
 		"createFromTemplate": "テンプレートから作成",
 		"addFolder": "フォルダを追加",
 		"deleteFile": "ファイルを削除",
-		"deleteFolder": "フォルダを削除"
+		"deleteFolder": "フォルダを削除",
+		"copyDeeplink": "ディープリンクをコピー",
+		"deeplinkCopied": "ディープリンクをコピーしました。",
+		"deeplinkCopyFailed": "ディープリンクをコピーできませんでした"
+	},
+	"deeplink": {
+		"openFailed": "リンクを開けませんでした",
+		"malformed": "この Glyph リンクは無効です。",
+		"spaceNotFound": "そのスペースが見つかりませんでした。",
+		"noteNotFound": "そのノートが見つかりませんでした。",
+		"noteNotMarkdown": "このリンクは Markdown ノートを指していません。"
 	},
 	"commandPalette": {
 		"title": "コマンドパレット",

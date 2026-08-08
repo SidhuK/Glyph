@@ -46,6 +46,12 @@ interface UILayoutContextValue {
 	dailyNotesFolder: string | null;
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
+	/**
+	 * The space whose settings `dailyNotesFolder`, `templateFolder` and
+	 * `dailyNoteTemplatePath` currently describe. Hydration is async, so after a
+	 * space switch those three lag until this matches the new space path.
+	 */
+	settingsSpacePath: string | null;
 	showToc: boolean;
 	setShowToc: (show: boolean) => void;
 	folioMode: boolean;
@@ -82,6 +88,7 @@ type UIState = {
 	dailyNotesFolder: string | null;
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
+	settingsSpacePath: string | null;
 	showToc: boolean;
 	folioMode: boolean;
 	folioScope: FolioScope;
@@ -115,6 +122,7 @@ type UIAction =
 	| { type: "onSpacePathChanged"; hasSpace: boolean }
 	| {
 			type: "hydrateSettings";
+			spacePath: string | null;
 			aiEnabled: boolean;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
@@ -123,6 +131,13 @@ type UIAction =
 			showToc: boolean;
 			folioMode: boolean;
 			dateDisplayFormat: DateDisplayFormat;
+	  }
+	| {
+			type: "hydrateSpaceSettings";
+			spacePath: string;
+			dailyNotesFolder: string | null;
+			templateFolder: string | null;
+			dailyNoteTemplatePath: string | null;
 	  };
 
 const initialUIState: UIState = {
@@ -134,6 +149,7 @@ const initialUIState: UIState = {
 	dailyNotesFolder: null,
 	templateFolder: null,
 	dailyNoteTemplatePath: null,
+	settingsSpacePath: null,
 	showToc: true,
 	folioMode: false,
 	folioScope: DEFAULT_FOLIO_SCOPE,
@@ -220,9 +236,18 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 						openMarkdownTabs: [],
 						activeMarkdownTabPath: null,
 					};
+		case "hydrateSpaceSettings":
+			return {
+				...state,
+				settingsSpacePath: action.spacePath,
+				dailyNotesFolder: action.dailyNotesFolder,
+				templateFolder: action.templateFolder,
+				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
+			};
 		case "hydrateSettings":
 			return {
 				...state,
+				settingsSpacePath: action.spacePath,
 				aiEnabled: action.aiEnabled,
 				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
 				aiAssistantMode: action.aiAssistantMode,
@@ -251,6 +276,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		dailyNotesFolder,
 		templateFolder,
 		dailyNoteTemplatePath,
+		settingsSpacePath,
 		showToc,
 		folioMode,
 		folioScope,
@@ -319,6 +345,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				dispatch({
 					type: "hydrateSettings",
+					spacePath: spacePathRef.current,
 					aiEnabled: s.ui.aiEnabled,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
@@ -364,16 +391,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				const s = await loadSettings({ spacePath });
 				if (cancelled) return;
 				dispatch({
-					type: "setDailyNotesFolder",
-					value: s.dailyNotes?.folder ?? null,
-				});
-				dispatch({
-					type: "setTemplateFolder",
-					value: s.templates?.folder ?? null,
-				});
-				dispatch({
-					type: "setDailyNoteTemplatePath",
-					value: s.templates?.dailyNoteTemplate ?? null,
+					type: "hydrateSpaceSettings",
+					spacePath,
+					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+					templateFolder: s.templates?.folder ?? null,
+					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
 				});
 			} catch {
 				// best-effort settings refresh
@@ -467,6 +489,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNotesFolder,
 			templateFolder,
 			dailyNoteTemplatePath,
+			settingsSpacePath,
 			showToc,
 			setShowToc,
 			folioMode,
@@ -493,6 +516,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNotesFolder,
 			templateFolder,
 			dailyNoteTemplatePath,
+			settingsSpacePath,
 			showToc,
 			setShowToc,
 			folioMode,

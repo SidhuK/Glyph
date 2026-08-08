@@ -31,7 +31,8 @@ interface SpaceContextValue {
 	startIndexRebuild: () => Promise<void>;
 	startIndexSync: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
-	onOpenSpaceAtPath: (path: string) => Promise<void>;
+	/** Resolves to whether the space is now open. */
+	onOpenSpaceAtPath: (path: string) => Promise<boolean>;
 	onCreateSpace: () => Promise<void>;
 	closeSpace: () => Promise<void>;
 }
@@ -198,11 +199,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const applySpaceSelection = useCallback(
-		async (path: string, mode: "open" | "create") => {
-			if (isOpeningSpaceRef.current) return;
+		async (path: string, mode: "open" | "create"): Promise<boolean> => {
+			if (isOpeningSpaceRef.current) return false;
 			isOpeningSpaceRef.current = true;
 			try {
-				if (path === currentSpacePathRef.current) return;
+				if (path === currentSpacePathRef.current) return true;
 				const spaceInfo =
 					mode === "create"
 						? await invoke("space_create", { path })
@@ -215,8 +216,10 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setRecentSpaces((prev) => normalizeRecentSpaces(prev, spaceInfo.root));
 				void updateOnboardingSettings({ launcherSeen: true });
 				await setCurrentSpacePath(spaceInfo.root);
+				return true;
 			} catch (err) {
 				setError(extractErrorMessage(err));
+				return false;
 			} finally {
 				isOpeningSpaceRef.current = false;
 			}

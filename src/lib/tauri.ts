@@ -842,6 +842,11 @@ export interface RolloverMoveResult {
 
 interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
+	deeplink_open: CommandDef<{ url: string }, void>;
+	deeplink_take_pending: CommandDef<
+		void,
+		import("./deeplink").PendingDeeplinks
+	>;
 	updater_check_release_channel: CommandDef<
 		{ channel: "stable" | "alpha" },
 		ReleaseChannelUpdate | null

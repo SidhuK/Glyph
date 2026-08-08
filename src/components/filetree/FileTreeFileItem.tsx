@@ -258,7 +258,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					label: t("fileTree.showInFinder"),
 					action: () => void handleRevealInFinder(),
 				},
-				...buildPathCopyMenuItems(spacePath, entry.rel_path),
+				...buildPathCopyMenuItems(spacePath, entry.rel_path, {
+					includeDeeplink: entry.is_markdown,
+				}),
 				{ type: "separator" },
 				{
 					label: t("fileTree.rename"),

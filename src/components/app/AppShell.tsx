@@ -23,6 +23,7 @@ import {
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
+import { useDeeplinkDispatch } from "../../hooks/useDeeplinkDispatch";
 import { useFileImport } from "../../hooks/useFileImport";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
@@ -159,6 +160,7 @@ export function AppShell() {
 		dailyNotesFolder,
 		templateFolder,
 		dailyNoteTemplatePath,
+		settingsSpacePath,
 		sidebarWidth,
 		setSidebarWidth,
 		settingsMode,
@@ -429,9 +431,10 @@ export function AppShell() {
 	}, [createSpace, prepareForSpaceChange, spacePath]);
 
 	const handleSelectSpace = useCallback(
-		async (path: string) => {
-			if (path === spacePath || !(await prepareForSpaceChange())) return;
-			await openSpaceAtPath(path);
+		async (path: string): Promise<boolean> => {
+			if (path === spacePath) return true;
+			if (!(await prepareForSpaceChange())) return false;
+			return await openSpaceAtPath(path);
 		},
 		[openSpaceAtPath, prepareForSpaceChange, spacePath],
 	);
@@ -734,6 +737,17 @@ export function AppShell() {
 		},
 		[setPaletteOpen],
 	);
+
+	useDeeplinkDispatch({
+		spacePath,
+		settingsSpacePath,
+		settingsLoaded,
+		selectSpace: handleSelectSpace,
+		openWorkspaceFile,
+		openPalette,
+		requestOpenDailyNote,
+	});
+
 	const closePalette = useCallback(() => {
 		moveTargetDirsRequestIdRef.current += 1;
 		setPaletteOpen(false);

@@ -1,5 +1,7 @@
 import { EditorView } from "@codemirror/view";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { isGlyphDeeplink } from "../../../lib/deeplink";
+import { openDeeplink } from "../../../lib/deeplinkOpen";
 import {
 	dispatchInternalAnchorClick,
 	dispatchMarkdownLinkClick,
@@ -106,6 +108,10 @@ export function createRawMarkdownEventHandlers(getRelPath: () => string) {
 			);
 			const href = markdownLink?.dataset.markdownHref;
 			if (!href) return false;
+			if (isGlyphDeeplink(href)) {
+				void openDeeplink(href);
+				return true;
+			}
 			if (href.startsWith("http://") || href.startsWith("https://")) {
 				void openUrl(href);
 				return true;

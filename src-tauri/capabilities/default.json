@@ -33,6 +33,7 @@
 		"opener:default",
 		"process:allow-restart",
 		"store:default",
-		"updater:default"
+		"updater:default",
+		"deep-link:default"
 	]
 }

@@ -1,6 +1,8 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import { isGlyphDeeplink } from "../../lib/deeplink";
+import { openDeeplink } from "../../lib/deeplinkOpen";
 import { cssEscape } from "../../utils/dom";
 import {
 	dispatchInternalAnchorClick,
@@ -163,6 +165,10 @@ export function handleEditorClick(
 		return true;
 	}
 	event.preventDefault();
+	if (isGlyphDeeplink(href)) {
+		void openDeeplink(href);
+		return true;
+	}
 	if (
 		editable &&
 		isExpandedMarkdownUrlLink(link) &&

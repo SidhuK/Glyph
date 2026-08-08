@@ -75,7 +75,17 @@
 		"importFilesHere": "Import Files Here…",
 		"importFolderHere": "Import Folder Here…",
 		"deleteFile": "Delete file",
-		"deleteFolder": "Delete folder"
+		"deleteFolder": "Delete folder",
+		"copyDeeplink": "Copy Deeplink",
+		"deeplinkCopied": "Copied deeplink.",
+		"deeplinkCopyFailed": "Could not copy deeplink"
+	},
+	"deeplink": {
+		"openFailed": "Could not open link",
+		"malformed": "This Glyph link is not valid.",
+		"spaceNotFound": "That space could not be found.",
+		"noteNotFound": "That note could not be found.",
+		"noteNotMarkdown": "That link does not point to a Markdown note."
 	},
 	"import": {
 		"filesTitle": "Import Files",
