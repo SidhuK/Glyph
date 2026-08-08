@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/SidhuK/Glyph/total" />
+</p>
+
+<p align="center">
   <strong>Offline-first notes for macOS</strong><br />
   Keep your Markdown files close, search them quickly, and work without a server.
 </p>
