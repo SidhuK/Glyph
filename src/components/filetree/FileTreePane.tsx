@@ -994,8 +994,12 @@ export const FileTreePane = memo(function FileTreePane({
 				if (payload.type !== "drop" || payload.paths.length === 0) return;
 				const pane = paneRef.current;
 				if (!pane) return;
-				const scaleFactor = await currentWindow.scaleFactor();
-				const position = payload.position.toLogical(scaleFactor);
+				// Wry reports macOS file-drop positions in AppKit points even though
+				// Tauri exposes them as physical pixels. Converting again would move a
+				// Retina drop toward the top-left of the tree.
+				const position = navigator.userAgent.includes("Macintosh")
+					? payload.position
+					: payload.position.toLogical(await currentWindow.scaleFactor());
 				const bounds = pane.getBoundingClientRect();
 				if (
 					position.x < bounds.left ||
