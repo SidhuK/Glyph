@@ -126,11 +126,13 @@ function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 interface FileTreeRootDropProps {
 	children: ReactNode;
 	targetDirPath?: string;
+	isExternalDropTarget?: boolean;
 }
 
 function FileTreeRootDrop({
 	children,
 	targetDirPath = "",
+	isExternalDropTarget = false,
 }: FileTreeRootDropProps) {
 	const { ref, isDropTarget } = useDroppable({
 		id: targetDirPath ? `file-tree-focused:${targetDirPath}` : "file-tree-root",
@@ -143,7 +145,9 @@ function FileTreeRootDrop({
 		<div
 			ref={ref}
 			className="fileTreeScroll"
-			data-drop-target={isDropTarget ? "true" : undefined}
+			data-drop-target={
+				isDropTarget || isExternalDropTarget ? "true" : undefined
+			}
 		>
 			{children}
 		</div>
@@ -164,6 +168,36 @@ interface FolderBreadcrumbProps {
 	dirPath: string;
 	onNavigate: (dirPath: string) => void;
 	onExit: () => void;
+}
+
+function fileTreeDropTargetAtPoint(
+	pane: HTMLElement,
+	x: number,
+	y: number,
+	fallbackDirPath: string,
+): string | null {
+	const bounds = pane.getBoundingClientRect();
+	if (
+		x < bounds.left ||
+		x >= bounds.right ||
+		y < bounds.top ||
+		y >= bounds.bottom
+	) {
+		return null;
+	}
+
+	const hit = document.elementFromPoint(x, y);
+	const row =
+		hit instanceof Element
+			? hit.closest<HTMLElement>("[data-file-tree-path][data-file-tree-kind]")
+			: null;
+	const rowPath =
+		row && pane.contains(row) ? row.dataset.fileTreePath : undefined;
+	return rowPath && row?.dataset.fileTreeKind === "dir"
+		? rowPath
+		: rowPath
+			? parentDir(rowPath)
+			: fallbackDirPath;
 }
 
 function FolderBreadcrumb({
@@ -256,6 +290,7 @@ interface TreeEntriesProps {
 	folderFileCounts: Record<string, number>;
 	showFolderFileCounts: boolean;
 	showNonMarkdownFiles: boolean;
+	externalDropTargetPath: string | null;
 	onOpenAppearancePicker: (entry: FsEntry) => void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
@@ -342,6 +377,7 @@ function TreeEntries({
 	folderFileCounts,
 	showFolderFileCounts,
 	showNonMarkdownFiles,
+	externalDropTargetPath,
 	onOpenAppearancePicker,
 	pinnedFiles,
 	onTogglePinnedFile,
@@ -504,6 +540,7 @@ function TreeEntries({
 									? (folderFileCounts[entry.rel_path] ?? null)
 									: null
 							}
+							isExternalDropTarget={externalDropTargetPath === entry.rel_path}
 							onOpenAppearancePicker={() => onOpenAppearancePicker(entry)}
 							onStartRename={() => onStartRename(entry.rel_path)}
 							onCommitRename={onCommitDirRename}
@@ -606,6 +643,9 @@ export const FileTreePane = memo(function FileTreePane({
 	} = useVisibleFilePreviews(spacePath, focusedDirPath);
 	const [appearancePickerTarget, setAppearancePickerTarget] =
 		useState<AppearancePickerTarget | null>(null);
+	const [externalDropTargetPath, setExternalDropTargetPath] = useState<
+		string | null
+	>(null);
 	const moveClickSuppressRef = useRef(false);
 	const moveClickSuppressResetTimerRef = useRef<ReturnType<
 		typeof window.setTimeout
@@ -991,36 +1031,28 @@ export const FileTreePane = memo(function FileTreePane({
 		let disposed = false;
 		void currentWindow
 			.onDragDropEvent(async ({ payload }) => {
-				if (payload.type !== "drop" || payload.paths.length === 0) return;
-				const pane = paneRef.current;
-				if (!pane) return;
-				const scaleFactor = await currentWindow.scaleFactor();
-				const position = payload.position.toLogical(scaleFactor);
-				const bounds = pane.getBoundingClientRect();
-				if (
-					position.x < bounds.left ||
-					position.x > bounds.right ||
-					position.y < bounds.top ||
-					position.y > bounds.bottom
-				) {
+				if (payload.type === "leave") {
+					setExternalDropTargetPath(null);
 					return;
 				}
-
-				const hit = document.elementFromPoint(position.x, position.y);
-				const row =
-					hit instanceof Element
-						? hit.closest<HTMLElement>(
-								"[data-file-tree-path][data-file-tree-kind]",
-							)
-						: null;
-				const rowPath =
-					row && pane.contains(row) ? row.dataset.fileTreePath : undefined;
-				const targetDir =
-					rowPath && row?.dataset.fileTreeKind === "dir"
-						? rowPath
-						: rowPath
-							? parentDir(rowPath)
-							: (focusedDirPathRef.current ?? "");
+				const pane = paneRef.current;
+				if (!pane) {
+					setExternalDropTargetPath(null);
+					return;
+				}
+				const targetDir = fileTreeDropTargetAtPoint(
+					pane,
+					payload.position.x,
+					payload.position.y,
+					focusedDirPathRef.current ?? "",
+				);
+				if (payload.type !== "drop") {
+					setExternalDropTargetPath(targetDir);
+					return;
+				}
+				setExternalDropTargetPath(null);
+				if (payload.paths.length === 0) return;
+				if (targetDir === null) return;
 				await onImportPathsInDir(payload.paths, targetDir);
 			})
 			.then((stopListening) => {
@@ -1073,7 +1105,10 @@ export const FileTreePane = memo(function FileTreePane({
 				}}
 			/>
 			{!hasLoadedFileVisibility ? null : focusedDirPath ? (
-				<FileTreeRootDrop targetDirPath={focusedDirPath}>
+				<FileTreeRootDrop
+					targetDirPath={focusedDirPath}
+					isExternalDropTarget={externalDropTargetPath === focusedDirPath}
+				>
 					<FolderBreadcrumb
 						spacePath={spacePath}
 						dirPath={focusedDirPath}
@@ -1110,6 +1145,7 @@ export const FileTreePane = memo(function FileTreePane({
 							folderFileCounts={folderFileCounts}
 							showFolderFileCounts={showFolderFileCounts}
 							showNonMarkdownFiles={showNonMarkdownFilesSetting}
+							externalDropTargetPath={externalDropTargetPath}
 							onOpenAppearancePicker={handleOpenAppearancePicker}
 							pinnedFiles={pinnedFiles}
 							onTogglePinnedFile={onTogglePinnedFile}
@@ -1131,7 +1167,7 @@ export const FileTreePane = memo(function FileTreePane({
 					)}
 				</FileTreeRootDrop>
 			) : hasVisibleRootEntries ? (
-				<FileTreeRootDrop>
+				<FileTreeRootDrop isExternalDropTarget={externalDropTargetPath === ""}>
 					<TreeEntries
 						entries={rootEntries}
 						parentDepth={-1}
@@ -1160,6 +1196,7 @@ export const FileTreePane = memo(function FileTreePane({
 						folderFileCounts={folderFileCounts}
 						showFolderFileCounts={showFolderFileCounts}
 						showNonMarkdownFiles={showNonMarkdownFilesSetting}
+						externalDropTargetPath={externalDropTargetPath}
 						onOpenAppearancePicker={handleOpenAppearancePicker}
 						pinnedFiles={pinnedFiles}
 						onTogglePinnedFile={onTogglePinnedFile}

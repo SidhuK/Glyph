@@ -127,7 +127,6 @@ vi.mock("@tauri-apps/api/window", () => ({
 	getCurrentWindow: () => ({
 		label: "main",
 		onDragDropEvent: vi.fn().mockResolvedValue(vi.fn()),
-		scaleFactor: vi.fn().mockResolvedValue(1),
 	}),
 }));
 

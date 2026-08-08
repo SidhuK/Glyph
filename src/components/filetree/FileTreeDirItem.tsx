@@ -114,6 +114,7 @@ interface FileTreeDirItemProps {
 	appearance?: FileTreeAppearance | null;
 	onOpenAppearancePicker: () => void;
 	fileCount?: number | null;
+	isExternalDropTarget: boolean;
 	onMoveClickSuppressRef: MutableRefObject<boolean>;
 	virtualRowRef?: Ref<HTMLLIElement>;
 	virtualRowStyle?: CSSProperties;
@@ -141,6 +142,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	appearance,
 	onOpenAppearancePicker,
 	fileCount,
+	isExternalDropTarget,
 	onMoveClickSuppressRef,
 	virtualRowRef,
 	virtualRowStyle,
@@ -242,7 +244,12 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
-					<div className="fileTreeRow" style={rowStyle}>
+					<div
+						className="fileTreeRow"
+						style={rowStyle}
+						data-file-tree-kind="dir"
+						data-file-tree-path={entry.rel_path}
+					>
 						<DirectoryRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
 							initialName={entry.name.trim() || "New Folder"}
@@ -275,7 +282,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							title={entry.rel_path || entry.name || "Folder"}
 							data-draggable="true"
 							data-dragging={isDragging ? "true" : undefined}
-							data-drop-target={isRowDropTarget ? "true" : undefined}
+							data-drop-target={
+								isRowDropTarget || isExternalDropTarget ? "true" : undefined
+							}
 							data-has-custom-color={customColor ? "true" : "false"}
 							data-file-tree-kind="dir"
 							data-file-tree-path={entry.rel_path}
