@@ -8,6 +8,7 @@ mod app_exit;
 mod custom_theme;
 mod databases;
 mod daily_note_rollover;
+mod deeplink;
 mod external_markdown;
 mod external_link_preview;
 mod file_tree_appearance;
@@ -1011,7 +1012,7 @@ fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
     Ok(window)
 }
 
-fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
+pub(crate) fn show_main_window_for_app(app: &tauri::AppHandle) -> Result<(), String> {
     let window = main_window(app)?;
     window.show().map_err(|error| error.to_string())?;
     window.unminimize().map_err(|error| error.to_string())?;
@@ -1064,6 +1065,12 @@ fn has_external_markdown_windows(app: &tauri::AppHandle) -> bool {
         .any(|label| external_markdown::is_external_markdown_window(label))
 }
 
+/// Handle OS-opened URLs. Returns true when the open was satisfied by an
+/// external markdown window, so the main window may stay hidden on cold start.
+///
+/// `glyph://` is deliberately not handled here: the deep-link plugin hooks the
+/// same `RunEvent::Opened` and forwards it to `on_open_url`, so branching on it
+/// in both places would dispatch every deeplink twice.
 fn handle_opened_urls(app: &tauri::AppHandle, urls: Vec<url::Url>) -> bool {
     for url in urls {
         if url.scheme() != "file" {
@@ -1417,7 +1424,14 @@ pub fn run() {
     #[cfg(target_os = "macos")]
     macos_webkit_defaults::configure_continuous_spell_checking();
 
+    // Single-instance must be registered first so deep links launched as a
+    // second process are forwarded to the running app (Windows/Linux).
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Err(error) = show_main_window_for_app(app) {
+                warn!("Failed to focus main window for second instance: {error}");
+            }
+        }))
         .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new(), &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
             id if id.starts_with("space.recent.") => {
@@ -1492,6 +1506,35 @@ pub fn run() {
             }
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                if let Err(error) = app.deep_link().register_all() {
+                    warn!("Failed to register deeplink schemes: {error}");
+                }
+            }
+
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                let handle = app.handle().clone();
+                // The plugin forwards every `RunEvent::Opened` URL on macOS,
+                // including `file://`, so filter by scheme here.
+                app.deep_link().on_open_url(move |event| {
+                    for url in event.urls() {
+                        if url.scheme() == "glyph" {
+                            deeplink::handle_url(
+                                &handle,
+                                url.as_str(),
+                                deeplink::DeeplinkSource::Os,
+                            );
+                        }
+                    }
+                });
+                // On Windows/Linux the plugin emits the cold-start URL during
+                // its own init, before the listener above exists.
+                deeplink::consume_startup_url(app.handle());
+            }
+
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -1544,6 +1587,7 @@ pub fn run() {
         .manage(space::SpaceState::default())
         .manage(app_exit::AppExitState::default())
         .manage(external_markdown::ExternalMarkdownState::default())
+        .manage(deeplink::DeeplinkState::default())
         .manage(MenuState::default())
         .manage(QuickNoteShortcutState::default())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -1552,8 +1596,11 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_deep_link::init())
         .invoke_handler(tauri::generate_handler![
             app_info,
+            deeplink::deeplink_open,
+            deeplink::deeplink_take_pending,
             release_channels::updater_check_release_channel,
             system_fonts_list,
             system_monospace_fonts_list,

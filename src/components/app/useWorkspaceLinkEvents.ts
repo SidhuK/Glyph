@@ -1,5 +1,7 @@
 import { useCallback, useEffect } from "react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
+import { isGlyphDeeplink } from "../../lib/deeplink";
+import { openDeeplink } from "../../lib/deeplinkOpen";
 import { invoke } from "../../lib/tauri";
 import {
 	isImagePath,
@@ -146,6 +148,10 @@ export function useWorkspaceLinkEvents({
 			if (!detail?.href) return;
 			void (async () => {
 				try {
+					if (isGlyphDeeplink(detail.href)) {
+						await openDeeplink(detail.href);
+						return;
+					}
 					const resolved = await invoke("space_resolve_markdown_link", {
 						href: detail.href,
 						sourcePath: detail.sourcePath,

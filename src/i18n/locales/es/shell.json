@@ -73,7 +73,17 @@
 		"createFromTemplate": "Crear desde plantilla",
 		"addFolder": "Añadir carpeta",
 		"deleteFile": "Eliminar archivo",
-		"deleteFolder": "Eliminar carpeta"
+		"deleteFolder": "Eliminar carpeta",
+		"copyDeeplink": "Copiar enlace profundo",
+		"deeplinkCopied": "Enlace profundo copiado.",
+		"deeplinkCopyFailed": "No se pudo copiar el enlace profundo"
+	},
+	"deeplink": {
+		"openFailed": "No se pudo abrir el enlace",
+		"malformed": "Este enlace de Glyph no es válido.",
+		"spaceNotFound": "No se encontró ese espacio.",
+		"noteNotFound": "No se encontró esa nota.",
+		"noteNotMarkdown": "Ese enlace no apunta a una nota de Markdown."
 	},
 	"commandPalette": {
 		"title": "Paleta de comandos",

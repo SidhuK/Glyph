@@ -50,6 +50,8 @@ rig-core = { version = "0.24.0", features = ["derive"] }
 schemars = "0.8"
 tauri-plugin-process = "2"
 tauri-plugin-global-shortcut = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-text = "20"

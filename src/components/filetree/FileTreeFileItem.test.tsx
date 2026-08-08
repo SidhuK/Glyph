@@ -34,6 +34,20 @@ vi.mock("../../lib/nativeContextMenu", () => ({
 	showNativeContextMenu: showNativeContextMenuMock,
 }));
 
+vi.mock("../../lib/pathClipboard", () => ({
+	buildPathCopyMenuItems: (
+		_spacePath: string | null,
+		_relPath: string,
+		options?: { includeDeeplink?: boolean },
+	) => [
+		{ label: "Copy Relative Path", action: () => undefined },
+		{ label: "Copy Absolute Path", action: () => undefined },
+		...(options?.includeDeeplink
+			? [{ label: "Copy Deeplink", action: () => undefined }]
+			: []),
+	],
+}));
+
 const openMarkdownInExternalWindowMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../../lib/externalMarkdown", () => ({
@@ -251,6 +265,27 @@ describe("FileTreeFileItem", () => {
 		expect(menuItems?.map((item) => item.label)).not.toContain(
 			"Open in New Window",
 		);
+		expect(menuItems?.map((item) => item.label)).not.toContain("Copy Deeplink");
+	});
+
+	it("shows Copy Deeplink for markdown files", async () => {
+		await renderFileTreeFileItem();
+
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new MouseEvent("contextmenu", { bubbles: true, cancelable: true }),
+			);
+		});
+
+		const menuItems = showNativeContextMenuMock.mock.calls[0]?.[1] as
+			| Array<{ label?: string }>
+			| undefined;
+		expect(menuItems?.map((item) => item.label)).toContain("Copy Deeplink");
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {

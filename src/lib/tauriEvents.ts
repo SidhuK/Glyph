@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 import type { CustomTheme } from "./customThemes";
+import type { DeeplinkErrorPayload, DeeplinkEvent } from "./deeplink";
 import type { EditorViewMode } from "./editorMode";
 import type { HeadingPaletteId } from "./headingPalettes";
 import type {
@@ -20,6 +21,8 @@ type TauriEventMap = {
 	"menu:app_command": { command_id: string };
 	"menu:open_recent_space": { path: string };
 	"app:open_note": { path: string };
+	"deeplink:action": DeeplinkEvent;
+	"deeplink:error": DeeplinkErrorPayload;
 	"external-markdown:close_requested": undefined;
 	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };

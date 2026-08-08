@@ -1,5 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { i18n } from "../i18n";
+import { buildNoteDeeplink } from "./deeplink";
 import type { NativeContextMenuItem } from "./nativeContextMenu";
 import { toast } from "./toast";
 
@@ -58,11 +59,34 @@ export async function copyAbsolutePath(
 	}
 }
 
+export async function copyNoteDeeplink(
+	spacePath: string | null,
+	relPath: string,
+): Promise<void> {
+	// Own the clipboard write so failures use the localized deeplink toast
+	// instead of the generic path-copy message from `copyPathToClipboard`.
+	try {
+		if (!spacePath) {
+			throw new Error("No space is open.");
+		}
+		const url = buildNoteDeeplink(spacePath, relPath);
+		const clipboard = navigator.clipboard;
+		if (!clipboard?.writeText) {
+			throw new Error("Clipboard is not available.");
+		}
+		await clipboard.writeText(url);
+		toast.success(i18n.t("shell:fileTree.deeplinkCopied"));
+	} catch {
+		toast.error(i18n.t("shell:fileTree.deeplinkCopyFailed"));
+	}
+}
+
 export function buildPathCopyMenuItems(
 	spacePath: string | null,
 	relPath: string,
+	options?: { includeDeeplink?: boolean },
 ): NativeContextMenuItem[] {
-	return [
+	const items: NativeContextMenuItem[] = [
 		{
 			label: i18n.t("shell:fileTree.copyRelativePath"),
 			action: () => void copyRelativePath(relPath),
@@ -72,4 +96,11 @@ export function buildPathCopyMenuItems(
 			action: () => void copyAbsolutePath(spacePath, relPath),
 		},
 	];
+	if (options?.includeDeeplink) {
+		items.push({
+			label: i18n.t("shell:fileTree.copyDeeplink"),
+			action: () => void copyNoteDeeplink(spacePath, relPath),
+		});
+	}
+	return items;
 }
