@@ -27,6 +27,7 @@ import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
+import { SettingsFolderPicker } from "./SettingsFolderPicker";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -34,54 +35,12 @@ import {
 } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
+import {
+	requireSpacePath,
+	selectFolderRelativeToSpace,
+} from "./spaceFolderSelection";
 
 const ATTACHMENT_SUBFOLDER_ERROR_ID = "attachmentSubfolderError";
-
-interface SpaceFolderSelection {
-	relativePath: string;
-	spacePath: string;
-}
-
-async function selectFolderRelativeToSpace(): Promise<SpaceFolderSelection | null> {
-	const { open } = await import("@tauri-apps/plugin-dialog");
-	const selected = await open({
-		directory: true,
-		multiple: false,
-	});
-	if (!selected || typeof selected !== "string") {
-		return null;
-	}
-
-	const currentSpace = await invoke("space_get_current");
-	if (!currentSpace) {
-		throw new Error("No space is currently open.");
-	}
-
-	const normSelected = selected.replace(/\\/g, "/");
-	const normSpace = currentSpace.replace(/\\/g, "/");
-	const spacePrefix = normSpace.endsWith("/") ? normSpace : `${normSpace}/`;
-	const selectedLower = normSelected.toLowerCase();
-	const spaceLower = normSpace.toLowerCase();
-
-	if (
-		selectedLower !== spaceLower &&
-		!selectedLower.startsWith(spacePrefix.toLowerCase())
-	) {
-		throw new Error("Selected folder must be inside the current space.");
-	}
-
-	return {
-		relativePath: normSelected.slice(normSpace.length).replace(/^\/+/, ""),
-		spacePath: currentSpace,
-	};
-}
-
-function requireSpacePath(spacePath: string | null): string {
-	if (!spacePath) {
-		throw new Error("No space is currently open.");
-	}
-	return spacePath;
-}
 
 export function SpaceSettingsPane() {
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
@@ -340,43 +299,16 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="dailyNotesFolderField">
-							<div className="dailyNotesFolderRow">
-								<div className="dailyNotesFolderPath">
-									{dailyNotesFolder ?? "Not configured"}
-								</div>
-								<div className="settingsActions dailyNotesActions">
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleBrowseFolder}
-									>
-										<FolderOpen size="var(--icon-md)" />
-										Browse
-									</Button>
-									{dailyNotesFolder ? (
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-sm"
-											className="rounded-md border-border bg-background justify-center shadow-none"
-											onClick={handleClearFolder}
-											aria-label="Clear daily notes folder"
-											title="Clear daily notes folder"
-										>
-											<Trash2 size="var(--icon-md)" />
-										</Button>
-									) : null}
-								</div>
-							</div>
-							{dailyNotesError ? (
-								<div className="settingsError dailyNotesError">
-									{dailyNotesError}
-								</div>
-							) : null}
-						</div>
+						<SettingsFolderPicker
+							path={dailyNotesFolder ?? "Not configured"}
+							browseLabel="Browse"
+							clearLabel="Clear daily notes folder"
+							onBrowse={() => void handleBrowseFolder()}
+							onClear={
+								dailyNotesFolder ? () => void handleClearFolder() : undefined
+							}
+							error={dailyNotesError}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 
@@ -387,39 +319,14 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="dailyNotesFolderField">
-							<div className="dailyNotesFolderRow">
-								<div className="dailyNotesFolderPath">{quickNotesFolder}</div>
-								<div className="settingsActions dailyNotesActions">
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										onClick={() => void handleBrowseQuickNotesFolder()}
-									>
-										<FolderOpen size="var(--icon-md)" />
-										Browse
-									</Button>
-									<Button
-										type="button"
-										variant="outline"
-										size="icon-sm"
-										className="rounded-md border-border bg-background justify-center shadow-none"
-										onClick={() => void handleResetQuickNotesFolder()}
-										aria-label="Reset quick notes folder"
-										title="Reset quick notes folder"
-									>
-										<Trash2 size="var(--icon-md)" />
-									</Button>
-								</div>
-							</div>
-							{quickNotesError ? (
-								<div className="settingsError dailyNotesError">
-									{quickNotesError}
-								</div>
-							) : null}
-						</div>
+						<SettingsFolderPicker
+							path={quickNotesFolder}
+							browseLabel="Browse"
+							clearLabel="Reset quick notes folder"
+							onBrowse={() => void handleBrowseQuickNotesFolder()}
+							onClear={() => void handleResetQuickNotesFolder()}
+							error={quickNotesError}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 

@@ -1,88 +1,55 @@
-import {
-	type Dispatch,
-	type SetStateAction,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect } from "react";
 import { applyUiCornerRadius } from "../../lib/appearance";
 import {
 	DEFAULT_UI_CORNER_RADIUS_STYLE,
 	type UiCornerRadiusStyle,
-	loadSettings,
 	setUiCornerRadiusStyle,
 } from "../../lib/settings";
+import { useSettingsValue } from "./useSettingsValue";
 
 interface UseAppearanceCornerRadiusOptions {
-	setError: Dispatch<SetStateAction<string>>;
+	setError: (message: string) => void;
+	isHydrated: boolean;
 }
 
 export function useAppearanceCornerRadius({
 	setError,
+	isHydrated,
 }: UseAppearanceCornerRadiusOptions) {
-	const [cornerRadiusStyle, setCornerRadiusStyleState] =
-		useState<UiCornerRadiusStyle>(DEFAULT_UI_CORNER_RADIUS_STYLE);
-	const cornerRadiusMutationRef = useRef(0);
-	const persistedCornerRadiusStyleRef = useRef<UiCornerRadiusStyle>(
+	const setting = useSettingsValue(
 		DEFAULT_UI_CORNER_RADIUS_STYLE,
+		setUiCornerRadiusStyle,
+		setError,
 	);
-	const cornerRadiusWriteQueueRef = useRef<Promise<unknown>>(Promise.resolve());
-
-	const applyCornerRadiusState = useCallback((next: UiCornerRadiusStyle) => {
-		setCornerRadiusStyleState(next);
-		applyUiCornerRadius(next);
-	}, []);
 
 	useEffect(() => {
-		let cancelled = false;
-		const hydrationMutationId = cornerRadiusMutationRef.current;
-		void (async () => {
-			try {
-				const settings = await loadSettings();
-				if (
-					cancelled ||
-					cornerRadiusMutationRef.current !== hydrationMutationId
-				) {
-					return;
-				}
-				persistedCornerRadiusStyleRef.current = settings.ui.cornerRadiusStyle;
-				applyCornerRadiusState(settings.ui.cornerRadiusStyle);
-			} catch (e) {
-				if (!cancelled) {
-					setError(e instanceof Error ? e.message : "Failed to load settings");
-				}
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [applyCornerRadiusState, setError]);
+		if (!isHydrated) return;
+		applyUiCornerRadius(setting.value);
+	}, [isHydrated, setting.value]);
 
+	const setCornerRadiusStyle = useCallback(
+		(next: UiCornerRadiusStyle) => {
+			setting.setValue(next);
+		},
+		[setting.setValue],
+	);
+	const setInitialCornerRadiusStyle = useCallback(
+		(next: UiCornerRadiusStyle) => {
+			setting.setInitialValue(next);
+		},
+		[setting.setInitialValue],
+	);
 	const onCornerRadiusStyleChange = useCallback(
 		async (next: UiCornerRadiusStyle) => {
-			const mutationId = cornerRadiusMutationRef.current + 1;
-			cornerRadiusMutationRef.current = mutationId;
-			setError("");
-			applyCornerRadiusState(next);
-			const persist = cornerRadiusWriteQueueRef.current.then(() =>
-				setUiCornerRadiusStyle(next),
-			);
-			cornerRadiusWriteQueueRef.current = persist.catch(() => {});
-			try {
-				await persist;
-				persistedCornerRadiusStyleRef.current = next;
-			} catch (e) {
-				if (cornerRadiusMutationRef.current !== mutationId) return;
-				applyCornerRadiusState(persistedCornerRadiusStyleRef.current);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			setting.onChange(next);
 		},
-		[applyCornerRadiusState, setError],
+		[setting.onChange],
 	);
 
 	return {
-		cornerRadiusStyle,
+		cornerRadiusStyle: setting.value,
+		setCornerRadiusStyle,
+		setInitialCornerRadiusStyle,
 		onCornerRadiusStyleChange,
 	};
 }

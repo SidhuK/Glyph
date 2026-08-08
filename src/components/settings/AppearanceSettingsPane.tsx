@@ -54,6 +54,7 @@ import { SettingsSelect } from "./SettingsSelect";
 import { useAppearanceCornerRadius } from "./useAppearanceCornerRadius";
 import { useAppearanceTypography } from "./useAppearanceTypography";
 import { applyIfBoolean, useSettingsBoolean } from "./useSettingsBoolean";
+import { useSettingsValue } from "./useSettingsValue";
 
 const EDITOR_WIDTH_VALUES = [
 	"compact",
@@ -64,21 +65,34 @@ const EDITOR_WIDTH_VALUES = [
 export function AppearanceSettingsPane() {
 	const { t } = useTranslation("settings.appearance");
 	const { setTheme } = useTheme();
-	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
-	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
-		GLYPH_DEFAULT_LIGHT_THEME_ID,
-	);
-	const [darkThemeId, setDarkThemeIdState] = useState<UiDarkThemeId>(
-		GLYPH_DEFAULT_DARK_THEME_ID,
-	);
-	const [translucentApp, setTranslucentAppState] = useState(
-		DEFAULT_UI_TRANSLUCENT_APP,
-	);
 	const [customThemes, setCustomThemesState] = useState<CustomTheme[]>([]);
-	const [editorWidthMode, setEditorWidthModeState] =
-		useState<EditorWidthMode>("compact");
-	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [error, setError] = useState("");
+	const [isHydrated, setIsHydrated] = useState(false);
+	const themeMode = useSettingsValue<ThemeMode>(
+		"system",
+		setThemeMode,
+		setError,
+	);
+	const lightThemeId = useSettingsValue<UiLightThemeId>(
+		GLYPH_DEFAULT_LIGHT_THEME_ID,
+		setUiLightThemeId,
+		setError,
+	);
+	const darkThemeId = useSettingsValue<UiDarkThemeId>(
+		GLYPH_DEFAULT_DARK_THEME_ID,
+		setUiDarkThemeId,
+		setError,
+	);
+	const translucentApp = useSettingsValue<boolean>(
+		DEFAULT_UI_TRANSLUCENT_APP,
+		setUiTranslucentApp,
+		setError,
+	);
+	const editorWidthMode = useSettingsValue<EditorWidthMode>(
+		"compact",
+		setEditorWidthMode,
+		setError,
+	);
 	const beautifulTags = useSettingsBoolean(
 		false,
 		setEditorBeautifulTags,
@@ -95,8 +109,12 @@ export function AppearanceSettingsPane() {
 		setDatabaseShowColumnColor,
 		setError,
 	);
-	const { cornerRadiusStyle, onCornerRadiusStyleChange } =
-		useAppearanceCornerRadius({ setError });
+	const {
+		cornerRadiusStyle,
+		setCornerRadiusStyle,
+		setInitialCornerRadiusStyle,
+		onCornerRadiusStyleChange,
+	} = useAppearanceCornerRadius({ setError, isHydrated });
 	const {
 		fontFamily,
 		editorFontFamily,
@@ -110,7 +128,13 @@ export function AppearanceSettingsPane() {
 		onMonoFontFamilyChange,
 		onUiFontSizeChange,
 		onEditorFontSizeChange,
-	} = useAppearanceTypography({ setError });
+		setInitialTypography,
+		setFontFamily,
+		setEditorFontFamily,
+		setMonoFontFamily,
+		setUiFontSize,
+		setEditorFontSize,
+	} = useAppearanceTypography({ setError, isHydrated });
 
 	const setBeautifulTagsChecked = beautifulTags.setChecked;
 	const setFolioModeChecked = folioMode.setChecked;
@@ -123,25 +147,19 @@ export function AppearanceSettingsPane() {
 			try {
 				const settings = await loadSettings();
 				if (cancelled) return;
-				setThemeModeState(settings.ui.theme);
-				setLightThemeIdState(settings.ui.lightThemeId);
-				setDarkThemeIdState(settings.ui.darkThemeId);
-				setTranslucentAppState(settings.ui.translucentApp);
+				themeMode.setInitialValue(settings.ui.theme);
+				lightThemeId.setInitialValue(settings.ui.lightThemeId);
+				darkThemeId.setInitialValue(settings.ui.darkThemeId);
+				translucentApp.setInitialValue(settings.ui.translucentApp);
 				setCustomThemesState(settings.ui.customThemes);
-				applyCustomThemes(settings.ui.customThemes);
 				setBeautifulTagsChecked(settings.editor.beautifulTags);
-				setEditorWidthModeState(settings.editor.editorWidthMode);
+				editorWidthMode.setInitialValue(settings.editor.editorWidthMode);
 				setFolioModeChecked(settings.ui.folioMode);
 				setClassicAllNotesChecked(settings.ui.classicAllNotesByDefault);
 				setShowColumnColorChecked(settings.database.showColumnColor);
-				setTheme(settings.ui.theme);
-				applyUiThemeSelection(
-					settings.ui.lightThemeId,
-					settings.ui.darkThemeId,
-				);
-				applyUiSurfacePreferences({
-					translucentApp: settings.ui.translucentApp,
-				});
+				setInitialCornerRadiusStyle(settings.ui.cornerRadiusStyle);
+				setInitialTypography(settings);
+				setIsHydrated(true);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -156,12 +174,67 @@ export function AppearanceSettingsPane() {
 		setClassicAllNotesChecked,
 		setFolioModeChecked,
 		setShowColumnColorChecked,
-		setTheme,
+		darkThemeId.setInitialValue,
+		editorWidthMode.setInitialValue,
+		lightThemeId.setInitialValue,
+		setInitialCornerRadiusStyle,
+		setInitialTypography,
+		themeMode.setInitialValue,
+		translucentApp.setInitialValue,
 	]);
+
+	useEffect(() => {
+		if (!isHydrated) return;
+		setTheme(themeMode.value);
+	}, [isHydrated, setTheme, themeMode.value]);
+
+	useEffect(() => {
+		if (!isHydrated) return;
+		applyUiThemeSelection(lightThemeId.value, darkThemeId.value);
+	}, [darkThemeId.value, isHydrated, lightThemeId.value]);
+
+	useEffect(() => {
+		if (!isHydrated) return;
+		applyUiSurfacePreferences({ translucentApp: translucentApp.value });
+	}, [isHydrated, translucentApp.value]);
+
+	useEffect(() => {
+		if (!isHydrated) return;
+		applyCustomThemes(customThemes);
+	}, [customThemes, isHydrated]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (payload.ui?.customThemes) {
 			setCustomThemesState(payload.ui.customThemes);
+		}
+		if (
+			payload.ui?.theme === "system" ||
+			payload.ui?.theme === "light" ||
+			payload.ui?.theme === "dark"
+		) {
+			themeMode.setValue(payload.ui.theme);
+		}
+		if (payload.ui?.lightThemeId)
+			lightThemeId.setValue(payload.ui.lightThemeId);
+		if (payload.ui?.darkThemeId) darkThemeId.setValue(payload.ui.darkThemeId);
+		applyIfBoolean(payload.ui?.translucentApp, translucentApp.setValue);
+		if (payload.ui?.cornerRadiusStyle) {
+			setCornerRadiusStyle(payload.ui.cornerRadiusStyle);
+		}
+		if (typeof payload.ui?.fontFamily === "string") {
+			setFontFamily(payload.ui.fontFamily);
+		}
+		if (typeof payload.ui?.editorFontFamily === "string") {
+			setEditorFontFamily(payload.ui.editorFontFamily);
+		}
+		if (typeof payload.ui?.monoFontFamily === "string") {
+			setMonoFontFamily(payload.ui.monoFontFamily);
+		}
+		if (typeof payload.ui?.fontSize === "number") {
+			setUiFontSize(payload.ui.fontSize);
+		}
+		if (typeof payload.ui?.editorFontSize === "number") {
+			setEditorFontSize(payload.ui.editorFontSize);
 		}
 		applyIfBoolean(payload.editor?.beautifulTags, setBeautifulTagsChecked);
 		if (
@@ -169,7 +242,7 @@ export function AppearanceSettingsPane() {
 			payload.editor?.editorWidthMode === "comfortable" ||
 			payload.editor?.editorWidthMode === "wide"
 		) {
-			setEditorWidthModeState(payload.editor.editorWidthMode);
+			editorWidthMode.setValue(payload.editor.editorWidthMode);
 		}
 		applyIfBoolean(payload.ui?.folioMode, setFolioModeChecked);
 		applyIfBoolean(
@@ -184,71 +257,35 @@ export function AppearanceSettingsPane() {
 
 	const onThemeModeChange = useCallback(
 		async (next: ThemeMode) => {
-			setError("");
-			setThemeModeState(next);
-			setTheme(next);
-			try {
-				await setThemeMode(next);
-			} catch (e) {
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			themeMode.onChange(next);
 		},
-		[setTheme],
+		[themeMode.onChange],
 	);
 
 	const onLightThemeChange = useCallback(
 		async (next: UiLightThemeId | string) => {
-			setError("");
-			const previousLight = lightThemeId;
-			const previousDark = darkThemeId;
-			const normalizedNext = asUiLightThemeId(next);
-			setLightThemeIdState(normalizedNext);
-			applyUiThemeSelection(normalizedNext, previousDark);
-			try {
-				await setUiLightThemeId(normalizedNext);
-			} catch (e) {
-				setLightThemeIdState(previousLight);
-				applyUiThemeSelection(previousLight, previousDark);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			lightThemeId.onChange(asUiLightThemeId(next));
 		},
-		[darkThemeId, lightThemeId],
+		[lightThemeId.onChange],
 	);
 
 	const onDarkThemeChange = useCallback(
 		async (next: UiDarkThemeId | string) => {
-			setError("");
-			const previousLight = lightThemeId;
-			const previousDark = darkThemeId;
-			const normalizedNext = asUiDarkThemeId(next);
-			setDarkThemeIdState(normalizedNext);
-			applyUiThemeSelection(previousLight, normalizedNext);
-			try {
-				await setUiDarkThemeId(normalizedNext);
-			} catch (e) {
-				setDarkThemeIdState(previousDark);
-				applyUiThemeSelection(previousLight, previousDark);
-				setError(e instanceof Error ? e.message : "Failed to save settings");
-			}
+			darkThemeId.onChange(asUiDarkThemeId(next));
 		},
-		[darkThemeId, lightThemeId],
+		[darkThemeId.onChange],
 	);
 
-	const onTranslucentAppChange = useCallback(async (next: boolean) => {
-		setError("");
-		setTranslucentAppState(next);
-		applyUiSurfacePreferences({ translucentApp: next });
-		try {
-			await setUiTranslucentApp(next);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : "Failed to save settings");
-		}
-	}, []);
+	const onTranslucentAppChange = useCallback(
+		async (next: boolean) => {
+			translucentApp.onChange(next);
+		},
+		[translucentApp.onChange],
+	);
 
 	const persistCustomThemes = useCallback(async (next: CustomTheme[]) => {
 		await setUiCustomThemes(next);
 		setCustomThemesState(next);
-		applyCustomThemes(next);
 	}, []);
 
 	const onCustomThemeImport = useCallback(
@@ -264,27 +301,35 @@ export function AppearanceSettingsPane() {
 			setError("");
 			const removedId = customThemeId(theme.name);
 			const nextLight =
-				lightThemeId === removedId
+				lightThemeId.value === removedId
 					? GLYPH_DEFAULT_LIGHT_THEME_ID
-					: lightThemeId;
+					: lightThemeId.value;
 			const nextDark =
-				darkThemeId === removedId ? GLYPH_DEFAULT_DARK_THEME_ID : darkThemeId;
-			if (nextLight !== lightThemeId) {
+				darkThemeId.value === removedId
+					? GLYPH_DEFAULT_DARK_THEME_ID
+					: darkThemeId.value;
+			if (nextLight !== lightThemeId.value) {
 				await setUiLightThemeId(nextLight);
-				setLightThemeIdState(nextLight);
+				lightThemeId.setValue(nextLight);
 			}
-			if (nextDark !== darkThemeId) {
+			if (nextDark !== darkThemeId.value) {
 				await setUiDarkThemeId(nextDark);
-				setDarkThemeIdState(nextDark);
+				darkThemeId.setValue(nextDark);
 			}
-			applyUiThemeSelection(nextLight, nextDark);
 			await persistCustomThemes(
 				customThemes.filter(
 					(existing) => customThemeId(existing.name) !== removedId,
 				),
 			);
 		},
-		[customThemes, darkThemeId, lightThemeId, persistCustomThemes],
+		[
+			customThemes,
+			darkThemeId.setValue,
+			darkThemeId.value,
+			lightThemeId.setValue,
+			lightThemeId.value,
+			persistCustomThemes,
+		],
 	);
 
 	const lightOptions: readonly UiThemeOption<UiLightThemeId>[] = [
@@ -296,23 +341,23 @@ export function AppearanceSettingsPane() {
 		...customThemeOptions(customThemes, "dark"),
 	];
 	const lightTheme =
-		lightOptions.find((option) => option.id === lightThemeId) ??
-		getUiLightThemeOption(lightThemeId);
+		lightOptions.find((option) => option.id === lightThemeId.value) ??
+		getUiLightThemeOption(lightThemeId.value);
 	const darkTheme =
-		darkOptions.find((option) => option.id === darkThemeId) ??
-		getUiDarkThemeOption(darkThemeId);
+		darkOptions.find((option) => option.id === darkThemeId.value) ??
+		getUiDarkThemeOption(darkThemeId.value);
 
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				<AppearanceThemeCard
-					themeMode={themeMode}
+					themeMode={themeMode.value}
 					lightTheme={lightTheme}
 					darkTheme={darkTheme}
 					lightOptions={lightOptions}
 					darkOptions={darkOptions}
-					translucentApp={translucentApp}
+					translucentApp={translucentApp.value}
 					onThemeModeChange={onThemeModeChange}
 					onLightThemeChange={onLightThemeChange}
 					onDarkThemeChange={onDarkThemeChange}
@@ -390,8 +435,8 @@ export function AppearanceSettingsPane() {
 					>
 						<SettingsSelect
 							aria-label={t("editorPresentation.editorWidth.ariaLabel")}
-							value={editorWidthMode}
-							disabled={isSavingEditorWidthMode}
+							value={editorWidthMode.value}
+							disabled={editorWidthMode.isSaving}
 							onChange={(event) => {
 								const nextMode = event.currentTarget.value;
 								if (
@@ -401,20 +446,7 @@ export function AppearanceSettingsPane() {
 								) {
 									return;
 								}
-								const previous = editorWidthMode;
-								setError("");
-								setEditorWidthModeState(nextMode);
-								setIsSavingEditorWidthMode(true);
-								void setEditorWidthMode(nextMode)
-									.catch((cause) => {
-										setEditorWidthModeState(previous);
-										setError(
-											cause instanceof Error ? cause.message : String(cause),
-										);
-									})
-									.finally(() => {
-										setIsSavingEditorWidthMode(false);
-									});
+								editorWidthMode.onChange(nextMode);
 							}}
 						>
 							{EDITOR_WIDTH_VALUES.map((value) => (

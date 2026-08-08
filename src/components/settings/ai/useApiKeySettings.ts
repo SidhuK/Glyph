@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { extractErrorMessage } from "../../../lib/errorUtils";
 import { invoke } from "../../../lib/tauri";
-import { errMessage } from "./utils";
 
 interface ApiKeyState {
 	apiKeyDraft: string;
@@ -103,7 +103,7 @@ export function useApiKeySettings(activeProfileId: string | null) {
 			}, 3000);
 			keySavedTimeoutRef.current = timeout;
 		} catch (error) {
-			setApiState((prev) => ({ ...prev, error: errMessage(error) }));
+			setApiState((prev) => ({ ...prev, error: extractErrorMessage(error) }));
 		}
 	}, [activeProfileId, apiState.apiKeyDraft, setApiKeyMutation]);
 
@@ -119,7 +119,7 @@ export function useApiKeySettings(activeProfileId: string | null) {
 				secretConfigured: false,
 			}));
 		} catch (error) {
-			setApiState((prev) => ({ ...prev, error: errMessage(error) }));
+			setApiState((prev) => ({ ...prev, error: extractErrorMessage(error) }));
 		}
 	}, [activeProfileId, clearApiKeyMutation]);
 

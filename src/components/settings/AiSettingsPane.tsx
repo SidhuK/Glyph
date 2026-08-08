@@ -1,6 +1,7 @@
 import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { isMissingFileError } from "../../lib/fsErrors";
 import {
 	loadSettings,
@@ -15,7 +16,6 @@ import {
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
-import { errMessage } from "./ai/utils";
 import { useSettingsBoolean } from "./useSettingsBoolean";
 
 const MISSING_FILE_RETRY_DELAY_MS = 80;
@@ -108,7 +108,7 @@ export function AiSettingsPane() {
 			}
 		} catch (e) {
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
-			setError(errMessage(e));
+			setError(extractErrorMessage(e));
 		}
 	}, [setActiveProfileIdTracked, setAiToolsEnabledChecked]);
 
@@ -138,7 +138,7 @@ export function AiSettingsPane() {
 		try {
 			await setAiEnabled(enabled);
 		} catch (e) {
-			setError(errMessage(e));
+			setError(extractErrorMessage(e));
 		}
 	}, []);
 
@@ -160,7 +160,7 @@ export function AiSettingsPane() {
 				await notifyAiProfilesUpdated();
 			} catch (e) {
 				if (requestId !== saveProfileRequestIdRef.current) return;
-				setError(errMessage(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[notifyAiProfilesUpdated, setActiveProfileIdTracked],
@@ -185,7 +185,7 @@ export function AiSettingsPane() {
 				if (requestId !== activeProfileChangeRequestIdRef.current) return;
 				pendingActiveProfileIdRef.current = null;
 				setActiveProfileIdTracked(previous);
-				setError(errMessage(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[notifyAiProfilesUpdated, setActiveProfileIdTracked],

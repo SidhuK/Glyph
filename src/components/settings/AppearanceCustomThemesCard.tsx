@@ -174,7 +174,7 @@ export function AppearanceCustomThemesCard({
 						type="button"
 						variant="outline"
 						size="icon-sm"
-						className="rounded-md border-border bg-background justify-center shadow-none"
+						className={ACTION_BUTTON_CLASS}
 						aria-label={t("customThemes.removeAriaLabel", { name: theme.name })}
 						title={t("customThemes.removeAriaLabel", { name: theme.name })}
 						onClick={() => void handleRemove(theme)}

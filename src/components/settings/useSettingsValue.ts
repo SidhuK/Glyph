@@ -11,6 +11,7 @@ export function useSettingsValue<T>(
 	const changedRef = useRef(false);
 	const persistedRef = useRef<{ value: T } | null>(null);
 	const saveRequestIdRef = useRef(0);
+	const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 	const setValue = useCallback((next: T) => {
 		changedRef.current = true;
 		persistedRef.current = { value: next };
@@ -30,7 +31,9 @@ export function useSettingsValue<T>(
 			changedRef.current = true;
 			setValueState(next);
 			setIsSaving(true);
-			void save(next)
+			const savePromise = saveQueueRef.current.then(() => save(next));
+			saveQueueRef.current = savePromise.catch(() => undefined);
+			void savePromise
 				.catch((cause) => {
 					if (requestId !== saveRequestIdRef.current) return;
 					const latestPersisted = persistedRef.current;
