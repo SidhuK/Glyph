@@ -25,6 +25,11 @@ import type { NoteInlineEditorMode } from "../types";
 
 const MAX_SELECTION_QUERY_LENGTH = 120;
 
+interface TextRange {
+	from: number;
+	to: number;
+}
+
 interface UseNoteFindOptions {
 	editor: Editor | null;
 	markdown: string;
@@ -100,6 +105,68 @@ function centerEditorPosition(editor: Editor, pos: number) {
 	}
 }
 
+function markdownLinkDestinations(markdown: string): TextRange[] {
+	const destinations: TextRange[] = [];
+	let index = 0;
+	while (index + 1 < markdown.length) {
+		if (markdown[index] !== "]" || markdown[index + 1] !== "(") {
+			index += 1;
+			continue;
+		}
+
+		const from = index + 2;
+		let cursor = from;
+		let depth = 1;
+		while (cursor < markdown.length) {
+			const char = markdown[cursor];
+			if (char === "\\") {
+				cursor += 2;
+			} else if (char === "(") {
+				depth += 1;
+				cursor += 1;
+			} else if (char === ")") {
+				depth -= 1;
+				cursor += 1;
+				if (depth === 0) {
+					destinations.push({ from, to: cursor - 1 });
+					break;
+				}
+			} else {
+				cursor += 1;
+			}
+		}
+		index = cursor;
+	}
+	return destinations;
+}
+
+function overlapsMarkdownLinkDestination(
+	range: TextRange,
+	destinations: readonly TextRange[],
+) {
+	return destinations.some(
+		(destination) => range.from < destination.to && destination.from < range.to,
+	);
+}
+
+function rawMatchIndexForVisibleMatch(
+	markdown: string,
+	query: string,
+	visibleMatchIndex: number,
+) {
+	const destinations = markdownLinkDestinations(markdown);
+	let visibleIndex = 0;
+	for (const [rawIndex, range] of findPlainTextSearchRanges(
+		markdown,
+		query,
+	).entries()) {
+		if (overlapsMarkdownLinkDestination(range, destinations)) continue;
+		if (visibleIndex === visibleMatchIndex) return rawIndex;
+		visibleIndex += 1;
+	}
+	return null;
+}
+
 export function useNoteFind({
 	editor,
 	markdown,
@@ -145,17 +212,23 @@ export function useNoteFind({
 	}, [editorDoc, findOpen, findQuery, markdown, mode]);
 	/**
 	 * Search counts occurrences from the note body, but the two editor modes
-	 * search different text: the rich editor's document is the body alone, while
-	 * the raw editor holds the whole file. So raw mode has to add the
-	 * frontmatter's own occurrences back onto the body ordinal.
+	 * search different text: the rich editor's document omits link destinations,
+	 * while the raw editor holds the whole file. So raw mode has to restore those
+	 * source-only occurrences plus frontmatter to the body ordinal.
 	 */
 	const jumpTargetIndex = useMemo(() => {
 		if (!searchJump || searchJump.query !== findQuery) return null;
 		if (mode !== "plain") return searchJump.matchIndex;
-		const { frontmatter } = splitYamlFrontmatter(markdown);
-		if (!frontmatter) return searchJump.matchIndex;
+		const { body, frontmatter } = splitYamlFrontmatter(markdown);
+		const rawMatchIndex = rawMatchIndexForVisibleMatch(
+			body,
+			searchJump.query,
+			searchJump.matchIndex,
+		);
+		if (rawMatchIndex === null) return searchJump.matchIndex;
+		if (!frontmatter) return rawMatchIndex;
 		return (
-			searchJump.matchIndex +
+			rawMatchIndex +
 			findPlainTextSearchRanges(frontmatter, searchJump.query).length
 		);
 	}, [findQuery, markdown, mode, searchJump]);

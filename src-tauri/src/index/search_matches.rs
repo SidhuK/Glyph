@@ -7,6 +7,9 @@ const MAX_MATCHES_PER_NOTE: usize = 40;
 /// Reading note files is the cost here, so only the strongest hits are expanded.
 const MAX_EXPANDED_NOTES: usize = 60;
 const SNIPPET_RADIUS_CHARS: usize = 42;
+const SNIPPET_ESCAPE: char = '\u{001b}';
+const SNIPPET_HIGHLIGHT_START: char = '\u{001c}';
+const SNIPPET_HIGHLIGHT_END: char = '\u{001d}';
 
 /// Expand note-level hits into one row per literal occurrence of `query` in the
 /// note body, so search behaves like "find in files" instead of "find files".
@@ -46,7 +49,7 @@ pub fn expand_text_matches(
 
         let (_, body) = split_frontmatter(&markdown);
         let body_start = markdown.len() - body.len();
-        let matches = find_matches(body, &needle_lc);
+        let matches = find_visible_matches(body, &needle_lc);
         if matches.is_empty() {
             out.push(note);
             continue;
@@ -130,12 +133,63 @@ fn find_matches(haystack: &str, needle_lc: &str) -> Vec<ByteRange> {
         let start = source_starts[at];
         let end = source_ends[at + needle_lc.len() - 1];
         out.push(ByteRange { start, end });
-        if out.len() >= MAX_MATCHES_PER_NOTE {
-            break;
-        }
         cursor = at + needle_lc.len();
     }
     out
+}
+
+/// The rich editor renders a Markdown link's label but not its destination.
+/// Excluding destinations keeps the occurrence ordinal passed to rich find in
+/// sync with the visible text while retaining the source range for snippets.
+fn find_visible_matches(haystack: &str, needle_lc: &str) -> Vec<ByteRange> {
+    let hidden = markdown_link_destinations(haystack);
+    find_matches(haystack, needle_lc)
+        .into_iter()
+        .filter(|range| {
+            !hidden
+                .iter()
+                .any(|destination| range.start < destination.end && destination.start < range.end)
+        })
+        .take(MAX_MATCHES_PER_NOTE)
+        .collect()
+}
+
+/// Return the content ranges of balanced inline Markdown link destinations.
+fn markdown_link_destinations(markdown: &str) -> Vec<ByteRange> {
+    let bytes = markdown.as_bytes();
+    let mut destinations = Vec::new();
+    let mut index = 0;
+    while index + 1 < bytes.len() {
+        if bytes[index] != b']' || bytes[index + 1] != b'(' {
+            index += 1;
+            continue;
+        }
+
+        let start = index + 2;
+        let mut cursor = start;
+        let mut depth = 1usize;
+        while cursor < bytes.len() {
+            match bytes[cursor] {
+                b'\\' => cursor += 2,
+                b'(' => {
+                    depth += 1;
+                    cursor += 1;
+                }
+                b')' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        destinations.push(ByteRange { start, end: cursor });
+                        cursor += 1;
+                        break;
+                    }
+                    cursor += 1;
+                }
+                _ => cursor += 1,
+            }
+        }
+        index = cursor;
+    }
+    destinations
 }
 
 /// Step `count` chars backwards from `index`, staying on char boundaries.
@@ -166,8 +220,8 @@ fn step_forward(text: &str, mut index: usize, count: usize) -> usize {
     index
 }
 
-/// One-line preview with the hit wrapped in the `⟦⟧` markers the palette renders
-/// as a highlight (see `HighlightedSnippet` in `CommandList.tsx`).
+/// One-line preview with escaped source text and explicit highlight markers for
+/// the palette renderer (see `HighlightedSnippet` in `CommandList.tsx`).
 fn snippet_around(text: &str, start: usize, end: usize) -> String {
     let from = step_back(text, start, SNIPPET_RADIUS_CHARS);
     let to = step_forward(text, end, SNIPPET_RADIUS_CHARS);
@@ -177,9 +231,9 @@ fn snippet_around(text: &str, start: usize, end: usize) -> String {
         out.push('…');
     }
     push_flattened(&mut out, &text[from..start]);
-    out.push('⟦');
+    out.push(SNIPPET_HIGHLIGHT_START);
     push_flattened(&mut out, &text[start..end]);
-    out.push('⟧');
+    out.push(SNIPPET_HIGHLIGHT_END);
     push_flattened(&mut out, &text[end..to]);
     if to < text.len() {
         out.push('…');
@@ -190,8 +244,10 @@ fn snippet_around(text: &str, start: usize, end: usize) -> String {
 fn push_flattened(out: &mut String, part: &str) {
     for ch in part.chars() {
         match ch {
-            '⟦' => out.push_str("⟦⟦"),
-            '⟧' => out.push_str("⟧⟧"),
+            SNIPPET_ESCAPE | SNIPPET_HIGHLIGHT_START | SNIPPET_HIGHLIGHT_END => {
+                out.push(SNIPPET_ESCAPE);
+                out.push(ch);
+            }
             _ => out.push(if ch.is_whitespace() { ' ' } else { ch }),
         }
     }
@@ -199,7 +255,10 @@ fn push_flattened(out: &mut String, part: &str) {
 
 #[cfg(test)]
 mod tests {
-    use super::{count_newlines, expand_text_matches, find_matches, snippet_around};
+    use super::{
+        count_newlines, expand_text_matches, find_matches, snippet_around,
+        SNIPPET_HIGHLIGHT_END, SNIPPET_HIGHLIGHT_START,
+    };
     use crate::index::types::SearchResult;
 
     fn temp_space() -> std::path::PathBuf {
@@ -251,13 +310,16 @@ mod tests {
         let hits = find_matches(text, "i");
         assert_eq!(hits.len(), 1);
         assert_eq!(&text[hits[0].start..hits[0].end], "İ");
-        assert!(snippet_around(text, hits[0].start, hits[0].end).contains("⟦İ⟧"));
+        assert!(snippet_around(text, hits[0].start, hits[0].end)
+            .contains(&format!("{SNIPPET_HIGHLIGHT_START}İ{SNIPPET_HIGHLIGHT_END}")));
     }
 
     #[test]
     fn snippet_wraps_match_and_flattens_newlines() {
         let snippet = snippet_around("hello\ndeadline world", 6, 14);
-        assert!(snippet.contains("⟦deadline⟧"));
+        assert!(snippet.contains(&format!(
+            "{SNIPPET_HIGHLIGHT_START}deadline{SNIPPET_HIGHLIGHT_END}"
+        )));
         assert!(!snippet.contains('\n'));
     }
 
@@ -278,7 +340,9 @@ mod tests {
         assert_eq!(rows[0].match_query.as_deref(), Some("deadline"));
         assert_eq!(rows[1].match_index, Some(1));
         assert_eq!(rows[1].line, Some(5));
-        assert!(rows[0].snippet.contains("⟦deadline⟧"));
+        assert!(rows[0].snippet.contains(&format!(
+            "{SNIPPET_HIGHLIGHT_START}deadline{SNIPPET_HIGHLIGHT_END}"
+        )));
     }
 
     #[test]

@@ -890,7 +890,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{canEdit && noteFind.findOpen ? (
+				{noteFind.findOpen ? (
 					<NoteFindBar
 						countLabel={noteFind.findCountLabel}
 						inputRef={noteFind.findInputRef}

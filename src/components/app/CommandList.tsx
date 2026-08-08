@@ -22,6 +22,10 @@ interface CommandListProps {
 	onSelectResult: (index: number) => void;
 }
 
+const SNIPPET_ESCAPE = "\u001b";
+const SNIPPET_HIGHLIGHT_START = "\u001c";
+const SNIPPET_HIGHLIGHT_END = "\u001d";
+
 function HighlightedSnippet({ snippet }: { snippet: string }) {
 	const output: ReactNode[] = [];
 	let highlighted = false;
@@ -38,13 +42,13 @@ function HighlightedSnippet({ snippet }: { snippet: string }) {
 	for (let index = 0; index < snippet.length; index += 1) {
 		const char = snippet[index];
 		const next = snippet[index + 1];
-		if ((char === "⟦" || char === "⟧") && next === char) {
-			text += char;
+		if (char === SNIPPET_ESCAPE && next) {
+			text += next;
 			index += 1;
-		} else if (char === "⟦") {
+		} else if (char === SNIPPET_HIGHLIGHT_START) {
 			pushText(index);
 			highlighted = true;
-		} else if (char === "⟧") {
+		} else if (char === SNIPPET_HIGHLIGHT_END) {
 			pushText(index);
 			highlighted = false;
 		} else {
