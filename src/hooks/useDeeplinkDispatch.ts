@@ -196,7 +196,9 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 		(event: DeeplinkEvent) => {
 			if (!claimId(event.id)) return;
 			queueRef.current.push(event);
-			void processQueue();
+			// Hold until bootstrap finishes so live cold-start events cannot race
+			// SpaceContext's session restore `space_open`.
+			if (optionsRef.current.settingsLoaded) void processQueue();
 		},
 		[claimId, processQueue],
 	);
@@ -223,17 +225,19 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 
 	useTauriEvent("deeplink:action", (payload) => {
 		enqueue(payload);
-		void drainPending();
 	});
 
 	useTauriEvent("deeplink:error", (payload) => {
 		reportError(payload);
-		void drainPending();
 	});
 
 	// Wait for settings so a cold-start deeplink does not race session restore.
+	// Drain the native pending queue and process anything already enqueued live.
 	useEffect(() => {
 		if (!settingsLoaded) return;
-		void drainPending();
-	}, [drainPending, settingsLoaded]);
+		void (async () => {
+			await drainPending();
+			void processQueue();
+		})();
+	}, [drainPending, processQueue, settingsLoaded]);
 }

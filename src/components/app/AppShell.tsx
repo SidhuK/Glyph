@@ -1207,7 +1207,9 @@ export function AppShell() {
 		onPrintNote: handlePrintActiveNote,
 		onCloseTab: () => void handleCloseTabOrWindow(),
 		onOpenSpace: handleOpenSpace,
-		onOpenRecentSpaceAtPath: handleSelectSpace,
+		onOpenRecentSpaceAtPath: (path) => {
+			void handleSelectSpace(path);
+		},
 		onCreateSpace: handleCreateSpace,
 		closeSpace: handleCloseSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,

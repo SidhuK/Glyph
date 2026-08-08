@@ -57,7 +57,10 @@ pub struct PendingDeeplinks {
 pub struct DeeplinkState {
     actions: Mutex<VecDeque<DeeplinkEvent>>,
     errors: Mutex<VecDeque<DeeplinkErrorPayload>>,
-    last_os_url: Mutex<Option<(String, Instant)>>,
+    /// Recent OS URLs inside `OS_DEDUPE_WINDOW`. A single "last URL" slot is not
+    /// enough: cold starts can deliver multiple URLs via `get_current`, then
+    /// re-deliver the same set live — each earlier URL would miss a 1-slot check.
+    recent_os_urls: Mutex<VecDeque<(String, Instant)>>,
     next_id: AtomicU64,
 }
 
@@ -91,16 +94,20 @@ impl DeeplinkState {
 
     fn is_repeat_os_url(&self, url: &str) -> bool {
         let mut guard = self
-            .last_os_url
+            .recent_os_urls
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         let now = Instant::now();
-        if let Some((previous, at)) = guard.as_ref() {
-            if previous == url && now.duration_since(*at) < OS_DEDUPE_WINDOW {
-                return true;
+        while let Some((_, at)) = guard.front() {
+            if now.duration_since(*at) < OS_DEDUPE_WINDOW {
+                break;
             }
+            guard.pop_front();
         }
-        *guard = Some((url.to_string(), now));
+        if guard.iter().any(|(previous, _)| previous == url) {
+            return true;
+        }
+        guard.push_back((url.to_string(), now));
         false
     }
 }
@@ -293,5 +300,7 @@ mod tests {
         assert!(!state.is_repeat_os_url("glyph://open/space?space=/tmp"));
         assert!(state.is_repeat_os_url("glyph://open/space?space=/tmp"));
         assert!(!state.is_repeat_os_url("glyph://open/space?space=/other"));
+        // Earlier URL is still remembered while a second one is recorded.
+        assert!(state.is_repeat_os_url("glyph://open/space?space=/tmp"));
     }
 }

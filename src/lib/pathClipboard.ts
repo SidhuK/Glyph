@@ -63,18 +63,21 @@ export async function copyNoteDeeplink(
 	spacePath: string | null,
 	relPath: string,
 ): Promise<void> {
+	// Own the clipboard write so failures use the localized deeplink toast
+	// instead of the generic path-copy message from `copyPathToClipboard`.
 	try {
 		if (!spacePath) {
 			throw new Error("No space is open.");
 		}
 		const url = buildNoteDeeplink(spacePath, relPath);
-		await copyPathToClipboard(url, i18n.t("shell:fileTree.deeplinkCopied"));
-	} catch (error) {
-		const message =
-			error instanceof Error ? error.message : "Could not copy deeplink.";
-		toast.error(i18n.t("shell:fileTree.deeplinkCopyFailed"), {
-			description: message,
-		});
+		const clipboard = navigator.clipboard;
+		if (!clipboard?.writeText) {
+			throw new Error("Clipboard is not available.");
+		}
+		await clipboard.writeText(url);
+		toast.success(i18n.t("shell:fileTree.deeplinkCopied"));
+	} catch {
+		toast.error(i18n.t("shell:fileTree.deeplinkCopyFailed"));
 	}
 }
 

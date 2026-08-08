@@ -341,11 +341,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		let cancelled = false;
 		const loadAndApplySettings = async () => {
 			try {
-				const s = await loadSettings({ spacePath: spacePathRef.current });
-				if (cancelled) return;
+				const requestedSpacePath = spacePathRef.current;
+				const s = await loadSettings({ spacePath: requestedSpacePath });
+				// Discard if unmounted or the active space changed mid-load so we
+				// never stamp the previous space's folders/template as the new one.
+				if (cancelled || requestedSpacePath !== spacePathRef.current) return;
 				dispatch({
 					type: "hydrateSettings",
-					spacePath: spacePathRef.current,
+					spacePath: requestedSpacePath,
 					aiEnabled: s.ui.aiEnabled,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
