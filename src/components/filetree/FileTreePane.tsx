@@ -646,7 +646,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const [externalDropTargetPath, setExternalDropTargetPath] = useState<
 		string | null
 	>(null);
-	const externalDropEventGenerationRef = useRef(0);
 	const moveClickSuppressRef = useRef(false);
 	const moveClickSuppressResetTimerRef = useRef<ReturnType<
 		typeof window.setTimeout
@@ -1032,7 +1031,6 @@ export const FileTreePane = memo(function FileTreePane({
 		let disposed = false;
 		void currentWindow
 			.onDragDropEvent(async ({ payload }) => {
-				const eventGeneration = ++externalDropEventGenerationRef.current;
 				if (payload.type === "leave") {
 					setExternalDropTargetPath(null);
 					return;
@@ -1042,17 +1040,10 @@ export const FileTreePane = memo(function FileTreePane({
 					setExternalDropTargetPath(null);
 					return;
 				}
-				// Wry reports macOS file-drop positions in AppKit points even though
-				// Tauri exposes them as physical pixels. Converting again would move a
-				// Retina drop toward the top-left of the tree.
-				const position = navigator.userAgent.includes("Macintosh")
-					? payload.position
-					: payload.position.toLogical(await currentWindow.scaleFactor());
-				if (eventGeneration !== externalDropEventGenerationRef.current) return;
 				const targetDir = fileTreeDropTargetAtPoint(
 					pane,
-					position.x,
-					position.y,
+					payload.position.x,
+					payload.position.y,
 					focusedDirPathRef.current ?? "",
 				);
 				if (payload.type !== "drop") {
