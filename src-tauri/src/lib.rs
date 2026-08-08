@@ -1767,6 +1767,9 @@ pub fn run() {
                             warn!("Failed to show main window: {error}");
                         }
                     }
+                    if let Some(state) = app_handle.try_state::<deeplink::DeeplinkState>() {
+                        state.mark_startup_complete();
+                    }
                 }
                 #[cfg(target_os = "macos")]
                 RunEvent::Reopen { .. } if !initial_launch_pending => {

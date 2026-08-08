@@ -7,7 +7,7 @@ pub use parse::{parse_deeplink_url, DeeplinkAction, DeeplinkError};
 use serde::Serialize;
 use std::collections::VecDeque;
 use std::path::Path;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -61,6 +61,7 @@ pub struct DeeplinkState {
     /// enough: cold starts can deliver multiple URLs via `get_current`, then
     /// re-deliver the same set live — each earlier URL would miss a 1-slot check.
     recent_os_urls: Mutex<VecDeque<(String, Instant)>>,
+    startup_complete: AtomicBool,
     next_id: AtomicU64,
 }
 
@@ -81,6 +82,14 @@ fn drain<T>(queue: &Mutex<VecDeque<T>>) -> Vec<T> {
 }
 
 impl DeeplinkState {
+    pub(crate) fn mark_startup_complete(&self) {
+        self.startup_complete.store(true, Ordering::Release);
+    }
+
+    fn startup_complete(&self) -> bool {
+        self.startup_complete.load(Ordering::Acquire)
+    }
+
     fn next_id(&self) -> u64 {
         self.next_id.fetch_add(1, Ordering::Relaxed) + 1
     }
@@ -157,7 +166,7 @@ fn dispatch_action(app: &AppHandle, state: &DeeplinkState, action: DeeplinkActio
     };
     // Queue before emitting: on a cold start the webview is not listening yet.
     push_bounded(&state.actions, event.clone());
-    show_shell(app);
+    show_shell(app, state);
     if let Err(error) = app.emit_to(MAIN_WINDOW_LABEL, DEEPLINK_ACTION_EVENT, &event) {
         warn!("Failed to emit deeplink action: {error}");
     }
@@ -169,7 +178,7 @@ fn dispatch_error(app: &AppHandle, state: &DeeplinkState, error: &DeeplinkError)
         code: error.code(),
     };
     push_bounded(&state.errors, payload.clone());
-    show_shell(app);
+    show_shell(app, state);
     if let Err(error) = app.emit_to(MAIN_WINDOW_LABEL, DEEPLINK_ERROR_EVENT, &payload) {
         warn!("Failed to emit deeplink error: {error}");
     }
@@ -177,7 +186,13 @@ fn dispatch_error(app: &AppHandle, state: &DeeplinkState, error: &DeeplinkError)
 
 /// Every deeplink route needs the main app shell; auxiliary windows (quick
 /// note, external markdown) never own a space session of their own.
-fn show_shell(app: &AppHandle) {
+fn show_shell(app: &AppHandle, state: &DeeplinkState) {
+    // The first macOS `Opened` event can arrive before the app's initial
+    // `MainEventsCleared` pass. Let that normal startup pass create the lazy
+    // main window instead of creating it from inside the URL callback.
+    if !state.startup_complete() && app.get_webview_window(MAIN_WINDOW_LABEL).is_none() {
+        return;
+    }
     if let Err(error) = crate::show_main_window_for_app(app) {
         warn!("Failed to show main window for deeplink: {error}");
     }
