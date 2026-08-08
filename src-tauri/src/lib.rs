@@ -1762,10 +1762,16 @@ pub fn run() {
                 }
                 RunEvent::MainEventsCleared if initial_launch_pending => {
                     initial_launch_pending = false;
-                    if !initial_launch_received_file_open {
+                    let has_pending_deeplink = app_handle
+                        .try_state::<deeplink::DeeplinkState>()
+                        .is_some_and(|state| state.has_pending());
+                    if !initial_launch_received_file_open || has_pending_deeplink {
                         if let Err(error) = show_main_window_for_app(app_handle) {
                             warn!("Failed to show main window: {error}");
                         }
+                    }
+                    if let Some(state) = app_handle.try_state::<deeplink::DeeplinkState>() {
+                        state.mark_startup_complete();
                     }
                 }
                 #[cfg(target_os = "macos")]
