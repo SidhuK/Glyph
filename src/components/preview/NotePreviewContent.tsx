@@ -18,6 +18,7 @@ export function NotePreviewContent(data: NotePreviewData) {
 				mode="preview"
 				onChange={() => {}}
 				interactive={false}
+				acceptSearchJumps={false}
 				deferHeavyFeatures
 			/>
 		</div>

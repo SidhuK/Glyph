@@ -44,6 +44,8 @@ export interface NoteInlineEditorProps {
 	extractToNoteActions?: ExtractToNoteActions;
 	rolloverTaskActions?: RolloverTaskActions | null;
 	interactive?: boolean;
+	/** Whether this editor can receive palette search jumps. */
+	acceptSearchJumps?: boolean;
 	deferHeavyFeatures?: boolean;
 	chrome?: NoteInlineEditorChrome;
 	additionalExtensions?: AnyExtension[];

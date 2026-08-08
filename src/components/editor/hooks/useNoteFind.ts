@@ -35,6 +35,7 @@ interface UseNoteFindOptions {
 	markdown: string;
 	mode: NoteInlineEditorMode;
 	relPath?: string;
+	acceptSearchJumps: boolean;
 	hostRef: RefObject<HTMLDivElement | null>;
 	rawEditorRef: RefObject<RawMarkdownEditorHandle | null>;
 	tiptapHostRef: RefObject<HTMLDivElement | null>;
@@ -172,6 +173,7 @@ export function useNoteFind({
 	markdown,
 	mode,
 	relPath,
+	acceptSearchJumps,
 	hostRef,
 	rawEditorRef,
 	tiptapHostRef,
@@ -414,6 +416,7 @@ export function useNoteFind({
 	);
 
 	useEffect(() => {
+		if (!acceptSearchJumps) return;
 		// A jump is claimed before the path check, because opening a search result
 		// in a new tab mounts this hook already pointed at the target note.
 		const targetPaneId = hostRef.current
@@ -432,11 +435,17 @@ export function useNoteFind({
 		setFindOpen(false);
 		setFindQuery("");
 		setFindActiveIndex(0);
-	}, [applySearchJump, hostRef, isSearchJumpTarget, relPath]);
+	}, [
+		acceptSearchJumps,
+		applySearchJump,
+		hostRef,
+		isSearchJumpTarget,
+		relPath,
+	]);
 
 	// Jump while this note is already open (palette → same tab).
 	useEffect(() => {
-		if (!relPath) return;
+		if (!acceptSearchJumps || !relPath) return;
 		const onJump = (event: Event) => {
 			const detail = (event as CustomEvent<SearchJumpRequest>).detail;
 			if (!detail || detail.path !== relPath || !isSearchJumpTarget(detail))
@@ -446,7 +455,7 @@ export function useNoteFind({
 		};
 		window.addEventListener(SEARCH_JUMP_EVENT, onJump);
 		return () => window.removeEventListener(SEARCH_JUMP_EVENT, onJump);
-	}, [applySearchJump, isSearchJumpTarget, relPath]);
+	}, [acceptSearchJumps, applySearchJump, isSearchJumpTarget, relPath]);
 
 	useEffect(() => {
 		if (!findOpen) return;
