@@ -73,7 +73,17 @@
 		"createFromTemplate": "템플릿에서 만들기",
 		"addFolder": "폴더 추가",
 		"deleteFile": "파일 삭제",
-		"deleteFolder": "폴더 삭제"
+		"deleteFolder": "폴더 삭제",
+		"copyDeeplink": "딥링크 복사",
+		"deeplinkCopied": "딥링크를 복사했습니다.",
+		"deeplinkCopyFailed": "딥링크를 복사할 수 없습니다"
+	},
+	"deeplink": {
+		"openFailed": "링크를 열 수 없습니다",
+		"malformed": "유효하지 않은 Glyph 링크입니다.",
+		"spaceNotFound": "해당 스페이스를 찾을 수 없습니다.",
+		"noteNotFound": "해당 노트를 찾을 수 없습니다.",
+		"noteNotMarkdown": "이 링크는 마크다운 노트를 가리키지 않습니다."
 	},
 	"commandPalette": {
 		"title": "명령 팔레트",

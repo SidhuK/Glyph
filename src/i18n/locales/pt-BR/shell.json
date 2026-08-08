@@ -73,7 +73,17 @@
 		"createFromTemplate": "Criar a partir de modelo",
 		"addFolder": "Adicionar pasta",
 		"deleteFile": "Excluir arquivo",
-		"deleteFolder": "Excluir pasta"
+		"deleteFolder": "Excluir pasta",
+		"copyDeeplink": "Copiar deeplink",
+		"deeplinkCopied": "Deeplink copiado.",
+		"deeplinkCopyFailed": "Não foi possível copiar o deeplink"
+	},
+	"deeplink": {
+		"openFailed": "Não foi possível abrir o link",
+		"malformed": "Este link do Glyph não é válido.",
+		"spaceNotFound": "Esse espaço não foi encontrado.",
+		"noteNotFound": "Essa nota não foi encontrada.",
+		"noteNotMarkdown": "Esse link não aponta para uma nota Markdown."
 	},
 	"commandPalette": {
 		"title": "Paleta de comandos",

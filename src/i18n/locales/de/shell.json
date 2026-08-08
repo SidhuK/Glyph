@@ -73,7 +73,17 @@
 		"createFromTemplate": "Aus Vorlage erstellen",
 		"addFolder": "Ordner hinzufügen",
 		"deleteFile": "Datei löschen",
-		"deleteFolder": "Ordner löschen"
+		"deleteFolder": "Ordner löschen",
+		"copyDeeplink": "Deeplink kopieren",
+		"deeplinkCopied": "Deeplink kopiert.",
+		"deeplinkCopyFailed": "Deeplink konnte nicht kopiert werden"
+	},
+	"deeplink": {
+		"openFailed": "Link konnte nicht geöffnet werden",
+		"malformed": "Dieser Glyph-Link ist ungültig.",
+		"spaceNotFound": "Dieser Space wurde nicht gefunden.",
+		"noteNotFound": "Diese Notiz wurde nicht gefunden.",
+		"noteNotMarkdown": "Dieser Link verweist nicht auf eine Markdown-Notiz."
 	},
 	"commandPalette": {
 		"title": "Befehlspalette",

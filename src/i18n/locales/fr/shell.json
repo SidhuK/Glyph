@@ -73,7 +73,17 @@
 		"createFromTemplate": "Créer à partir d’un modèle",
 		"addFolder": "Ajouter un dossier",
 		"deleteFile": "Supprimer le fichier",
-		"deleteFolder": "Supprimer le dossier"
+		"deleteFolder": "Supprimer le dossier",
+		"copyDeeplink": "Copier le lien profond",
+		"deeplinkCopied": "Lien profond copié.",
+		"deeplinkCopyFailed": "Impossible de copier le lien profond"
+	},
+	"deeplink": {
+		"openFailed": "Impossible d’ouvrir le lien",
+		"malformed": "Ce lien Glyph n’est pas valide.",
+		"spaceNotFound": "Cet espace est introuvable.",
+		"noteNotFound": "Cette note est introuvable.",
+		"noteNotMarkdown": "Ce lien ne pointe pas vers une note Markdown."
 	},
 	"commandPalette": {
 		"title": "Palette de commandes",

@@ -100,6 +100,10 @@ export function useWorkspaceSession({
 }: UseWorkspaceSessionArgs) {
 	const restoredSessionSpaceRef = useRef<string | null>(null);
 	const restoreSessionRequestIdRef = useRef(0);
+	// Live revision so an in-flight restore can yield to a tab change (e.g. a
+	// cold-start deeplink) that committed after the restore effect started.
+	const tabsRevisionRef = useRef(tabsRevision);
+	tabsRevisionRef.current = tabsRevision;
 	const pendingSaveRef = useRef<PendingWorkspaceSessionSave | null>(null);
 	const saveTimerRef = useRef<number | null>(null);
 	const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -173,6 +177,9 @@ export function useWorkspaceSession({
 			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
+				// A deeplink (or any other open) may have bumped revision while we
+				// awaited; do not clobber that navigation with a stale snapshot.
+				tabsRevisionRef.current !== 0 ||
 				(!restorableTabs.length && !(resumeLastSession && snapshot.splitLayout))
 			) {
 				return;
