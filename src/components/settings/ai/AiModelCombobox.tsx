@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
 import { SettingsSelect } from "../SettingsSelect";
+import { providerNeedsApiKey } from "./providerCapabilities";
 
 interface AiModelComboboxProps {
 	profileId: string;
@@ -11,19 +12,6 @@ interface AiModelComboboxProps {
 	onChange: (modelId: string) => void;
 	onModelsChange?: (models: AiModel[] | null) => void;
 }
-
-const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
-	"ollama",
-	"llama_cpp",
-	"codex_chatgpt",
-	"amp",
-	"claude_code",
-	"opencode",
-	"pi",
-]);
-
-const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
-	!PROVIDERS_NO_API_KEY.has(provider);
 
 export function AiModelCombobox({
 	profileId,

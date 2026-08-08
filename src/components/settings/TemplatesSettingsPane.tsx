@@ -7,11 +7,13 @@ import {
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
-import { Trash2 } from "../Icons";
-import { FolderOpen } from "../Icons/NavigationIcons";
-import { Button } from "../ui/shadcn/button";
+import { SettingsFolderPicker } from "./SettingsFolderPicker";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { SettingsSelect } from "./SettingsSelect";
+import {
+	requireSpacePath,
+	selectFolderRelativeToSpace,
+} from "./spaceFolderSelection";
 
 interface TemplateOption {
 	label: string;
@@ -53,13 +55,6 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 	const currentSpacePath = await invoke("space_get_current");
 	if (currentSpacePath) return currentSpacePath;
 	return null;
-}
-
-function requireSpacePath(spacePath: string | null): string {
-	if (!spacePath) {
-		throw new Error("No space is currently open.");
-	}
-	return spacePath;
 }
 
 export function TemplateSettingsSections() {
@@ -218,41 +213,18 @@ export function TemplateSettingsSections() {
 		let writeId: number | null = null;
 		setSettingsState((current) => ({ ...current, error: null }));
 		try {
-			const { open } = await import("@tauri-apps/plugin-dialog");
-			const selected = await open({
-				directory: true,
-				multiple: false,
+			const selection = await selectFolderRelativeToSpace();
+			if (!selection) return;
+			await setTemplatesFolder(selection.relativePath, {
+				spacePath: selection.spacePath,
 			});
-			if (!selected || typeof selected !== "string") return;
-			const currentSpacePath = await ensureCurrentSpaceOpen();
-			if (!currentSpacePath) {
-				setSettingsState((current) => ({
-					...current,
-					error: "No space is currently open.",
-				}));
-				return;
-			}
-			const normSelected = selected.replace(/\\/g, "/");
-			const normSpace = currentSpacePath.replace(/\\/g, "/");
-			const spacePrefix = normSpace.endsWith("/") ? normSpace : `${normSpace}/`;
-			if (normSelected !== normSpace && !normSelected.startsWith(spacePrefix)) {
-				setSettingsState((current) => ({
-					...current,
-					error: "Selected folder must be inside the current space.",
-				}));
-				return;
-			}
-			const relativePath = normSelected
-				.slice(normSpace.length)
-				.replace(/^\/+/, "");
-			await setTemplatesFolder(relativePath, { spacePath: currentSpacePath });
 			writeId = beginDailyTemplateWrite();
-			await setDailyNoteTemplate(null, { spacePath: currentSpacePath });
+			await setDailyNoteTemplate(null, { spacePath: selection.spacePath });
 			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
-				currentSpacePath,
-				templatesFolder: relativePath,
+				currentSpacePath: selection.spacePath,
+				templatesFolder: selection.relativePath,
 				dailyNoteTemplatePath: null,
 			}));
 		} catch (cause) {
@@ -336,46 +308,23 @@ export function TemplateSettingsSections() {
 					stacked
 					interactive={false}
 				>
-					<div className="dailyNotesFolderField">
-						<div className="dailyNotesFolderRow">
-							<div className="dailyNotesFolderPath">
-								{templatesFolder === null
-									? "Not configured"
-									: templatesFolder || "/"}
-							</div>
-							<div className="settingsActions dailyNotesActions">
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-									onClick={handleBrowseFolder}
-								>
-									<FolderOpen size="var(--icon-md)" />
-									Browse
-								</Button>
-								{templatesFolder !== null ? (
-									<Button
-										type="button"
-										variant="outline"
-										size="icon-sm"
-										className="rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleClearFolder}
-										aria-label="Clear template folder"
-										title="Clear template folder"
-									>
-										<Trash2 size="var(--icon-md)" />
-									</Button>
-								) : null}
-							</div>
-						</div>
-						<div className="settingsHelp">{summary}</div>
-						{templatesError ? (
-							<div className="settingsError dailyNotesError">
-								{templatesError}
-							</div>
-						) : null}
-					</div>
+					<SettingsFolderPicker
+						path={
+							templatesFolder === null
+								? "Not configured"
+								: templatesFolder || "/"
+						}
+						browseLabel="Browse"
+						clearLabel="Clear template folder"
+						onBrowse={() => void handleBrowseFolder()}
+						onClear={
+							templatesFolder !== null
+								? () => void handleClearFolder()
+								: undefined
+						}
+						helper={summary}
+						error={templatesError}
+					/>
 				</SettingsRow>
 
 				<SettingsRow label="Default daily note template">

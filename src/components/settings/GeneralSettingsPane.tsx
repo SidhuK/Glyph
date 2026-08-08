@@ -514,7 +514,6 @@ export function GeneralSettingsPane() {
 					description={t("language.sectionDescription")}
 				>
 					<SettingsRow
-						title={t("language.label")}
 						label={t("language.label")}
 						description={
 							<Trans
@@ -556,7 +555,6 @@ export function GeneralSettingsPane() {
 					description={t("dateTime.sectionDescription")}
 				>
 					<SettingsRow
-						title={t("dateTime.dateFormat.label")}
 						label={t("dateTime.dateFormat.label")}
 						description={t("dateTime.dateFormat.description")}
 						htmlFor="settings-date-format-select"

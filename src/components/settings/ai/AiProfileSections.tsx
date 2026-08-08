@@ -3,6 +3,7 @@ import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { AiApiKeySection } from "./AiApiKeySection";
 import { AiCodexAccountSection } from "./AiCodexAccountSection";
 import { AiProviderSection } from "./AiProviderSection";
+import { providerNeedsApiKey } from "./providerCapabilities";
 import { useApiKeySettings } from "./useApiKeySettings";
 import { useCodexAccount } from "./useCodexAccount";
 
@@ -13,14 +14,6 @@ interface AiProfileSectionsProps {
 	onActiveProfileChange: (id: string | null) => Promise<void>;
 	onSaveProfile: (draft: AiProfile) => Promise<void>;
 }
-
-const PROVIDERS_NO_API_KEY = new Set<AiProviderKind>([
-	"codex_chatgpt",
-	"amp",
-	"claude_code",
-	"opencode",
-	"pi",
-]);
 
 export function AiProfileSections({
 	profiles,
@@ -74,9 +67,7 @@ function AiProfileSectionsBody({
 		useCodexAccount(profileDraft?.provider);
 
 	const providerUsesApiKey = useMemo(
-		() =>
-			!profileDraft?.provider ||
-			!PROVIDERS_NO_API_KEY.has(profileDraft.provider),
+		() => !profileDraft?.provider || providerNeedsApiKey(profileDraft.provider),
 		[profileDraft?.provider],
 	);
 

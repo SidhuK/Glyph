@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { extractErrorMessage } from "../../../lib/errorUtils";
 import { type AiProfile, invoke } from "../../../lib/tauri";
 import {
 	CODEX_RATE_LIMIT_REFRESH_MS,
@@ -8,7 +9,6 @@ import {
 	clampPercent,
 	formatRateLimitWindow,
 } from "./aiProfileSectionUtils";
-import { errMessage } from "./utils";
 
 interface CodexRateLimitItem {
 	key: string;
@@ -142,7 +142,7 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 			try {
 				await invoke("codex_login_complete", { flow_id: started.flow_id });
 			} catch (error) {
-				if (!/pending/i.test(errMessage(error))) {
+				if (!/pending/i.test(extractErrorMessage(error))) {
 					throw error;
 				}
 			}
@@ -168,9 +168,10 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 	}, [disconnectMutation]);
 
 	const error =
-		(accountQuery.error && errMessage(accountQuery.error)) ||
-		(connectMutation.error && errMessage(connectMutation.error)) ||
-		(disconnectMutation.error && errMessage(disconnectMutation.error)) ||
+		(accountQuery.error && extractErrorMessage(accountQuery.error)) ||
+		(connectMutation.error && extractErrorMessage(connectMutation.error)) ||
+		(disconnectMutation.error &&
+			extractErrorMessage(disconnectMutation.error)) ||
 		"";
 	const codexState = useMemo<CodexState>(() => {
 		if (!isCodexProvider) return disconnectedState;
