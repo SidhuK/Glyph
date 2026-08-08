@@ -244,7 +244,12 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
-					<div className="fileTreeRow" style={rowStyle}>
+					<div
+						className="fileTreeRow"
+						style={rowStyle}
+						data-file-tree-kind="dir"
+						data-file-tree-path={entry.rel_path}
+					>
 						<DirectoryRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
 							initialName={entry.name.trim() || "New Folder"}

@@ -332,6 +332,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					<div
 						className="fileTreeRow"
 						style={rowStyle}
+						data-file-tree-kind="file"
 						data-file-tree-path={entry.rel_path}
 					>
 						<span className="fileTreeLeadingSpacer" aria-hidden="true" />

@@ -126,11 +126,13 @@ function folderBreadcrumbParts(spacePath: string | null, dirPath: string) {
 interface FileTreeRootDropProps {
 	children: ReactNode;
 	targetDirPath?: string;
+	isExternalDropTarget?: boolean;
 }
 
 function FileTreeRootDrop({
 	children,
 	targetDirPath = "",
+	isExternalDropTarget = false,
 }: FileTreeRootDropProps) {
 	const { ref, isDropTarget } = useDroppable({
 		id: targetDirPath ? `file-tree-focused:${targetDirPath}` : "file-tree-root",
@@ -143,7 +145,9 @@ function FileTreeRootDrop({
 		<div
 			ref={ref}
 			className="fileTreeScroll"
-			data-drop-target={isDropTarget ? "true" : undefined}
+			data-drop-target={
+				isDropTarget || isExternalDropTarget ? "true" : undefined
+			}
 		>
 			{children}
 		</div>
@@ -175,9 +179,9 @@ function fileTreeDropTargetAtPoint(
 	const bounds = pane.getBoundingClientRect();
 	if (
 		x < bounds.left ||
-		x > bounds.right ||
+		x >= bounds.right ||
 		y < bounds.top ||
-		y > bounds.bottom
+		y >= bounds.bottom
 	) {
 		return null;
 	}
@@ -642,6 +646,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const [externalDropTargetPath, setExternalDropTargetPath] = useState<
 		string | null
 	>(null);
+	const externalDropEventGenerationRef = useRef(0);
 	const moveClickSuppressRef = useRef(false);
 	const moveClickSuppressResetTimerRef = useRef<ReturnType<
 		typeof window.setTimeout
@@ -1027,6 +1032,7 @@ export const FileTreePane = memo(function FileTreePane({
 		let disposed = false;
 		void currentWindow
 			.onDragDropEvent(async ({ payload }) => {
+				const eventGeneration = ++externalDropEventGenerationRef.current;
 				if (payload.type === "leave") {
 					setExternalDropTargetPath(null);
 					return;
@@ -1042,15 +1048,19 @@ export const FileTreePane = memo(function FileTreePane({
 				const position = navigator.userAgent.includes("Macintosh")
 					? payload.position
 					: payload.position.toLogical(await currentWindow.scaleFactor());
+				if (eventGeneration !== externalDropEventGenerationRef.current) return;
 				const targetDir = fileTreeDropTargetAtPoint(
 					pane,
 					position.x,
 					position.y,
 					focusedDirPathRef.current ?? "",
 				);
-				setExternalDropTargetPath(targetDir);
-				if (payload.type !== "drop" || payload.paths.length === 0) return;
+				if (payload.type !== "drop") {
+					setExternalDropTargetPath(targetDir);
+					return;
+				}
 				setExternalDropTargetPath(null);
+				if (payload.paths.length === 0) return;
 				if (targetDir === null) return;
 				await onImportPathsInDir(payload.paths, targetDir);
 			})
@@ -1104,7 +1114,10 @@ export const FileTreePane = memo(function FileTreePane({
 				}}
 			/>
 			{!hasLoadedFileVisibility ? null : focusedDirPath ? (
-				<FileTreeRootDrop targetDirPath={focusedDirPath}>
+				<FileTreeRootDrop
+					targetDirPath={focusedDirPath}
+					isExternalDropTarget={externalDropTargetPath === focusedDirPath}
+				>
 					<FolderBreadcrumb
 						spacePath={spacePath}
 						dirPath={focusedDirPath}
@@ -1163,7 +1176,7 @@ export const FileTreePane = memo(function FileTreePane({
 					)}
 				</FileTreeRootDrop>
 			) : hasVisibleRootEntries ? (
-				<FileTreeRootDrop>
+				<FileTreeRootDrop isExternalDropTarget={externalDropTargetPath === ""}>
 					<TreeEntries
 						entries={rootEntries}
 						parentDepth={-1}
