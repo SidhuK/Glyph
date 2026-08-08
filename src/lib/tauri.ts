@@ -358,6 +358,12 @@ export interface SearchResult {
 	title: string;
 	snippet: string;
 	score: number;
+	/** 0-based body occurrence index for jump-to-match. Absent on note-level rows. */
+	match_index?: number | null;
+	/** The literal text `match_index` counts, with search operators parsed off. */
+	match_query?: string | null;
+	/** 1-based line number in the note's source markdown. */
+	line?: number | null;
 }
 
 export interface AllDocsItem {

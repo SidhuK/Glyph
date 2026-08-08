@@ -19,26 +19,50 @@ interface NoteSearchPluginState extends NoteSearchState {
 
 const noteSearchPluginKey = new PluginKey<NoteSearchPluginState>("note-search");
 
+/**
+ * Case-insensitive, non-overlapping literal search.
+ *
+ * Lowercasing can change a string's length (`İ` lowercases to two code points),
+ * so folded positions are mapped back to the bounds of the source character they
+ * came from rather than used as offsets into the original text. Search's
+ * `expand_text_matches` mirrors this exactly, so a match ordinal computed there
+ * addresses the same occurrence here. Folding is locale-neutral for the same
+ * reason — a Turkish locale would otherwise count different occurrences.
+ */
 export function findPlainTextSearchRanges(
 	text: string,
 	query: string,
 	offset = 0,
 ) {
 	const ranges: NoteSearchRange[] = [];
-	if (!query) return ranges;
+	if (!query || !text) return ranges;
 
-	const haystack = text.toLocaleLowerCase();
-	const needle = query.toLocaleLowerCase();
-	let startIndex = 0;
+	const folded: string[] = [];
+	const sourceStart: number[] = [];
+	const sourceEnd: number[] = [];
+	let index = 0;
+	for (const char of text) {
+		const lowered = char.toLowerCase();
+		const end = index + char.length;
+		for (let i = 0; i < lowered.length; i += 1) {
+			sourceStart.push(index);
+			sourceEnd.push(end);
+		}
+		folded.push(lowered);
+		index = end;
+	}
 
-	while (startIndex <= haystack.length - needle.length) {
-		const index = haystack.indexOf(needle, startIndex);
-		if (index === -1) break;
+	const haystack = folded.join("");
+	const needle = Array.from(query, (char) => char.toLowerCase()).join("");
+	let cursor = 0;
+	while (cursor <= haystack.length - needle.length) {
+		const found = haystack.indexOf(needle, cursor);
+		if (found === -1) break;
 		ranges.push({
-			from: offset + index,
-			to: offset + index + query.length,
+			from: offset + sourceStart[found],
+			to: offset + sourceEnd[found + needle.length - 1],
 		});
-		startIndex = index + query.length;
+		cursor = found + needle.length;
 	}
 
 	return ranges;

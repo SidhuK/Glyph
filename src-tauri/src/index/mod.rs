@@ -12,6 +12,7 @@ mod relationships;
 pub(crate) mod schema;
 pub(crate) mod search_advanced;
 mod search_hybrid;
+mod search_matches;
 pub(crate) mod tags;
 mod types;
 pub(crate) mod unlinked_mentions;

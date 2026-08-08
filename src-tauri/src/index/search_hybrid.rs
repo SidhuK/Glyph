@@ -108,6 +108,9 @@ fn keyword_search(
             title: row.get(1).map_err(|e| e.to_string())?,
             snippet: row.get(2).map_err(|e| e.to_string())?,
             score: row.get(3).map_err(|e| e.to_string())?,
+            match_index: None,
+            match_query: None,
+            line: None,
         });
     }
     Ok(out)
@@ -202,6 +205,9 @@ pub fn hybrid_search(
             title,
             snippet: preview,
             score: 0.0,
+            match_index: None,
+            match_query: None,
+            line: None,
         });
         entry.score += 0.5 * sem;
     }

@@ -95,9 +95,18 @@ export function useCommandSearch(
 		}
 		const title: SearchResult[] = [];
 		const content: SearchResult[] = [];
+		const titleSeen = new Set<string>();
 		for (const r of searchResults) {
+			// Body occurrence rows always list under content (multi-match jump list).
+			if (typeof r.match_index === "number") {
+				content.push(r);
+				continue;
+			}
 			if (!q || r.title.toLowerCase().includes(q)) {
-				title.push(r);
+				if (!titleSeen.has(r.id)) {
+					titleSeen.add(r.id);
+					title.push(r);
+				}
 			} else {
 				content.push(r);
 			}

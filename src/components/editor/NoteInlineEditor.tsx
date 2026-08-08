@@ -212,6 +212,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	relPath,
 	mode,
 	interactive = true,
+	acceptSearchJumps = true,
 	deferHeavyFeatures = false,
 	chrome = "full",
 	additionalExtensions: additionalExtensionsProp = EMPTY_ADDITIONAL_EXTENSIONS,
@@ -300,6 +301,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const noteEditorHostRef = useRef<HTMLDivElement | null>(null);
 	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
 		null,
 	);
@@ -434,6 +436,8 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 		markdown,
 		mode,
 		relPath,
+		acceptSearchJumps,
+		hostRef: noteEditorHostRef,
 		rawEditorRef,
 		tiptapHostRef,
 	});
@@ -873,6 +877,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 
 	return (
 		<div
+			ref={noteEditorHostRef}
 			className={[
 				"rfNodeNoteEditor",
 				"rfNodeNoteEditorFlatEdges",
@@ -887,7 +892,7 @@ export const NoteInlineEditor = memo(function NoteInlineEditor({
 			}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{canEdit && noteFind.findOpen ? (
+				{noteFind.findOpen ? (
 					<NoteFindBar
 						countLabel={noteFind.findCountLabel}
 						inputRef={noteFind.findInputRef}

@@ -13,6 +13,7 @@ use super::db::open_db;
 use super::indexer::{rebuild_with_progress, sync};
 use super::relationships::{query_note_relationships, NoteRelationship};
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
+use super::search_matches::expand_text_matches;
 use super::search_hybrid::hybrid_search;
 use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::types::{
@@ -162,6 +163,30 @@ pub async fn index_sync(
     .map_err(|e| e.to_string())?
 }
 
+/// Run a search, then expand each hit into one row per literal occurrence so the
+/// palette lists match sites rather than notes. Title- and tag-scoped searches
+/// are about notes, not body text, so they are left unexpanded.
+fn run_search_with_matches(
+    conn: &rusqlite::Connection,
+    space_root: &Path,
+    request: SearchAdvancedRequest,
+) -> Result<Vec<SearchResult>, String> {
+    let limit = request.limit.unwrap_or(200).clamp(1, 2_000) as usize;
+    let expand = !request.title_only && !request.tag_only;
+    let query_text = request.query.clone().unwrap_or_default();
+    let notes = run_search_advanced(conn, request)?;
+    if expand {
+        Ok(expand_text_matches(
+            space_root,
+            notes,
+            query_text.trim(),
+            limit,
+        ))
+    } else {
+        Ok(notes)
+    }
+}
+
 #[tauri::command]
 pub async fn search(
     window: WebviewWindow,
@@ -171,7 +196,8 @@ pub async fn search(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        hybrid_search(&conn, &query, &[], 50)
+        let notes = hybrid_search(&conn, &query, &[], 50)?;
+        Ok(expand_text_matches(&root, notes, query.trim(), 200))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -186,7 +212,7 @@ pub async fn search_advanced(
     let root = state.root_for_window(&window)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        run_search_advanced(&conn, request)
+        run_search_with_matches(&conn, &root, request)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -203,7 +229,7 @@ pub async fn search_parse_and_run(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
-        run_search_advanced(&conn, req)
+        run_search_with_matches(&conn, &root, req)
     })
     .await
     .map_err(|e| e.to_string())?

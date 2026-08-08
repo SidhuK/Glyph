@@ -157,6 +157,7 @@ export const EditorPaneCanvas = memo(function EditorPaneCanvas({
 	return (
 		<div
 			className="canvasPaneHost"
+			data-editor-pane-id={pane.id}
 			data-space-connections={
 				viewerPath === SPACE_CONNECTIONS_TAB_ID ? "true" : undefined
 			}

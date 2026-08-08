@@ -132,6 +132,14 @@ vi.mock("@tiptap/react", () => ({
 			<p>Outside table</p>
 		</div>
 	),
+	useEditorState: ({
+		selector,
+	}: {
+		selector: (snapshot: {
+			editor: unknown;
+			transactionNumber: number;
+		}) => unknown;
+	}) => selector({ editor: null, transactionNumber: 0 }),
 }));
 
 vi.mock("motion/react", () => ({
