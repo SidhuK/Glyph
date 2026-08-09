@@ -1,7 +1,8 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
+import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 
 interface UseMenuListenersProps {
@@ -180,4 +181,19 @@ export function useMenuListeners({
 
 	useTauriEvent("menu:app_command", handleAppCommand);
 	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
+
+	useEffect(() => {
+		// Commands clicked while the main window did not exist yet (e.g. the
+		// app was cold-started into an external markdown window) are queued on
+		// the Rust side and replayed here once the shell is listening.
+		void invoke("menu_take_pending_commands")
+			.then((commands) => {
+				for (const command of commands) {
+					handleAppCommand(command);
+				}
+			})
+			.catch(() => {
+				// Nothing pending or IPC unavailable; the live listener covers it.
+			});
+	}, [handleAppCommand]);
 }

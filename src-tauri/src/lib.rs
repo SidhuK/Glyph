@@ -139,6 +139,10 @@ struct MenuState {
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
     menu_labels: Mutex<HashMap<String, String>>,
+    /// Commands that arrived while the main window did not exist (e.g. the app
+    /// was cold-started into an external markdown window via Finder). The shell
+    /// drains them on mount; see `menu_take_pending_commands`.
+    pending_commands: Mutex<Vec<AppCommandPayload>>,
 }
 
 #[derive(Default)]
@@ -1090,6 +1094,16 @@ fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
     })
 }
 
+fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
+    let _ = app.emit_to(
+        window_geometry::MAIN_WINDOW_LABEL,
+        "menu:app_command",
+        AppCommandPayload {
+            command_id: command_id.to_string(),
+        },
+    );
+}
+
 #[tauri::command(rename_all = "snake_case")]
 fn set_quick_note_global_shortcut(
     app: tauri::AppHandle,
@@ -1176,6 +1190,18 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
     .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
+}
+
+/// Drain menu commands that were queued while the main window did not exist
+/// (e.g. the app was cold-started into an external markdown window). The main
+/// shell replays them once its webview is listening.
+#[tauri::command]
+fn menu_take_pending_commands(state: State<'_, MenuState>) -> Vec<AppCommandPayload> {
+    state
+        .pending_commands
+        .lock()
+        .map(|mut pending| std::mem::take(&mut *pending))
+        .unwrap_or_default()
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1464,13 +1490,24 @@ pub fn run() {
                 );
             }
             "file.print_note" => {
-                let _ = app.emit_to(
-                    window_geometry::MAIN_WINDOW_LABEL,
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: "print-note".to_string(),
-                    },
-                );
+                emit_menu_command_to_main(app, "print-note");
+            }
+            "file.close_tab" => {
+                // External markdown windows close themselves via Close Tab;
+                // the main window owns tab management everywhere else.
+                if let Some((label, _window)) = focused_editor_window(app) {
+                    if external_markdown::is_external_markdown_window(&label) {
+                        let _ = app.emit_to(
+                            label,
+                            "menu:app_command",
+                            AppCommandPayload {
+                                command_id: "close-active-tab".to_string(),
+                            },
+                        );
+                        return;
+                    }
+                }
+                emit_menu_command_to_main(app, "close-active-tab");
             }
             #[cfg(target_os = "macos")]
             "edit.paste_without_formatting" => {
@@ -1490,13 +1527,27 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                let _ = app.emit_to(
-                    window_geometry::MAIN_WINDOW_LABEL,
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: command.id,
-                    },
-                );
+                if app
+                    .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
+                    .is_none()
+                {
+                    // The app may be running with only an external markdown window
+                    // (a file opened from Finder), so the main window does not
+                    // exist. Queue the command for the shell to replay on mount,
+                    // then reveal the main window.
+                    if let Some(state) = app.try_state::<MenuState>() {
+                        let _ = state.pending_commands.lock().map(|mut pending| {
+                            pending.push(AppCommandPayload {
+                                command_id: command.id,
+                            });
+                        });
+                    }
+                    if let Err(error) = show_main_window_for_app(app) {
+                        warn!("Failed to show main window for menu command {id}: {error}");
+                    }
+                } else {
+                    emit_menu_command_to_main(app, &command.id);
+                }
             }
         })
         .setup(|app| {
@@ -1613,6 +1664,7 @@ pub fn run() {
             set_recent_spaces_menu,
             set_menu_shortcuts,
             set_menu_labels,
+            menu_take_pending_commands,
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,
             external_markdown::external_markdown_window_path,
