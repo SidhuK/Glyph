@@ -1687,6 +1687,7 @@ pub fn run() {
             index::commands::all_docs_count,
             index::calendar::index_calendar_activity,
             index::calendar::index_calendar_notes_for_date,
+            index::insights::usage_insights,
             index::commands::tags_list,
             index::commands::people_list,
             index::commands::task_summary,

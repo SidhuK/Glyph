@@ -76,6 +76,11 @@ const ShortcutsSettingsPane = lazy(() =>
 		default: module.ShortcutsSettingsPane,
 	})),
 );
+const UsageSettingsPane = lazy(() =>
+	import("../settings/UsageSettingsPane").then((module) => ({
+		default: module.UsageSettingsPane,
+	})),
+);
 interface EmptyTip {
 	key: string;
 	icon: ReactNode;
@@ -527,6 +532,11 @@ export const MainContent = memo(function MainContent({
 		space: <SpaceSettingsPane />,
 		git: <GitSettingsPane />,
 		about: <AboutSettingsPane />,
+		usage: (
+			<Suspense fallback={null}>
+				<UsageSettingsPane />
+			</Suspense>
+		),
 	};
 
 	const { i18n } = useTranslation();

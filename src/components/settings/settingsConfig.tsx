@@ -1,6 +1,7 @@
 import {
 	AiBrain04Icon,
 	Archive02Icon,
+	ChartIcon,
 	CommandIcon,
 	GitBranchIcon,
 	Settings01Icon,
@@ -17,7 +18,8 @@ export type SettingsTab =
 	| "ai"
 	| "space"
 	| "git"
-	| "about";
+	| "about"
+	| "usage";
 
 export interface SettingsTabMeta {
 	id: SettingsTab;
@@ -99,6 +101,13 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			/>
 		),
 	},
+	{
+		id: "usage",
+		label: "Space Insights",
+		renderIcon: () => (
+			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={0.9} />
+		),
+	},
 ];
 
 const SETTINGS_TAB_IDS = new Set<SettingsTab>(
@@ -121,7 +130,11 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		id: "workspace",
 		label: "Workspace",
 		tabs: SETTINGS_TABS.filter(
-			(tab) => tab.id === "space" || tab.id === "git" || tab.id === "ai",
+			(tab) =>
+				tab.id === "space" ||
+				tab.id === "git" ||
+				tab.id === "ai" ||
+				tab.id === "usage",
 		),
 	},
 ];

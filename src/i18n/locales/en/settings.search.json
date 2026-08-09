@@ -6,7 +6,8 @@
 		"ai": "AI",
 		"space": "Space",
 		"git": "Git Sync",
-		"about": "About"
+		"about": "About",
+		"usage": "Space Insights"
 	},
 	"tabEntry": {
 		"general": {
@@ -43,6 +44,11 @@
 			"title": "About settings",
 			"description": "Open About settings.",
 			"keywords": ["About"]
+		},
+		"usage": {
+			"title": "Space Insights settings",
+			"description": "View local-only space insights.",
+			"keywords": ["Space", "Usage", "Insights", "Activity"]
 		}
 	},
 	"entries": {
@@ -540,6 +546,26 @@
 			"section": "Updates",
 			"description": "Latest updater activity from this window.",
 			"keywords": ["checking", "ready", "latest version"]
+		},
+		"usage-insights": {
+			"title": "Space insights",
+			"description": "Local-only summaries of your notes, tasks, and knowledge graph.",
+			"keywords": ["usage", "insights", "statistics"]
+		},
+		"usage-activity": {
+			"title": "Activity",
+			"description": "Notes created and last edited over time.",
+			"keywords": ["activity", "streak", "editing"]
+		},
+		"usage-tasks": {
+			"title": "Tasks",
+			"description": "Current task totals and completion progress.",
+			"keywords": ["tasks", "checklists", "done"]
+		},
+		"usage-library": {
+			"title": "Library health",
+			"description": "Folders, tags, links, and current storage size.",
+			"keywords": ["folders", "tags", "links", "storage"]
 		},
 		"about-changelog": {
 			"title": "Changelog",

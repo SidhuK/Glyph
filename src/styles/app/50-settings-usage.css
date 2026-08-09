@@ -1,0 +1,318 @@
+.usagePane {
+	width: 70%;
+	max-width: 644px;
+	min-width: 0;
+	gap: 20px;
+}
+
+.usagePanelHeader h3 {
+	margin: 0;
+	color: var(--text-primary);
+}
+
+.usageDashboard {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	min-width: 0;
+	gap: 14px;
+}
+
+.usagePanel {
+	min-width: 0;
+	max-width: 100%;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+}
+
+.usagePanelHeader {
+	padding: 18px 18px 0;
+}
+
+.usagePanelHeader h3 {
+	font-size: calc(var(--text-base) * 1.04);
+	letter-spacing: -0.015em;
+}
+
+.usageOverviewPanel {
+	grid-column: 1 / -1;
+}
+.usageActivityPanel { grid-column: span 4; }
+.usageTaskPanel,
+.usageLibraryPanel {
+	grid-column: span 2;
+}
+.usageRankingPanel { grid-column: span 3; }
+.usageFoldersPanel {
+	grid-column: span 4;
+}
+.usageTaskDensityPanel { grid-column: span 3; }
+
+.usageStats,
+.usageTaskSummary {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	gap: 1px;
+	margin: 16px 18px 18px;
+	overflow: hidden;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--border-light);
+}
+
+.usageTaskSummary {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.usageTaskSummary .usageStat:last-child {
+	grid-column: 1 / -1;
+}
+
+.usageOverviewPanel .usageStats {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.usageStat {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+	min-height: 78px;
+	padding: 14px;
+	background: var(--bg-primary);
+}
+
+.usageStat span,
+.usageEmpty {
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.8);
+}
+
+.usageStat strong {
+	overflow: hidden;
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 1.28);
+	font-variant-numeric: tabular-nums;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.usageCharts {
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	padding: 14px 18px 16px;
+}
+
+.usageFolderTiles {
+	display: grid;
+	grid-auto-flow: dense;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-auto-rows: 52px;
+	min-width: 0;
+	max-width: 100%;
+	gap: 5px;
+	margin: 0;
+	padding: 14px 18px 18px;
+}
+
+
+.usageFolderTile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	overflow: hidden;
+	padding: 8px;
+	border-radius: 3px;
+	background: var(--accent-color);
+	color: var(--bg-primary);
+	text-align: center;
+}
+
+.usageFolderTile[data-rank="0"] { grid-column: span 6; grid-row: span 6; }
+.usageFolderTile[data-rank="1"] { grid-column: span 6; grid-row: span 3; background: var(--status-info-fg); }
+.usageFolderTile[data-rank="2"] { grid-column: span 3; grid-row: span 3; background: var(--status-success-fg); }
+.usageFolderTile[data-rank="3"] { grid-column: span 3; grid-row: span 3; background: var(--status-warning-fg); }
+.usageFolderTile[data-rank="4"],
+.usageFolderTile[data-rank="5"],
+.usageFolderTile[data-rank="6"],
+.usageFolderTile[data-rank="7"] { grid-column: span 3; grid-row: span 1; }
+.usageFolderTile[data-rank="5"],
+.usageFolderTile[data-rank="7"] { background: var(--status-info-fg); }
+.usageFolderTile[data-rank="6"] { background: var(--status-success-fg); }
+.usageFolderTile span {
+	display: -webkit-box;
+	max-width: 100%;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	line-height: 1.2;
+}
+.usageFolderTile small { flex: 0 0 auto; margin-top: 3px; font-size: calc(var(--text-base) * 0.72); opacity: 0.82; }
+.usageEmpty {
+	margin: 18px;
+}
+
+.usageHeatmap {
+	display: grid;
+	grid-template-columns: 30px 1fr;
+	min-width: 0;
+	gap: 8px 10px;
+	padding: 22px 18px 18px;
+}
+
+.usageHeatmapDays {
+	display: grid;
+	grid-template-rows: repeat(7, 1fr);
+	grid-column: 1;
+	grid-row: 1;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.7);
+	line-height: 1;
+}
+
+.usageHeatmapDays span:nth-child(1) { grid-row: 2; }
+.usageHeatmapDays span:nth-child(2) { grid-row: 4; }
+.usageHeatmapDays span:nth-child(3) { grid-row: 6; }
+
+.usageHeatmapGrid {
+	display: grid;
+	min-width: 0;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-template-rows: repeat(7, 1fr);
+	grid-auto-flow: column;
+	gap: 5px;
+	aspect-ratio: 12 / 7;
+}
+
+.usageHeatmapCell {
+	min-width: 0;
+	min-height: 0;
+	border-radius: 2px;
+	background: var(--bg-primary);
+	outline: 1px solid var(--border-light);
+}
+
+.usageHeatmapCell[data-level="1"] { background: color-mix(in srgb, var(--accent-color) 30%, var(--bg-primary)); }
+.usageHeatmapCell[data-level="2"] { background: color-mix(in srgb, var(--accent-color) 48%, var(--bg-primary)); }
+.usageHeatmapCell[data-level="3"] { background: color-mix(in srgb, var(--accent-color) 68%, var(--bg-primary)); }
+.usageHeatmapCell[data-level="4"] { background: var(--accent-color); }
+
+.usageHeatmapMonths {
+	display: flex;
+	grid-column: 2;
+	justify-content: space-between;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.72);
+}
+
+
+.usageTaskDonut {
+	display: grid;
+	position: relative;
+	place-items: center;
+	min-width: 0;
+	margin: 4px 18px 22px;
+	font-variant-numeric: tabular-nums;
+}
+
+.usageTaskDonut > :first-child { grid-area: 1 / 1; width: 100%; }
+.usageDonutValue { display: grid; grid-area: 1 / 1; place-items: center; pointer-events: none; }
+.usageDonutValue strong { color: var(--text-primary); font-size: calc(var(--text-base) * 1.25); font-variant-numeric: tabular-nums; }
+.usageDonutValue span { color: var(--text-secondary); font-size: calc(var(--text-base) * 0.7); }
+
+.usageDonutLegend {
+	display: flex;
+	grid-column: 1;
+	gap: 14px;
+	justify-content: center;
+	margin-top: -8px;
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.75);
+}
+
+.usageDonutLegend span::before {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin-right: 5px;
+	border-radius: 50%;
+	content: "";
+}
+
+.usageDonutDone::before { background: var(--status-success-fg); }
+.usageDonutOpen::before { background: var(--bg-primary); outline: 1px solid var(--border-light); }
+.usageCoverage {
+	margin: 0 18px 18px;
+	padding: 14px;
+	border-top: 1px solid var(--border-light);
+}
+
+.usageCoverageHeader {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+
+.usageCoverageHeader strong { color: var(--text-primary); font-size: calc(var(--text-base) * 1.12); font-variant-numeric: tabular-nums; }
+.usageCoverageHeader span { color: var(--text-secondary); font-size: calc(var(--text-base) * 0.75); }
+
+.usageCoverageGrid {
+	display: grid;
+	grid-template-columns: repeat(10, minmax(0, 1fr));
+	max-width: 100%;
+	gap: 4px;
+}
+
+.usageCoverageGrid span {
+	aspect-ratio: 1;
+	border-radius: 1px;
+	background: var(--bg-primary);
+}
+
+.usageCoverageGrid span[data-filled="true"] { background: var(--accent-color); }
+
+@media (max-width: 860px) {
+	.usageDashboard {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.usageActivityPanel,
+	.usageOverviewPanel,
+	.usageFoldersPanel {
+		grid-column: 1 / -1;
+	}
+	.usageActivityPanel {
+		grid-row: auto;
+	}
+	.usageTaskPanel,
+	.usageLibraryPanel {
+		grid-column: span 1;
+		grid-row: auto;
+	}
+	.usageRankingPanel,
+	.usageTaskDensityPanel { grid-column: span 1; }
+}
+
+@media (max-width: 600px) {
+	.usageDashboard {
+		grid-template-columns: 1fr;
+	}
+	.usagePanel,
+	.usageActivityPanel,
+	.usageTaskPanel,
+	.usageLibraryPanel,
+	.usageRankingPanel,
+	.usageFoldersPanel,
+	.usageTaskDensityPanel {
+		grid-column: 1;
+	}
+	.usageStats,
+	.usageOverviewPanel .usageStats {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.usageFolderTiles { grid-auto-rows: 48px; gap: 4px; }
+}
