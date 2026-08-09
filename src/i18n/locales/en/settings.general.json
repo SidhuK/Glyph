@@ -8,8 +8,6 @@
 		"clearSearchAriaLabel": "Clear settings search"
 	},
 	"usage": {
-		"title": "Your space, at a glance",
-		"description": "A private snapshot of the notes, tasks, and links in this space.",
 		"loading": "Loading insights…",
 		"error": "Could not load insights",
 		"overview": "Your space",
@@ -21,18 +19,15 @@
 		"tasks": "Tasks",
 		"completed": "completed",
 		"activity": "Recent note dates",
-		"activityDescription": "The last 12 weeks, based on when notes were created or last changed.",
 		"mon": "Mon",
 		"wed": "Wed",
 		"fri": "Fri",
 		"lastTwelveWeeks": "12 weeks ago",
 		"thisWeek": "This week",
 		"taskHealth": "Tasks in motion",
-		"taskHealthDescription": "A snapshot of the checklists in this space.",
 		"open": "Open",
 		"done": "Done",
 		"library": "Your note network",
-		"libraryDescription": "Links and tags that tie your notes together.",
 		"links": "Links",
 		"isolated": "Notes without links",
 		"noteCoverage": "notes connected",
@@ -45,8 +40,7 @@
 		"noTasks": "No checklist items yet.",
 		"noData": "No indexed data yet.",
 		"notesInFolder": "Notes in folder",
-		"tasksInFolder": "Tasks in folder",
-		"localOnly": "Private to this space"
+		"tasksInFolder": "Tasks in folder"
 	},
 	"language": {
 		"sectionTitle": "Language",

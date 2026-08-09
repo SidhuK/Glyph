@@ -2,7 +2,6 @@
 	width: 70%;
 	max-width: 644px;
 	min-width: 0;
-	gap: 20px;
 }
 
 .usagePanelHeader h3 {
@@ -19,7 +18,6 @@
 
 .usagePanel {
 	min-width: 0;
-	max-width: 100%;
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
@@ -285,13 +283,9 @@
 	.usageFoldersPanel {
 		grid-column: 1 / -1;
 	}
-	.usageActivityPanel {
-		grid-row: auto;
-	}
 	.usageTaskPanel,
 	.usageLibraryPanel {
 		grid-column: span 1;
-		grid-row: auto;
 	}
 	.usageRankingPanel,
 	.usageTaskDensityPanel { grid-column: span 1; }
@@ -301,13 +295,7 @@
 	.usageDashboard {
 		grid-template-columns: 1fr;
 	}
-	.usagePanel,
-	.usageActivityPanel,
-	.usageTaskPanel,
-	.usageLibraryPanel,
-	.usageRankingPanel,
-	.usageFoldersPanel,
-	.usageTaskDensityPanel {
+	.usagePanel {
 		grid-column: 1;
 	}
 	.usageStats,

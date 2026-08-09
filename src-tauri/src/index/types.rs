@@ -161,7 +161,6 @@ pub struct UsageFolder {
     pub note_count: u32,
     pub task_total: u32,
     pub task_completed: u32,
-    pub file_bytes: u64,
 }
 
 #[derive(Serialize)]

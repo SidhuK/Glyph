@@ -416,7 +416,6 @@ export interface UsageFolder {
 	noteCount: number;
 	taskTotal: number;
 	taskCompleted: number;
-	fileBytes: number;
 }
 
 export interface UsageTag {

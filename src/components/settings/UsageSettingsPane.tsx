@@ -406,7 +406,7 @@ export function UsageSettingsPane() {
 					title={t("usage.library")}
 					className="usageLibraryPanel"
 				>
-					<div className="usageStats usageStatsThree">
+					<div className="usageStats">
 						<Stat
 							label={t("usage.links")}
 							value={numberFormat.format(insights.linkCount)}
@@ -447,7 +447,7 @@ export function UsageSettingsPane() {
 
 				<UsagePanel
 					title={t("usage.topTags")}
-					className="usageRankingPanel usageTagsPanel"
+					className="usageRankingPanel"
 				>
 					<div className="usageCharts">
 						{tagRows.length ? (

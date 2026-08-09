@@ -107,7 +107,7 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
     let active_day_count = activity.len() as u32;
     let longest_activity_streak = longest_streak(&activity);
 
-    let mut folder_statement = conn.prepare("SELECT CASE WHEN instr(n.path, '/') = 0 THEN '/' ELSE substr(n.path, 1, instr(n.path, '/') - 1) END, COUNT(*), COALESCE(SUM(n.checklist_total), 0), COALESCE(SUM(n.checklist_completed), 0), COALESCE(SUM(f.size), 0) FROM notes n LEFT JOIN indexed_files f ON f.path = n.id GROUP BY 1 ORDER BY COUNT(*) DESC, 1 COLLATE NOCASE ASC").map_err(|error| error.to_string())?;
+    let mut folder_statement = conn.prepare("SELECT CASE WHEN instr(path, '/') = 0 THEN '/' ELSE substr(path, 1, instr(path, '/') - 1) END, COUNT(*), COALESCE(SUM(checklist_total), 0), COALESCE(SUM(checklist_completed), 0) FROM notes GROUP BY 1 ORDER BY COUNT(*) DESC, 1 COLLATE NOCASE ASC").map_err(|error| error.to_string())?;
     let folders = folder_statement
         .query_map([], |row| {
             Ok(UsageFolder {
@@ -115,7 +115,6 @@ fn usage_insights_for_conn(conn: &Connection, root: &Path) -> Result<UsageInsigh
                 note_count: row.get::<_, i64>(1)?.max(0) as u32,
                 task_total: row.get::<_, i64>(2)?.max(0) as u32,
                 task_completed: row.get::<_, i64>(3)?.max(0) as u32,
-                file_bytes: row.get::<_, i64>(4)?.max(0) as u64,
             })
         })
         .map_err(|error| error.to_string())?
