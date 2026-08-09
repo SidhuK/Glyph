@@ -9,6 +9,7 @@
 	},
 	"usage": {
 		"loading": "Loading insights…",
+		"noSpace": "Open a space to view insights.",
 		"error": "Could not load insights",
 		"overview": "Your space",
 		"notes": "Notes",

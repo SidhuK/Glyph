@@ -369,6 +369,9 @@ export function UsageSettingsPane() {
 	if (insightsQuery.isLoading) {
 		return <div className="settingsPane usagePane">{t("usage.loading")}</div>;
 	}
+	if (!spacePath) {
+		return <div className="settingsPane usagePane">{t("usage.noSpace")}</div>;
+	}
 	if (insightsQuery.error || !insights) {
 		return (
 			<div className="settingsPane usagePane settingsError">
