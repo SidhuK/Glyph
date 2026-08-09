@@ -256,6 +256,11 @@ function findSettingsTarget(
 	root: ParentNode,
 	entry: SettingsSearchEntry,
 ): HTMLElement | null {
+	const searchTarget = root.querySelector<HTMLElement>(
+		`[data-settings-search-id="${entry.id}"]`,
+	);
+	if (searchTarget) return searchTarget;
+
 	const rows = Array.from(
 		root.querySelectorAll<HTMLElement>("[data-settings-row-title]"),
 	);

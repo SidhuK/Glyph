@@ -23,7 +23,6 @@ export type SettingsTab =
 
 export interface SettingsTabMeta {
 	id: SettingsTab;
-	label: string;
 	renderIcon: () => ReactElement;
 }
 
@@ -36,7 +35,6 @@ export interface SettingsTabGroup {
 export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
-		label: "General",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Settings01Icon}
@@ -47,14 +45,12 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "appearance",
-		label: "Appearance",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
 	},
 	{
 		id: "shortcuts",
-		label: "Shortcuts",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={CommandIcon}
@@ -65,7 +61,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "ai",
-		label: "Glyph AI",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={AiBrain04Icon}
@@ -76,12 +71,10 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "space",
-		label: "Space",
 		renderIcon: () => <FolderOpen size="var(--icon-md)" />,
 	},
 	{
 		id: "git",
-		label: "Git",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={GitBranchIcon}
@@ -92,7 +85,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "about",
-		label: "About",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Archive02Icon}
@@ -103,7 +95,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "usage",
-		label: "Space Insights",
 		renderIcon: () => (
 			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={0.9} />
 		),

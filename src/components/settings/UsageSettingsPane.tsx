@@ -8,10 +8,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useSpace } from "../../contexts";
 import { type UsageInsights, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 
-const usageInsightsQueryKey = ["usage-insights"] as const;
+const usageInsightsQueryKey = (spacePath: string) =>
+	["usage-insights", spacePath] as const;
 const numberFormat = new Intl.NumberFormat();
 const coverageCellIds = Array.from(
 	{ length: 50 },
@@ -43,13 +45,18 @@ function UsagePanel({
 	title,
 	children,
 	className,
+	searchId,
 }: {
 	title: string;
 	children: ReactNode;
 	className?: string;
+	searchId?: string;
 }) {
 	return (
-		<section className={["usagePanel", className].filter(Boolean).join(" ")}>
+		<section
+			className={["usagePanel", className].filter(Boolean).join(" ")}
+			data-settings-search-id={searchId}
+		>
 			<header className="usagePanelHeader">
 				<h3>{title}</h3>
 			</header>
@@ -309,10 +316,13 @@ function UsageTaskDensityChart({
 
 export function UsageSettingsPane() {
 	const { t } = useTranslation("settings.general");
+	const { spacePath } = useSpace();
 	const queryClient = useQueryClient();
+	const queryKey = usageInsightsQueryKey(spacePath ?? "__no-space__");
 	const insightsQuery = useQuery({
-		queryKey: usageInsightsQueryKey,
+		queryKey,
 		queryFn: () => invoke("usage_insights"),
+		enabled: Boolean(spacePath),
 	});
 	const insights = insightsQuery.data;
 	const folderRows = useMemo(
@@ -346,10 +356,14 @@ export function UsageSettingsPane() {
 	);
 
 	useTauriEvent("notes:external_changed", () => {
-		void queryClient.invalidateQueries({ queryKey: usageInsightsQueryKey });
+		if (spacePath) {
+			void queryClient.invalidateQueries({ queryKey });
+		}
 	});
 	useTauriEvent("space:fs_changed", () => {
-		void queryClient.invalidateQueries({ queryKey: usageInsightsQueryKey });
+		if (spacePath) {
+			void queryClient.invalidateQueries({ queryKey });
+		}
 	});
 
 	if (insightsQuery.isLoading) {
@@ -372,7 +386,11 @@ export function UsageSettingsPane() {
 	return (
 		<div className="settingsPane usagePane">
 			<div className="usageDashboard">
-				<UsagePanel title={t("usage.overview")} className="usageOverviewPanel">
+				<UsagePanel
+					title={t("usage.overview")}
+					className="usageOverviewPanel"
+					searchId="usage-insights"
+				>
 					<div className="usageStats">
 						<Stat
 							label={t("usage.notes")}
@@ -401,11 +419,19 @@ export function UsageSettingsPane() {
 					</div>
 				</UsagePanel>
 
-				<UsagePanel title={t("usage.activity")} className="usageActivityPanel">
+				<UsagePanel
+					title={t("usage.activity")}
+					className="usageActivityPanel"
+					searchId="usage-activity"
+				>
 					<UsageActivityHeatmap insights={insights} />
 				</UsagePanel>
 
-				<UsagePanel title={t("usage.taskHealth")} className="usageTaskPanel">
+				<UsagePanel
+					title={t("usage.taskHealth")}
+					className="usageTaskPanel"
+					searchId="usage-tasks"
+				>
 					<div className="usageTaskSummary">
 						<Stat
 							label={t("usage.open")}
@@ -426,7 +452,11 @@ export function UsageSettingsPane() {
 					/>
 				</UsagePanel>
 
-				<UsagePanel title={t("usage.library")} className="usageLibraryPanel">
+				<UsagePanel
+					title={t("usage.library")}
+					className="usageLibraryPanel"
+					searchId="usage-library"
+				>
 					<div className="usageStats">
 						<Stat
 							label={t("usage.links")}

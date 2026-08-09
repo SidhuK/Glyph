@@ -21,21 +21,38 @@ fn visible_space_file_bytes(root: &Path) -> Result<u64, String> {
     let mut directories = vec![root.to_path_buf()];
 
     while let Some(directory) = directories.pop() {
-        for entry in std::fs::read_dir(&directory).map_err(|error| error.to_string())? {
-            let entry = entry.map_err(|error| error.to_string())?;
+        let entries = match std::fs::read_dir(&directory) {
+            Ok(entries) => entries,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(error) => return Err(error.to_string()),
+        };
+        for entry in entries {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) => return Err(error.to_string()),
+            };
             let name = entry.file_name();
             if crate::utils::should_hide(&name.to_string_lossy()) {
                 continue;
             }
-            let file_type = entry.file_type().map_err(|error| error.to_string())?;
+            let file_type = match entry.file_type() {
+                Ok(file_type) => file_type,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(error) => return Err(error.to_string()),
+            };
             if file_type.is_symlink() {
                 continue;
             }
             if file_type.is_dir() {
                 directories.push(entry.path());
             } else if file_type.is_file() {
-                total = total
-                    .saturating_add(entry.metadata().map_err(|error| error.to_string())?.len());
+                let metadata = match entry.metadata() {
+                    Ok(metadata) => metadata,
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
+                    Err(error) => return Err(error.to_string()),
+                };
+                total = total.saturating_add(metadata.len());
             }
         }
     }
