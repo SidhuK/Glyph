@@ -634,7 +634,9 @@ export const FileTreePane = memo(function FileTreePane({
 		Record<string, number>
 	>({});
 	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
-	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(null);
+	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
+		activeDirPath,
+	);
 	const {
 		filePreviewsByPath,
 		clearVisiblePreviewPaths,
