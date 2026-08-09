@@ -35,16 +35,22 @@
 .usageOverviewPanel {
 	grid-column: 1 / -1;
 }
-.usageActivityPanel { grid-column: span 4; }
+.usageActivityPanel {
+	grid-column: span 4;
+}
 .usageTaskPanel,
 .usageLibraryPanel {
 	grid-column: span 2;
 }
-.usageRankingPanel { grid-column: span 3; }
+.usageRankingPanel {
+	grid-column: span 3;
+}
 .usageFoldersPanel {
 	grid-column: span 4;
 }
-.usageTaskDensityPanel { grid-column: span 3; }
+.usageTaskDensityPanel {
+	grid-column: span 3;
+}
 
 .usageStats,
 .usageTaskSummary {
@@ -114,7 +120,6 @@
 	padding: 14px 18px 18px;
 }
 
-
 .usageFolderTile {
 	display: flex;
 	flex-direction: column;
@@ -129,17 +134,39 @@
 	text-align: center;
 }
 
-.usageFolderTile[data-rank="0"] { grid-column: span 6; grid-row: span 6; }
-.usageFolderTile[data-rank="1"] { grid-column: span 6; grid-row: span 3; background: var(--status-info-fg); }
-.usageFolderTile[data-rank="2"] { grid-column: span 3; grid-row: span 3; background: var(--status-success-fg); }
-.usageFolderTile[data-rank="3"] { grid-column: span 3; grid-row: span 3; background: var(--status-warning-fg); }
+.usageFolderTile[data-rank="0"] {
+	grid-column: span 6;
+	grid-row: span 6;
+}
+.usageFolderTile[data-rank="1"] {
+	grid-column: span 6;
+	grid-row: span 3;
+	background: var(--status-info-fg);
+}
+.usageFolderTile[data-rank="2"] {
+	grid-column: span 3;
+	grid-row: span 3;
+	background: var(--status-success-fg);
+}
+.usageFolderTile[data-rank="3"] {
+	grid-column: span 3;
+	grid-row: span 3;
+	background: var(--status-warning-fg);
+}
 .usageFolderTile[data-rank="4"],
 .usageFolderTile[data-rank="5"],
 .usageFolderTile[data-rank="6"],
-.usageFolderTile[data-rank="7"] { grid-column: span 3; grid-row: span 1; }
+.usageFolderTile[data-rank="7"] {
+	grid-column: span 3;
+	grid-row: span 1;
+}
 .usageFolderTile[data-rank="5"],
-.usageFolderTile[data-rank="7"] { background: var(--status-info-fg); }
-.usageFolderTile[data-rank="6"] { background: var(--status-success-fg); }
+.usageFolderTile[data-rank="7"] {
+	background: var(--status-info-fg);
+}
+.usageFolderTile[data-rank="6"] {
+	background: var(--status-success-fg);
+}
 .usageFolderTile span {
 	display: -webkit-box;
 	max-width: 100%;
@@ -148,7 +175,12 @@
 	overflow: hidden;
 	line-height: 1.2;
 }
-.usageFolderTile small { flex: 0 0 auto; margin-top: 3px; font-size: calc(var(--text-base) * 0.72); opacity: 0.82; }
+.usageFolderTile small {
+	flex: 0 0 auto;
+	margin-top: 3px;
+	font-size: calc(var(--text-base) * 0.72);
+	opacity: 0.82;
+}
 .usageEmpty {
 	margin: 18px;
 }
@@ -171,9 +203,15 @@
 	line-height: 1;
 }
 
-.usageHeatmapDays span:nth-child(1) { grid-row: 2; }
-.usageHeatmapDays span:nth-child(2) { grid-row: 4; }
-.usageHeatmapDays span:nth-child(3) { grid-row: 6; }
+.usageHeatmapDays span:nth-child(1) {
+	grid-row: 2;
+}
+.usageHeatmapDays span:nth-child(2) {
+	grid-row: 4;
+}
+.usageHeatmapDays span:nth-child(3) {
+	grid-row: 6;
+}
 
 .usageHeatmapGrid {
 	display: grid;
@@ -193,10 +231,18 @@
 	outline: 1px solid var(--border-light);
 }
 
-.usageHeatmapCell[data-level="1"] { background: color-mix(in srgb, var(--accent-color) 30%, var(--bg-primary)); }
-.usageHeatmapCell[data-level="2"] { background: color-mix(in srgb, var(--accent-color) 48%, var(--bg-primary)); }
-.usageHeatmapCell[data-level="3"] { background: color-mix(in srgb, var(--accent-color) 68%, var(--bg-primary)); }
-.usageHeatmapCell[data-level="4"] { background: var(--accent-color); }
+.usageHeatmapCell[data-level="1"] {
+	background: color-mix(in srgb, var(--accent-color) 30%, var(--bg-primary));
+}
+.usageHeatmapCell[data-level="2"] {
+	background: color-mix(in srgb, var(--accent-color) 48%, var(--bg-primary));
+}
+.usageHeatmapCell[data-level="3"] {
+	background: color-mix(in srgb, var(--accent-color) 68%, var(--bg-primary));
+}
+.usageHeatmapCell[data-level="4"] {
+	background: var(--accent-color);
+}
 
 .usageHeatmapMonths {
 	display: flex;
@@ -205,7 +251,6 @@
 	color: var(--text-secondary);
 	font-size: calc(var(--text-base) * 0.72);
 }
-
 
 .usageTaskDonut {
 	display: grid;
@@ -216,10 +261,25 @@
 	font-variant-numeric: tabular-nums;
 }
 
-.usageTaskDonut > :first-child { grid-area: 1 / 1; width: 100%; }
-.usageDonutValue { display: grid; grid-area: 1 / 1; place-items: center; pointer-events: none; }
-.usageDonutValue strong { color: var(--text-primary); font-size: calc(var(--text-base) * 1.25); font-variant-numeric: tabular-nums; }
-.usageDonutValue span { color: var(--text-secondary); font-size: calc(var(--text-base) * 0.7); }
+.usageTaskDonut > :first-child {
+	grid-area: 1 / 1;
+	width: 100%;
+}
+.usageDonutValue {
+	display: grid;
+	grid-area: 1 / 1;
+	place-items: center;
+	pointer-events: none;
+}
+.usageDonutValue strong {
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 1.25);
+	font-variant-numeric: tabular-nums;
+}
+.usageDonutValue span {
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.7);
+}
 
 .usageDonutLegend {
 	display: flex;
@@ -240,8 +300,13 @@
 	content: "";
 }
 
-.usageDonutDone::before { background: var(--status-success-fg); }
-.usageDonutOpen::before { background: var(--bg-primary); outline: 1px solid var(--border-light); }
+.usageDonutDone::before {
+	background: var(--status-success-fg);
+}
+.usageDonutOpen::before {
+	background: var(--bg-primary);
+	outline: 1px solid var(--border-light);
+}
 .usageCoverage {
 	margin: 0 18px 18px;
 	padding: 14px;
@@ -256,8 +321,15 @@
 	margin-bottom: 10px;
 }
 
-.usageCoverageHeader strong { color: var(--text-primary); font-size: calc(var(--text-base) * 1.12); font-variant-numeric: tabular-nums; }
-.usageCoverageHeader span { color: var(--text-secondary); font-size: calc(var(--text-base) * 0.75); }
+.usageCoverageHeader strong {
+	color: var(--text-primary);
+	font-size: calc(var(--text-base) * 1.12);
+	font-variant-numeric: tabular-nums;
+}
+.usageCoverageHeader span {
+	color: var(--text-secondary);
+	font-size: calc(var(--text-base) * 0.75);
+}
 
 .usageCoverageGrid {
 	display: grid;
@@ -272,7 +344,9 @@
 	background: var(--bg-primary);
 }
 
-.usageCoverageGrid span[data-filled="true"] { background: var(--accent-color); }
+.usageCoverageGrid span[data-filled="true"] {
+	background: var(--accent-color);
+}
 
 @media (max-width: 860px) {
 	.usageDashboard {
@@ -288,7 +362,9 @@
 		grid-column: span 1;
 	}
 	.usageRankingPanel,
-	.usageTaskDensityPanel { grid-column: span 1; }
+	.usageTaskDensityPanel {
+		grid-column: span 1;
+	}
 }
 
 @media (max-width: 600px) {
@@ -302,5 +378,8 @@
 	.usageOverviewPanel .usageStats {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
-	.usageFolderTiles { grid-auto-rows: 48px; gap: 4px; }
+	.usageFolderTiles {
+		grid-auto-rows: 48px;
+		gap: 4px;
+	}
 }

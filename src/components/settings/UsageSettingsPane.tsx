@@ -1,18 +1,22 @@
 import { defineChart, dot } from "@tanstack/charts";
-import { pie, polar, radialArc } from "@tanstack/charts/polar";
 import { scaleBand } from "@tanstack/charts-scales/band";
 import { scaleLinear } from "@tanstack/charts-scales/linear";
+import { pie, polar, radialArc } from "@tanstack/charts/polar";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { Chart } from "@tanstack/react-charts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { invoke, type UsageInsights } from "../../lib/tauri";
+import { type UsageInsights, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 
 const usageInsightsQueryKey = ["usage-insights"] as const;
 const numberFormat = new Intl.NumberFormat();
+const coverageCellIds = Array.from(
+	{ length: 50 },
+	(_, index) => `coverage-${index}`,
+);
 
 function formatBytes(bytes: number): string {
 	if (bytes < 1024) return `${numberFormat.format(bytes)} B`;
@@ -155,7 +159,10 @@ function TaskCompletionDonut({
 		],
 		[completed, open],
 	);
-	const slices = useMemo(() => pie(rows, { value: "value", gapAngle: 0.04 }), [rows]);
+	const slices = useMemo(
+		() => pie(rows, { value: "value", gapAngle: 0.04 }),
+		[rows],
+	);
 	const definition = useMemo(
 		() =>
 			defineChart({
@@ -180,10 +187,15 @@ function TaskCompletionDonut({
 			}),
 		[slices],
 	);
-	const completion = completed + open === 0 ? 0 : completed / (completed + open);
+	const completion =
+		completed + open === 0 ? 0 : completed / (completed + open);
 	return (
 		<div className="usageTaskDonut">
-			<Chart definition={definition} height={154} ariaLabel={t("usage.tasks")} />
+			<Chart
+				definition={definition}
+				height={154}
+				ariaLabel={t("usage.tasks")}
+			/>
 			<div className="usageDonutValue" aria-hidden="true">
 				<strong>{`${Math.round(completion * 100)}%`}</strong>
 				<span>{t("usage.completed")}</span>
@@ -196,7 +208,10 @@ function TaskCompletionDonut({
 	);
 }
 
-function NetworkCoverage({ connected, total }: { connected: number; total: number }) {
+function NetworkCoverage({
+	connected,
+	total,
+}: { connected: number; total: number }) {
 	const { t } = useTranslation("settings.general");
 	const ratio = total === 0 ? 0 : connected / total;
 	const filled = Math.round(ratio * 50);
@@ -207,8 +222,8 @@ function NetworkCoverage({ connected, total }: { connected: number; total: numbe
 				<span>{t("usage.noteCoverage")}</span>
 			</div>
 			<div className="usageCoverageGrid" aria-hidden="true">
-				{Array.from({ length: 50 }, (_, index) => (
-					<span data-filled={index < filled} key={index} />
+				{coverageCellIds.map((id, index) => (
+					<span data-filled={index < filled} key={id} />
 				))}
 			</div>
 		</div>
@@ -246,7 +261,12 @@ function UsageTaskDensityChart({
 	tasksLabel,
 	tasksTooltipLabel,
 }: {
-	rows: readonly { name: string; notes: number; tasks: number; completed: number }[];
+	rows: readonly {
+		name: string;
+		notes: number;
+		tasks: number;
+		completed: number;
+	}[];
 	label: string;
 	notesLabel: string;
 	tasksLabel: string;
@@ -269,8 +289,18 @@ function UsageTaskDensityChart({
 						fill: "var(--status-warning-fg)",
 					}),
 				],
-				x: { scale: scaleLinear, nice: true, grid: true, axis: { label: notesLabel } },
-				y: { scale: scaleLinear, nice: true, grid: true, axis: { label: tasksLabel } },
+				x: {
+					scale: scaleLinear,
+					nice: true,
+					grid: true,
+					axis: { label: notesLabel },
+				},
+				y: {
+					scale: scaleLinear,
+					nice: true,
+					grid: true,
+					axis: { label: tasksLabel },
+				},
 			}),
 		[notesLabel, rows, tasksLabel, tasksTooltipLabel],
 	);
@@ -371,17 +401,11 @@ export function UsageSettingsPane() {
 					</div>
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.activity")}
-					className="usageActivityPanel"
-				>
+				<UsagePanel title={t("usage.activity")} className="usageActivityPanel">
 					<UsageActivityHeatmap insights={insights} />
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.taskHealth")}
-					className="usageTaskPanel"
-				>
+				<UsagePanel title={t("usage.taskHealth")} className="usageTaskPanel">
 					<div className="usageTaskSummary">
 						<Stat
 							label={t("usage.open")}
@@ -402,10 +426,7 @@ export function UsageSettingsPane() {
 					/>
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.library")}
-					className="usageLibraryPanel"
-				>
+				<UsagePanel title={t("usage.library")} className="usageLibraryPanel">
 					<div className="usageStats">
 						<Stat
 							label={t("usage.links")}
@@ -445,16 +466,10 @@ export function UsageSettingsPane() {
 					</div>
 				</UsagePanel>
 
-				<UsagePanel
-					title={t("usage.topTags")}
-					className="usageRankingPanel"
-				>
+				<UsagePanel title={t("usage.topTags")} className="usageRankingPanel">
 					<div className="usageCharts">
 						{tagRows.length ? (
-							<UsageTagDotPlot
-								rows={tagRows}
-								label={t("usage.tags")}
-							/>
+							<UsageTagDotPlot rows={tagRows} label={t("usage.tags")} />
 						) : (
 							<p className="usageEmpty">{t("usage.noData")}</p>
 						)}
@@ -479,7 +494,6 @@ export function UsageSettingsPane() {
 						)}
 					</div>
 				</UsagePanel>
-
 			</div>
 		</div>
 	);
