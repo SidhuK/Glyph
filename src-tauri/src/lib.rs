@@ -134,15 +134,21 @@ struct AppCommandPayload {
 }
 
 #[derive(Default)]
+struct PendingMenuCommands {
+    commands: Vec<AppCommandPayload>,
+    shell_ready: bool,
+}
+
+#[derive(Default)]
 struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
     menu_labels: Mutex<HashMap<String, String>>,
-    /// Commands that arrived while the main window did not exist (e.g. the app
-    /// was cold-started into an external markdown window via Finder). The shell
-    /// drains them on mount; see `menu_take_pending_commands`.
-    pending_commands: Mutex<Vec<AppCommandPayload>>,
+    /// Commands that arrive before the shell event listener is ready. The shell
+    /// drains them once that listener has registered; see
+    /// `menu_take_pending_commands`.
+    pending_commands: Mutex<PendingMenuCommands>,
 }
 
 #[derive(Default)]
@@ -994,6 +1000,12 @@ fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
         return Ok(window);
     }
 
+    if let Some(state) = app.try_state::<MenuState>() {
+        if let Ok(mut pending) = state.pending_commands.lock() {
+            pending.shell_ready = false;
+        }
+    }
+
     let config = app
         .config()
         .app
@@ -1104,6 +1116,38 @@ fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
     );
 }
 
+fn dispatch_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
+    let should_queue = app
+        .try_state::<MenuState>()
+        .is_some_and(|state| match state.pending_commands.lock() {
+            Ok(mut pending) if !pending.shell_ready => {
+                pending.commands.push(AppCommandPayload {
+                    command_id: command_id.to_string(),
+                });
+                true
+            }
+            Ok(_) => false,
+            Err(_) => {
+                warn!("Failed to lock pending menu commands");
+                false
+            }
+        });
+
+    if should_queue {
+        if app
+            .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
+            .is_none()
+        {
+            if let Err(error) = show_main_window_for_app(app) {
+                warn!("Failed to show main window for menu command {command_id}: {error}");
+            }
+        }
+        return;
+    }
+
+    emit_menu_command_to_main(app, command_id);
+}
+
 #[tauri::command(rename_all = "snake_case")]
 fn set_quick_note_global_shortcut(
     app: tauri::AppHandle,
@@ -1192,15 +1236,17 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
     Ok(())
 }
 
-/// Drain menu commands that were queued while the main window did not exist
-/// (e.g. the app was cold-started into an external markdown window). The main
-/// shell replays them once its webview is listening.
+/// Drain menu commands queued before the main shell registered its listener,
+/// then allow future commands to be emitted directly.
 #[tauri::command]
 fn menu_take_pending_commands(state: State<'_, MenuState>) -> Vec<AppCommandPayload> {
     state
         .pending_commands
         .lock()
-        .map(|mut pending| std::mem::take(&mut *pending))
+        .map(|mut pending| {
+            pending.shell_ready = true;
+            std::mem::take(&mut pending.commands)
+        })
         .unwrap_or_default()
 }
 
@@ -1490,7 +1536,7 @@ pub fn run() {
                 );
             }
             "file.print_note" => {
-                emit_menu_command_to_main(app, "print-note");
+                dispatch_menu_command_to_main(app, "print-note");
             }
             "file.close_tab" => {
                 // External markdown windows close themselves via Close Tab;
@@ -1507,7 +1553,7 @@ pub fn run() {
                         return;
                     }
                 }
-                emit_menu_command_to_main(app, "close-active-tab");
+                dispatch_menu_command_to_main(app, "close-active-tab");
             }
             #[cfg(target_os = "macos")]
             "edit.paste_without_formatting" => {
@@ -1527,27 +1573,7 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                if app
-                    .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
-                    .is_none()
-                {
-                    // The app may be running with only an external markdown window
-                    // (a file opened from Finder), so the main window does not
-                    // exist. Queue the command for the shell to replay on mount,
-                    // then reveal the main window.
-                    if let Some(state) = app.try_state::<MenuState>() {
-                        let _ = state.pending_commands.lock().map(|mut pending| {
-                            pending.push(AppCommandPayload {
-                                command_id: command.id,
-                            });
-                        });
-                    }
-                    if let Err(error) = show_main_window_for_app(app) {
-                        warn!("Failed to show main window for menu command {id}: {error}");
-                    }
-                } else {
-                    emit_menu_command_to_main(app, &command.id);
-                }
+                dispatch_menu_command_to_main(app, &command.id);
             }
         })
         .setup(|app| {

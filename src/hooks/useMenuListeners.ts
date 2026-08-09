@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
+import { extractErrorMessage } from "../lib/errorUtils";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
 import { invoke } from "../lib/tauri";
-import { useTauriEvent } from "../lib/tauriEvents";
+import { listenTauriEvent, useTauriEvent } from "../lib/tauriEvents";
 
 interface UseMenuListenersProps {
 	onNewNote: () => void;
@@ -179,21 +181,35 @@ export function useMenuListeners({
 		],
 	);
 
-	useTauriEvent("menu:app_command", handleAppCommand);
 	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
 
 	useEffect(() => {
-		// Commands clicked while the main window did not exist yet (e.g. the
-		// app was cold-started into an external markdown window) are queued on
-		// the Rust side and replayed here once the shell is listening.
-		void invoke("menu_take_pending_commands")
-			.then((commands) => {
+		let cancelled = false;
+		let unlisten: (() => void) | null = null;
+
+		void listenTauriEvent("menu:app_command", handleAppCommand)
+			.then(async (stop) => {
+				unlisten = stop;
+				if (cancelled) {
+					stop();
+					return;
+				}
+
+				const commands = await invoke("menu_take_pending_commands");
+				if (cancelled) return;
 				for (const command of commands) {
 					handleAppCommand(command);
 				}
 			})
-			.catch(() => {
-				// Nothing pending or IPC unavailable; the live listener covers it.
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.error("Failed to replay pending menu commands", error);
+				toast.error(extractErrorMessage(error));
 			});
+
+		return () => {
+			cancelled = true;
+			unlisten?.();
+		};
 	}, [handleAppCommand]);
 }
