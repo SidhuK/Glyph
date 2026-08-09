@@ -6,7 +6,8 @@
 		"ai": "AI",
 		"space": "Space",
 		"git": "Git Sync",
-		"about": "About"
+		"about": "About",
+		"usage": "공간 인사이트"
 	},
 	"tabEntry": {
 		"general": {

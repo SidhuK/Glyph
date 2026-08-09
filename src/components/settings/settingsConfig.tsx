@@ -1,6 +1,7 @@
 import {
 	AiBrain04Icon,
 	Archive02Icon,
+	ChartIcon,
 	CommandIcon,
 	GitBranchIcon,
 	Settings01Icon,
@@ -17,11 +18,11 @@ export type SettingsTab =
 	| "ai"
 	| "space"
 	| "git"
-	| "about";
+	| "about"
+	| "usage";
 
 export interface SettingsTabMeta {
 	id: SettingsTab;
-	label: string;
 	renderIcon: () => ReactElement;
 }
 
@@ -34,7 +35,6 @@ export interface SettingsTabGroup {
 export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
-		label: "General",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Settings01Icon}
@@ -45,14 +45,12 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "appearance",
-		label: "Appearance",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
 	},
 	{
 		id: "shortcuts",
-		label: "Shortcuts",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={CommandIcon}
@@ -63,7 +61,6 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "ai",
-		label: "Glyph AI",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={AiBrain04Icon}
@@ -74,12 +71,10 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "space",
-		label: "Space",
 		renderIcon: () => <FolderOpen size="var(--icon-md)" />,
 	},
 	{
 		id: "git",
-		label: "Git",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={GitBranchIcon}
@@ -90,13 +85,18 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "about",
-		label: "About",
 		renderIcon: () => (
 			<HugeiconsIcon
 				icon={Archive02Icon}
 				size="var(--icon-md)"
 				strokeWidth={0.9}
 			/>
+		),
+	},
+	{
+		id: "usage",
+		renderIcon: () => (
+			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={0.9} />
 		),
 	},
 ];
@@ -121,7 +121,11 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		id: "workspace",
 		label: "Workspace",
 		tabs: SETTINGS_TABS.filter(
-			(tab) => tab.id === "space" || tab.id === "git" || tab.id === "ai",
+			(tab) =>
+				tab.id === "space" ||
+				tab.id === "git" ||
+				tab.id === "ai" ||
+				tab.id === "usage",
 		),
 	},
 ];

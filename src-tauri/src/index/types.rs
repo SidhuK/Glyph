@@ -127,3 +127,45 @@ pub struct PersonCount {
     pub handle: String,
     pub count: u32,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageInsights {
+    pub note_count: u32,
+    pub task_total: u32,
+    pub task_completed: u32,
+    pub link_count: u32,
+    pub isolated_note_count: u32,
+    pub tag_count: u32,
+    pub total_file_bytes: u64,
+    pub daily_notes_count: u32,
+    pub active_day_count: u32,
+    pub longest_activity_streak: u32,
+    pub activity: Vec<UsageActivityDay>,
+    pub folders: Vec<UsageFolder>,
+    pub tags: Vec<UsageTag>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageActivityDay {
+    pub date: String,
+    pub created: u32,
+    pub last_edited: u32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageFolder {
+    pub name: String,
+    pub note_count: u32,
+    pub task_total: u32,
+    pub task_completed: u32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageTag {
+    pub tag: String,
+    pub note_count: u32,
+}
