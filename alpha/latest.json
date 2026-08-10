@@ -1,15 +1,15 @@
 {
-  "version": "0.8.13-alpha.5",
-  "notes": "## What's Changed\n* Add settings usage insights (#469) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/469\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.13-alpha.4...v0.8.13-alpha.5",
-  "pub_date": "2026-08-09T09:02:05.356Z",
+  "version": "0.8.13-alpha.6",
+  "notes": "## What's Changed\n* Fix sidebar expansion initialization by @SidhuK in https://github.com/SidhuK/Glyph/pull/470\n* fix: make menu commands work when a file is opened from Finder by @SidhuK in https://github.com/SidhuK/Glyph/pull/471\n* Clean up editor: consolidate ribbon/slash commands and link dialogs (#472) [Release] by @SidhuK in https://github.com/SidhuK/Glyph/pull/472\n\n\n**Full Changelog**: https://github.com/SidhuK/Glyph/compare/v0.8.13-alpha.5...v0.8.13-alpha.6",
+  "pub_date": "2026-08-10T05:12:03.784Z",
   "platforms": {
     "darwin-aarch64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHhTNzZ6VE92NzA4RjQ2UGxFdmdIZW4vQ0lxanJYRTExNXY4SnlteWkwQ2ZFdWR1RHh4dWZRditxQ2VQdElPbUR4KzVES2pVUUF5NUJFcGJQaGdUclFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2MjY2MTIwCWZpbGU6R2x5cGguYXBwLnRhci5negpXZ2cxRVl2YTM3U1ZGSXNHN2ZXb1JKcW9yMmdkTTRDMGM2NkpJZnd4NzFuZlZZSHFxQlhwVDU5d3MwaTFNSFh4SUFub0tydllUV0lnMlFCek10UktEQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.13-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDl4QjJQQTJickpUeFcwTjNzcFo0SUo3eXJsWEN6dDVkQnY2TERQaTN0Mm5xZlVaQ1FicHl3d0xMcDJ6ZjV6czhzN0dlVEFNeUsrcDVJSURtK21XMlFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2MzM4NzE5CWZpbGU6R2x5cGguYXBwLnRhci5negphdTU3RTlHUk9UZkNPRUd4ZHN0bE9vYlh5SEs2d1VJT2ZVWUxudkVLbllCZFNIRXM0RmE5YWVhWWlkUTNYYm92SzZ5SUhSdnpKV3hsWDkzMUw3ODVCQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.13-alpha.6/Glyph_aarch64.app.tar.gz"
     },
     "darwin-aarch64-app": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNHhTNzZ6VE92NzA4RjQ2UGxFdmdIZW4vQ0lxanJYRTExNXY4SnlteWkwQ2ZFdWR1RHh4dWZRditxQ2VQdElPbUR4KzVES2pVUUF5NUJFcGJQaGdUclFRPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2MjY2MTIwCWZpbGU6R2x5cGguYXBwLnRhci5negpXZ2cxRVl2YTM3U1ZGSXNHN2ZXb1JKcW9yMmdkTTRDMGM2NkpJZnd4NzFuZlZZSHFxQlhwVDU5d3MwaTFNSFh4SUFub0tydllUV0lnMlFCek10UktEQT09Cg==",
-      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.13-alpha.5/Glyph_aarch64.app.tar.gz"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRTVkyaThTc3NKNDl4QjJQQTJickpUeFcwTjNzcFo0SUo3eXJsWEN6dDVkQnY2TERQaTN0Mm5xZlVaQ1FicHl3d0xMcDJ6ZjV6czhzN0dlVEFNeUsrcDVJSURtK21XMlFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg2MzM4NzE5CWZpbGU6R2x5cGguYXBwLnRhci5negphdTU3RTlHUk9UZkNPRUd4ZHN0bE9vYlh5SEs2d1VJT2ZVWUxudkVLbllCZFNIRXM0RmE5YWVhWWlkUTNYYm92SzZ5SUhSdnpKV3hsWDkzMUw3ODVCQT09Cg==",
+      "url": "https://github.com/SidhuK/Glyph/releases/download/v0.8.13-alpha.6/Glyph_aarch64.app.tar.gz"
     }
   }
 }
