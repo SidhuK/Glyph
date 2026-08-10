@@ -14,7 +14,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -75,35 +75,51 @@ function EmptyStateCommandPaletteHint({
 }: {
 	onOpenCommandPalette: () => void;
 }) {
+	const { t } = useTranslation();
 	const { getBinding } = useShortcutBindings();
 	const shortcut = getBinding("open-command-palette");
 	const shortcutParts = shortcut
 		? formatShortcutPartsForPlatform(shortcut)
 		: [];
 
-	if (!shortcutParts.length) return null;
-
 	return (
 		<div className="mainEmptyBottomBlock">
 			<p className="mainEmptyPrompt">
-				Press{" "}
-				<button
-					type="button"
-					className="mainEmptyShortcutInline"
-					onClick={onOpenCommandPalette}
-					title="Open command palette"
-				>
-					<kbd className="mainEmptyShortcutBadge">
-						<span className="mainEmptyShortcutCombo">
-							{shortcutParts.map((part) => (
-								<span key={part} className="mainEmptyShortcutPart">
-									{part}
-								</span>
-							))}
-						</span>
-					</kbd>
-				</button>{" "}
-				to get started
+				{shortcutParts.length ? (
+					<Trans
+						i18nKey="emptyState.commandPalettePrompt"
+						components={{
+							shortcut: (
+								<button
+									type="button"
+									className="mainEmptyShortcutInline"
+									onClick={onOpenCommandPalette}
+									title={t("commandPalette.title")}
+									aria-label={t("emptyState.openCommandPalette")}
+								>
+									<kbd className="mainEmptyShortcutBadge">
+										<span className="mainEmptyShortcutCombo">
+											{shortcutParts.map((part) => (
+												<span key={part} className="mainEmptyShortcutPart">
+													{part}
+												</span>
+											))}
+										</span>
+									</kbd>
+								</button>
+							),
+						}}
+					/>
+				) : (
+					<button
+						type="button"
+						className="mainEmptyShortcutInline"
+						onClick={onOpenCommandPalette}
+						title={t("commandPalette.title")}
+					>
+						{t("emptyState.openCommandPalette")}
+					</button>
+				)}
 			</p>
 			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
 		</div>

@@ -85,6 +85,10 @@
 		"noteNotFound": "そのノートが見つかりませんでした。",
 		"noteNotMarkdown": "このリンクは Markdown ノートを指していません。"
 	},
+	"emptyState": {
+		"commandPalettePrompt": "<shortcut/>を押して始めましょう",
+		"openCommandPalette": "コマンドパレットを開く"
+	},
 	"commandPalette": {
 		"title": "コマンドパレット",
 		"notePreview": "ノートのプレビュー",

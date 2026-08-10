@@ -1,8 +1,8 @@
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-use crate::index::paths as index_paths;
 use crate::glyph_paths;
+use crate::index::paths as index_paths;
 
 #[derive(Serialize)]
 pub struct SpaceInfo {
@@ -36,32 +36,47 @@ pub fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
     Ok(p)
 }
 
-pub fn create_or_open_impl(root: &Path) -> Result<SpaceInfo, String> {
+pub fn create_or_open_impl(root: &Path) -> Result<(SpaceInfo, bool), String> {
     index_paths::register_space(root)?;
     index_paths::remove_stale_in_space_db(root);
     ensure_glyph_dirs(root)?;
     let _ = cleanup_tmp_files(root);
-    let welcome_note_path = ensure_welcome_note_for_launch(root);
-    Ok(SpaceInfo {
-        root: root.to_string_lossy().to_string(),
-        schema_version: VAULT_SCHEMA_VERSION,
-        welcome_note_path,
-    })
+    let (welcome_note_path, welcome_note_created) = ensure_welcome_note_for_launch(root);
+    Ok((
+        SpaceInfo {
+            root: root.to_string_lossy().to_string(),
+            schema_version: VAULT_SCHEMA_VERSION,
+            welcome_note_path,
+        },
+        welcome_note_created,
+    ))
 }
 
-fn ensure_welcome_note_for_launch(root: &Path) -> Option<String> {
-    let marker = glyph_paths::glyph_app_dir(root).ok()?.join(WELCOME_NOTE_MARKER);
+fn ensure_welcome_note_for_launch(root: &Path) -> (Option<String>, bool) {
+    let Ok(glyph_app_dir) = glyph_paths::glyph_app_dir(root) else {
+        return (None, false);
+    };
+    let marker = glyph_app_dir.join(WELCOME_NOTE_MARKER);
     if marker.exists() {
-        return None;
+        return (None, false);
     }
 
     let note_path = Path::new(WELCOME_NOTE_PATH);
-    let note = crate::paths::join_under(root, note_path).ok()?;
-    if !note.exists() {
-        crate::io_atomic::write_atomic(&note, WELCOME_NOTE_CONTENT.as_bytes()).ok()?;
+    let Ok(note) = crate::paths::join_under(root, note_path) else {
+        return (None, false);
+    };
+    let created = !note.exists();
+    if created {
+        if crate::io_atomic::write_atomic(&note, WELCOME_NOTE_CONTENT.as_bytes()).is_err()
+            || crate::index::index_note(root, WELCOME_NOTE_PATH, WELCOME_NOTE_CONTENT).is_err()
+        {
+            return (None, false);
+        }
     }
-    crate::io_atomic::write_atomic(&marker, b"").ok()?;
-    Some(WELCOME_NOTE_PATH.to_string())
+    if crate::io_atomic::write_atomic(&marker, b"").is_err() {
+        return (None, false);
+    }
+    (Some(WELCOME_NOTE_PATH.to_string()), created)
 }
 
 fn cleanup_tmp_files(root: &Path) -> Result<(), String> {

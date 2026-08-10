@@ -475,10 +475,11 @@ export function AppShell() {
 
 	useEffect(() => {
 		if (!spacePath || !welcomeNotePath) return;
-		consumeWelcomeNotePath();
-		void openWorkspaceFile(welcomeNotePath).catch((cause) => {
-			setError(cause instanceof Error ? cause.message : String(cause));
-		});
+		void openWorkspaceFile(welcomeNotePath)
+			.then(consumeWelcomeNotePath)
+			.catch((cause) => {
+				setError(cause instanceof Error ? cause.message : String(cause));
+			});
 	}, [
 		consumeWelcomeNotePath,
 		openWorkspaceFile,

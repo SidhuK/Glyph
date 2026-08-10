@@ -85,6 +85,10 @@
 		"noteNotFound": "No se encontró esa nota.",
 		"noteNotMarkdown": "Ese enlace no apunta a una nota de Markdown."
 	},
+	"emptyState": {
+		"commandPalettePrompt": "Pulsa <shortcut/> para comenzar",
+		"openCommandPalette": "Abrir paleta de comandos"
+	},
 	"commandPalette": {
 		"title": "Paleta de comandos",
 		"notePreview": "Vista previa de la nota",

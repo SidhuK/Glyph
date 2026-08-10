@@ -85,6 +85,10 @@
 		"noteNotFound": "Diese Notiz wurde nicht gefunden.",
 		"noteNotMarkdown": "Dieser Link verweist nicht auf eine Markdown-Notiz."
 	},
+	"emptyState": {
+		"commandPalettePrompt": "Drücke <shortcut/>, um loszulegen",
+		"openCommandPalette": "Befehlspalette öffnen"
+	},
 	"commandPalette": {
 		"title": "Befehlspalette",
 		"notePreview": "Notizvorschau",

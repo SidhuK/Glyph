@@ -102,6 +102,10 @@
 		"success_other": "Imported {{count}} files.",
 		"noneImported": "No files were imported."
 	},
+	"emptyState": {
+		"commandPalettePrompt": "Press <shortcut/> to get started",
+		"openCommandPalette": "Open command palette"
+	},
 	"commandPalette": {
 		"title": "Command Palette",
 		"notePreview": "Note preview",
