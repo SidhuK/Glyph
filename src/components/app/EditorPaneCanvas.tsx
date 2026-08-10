@@ -30,7 +30,7 @@ import type {
 	CreateMarkdownFileOptions,
 	ExtractToNoteActions,
 } from "../editor/types";
-import { NotePane } from "../preview/NotePane";
+import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { CanvasPaneAwait } from "./CanvasPaneAwait";
 import { TabBar } from "./TabBar";
 import {
@@ -306,7 +306,7 @@ function EditorPaneContent({
 	} satisfies ExtractToNoteActions;
 
 	return (
-		<NotePane
+		<MarkdownEditorPane
 			relPath={viewerPath}
 			initialDoc={getPrefetchedNote(viewerPath)}
 			extractToNoteActions={extractToNoteActions}

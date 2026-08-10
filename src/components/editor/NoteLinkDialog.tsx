@@ -11,6 +11,7 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
+import { applyEditorLink, removeEditorLink } from "./linkCommands";
 
 export interface NoteLinkDialogState {
 	href: string;
@@ -23,22 +24,6 @@ interface NoteLinkDialogProps {
 	canEdit: boolean;
 	state: NoteLinkDialogState | null;
 	onStateChange: (state: NoteLinkDialogState | null) => void;
-}
-
-function normalizeEditorHref(value: string): string {
-	const trimmed = value.trim();
-	if (!trimmed) return "";
-	if (
-		trimmed.startsWith("http://") ||
-		trimmed.startsWith("https://") ||
-		trimmed.startsWith("mailto:") ||
-		trimmed.startsWith("tel:") ||
-		trimmed.startsWith("#") ||
-		trimmed.startsWith("/")
-	) {
-		return trimmed;
-	}
-	return `https://${trimmed}`;
 }
 
 /**
@@ -56,36 +41,17 @@ export function NoteLinkDialog({
 
 	const apply = useCallback(() => {
 		if (!editor || !canEdit || !state) return;
-		const href = normalizeEditorHref(state.href);
-		const chain = editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.setTextSelection(state.range)
-			.extendMarkRange("link");
-		if (!href) {
-			chain.unsetLink().run();
-			onStateChange(null);
-			return;
-		}
-		chain
-			.setLink({
-				href,
-				target: state.target,
-				rel: state.target === "_blank" ? "noopener noreferrer" : undefined,
-			})
-			.run();
+		const chain = editor.chain().focus(null, { scrollIntoView: false });
+		applyEditorLink(chain, state);
 		onStateChange(null);
 	}, [canEdit, editor, onStateChange, state]);
 
 	const remove = useCallback(() => {
 		if (!editor || !canEdit || !state) return;
-		editor
-			.chain()
-			.focus(null, { scrollIntoView: false })
-			.setTextSelection(state.range)
-			.extendMarkRange("link")
-			.unsetLink()
-			.run();
+		removeEditorLink(
+			editor.chain().focus(null, { scrollIntoView: false }),
+			state.range,
+		);
 		onStateChange(null);
 	}, [canEdit, editor, onStateChange, state]);
 

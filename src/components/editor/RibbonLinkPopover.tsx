@@ -6,6 +6,7 @@ import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { applyEditorLink, removeEditorLink } from "./linkCommands";
 
 interface RibbonLinkPopoverProps {
 	editor: Editor;
@@ -13,22 +14,6 @@ interface RibbonLinkPopoverProps {
 	runCommand: (fn: () => void) => void;
 	focusChain: () => ReturnType<Editor["chain"]>;
 	preventMouseDown: (e: React.MouseEvent) => void;
-}
-
-function normalizeHref(value: string): string {
-	const trimmed = value.trim();
-	if (!trimmed) return "";
-	if (
-		trimmed.startsWith("http://") ||
-		trimmed.startsWith("https://") ||
-		trimmed.startsWith("mailto:") ||
-		trimmed.startsWith("tel:") ||
-		trimmed.startsWith("#") ||
-		trimmed.startsWith("/")
-	) {
-		return trimmed;
-	}
-	return `https://${trimmed}`;
 }
 
 export function RibbonLinkPopover({
@@ -60,36 +45,19 @@ export function RibbonLinkPopover({
 	};
 
 	const applyLink = () => {
-		const href = normalizeHref(linkHref);
-		if (!href) {
-			runCommand(() => {
-				const chain = focusChain();
-				if (linkRange) chain.setTextSelection(linkRange);
-				chain.unsetLink().run();
-			});
-			setLinkOpen(false);
-			return;
-		}
 		runCommand(() => {
-			const chain = focusChain();
-			if (linkRange) chain.setTextSelection(linkRange);
-			chain
-				.extendMarkRange("link")
-				.setLink({
-					href,
-					target: linkTarget,
-					rel: linkTarget === "_blank" ? "noopener noreferrer" : undefined,
-				})
-				.run();
+			applyEditorLink(focusChain(), {
+				href: linkHref,
+				range: linkRange,
+				target: linkTarget,
+			});
 		});
 		setLinkOpen(false);
 	};
 
 	const removeLink = () => {
 		runCommand(() => {
-			const chain = focusChain();
-			if (linkRange) chain.setTextSelection(linkRange);
-			chain.unsetLink().run();
+			removeEditorLink(focusChain(), linkRange);
 		});
 		setLinkOpen(false);
 	};
