@@ -8,7 +8,7 @@ use super::helpers::{canonicalize_dir, create_or_open_impl, SpaceInfo};
 use super::state::SpaceState;
 use super::watcher::create_notes_watcher;
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 struct NoteChangeEvent {
     space_path: String,
     rel_path: String,
