@@ -346,14 +346,6 @@
 			"label": "Salvar nota",
 			"description": "Salvar a nota atual se tiver sido modificada."
 		},
-		"show-getting-started": {
-			"label": "Primeiros passos",
-			"description": "Abrir o fluxo de primeiros passos."
-		},
-		"show-welcome-note": {
-			"label": "Nota de boas-vindas",
-			"description": "Criar ou abrir a nota de boas-vindas na raiz do espaço atual."
-		},
 		"open-shortcuts-settings": {
 			"label": "Atalhos de teclado…",
 			"description": "Abrir a seção de atalhos de teclado nas configurações."

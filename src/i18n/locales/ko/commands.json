@@ -346,14 +346,6 @@
 			"label": "노트 저장",
 			"description": "수정된 경우 현재 노트를 저장합니다."
 		},
-		"show-getting-started": {
-			"label": "시작하기",
-			"description": "시작하기 흐름을 엽니다."
-		},
-		"show-welcome-note": {
-			"label": "환영 노트",
-			"description": "현재 스페이스 루트에 환영 노트를 만들거나 엽니다."
-		},
 		"open-shortcuts-settings": {
 			"label": "키보드 단축키…",
 			"description": "설정의 키보드 단축키 섹션을 엽니다."

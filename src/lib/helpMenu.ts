@@ -22,13 +22,9 @@ const GLYPH_LINK_COMMAND_HANDLERS = {
 } as const;
 
 export function buildHelpMenuCommandHandlers(
-	openGettingStarted: () => void,
-	showWelcomeNote: () => void | Promise<void>,
 	openSettings: (tab?: SettingsTab) => void,
 ): Record<string, () => void | Promise<void>> {
 	return {
-		"show-getting-started": openGettingStarted,
-		"show-welcome-note": showWelcomeNote,
 		"open-shortcuts-settings": () => openSettings("shortcuts"),
 		...Object.fromEntries(
 			Object.entries(GLYPH_LINK_COMMAND_HANDLERS).map(([commandId, url]) => [

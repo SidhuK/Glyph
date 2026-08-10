@@ -1033,28 +1033,6 @@
 			"commandPalette": true,
 			"menuId": "file.save_note"
 		},
-		"show-getting-started": {
-			"id": "show-getting-started",
-			"label": "Getting Started",
-			"description": "Open the getting started flow.",
-			"category": "settings",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true,
-			"menuId": "help.getting_started"
-		},
-		"show-welcome-note": {
-			"id": "show-welcome-note",
-			"label": "Welcome Note",
-			"description": "Create or open the welcome note in the root of the current space.",
-			"category": "settings",
-			"context": "space",
-			"defaultBinding": null,
-			"allowInEditable": false,
-			"commandPalette": true,
-			"menuId": "help.welcome_note"
-		},
 		"open-shortcuts-settings": {
 			"id": "open-shortcuts-settings",
 			"label": "Keyboard Shortcuts\u2026",

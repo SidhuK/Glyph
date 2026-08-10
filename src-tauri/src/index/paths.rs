@@ -281,7 +281,7 @@ mod tests {
     fn remove_stale_in_space_db_deletes_only_sqlite_sidecars() {
         let space_root = temp_index_root().join("space");
         let glyph_dir = glyph_paths::ensure_glyph_dir(&space_root).expect("glyph dir should exist");
-        let marker = glyph_dir.join("onboarding-note-v2.json");
+        let marker = glyph_dir.join("metadata.json");
         std::fs::write(&marker, b"{}").expect("marker should be written");
         for name in [
             glyph_paths::GLYPH_DB_NAME,

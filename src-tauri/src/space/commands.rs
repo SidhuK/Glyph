@@ -1,14 +1,12 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tauri::State;
 
 use crate::{
-    index::{self, db::reset_schema_cache},
-    paths, window_geometry,
+    index::db::reset_schema_cache,
+    window_geometry,
 };
 
-use super::helpers::{
-    canonicalize_dir, create_or_open_impl, ensure_onboarding_note_for_command, SpaceInfo,
-};
+use super::helpers::{canonicalize_dir, create_or_open_impl, SpaceInfo};
 use super::state::SpaceState;
 use super::watcher::create_notes_watcher;
 
@@ -110,24 +108,6 @@ pub async fn space_get_current_info(
     tauri::async_runtime::spawn_blocking(move || create_or_open_impl(&root).map(Some))
         .await
         .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-pub async fn space_show_onboarding_note(
-    window: tauri::WebviewWindow,
-    state: State<'_, SpaceState>,
-) -> Result<String, String> {
-    let root = state.root_for_window(&window)?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
-        let note_path = ensure_onboarding_note_for_command(&root)?;
-        let abs = paths::join_under(&root, Path::new(&note_path))?;
-        if let Ok(markdown) = std::fs::read_to_string(&abs) {
-            let _ = index::index_note(&root, &note_path, &markdown);
-        }
-        Ok(note_path)
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

@@ -529,7 +529,7 @@ export function useTabManager(spacePath: string | null) {
 			activeTabTargetByPane: Record<string, string | null>,
 		) => {
 			// Yield to any tab open that landed while the snapshot was loading
-			// (cold-start deeplink, onboarding note, user click). Check the ref so
+			// (cold-start deeplink or user click). Check the ref so
 			// this sees commits that have not re-rendered yet.
 			if (tabsRevisionRef.current !== 0) return;
 

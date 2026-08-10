@@ -354,14 +354,6 @@
 			"label": "Save Note",
 			"description": "Save the current note if modified."
 		},
-		"show-getting-started": {
-			"label": "Getting Started",
-			"description": "Open the getting started flow."
-		},
-		"show-welcome-note": {
-			"label": "Welcome Note",
-			"description": "Create or open the welcome note in the root of the current space."
-		},
 		"open-shortcuts-settings": {
 			"label": "Keyboard Shortcuts…",
 			"description": "Open the keyboard shortcuts section in settings."

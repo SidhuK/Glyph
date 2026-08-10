@@ -56,7 +56,7 @@ import {
 import { PINNED_DOCS_TAB_ID } from "../../lib/pinnedDocs";
 import { buildPrintHtml } from "../../lib/printHtml";
 import { requestSearchJump } from "../../lib/searchJump";
-import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
+import { loadSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
@@ -126,8 +126,8 @@ export function AppShell() {
 		onOpenSpaceAtPath: openSpaceAtPath,
 		onCreateSpace: createSpace,
 		closeSpace,
-		onboardingNotePath,
-		consumeOnboardingNotePath,
+		welcomeNotePath,
+		consumeWelcomeNotePath,
 		isIndexing,
 		settingsLoaded,
 	} = space;
@@ -183,7 +183,6 @@ export function AppShell() {
 	const [databasesOpenRequest, setDatabasesOpenRequest] = useState(
 		INITIAL_DATABASES_OPEN_REQUEST,
 	);
-	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
@@ -359,7 +358,6 @@ export function AppShell() {
 		splitLayout,
 		focusedPaneId,
 		activeTab,
-		activeTabId,
 		activeTabPath,
 		setActiveTabId,
 		focusPane,
@@ -379,7 +377,6 @@ export function AppShell() {
 		splitPaneWithBlank,
 		moveTabToPane,
 		resizeSplit,
-		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
 		restoreWorkspaceTabs,
@@ -399,7 +396,7 @@ export function AppShell() {
 		spacePath,
 		settingsLoaded,
 		resumeLastSession,
-		onboardingNotePath,
+		welcomeNotePath,
 		tabs,
 		panes,
 		splitLayout,
@@ -477,30 +474,18 @@ export function AppShell() {
 	}, [importFolderInto, selectedImportDir]);
 
 	useEffect(() => {
-		if (!spacePath || !onboardingNotePath) return;
-		consumeOnboardingNotePath();
-		void openWorkspaceFile(onboardingNotePath).catch((cause) => {
+		if (!spacePath || !welcomeNotePath) return;
+		consumeWelcomeNotePath();
+		void openWorkspaceFile(welcomeNotePath).catch((cause) => {
 			setError(cause instanceof Error ? cause.message : String(cause));
 		});
 	}, [
-		consumeOnboardingNotePath,
-		onboardingNotePath,
+		consumeWelcomeNotePath,
 		openWorkspaceFile,
 		setError,
 		spacePath,
+		welcomeNotePath,
 	]);
-
-	const showWelcomeNote = useCallback(async () => {
-		if (!spacePath) return;
-		try {
-			const notePath = await invoke("space_show_onboarding_note");
-			await fileTree.loadDir("", true);
-			await openWorkspaceFile(notePath);
-		} catch (cause) {
-			const message = cause instanceof Error ? cause.message : String(cause);
-			toast.error("Could not open the welcome note", { description: message });
-		}
-	}, [fileTree, openWorkspaceFile, spacePath]);
 
 	const openFolioWorkspaceFile = useCallback(
 		async (path: string) => {
@@ -961,7 +946,6 @@ export function AppShell() {
 	}, [activeTabPath]);
 	const openCommandPalette = useCallback(() => {
 		openPalette("commands");
-		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [openPalette]);
 	const openSearchPalette = useCallback(() => {
 		if (!spacePath) {
@@ -1028,17 +1012,6 @@ export function AppShell() {
 		void loadActivityTimelinePane();
 		void prefetchAllDocs(null, ACTIVITY_DOCS_PAGE_SIZE);
 	}, []);
-	const openGettingStarted = useCallback(() => {
-		setShowGettingStartedRequest((prev) => prev + 1);
-	}, []);
-
-	const handleCreateNoteFromStarter = useCallback(async () => {
-		if (!spacePath) return;
-		const createdPath = await createNoteInSelectedFolder();
-		if (createdPath) {
-			await openWorkspaceFile(createdPath);
-		}
-	}, [createNoteInSelectedFolder, openWorkspaceFile, spacePath]);
 
 	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
 		if (!activeMarkdownTabPath) return;
@@ -1226,8 +1199,6 @@ export function AppShell() {
 		onEditorAction: (action) => {
 			dispatchEditorMenuAction({ action });
 		},
-		openGettingStarted,
-		showWelcomeNote,
 	});
 
 	const commands = useAppCommands({
@@ -1270,7 +1241,6 @@ export function AppShell() {
 		openBlankTab,
 		splitPaneWithBlank,
 		openDatabasesTab,
-		openGettingStarted,
 		openCalendar,
 		openConnectionsView,
 		openMarkdownTabsLength: openMarkdownTabs.length,
@@ -1279,7 +1249,6 @@ export function AppShell() {
 		openSearchPalette,
 		openSettings,
 		openWorkspaceFile,
-		showWelcomeNote,
 		pinnedFiles,
 		requestOpenDailyNote,
 		saveCurrentEditor,
@@ -1491,18 +1460,14 @@ export function AppShell() {
 				onOpenFileInNewTab={openWorkspaceFileInNewTab}
 				onOpenFolioFileInNewTab={openFolioWorkspaceFileInNewTab}
 				onOpenCommandPalette={openCommandPalette}
-				onCreateNote={handleCreateNoteFromStarter}
-				onOpenDailyNote={requestOpenDailyNote}
 				onOpenActivity={openActivityTab}
 				onPrefetchActivity={prefetchActivityTab}
 				onOpenDatabase={(databaseId) => openDatabasesTab(databaseId)}
-				tabs={tabs}
 				panes={panes}
 				splitLayout={splitLayout}
 				focusedPaneId={focusedPaneId}
 				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}
-				activeTabId={activeTabId}
 				activeTabPath={activeTabPath}
 				setActiveTabId={setActiveTabId}
 				focusPane={focusPane}
@@ -1520,10 +1485,8 @@ export function AppShell() {
 				onStartRenamePath={handleStartRenameFromTab}
 				onNavigateBreadcrumbPath={handleNavigateBreadcrumbPath}
 				onLoadBreadcrumbDir={fileTree.loadDir}
-				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
 				onGoBackInPane={goBackInPane}
 				onGoForwardInPane={goForwardInPane}
-				showGettingStartedRequest={showGettingStartedRequest}
 				databasesOpenRequest={databasesOpenRequest}
 				onConsumeDatabasesOpenRequest={consumeDatabasesOpenRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}

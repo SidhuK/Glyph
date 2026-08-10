@@ -23,8 +23,6 @@ const FRONTEND_MENU_COMMAND_IDS = [
 	"ai-attach-current-note",
 	"ai-attach-all-open-notes",
 	"open-ai-settings",
-	"show-getting-started",
-	"show-welcome-note",
 	"open-shortcuts-settings",
 	"open-glyph-website",
 	"open-glyph-changelog",

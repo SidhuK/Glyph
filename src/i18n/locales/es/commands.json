@@ -346,14 +346,6 @@
 			"label": "Guardar nota",
 			"description": "Guardar la nota actual si se ha modificado."
 		},
-		"show-getting-started": {
-			"label": "Primeros pasos",
-			"description": "Abrir el flujo de primeros pasos."
-		},
-		"show-welcome-note": {
-			"label": "Nota de bienvenida",
-			"description": "Crear o abrir la nota de bienvenida en la raíz del espacio actual."
-		},
 		"open-shortcuts-settings": {
 			"label": "Atajos de teclado…",
 			"description": "Abrir la sección de atajos de teclado en ajustes."

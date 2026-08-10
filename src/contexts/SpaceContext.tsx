@@ -12,22 +12,18 @@ import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
-import {
-	loadSettings,
-	setCurrentSpacePath,
-	updateOnboardingSettings,
-} from "../lib/settings";
+import { loadSettings, setCurrentSpacePath } from "../lib/settings";
 import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
 
 interface SpaceContextValue {
 	setError: (error: string) => void;
 	spacePath: string | null;
-	onboardingNotePath: string | null;
+	welcomeNotePath: string | null;
 	recentSpaces: string[];
 	isIndexing: boolean;
 	settingsLoaded: boolean;
-	consumeOnboardingNotePath: () => void;
+	consumeWelcomeNotePath: () => void;
 	startIndexRebuild: () => Promise<void>;
 	startIndexSync: () => Promise<void>;
 	onOpenSpace: () => Promise<void>;
@@ -75,9 +71,7 @@ async function selectSpaceFolder(): Promise<string | null> {
 
 export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [spacePath, setSpacePath] = useState<string | null>(null);
-	const [onboardingNotePath, setOnboardingNotePath] = useState<string | null>(
-		null,
-	);
+	const [welcomeNotePath, setWelcomeNotePath] = useState<string | null>(null);
 	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
@@ -133,8 +127,8 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				if (currentWindowSpaceInfo) {
 					if (!cancelled) {
 						setSpacePath(currentWindowSpaceInfo.root);
-						setOnboardingNotePath(
-							currentWindowSpaceInfo.onboarding_note_path ?? null,
+						setWelcomeNotePath(
+							currentWindowSpaceInfo.welcome_note_path ?? null,
 						);
 					}
 				} else if (settings.currentSpacePath) {
@@ -144,7 +138,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						});
 						if (!cancelled) {
 							setSpacePath(spaceInfo.root);
-							setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+							setWelcomeNotePath(spaceInfo.welcome_note_path ?? null);
 						}
 					} catch {}
 				}
@@ -212,9 +206,8 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				clearInlineImageHydrationCache();
 				invalidateNavigationPrefetch();
 				setSpacePath(spaceInfo.root);
-				setOnboardingNotePath(spaceInfo.onboarding_note_path ?? null);
+				setWelcomeNotePath(spaceInfo.welcome_note_path ?? null);
 				setRecentSpaces((prev) => normalizeRecentSpaces(prev, spaceInfo.root));
-				void updateOnboardingSettings({ launcherSeen: true });
 				await setCurrentSpacePath(spaceInfo.root);
 				return true;
 			} catch (err) {
@@ -234,14 +227,14 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			clearInlineImageHydrationCache();
 			invalidateNavigationPrefetch();
 			setSpacePath(null);
-			setOnboardingNotePath(null);
+			setWelcomeNotePath(null);
 		} catch (err) {
 			setError(extractErrorMessage(err));
 		}
 	}, []);
 
-	const consumeOnboardingNotePath = useCallback(() => {
-		setOnboardingNotePath(null);
+	const consumeWelcomeNotePath = useCallback(() => {
+		setWelcomeNotePath(null);
 	}, []);
 
 	const onOpenSpace = useCallback(async () => {
@@ -263,11 +256,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		() => ({
 			setError,
 			spacePath,
-			onboardingNotePath,
+			welcomeNotePath,
 			recentSpaces,
 			isIndexing,
 			settingsLoaded,
-			consumeOnboardingNotePath,
+			consumeWelcomeNotePath,
 			startIndexRebuild,
 			startIndexSync,
 			onOpenSpace,
@@ -277,11 +270,11 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		}),
 		[
 			spacePath,
-			onboardingNotePath,
+			welcomeNotePath,
 			recentSpaces,
 			isIndexing,
 			settingsLoaded,
-			consumeOnboardingNotePath,
+			consumeWelcomeNotePath,
 			startIndexRebuild,
 			startIndexSync,
 			onOpenSpace,
