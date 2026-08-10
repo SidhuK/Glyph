@@ -5,9 +5,7 @@ import {
 	type EditorMenuActionDetail,
 } from "../../../lib/appEvents";
 import { invoke } from "../../../lib/tauri";
-import { createDetailsBlockContent } from "../extensions/detailsBlock";
-import { isEditorTextColor } from "../textColors";
-import { isEditorTextHighlight } from "../textHighlights";
+import { createCalloutContent, executeEditorAction } from "../editorActions";
 import { isVisibleEditorHost } from "./editorDomUtils";
 
 interface UseRibbonCommandsOptions {
@@ -28,23 +26,6 @@ interface UseRibbonCommandsOptions {
 
 /** @internal Shared reference used to route editor menu actions to the focused editor instance. */
 let lastFocusedNoteEditorHost: HTMLDivElement | null = null;
-
-function normalizeCalloutType(type: string): string {
-	return type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
-}
-
-function createCalloutContent(type: string) {
-	return {
-		type: "blockquote",
-		content: [
-			{
-				type: "paragraph",
-				content: [{ type: "text", text: `[!${normalizeCalloutType(type)}]` }],
-			},
-			{ type: "paragraph" },
-		],
-	};
-}
 
 function createPlainTextPasteContent(text: string): JSONContent[] {
 	const paragraphs: JSONContent[] = [];
@@ -156,113 +137,17 @@ export function useRibbonCommands({
 				return;
 			}
 
-			const chain = editor
-				.chain()
-				.focus(null, { scrollIntoView: false })
-				.extendMarkRange("link");
-			const handled = (() => {
-				switch (action) {
-					case "bold":
-						return chain.toggleBold().run();
-					case "italic":
-						return chain.toggleItalic().run();
-					case "underline":
-						return chain.toggleUnderline().run();
-					case "strikethrough":
-						return chain.toggleStrike().run();
-					case "heading_1":
-						return chain.toggleHeading({ level: 1 }).run();
-					case "heading_2":
-						return chain.toggleHeading({ level: 2 }).run();
-					case "heading_3":
-						return chain.toggleHeading({ level: 3 }).run();
-					case "collapse_all_headings":
-						return chain.collapseAllHeadings().run();
-					case "expand_all_headings":
-						return chain.expandAllHeadings().run();
-					case "bullet_list":
-						return chain.toggleBulletList().run();
-					case "numbered_list":
-						return chain.toggleOrderedList().run();
-					case "todo_list":
-						return chain.toggleTaskList().run();
-					case "quote":
-						return chain.toggleBlockquote().run();
-					case "code_block":
-						return chain.toggleCodeBlock().run();
-					case "mermaid_chart":
-						return chain
-							.insertContent({
-								type: "codeBlock",
-								attrs: { language: "mermaid" },
-								content: [
-									{
-										type: "text",
-										text: "flowchart TD\n  A[Start] --> B[End]",
-									},
-								],
-							})
-							.run();
-					case "table":
-						return chain
-							.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-							.run();
-					case "divider":
-						return chain.setHorizontalRule().run();
-					case "details_block":
-						return chain.insertContent(createDetailsBlockContent()).run();
-					case "extract_selection_to_note":
-						onTriggerExtractToNote?.();
-						return true;
-					case "ai_selection_to_context":
-						onSendSelectionToAi?.();
-						return true;
-					case "callout_info":
-						return chain.insertContent(createCalloutContent("info")).run();
-					case "callout_warning":
-						return chain.insertContent(createCalloutContent("warning")).run();
-					case "callout_error":
-						return chain.insertContent(createCalloutContent("error")).run();
-					case "callout_success":
-						return chain.insertContent(createCalloutContent("success")).run();
-					case "callout_tip":
-						return chain.insertContent(createCalloutContent("tip")).run();
-					case "link_set": {
-						const linkAttrs = editor.getAttributes("link") as {
-							href?: string;
-							target?: string;
-						};
-						onOpenLinkDialog(
-							linkAttrs.href ?? "",
-							linkAttrs.target === "_blank" ? "_blank" : "_self",
-						);
-						return true;
-					}
-					case "link_clear":
-						return chain.unsetLink().run();
-					case "color_clear":
-						return chain.unsetTextColor().run();
-					case "highlight_clear":
-						return chain.unsetTextHighlight().run();
-					default: {
-						if (action.startsWith("color_")) {
-							const color = action.slice("color_".length);
-							if (isEditorTextColor(color)) {
-								return chain.setTextColor(color).run();
-							}
-							return false;
-						}
-						if (action.startsWith("highlight_")) {
-							const highlight = action.slice("highlight_".length);
-							if (isEditorTextHighlight(highlight)) {
-								return chain.setTextHighlight(highlight).run();
-							}
-							return false;
-						}
-						return false;
-					}
-				}
-			})();
+			const handled = executeEditorAction({
+				action,
+				editor,
+				chain: editor
+					.chain()
+					.focus(null, { scrollIntoView: false })
+					.extendMarkRange("link"),
+				onOpenLinkDialog,
+				onSendSelectionToAi,
+				onTriggerExtractToNote,
+			});
 			if (!handled) return;
 			if (scrollHost) {
 				requestAnimationFrame(() => {

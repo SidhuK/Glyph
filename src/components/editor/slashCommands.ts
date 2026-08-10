@@ -2,7 +2,7 @@ import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import { i18n } from "../../i18n";
-import { createDetailsBlockContent } from "./extensions/detailsBlock";
+import { type EditorActionId, executeEditorAction } from "./editorActions";
 import {
 	BLOCK_MATH_STARTER,
 	INLINE_MATH_STARTER,
@@ -78,6 +78,31 @@ function createEmbedSlashCommand({
 	};
 }
 
+function createEditorActionSlashCommand({
+	id,
+	icon,
+	keywords,
+	action,
+}: {
+	id: string;
+	icon: string;
+	keywords: string[];
+	action: EditorActionId;
+}): SlashCommandDef {
+	return {
+		id,
+		icon,
+		keywords,
+		command: ({ editor, range }) => {
+			executeEditorAction({
+				action,
+				editor,
+				chain: editor.chain().focus().deleteRange(range),
+			});
+		},
+	};
+}
+
 function insertMathAndOpen(
 	editor: Editor,
 	range: { from: number; to: number },
@@ -109,96 +134,66 @@ function insertMathAndOpen(
 }
 
 const SLASH_COMMANDS: SlashCommandDef[] = [
-	{
+	createEditorActionSlashCommand({
 		id: "heading1",
 		icon: "H1",
 		keywords: ["h1", "header", "title"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.toggleHeading({ level: 1 })
-				.run(),
-	},
-	{
+		action: "heading_1",
+	}),
+	createEditorActionSlashCommand({
 		id: "heading2",
 		icon: "H2",
 		keywords: ["h2", "header"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.toggleHeading({ level: 2 })
-				.run(),
-	},
-	{
+		action: "heading_2",
+	}),
+	createEditorActionSlashCommand({
 		id: "heading3",
 		icon: "H3",
 		keywords: ["h3", "header"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.toggleHeading({ level: 3 })
-				.run(),
-	},
-	{
+		action: "heading_3",
+	}),
+	createEditorActionSlashCommand({
 		id: "bulletList",
 		icon: "•",
 		keywords: ["ul", "bullet", "list"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).toggleBulletList().run(),
-	},
-	{
+		action: "bullet_list",
+	}),
+	createEditorActionSlashCommand({
 		id: "numberedList",
 		icon: "1.",
 		keywords: ["ol", "ordered", "list"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
-	},
-	{
+		action: "numbered_list",
+	}),
+	createEditorActionSlashCommand({
 		id: "todoList",
 		icon: "✓",
 		keywords: ["todo", "task", "checklist", "list"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).toggleTaskList().run(),
-	},
-	{
+		action: "todo_list",
+	}),
+	createEditorActionSlashCommand({
 		id: "quote",
 		icon: "❝",
 		keywords: ["blockquote", "quote"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
-	},
-	{
+		action: "quote",
+	}),
+	createEditorActionSlashCommand({
 		id: "codeBlock",
 		icon: "</>",
 		keywords: ["code", "block"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
-	},
-	{
+		action: "code_block",
+	}),
+	createEditorActionSlashCommand({
 		id: "divider",
 		icon: "—",
 		keywords: ["hr", "divider", "rule"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
-	},
-	{
+		action: "divider",
+	}),
+	createEditorActionSlashCommand({
 		id: "table",
 		icon: "▦",
 		keywords: ["table", "columns", "rows", "grid"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-				.run(),
-	},
+		action: "table",
+	}),
 	{
 		id: "tableOfContents",
 		icon: "☰",
@@ -217,27 +212,12 @@ const SLASH_COMMANDS: SlashCommandDef[] = [
 				])
 				.run(),
 	},
-	{
+	createEditorActionSlashCommand({
 		id: "mermaidChart",
 		icon: "M",
 		keywords: ["mermaid", "diagram", "flowchart", "graph"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "codeBlock",
-					attrs: { language: "mermaid" },
-					content: [
-						{
-							type: "text",
-							text: "flowchart TD\n  A[Start] --> B[End]",
-						},
-					],
-				})
-				.run(),
-	},
+		action: "mermaid_chart",
+	}),
 	createEmbedSlashCommand({
 		id: "htmlEmbed",
 		icon: "</>",
@@ -254,123 +234,42 @@ const SLASH_COMMANDS: SlashCommandDef[] = [
 		starterText:
 			'<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">\n  <rect width="200" height="80" rx="12" fill="tomato" />\n  <text x="100" y="48" text-anchor="middle">Glyph</text>\n</svg>',
 	}),
-	{
+	createEditorActionSlashCommand({
 		id: "detailsBlock",
 		icon: "▸",
 		keywords: ["details", "toggle", "collapse", "accordion", "summary"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent(createDetailsBlockContent())
-				.run(),
-	},
-	{
+		action: "details_block",
+	}),
+	createEditorActionSlashCommand({
 		id: "calloutInfo",
 		icon: "i",
 		keywords: ["callout", "info", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!info]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-	},
-	{
+		action: "callout_info",
+	}),
+	createEditorActionSlashCommand({
 		id: "calloutTip",
 		icon: "?",
 		keywords: ["callout", "tip", "hint", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!tip]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-	},
-	{
+		action: "callout_tip",
+	}),
+	createEditorActionSlashCommand({
 		id: "calloutSuccess",
 		icon: "+",
 		keywords: ["callout", "success", "done", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!success]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-	},
-	{
+		action: "callout_success",
+	}),
+	createEditorActionSlashCommand({
 		id: "calloutWarning",
 		icon: "!",
 		keywords: ["callout", "warning", "warn", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!warning]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-	},
-	{
+		action: "callout_warning",
+	}),
+	createEditorActionSlashCommand({
 		id: "calloutError",
 		icon: "×",
 		keywords: ["callout", "error", "danger", "admonition"],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: "[!error]" }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-	},
+		action: "callout_error",
+	}),
 	{
 		id: "mathInline",
 		icon: "ƒx",
@@ -385,39 +284,34 @@ const SLASH_COMMANDS: SlashCommandDef[] = [
 		command: ({ editor, range, onMathEditRequest }) =>
 			insertMathAndOpen(editor, range, "block", onMathEditRequest),
 	},
-	...EDITOR_TEXT_COLORS.map<SlashCommandDef>((color) => ({
-		id: `color${color.id[0].toUpperCase()}${color.id.slice(1)}`,
-		icon: "A",
-		keywords: ["color", "text", color.id],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).setTextColor(color.id).run(),
-	})),
-	{
+	...EDITOR_TEXT_COLORS.map((color) =>
+		createEditorActionSlashCommand({
+			id: `color${color.id[0].toUpperCase()}${color.id.slice(1)}`,
+			icon: "A",
+			keywords: ["color", "text", color.id],
+			action: `color_${color.id}`,
+		}),
+	),
+	createEditorActionSlashCommand({
 		id: "colorClear",
 		icon: "A",
 		keywords: ["color", "text", "clear", "reset"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).unsetTextColor().run(),
-	},
-	...EDITOR_TEXT_HIGHLIGHTS.map<SlashCommandDef>((highlight) => ({
-		id: `highlight${highlight.id[0].toUpperCase()}${highlight.id.slice(1)}`,
-		icon: "H",
-		keywords: ["highlight", "text", highlight.id],
-		command: ({ editor, range }) =>
-			editor
-				.chain()
-				.focus()
-				.deleteRange(range)
-				.setTextHighlight(highlight.id)
-				.run(),
-	})),
-	{
+		action: "color_clear",
+	}),
+	...EDITOR_TEXT_HIGHLIGHTS.map((highlight) =>
+		createEditorActionSlashCommand({
+			id: `highlight${highlight.id[0].toUpperCase()}${highlight.id.slice(1)}`,
+			icon: "H",
+			keywords: ["highlight", "text", highlight.id],
+			action: `highlight_${highlight.id}`,
+		}),
+	),
+	createEditorActionSlashCommand({
 		id: "highlightClear",
 		icon: "H",
 		keywords: ["highlight", "text", "clear", "reset"],
-		command: ({ editor, range }) =>
-			editor.chain().focus().deleteRange(range).unsetTextHighlight().run(),
-	},
+		action: "highlight_clear",
+	}),
 ];
 
 export const SlashCommand = Extension.create({
