@@ -1,8 +1,13 @@
 import type { Editor, JSONContent } from "@tiptap/core";
 import { createDetailsBlockContent } from "./extensions/detailsBlock";
-import { EDITOR_TEXT_COLORS, isEditorTextColor } from "./textColors";
+import {
+	EDITOR_TEXT_COLORS,
+	type EditorTextColor,
+	isEditorTextColor,
+} from "./textColors";
 import {
 	EDITOR_TEXT_HIGHLIGHTS,
+	type EditorTextHighlight,
 	isEditorTextHighlight,
 } from "./textHighlights";
 
@@ -41,21 +46,17 @@ const BASE_EDITOR_ACTION_IDS = [
 type BaseEditorActionId = (typeof BASE_EDITOR_ACTION_IDS)[number];
 export type EditorActionId =
 	| BaseEditorActionId
-	| `color_${string}`
-	| `highlight_${string}`;
+	| `color_${EditorTextColor}`
+	| `highlight_${EditorTextHighlight}`;
 
-interface EditorActionDefinition {
-	id: string;
-}
-
-export const EDITOR_ACTIONS: EditorActionDefinition[] = [
-	...BASE_EDITOR_ACTION_IDS.map((id) => ({ id })),
-	...EDITOR_TEXT_COLORS.map<EditorActionDefinition>((color) => ({
-		id: `color_${color.id}`,
-	})),
-	...EDITOR_TEXT_HIGHLIGHTS.map<EditorActionDefinition>((highlight) => ({
-		id: `highlight_${highlight.id}`,
-	})),
+export const EDITOR_ACTIONS: EditorActionId[] = [
+	...BASE_EDITOR_ACTION_IDS,
+	...EDITOR_TEXT_COLORS.map<`color_${EditorTextColor}`>(
+		(color) => `color_${color.id}`,
+	),
+	...EDITOR_TEXT_HIGHLIGHTS.map<`highlight_${EditorTextHighlight}`>(
+		(highlight) => `highlight_${highlight.id}`,
+	),
 ];
 
 type EditorChain = ReturnType<Editor["chain"]>;
@@ -154,13 +155,12 @@ export function executeEditorAction({
 			onSendSelectionToAi?.();
 			return true;
 		case "link_set": {
-			const linkAttrs = editor.getAttributes("link") as {
-				href?: string;
-				target?: string;
-			};
+			const linkAttrs = editor.getAttributes("link");
 			onOpenLinkDialog?.(
-				linkAttrs.href ?? "",
-				linkAttrs.target === "_blank" ? "_blank" : "_self",
+				typeof linkAttrs.href === "string" ? linkAttrs.href : "",
+				typeof linkAttrs.target === "string" && linkAttrs.target === "_blank"
+					? "_blank"
+					: "_self",
 			);
 			return true;
 		}

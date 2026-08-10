@@ -44,14 +44,14 @@ export function buildEditorCommands({
 	const enabled = Boolean(activeMarkdownTabPath);
 	const formattingCommands = EDITOR_ACTIONS.filter(
 		(action) =>
-			action.id !== "collapse_all_headings" &&
-			action.id !== "expand_all_headings" &&
-			(aiEnabled || action.id !== "ai_selection_to_context"),
+			action !== "collapse_all_headings" &&
+			action !== "expand_all_headings" &&
+			(aiEnabled || action !== "ai_selection_to_context"),
 	).map((action) => ({
-		id: action.id,
+		id: action,
 		enabled,
 		allowInEditable: true,
-		action: () => dispatchEditorMenuAction({ action: action.id }),
+		action: () => dispatchEditorMenuAction({ action }),
 	}));
 
 	const headingCommands: Command[] = [

@@ -58,9 +58,9 @@ function createPlainTextPasteContent(text: string): JSONContent[] {
 
 /**
  * Sets up the global editor menu action listener (keyboard shortcuts, slash commands)
- * and the callout inserter registration for the note editor.
+ * and delegates editor action dispatch to executeEditorAction.
  *
- * Contains the full command dispatch switch that maps action names to TipTap chain commands.
+ * Also registers the callout inserter for the note editor.
  */
 export function useRibbonCommands({
 	editor,

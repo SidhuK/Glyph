@@ -50,5 +50,6 @@ export function removeEditorLink(
 	chain: ReturnType<Editor["chain"]>,
 	range: EditorLinkState["range"],
 ): boolean {
-	return selectLinkRange(chain, range).unsetLink().run();
+	if (range) return chain.setTextSelection(range).unsetLink().run();
+	return chain.extendMarkRange("link").unsetLink().run();
 }
