@@ -28,7 +28,7 @@ export interface ReleaseChannelUpdate {
 interface SpaceInfo {
 	root: string;
 	schema_version: number;
-	onboarding_note_path?: string | null;
+	welcome_note_path?: string | null;
 }
 
 export interface FsEntry {
@@ -933,7 +933,6 @@ interface TauriCommands {
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
 	space_get_current: CommandDef<void, string | null>;
 	space_get_current_info: CommandDef<void, SpaceInfo | null>;
-	space_show_onboarding_note: CommandDef<void, string>;
 	space_close: CommandDef<void, void>;
 	app_confirm_exit: CommandDef<void, void>;
 	app_register_exit_listener: CommandDef<void, void>;

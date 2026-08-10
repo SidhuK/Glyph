@@ -12,7 +12,6 @@ import {
 	optimisticallyRemoveAllDocsPath,
 	optimisticallyRenameAllDocsPath,
 } from "../lib/navigationPrefetch";
-import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
@@ -191,7 +190,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					});
 				}
 				await refreshAfterCreate(parentDir(markdownRel));
-				void updateOnboardingSettings({ createdFirstNote: true });
 				return markdownRel;
 			} catch (e) {
 				setError(extractErrorMessage(e));

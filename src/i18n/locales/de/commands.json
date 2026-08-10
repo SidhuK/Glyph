@@ -346,14 +346,6 @@
 			"label": "Notiz speichern",
 			"description": "Die aktuelle Notiz speichern, falls geändert."
 		},
-		"show-getting-started": {
-			"label": "Erste Schritte",
-			"description": "Den Einstiegsablauf öffnen."
-		},
-		"show-welcome-note": {
-			"label": "Willkommensnotiz",
-			"description": "Die Willkommensnotiz im Stammverzeichnis des aktuellen Space erstellen oder öffnen."
-		},
 		"open-shortcuts-settings": {
 			"label": "Tastenkürzel…",
 			"description": "Den Tastenkürzel-Bereich in den Einstellungen öffnen."

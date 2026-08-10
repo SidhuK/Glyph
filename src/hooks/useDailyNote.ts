@@ -6,7 +6,6 @@ import {
 	parseIsoDate,
 } from "../lib/dailyNotes";
 import { isMissingFileError } from "../lib/fsErrors";
-import { updateOnboardingSettings } from "../lib/settings";
 import { invoke } from "../lib/tauri";
 import { renderTemplate } from "../lib/templates";
 
@@ -44,7 +43,6 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				try {
 					await invoke("space_read_text", { path: notePath });
 					await onOpenFile(notePath);
-					void updateOnboardingSettings({ openedDailyNote: true });
 					return notePath;
 				} catch (error) {
 					if (!isMissingFileError(error)) {
@@ -75,7 +73,6 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 					text: content,
 				});
 				await onOpenFile(notePath);
-				void updateOnboardingSettings({ openedDailyNote: true });
 				return notePath;
 			} catch (err) {
 				const message =

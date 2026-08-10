@@ -1823,7 +1823,6 @@ pub fn run() {
             space::commands::space_open,
             space::commands::space_get_current,
             space::commands::space_get_current_info,
-            space::commands::space_show_onboarding_note,
             space::commands::space_close,
             app_exit::app_confirm_exit,
             app_exit::app_register_exit_listener,

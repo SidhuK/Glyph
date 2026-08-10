@@ -150,22 +150,6 @@ const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
 ]);
 export type FocusMode = "off" | "paragraph" | "sentence";
 const FOCUS_MODES = new Set<FocusMode>(["off", "paragraph", "sentence"]);
-export interface OnboardingSettings {
-	launcherSeen: boolean;
-	starterDismissed: boolean;
-	createdFirstNote: boolean;
-	usedCommandPalette: boolean;
-	openedDailyNote: boolean;
-}
-
-export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
-	launcherSeen: false,
-	starterDismissed: false,
-	createdFirstNote: false,
-	usedCommandPalette: false,
-	openedDailyNote: false,
-};
-
 interface DatabaseSettings {
 	showColumnColor: boolean;
 }
@@ -438,7 +422,6 @@ async function emitSettingsUpdated(payload: {
 	shortcuts?: {
 		bindings?: ShortcutBindings;
 	};
-	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
 		if (payload.spacePath) {
@@ -461,7 +444,6 @@ export interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
-	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
 		language: AppLanguage;
@@ -586,20 +568,7 @@ const KEYS = {
 	shortcutsBindings: "shortcuts.bindings",
 	databaseShowColumnColor: "database.showColumnColor",
 	spaceScopedSettings: "space.scopedSettings",
-	onboardingLauncherSeen: "onboarding.launcherSeen",
-	onboardingStarterDismissed: "onboarding.starterDismissed",
-	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
-	onboardingUsedCommandPalette: "onboarding.usedCommandPalette",
-	onboardingOpenedDailyNote: "onboarding.openedDailyNote",
 } as const;
-
-const ONBOARDING_KEYS = {
-	launcherSeen: KEYS.onboardingLauncherSeen,
-	starterDismissed: KEYS.onboardingStarterDismissed,
-	createdFirstNote: KEYS.onboardingCreatedFirstNote,
-	usedCommandPalette: KEYS.onboardingUsedCommandPalette,
-	openedDailyNote: KEYS.onboardingOpenedDailyNote,
-} as const satisfies Record<keyof OnboardingSettings, string>;
 
 function isShortcutBindingRecord(
 	value: unknown,
@@ -843,26 +812,6 @@ export async function loadSettings(
 		KEYS.recentSpaces,
 	);
 	const rawRecentFiles = getSettingValue(entries, KEYS.recentFiles);
-	const rawOnboardingLauncherSeen = getSettingValue<boolean | null>(
-		entries,
-		KEYS.onboardingLauncherSeen,
-	);
-	const rawOnboardingStarterDismissed = getSettingValue<boolean | null>(
-		entries,
-		KEYS.onboardingStarterDismissed,
-	);
-	const rawOnboardingCreatedFirstNote = getSettingValue<boolean | null>(
-		entries,
-		KEYS.onboardingCreatedFirstNote,
-	);
-	const rawOnboardingUsedCommandPalette = getSettingValue<boolean | null>(
-		entries,
-		KEYS.onboardingUsedCommandPalette,
-	);
-	const rawOnboardingOpenedDailyNote = getSettingValue<boolean | null>(
-		entries,
-		KEYS.onboardingOpenedDailyNote,
-	);
 	const rawAiEnabled = getSettingValue<boolean | null>(entries, KEYS.aiEnabled);
 	const rawLanguage = getSettingValue(entries, KEYS.language);
 	const rawDateDisplayFormat = getSettingValue(entries, KEYS.dateDisplayFormat);
@@ -1003,13 +952,6 @@ export async function loadSettings(
 	const hasActiveSpace = Boolean(activeSettingsSpacePath);
 	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
-	const onboarding: OnboardingSettings = {
-		launcherSeen: rawOnboardingLauncherSeen ?? false,
-		starterDismissed: rawOnboardingStarterDismissed ?? false,
-		createdFirstNote: rawOnboardingCreatedFirstNote ?? false,
-		usedCommandPalette: rawOnboardingUsedCommandPalette ?? false,
-		openedDailyNote: rawOnboardingOpenedDailyNote ?? false,
-	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
 	const language = normalizeAppLanguage(rawLanguage);
@@ -1159,7 +1101,6 @@ export async function loadSettings(
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
-		onboarding,
 		ui: {
 			aiEnabled,
 			language,
@@ -1215,24 +1156,6 @@ export async function clearCurrentSpacePath(): Promise<void> {
 	const store = await getSettingsStore();
 	await store.set(KEYS.currentSpacePath, null);
 	await saveSettingsStore(store);
-}
-
-export async function updateOnboardingSettings(
-	patch: Partial<OnboardingSettings>,
-): Promise<void> {
-	const entries = Object.entries(patch).filter(
-		(entry): entry is [keyof OnboardingSettings, boolean] =>
-			typeof entry[1] === "boolean",
-	);
-	if (!entries.length) return;
-	const store = await getSettingsStore();
-	for (const [key, value] of entries) {
-		await store.set(ONBOARDING_KEYS[key], value);
-	}
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
-		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
-	});
 }
 
 async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {

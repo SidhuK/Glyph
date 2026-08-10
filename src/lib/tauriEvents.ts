@@ -136,13 +136,6 @@ type TauriEventMap = {
 				>
 			>;
 		};
-		onboarding?: {
-			launcherSeen?: boolean;
-			starterDismissed?: boolean;
-			createdFirstNote?: boolean;
-			usedCommandPalette?: boolean;
-			openedDailyNote?: boolean;
-		};
 	};
 };
 

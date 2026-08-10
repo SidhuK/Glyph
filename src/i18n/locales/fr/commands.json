@@ -346,14 +346,6 @@
 			"label": "Enregistrer la note",
 			"description": "Enregistrer la note actuelle si elle a été modifiée."
 		},
-		"show-getting-started": {
-			"label": "Premiers pas",
-			"description": "Ouvrir le parcours de premiers pas."
-		},
-		"show-welcome-note": {
-			"label": "Note de bienvenue",
-			"description": "Créer ou ouvrir la note de bienvenue à la racine de l’espace actuel."
-		},
 		"open-shortcuts-settings": {
 			"label": "Raccourcis clavier…",
 			"description": "Ouvrir la section des raccourcis clavier dans les réglages."

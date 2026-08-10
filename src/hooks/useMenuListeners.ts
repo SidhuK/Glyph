@@ -29,8 +29,6 @@ interface UseMenuListenersProps {
 	onAttachAllOpenNotesToAi: () => void;
 	onOpenAiSettings: () => void;
 	onEditorAction: (action: string) => void;
-	openGettingStarted: () => void;
-	showWelcomeNote: () => void | Promise<void>;
 }
 
 export function useMenuListeners({
@@ -55,18 +53,11 @@ export function useMenuListeners({
 	onAttachAllOpenNotesToAi,
 	onOpenAiSettings,
 	onEditorAction,
-	openGettingStarted,
-	showWelcomeNote,
 }: UseMenuListenersProps): void {
 	const { openSettings } = useUILayoutContext();
 	const helpMenuCommandHandlers = useMemo(
-		() =>
-			buildHelpMenuCommandHandlers(
-				openGettingStarted,
-				showWelcomeNote,
-				openSettings,
-			),
-		[openGettingStarted, openSettings, showWelcomeNote],
+		() => buildHelpMenuCommandHandlers(openSettings),
+		[openSettings],
 	);
 	const handleOpenRecentSpace = useCallback(
 		(payload: { path: string }) => {

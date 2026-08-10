@@ -64,7 +64,7 @@ interface UseWorkspaceSessionArgs {
 	spacePath: string | null;
 	settingsLoaded: boolean;
 	resumeLastSession: boolean | null;
-	onboardingNotePath: string | null;
+	welcomeNotePath: string | null;
 	tabs: WorkspaceTab[];
 	panes: Record<string, WorkspaceEditorPane>;
 	splitLayout: SplitEditorNode;
@@ -89,7 +89,7 @@ export function useWorkspaceSession({
 	spacePath,
 	settingsLoaded,
 	resumeLastSession,
-	onboardingNotePath,
+	welcomeNotePath,
 	tabs,
 	panes,
 	splitLayout,
@@ -156,8 +156,8 @@ export function useWorkspaceSession({
 		) {
 			return;
 		}
+		if (welcomeNotePath) return;
 
-		if (onboardingNotePath) return;
 		const requestId = ++restoreSessionRequestIdRef.current;
 		void (async () => {
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
@@ -205,9 +205,9 @@ export function useWorkspaceSession({
 			restoreSessionRequestIdRef.current += 1;
 		};
 	}, [
-		onboardingNotePath,
 		restoreWorkspaceTabs,
 		resumeLastSession,
+		welcomeNotePath,
 		settingsLoaded,
 		spacePath,
 		tabsRevision,

@@ -1,6 +1,4 @@
-import { CursorAddSelection02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { m } from "motion/react";
 import {
 	Activity,
 	type CSSProperties,
@@ -16,7 +14,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -35,19 +33,11 @@ import {
 	type DatabasesOpenRequest,
 	INITIAL_DATABASES_OPEN_REQUEST,
 } from "../../lib/database/openDatabasesRequest";
-import {
-	DEFAULT_ONBOARDING_SETTINGS,
-	type OnboardingSettings,
-	loadSettings,
-	updateOnboardingSettings,
-} from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import type { SplitEditorNode } from "../../lib/splitEditor";
 import type { FsEntry } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { toast } from "../../lib/toast";
 import { cn } from "../../lib/utils";
-import { Calendar } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import type { CreateMarkdownFileOptions } from "../editor/types";
 import { FolioWorkspace } from "../folio/FolioWorkspace";
@@ -59,16 +49,14 @@ import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
-import { springPresets } from "../ui/animations";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
-import { GettingStartedPane } from "./GettingStartedPane";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
 import type {
 	SplitEditorDragSource,
 	SplitEditorDropTarget,
 } from "./splitEditorDnd";
-import type { WorkspaceEditorPane, WorkspaceTab } from "./useTabManager";
+import type { WorkspaceEditorPane } from "./useTabManager";
 
 const DAILY_NOTES_SETUP_TOAST_ID = "daily-notes-setup";
 const ShortcutsSettingsPane = lazy(() =>
@@ -81,160 +69,59 @@ const UsageSettingsPane = lazy(() =>
 		default: module.UsageSettingsPane,
 	})),
 );
-interface EmptyTip {
-	key: string;
-	icon: ReactNode;
-	text: string;
-	action: string;
-	onClick: () => void;
-}
 
-function ContextualEmptyState({
-	onboarding,
-	commandShortcutParts,
-	showDailyNoteAction,
-	onCreateNote,
+function EmptyStateCommandPaletteHint({
 	onOpenCommandPalette,
-	onOpenDailyNote,
 }: {
-	onboarding: OnboardingSettings;
-	commandShortcutParts: string[];
-	showDailyNoteAction: boolean;
-	onCreateNote: () => void;
 	onOpenCommandPalette: () => void;
-	onOpenDailyNote: () => void;
 }) {
-	const reduced = useReducedMotion() ?? false;
+	const { t } = useTranslation();
+	const { getBinding } = useShortcutBindings();
+	const shortcut = getBinding("open-command-palette");
+	const shortcutParts = shortcut
+		? formatShortcutPartsForPlatform(shortcut)
+		: [];
 
-	const tips = useMemo(() => {
-		const t: EmptyTip[] = [];
-		if (!onboarding.createdFirstNote) {
-			t.push({
-				key: "note",
-				icon: (
-					<HugeiconsIcon
-						icon={CursorAddSelection02Icon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
+	return (
+		<div className="mainEmptyBottomBlock">
+			<p className="mainEmptyPrompt">
+				{shortcutParts.length ? (
+					<Trans
+						i18nKey="emptyState.commandPalettePrompt"
+						components={{
+							shortcut: (
+								<button
+									type="button"
+									className="mainEmptyShortcutInline"
+									onClick={onOpenCommandPalette}
+									title={t("commandPalette.title")}
+									aria-label={t("emptyState.openCommandPalette")}
+								>
+									<kbd className="mainEmptyShortcutBadge">
+										<span className="mainEmptyShortcutCombo">
+											{shortcutParts.map((part) => (
+												<span key={part} className="mainEmptyShortcutPart">
+													{part}
+												</span>
+											))}
+										</span>
+									</kbd>
+								</button>
+							),
+						}}
 					/>
-				),
-				text: "Create your first note",
-				action: "New note",
-				onClick: onCreateNote,
-			});
-		}
-		if (!onboarding.openedDailyNote && showDailyNoteAction) {
-			t.push({
-				key: "daily",
-				icon: <Calendar size="var(--icon-lg)" />,
-				text: "Try a daily note — saved to your daily notes folder",
-				action: "Open daily note",
-				onClick: onOpenDailyNote,
-			});
-		}
-		if (!onboarding.usedCommandPalette) {
-			t.push({
-				key: "palette",
-				icon: null,
-				text: "Open the command palette",
-				action: "Open",
-				onClick: onOpenCommandPalette,
-			});
-		}
-		return t;
-	}, [
-		onboarding,
-		showDailyNoteAction,
-		onCreateNote,
-		onOpenDailyNote,
-		onOpenCommandPalette,
-	]);
-
-	const [tipIndex, setTipIndex] = useState(0);
-
-	useEffect(() => {
-		if (tips.length <= 1) return;
-		const interval = setInterval(() => {
-			setTipIndex((i) => i + 1);
-		}, 5000);
-		return () => clearInterval(interval);
-	}, [tips.length]);
-
-	if (tips.length === 0) {
-		return (
-			<div className="mainEmptyBottomBlock">
-				<p className="mainEmptyPrompt">
-					Press{" "}
+				) : (
 					<button
 						type="button"
 						className="mainEmptyShortcutInline"
 						onClick={onOpenCommandPalette}
-						title="Open command palette"
+						title={t("commandPalette.title")}
 					>
-						<kbd className="mainEmptyShortcutBadge">
-							<span className="mainEmptyShortcutCombo">
-								{commandShortcutParts.map((part) => (
-									<span key={part} className="mainEmptyShortcutPart">
-										{part}
-									</span>
-								))}
-							</span>
-						</kbd>
-					</button>{" "}
-					to get started
-				</p>
-				<div className="mainEmptyTagline">{APP_TAGLINE}</div>
-			</div>
-		);
-	}
-
-	const activeTip = tips[tipIndex % tips.length];
-	const transition = reduced ? { duration: 0 } : springPresets.gentle;
-
-	return (
-		<div className="mainEmptyContextual">
-			<AnimatePresence mode="wait">
-				<m.div
-					key={activeTip.key}
-					className="mainEmptyTip"
-					initial={{ opacity: 0, y: 8 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -8 }}
-					transition={transition}
-				>
-					{activeTip.icon && (
-						<span className="mainEmptyTipIcon">{activeTip.icon}</span>
-					)}
-					{activeTip.key === "palette" && (
-						<span className="mainEmptyTipIcon">
-							{commandShortcutParts.map((part) => (
-								<kbd key={part} className="mainEmptyTipKbd">
-									{part}
-								</kbd>
-							))}
-						</span>
-					)}
-					<span className="mainEmptyTipText">{activeTip.text}</span>
-					<button
-						type="button"
-						className="mainEmptyTipAction"
-						onClick={activeTip.onClick}
-					>
-						{activeTip.action}
+						{t("emptyState.openCommandPalette")}
 					</button>
-				</m.div>
-			</AnimatePresence>
-			<div className="mainEmptyTagline mainEmptyTaglineEdge">{APP_TAGLINE}</div>
-			{tips.length > 1 && (
-				<div className="mainEmptyTipDots">
-					{tips.map((tip, i) => (
-						<span
-							key={tip.key}
-							className={`mainEmptyTipDot${i === tipIndex % tips.length ? " mainEmptyTipDotActive" : ""}`}
-						/>
-					))}
-				</div>
-			)}
+				)}
+			</p>
+			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
 		</div>
 	);
 }
@@ -257,18 +144,14 @@ interface MainContentProps {
 	onOpenFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenFolioFileInNewTab: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
-	onCreateNote: () => void;
-	onOpenDailyNote: () => void;
 	onOpenActivity: () => void;
 	onPrefetchActivity: () => void;
 	onOpenDatabase: (databaseId: string) => void;
-	tabs: WorkspaceTab[];
 	panes: Record<string, WorkspaceEditorPane>;
 	splitLayout: SplitEditorNode;
 	focusedPaneId: string;
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
-	activeTabId: string | null;
 	activeTabPath: string | null;
 	setActiveTabId: (tabId: string | null) => void;
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
@@ -298,10 +181,8 @@ interface MainContentProps {
 	onStartRenamePath: (path: string) => void;
 	onNavigateBreadcrumbPath: (dirPath: string) => void;
 	onLoadBreadcrumbDir: (dirPath: string) => Promise<void>;
-	replaceActiveTabWithBlank: () => void;
 	onGoBackInPane: (paneId: string) => void;
 	onGoForwardInPane: (paneId: string) => void;
-	showGettingStartedRequest: number;
 	databasesOpenRequest: DatabasesOpenRequest;
 	onConsumeDatabasesOpenRequest?: () => void;
 	dailyNoteSetupNoticeRequest: number;
@@ -316,18 +197,14 @@ export const MainContent = memo(function MainContent({
 	onOpenFileInNewTab,
 	onOpenFolioFileInNewTab,
 	onOpenCommandPalette,
-	onCreateNote,
-	onOpenDailyNote,
 	onOpenActivity,
 	onPrefetchActivity,
 	onOpenDatabase,
-	tabs,
 	panes,
 	splitLayout,
 	focusedPaneId,
 	rootEntries,
 	childrenByDir,
-	activeTabId,
 	activeTabPath,
 	setActiveTabId,
 	setDirtyByPath,
@@ -345,10 +222,8 @@ export const MainContent = memo(function MainContent({
 	onStartRenamePath,
 	onNavigateBreadcrumbPath,
 	onLoadBreadcrumbDir,
-	replaceActiveTabWithBlank,
 	onGoBackInPane,
 	onGoForwardInPane,
-	showGettingStartedRequest,
 	databasesOpenRequest,
 	onConsumeDatabasesOpenRequest,
 	dailyNoteSetupNoticeRequest,
@@ -356,41 +231,11 @@ export const MainContent = memo(function MainContent({
 	onRightSidebarOpenChange,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
-	const { getBinding } = useShortcutBindings();
-	const { dailyNotesFolder, folioMode, settingsMode, settingsTab } =
-		useUILayoutContext();
+	const { folioMode, settingsMode, settingsTab } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
-	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
-		DEFAULT_ONBOARDING_SETTINGS,
-	);
-	const [onboardingLoaded, setOnboardingLoaded] = useState(false);
-	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
-	const handledShowGettingStartedRequestRef = useRef(0);
 	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
-	const activeTab = useMemo(
-		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
-		[tabs, activeTabId],
-	);
-
-	useEffect(() => {
-		if (!activeTab || activeTab.kind === "blank") return;
-		setStarterOverrideVisible(false);
-	}, [activeTab]);
-
-	useEffect(() => {
-		if (
-			!spacePath ||
-			showGettingStartedRequest === 0 ||
-			showGettingStartedRequest === handledShowGettingStartedRequestRef.current
-		) {
-			return;
-		}
-		handledShowGettingStartedRequestRef.current = showGettingStartedRequest;
-		setStarterOverrideVisible(true);
-		replaceActiveTabWithBlank();
-	}, [replaceActiveTabWithBlank, showGettingStartedRequest, spacePath]);
 
 	useEffect(() => {
 		const handlePathRemoved = (event: Event) => {
@@ -411,27 +256,6 @@ export const MainContent = memo(function MainContent({
 		};
 	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
-	const openCommandPaletteShortcut = getBinding("open-command-palette");
-	const commandShortcutParts = useMemo(
-		() =>
-			openCommandPaletteShortcut
-				? formatShortcutPartsForPlatform(openCommandPaletteShortcut)
-				: [],
-		[openCommandPaletteShortcut],
-	);
-	const hasStarterCompletion =
-		onboarding.createdFirstNote ||
-		onboarding.usedCommandPalette ||
-		onboarding.openedDailyNote;
-	const showStarterByDefault =
-		onboardingLoaded &&
-		!onboarding.starterDismissed &&
-		!hasStarterCompletion &&
-		tabs.length === 0 &&
-		!activeTabPath;
-	const showStarterPane =
-		Boolean(spacePath) &&
-		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const aiSidebarVisible = aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const rightSidebarOpen =
 		Boolean(spacePath) &&
@@ -461,27 +285,6 @@ export const MainContent = memo(function MainContent({
 		},
 		[onRightSidebarOpenChange],
 	);
-
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			try {
-				const settings = await loadSettings();
-				if (cancelled) return;
-				setOnboarding(settings.onboarding);
-			} finally {
-				if (!cancelled) setOnboardingLoaded(true);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (!payload.onboarding) return;
-		setOnboarding((prev) => ({ ...prev, ...payload.onboarding }));
-	});
 
 	useEffect(() => {
 		if (
@@ -554,10 +357,6 @@ export const MainContent = memo(function MainContent({
 			fileTree.onRenameDir(path, nextName, "file"),
 		[fileTree.onRenameDir],
 	);
-	const handleDismissStarter = useCallback(() => {
-		setStarterOverrideVisible(false);
-		void updateOnboardingSettings({ starterDismissed: true });
-	}, []);
 	const handleSplitDrop = useCallback(
 		(source: SplitEditorDragSource, target: SplitEditorDropTarget) => {
 			if (source.kind === "tab") {
@@ -582,26 +381,6 @@ export const MainContent = memo(function MainContent({
 			const paneDatabasesOpenRequest = handlesDatabasesOpenRequest
 				? databasesOpenRequest
 				: INITIAL_DATABASES_OPEN_REQUEST;
-			const emptyState =
-				focused && showStarterPane ? (
-					<GettingStartedPane
-						commandShortcutParts={commandShortcutParts}
-						showDailyNoteAction={Boolean(dailyNotesFolder)}
-						onCreateNote={onCreateNote}
-						onOpenCommandPalette={onOpenCommandPalette}
-						onOpenDailyNote={onOpenDailyNote}
-						onDismiss={handleDismissStarter}
-					/>
-				) : (
-					<ContextualEmptyState
-						onboarding={onboarding}
-						commandShortcutParts={commandShortcutParts}
-						showDailyNoteAction={Boolean(dailyNotesFolder)}
-						onCreateNote={onCreateNote}
-						onOpenCommandPalette={onOpenCommandPalette}
-						onOpenDailyNote={onOpenDailyNote}
-					/>
-				);
 			return (
 				<EditorPaneCanvas
 					key={paneId}
@@ -610,7 +389,11 @@ export const MainContent = memo(function MainContent({
 					allowWindowDrag={splitLayout.type === "pane"}
 					rootEntries={rootEntries}
 					childrenByDir={childrenByDir}
-					emptyState={emptyState}
+					emptyState={
+						<EmptyStateCommandPaletteHint
+							onOpenCommandPalette={onOpenCommandPalette}
+						/>
+					}
 					createMarkdownFileAtPath={fileTree.createMarkdownFileAtPath}
 					onRenameFile={handleRenameFile}
 					onOpenFile={onOpenFile}
@@ -643,34 +426,27 @@ export const MainContent = memo(function MainContent({
 			childrenByDir,
 			closeTab,
 			toggleTabPinned,
-			commandShortcutParts,
-			dailyNotesFolder,
 			databasesOpenRequest,
 			fileTree,
-			handleDismissStarter,
 			handleRenameFile,
 			onConsumeDatabasesOpenRequest,
 			onLoadBreadcrumbDir,
 			onNavigateBreadcrumbPath,
 			onOpenActivity,
-			onOpenCommandPalette,
-			onOpenDailyNote,
 			onOpenDatabase,
 			onOpenFile,
 			onOpenFileInNewTab,
-			onCreateNote,
+			onOpenCommandPalette,
 			onGoBackInPane,
 			onGoForwardInPane,
 			onPrefetchActivity,
 			onStartRenamePath,
-			onboarding,
 			openBlankTabInPane,
 			panes,
 			reorderTabs,
 			rootEntries,
 			setActiveTabId,
 			setDirtyByPath,
-			showStarterPane,
 			splitLayout.type,
 		],
 	);

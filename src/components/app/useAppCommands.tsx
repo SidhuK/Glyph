@@ -103,7 +103,6 @@ interface UseAppCommandsDeps {
 	openBlankTab: () => void;
 	splitPaneWithBlank: (edge: SplitDropEdge) => void;
 	openDatabasesTab: (databaseId?: string | null) => void;
-	openGettingStarted: () => void;
 	openCalendar: () => void;
 	openConnectionsView: () => void;
 	openPalette: (tab: "commands" | "search", query?: string) => void;
@@ -111,7 +110,6 @@ interface UseAppCommandsDeps {
 	openSearchPalette: () => void;
 	openSettings: (tab?: SettingsTab) => void;
 	openWorkspaceFile: (path: string) => Promise<void>;
-	showWelcomeNote: () => Promise<void>;
 	openMarkdownTabsLength: number;
 	pinnedFiles: string[];
 	requestOpenDailyNote: () => void;
@@ -268,7 +266,6 @@ export function useAppCommands({
 	openBlankTab,
 	splitPaneWithBlank,
 	openDatabasesTab,
-	openGettingStarted,
 	openCalendar,
 	openConnectionsView,
 	openPalette,
@@ -276,7 +273,6 @@ export function useAppCommands({
 	openSearchPalette,
 	openSettings,
 	openWorkspaceFile,
-	showWelcomeNote,
 	openMarkdownTabsLength,
 	pinnedFiles,
 	requestOpenDailyNote,
@@ -896,30 +892,6 @@ export function useAppCommands({
 				),
 				action: handleOpenAiSettings,
 			},
-			{
-				id: "show-getting-started",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				enabled: Boolean(spacePath),
-				action: openGettingStarted,
-			},
-			{
-				id: "show-welcome-note",
-				icon: (
-					<HugeiconsIcon
-						icon={NoteIcon}
-						size="var(--icon-lg)"
-						strokeWidth={0.9}
-					/>
-				),
-				enabled: Boolean(spacePath),
-				action: showWelcomeNote,
-			},
 		];
 		return resolveCommandShortcuts(
 			[...baseCommands, ...aiCommands, ...editorCommands],
@@ -968,14 +940,12 @@ export function useAppCommands({
 		openAllDocsTab,
 		openSearchPalette,
 		openDatabasesTab,
-		openGettingStarted,
 		openCalendar,
 		openConnectionsView,
 		openBlankTab,
 		splitPaneWithBlank,
 		openQuickNoteWindow,
 		openWorkspaceFile,
-		showWelcomeNote,
 		gitSync,
 		getBinding,
 		moveTargetDirs,

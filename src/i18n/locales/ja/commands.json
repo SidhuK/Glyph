@@ -346,14 +346,6 @@
 			"label": "ノートを保存",
 			"description": "変更がある場合、現在のノートを保存します。"
 		},
-		"show-getting-started": {
-			"label": "はじめに",
-			"description": "はじめにのフローを開きます。"
-		},
-		"show-welcome-note": {
-			"label": "ウェルカムノート",
-			"description": "現在のスペースのルートにウェルカムノートを作成または開きます。"
-		},
 		"open-shortcuts-settings": {
 			"label": "キーボードショートカット…",
 			"description": "設定のキーボードショートカットセクションを開きます。"
