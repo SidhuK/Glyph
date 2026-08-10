@@ -1,8 +1,9 @@
-import { AnimatePresence, m } from "motion/react";
+import { m } from "motion/react";
 import {
 	Activity,
 	type CSSProperties,
 	type Dispatch,
+	type ReactNode,
 	type SetStateAction,
 	Suspense,
 	lazy,
@@ -48,7 +49,6 @@ import { GitSettingsPane } from "../settings/GitSettingsPane";
 import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
 import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { localizedSettingsTabLabel } from "../settings/settingsSearch";
-import { springPresets } from "../ui/animations";
 import { EditorPaneCanvas } from "./EditorPaneCanvas";
 import { SplitEditorLayout } from "./SplitEditorLayout";
 import { WelcomeScreen } from "./WelcomeScreen";
