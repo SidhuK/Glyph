@@ -1117,10 +1117,13 @@ fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
 }
 
 fn dispatch_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
+    let main_window_missing = app
+        .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
+        .is_none();
     let should_queue = app
         .try_state::<MenuState>()
         .is_some_and(|state| match state.pending_commands.lock() {
-            Ok(mut pending) if !pending.shell_ready => {
+            Ok(mut pending) if main_window_missing || !pending.shell_ready => {
                 pending.commands.push(AppCommandPayload {
                     command_id: command_id.to_string(),
                 });
@@ -1134,10 +1137,7 @@ fn dispatch_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
         });
 
     if should_queue {
-        if app
-            .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
-            .is_none()
-        {
+        if main_window_missing {
             if let Err(error) = show_main_window_for_app(app) {
                 warn!("Failed to show main window for menu command {command_id}: {error}");
             }
@@ -1653,8 +1653,18 @@ pub fn run() {
             }
 
             if is_main_window_label(window.label()) {
-                if let WindowEvent::CloseRequested { .. } = event {
-                    destroy_auxiliary_persisted_windows(window.app_handle());
+                match event {
+                    WindowEvent::CloseRequested { .. } => {
+                        destroy_auxiliary_persisted_windows(window.app_handle());
+                    }
+                    WindowEvent::Destroyed => {
+                        if let Some(state) = window.app_handle().try_state::<MenuState>() {
+                            if let Ok(mut pending) = state.pending_commands.lock() {
+                                pending.shell_ready = false;
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         })

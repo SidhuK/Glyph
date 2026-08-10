@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo } from "react";
-import { toast } from "sonner";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
 import { invoke } from "../lib/tauri";
 import { listenTauriEvent, useTauriEvent } from "../lib/tauriEvents";
+import { toast } from "../lib/toast";
 
 interface UseMenuListenersProps {
 	onNewNote: () => void;
