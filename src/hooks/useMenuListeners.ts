@@ -1,8 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useUILayoutContext } from "../contexts";
 import { dispatchAppCommand } from "../lib/commands/commandDispatcher";
+import { extractErrorMessage } from "../lib/errorUtils";
 import { buildHelpMenuCommandHandlers } from "../lib/helpMenu";
-import { useTauriEvent } from "../lib/tauriEvents";
+import { invoke } from "../lib/tauri";
+import { listenTauriEvent, useTauriEvent } from "../lib/tauriEvents";
+import { toast } from "../lib/toast";
 
 interface UseMenuListenersProps {
 	onNewNote: () => void;
@@ -178,6 +181,35 @@ export function useMenuListeners({
 		],
 	);
 
-	useTauriEvent("menu:app_command", handleAppCommand);
 	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
+
+	useEffect(() => {
+		let cancelled = false;
+		let unlisten: (() => void) | null = null;
+
+		void listenTauriEvent("menu:app_command", handleAppCommand)
+			.then(async (stop) => {
+				unlisten = stop;
+				if (cancelled) {
+					stop();
+					return;
+				}
+
+				const commands = await invoke("menu_take_pending_commands");
+				if (cancelled) return;
+				for (const command of commands) {
+					handleAppCommand(command);
+				}
+			})
+			.catch((error: unknown) => {
+				if (cancelled) return;
+				console.error("Failed to replay pending menu commands", error);
+				toast.error(extractErrorMessage(error));
+			});
+
+		return () => {
+			cancelled = true;
+			unlisten?.();
+		};
+	}, [handleAppCommand]);
 }

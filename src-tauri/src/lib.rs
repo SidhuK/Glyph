@@ -134,11 +134,21 @@ struct AppCommandPayload {
 }
 
 #[derive(Default)]
+struct PendingMenuCommands {
+    commands: Vec<AppCommandPayload>,
+    shell_ready: bool,
+}
+
+#[derive(Default)]
 struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
     menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
     menu_labels: Mutex<HashMap<String, String>>,
+    /// Commands that arrive before the shell event listener is ready. The shell
+    /// drains them once that listener has registered; see
+    /// `menu_take_pending_commands`.
+    pending_commands: Mutex<PendingMenuCommands>,
 }
 
 #[derive(Default)]
@@ -990,6 +1000,12 @@ fn main_window(app: &tauri::AppHandle) -> Result<tauri::WebviewWindow, String> {
         return Ok(window);
     }
 
+    if let Some(state) = app.try_state::<MenuState>() {
+        if let Ok(mut pending) = state.pending_commands.lock() {
+            pending.shell_ready = false;
+        }
+    }
+
     let config = app
         .config()
         .app
@@ -1090,6 +1106,48 @@ fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
     })
 }
 
+fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
+    let _ = app.emit_to(
+        window_geometry::MAIN_WINDOW_LABEL,
+        "menu:app_command",
+        AppCommandPayload {
+            command_id: command_id.to_string(),
+        },
+    );
+}
+
+fn dispatch_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
+    let main_window_missing = app
+        .get_webview_window(window_geometry::MAIN_WINDOW_LABEL)
+        .is_none();
+    let should_queue = app
+        .try_state::<MenuState>()
+        .is_some_and(|state| match state.pending_commands.lock() {
+            Ok(mut pending) if main_window_missing || !pending.shell_ready => {
+                pending.commands.push(AppCommandPayload {
+                    command_id: command_id.to_string(),
+                });
+                true
+            }
+            Ok(_) => false,
+            Err(_) => {
+                warn!("Failed to lock pending menu commands");
+                false
+            }
+        });
+
+    if should_queue {
+        if main_window_missing {
+            if let Err(error) = show_main_window_for_app(app) {
+                warn!("Failed to show main window for menu command {command_id}: {error}");
+            }
+        }
+        return;
+    }
+
+    emit_menu_command_to_main(app, command_id);
+}
+
 #[tauri::command(rename_all = "snake_case")]
 fn set_quick_note_global_shortcut(
     app: tauri::AppHandle,
@@ -1176,6 +1234,20 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
     .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
+}
+
+/// Drain menu commands queued before the main shell registered its listener,
+/// then allow future commands to be emitted directly.
+#[tauri::command]
+fn menu_take_pending_commands(state: State<'_, MenuState>) -> Vec<AppCommandPayload> {
+    state
+        .pending_commands
+        .lock()
+        .map(|mut pending| {
+            pending.shell_ready = true;
+            std::mem::take(&mut pending.commands)
+        })
+        .unwrap_or_default()
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -1464,13 +1536,24 @@ pub fn run() {
                 );
             }
             "file.print_note" => {
-                let _ = app.emit_to(
-                    window_geometry::MAIN_WINDOW_LABEL,
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: "print-note".to_string(),
-                    },
-                );
+                dispatch_menu_command_to_main(app, "print-note");
+            }
+            "file.close_tab" => {
+                // External markdown windows close themselves via Close Tab;
+                // the main window owns tab management everywhere else.
+                if let Some((label, _window)) = focused_editor_window(app) {
+                    if external_markdown::is_external_markdown_window(&label) {
+                        let _ = app.emit_to(
+                            label,
+                            "menu:app_command",
+                            AppCommandPayload {
+                                command_id: "close-active-tab".to_string(),
+                            },
+                        );
+                        return;
+                    }
+                }
+                dispatch_menu_command_to_main(app, "close-active-tab");
             }
             #[cfg(target_os = "macos")]
             "edit.paste_without_formatting" => {
@@ -1490,13 +1573,7 @@ pub fn run() {
                 let Some(command) = menu_manifest::command_for_menu_id(id) else {
                     return;
                 };
-                let _ = app.emit_to(
-                    window_geometry::MAIN_WINDOW_LABEL,
-                    "menu:app_command",
-                    AppCommandPayload {
-                        command_id: command.id,
-                    },
-                );
+                dispatch_menu_command_to_main(app, &command.id);
             }
         })
         .setup(|app| {
@@ -1576,8 +1653,18 @@ pub fn run() {
             }
 
             if is_main_window_label(window.label()) {
-                if let WindowEvent::CloseRequested { .. } = event {
-                    destroy_auxiliary_persisted_windows(window.app_handle());
+                match event {
+                    WindowEvent::CloseRequested { .. } => {
+                        destroy_auxiliary_persisted_windows(window.app_handle());
+                    }
+                    WindowEvent::Destroyed => {
+                        if let Some(state) = window.app_handle().try_state::<MenuState>() {
+                            if let Ok(mut pending) = state.pending_commands.lock() {
+                                pending.shell_ready = false;
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         })
@@ -1613,6 +1700,7 @@ pub fn run() {
             set_recent_spaces_menu,
             set_menu_shortcuts,
             set_menu_labels,
+            menu_take_pending_commands,
             set_window_vibrancy_theme,
             external_markdown::open_external_markdown_path,
             external_markdown::external_markdown_window_path,

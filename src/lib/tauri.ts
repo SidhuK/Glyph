@@ -910,6 +910,7 @@ interface TauriCommands {
 		void
 	>;
 	set_menu_labels: CommandDef<{ labels: Record<string, string> }, void>;
+	menu_take_pending_commands: CommandDef<void, { command_id: string }[]>;
 	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	external_link_preview: CommandDef<{ url: string }, ExternalLinkPreview>;
 	open_external_markdown_path: CommandDef<{ path: string }, void>;
