@@ -33,6 +33,7 @@ jobs:
         with:
           filters: |
             frontend:
+              - '.github/workflows/pr-checks.yml'
               - 'src/**'
               - 'public/**'
               - 'index.html'
@@ -45,13 +46,24 @@ jobs:
               - 'tsconfig.node.json'
               - 'vite.config.ts'
             rust:
+              - '.github/workflows/pr-checks.yml'
               - 'src-tauri/**'
 
   frontend:
-    name: Frontend
+    name: Frontend / ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Check
+            command: pnpm check
+          - name: Test
+            command: pnpm test
+          - name: Build
+            command: pnpm build
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -83,20 +95,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting and lint
-        run: pnpm check
-
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
+      - name: ${{ matrix.name }}
+        run: ${{ matrix.command }}
 
   rust:
-    name: Rust
+    name: Rust / ${{ matrix.name }}
     needs: changes
     if: needs.changes.outputs.rust == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Check
+            command: cargo check
+          - name: Test
+            command: cargo test
+          - name: Clippy
+            command: cargo clippy -- -D warnings
+          - name: Format
+            command: cargo fmt --check
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -107,16 +125,13 @@ jobs:
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: stable
+          components: clippy, rustfmt
 
       - name: Cache Rust artifacts
         uses: Swatinem/rust-cache@42dc69e1aa15d09112580998cf2ef0119e2e91ae # v2
         with:
           workspaces: src-tauri -> target
 
-      - name: Check
+      - name: ${{ matrix.name }}
         working-directory: src-tauri
-        run: cargo check
-
-      - name: Test
-        working-directory: src-tauri
-        run: cargo test
+        run: ${{ matrix.command }}
