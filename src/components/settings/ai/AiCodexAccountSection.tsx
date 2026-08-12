@@ -156,7 +156,7 @@ export function AiCodexAccountSection({
 													<HugeiconsIcon
 														icon={WindowIcon}
 														size="var(--icon-lg)"
-														strokeWidth={1.6}
+														strokeWidth={1.5}
 														aria-hidden="true"
 													/>
 													<span>{shortLabel}</span>

@@ -13,7 +13,7 @@
 		"lint": "biome lint .",
 		"check": "biome check .",
 		"preview": "vite preview",
-		"tauri": "tauri"
+		"tauri": "node scripts/tauri.mjs"
 	},
 	"dependencies": {
 		"@codemirror/autocomplete": "^6.20.3",

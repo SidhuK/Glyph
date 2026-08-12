@@ -136,7 +136,7 @@ export function AboutSettingsPane() {
 							<HugeiconsIcon
 								icon={GlobeIcon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
+								strokeWidth={1.5}
 							/>
 							Website
 						</Button>
@@ -150,7 +150,7 @@ export function AboutSettingsPane() {
 							<HugeiconsIcon
 								icon={DiscordIcon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
+								strokeWidth={1.5}
 							/>
 							Discord
 						</Button>
@@ -164,7 +164,7 @@ export function AboutSettingsPane() {
 							<HugeiconsIcon
 								icon={File01Icon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
+								strokeWidth={1.5}
 							/>
 							Terms
 						</Button>
@@ -178,7 +178,7 @@ export function AboutSettingsPane() {
 							<HugeiconsIcon
 								icon={Shield01Icon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
+								strokeWidth={1.5}
 							/>
 							Privacy
 						</Button>
@@ -311,7 +311,7 @@ export function AboutSettingsPane() {
 								<HugeiconsIcon
 									icon={ListViewIcon}
 									size="var(--icon-md)"
-									strokeWidth={1.6}
+									strokeWidth={1.5}
 								/>
 								View Changelog
 							</Button>

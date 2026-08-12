@@ -154,7 +154,7 @@ function buildAiCommands({
 				<HugeiconsIcon
 					icon={AiBrain04Icon}
 					size="var(--icon-lg)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			),
 			shortcut: { meta: true, shift: true, key: "a" },
@@ -167,7 +167,7 @@ function buildAiCommands({
 				<HugeiconsIcon
 					icon={Link01Icon}
 					size="var(--icon-lg)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			),
 			shortcut: { meta: true, alt: true, key: "a" },
@@ -180,7 +180,7 @@ function buildAiCommands({
 				<HugeiconsIcon
 					icon={Link01Icon}
 					size="var(--icon-lg)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			),
 			shortcut: { meta: true, alt: true, shift: true, key: "a" },
@@ -322,7 +322,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={CursorAddSelection02Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "n" },
@@ -335,7 +335,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={NoteIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: true,
@@ -348,7 +348,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={ColorsIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "m" },
@@ -361,7 +361,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={FileImportIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -373,7 +373,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={FolderImportIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -385,7 +385,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={CursorInWindowIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "t" },
@@ -403,7 +403,7 @@ export function useAppCommands({
 			).map(([id, icon, edge]) => ({
 				id,
 				icon: (
-					<HugeiconsIcon icon={icon} size="var(--icon-lg)" strokeWidth={0.9} />
+					<HugeiconsIcon icon={icon} size="var(--icon-lg)" strokeWidth={1.5} />
 				),
 				enabled: Boolean(spacePath),
 				action: () => splitPaneWithBlank(edge),
@@ -427,7 +427,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={activeTabIsPinned ? PinOffIcon : PinIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: activeTabCanPin,
@@ -449,7 +449,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={TableIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -461,7 +461,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Folder01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -477,7 +477,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={NoteIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled:
@@ -491,7 +491,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={CalendarAdd01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "d" },
@@ -512,7 +512,7 @@ export function useAppCommands({
 								: PinIcon
 						}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
@@ -528,7 +528,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={NoteIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "s" },
@@ -542,7 +542,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={ChartRelationshipIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "g" },
@@ -559,7 +559,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={InformationCircleIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "i" },
@@ -576,7 +576,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={NoteIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "c" },
@@ -591,7 +591,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Link01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(activeFilePath),
@@ -609,7 +609,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Link01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
@@ -626,7 +626,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={MoveIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
@@ -643,7 +643,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={ArrowLeft}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "[" },
@@ -657,7 +657,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={ArrowRight}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "]" },
@@ -671,7 +671,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={SearchIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "p" },
@@ -685,7 +685,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Archive04Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -698,7 +698,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={ChartRelationshipIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -710,7 +710,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={LibraryIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -723,7 +723,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Calendar03Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -735,7 +735,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Folder01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "n" },
@@ -750,7 +750,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={FolderOpenIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "o" },
@@ -762,7 +762,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={FolderOpenIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -774,7 +774,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={FolderRemoveIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -786,7 +786,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Link01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -804,7 +804,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={SidebarLeftIcon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, shift: true, key: "b" },
@@ -816,7 +816,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={SquareLock02Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				action: async () => {
@@ -840,7 +840,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Settings01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				shortcut: { meta: true, key: "," },
@@ -852,7 +852,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Settings01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -864,7 +864,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={SquareLock02Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				action: () => openSettings("general"),
@@ -875,7 +875,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Settings01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				enabled: Boolean(spacePath),
@@ -887,7 +887,7 @@ export function useAppCommands({
 					<HugeiconsIcon
 						icon={Settings01Icon}
 						size="var(--icon-lg)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				),
 				action: handleOpenAiSettings,

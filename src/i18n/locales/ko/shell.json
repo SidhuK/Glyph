@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "사이드바 접기",
 		"expand": "사이드바 펼치기",
+		"devBadge": "DEV",
 		"newNote": "새 노트",
 		"pinned": "고정됨",
 		"allNotes": "모든 노트",

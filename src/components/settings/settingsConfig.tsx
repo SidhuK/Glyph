@@ -39,14 +39,14 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			<HugeiconsIcon
 				icon={Settings01Icon}
 				size="var(--icon-md)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 	},
 	{
 		id: "appearance",
 		renderIcon: () => (
-			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={0.9} />
+			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={1.5} />
 		),
 	},
 	{
@@ -55,7 +55,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			<HugeiconsIcon
 				icon={CommandIcon}
 				size="var(--icon-md)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 	},
@@ -65,7 +65,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			<HugeiconsIcon
 				icon={AiBrain04Icon}
 				size="var(--icon-md)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 	},
@@ -79,7 +79,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			<HugeiconsIcon
 				icon={GitBranchIcon}
 				size="var(--icon-md)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 	},
@@ -89,14 +89,14 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 			<HugeiconsIcon
 				icon={Archive02Icon}
 				size="var(--icon-md)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 	},
 	{
 		id: "usage",
 		renderIcon: () => (
-			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={0.9} />
+			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={1.5} />
 		),
 	},
 ];

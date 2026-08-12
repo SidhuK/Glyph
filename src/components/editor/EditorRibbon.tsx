@@ -131,7 +131,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 							<HugeiconsIcon
 								icon={NoteAddIcon}
 								size="var(--icon-lg)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 						</m.button>
 					) : null}

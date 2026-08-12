@@ -167,7 +167,7 @@ export function DatabaseBoardLaneView({
 					}
 					className="databaseBoardLaneTitleIcon"
 					size="var(--icon-sm)"
-					strokeWidth={1.2}
+					strokeWidth={1.5}
 					aria-hidden="true"
 				/>
 			) : (

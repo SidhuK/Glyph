@@ -383,7 +383,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={CursorAddSelection02Icon}
 								size="var(--icon-lg)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.newNote")}
@@ -412,7 +412,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={StarIcon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.pinned")}
@@ -440,7 +440,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={Archive04Icon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.allNotes")}
@@ -468,7 +468,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={LibraryIcon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.collections")}
@@ -492,7 +492,7 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={ChartRelationshipIcon}
 								size="var(--icon-md)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.connections")}
@@ -524,7 +524,7 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={Sorting01Icon}
 											size="var(--icon-sm)"
-											strokeWidth={0.9}
+											strokeWidth={1.5}
 											className="sidebarStackHeaderSortIcon"
 											aria-hidden="true"
 										/>
@@ -558,7 +558,7 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={ExpandParagraphIcon}
 											size="var(--icon-sm)"
-											strokeWidth={0.9}
+											strokeWidth={1.5}
 										/>
 									</button>
 									<button
@@ -571,7 +571,7 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={ArrowShrinkIcon}
 											size="var(--icon-sm)"
-											strokeWidth={0.9}
+											strokeWidth={1.5}
 										/>
 									</button>
 								</div>

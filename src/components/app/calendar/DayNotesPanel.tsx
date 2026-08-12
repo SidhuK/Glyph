@@ -41,7 +41,7 @@ function NoteRow({
 					<HugeiconsIcon
 						icon={isDaily ? Calendar03Icon : NoteIcon}
 						size="var(--icon-md)"
-						strokeWidth={1.4}
+						strokeWidth={1.5}
 					/>
 				</span>
 				<span className="calendarNoteText">

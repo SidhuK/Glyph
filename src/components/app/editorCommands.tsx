@@ -78,7 +78,7 @@ export function buildEditorCommands({
 			<HugeiconsIcon
 				icon={command.icon}
 				size="var(--icon-lg)"
-				strokeWidth={0.9}
+				strokeWidth={1.5}
 			/>
 		),
 		enabled,

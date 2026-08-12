@@ -97,7 +97,7 @@ export function DatabaseFolderPicker({
 				<HugeiconsIcon
 					icon={Folder03Icon}
 					size="var(--icon-md)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			</span>
 			<span className="databasePickerTriggerText">

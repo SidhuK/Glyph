@@ -30,175 +30,175 @@ import { type IconProps, withDefaultIconSize } from "./NavigationIcons";
 export const FileText = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={NoteIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const File = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={FileIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileCode = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={FileCodeIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileImage = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={FileImageIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileJson = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={DocumentCodeIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileSpreadsheet = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Xls01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileCsv = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Csv01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FilePdf = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Pdf01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileDoc = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Doc01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileTxt = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Txt01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileHtml = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={HtmlFile01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileCss = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={CssFile01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FileXml = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Xml01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const FilePpt = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Ppt01Icon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Film = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={FilmIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Music = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={MusicIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Archive = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={ArchiveIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Database = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={DatabaseIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Table = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={TableIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Kanban = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={KanbanIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Cpu = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={CpuIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Palette = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={PaletteIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Hash = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={HashIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Files = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={Document}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );
 export const Tags = (props: IconProps) => (
 	<HugeiconsIcon
 		icon={HashIcon}
-		strokeWidth={0.9}
+		strokeWidth={1.5}
 		{...withDefaultIconSize(props)}
 	/>
 );

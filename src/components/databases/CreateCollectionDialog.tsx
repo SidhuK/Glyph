@@ -128,7 +128,7 @@ export function CreateCollectionDialog({
 						<HugeiconsIcon
 							icon={LibraryIcon}
 							size="var(--icon-xl)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 					</div>
 					<DialogHeader className="createCollectionHeader text-center sm:text-center items-center">

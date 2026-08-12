@@ -288,7 +288,7 @@ export function ModelSelector({
 														<HugeiconsIcon
 															icon={InformationCircleIcon}
 															size="var(--icon-md)"
-															strokeWidth={0.9}
+															strokeWidth={1.5}
 														/>
 													</button>
 												)}

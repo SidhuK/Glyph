@@ -291,7 +291,7 @@ function TagRowIcon({
 			icon={Tag01Icon}
 			className="tagsIcon"
 			size="var(--icon-sm)"
-			strokeWidth={0.9}
+			strokeWidth={1.5}
 		/>
 	);
 }

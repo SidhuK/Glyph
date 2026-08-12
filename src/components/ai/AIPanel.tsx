@@ -408,7 +408,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						<HugeiconsIcon
 							icon={ChatAdd01Icon}
 							size="var(--icon-sm)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 					</Button>
 					<Button
@@ -436,7 +436,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						<HugeiconsIcon
 							icon={Logout05Icon}
 							size="var(--icon-sm)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 					</Button>
 				</div>

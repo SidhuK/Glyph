@@ -290,7 +290,7 @@ export function ShortcutsSettingsPane() {
 												<HugeiconsIcon
 													icon={ReloadIcon}
 													size="var(--icon-md)"
-													strokeWidth={0.9}
+													strokeWidth={1.5}
 												/>
 											</Button>
 										</div>

@@ -68,7 +68,7 @@ function DialogContent({
 						<HugeiconsIcon
 							icon={Close}
 							size="var(--icon-lg)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 						<span className="sr-only">Close</span>
 					</DialogPrimitive.Close>

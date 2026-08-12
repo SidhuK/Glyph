@@ -252,7 +252,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 				>
 					<HugeiconsIcon
 						icon={TimelineEventIcon}
-						strokeWidth={1}
+						strokeWidth={1.5}
 						data-icon="inline-start"
 					/>
 					<span>{t("allNotes.showActivity")}</span>

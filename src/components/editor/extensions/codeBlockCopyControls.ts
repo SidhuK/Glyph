@@ -24,7 +24,7 @@ function iconMarkup(copied: boolean): string {
 		createElement(HugeiconsIcon, {
 			icon: copied ? Tick02Icon : Copy01Icon,
 			size: "var(--icon-sm)",
-			strokeWidth: 0.9,
+			strokeWidth: 1.5,
 		}),
 	);
 }

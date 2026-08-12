@@ -96,7 +96,7 @@ function DropdownMenuRadioItem({
 						icon={Circle}
 						size="var(--icon-xs)"
 						className="fill-current"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				</DropdownMenuPrimitive.ItemIndicator>
 			</span>
@@ -168,7 +168,7 @@ function DropdownMenuSubTrigger({
 					icon={ArrowRight01Icon}
 					size="var(--icon-xs)"
 					className="text-muted-foreground"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 					aria-hidden="true"
 				/>
 			</span>

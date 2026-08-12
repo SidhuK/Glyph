@@ -169,7 +169,7 @@ export function SpaceConnectionsView() {
 							icon={LoaderCircle}
 							className="animate-spin"
 							size="var(--icon-sm)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 						Loading notes and links…
 					</div>
@@ -195,7 +195,7 @@ export function SpaceConnectionsView() {
 							icon={LoaderCircle}
 							className="animate-spin"
 							size="var(--icon-sm)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 						Arranging connections…
 					</div>
@@ -216,7 +216,7 @@ export function SpaceConnectionsView() {
 							icon={Refresh01Icon}
 							data-icon="inline-start"
 							size="var(--icon-md)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 						Retry
 					</Button>

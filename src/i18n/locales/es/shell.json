@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "Contraer barra lateral",
 		"expand": "Expandir barra lateral",
+		"devBadge": "DEV",
 		"newNote": "Nueva nota",
 		"pinned": "Fijadas",
 		"allNotes": "Todas las notas",

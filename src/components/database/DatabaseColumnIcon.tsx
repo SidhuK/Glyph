@@ -322,7 +322,7 @@ export function DatabaseColumnIcon({
 		<HugeiconsIcon
 			icon={iconDefinition(resolvedIconName)}
 			size={size}
-			strokeWidth={strokeWidth ?? 0.9}
+			strokeWidth={strokeWidth ?? 1.5}
 			className={className}
 		/>
 	);

@@ -181,7 +181,7 @@ export function GitSettingsPane() {
 								<HugeiconsIcon
 									icon={CheckmarkCircle02Icon}
 									size="var(--icon-md)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 								/>
 							}
 							value={status?.git_installed ? "Installed" : "Missing"}
@@ -198,7 +198,7 @@ export function GitSettingsPane() {
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
 									size="var(--icon-md)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 								/>
 							}
 							value={repoStateLabel}
@@ -215,7 +215,7 @@ export function GitSettingsPane() {
 								<HugeiconsIcon
 									icon={Link01Icon}
 									size="var(--icon-md)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 								/>
 							}
 							value={
@@ -237,7 +237,7 @@ export function GitSettingsPane() {
 									<HugeiconsIcon
 										icon={GitBranchIcon}
 										size="var(--icon-md)"
-										strokeWidth={0.9}
+										strokeWidth={1.5}
 									/>
 								}
 								value={config.branch}

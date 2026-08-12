@@ -46,7 +46,7 @@ export function RibbonColorPopover({
 					<HugeiconsIcon
 						icon={PaintBucketIcon}
 						size="var(--icon-md)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				</m.button>
 			</DropdownMenuTrigger>

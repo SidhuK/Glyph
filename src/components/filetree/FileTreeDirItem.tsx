@@ -299,7 +299,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								<HugeiconsIcon
 									icon={isExpanded ? Folder03Icon : Folder01Icon}
 									size="var(--icon-sm)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							)}
@@ -351,7 +351,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 										<HugeiconsIcon
 											icon={ArrowRight02Icon}
 											size="var(--icon-sm)"
-											strokeWidth={0.9}
+											strokeWidth={1.5}
 										/>
 									</span>
 								</div>

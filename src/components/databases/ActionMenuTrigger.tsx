@@ -34,7 +34,7 @@ function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 				<HugeiconsIcon
 					icon={LibraryIcon}
 					size="var(--icon-sm)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			);
 	}

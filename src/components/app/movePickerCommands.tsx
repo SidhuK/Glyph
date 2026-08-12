@@ -29,7 +29,7 @@ export function buildMovePickerCommands({
 				<HugeiconsIcon
 					icon={Folder01Icon}
 					size="var(--icon-lg)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			),
 			category: "Move Destination",
@@ -42,7 +42,7 @@ export function buildMovePickerCommands({
 				<HugeiconsIcon
 					icon={Folder01Icon}
 					size="var(--icon-lg)"
-					strokeWidth={0.9}
+					strokeWidth={1.5}
 				/>
 			),
 			category: "Move Destination",

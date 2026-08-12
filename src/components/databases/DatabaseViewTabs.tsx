@@ -178,7 +178,7 @@ export function DatabaseViewTabs({
 						icon={MoreVerticalIcon}
 						className="databasesViewTabMenuIcon"
 						size="var(--icon-md)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 						color="currentColor"
 						aria-hidden
 					/>

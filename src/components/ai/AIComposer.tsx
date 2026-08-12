@@ -542,7 +542,7 @@ export function AIComposer({
 										<HugeiconsIcon
 											icon={AtIcon}
 											size="var(--icon-sm)"
-											strokeWidth={0.9}
+											strokeWidth={1.5}
 										/>
 									</Button>
 								</div>
@@ -567,7 +567,7 @@ export function AIComposer({
 									<HugeiconsIcon
 										icon={StopIcon}
 										size="var(--icon-md)"
-										strokeWidth={0.9}
+										strokeWidth={1.5}
 									/>
 								</button>
 							) : (

@@ -144,7 +144,7 @@ export function CollectionTopBar({
 					<HugeiconsIcon
 						icon={LibraryIcon}
 						size="var(--icon-sm)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 					<span className="databasesCollectionSwitcherLabel">
 						{collectionMenuLabel}
@@ -169,7 +169,7 @@ export function CollectionTopBar({
 						<HugeiconsIcon
 							icon={StarIcon}
 							size="var(--icon-md)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 					</Button>
 					<Button
@@ -193,7 +193,7 @@ export function CollectionTopBar({
 						<HugeiconsIcon
 							icon={CursorAddSelection02Icon}
 							size="var(--icon-lg)"
-							strokeWidth={0.9}
+							strokeWidth={1.5}
 						/>
 						New Note
 					</button>

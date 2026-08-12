@@ -373,7 +373,7 @@ export function QuickNoteWindow() {
 							<HugeiconsIcon
 								icon={CheckmarkCircle02Icon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
+								strokeWidth={1.5}
 								aria-hidden="true"
 							/>
 							<span className="quickNoteSaveLabel">

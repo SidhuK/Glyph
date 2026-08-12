@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "Zwiń pasek boczny",
 		"expand": "Rozwiń pasek boczny",
+		"devBadge": "DEV",
 		"newNote": "Nowa notatka",
 		"pinned": "Przypięte",
 		"allNotes": "Wszystkie",

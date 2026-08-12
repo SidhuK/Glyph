@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "Collapse sidebar",
 		"expand": "Expand sidebar",
+		"devBadge": "DEV",
 		"newNote": "New Note",
 		"pinned": "Pinned",
 		"allNotes": "All Notes",

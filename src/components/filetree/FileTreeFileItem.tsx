@@ -403,7 +403,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							<HugeiconsIcon
 								icon={StarIcon}
 								size="var(--icon-sm)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 								className="fileTreePinIcon"
 							/>
 						) : null}

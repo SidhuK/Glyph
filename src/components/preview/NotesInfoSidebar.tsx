@@ -321,7 +321,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						<HugeiconsIcon
 							icon={BadgeInfoIcon}
 							size="var(--icon-sm)"
-							strokeWidth={1}
+							strokeWidth={1.5}
 						/>
 						Info
 					</button>
@@ -337,7 +337,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 							<HugeiconsIcon
 								icon={GitBranchIcon}
 								size="var(--icon-sm)"
-								strokeWidth={1}
+								strokeWidth={1.5}
 							/>
 							Version history
 						</button>
@@ -546,7 +546,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
 									size="var(--icon-sm)"
-									strokeWidth={1}
+									strokeWidth={1.5}
 								/>
 								Info
 							</h3>

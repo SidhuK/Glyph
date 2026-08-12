@@ -91,7 +91,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 					iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 					className="databaseTagPillIcon"
 					size="var(--icon-xs)"
-					strokeWidth={1.2}
+					strokeWidth={1.5}
 				/>
 			) : null}
 			{item.label}
@@ -199,7 +199,7 @@ function ResponsivePillList({ items }: { items: DatabaseDisplayPill[] }) {
 								iconName={item.iconName ?? DEFAULT_TAG_ICON_NAME}
 								className="databaseTagPillIcon"
 								size="var(--icon-xs)"
-								strokeWidth={1.2}
+								strokeWidth={1.5}
 							/>
 						) : null}
 						{item.label}
@@ -585,7 +585,7 @@ function DatabaseCellEditor({
 								iconName={iconNameForTag(value)}
 								className="databaseTagPillIcon"
 								size="var(--icon-xs)"
-								strokeWidth={1.2}
+								strokeWidth={1.5}
 							/>
 							<span>{formatDatabaseTagLabel(value)}</span>
 							<X size="var(--icon-xs)" />

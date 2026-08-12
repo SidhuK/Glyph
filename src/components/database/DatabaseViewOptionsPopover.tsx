@@ -502,7 +502,7 @@ export function DatabaseViewOptionsPopover({
 					<HugeiconsIcon
 						icon={SlidersVerticalIcon}
 						size="var(--icon-md)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 				</Button>
 			</PopoverTrigger>
@@ -587,7 +587,7 @@ export function DatabaseViewOptionsPopover({
 								<HugeiconsIcon
 									icon={GridViewIcon}
 									size="var(--icon-lg)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 								/>
 							}
 							label="Columns"
@@ -601,7 +601,7 @@ export function DatabaseViewOptionsPopover({
 							<HugeiconsIcon
 								icon={FilterMailIcon}
 								size="var(--icon-lg)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 						}
 						label="Filter by"
@@ -618,7 +618,7 @@ export function DatabaseViewOptionsPopover({
 							<HugeiconsIcon
 								icon={TextFontIcon}
 								size="var(--icon-lg)"
-								strokeWidth={0.9}
+								strokeWidth={1.5}
 							/>
 						}
 						label="Sort by"
@@ -632,7 +632,7 @@ export function DatabaseViewOptionsPopover({
 								<HugeiconsIcon
 									icon={Cards01Icon}
 									size="var(--icon-lg)"
-									strokeWidth={0.9}
+									strokeWidth={1.5}
 								/>
 							}
 							label="Card fields"

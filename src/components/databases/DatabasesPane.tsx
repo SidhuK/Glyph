@@ -182,7 +182,7 @@ function DatabasesPaneContent({
 					<HugeiconsIcon
 						icon={LibraryIcon}
 						size="var(--icon-3xl)"
-						strokeWidth={0.9}
+						strokeWidth={1.5}
 					/>
 					<div className="databasesEmptyTitle">
 						{selection.summaries.length === 0
