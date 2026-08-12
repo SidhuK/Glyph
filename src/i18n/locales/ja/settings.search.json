@@ -131,6 +131,12 @@
 				"tabs"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "最後のウインドウを閉じても Glyph を実行し続ける",
+			"section": "起動",
+			"description": "Glyph を終了せずに最後のウインドウを非表示にします。",
+			"keywords": ["閉じる", "ウインドウ", "終了", "非表示", "Dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "テーマを選択",
 			"section": "テーマ",

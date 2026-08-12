@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "Démarrage",
-		"sectionDescription": "Choisissez ce qui s’ouvre au démarrage de Glyph.",
+		"sectionDescription": "Choisissez le comportement de Glyph au démarrage et à la fermeture de la dernière fenêtre.",
 		"openPreviousTabs": {
 			"label": "Ouvrir les onglets précédents",
 			"description": "Démarrer cet espace avec les onglets que vous aviez laissés ouverts.",
 			"ariaLabel": "Reprendre la dernière session"
+		},
+		"keepRunningOnClose": {
+			"label": "Garder Glyph actif après la fermeture de la dernière fenêtre",
+			"description": "La fermeture de la dernière fenêtre la masque tandis que Glyph reste ouvert. Utilisez Quitter Glyph pour fermer l’application.",
+			"ariaLabel": "Garder Glyph actif après la fermeture de la dernière fenêtre"
 		}
 	},
 	"editor": {

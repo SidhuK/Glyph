@@ -138,6 +138,12 @@
 				"tabs"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Mantener Glyph en ejecución al cerrar la última ventana",
+			"section": "Inicio",
+			"description": "Ocultar la última ventana sin salir de Glyph.",
+			"keywords": ["cerrar", "ventana", "salir", "ocultar", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "Seleccionar tema",
 			"section": "Temas",

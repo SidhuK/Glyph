@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "Start",
-		"sectionDescription": "Wähle, was beim Start von Glyph geöffnet wird.",
+		"sectionDescription": "Lege fest, was Glyph beim Start und beim Schließen des letzten Fensters tun soll.",
 		"openPreviousTabs": {
 			"label": "Vorherige Tabs öffnen",
 			"description": "Diesen Space mit den Tabs starten, die du offen gelassen hast.",
 			"ariaLabel": "Letzte Sitzung fortsetzen"
+		},
+		"keepRunningOnClose": {
+			"label": "Glyph nach dem Schließen des letzten Fensters weiter ausführen",
+			"description": "Beim Schließen des letzten Fensters wird es ausgeblendet, während Glyph geöffnet bleibt. Beende Glyph mit „Glyph beenden“.",
+			"ariaLabel": "Glyph nach dem Schließen des letzten Fensters weiter ausführen"
 		}
 	},
 	"editor": {

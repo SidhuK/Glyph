@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
+import { loadSettings } from "../../lib/settings";
 import type { SplitEditorNode } from "../../lib/splitEditor";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -263,13 +264,19 @@ export function useWorkspaceSession({
 	useEffect(() => {
 		let disposed = false;
 		let unlisten: (() => void) | null = null;
-		void getCurrentWindow()
+		const currentWindow = getCurrentWindow();
+		void currentWindow
 			.onCloseRequested(async (event) => {
+				event.preventDefault();
 				try {
-					// Keep the webview alive until its open-note snapshot reaches disk.
-					await flushPendingSave();
+					const [settings] = await Promise.all([
+						loadSettings(),
+						flushPendingSave(),
+					]);
+					if (!settings.ui.keepRunningOnLastWindowClose) {
+						await currentWindow.destroy();
+					}
 				} catch (cause) {
-					event.preventDefault();
 					console.error(
 						"Failed to save workspace session before closing",
 						cause,

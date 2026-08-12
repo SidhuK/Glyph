@@ -134,6 +134,12 @@
 				"workspace session"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Keep Glyph running after closing the last window",
+			"section": "Startup",
+			"description": "Hide the last window without quitting Glyph.",
+			"keywords": ["close", "window", "quit", "hide", "dock", "keep running"]
+		},
 		"appearance-theme-mode": {
 			"title": "Select Theme",
 			"section": "Themes",

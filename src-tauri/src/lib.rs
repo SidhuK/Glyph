@@ -48,6 +48,8 @@ use tauri::menu::{
 };
 use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+#[cfg(target_os = "macos")]
+use tauri_plugin_store::StoreExt;
 use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
@@ -1106,6 +1108,14 @@ fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
     })
 }
 
+#[cfg(target_os = "macos")]
+fn keep_running_on_last_window_close(app: &tauri::AppHandle) -> bool {
+    app.get_store("settings.json")
+        .and_then(|store| store.get("ui.keepRunningOnLastWindowClose"))
+        .and_then(|value| value.as_bool())
+        .unwrap_or(false)
+}
+
 fn emit_menu_command_to_main(app: &tauri::AppHandle, command_id: &str) {
     let _ = app.emit_to(
         window_geometry::MAIN_WINDOW_LABEL,
@@ -1654,7 +1664,16 @@ pub fn run() {
 
             if is_main_window_label(window.label()) {
                 match event {
-                    WindowEvent::CloseRequested { .. } => {
+                    WindowEvent::CloseRequested { api, .. } => {
+                        #[cfg(target_os = "macos")]
+                        if keep_running_on_last_window_close(window.app_handle()) {
+                            api.prevent_close();
+                            destroy_auxiliary_persisted_windows(window.app_handle());
+                            if let Err(error) = window.hide() {
+                                warn!("Failed to hide main window on close: {error}");
+                            }
+                            return;
+                        }
                         destroy_auxiliary_persisted_windows(window.app_handle());
                     }
                     WindowEvent::Destroyed => {

@@ -86,6 +86,7 @@ type TauriEventMap = {
 			folioMode?: boolean;
 			classicAllNotesByDefault?: boolean;
 			resumeLastSession?: boolean;
+			keepRunningOnLastWindowClose?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			language?: AppLanguage;

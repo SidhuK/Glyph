@@ -26,6 +26,7 @@ import {
 	setEditorWidthMode,
 	setFileTreeSortMode,
 	setFolioMode,
+	setKeepRunningOnLastWindowClose,
 	setLanguage,
 	setQuickNotesFolder,
 	setReleaseChannel,
@@ -140,6 +141,13 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		control: "toggle",
 		read: (settings) => settings.ui.resumeLastSession,
 		write: (value) => setResumeLastSession(requireBoolean(value)),
+	},
+	{
+		id: "general-keep-running-on-close",
+		scope: "application",
+		control: "toggle",
+		read: (settings) => settings.ui.keepRunningOnLastWindowClose,
+		write: (value) => setKeepRunningOnLastWindowClose(requireBoolean(value)),
 	},
 	{
 		id: "appearance-theme-mode",
