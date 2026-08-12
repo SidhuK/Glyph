@@ -42,24 +42,8 @@
 	gap: 12px;
 	min-height: var(--external-markdown-chrome-height);
 	padding: 10px 16px 10px 82px;
-	background: linear-gradient(
-		to bottom,
-		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 96%, transparent) 0%,
-		color-mix(in srgb, var(--bg-canvas, var(--bg-primary)) 70%, transparent) 62%,
-		transparent 100%
-	);
+	background: var(--bg-canvas, var(--bg-primary));
 	pointer-events: none;
-	transition: opacity 220ms ease;
-}
-
-.externalMarkdownWindow[data-chrome-dimmed="true"]
-	.externalMarkdownOverlayChrome {
-	opacity: 0.18;
-}
-
-.externalMarkdownWindow[data-chrome-dimmed="true"]
-	.externalMarkdownOverlayChrome:hover {
-	opacity: 1;
 }
 
 .externalMarkdownTitleBlock {
