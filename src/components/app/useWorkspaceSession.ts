@@ -288,8 +288,15 @@ export function useWorkspaceSession({
 					}
 				} catch (cause) {
 					console.error("Failed to load settings before closing", cause);
+					toast.error("Could not close Glyph");
+					return;
 				}
-				await currentWindow.destroy();
+				try {
+					await currentWindow.destroy();
+				} catch (cause) {
+					console.error("Failed to destroy window while closing", cause);
+					toast.error("Could not close Glyph");
+				}
 			})
 			.then((stopListening) => {
 				if (disposed) {
