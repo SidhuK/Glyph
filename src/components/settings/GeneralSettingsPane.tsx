@@ -33,6 +33,7 @@ import {
 	setEditorShowFrontmatterInEditor,
 	setEditorShowHeadingPrefixes,
 	setEditorSpellCheck,
+	setKeepRunningOnLastWindowClose,
 	setLanguage,
 	setResumeLastSession,
 	setShowFileTreeFolderCounts,
@@ -98,6 +99,11 @@ export function GeneralSettingsPane() {
 		setResumeLastSession,
 		setError,
 	);
+	const keepRunningOnLastWindowClose = useSettingsBoolean(
+		false,
+		setKeepRunningOnLastWindowClose,
+		setError,
+	);
 	const showToc = useSettingsBoolean(true, setShowToc, setError);
 	const showFrontmatter = useSettingsBoolean(
 		false,
@@ -152,6 +158,8 @@ export function GeneralSettingsPane() {
 	);
 
 	const setResumeLastSessionChecked = resumeLastSession.setChecked;
+	const setKeepRunningOnLastWindowCloseChecked =
+		keepRunningOnLastWindowClose.setChecked;
 	const setShowTocChecked = showToc.setChecked;
 	const setShowFrontmatterChecked = showFrontmatter.setChecked;
 	const setColorfulHeadingsChecked = colorfulHeadings.setChecked;
@@ -183,6 +191,9 @@ export function GeneralSettingsPane() {
 				setInitialDefaultEditorMode(settings.editor.defaultEditorMode);
 				setInitialFocusMode(settings.editor.focusMode);
 				setResumeLastSessionChecked(settings.ui.resumeLastSession);
+				setKeepRunningOnLastWindowCloseChecked(
+					settings.ui.keepRunningOnLastWindowClose,
+				);
 				setShowTocChecked(settings.ui.showToc);
 				setShowFrontmatterChecked(settings.editor.showFrontmatterInEditor);
 				setColorfulHeadingsChecked(settings.editor.colorfulHeadings);
@@ -208,6 +219,7 @@ export function GeneralSettingsPane() {
 		};
 	}, [
 		setResumeLastSessionChecked,
+		setKeepRunningOnLastWindowCloseChecked,
 		setShowTocChecked,
 		setShowFrontmatterChecked,
 		setColorfulHeadingsChecked,
@@ -247,6 +259,10 @@ export function GeneralSettingsPane() {
 				applyIfBoolean(
 					payload.ui?.resumeLastSession,
 					setResumeLastSessionChecked,
+				);
+				applyIfBoolean(
+					payload.ui?.keepRunningOnLastWindowClose,
+					setKeepRunningOnLastWindowCloseChecked,
 				);
 				applyIfBoolean(payload.ui?.showToc, setShowTocChecked);
 				applyIfBoolean(
@@ -289,6 +305,7 @@ export function GeneralSettingsPane() {
 			},
 			[
 				setResumeLastSessionChecked,
+				setKeepRunningOnLastWindowCloseChecked,
 				setShowTocChecked,
 				setShowFrontmatterChecked,
 				setColorfulHeadingsChecked,
@@ -336,6 +353,17 @@ export function GeneralSettingsPane() {
 							disabled={resumeLastSession.isSaving}
 							ariaLabel={t("startup.openPreviousTabs.ariaLabel")}
 							onCheckedChange={resumeLastSession.onCheckedChange}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={t("startup.keepRunningOnClose.label")}
+						description={t("startup.keepRunningOnClose.description")}
+					>
+						<SettingsToggle
+							checked={keepRunningOnLastWindowClose.checked}
+							disabled={keepRunningOnLastWindowClose.isSaving}
+							ariaLabel={t("startup.keepRunningOnClose.ariaLabel")}
+							onCheckedChange={keepRunningOnLastWindowClose.onCheckedChange}
 						/>
 					</SettingsRow>
 				</SettingsSection>

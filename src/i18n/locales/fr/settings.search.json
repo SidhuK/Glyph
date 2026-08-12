@@ -138,6 +138,12 @@
 				"tabs"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Garder Glyph actif après la fermeture de la dernière fenêtre",
+			"section": "Démarrage",
+			"description": "Masquer la dernière fenêtre sans quitter Glyph.",
+			"keywords": ["fermer", "fenêtre", "quitter", "masquer", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "Sélectionner le thème",
 			"section": "Thèmes",

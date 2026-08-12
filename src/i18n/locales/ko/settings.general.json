@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "시작",
-		"sectionDescription": "Glyph를 시작할 때 열 내용을 선택합니다.",
+		"sectionDescription": "Glyph를 시작할 때와 마지막 창을 닫을 때의 동작을 선택합니다.",
 		"openPreviousTabs": {
 			"label": "이전 탭 열기",
 			"description": "열어 두었던 탭으로 이 스페이스를 시작합니다.",
 			"ariaLabel": "마지막 세션 이어하기"
+		},
+		"keepRunningOnClose": {
+			"label": "마지막 창을 닫아도 Glyph 계속 실행",
+			"description": "마지막 창을 닫으면 창만 숨겨지고 Glyph는 계속 열려 있습니다. 종료하려면 Glyph 종료를 사용하세요.",
+			"ariaLabel": "마지막 창을 닫아도 Glyph 계속 실행"
 		}
 	},
 	"editor": {

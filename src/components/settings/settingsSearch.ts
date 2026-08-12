@@ -32,6 +32,7 @@ const SETTINGS_SEARCH_DEFS: readonly SettingsSearchDef[] = [
 	{ id: "general-language", tab: "general" },
 	{ id: "general-date-format", tab: "general" },
 	{ id: "general-resume-last-session", tab: "general" },
+	{ id: "general-keep-running-on-close", tab: "general" },
 	{ id: "appearance-theme-mode", tab: "appearance" },
 	{ id: "appearance-light-theme", tab: "appearance" },
 	{ id: "appearance-dark-theme", tab: "appearance" },

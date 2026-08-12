@@ -134,6 +134,12 @@
 				"sesja przestrzeni roboczej"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna",
+			"section": "Uruchamianie",
+			"description": "Ukryj ostatnie okno bez kończenia Glyph.",
+			"keywords": ["zamknij", "okno", "zakończ", "ukryj", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "Wybierz motyw",
 			"section": "Motyw",

@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "Uruchamianie",
-		"sectionDescription": "Wybierz, które zakładki mają się otwierać po uruchomieniu programu Glyph.",
+		"sectionDescription": "Wybierz zachowanie Glyph przy uruchamianiu i zamykaniu ostatniego okna.",
 		"openPreviousTabs": {
 			"label": "Otwórz poprzednie zakładki",
 			"description": "Rozpocznij tę przestrzeń z zakładkami pozostawionymi otwartymi.",
 			"ariaLabel": "Wznów ostatnią sesję"
+		},
+		"keepRunningOnClose": {
+			"label": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna",
+			"description": "Zamknięcie ostatniego okna ukrywa je, ale Glyph pozostaje otwarty. Aby zakończyć, użyj opcji Zakończ Glyph.",
+			"ariaLabel": "Pozostaw Glyph uruchomiony po zamknięciu ostatniego okna"
 		}
 	},
 	"editor": {

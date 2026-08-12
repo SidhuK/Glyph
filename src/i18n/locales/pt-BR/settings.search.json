@@ -139,6 +139,12 @@
 				"session"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Manter o Glyph em execução após fechar a última janela",
+			"section": "Inicialização",
+			"description": "Ocultar a última janela sem sair do Glyph.",
+			"keywords": ["fechar", "janela", "sair", "ocultar", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "Selecionar tema",
 			"section": "Temas",

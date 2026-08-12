@@ -383,6 +383,7 @@ async function emitSettingsUpdated(payload: {
 		folioMode?: boolean;
 		classicAllNotesByDefault?: boolean;
 		resumeLastSession?: boolean;
+		keepRunningOnLastWindowClose?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		language?: AppLanguage;
@@ -467,6 +468,7 @@ export interface AppSettings {
 		folioMode: boolean;
 		classicAllNotesByDefault: boolean;
 		resumeLastSession: boolean;
+		keepRunningOnLastWindowClose: boolean;
 		aiAssistantMode: AiAssistantMode;
 		dateDisplayFormat: DateDisplayFormat;
 	};
@@ -543,6 +545,7 @@ const KEYS = {
 	folioMode: "ui.folioMode",
 	classicAllNotesByDefault: "ui.classicAllNotesByDefault",
 	resumeLastSession: "ui.resumeLastSession",
+	keepRunningOnLastWindowClose: "ui.keepRunningOnLastWindowClose",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowCollapsibleLists: "editor.showCollapsibleLists",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
@@ -853,6 +856,10 @@ export async function loadSettings(
 		entries,
 		KEYS.resumeLastSession,
 	);
+	const rawKeepRunningOnLastWindowClose = getSettingValue<boolean | null>(
+		entries,
+		KEYS.keepRunningOnLastWindowClose,
+	);
 	const dailyNotesFolderRaw = getSettingValue<string | null>(
 		entries,
 		KEYS.dailyNotesFolder,
@@ -1008,6 +1015,10 @@ export async function loadSettings(
 			: false;
 	const resumeLastSession =
 		typeof rawResumeLastSession === "boolean" ? rawResumeLastSession : false;
+	const keepRunningOnLastWindowClose =
+		typeof rawKeepRunningOnLastWindowClose === "boolean"
+			? rawKeepRunningOnLastWindowClose
+			: false;
 	const dailyNotesFolder = hasActiveSpace
 		? (activeScopedSettings?.dailyNotesFolder ?? null)
 		: typeof dailyNotesFolderRaw === "string"
@@ -1124,6 +1135,7 @@ export async function loadSettings(
 			folioMode,
 			classicAllNotesByDefault,
 			resumeLastSession,
+			keepRunningOnLastWindowClose,
 			aiAssistantMode,
 			dateDisplayFormat,
 		},
@@ -1427,6 +1439,15 @@ export async function setResumeLastSession(enabled: boolean): Promise<void> {
 	await store.set(KEYS.resumeLastSession, enabled);
 	await saveSettingsStore(store);
 	void emitSettingsUpdated({ ui: { resumeLastSession: enabled } });
+}
+
+export async function setKeepRunningOnLastWindowClose(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getSettingsStore();
+	await store.set(KEYS.keepRunningOnLastWindowClose, enabled);
+	await saveSettingsStore(store);
+	void emitSettingsUpdated({ ui: { keepRunningOnLastWindowClose: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(

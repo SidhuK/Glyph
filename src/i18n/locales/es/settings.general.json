@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "Inicio",
-		"sectionDescription": "Elige qué se abre al iniciar Glyph.",
+		"sectionDescription": "Elige qué hace Glyph al iniciarse y al cerrar la última ventana.",
 		"openPreviousTabs": {
 			"label": "Abrir pestañas anteriores",
 			"description": "Iniciar este espacio con las pestañas que dejaste abiertas.",
 			"ariaLabel": "Reanudar la última sesión"
+		},
+		"keepRunningOnClose": {
+			"label": "Mantener Glyph en ejecución al cerrar la última ventana",
+			"description": "Al cerrar la última ventana, esta se oculta y Glyph permanece abierto. Usa Salir de Glyph para cerrarlo.",
+			"ariaLabel": "Mantener Glyph en ejecución al cerrar la última ventana"
 		}
 	},
 	"editor": {

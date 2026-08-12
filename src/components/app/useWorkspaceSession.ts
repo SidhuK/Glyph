@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef } from "react";
+import { loadSettings } from "../../lib/settings";
 import type { SplitEditorNode } from "../../lib/splitEditor";
 import { invoke } from "../../lib/tauri";
 import { toast } from "../../lib/toast";
@@ -263,13 +264,13 @@ export function useWorkspaceSession({
 	useEffect(() => {
 		let disposed = false;
 		let unlisten: (() => void) | null = null;
-		void getCurrentWindow()
+		const currentWindow = getCurrentWindow();
+		void currentWindow
 			.onCloseRequested(async (event) => {
+				event.preventDefault();
 				try {
-					// Keep the webview alive until its open-note snapshot reaches disk.
 					await flushPendingSave();
 				} catch (cause) {
-					event.preventDefault();
 					console.error(
 						"Failed to save workspace session before closing",
 						cause,
@@ -277,6 +278,24 @@ export function useWorkspaceSession({
 					toast.error("Could not close Glyph", {
 						description: "The open tabs could not be saved. Please try again.",
 					});
+					await currentWindow.show();
+					return;
+				}
+				try {
+					const settings = await loadSettings();
+					if (settings.ui.keepRunningOnLastWindowClose) {
+						return;
+					}
+				} catch (cause) {
+					console.error("Failed to load settings before closing", cause);
+					toast.error("Could not close Glyph");
+					return;
+				}
+				try {
+					await currentWindow.destroy();
+				} catch (cause) {
+					console.error("Failed to destroy window while closing", cause);
+					toast.error("Could not close Glyph");
 				}
 			})
 			.then((stopListening) => {

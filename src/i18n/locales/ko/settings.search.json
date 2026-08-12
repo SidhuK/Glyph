@@ -131,6 +131,12 @@
 				"tabs"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "마지막 창을 닫아도 Glyph 계속 실행",
+			"section": "시작",
+			"description": "Glyph를 종료하지 않고 마지막 창을 숨깁니다.",
+			"keywords": ["닫기", "창", "종료", "숨기기", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "테마 선택",
 			"section": "테마",

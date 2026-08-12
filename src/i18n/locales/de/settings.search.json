@@ -137,6 +137,12 @@
 				"startup"
 			]
 		},
+		"general-keep-running-on-close": {
+			"title": "Glyph nach dem Schließen des letzten Fensters weiter ausführen",
+			"section": "Start",
+			"description": "Das letzte Fenster ausblenden, ohne Glyph zu beenden.",
+			"keywords": ["schließen", "fenster", "beenden", "ausblenden", "dock"]
+		},
 		"appearance-theme-mode": {
 			"title": "Design auswählen",
 			"section": "Designs",

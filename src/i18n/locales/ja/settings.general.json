@@ -62,11 +62,16 @@
 	},
 	"startup": {
 		"sectionTitle": "起動",
-		"sectionDescription": "Glyph 起動時に開く内容を選択します。",
+		"sectionDescription": "Glyph の起動時と最後のウインドウを閉じたときの動作を選択します。",
 		"openPreviousTabs": {
 			"label": "前回のタブを開く",
 			"description": "前回開いていたタブでこのスペースを開始します。",
 			"ariaLabel": "前回のセッションを再開"
+		},
+		"keepRunningOnClose": {
+			"label": "最後のウインドウを閉じても Glyph を実行し続ける",
+			"description": "最後のウインドウを閉じると非表示になりますが、Glyph は開いたままです。終了するには「Glyph を終了」を使用します。",
+			"ariaLabel": "最後のウインドウを閉じても Glyph を実行し続ける"
 		}
 	},
 	"editor": {
