@@ -21,7 +21,6 @@ import {
 import { NoteInlineEditor } from "../editor/NoteInlineEditor";
 import { ExternalMarkdownHeader } from "./ExternalMarkdownHeader";
 import { ExternalMarkdownStatusBar } from "./ExternalMarkdownStatusBar";
-import { useDimChromeWhileTyping } from "./useDimChromeWhileTyping";
 
 const AUTOSAVE_DELAY_MS = 700;
 
@@ -71,7 +70,6 @@ export function ExternalMarkdownWindow() {
 	const saveTokenRef = useRef(0);
 	const autosaveTimerRef = useRef<number | null>(null);
 	const mountedRef = useRef(true);
-	const chromeDimmed = useDimChromeWhileTyping();
 	const {
 		setSaving,
 		setLoading,
@@ -252,10 +250,7 @@ export function ExternalMarkdownWindow() {
 	);
 
 	return (
-		<div
-			className="externalMarkdownWindow"
-			data-chrome-dimmed={chromeDimmed ? "true" : "false"}
-		>
+		<div className="externalMarkdownWindow">
 			<ExternalMarkdownHeader
 				title={title}
 				folderLabel={folderLabel}
