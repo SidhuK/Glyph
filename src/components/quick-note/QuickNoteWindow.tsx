@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { emitTo } from "@tauri-apps/api/event";
 import type { Editor } from "@tiptap/core";
@@ -373,7 +373,6 @@ export function QuickNoteWindow() {
 							<HugeiconsIcon
 								icon={CheckmarkCircle02Icon}
 								size="var(--icon-lg)"
-								strokeWidth={1.6}
 								aria-hidden="true"
 							/>
 							<span className="quickNoteSaveLabel">

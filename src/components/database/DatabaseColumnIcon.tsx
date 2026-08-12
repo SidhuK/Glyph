@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Activity01Icon,
 	AiIdeaIcon,
@@ -140,7 +141,6 @@ import {
 	WorkflowCircle01Icon,
 	ZapIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
 import {
 	getDatabaseColumnIconOption,
@@ -322,7 +322,7 @@ export function DatabaseColumnIcon({
 		<HugeiconsIcon
 			icon={iconDefinition(resolvedIconName)}
 			size={size}
-			strokeWidth={strokeWidth ?? 0.9}
+			strokeWidth={strokeWidth}
 			className={className}
 		/>
 	);

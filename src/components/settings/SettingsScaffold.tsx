@@ -1,6 +1,6 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -156,11 +156,7 @@ export function SettingsInfoHint({
 					className="settingsInfoButton"
 					aria-label={ariaLabel}
 				>
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size="var(--icon-md)"
-						strokeWidth={0.9}
-					/>
+					<HugeiconsIcon icon={InformationCircleIcon} size="var(--icon-md)" />
 				</button>
 			</PopoverTrigger>
 			<PopoverContent

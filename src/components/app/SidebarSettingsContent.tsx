@@ -1,8 +1,8 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	ArrowLeft02Icon,
 	ArrowUpRight01Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,11 +55,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 						className="sidebarQuickActionBtn settingsBackButton"
 						onClick={closeSettings}
 					>
-						<HugeiconsIcon
-							icon={ArrowLeft02Icon}
-							size="var(--icon-md)"
-							strokeWidth={0.9}
-						/>
+						<HugeiconsIcon icon={ArrowLeft02Icon} size="var(--icon-md)" />
 						<span className="sidebarQuickActionLabel">Back</span>
 					</button>
 				</div>
@@ -195,11 +191,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							onClick={() => void openUrl(licenseStatus.purchase_url)}
 						>
 							Buy official license
-							<HugeiconsIcon
-								icon={ArrowUpRight01Icon}
-								size="var(--icon-sm)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
 						</Button>
 					</div>
 				) : (
@@ -218,11 +210,7 @@ export const SidebarSettingsContent = memo(function SidebarSettingsContent() {
 							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
 							Send feedback
-							<HugeiconsIcon
-								icon={ArrowUpRight01Icon}
-								size="var(--icon-sm)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={ArrowUpRight01Icon} size="var(--icon-sm)" />
 						</Button>
 					</div>
 				)}

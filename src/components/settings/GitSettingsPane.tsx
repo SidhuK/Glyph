@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	CheckmarkCircle02Icon,
 	GitBranchIcon,
 	InformationCircleIcon,
 	Link01Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ATTACHMENT_LOCATION_OPTIONS } from "../../lib/attachmentStorage";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -181,7 +181,6 @@ export function GitSettingsPane() {
 								<HugeiconsIcon
 									icon={CheckmarkCircle02Icon}
 									size="var(--icon-md)"
-									strokeWidth={0.9}
 								/>
 							}
 							value={status?.git_installed ? "Installed" : "Missing"}
@@ -198,7 +197,6 @@ export function GitSettingsPane() {
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
 									size="var(--icon-md)"
-									strokeWidth={0.9}
 								/>
 							}
 							value={repoStateLabel}
@@ -211,13 +209,7 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={
-								<HugeiconsIcon
-									icon={Link01Icon}
-									size="var(--icon-md)"
-									strokeWidth={0.9}
-								/>
-							}
+							icon={<HugeiconsIcon icon={Link01Icon} size="var(--icon-md)" />}
 							value={
 								config?.remote_url ??
 								"Open a folder that already has Git initialized."
@@ -234,11 +226,7 @@ export function GitSettingsPane() {
 						>
 							<SettingsValueCard
 								icon={
-									<HugeiconsIcon
-										icon={GitBranchIcon}
-										size="var(--icon-md)"
-										strokeWidth={0.9}
-									/>
+									<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />
 								}
 								value={config.branch}
 								mono

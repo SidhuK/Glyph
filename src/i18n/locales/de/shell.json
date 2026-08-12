@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "Seitenleiste einklappen",
 		"expand": "Seitenleiste ausklappen",
+		"devBadge": "DEV",
 		"newNote": "Neue Notiz",
 		"pinned": "Angeheftet",
 		"allNotes": "Alle Notizen",

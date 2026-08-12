@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	ActivityCircleIcon,
 	Archive02Icon,
@@ -10,7 +11,6 @@ import {
 	Queue02Icon,
 	Task01Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
 import {
 	statusLabel,
@@ -66,7 +66,6 @@ export function StatusPropertyPill({
 				icon={statusPropertyIconForValue(value)}
 				className="propertyValueTextIcon"
 				size="var(--icon-sm)"
-				strokeWidth={1.3}
 			/>
 			<span>{label}</span>
 		</span>

@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useMemo, useState } from "react";
 import {
 	folderNameFromPath,
@@ -125,11 +125,7 @@ export function CreateCollectionDialog({
 			>
 				<div className="createCollectionHero">
 					<div className="createCollectionIcon" aria-hidden="true">
-						<HugeiconsIcon
-							icon={LibraryIcon}
-							size="var(--icon-xl)"
-							strokeWidth={0.9}
-						/>
+						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-xl)" />
 					</div>
 					<DialogHeader className="createCollectionHeader text-center sm:text-center items-center">
 						<p className="createCollectionEyebrow">Collections</p>

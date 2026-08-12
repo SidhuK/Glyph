@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import {
 	type CSSProperties,
@@ -291,7 +291,6 @@ function TagRowIcon({
 			icon={Tag01Icon}
 			className="tagsIcon"
 			size="var(--icon-sm)"
-			strokeWidth={0.9}
 		/>
 	);
 }

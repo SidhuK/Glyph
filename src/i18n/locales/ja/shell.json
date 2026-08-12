@@ -2,6 +2,7 @@
 	"sidebar": {
 		"collapse": "サイドバーを折りたたむ",
 		"expand": "サイドバーを展開",
+		"devBadge": "DEV",
 		"newNote": "新規ノート",
 		"pinned": "ピン留め",
 		"allNotes": "すべてのノート",

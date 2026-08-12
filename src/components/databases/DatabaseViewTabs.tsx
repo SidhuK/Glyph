@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { MoreVerticalIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { useCallback, useRef } from "react";
 import type { DatabaseView, SaveDatabase } from "../../hooks/database/types";
@@ -178,7 +178,6 @@ export function DatabaseViewTabs({
 						icon={MoreVerticalIcon}
 						className="databasesViewTabMenuIcon"
 						size="var(--icon-md)"
-						strokeWidth={0.9}
 						color="currentColor"
 						aria-hidden
 					/>

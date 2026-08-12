@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { TimelineEventIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -250,11 +250,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 					title={t("allNotes.showActivity")}
 					aria-label={t("allNotes.showActivity")}
 				>
-					<HugeiconsIcon
-						icon={TimelineEventIcon}
-						strokeWidth={1}
-						data-icon="inline-start"
-					/>
+					<HugeiconsIcon icon={TimelineEventIcon} data-icon="inline-start" />
 					<span>{t("allNotes.showActivity")}</span>
 				</Button>
 			</header>

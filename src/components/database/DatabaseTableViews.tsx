@@ -79,7 +79,7 @@ export function DatabaseTableGroupHeader({
 						title={`Add note to ${label}`}
 						aria-label={`Add note to ${label}`}
 					>
-						<Plus size="var(--icon-sm)" strokeWidth={1.6} aria-hidden="true" />
+						<Plus size="var(--icon-sm)" aria-hidden="true" />
 					</button>
 				) : null}
 			</td>

@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { HighlighterIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { useTranslation } from "react-i18next";
@@ -43,11 +43,7 @@ export function RibbonHighlightPopover({
 					whileTap={canEdit ? { scale: 0.97 } : undefined}
 					transition={springPresets.snappy}
 				>
-					<HugeiconsIcon
-						icon={HighlighterIcon}
-						size="var(--icon-md)"
-						strokeWidth={0.9}
-					/>
+					<HugeiconsIcon icon={HighlighterIcon} size="var(--icon-md)" />
 				</m.button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent

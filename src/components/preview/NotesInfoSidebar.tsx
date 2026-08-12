@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	BadgeInfoIcon,
 	GitBranchIcon,
 	InformationCircleIcon,
 	Link04Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -318,11 +318,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 						data-active={activeTab === "info" ? "true" : undefined}
 						onClick={() => setActiveTab("info")}
 					>
-						<HugeiconsIcon
-							icon={BadgeInfoIcon}
-							size="var(--icon-sm)"
-							strokeWidth={1}
-						/>
+						<HugeiconsIcon icon={BadgeInfoIcon} size="var(--icon-sm)" />
 						Info
 					</button>
 					{hasGitHistoryTab ? (
@@ -334,11 +330,7 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 							data-active={activeTab === "history" ? "true" : undefined}
 							onClick={() => setActiveTab("history")}
 						>
-							<HugeiconsIcon
-								icon={GitBranchIcon}
-								size="var(--icon-sm)"
-								strokeWidth={1}
-							/>
+							<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-sm)" />
 							Version history
 						</button>
 					) : null}
@@ -546,7 +538,6 @@ export const NotesInfoSidebar = memo(function NotesInfoSidebar({
 								<HugeiconsIcon
 									icon={InformationCircleIcon}
 									size="var(--icon-sm)"
-									strokeWidth={1}
 								/>
 								Info
 							</h3>

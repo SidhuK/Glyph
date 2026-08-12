@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Folder03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { join } from "@tauri-apps/api/path";
 import { useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -94,11 +94,7 @@ export function DatabaseFolderPicker({
 			}}
 		>
 			<span className="databasePickerTriggerIcon">
-				<HugeiconsIcon
-					icon={Folder03Icon}
-					size="var(--icon-md)"
-					strokeWidth={0.9}
-				/>
+				<HugeiconsIcon icon={Folder03Icon} size="var(--icon-md)" />
 			</span>
 			<span className="databasePickerTriggerText">
 				<span className="databasePickerTriggerLabel">{selectedLabel}</span>

@@ -81,6 +81,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	position: relative;
 	width: 26px;
 	height: 26px;
 	padding: 0;
@@ -94,6 +95,27 @@
 	cursor: pointer;
 	-webkit-app-region: no-drag;
 	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sidebarDevBadge {
+	position: absolute;
+	right: -4px;
+	bottom: -4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 22px;
+	height: 13px;
+	padding: 0 3px;
+	border: 2px solid var(--bg-sidebar);
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: 7px;
+	font-weight: var(--font-bold);
+	line-height: 1;
+	letter-spacing: 0.08em;
+	pointer-events: none;
 }
 
 .windowChromeSidebarToggle:hover,

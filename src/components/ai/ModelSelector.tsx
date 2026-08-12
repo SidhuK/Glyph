@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	type MouseEvent as ReactMouseEvent,
@@ -288,7 +288,6 @@ export function ModelSelector({
 														<HugeiconsIcon
 															icon={InformationCircleIcon}
 															size="var(--icon-md)"
-															strokeWidth={0.9}
 														/>
 													</button>
 												)}

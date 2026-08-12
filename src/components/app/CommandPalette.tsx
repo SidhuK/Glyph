@@ -1,6 +1,6 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
 import { StarIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -549,11 +549,7 @@ export function CommandPalette({
 												: "commandPalette.saveSearch",
 										)}
 									>
-										<HugeiconsIcon
-											icon={StarIcon}
-											size="var(--icon-md)"
-											strokeWidth={0.9}
-										/>
+										<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
 									</button>
 								</div>
 							) : null}

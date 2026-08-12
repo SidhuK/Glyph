@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Copy01Icon, PlayIcon, Tick02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { memo } from "react";
@@ -130,11 +130,7 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 							title={t("codeBlock.runPreview")}
 							aria-label={t("codeBlock.runPreview")}
 						>
-							<HugeiconsIcon
-								icon={PlayIcon}
-								size="var(--icon-sm)"
-								strokeWidth={0.9}
-							/>
+							<HugeiconsIcon icon={PlayIcon} size="var(--icon-sm)" />
 						</button>
 					) : null}
 					<button
@@ -153,7 +149,6 @@ export const NoteEditorSurface = memo(function NoteEditorSurface({
 						<HugeiconsIcon
 							icon={codeBlock.copied ? Tick02Icon : Copy01Icon}
 							size="var(--icon-sm)"
-							strokeWidth={0.9}
 						/>
 					</button>
 				</div>

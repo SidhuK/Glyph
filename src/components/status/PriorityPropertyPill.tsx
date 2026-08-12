@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	FullSignalIcon,
 	LowSignalIcon,
 	MediumSignalIcon,
 	NoSignalIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
 import {
 	priorityLabel,
@@ -50,7 +50,6 @@ export function PriorityPropertyPill({
 				icon={priorityPropertyIconForValue(value)}
 				className="propertyValueTextIcon"
 				size="var(--icon-sm)"
-				strokeWidth={1.3}
 			/>
 			<span>{label}</span>
 		</span>

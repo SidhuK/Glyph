@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import {
 	KeyboardSensor,
@@ -6,7 +7,6 @@ import {
 	useDroppable,
 } from "@dnd-kit/react";
 import { Tag01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import {
 	type MouseEvent,
@@ -167,7 +167,6 @@ export function DatabaseBoardLaneView({
 					}
 					className="databaseBoardLaneTitleIcon"
 					size="var(--icon-sm)"
-					strokeWidth={1.2}
 					aria-hidden="true"
 				/>
 			) : (

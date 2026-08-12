@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { NoteAddIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { memo } from "react";
@@ -128,11 +128,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 							whileTap={canEdit ? { scale: 0.97 } : undefined}
 							transition={springPresets.snappy}
 						>
-							<HugeiconsIcon
-								icon={NoteAddIcon}
-								size="var(--icon-lg)"
-								strokeWidth={0.9}
-							/>
+							<HugeiconsIcon icon={NoteAddIcon} size="var(--icon-lg)" />
 						</m.button>
 					) : null}
 					<span className="ribbonDivider" />

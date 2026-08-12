@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Folder01Icon,
 	TableIcon,
 	Tag01Icon,
 	UserIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Fragment, type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -74,7 +74,7 @@ function ResultIcon({ result }: { result: PaletteResult }) {
 							? TableIcon
 							: null;
 	return icon ? (
-		<HugeiconsIcon icon={icon} size="var(--icon-md)" strokeWidth={0.9} />
+		<HugeiconsIcon icon={icon} size="var(--icon-md)" />
 	) : (
 		<FileText size="var(--icon-md)" />
 	);

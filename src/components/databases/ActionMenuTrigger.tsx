@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { type MouseEvent, type ReactNode, useCallback } from "react";
 import {
 	type ActionMenuIconKey,
@@ -30,13 +30,7 @@ function renderMenuIcon(iconKey: ActionMenuIconKey): ReactNode {
 		case "plus":
 			return <Plus size="var(--icon-sm)" />;
 		case "library":
-			return (
-				<HugeiconsIcon
-					icon={LibraryIcon}
-					size="var(--icon-sm)"
-					strokeWidth={0.9}
-				/>
-			);
+			return <HugeiconsIcon icon={LibraryIcon} size="var(--icon-sm)" />;
 	}
 }
 

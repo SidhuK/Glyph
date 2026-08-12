@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface WindowChromeIconButtonProps {
 	ariaLabel: string;
@@ -17,6 +18,8 @@ export function WindowChromeIconButton({
 	title,
 	children,
 }: WindowChromeIconButtonProps) {
+	const { t } = useTranslation("shell");
+
 	return (
 		<button
 			data-sidebar="trigger"
@@ -30,6 +33,9 @@ export function WindowChromeIconButton({
 			title={title}
 		>
 			{children}
+			{import.meta.env.DEV && (
+				<span className="sidebarDevBadge">{t("sidebar.devBadge")}</span>
+			)}
 		</button>
 	);
 }

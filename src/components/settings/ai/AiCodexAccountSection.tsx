@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Calendar03Icon, Time04Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "../../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import {
@@ -156,7 +156,6 @@ export function AiCodexAccountSection({
 													<HugeiconsIcon
 														icon={WindowIcon}
 														size="var(--icon-lg)"
-														strokeWidth={1.6}
 														aria-hidden="true"
 													/>
 													<span>{shortLabel}</span>
