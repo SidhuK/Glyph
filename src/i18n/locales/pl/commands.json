@@ -183,7 +183,7 @@
 			"description": "Uruchom synchronizację Git teraz."
 		},
 		"go-back-note": {
-			"label": "Cofnij",
+			"label": "Wstecz",
 			"description": "Przejdź wstecz w historii notatek bieżącej zakładki."
 		},
 		"go-forward-note": {

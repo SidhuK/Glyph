@@ -26,8 +26,8 @@
 			}
 		},
 		"translucentSidebar": {
-			"label": "Przezroczysty pasek boczny",
-			"ariaLabel": "Przezroczysty pasek boczny"
+			"label": "Półprzezroczysty pasek boczny",
+			"ariaLabel": "Półprzezroczysty pasek boczny"
 		}
 	},
 	"lightTheme": {
@@ -126,9 +126,9 @@
 		"sectionTitle": "Prezentacja edytora",
 		"sectionDescription": "Wybierz wygląd notatek podczas ich edycji.",
 		"beautifulTags": {
-			"label": "Ładne etykiety",
-			"description": "Włącz eksperymentalną prezentację ładnych etykiet dla tagów.",
-			"ariaLabel": "Ładne etykiety"
+			"label": "Ładne tagi",
+			"description": "Włącz eksperymentalną prezentację ładnych tagów.",
+			"ariaLabel": "Ładne tagi"
 		},
 		"editorWidth": {
 			"label": "Szerokość edytora",

@@ -153,7 +153,7 @@
 			"keywords": ["motyw", "kolor", "ciemny"]
 		},
 		"appearance-translucent-app": {
-			"title": "Przezroczysty pasek boczny",
+			"title": "Półprzezroczysty pasek boczny",
 			"section": "Motyw",
 			"keywords": ["okno", "szkło", "rozmycie", "przezroczysty"]
 		},
@@ -418,7 +418,7 @@
 			"keywords": ["edytor", "kolor"]
 		},
 		"appearance-editor-presentation-beautiful-tags": {
-			"title": "Ładne etykiety",
+			"title": "Ładne tagi",
 			"section": "Prezentacja edytora",
 			"keywords": ["tagi", "edytor"]
 		},
