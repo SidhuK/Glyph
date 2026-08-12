@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Folder01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { UseFileTreeResult } from "../../hooks/useFileTree";
 import type { Command } from "./commandPaletteHelpers";
 
@@ -25,26 +25,14 @@ export function buildMovePickerCommands({
 		{
 			id: "move-picker-root",
 			label: "/",
-			icon: (
-				<HugeiconsIcon
-					icon={Folder01Icon}
-					size="var(--icon-lg)"
-					strokeWidth={1.5}
-				/>
-			),
+			icon: <HugeiconsIcon icon={Folder01Icon} size="var(--icon-lg)" />,
 			category: "Move Destination",
 			action: () => moveTo(""),
 		},
 		...moveTargetDirs.map((directory) => ({
 			id: `move-picker:${directory}`,
 			label: `/${directory}`,
-			icon: (
-				<HugeiconsIcon
-					icon={Folder01Icon}
-					size="var(--icon-lg)"
-					strokeWidth={1.5}
-				/>
-			),
+			icon: <HugeiconsIcon icon={Folder01Icon} size="var(--icon-lg)" />,
 			category: "Move Destination",
 			action: () => moveTo(directory),
 		})),

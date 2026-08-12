@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { NextWeekIcon, Sun02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { useEffect, useState } from "react";

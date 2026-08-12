@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Audit02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";

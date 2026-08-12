@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowRight01Icon, Circle } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import type * as React from "react";
 
@@ -96,7 +96,6 @@ function DropdownMenuRadioItem({
 						icon={Circle}
 						size="var(--icon-xs)"
 						className="fill-current"
-						strokeWidth={1.5}
 					/>
 				</DropdownMenuPrimitive.ItemIndicator>
 			</span>
@@ -168,7 +167,6 @@ function DropdownMenuSubTrigger({
 					icon={ArrowRight01Icon}
 					size="var(--icon-xs)"
 					className="text-muted-foreground"
-					strokeWidth={1.5}
 					aria-hidden="true"
 				/>
 			</span>

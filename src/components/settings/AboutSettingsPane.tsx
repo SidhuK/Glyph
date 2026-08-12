@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	DiscordIcon,
 	File01Icon,
@@ -5,7 +6,6 @@ import {
 	ListViewIcon,
 	Shield01Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
@@ -133,11 +133,7 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl(GLYPH_LINKS.website)}
 						>
-							<HugeiconsIcon
-								icon={GlobeIcon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={GlobeIcon} size="var(--icon-lg)" />
 							Website
 						</Button>
 						<Button
@@ -147,11 +143,7 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl(GLYPH_LINKS.discord)}
 						>
-							<HugeiconsIcon
-								icon={DiscordIcon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={DiscordIcon} size="var(--icon-lg)" />
 							Discord
 						</Button>
 						<Button
@@ -161,11 +153,7 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl(GLYPH_LINKS.terms)}
 						>
-							<HugeiconsIcon
-								icon={File01Icon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={File01Icon} size="var(--icon-lg)" />
 							Terms
 						</Button>
 						<Button
@@ -175,11 +163,7 @@ export function AboutSettingsPane() {
 							className="aboutLinkButton"
 							onClick={() => void openUrl(GLYPH_LINKS.privacy)}
 						>
-							<HugeiconsIcon
-								icon={Shield01Icon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={Shield01Icon} size="var(--icon-lg)" />
 							Privacy
 						</Button>
 					</div>
@@ -308,11 +292,7 @@ export function AboutSettingsPane() {
 								variant="outline"
 								onClick={() => void openUrl(GLYPH_LINKS.changelog)}
 							>
-								<HugeiconsIcon
-									icon={ListViewIcon}
-									size="var(--icon-md)"
-									strokeWidth={1.5}
-								/>
+								<HugeiconsIcon icon={ListViewIcon} size="var(--icon-md)" />
 								View Changelog
 							</Button>
 						</div>

@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive04Icon,
 	ArrowShrinkIcon,
@@ -8,7 +9,6 @@ import {
 	Sorting01Icon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useQuery } from "@tanstack/react-query";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -383,7 +383,6 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={CursorAddSelection02Icon}
 								size="var(--icon-lg)"
-								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.newNote")}
@@ -409,11 +408,7 @@ export const SidebarContent = memo(function SidebarContent({
 							onClick={onOpenPinnedDocs}
 							title={t("sidebar.pinned")}
 						>
-							<HugeiconsIcon
-								icon={StarIcon}
-								size="var(--icon-md)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.pinned")}
 							</span>
@@ -437,11 +432,7 @@ export const SidebarContent = memo(function SidebarContent({
 							onFocus={onPrefetchAllDocs}
 							title={t("sidebar.allNotes")}
 						>
-							<HugeiconsIcon
-								icon={Archive04Icon}
-								size="var(--icon-md)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={Archive04Icon} size="var(--icon-md)" />
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.allNotes")}
 							</span>
@@ -465,11 +456,7 @@ export const SidebarContent = memo(function SidebarContent({
 							onFocus={() => onPrefetchDatabases()}
 							title={t("sidebar.collections")}
 						>
-							<HugeiconsIcon
-								icon={LibraryIcon}
-								size="var(--icon-md)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.collections")}
 							</span>
@@ -492,7 +479,6 @@ export const SidebarContent = memo(function SidebarContent({
 							<HugeiconsIcon
 								icon={ChartRelationshipIcon}
 								size="var(--icon-md)"
-								strokeWidth={1.5}
 							/>
 							<span className="sidebarQuickActionLabel">
 								{t("sidebar.connections")}
@@ -524,7 +510,6 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={Sorting01Icon}
 											size="var(--icon-sm)"
-											strokeWidth={1.5}
 											className="sidebarStackHeaderSortIcon"
 											aria-hidden="true"
 										/>
@@ -558,7 +543,6 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={ExpandParagraphIcon}
 											size="var(--icon-sm)"
-											strokeWidth={1.5}
 										/>
 									</button>
 									<button
@@ -571,7 +555,6 @@ export const SidebarContent = memo(function SidebarContent({
 										<HugeiconsIcon
 											icon={ArrowShrinkIcon}
 											size="var(--icon-sm)"
-											strokeWidth={1.5}
 										/>
 									</button>
 								</div>

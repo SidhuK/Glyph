@@ -1,6 +1,6 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { Calendar03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
@@ -668,7 +668,6 @@ export function DatabaseBoard({
 																		<HugeiconsIcon
 																			icon={Calendar03Icon}
 																			size="var(--icon-xs)"
-																			strokeWidth={1.5}
 																			aria-hidden="true"
 																		/>
 																		{compactUpdatedLabel}
@@ -742,7 +741,6 @@ export function DatabaseBoard({
 																		iconName={iconNameForTag(tag)}
 																		className="databaseTagPillIcon"
 																		size="var(--icon-xs)"
-																		strokeWidth={1.5}
 																	/>
 																	{formatDatabaseTagLabel(tag)}
 																</span>
@@ -780,7 +778,7 @@ export function DatabaseBoard({
 												className="databaseBoardAddCardIcon"
 												aria-hidden="true"
 											>
-												<Plus size="var(--icon-sm)" strokeWidth={1.5} />
+												<Plus size="var(--icon-sm)" />
 											</span>
 											<span className="databaseBoardAddCardLabel">New</span>
 										</button>

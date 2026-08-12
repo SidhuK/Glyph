@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Archive04Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	useInfiniteQuery,
 	useQuery,
@@ -648,11 +648,7 @@ export const ActivityTimelinePane = memo(function ActivityTimelinePane({
 			<header className="activityTimelineHeader">
 				<div>
 					<h1 className="activityTimelineTitle">
-						<HugeiconsIcon
-							icon={Archive04Icon}
-							size="var(--icon-2xl)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={Archive04Icon} size="var(--icon-2xl)" />
 						<span>All Notes</span>
 					</h1>
 					<p

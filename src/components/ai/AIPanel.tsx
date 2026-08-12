@@ -1,6 +1,6 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
 import { ChatAdd01Icon, Logout05Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAISidebarContext, useUILayoutContext } from "../../contexts";
@@ -405,11 +405,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon
-							icon={ChatAdd01Icon}
-							size="var(--icon-sm)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={ChatAdd01Icon} size="var(--icon-sm)" />
 					</Button>
 					<Button
 						type="button"
@@ -433,11 +429,7 @@ export function AIPanel({ onClose }: AIPanelProps) {
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon
-							icon={Logout05Icon}
-							size="var(--icon-sm)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={Logout05Icon} size="var(--icon-sm)" />
 					</Button>
 				</div>
 			</div>

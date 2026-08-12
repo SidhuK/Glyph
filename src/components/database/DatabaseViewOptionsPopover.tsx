@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { cn } from "@/lib/utils";
 import {
 	Cards01Icon,
@@ -6,7 +7,6 @@ import {
 	SlidersVerticalIcon,
 	TextFontIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type ReactNode,
 	useCallback,
@@ -499,11 +499,7 @@ export function DatabaseViewOptionsPopover({
 					title="View settings"
 					aria-label="View settings"
 				>
-					<HugeiconsIcon
-						icon={SlidersVerticalIcon}
-						size="var(--icon-md)"
-						strokeWidth={1.5}
-					/>
+					<HugeiconsIcon icon={SlidersVerticalIcon} size="var(--icon-md)" />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
@@ -583,13 +579,7 @@ export function DatabaseViewOptionsPopover({
 					/>
 					{isTableView ? (
 						<OptionMenuRow
-							icon={
-								<HugeiconsIcon
-									icon={GridViewIcon}
-									size="var(--icon-lg)"
-									strokeWidth={1.5}
-								/>
-							}
+							icon={<HugeiconsIcon icon={GridViewIcon} size="var(--icon-lg)" />}
 							label="Columns"
 							value={`${visibleCount} selected`}
 							active={activePanel === "columns"}
@@ -597,13 +587,7 @@ export function DatabaseViewOptionsPopover({
 						/>
 					) : null}
 					<OptionMenuRow
-						icon={
-							<HugeiconsIcon
-								icon={FilterMailIcon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
-						}
+						icon={<HugeiconsIcon icon={FilterMailIcon} size="var(--icon-lg)" />}
 						label="Filter by"
 						value={
 							config.filters.length > 0
@@ -614,13 +598,7 @@ export function DatabaseViewOptionsPopover({
 						onClick={() => togglePanel("filters")}
 					/>
 					<OptionMenuRow
-						icon={
-							<HugeiconsIcon
-								icon={TextFontIcon}
-								size="var(--icon-lg)"
-								strokeWidth={1.5}
-							/>
-						}
+						icon={<HugeiconsIcon icon={TextFontIcon} size="var(--icon-lg)" />}
 						label="Sort by"
 						value={sortLabel(activeSort ?? undefined, resolvedColumns)}
 						active={activePanel === "sort"}
@@ -628,13 +606,7 @@ export function DatabaseViewOptionsPopover({
 					/>
 					{config.view.layout === "board" ? (
 						<OptionMenuRow
-							icon={
-								<HugeiconsIcon
-									icon={Cards01Icon}
-									size="var(--icon-lg)"
-									strokeWidth={1.5}
-								/>
-							}
+							icon={<HugeiconsIcon icon={Cards01Icon} size="var(--icon-lg)" />}
 							label="Card fields"
 							value={cardFieldsLabel(config.view.board_card_fields)}
 							active={activePanel === "card_fields"}

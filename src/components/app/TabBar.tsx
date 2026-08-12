@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { PointerActivationConstraints } from "@dnd-kit/dom";
 import {
 	type DragEndEvent,
@@ -6,7 +7,6 @@ import {
 } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Cancel01Icon, PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import type { MouseEvent, MutableRefObject } from "react";
 import { useTranslation } from "react-i18next";
@@ -364,13 +364,11 @@ const TabItem = memo(function TabItem({
 					<HugeiconsIcon
 						icon={PinIcon}
 						size={13}
-						strokeWidth={1.5}
 						className="mainTabPinIcon mainTabPinIconPinned"
 					/>
 					<HugeiconsIcon
 						icon={PinOffIcon}
 						size={13}
-						strokeWidth={1.5}
 						className="mainTabPinIcon mainTabPinIconUnpin"
 					/>
 				</button>
@@ -381,12 +379,7 @@ const TabItem = memo(function TabItem({
 					onClick={handleClose}
 					aria-label={`Close ${label}`}
 				>
-					<HugeiconsIcon
-						icon={Cancel01Icon}
-						size={13}
-						strokeWidth={1.5}
-						aria-hidden="true"
-					/>
+					<HugeiconsIcon icon={Cancel01Icon} size={13} aria-hidden="true" />
 				</button>
 			)}
 			<button

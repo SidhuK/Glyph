@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowUp02Icon, AtIcon, StopIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { BorderBeam } from "border-beam";
 import {
 	type Dispatch,
@@ -539,11 +539,7 @@ export function AIComposer({
 										onClick={handleInsertMentionTrigger}
 										disabled={isAwaitingResponse}
 									>
-										<HugeiconsIcon
-											icon={AtIcon}
-											size="var(--icon-sm)"
-											strokeWidth={1.5}
-										/>
+										<HugeiconsIcon icon={AtIcon} size="var(--icon-sm)" />
 									</Button>
 								</div>
 								<div className="aiComposerRight">
@@ -564,11 +560,7 @@ export function AIComposer({
 									aria-label="Stop"
 									title="Stop"
 								>
-									<HugeiconsIcon
-										icon={StopIcon}
-										size="var(--icon-md)"
-										strokeWidth={1.5}
-									/>
+									<HugeiconsIcon icon={StopIcon} size="var(--icon-md)" />
 								</button>
 							) : (
 								<Button

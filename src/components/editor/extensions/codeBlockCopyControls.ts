@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Extension } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
@@ -24,7 +24,6 @@ function iconMarkup(copied: boolean): string {
 		createElement(HugeiconsIcon, {
 			icon: copied ? Tick02Icon : Copy01Icon,
 			size: "var(--icon-sm)",
-			strokeWidth: 1.5,
 		}),
 	);
 }

@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	ArrangeByLettersAZIcon,
 	Calendar03Icon,
 	Clock01Icon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { memo } from "react";
 import type { FolioNotesSortMode } from "./folioScopes";
 
@@ -32,11 +32,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 		<header className="folioNotesHeader">
 			<div className="folioNotesControls">
 				<label className="folioNotesSearch">
-					<HugeiconsIcon
-						icon={SearchIcon}
-						size="var(--icon-md)"
-						strokeWidth={1.5}
-					/>
+					<HugeiconsIcon icon={SearchIcon} size="var(--icon-md)" />
 					<input
 						type="text"
 						inputMode="search"
@@ -47,11 +43,7 @@ export const FolioScopeHeader = memo(function FolioScopeHeader({
 					/>
 				</label>
 				<label className="folioNotesSort">
-					<HugeiconsIcon
-						icon={sortIcon}
-						size="var(--icon-md)"
-						strokeWidth={1.5}
-					/>
+					<HugeiconsIcon icon={sortIcon} size="var(--icon-md)" />
 					<select
 						className="folioNotesSortSelect"
 						value={sortMode}

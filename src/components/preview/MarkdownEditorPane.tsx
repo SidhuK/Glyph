@@ -1,8 +1,8 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
 	LayoutAlignRightIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
@@ -568,11 +568,7 @@ export function MarkdownEditorPane({
 							}
 							aria-pressed={aiEnabled ? aiPanelOpen : undefined}
 						>
-							<HugeiconsIcon
-								icon={AiBrain04Icon}
-								size="var(--icon-md)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
 						</button>
 						<button
 							type="button"
@@ -586,7 +582,6 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon
 								icon={LayoutAlignRightIcon}
 								size="var(--icon-md)"
-								strokeWidth={1.5}
 							/>
 						</button>
 					</div>

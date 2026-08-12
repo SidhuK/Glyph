@@ -1,10 +1,10 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { useDraggable } from "@dnd-kit/react";
 import {
 	ArrowRight02Icon,
 	Folder01Icon,
 	Folder03Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type {
 	CSSProperties,
@@ -299,7 +299,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								<HugeiconsIcon
 									icon={isExpanded ? Folder03Icon : Folder01Icon}
 									size="var(--icon-sm)"
-									strokeWidth={1.5}
 									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 							)}
@@ -351,7 +350,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 										<HugeiconsIcon
 											icon={ArrowRight02Icon}
 											size="var(--icon-sm)"
-											strokeWidth={1.5}
 										/>
 									</span>
 								</div>

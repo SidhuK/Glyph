@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LocationAdd01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { type MouseEvent, memo, useCallback, useMemo } from "react";
 import {
 	type NativeContextMenuItem,
@@ -117,11 +117,7 @@ const TableAxisControl = memo(function TableAxisControl({
 			onMouseDown={onControlMouseDown}
 			onClick={nativeMenusEnabled ? handleNativeMenuClick : undefined}
 		>
-			<HugeiconsIcon
-				icon={LocationAdd01Icon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={LocationAdd01Icon} size="var(--icon-md)" />
 		</button>
 	);
 

@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useReducedMotion } from "motion/react";
 import { useDatabasesPane } from "../../hooks/database/useDatabasesPane";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
@@ -179,11 +179,7 @@ function DatabasesPaneContent({
 					{ui.error ? (
 						<div className="databaseNotice databaseNoticeError">{ui.error}</div>
 					) : null}
-					<HugeiconsIcon
-						icon={LibraryIcon}
-						size="var(--icon-3xl)"
-						strokeWidth={1.5}
-					/>
+					<HugeiconsIcon icon={LibraryIcon} size="var(--icon-3xl)" />
 					<div className="databasesEmptyTitle">
 						{selection.summaries.length === 0
 							? "Create your first collection"

@@ -1,9 +1,9 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	CursorAddSelection02Icon,
 	LibraryIcon,
 	StarIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { UseDatabasesPaneReturn } from "../../hooks/database/useDatabasesPane";
@@ -141,11 +141,7 @@ export function CollectionTopBar({
 					contentClassName="databasesDropdownContent databasesCollectionMenu"
 					itemClassName="databasesDropdownItem databasesCollectionMenuItem"
 				>
-					<HugeiconsIcon
-						icon={LibraryIcon}
-						size="var(--icon-sm)"
-						strokeWidth={1.5}
-					/>
+					<HugeiconsIcon icon={LibraryIcon} size="var(--icon-sm)" />
 					<span className="databasesCollectionSwitcherLabel">
 						{collectionMenuLabel}
 					</span>
@@ -166,11 +162,7 @@ export function CollectionTopBar({
 						aria-label={t(isPinned ? "collections.unpin" : "collections.pin")}
 						aria-pressed={isPinned}
 					>
-						<HugeiconsIcon
-							icon={StarIcon}
-							size="var(--icon-md)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
 					</Button>
 					<Button
 						type="button"
@@ -193,7 +185,6 @@ export function CollectionTopBar({
 						<HugeiconsIcon
 							icon={CursorAddSelection02Icon}
 							size="var(--icon-lg)"
-							strokeWidth={1.5}
 						/>
 						New Note
 					</button>

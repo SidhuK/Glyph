@@ -556,7 +556,6 @@ export const FolioNoteListItem = memo(
 									iconName="link"
 									className="folioNoteUrlIcon"
 									size="var(--icon-xs)"
-									strokeWidth={1.5}
 								/>
 								{firstUrlLabel}
 							</a>
@@ -572,7 +571,6 @@ export const FolioNoteListItem = memo(
 										iconName={iconNameForTag(tag)}
 										className="folioNoteTagIcon"
 										size="var(--icon-xs)"
-										strokeWidth={1.5}
 									/>
 									{formatDatabaseTagLabel(tag)}
 								</span>

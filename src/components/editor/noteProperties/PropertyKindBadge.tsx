@@ -1,4 +1,4 @@
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Button } from "../../ui/shadcn/button";
 import {
 	DropdownMenu,
@@ -41,11 +41,7 @@ export function PropertyKindBadge({
 						className="notePropertyKindBadge notePropertyKindTrigger"
 						title={`Property type: ${label}`}
 					>
-						<HugeiconsIcon
-							icon={icon}
-							size="var(--icon-sm)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
@@ -67,7 +63,6 @@ export function PropertyKindBadge({
 									<HugeiconsIcon
 										icon={PROPERTY_KIND_ICONS[menuKind]}
 										size="var(--icon-sm)"
-										strokeWidth={1.5}
 									/>
 								</span>
 								<span className="notePropertyKindOptionLabel">
@@ -83,7 +78,7 @@ export function PropertyKindBadge({
 
 	return (
 		<div className="notePropertyKindBadge">
-			<HugeiconsIcon icon={icon} size="var(--icon-sm)" strokeWidth={1.5} />
+			<HugeiconsIcon icon={icon} size="var(--icon-sm)" />
 		</div>
 	);
 }

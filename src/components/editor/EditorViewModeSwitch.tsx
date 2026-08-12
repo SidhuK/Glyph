@@ -1,9 +1,9 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	CodeIcon,
 	EyeIcon,
 	PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useTranslation } from "react-i18next";
 import type { EditorViewMode } from "../../lib/editorMode";
 
@@ -59,11 +59,7 @@ export function EditorViewModeSwitch({
 							data-active={isActive || undefined}
 							onClick={() => onModeChange(item.id)}
 						>
-							<HugeiconsIcon
-								icon={item.icon}
-								size="var(--icon-md)"
-								strokeWidth={1.5}
-							/>
+							<HugeiconsIcon icon={item.icon} size="var(--icon-md)" />
 						</button>
 						<span
 							className="markdownEditorModeBtnHint"

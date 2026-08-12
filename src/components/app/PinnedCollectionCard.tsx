@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { LibraryIcon, StarIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import type { WorkspaceDatabaseSummary } from "../../lib/tauri";
@@ -43,11 +43,7 @@ export function PinnedCollectionCard({
 			>
 				<span className="pinnedCollectionCardCopy">
 					<span className="pinnedCollectionCardTitle">
-						<HugeiconsIcon
-							icon={LibraryIcon}
-							size="var(--icon-md)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={LibraryIcon} size="var(--icon-md)" />
 						<strong>{collection.name}</strong>
 					</span>
 					<span>{collectionDescription(collection, t)}</span>
@@ -60,11 +56,7 @@ export function PinnedCollectionCard({
 				title={t("collections.unpin")}
 				aria-label={t("collections.unpinNamed", { name: collection.name })}
 			>
-				<HugeiconsIcon
-					icon={StarIcon}
-					size="var(--icon-md)"
-					strokeWidth={1.5}
-				/>
+				<HugeiconsIcon icon={StarIcon} size="var(--icon-md)" />
 			</button>
 		</article>
 	);

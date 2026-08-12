@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ReloadIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
@@ -290,7 +290,6 @@ export function ShortcutsSettingsPane() {
 												<HugeiconsIcon
 													icon={ReloadIcon}
 													size="var(--icon-md)"
-													strokeWidth={1.5}
 												/>
 											</Button>
 										</div>

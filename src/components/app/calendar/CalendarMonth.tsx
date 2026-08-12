@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type Day,
 	addMonths,
@@ -129,11 +129,7 @@ export function CalendarMonth({
 						aria-label={t("calendar.previousMonth")}
 						onClick={() => goToMonth(-1)}
 					>
-						<HugeiconsIcon
-							icon={ArrowLeft01Icon}
-							size="var(--icon-lg)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={ArrowLeft01Icon} size="var(--icon-lg)" />
 					</button>
 					<button
 						type="button"
@@ -141,11 +137,7 @@ export function CalendarMonth({
 						aria-label={t("calendar.nextMonth")}
 						onClick={() => goToMonth(1)}
 					>
-						<HugeiconsIcon
-							icon={ArrowRight01Icon}
-							size="var(--icon-lg)"
-							strokeWidth={1.5}
-						/>
+						<HugeiconsIcon icon={ArrowRight01Icon} size="var(--icon-lg)" />
 					</button>
 				</div>
 			</header>

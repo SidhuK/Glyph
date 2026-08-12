@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	AiBrain04Icon,
 	Archive02Icon,
@@ -7,7 +8,6 @@ import {
 	Settings01Icon,
 	Sun03Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { ReactElement } from "react";
 import { FolderOpen } from "../Icons/NavigationIcons";
 
@@ -36,37 +36,23 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		renderIcon: () => (
-			<HugeiconsIcon
-				icon={Settings01Icon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={Settings01Icon} size="var(--icon-md)" />
 		),
 	},
 	{
 		id: "appearance",
-		renderIcon: () => (
-			<HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" strokeWidth={1.5} />
-		),
+		renderIcon: () => <HugeiconsIcon icon={Sun03Icon} size="var(--icon-md)" />,
 	},
 	{
 		id: "shortcuts",
 		renderIcon: () => (
-			<HugeiconsIcon
-				icon={CommandIcon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={CommandIcon} size="var(--icon-md)" />
 		),
 	},
 	{
 		id: "ai",
 		renderIcon: () => (
-			<HugeiconsIcon
-				icon={AiBrain04Icon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={AiBrain04Icon} size="var(--icon-md)" />
 		),
 	},
 	{
@@ -76,28 +62,18 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "git",
 		renderIcon: () => (
-			<HugeiconsIcon
-				icon={GitBranchIcon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={GitBranchIcon} size="var(--icon-md)" />
 		),
 	},
 	{
 		id: "about",
 		renderIcon: () => (
-			<HugeiconsIcon
-				icon={Archive02Icon}
-				size="var(--icon-md)"
-				strokeWidth={1.5}
-			/>
+			<HugeiconsIcon icon={Archive02Icon} size="var(--icon-md)" />
 		),
 	},
 	{
 		id: "usage",
-		renderIcon: () => (
-			<HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" strokeWidth={1.5} />
-		),
+		renderIcon: () => <HugeiconsIcon icon={ChartIcon} size="var(--icon-md)" />,
 	},
 ];
 

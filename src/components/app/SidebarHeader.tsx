@@ -45,9 +45,6 @@ export function SidebarHeader({
 						}`}
 					>
 						<LayoutAlignLeft size="var(--icon-md)" />
-						{import.meta.env.DEV && (
-							<span className="sidebarDevBadge">{t("sidebar.devBadge")}</span>
-						)}
 					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}

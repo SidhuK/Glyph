@@ -1,5 +1,5 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Calendar03Icon, NoteIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { CalendarDateNote } from "../../../lib/tauri";
@@ -41,7 +41,6 @@ function NoteRow({
 					<HugeiconsIcon
 						icon={isDaily ? Calendar03Icon : NoteIcon}
 						size="var(--icon-md)"
-						strokeWidth={1.5}
 					/>
 				</span>
 				<span className="calendarNoteText">

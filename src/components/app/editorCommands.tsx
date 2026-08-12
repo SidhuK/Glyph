@@ -1,9 +1,9 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	CodeIcon,
 	EyeIcon,
 	PencilEdit02Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { dispatchEditorMenuAction } from "../../lib/appEvents";
 import type { EditorViewMode } from "../../lib/editorMode";
 import { ChevronDown, ChevronUp } from "../Icons";
@@ -74,13 +74,7 @@ export function buildEditorCommands({
 
 	const viewModeCommands: Command[] = VIEW_MODE_COMMANDS.map((command) => ({
 		id: command.id,
-		icon: (
-			<HugeiconsIcon
-				icon={command.icon}
-				size="var(--icon-lg)"
-				strokeWidth={1.5}
-			/>
-		),
+		icon: <HugeiconsIcon icon={command.icon} size="var(--icon-lg)" />,
 		enabled,
 		allowInEditable: true,
 		action: () => {

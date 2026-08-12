@@ -1,3 +1,4 @@
+import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import {
 	Archive04Icon,
 	ArrowDown,
@@ -9,7 +10,6 @@ import {
 	Search as SearchIcon,
 	Settings01Icon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
@@ -22,65 +22,29 @@ export function withDefaultIconSize({
 }
 
 export const Search = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={SearchIcon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={SearchIcon} {...withDefaultIconSize(props)} />
 );
 export const Command = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={CommandIcon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={CommandIcon} {...withDefaultIconSize(props)} />
 );
 export const ChevronRight = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={ArrowRight}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={ArrowRight} {...withDefaultIconSize(props)} />
 );
 export const ChevronUp = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={ArrowUp}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={ArrowUp} {...withDefaultIconSize(props)} />
 );
 export const ChevronDown = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={ArrowDown}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={ArrowDown} {...withDefaultIconSize(props)} />
 );
 export const FolderOpen = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={Archive04Icon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={Archive04Icon} {...withDefaultIconSize(props)} />
 );
 export const LayoutAlignLeft = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={LayoutAlignLeftIcon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={LayoutAlignLeftIcon} {...withDefaultIconSize(props)} />
 );
 export const Settings = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={Settings01Icon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={Settings01Icon} {...withDefaultIconSize(props)} />
 );
 export const Calendar = (props: IconProps) => (
-	<HugeiconsIcon
-		icon={Calendar03Icon}
-		strokeWidth={1.5}
-		{...withDefaultIconSize(props)}
-	/>
+	<HugeiconsIcon icon={Calendar03Icon} {...withDefaultIconSize(props)} />
 );
