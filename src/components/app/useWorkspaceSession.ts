@@ -269,13 +269,7 @@ export function useWorkspaceSession({
 			.onCloseRequested(async (event) => {
 				event.preventDefault();
 				try {
-					const [settings] = await Promise.all([
-						loadSettings(),
-						flushPendingSave(),
-					]);
-					if (!settings.ui.keepRunningOnLastWindowClose) {
-						await currentWindow.destroy();
-					}
+					await flushPendingSave();
 				} catch (cause) {
 					console.error(
 						"Failed to save workspace session before closing",
@@ -284,7 +278,18 @@ export function useWorkspaceSession({
 					toast.error("Could not close Glyph", {
 						description: "The open tabs could not be saved. Please try again.",
 					});
+					await currentWindow.show();
+					return;
 				}
+				try {
+					const settings = await loadSettings();
+					if (settings.ui.keepRunningOnLastWindowClose) {
+						return;
+					}
+				} catch (cause) {
+					console.error("Failed to load settings before closing", cause);
+				}
+				await currentWindow.destroy();
 			})
 			.then((stopListening) => {
 				if (disposed) {
