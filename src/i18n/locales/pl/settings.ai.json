@@ -1,0 +1,31 @@
+{
+	"connection": {
+		"sectionTitle": "Połączenie",
+		"sectionDescription": "Wybierz sposób, w jaki Glyph łączy się z AI, a następnie skonfiguruj dostawcę i model.",
+		"type": {
+			"label": "Typ połączenia",
+			"description": "Użyj zainstalowanego agenta, prywatnego modelu na tym Macu lub interfejsu API dostawcy.",
+			"ariaLabel": "Typ połączenia AI"
+		},
+		"provider": {
+			"label": "Dostawca"
+		},
+		"types": {
+			"agents": {
+				"label": "Agenci",
+				"description": "Użyj agenta AI lub konta połączonego z tym Makiem.",
+				"providerDescription": "Wybierz agenta, którego ma używać Glyph. Każdy agent zachowuje własną konfigurację."
+			},
+			"local": {
+				"label": "Lokalnie",
+				"description": "Uruchamiaj modele prywatnie na tym Macu.",
+				"providerDescription": "Wybierz lokalne środowisko modeli, z którym ma się połączyć Glyph."
+			},
+			"api": {
+				"label": "API",
+				"description": "Połącz się bezpośrednio za pomocą klucza API dostawcy.",
+				"providerDescription": "Wybierz dostawcę, którego interfejsu API i modeli ma używać Glyph."
+			}
+		}
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"app": {
+		"about": "O programie Glyph",
+		"settings": "Ustawienia…"
+	},
+	"submenus": {
+		"file": "Plik",
+		"edit": "Edycja",
+		"markdown": "Markdown",
+		"textColor": "Kolor tekstu",
+		"textHighlight": "Wyróżnienie tekstu",
+		"ai": "AI",
+		"space": "Przestrzeń",
+		"recentSpaces": "Ostatnie przestrzenie",
+		"window": "Okno",
+		"help": "Pomoc"
+	},
+	"recentSpaces": {
+		"empty": "Brak ostatnich przestrzeni"
+	}
+}

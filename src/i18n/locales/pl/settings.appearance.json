@@ -1,0 +1,153 @@
+{
+	"nav": {
+		"tab": "Wygląd",
+		"panelTitle": "Wygląd"
+	},
+	"theme": {
+		"sectionTitle": "Motyw",
+		"sectionDescription": "Wybierz motyw programu Glyph.",
+		"appearance": {
+			"label": "Wygląd",
+			"description": "Dopasuj do systemu lub zablokuj program Glyph w trybie jasnym lub ciemnym.",
+			"ariaLabel": "Tryb motywu"
+		},
+		"modes": {
+			"system": {
+				"label": "Systemowy",
+				"description": "Dopasuj do motywu urządzenia."
+			},
+			"light": {
+				"label": "Jasny",
+				"description": "Zawsze używaj trybu jasnego."
+			},
+			"dark": {
+				"label": "Ciemny",
+				"description": "Zawsze używaj trybu ciemnego."
+			}
+		},
+		"translucentSidebar": {
+			"label": "Przezroczysty pasek boczny",
+			"ariaLabel": "Przezroczysty pasek boczny"
+		}
+	},
+	"lightTheme": {
+		"label": "Jasny",
+		"hint": "Wybierz paletę używaną przez Glyph w trybie jasnym."
+	},
+	"darkTheme": {
+		"label": "Ciemny",
+		"hint": "Wybierz paletę używaną przez Glyph w trybie ciemnym."
+	},
+	"customThemes": {
+		"sectionTitle": "Niestandardowe motywy",
+		"sectionDescription": "Zaimportuj paletę JSON i używaj jej jak każdego wbudowanego motywu.",
+		"template": {
+			"label": "Szablon motywu",
+			"description": "Bazując na domyślnych jasnych i ciemnych kolorach Glyph — zmień kody szesnastkowe i nazwę.",
+			"copy": "Kopiuj JSON",
+			"save": "Zapisz plik"
+		},
+		"import": {
+			"label": "Importuj motyw",
+			"description": "Wybierz edytowany plik JSON. Jego nazwa nie może być taka sama jak nazwa istniejącego motywu.",
+			"action": "Wybierz plik",
+			"helpAriaLabel": "Informacje o importowaniu motywów"
+		},
+		"installedDescription": "Dostępne w selektorach jasnego i ciemnego motywu.",
+		"removeAriaLabel": "Usuń {{name}}",
+		"nameTaken": "Motyw o nazwie „{{name}}” już istnieje. Wybierz inną nazwę.",
+		"saveDialogTitle": "Zapisz szablon motywu",
+		"importDialogTitle": "Importuj plik JSON motywu"
+	},
+	"shape": {
+		"sectionTitle": "Kształt",
+		"sectionDescription": "Wybierz stopień zaokrąglenia paneli, przycisków i okien w całej aplikacji.",
+		"corners": {
+			"label": "Narożniki",
+			"description": "Dotyczy wszystkich elementów — pasków bocznych, okien dialogowych, pól wprowadzania i kart.",
+			"ariaLabel": "Kształt interfejsu"
+		},
+		"options": {
+			"sharp": {
+				"label": "Wyrazisty",
+				"description": "Wyraziste, kwadratowe krawędzie w całej aplikacji."
+			},
+			"default": {
+				"label": "Domyślny",
+				"description": "Zbalansowany wygląd programu Glyph."
+			},
+			"round": {
+				"label": "Miękki",
+				"description": "Łagodniejsze, bardziej zaokrąglone krawędzie w całej aplikacji."
+			}
+		}
+	},
+	"typography": {
+		"sectionTitle": "Typografia",
+		"sectionDescription": "Niezależnie dostosuj czcionkę interfejsu, styl kodu i skalę czytania.",
+		"interfaceFont": {
+			"label": "Czcionka interfejsu",
+			"description": "Używana do nawigacji, ustawień i większości tekstów interfejsu w programie Glyph."
+		},
+		"editorFont": {
+			"label": "Czcionka edytora",
+			"description": "Używana do zwykłego tekstu notatek poza kodem w tekście i blokami kodu."
+		},
+		"monospaceFont": {
+			"label": "Czcionka o stałej szerokości",
+			"description": "Używana do kodu źródłowego Markdown, kodu w tekście i powierzchni przeznaczonych dla programistów."
+		},
+		"uiFontSize": {
+			"label": "Rozmiar czcionki interfejsu",
+			"description": "Dostosuj bazowy rozmiar używany przez menu, panele, elementy sterujące i ustawienia.",
+			"valueAriaLabel": "Wartość rozmiaru czcionki interfejsu"
+		},
+		"editorFontSize": {
+			"label": "Rozmiar czcionki edytora",
+			"description": "Dostosuj rozmiar czytania dla edytora notatek, podglądu Markdown i edycji surowego tekstu.",
+			"valueAriaLabel": "Wartość rozmiaru czcionki edytora"
+		}
+	},
+	"layout": {
+		"sectionTitle": "Układ",
+		"sectionDescription": "Wybierz sposób prezentacji przestrzeni roboczej i wszystkich notatek w programie Glyph.",
+		"folioMode": {
+			"label": "Tryb Folio",
+			"description": "Wyświetl nawigację, notatki i edytor w trójkolumnowej przestrzeni roboczej.",
+			"ariaLabel": "Tryb Folio"
+		},
+		"classicAllNotes": {
+			"label": "Klasyczna siatka wszystkich notatek",
+			"description": "Otwórz widok wszystkich notatek jako prostą siatkę zamiast osi czasu aktywności.",
+			"ariaLabel": "Klasyczna siatka wszystkich notatek"
+		}
+	},
+	"editorPresentation": {
+		"sectionTitle": "Prezentacja edytora",
+		"sectionDescription": "Wybierz wygląd notatek podczas ich edycji.",
+		"beautifulTags": {
+			"label": "Ładne etykiety",
+			"description": "Włącz eksperymentalną prezentację ładnych etykiet dla tagów.",
+			"ariaLabel": "Ładne etykiety"
+		},
+		"editorWidth": {
+			"label": "Szerokość edytora",
+			"description": "Tryb kompaktowy utrzymuje krótsze wiersze, wygodny daje nieco więcej przestrzeni, a szeroki wykorzystuje pełną szerokość edytora.",
+			"ariaLabel": "Szerokość edytora",
+			"options": {
+				"compact": "Kompaktowa",
+				"comfortable": "Wygodna",
+				"wide": "Szeroka"
+			}
+		}
+	},
+	"database": {
+		"sectionTitle": "Baza danych",
+		"sectionDescription": "Wybierz sposób prezentacji baz danych w programie Glyph.",
+		"showColumnColor": {
+			"label": "Pokaż kolor kolumny bazy danych",
+			"description": "Zachowaj kolory pigułek pasów i tagów, przełączając pełne przyciemnienie kolumny.",
+			"ariaLabel": "Pokaż kolor kolumny bazy danych"
+		}
+	}
+}
