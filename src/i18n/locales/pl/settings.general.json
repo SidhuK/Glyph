@@ -1,0 +1,173 @@
+{
+	"nav": {
+		"tab": "Ogólne",
+		"panelTitle": "Ogólne",
+		"groupApplication": "Aplikacja",
+		"searchPlaceholder": "Szukaj w ustawieniach",
+		"searchAriaLabel": "Szukaj w ustawieniach",
+		"clearSearchAriaLabel": "Wyczyść wyszukiwanie ustawień"
+	},
+	"usage": {
+		"loading": "Ładowanie statystyk…",
+		"noSpace": "Otwórz przestrzeń, aby wyświetlić statystyki.",
+		"error": "Nie udało się załadować statystyk",
+		"overview": "Przegląd przestrzeni",
+		"notes": "Notatki",
+		"storage": "Rozmiar przestrzeni",
+		"dailyNotes": "Notatki datowane",
+		"activeDays": "Dni z notatkami",
+		"longestStreak": "Najdłuższa seria",
+		"tasks": "Zadania",
+		"completed": "ukończono",
+		"activity": "Aktywność notatek",
+		"mon": "Pon.",
+		"wed": "Śr.",
+		"fri": "Pt.",
+		"lastTwelveWeeks": "12 tygodni temu",
+		"thisWeek": "Ten tydzień",
+		"taskHealth": "Stan zadań",
+		"open": "Otwarte",
+		"done": "Ukończone",
+		"library": "Połączenia notatek",
+		"links": "Linki",
+		"isolated": "Notatki bez linków",
+		"noteCoverage": "połączonych notatek",
+		"tags": "Tagi",
+		"folders": "Foldery",
+		"topFolders": "Notatki według folderu",
+		"rootFolder": "Luźne notatki",
+		"topTags": "Najczęściej używane tagi",
+		"taskDensity": "Zadania według folderu",
+		"noTasks": "Brak elementów listy kontrolnej.",
+		"noData": "Brak zindeksowanych danych.",
+		"notesInFolder": "Notatki w folderze",
+		"tasksInFolder": "Zadania w folderze"
+	},
+	"language": {
+		"sectionTitle": "Język",
+		"sectionDescription": "Wybierz język używany w programie Glyph.",
+		"label": "Język",
+		"description": "Dotyczy menu, ustawień i nawigacji.",
+		"ariaLabel": "Język",
+		"communityNotice": "Tłumaczenia są przygotowywane przez społeczność i mogą być niekompletne. Masz pytania lub propozycje ulepszeń? <discord>Dołącz do serwera Discord</discord>."
+	},
+	"dateTime": {
+		"sectionTitle": "Data i czas",
+		"sectionDescription": "Wybierz sposób wyświetlania dat w programie Glyph.",
+		"dateFormat": {
+			"label": "Format daty",
+			"description": "Dotyczy natychmiast dat w notatkach, metadanych, bazach danych i historii.",
+			"ariaLabel": "Format daty"
+		}
+	},
+	"startup": {
+		"sectionTitle": "Uruchamianie",
+		"sectionDescription": "Wybierz, które zakładki mają się otwierać po uruchomieniu programu Glyph.",
+		"openPreviousTabs": {
+			"label": "Otwórz poprzednie zakładki",
+			"description": "Rozpocznij tę przestrzeń z zakładkami pozostawionymi otwartymi.",
+			"ariaLabel": "Wznów ostatnią sesję"
+		}
+	},
+	"editor": {
+		"sectionTitle": "Edytor",
+		"sectionDescription": "Elementy sterujące zachowaniem podczas edycji i strukturą notatek w programie Glyph.",
+		"defaultEditorMode": {
+			"label": "Domyślny tryb edytora",
+			"description": "Sposób domyślnego otwierania notatek: Wzbogacony do edycji, Podgląd do przeglądania lub Źródłowy do zwykłego Markdown.",
+			"ariaLabel": "Domyślny tryb edytora",
+			"options": {
+				"rich": "Wzbogacony (edycja)",
+				"preview": "Podgląd (tylko do odczytu)",
+				"plain": "Surowy Markdown"
+			}
+		},
+		"focusMode": {
+			"label": "Tryb skupienia",
+			"description": "Przyciemnij nieaktywny tekst w głównym edytorze wzbogaconym, zachowując wyraźną bieżącą jednostkę pisania.",
+			"ariaLabel": "Tryb skupienia",
+			"options": {
+				"off": "Wyłączony",
+				"paragraph": "Akapit",
+				"sentence": "Zdanie"
+			}
+		},
+		"tableOfContents": {
+			"label": "Spis treści",
+			"description": "Pokaż pływający spis treści dla każdej notatki.",
+			"ariaLabel": "Spis treści"
+		},
+		"showFrontmatter": {
+			"label": "Pokaż frontmatter w edytorze",
+			"description": "Wyświetlaj frontmatter YAML na górze notatek podczas edycji. Wyłączenie tej opcji sprawia, że frontmatter pozostaje dostępny dla indeksowania i baz danych.",
+			"ariaLabel": "Pokaż frontmatter w edytorze"
+		},
+		"headingPrefixes": {
+			"label": "Przedrostki nagłówków",
+			"description": "Pokaż etykiety H1-H6 obok nagłówków w edytorze tekstu wzbogaconego.",
+			"ariaLabel": "Pokaż przedrostki nagłówków"
+		},
+		"colorfulHeadings": {
+			"label": "Kolorowe nagłówki",
+			"description": "Użyj wybranej palety kolorów dla H1-H6 podczas edycji notatek.",
+			"ariaLabel": "Kolorowe nagłówki",
+			"palette": {
+				"label": "Paleta nagłówków",
+				"options": {
+					"classy": "Elegancka",
+					"seaside": "Nadmorska",
+					"woodland": "Leśna",
+					"sunset": "Zachód słońca",
+					"candy": "Cukierkowa"
+				}
+			}
+		},
+		"collapsibleHeadings": {
+			"label": "Zwijane nagłówki",
+			"description": "Pokaż przyciski zwijania przy nagłówkach notatek w edytorze i podglądzie.",
+			"ariaLabel": "Zwijane nagłówki"
+		},
+		"collapsibleLists": {
+			"label": "Zwijane listy",
+			"description": "Pokaż przyciski zwijania przy listach zagnieżdżonych w edytorze i podglądzie.",
+			"ariaLabel": "Zwijane listy"
+		},
+		"spellCheck": {
+			"label": "Sprawdzanie pisowni",
+			"description": "Podkreślaj błędy ortograficzne podczas pisania. Kliknij słowo prawym przyciskiem myszy, aby wyświetlić sugerowane pisownie.",
+			"ariaLabel": "Sprawdzanie pisowni"
+		},
+		"externalLinkPreviews": {
+			"label": "Podglądy linków zewnętrznych",
+			"description": "Wyświetlaj samodzielne linki internetowe jako karty w trybie wzbogaconym i podglądu. Glyph pobiera szczegóły podglądu bezpośrednio z każdej połączonej witryny.",
+			"ariaLabel": "Pokaż podglądy linków zewnętrznych"
+		},
+		"vimMode": {
+			"title": "Tryb Vim",
+			"label": "Tryb Vim",
+			"description": "Włącz skróty klawiszowe programu Vim.",
+			"ariaLabel": "Tryb Vim",
+			"helpAriaLabel": "O trybie Vim",
+			"info": "Tryb Vim jest dostępny tylko w surowym trybie Markdown."
+		}
+	},
+	"fileTree": {
+		"sectionTitle": "Drzewo plików",
+		"sectionDescription": "Wybierz, co pojawia się w drzewie plików na pasku bocznym oraz na liście Folio.",
+		"folderCounts": {
+			"label": "Pokaż liczbę plików w folderach",
+			"description": "Pokaż rekurencyjną sumę plików na końcu każdego wiersza folderu w drzewie plików.",
+			"ariaLabel": "Pokaż liczbę plików w folderach"
+		},
+		"nonMarkdownFiles": {
+			"label": "Pokaż pliki inne niż Markdown",
+			"description": "Pokaż pliki PDF, obrazy i inne załączniki w drzewie plików i na liście Folio. Wyłączenie tej opcji ukrywa je tylko w tych widokach.",
+			"ariaLabel": "Pokaż pliki inne niż Markdown"
+		},
+		"sort": {
+			"label": "Sortowanie drzewa plików",
+			"description": "Wybierz sposób uporządkowania folderów i plików w drzewie na pasku bocznym.",
+			"ariaLabel": "Sortowanie drzewa plików"
+		}
+	}
+}

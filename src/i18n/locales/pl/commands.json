@@ -1,0 +1,454 @@
+{
+	"categories": {
+		"workspace": "Przestrzeń",
+		"navigation": "Nawigacja",
+		"search": "Szukaj",
+		"file": "Operacje na plikach",
+		"tabs": "Zakładki",
+		"ai": "AI",
+		"editor": "Edytor",
+		"settings": "Ustawienia"
+	},
+	"commands": {
+		"activate-tab-1": {
+			"label": "Aktywuj zakładkę 1",
+			"description": "Przełącz na zakładkę 1."
+		},
+		"activate-tab-2": {
+			"label": "Aktywuj zakładkę 2",
+			"description": "Przełącz na zakładkę 2."
+		},
+		"activate-tab-3": {
+			"label": "Aktywuj zakładkę 3",
+			"description": "Przełącz na zakładkę 3."
+		},
+		"activate-tab-4": {
+			"label": "Aktywuj zakładkę 4",
+			"description": "Przełącz na zakładkę 4."
+		},
+		"activate-tab-5": {
+			"label": "Aktywuj zakładkę 5",
+			"description": "Przełącz na zakładkę 5."
+		},
+		"activate-tab-6": {
+			"label": "Aktywuj zakładkę 6",
+			"description": "Przełącz na zakładkę 6."
+		},
+		"activate-tab-7": {
+			"label": "Aktywuj zakładkę 7",
+			"description": "Przełącz na zakładkę 7."
+		},
+		"activate-tab-8": {
+			"label": "Aktywuj zakładkę 8",
+			"description": "Przełącz na zakładkę 8."
+		},
+		"activate-tab-9": {
+			"label": "Aktywuj zakładkę 9",
+			"description": "Przełącz na zakładkę 9."
+		},
+		"ai-attach-all-open-notes": {
+			"label": "AI: Dołącz wszystkie otwarte notatki",
+			"description": "Dołącz wszystkie otwarte notatki do AI."
+		},
+		"ai-attach-current-note": {
+			"label": "AI: Dołącz bieżącą notatkę",
+			"description": "Dołącz bieżącą notatkę do AI."
+		},
+		"ai_selection_to_context": {
+			"label": "AI: Użyj zaznaczenia jako kontekstu",
+			"description": "Wyślij zaznaczony tekst do panelu AI jako jego główny kontekst."
+		},
+		"bold": {
+			"label": "Pogrubienie",
+			"description": "Włącz lub wyłącz pogrubienie dla bieżącego zaznaczenia."
+		},
+		"bullet_list": {
+			"label": "Lista wypunktowana",
+			"description": "Włącz lub wyłącz listę wypunktowaną."
+		},
+		"buy-glyph-license": {
+			"label": "Kup licencję Glyph",
+			"description": "Otwórz stronę zakupu programu Glyph."
+		},
+		"callout_error": {
+			"label": "Wyróżnienie: Błąd",
+			"description": "Wstaw blok wyróżnienia błędu."
+		},
+		"callout_info": {
+			"label": "Wyróżnienie: Informacja",
+			"description": "Wstaw blok wyróżnienia informacji."
+		},
+		"callout_success": {
+			"label": "Wyróżnienie: Sukces",
+			"description": "Wstaw blok wyróżnienia sukcesu."
+		},
+		"callout_tip": {
+			"label": "Wyróżnienie: Wskazówka",
+			"description": "Wstaw blok wyróżnienia wskazówki."
+		},
+		"callout_warning": {
+			"label": "Wyróżnienie: Ostrzeżenie",
+			"description": "Wstaw blok wyróżnienia ostrzeżenia."
+		},
+		"close-active-tab": {
+			"label": "Zamknij aktywną zakładkę",
+			"description": "Zamknij bieżącą zakładkę."
+		},
+		"close-all-tabs": {
+			"label": "Zamknij wszystkie zakładki",
+			"description": "Zamknij każdą otwartą zakładkę."
+		},
+		"close-space": {
+			"label": "Zamknij bieżącą przestrzeń",
+			"description": "Zamknij obecnie otwartą przestrzeń."
+		},
+		"code_block": {
+			"label": "Blok kodu",
+			"description": "Włącz lub wyłącz blok kodu."
+		},
+		"collapse_all_headings": {
+			"label": "Zwiń wszystkie nagłówki",
+			"description": "Zwiń każdy nagłówek w bieżącej notatce."
+		},
+		"color_blue": {
+			"label": "Kolor tekstu: Niebieski",
+			"description": "Zastosuj niebieski kolor tekstu."
+		},
+		"color_brown": {
+			"label": "Kolor tekstu: Brązowy",
+			"description": "Zastosuj brązowy kolor tekstu."
+		},
+		"color_clear": {
+			"label": "Wyczyść kolor tekstu",
+			"description": "Usuń formatowanie koloru tekstu."
+		},
+		"color_gray": {
+			"label": "Kolor tekstu: Szary",
+			"description": "Zastosuj szary kolor tekstu."
+		},
+		"color_green": {
+			"label": "Kolor tekstu: Zielony",
+			"description": "Zastosuj zielony kolor tekstu."
+		},
+		"color_orange": {
+			"label": "Kolor tekstu: Pomarańczowy",
+			"description": "Zastosuj pomarańczowy kolor tekstu."
+		},
+		"color_purple": {
+			"label": "Kolor tekstu: Fioletowy",
+			"description": "Zastosuj fioletowy kolor tekstu."
+		},
+		"color_red": {
+			"label": "Kolor tekstu: Czerwony",
+			"description": "Zastosuj czerwony kolor tekstu."
+		},
+		"color_yellow": {
+			"label": "Kolor tekstu: Żółty",
+			"description": "Zastosuj żółty kolor tekstu."
+		},
+		"copy-note-markdown": {
+			"label": "Kopiuj notatkę jako Markdown",
+			"description": "Skopiuj bieżącą notatkę jako Markdown."
+		},
+		"create-from-template": {
+			"label": "Utwórz z szablonu",
+			"description": "Utwórz nową notatkę z szablonu."
+		},
+		"create-space": {
+			"label": "Utwórz przestrzeń",
+			"description": "Utwórz nową przestrzeń."
+		},
+		"details_block": {
+			"label": "Blok szczegółów",
+			"description": "Wstaw zwijaną sekcję przełączaną."
+		},
+		"divider": {
+			"label": "Separator",
+			"description": "Wstaw poziomą linię podziału."
+		},
+		"duplicate-current-note": {
+			"label": "Powiel bieżącą notatkę",
+			"description": "Utwórz kopię bieżącej notatki."
+		},
+		"expand_all_headings": {
+			"label": "Rozwiń wszystkie nagłówki",
+			"description": "Rozwiń każdy nagłówek w bieżącej notatce."
+		},
+		"extract_selection_to_note": {
+			"label": "Wyodrębnij do notatki",
+			"description": "Utwórz nową notatkę z bieżącego zaznaczenia."
+		},
+		"git-sync-now": {
+			"label": "Synchronizuj teraz",
+			"description": "Uruchom synchronizację Git teraz."
+		},
+		"go-back-note": {
+			"label": "Wstecz",
+			"description": "Przejdź wstecz w historii notatek bieżącej zakładki."
+		},
+		"go-forward-note": {
+			"label": "Dalej",
+			"description": "Przejdź do przodu w historii notatek bieżącej zakładki."
+		},
+		"heading_1": {
+			"label": "Nagłówek 1",
+			"description": "Przekształć bieżący blok w nagłówek poziomu 1."
+		},
+		"heading_2": {
+			"label": "Nagłówek 2",
+			"description": "Przekształć bieżący blok w nagłówek poziomu 2."
+		},
+		"heading_3": {
+			"label": "Nagłówek 3",
+			"description": "Przekształć bieżący blok w nagłówek poziomu 3."
+		},
+		"highlight_blue": {
+			"label": "Wyróżnienie: Niebieskie",
+			"description": "Zastosuj niebieskie wyróżnienie tekstu."
+		},
+		"highlight_clear": {
+			"label": "Wyczyść wyróżnienie",
+			"description": "Usuń formatowanie wyróżnienia tekstu."
+		},
+		"highlight_green": {
+			"label": "Wyróżnienie: Zielone",
+			"description": "Zastosuj zielone wyróżnienie tekstu."
+		},
+		"highlight_red": {
+			"label": "Wyróżnienie: Czerwone",
+			"description": "Zastosuj czerwone wyróżnienie tekstu."
+		},
+		"highlight_yellow": {
+			"label": "Wyróżnienie: Żółte",
+			"description": "Zastosuj żółte wyróżnienie tekstu."
+		},
+		"import-files": {
+			"label": "Importuj pliki…",
+			"description": "Importuj pliki Markdown do bieżącego folderu."
+		},
+		"import-folder": {
+			"label": "Importuj folder…",
+			"description": "Importuj folder do bieżącego folderu."
+		},
+		"italic": {
+			"label": "Kursywa",
+			"description": "Włącz lub wyłącz kursywę dla bieżącego zaznaczenia."
+		},
+		"link_clear": {
+			"label": "Usuń odnośnik",
+			"description": "Usuń bieżący odnośnik z zaznaczenia."
+		},
+		"link_set": {
+			"label": "Wstaw lub edytuj odnośnik",
+			"description": "Wstaw odnośnik lub edytuj bieżący odnośnik."
+		},
+		"mermaid_chart": {
+			"label": "Wykres Mermaid",
+			"description": "Wstaw blok kodu Mermaid."
+		},
+		"move-active-file": {
+			"label": "Przenieś aktywny plik",
+			"description": "Przenieś bieżący plik do innego folderu."
+		},
+		"new-database": {
+			"label": "Nowa kolekcja",
+			"description": "Utwórz nową kolekcję."
+		},
+		"new-folder": {
+			"label": "Nowy folder",
+			"description": "Utwórz nowy folder."
+		},
+		"new-note": {
+			"label": "Nowa notatka",
+			"description": "Utwórz nową notatkę w bieżącym folderze."
+		},
+		"new-tab": {
+			"label": "Nowa zakładka",
+			"description": "Otwórz pustą zakładkę."
+		},
+		"next-tab": {
+			"label": "Następna zakładka",
+			"description": "Przejdź do następnej zakładki."
+		},
+		"numbered_list": {
+			"label": "Lista numerowana",
+			"description": "Włącz lub wyłącz listę numerowaną."
+		},
+		"open-about": {
+			"label": "O programie",
+			"description": "Otwórz ekran informacji o programie."
+		},
+		"open-ai-settings": {
+			"label": "Otwórz ustawienia AI",
+			"description": "Otwórz ustawienia sztucznej inteligencji."
+		},
+		"open-all-docs": {
+			"label": "Otwórz wszystkie notatki",
+			"description": "Otwórz widok wszystkich notatek."
+		},
+		"open-command-palette": {
+			"label": "Otwórz paletę poleceń",
+			"description": "Otwórz paletę poleceń."
+		},
+		"open-daily-note": {
+			"label": "Otwórz dzisiejszą notatkę",
+			"description": "Otwórz lub utwórz dzisiejszą notatkę w dzienniku."
+		},
+		"open-databases": {
+			"label": "Otwórz kolekcje",
+			"description": "Otwórz widok kolekcji."
+		},
+		"open-git-sync-settings": {
+			"label": "Otwórz ustawienia synchronizacji Git",
+			"description": "Otwórz sekcję synchronizacji Git w ustawieniach."
+		},
+		"open-license-settings": {
+			"label": "Otwórz ustawienia licencji",
+			"description": "Otwórz sekcję licencji w ustawieniach."
+		},
+		"open-local-connections": {
+			"label": "Otwórz połączenia lokalne",
+			"description": "Otwórz połączenia lokalne dla bieżącej notatki."
+		},
+		"open-quick-note": {
+			"label": "Otwórz szybką notatkę",
+			"description": "Otwórz pływający notes na szybkie notatki."
+		},
+		"open-search-palette": {
+			"label": "Otwórz paletę wyszukiwania",
+			"description": "Otwórz wyszukiwanie w palecie poleceń."
+		},
+		"open-settings": {
+			"label": "Otwórz ustawienia",
+			"description": "Otwórz widok ustawień."
+		},
+		"open-space": {
+			"label": "Otwórz przestrzeń",
+			"description": "Otwórz istniejącą przestrzeń."
+		},
+		"open-space-settings": {
+			"label": "Otwórz ustawienia przestrzeni",
+			"description": "Otwórz ustawienia dla bieżącej przestrzeni."
+		},
+		"paste_without_formatting": {
+			"label": "Wklej bez formatowania",
+			"description": "Wklej tekst bez formatowania."
+		},
+		"previous-tab": {
+			"label": "Poprzednia zakładka",
+			"description": "Przejdź do poprzedniej zakładki."
+		},
+		"quick-open": {
+			"label": "Szybkie otwarcie",
+			"description": "Otwórz paletę poleceń bezpośrednio w trybie plików."
+		},
+		"quote": {
+			"label": "Cytat",
+			"description": "Włącz lub wyłącz blok cytatu."
+		},
+		"reveal-space": {
+			"label": "Pokaż przestrzeń",
+			"description": "Pokaż bieżącą przestrzeń w menedżerze plików systemu."
+		},
+		"save-note": {
+			"label": "Zapisz notatkę",
+			"description": "Zapisz bieżącą notatkę, jeśli została zmodyfikowana."
+		},
+		"open-shortcuts-settings": {
+			"label": "Skróty klawiszowe…",
+			"description": "Otwórz sekcję skrótów klawiszowych w ustawieniach."
+		},
+		"open-glyph-website": {
+			"label": "Strona Glyph",
+			"description": "Otwórz stronę www programu Glyph."
+		},
+		"open-glyph-changelog": {
+			"label": "Lista zmian",
+			"description": "Otwórz opublikowaną listę zmian programu Glyph."
+		},
+		"open-glyph-privacy": {
+			"label": "Polityka prywatności",
+			"description": "Otwórz politykę prywatności programu Glyph."
+		},
+		"open-glyph-terms": {
+			"label": "Regulamin usługi",
+			"description": "Otwórz regulamin usługi programu Glyph."
+		},
+		"open-glyph-discord": {
+			"label": "Discord",
+			"description": "Otwórz społecznościowy serwer Discord programu Glyph."
+		},
+		"open-glyph-github": {
+			"label": "GitHub",
+			"description": "Otwórz repozytorium programu Glyph w serwisie GitHub."
+		},
+		"open-glyph-x": {
+			"label": "Obserwuj na X",
+			"description": "Otwórz profil Karata Sidhu w serwisie X."
+		},
+		"split-editor-above": {
+			"label": "Podziel edytor powyżej",
+			"description": "Utwórz pusty panel edytora powyżej aktywnego panelu."
+		},
+		"split-editor-below": {
+			"label": "Podziel edytor poniżej",
+			"description": "Utwórz pusty panel edytora poniżej aktywnego panelu."
+		},
+		"split-editor-left": {
+			"label": "Podziel edytor po lewej",
+			"description": "Utwórz pusty panel edytora po lewej stronie aktywnego panelu."
+		},
+		"split-editor-right": {
+			"label": "Podziel edytor po prawej",
+			"description": "Utwórz pusty panel edytora po prawej stronie aktywnego panelu."
+		},
+		"strikethrough": {
+			"label": "Przekreślenie",
+			"description": "Włącz lub wyłącz przekreślenie dla bieżącego zaznaczenia."
+		},
+		"table": {
+			"label": "Tabela",
+			"description": "Wstaw tabelę Markdown."
+		},
+		"todo_list": {
+			"label": "Lista zadań",
+			"description": "Włącz lub wyłącz listę zadań."
+		},
+		"toggle-ai": {
+			"label": "Przełącz panel AI",
+			"description": "Pokaż lub ukryj panel asystenta AI."
+		},
+		"toggle-note-info-sidebar": {
+			"label": "Przełącz pasek boczny informacji o notatce",
+			"description": "Pokaż lub ukryj pasek boczny z informacjami o notatce."
+		},
+		"toggle-pin-active-file": {
+			"label": "Przypnij lub odepnij bieżący plik",
+			"description": "Przypnij lub odepnij aktywny plik."
+		},
+		"toggle-pin-active-tab": {
+			"label": "Przypnij lub odepnij aktywną zakładkę",
+			"description": "Utrzymaj aktywną zakładkę otwartą do momentu jej odpięcia."
+		},
+		"toggle-sidebar": {
+			"label": "Przełącz pasek boczny",
+			"description": "Pokaż lub ukryj pasek boczny drzewa plików."
+		},
+		"underline": {
+			"label": "Podkreślenie",
+			"description": "Włącz lub wyłącz podkreślenie dla bieżącego zaznaczenia."
+		},
+		"switch-to-edit": {
+			"label": "Tryb WYSIWYG",
+			"description": "Przełącz na tryb edycji WYSIWYG."
+		},
+		"switch-to-preview": {
+			"label": "Tryb podglądu",
+			"description": "Przełącz na tryb podglądu tylko do odczytu."
+		},
+		"switch-to-raw": {
+			"label": "Tryb źródłowy",
+			"description": "Przełącz na surowy tryb edycji Markdown."
+		}
+	}
+}

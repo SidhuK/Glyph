@@ -1,0 +1,295 @@
+{
+	"mode": {
+		"label": "Tryb edytora",
+		"raw": "Źródłowy",
+		"rich": "WYSIWYG",
+		"preview": "Podgląd",
+		"largeNoteHint": "Może działać wolno przy dużych notatkach"
+	},
+	"rollover": {
+		"bannerLabel": "Przenoszenie zaległych notatek dziennych",
+		"bannerTitle_one": "{{count}} zaległy element",
+		"bannerTitle_few": "{{count}} zaległe elementy",
+		"bannerTitle_many": "{{count}} zaległych elementów",
+		"bannerTitle_other": "{{count}} zaległego elementu",
+		"review": "Przejrzyj",
+		"reviewGroupTitle": "Elementy z dnia {{date}}",
+		"reviewGroupDescription_one": "{{count}} nieukończony blok pola wyboru.",
+		"reviewGroupDescription_few": "{{count}} nieukończone bloki pól wyboru.",
+		"reviewGroupDescription_many": "{{count}} nieukończonych bloków pól wyboru.",
+		"reviewGroupDescription_other": "{{count}} nieukończonego bloku pola wyboru.",
+		"reviewIndividually": "Przejrzyj indywidualnie",
+		"reviewItemTitle": "Element z dnia {{date}}",
+		"selectAll": "Zaznacz wszystko",
+		"select": "Zaznacz",
+		"skip": "Pomiń",
+		"cancelReview": "Anuluj przegląd",
+		"nestedSummary": "Zawiera {{nested}}, w tym {{unfinished}}",
+		"nestedCount_one": "{{count}} element zagnieżdżony",
+		"nestedCount_few": "{{count}} elementy zagnieżdżone",
+		"nestedCount_many": "{{count}} elementów zagnieżdżonych",
+		"nestedCount_other": "{{count}} elementu zagnieżdżonego",
+		"unfinishedCount_one": "{{count}} nieukończony",
+		"unfinishedCount_few": "{{count}} nieukończone",
+		"unfinishedCount_many": "{{count}} nieukończonych",
+		"unfinishedCount_other": "{{count}} nieukończonego",
+		"cancel": "Anuluj",
+		"chooseDestination": "Wybierz miejsce docelowe",
+		"chooseDestinationDescription_one": "Przenieś {{count}} zaznaczony element.",
+		"chooseDestinationDescription_few": "Przenieś {{count}} zaznaczone elementy.",
+		"chooseDestinationDescription_many": "Przenieś {{count}} zaznaczonych elementów.",
+		"chooseDestinationDescription_other": "Przenieś {{count}} zaznaczonego elementu.",
+		"moveToday": "Przenieś na dzisiaj",
+		"moveTomorrow": "Przenieś na jutro",
+		"moved_one": "Przeniesiono {{count}} element",
+		"moved_few": "Przeniesiono {{count}} elementy",
+		"moved_many": "Przeniesiono {{count}} elementów",
+		"moved_other": "Przeniesiono {{count}} elementu",
+		"moveFailed": "Nie udało się przenieść elementów",
+		"moveFailedDescription": "Notatki uległy zmianie lub nie mogły zostać zapisane. Spróbuj ponownie.",
+		"saveBeforeMove": "Zapisz bieżącą notatkę przed przeniesieniem jej elementów z polami wyboru.",
+		"itemChanged": "Ten element z polem wyboru uległ zmianie. Przejrzyj go i spróbuj ponownie.",
+		"invalidDailyNote": "Ta notatka dzienna ma nieprawidłową datę."
+	},
+	"unlinkedMentions": {
+		"heading": "Niepołączone wzmianki ({{count}})",
+		"loading": "Sprawdzanie niepołączonych wzmianek…",
+		"empty": "Nie znaleziono niepołączonych wzmianek.",
+		"linked_one": "Połączono {{count}} wzmiankę.",
+		"linked_few": "Połączono {{count}} wzmianki.",
+		"linked_many": "Połączono {{count}} wzmianek.",
+		"linked_other": "Połączono {{count}} wzmianki.",
+		"skipped": "Niektóre wzmianki nie mogły zostać połączone, ponieważ ich notatki uległy zmianie. Odśwież i spróbuj ponownie.",
+		"link": "Połącz",
+		"linkAll": "Połącz wszystkie"
+	},
+	"ribbon": {
+		"bold": "Pogrubienie",
+		"italic": "Kursywa",
+		"underline": "Podkreślenie",
+		"strikethrough": "Przekreślenie",
+		"textColor": "Kolor tekstu",
+		"clearColor": "Wyczyść kolor",
+		"textHighlight": "Wyróżnienie tekstu",
+		"clearHighlight": "Wyczyść wyróżnienie",
+		"extractToNote": "Wyodrębnij do notatki",
+		"heading1": "Nagłówek 1",
+		"heading2": "Nagłówek 2",
+		"heading3": "Nagłówek 3",
+		"bulletList": "Lista wypunktowana",
+		"numberedList": "Lista numerowana",
+		"taskList": "Lista zadań",
+		"quote": "Cytat",
+		"codeBlock": "Blok kodu"
+	},
+	"selectionAi": {
+		"title": "Zapytaj AI o zaznaczenie",
+		"close": "Zamknij",
+		"noSelection": "Najpierw zaznacz tekst w edytorze.",
+		"summarize": "Podsumuj",
+		"summarizePrompt": "Zwięźle podsumuj to zaznaczenie.",
+		"rephrase": "Przeformułuj",
+		"rephrasePrompt": "Przeformułuj to zaznaczenie, aby zwiększyć przejrzystość, zachowując jego znaczenie.",
+		"replace": "Zastąp zaznaczenie",
+		"insertBelow": "Wstaw poniżej",
+		"applyFailed": "Nie udało się zastosować odpowiedzi AI.",
+		"selectionChanged": "Zaznaczony tekst uległ zmianie. Zaznacz go ponownie i spróbuj ponowić próbę."
+	},
+	"colors": {
+		"gray": "Szary",
+		"brown": "Brązowy",
+		"orange": "Pomarańczowy",
+		"yellow": "Żółty",
+		"green": "Zielony",
+		"blue": "Niebieski",
+		"purple": "Fioletowy",
+		"red": "Czerwony"
+	},
+	"highlights": {
+		"yellow": "Żółte",
+		"blue": "Niebieskie",
+		"green": "Zielone",
+		"red": "Czerwone"
+	},
+	"codeBlock": {
+		"setLanguage": "Ustaw język bloku kodu",
+		"runPreview": "Uruchom podgląd",
+		"copy": "Kopiuj kod",
+		"copied": "Skopiowano kod",
+		"copyFailed": "Nie udało się skopiować kodu",
+		"editCode": "Edytuj kod",
+		"editMermaid": "Edytuj kod Mermaid",
+		"editHtml": "Edytuj kod HTML",
+		"editSvg": "Edytuj kod SVG",
+		"focusedViewer": {
+			"open": "Otwórz widok skupienia"
+		},
+		"languages": {
+			"plaintext": "Zwykły tekst",
+			"bash": "Bash",
+			"javascript": "JavaScript",
+			"typescript": "TypeScript",
+			"json": "JSON",
+			"markdown": "Markdown",
+			"mermaid": "Mermaid",
+			"python": "Python",
+			"rust": "Rust",
+			"html": "HTML",
+			"svg": "SVG",
+			"xml": "XML",
+			"yaml": "YAML"
+		}
+	},
+	"listCollapse": {
+		"collapseBranch": "Zwiń listę",
+		"expandBranch": "Rozwiń listę",
+		"loadFailed": "Nie udało się wczytać stanu listy",
+		"saveFailed": "Nie udało się zapisać stanu listy"
+	},
+	"slash": {
+		"heading1": {
+			"title": "Nagłówek 1",
+			"description": "Nagłówek 1"
+		},
+		"heading2": {
+			"title": "Nagłówek 2",
+			"description": "Nagłówek 2"
+		},
+		"heading3": {
+			"title": "Nagłówek 3",
+			"description": "Nagłówek 3"
+		},
+		"bulletList": {
+			"title": "Lista wypunktowana",
+			"description": "Rozpocznij listę wypunktowaną"
+		},
+		"numberedList": {
+			"title": "Lista numerowana",
+			"description": "Rozpocznij listę numerowaną"
+		},
+		"todoList": {
+			"title": "Lista zadań",
+			"description": "Rozpocznij listę zadań"
+		},
+		"quote": {
+			"title": "Cytat",
+			"description": "Wstaw blok cytatu"
+		},
+		"codeBlock": {
+			"title": "Blok kodu",
+			"description": "Wstaw blok kodu"
+		},
+		"divider": {
+			"title": "Separator",
+			"description": "Wstaw linię poziomą"
+		},
+		"table": {
+			"title": "Tabela",
+			"description": "Wstaw tabelę Markdown"
+		},
+		"tableOfContents": {
+			"title": "Spis treści",
+			"description": "Wstaw dynamiczny spis treści"
+		},
+		"mermaidChart": {
+			"title": "Wykres Mermaid",
+			"description": "Wstaw blok diagramu Mermaid"
+		},
+		"htmlEmbed": {
+			"title": "Wstaw HTML",
+			"description": "Wstaw blok podglądu HTML"
+		},
+		"svgEmbed": {
+			"title": "Wstaw SVG",
+			"description": "Wstaw blok podglądu SVG"
+		},
+		"detailsBlock": {
+			"title": "Blok szczegółów",
+			"description": "Wstaw zwijaną szczegółową sekcję"
+		},
+		"calloutInfo": {
+			"title": "Wyróżnienie: Informacja",
+			"description": "Wstaw wyróżnienie z informacją"
+		},
+		"calloutTip": {
+			"title": "Wyróżnienie: Wskazówka",
+			"description": "Wstaw wyróżnienie ze wskazówką"
+		},
+		"calloutSuccess": {
+			"title": "Wyróżnienie: Sukces",
+			"description": "Wstaw wyróżnienie z sukcesem"
+		},
+		"calloutWarning": {
+			"title": "Wyróżnienie: Ostrzeżenie",
+			"description": "Wstaw wyróżnienie z ostrzeżeniem"
+		},
+		"calloutError": {
+			"title": "Wyróżnienie: Błąd",
+			"description": "Wstaw wyróżnienie z błędem"
+		},
+		"mathInline": {
+			"title": "Równanie w tekście",
+			"description": "Wstaw wyrażenie LaTeX w linii"
+		},
+		"mathDisplay": {
+			"title": "Równanie wyśrodkowane",
+			"description": "Wstaw wyśrodkowany blok LaTeX"
+		},
+		"colorGray": {
+			"title": "Kolor: Szary",
+			"description": "Zastosuj szary kolor tekstu"
+		},
+		"colorBrown": {
+			"title": "Kolor: Brązowy",
+			"description": "Zastosuj brązowy kolor tekstu"
+		},
+		"colorOrange": {
+			"title": "Kolor: Pomarańczowy",
+			"description": "Zastosuj pomarańczowy kolor tekstu"
+		},
+		"colorYellow": {
+			"title": "Kolor: Żółty",
+			"description": "Zastosuj żółty kolor tekstu"
+		},
+		"colorGreen": {
+			"title": "Kolor: Zielony",
+			"description": "Zastosuj zielony kolor tekstu"
+		},
+		"colorBlue": {
+			"title": "Kolor: Niebieski",
+			"description": "Zastosuj niebieski kolor tekstu"
+		},
+		"colorPurple": {
+			"title": "Kolor: Fioletowy",
+			"description": "Zastosuj fioletowy kolor tekstu"
+		},
+		"colorRed": {
+			"title": "Kolor: Czerwony",
+			"description": "Zastosuj czerwony kolor tekstu"
+		},
+		"colorClear": {
+			"title": "Kolor: Brak",
+			"description": "Usuń kolor tekstu"
+		},
+		"highlightYellow": {
+			"title": "Wyróżnienie: Żółte",
+			"description": "Zastosuj żółte wyróżnienie tekstu"
+		},
+		"highlightBlue": {
+			"title": "Wyróżnienie: Niebieskie",
+			"description": "Zastosuj niebieskie wyróżnienie tekstu"
+		},
+		"highlightGreen": {
+			"title": "Wyróżnienie: Zielone",
+			"description": "Zastosuj zielone wyróżnienie tekstu"
+		},
+		"highlightRed": {
+			"title": "Wyróżnienie: Czerwone",
+			"description": "Zastosuj czerwone wyróżnienie tekstu"
+		},
+		"highlightClear": {
+			"title": "Wyróżnienie: Brak",
+			"description": "Usuń wyróżnienie tekstu"
+		}
+	}
+}

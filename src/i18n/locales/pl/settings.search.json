@@ -1,0 +1,591 @@
+{
+	"tabs": {
+		"general": "Ogólne",
+		"appearance": "Wygląd",
+		"shortcuts": "Skróty",
+		"ai": "AI",
+		"space": "Przestrzeń",
+		"git": "Synchronizacja Git",
+		"about": "O programie",
+		"usage": "Statystyki przestrzeni"
+	},
+	"tabEntry": {
+		"general": {
+			"title": "Ustawienia ogólne",
+			"description": "Otwórz ustawienia ogólne.",
+			"keywords": ["Ogólne"]
+		},
+		"appearance": {
+			"title": "Ustawienia wyglądu",
+			"description": "Otwórz ustawienia wyglądu.",
+			"keywords": ["Wygląd"]
+		},
+		"shortcuts": {
+			"title": "Ustawienia skrótów",
+			"description": "Otwórz ustawienia skrótów.",
+			"keywords": ["Skróty"]
+		},
+		"ai": {
+			"title": "Ustawienia AI",
+			"description": "Otwórz ustawienia AI.",
+			"keywords": ["AI"]
+		},
+		"space": {
+			"title": "Ustawienia przestrzeni",
+			"description": "Otwórz ustawienia przestrzeni.",
+			"keywords": ["Przestrzeń"]
+		},
+		"git": {
+			"title": "Ustawienia synchronizacji Git",
+			"description": "Otwórz ustawienia synchronizacji Git.",
+			"keywords": ["Synchronizacja Git"]
+		},
+		"about": {
+			"title": "Informacje o programie",
+			"description": "Otwórz informacje o programie.",
+			"keywords": ["O programie"]
+		},
+		"usage": {
+			"title": "Ustawienia statystyk przestrzeni",
+			"description": "Wyświetl lokalne statystyki przestrzeni.",
+			"keywords": ["Przestrzeń", "Użycie", "Statystyki", "Aktywność"]
+		}
+	},
+	"entries": {
+		"general-license": {
+			"title": "Licencja",
+			"description": "Status wersji próbnej, klucz licencyjny, aktywacja i oficjalna kompilacja.",
+			"keywords": [
+				"wersja próbna",
+				"aktywuj",
+				"aktywacja",
+				"subskrypcja",
+				"zakup"
+			]
+		},
+		"general-trial-status": {
+			"title": "Status wersji próbnej",
+			"section": "Licencja",
+			"description": "Pozostały czas bieżącej wersji próbnej dla tego urządzenia.",
+			"keywords": ["pozostały czas wersji próbnej", "wygasła"]
+		},
+		"general-activated": {
+			"title": "Aktywowano",
+			"section": "Licencja",
+			"description": "Data aktywacji lokalnej licencji Glyph.",
+			"keywords": ["licencjonowana", "data licencji"]
+		},
+		"general-license-key": {
+			"title": "Klucz licencyjny",
+			"section": "Licencja",
+			"description": "Wyświetl zamaskowany klucz licencyjny przechowywany lokalnie.",
+			"keywords": ["seryjny", "klucz aktywacyjny"]
+		},
+		"general-activate-glyph": {
+			"title": "Aktywuj Glyph",
+			"section": "Licencja",
+			"description": "Wprowadź klucz licencyjny, aby trwale odblokować program Glyph.",
+			"keywords": ["aktywuj", "kup", "oficjalna kompilacja"]
+		},
+		"general-official-build": {
+			"title": "Oficjalna kompilacja",
+			"section": "Licencja",
+			"description": "Kup oficjalną licencję zapewniającą pomoc techniczną i automatyczne aktualizacje.",
+			"keywords": ["kompilacja społecznościowa", "kup", "aktualizacje"]
+		},
+		"general-license-help": {
+			"title": "Pomoc",
+			"section": "Licencja",
+			"description": "Uzyskaj pomoc dotyczącą licencji, utraconych kluczy lub problemów z zakupem.",
+			"keywords": ["wsparcie", "usuń lokalną aktywację"]
+		},
+		"general-language": {
+			"title": "Język",
+			"section": "Język",
+			"description": "Wybierz język interfejsu dla programu Glyph.",
+			"keywords": ["lokalizacja", "tłumaczenie", "i18n", "język"]
+		},
+		"general-date-format": {
+			"title": "Format daty",
+			"section": "Data i czas",
+			"description": "Wybierz sposób wyświetlania pełnych dat w programie Glyph.",
+			"keywords": [
+				"data",
+				"format",
+				"kalendarz",
+				"amerykański",
+				"europejski",
+				"czytelny",
+				"ISO",
+				"lokalizacja",
+				"wyświetlanie"
+			]
+		},
+		"general-resume-last-session": {
+			"title": "Otwórz poprzednie zakładki",
+			"section": "Uruchamianie",
+			"description": "Rozpocznij tę przestrzeń z zakładkami pozostawionymi otwartymi.",
+			"keywords": [
+				"przywróć",
+				"uruchamianie",
+				"start",
+				"zacznij od miejsca, w którym skończyłem",
+				"zakładki",
+				"sesja przestrzeni roboczej"
+			]
+		},
+		"appearance-theme-mode": {
+			"title": "Wybierz motyw",
+			"section": "Motyw",
+			"description": "Wybierz tryb systemowy, jasny lub ciemny.",
+			"keywords": ["tryb", "systemowy", "jasny", "ciemny"]
+		},
+		"appearance-light-theme": {
+			"title": "Gotowy zestaw",
+			"section": "Jasny motyw",
+			"description": "Wybierz paletę używaną przez Glyph w trybie jasnym.",
+			"keywords": ["motyw", "kolor", "jasny"]
+		},
+		"appearance-dark-theme": {
+			"title": "Gotowy zestaw",
+			"section": "Ciemny motyw",
+			"description": "Wybierz paletę używaną przez Glyph w trybie ciemnym.",
+			"keywords": ["motyw", "kolor", "ciemny"]
+		},
+		"appearance-translucent-app": {
+			"title": "Półprzezroczysty pasek boczny",
+			"section": "Motyw",
+			"keywords": ["okno", "szkło", "rozmycie", "przezroczysty"]
+		},
+		"appearance-custom-themes": {
+			"title": "Importuj motyw",
+			"section": "Niestandardowe motywy",
+			"description": "Zaimportuj paletę JSON jako nowy motyw.",
+			"keywords": ["motyw", "json", "import", "niestandardowy"]
+		},
+		"appearance-interface-font": {
+			"title": "Czcionka interfejsu",
+			"section": "Typografia",
+			"keywords": ["czcionka", "interfejs", "bezszeryfowa"]
+		},
+		"appearance-monospace-font": {
+			"title": "Czcionka o stałej szerokości",
+			"section": "Typografia",
+			"keywords": ["czcionka", "kod", "monowidth"]
+		},
+		"appearance-editor-font": {
+			"title": "Czcionka edytora",
+			"section": "Typografia",
+			"keywords": ["czcionka", "edytor", "notatki", "proza"]
+		},
+		"appearance-ui-font-size": {
+			"title": "Rozmiar czcionki interfejsu",
+			"section": "Typografia",
+			"keywords": ["czcionka", "tekst", "interfejs"]
+		},
+		"appearance-editor-font-size": {
+			"title": "Rozmiar czcionki edytora",
+			"section": "Typografia",
+			"keywords": ["czcionka", "tekst", "notatki"]
+		},
+		"shortcuts-customize": {
+			"title": "Dostosuj skróty",
+			"section": "Dostosuj skróty",
+			"description": "Edytuj skróty klawiszowe.",
+			"keywords": ["skróty", "powiązania klawiszy", "polecenia"]
+		},
+		"shortcuts-search": {
+			"title": "Szukaj akcji, kategorii lub skrótów",
+			"section": "Dostosuj skróty",
+			"description": "Filtruj skróty według akcji, kategorii, powiązania lub opisu.",
+			"keywords": ["filtr", "znajdź skróty", "wyszukiwanie skrótów"]
+		},
+		"shortcuts-workspace": {
+			"title": "Skróty przestrzeni roboczej",
+			"section": "Przestrzeń",
+			"keywords": ["przestrzeń", "okno", "przestrzeń robocza"]
+		},
+		"shortcuts-navigation": {
+			"title": "Skróty nawigacji",
+			"section": "Nawigacja",
+			"keywords": ["przenieś", "idź", "nawiguj"]
+		},
+		"shortcuts-search-category": {
+			"title": "Skróty wyszukiwania",
+			"section": "Szukaj",
+			"keywords": ["znajdź", "szybkie wyszukiwanie", "paleta poleceń"]
+		},
+		"shortcuts-file-operations": {
+			"title": "Skróty operacji na plikach",
+			"section": "Operacje na plikach",
+			"keywords": ["plik", "folder", "zmień nazwę", "usuń"]
+		},
+		"shortcuts-tabs": {
+			"title": "Skróty zakładek",
+			"section": "Zakładki",
+			"keywords": ["zakładka", "otwórz zakładkę", "zamknij zakładkę"]
+		},
+		"shortcuts-ai": {
+			"title": "Skróty AI",
+			"section": "AI",
+			"keywords": ["asystent", "czat", "glyph ai"]
+		},
+		"shortcuts-editor": {
+			"title": "Skróty edytora",
+			"section": "Edytor",
+			"keywords": ["notatka", "markdown", "edycja"]
+		},
+		"ai-features": {
+			"title": "Funkcje AI",
+			"section": "Dostępność",
+			"description": "Włącz lub wyłącz narzędzia AI w programie Glyph.",
+			"keywords": ["asystent", "czat", "włącz", "wyłącz"]
+		},
+		"ai-configuration": {
+			"title": "Konfiguracja",
+			"section": "Dostępność",
+			"keywords": ["dostawcy", "modele", "konto"]
+		},
+		"ai-connection-type": {
+			"title": "Typ połączenia",
+			"section": "Połączenie",
+			"keywords": ["agenci", "lokalnie", "api", "dostawca"]
+		},
+		"ai-provider-service": {
+			"title": "Usługa",
+			"section": "Dostawca",
+			"keywords": ["dostawca", "openai", "anthropic", "ollama"]
+		},
+		"ai-provider-model": {
+			"title": "Model",
+			"section": "Dostawca",
+			"keywords": ["dostawca", "model", "asystent"]
+		},
+		"ai-reasoning-level": {
+			"title": "Poziom rozumowania",
+			"section": "Dostawca",
+			"keywords": ["wysiłek", "myślenie"]
+		},
+		"ai-base-url": {
+			"title": "Podstawowy adres URL",
+			"section": "Dostawca",
+			"keywords": ["punkt końcowy", "lokalny", "serwer"]
+		},
+		"ai-local-network": {
+			"title": "Zezwalaj na sieć lokalną",
+			"section": "Dostawca",
+			"keywords": ["localhost", "lan", "sieć"]
+		},
+		"ai-api-key": {
+			"title": "Ustaw klucz",
+			"section": "Klucz API",
+			"keywords": ["sekret", "token", "poświadczenie", "zaktualizuj klucz"]
+		},
+		"ai-chatgpt-account": {
+			"title": "Konto ChatGPT",
+			"section": "Konto ChatGPT",
+			"keywords": ["codex", "konto", "uwierzytelnianie", "limity żądań"]
+		},
+		"ai-chatgpt-identity": {
+			"title": "Tożsamość",
+			"section": "Konto ChatGPT",
+			"description": "Połączone konto, z którego Glyph obecnie korzysta dla funkcji Codex.",
+			"keywords": ["e-mail", "nazwa wyświetlana", "połącz", "rozłącz"]
+		},
+		"ai-chatgpt-authentication": {
+			"title": "Uwierzytelnianie",
+			"section": "Konto ChatGPT",
+			"description": "Sposób uwierzytelniania bieżącej sesji ChatGPT.",
+			"keywords": ["tryb uwierzytelniania", "sesja"]
+		},
+		"ai-chatgpt-rate-limits": {
+			"title": "Limity żądań",
+			"section": "Konto ChatGPT",
+			"description": "Sprawdź pozostałą pojemność dla połączonego konta.",
+			"keywords": ["użycie", "pozostało", "resetuje się"]
+		},
+		"space-daily-notes-folder": {
+			"title": "Folder",
+			"section": "Notatki dzienne",
+			"description": "Wybierz miejsce tworzenia notatek dziennych.",
+			"keywords": ["dziennik", "dzisiaj", "data"]
+		},
+		"space-quick-notes-folder": {
+			"title": "Folder",
+			"section": "Szybkie notatki",
+			"description": "Wybierz miejsce zapisywania szybkich notatek.",
+			"keywords": ["przechwytywanie", "skrzynka odbiorcza"]
+		},
+		"space-attachments-location": {
+			"title": "Lokalizacja",
+			"section": "Załączniki",
+			"keywords": ["zasoby", "pliki", "obrazy", "folder"]
+		},
+		"space-template-folder": {
+			"title": "Folder szablonów",
+			"section": "Szablony",
+			"keywords": ["szablony", "folder"]
+		},
+		"space-default-daily-template": {
+			"title": "Domyślny szablon notatki dziennej",
+			"section": "Szablony",
+			"keywords": ["szablony", "notatki dzienne"]
+		},
+		"space-search-index-status": {
+			"title": "Status",
+			"section": "Indeks wyszukiwania",
+			"keywords": ["indeks", "przebuduj", "szukaj"]
+		},
+		"git-availability": {
+			"title": "Dostępność usługi Git",
+			"section": "Połączenie",
+			"keywords": ["synchronizacja", "repozytorium"]
+		},
+		"git-repository-state": {
+			"title": "Stan repozytorium",
+			"section": "Połączenie",
+			"keywords": ["repo", "synchronizacja", "gałąź"]
+		},
+		"git-how-it-works": {
+			"title": "Jak to działa",
+			"section": "Połączenie",
+			"description": "Przejrzyj szczegóły połączenia zdalnego dla bieżącego repozytorium.",
+			"keywords": ["zdalny adres url", "zainicjuj git", "poświadczenia"]
+		},
+		"git-branch": {
+			"title": "Gałąź",
+			"section": "Połączenie",
+			"keywords": ["repo", "synchronizacja"]
+		},
+		"git-automatic-sync": {
+			"title": "Automatyczna synchronizacja",
+			"section": "Synchronizacja",
+			"keywords": ["automatyczna", "git"]
+		},
+		"git-sync-interval": {
+			"title": "Interwał",
+			"section": "Synchronizacja",
+			"keywords": ["częstotliwość", "minuty"]
+		},
+		"git-sync-actions": {
+			"title": "Akcje",
+			"section": "Synchronizacja",
+			"keywords": ["uruchom", "synchronizuj teraz", "wypchnij", "pobierz"]
+		},
+		"git-conflict-policy": {
+			"title": "Zasady",
+			"section": "Rozwiązywanie konfliktów",
+			"keywords": ["scalanie", "konflikt"]
+		},
+		"git-include-templates": {
+			"title": "Uwzględnij szablony",
+			"section": "Zawartość",
+			"keywords": ["synchronizacja", "szablony"]
+		},
+		"git-include-attachments": {
+			"title": "Uwzględnij załączniki",
+			"section": "Zawartość",
+			"keywords": ["synchronizacja", "zasoby", "pliki"]
+		},
+		"git-include-non-markdown": {
+			"title": "Uwzględnij pliki inne niż Markdown",
+			"section": "Zawartość",
+			"keywords": ["synchronizacja", "pliki"]
+		},
+		"general-editor-table-of-contents": {
+			"title": "Spis treści",
+			"section": "Edytor",
+			"keywords": ["spis treści", "zarys"]
+		},
+		"space-search-index-people-tags": {
+			"title": "Wzmianki o osobach jako tagi",
+			"section": "Indeks wyszukiwania",
+			"keywords": ["wzmianki", "ludzie", "tagi"]
+		},
+		"general-editor-frontmatter": {
+			"title": "Pokaż frontmatter w edytorze",
+			"section": "Edytor",
+			"keywords": ["właściwości", "yaml", "metadane"]
+		},
+		"general-editor-heading-prefixes": {
+			"title": "Przedrostki nagłówków",
+			"section": "Edytor",
+			"keywords": ["nagłówek", "h1", "h2", "h3", "etykieta"]
+		},
+		"general-editor-colorful-headings": {
+			"title": "Kolorowe nagłówki",
+			"section": "Edytor",
+			"keywords": ["edytor", "kolor"]
+		},
+		"appearance-editor-presentation-beautiful-tags": {
+			"title": "Ładne tagi",
+			"section": "Prezentacja edytora",
+			"keywords": ["tagi", "edytor"]
+		},
+		"appearance-editor-presentation-width": {
+			"title": "Szerokość edytora",
+			"section": "Prezentacja edytora",
+			"keywords": ["kompaktowa", "wygodna", "szeroka"]
+		},
+		"general-editor-collapsible-headings": {
+			"title": "Zwijane nagłówki",
+			"section": "Edytor",
+			"keywords": ["zwijanie", "składanie", "rozwijanie"]
+		},
+		"general-editor-collapsible-lists": {
+			"title": "Zwijane listy",
+			"section": "Edytor",
+			"keywords": [
+				"zwijanie",
+				"składanie",
+				"rozwijanie",
+				"wypunktowanie",
+				"zadanie",
+				"uporządkowana"
+			]
+		},
+		"general-editor-spell-check": {
+			"title": "Sprawdzanie pisowni",
+			"section": "Edytor",
+			"keywords": ["pisownia", "literówka", "słownik"]
+		},
+		"general-editor-external-link-previews": {
+			"title": "Podglądy linków zewnętrznych",
+			"section": "Edytor",
+			"keywords": ["link", "sieć", "witryna", "karta", "open graph", "metadane"]
+		},
+		"general-editor-vim-mode": {
+			"title": "Tryb Vim",
+			"section": "Edytor",
+			"keywords": [
+				"vim",
+				"surowy",
+				"markdown",
+				"powiązania klawiszy",
+				"klawiatura"
+			]
+		},
+		"ai-assistant-behavior-tools": {
+			"title": "Czat AI ma dostęp do narzędzi",
+			"section": "Zachowanie asystenta",
+			"keywords": ["asystent", "wywołania narzędzi"]
+		},
+		"appearance-layout-folio-mode": {
+			"title": "Tryb Folio",
+			"section": "Układ",
+			"keywords": ["układ", "czytanie"]
+		},
+		"appearance-layout-classic-all-notes": {
+			"title": "Klasyczna siatka wszystkich notatek",
+			"section": "Układ",
+			"keywords": ["wszystkie notatki", "aktywność", "oś czasu", "siatka"]
+		},
+		"general-file-tree-folder-counts": {
+			"title": "Pokaż liczbę plików w folderach",
+			"section": "Drzewo plików",
+			"keywords": ["pasek boczny", "liczba"]
+		},
+		"general-file-tree-non-markdown-files": {
+			"title": "Pokaż pliki inne niż Markdown",
+			"section": "Drzewo plików",
+			"keywords": [
+				"pasek boczny",
+				"załączniki",
+				"pdf",
+				"obrazy",
+				"folio",
+				"drzewo plików"
+			]
+		},
+		"general-file-tree-sort": {
+			"title": "Sortowanie drzewa plików",
+			"section": "Drzewo plików",
+			"keywords": ["pasek boczny", "foldery", "pliki", "kolejność"]
+		},
+		"appearance-database-column-color": {
+			"title": "Pokaż kolor kolumny bazy danych",
+			"section": "Baza danych",
+			"keywords": ["kolekcja", "baza danych", "kolor"]
+		},
+		"about-app": {
+			"title": "Glyph",
+			"description": "Wyświetl nazwę, wersję, autorstwo i szybkie odnośniki aplikacji Glyph.",
+			"keywords": ["o programie", "wersja", "karat sidhu"]
+		},
+		"about-website": {
+			"title": "Witryna",
+			"description": "Otwórz witrynę internetową programu Glyph.",
+			"keywords": ["glyphformac.com", "strona główna"]
+		},
+		"about-discord": {
+			"title": "Discord",
+			"description": "Otwórz społecznościowy serwer Discord programu Glyph.",
+			"keywords": ["społeczność", "wsparcie", "opinie"]
+		},
+		"about-terms": {
+			"title": "Regulamin",
+			"description": "Otwórz stronę regulaminu programu Glyph.",
+			"keywords": ["prawne", "regulamin usługi"]
+		},
+		"about-privacy": {
+			"title": "Prywatność",
+			"description": "Otwórz stronę polityki prywatności programu Glyph.",
+			"keywords": ["prawne", "polityka prywatności"]
+		},
+		"about-updates": {
+			"title": "Aktualizacje aplikacji",
+			"section": "Aktualizacje",
+			"keywords": ["wydanie", "wersja", "aktualizacja"]
+		},
+		"about-alpha-releases": {
+			"title": "Wydania alfa",
+			"section": "Aktualizacje",
+			"description": "Otrzymuj kompilacje z wczesnym dostępem przed ich stabilnym wydaniem.",
+			"keywords": ["alfa", "wersja wstępna", "beta", "kanał wydania"]
+		},
+		"about-license-status": {
+			"title": "Status licencji",
+			"section": "Aktualizacje",
+			"description": "Sprawdź, czy ta kompilacja może korzystać z automatycznych aktualizacji.",
+			"keywords": ["oficjalna kompilacja", "kompilacja społecznościowa"]
+		},
+		"about-community-build": {
+			"title": "Kompilacja społecznościowa",
+			"section": "Aktualizacje",
+			"keywords": ["licencja", "kompilacja"]
+		},
+		"about-update-status": {
+			"title": "Status",
+			"section": "Aktualizacje",
+			"description": "Ostatnia aktywność programu aktualizującego z tego okna.",
+			"keywords": ["sprawdzanie", "gotowe", "najnowsza wersja"]
+		},
+		"usage-insights": {
+			"title": "Statystyki przestrzeni",
+			"description": "Lokalne podsumowania notatek, zadań i grafu wiedzy.",
+			"keywords": ["użycie", "statystyki", "dane"]
+		},
+		"usage-activity": {
+			"title": "Aktywność",
+			"description": "Notatki utworzone i ostatnio edytowane w czasie.",
+			"keywords": ["aktywność", "seria", "edycja"]
+		},
+		"usage-tasks": {
+			"title": "Zadania",
+			"description": "Bieżąca liczba zadań i postęp ich realizacji.",
+			"keywords": ["zadania", "listy kontrolne", "ukończone"]
+		},
+		"usage-library": {
+			"title": "Stan biblioteki",
+			"description": "Foldery, tagi, linki i bieżący rozmiar zajętej przestrzeni.",
+			"keywords": ["foldery", "tagi", "linki", "rozmiar"]
+		},
+		"about-changelog": {
+			"title": "Lista zmian",
+			"section": "Aktualizacje",
+			"description": "Otwórz opublikowaną listę zmian programu Glyph.",
+			"keywords": ["informacje o wydaniu", "wersja", "aktualizacje"]
+		}
+	},
+	"categoryPrefix": "Ustawienia > {{tab}}"
+}

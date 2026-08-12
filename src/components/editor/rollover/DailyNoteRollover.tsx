@@ -183,8 +183,12 @@ export function DailyNoteRollover({
 			for (const candidate of group) {
 				const detail = candidate.nested_count
 					? `\n\n${t("rollover.nestedSummary", {
-							count: candidate.nested_count,
-							unfinished: candidate.unfinished_nested_count,
+							nested: t("rollover.nestedCount", {
+								count: candidate.nested_count,
+							}),
+							unfinished: t("rollover.unfinishedCount", {
+								count: candidate.unfinished_nested_count,
+							}),
 						})}`
 					: "";
 				const selectLabel = t("rollover.select");

@@ -6,6 +6,7 @@ export const SUPPORTED_LANGUAGE_IDS = [
 	"fr",
 	"ko",
 	"pt-BR",
+	"pl",
 ] as const;
 
 export type AppLanguage = (typeof SUPPORTED_LANGUAGE_IDS)[number];
@@ -23,6 +24,7 @@ export const LANGUAGE_OPTIONS: LanguageOption[] = [
 	{ id: "fr", nativeLabel: "Français" },
 	{ id: "ko", nativeLabel: "한국어" },
 	{ id: "pt-BR", nativeLabel: "Português (Brasil)" },
+	{ id: "pl", nativeLabel: "Polski" },
 ];
 
 const SUPPORTED_LANGUAGE_SET = new Set<string>(SUPPORTED_LANGUAGE_IDS);
