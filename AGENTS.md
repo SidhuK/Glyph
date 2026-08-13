@@ -93,7 +93,7 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 
 ## Version Control
 
-- Always use native `gh` CLI. If Github CLI is not available, use git commands (push, pull, fetch, commit, squash, rebase, etc.)
+- Always use native `gh` CLI. If GitHub CLI is not available, use git commands (push, pull, fetch, commit, squash, rebase, etc.)
 
 ## Tool Restrictions
 
