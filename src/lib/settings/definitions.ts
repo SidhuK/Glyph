@@ -683,7 +683,8 @@ export const SPACE_SETTINGS = {
 			typeof value === "string"
 				? normalizeRelPath(value) || DEFAULT_QUICK_NOTES_FOLDER
 				: DEFAULT_QUICK_NOTES_FOLDER,
-		parse: parseString,
+		parse: (value) =>
+			value === null ? parsed(DEFAULT_QUICK_NOTES_FOLDER) : parseString(value),
 		read: (settings) => settings.quickNotes.folder,
 		patch: (value) => ({ quickNotesFolder: value }),
 		change: (value) => ({ quickNotes: { folder: value } }),

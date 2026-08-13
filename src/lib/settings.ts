@@ -447,9 +447,10 @@ export async function loadSettings(
 		GLYPH_DEFAULT_DARK_THEME_ID,
 	);
 	const fontFamily = DURABLE_SETTINGS.fontFamily.load(entries);
-	const editorFontFamily = entries.has(DURABLE_SETTINGS.editorFontFamily.key)
-		? DURABLE_SETTINGS.editorFontFamily.load(entries)
-		: fontFamily;
+	const editorFontFamily =
+		entries.get(DURABLE_SETTINGS.editorFontFamily.key) == null
+			? fontFamily
+			: DURABLE_SETTINGS.editorFontFamily.load(entries);
 	const monoFontFamily = DURABLE_SETTINGS.monoFontFamily.load(entries);
 	const fontSize = DURABLE_SETTINGS.fontSize.load(entries);
 	const editorFontSize = DURABLE_SETTINGS.editorFontSize.load(entries);
