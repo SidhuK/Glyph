@@ -75,9 +75,9 @@ describe("settings colorful headings", () => {
 	});
 
 	it("persists and emits colorful headings changes", async () => {
-		const { setEditorColorfulHeadings } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setEditorColorfulHeadings(true);
+		await DURABLE_SETTINGS.editorColorfulHeadings.write(true);
 
 		expect(storeState.get("editor.colorfulHeadings")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -111,9 +111,9 @@ describe("settings spell check", () => {
 	});
 
 	it("persists and emits spell check changes", async () => {
-		const { setEditorSpellCheck } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setEditorSpellCheck(false);
+		await DURABLE_SETTINGS.editorSpellCheck.write(false);
 
 		expect(storeState.get("editor.spellCheck")).toBe(false);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -147,9 +147,9 @@ describe("settings Raw Markdown Vim Mode", () => {
 	});
 
 	it("persists and emits Raw Markdown Vim Mode changes", async () => {
-		const { setEditorRawMarkdownVimMode } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setEditorRawMarkdownVimMode(true);
+		await DURABLE_SETTINGS.editorRawMarkdownVimMode.write(true);
 
 		expect(storeState.get("editor.rawMarkdownVimMode")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -179,8 +179,8 @@ describe("settings Folio Mode", () => {
 	});
 
 	it("persists and emits Folio Mode changes", async () => {
-		const { setFolioMode } = await import("./settings");
-		await setFolioMode(true);
+		const { DURABLE_SETTINGS } = await import("./settings");
+		await DURABLE_SETTINGS.folioMode.write(true);
 		expect(storeState.get("ui.folioMode")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			ui: { folioMode: true },
@@ -202,8 +202,8 @@ describe("settings workspace session restore", () => {
 	});
 
 	it("persists and emits resume last session changes", async () => {
-		const { setResumeLastSession } = await import("./settings");
-		await setResumeLastSession(true);
+		const { DURABLE_SETTINGS } = await import("./settings");
+		await DURABLE_SETTINGS.resumeLastSession.write(true);
 		expect(storeState.get("ui.resumeLastSession")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			ui: { resumeLastSession: true },
@@ -359,16 +359,16 @@ describe("settings corner radius style", () => {
 	});
 
 	it("persists and emits corner radius style changes", async () => {
-		const { setUiCornerRadiusStyle } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setUiCornerRadiusStyle("sharp");
+		await DURABLE_SETTINGS.cornerRadiusStyle.write("sharp");
 
 		expect(storeState.get("ui.cornerRadiusStyle")).toBe("sharp");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			ui: { cornerRadiusStyle: "sharp" },
 		});
 
-		await setUiCornerRadiusStyle("round");
+		await DURABLE_SETTINGS.cornerRadiusStyle.write("round");
 
 		expect(storeState.get("ui.cornerRadiusStyle")).toBe("round");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -402,16 +402,16 @@ describe("settings app translucency", () => {
 	});
 
 	it("persists and emits app translucency changes", async () => {
-		const { setUiTranslucentApp } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setUiTranslucentApp(true);
+		await DURABLE_SETTINGS.translucentApp.write(true);
 
 		expect(storeState.get("ui.translucentApp")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			ui: { translucentApp: true },
 		});
 
-		await setUiTranslucentApp(false);
+		await DURABLE_SETTINGS.translucentApp.write(false);
 
 		expect(storeState.get("ui.translucentApp")).toBe(false);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -450,9 +450,9 @@ describe("settings editor font family", () => {
 	});
 
 	it("persists and emits editor font changes", async () => {
-		const { setUiEditorFontFamily } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setUiEditorFontFamily("Literata");
+		await DURABLE_SETTINGS.editorFontFamily.write("Literata");
 
 		expect(storeState.get("ui.editorFontFamily")).toBe("Literata");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -486,9 +486,9 @@ describe("settings editor width mode", () => {
 	});
 
 	it("persists and emits editor width mode changes", async () => {
-		const { setEditorWidthMode } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setEditorWidthMode("comfortable");
+		await DURABLE_SETTINGS.editorWidthMode.write("comfortable");
 
 		expect(storeState.get("editor.editorWidthMode")).toBe("comfortable");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -522,9 +522,9 @@ describe("settings show frontmatter in editor", () => {
 	});
 
 	it("persists and emits frontmatter visibility changes", async () => {
-		const { setEditorShowFrontmatterInEditor } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setEditorShowFrontmatterInEditor(true);
+		await DURABLE_SETTINGS.editorShowFrontmatterInEditor.write(true);
 
 		expect(storeState.get("editor.showFrontmatterInEditor")).toBe(true);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -550,10 +550,13 @@ describe("attachment storage settings", () => {
 	});
 
 	it("persists and emits attachment mode changes", async () => {
-		const { setEditorAttachmentStorageMode } = await import("./settings");
+		const { SPACE_SETTINGS, writeSpaceSetting } = await import("./settings");
 
-		await setEditorAttachmentStorageMode("space-root");
-		await setEditorAttachmentStorageMode("note-subfolder");
+		await writeSpaceSetting(SPACE_SETTINGS.attachmentStorageMode, "space-root");
+		await writeSpaceSetting(
+			SPACE_SETTINGS.attachmentStorageMode,
+			"note-subfolder",
+		);
 
 		expect(storeState.get("editor.attachmentStorageMode")).toBe(
 			"note-subfolder",
@@ -564,9 +567,9 @@ describe("attachment storage settings", () => {
 	});
 
 	it("persists and emits attachment folder changes", async () => {
-		const { setEditorAttachmentFolder } = await import("./settings");
+		const { SPACE_SETTINGS, writeSpaceSetting } = await import("./settings");
 
-		await setEditorAttachmentFolder("assets/uploads");
+		await writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, "assets/uploads");
 
 		expect(storeState.get("editor.attachmentFolder")).toBe("assets/uploads");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
@@ -582,12 +585,14 @@ describe("attachment storage settings", () => {
 	});
 
 	it("rejects invalid attachment folder paths", async () => {
-		const { setEditorAttachmentFolder } = await import("./settings");
+		const { SPACE_SETTINGS, writeSpaceSetting } = await import("./settings");
 
-		await expect(setEditorAttachmentFolder("../secret")).rejects.toThrow("..");
-		await expect(setEditorAttachmentFolder(".hidden")).rejects.toThrow(
-			"hidden",
-		);
+		await expect(
+			writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, "../secret"),
+		).rejects.toThrow("..");
+		await expect(
+			writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, ".hidden"),
+		).rejects.toThrow("hidden");
 	});
 });
 
@@ -618,19 +623,23 @@ describe("space-scoped settings", () => {
 	});
 
 	it("persists folder settings under the explicit space path", async () => {
-		const {
-			setDailyNotesFolder,
-			setEditorAttachmentStorageMode,
-			setQuickNotesFolder,
-			setTemplatesFolder,
-		} = await import("./settings");
+		const { SPACE_SETTINGS, setTemplatesFolder, writeSpaceSetting } =
+			await import("./settings");
 
-		await setDailyNotesFolder("Daily", { spacePath: "/spaces/work" });
-		await setQuickNotesFolder("Inbox", { spacePath: "/spaces/work" });
-		await setTemplatesFolder("Templates", { spacePath: "/spaces/work" });
-		await setEditorAttachmentStorageMode("specific-folder", {
+		await writeSpaceSetting(SPACE_SETTINGS.dailyNotesFolder, "Daily", {
 			spacePath: "/spaces/work",
 		});
+		await writeSpaceSetting(SPACE_SETTINGS.quickNotesFolder, "Inbox", {
+			spacePath: "/spaces/work",
+		});
+		await setTemplatesFolder("Templates", { spacePath: "/spaces/work" });
+		await writeSpaceSetting(
+			SPACE_SETTINGS.attachmentStorageMode,
+			"specific-folder",
+			{
+				spacePath: "/spaces/work",
+			},
+		);
 
 		expect(storeState.get("space.scopedSettings")).toEqual({
 			"/spaces/work": {
@@ -808,9 +817,9 @@ describe("settings language", () => {
 	});
 
 	it("persists and emits language changes", async () => {
-		const { setLanguage } = await import("./settings");
+		const { DURABLE_SETTINGS } = await import("./settings");
 
-		await setLanguage("es");
+		await DURABLE_SETTINGS.language.write("es");
 
 		expect(storeState.get("ui.language")).toBe("es");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {

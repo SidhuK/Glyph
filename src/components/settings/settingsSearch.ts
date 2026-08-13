@@ -1,4 +1,5 @@
 import { i18n } from "../../i18n";
+import { SEARCHABLE_SETTING_IDS } from "../../lib/settings/definitions";
 import { SETTINGS_TABS, type SettingsTab } from "./settingsConfig";
 
 export interface SettingsSearchEntry {
@@ -129,6 +130,15 @@ export const SETTINGS_SEARCH_ENTRIES: readonly SettingsSearchDef[] = [
 	...SETTINGS_TAB_DEFS,
 	...SETTINGS_SEARCH_DEFS,
 ];
+
+const settingsSearchIds = new Set(
+	SETTINGS_SEARCH_ENTRIES.map((definition) => definition.id),
+);
+for (const id of SEARCHABLE_SETTING_IDS) {
+	if (!settingsSearchIds.has(id)) {
+		throw new Error(`Missing settings search entry: ${id}`);
+	}
+}
 
 function readKeywords(
 	nsKey: string,

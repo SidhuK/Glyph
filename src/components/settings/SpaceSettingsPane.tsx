@@ -14,12 +14,12 @@ import {
 	DEFAULT_QUICK_NOTES_FOLDER,
 	isAttachmentStorageMode,
 	loadSettings,
-	setDailyNotesFolder,
-	setEditorAttachmentFolder,
-	setEditorAttachmentStorageMode,
-	setEditorEnablePeopleMentionsAsTags,
-	setQuickNotesFolder,
+	writeSpaceSetting,
 } from "../../lib/settings";
+import {
+	DURABLE_SETTINGS,
+	SPACE_SETTINGS,
+} from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath, validateRelFolderPath } from "../../utils/path";
@@ -122,7 +122,7 @@ export function SpaceSettingsPane() {
 					enabled: checked,
 				});
 				if (currentSpacePath) await startIndexRebuild();
-				await setEditorEnablePeopleMentionsAsTags(checked);
+				await DURABLE_SETTINGS.editorEnablePeopleMentionsAsTags.write(checked);
 				setEnablePeopleMentionsAsTags(checked);
 			})()
 				.catch((cause) => {
@@ -142,9 +142,13 @@ export function SpaceSettingsPane() {
 		try {
 			const selection = await selectFolderRelativeToSpace();
 			if (selection === null) return;
-			await setDailyNotesFolder(selection.relativePath || null, {
-				spacePath: selection.spacePath,
-			});
+			await writeSpaceSetting(
+				SPACE_SETTINGS.dailyNotesFolder,
+				selection.relativePath || null,
+				{
+					spacePath: selection.spacePath,
+				},
+			);
 			setCurrentSpacePath(selection.spacePath);
 			setDailyNotesFolderState(selection.relativePath || null);
 		} catch (cause) {
@@ -158,7 +162,9 @@ export function SpaceSettingsPane() {
 		setDailyNotesError(null);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await setDailyNotesFolder(null, { spacePath });
+			await writeSpaceSetting(SPACE_SETTINGS.dailyNotesFolder, null, {
+				spacePath,
+			});
 			setDailyNotesFolderState(null);
 		} catch (cause) {
 			setDailyNotesError(
@@ -172,16 +178,24 @@ export function SpaceSettingsPane() {
 			setAttachmentError(null);
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
-				await setEditorAttachmentStorageMode(nextMode, { spacePath });
+				await writeSpaceSetting(
+					SPACE_SETTINGS.attachmentStorageMode,
+					nextMode,
+					{ spacePath },
+				);
 				setAttachmentStorageModeState(nextMode);
 
 				const shouldResetFolder =
 					modesUseDifferentFolderSemantics(attachmentStorageMode, nextMode) ||
 					(modeRequiresAttachmentFolder(nextMode) && !attachmentFolder);
 				if (shouldResetFolder) {
-					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, {
-						spacePath,
-					});
+					await writeSpaceSetting(
+						SPACE_SETTINGS.attachmentFolder,
+						DEFAULT_ATTACHMENT_FOLDER,
+						{
+							spacePath,
+						},
+					);
 					setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 				}
 			} catch (cause) {
@@ -203,7 +217,9 @@ export function SpaceSettingsPane() {
 		const normalized = normalizeRelPath(attachmentFolder);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await setEditorAttachmentFolder(normalized, { spacePath });
+			await writeSpaceSetting(SPACE_SETTINGS.attachmentFolder, normalized, {
+				spacePath,
+			});
 			setAttachmentFolderState(normalized);
 		} catch (cause) {
 			setAttachmentError(
@@ -217,9 +233,13 @@ export function SpaceSettingsPane() {
 		try {
 			const selection = await selectFolderRelativeToSpace();
 			if (selection === null) return;
-			await setEditorAttachmentFolder(selection.relativePath, {
-				spacePath: selection.spacePath,
-			});
+			await writeSpaceSetting(
+				SPACE_SETTINGS.attachmentFolder,
+				selection.relativePath,
+				{
+					spacePath: selection.spacePath,
+				},
+			);
 			setCurrentSpacePath(selection.spacePath);
 			setAttachmentFolderState(
 				selection.relativePath || DEFAULT_ATTACHMENT_FOLDER,
@@ -235,7 +255,11 @@ export function SpaceSettingsPane() {
 		setAttachmentError(null);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER, { spacePath });
+			await writeSpaceSetting(
+				SPACE_SETTINGS.attachmentFolder,
+				DEFAULT_ATTACHMENT_FOLDER,
+				{ spacePath },
+			);
 			setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
 			setAttachmentError(
@@ -249,7 +273,8 @@ export function SpaceSettingsPane() {
 		try {
 			const selection = await selectFolderRelativeToSpace();
 			if (selection === null) return;
-			await setQuickNotesFolder(
+			await writeSpaceSetting(
+				SPACE_SETTINGS.quickNotesFolder,
 				selection.relativePath || DEFAULT_QUICK_NOTES_FOLDER,
 				{ spacePath: selection.spacePath },
 			);
@@ -270,7 +295,11 @@ export function SpaceSettingsPane() {
 		setQuickNotesError(null);
 		try {
 			const spacePath = requireSpacePath(currentSpacePath);
-			await setQuickNotesFolder(DEFAULT_QUICK_NOTES_FOLDER, { spacePath });
+			await writeSpaceSetting(
+				SPACE_SETTINGS.quickNotesFolder,
+				DEFAULT_QUICK_NOTES_FOLDER,
+				{ spacePath },
+			);
 			setQuickNotesFolderState(DEFAULT_QUICK_NOTES_FOLDER);
 		} catch (cause) {
 			setQuickNotesError(

@@ -14,8 +14,8 @@ import {
 	type FileTreeSortMode,
 	isFileTreeSortMode,
 	loadSettings,
-	setFileTreeSortMode as persistFileTreeSortMode,
 } from "../lib/settings";
+import { DURABLE_SETTINGS } from "../lib/settings/definitions";
 import { normalizeTagIconKey } from "../lib/tagIcons";
 import type {
 	FileTreeAppearance,
@@ -616,7 +616,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			fileTreeSortModeRequestVersionRef.current = requestVersion;
 			setFileTreeSortModeState(nextSortMode);
 			setIsSavingFileTreeSortMode(true);
-			return persistFileTreeSortMode(nextSortMode)
+			return DURABLE_SETTINGS.fileTreeSortMode
+				.write(nextSortMode)
 				.catch((error) => {
 					if (requestVersion === fileTreeSortModeRequestVersionRef.current) {
 						setFileTreeSortModeState(previous);

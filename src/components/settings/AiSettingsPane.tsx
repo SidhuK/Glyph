@@ -3,11 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { isMissingFileError } from "../../lib/fsErrors";
-import {
-	loadSettings,
-	setAiAssistantMode,
-	setAiEnabled,
-} from "../../lib/settings";
+import { loadSettings } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -56,7 +53,7 @@ export function AiSettingsPane() {
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const setAiToolsEnabled = useCallback(async (checked: boolean) => {
-		await setAiAssistantMode(checked ? "create" : "chat");
+		await DURABLE_SETTINGS.aiAssistantMode.write(checked ? "create" : "chat");
 	}, []);
 	const aiToolsEnabled = useSettingsBoolean(true, setAiToolsEnabled, setError);
 	const setAiToolsEnabledChecked = aiToolsEnabled.setChecked;
@@ -136,7 +133,7 @@ export function AiSettingsPane() {
 		setError("");
 		setAiEnabledState(enabled);
 		try {
-			await setAiEnabled(enabled);
+			await DURABLE_SETTINGS.aiEnabled.write(enabled);
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		}

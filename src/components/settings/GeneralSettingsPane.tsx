@@ -21,25 +21,8 @@ import {
 	isDateDisplayFormat,
 	isFocusMode,
 	loadSettings,
-	setDateDisplayFormat,
-	setEditorColorfulHeadings,
-	setEditorDefaultEditorMode,
-	setEditorFocusMode,
-	setEditorHeadingPaletteId,
-	setEditorRawMarkdownVimMode,
-	setEditorShowCollapsibleHeadings,
-	setEditorShowCollapsibleLists,
-	setEditorShowExternalLinkPreviews,
-	setEditorShowFrontmatterInEditor,
-	setEditorShowHeadingPrefixes,
-	setEditorSpellCheck,
-	setKeepRunningOnLastWindowClose,
-	setLanguage,
-	setResumeLastSession,
-	setShowFileTreeFolderCounts,
-	setShowNonMarkdownFiles,
-	setShowToc,
 } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { FileTreeSettingsSection } from "./FileTreeSettingsSection";
@@ -81,79 +64,87 @@ export function GeneralSettingsPane() {
 	const [language, setLanguageState] = useState<AppLanguage>("en");
 	const dateFormat = useSettingsValue<DateDisplayFormat>(
 		DEFAULT_DATE_DISPLAY_FORMAT,
-		setDateDisplayFormat,
+		DURABLE_SETTINGS.dateDisplayFormat.write,
 		setError,
 	);
 	const defaultEditorMode = useSettingsValue<EditorViewMode>(
 		getDefaultEditorViewMode,
-		setEditorDefaultEditorMode,
+		DURABLE_SETTINGS.editorDefaultEditorMode.write,
 		setError,
 	);
 	const focusMode = useSettingsValue<FocusMode>(
 		"off",
-		setEditorFocusMode,
+		DURABLE_SETTINGS.editorFocusMode.write,
 		setError,
 	);
 	const resumeLastSession = useSettingsBoolean(
 		false,
-		setResumeLastSession,
+		DURABLE_SETTINGS.resumeLastSession.write,
 		setError,
 	);
 	const keepRunningOnLastWindowClose = useSettingsBoolean(
 		false,
-		setKeepRunningOnLastWindowClose,
+		DURABLE_SETTINGS.keepRunningOnLastWindowClose.write,
 		setError,
 	);
-	const showToc = useSettingsBoolean(true, setShowToc, setError);
+	const showToc = useSettingsBoolean(
+		true,
+		DURABLE_SETTINGS.showToc.write,
+		setError,
+	);
 	const showFrontmatter = useSettingsBoolean(
 		false,
-		setEditorShowFrontmatterInEditor,
+		DURABLE_SETTINGS.editorShowFrontmatterInEditor.write,
 		setError,
 	);
 	const colorfulHeadings = useSettingsBoolean(
 		false,
-		setEditorColorfulHeadings,
+		DURABLE_SETTINGS.editorColorfulHeadings.write,
 		setError,
 	);
 	const headingPrefixes = useSettingsBoolean(
 		true,
-		setEditorShowHeadingPrefixes,
+		DURABLE_SETTINGS.editorShowHeadingPrefixes.write,
 		setError,
 	);
 	const headingPalette = useSettingsValue<HeadingPaletteId>(
 		DEFAULT_HEADING_PALETTE_ID,
-		setEditorHeadingPaletteId,
+		DURABLE_SETTINGS.editorHeadingPaletteId.write,
 		setError,
 	);
 	const collapsibleHeadings = useSettingsBoolean(
 		false,
-		setEditorShowCollapsibleHeadings,
+		DURABLE_SETTINGS.editorShowCollapsibleHeadings.write,
 		setError,
 	);
 	const collapsibleLists = useSettingsBoolean(
 		false,
-		setEditorShowCollapsibleLists,
+		DURABLE_SETTINGS.editorShowCollapsibleLists.write,
 		setError,
 	);
-	const spellCheck = useSettingsBoolean(true, setEditorSpellCheck, setError);
+	const spellCheck = useSettingsBoolean(
+		true,
+		DURABLE_SETTINGS.editorSpellCheck.write,
+		setError,
+	);
 	const externalLinkPreviews = useSettingsBoolean(
 		false,
-		setEditorShowExternalLinkPreviews,
+		DURABLE_SETTINGS.editorShowExternalLinkPreviews.write,
 		setError,
 	);
 	const rawMarkdownVimMode = useSettingsBoolean(
 		false,
-		setEditorRawMarkdownVimMode,
+		DURABLE_SETTINGS.editorRawMarkdownVimMode.write,
 		setError,
 	);
 	const folderCounts = useSettingsBoolean(
 		false,
-		setShowFileTreeFolderCounts,
+		DURABLE_SETTINGS.showFileTreeFolderCounts.write,
 		setError,
 	);
 	const nonMarkdownFiles = useSettingsBoolean(
 		true,
-		setShowNonMarkdownFiles,
+		DURABLE_SETTINGS.showNonMarkdownFiles.write,
 		setError,
 	);
 
@@ -329,7 +320,7 @@ export function GeneralSettingsPane() {
 		const previous = language;
 		setLanguageState(nextLanguage);
 		try {
-			await setLanguage(nextLanguage);
+			await DURABLE_SETTINGS.language.write(nextLanguage);
 		} catch (cause) {
 			setLanguageState(previous);
 			setError(cause instanceof Error ? cause.message : String(cause));

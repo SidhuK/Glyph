@@ -1109,10 +1109,13 @@ fn should_exit_after_external_markdown_close(app: &tauri::AppHandle) -> bool {
 }
 
 #[cfg(target_os = "macos")]
+const KEEP_RUNNING_ON_LAST_WINDOW_CLOSE_SETTING_KEY: &str = "ui.keepRunningOnLastWindowClose";
+
+#[cfg(target_os = "macos")]
 fn keep_running_on_last_window_close(app: &tauri::AppHandle) -> bool {
     app.store("settings.json")
         .ok()
-        .and_then(|store| store.get("ui.keepRunningOnLastWindowClose"))
+        .and_then(|store| store.get(KEEP_RUNNING_ON_LAST_WINDOW_CLOSE_SETTING_KEY))
         .and_then(|value| value.as_bool())
         .unwrap_or(false)
 }

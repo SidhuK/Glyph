@@ -18,17 +18,8 @@ import {
 	type UiDarkThemeId,
 	type UiLightThemeId,
 	loadSettings,
-	setClassicAllNotesByDefault,
-	setDatabaseShowColumnColor,
-	setEditorBeautifulTags,
-	setEditorWidthMode,
-	setFolioMode,
-	setThemeMode,
-	setUiCustomThemes,
-	setUiDarkThemeId,
-	setUiLightThemeId,
-	setUiTranslucentApp,
 } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	DARK_THEME_OPTIONS,
@@ -70,43 +61,47 @@ export function AppearanceSettingsPane() {
 	const [isHydrated, setIsHydrated] = useState(false);
 	const themeMode = useSettingsValue<ThemeMode>(
 		"system",
-		setThemeMode,
+		DURABLE_SETTINGS.theme.write,
 		setError,
 	);
 	const lightThemeId = useSettingsValue<UiLightThemeId>(
 		GLYPH_DEFAULT_LIGHT_THEME_ID,
-		setUiLightThemeId,
+		DURABLE_SETTINGS.lightThemeId.write,
 		setError,
 	);
 	const darkThemeId = useSettingsValue<UiDarkThemeId>(
 		GLYPH_DEFAULT_DARK_THEME_ID,
-		setUiDarkThemeId,
+		DURABLE_SETTINGS.darkThemeId.write,
 		setError,
 	);
 	const translucentApp = useSettingsValue<boolean>(
 		DEFAULT_UI_TRANSLUCENT_APP,
-		setUiTranslucentApp,
+		DURABLE_SETTINGS.translucentApp.write,
 		setError,
 	);
 	const editorWidthMode = useSettingsValue<EditorWidthMode>(
 		"compact",
-		setEditorWidthMode,
+		DURABLE_SETTINGS.editorWidthMode.write,
 		setError,
 	);
 	const beautifulTags = useSettingsBoolean(
 		false,
-		setEditorBeautifulTags,
+		DURABLE_SETTINGS.editorBeautifulTags.write,
 		setError,
 	);
-	const folioMode = useSettingsBoolean(false, setFolioMode, setError);
+	const folioMode = useSettingsBoolean(
+		false,
+		DURABLE_SETTINGS.folioMode.write,
+		setError,
+	);
 	const classicAllNotes = useSettingsBoolean(
 		false,
-		setClassicAllNotesByDefault,
+		DURABLE_SETTINGS.classicAllNotesByDefault.write,
 		setError,
 	);
 	const showColumnColor = useSettingsBoolean(
 		true,
-		setDatabaseShowColumnColor,
+		DURABLE_SETTINGS.databaseShowColumnColor.write,
 		setError,
 	);
 	const {
@@ -284,7 +279,7 @@ export function AppearanceSettingsPane() {
 	);
 
 	const persistCustomThemes = useCallback(async (next: CustomTheme[]) => {
-		await setUiCustomThemes(next);
+		await DURABLE_SETTINGS.customThemes.write(next);
 		setCustomThemesState(next);
 	}, []);
 
@@ -309,11 +304,11 @@ export function AppearanceSettingsPane() {
 					? GLYPH_DEFAULT_DARK_THEME_ID
 					: darkThemeId.value;
 			if (nextLight !== lightThemeId.value) {
-				await setUiLightThemeId(nextLight);
+				await DURABLE_SETTINGS.lightThemeId.write(nextLight);
 				lightThemeId.setValue(nextLight);
 			}
 			if (nextDark !== darkThemeId.value) {
-				await setUiDarkThemeId(nextDark);
+				await DURABLE_SETTINGS.darkThemeId.write(nextDark);
 				darkThemeId.setValue(nextDark);
 			}
 			await persistCustomThemes(

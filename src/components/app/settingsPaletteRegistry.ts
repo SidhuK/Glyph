@@ -3,52 +3,25 @@ import { LANGUAGE_OPTIONS } from "../../i18n/locales";
 import {
 	type AppSettings,
 	DATE_DISPLAY_FORMAT_OPTIONS,
-	DEFAULT_QUICK_NOTES_FOLDER,
+	DURABLE_SETTINGS,
 	MAX_EDITOR_FONT_SIZE,
 	MAX_UI_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
 	MIN_UI_FONT_SIZE,
-	setAiAssistantMode,
-	setAiEnabled,
-	setClassicAllNotesByDefault,
-	setDailyNotesFolder,
-	setDatabaseShowColumnColor,
-	setDateDisplayFormat,
-	setEditorAttachmentStorageMode,
-	setEditorBeautifulTags,
-	setEditorColorfulHeadings,
-	setEditorRawMarkdownVimMode,
-	setEditorShowCollapsibleHeadings,
-	setEditorShowCollapsibleLists,
-	setEditorShowExternalLinkPreviews,
-	setEditorShowFrontmatterInEditor,
-	setEditorSpellCheck,
-	setEditorWidthMode,
-	setFileTreeSortMode,
-	setFolioMode,
-	setKeepRunningOnLastWindowClose,
-	setLanguage,
-	setQuickNotesFolder,
-	setReleaseChannel,
-	setResumeLastSession,
-	setShowFileTreeFolderCounts,
-	setShowNonMarkdownFiles,
-	setShowToc,
+	SPACE_SETTINGS,
 	setTemplatesFolder,
-	setThemeMode,
-	setUiDarkThemeId,
-	setUiEditorFontFamily,
-	setUiEditorFontSize,
-	setUiFontFamily,
-	setUiFontSize,
-	setUiLightThemeId,
-	setUiMonoFontFamily,
-	setUiTranslucentApp,
+	writeSpaceSetting,
 } from "../../lib/settings";
+import type {
+	ApplicationSettingDefinition,
+	SpaceSettingDefinition,
+} from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { DARK_THEME_OPTIONS, LIGHT_THEME_OPTIONS } from "../../lib/uiThemes";
 import type { SettingsTab } from "../settings/settingsConfig";
 import { SETTINGS_SEARCH_ENTRIES } from "../settings/settingsSearch";
+
+type PaletteSettingValue = string | number | boolean | null;
 
 export type PaletteSettingControl =
 	| "toggle"
@@ -72,86 +45,86 @@ export interface PaletteSettingDefinition {
 	min?: number;
 	max?: number;
 	options?: readonly PaletteSettingOption[];
-	read: (settings: AppSettings) => string | number | boolean | null;
+	read: (settings: AppSettings) => PaletteSettingValue;
 	write: (
-		value: string | number | boolean | null,
+		value: PaletteSettingValue,
 		spacePath: string | null,
 	) => Promise<void>;
 }
 
 type EditablePaletteSettingDefinition = Omit<PaletteSettingDefinition, "tab">;
+type SettingBinding = Pick<
+	EditablePaletteSettingDefinition,
+	"id" | "scope" | "read" | "write"
+>;
 
 function invalidValue(): never {
 	throw new Error(i18n.t("shell:commandPalette.invalidSettingValue"));
 }
 
-function requireString(value: string | number | boolean | null): string {
-	return typeof value === "string" ? value : invalidValue();
+function searchableId<Value>(
+	definition:
+		| ApplicationSettingDefinition<Value>
+		| SpaceSettingDefinition<Value>,
+): string {
+	if (definition.discovery.kind === "search") return definition.discovery.id;
+	throw new Error(`Palette setting is hidden: ${definition.discovery.reason}`);
 }
 
-function requireBoolean(value: string | number | boolean | null): boolean {
-	return typeof value === "boolean" ? value : invalidValue();
+function bindApplicationSetting<Value extends PaletteSettingValue>(
+	definition: ApplicationSettingDefinition<Value>,
+): SettingBinding {
+	return {
+		id: searchableId(definition),
+		scope: "application",
+		read: definition.read,
+		write: async (value) => {
+			const result = definition.parse(value);
+			if (!result.ok) invalidValue();
+			await definition.write(result.value);
+		},
+	};
 }
 
-function requireNumber(value: string | number | boolean | null): number {
-	return typeof value === "number" && Number.isFinite(value)
-		? value
-		: invalidValue();
-}
-
-function scope(spacePath: string | null) {
-	return { spacePath };
+function bindSpaceSetting<Value extends PaletteSettingValue>(
+	definition: SpaceSettingDefinition<Value>,
+): SettingBinding {
+	return {
+		id: searchableId(definition),
+		scope: "space",
+		read: definition.read,
+		write: async (value, spacePath) => {
+			const result = definition.parse(value);
+			if (!result.ok) invalidValue();
+			await writeSpaceSetting(definition, result.value, { spacePath });
+		},
+	};
 }
 
 const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 	{
-		id: "general-language",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.language),
 		control: "choice",
 		options: LANGUAGE_OPTIONS.map(({ id, nativeLabel }) => ({
 			value: id,
 			label: nativeLabel,
 		})),
-		read: (settings) => settings.ui.language,
-		write: async (value) => {
-			const language = requireString(value);
-			const option = LANGUAGE_OPTIONS.find(({ id }) => id === language);
-			if (!option) invalidValue();
-			await setLanguage(option.id);
-		},
 	},
 	{
-		id: "general-date-format",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.dateDisplayFormat),
 		control: "choice",
 		options: DATE_DISPLAY_FORMAT_OPTIONS,
-		read: (settings) => settings.ui.dateDisplayFormat,
-		write: async (value) => {
-			const format = requireString(value);
-			const option = DATE_DISPLAY_FORMAT_OPTIONS.find(
-				(candidate) => candidate.value === format,
-			);
-			if (!option) invalidValue();
-			await setDateDisplayFormat(option.value);
-		},
 	},
 	{
-		id: "general-resume-last-session",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.resumeLastSession),
 		control: "toggle",
-		read: (settings) => settings.ui.resumeLastSession,
-		write: (value) => setResumeLastSession(requireBoolean(value)),
 	},
 	{
-		id: "general-keep-running-on-close",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.keepRunningOnLastWindowClose),
 		control: "toggle",
-		read: (settings) => settings.ui.keepRunningOnLastWindowClose,
-		write: (value) => setKeepRunningOnLastWindowClose(requireBoolean(value)),
 	},
 	{
-		id: "appearance-theme-mode",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.theme),
 		control: "choice",
 		defaultVisible: true,
 		options: [
@@ -159,138 +132,68 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			{ value: "light", label: "Light" },
 			{ value: "dark", label: "Dark" },
 		],
-		read: (settings) => settings.ui.theme,
-		write: async (value) => {
-			const mode = requireString(value);
-			if (mode !== "system" && mode !== "light" && mode !== "dark")
-				invalidValue();
-			await setThemeMode(mode);
-		},
 	},
 	{
-		id: "appearance-light-theme",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.lightThemeId),
 		control: "choice",
 		options: LIGHT_THEME_OPTIONS.map(({ id, label }) => ({ value: id, label })),
-		read: (settings) => settings.ui.lightThemeId,
-		write: async (value) => {
-			const id = requireString(value);
-			const option = LIGHT_THEME_OPTIONS.find(
-				(candidate) => candidate.id === id,
-			);
-			if (!option) invalidValue();
-			await setUiLightThemeId(option.id);
-		},
 	},
 	{
-		id: "appearance-dark-theme",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.darkThemeId),
 		control: "choice",
 		options: DARK_THEME_OPTIONS.map(({ id, label }) => ({ value: id, label })),
-		read: (settings) => settings.ui.darkThemeId,
-		write: async (value) => {
-			const id = requireString(value);
-			const option = DARK_THEME_OPTIONS.find(
-				(candidate) => candidate.id === id,
-			);
-			if (!option) invalidValue();
-			await setUiDarkThemeId(option.id);
-		},
 	},
 	{
-		id: "appearance-translucent-app",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.translucentApp),
 		control: "toggle",
-		read: (settings) => settings.ui.translucentApp,
-		write: (value) => setUiTranslucentApp(requireBoolean(value)),
 	},
 	{
-		id: "appearance-interface-font",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.fontFamily),
 		control: "text",
-		read: (settings) => settings.ui.fontFamily,
-		write: (value) => setUiFontFamily(requireString(value)),
 	},
 	{
-		id: "appearance-editor-font",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorFontFamily),
 		control: "text",
-		read: (settings) => settings.ui.editorFontFamily,
-		write: (value) => setUiEditorFontFamily(requireString(value)),
 	},
 	{
-		id: "appearance-monospace-font",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.monoFontFamily),
 		control: "text",
-		read: (settings) => settings.ui.monoFontFamily,
-		write: (value) => setUiMonoFontFamily(requireString(value)),
 	},
 	{
-		id: "appearance-ui-font-size",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.fontSize),
 		control: "number",
 		min: MIN_UI_FONT_SIZE,
 		max: MAX_UI_FONT_SIZE,
-		read: (settings) => settings.ui.fontSize,
-		write: (value) => setUiFontSize(requireNumber(value)),
 	},
 	{
-		id: "appearance-editor-font-size",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorFontSize),
 		control: "number",
 		min: MIN_EDITOR_FONT_SIZE,
 		max: MAX_EDITOR_FONT_SIZE,
-		read: (settings) => settings.ui.editorFontSize,
-		write: (value) => setUiEditorFontSize(requireNumber(value)),
 	},
 	{
-		id: "ai-features",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.aiEnabled),
 		control: "toggle",
 		defaultVisible: true,
-		read: (settings) => settings.ui.aiEnabled,
-		write: (value) => setAiEnabled(requireBoolean(value)),
 	},
 	{
-		id: "ai-assistant-behavior-tools",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.aiAssistantMode),
 		control: "choice",
 		options: [
 			{ value: "chat", label: "Chat" },
 			{ value: "create", label: "Create" },
 		],
-		read: (settings) => settings.ui.aiAssistantMode,
-		write: async (value) => {
-			const mode = requireString(value);
-			if (mode !== "chat" && mode !== "create") invalidValue();
-			await setAiAssistantMode(mode);
-		},
 	},
 	{
-		id: "space-daily-notes-folder",
-		scope: "space",
+		...bindSpaceSetting(SPACE_SETTINGS.dailyNotesFolder),
 		control: "path",
-		read: (settings) => settings.dailyNotes.folder,
-		write: (value, spacePath) =>
-			setDailyNotesFolder(
-				value === null ? null : requireString(value),
-				scope(spacePath),
-			),
 	},
 	{
-		id: "space-quick-notes-folder",
-		scope: "space",
+		...bindSpaceSetting(SPACE_SETTINGS.quickNotesFolder),
 		control: "path",
-		read: (settings) => settings.quickNotes.folder,
-		write: (value, spacePath) =>
-			setQuickNotesFolder(
-				value === null ? DEFAULT_QUICK_NOTES_FOLDER : requireString(value),
-				scope(spacePath),
-			),
 	},
 	{
-		id: "space-attachments-location",
-		scope: "space",
+		...bindSpaceSetting(SPACE_SETTINGS.attachmentStorageMode),
 		control: "choice",
 		options: [
 			{ value: "space-root", label: "Space root" },
@@ -298,29 +201,16 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			{ value: "note-folder", label: "Note folder" },
 			{ value: "note-subfolder", label: "Note subfolder" },
 		],
-		read: (settings) => settings.editor.attachmentStorageMode,
-		write: async (value, spacePath) => {
-			const mode = requireString(value);
-			if (
-				mode !== "space-root" &&
-				mode !== "specific-folder" &&
-				mode !== "note-folder" &&
-				mode !== "note-subfolder"
-			)
-				invalidValue();
-			await setEditorAttachmentStorageMode(mode, scope(spacePath));
-		},
 	},
 	{
 		id: "space-template-folder",
 		scope: "space",
 		control: "path",
 		read: (settings) => settings.templates.folder,
-		write: (value, spacePath) =>
-			setTemplatesFolder(
-				value === null ? null : requireString(value),
-				scope(spacePath),
-			),
+		write: (value, spacePath) => {
+			if (typeof value !== "string" && value !== null) invalidValue();
+			return setTemplatesFolder(value, { spacePath });
+		},
 	},
 	{
 		id: "space-search-index-status",
@@ -332,119 +222,71 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 		},
 	},
 	{
-		id: "general-editor-table-of-contents",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.showToc),
 		control: "toggle",
 		defaultVisible: true,
-		read: (settings) => settings.ui.showToc,
-		write: (value) => setShowToc(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-frontmatter",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowFrontmatterInEditor),
 		control: "toggle",
-		read: (settings) => settings.editor.showFrontmatterInEditor,
-		write: (value) => setEditorShowFrontmatterInEditor(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-colorful-headings",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorColorfulHeadings),
 		control: "toggle",
-		read: (settings) => settings.editor.colorfulHeadings,
-		write: (value) => setEditorColorfulHeadings(requireBoolean(value)),
 	},
 	{
-		id: "appearance-editor-presentation-beautiful-tags",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorBeautifulTags),
 		control: "toggle",
-		read: (settings) => settings.editor.beautifulTags,
-		write: (value) => setEditorBeautifulTags(requireBoolean(value)),
 	},
 	{
-		id: "appearance-editor-presentation-width",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorWidthMode),
 		control: "choice",
 		options: [
 			{ value: "compact", label: "Compact" },
 			{ value: "comfortable", label: "Comfortable" },
 			{ value: "wide", label: "Wide" },
 		],
-		read: (settings) => settings.editor.editorWidthMode,
-		write: async (value) => {
-			const width = requireString(value);
-			if (width !== "compact" && width !== "comfortable" && width !== "wide")
-				invalidValue();
-			await setEditorWidthMode(width);
-		},
 	},
 	{
-		id: "general-editor-collapsible-headings",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowCollapsibleHeadings),
 		control: "toggle",
-		read: (settings) => settings.editor.showCollapsibleHeadings,
-		write: (value) => setEditorShowCollapsibleHeadings(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-collapsible-lists",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowCollapsibleLists),
 		control: "toggle",
-		read: (settings) => settings.editor.showCollapsibleLists,
-		write: (value) => setEditorShowCollapsibleLists(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-spell-check",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorSpellCheck),
 		control: "toggle",
 		defaultVisible: true,
-		read: (settings) => settings.editor.spellCheck,
-		write: (value) => setEditorSpellCheck(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-external-link-previews",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorShowExternalLinkPreviews),
 		control: "toggle",
-		read: (settings) => settings.editor.showExternalLinkPreviews,
-		write: (value) => setEditorShowExternalLinkPreviews(requireBoolean(value)),
 	},
 	{
-		id: "general-editor-vim-mode",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.editorRawMarkdownVimMode),
 		control: "toggle",
-		read: (settings) => settings.editor.rawMarkdownVimMode,
-		write: (value) => setEditorRawMarkdownVimMode(requireBoolean(value)),
 	},
 	{
-		id: "appearance-layout-folio-mode",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.folioMode),
 		control: "toggle",
 		defaultVisible: true,
-		read: (settings) => settings.ui.folioMode,
-		write: (value) => setFolioMode(requireBoolean(value)),
 	},
 	{
-		id: "appearance-layout-classic-all-notes",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.classicAllNotesByDefault),
 		control: "toggle",
-		read: (settings) => settings.ui.classicAllNotesByDefault,
-		write: (value) => setClassicAllNotesByDefault(requireBoolean(value)),
 	},
 	{
-		id: "general-file-tree-folder-counts",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.showFileTreeFolderCounts),
 		control: "toggle",
-		read: (settings) => settings.ui.showFileTreeFolderCounts,
-		write: (value) => setShowFileTreeFolderCounts(requireBoolean(value)),
 	},
 	{
-		id: "general-file-tree-non-markdown-files",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.showNonMarkdownFiles),
 		control: "toggle",
-		read: (settings) => settings.ui.showNonMarkdownFiles,
-		write: (value) => setShowNonMarkdownFiles(requireBoolean(value)),
 	},
 	{
-		id: "general-file-tree-sort",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.fileTreeSortMode),
 		control: "choice",
 		defaultVisible: true,
 		options: [
@@ -455,35 +297,20 @@ const editableDefinitions: readonly EditablePaletteSettingDefinition[] = [
 			{ value: "created-desc", label: "Created newest" },
 			{ value: "created-asc", label: "Created oldest" },
 		],
-		read: (settings) => settings.ui.fileTreeSortMode,
-		write: async (value) => {
-			const mode = requireString(value);
-			if (
-				mode !== "name-asc" &&
-				mode !== "name-desc" &&
-				mode !== "modified-desc" &&
-				mode !== "modified-asc" &&
-				mode !== "created-desc" &&
-				mode !== "created-asc"
-			)
-				invalidValue();
-			await setFileTreeSortMode(mode);
-		},
 	},
 	{
-		id: "appearance-database-column-color",
-		scope: "application",
+		...bindApplicationSetting(DURABLE_SETTINGS.databaseShowColumnColor),
 		control: "toggle",
-		read: (settings) => settings.database.showColumnColor,
-		write: (value) => setDatabaseShowColumnColor(requireBoolean(value)),
 	},
 	{
 		id: "about-alpha-releases",
 		scope: "application",
 		control: "toggle",
 		read: (settings) => settings.ui.releaseChannel === "alpha",
-		write: (value) =>
-			setReleaseChannel(requireBoolean(value) ? "alpha" : "stable"),
+		write: async (value) => {
+			if (typeof value !== "boolean") invalidValue();
+			await DURABLE_SETTINGS.releaseChannel.write(value ? "alpha" : "stable");
+		},
 	},
 ];
 
@@ -494,9 +321,8 @@ const settingsTabById = new Map(
 export const PALETTE_SETTINGS_REGISTRY: readonly PaletteSettingDefinition[] =
 	editableDefinitions.map((definition) => {
 		const tab = settingsTabById.get(definition.id);
-		if (!tab) {
+		if (!tab)
 			throw new Error(`Missing settings search entry: ${definition.id}`);
-		}
 		return { ...definition, tab };
 	});
 

@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SpaceSettingsPane } from "./SpaceSettingsPane";
 
 const {
-	getDailyNotesFolderMock,
 	invokeMock,
 	loadSettingsMock,
 	setDailyNotesFolderMock,
@@ -15,8 +14,8 @@ const {
 	setEditorAttachmentStorageModeMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
 	setQuickNotesFolderMock,
+	writeSpaceSettingMock,
 } = vi.hoisted(() => ({
-	getDailyNotesFolderMock: vi.fn(() => Promise.resolve(null)),
 	invokeMock: vi.fn(),
 	loadSettingsMock: vi.fn(() =>
 		Promise.resolve({
@@ -34,11 +33,30 @@ const {
 			},
 		}),
 	),
-	setDailyNotesFolderMock: vi.fn(() => Promise.resolve()),
-	setEditorAttachmentFolderMock: vi.fn(() => Promise.resolve()),
-	setEditorAttachmentStorageModeMock: vi.fn(() => Promise.resolve()),
+	setDailyNotesFolderMock: vi.fn(
+		(_value: unknown, _scope: { spacePath?: string | null }) =>
+			Promise.resolve(),
+	),
+	setEditorAttachmentFolderMock: vi.fn(
+		(_value: unknown, _scope: { spacePath?: string | null }) =>
+			Promise.resolve(),
+	),
+	setEditorAttachmentStorageModeMock: vi.fn(
+		(_value: unknown, _scope: { spacePath?: string | null }) =>
+			Promise.resolve(),
+	),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
-	setQuickNotesFolderMock: vi.fn(() => Promise.resolve()),
+	setQuickNotesFolderMock: vi.fn(
+		(_value: unknown, _scope: { spacePath?: string | null }) =>
+			Promise.resolve(),
+	),
+	writeSpaceSettingMock: vi.fn(
+		(
+			_definition: { field: string },
+			_value: unknown,
+			_scope: { spacePath?: string | null },
+		) => Promise.resolve(),
+	),
 }));
 
 (
@@ -57,16 +75,29 @@ vi.mock("../../lib/settings", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../../lib/settings")>();
 	return {
 		...actual,
-		getDailyNotesFolder: getDailyNotesFolderMock,
 		loadSettings: loadSettingsMock,
-		setDailyNotesFolder: setDailyNotesFolderMock,
-		setEditorAttachmentFolder: setEditorAttachmentFolderMock,
-		setEditorAttachmentStorageMode: setEditorAttachmentStorageModeMock,
-		setEditorEnablePeopleMentionsAsTags:
-			setEditorEnablePeopleMentionsAsTagsMock,
-		setQuickNotesFolder: setQuickNotesFolderMock,
+		writeSpaceSetting: writeSpaceSettingMock,
 	};
 });
+
+vi.mock("../../lib/settings/definitions", () => ({
+	DURABLE_SETTINGS: {
+		editorEnablePeopleMentionsAsTags: {
+			write: setEditorEnablePeopleMentionsAsTagsMock,
+		},
+	},
+	SPACE_SETTINGS: {
+		dailyNotesFolder: { field: "dailyNotesFolder" },
+		quickNotesFolder: { field: "quickNotesFolder" },
+		attachmentStorageMode: { field: "attachmentStorageMode" },
+		attachmentFolder: { field: "attachmentFolder" },
+	},
+	isAttachmentStorageMode: (value: unknown) =>
+		value === "space-root" ||
+		value === "specific-folder" ||
+		value === "note-folder" ||
+		value === "note-subfolder",
+}));
 
 vi.mock("../../lib/tauri", () => ({
 	invoke: invokeMock,
@@ -173,6 +204,24 @@ describe("SpaceSettingsPane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		invokeMock.mockResolvedValue("/spaces/test");
+		writeSpaceSettingMock.mockImplementation(
+			(
+				definition: { field: string },
+				value: unknown,
+				scope: { spacePath?: string | null },
+			) => {
+				if (definition.field === "attachmentStorageMode") {
+					return setEditorAttachmentStorageModeMock(value, scope);
+				}
+				if (definition.field === "attachmentFolder") {
+					return setEditorAttachmentFolderMock(value, scope);
+				}
+				if (definition.field === "dailyNotesFolder") {
+					return setDailyNotesFolderMock(value, scope);
+				}
+				return setQuickNotesFolderMock(value, scope);
+			},
+		);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);

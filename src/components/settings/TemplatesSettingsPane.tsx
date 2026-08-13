@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-	getDailyNoteTemplate,
-	getTemplatesFolder,
-	setDailyNoteTemplate,
+	loadSettings,
 	setTemplatesFolder,
+	writeSpaceSetting,
 } from "../../lib/settings";
+import { SPACE_SETTINGS } from "../../lib/settings/definitions";
 import { invoke } from "../../lib/tauri";
 import { listTemplates } from "../../lib/templates";
 import { SettingsFolderPicker } from "./SettingsFolderPicker";
@@ -78,16 +78,12 @@ export function TemplateSettingsSections() {
 		void (async () => {
 			try {
 				const currentSpace = await ensureCurrentSpaceOpen();
-				const settingsScope = { spacePath: currentSpace };
-				const [folder, dailyTemplate] = await Promise.all([
-					getTemplatesFolder(settingsScope),
-					getDailyNoteTemplate(settingsScope),
-				]);
+				const settings = await loadSettings({ spacePath: currentSpace });
 				if (cancelled) return;
 				setSettingsState({
 					currentSpacePath: currentSpace,
-					templatesFolder: folder,
-					dailyNoteTemplatePath: dailyTemplate,
+					templatesFolder: settings.templates.folder,
+					dailyNoteTemplatePath: settings.templates.dailyNoteTemplate,
 					error: null,
 				});
 			} catch (cause) {
@@ -115,9 +111,13 @@ export function TemplateSettingsSections() {
 					...current,
 					dailyNoteTemplatePath: null,
 				}));
-				void setDailyNoteTemplate(null, {
-					spacePath: currentSpacePath,
-				}).catch((cause) => {
+				void writeSpaceSetting(
+					SPACE_SETTINGS.templatesDailyNoteTemplate,
+					null,
+					{
+						spacePath: currentSpacePath,
+					},
+				).catch((cause) => {
 					if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 					setSettingsState((current) => ({
 						...current,
@@ -159,9 +159,13 @@ export function TemplateSettingsSections() {
 					)
 				) {
 					const writeId = beginDailyTemplateWrite();
-					void setDailyNoteTemplate(null, {
-						spacePath: currentSpacePath,
-					})
+					void writeSpaceSetting(
+						SPACE_SETTINGS.templatesDailyNoteTemplate,
+						null,
+						{
+							spacePath: currentSpacePath,
+						},
+					)
 						.then(() => {
 							if (
 								cancelled ||
@@ -219,7 +223,9 @@ export function TemplateSettingsSections() {
 				spacePath: selection.spacePath,
 			});
 			writeId = beginDailyTemplateWrite();
-			await setDailyNoteTemplate(null, { spacePath: selection.spacePath });
+			await writeSpaceSetting(SPACE_SETTINGS.templatesDailyNoteTemplate, null, {
+				spacePath: selection.spacePath,
+			});
 			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
@@ -272,7 +278,11 @@ export function TemplateSettingsSections() {
 			setSettingsState((current) => ({ ...current, error: null }));
 			try {
 				const spacePath = requireSpacePath(currentSpacePath);
-				await setDailyNoteTemplate(next, { spacePath });
+				await writeSpaceSetting(
+					SPACE_SETTINGS.templatesDailyNoteTemplate,
+					next,
+					{ spacePath },
+				);
 				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,

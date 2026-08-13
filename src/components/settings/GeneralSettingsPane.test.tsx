@@ -6,10 +6,13 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
-const { useLicenseStatusMock, useTauriEventMock } = vi.hoisted(() => ({
-	useLicenseStatusMock: vi.fn(),
-	useTauriEventMock: vi.fn(),
-}));
+const { settingWriter, useLicenseStatusMock, useTauriEventMock } = vi.hoisted(
+	() => ({
+		settingWriter: () => ({ write: vi.fn(() => Promise.resolve()) }),
+		useLicenseStatusMock: vi.fn(),
+		useTauriEventMock: vi.fn(),
+	}),
+);
 
 vi.mock("../../lib/settings", () => ({
 	isFocusMode: (value: unknown) =>
@@ -51,24 +54,29 @@ vi.mock("../../lib/settings", () => ({
 			},
 		}),
 	),
-	setLanguage: vi.fn(() => Promise.resolve()),
-	setDateDisplayFormat: vi.fn(() => Promise.resolve()),
-	setResumeLastSession: vi.fn(() => Promise.resolve()),
-	setKeepRunningOnLastWindowClose: vi.fn(() => Promise.resolve()),
-	setShowToc: vi.fn(() => Promise.resolve()),
-	setEditorShowFrontmatterInEditor: vi.fn(() => Promise.resolve()),
-	setEditorShowHeadingPrefixes: vi.fn(() => Promise.resolve()),
-	setEditorColorfulHeadings: vi.fn(() => Promise.resolve()),
-	setEditorHeadingPaletteId: vi.fn(() => Promise.resolve()),
-	setEditorShowCollapsibleHeadings: vi.fn(() => Promise.resolve()),
-	setEditorShowCollapsibleLists: vi.fn(() => Promise.resolve()),
-	setEditorSpellCheck: vi.fn(() => Promise.resolve()),
-	setEditorShowExternalLinkPreviews: vi.fn(() => Promise.resolve()),
-	setEditorRawMarkdownVimMode: vi.fn(() => Promise.resolve()),
-	setEditorDefaultEditorMode: vi.fn(() => Promise.resolve()),
-	setEditorFocusMode: vi.fn(() => Promise.resolve()),
-	setShowFileTreeFolderCounts: vi.fn(() => Promise.resolve()),
-	setShowNonMarkdownFiles: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock("../../lib/settings/definitions", () => ({
+	DURABLE_SETTINGS: {
+		language: settingWriter(),
+		dateDisplayFormat: settingWriter(),
+		resumeLastSession: settingWriter(),
+		keepRunningOnLastWindowClose: settingWriter(),
+		showToc: settingWriter(),
+		editorShowFrontmatterInEditor: settingWriter(),
+		editorShowHeadingPrefixes: settingWriter(),
+		editorColorfulHeadings: settingWriter(),
+		editorHeadingPaletteId: settingWriter(),
+		editorShowCollapsibleHeadings: settingWriter(),
+		editorShowCollapsibleLists: settingWriter(),
+		editorSpellCheck: settingWriter(),
+		editorShowExternalLinkPreviews: settingWriter(),
+		editorRawMarkdownVimMode: settingWriter(),
+		editorDefaultEditorMode: settingWriter(),
+		editorFocusMode: settingWriter(),
+		showFileTreeFolderCounts: settingWriter(),
+		showNonMarkdownFiles: settingWriter(),
+	},
 }));
 
 vi.mock("react-i18next", () => ({

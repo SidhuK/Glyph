@@ -25,10 +25,8 @@ import {
 	type AiAssistantMode,
 	loadSettings,
 	reloadFromDisk,
-	setAiAssistantMode as saveAiAssistantMode,
-	setFolioMode as saveFolioMode,
-	setShowToc as saveShowToc,
 } from "../lib/settings";
+import { DURABLE_SETTINGS } from "../lib/settings/definitions";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
@@ -411,17 +409,17 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	const setAiAssistantMode = useCallback((mode: AiAssistantMode) => {
 		dispatch({ type: "setAiAssistantMode", value: mode });
-		void saveAiAssistantMode(mode);
+		void DURABLE_SETTINGS.aiAssistantMode.write(mode);
 	}, []);
 
 	const setShowToc = useCallback((show: boolean) => {
 		dispatch({ type: "setShowToc", value: show });
-		void saveShowToc(show);
+		void DURABLE_SETTINGS.showToc.write(show);
 	}, []);
 
 	const setFolioMode = useCallback((enabled: boolean) => {
 		dispatch({ type: "setFolioMode", value: enabled });
-		void saveFolioMode(enabled);
+		void DURABLE_SETTINGS.folioMode.write(enabled);
 	}, []);
 
 	const setFolioScope = useCallback(
