@@ -17,7 +17,7 @@ import {
 	wikiLinkAttrsToMarkdown,
 } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
-import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
 const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
@@ -310,29 +310,12 @@ export const WikiLink = Node.create({
 						.run();
 				},
 				render: () =>
-					createTipTapSuggestionMenu<EditorLinkSuggestion>({
+					createTipTapTextSuggestionMenu<EditorLinkSuggestion>({
 						menuClassName: "wikiLinkSuggestionMenu",
-						renderItem: ({ item, isActive, select }) => {
-							const button = document.createElement("button");
-							button.type = "button";
-							button.className = "wikiLinkSuggestionItem";
-							button.classList.toggle("active", isActive);
-
-							const title = document.createElement("span");
-							title.className = "wikiLinkSuggestionTitle";
-							title.textContent = item.title;
-
-							const path = document.createElement("span");
-							path.className = "wikiLinkSuggestionPath";
-							path.textContent = item.path;
-
-							button.append(title, path);
-							button.addEventListener("mousedown", (event) => {
-								event.preventDefault();
-								select(item);
-							});
-							return button;
-						},
+						itemContent: (item) => ({
+							title: item.title,
+							description: item.path,
+						}),
 					}),
 			}),
 		];

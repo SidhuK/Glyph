@@ -334,11 +334,11 @@ export function AppearanceSettingsPane() {
 
 	const lightOptions: readonly UiThemeOption<UiLightThemeId>[] = [
 		...LIGHT_THEME_OPTIONS,
-		...customThemeOptions(customThemes, "light"),
+		...customThemeOptions(customThemes),
 	];
 	const darkOptions: readonly UiThemeOption<UiDarkThemeId>[] = [
 		...DARK_THEME_OPTIONS,
-		...customThemeOptions(customThemes, "dark"),
+		...customThemeOptions(customThemes),
 	];
 	const lightTheme =
 		lightOptions.find((option) => option.id === lightThemeId.value) ??

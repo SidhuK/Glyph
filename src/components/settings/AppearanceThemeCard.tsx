@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type {
@@ -7,11 +6,7 @@ import type {
 	UiDarkThemeId,
 	UiLightThemeId,
 } from "../../lib/settings";
-import {
-	type UiThemeOption,
-	type UiThemePreview,
-	sortUiThemeOptions,
-} from "../../lib/uiThemes";
+import { type UiThemeOption, sortUiThemeOptions } from "../../lib/uiThemes";
 import { ChevronDown } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { AppearanceThemeModePicker } from "./AppearanceThemeModePicker";
@@ -34,12 +29,19 @@ interface AppearanceThemeCardProps {
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
 }
 
-function getBadgeStyle(preview: UiThemePreview): CSSProperties {
-	return {
-		"--theme-preview-badge-bg": preview.badgeBackground,
-		"--theme-preview-badge-border": preview.badgeBorder,
-		"--theme-preview-badge-text": preview.badgeText,
-	} as CSSProperties;
+function ThemeBadge({
+	mode,
+	themeId,
+}: { mode: "light" | "dark"; themeId: string }) {
+	return (
+		<span
+			className={cn("appearanceThemeBadge appearanceThemePreview", mode)}
+			data-light-theme={mode === "light" ? themeId : undefined}
+			data-dark-theme={mode === "dark" ? themeId : undefined}
+		>
+			Aa
+		</span>
+	);
 }
 
 function ThemeSelector<T extends string>({
@@ -70,11 +72,10 @@ function ThemeSelector<T extends string>({
 					<button
 						type="button"
 						className={cn("appearanceThemeDropdownTrigger", open && "is-open")}
-						style={getBadgeStyle(selected.preview)}
 						aria-expanded={open}
 					>
 						<span className="appearanceThemeDropdownLeading">
-							<span className="appearanceThemeBadge">Aa</span>
+							<ThemeBadge mode={mode} themeId={selected.id} />
 							<span className="appearanceThemeDropdownTitle">
 								{selected.label}
 							</span>
@@ -112,7 +113,6 @@ function ThemeSelector<T extends string>({
 										"appearanceThemeDropdownOption",
 										selectedOption && "is-selected",
 									)}
-									style={getBadgeStyle(option.preview)}
 									onClick={() => {
 										void onSelect(option.id);
 										setOpen(false);
@@ -120,7 +120,7 @@ function ThemeSelector<T extends string>({
 									aria-pressed={selectedOption}
 								>
 									<span className="appearanceThemeDropdownOptionLead">
-										<span className="appearanceThemeBadge">Aa</span>
+										<ThemeBadge mode={mode} themeId={option.id} />
 										<span className="appearanceThemeDropdownOptionTitle">
 											{option.label}
 										</span>

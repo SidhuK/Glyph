@@ -13,13 +13,14 @@ import type {
 	MutableRefObject,
 	Ref,
 } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSpace } from "../../contexts";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { Plus } from "../Icons";
+import { InlineRenameInput } from "../InlineRenameInput";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import {
@@ -34,64 +35,6 @@ import {
 	springTransition,
 } from "./fileTreeItemHelpers";
 import { fileTreeAppearanceNativeMenu } from "./fileTreeNativeContextMenu";
-
-function DirectoryRenameInput({
-	initialName,
-	relPath,
-	onCommitRename,
-	onCancelRename,
-}: {
-	initialName: string;
-	relPath: string;
-	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
-	onCancelRename: () => void;
-}) {
-	const [draftName, setDraftName] = useState(initialName);
-	const renameSubmittedRef = useRef(false);
-	const inputRef = useRef<HTMLInputElement | null>(null);
-
-	useEffect(() => {
-		inputRef.current?.focus();
-		inputRef.current?.select();
-	}, []);
-
-	const commitRename = async () => {
-		if (renameSubmittedRef.current) return;
-		renameSubmittedRef.current = true;
-		await onCommitRename(relPath, draftName);
-	};
-
-	return (
-		<input
-			ref={inputRef}
-			className="plainTextInput fileTreeRenameInput"
-			value={draftName}
-			placeholder="New Folder"
-			onChange={(event) => setDraftName(event.target.value)}
-			onMouseDown={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-			onClick={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-			onBlur={() => void commitRename()}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					void commitRename();
-					return;
-				}
-				if (event.key === "Escape") {
-					event.preventDefault();
-					renameSubmittedRef.current = true;
-					onCancelRename();
-				}
-			}}
-		/>
-	);
-}
 
 interface FileTreeDirItemProps {
 	entry: FsEntry;
@@ -250,12 +193,14 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						data-file-tree-kind="dir"
 						data-file-tree-path={entry.rel_path}
 					>
-						<DirectoryRenameInput
+						<InlineRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
-							initialName={entry.name.trim() || "New Folder"}
-							relPath={entry.rel_path}
-							onCommitRename={onCommitRename}
-							onCancelRename={onCancelRename}
+							initialValue={entry.name.trim() || "New Folder"}
+							className="plainTextInput fileTreeRenameInput"
+							placeholder="New Folder"
+							containPointerEvents
+							onCommit={(nextName) => onCommitRename(entry.rel_path, nextName)}
+							onCancel={onCancelRename}
 						/>
 					</div>
 				) : (

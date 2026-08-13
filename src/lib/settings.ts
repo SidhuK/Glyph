@@ -360,7 +360,7 @@ function asReleaseChannel(value: unknown): ReleaseChannel {
 	return value === "alpha" ? "alpha" : "stable";
 }
 
-async function emitSettingsUpdated(payload: {
+interface SettingsUpdatedPayload {
 	spacePath?: string;
 	ui?: {
 		theme?: ThemeMode;
@@ -423,7 +423,11 @@ async function emitSettingsUpdated(payload: {
 	shortcuts?: {
 		bindings?: ShortcutBindings;
 	};
-}): Promise<void> {
+}
+
+async function emitSettingsUpdated(
+	payload: SettingsUpdatedPayload,
+): Promise<void> {
 	try {
 		if (payload.spacePath) {
 			await emitTo(getCurrentWindow().label, "settings:updated", payload);
@@ -572,6 +576,21 @@ const KEYS = {
 	databaseShowColumnColor: "database.showColumnColor",
 	spaceScopedSettings: "space.scopedSettings",
 } as const;
+
+type SettingsKey = (typeof KEYS)[keyof typeof KEYS];
+
+async function persistSetting<Value>(
+	key: SettingsKey,
+	value: Value,
+	payload: SettingsUpdatedPayload,
+	afterSave?: (value: Value) => void,
+): Promise<void> {
+	const store = await getSettingsStore();
+	await store.set(key, value);
+	await saveSettingsStore(store);
+	afterSave?.(value);
+	void emitSettingsUpdated(payload);
+}
 
 function isShortcutBindingRecord(
 	value: unknown,
@@ -1257,206 +1276,162 @@ export async function resetAllShortcutBindings(): Promise<void> {
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.aiAssistantMode, mode);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { aiAssistantMode: mode } });
+	await persistSetting(KEYS.aiAssistantMode, mode, {
+		ui: { aiAssistantMode: mode },
+	});
 }
 
 export async function setAiEnabled(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.aiEnabled, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
+	await persistSetting(KEYS.aiEnabled, enabled, { ui: { aiEnabled: enabled } });
 }
 
 export async function setLanguage(language: AppLanguage): Promise<void> {
-	const store = await getSettingsStore();
 	const normalized = normalizeAppLanguage(language);
-	await store.set(KEYS.language, normalized);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { language: normalized } });
+	await persistSetting(KEYS.language, normalized, {
+		ui: { language: normalized },
+	});
 }
 
 export async function setDateDisplayFormat(
 	format: DateDisplayFormat,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = normalizeDateDisplayFormat(format);
-	await store.set(KEYS.dateDisplayFormat, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { dateDisplayFormat: next } });
+	await persistSetting(KEYS.dateDisplayFormat, next, {
+		ui: { dateDisplayFormat: next },
+	});
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.theme, theme);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { theme } });
+	await persistSetting(KEYS.theme, theme, { ui: { theme } });
 }
 
 export async function setUiLightThemeId(
 	lightThemeId: UiLightThemeId,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiLightThemeId(lightThemeId);
-	await store.set(KEYS.lightThemeId, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { lightThemeId: next } });
+	await persistSetting(KEYS.lightThemeId, next, { ui: { lightThemeId: next } });
 }
 
 export async function setUiDarkThemeId(
 	darkThemeId: UiDarkThemeId,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiDarkThemeId(darkThemeId);
-	await store.set(KEYS.darkThemeId, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { darkThemeId: next } });
+	await persistSetting(KEYS.darkThemeId, next, { ui: { darkThemeId: next } });
 }
 
 export async function setUiCustomThemes(
 	customThemes: readonly CustomTheme[],
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = normalizeCustomThemes(customThemes);
-	await store.set(KEYS.customThemes, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { customThemes: next } });
+	await persistSetting(KEYS.customThemes, next, { ui: { customThemes: next } });
 }
 
 export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiFontFamily(fontFamily);
-	await store.set(KEYS.fontFamily, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { fontFamily: next } });
+	await persistSetting(KEYS.fontFamily, next, { ui: { fontFamily: next } });
 }
 
 export async function setUiEditorFontFamily(
 	fontFamily: UiFontFamily,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiEditorFontFamily(fontFamily);
-	await store.set(KEYS.editorFontFamily, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { editorFontFamily: next } });
+	await persistSetting(KEYS.editorFontFamily, next, {
+		ui: { editorFontFamily: next },
+	});
 }
 
 export async function setUiMonoFontFamily(
 	fontFamily: UiFontFamily,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiMonoFontFamily(fontFamily);
-	await store.set(KEYS.monoFontFamily, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { monoFontFamily: next } });
+	await persistSetting(KEYS.monoFontFamily, next, {
+		ui: { monoFontFamily: next },
+	});
 }
 
 export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiFontSize(fontSize);
-	await store.set(KEYS.fontSize, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { fontSize: next } });
+	await persistSetting(KEYS.fontSize, next, { ui: { fontSize: next } });
 }
 
 export async function setUiEditorFontSize(fontSize: UiFontSize): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiEditorFontSize(fontSize);
-	await store.set(KEYS.editorFontSize, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { editorFontSize: next } });
+	await persistSetting(KEYS.editorFontSize, next, {
+		ui: { editorFontSize: next },
+	});
 }
 
 export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.translucentApp, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
+	await persistSetting(KEYS.translucentApp, enabled, {
+		ui: { translucentApp: enabled },
+	});
 }
 
 export async function setUiCornerRadiusStyle(
 	style: UiCornerRadiusStyle,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asUiCornerRadiusStyle(style);
-	await store.set(KEYS.cornerRadiusStyle, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { cornerRadiusStyle: next } });
+	await persistSetting(KEYS.cornerRadiusStyle, next, {
+		ui: { cornerRadiusStyle: next },
+	});
 }
 
 export async function setShowToc(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.showToc, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { showToc: enabled } });
+	await persistSetting(KEYS.showToc, enabled, { ui: { showToc: enabled } });
 }
 
 export async function setShowFileTreeFolderCounts(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.showFileTreeFolderCounts, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
+	await persistSetting(KEYS.showFileTreeFolderCounts, enabled, {
+		ui: { showFileTreeFolderCounts: enabled },
+	});
 }
 
 export async function setShowNonMarkdownFiles(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.showNonMarkdownFiles, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { showNonMarkdownFiles: enabled } });
+	await persistSetting(KEYS.showNonMarkdownFiles, enabled, {
+		ui: { showNonMarkdownFiles: enabled },
+	});
 }
 
 export async function setFileTreeSortMode(
 	sortMode: FileTreeSortMode,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.fileTreeSortMode, sortMode);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { fileTreeSortMode: sortMode } });
+	await persistSetting(KEYS.fileTreeSortMode, sortMode, {
+		ui: { fileTreeSortMode: sortMode },
+	});
 }
 
 export async function setFolioMode(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.folioMode, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { folioMode: enabled } });
+	await persistSetting(KEYS.folioMode, enabled, { ui: { folioMode: enabled } });
 }
 
 export async function setClassicAllNotesByDefault(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.classicAllNotesByDefault, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { classicAllNotesByDefault: enabled } });
+	await persistSetting(KEYS.classicAllNotesByDefault, enabled, {
+		ui: { classicAllNotesByDefault: enabled },
+	});
 }
 
 export async function setResumeLastSession(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.resumeLastSession, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { resumeLastSession: enabled } });
+	await persistSetting(KEYS.resumeLastSession, enabled, {
+		ui: { resumeLastSession: enabled },
+	});
 }
 
 export async function setKeepRunningOnLastWindowClose(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.keepRunningOnLastWindowClose, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { keepRunningOnLastWindowClose: enabled } });
+	await persistSetting(KEYS.keepRunningOnLastWindowClose, enabled, {
+		ui: { keepRunningOnLastWindowClose: enabled },
+	});
 }
 
 export async function setEditorShowCollapsibleHeadings(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorShowCollapsibleHeadings, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorShowCollapsibleHeadings, enabled, {
 		editor: { showCollapsibleHeadings: enabled },
 	});
 }
@@ -1464,10 +1439,7 @@ export async function setEditorShowCollapsibleHeadings(
 export async function setEditorShowCollapsibleLists(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorShowCollapsibleLists, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorShowCollapsibleLists, enabled, {
 		editor: { showCollapsibleLists: enabled },
 	});
 }
@@ -1475,10 +1447,7 @@ export async function setEditorShowCollapsibleLists(
 export async function setEditorColorfulHeadings(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorColorfulHeadings, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorColorfulHeadings, enabled, {
 		editor: { colorfulHeadings: enabled },
 	});
 }
@@ -1486,10 +1455,7 @@ export async function setEditorColorfulHeadings(
 export async function setEditorShowHeadingPrefixes(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorShowHeadingPrefixes, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorShowHeadingPrefixes, enabled, {
 		editor: { showHeadingPrefixes: enabled },
 	});
 }
@@ -1497,20 +1463,14 @@ export async function setEditorShowHeadingPrefixes(
 export async function setEditorHeadingPaletteId(
 	headingPaletteId: HeadingPaletteId,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asHeadingPaletteId(headingPaletteId);
-	await store.set(KEYS.editorHeadingPaletteId, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorHeadingPaletteId, next, {
 		editor: { headingPaletteId: next },
 	});
 }
 
 export async function setEditorBeautifulTags(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorBeautifulTags, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorBeautifulTags, enabled, {
 		editor: { beautifulTags: enabled },
 	});
 }
@@ -1518,10 +1478,7 @@ export async function setEditorBeautifulTags(enabled: boolean): Promise<void> {
 export async function setEditorShowFrontmatterInEditor(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorShowFrontmatterInEditor, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorShowFrontmatterInEditor, enabled, {
 		editor: { showFrontmatterInEditor: enabled },
 	});
 }
@@ -1529,22 +1486,18 @@ export async function setEditorShowFrontmatterInEditor(
 export async function setEditorDefaultEditorMode(
 	mode: EditorViewMode,
 ): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asDefaultEditorMode(mode);
-	await store.set(KEYS.editorDefaultEditorMode, next);
-	await saveSettingsStore(store);
-	setCachedDefaultEditorViewMode(next);
-	void emitSettingsUpdated({
-		editor: { defaultEditorMode: next },
-	});
+	await persistSetting(
+		KEYS.editorDefaultEditorMode,
+		next,
+		{ editor: { defaultEditorMode: next } },
+		setCachedDefaultEditorViewMode,
+	);
 }
 
 export async function setEditorWidthMode(mode: EditorWidthMode): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asEditorWidthMode(mode);
-	await store.set(KEYS.editorEditorWidthMode, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorEditorWidthMode, next, {
 		editor: { editorWidthMode: next },
 	});
 }
@@ -1567,10 +1520,7 @@ export async function setEditorAttachmentStorageMode(
 		});
 		return;
 	}
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorAttachmentStorageMode, nextMode);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorAttachmentStorageMode, nextMode, {
 		editor: { attachmentStorageMode: nextMode },
 	});
 }
@@ -1600,10 +1550,7 @@ export async function setEditorAttachmentFolder(
 		});
 		return;
 	}
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorAttachmentFolder, nextFolder);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorAttachmentFolder, nextFolder, {
 		editor: { attachmentFolder: nextFolder },
 	});
 }
@@ -1611,10 +1558,7 @@ export async function setEditorAttachmentFolder(
 export async function setEditorEnablePeopleMentionsAsTags(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorEnablePeopleMentionsAsTags, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorEnablePeopleMentionsAsTags, enabled, {
 		editor: { enablePeopleMentionsAsTags: enabled },
 	});
 }
@@ -1622,19 +1566,13 @@ export async function setEditorEnablePeopleMentionsAsTags(
 export async function setEditorRawMarkdownVimMode(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorRawMarkdownVimMode, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorRawMarkdownVimMode, enabled, {
 		editor: { rawMarkdownVimMode: enabled },
 	});
 }
 
 export async function setEditorSpellCheck(enabled: boolean): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorSpellCheck, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorSpellCheck, enabled, {
 		editor: { spellCheck: enabled },
 	});
 }
@@ -1642,20 +1580,14 @@ export async function setEditorSpellCheck(enabled: boolean): Promise<void> {
 export async function setEditorShowExternalLinkPreviews(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.editorShowExternalLinkPreviews, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorShowExternalLinkPreviews, enabled, {
 		editor: { showExternalLinkPreviews: enabled },
 	});
 }
 
 export async function setEditorFocusMode(mode: FocusMode): Promise<void> {
-	const store = await getSettingsStore();
 	const next = asFocusMode(mode);
-	await store.set(KEYS.editorFocusMode, next);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({
+	await persistSetting(KEYS.editorFocusMode, next, {
 		editor: { focusMode: next },
 	});
 }
@@ -1707,10 +1639,9 @@ export async function setQuickNotesFolder(
 		void emitSettingsUpdated({ spacePath, quickNotes: { folder: nextFolder } });
 		return;
 	}
-	const store = await getSettingsStore();
-	await store.set(KEYS.quickNotesFolder, nextFolder);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ quickNotes: { folder: nextFolder } });
+	await persistSetting(KEYS.quickNotesFolder, nextFolder, {
+		quickNotes: { folder: nextFolder },
+	});
 }
 
 export async function getTemplatesFolder(
@@ -1798,10 +1729,9 @@ export async function setDailyNoteTemplate(
 export async function setDatabaseShowColumnColor(
 	enabled: boolean,
 ): Promise<void> {
-	const store = await getSettingsStore();
-	await store.set(KEYS.databaseShowColumnColor, enabled);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
+	await persistSetting(KEYS.databaseShowColumnColor, enabled, {
+		database: { showColumnColor: enabled },
+	});
 }
 
 export async function setAutoUpdateLastCheckedAt(
@@ -1824,10 +1754,9 @@ export async function setReleaseChannel(
 	channel: ReleaseChannel,
 ): Promise<void> {
 	const nextChannel = asReleaseChannel(channel);
-	const store = await getSettingsStore();
-	await store.set(KEYS.releaseChannel, nextChannel);
-	await saveSettingsStore(store);
-	void emitSettingsUpdated({ ui: { releaseChannel: nextChannel } });
+	await persistSetting(KEYS.releaseChannel, nextChannel, {
+		ui: { releaseChannel: nextChannel },
+	});
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

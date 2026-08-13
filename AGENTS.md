@@ -93,8 +93,26 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 
 ## Version Control
 
-- Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
+- Always use native `gh` CLI. If Github CLI is not available, use git commands (push, pull, fetch, commit, squash, rebase, etc.)
 
 ## Tool Restrictions
 
 - Browser and computer-use tools are completely forbidden. Do not use them under any circumstances.
+
+## Development Platform
+
+- Glyph is a MacOS ONLY app. It is not being developed for Linux and Windows. Any code, suggestions or comments regarding Windows or Linux should be skipped, while solely focussing on MacOS developement.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues on this repo, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical labels, each named after its role: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.

@@ -9,7 +9,7 @@ import type {
 	MutableRefObject,
 	Ref,
 } from "react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useEditorContext, useSpace } from "../../contexts";
 import { useHoverPrefetch } from "../../hooks/useHoverPrefetch";
@@ -23,6 +23,7 @@ import type {
 	NoteTaskSummary,
 } from "../../lib/tauri";
 import { basename, splitEditableFileName } from "../../utils/path";
+import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
@@ -42,70 +43,6 @@ import { getFileTypeInfo } from "./fileTypeUtils";
 const DEFAULT_MOVE_CLICK_SUPPRESS_REF: MutableRefObject<boolean> = {
 	current: false,
 };
-
-function FileRenameInput({
-	initialName,
-	relPath,
-	fileStem,
-	fileExt,
-	onCommitRename,
-	onCancelRename,
-}: {
-	initialName: string;
-	relPath: string;
-	fileStem: string;
-	fileExt: string;
-	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
-	onCancelRename: () => void;
-}) {
-	const [draftName, setDraftName] = useState(initialName);
-	const renameSubmittedRef = useRef(false);
-	const inputRef = useRef<HTMLInputElement | null>(null);
-
-	useEffect(() => {
-		inputRef.current?.focus();
-		inputRef.current?.select();
-	}, []);
-
-	const commitRename = async () => {
-		if (renameSubmittedRef.current) return;
-		renameSubmittedRef.current = true;
-		const nextStem = draftName.trim() || fileStem || initialName.trim();
-		const nextName = `${nextStem}${fileExt}`;
-		await onCommitRename(relPath, nextName);
-	};
-
-	return (
-		<input
-			ref={inputRef}
-			className="plainTextInput fileTreeRenameInput"
-			value={draftName}
-			placeholder="Untitled"
-			onChange={(event) => setDraftName(event.target.value)}
-			onMouseDown={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-			onClick={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-			onBlur={() => void commitRename()}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					void commitRename();
-					return;
-				}
-				if (event.key === "Escape") {
-					event.preventDefault();
-					renameSubmittedRef.current = true;
-					onCancelRename();
-				}
-			}}
-		/>
-	);
-}
 
 interface FileTreeFileItemProps {
 	entry: FsEntry;
@@ -336,14 +273,18 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 						data-file-tree-path={entry.rel_path}
 					>
 						<span className="fileTreeLeadingSpacer" aria-hidden="true" />
-						<FileRenameInput
+						<InlineRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
-							initialName={fileStem || entry.name.trim() || "Untitled"}
-							relPath={entry.rel_path}
-							fileStem={fileStem}
-							fileExt={fileExt}
-							onCommitRename={onCommitRename}
-							onCancelRename={onCancelRename}
+							initialValue={fileStem || entry.name.trim() || "Untitled"}
+							className="plainTextInput fileTreeRenameInput"
+							placeholder="Untitled"
+							containPointerEvents
+							onCommit={(draftName) => {
+								const nextStem =
+									draftName.trim() || fileStem || entry.name.trim();
+								return onCommitRename(entry.rel_path, `${nextStem}${fileExt}`);
+							}}
+							onCancel={onCancelRename}
 						/>
 					</div>
 				) : (

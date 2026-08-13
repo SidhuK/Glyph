@@ -7,7 +7,7 @@ import {
 	normalizeTagDraftPrefix,
 	normalizeTagToken,
 } from "../noteProperties/utils";
-import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const TAG_SUGGESTION_KEY = new PluginKey("tag-suggestion");
 
@@ -122,31 +122,14 @@ export const TagAutocomplete = Extension.create({
 						.run();
 				},
 				render: () =>
-					createTipTapSuggestionMenu<TagSuggestionItem>({
+					createTipTapTextSuggestionMenu<TagSuggestionItem>({
 						menuClassName: "wikiLinkSuggestionMenu",
-						renderItem: ({ item, isActive, select }) => {
-							const button = document.createElement("button");
-							button.type = "button";
-							button.className = "wikiLinkSuggestionItem";
-							button.classList.toggle("active", isActive);
-
-							const title = document.createElement("span");
-							title.className = "wikiLinkSuggestionTitle";
-							title.textContent = `#${item.tag}`;
-
-							const path = document.createElement("span");
-							path.className = "wikiLinkSuggestionPath";
-							path.textContent = item.isNew
+						itemContent: (item) => ({
+							title: `#${item.tag}`,
+							description: item.isNew
 								? "Create tag"
-								: `${item.count} note${item.count === 1 ? "" : "s"}`;
-
-							button.append(title, path);
-							button.addEventListener("mousedown", (event) => {
-								event.preventDefault();
-								select(item);
-							});
-							return button;
-						},
+								: `${item.count} note${item.count === 1 ? "" : "s"}`,
+						}),
 					}),
 			}),
 		];

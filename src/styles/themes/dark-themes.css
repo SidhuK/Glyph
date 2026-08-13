@@ -1,4 +1,4 @@
-:root.dark {
+:where(:root, .appearanceThemePreview).dark {
 	--glyph-inline-color-gray: #b6c2cf;
 	--glyph-inline-color-brown: #d4a574;
 	--glyph-inline-color-orange: #fba034;
@@ -24,8 +24,11 @@
 		rgba(0, 0, 0, 0.25);
 }
 
-:root.dark:not([data-dark-theme]),
-:root.dark[data-dark-theme="glyph-default-dark"] {
+:where(:root, .appearanceThemePreview).dark:not([data-dark-theme]),
+:where(
+		:root,
+		.appearanceThemePreview
+	).dark[data-dark-theme="glyph-default-dark"] {
 	/* Clean neutral default — warm charcoal surfaces with soft off-white text. */
 	--bg-primary: #191919;
 	--bg-secondary: #252525;
@@ -83,7 +86,7 @@
 	--glass-bg: rgba(25, 25, 25, 0.72);
 }
 
-:root.dark[data-dark-theme="solarized-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="solarized-dark"] {
 	--bg-primary: #002b36;
 	--bg-secondary: #073642;
 	--bg-tertiary: #0a4250;
@@ -128,7 +131,7 @@
 	--glass-bg: rgba(0, 43, 54, 0.66);
 }
 
-:root.dark[data-dark-theme="github-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="github-dark"] {
 	--bg-primary: #0d1117;
 	--bg-secondary: #161b22;
 	--bg-tertiary: #1f2630;
@@ -173,7 +176,7 @@
 	--glass-bg: rgba(13, 17, 23, 0.68);
 }
 
-:root.dark[data-dark-theme="nord-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="nord-dark"] {
 	--bg-primary: #2e3440;
 	--bg-secondary: #343c4a;
 	--bg-tertiary: #3b4252;
@@ -218,7 +221,7 @@
 	--glass-bg: rgba(46, 52, 64, 0.64);
 }
 
-:root.dark[data-dark-theme="tokyo-night"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="tokyo-night"] {
 	--bg-primary: #1a1b26;
 	--bg-secondary: #1f2335;
 	--bg-tertiary: #24283b;
@@ -263,7 +266,7 @@
 	--glass-bg: rgba(26, 27, 38, 0.66);
 }
 
-:root.dark[data-dark-theme="dracula"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="dracula"] {
 	--bg-primary: #282a36;
 	--bg-secondary: #303341;
 	--bg-tertiary: #383c4d;
@@ -308,7 +311,7 @@
 	--glass-bg: rgba(40, 42, 54, 0.68);
 }
 
-:root.dark[data-dark-theme="night-owl"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="night-owl"] {
 	--bg-primary: #011627;
 	--bg-secondary: #0b1d32;
 	--bg-tertiary: #10243c;
@@ -342,7 +345,7 @@
 	--glass-bg: rgba(1, 22, 39, 0.68);
 }
 
-:root.dark[data-dark-theme="one-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="one-dark"] {
 	--bg-primary: #282c34;
 	--bg-secondary: #21252b;
 	--bg-tertiary: #2f343d;
@@ -376,7 +379,7 @@
 	--glass-bg: rgba(40, 44, 52, 0.68);
 }
 
-:root.dark[data-dark-theme="rose-pine-moon"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="rose-pine-moon"] {
 	--bg-primary: #232136;
 	--bg-secondary: #2a273f;
 	--bg-tertiary: #312c4f;
@@ -410,7 +413,10 @@
 	--glass-bg: rgba(35, 33, 54, 0.7);
 }
 
-:root.dark[data-dark-theme="catppuccin-mocha"] {
+:where(
+		:root,
+		.appearanceThemePreview
+	).dark[data-dark-theme="catppuccin-mocha"] {
 	--bg-primary: #1e1e2e;
 	--bg-secondary: #181825;
 	--bg-tertiary: #11111b;
@@ -455,9 +461,9 @@
 	--glass-bg: rgba(30, 30, 46, 0.72);
 }
 
-:root.dark[data-dark-theme="night-owl"],
-:root.dark[data-dark-theme="one-dark"],
-:root.dark[data-dark-theme="rose-pine-moon"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="night-owl"],
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="one-dark"],
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="rose-pine-moon"] {
 	--text-error: var(--status-danger-fg);
 	--feedback-error-bg: color-mix(
 		in srgb,
@@ -487,7 +493,7 @@
 	--callout-error: var(--status-danger-fg);
 }
 
-:root.dark[data-dark-theme="gruvbox-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="gruvbox-dark"] {
 	--bg-primary: #282828;
 	--bg-secondary: #1d2021;
 	--bg-tertiary: #3c3836;
@@ -532,7 +538,7 @@
 	--glass-bg: rgba(40, 40, 40, 0.72);
 }
 
-:root.dark[data-dark-theme="monokai"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="monokai"] {
 	--bg-primary: #272822;
 	--bg-secondary: #1e1f1c;
 	--bg-tertiary: #414339;
@@ -577,7 +583,7 @@
 	--glass-bg: rgba(39, 40, 34, 0.72);
 }
 
-:root.dark[data-dark-theme="ayu-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="ayu-dark"] {
 	--bg-primary: #10141c;
 	--bg-secondary: #141821;
 	--bg-tertiary: #0d1017;
@@ -622,7 +628,7 @@
 	--glass-bg: rgba(16, 20, 28, 0.74);
 }
 
-:root.dark[data-dark-theme="vesper"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="vesper"] {
 	--bg-primary: #101010;
 	--bg-secondary: #161616;
 	--bg-tertiary: #1c1c1c;
@@ -667,7 +673,7 @@
 	--glass-bg: rgba(16, 16, 16, 0.74);
 }
 
-:root.dark[data-dark-theme="flexoki-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="flexoki-dark"] {
 	--bg-primary: #1c1b1a;
 	--bg-secondary: #282726;
 	--bg-tertiary: #343331;
@@ -712,7 +718,7 @@
 	--glass-bg: rgba(28, 27, 26, 0.74);
 }
 
-:root.dark[data-dark-theme="everforest-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="everforest-dark"] {
 	--bg-primary: #2d353b;
 	--bg-secondary: #343f44;
 	--bg-tertiary: #3d484d;
@@ -757,7 +763,7 @@
 	--glass-bg: rgba(45, 53, 59, 0.72);
 }
 
-:root.dark[data-dark-theme="claude-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="claude-dark"] {
 	--bg-primary: #141413;
 	--bg-secondary: #1f1e1c;
 	--bg-tertiary: #2a2926;
@@ -802,7 +808,7 @@
 	--glass-bg: rgba(20, 20, 19, 0.74);
 }
 
-:root.dark[data-dark-theme="codex-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="codex-dark"] {
 	--bg-primary: #181818;
 	--bg-secondary: #222222;
 	--bg-tertiary: #2a2a2a;
@@ -847,7 +853,7 @@
 	--glass-bg: rgba(24, 24, 24, 0.74);
 }
 
-:root.dark[data-dark-theme="raycast-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="raycast-dark"] {
 	--bg-primary: #101010;
 	--bg-secondary: #181818;
 	--bg-tertiary: #222222;
@@ -892,7 +898,7 @@
 	--glass-bg: rgba(16, 16, 16, 0.74);
 }
 
-:root.dark[data-dark-theme="xcode-dark"] {
+:where(:root, .appearanceThemePreview).dark[data-dark-theme="xcode-dark"] {
 	--bg-primary: #292a30;
 	--bg-secondary: #32333a;
 	--bg-tertiary: #3a3b42;
