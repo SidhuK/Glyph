@@ -289,6 +289,7 @@ export const SidebarContent = memo(function SidebarContent({
 			if (renamed) {
 				setRenamingPath(null);
 			}
+			return renamed !== null;
 		},
 		[onRenameDir],
 	);
@@ -296,12 +297,13 @@ export const SidebarContent = memo(function SidebarContent({
 	const handleCommitFileRename = useCallback(
 		async (path: string, nextName: string) => {
 			const renamed = await onRenameDir(path, nextName, "file");
-			if (!renamed) return;
+			if (!renamed) return false;
 			setRenamingPath(null);
 			if (pendingNewNotePath === path) {
 				onOpenFile(renamed);
 				setPendingNewNotePath(null);
 			}
+			return true;
 		},
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);

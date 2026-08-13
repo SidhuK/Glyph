@@ -201,7 +201,7 @@ function themeRule(theme: CustomTheme, mode: "light" | "dark"): string {
 	const declarations = paletteVariables(theme[mode])
 		.map(([property, value]) => `\t${property}: ${value};`)
 		.join("\n");
-	return `:root.${mode}[data-${mode}-theme="${id}"] {\n${declarations}\n}`;
+	return `:where(:root, .appearanceThemePreview).${mode}[data-${mode}-theme="${id}"] {\n${declarations}\n}`;
 }
 
 export function buildCustomThemeCss(themes: readonly CustomTheme[]): string {
@@ -223,25 +223,15 @@ export function applyCustomThemes(themes: readonly CustomTheme[]): void {
 
 export function customThemeOption(
 	theme: CustomTheme,
-	mode: "light" | "dark",
 ): UiThemeOption<CustomUiThemeId> {
-	const palette = theme[mode];
 	return {
 		id: customThemeId(theme.name),
 		label: theme.name,
-		preview: {
-			badgeBackground: palette.surface,
-			badgeBorder: palette.border,
-			badgeText: palette.accent,
-			surface: palette.background,
-			text: palette.foreground,
-		},
 	};
 }
 
 export function customThemeOptions(
 	themes: readonly CustomTheme[],
-	mode: "light" | "dark",
 ): UiThemeOption<CustomUiThemeId>[] {
-	return themes.map((theme) => customThemeOption(theme, mode));
+	return themes.map(customThemeOption);
 }

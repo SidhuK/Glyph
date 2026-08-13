@@ -129,9 +129,9 @@
 	min-width: 24px;
 	padding: 0;
 	border-radius: 6px;
-	border: 1px solid var(--theme-preview-badge-border);
-	background: var(--theme-preview-badge-bg);
-	color: var(--theme-preview-badge-text);
+	border: 1px solid var(--border-default);
+	background: var(--bg-secondary);
+	color: var(--interactive-accent);
 	font-size: calc(var(--text-base) * 0.68);
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.04em;

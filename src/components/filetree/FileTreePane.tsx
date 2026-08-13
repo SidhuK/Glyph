@@ -78,8 +78,8 @@ interface FileTreePaneProps {
 	renamingPath: string | null;
 	onStartRename: (path: string) => void;
 	onCancelRename: () => void;
-	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
-	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
+	onCommitFileRename: (path: string, nextName: string) => Promise<boolean>;
+	onCommitDirRename: (dirPath: string, nextName: string) => Promise<boolean>;
 	onMovePath: (
 		fromPath: string,
 		toDirPath: string,
@@ -283,8 +283,8 @@ interface TreeEntriesProps {
 	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
 	onStartRename: (path: string) => void;
-	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
-	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
+	onCommitDirRename: (dirPath: string, nextName: string) => Promise<boolean>;
+	onCommitFileRename: (path: string, nextName: string) => Promise<boolean>;
 	onCancelRename: () => void;
 	itemAppearance: Record<string, FileTreeAppearance>;
 	folderFileCounts: Record<string, number>;

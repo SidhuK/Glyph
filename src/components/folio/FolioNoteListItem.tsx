@@ -7,7 +7,6 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
-	useRef,
 	useState,
 } from "react";
 import { useSpace } from "../../contexts";
@@ -18,6 +17,7 @@ import { buildPathCopyMenuItems } from "../../lib/pathClipboard";
 import type { FileTreeAppearance, NoteTaskSummary } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { basename, parentDir, splitEditableFileName } from "../../utils/path";
+import { InlineRenameInput } from "../InlineRenameInput";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
@@ -332,67 +332,6 @@ function useFolioFirstUrl(note: FolioItem): string {
 	return url;
 }
 
-function FolioRenameInput({
-	initialName,
-	relPath,
-	fileStem,
-	fileExt,
-	onCommitRename,
-	onCancelRename,
-}: {
-	initialName: string;
-	relPath: string;
-	fileStem: string;
-	fileExt: string;
-	onCommitRename: (
-		path: string,
-		nextName: string,
-	) => Promise<boolean> | boolean;
-	onCancelRename: () => void;
-}) {
-	const [draftName, setDraftName] = useState(initialName);
-	const submittedRef = useRef(false);
-	const inputRef = useRef<HTMLInputElement | null>(null);
-
-	useEffect(() => {
-		inputRef.current?.focus();
-		inputRef.current?.select();
-	}, []);
-
-	const commitRename = async () => {
-		if (submittedRef.current) return;
-		submittedRef.current = true;
-		const nextStem = draftName.trim() || fileStem || initialName.trim();
-		const renamed = await onCommitRename(relPath, `${nextStem}${fileExt}`);
-		if (!renamed) {
-			submittedRef.current = false;
-		}
-	};
-
-	return (
-		<input
-			ref={inputRef}
-			className="plainTextInput folioNoteRenameInput"
-			value={draftName}
-			placeholder="Untitled"
-			onChange={(event) => setDraftName(event.target.value)}
-			onBlur={() => void commitRename()}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					void commitRename();
-					return;
-				}
-				if (event.key === "Escape") {
-					event.preventDefault();
-					submittedRef.current = true;
-					onCancelRename();
-				}
-			}}
-		/>
-	);
-}
-
 export const FolioNoteListItem = memo(
 	forwardRef<HTMLLIElement, FolioNoteListItemProps>(function FolioNoteListItem(
 		{
@@ -613,14 +552,21 @@ export const FolioNoteListItem = memo(
 						style={rowStyle}
 					>
 						<span className="folioNoteRowTop">
-							<FolioRenameInput
+							<InlineRenameInput
 								key={`${note.note_path}:${fileStem}`}
-								initialName={fileStem || titleFromPath(note.note_path)}
-								relPath={note.note_path}
-								fileStem={fileStem}
-								fileExt={fileExt}
-								onCommitRename={onCommitRename}
-								onCancelRename={onCancelRename}
+								initialValue={fileStem || titleFromPath(note.note_path)}
+								className="plainTextInput folioNoteRenameInput"
+								placeholder="Untitled"
+								onCommit={(draftName) => {
+									const initialName = fileStem || titleFromPath(note.note_path);
+									const nextStem =
+										draftName.trim() || fileStem || initialName.trim();
+									return onCommitRename(
+										note.note_path,
+										`${nextStem}${fileExt}`,
+									);
+								}}
+								onCancel={onCancelRename}
 							/>
 							{taskProgress}
 						</span>

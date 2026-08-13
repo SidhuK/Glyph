@@ -1,29 +1,15 @@
 import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useDateDisplayFormat } from "../../../contexts";
-import {
-	priorityColorKey,
-	priorityOptionsWithCustomValues,
-} from "../../../lib/priorityProperties";
-import {
-	statusColorKey,
-	statusOptionsWithCustomValues,
-} from "../../../lib/statusProperties";
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Toggle } from "../../base/toggle/toggle";
 import { PriorityPropertyPill } from "../../status/PriorityPropertyPill";
+import { PropertyOptionPicker } from "../../status/PropertyOptionPicker";
 import { StatusPropertyPill } from "../../status/StatusPropertyPill";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../../ui/shadcn/dropdown-menu";
 import { Input } from "../../ui/shadcn/input";
 import { useWikiLinkAutocomplete } from "../hooks/useWikiLinkAutocomplete";
-import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../textColors";
+import type { EditorTextColor } from "../textColors";
 import { WikiLinkedText } from "./WikiLinkedText";
 import {
 	buildTagSuggestions,
@@ -175,120 +161,29 @@ export function NotePropertyValueField({
 
 	if (property.kind === "status") {
 		const currentValue = property.value_text ?? "";
-		const currentStatusId = statusColorKey(currentValue);
-		const statusOptions = statusOptionsWithCustomValues([currentValue]);
 		return (
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<button
-						type="button"
-						className="notePropertyStatusTrigger"
-						aria-label={property.key || "Status property"}
-					>
-						<StatusPropertyPill
-							value={currentValue || "not_started"}
-							colors={statusColors}
-						/>
-					</button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent
-					align="start"
-					sideOffset={6}
-					className="databasePickerMenu notePropertyStatusMenu"
-				>
-					<div className="notePropertyStatusOptions">
-						{statusOptions.map((option) => (
-							<DropdownMenuItem
-								key={option.id}
-								className="notePropertyStatusOption"
-								data-selected={
-									statusColorKey(option.label) === currentStatusId
-										? "true"
-										: "false"
-								}
-								onClick={() => onUpdate(index, { value_text: option.label })}
-							>
-								<StatusPropertyPill
-									value={option.label}
-									colors={statusColors}
-								/>
-							</DropdownMenuItem>
-						))}
-					</div>
-					{currentStatusId ? (
-						<>
-							<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
-							<div className="notePropertyStatusColorRibbon">
-								{EDITOR_TEXT_COLORS.map((color) => (
-									<button
-										key={color.id}
-										type="button"
-										className="databaseBoardColorRibbonSwatch"
-										style={
-											{
-												"--database-tone": `var(${color.cssVar})`,
-											} as CSSProperties
-										}
-										onClick={() => onStatusColorChange(currentValue, color.id)}
-										title={color.label}
-										aria-label={`Set ${currentValue} color to ${color.label}`}
-									/>
-								))}
-								<button
-									type="button"
-									className="databaseBoardColorRibbonClear"
-									onClick={() => onStatusColorChange(currentValue, null)}
-									title="Clear color"
-									aria-label={`Clear color for ${currentValue}`}
-								>
-									<span />
-								</button>
-							</div>
-						</>
-					) : null}
-				</DropdownMenuContent>
-			</DropdownMenu>
+			<PropertyOptionPicker
+				kind="status"
+				value={currentValue}
+				colors={statusColors}
+				triggerClassName="notePropertyStatusTrigger"
+				triggerAriaLabel={property.key || "Status property"}
+				onChange={(value) => onUpdate(index, { value_text: value })}
+				onColorChange={onStatusColorChange}
+			/>
 		);
 	}
 
 	if (property.kind === "priority") {
 		const currentValue = property.value_text ?? "";
-		const currentPriorityId = priorityColorKey(currentValue);
-		const priorityOptions = priorityOptionsWithCustomValues([currentValue]);
 		return (
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<button
-						type="button"
-						className="notePropertyStatusTrigger"
-						aria-label={property.key || "Priority property"}
-					>
-						<PriorityPropertyPill value={currentValue || "no"} />
-					</button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent
-					align="start"
-					sideOffset={6}
-					className="databasePickerMenu notePropertyStatusMenu"
-				>
-					<div className="notePropertyStatusOptions">
-						{priorityOptions.map((option) => (
-							<DropdownMenuItem
-								key={option.id}
-								className="notePropertyStatusOption"
-								data-selected={
-									priorityColorKey(option.label) === currentPriorityId
-										? "true"
-										: "false"
-								}
-								onClick={() => onUpdate(index, { value_text: option.label })}
-							>
-								<PriorityPropertyPill value={option.label} />
-							</DropdownMenuItem>
-						))}
-					</div>
-				</DropdownMenuContent>
-			</DropdownMenu>
+			<PropertyOptionPicker
+				kind="priority"
+				value={currentValue}
+				triggerClassName="notePropertyStatusTrigger"
+				triggerAriaLabel={property.key || "Priority property"}
+				onChange={(value) => onUpdate(index, { value_text: value })}
+			/>
 		);
 	}
 

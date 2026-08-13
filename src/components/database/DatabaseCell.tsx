@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useDateDisplayFormat, useFileTreeContext } from "../../contexts";
 import {
@@ -11,14 +10,6 @@ import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { formatDisplayDate } from "../../lib/dateDisplayFormat";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
-	priorityColorKey,
-	priorityOptionsWithCustomValues,
-} from "../../lib/priorityProperties";
-import {
-	statusColorKey,
-	statusOptionsWithCustomValues,
-} from "../../lib/statusProperties";
-import {
 	DEFAULT_TAG_ICON_NAME,
 	resolveTagIconName,
 	tagIconOverridesFromAppearance,
@@ -30,16 +21,10 @@ import {
 	normalizeTagDraftPrefix,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
-import { EDITOR_TEXT_COLORS, type EditorTextColor } from "../editor/textColors";
+import type { EditorTextColor } from "../editor/textColors";
 import { PriorityPropertyPill } from "../status/PriorityPropertyPill";
+import { PropertyOptionPicker } from "../status/PropertyOptionPicker";
 import { StatusPropertyPill } from "../status/StatusPropertyPill";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 import {
@@ -682,165 +667,62 @@ function DatabaseCellEditor({
 
 	if (isStatusColumn) {
 		const currentValue = cellValue.value_text ?? "";
-		const currentStatusId = statusColorKey(currentValue);
-		const statusOptions = statusOptionsWithCustomValues([
-			currentValue,
-			...valueOptions,
-		]);
 		return (
 			<div className="databaseTagEditor">
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button
-							type="button"
-							className="notePropertyStatusTrigger databaseStatusTrigger"
-							onFocus={handleSelectRow}
-							onClick={(event) => {
-								handleSelectRow();
-								event.stopPropagation();
-							}}
-						>
-							<StatusPropertyPill
-								value={currentValue || "not_started"}
-								colors={statusColors}
-							/>
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="start"
-						sideOffset={6}
-						className="databasePickerMenu notePropertyStatusMenu"
-					>
-						<div className="notePropertyStatusOptions">
-							{statusOptions.map((option) => (
-								<DropdownMenuItem
-									key={option.id}
-									className="notePropertyStatusOption"
-									data-selected={
-										statusColorKey(option.label) === currentStatusId
-											? "true"
-											: "false"
-									}
-									onClick={async () => {
-										try {
-											await onSave(row.note_path, column, {
-												kind: "status",
-												value_text: option.label,
-												value_bool: null,
-												value_list: [],
-											});
-										} catch (error) {
-											setSaveError(extractErrorMessage(error));
-											return;
-										}
-										onClose();
-									}}
-								>
-									<StatusPropertyPill
-										value={option.label}
-										colors={statusColors}
-									/>
-								</DropdownMenuItem>
-							))}
-						</div>
-						{currentStatusId && onStatusColorChange ? (
-							<>
-								<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
-								<div className="notePropertyStatusColorRibbon">
-									{EDITOR_TEXT_COLORS.map((color) => (
-										<button
-											key={color.id}
-											type="button"
-											className="databaseBoardColorRibbonSwatch"
-											style={
-												{
-													"--database-tone": `var(${color.cssVar})`,
-												} as CSSProperties
-											}
-											onClick={() =>
-												onStatusColorChange(currentValue, color.id)
-											}
-											title={color.label}
-											aria-label={`Set ${currentValue} color to ${color.label}`}
-										/>
-									))}
-									<button
-										type="button"
-										className="databaseBoardColorRibbonClear"
-										onClick={() => onStatusColorChange(currentValue, null)}
-										title="Clear color"
-										aria-label={`Clear color for ${currentValue}`}
-									>
-										<span />
-									</button>
-								</div>
-							</>
-						) : null}
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<PropertyOptionPicker
+					kind="status"
+					value={currentValue}
+					valueOptions={valueOptions}
+					colors={statusColors}
+					triggerClassName="notePropertyStatusTrigger databaseStatusTrigger"
+					onTriggerFocus={handleSelectRow}
+					onTriggerClick={handleSelectRow}
+					stopTriggerClickPropagation
+					onChange={async (value) => {
+						await onSave(row.note_path, column, {
+							kind: "status",
+							value_text: value,
+							value_bool: null,
+							value_list: [],
+						});
+						onClose();
+					}}
+					onError={(error) => setSaveError(extractErrorMessage(error))}
+					onColorChange={onStatusColorChange}
+				/>
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
+				) : null}
 			</div>
 		);
 	}
 
 	if (isPriorityColumn) {
 		const currentValue = cellValue.value_text ?? "";
-		const currentPriorityId = priorityColorKey(currentValue);
-		const priorityOptions = priorityOptionsWithCustomValues([
-			currentValue,
-			...valueOptions,
-		]);
 		return (
 			<div className="databaseTagEditor">
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<button
-							type="button"
-							className="notePropertyStatusTrigger databaseStatusTrigger"
-							onFocus={handleSelectRow}
-							onClick={(event) => {
-								handleSelectRow();
-								event.stopPropagation();
-							}}
-						>
-							<PriorityPropertyPill value={currentValue || "no"} />
-						</button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent
-						align="start"
-						sideOffset={6}
-						className="databasePickerMenu notePropertyStatusMenu"
-					>
-						<div className="notePropertyStatusOptions">
-							{priorityOptions.map((option) => (
-								<DropdownMenuItem
-									key={option.id}
-									className="notePropertyStatusOption"
-									data-selected={
-										priorityColorKey(option.label) === currentPriorityId
-											? "true"
-											: "false"
-									}
-									onClick={async () => {
-										try {
-											await onSave(row.note_path, column, {
-												kind: "priority",
-												value_text: option.label,
-												value_bool: null,
-												value_list: [],
-											});
-										} catch (error) {
-											setSaveError(extractErrorMessage(error));
-											return;
-										}
-										onClose();
-									}}
-								>
-									<PriorityPropertyPill value={option.label} />
-								</DropdownMenuItem>
-							))}
-						</div>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<PropertyOptionPicker
+					kind="priority"
+					value={currentValue}
+					valueOptions={valueOptions}
+					triggerClassName="notePropertyStatusTrigger databaseStatusTrigger"
+					onTriggerFocus={handleSelectRow}
+					onTriggerClick={handleSelectRow}
+					stopTriggerClickPropagation
+					onChange={async (value) => {
+						await onSave(row.note_path, column, {
+							kind: "priority",
+							value_text: value,
+							value_bool: null,
+							value_list: [],
+						});
+						onClose();
+					}}
+					onError={(error) => setSaveError(extractErrorMessage(error))}
+				/>
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
+				) : null}
 			</div>
 		);
 	}
@@ -1119,6 +1001,7 @@ export function DatabaseCell({
 		noteAppearance,
 	);
 	const [editing, setEditing] = useState(false);
+	const [saveError, setSaveError] = useState("");
 	const displayText =
 		cellValue.kind === "datetime"
 			? formatDatabaseDateTime(cellValue.value_text, dateDisplayFormat)
@@ -1232,100 +1115,34 @@ export function DatabaseCell({
 		}
 		if (cellValue.kind === "status") {
 			const currentValue = cellValue.value_text ?? "";
-			const currentStatusId = statusColorKey(currentValue);
-			const statusOptions = statusOptionsWithCustomValues([
-				currentValue,
-				...valueOptions,
-			]);
 			if (editable) {
 				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button
-								type="button"
-								className="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
-								onClick={(event) => {
-									handleSelectRow();
-									event.stopPropagation();
-								}}
-								title={displayText || "Change status"}
-							>
-								<StatusPropertyPill
-									value={currentValue || "not_started"}
-									colors={statusColors}
-								/>
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="start"
-							sideOffset={6}
-							className="databasePickerMenu notePropertyStatusMenu"
-						>
-							<div className="notePropertyStatusOptions">
-								{statusOptions.map((option) => (
-									<DropdownMenuItem
-										key={option.id}
-										className="notePropertyStatusOption"
-										data-selected={
-											statusColorKey(option.label) === currentStatusId
-												? "true"
-												: "false"
-										}
-										onClick={async () => {
-											try {
-												await onSave(row.note_path, column, {
-													kind: "status",
-													value_text: option.label,
-													value_bool: null,
-													value_list: [],
-												});
-											} catch (error) {
-												console.error("Failed to save database status", error);
-											}
-										}}
-									>
-										<StatusPropertyPill
-											value={option.label}
-											colors={statusColors}
-										/>
-									</DropdownMenuItem>
-								))}
-							</div>
-							{currentStatusId && onStatusColorChange ? (
-								<>
-									<DropdownMenuSeparator className="databaseBoardContextMenuSeparator" />
-									<div className="notePropertyStatusColorRibbon">
-										{EDITOR_TEXT_COLORS.map((color) => (
-											<button
-												key={color.id}
-												type="button"
-												className="databaseBoardColorRibbonSwatch"
-												style={
-													{
-														"--database-tone": `var(${color.cssVar})`,
-													} as CSSProperties
-												}
-												onClick={() =>
-													onStatusColorChange(currentValue, color.id)
-												}
-												title={color.label}
-												aria-label={`Set ${currentValue} color to ${color.label}`}
-											/>
-										))}
-										<button
-											type="button"
-											className="databaseBoardColorRibbonClear"
-											onClick={() => onStatusColorChange(currentValue, null)}
-											title="Clear color"
-											aria-label={`Clear color for ${currentValue}`}
-										>
-											<span />
-										</button>
-									</div>
-								</>
-							) : null}
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<div className="databaseTagEditor">
+						<PropertyOptionPicker
+							kind="status"
+							value={currentValue}
+							valueOptions={valueOptions}
+							colors={statusColors}
+							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
+							triggerTitle={displayText || "Change status"}
+							stopTriggerClickPropagation
+							onTriggerClick={handleSelectRow}
+							onChange={(value) => {
+								setSaveError("");
+								return onSave(row.note_path, column, {
+									kind: "status",
+									value_text: value,
+									value_bool: null,
+									value_list: [],
+								});
+							}}
+							onError={(error) => setSaveError(extractErrorMessage(error))}
+							onColorChange={onStatusColorChange}
+						/>
+						{saveError ? (
+							<div className="databaseCellError">{saveError}</div>
+						) : null}
+					</div>
 				);
 			}
 			return (
@@ -1347,64 +1164,32 @@ export function DatabaseCell({
 		}
 		if (cellValue.kind === "priority") {
 			const currentValue = cellValue.value_text ?? "";
-			const currentPriorityId = priorityColorKey(currentValue);
-			const priorityOptions = priorityOptionsWithCustomValues([
-				currentValue,
-				...valueOptions,
-			]);
 			if (editable) {
 				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<button
-								type="button"
-								className="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
-								onClick={(event) => {
-									handleSelectRow();
-									event.stopPropagation();
-								}}
-								title={displayText || "Change priority"}
-							>
-								<PriorityPropertyPill value={currentValue || "no"} />
-							</button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="start"
-							sideOffset={6}
-							className="databasePickerMenu notePropertyStatusMenu"
-						>
-							<div className="notePropertyStatusOptions">
-								{priorityOptions.map((option) => (
-									<DropdownMenuItem
-										key={option.id}
-										className="notePropertyStatusOption"
-										data-selected={
-											priorityColorKey(option.label) === currentPriorityId
-												? "true"
-												: "false"
-										}
-										onClick={async () => {
-											try {
-												await onSave(row.note_path, column, {
-													kind: "priority",
-													value_text: option.label,
-													value_bool: null,
-													value_list: [],
-												});
-											} catch (error) {
-												console.error(
-													"Failed to save database priority",
-													error,
-												);
-											}
-										}}
-									>
-										<PriorityPropertyPill value={option.label} />
-									</DropdownMenuItem>
-								))}
-							</div>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<div className="databaseTagEditor">
+						<PropertyOptionPicker
+							kind="priority"
+							value={currentValue}
+							valueOptions={valueOptions}
+							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
+							triggerTitle={displayText || "Change priority"}
+							stopTriggerClickPropagation
+							onTriggerClick={handleSelectRow}
+							onChange={(value) => {
+								setSaveError("");
+								return onSave(row.note_path, column, {
+									kind: "priority",
+									value_text: value,
+									value_bool: null,
+									value_list: [],
+								});
+							}}
+							onError={(error) => setSaveError(extractErrorMessage(error))}
+						/>
+						{saveError ? (
+							<div className="databaseCellError">{saveError}</div>
+						) : null}
+					</div>
 				);
 			}
 			return (

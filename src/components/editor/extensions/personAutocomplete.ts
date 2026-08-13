@@ -2,7 +2,7 @@ import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion from "@tiptap/suggestion";
 import { type PersonCount, invoke } from "../../../lib/tauri";
-import { createTipTapSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
+import { createTipTapTextSuggestionMenu } from "../suggestions/tiptapSuggestionMenu";
 
 const PERSON_SUGGESTION_KEY = new PluginKey("person-suggestion");
 
@@ -103,31 +103,16 @@ export const PersonAutocomplete = Extension.create({
 						.run();
 				},
 				render: () =>
-					createTipTapSuggestionMenu<PersonSuggestionItem>({
+					createTipTapTextSuggestionMenu<PersonSuggestionItem>({
 						menuClassName: "wikiLinkSuggestionMenu",
 						lockEditorScroll: false,
 						resetSelectionOnUpdate: true,
-						renderItem: ({ item, isActive, select }) => {
-							const button = document.createElement("button");
-							button.type = "button";
-							button.className = "wikiLinkSuggestionItem";
-							button.classList.toggle("active", isActive);
-							const meta = item.isNew
+						itemContent: (item) => ({
+							title: `@${item.handle}`,
+							description: item.isNew
 								? "Create mention"
-								: `${item.count ?? 0} note${item.count === 1 ? "" : "s"}`;
-							const title = document.createElement("span");
-							title.className = "wikiLinkSuggestionTitle";
-							title.textContent = `@${item.handle}`;
-							const path = document.createElement("span");
-							path.className = "wikiLinkSuggestionPath";
-							path.textContent = String(meta);
-							button.append(title, path);
-							button.addEventListener("mousedown", (event) => {
-								event.preventDefault();
-								select(item);
-							});
-							return button;
-						},
+								: `${item.count ?? 0} note${item.count === 1 ? "" : "s"}`,
+						}),
 					}),
 			}),
 		];

@@ -32,7 +32,7 @@ Run the narrowest permitted verification during development and the full permitt
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: Markdown and space metadata in `.glyph/`; derived SQLite index in app support.
 
-Repo extras: internal product and engineering docs live in `docs/`. The docs folder is for human user only. It is not the source of truth. If you are an AI agent, do not use docs/ folder to understand or work with the code. 
+Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All other content under `docs/` is human-only and must not be used to understand or work with the code.
 
 ## Frontend Overview (`src/`)
 
@@ -93,8 +93,27 @@ Agents and reviewers should flag these patterns unless the change includes a cle
 
 ## Version Control
 
-- Always use native `git` commands (push, pull, fetch, commit, squash, rebase, etc.) and never use the `gh` CLI for these operations.
+- Use `git` for repository operations, including push, pull, fetch, commit, squash, and rebase.
+- Use the native `gh` CLI for GitHub issues, pull requests, reviews, and other GitHub-hosted operations.
 
 ## Tool Restrictions
 
 - Browser and computer-use tools are completely forbidden. Do not use them under any circumstances.
+
+## Development Platform
+
+- Glyph is a macOS-only app. It is not being developed for Linux or Windows. Focus code, suggestions, and comments solely on macOS development.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues on this repo, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical labels, each named after its role: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Read relevant decisions in `docs/architecture/adr/`. See `docs/agents/domain.md` for the domain-doc workflow.

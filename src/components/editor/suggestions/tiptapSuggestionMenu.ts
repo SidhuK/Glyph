@@ -24,6 +24,46 @@ interface TipTapSuggestionMenuOptions<T> {
 	onEscape?: (view: EditorView) => void;
 }
 
+interface TipTapTextSuggestionMenuOptions<T>
+	extends Omit<TipTapSuggestionMenuOptions<T>, "renderItem"> {
+	itemContent: (item: T) => {
+		title: string;
+		description: string;
+	};
+}
+
+function renderTextSuggestionItem<T>({
+	item,
+	isActive,
+	select,
+	itemContent,
+	itemActiveClassName,
+}: RenderTipTapSuggestionItemOptions<T> & {
+	itemContent: TipTapTextSuggestionMenuOptions<T>["itemContent"];
+	itemActiveClassName: string;
+}): HTMLElement {
+	const content = itemContent(item);
+	const button = document.createElement("button");
+	button.type = "button";
+	button.className = "wikiLinkSuggestionItem";
+	button.classList.toggle(itemActiveClassName, isActive);
+
+	const title = document.createElement("span");
+	title.className = "wikiLinkSuggestionTitle";
+	title.textContent = content.title;
+
+	const description = document.createElement("span");
+	description.className = "wikiLinkSuggestionPath";
+	description.textContent = content.description;
+
+	button.append(title, description);
+	button.addEventListener("mousedown", (event) => {
+		event.preventDefault();
+		select(item);
+	});
+	return button;
+}
+
 function placeMenu(menu: HTMLElement, rect: DOMRect): void {
 	const pad = 8;
 	const gap = 6;
@@ -160,6 +200,23 @@ export function createTipTapSuggestionMenu<T>({
 			activeProps = null;
 		},
 	};
+}
+
+export function createTipTapTextSuggestionMenu<T>({
+	itemContent,
+	itemActiveClassName = "active",
+	...options
+}: TipTapTextSuggestionMenuOptions<T>) {
+	return createTipTapSuggestionMenu<T>({
+		...options,
+		itemActiveClassName,
+		renderItem: (renderOptions) =>
+			renderTextSuggestionItem({
+				...renderOptions,
+				itemContent,
+				itemActiveClassName,
+			}),
+	});
 }
 
 export function exitTipTapSuggestion(view: EditorView): void {
