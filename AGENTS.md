@@ -32,7 +32,7 @@ Run the narrowest permitted verification during development and the full permitt
 
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: Markdown and space metadata in `.glyph/`; derived SQLite index in app support.
 
-Repo extras: agents may read `docs/agents/` and `docs/adr/`. All other content under `docs/` is human-only and must not be used to understand or work with the code.
+Repo extras: agents may read `docs/agents/` and `docs/architecture/adr/`. All other content under `docs/` is human-only and must not be used to understand or work with the code.
 
 ## Frontend Overview (`src/`)
 
@@ -116,4 +116,4 @@ Five canonical labels, each named after its role: `needs-triage`, `needs-info`, 
 
 ### Domain docs
 
-Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Read relevant decisions in `docs/architecture/adr/`. See `docs/agents/domain.md` for the domain-doc workflow.

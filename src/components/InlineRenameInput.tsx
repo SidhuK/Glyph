@@ -27,8 +27,13 @@ export function InlineRenameInput({
 	const commit = async () => {
 		if (submittedRef.current) return;
 		submittedRef.current = true;
-		const committed = await onCommit(value);
-		if (!committed) submittedRef.current = false;
+		try {
+			const committed = await onCommit(value);
+			if (!committed) submittedRef.current = false;
+		} catch (error) {
+			submittedRef.current = false;
+			console.error("Failed to commit inline rename", error);
+		}
 	};
 
 	return (
@@ -42,6 +47,7 @@ export function InlineRenameInput({
 			onMouseDown={
 				containPointerEvents
 					? (event) => {
+							event.preventDefault();
 							event.stopPropagation();
 						}
 					: undefined
