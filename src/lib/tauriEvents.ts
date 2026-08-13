@@ -1,21 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
-import type { CustomTheme } from "./customThemes";
 import type { DeeplinkErrorPayload, DeeplinkEvent } from "./deeplink";
-import type { EditorViewMode } from "./editorMode";
-import type { HeadingPaletteId } from "./headingPalettes";
-import type {
-	AppLanguage,
-	AttachmentStorageMode,
-	AutoUpdateCheckInterval,
-	DateDisplayFormat,
-	EditorWidthMode,
-	FileTreeSortMode,
-	FocusMode,
-	ReleaseChannel,
-	UiCornerRadiusStyle,
-} from "./settings";
-import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
+import type { SettingsUpdatedPayload } from "./settings/model";
 
 type TauriEventMap = {
 	"menu:app_command": { command_id: string };
@@ -63,81 +49,7 @@ type TauriEventMap = {
 		removed: boolean;
 	};
 	"index:progress": import("./tauri").IndexProgress;
-	"settings:updated": {
-		spacePath?: string;
-		ui?: {
-			theme?: string;
-			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
-			releaseChannel?: ReleaseChannel;
-			lightThemeId?: UiLightThemeId;
-			darkThemeId?: UiDarkThemeId;
-			customThemes?: CustomTheme[];
-			fontFamily?: string;
-			editorFontFamily?: string;
-			monoFontFamily?: string;
-			fontSize?: number;
-			editorFontSize?: number;
-			translucentApp?: boolean;
-			cornerRadiusStyle?: UiCornerRadiusStyle;
-			showToc?: boolean;
-			showFileTreeFolderCounts?: boolean;
-			showNonMarkdownFiles?: boolean;
-			fileTreeSortMode?: FileTreeSortMode;
-			folioMode?: boolean;
-			classicAllNotesByDefault?: boolean;
-			resumeLastSession?: boolean;
-			keepRunningOnLastWindowClose?: boolean;
-			aiEnabled?: boolean;
-			aiAssistantMode?: "chat" | "create";
-			language?: AppLanguage;
-			dateDisplayFormat?: DateDisplayFormat;
-		};
-		dailyNotes?: {
-			folder?: string | null;
-		};
-		quickNotes?: {
-			folder?: string;
-		};
-		templates?: {
-			folder?: string | null;
-			dailyNoteTemplate?: string | null;
-		};
-		database?: {
-			showColumnColor?: boolean;
-		};
-		editor?: {
-			showCollapsibleHeadings?: boolean;
-			showCollapsibleLists?: boolean;
-			showFrontmatterInEditor?: boolean;
-			showHeadingPrefixes?: boolean;
-			colorfulHeadings?: boolean;
-			headingPaletteId?: HeadingPaletteId;
-			beautifulTags?: boolean;
-			editorWidthMode?: EditorWidthMode;
-			defaultEditorMode?: EditorViewMode;
-			attachmentStorageMode?: AttachmentStorageMode;
-			attachmentFolder?: string | null;
-			enablePeopleMentionsAsTags?: boolean;
-			rawMarkdownVimMode?: boolean;
-			spellCheck?: boolean;
-			showExternalLinkPreviews?: boolean;
-			focusMode?: FocusMode;
-		};
-		shortcuts?: {
-			bindings?: Partial<
-				Record<
-					string,
-					{
-						key: string;
-						meta?: boolean;
-						ctrl?: boolean;
-						alt?: boolean;
-						shift?: boolean;
-					} | null
-				>
-			>;
-		};
-	};
+	"settings:updated": SettingsUpdatedPayload;
 };
 
 type TauriEventHandler<K extends keyof TauriEventMap> =

@@ -11,11 +11,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdaterContext } from "../../contexts";
 import { GLYPH_LINKS } from "../../lib/helpMenu";
 import { useLicenseStatus } from "../../lib/license";
-import {
-	type ReleaseChannel,
-	loadSettings,
-	setReleaseChannel,
-} from "../../lib/settings";
+import { type ReleaseChannel, loadSettings } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
@@ -237,7 +234,8 @@ export function AboutSettingsPane() {
 										setUpdateStatus("");
 										setReleaseChannelState(nextChannel);
 										setIsSavingReleaseChannel(true);
-										void setReleaseChannel(nextChannel)
+										void DURABLE_SETTINGS.releaseChannel
+											.write(nextChannel)
 											.catch((cause) => {
 												setReleaseChannelState(previous);
 												setError(

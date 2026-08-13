@@ -1,15 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { applyUiTypography } from "../../lib/appearance";
-import {
-	type AppSettings,
-	type UiFontFamily,
-	type UiFontSize,
-	setUiEditorFontFamily,
-	setUiEditorFontSize,
-	setUiFontFamily,
-	setUiFontSize,
-	setUiMonoFontFamily,
-} from "../../lib/settings";
+import type { AppSettings, UiFontFamily, UiFontSize } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import {
 	DEFAULT_FONT_FAMILY,
 	loadAvailableFonts,
@@ -38,23 +30,27 @@ export function useAppearanceTypography({
 }: UseAppearanceTypographyOptions) {
 	const fontFamily = useSettingsValue<UiFontFamily>(
 		DEFAULT_FONT_FAMILY,
-		setUiFontFamily,
+		DURABLE_SETTINGS.fontFamily.write,
 		setError,
 	);
 	const editorFontFamily = useSettingsValue<UiFontFamily>(
 		DEFAULT_FONT_FAMILY,
-		setUiEditorFontFamily,
+		DURABLE_SETTINGS.editorFontFamily.write,
 		setError,
 	);
 	const monoFontFamily = useSettingsValue<UiFontFamily>(
 		"JetBrains Mono",
-		setUiMonoFontFamily,
+		DURABLE_SETTINGS.monoFontFamily.write,
 		setError,
 	);
-	const uiFontSize = useSettingsValue<UiFontSize>(14, setUiFontSize, setError);
+	const uiFontSize = useSettingsValue<UiFontSize>(
+		14,
+		DURABLE_SETTINGS.fontSize.write,
+		setError,
+	);
 	const editorFontSize = useSettingsValue<UiFontSize>(
 		16,
-		setUiEditorFontSize,
+		DURABLE_SETTINGS.editorFontSize.write,
 		setError,
 	);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([

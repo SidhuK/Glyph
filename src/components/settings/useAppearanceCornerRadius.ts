@@ -3,8 +3,8 @@ import { applyUiCornerRadius } from "../../lib/appearance";
 import {
 	DEFAULT_UI_CORNER_RADIUS_STYLE,
 	type UiCornerRadiusStyle,
-	setUiCornerRadiusStyle,
 } from "../../lib/settings";
+import { DURABLE_SETTINGS } from "../../lib/settings/definitions";
 import { useSettingsValue } from "./useSettingsValue";
 
 interface UseAppearanceCornerRadiusOptions {
@@ -18,7 +18,7 @@ export function useAppearanceCornerRadius({
 }: UseAppearanceCornerRadiusOptions) {
 	const setting = useSettingsValue(
 		DEFAULT_UI_CORNER_RADIUS_STYLE,
-		setUiCornerRadiusStyle,
+		DURABLE_SETTINGS.cornerRadiusStyle.write,
 		setError,
 	);
 
