@@ -5,7 +5,7 @@ interface InlineRenameInputProps {
 	className: string;
 	placeholder: string;
 	containPointerEvents?: boolean;
-	onCommit: (value: string) => unknown;
+	onCommit: (value: string) => boolean | Promise<boolean>;
 	onCancel: () => void;
 }
 
@@ -28,7 +28,7 @@ export function InlineRenameInput({
 		if (submittedRef.current) return;
 		submittedRef.current = true;
 		const committed = await onCommit(value);
-		if (committed === false) submittedRef.current = false;
+		if (!committed) submittedRef.current = false;
 	};
 
 	return (
@@ -42,7 +42,6 @@ export function InlineRenameInput({
 			onMouseDown={
 				containPointerEvents
 					? (event) => {
-							event.preventDefault();
 							event.stopPropagation();
 						}
 					: undefined
@@ -58,6 +57,7 @@ export function InlineRenameInput({
 			onBlur={() => void commit()}
 			onKeyDown={(event) => {
 				if (event.key === "Enter") {
+					if (event.nativeEvent.isComposing) return;
 					event.preventDefault();
 					void commit();
 					return;

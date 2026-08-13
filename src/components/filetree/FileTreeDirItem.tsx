@@ -45,7 +45,7 @@ interface FileTreeDirItemProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onStartRename: () => void;
-	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
+	onCommitRename: (dirPath: string, nextName: string) => Promise<boolean>;
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;

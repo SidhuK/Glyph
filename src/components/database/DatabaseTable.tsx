@@ -331,6 +331,7 @@ export function DatabaseTable({
 	const table = useReactTable({
 		data: rows,
 		columns: tableColumns,
+		getRowId: (row) => row.note_path,
 		getCoreRowModel: getCoreRowModel(),
 		enableColumnResizing: true,
 		columnResizeMode: "onChange",

@@ -37,14 +37,16 @@ function renderTextSuggestionItem<T>({
 	isActive,
 	select,
 	itemContent,
+	itemActiveClassName,
 }: RenderTipTapSuggestionItemOptions<T> & {
 	itemContent: TipTapTextSuggestionMenuOptions<T>["itemContent"];
+	itemActiveClassName: string;
 }): HTMLElement {
 	const content = itemContent(item);
 	const button = document.createElement("button");
 	button.type = "button";
 	button.className = "wikiLinkSuggestionItem";
-	button.classList.toggle("active", isActive);
+	button.classList.toggle(itemActiveClassName, isActive);
 
 	const title = document.createElement("span");
 	title.className = "wikiLinkSuggestionTitle";
@@ -202,12 +204,18 @@ export function createTipTapSuggestionMenu<T>({
 
 export function createTipTapTextSuggestionMenu<T>({
 	itemContent,
+	itemActiveClassName = "active",
 	...options
 }: TipTapTextSuggestionMenuOptions<T>) {
 	return createTipTapSuggestionMenu<T>({
 		...options,
+		itemActiveClassName,
 		renderItem: (renderOptions) =>
-			renderTextSuggestionItem({ ...renderOptions, itemContent }),
+			renderTextSuggestionItem({
+				...renderOptions,
+				itemContent,
+				itemActiveClassName,
+			}),
 	});
 }
 

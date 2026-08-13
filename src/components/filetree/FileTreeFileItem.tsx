@@ -56,7 +56,7 @@ interface FileTreeFileItemProps {
 	onRequestCreateFolder: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
 	onStartRename: () => void;
-	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
+	onCommitRename: (path: string, nextName: string) => Promise<boolean>;
 	onCancelRename: () => void;
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;

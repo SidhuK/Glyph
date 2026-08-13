@@ -690,6 +690,9 @@ function DatabaseCellEditor({
 					onError={(error) => setSaveError(extractErrorMessage(error))}
 					onColorChange={onStatusColorChange}
 				/>
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
+				) : null}
 			</div>
 		);
 	}
@@ -717,6 +720,9 @@ function DatabaseCellEditor({
 					}}
 					onError={(error) => setSaveError(extractErrorMessage(error))}
 				/>
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
+				) : null}
 			</div>
 		);
 	}
@@ -1111,7 +1117,7 @@ export function DatabaseCell({
 			const currentValue = cellValue.value_text ?? "";
 			if (editable) {
 				return (
-					<>
+					<div className="databaseTagEditor">
 						<PropertyOptionPicker
 							kind="status"
 							value={currentValue}
@@ -1120,7 +1126,6 @@ export function DatabaseCell({
 							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
 							triggerTitle={displayText || "Change status"}
 							stopTriggerClickPropagation
-							onTriggerFocus={handleSelectRow}
 							onTriggerClick={handleSelectRow}
 							onChange={(value) => {
 								setSaveError("");
@@ -1137,7 +1142,7 @@ export function DatabaseCell({
 						{saveError ? (
 							<div className="databaseCellError">{saveError}</div>
 						) : null}
-					</>
+					</div>
 				);
 			}
 			return (
@@ -1161,7 +1166,7 @@ export function DatabaseCell({
 			const currentValue = cellValue.value_text ?? "";
 			if (editable) {
 				return (
-					<>
+					<div className="databaseTagEditor">
 						<PropertyOptionPicker
 							kind="priority"
 							value={currentValue}
@@ -1169,7 +1174,6 @@ export function DatabaseCell({
 							triggerClassName="databaseCellButton is-pill-list notePropertyStatusTrigger databaseStatusTrigger"
 							triggerTitle={displayText || "Change priority"}
 							stopTriggerClickPropagation
-							onTriggerFocus={handleSelectRow}
 							onTriggerClick={handleSelectRow}
 							onChange={(value) => {
 								setSaveError("");
@@ -1185,7 +1189,7 @@ export function DatabaseCell({
 						{saveError ? (
 							<div className="databaseCellError">{saveError}</div>
 						) : null}
-					</>
+					</div>
 				);
 			}
 			return (
