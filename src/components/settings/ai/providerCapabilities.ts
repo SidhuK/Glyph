@@ -6,6 +6,7 @@ const PROVIDERS_WITHOUT_API_KEY = new Set<AiProviderKind>([
 	"codex_chatgpt",
 	"amp",
 	"claude_code",
+	"cursor",
 	"opencode",
 	"pi",
 ]);

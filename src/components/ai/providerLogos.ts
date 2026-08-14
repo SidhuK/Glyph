@@ -3,6 +3,8 @@ import ampLogoUrl from "../../assets/provider-logos/amp.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
 import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
+import cursorDarkThemeLogoUrl from "../../assets/provider-logos/cursor-dark.svg?url";
+import cursorLightThemeLogoUrl from "../../assets/provider-logos/cursor-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
 import llamacppLogoUrl from "../../assets/provider-logos/llamacpp.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
@@ -40,6 +42,11 @@ export const providerLogoMeta: Record<
 	},
 	amp: { src: ampLogoUrl, label: "Amp" },
 	claude_code: { src: anthropicLogoUrl, label: "Claude Code" },
+	cursor: {
+		src: cursorLightThemeLogoUrl,
+		darkSrc: cursorDarkThemeLogoUrl,
+		label: "Cursor",
+	},
 	opencode: {
 		src: opencodeLightThemeLogoUrl,
 		darkSrc: opencodeDarkThemeLogoUrl,

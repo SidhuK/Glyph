@@ -18,6 +18,7 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::CodexChatgpt
         | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
+        | AiProviderKind::Cursor
         | AiProviderKind::Opencode
         | AiProviderKind::Pi => ProviderCapabilities {
             requires_max_tokens: false,
