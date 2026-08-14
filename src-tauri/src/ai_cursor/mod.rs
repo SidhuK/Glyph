@@ -432,6 +432,7 @@ pub async fn run_with_cursor(
     let mut last_stderr = String::new();
     let mut saw_stdout = false;
     let mut stderr_open = true;
+    let mut stdout_open = true;
 
     loop {
         tokio::select! {
@@ -461,7 +462,14 @@ pub async fn run_with_cursor(
                     None => stderr_open = false,
                 }
             }
-            line = stdout_lines.next_line() => {
+            status = child.wait(), if !stdout_open => {
+                let status = status.map_err(|e| e.to_string())?;
+                if status.success() && !full.trim().is_empty() {
+                    return Ok((full, false, tool_events));
+                }
+                return Err(cursor_cli_failure("request", status, &last_stderr));
+            }
+            line = stdout_lines.next_line(), if stdout_open => {
                 let line = match line {
                     Ok(line) => line,
                     Err(e) => {
@@ -470,11 +478,8 @@ pub async fn run_with_cursor(
                     }
                 };
                 let Some(line) = line else {
-                    let status = child.wait().await.map_err(|e| e.to_string())?;
-                    if status.success() && !full.trim().is_empty() {
-                        return Ok((full, false, tool_events));
-                    }
-                    return Err(cursor_cli_failure("request", status, &last_stderr));
+                    stdout_open = false;
+                    continue;
                 };
                 if line.trim().is_empty() {
                     continue;
