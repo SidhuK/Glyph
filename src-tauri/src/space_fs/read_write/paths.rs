@@ -155,7 +155,9 @@ fn duplicate_file_under_root(
                         error = %error,
                         "failed to read duplicated markdown note for indexing"
                     );
-                    mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
+                    if error.kind() == std::io::ErrorKind::InvalidData {
+                        mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
+                    }
                 }
             }
         }

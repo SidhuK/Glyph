@@ -259,30 +259,40 @@ pub fn reindex_after_rename(
     if is_dir {
         let prefix = dir_prefix(from_path);
         let new_prefix = dir_prefix(to_path);
-        if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ? ESCAPE '\\'") {
-                let pattern = like_descendants_pattern(from_path);
-                if let Ok(rows) = stmt.query_map([&pattern], |row| row.get::<_, String>(0)) {
-                    let old_ids: Vec<String> = rows.filter_map(|row| row.ok()).collect();
-                    for old_id in old_ids {
-                        let Some(suffix) = old_id.strip_prefix(prefix.as_str()) else {
-                            continue;
-                        };
-                        let new_id = format!("{new_prefix}{suffix}");
-                        mark_if_indexed(recent, &old_id, index::remove_note(root, &old_id).is_ok());
-                        if let Ok(markdown) = std::fs::read_to_string(root.join(&new_id)) {
-                            mark_if_indexed(
-                                recent,
-                                &new_id,
-                                index::index_note(root, &new_id, &markdown).is_ok(),
-                            );
-                        }
-                    }
+        let Ok(conn) = index::open_db(root) else {
+            return;
+        };
+        let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ? ESCAPE '\\'") else {
+            return;
+        };
+        let pattern = like_descendants_pattern(from_path);
+        let Ok(rows) = stmt.query_map([&pattern], |row| row.get::<_, String>(0)) else {
+            return;
+        };
+        let old_ids: Vec<String> = rows.filter_map(|row| row.ok()).collect();
+        let mut complete = true;
+        for old_id in old_ids {
+            let Some(suffix) = old_id.strip_prefix(prefix.as_str()) else {
+                complete = false;
+                continue;
+            };
+            let new_id = format!("{new_prefix}{suffix}");
+            let removed = index::remove_note(root, &old_id).is_ok();
+            mark_if_indexed(recent, &old_id, removed);
+            complete &= removed;
+            match std::fs::read_to_string(root.join(&new_id)) {
+                Ok(markdown) => {
+                    let indexed = index::index_note(root, &new_id, &markdown).is_ok();
+                    mark_if_indexed(recent, &new_id, indexed);
+                    complete &= indexed;
                 }
+                Err(_) => complete = false,
             }
         }
-        mark_recent_local_change(recent, from_path);
-        mark_recent_local_change(recent, to_path);
+        if complete {
+            mark_recent_local_change(recent, from_path);
+            mark_recent_local_change(recent, to_path);
+        }
         return;
     }
     if utils::is_markdown_path(Path::new(from_path)) {

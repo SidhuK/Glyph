@@ -4,13 +4,83 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
 
-use crate::note_mutation::{emit_changed, reindex_after_rename, SpaceChange};
+use crate::note_mutation::{emit_changed, SpaceChange};
 use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
 
 const DEBOUNCE_MS: u64 = 100;
 const INDEX_OPEN_RETRY_MS: u64 = 1_000;
+
+fn dir_prefix(rel_path: &str) -> String {
+    if rel_path.ends_with('/') {
+        rel_path.to_string()
+    } else {
+        format!("{rel_path}/")
+    }
+}
+
+fn markdown_rels_under(root: &Path, abs_dir: &Path) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut stack = vec![abs_dir.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let Ok(meta) = entry.metadata() else {
+                continue;
+            };
+            if meta.is_dir() {
+                if path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'))
+                {
+                    continue;
+                }
+                stack.push(path);
+                continue;
+            }
+            if !utils::is_markdown_path(&path) {
+                continue;
+            }
+            if let Some(rel) = rel_under_root(root, &path) {
+                out.push(rel);
+            }
+        }
+    }
+    out
+}
+
+fn queue_rename_reindex(
+    idx_tx: &std_mpsc::Sender<(String, bool, bool)>,
+    root: &Path,
+    from: &str,
+    to: &str,
+    to_abs: &Path,
+    recursive: bool,
+) {
+    if recursive {
+        let from_prefix = dir_prefix(from);
+        let to_prefix = dir_prefix(to);
+        for rel in markdown_rels_under(root, to_abs) {
+            let Some(suffix) = rel.strip_prefix(&to_prefix) else {
+                continue;
+            };
+            let _ = idx_tx.send((format!("{from_prefix}{suffix}"), true, false));
+            let _ = idx_tx.send((rel, false, false));
+        }
+        return;
+    }
+    if utils::is_markdown_path(Path::new(from)) {
+        let _ = idx_tx.send((from.to_string(), true, false));
+    }
+    if utils::is_markdown_path(to_abs) {
+        let _ = idx_tx.send((to.to_string(), false, false));
+    }
+}
 
 fn rel_under_root(root: &Path, path: &Path) -> Option<String> {
     let rel = path.strip_prefix(root).ok()?;
@@ -124,18 +194,18 @@ pub fn create_notes_watcher(
                     return;
                 };
                 if has_recent_local_change(&recent_local_changes, &from)
-                    || has_recent_local_change(&recent_local_changes, &to)
+                    && has_recent_local_change(&recent_local_changes, &to)
                 {
                     return;
                 }
                 let recursive = event.paths[1].is_dir();
-                reindex_after_rename(
+                queue_rename_reindex(
+                    &idx_tx,
                     &root2,
                     &from,
                     &to,
                     &event.paths[1],
                     recursive,
-                    &recent_local_changes,
                 );
                 emit_changed(
                     &app2,
@@ -171,7 +241,7 @@ pub fn create_notes_watcher(
             let recursive = match event.kind {
                 EventKind::Remove(RemoveKind::Folder) => true,
                 EventKind::Remove(RemoveKind::File) => false,
-                EventKind::Remove(_) => path.extension().is_none(),
+                EventKind::Remove(_) => true,
                 _ => path.is_dir(),
             };
             let change = if is_remove {

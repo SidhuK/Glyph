@@ -263,8 +263,13 @@ fn row_folder(note_path: &str) -> String {
         .unwrap_or_default()
 }
 
-fn fallback_created_row(note_path: &str, title: &str) -> DatabaseRow {
-    DatabaseRow {
+fn fallback_created_row(
+    note_path: &str,
+    title: &str,
+    database: &DatabaseDefinition,
+    initial_values: &[DatabaseCreateRowInitialValue],
+) -> DatabaseRow {
+    let mut row = DatabaseRow {
         folder: row_folder(note_path),
         note_path: note_path.to_string(),
         title: title.to_string(),
@@ -274,7 +279,14 @@ fn fallback_created_row(note_path: &str, title: &str) -> DatabaseRow {
         tags: Vec::new(),
         linked_notes: Vec::new(),
         properties: BTreeMap::new(),
+    };
+    for default in database_new_row_field_defaults(database) {
+        row.properties.insert(default.key, default.value);
     }
+    for initial in initial_values {
+        row = apply_cell_to_row(row, &initial.column, &initial.value);
+    }
+    row
 }
 
 fn apply_cell_to_row(
@@ -880,8 +892,9 @@ pub async fn databases_create_row(
             if let Some(change) =
                 write_new_markdown_note(&root, &recent_local_changes, &space_path, &candidate, &next)?
             {
-                let row = row_by_path(&root, &candidate)
-                    .unwrap_or_else(|_| fallback_created_row(&candidate, &title));
+                let row = row_by_path(&root, &candidate).unwrap_or_else(|_| {
+                    fallback_created_row(&candidate, &title, &database, &initial_values)
+                });
                 return Ok((
                     DatabaseCreateRowResult {
                         note_path: candidate,
