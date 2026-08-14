@@ -431,6 +431,7 @@ pub async fn run_with_cursor(
     let mut tool_events = Vec::new();
     let mut last_stderr = String::new();
     let mut saw_stdout = false;
+    let mut stderr_open = true;
 
     loop {
         tokio::select! {
@@ -450,11 +451,14 @@ pub async fn run_with_cursor(
                     format!("Cursor CLI produced no output after starting: {last_stderr}")
                 });
             }
-            maybe_err = stderr_lines.recv() => {
-                if let Some(line) = maybe_err {
-                    if !line.trim().is_empty() {
-                        last_stderr = line;
+            maybe_err = stderr_lines.recv(), if stderr_open => {
+                match maybe_err {
+                    Some(line) => {
+                        if !line.trim().is_empty() {
+                            last_stderr = line;
+                        }
                     }
+                    None => stderr_open = false,
                 }
             }
             line = stdout_lines.next_line() => {
