@@ -369,6 +369,7 @@ pub async fn run_with_rig(
         AiProviderKind::CodexChatgpt
         | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
+        | AiProviderKind::Cursor
         | AiProviderKind::Opencode
         | AiProviderKind::Pi => {
             return Err(
@@ -636,6 +637,9 @@ pub async fn generate_chat_title_with_rig(
         }
         AiProviderKind::ClaudeCode => {
             return Ok("Claude Code Chat".to_string());
+        }
+        AiProviderKind::Cursor => {
+            return Ok("Cursor Chat".to_string());
         }
         AiProviderKind::Opencode => {
             return Ok("OpenCode Chat".to_string());

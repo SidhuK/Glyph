@@ -290,7 +290,7 @@
 		"ai-provider-service": {
 			"title": "Proveedor",
 			"section": "Conexión",
-			"keywords": ["codex", "openai", "anthropic", "ollama"]
+			"keywords": ["codex", "cursor", "openai", "anthropic", "ollama"]
 		},
 		"ai-provider-model": {
 			"title": "Model",

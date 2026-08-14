@@ -741,6 +741,7 @@ export type AiProviderKind =
 	| "codex_chatgpt"
 	| "amp"
 	| "claude_code"
+	| "cursor"
 	| "opencode"
 	| "pi";
 
