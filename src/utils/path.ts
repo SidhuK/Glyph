@@ -50,7 +50,7 @@ export function fileExtension(path: string): string {
 
 export function hasExplicitFileExtension(path: string): boolean {
 	const ext = fileExtension(path);
-	return ext.length > 0 && !/\s/.test(ext);
+	return ext.length > 0 && !/\s/.test(ext) && /[a-z]/i.test(ext);
 }
 
 export function isImagePath(path: string): boolean {
