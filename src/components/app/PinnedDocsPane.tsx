@@ -108,7 +108,7 @@ export const PinnedDocsPane = memo(function PinnedDocsPane({
 		() => pinnedFiles.filter((p) => p.toLowerCase().endsWith(".md")),
 		[pinnedFiles],
 	);
-	const taskSummariesByPath = useTaskSummariesForPaths(notePaths, true, 0);
+	const taskSummariesByPath = useTaskSummariesForPaths(notePaths, true);
 
 	const handleOpen = useCallback(
 		(path: string) => {

@@ -34,9 +34,7 @@ import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
-	dispatchPathRemoved,
 } from "../../lib/appEvents";
-import { invalidateCalendarPrefetch } from "../../lib/calendarActivity";
 import {
 	INITIAL_DATABASES_OPEN_REQUEST,
 	consumeCreateCollectionDialog,
@@ -45,10 +43,6 @@ import {
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
-	invalidateAllDocsPrefetch,
-	invalidateDatabaseRowsPrefetch,
-	invalidatePrefetchedNote,
-	invalidateTaskSummariesPrefetchForNotes,
 	prefetchAllDocs,
 	prefetchDatabasesLanding,
 	prefetchNote,
@@ -58,6 +52,7 @@ import { buildPrintHtml } from "../../lib/printHtml";
 import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
+import { useSpaceChangePropagation } from "../../lib/spaceChange";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -105,8 +100,6 @@ const LazyCommandPalette = lazy(loadCommandPalette);
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const SIDEBAR_AUTO_COLLAPSE_WIDTH = 760;
-const FILE_TREE_REFRESH_BATCH_MS = 150;
-const NOTE_INVALIDATION_BATCH_MS = 50;
 const GIT_SYNC_ERROR_TOAST_ID = "glyph-git-sync-error";
 
 function showGitSyncErrorToast(message: string) {
@@ -149,6 +142,7 @@ export function AppShell() {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		setActiveFilePath,
+		refreshTags,
 	} = fileTreeCtx;
 	const {
 		sidebarCollapsed: sidebarCollapsedState,
@@ -342,8 +336,6 @@ export function AppShell() {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
-		renamePinnedPath,
-		deletePinnedPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
@@ -708,10 +700,6 @@ export function AppShell() {
 		[dailyNotesFolder, openOrCreateDailyNoteAtDate, setError],
 	);
 
-	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
-	const fsRefreshTimerRef = useRef<number | null>(null);
-	const noteInvalidationQueueRef = useRef<Map<string, boolean>>(new Map());
-	const noteInvalidationTimerRef = useRef<number | null>(null);
 	const moveTargetDirsRequestIdRef = useRef(0);
 
 	const openPalette = useCallback(
@@ -874,63 +862,29 @@ export function AppShell() {
 		openSettings("ai");
 	}, [openSettings]);
 
-	const handleSpaceFsChanged = useCallback(
-		(payload: { rel_path: string; removed: boolean }) => {
-			if (!spacePath) return;
-			const changedPath = normalizeRelPath(payload.rel_path);
-			if (!changedPath) return;
-			if (payload.removed) {
-				dispatchPathRemoved({ path: changedPath, recursive: true });
-			}
-			fsRefreshQueueRef.current.add(changedPath);
-			if (fsRefreshTimerRef.current !== null) return;
-			fsRefreshTimerRef.current = window.setTimeout(() => {
-				fsRefreshTimerRef.current = null;
-				const changed = [...fsRefreshQueueRef.current];
-				fsRefreshQueueRef.current.clear();
-				if (!changed.length) return;
-				invalidateCalendarPrefetch();
-				invalidateAllDocsPrefetch();
-				const dirs = new Set<string>([""]);
-				for (const rel of changed) {
-					dirs.add(parentDir(rel));
-					if (expandedDirs.has(rel)) dirs.add(rel);
-				}
-				for (const dir of dirs) void fileTree.loadDir(dir, true);
-			}, FILE_TREE_REFRESH_BATCH_MS);
-		},
-		[expandedDirs, fileTree.loadDir, spacePath],
+	const spaceChangeHost = useMemo(
+		() => ({
+			spacePath,
+			expandedDirs,
+			loadDir: fileTree.loadDir,
+			closeTabsForPathRemoval,
+			renameTabsForPath,
+			renamePinnedPath,
+			deletePinnedPath,
+			refreshTags,
+		}),
+		[
+			spacePath,
+			expandedDirs,
+			fileTree.loadDir,
+			closeTabsForPathRemoval,
+			renameTabsForPath,
+			renamePinnedPath,
+			deletePinnedPath,
+			refreshTags,
+		],
 	);
-
-	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
-	useTauriEvent("notes:external_changed", (payload) => {
-		const relPath = normalizeRelPath(payload.rel_path);
-		if (!relPath) return;
-		noteInvalidationQueueRef.current.set(relPath, payload.removed);
-		if (noteInvalidationTimerRef.current !== null) return;
-		noteInvalidationTimerRef.current = window.setTimeout(() => {
-			noteInvalidationTimerRef.current = null;
-			const changes = new Map(noteInvalidationQueueRef.current);
-			noteInvalidationQueueRef.current.clear();
-			if (changes.size === 0) return;
-			invalidateCalendarPrefetch();
-			invalidateAllDocsPrefetch();
-			invalidateDatabaseRowsPrefetch();
-			void invalidateTaskSummariesPrefetchForNotes(changes);
-			for (const path of changes.keys()) {
-				invalidatePrefetchedNote(path);
-			}
-		}, NOTE_INVALIDATION_BATCH_MS);
-	});
-	useEffect(
-		() => () => {
-			if (fsRefreshTimerRef.current !== null)
-				window.clearTimeout(fsRefreshTimerRef.current);
-			if (noteInvalidationTimerRef.current !== null)
-				window.clearTimeout(noteInvalidationTimerRef.current);
-		},
-		[],
-	);
+	useSpaceChangePropagation(spaceChangeHost);
 
 	const activeTopSection = useMemo<
 		"all-notes" | "connections" | "databases" | "pinned-notes" | null

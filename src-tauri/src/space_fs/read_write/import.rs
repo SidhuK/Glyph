@@ -3,8 +3,9 @@ use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tauri::{Emitter, State, WebviewWindow};
+use tauri::{State, WebviewWindow};
 
+use crate::note_mutation::{emit_changed, index_written_markdown, SpaceChange};
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
@@ -28,13 +29,6 @@ pub enum SpaceImportResult {
         imported_count: usize,
         markdown_paths: Vec<String>,
     },
-}
-
-#[derive(Clone, Serialize)]
-struct NoteChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
 }
 
 struct ImportRoot {
@@ -326,9 +320,7 @@ fn reindex_markdown_tree(
     let Ok(markdown) = std::fs::read_to_string(&destination_abs) else {
         return;
     };
-    if index::index_note(root, &rel_path, &markdown).is_ok() {
-        mark_recent_local_change(recent_local_changes, &rel_path);
-    }
+    index_written_markdown(root, recent_local_changes, &rel_path, &markdown);
 }
 
 fn finalize_replace_backup(
@@ -434,15 +426,7 @@ fn copy_source(
     // Only suppress the watcher after a successful index (same as text writes).
     match std::fs::read_to_string(&destination_abs) {
         Ok(markdown) => {
-            if let Err(error) = index::index_note(root, &rel_path, &markdown) {
-                tracing::warn!(
-                    note_id = %rel_path,
-                    error = %error,
-                    "failed to index imported markdown note"
-                );
-            } else {
-                mark_recent_local_change(recent_local_changes, &rel_path);
-            }
+            index_written_markdown(root, recent_local_changes, &rel_path, &markdown);
         }
         Err(error) => {
             tracing::warn!(
@@ -573,17 +557,11 @@ pub async fn space_import_paths(
     if let SpaceImportResult::Imported { markdown_paths, .. } = &result {
         let window_label = window.label().to_string();
         let space_path = root.to_string_lossy().to_string();
-        for rel_path in markdown_paths {
-            let _ = app.emit_to(
-                &window_label,
-                "notes:external_changed",
-                NoteChangeEvent {
-                    space_path: space_path.clone(),
-                    rel_path: rel_path.clone(),
-                    removed: false,
-                },
-            );
-        }
+        emit_changed(
+            &app,
+            &window_label,
+            &SpaceChange::contents(&space_path, markdown_paths.iter().cloned()),
+        );
     }
 
     Ok(result)

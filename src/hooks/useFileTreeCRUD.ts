@@ -1,17 +1,12 @@
 import { useCallback, useRef } from "react";
-import {
-	dispatchFileTreeStartRename,
-	dispatchPathRemoved,
-	dispatchPathRenamed,
-} from "../lib/appEvents";
-import { extractErrorMessage } from "../lib/errorUtils";
+import { dispatchFileTreeStartRename } from "../lib/appEvents";
 import { isMissingFileError } from "../lib/fsErrors";
 import {
-	invalidateAllDocsPrefetch,
 	optimisticallyAddAllDocsNote,
 	optimisticallyRemoveAllDocsPath,
 	optimisticallyRenameAllDocsPath,
 } from "../lib/navigationPrefetch";
+import { applySpaceChange } from "../lib/spaceChange";
 import type { FsEntry, LinkRewriteResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { toast } from "../lib/toast";
@@ -38,8 +33,6 @@ interface UseFileTreeCRUDDeps {
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
-	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
-	deletePinnedPath: (path: string) => Promise<void>;
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
@@ -73,8 +66,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
-		renamePinnedPath,
-		deletePinnedPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
@@ -93,17 +84,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (parent !== targetDir) await loadDir(parent, true);
 		},
 		[loadDir],
-	);
-
-	const runPinnedSync = useCallback(
-		async (context: string, operation: () => Promise<void>) => {
-			try {
-				await operation();
-			} catch (error) {
-				console.error(`Failed to sync pinned files ${context}`, error);
-			}
-		},
-		[],
 	);
 
 	const ensureDirChainLoaded = useCallback(
@@ -381,18 +361,16 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					});
 				}
 				if (activeFilePathRef.current === dirPath) setActiveFilePath(nextPath);
-				dispatchPathRenamed({
-					fromPath: dirPath,
-					toPath: nextPath,
+				applySpaceChange({
+					kind: "rename",
+					space_path: spacePath ?? "",
+					from_path: dirPath,
+					to_path: nextPath,
 					recursive: kind === "dir",
 				});
 				optimisticallyRenameAllDocsPath(dirPath, nextPath, kind === "dir");
-				invalidateAllDocsPrefetch();
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
-				await runPinnedSync("rename", () =>
-					renamePinnedPath(dirPath, nextPath),
-				);
 				try {
 					await renameItemAppearance(dirPath, nextPath);
 				} catch (error) {
@@ -408,9 +386,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			loadedDirsRef,
 			refreshAfterCreate,
-			runPinnedSync,
+			spacePath,
 			updateChildrenByDir,
-			renamePinnedPath,
 			renameItemAppearance,
 			setActiveFilePath,
 			setError,
@@ -471,13 +448,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					(kind === "dir" && Boolean(activeFile?.startsWith(`${target}/`)))
 				)
 					setActiveFilePath(null);
-				dispatchPathRemoved({
-					path: target,
+				applySpaceChange({
+					kind: "remove",
+					space_path: spacePath ?? "",
+					rel_path: target,
 					recursive: kind === "dir",
 				});
 				optimisticallyRemoveAllDocsPath(target, kind === "dir");
-				invalidateAllDocsPrefetch();
-				await runPinnedSync("delete", () => deletePinnedPath(target));
 				try {
 					await deleteItemAppearance(target);
 				} catch (error) {
@@ -493,10 +470,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
-			runPinnedSync,
 			setActiveFilePath,
+			spacePath,
 			updateChildrenByDir,
-			deletePinnedPath,
 			deleteItemAppearance,
 			setError,
 			updateExpandedDirs,
@@ -595,14 +571,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				) {
 					setActiveFilePath(rewritePrefix(activeFile, from, nextPath));
 				}
-				dispatchPathRenamed({
-					fromPath: from,
-					toPath: nextPath,
+				applySpaceChange({
+					kind: "rename",
+					space_path: spacePath ?? "",
+					from_path: from,
+					to_path: nextPath,
 					recursive: kind === "dir",
 				});
 				optimisticallyRenameAllDocsPath(from, nextPath, kind === "dir");
-				invalidateAllDocsPrefetch();
-				await runPinnedSync("move", () => renamePinnedPath(from, nextPath));
 				try {
 					await renameItemAppearance(from, nextPath);
 				} catch (error) {
@@ -622,9 +598,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
-			renamePinnedPath,
+			spacePath,
 			renameItemAppearance,
-			runPinnedSync,
 			setActiveFilePath,
 			updateExpandedDirs,
 			updateChildrenByDir,

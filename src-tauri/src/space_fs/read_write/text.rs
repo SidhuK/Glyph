@@ -1,38 +1,52 @@
-use serde::Serialize;
 use std::{
     collections::{HashMap, HashSet},
-    ffi::OsStr,
     path::{Path, PathBuf},
 };
-use tauri::{Emitter, State, WebviewWindow};
+use tauri::{State, WebviewWindow};
 
 use crate::index::unlinked_mentions::{
     mention_target, replace_mentions, selected_mentions_are_valid, LinkUnlinkedMentionsResult,
     UnlinkedMention,
 };
-use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
-use crate::{index, io_atomic, paths, space::SpaceState};
+use crate::note_mutation::{
+    commit_markdown, emit_changed, CommitCtx, PersistMode, SpaceChange,
+};
+use crate::space::state::RecentLocalChanges;
+use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::super::types::{
     OpenOrCreateTextResult, TextFileDoc, TextFileDocBatch, TextFileWriteResult,
 };
 
-#[derive(Serialize, Clone)]
-struct NoteChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
-
 fn write_text_under_root(
     root: &Path,
     recent_local_changes: &RecentLocalChanges,
+    space_path: &str,
     rel: &Path,
     text: &str,
     expected_mtime_ms: Option<u64>,
-) -> Result<TextFileWriteResult, String> {
+) -> Result<(TextFileWriteResult, Option<SpaceChange>), String> {
     deny_hidden_rel_path(rel)?;
+    if utils::is_markdown_path(rel) {
+        let committed = commit_markdown(
+            &CommitCtx {
+                root,
+                recent: recent_local_changes,
+                space_path,
+            },
+            &rel.to_string_lossy(),
+            text,
+            PersistMode::Replace { expected_mtime_ms },
+        )?;
+        return Ok((
+            TextFileWriteResult {
+                etag: committed.etag,
+                mtime_ms: committed.mtime_ms,
+            },
+            Some(committed.change),
+        ));
+    }
     let abs = paths::join_under(root, rel)?;
     if let Some(expected) = expected_mtime_ms {
         let actual = file_mtime_ms(&abs);
@@ -43,23 +57,15 @@ fn write_text_under_root(
     if let Some(parent) = abs.parent() {
         std::fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     }
-
-    let rel_path = rel.to_string_lossy().to_string();
-    let should_index = rel.extension() == Some(OsStr::new("md"));
     let bytes = text.as_bytes();
     io_atomic::write_atomic(&abs, bytes).map_err(|error| error.to_string())?;
-    if should_index {
-        if let Err(error) = index::index_note(root, &rel_path, text) {
-            tracing::warn!(note_id = %rel_path, %error, "saved note could not be indexed");
-        } else {
-            mark_recent_local_change(recent_local_changes, &rel_path);
-        }
-    }
-
-    Ok(TextFileWriteResult {
-        etag: etag_for(bytes),
-        mtime_ms: file_mtime_ms(&abs),
-    })
+    Ok((
+        TextFileWriteResult {
+            etag: etag_for(bytes),
+            mtime_ms: file_mtime_ms(&abs),
+        },
+        None,
+    ))
 }
 
 #[tauri::command]
@@ -143,33 +149,27 @@ pub async fn space_write_text(
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let note_mutation_mutex = state.note_mutation_mutex();
-    let event_rel_path = PathBuf::from(&path).to_string_lossy().to_string();
-    let should_emit_note_change = PathBuf::from(&path).extension() == Some(OsStr::new("md"));
-    let result =
-        tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
+    let (result, change) = tauri::async_runtime::spawn_blocking(
+        move || -> Result<(TextFileWriteResult, Option<SpaceChange>), String> {
             let _guard = note_mutation_mutex
                 .lock()
                 .map_err(|_| "note mutation mutex poisoned".to_string())?;
             let rel = PathBuf::from(&path);
-            deny_hidden_rel_path(&rel)?;
-            write_text_under_root(&root, &recent_local_changes, &rel, &text, base_mtime_ms)
-        })
-        .await
-        .map_err(|e| e.to_string())??;
+            write_text_under_root(
+                &root,
+                &recent_local_changes,
+                &space_path,
+                &rel,
+                &text,
+                base_mtime_ms,
+            )
+        },
+    )
+    .await
+    .map_err(|e| e.to_string())??;
 
-    if should_emit_note_change {
-        // Local writes are filtered out by the filesystem watcher, so publish the
-        // same note-change event here. If indexing failed, the unmarked watcher
-        // event retries it without making the saved document appear to fail.
-        let _ = app.emit_to(
-            window_label,
-            "notes:external_changed",
-            NoteChangeEvent {
-                space_path,
-                rel_path: event_rel_path,
-                removed: false,
-            },
-        );
+    if let Some(change) = change {
+        emit_changed(&app, &window_label, &change);
     }
 
     Ok(result)
@@ -185,6 +185,7 @@ pub async fn space_link_unlinked_mentions(
 ) -> Result<LinkUnlinkedMentionsResult, String> {
     let root = state.root_for_window(&window)?;
     let space_path = root.to_string_lossy().to_string();
+    let emit_space_path = space_path.clone();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let note_mutation_mutex = state.note_mutation_mutex();
@@ -207,7 +208,7 @@ pub async fn space_link_unlinked_mentions(
 
         for (source_id, source_mentions) in grouped {
             let rel = PathBuf::from(&source_id);
-            if rel.extension() != Some(OsStr::new("md")) {
+            if !utils::is_markdown_path(&rel) {
                 skipped_count += source_mentions.len();
                 continue;
             }
@@ -244,20 +245,19 @@ pub async fn space_link_unlinked_mentions(
                 }
             };
 
-            if write_text_under_root(
+            let Ok((_, Some(change))) = write_text_under_root(
                 &root,
                 &recent_local_changes,
+                &space_path,
                 &rel,
                 &next_markdown,
                 Some(source_mtime_ms),
-            )
-            .is_err()
-            {
+            ) else {
                 skipped_count += source_mentions.len();
                 continue;
-            }
+            };
             linked_count += source_mentions.len();
-            changed_paths.insert(source_id);
+            changed_paths.insert(change);
         }
 
         Ok::<_, String>((
@@ -271,15 +271,11 @@ pub async fn space_link_unlinked_mentions(
     .await
     .map_err(|error| error.to_string())??;
 
-    for rel_path in changed_paths {
-        let _ = app.emit_to(
+    if !changed_paths.is_empty() {
+        emit_changed(
+            &app,
             &window_label,
-            "notes:external_changed",
-            NoteChangeEvent {
-                space_path: space_path.clone(),
-                rel_path,
-                removed: false,
-            },
+            &SpaceChange::batch(emit_space_path, changed_paths.into_iter().collect()),
         );
     }
 
@@ -288,38 +284,75 @@ pub async fn space_link_unlinked_mentions(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_open_or_create_text(
+    app: tauri::AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     text: String,
 ) -> Result<OpenOrCreateTextResult, String> {
     let root = state.root_for_window(&window)?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<OpenOrCreateTextResult, String> {
-        let rel = PathBuf::from(&path);
-        deny_hidden_rel_path(&rel)?;
-        let abs = paths::join_under(&root, &rel)?;
-
-        if abs.exists() {
-            return Ok(OpenOrCreateTextResult {
-                created: false,
-                mtime_ms: file_mtime_ms(&abs),
-            });
-        }
-
-        if let Some(parent) = abs.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        if !io_atomic::write_atomic_create_new(&abs, text.as_bytes()).map_err(|e| e.to_string())? {
-            return Ok(OpenOrCreateTextResult {
-                created: false,
-                mtime_ms: file_mtime_ms(&abs),
-            });
-        }
-        Ok(OpenOrCreateTextResult {
-            created: true,
-            mtime_ms: file_mtime_ms(&abs),
-        })
-    })
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let (result, change) = tauri::async_runtime::spawn_blocking(
+        move || -> Result<(OpenOrCreateTextResult, Option<SpaceChange>), String> {
+            let rel = PathBuf::from(&path);
+            deny_hidden_rel_path(&rel)?;
+            if utils::is_markdown_path(&rel) {
+                let committed = commit_markdown(
+                    &CommitCtx {
+                        root: &root,
+                        recent: &recent_local_changes,
+                        space_path: &space_path,
+                    },
+                    &rel.to_string_lossy(),
+                    &text,
+                    PersistMode::CreateNew,
+                )?;
+                return Ok((
+                    OpenOrCreateTextResult {
+                        created: committed.created,
+                        mtime_ms: committed.mtime_ms,
+                    },
+                    committed.created.then_some(committed.change),
+                ));
+            }
+            let abs = paths::join_under(&root, &rel)?;
+            if abs.exists() {
+                return Ok((
+                    OpenOrCreateTextResult {
+                        created: false,
+                        mtime_ms: file_mtime_ms(&abs),
+                    },
+                    None,
+                ));
+            }
+            if let Some(parent) = abs.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            if !io_atomic::write_atomic_create_new(&abs, text.as_bytes()).map_err(|e| e.to_string())?
+            {
+                return Ok((
+                    OpenOrCreateTextResult {
+                        created: false,
+                        mtime_ms: file_mtime_ms(&abs),
+                    },
+                    None,
+                ));
+            }
+            Ok((
+                OpenOrCreateTextResult {
+                    created: true,
+                    mtime_ms: file_mtime_ms(&abs),
+                },
+                None,
+            ))
+        },
+    )
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    if let Some(change) = change {
+        emit_changed(&app, &window_label, &change);
+    }
+    Ok(result)
 }

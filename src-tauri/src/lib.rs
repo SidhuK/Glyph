@@ -24,6 +24,7 @@ mod macos_clipboard;
 mod macos_webkit_defaults;
 mod menu_manifest;
 mod net;
+mod note_mutation;
 mod notes;
 mod paths;
 mod pinned_files;

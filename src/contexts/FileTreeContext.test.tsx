@@ -5,13 +5,11 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTreeProvider, useFileTreeContext } from "./FileTreeContext";
 
-const { invokeMock, listenTauriEventMock, useSpaceMock, useTauriEventMock } =
-	vi.hoisted(() => ({
-		invokeMock: vi.fn(),
-		listenTauriEventMock: vi.fn(),
-		useSpaceMock: vi.fn(),
-		useTauriEventMock: vi.fn(),
-	}));
+const { invokeMock, useSpaceMock, useTauriEventMock } = vi.hoisted(() => ({
+	invokeMock: vi.fn(),
+	useSpaceMock: vi.fn(),
+	useTauriEventMock: vi.fn(),
+}));
 
 vi.mock("../lib/tauri", () => ({
 	invoke: invokeMock,
@@ -22,7 +20,6 @@ vi.mock("./SpaceContext", () => ({
 }));
 
 vi.mock("../lib/tauriEvents", () => ({
-	listenTauriEvent: listenTauriEventMock,
 	useTauriEvent: useTauriEventMock,
 }));
 
@@ -78,7 +75,6 @@ describe("FileTreeProvider pinned files", () => {
 			spacePath: currentSpacePath,
 			startIndexSync,
 		}));
-		listenTauriEventMock.mockResolvedValue(() => {});
 		useTauriEventMock.mockImplementation(() => {});
 		invokeMock.mockImplementation((command: string) => {
 			if (command === "space_list_dir") return Promise.resolve([]);

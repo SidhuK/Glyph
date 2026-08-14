@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { type UnlinkedMention, invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 
 interface UseUnlinkedMentionsOptions {
 	enabled: boolean;
@@ -22,8 +21,6 @@ export function useUnlinkedMentions({
 		if (!enabled) return;
 		void queryClient.invalidateQueries({ queryKey });
 	}, [enabled, queryClient, queryKey]);
-	useTauriEvent("notes:external_changed", invalidateMentions);
-	useTauriEvent("space:fs_changed", invalidateMentions);
 	const mentionsQuery = useQuery({
 		queryKey,
 		enabled: enabled && Boolean(noteId),

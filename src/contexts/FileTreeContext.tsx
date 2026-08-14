@@ -8,7 +8,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useDebouncedNoteChange } from "../hooks/useDebouncedNoteChange";
 import { extractErrorMessage } from "../lib/errorUtils";
 import {
 	type FileTreeSortMode,
@@ -156,19 +155,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const tagAppearanceRequestIdRef = useRef(0);
 	const fileTreeSortModeRequestVersionRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
-	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 	currentSpacePathRef.current = spacePath;
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: clear pending refreshes when the active space changes.
-	useEffect(
-		() => () => {
-			if (pinnedFilesRefreshTimerRef.current !== null) {
-				window.clearTimeout(pinnedFilesRefreshTimerRef.current);
-				pinnedFilesRefreshTimerRef.current = null;
-			}
-		},
-		[spacePath],
-	);
 
 	const refreshTags = useCallback(() => {
 		const requestId = tagsRequestIdRef.current + 1;
@@ -409,26 +396,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			}
 		}
 	}, [spacePath]);
-
-	useDebouncedNoteChange({
-		delayMs: 200,
-		enabled: Boolean(spacePath),
-		onChange: () => {
-			tagsGenerationRef.current += 1;
-		},
-	});
-
-	useTauriEvent("space:fs_changed", (payload) => {
-		if (!spacePath) return;
-		if (!payload.removed) return;
-		if (pinnedFilesRefreshTimerRef.current !== null) {
-			window.clearTimeout(pinnedFilesRefreshTimerRef.current);
-		}
-		pinnedFilesRefreshTimerRef.current = window.setTimeout(() => {
-			pinnedFilesRefreshTimerRef.current = null;
-			void refreshPinnedFiles();
-		}, 150);
-	});
 
 	const activeNoteId = activeFilePath?.toLowerCase().endsWith(".md")
 		? activeFilePath

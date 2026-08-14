@@ -38,16 +38,7 @@ type TauriEventMap = {
 		payload?: unknown;
 		error?: string;
 	};
-	"notes:external_changed": {
-		space_path?: string;
-		rel_path: string;
-		removed: boolean;
-	};
-	"space:fs_changed": {
-		space_path?: string;
-		rel_path: string;
-		removed: boolean;
-	};
+	"space:fs_changed": import("./spaceChange").SpaceChange;
 	"index:progress": import("./tauri").IndexProgress;
 	"settings:updated": SettingsUpdatedPayload;
 };

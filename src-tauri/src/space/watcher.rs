@@ -1,23 +1,29 @@
+use notify::event::{EventKind, ModifyKind};
 use notify::Watcher;
-use serde::Serialize;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
-use tauri::Emitter;
 
+use crate::note_mutation::{emit_changed, SpaceChange};
 use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
 
-#[derive(Serialize, Clone)]
-struct ExternalChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
-
 const DEBOUNCE_MS: u64 = 100;
 const INDEX_OPEN_RETRY_MS: u64 = 1_000;
+
+fn rel_under_root(root: &Path, path: &Path) -> Option<String> {
+    let rel = path.strip_prefix(root).ok()?;
+    let rel_s = rel
+        .components()
+        .filter_map(|c| c.as_os_str().to_str())
+        .collect::<Vec<_>>()
+        .join("/");
+    if rel_s.is_empty() || rel_s.split('/').any(|part| part.starts_with('.')) {
+        return None;
+    }
+    Some(rel_s)
+}
 
 pub fn create_notes_watcher(
     app: tauri::AppHandle,
@@ -25,7 +31,7 @@ pub fn create_notes_watcher(
     window_label: String,
     recent_local_changes: RecentLocalChanges,
 ) -> Result<notify::RecommendedWatcher, String> {
-    let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool)>();
+    let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool, bool)>();
 
     let root_idx = root.clone();
     let index_app = app.clone();
@@ -36,10 +42,10 @@ pub fn create_notes_watcher(
         let mut pending = HashMap::new();
         loop {
             if pending.is_empty() {
-                let Ok((rel, remove)) = idx_rx.recv() else {
+                let Ok((rel, remove, emit)) = idx_rx.recv() else {
                     return;
                 };
-                pending.insert(rel, remove);
+                pending.insert(rel, (remove, emit));
             }
 
             let deadline = std::time::Instant::now() + debounce;
@@ -49,8 +55,8 @@ pub fn create_notes_watcher(
                     break;
                 }
                 match idx_rx.recv_timeout(remaining) {
-                    Ok((rel, remove)) => {
-                        pending.insert(rel, remove);
+                    Ok((rel, remove, emit)) => {
+                        pending.insert(rel, (remove, emit));
                     }
                     Err(std_mpsc::RecvTimeoutError::Timeout) => break,
                     Err(std_mpsc::RecvTimeoutError::Disconnected) => break,
@@ -65,8 +71,8 @@ pub fn create_notes_watcher(
                     continue;
                 }
             };
-            let mut events = Vec::new();
-            for (rel_s, is_remove) in std::mem::take(&mut pending) {
+            let mut changes = Vec::new();
+            for (rel_s, (is_remove, emit)) in std::mem::take(&mut pending) {
                 let result = if is_remove {
                     index::remove_note_with_conn(&conn, &rel_s)
                 } else {
@@ -80,17 +86,21 @@ pub fn create_notes_watcher(
                         continue;
                     }
                 };
-                if result.is_ok() {
-                    events.push(ExternalChangeEvent {
-                        space_path: index_space_path.clone(),
-                        rel_path: rel_s,
-                        removed: is_remove,
+                if result.is_ok() && emit {
+                    changes.push(if is_remove {
+                        SpaceChange::remove(&index_space_path, rel_s, false)
+                    } else {
+                        SpaceChange::content(&index_space_path, rel_s)
                     });
                 }
             }
 
-            for event in events {
-                let _ = index_app.emit_to(&index_window_label, "notes:external_changed", event);
+            if !changes.is_empty() {
+                emit_changed(
+                    &index_app,
+                    &index_window_label,
+                    &SpaceChange::batch(&index_space_path, changes),
+                );
             }
         }
     });
@@ -105,45 +115,58 @@ pub fn create_notes_watcher(
             Err(_) => return,
         };
 
-        let is_remove = matches!(event.kind, notify::EventKind::Remove(_));
-        let is_create = matches!(event.kind, notify::EventKind::Create(_));
-        let is_modify = matches!(event.kind, notify::EventKind::Modify(_));
+        if let EventKind::Modify(ModifyKind::Name(_)) = event.kind {
+            if event.paths.len() >= 2 {
+                let Some(from) = rel_under_root(&root2, &event.paths[0]) else {
+                    return;
+                };
+                let Some(to) = rel_under_root(&root2, &event.paths[1]) else {
+                    return;
+                };
+                if utils::is_markdown_path(&event.paths[1])
+                    && !has_recent_local_change(&recent_local_changes, &from)
+                    && !has_recent_local_change(&recent_local_changes, &to)
+                {
+                    let _ = idx_tx.send((from.clone(), true, false));
+                    let _ = idx_tx.send((to.clone(), false, false));
+                }
+                emit_changed(
+                    &app2,
+                    &window_label,
+                    &SpaceChange::rename(&space_path, from, to, false),
+                );
+                return;
+            }
+        }
+
+        let is_remove = matches!(event.kind, EventKind::Remove(_));
+        let is_create = matches!(event.kind, EventKind::Create(_));
+        let is_modify = matches!(event.kind, EventKind::Modify(_));
         if !(is_remove || is_create || is_modify) {
             return;
         }
 
         for path in event.paths {
-            let rel = match path.strip_prefix(&root2) {
-                Ok(r) => r,
-                Err(_) => continue,
+            let Some(rel_s) = rel_under_root(&root2, &path) else {
+                continue;
             };
-            let rel_s = rel
-                .components()
-                .filter_map(|c| c.as_os_str().to_str())
-                .collect::<Vec<_>>()
-                .join("/");
-            if rel_s.is_empty() {
-                continue;
-            }
-            if rel_s.split('/').any(|p| p.starts_with('.')) {
+
+            let is_md = utils::is_markdown_path(&path);
+            if is_md {
+                if !has_recent_local_change(&recent_local_changes, &rel_s) {
+                    let _ = idx_tx.send((rel_s, is_remove, true));
+                }
                 continue;
             }
 
-            if utils::is_markdown_path(&path)
-                && !has_recent_local_change(&recent_local_changes, &rel_s)
-            {
-                let _ = idx_tx.send((rel_s.clone(), is_remove));
-            }
-
-            let _ = app2.emit_to(
-                &window_label,
-                "space:fs_changed",
-                ExternalChangeEvent {
-                    space_path: space_path.clone(),
-                    rel_path: rel_s,
-                    removed: is_remove,
-                },
-            );
+            let change = if is_remove {
+                SpaceChange::remove(&space_path, rel_s, true)
+            } else if is_create {
+                SpaceChange::create(&space_path, rel_s)
+            } else {
+                SpaceChange::content(&space_path, rel_s)
+            };
+            emit_changed(&app2, &window_label, &change);
         }
     })
     .map_err(|e| e.to_string())?;

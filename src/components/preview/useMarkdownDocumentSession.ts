@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorSaveIndicator } from "../../hooks/useEditorSaveIndicator";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
+import { subscribeOpenNoteContent } from "../../lib/spaceChange";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath } from "../../utils/path";
 import type { RawMarkdownEditorHandle } from "../editor/raw/types";
 import type { NoteInlineEditorMode } from "../editor/types";
@@ -484,8 +484,8 @@ export function useMarkdownDocumentSession({
 	}, [runAutosave]);
 
 	const handleExternalNoteChanged = useCallback(
-		(payload: { rel_path: string }) => {
-			const changed = normalizeRelPath(payload.rel_path);
+		(changedPath: string) => {
+			const changed = normalizeRelPath(changedPath);
 			const current = normalizeRelPath(relPath);
 			if (!changed || changed !== current) return;
 			if (externalSyncTimerRef.current !== null) {
@@ -508,7 +508,10 @@ export function useMarkdownDocumentSession({
 		[flushPendingEdits, loadDocFromExternalChange, relPath],
 	);
 
-	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
+	useEffect(
+		() => subscribeOpenNoteContent(handleExternalNoteChanged),
+		[handleExternalNoteChanged],
+	);
 
 	useEffect(() => {
 		if (!pendingExternalReloadRef.current) return;
