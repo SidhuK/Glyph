@@ -103,8 +103,6 @@ export function useWorkspaceSession({
 }: UseWorkspaceSessionArgs) {
 	const restoredSessionSpaceRef = useRef<string | null>(null);
 	const restoreSessionRequestIdRef = useRef(0);
-	// Live revision so an in-flight restore can yield to a tab change that
-	// committed after restore started.
 	const tabsRevisionRef = useRef(tabsRevision);
 	tabsRevisionRef.current = tabsRevision;
 	const pendingSaveRef = useRef<PendingWorkspaceSessionSave | null>(null);
@@ -147,11 +145,12 @@ export function useWorkspaceSession({
 
 	const restoreWorkspaceSession = useCallback(
 		async (_spacePath: string, _generation: number): Promise<void> => {
+			const revisionAtStart = tabsRevisionRef.current;
 			if (
 				!spacePath ||
 				!settingsLoaded ||
 				resumeLastSession === null ||
-				tabsRevisionRef.current !== 0 ||
+				revisionAtStart !== 0 ||
 				restoredSessionSpaceRef.current === spacePath
 			) {
 				return;
@@ -176,7 +175,7 @@ export function useWorkspaceSession({
 			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
-				tabsRevisionRef.current !== 0 ||
+				tabsRevisionRef.current !== revisionAtStart ||
 				(!restorableTabs.length && !(resumeLastSession && snapshot.splitLayout))
 			) {
 				return;
