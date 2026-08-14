@@ -72,6 +72,7 @@ interface UseWorkspaceSessionArgs {
 	focusedPaneId: string;
 	activeTabPath: string | null;
 	tabsRevision: number;
+	enqueueSessionFlush: () => Promise<boolean>;
 	restoreWorkspaceTabs: (
 		tabSnapshots: WorkspaceSessionTabSnapshot[],
 		activeTabTarget: string | null,
@@ -97,12 +98,13 @@ export function useWorkspaceSession({
 	focusedPaneId,
 	activeTabPath,
 	tabsRevision,
+	enqueueSessionFlush,
 	restoreWorkspaceTabs,
 }: UseWorkspaceSessionArgs) {
 	const restoredSessionSpaceRef = useRef<string | null>(null);
 	const restoreSessionRequestIdRef = useRef(0);
-	// Live revision so an in-flight restore can yield to a tab change (e.g. a
-	// cold-start deeplink) that committed after the restore effect started.
+	// Live revision so an in-flight restore can yield to a tab change that
+	// committed after restore started.
 	const tabsRevisionRef = useRef(tabsRevision);
 	tabsRevisionRef.current = tabsRevision;
 	const pendingSaveRef = useRef<PendingWorkspaceSessionSave | null>(null);
@@ -143,24 +145,20 @@ export function useWorkspaceSession({
 		}
 	}, [clearSaveTimer]);
 
-	useEffect(() => {
-		if (restoredSessionSpaceRef.current !== spacePath) {
-			restoredSessionSpaceRef.current = null;
-			restoreSessionRequestIdRef.current += 1;
-		}
-		if (
-			!spacePath ||
-			!settingsLoaded ||
-			resumeLastSession === null ||
-			tabsRevision !== 0 ||
-			restoredSessionSpaceRef.current === spacePath
-		) {
-			return;
-		}
-		if (welcomeNotePath) return;
+	const restoreWorkspaceSession = useCallback(
+		async (_spacePath: string, _generation: number): Promise<void> => {
+			if (
+				!spacePath ||
+				!settingsLoaded ||
+				resumeLastSession === null ||
+				tabsRevisionRef.current !== 0 ||
+				restoredSessionSpaceRef.current === spacePath
+			) {
+				return;
+			}
+			if (welcomeNotePath) return;
 
-		const requestId = ++restoreSessionRequestIdRef.current;
-		void (async () => {
+			const requestId = ++restoreSessionRequestIdRef.current;
 			const snapshot = await loadWorkspaceSessionSnapshot(spacePath);
 			if (requestId !== restoreSessionRequestIdRef.current || !snapshot) {
 				return;
@@ -178,8 +176,6 @@ export function useWorkspaceSession({
 			const restorableTabs = await validateRestorableSessionTabs(requestedTabs);
 			if (
 				requestId !== restoreSessionRequestIdRef.current ||
-				// A deeplink (or any other open) may have bumped revision while we
-				// awaited; do not clobber that navigation with a stale snapshot.
 				tabsRevisionRef.current !== 0 ||
 				(!restorableTabs.length && !(resumeLastSession && snapshot.splitLayout))
 			) {
@@ -199,20 +195,22 @@ export function useWorkspaceSession({
 				resumeLastSession ? snapshot.activeTabTargetByPane : {},
 			);
 			restoredSessionSpaceRef.current = spacePath;
-		})().catch((cause) => {
-			console.error("Failed to restore workspace session", cause);
-		});
-		return () => {
+		},
+		[
+			restoreWorkspaceTabs,
+			resumeLastSession,
+			welcomeNotePath,
+			settingsLoaded,
+			spacePath,
+		],
+	);
+
+	useEffect(() => {
+		if (restoredSessionSpaceRef.current !== spacePath) {
+			restoredSessionSpaceRef.current = null;
 			restoreSessionRequestIdRef.current += 1;
-		};
-	}, [
-		restoreWorkspaceTabs,
-		resumeLastSession,
-		welcomeNotePath,
-		settingsLoaded,
-		spacePath,
-		tabsRevision,
-	]);
+		}
+	}, [spacePath]);
 
 	useEffect(() => {
 		if (saveSpaceRef.current !== spacePath) {
@@ -269,7 +267,8 @@ export function useWorkspaceSession({
 			.onCloseRequested(async (event) => {
 				event.preventDefault();
 				try {
-					await flushPendingSave();
+					const flushed = await enqueueSessionFlush();
+					if (!flushed) throw new Error("session flush failed");
 				} catch (cause) {
 					console.error(
 						"Failed to save workspace session before closing",
@@ -316,14 +315,17 @@ export function useWorkspaceSession({
 			disposed = true;
 			unlisten?.();
 		};
-	}, [flushPendingSave]);
+	}, [enqueueSessionFlush]);
 
 	useEffect(() => {
 		let disposed = false;
 		let unlisten: (() => void) | null = null;
 		void listen("app:exit_requested", () => {
-			void flushPendingSave()
-				.then(() => invoke("app_confirm_exit"))
+			void enqueueSessionFlush()
+				.then((flushed) => {
+					if (!flushed) throw new Error("session flush failed");
+					return invoke("app_confirm_exit");
+				})
 				.catch((cause) => {
 					console.error(
 						"Failed to save workspace session before quitting",
@@ -359,7 +361,7 @@ export function useWorkspaceSession({
 			disposed = true;
 			unlisten?.();
 		};
-	}, [flushPendingSave]);
+	}, [enqueueSessionFlush]);
 
-	return flushPendingSave;
+	return { flushPendingSave, restoreWorkspaceSession };
 }

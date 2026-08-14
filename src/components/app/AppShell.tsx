@@ -43,6 +43,7 @@ import {
 	nextDatabasesOpenRequest,
 } from "../../lib/database/openDatabasesRequest";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import { type DeeplinkAction, isSameSpacePath } from "../../lib/deeplink";
 import {
 	ACTIVITY_DOCS_PAGE_SIZE,
 	invalidateAllDocsPrefetch,
@@ -59,6 +60,12 @@ import { requestSearchJump } from "../../lib/searchJump";
 import { loadSettings } from "../../lib/settings";
 import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
 import { SPACE_CONNECTIONS_TAB_ID } from "../../lib/spaceConnections";
+import {
+	SPACE_SETTINGS_WAIT_MS,
+	type SpaceLifecycle,
+	createSpaceLifecycle,
+	waitUntil,
+} from "../../lib/spaceLifecycle";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
@@ -392,7 +399,47 @@ export function AppShell() {
 		tabsRevision,
 	} = useTabManager(spacePath);
 	const { getBinding, actionsWithBindings } = useShortcutBindings();
-	const flushWorkspaceSession = useWorkspaceSession({
+
+	const spacePathRef = useRef(spacePath);
+	spacePathRef.current = spacePath;
+	const settingsSpacePathRef = useRef(settingsSpacePath);
+	settingsSpacePathRef.current = settingsSpacePath;
+	const saveAllEditorsRef = useRef(saveAllEditors);
+	saveAllEditorsRef.current = saveAllEditors;
+	const openSpaceAtPathRef = useRef(openSpaceAtPath);
+	openSpaceAtPathRef.current = openSpaceAtPath;
+	const closeSpaceRef = useRef(closeSpace);
+	closeSpaceRef.current = closeSpace;
+	const flushSessionRef = useRef<() => Promise<void>>(async () => {});
+	const restoreSessionRef = useRef<
+		(path: string, generation: number) => Promise<void>
+	>(async () => {});
+	const applyNavigationRef = useRef<(action: DeeplinkAction) => Promise<void>>(
+		async () => {},
+	);
+	const lifecycleRef = useRef<SpaceLifecycle | null>(null);
+	if (!lifecycleRef.current) {
+		lifecycleRef.current = createSpaceLifecycle({
+			currentSpacePath: () => spacePathRef.current,
+			saveEditors: async () => {
+				await saveAllEditorsRef.current();
+			},
+			flushSession: () => flushSessionRef.current(),
+			activateSpace: (path) => openSpaceAtPathRef.current(path),
+			closeSpace: () => closeSpaceRef.current(),
+			hydrateSettings: (path) =>
+				waitUntil(
+					() => isSameSpacePath(settingsSpacePathRef.current, path),
+					SPACE_SETTINGS_WAIT_MS,
+				),
+			restoreSession: (path, generation) =>
+				restoreSessionRef.current(path, generation),
+			applyNavigation: (action) => applyNavigationRef.current(action),
+		});
+	}
+	const spaceLifecycle = lifecycleRef.current;
+
+	const { flushPendingSave, restoreWorkspaceSession } = useWorkspaceSession({
 		spacePath,
 		settingsLoaded,
 		resumeLastSession,
@@ -403,44 +450,60 @@ export function AppShell() {
 		focusedPaneId,
 		activeTabPath,
 		tabsRevision,
+		enqueueSessionFlush: async () => {
+			const result = await spaceLifecycle.submit({ kind: "flushSession" });
+			return result.kind === "ok";
+		},
 		restoreWorkspaceTabs,
 	});
+	flushSessionRef.current = flushPendingSave;
+	restoreSessionRef.current = restoreWorkspaceSession;
 
-	const prepareForSpaceChange = useCallback(async (): Promise<boolean> => {
-		try {
-			await saveAllEditors();
-			await flushWorkspaceSession();
-			return true;
-		} catch (cause) {
-			console.error("Failed to save the current space before switching", cause);
+	const reportSaveFailure = useCallback(
+		(failed: boolean) => {
+			if (!failed) return false;
 			setError(t("workspace.switchSaveFailed"));
-			return false;
-		}
-	}, [flushWorkspaceSession, saveAllEditors, setError, t]);
+			return true;
+		},
+		[setError, t],
+	);
 
 	const handleOpenSpace = useCallback(async () => {
-		if (spacePath && !(await prepareForSpaceChange())) return;
+		if (spacePath) {
+			const result = await spaceLifecycle.submit({ kind: "checkpoint" });
+			if (reportSaveFailure(result.kind === "failed")) return;
+		}
 		await openSpace();
-	}, [openSpace, prepareForSpaceChange, spacePath]);
+	}, [openSpace, reportSaveFailure, spaceLifecycle, spacePath]);
 
 	const handleCreateSpace = useCallback(async () => {
-		if (spacePath && !(await prepareForSpaceChange())) return;
+		if (spacePath) {
+			const result = await spaceLifecycle.submit({ kind: "checkpoint" });
+			if (reportSaveFailure(result.kind === "failed")) return;
+		}
 		await createSpace();
-	}, [createSpace, prepareForSpaceChange, spacePath]);
+	}, [createSpace, reportSaveFailure, spaceLifecycle, spacePath]);
 
 	const handleSelectSpace = useCallback(
 		async (path: string): Promise<boolean> => {
-			if (path === spacePath) return true;
-			if (!(await prepareForSpaceChange())) return false;
-			return await openSpaceAtPath(path);
+			const result = await spaceLifecycle.submit({
+				kind: "activate",
+				path,
+				mode: "open",
+			});
+			if (result.kind === "failed") {
+				if (result.error === "save_failed") reportSaveFailure(true);
+				return false;
+			}
+			return true;
 		},
-		[openSpaceAtPath, prepareForSpaceChange, spacePath],
+		[reportSaveFailure, spaceLifecycle],
 	);
 
 	const handleCloseSpace = useCallback(async () => {
-		if (!(await prepareForSpaceChange())) return;
-		await closeSpace();
-	}, [closeSpace, prepareForSpaceChange]);
+		const result = await spaceLifecycle.submit({ kind: "close" });
+		if (result.kind === "failed") reportSaveFailure(true);
+	}, [reportSaveFailure, spaceLifecycle]);
 
 	useEffect(() => {
 		const visible =
@@ -725,14 +788,35 @@ export function AppShell() {
 		[setPaletteOpen],
 	);
 
+	applyNavigationRef.current = async (action: DeeplinkAction) => {
+		switch (action.kind) {
+			case "open_space":
+				return;
+			case "open_note":
+				await openWorkspaceFile(action.path);
+				return;
+			case "search":
+				openPalette("search", action.q);
+				return;
+			case "open_daily_note":
+				requestOpenDailyNote();
+				return;
+			default: {
+				const _exhaustive: never = action;
+				return _exhaustive;
+			}
+		}
+	};
+
+	useEffect(() => {
+		if (!spacePath || !settingsLoaded || resumeLastSession === null) return;
+		void spaceLifecycle.submit({ kind: "restore" });
+	}, [resumeLastSession, settingsLoaded, spaceLifecycle, spacePath]);
+
 	useDeeplinkDispatch({
-		spacePath,
-		settingsSpacePath,
 		settingsLoaded,
-		selectSpace: handleSelectSpace,
-		openWorkspaceFile,
-		openPalette,
-		requestOpenDailyNote,
+		submitNavigate: (event) =>
+			spaceLifecycle.submit({ kind: "navigate", action: event }),
 	});
 
 	const closePalette = useCallback(() => {

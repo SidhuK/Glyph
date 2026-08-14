@@ -1,86 +1,26 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	type DeeplinkErrorPayload,
-	type DeeplinkEvent,
-	isSameSpacePath,
-} from "../lib/deeplink";
+import type { DeeplinkErrorPayload, DeeplinkEvent } from "../lib/deeplink";
+import type { SpaceLifecycleResult } from "../lib/spaceLifecycle";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { toast } from "../lib/toast";
 
 const DEEPLINK_ERROR_TOAST_ID = "glyph-deeplink-error";
-/**
- * A deeplink can only act on the new space once React state reflects the
- * switch. Settings hydration is best-effort and may never land, so the wait is
- * bounded rather than open-ended.
- */
-const SPACE_SETTLE_TIMEOUT_MS = 5000;
-/** Ids are only needed long enough to spot a pending-queue replay. */
 const MAX_REMEMBERED_IDS = 256;
 
-type Waiter = { ready: () => boolean; settle: (ready: boolean) => void };
-
 export interface UseDeeplinkDispatchOptions {
-	spacePath: string | null;
-	/** Space whose settings are currently hydrated; see `UIContext`. */
-	settingsSpacePath: string | null;
 	settingsLoaded: boolean;
-	/** Saves the open editors, switches space, and reports whether it worked. */
-	selectSpace: (path: string) => Promise<boolean>;
-	openWorkspaceFile: (path: string) => Promise<void>;
-	openPalette: (mode: "commands" | "search", query?: string) => void;
-	requestOpenDailyNote: () => void;
+	submitNavigate: (event: DeeplinkEvent) => Promise<SpaceLifecycleResult>;
 }
 
-/**
- * Routes native `glyph://` deeplinks onto the existing open/search/daily flows.
- * Native code has already validated the space and note, so failures arrive as
- * `deeplink:error` codes rather than being re-checked here.
- */
 export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
-	const { spacePath, settingsSpacePath, settingsLoaded } = options;
+	const { settingsLoaded } = options;
 	const { t } = useTranslation("shell");
-
 	const optionsRef = useRef(options);
 	optionsRef.current = options;
-
 	const seenIdsRef = useRef<Set<number>>(new Set());
-	const queueRef = useRef<DeeplinkEvent[]>([]);
-	const runningRef = useRef(false);
-	const waitersRef = useRef<Waiter[]>([]);
-
-	// Resume any action that was waiting on the space (or its settings) to land.
-	// spacePath / settingsSpacePath are read so the effect re-runs when they change;
-	// waiters themselves close over ready() against optionsRef.
-	useEffect(() => {
-		void spacePath;
-		void settingsSpacePath;
-		for (const waiter of [...waitersRef.current]) {
-			if (waiter.ready()) waiter.settle(true);
-		}
-	}, [spacePath, settingsSpacePath]);
-
-	const waitForState = useCallback((ready: () => boolean): Promise<boolean> => {
-		if (ready()) return Promise.resolve(true);
-		return new Promise<boolean>((resolve) => {
-			const waiter: Waiter = {
-				ready,
-				settle: (settled) => {
-					clearTimeout(timer);
-					waitersRef.current = waitersRef.current.filter(
-						(entry) => entry !== waiter,
-					);
-					resolve(settled);
-				},
-			};
-			const timer = setTimeout(
-				() => waiter.settle(false),
-				SPACE_SETTLE_TIMEOUT_MS,
-			);
-			waitersRef.current.push(waiter);
-		});
-	}, []);
+	const heldRef = useRef<DeeplinkEvent[]>([]);
 
 	const showError = useCallback(
 		(description?: string) => {
@@ -108,82 +48,10 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 		[t],
 	);
 
-	const ensureSpace = useCallback(
-		async (space: string): Promise<boolean> => {
-			if (isSameSpacePath(optionsRef.current.spacePath, space)) return true;
-			// `selectSpace` saves open editors and surfaces its own failures.
-			if (!(await optionsRef.current.selectSpace(space))) return false;
-			return waitForState(() =>
-				isSameSpacePath(optionsRef.current.spacePath, space),
-			);
-		},
-		[waitForState],
-	);
-
-	const runEvent = useCallback(
-		async (event: DeeplinkEvent) => {
-			try {
-				if (!(await ensureSpace(event.space))) {
-					showError();
-					return;
-				}
-				switch (event.kind) {
-					case "open_space":
-						return;
-					case "open_note":
-						await optionsRef.current.openWorkspaceFile(event.path);
-						return;
-					case "search":
-						optionsRef.current.openPalette("search", event.q);
-						return;
-					case "open_daily_note": {
-						// The daily note folder and template are per-space settings, so
-						// acting before they rehydrate would target the previous space.
-						const ready = await waitForState(() =>
-							isSameSpacePath(
-								optionsRef.current.settingsSpacePath,
-								event.space,
-							),
-						);
-						if (!ready) {
-							showError();
-							return;
-						}
-						optionsRef.current.requestOpenDailyNote();
-						return;
-					}
-					default: {
-						const _exhaustive: never = event;
-						return _exhaustive;
-					}
-				}
-			} catch (error) {
-				console.error("Failed to run deeplink", error);
-				showError();
-			}
-		},
-		[ensureSpace, showError, waitForState],
-	);
-
-	const processQueue = useCallback(async () => {
-		if (runningRef.current) return;
-		runningRef.current = true;
-		try {
-			while (queueRef.current.length > 0) {
-				const next = queueRef.current.shift();
-				if (next) await runEvent(next);
-			}
-		} finally {
-			runningRef.current = false;
-		}
-	}, [runEvent]);
-
-	/** Returns false when this id was already handled (live emit vs. queue replay). */
 	const claimId = useCallback((id: number): boolean => {
 		const seen = seenIdsRef.current;
 		if (seen.has(id)) return false;
 		seen.add(id);
-		// Sets iterate in insertion order, so this evicts the oldest ids.
 		while (seen.size > MAX_REMEMBERED_IDS) {
 			const oldest = seen.values().next();
 			if (oldest.done) break;
@@ -192,15 +60,23 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 		return true;
 	}, []);
 
+	const pump = useCallback(() => {
+		if (!optionsRef.current.settingsLoaded) return;
+		const held = heldRef.current.splice(0);
+		for (const event of held) {
+			void optionsRef.current.submitNavigate(event).then((result) => {
+				if (result.kind === "failed") showError();
+			});
+		}
+	}, [showError]);
+
 	const enqueue = useCallback(
 		(event: DeeplinkEvent) => {
 			if (!claimId(event.id)) return;
-			queueRef.current.push(event);
-			// Hold until bootstrap finishes so live cold-start events cannot race
-			// SpaceContext's session restore `space_open`.
-			if (optionsRef.current.settingsLoaded) void processQueue();
+			heldRef.current.push(event);
+			pump();
 		},
-		[claimId, processQueue],
+		[claimId, pump],
 	);
 
 	const reportError = useCallback(
@@ -211,8 +87,6 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 		[claimId, errorMessage, showError],
 	);
 
-	// Deeplinks are queued natively as well as emitted, because the webview is
-	// not listening yet on a cold start. Draining is idempotent thanks to ids.
 	const drainPending = useCallback(async () => {
 		try {
 			const pending = await invoke("deeplink_take_pending");
@@ -231,13 +105,8 @@ export function useDeeplinkDispatch(options: UseDeeplinkDispatchOptions): void {
 		reportError(payload);
 	});
 
-	// Wait for settings so a cold-start deeplink does not race session restore.
-	// Drain the native pending queue and process anything already enqueued live.
 	useEffect(() => {
 		if (!settingsLoaded) return;
-		void (async () => {
-			await drainPending();
-			void processQueue();
-		})();
-	}, [drainPending, processQueue, settingsLoaded]);
+		void drainPending().then(pump);
+	}, [drainPending, pump, settingsLoaded]);
 }
