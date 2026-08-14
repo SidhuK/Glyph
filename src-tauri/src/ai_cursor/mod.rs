@@ -1,6 +1,5 @@
 use std::{
     path::{Path, PathBuf},
-    process::Command as StdCommand,
     time::Duration,
 };
 
@@ -23,6 +22,7 @@ use crate::ai_rig::{
 const RUN_TIMEOUT: Duration = Duration::from_secs(600);
 const EXIT_AFTER_RESULT_GRACE: Duration = Duration::from_secs(2);
 const STARTUP_OUTPUT_TIMEOUT: Duration = Duration::from_secs(30);
+const LIST_MODELS_TIMEOUT: Duration = Duration::from_secs(30);
 const DEFAULT_MODEL_ID: &str = "auto";
 
 fn find_cursor_binary() -> Result<PathBuf, String> {
@@ -59,10 +59,7 @@ fn model_entry(id: &str, name: &str) -> AiModel {
 
 fn parse_model_line(line: &str) -> Option<(String, String)> {
     let line = line.trim();
-    if line.is_empty() || line.eq_ignore_ascii_case("available models") {
-        return None;
-    }
-    let (id, name) = line.split_once(" - ").unwrap_or((line, line));
+    let (id, name) = line.split_once(" - ")?;
     let id = id.trim();
     if id.is_empty() {
         return None;
@@ -70,12 +67,33 @@ fn parse_model_line(line: &str) -> Option<(String, String)> {
     Some((id.to_string(), name.trim().to_string()))
 }
 
-pub fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
+fn cursor_cli_failure(action: &str, status: impl std::fmt::Display, stderr: &str) -> String {
+    let stderr = stderr.trim();
+    if stderr.is_empty() {
+        format!("Cursor CLI {action} exited with {status}")
+    } else {
+        format!("Cursor CLI {action} exited with {status}: {stderr}")
+    }
+}
+
+pub async fn list_models(profile: &AiProfile) -> Result<Vec<AiModel>, String> {
     let binary = find_cursor_binary()?;
-    let output = StdCommand::new(&binary)
-        .arg("--list-models")
-        .output()
+    let mut command = Command::new(&binary);
+    command.arg("--list-models").kill_on_drop(true);
+    if let Some(path) = cli_runtime_path(&binary) {
+        command.env("PATH", path);
+    }
+    let output = tokio::time::timeout(LIST_MODELS_TIMEOUT, command.output())
+        .await
+        .map_err(|_| "Cursor CLI timed out while listing models".to_string())?
         .map_err(|e| format!("failed to list Cursor models: {e}"))?;
+    if !output.status.success() {
+        return Err(cursor_cli_failure(
+            "listing models",
+            output.status,
+            &String::from_utf8_lossy(&output.stderr),
+        ));
+    }
     let stdout = String::from_utf8_lossy(&output.stdout);
     let mut models = Vec::new();
     let mut seen = std::collections::HashSet::new();
@@ -230,7 +248,7 @@ fn tool_call_name(tool_call: &Value) -> &str {
     }
     object
         .keys()
-        .next()
+        .find(|key| key.ends_with("ToolCall"))
         .map(|key| key.strip_suffix("ToolCall").unwrap_or(key.as_str()))
         .unwrap_or("tool")
 }
@@ -391,7 +409,7 @@ pub async fn run_with_cursor(
     if !model.is_empty() && model != DEFAULT_MODEL_ID {
         command.arg("--model").arg(model);
     }
-    command.arg(prompt);
+    command.arg(prompt).kill_on_drop(true);
 
     let mut child = KillChildOnDrop::new(
         command
@@ -440,27 +458,41 @@ pub async fn run_with_cursor(
                 }
             }
             line = stdout_lines.next_line() => {
-                let line = line.map_err(|e| format!("failed reading Cursor CLI output: {e}"))?;
+                let line = match line {
+                    Ok(line) => line,
+                    Err(e) => {
+                        stop_child(&mut child).await;
+                        return Err(format!("failed reading Cursor CLI output: {e}"));
+                    }
+                };
                 let Some(line) = line else {
                     let status = child.wait().await.map_err(|e| e.to_string())?;
                     if status.success() && !full.trim().is_empty() {
                         return Ok((full, false, tool_events));
                     }
-                    return Err(if last_stderr.trim().is_empty() {
-                        format!("Cursor CLI exited with {status}")
-                    } else {
-                        format!("Cursor CLI exited with {status}: {last_stderr}")
-                    });
+                    return Err(cursor_cli_failure("request", status, &last_stderr));
                 };
                 if line.trim().is_empty() {
                     continue;
                 }
                 saw_stdout = true;
-                let value = serde_json::from_str::<Value>(&line)
-                    .map_err(|e| format!("failed to parse Cursor CLI JSON output: {e}"))?;
-                if let Some(done) = handle_event(app, job_id, &value, &mut full, &mut tool_events)? {
-                    let _ = wait_after_result(&mut child, &last_stderr).await;
-                    return Ok((full, done, tool_events));
+                let value = match serde_json::from_str::<Value>(&line) {
+                    Ok(value) => value,
+                    Err(e) => {
+                        stop_child(&mut child).await;
+                        return Err(format!("failed to parse Cursor CLI JSON output: {e}"));
+                    }
+                };
+                match handle_event(app, job_id, &value, &mut full, &mut tool_events) {
+                    Ok(Some(done)) => {
+                        wait_after_result(&mut child, &last_stderr).await?;
+                        return Ok((full, done, tool_events));
+                    }
+                    Ok(None) => {}
+                    Err(e) => {
+                        stop_child(&mut child).await;
+                        return Err(e);
+                    }
                 }
             }
         }

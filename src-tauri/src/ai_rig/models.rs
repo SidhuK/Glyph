@@ -621,12 +621,7 @@ pub async fn ai_models_list(
         AiProviderKind::CodexChatgpt => list_codex_models(app).await,
         AiProviderKind::Amp => Ok(crate::ai_amp::list_models()),
         AiProviderKind::ClaudeCode => crate::ai_claude_code::list_models(&space_root, &profile),
-        AiProviderKind::Cursor => {
-            let profile = profile.clone();
-            tauri::async_runtime::spawn_blocking(move || crate::ai_cursor::list_models(&profile))
-                .await
-                .map_err(|e| e.to_string())?
-        }
+        AiProviderKind::Cursor => crate::ai_cursor::list_models(&profile).await,
         AiProviderKind::Opencode => crate::ai_opencode::list_models(&space_root).await,
         AiProviderKind::Pi => crate::ai_pi::list_models(&space_root).await,
     }
