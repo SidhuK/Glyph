@@ -24,6 +24,7 @@ import type {
 	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
 export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
@@ -47,6 +48,8 @@ function resolveInitialViewId(
 	}
 	return resolveSelectedViewId(databaseId, initialDocument.database.views);
 }
+
+const COLLECTION_DOCUMENT_REFRESH_MS = 200;
 
 export function useCollectionWorkspace({
 	databasesOpenRequest,
@@ -168,6 +171,37 @@ export function useCollectionWorkspace({
 			cancelled = true;
 		};
 	}, [clearError, selectedDatabaseId, setError]);
+
+	const collectionRefreshTimerRef = useRef<number | null>(null);
+	useEffect(() => {
+		return () => {
+			if (collectionRefreshTimerRef.current !== null) {
+				window.clearTimeout(collectionRefreshTimerRef.current);
+			}
+		};
+	}, []);
+	useTauriEvent("space:fs_changed", () => {
+		const activeDatabaseId = documentIdRef.current;
+		if (!activeDatabaseId) return;
+		if (collectionRefreshTimerRef.current !== null) {
+			window.clearTimeout(collectionRefreshTimerRef.current);
+		}
+		collectionRefreshTimerRef.current = window.setTimeout(() => {
+			collectionRefreshTimerRef.current = null;
+			invalidateDatabasePrefetch(activeDatabaseId);
+			void prefetchDatabaseDocument(activeDatabaseId)
+				.then((next) => {
+					if (documentIdRef.current !== activeDatabaseId) return;
+					documentRef.current = next;
+					setDocument(next);
+					clearError();
+				})
+				.catch((cause) => {
+					if (documentIdRef.current !== activeDatabaseId) return;
+					setError(extractErrorMessage(cause));
+				});
+		}, COLLECTION_DOCUMENT_REFRESH_MS);
+	});
 
 	useEffect(() => {
 		if (

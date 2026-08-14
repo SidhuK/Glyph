@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { dispatchFileTreeStartRename } from "../lib/appEvents";
+import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
 import {
 	optimisticallyAddAllDocsNote,

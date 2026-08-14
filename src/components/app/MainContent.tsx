@@ -151,12 +151,6 @@ interface MainContentProps {
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	closeTab: (tabId: string) => void;
 	toggleTabPinned: (tabId: string) => void;
-	closeTabsForPathRemoval: (path: string, recursive?: boolean) => void;
-	renameTabsForPath: (
-		fromPath: string,
-		toPath: string,
-		recursive?: boolean,
-	) => void;
 	reorderTabs: (fromTabId: string, toTabId: string) => void;
 	openBlankTabInPane: (paneId: string) => void;
 	openFileInPane: (path: string, paneId: string) => boolean;
@@ -204,8 +198,6 @@ export const MainContent = memo(function MainContent({
 	setDirtyByPath,
 	closeTab,
 	toggleTabPinned,
-	closeTabsForPathRemoval,
-	renameTabsForPath,
 	reorderTabs,
 	openBlankTabInPane,
 	openFileInPane,

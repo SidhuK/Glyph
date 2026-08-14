@@ -1,10 +1,10 @@
-use notify::event::{EventKind, ModifyKind};
+use notify::event::{EventKind, ModifyKind, RemoveKind};
 use notify::Watcher;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
 
-use crate::note_mutation::{emit_changed, SpaceChange};
+use crate::note_mutation::{emit_changed, reindex_after_rename, SpaceChange};
 use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
@@ -123,17 +123,24 @@ pub fn create_notes_watcher(
                 let Some(to) = rel_under_root(&root2, &event.paths[1]) else {
                     return;
                 };
-                if utils::is_markdown_path(&event.paths[1])
-                    && !has_recent_local_change(&recent_local_changes, &from)
-                    && !has_recent_local_change(&recent_local_changes, &to)
+                if has_recent_local_change(&recent_local_changes, &from)
+                    || has_recent_local_change(&recent_local_changes, &to)
                 {
-                    let _ = idx_tx.send((from.clone(), true, false));
-                    let _ = idx_tx.send((to.clone(), false, false));
+                    return;
                 }
+                let recursive = event.paths[1].is_dir();
+                reindex_after_rename(
+                    &root2,
+                    &from,
+                    &to,
+                    &event.paths[1],
+                    recursive,
+                    &recent_local_changes,
+                );
                 emit_changed(
                     &app2,
                     &window_label,
-                    &SpaceChange::rename(&space_path, from, to, false),
+                    &SpaceChange::rename(&space_path, from, to, recursive),
                 );
                 return;
             }
@@ -151,16 +158,24 @@ pub fn create_notes_watcher(
                 continue;
             };
 
-            let is_md = utils::is_markdown_path(&path);
-            if is_md {
-                if !has_recent_local_change(&recent_local_changes, &rel_s) {
-                    let _ = idx_tx.send((rel_s, is_remove, true));
-                }
+            if has_recent_local_change(&recent_local_changes, &rel_s) {
                 continue;
             }
 
+            let is_md = utils::is_markdown_path(&path);
+            if is_md {
+                let _ = idx_tx.send((rel_s, is_remove, true));
+                continue;
+            }
+
+            let recursive = match event.kind {
+                EventKind::Remove(RemoveKind::Folder) => true,
+                EventKind::Remove(RemoveKind::File) => false,
+                EventKind::Remove(_) => path.extension().is_none(),
+                _ => path.is_dir(),
+            };
             let change = if is_remove {
-                SpaceChange::remove(&space_path, rel_s, true)
+                SpaceChange::remove(&space_path, rel_s, recursive)
             } else if is_create {
                 SpaceChange::create(&space_path, rel_s)
             } else {

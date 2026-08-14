@@ -43,7 +43,7 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";

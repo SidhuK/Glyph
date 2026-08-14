@@ -73,9 +73,13 @@ export function subscribeOpenNoteContent(
 	};
 }
 
-function reloadDirs(relPath: string, current: SpaceChangeHost): void {
+function reloadDirs(
+	relPath: string,
+	current: SpaceChangeHost,
+	includeSelf: boolean,
+): void {
 	const dirs = new Set(["", parentDir(relPath)]);
-	if (current.expandedDirs.has(relPath)) dirs.add(relPath);
+	if (includeSelf && current.expandedDirs.has(relPath)) dirs.add(relPath);
 	for (const dir of dirs) void current.loadDir(dir, true);
 }
 
@@ -105,8 +109,8 @@ export function applySpaceChange(change: SpaceChange): void {
 	if (change.kind === "rename") {
 		const from = normalizeRelPath(change.from_path);
 		const to = normalizeRelPath(change.to_path);
-		reloadDirs(from, current);
-		reloadDirs(to, current);
+		reloadDirs(from, current, false);
+		reloadDirs(to, current, true);
 		current.renameTabsForPath(from, to, change.recursive);
 		void current.renamePinnedPath(from, to);
 		void current.refreshTags();
@@ -116,7 +120,7 @@ export function applySpaceChange(change: SpaceChange): void {
 		return;
 	}
 	const path = normalizeRelPath(change.rel_path);
-	reloadDirs(path, current);
+	reloadDirs(path, current, change.kind !== "remove");
 	void current.refreshTags();
 	if (change.kind === "remove") {
 		current.closeTabsForPathRemoval(path, change.recursive);
@@ -138,14 +142,18 @@ export function useSpaceChangePropagation(nextHost: SpaceChangeHost): void {
 
 	useEffect(() => {
 		host = nextHost;
+	}, [nextHost]);
+
+	useEffect(() => {
 		return () => {
 			host = null;
 			if (timerRef.current !== null) {
 				window.clearTimeout(timerRef.current);
 				timerRef.current = null;
 			}
+			queueRef.current.clear();
 		};
-	}, [nextHost]);
+	}, []);
 
 	const flush = useCallback(() => {
 		timerRef.current = null;

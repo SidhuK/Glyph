@@ -7,7 +7,7 @@ use tauri::{State, WebviewWindow};
 use crate::note_mutation::{
     emit_changed, index_written_markdown, reindex_after_rename, unindex_path, SpaceChange,
 };
-use crate::space::state::RecentLocalChanges;
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::{paths, space::SpaceState, utils};
 
 use super::super::filename::split_stem_extension;
@@ -155,6 +155,7 @@ fn duplicate_file_under_root(
                         error = %error,
                         "failed to read duplicated markdown note for indexing"
                     );
+                    mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
                 }
             }
         }
@@ -386,10 +387,23 @@ pub async fn space_rename_path(
     })
     .await
     .map_err(|e| e.to_string())??;
+    let mut changes = vec![SpaceChange::rename(
+        space_path.clone(),
+        emit_from,
+        emit_to,
+        recursive,
+    )];
+    changes.extend(
+        rewrite_result
+            .changed_files
+            .iter()
+            .cloned()
+            .map(|rel_path| SpaceChange::content(&space_path, rel_path)),
+    );
     emit_changed(
         &app,
         &window_label,
-        &SpaceChange::rename(space_path, emit_from, emit_to, recursive),
+        &SpaceChange::batch(space_path, changes),
     );
     Ok(rewrite_result)
 }

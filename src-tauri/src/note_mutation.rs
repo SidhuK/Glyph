@@ -199,6 +199,23 @@ fn dir_prefix(rel_path: &str) -> String {
     }
 }
 
+fn escape_like(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
+}
+
+fn like_descendants_pattern(rel_path: &str) -> String {
+    format!("{}%", escape_like(&dir_prefix(rel_path)))
+}
+
+fn mark_if_indexed(recent: &RecentLocalChanges, rel_path: &str, ok: bool) {
+    if ok {
+        mark_recent_local_change(recent, rel_path);
+    }
+}
+
 pub fn unindex_path(
     root: &Path,
     rel_path: &str,
@@ -208,23 +225,26 @@ pub fn unindex_path(
 ) {
     if is_dir {
         if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ?") {
-                let pattern = format!("{}%", dir_prefix(rel_path));
+            if let Ok(mut stmt) =
+                conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ? ESCAPE '\\'")
+            {
+                let pattern = like_descendants_pattern(rel_path);
                 if let Ok(rows) =
                     stmt.query_map([rel_path, pattern.as_str()], |row| row.get::<_, String>(0))
                 {
                     for note_id in rows.filter_map(|row| row.ok()) {
-                        mark_recent_local_change(recent, &note_id);
-                        let _ = index::remove_note(root, &note_id);
+                        mark_if_indexed(recent, &note_id, index::remove_note(root, &note_id).is_ok());
                     }
                 }
             }
         }
+        mark_recent_local_change(recent, rel_path);
         return;
     }
     if utils::is_markdown_path(abs_path) {
+        mark_if_indexed(recent, rel_path, index::remove_note(root, rel_path).is_ok());
+    } else {
         mark_recent_local_change(recent, rel_path);
-        let _ = index::remove_note(root, rel_path);
     }
 }
 
@@ -240,30 +260,49 @@ pub fn reindex_after_rename(
         let prefix = dir_prefix(from_path);
         let new_prefix = dir_prefix(to_path);
         if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ?") {
-                let pattern = format!("{prefix}%");
+            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ? ESCAPE '\\'") {
+                let pattern = like_descendants_pattern(from_path);
                 if let Ok(rows) = stmt.query_map([&pattern], |row| row.get::<_, String>(0)) {
                     let old_ids: Vec<String> = rows.filter_map(|row| row.ok()).collect();
                     for old_id in old_ids {
-                        let new_id = format!("{new_prefix}{}", &old_id[prefix.len()..]);
-                        mark_recent_local_change(recent, &old_id);
-                        mark_recent_local_change(recent, &new_id);
-                        let _ = index::remove_note(root, &old_id);
+                        let Some(suffix) = old_id.strip_prefix(prefix.as_str()) else {
+                            continue;
+                        };
+                        let new_id = format!("{new_prefix}{suffix}");
+                        mark_if_indexed(recent, &old_id, index::remove_note(root, &old_id).is_ok());
                         if let Ok(markdown) = std::fs::read_to_string(root.join(&new_id)) {
-                            let _ = index::index_note(root, &new_id, &markdown);
+                            mark_if_indexed(
+                                recent,
+                                &new_id,
+                                index::index_note(root, &new_id, &markdown).is_ok(),
+                            );
                         }
                     }
                 }
             }
         }
-        return;
-    }
-    if utils::is_markdown_path(to_abs) {
         mark_recent_local_change(recent, from_path);
         mark_recent_local_change(recent, to_path);
-        let _ = index::remove_note(root, from_path);
+        return;
+    }
+    if utils::is_markdown_path(Path::new(from_path)) {
+        mark_if_indexed(
+            recent,
+            from_path,
+            index::remove_note(root, from_path).is_ok(),
+        );
+    } else {
+        mark_recent_local_change(recent, from_path);
+    }
+    if utils::is_markdown_path(to_abs) {
         if let Ok(markdown) = std::fs::read_to_string(to_abs) {
-            let _ = index::index_note(root, to_path, &markdown);
+            mark_if_indexed(
+                recent,
+                to_path,
+                index::index_note(root, to_path, &markdown).is_ok(),
+            );
         }
+    } else {
+        mark_recent_local_change(recent, to_path);
     }
 }

@@ -1429,8 +1429,6 @@ export function AppShell() {
 				setDirtyByPath={setDirtyByPath}
 				closeTab={closeTab}
 				toggleTabPinned={toggleTabPinned}
-				closeTabsForPathRemoval={closeTabsForPathRemoval}
-				renameTabsForPath={renameTabsForPath}
 				reorderTabs={reorderTabs}
 				openBlankTabInPane={openBlankTabInPane}
 				openFileInPane={openFileInPane}

@@ -256,6 +256,50 @@ fn apply_cell_update_to_markdown(
     render_note_markdown(note_path, markdown, mapping)
 }
 
+fn row_folder(note_path: &str) -> String {
+    note_path
+        .rsplit_once('/')
+        .map(|(folder, _)| folder.to_string())
+        .unwrap_or_default()
+}
+
+fn fallback_created_row(note_path: &str, title: &str) -> DatabaseRow {
+    DatabaseRow {
+        folder: row_folder(note_path),
+        note_path: note_path.to_string(),
+        title: title.to_string(),
+        created: String::new(),
+        updated: String::new(),
+        preview: String::new(),
+        tags: Vec::new(),
+        linked_notes: Vec::new(),
+        properties: BTreeMap::new(),
+    }
+}
+
+fn apply_cell_to_row(
+    mut row: DatabaseRow,
+    column: &DatabaseColumn,
+    value: &DatabaseCellValue,
+) -> DatabaseRow {
+    match column.column_type.as_str() {
+        "title" => {
+            if let Some(text) = &value.value_text {
+                row.title = text.clone();
+            }
+        }
+        "tags" => row.tags = value.value_list.clone(),
+        "linked_notes" => row.linked_notes = value.value_list.clone(),
+        "property" => {
+            if let Some(key) = &column.property_key {
+                row.properties.insert(key.clone(), value.clone());
+            }
+        }
+        _ => {}
+    }
+    row
+}
+
 fn write_markdown_note(
     root: &Path,
     recent_local_changes: &crate::space::state::RecentLocalChanges,
@@ -764,7 +808,11 @@ pub async fn databases_update_cell(
     let space_path = root.to_string_lossy().to_string();
     let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
+    let note_mutation_mutex = state.note_mutation_mutex();
     let (row, change) = tauri::async_runtime::spawn_blocking(move || {
+        let _guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
         let existing_row = row_by_path(&root, &note_path)?;
         validate_editable_column(&existing_row, &column)?;
         let rel = PathBuf::from(&note_path);
@@ -779,7 +827,9 @@ pub async fn databases_update_cell(
             &note_path,
             &next,
         )?;
-        Ok::<_, String>((row_by_path(&root, &note_path)?, change))
+        let row = row_by_path(&root, &note_path)
+            .unwrap_or_else(|_| apply_cell_to_row(existing_row, &column, &value));
+        Ok::<_, String>((row, change))
     })
     .await
     .map_err(|e| e.to_string())??;
@@ -830,7 +880,8 @@ pub async fn databases_create_row(
             if let Some(change) =
                 write_new_markdown_note(&root, &recent_local_changes, &space_path, &candidate, &next)?
             {
-                let row = row_by_path(&root, &candidate)?;
+                let row = row_by_path(&root, &candidate)
+                    .unwrap_or_else(|_| fallback_created_row(&candidate, &title));
                 return Ok((
                     DatabaseCreateRowResult {
                         note_path: candidate,
