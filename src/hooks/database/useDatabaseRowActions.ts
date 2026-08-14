@@ -1,4 +1,3 @@
-import { emit } from "@tauri-apps/api/event";
 import { type Dispatch, type SetStateAction, useCallback } from "react";
 import { boardCreateValue } from "../../lib/database/board";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -75,10 +74,6 @@ export function useDatabaseRowActions({
 				if (document && selectedViewId) {
 					invalidateDatabasePrefetch(document.database.id);
 				}
-				void emit("notes:external_changed", {
-					rel_path: notePath,
-					removed: false,
-				});
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
 				throw cause;

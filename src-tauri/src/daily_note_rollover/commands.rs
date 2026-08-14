@@ -1,26 +1,18 @@
-use serde::Serialize;
 use std::{
     collections::{BTreeMap, BTreeSet},
     ffi::OsStr,
     path::PathBuf,
 };
-use tauri::{Emitter, State, WebviewWindow};
+use tauri::{State, WebviewWindow};
 
-use crate::space::state::mark_recent_local_change;
+use crate::note_mutation::{emit_changed, index_written_markdown, SpaceChange};
 use crate::space_fs::helpers::{deny_hidden_rel_path, file_mtime_ms};
-use crate::{index, io_atomic, paths, space::SpaceState};
+use crate::{io_atomic, paths, space::SpaceState};
 
 use super::{
     markdown,
     types::{RolloverCandidate, RolloverMoveItem, RolloverMoveResult},
 };
-
-#[derive(Clone, Serialize)]
-struct NoteChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn daily_note_rollover_candidates(
@@ -282,11 +274,7 @@ pub async fn daily_note_rollover_move(
         }
 
         for (path, text) in &rewritten {
-            if let Err(error) = index::index_note(&root, path, text) {
-                tracing::warn!(note_id = %path, %error, "rolled-over note could not be indexed");
-            } else {
-                mark_recent_local_change(&recent_changes, path);
-            }
+            index_written_markdown(&root, &recent_changes, path, text);
         }
         Ok(RolloverMoveResult {
             moved_count: source_items.values().map(Vec::len).sum::<usize>() as u32,
@@ -297,15 +285,11 @@ pub async fn daily_note_rollover_move(
     .await
     .map_err(|error| error.to_string())??;
 
-    for rel_path in &result.changed_paths {
-        let _ = app.emit_to(
+    if !result.changed_paths.is_empty() {
+        emit_changed(
+            &app,
             &window_label,
-            "notes:external_changed",
-            NoteChangeEvent {
-                space_path: space_path.clone(),
-                rel_path: rel_path.clone(),
-                removed: false,
-            },
+            &SpaceChange::contents(&space_path, result.changed_paths.iter().cloned()),
         );
     }
     Ok(result)

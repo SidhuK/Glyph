@@ -1,25 +1,20 @@
-use serde::Serialize;
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
 };
-use tauri::{Emitter, State, WebviewWindow};
+use tauri::{State, WebviewWindow};
 
+use crate::note_mutation::{
+    emit_changed, index_written_markdown, reindex_after_rename, unindex_path, SpaceChange,
+};
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
-use crate::{index, paths, space::SpaceState, utils};
+use crate::{paths, space::SpaceState, utils};
 
 use super::super::filename::split_stem_extension;
 use super::super::helpers::deny_hidden_rel_path;
 use super::super::link_rewrite::{self, LinkRewriteResult};
 use super::super::types::FsEntry;
 use super::trash::move_path_to_trash;
-
-#[derive(Serialize, Clone)]
-struct NoteChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
 
 fn next_duplicate_file_name(existing_names: &HashSet<String>, file_name: &str) -> String {
     let (stem, ext) = split_stem_extension(file_name);
@@ -150,16 +145,9 @@ fn duplicate_file_under_root(
 
         let duplicate_rel_string = utils::to_slash(&duplicate_rel);
         if is_markdown {
-            mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
             match std::fs::read_to_string(&duplicate_abs) {
                 Ok(markdown) => {
-                    if let Err(error) = index::index_note(root, &duplicate_rel_string, &markdown) {
-                        tracing::warn!(
-                            note_id = %duplicate_rel_string,
-                            error = %error,
-                            "failed to index duplicated markdown note"
-                        );
-                    }
+                    index_written_markdown(root, recent_local_changes, &duplicate_rel_string, &markdown)
                 }
                 Err(error) => {
                     tracing::warn!(
@@ -167,46 +155,14 @@ fn duplicate_file_under_root(
                         error = %error,
                         "failed to read duplicated markdown note for indexing"
                     );
+                    if error.kind() == std::io::ErrorKind::InvalidData {
+                        mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
+                    }
                 }
             }
         }
 
         return build_file_entry(&duplicate_rel, is_markdown);
-    }
-}
-
-pub(crate) fn remove_markdown_notes_from_index(
-    root: &Path,
-    rel_path: &str,
-    abs_path: &Path,
-    recent_local_changes: &RecentLocalChanges,
-    is_dir: bool,
-) {
-    if is_dir {
-        let prefix = if rel_path.ends_with('/') {
-            rel_path.to_string()
-        } else {
-            format!("{rel_path}/")
-        };
-        if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ?") {
-                let pattern = format!("{prefix}%");
-                if let Ok(rows) =
-                    stmt.query_map([rel_path, pattern.as_str()], |row| row.get::<_, String>(0))
-                {
-                    for note_id in rows.filter_map(|row| row.ok()) {
-                        mark_recent_local_change(recent_local_changes, &note_id);
-                        let _ = index::remove_note(root, &note_id);
-                    }
-                }
-            }
-        }
-        return;
-    }
-
-    if utils::is_markdown_path(abs_path) {
-        mark_recent_local_change(recent_local_changes, rel_path);
-        let _ = index::remove_note(root, rel_path);
     }
 }
 
@@ -244,14 +200,10 @@ pub async fn space_duplicate_path(
     .await
     .map_err(|e| e.to_string())??;
     if entry.is_markdown {
-        let _ = app.emit_to(
-            window_label,
-            "notes:external_changed",
-            NoteChangeEvent {
-                space_path,
-                rel_path: entry.rel_path.clone(),
-                removed: false,
-            },
+        emit_changed(
+            &app,
+            &window_label,
+            &SpaceChange::create(space_path, entry.rel_path.clone()),
         );
     }
     Ok(entry)
@@ -324,15 +276,21 @@ pub async fn space_reveal_path(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_rename_path(
+    app: tauri::AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
 ) -> Result<LinkRewriteResult, String> {
     let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let emit_from = from_path.clone();
+    let emit_to = to_path.clone();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let list_collapse_state_mutex = state.list_collapse_state_mutex();
-    tauri::async_runtime::spawn_blocking(move || -> Result<LinkRewriteResult, String> {
+    let (rewrite_result, recursive) = tauri::async_runtime::spawn_blocking(
+        move || -> Result<(LinkRewriteResult, bool), String> {
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
         deny_hidden_rel_path(&from_rel)?;
@@ -372,16 +330,14 @@ pub async fn space_rename_path(
             match link_rewrite::rewrite_links_after_rename(&root, &plan) {
                 Ok(result) => {
                     for changed in &result.changed_files {
-                        mark_recent_local_change(&recent_local_changes, changed);
                         match std::fs::read_to_string(root.join(changed)) {
                             Ok(markdown) => {
-                                if let Err(error) = index::index_note(&root, changed, &markdown) {
-                                    tracing::warn!(
-                                        note_id = %changed,
-                                        error = %error,
-                                        "failed to index rewritten links after rename"
-                                    );
-                                }
+                                index_written_markdown(
+                                    &root,
+                                    &recent_local_changes,
+                                    changed,
+                                    &markdown,
+                                );
                             }
                             Err(error) => {
                                 tracing::warn!(
@@ -429,70 +385,46 @@ pub async fn space_rename_path(
                 );
             }
         }
-        Ok(rewrite_result)
+        Ok((rewrite_result, is_dir))
     })
     .await
-    .map_err(|e| e.to_string())?
-}
-
-fn reindex_after_rename(
-    root: &Path,
-    from_path: &str,
-    to_path: &str,
-    to_abs: &Path,
-    is_dir: bool,
-    recent_local_changes: &RecentLocalChanges,
-) {
-    if is_dir {
-        let prefix = if from_path.ends_with('/') {
-            from_path.to_string()
-        } else {
-            format!("{from_path}/")
-        };
-        let new_prefix = if to_path.ends_with('/') {
-            to_path.to_string()
-        } else {
-            format!("{to_path}/")
-        };
-        if let Ok(conn) = index::open_db(root) {
-            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ?") {
-                let pattern = format!("{prefix}%");
-                if let Ok(rows) = stmt.query_map([&pattern], |row| row.get::<_, String>(0)) {
-                    let old_ids: Vec<String> = rows.filter_map(|r| r.ok()).collect();
-                    for old_id in old_ids {
-                        let new_id = format!("{new_prefix}{}", &old_id[prefix.len()..]);
-                        mark_recent_local_change(recent_local_changes, &old_id);
-                        mark_recent_local_change(recent_local_changes, &new_id);
-                        let _ = index::remove_note(root, &old_id);
-                        let abs = root.join(&new_id);
-                        if let Ok(markdown) = std::fs::read_to_string(&abs) {
-                            let _ = index::index_note(root, &new_id, &markdown);
-                        }
-                    }
-                }
-            }
-        }
-    } else if utils::is_markdown_path(to_abs) {
-        mark_recent_local_change(recent_local_changes, from_path);
-        mark_recent_local_change(recent_local_changes, to_path);
-        let _ = index::remove_note(root, from_path);
-        if let Ok(markdown) = std::fs::read_to_string(to_abs) {
-            let _ = index::index_note(root, to_path, &markdown);
-        }
-    }
+    .map_err(|e| e.to_string())??;
+    let mut changes = vec![SpaceChange::rename(
+        space_path.clone(),
+        emit_from,
+        emit_to,
+        recursive,
+    )];
+    changes.extend(
+        rewrite_result
+            .changed_files
+            .iter()
+            .cloned()
+            .map(|rel_path| SpaceChange::content(&space_path, rel_path)),
+    );
+    emit_changed(
+        &app,
+        &window_label,
+        &SpaceChange::batch(space_path, changes),
+    );
+    Ok(rewrite_result)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn space_delete_path(
+    app: tauri::AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     path: String,
     recursive: Option<bool>,
 ) -> Result<(), String> {
     let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
+    let emit_path = path.clone();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
     let list_collapse_state_mutex = state.list_collapse_state_mutex();
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+    let recursive_delete = tauri::async_runtime::spawn_blocking(move || -> Result<bool, String> {
         let rel = PathBuf::from(&path);
         if rel.as_os_str().is_empty() {
             return Err("path is required".to_string());
@@ -509,7 +441,7 @@ pub async fn space_delete_path(
         } else {
             move_path_to_trash(&abs)
         }?;
-        remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
+        unindex_path(&root, &path, &abs, &recent_local_changes, meta.is_dir());
         match list_collapse_state_mutex.lock() {
             Ok(_guard) => {
                 if let Err(error) = crate::list_collapse_state::delete_path(&root, &path) {
@@ -528,10 +460,16 @@ pub async fn space_delete_path(
                 );
             }
         }
-        Ok(())
+        Ok(meta.is_dir())
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    emit_changed(
+        &app,
+        &window_label,
+        &SpaceChange::remove(space_path, emit_path, recursive_delete),
+    );
+    Ok(())
 }
 
 #[tauri::command(rename_all = "snake_case")]

@@ -1,10 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { Archive04Icon } from "@hugeicons/core-free-icons";
-import {
-	useInfiniteQuery,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
 	type VirtualItem,
 	type Virtualizer,
@@ -37,14 +33,12 @@ import {
 	ACTIVITY_DOCS_PAGE_SIZE,
 	allDocsListQueryOptions,
 	allDocsPagesQueryOptions,
-	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type {
 	AllDocsItem,
 	FileTreeAppearance,
 	NoteTaskSummary,
 } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -248,7 +242,6 @@ function countUniqueNotes(days: ActivityDay[]): number {
 }
 
 function useActivityTimelineData(dailyNotesFolder: string | null) {
-	const queryClient = useQueryClient();
 	const notesQuery = useInfiniteQuery(
 		allDocsPagesQueryOptions(null, ACTIVITY_DOCS_PAGE_SIZE),
 	);
@@ -261,7 +254,7 @@ function useActivityTimelineData(dailyNotesFolder: string | null) {
 		() => feedNotes.map((note) => note.note_path),
 		[feedNotes],
 	);
-	const taskSummariesByPath = useTaskSummariesForPaths(feedNotePaths, true, 0);
+	const taskSummariesByPath = useTaskSummariesForPaths(feedNotePaths, true);
 	const heatmapNotes = heatmapNotesQuery.data ?? feedNotes;
 	const activityDays = useMemo(
 		() => buildActivityDays(heatmapNotes, dailyNotesFolder),
@@ -300,12 +293,6 @@ function useActivityTimelineData(dailyNotesFolder: string | null) {
 		() => countUniqueNotes(recentActivityDays),
 		[recentActivityDays],
 	);
-
-	useTauriEvent("notes:external_changed", () => {
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocs(),
-		});
-	});
 
 	return {
 		notesQuery,

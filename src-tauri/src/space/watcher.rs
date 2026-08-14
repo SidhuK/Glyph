@@ -1,23 +1,99 @@
+use notify::event::{EventKind, ModifyKind, RemoveKind};
 use notify::Watcher;
-use serde::Serialize;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc as std_mpsc;
-use tauri::Emitter;
 
+use crate::note_mutation::{emit_changed, SpaceChange};
 use crate::{index, paths, utils};
 
 use super::state::{has_recent_local_change, RecentLocalChanges};
 
-#[derive(Serialize, Clone)]
-struct ExternalChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
-
 const DEBOUNCE_MS: u64 = 100;
 const INDEX_OPEN_RETRY_MS: u64 = 1_000;
+
+fn dir_prefix(rel_path: &str) -> String {
+    if rel_path.ends_with('/') {
+        rel_path.to_string()
+    } else {
+        format!("{rel_path}/")
+    }
+}
+
+fn markdown_rels_under(root: &Path, abs_dir: &Path) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut stack = vec![abs_dir.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let Ok(meta) = entry.metadata() else {
+                continue;
+            };
+            if meta.is_dir() {
+                if path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'))
+                {
+                    continue;
+                }
+                stack.push(path);
+                continue;
+            }
+            if !utils::is_markdown_path(&path) {
+                continue;
+            }
+            if let Some(rel) = rel_under_root(root, &path) {
+                out.push(rel);
+            }
+        }
+    }
+    out
+}
+
+fn queue_rename_reindex(
+    idx_tx: &std_mpsc::Sender<(String, bool, bool)>,
+    root: &Path,
+    from: &str,
+    to: &str,
+    to_abs: &Path,
+    recursive: bool,
+) {
+    if recursive {
+        let from_prefix = dir_prefix(from);
+        let to_prefix = dir_prefix(to);
+        for rel in markdown_rels_under(root, to_abs) {
+            let Some(suffix) = rel.strip_prefix(&to_prefix) else {
+                continue;
+            };
+            let _ = idx_tx.send((format!("{from_prefix}{suffix}"), true, false));
+            let _ = idx_tx.send((rel, false, false));
+        }
+        return;
+    }
+    if utils::is_markdown_path(Path::new(from)) {
+        let _ = idx_tx.send((from.to_string(), true, false));
+    }
+    if utils::is_markdown_path(to_abs) {
+        let _ = idx_tx.send((to.to_string(), false, false));
+    }
+}
+
+fn rel_under_root(root: &Path, path: &Path) -> Option<String> {
+    let rel = path.strip_prefix(root).ok()?;
+    let rel_s = rel
+        .components()
+        .filter_map(|c| c.as_os_str().to_str())
+        .collect::<Vec<_>>()
+        .join("/");
+    if rel_s.is_empty() || rel_s.split('/').any(|part| part.starts_with('.')) {
+        return None;
+    }
+    Some(rel_s)
+}
 
 pub fn create_notes_watcher(
     app: tauri::AppHandle,
@@ -25,7 +101,7 @@ pub fn create_notes_watcher(
     window_label: String,
     recent_local_changes: RecentLocalChanges,
 ) -> Result<notify::RecommendedWatcher, String> {
-    let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool)>();
+    let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool, bool)>();
 
     let root_idx = root.clone();
     let index_app = app.clone();
@@ -36,10 +112,10 @@ pub fn create_notes_watcher(
         let mut pending = HashMap::new();
         loop {
             if pending.is_empty() {
-                let Ok((rel, remove)) = idx_rx.recv() else {
+                let Ok((rel, remove, emit)) = idx_rx.recv() else {
                     return;
                 };
-                pending.insert(rel, remove);
+                pending.insert(rel, (remove, emit));
             }
 
             let deadline = std::time::Instant::now() + debounce;
@@ -49,8 +125,8 @@ pub fn create_notes_watcher(
                     break;
                 }
                 match idx_rx.recv_timeout(remaining) {
-                    Ok((rel, remove)) => {
-                        pending.insert(rel, remove);
+                    Ok((rel, remove, emit)) => {
+                        pending.insert(rel, (remove, emit));
                     }
                     Err(std_mpsc::RecvTimeoutError::Timeout) => break,
                     Err(std_mpsc::RecvTimeoutError::Disconnected) => break,
@@ -65,8 +141,8 @@ pub fn create_notes_watcher(
                     continue;
                 }
             };
-            let mut events = Vec::new();
-            for (rel_s, is_remove) in std::mem::take(&mut pending) {
+            let mut changes = Vec::new();
+            for (rel_s, (is_remove, emit)) in std::mem::take(&mut pending) {
                 let result = if is_remove {
                     index::remove_note_with_conn(&conn, &rel_s)
                 } else {
@@ -80,17 +156,21 @@ pub fn create_notes_watcher(
                         continue;
                     }
                 };
-                if result.is_ok() {
-                    events.push(ExternalChangeEvent {
-                        space_path: index_space_path.clone(),
-                        rel_path: rel_s,
-                        removed: is_remove,
+                if result.is_ok() && emit {
+                    changes.push(if is_remove {
+                        SpaceChange::remove(&index_space_path, rel_s, false)
+                    } else {
+                        SpaceChange::content(&index_space_path, rel_s)
                     });
                 }
             }
 
-            for event in events {
-                let _ = index_app.emit_to(&index_window_label, "notes:external_changed", event);
+            if !changes.is_empty() {
+                emit_changed(
+                    &index_app,
+                    &index_window_label,
+                    &SpaceChange::batch(&index_space_path, changes),
+                );
             }
         }
     });
@@ -105,45 +185,73 @@ pub fn create_notes_watcher(
             Err(_) => return,
         };
 
-        let is_remove = matches!(event.kind, notify::EventKind::Remove(_));
-        let is_create = matches!(event.kind, notify::EventKind::Create(_));
-        let is_modify = matches!(event.kind, notify::EventKind::Modify(_));
+        if let EventKind::Modify(ModifyKind::Name(_)) = event.kind {
+            if event.paths.len() >= 2 {
+                let Some(from) = rel_under_root(&root2, &event.paths[0]) else {
+                    return;
+                };
+                let Some(to) = rel_under_root(&root2, &event.paths[1]) else {
+                    return;
+                };
+                if has_recent_local_change(&recent_local_changes, &from)
+                    && has_recent_local_change(&recent_local_changes, &to)
+                {
+                    return;
+                }
+                let recursive = event.paths[1].is_dir();
+                queue_rename_reindex(
+                    &idx_tx,
+                    &root2,
+                    &from,
+                    &to,
+                    &event.paths[1],
+                    recursive,
+                );
+                emit_changed(
+                    &app2,
+                    &window_label,
+                    &SpaceChange::rename(&space_path, from, to, recursive),
+                );
+                return;
+            }
+        }
+
+        let is_remove = matches!(event.kind, EventKind::Remove(_));
+        let is_create = matches!(event.kind, EventKind::Create(_));
+        let is_modify = matches!(event.kind, EventKind::Modify(_));
         if !(is_remove || is_create || is_modify) {
             return;
         }
 
         for path in event.paths {
-            let rel = match path.strip_prefix(&root2) {
-                Ok(r) => r,
-                Err(_) => continue,
+            let Some(rel_s) = rel_under_root(&root2, &path) else {
+                continue;
             };
-            let rel_s = rel
-                .components()
-                .filter_map(|c| c.as_os_str().to_str())
-                .collect::<Vec<_>>()
-                .join("/");
-            if rel_s.is_empty() {
-                continue;
-            }
-            if rel_s.split('/').any(|p| p.starts_with('.')) {
+
+            if has_recent_local_change(&recent_local_changes, &rel_s) {
                 continue;
             }
 
-            if utils::is_markdown_path(&path)
-                && !has_recent_local_change(&recent_local_changes, &rel_s)
-            {
-                let _ = idx_tx.send((rel_s.clone(), is_remove));
+            let is_md = utils::is_markdown_path(&path);
+            if is_md {
+                let _ = idx_tx.send((rel_s, is_remove, true));
+                continue;
             }
 
-            let _ = app2.emit_to(
-                &window_label,
-                "space:fs_changed",
-                ExternalChangeEvent {
-                    space_path: space_path.clone(),
-                    rel_path: rel_s,
-                    removed: is_remove,
-                },
-            );
+            let recursive = match event.kind {
+                EventKind::Remove(RemoveKind::Folder) => true,
+                EventKind::Remove(RemoveKind::File) => false,
+                EventKind::Remove(_) => true,
+                _ => path.is_dir(),
+            };
+            let change = if is_remove {
+                SpaceChange::remove(&space_path, rel_s, recursive)
+            } else if is_create {
+                SpaceChange::create(&space_path, rel_s)
+            } else {
+                SpaceChange::content(&space_path, rel_s)
+            };
+            emit_changed(&app2, &window_label, &change);
         }
     })
     .map_err(|e| e.to_string())?;

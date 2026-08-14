@@ -1,6 +1,6 @@
 import { HugeiconsIcon } from "@/components/HugeiconsIcon";
 import { TimelineEventIcon } from "@hugeicons/core-free-icons";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	isSameDay,
@@ -20,10 +20,8 @@ import { useTaskSummariesForPaths } from "../../hooks/useTaskSummariesForPaths";
 import {
 	ALL_DOCS_PAGE_SIZE,
 	allDocsPagesQueryOptions,
-	navigationQueryKeys,
 } from "../../lib/navigationPrefetch";
 import type { AllDocsItem } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { TaskProgressIndicator } from "../checklists/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -97,9 +95,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		hoverPrefetchProps: activityHoverPrefetchProps,
 	} = useHoverPrefetch(onPrefetchActivity);
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
-	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const [paneWidth, setPaneWidth] = useState(0);
-	const queryClient = useQueryClient();
 	const notesQuery = useInfiniteQuery({
 		...allDocsPagesQueryOptions(null),
 		// Prefetch keeps a 5-minute stale window; the pane should still refetch on open.
@@ -125,17 +121,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		[notesQuery.data],
 	);
 	const notePaths = useMemo(() => notes.map((note) => note.note_path), [notes]);
-	const taskSummariesByPath = useTaskSummariesForPaths(
-		notePaths,
-		true,
-		taskSummaryRefreshKey,
-	);
-	useTauriEvent("notes:external_changed", () => {
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocs(),
-		});
-		setTaskSummaryRefreshKey((key) => key + 1);
-	});
+	const taskSummariesByPath = useTaskSummariesForPaths(notePaths, true);
 
 	useEffect(() => {
 		const pane = paneRef.current;

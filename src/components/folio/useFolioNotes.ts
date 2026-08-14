@@ -1,9 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-	allDocsListQueryOptions,
-	navigationQueryKeys,
-} from "../../lib/navigationPrefetch";
+import { allDocsListQueryOptions } from "../../lib/navigationPrefetch";
 import { loadSettings } from "../../lib/settings";
 import type { AllDocsItem, FsEntry, FsEntryList } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -131,7 +128,6 @@ function mergeFolioItems(notes: AllDocsItem[], files: FolioItem[]) {
 }
 
 export function useFolioNotes(scope: FolioScope) {
-	const queryClient = useQueryClient();
 	const [showNonMarkdownFiles, setShowNonMarkdownFiles] = useState<
 		boolean | null
 	>(null);
@@ -174,20 +170,6 @@ export function useFolioNotes(scope: FolioScope) {
 		queryKey: folioFilesQueryKey(folderPrefix),
 		queryFn: () => listNonMarkdownFiles(folderPrefix),
 		enabled: includesNonMarkdownFiles,
-	});
-
-	useTauriEvent("notes:external_changed", () => {
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		});
-	});
-	useTauriEvent("space:fs_changed", () => {
-		void queryClient.invalidateQueries({
-			queryKey: navigationQueryKeys.allDocsList(folderPrefix),
-		});
-		void queryClient.invalidateQueries({
-			queryKey: ["navigation", "folio-files"],
-		});
 	});
 
 	const items = useMemo(

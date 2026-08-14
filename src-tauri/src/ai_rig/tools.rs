@@ -10,7 +10,13 @@ use rig::tool::Tool;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::json;
+use tauri::AppHandle;
 
+use crate::note_mutation::{
+    commit_markdown, emit_changed, reindex_after_rename, unindex_path, CommitCtx, PersistMode,
+    SpaceChange,
+};
+use crate::space::state::RecentLocalChanges;
 use crate::{index::open_db, io_atomic, paths, utils};
 
 const MAX_READ_BYTES: u64 = 512 * 1024;
@@ -18,6 +24,46 @@ const MAX_READ_CHARS: usize = 12_000;
 const MAX_LIST_LIMIT: usize = 5_000;
 const MAX_SEARCH_LIMIT: usize = 200;
 const CONFIRM_TOKEN: &str = "CONFIRM";
+#[derive(Clone)]
+struct SpaceWriteCtx {
+    app: AppHandle,
+    window_label: String,
+    recent: RecentLocalChanges,
+}
+
+fn space_path(root: &Path) -> String {
+    root.to_string_lossy().into_owned()
+}
+
+fn commit_markdown_tool(
+    root: &Path,
+    ctx: &SpaceWriteCtx,
+    rel: &str,
+    text: &str,
+    create_only: bool,
+) -> Result<SpaceChange, ToolError> {
+    let committed = commit_markdown(
+        &CommitCtx {
+            root,
+            recent: &ctx.recent,
+            space_path: &space_path(root),
+        },
+        rel,
+        text,
+        if create_only {
+            PersistMode::CreateNew
+        } else {
+            PersistMode::Replace {
+                expected_mtime_ms: None,
+            }
+        },
+    )?;
+    if create_only && !committed.created {
+        return Err(ToolError("file already exists".to_string()));
+    }
+    emit_changed(&ctx.app, &ctx.window_label, &committed.change);
+    Ok(committed.change)
+}
 
 #[derive(Debug, Clone)]
 pub struct ToolError(pub String);
@@ -448,6 +494,7 @@ impl Tool for ReadFilesBatchTool {
 #[derive(Clone)]
 pub struct WriteFileTool {
     pub root: PathBuf,
+    ctx: SpaceWriteCtx,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct WriteFileArgs {
@@ -464,6 +511,7 @@ impl Tool for WriteFileTool {
         tool_definition::<WriteFileArgs>(Self::NAME, "Create or overwrite a file.")
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        let rel = normalize_rel_path(&args.path)?;
         let abs = safe_join(&self.root, &args.path)?;
         if let Some(parent) = abs.parent() {
             fs::create_dir_all(parent)?;
@@ -473,8 +521,30 @@ impl Tool for WriteFileTool {
         if exists && mode == "create_only" {
             return Ok(err_payload("file already exists"));
         }
-        io_atomic::write_atomic(&abs, args.content.as_bytes())
-            .map_err(|e| ToolError(e.to_string()))?;
+        if utils::is_markdown_path(&abs) {
+            match commit_markdown_tool(
+                &self.root,
+                &self.ctx,
+                &rel,
+                &args.content,
+                mode == "create_only",
+            ) {
+                Ok(_) => {}
+                Err(error) if error.0.contains("already exists") => {
+                    return Ok(err_payload("file already exists"));
+                }
+                Err(error) => return Err(error),
+            }
+        } else {
+            io_atomic::write_atomic(&abs, args.content.as_bytes())
+                .map_err(|e| ToolError(e.to_string()))?;
+            let change = if exists {
+                SpaceChange::content(space_path(&self.root), rel)
+            } else {
+                SpaceChange::create(space_path(&self.root), rel)
+            };
+            emit_changed(&self.ctx.app, &self.ctx.window_label, &change);
+        }
         Ok(ok(
             json!({"path": args.path, "bytes_written": args.content.len()}),
         ))
@@ -484,6 +554,7 @@ impl Tool for WriteFileTool {
 #[derive(Clone)]
 pub struct ApplyPatchTool {
     pub root: PathBuf,
+    ctx: SpaceWriteCtx,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct ApplyPatchArgs {
@@ -514,7 +585,17 @@ impl Tool for ApplyPatchTool {
         if updated == text {
             return Ok(err_payload("no matching text for patch"));
         }
-        io_atomic::write_atomic(&abs, updated.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
+        let rel = normalize_rel_path(&args.path)?;
+        if utils::is_markdown_path(&abs) {
+            commit_markdown_tool(&self.root, &self.ctx, &rel, &updated, false)?;
+        } else {
+            io_atomic::write_atomic(&abs, updated.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
+            emit_changed(
+                &self.ctx.app,
+                &self.ctx.window_label,
+                &SpaceChange::content(space_path(&self.root), rel),
+            );
+        }
         Ok(ok(json!({"path": args.path, "patched": true})))
     }
 }
@@ -522,6 +603,7 @@ impl Tool for ApplyPatchTool {
 #[derive(Clone)]
 pub struct MoveTool {
     pub root: PathBuf,
+    ctx: SpaceWriteCtx,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct MoveArgs {
@@ -549,7 +631,22 @@ impl Tool for MoveTool {
         if dest.exists() && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
             return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"src": args.src, "dest": args.dest, "action": "overwrite_move"}}).to_string());
         }
-        fs::rename(src, dest)?;
+        fs::rename(&src, &dest)?;
+        let from = normalize_rel_path(&args.src)?;
+        let to = normalize_rel_path(&args.dest)?;
+        reindex_after_rename(
+            &self.root,
+            &from,
+            &to,
+            &dest,
+            dest.is_dir(),
+            &self.ctx.recent,
+        );
+        emit_changed(
+            &self.ctx.app,
+            &self.ctx.window_label,
+            &SpaceChange::rename(space_path(&self.root), from, to, dest.is_dir()),
+        );
         Ok(ok(json!({"src": args.src, "dest": args.dest})))
     }
 }
@@ -585,6 +682,7 @@ impl Tool for MkdirTool {
 #[derive(Clone)]
 pub struct DeleteTool {
     pub root: PathBuf,
+    ctx: SpaceWriteCtx,
 }
 #[derive(Deserialize, JsonSchema)]
 pub struct DeleteArgs {
@@ -609,17 +707,25 @@ impl Tool for DeleteTool {
         if (recursive || abs.is_dir()) && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
             return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "recursive": recursive, "action": "delete"}}).to_string());
         }
+        let is_dir = abs.is_dir();
         if abs.is_dir() {
             if recursive {
-                fs::remove_dir_all(abs)?;
+                fs::remove_dir_all(&abs)?;
             } else {
-                fs::remove_dir(abs)?;
+                fs::remove_dir(&abs)?;
             }
         } else if abs.exists() {
-            fs::remove_file(abs)?;
+            fs::remove_file(&abs)?;
         } else {
             return Ok(err_payload("path not found"));
         }
+        let rel = normalize_rel_path(&args.path)?;
+        unindex_path(&self.root, &rel, &abs, &self.ctx.recent, is_dir);
+        emit_changed(
+            &self.ctx.app,
+            &self.ctx.window_label,
+            &SpaceChange::remove(space_path(&self.root), rel, is_dir),
+        );
         Ok(ok(json!({"path": args.path, "deleted": true})))
     }
 }
@@ -639,18 +745,32 @@ pub struct ToolBundle {
 }
 
 impl ToolBundle {
-    pub fn new(root: PathBuf) -> Self {
+    pub fn new(root: PathBuf, app: AppHandle, window_label: String, recent: RecentLocalChanges) -> Self {
+        let ctx = SpaceWriteCtx {
+            app,
+            window_label,
+            recent,
+        };
         Self {
             list_dir: ListDirTool { root: root.clone() },
             search: SearchTool { root: root.clone() },
             stat: StatTool { root: root.clone() },
             read_file: ReadFileTool { root: root.clone() },
             read_files_batch: ReadFilesBatchTool { root: root.clone() },
-            write_file: WriteFileTool { root: root.clone() },
-            apply_patch: ApplyPatchTool { root: root.clone() },
-            move_path: MoveTool { root: root.clone() },
+            write_file: WriteFileTool {
+                root: root.clone(),
+                ctx: ctx.clone(),
+            },
+            apply_patch: ApplyPatchTool {
+                root: root.clone(),
+                ctx: ctx.clone(),
+            },
+            move_path: MoveTool {
+                root: root.clone(),
+                ctx: ctx.clone(),
+            },
             mkdir: MkdirTool { root: root.clone() },
-            delete: DeleteTool { root },
+            delete: DeleteTool { root, ctx },
         }
     }
 }

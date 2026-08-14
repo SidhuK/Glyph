@@ -13,17 +13,13 @@ import {
 	useState,
 } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import {
-	invalidateDatabasePrefetch,
-	navigationQueryKeys,
-} from "../../lib/navigationPrefetch";
+import { navigationQueryKeys } from "../../lib/navigationPrefetch";
 import type {
 	DatabaseRow,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseQueryResult,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { useDebouncedNoteChange } from "../useDebouncedNoteChange";
 import type { PaneErrorHandlers } from "./types";
 
 export interface UseDatabaseRowsOptions extends PaneErrorHandlers {
@@ -182,16 +178,6 @@ export function useDatabaseRows({
 			setError(extractErrorMessage(rowsQuery.error));
 		}
 	}, [rowsQuery.error, setError]);
-
-	useDebouncedNoteChange({
-		delayMs: 150,
-		onChange: () => {
-			if (selectedDatabaseId) {
-				invalidateDatabasePrefetch(selectedDatabaseId);
-			}
-			void loadRows();
-		},
-	});
 
 	return {
 		rows,

@@ -19,7 +19,6 @@ import {
 	tagIconOverridesFromAppearance,
 } from "../../lib/tagIcons";
 import type { FileTreeAppearance } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
 import { basename } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
@@ -162,7 +161,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	const [appearancePickerPath, setAppearancePickerPath] = useState<
 		string | null
 	>(null);
-	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const listRef = useRef<HTMLUListElement | null>(null);
 	const visibleNotes = useMemo(
@@ -203,11 +201,7 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 				.map((note) => note.note_path),
 		[visibleNotes],
 	);
-	const taskSummariesByPath = useTaskSummariesForPaths(
-		taskSummaryPaths,
-		true,
-		taskSummaryRefreshKey,
-	);
+	const taskSummariesByPath = useTaskSummariesForPaths(taskSummaryPaths, true);
 	const tagIconOverrides = useMemo(
 		() => tagIconOverridesFromAppearance(tagAppearance),
 		[tagAppearance],
@@ -232,11 +226,6 @@ export const FolioNotesListPane = memo(function FolioNotesListPane({
 	});
 	const virtualItems = rowVirtualizer.getVirtualItems();
 
-	useTauriEvent("notes:external_changed", (payload) => {
-		if (!payload.rel_path || !taskSummaryPaths.includes(payload.rel_path))
-			return;
-		setTaskSummaryRefreshKey((key) => key + 1);
-	});
 	const focusPane = useCallback(() => {
 		requestAnimationFrame(() =>
 			paneRef.current?.focus({ preventScroll: true }),

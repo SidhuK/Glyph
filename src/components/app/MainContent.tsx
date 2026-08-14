@@ -22,12 +22,6 @@ import {
 } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useShortcutBindings } from "../../hooks/useShortcutBindings";
-import {
-	PATH_REMOVED_EVENT,
-	PATH_RENAMED_EVENT,
-	type PathRemovedDetail,
-	type PathRenamedDetail,
-} from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
 import {
 	type DatabasesOpenRequest,
@@ -157,12 +151,6 @@ interface MainContentProps {
 	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
 	closeTab: (tabId: string) => void;
 	toggleTabPinned: (tabId: string) => void;
-	closeTabsForPathRemoval: (path: string, recursive?: boolean) => void;
-	renameTabsForPath: (
-		fromPath: string,
-		toPath: string,
-		recursive?: boolean,
-	) => void;
 	reorderTabs: (fromTabId: string, toTabId: string) => void;
 	openBlankTabInPane: (paneId: string) => void;
 	openFileInPane: (path: string, paneId: string) => boolean;
@@ -210,8 +198,6 @@ export const MainContent = memo(function MainContent({
 	setDirtyByPath,
 	closeTab,
 	toggleTabPinned,
-	closeTabsForPathRemoval,
-	renameTabsForPath,
 	reorderTabs,
 	openBlankTabInPane,
 	openFileInPane,
@@ -236,25 +222,6 @@ export const MainContent = memo(function MainContent({
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const [infoSidebarOpen, setInfoSidebarOpen] = useState(false);
 	const handledDailyNoteSetupNoticeRequestRef = useRef(0);
-
-	useEffect(() => {
-		const handlePathRemoved = (event: Event) => {
-			const detail = (event as CustomEvent<PathRemovedDetail>).detail;
-			if (!detail?.path) return;
-			closeTabsForPathRemoval(detail.path, detail.recursive);
-		};
-		const handlePathRenamed = (event: Event) => {
-			const detail = (event as CustomEvent<PathRenamedDetail>).detail;
-			if (!detail?.fromPath || !detail?.toPath) return;
-			renameTabsForPath(detail.fromPath, detail.toPath, detail.recursive);
-		};
-		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
-		window.addEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
-		return () => {
-			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
-			window.removeEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
-		};
-	}, [closeTabsForPathRemoval, renameTabsForPath]);
 
 	const aiSidebarVisible = aiEnabled && aiPanelOpen && !infoSidebarOpen;
 	const rightSidebarOpen =

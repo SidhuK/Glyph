@@ -6,15 +6,15 @@ use serde_yaml::{Mapping, Value};
 use tauri::{State, WebviewWindow};
 use uuid::Uuid;
 
-use crate::index::index_note;
 use crate::index::open_db;
-use crate::io_atomic;
+use crate::note_mutation::{
+    commit_markdown, emit_changed, CommitCtx, PersistMode,
+};
 use crate::notes::frontmatter::{
     normalize_frontmatter_mapping, parse_frontmatter_mapping, render_frontmatter_mapping_yaml,
     split_frontmatter,
 };
 use crate::paths;
-use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
@@ -256,42 +256,106 @@ fn apply_cell_update_to_markdown(
     render_note_markdown(note_path, markdown, mapping)
 }
 
+fn row_folder(note_path: &str) -> String {
+    note_path
+        .rsplit_once('/')
+        .map(|(folder, _)| folder.to_string())
+        .unwrap_or_default()
+}
+
+fn fallback_created_row(
+    note_path: &str,
+    title: &str,
+    database: &DatabaseDefinition,
+    initial_values: &[DatabaseCreateRowInitialValue],
+) -> DatabaseRow {
+    let mut row = DatabaseRow {
+        folder: row_folder(note_path),
+        note_path: note_path.to_string(),
+        title: title.to_string(),
+        created: String::new(),
+        updated: String::new(),
+        preview: String::new(),
+        tags: Vec::new(),
+        linked_notes: Vec::new(),
+        properties: BTreeMap::new(),
+    };
+    for default in database_new_row_field_defaults(database) {
+        row.properties.insert(default.key, default.value);
+    }
+    for initial in initial_values {
+        row = apply_cell_to_row(row, &initial.column, &initial.value);
+    }
+    row
+}
+
+fn apply_cell_to_row(
+    mut row: DatabaseRow,
+    column: &DatabaseColumn,
+    value: &DatabaseCellValue,
+) -> DatabaseRow {
+    match column.column_type.as_str() {
+        "title" => {
+            if let Some(text) = &value.value_text {
+                row.title = text.clone();
+            }
+        }
+        "tags" => row.tags = value.value_list.clone(),
+        "linked_notes" => row.linked_notes = value.value_list.clone(),
+        "property" => {
+            if let Some(key) = &column.property_key {
+                row.properties.insert(key.clone(), value.clone());
+            }
+        }
+        _ => {}
+    }
+    row
+}
+
 fn write_markdown_note(
     root: &Path,
-    recent_local_changes: &RecentLocalChanges,
+    recent_local_changes: &crate::space::state::RecentLocalChanges,
+    space_path: &str,
     rel_path: &str,
     markdown: &str,
-) -> Result<(), String> {
-    let rel = PathBuf::from(rel_path);
-    deny_hidden_rel_path(&rel)?;
-    let abs = paths::join_under(root, &rel)?;
-    if let Some(parent) = abs.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-    mark_recent_local_change(recent_local_changes, rel_path);
-    io_atomic::write_atomic(&abs, markdown.as_bytes()).map_err(|e| e.to_string())?;
-    index_note(root, rel_path, markdown)?;
-    Ok(())
+) -> Result<crate::note_mutation::SpaceChange, String> {
+    let committed = commit_markdown(
+        &CommitCtx {
+            root,
+            recent: recent_local_changes,
+            space_path,
+        },
+        rel_path,
+        markdown,
+        PersistMode::Replace {
+            expected_mtime_ms: None,
+        },
+    )?;
+    Ok(committed.change)
 }
 
 fn write_new_markdown_note(
     root: &Path,
-    recent_local_changes: &RecentLocalChanges,
+    recent_local_changes: &crate::space::state::RecentLocalChanges,
+    space_path: &str,
     rel_path: &str,
     markdown: &str,
-) -> Result<bool, String> {
-    let rel = PathBuf::from(rel_path);
-    deny_hidden_rel_path(&rel)?;
-    let abs = paths::join_under(root, &rel)?;
-    if let Some(parent) = abs.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+) -> Result<Option<crate::note_mutation::SpaceChange>, String> {
+    let committed = commit_markdown(
+        &CommitCtx {
+            root,
+            recent: recent_local_changes,
+            space_path,
+        },
+        rel_path,
+        markdown,
+        PersistMode::CreateNew,
+    )?;
+    if committed.created {
+        Ok(Some(committed.change))
+    } else {
+        Ok(None)
     }
-    if !io_atomic::write_atomic_create_new(&abs, markdown.as_bytes()).map_err(|e| e.to_string())? {
-        return Ok(false);
-    }
-    mark_recent_local_change(recent_local_changes, rel_path);
-    index_note(root, rel_path, markdown)?;
-    Ok(true)
 }
 
 fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Result<(), String> {
@@ -745,6 +809,7 @@ pub async fn databases_query_rows(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_update_cell(
+    app: tauri::AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     note_path: String,
@@ -752,8 +817,14 @@ pub async fn databases_update_cell(
     value: DatabaseCellValue,
 ) -> Result<DatabaseRow, String> {
     let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
-    tauri::async_runtime::spawn_blocking(move || {
+    let note_mutation_mutex = state.note_mutation_mutex();
+    let (row, change) = tauri::async_runtime::spawn_blocking(move || {
+        let _guard = note_mutation_mutex
+            .lock()
+            .map_err(|_| "note mutation mutex poisoned".to_string())?;
         let existing_row = row_by_path(&root, &note_path)?;
         validate_editable_column(&existing_row, &column)?;
         let rel = PathBuf::from(&note_path);
@@ -761,15 +832,26 @@ pub async fn databases_update_cell(
         let abs = paths::join_under(&root, &rel)?;
         let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
         let next = apply_cell_update_to_markdown(&note_path, &markdown, &column, &value)?;
-        write_markdown_note(&root, &recent_local_changes, &note_path, &next)?;
-        row_by_path(&root, &note_path)
+        let change = write_markdown_note(
+            &root,
+            &recent_local_changes,
+            &space_path,
+            &note_path,
+            &next,
+        )?;
+        let row = row_by_path(&root, &note_path)
+            .unwrap_or_else(|_| apply_cell_to_row(existing_row, &column, &value));
+        Ok::<_, String>((row, change))
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    emit_changed(&app, &window_label, &change);
+    Ok(row)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_create_row(
+    app: tauri::AppHandle,
     window: WebviewWindow,
     state: State<'_, SpaceState>,
     database_id: String,
@@ -777,9 +859,11 @@ pub async fn databases_create_row(
     initial_values: Option<Vec<DatabaseCreateRowInitialValue>>,
 ) -> Result<DatabaseCreateRowResult, String> {
     let root = state.root_for_window(&window)?;
+    let space_path = root.to_string_lossy().to_string();
+    let window_label = window.label().to_string();
     let db_store_mutex = state.db_store_mutex();
     let recent_local_changes = state.recent_local_changes_for_window(window.label());
-    tauri::async_runtime::spawn_blocking(move || {
+    let (result, change) = tauri::async_runtime::spawn_blocking(move || {
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
@@ -805,8 +889,19 @@ pub async fn databases_create_row(
         let mut index = 2;
         loop {
             let next = create_new_row_markdown(&database, &candidate, &title, &initial_values)?;
-            if write_new_markdown_note(&root, &recent_local_changes, &candidate, &next)? {
-                break;
+            if let Some(change) =
+                write_new_markdown_note(&root, &recent_local_changes, &space_path, &candidate, &next)?
+            {
+                let row = row_by_path(&root, &candidate).unwrap_or_else(|_| {
+                    fallback_created_row(&candidate, &title, &database, &initial_values)
+                });
+                return Ok((
+                    DatabaseCreateRowResult {
+                        note_path: candidate,
+                        row,
+                    },
+                    Some(change),
+                ));
             }
             if index > MAX_ROW_CREATE_COLLISION_INDEX {
                 return Err(format!(
@@ -820,14 +915,13 @@ pub async fn databases_create_row(
             };
             index += 1;
         }
-        let row = row_by_path(&root, &candidate)?;
-        Ok(DatabaseCreateRowResult {
-            note_path: candidate,
-            row,
-        })
     })
     .await
-    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())??;
+    if let Some(change) = change {
+        emit_changed(&app, &window_label, &change);
+    }
+    Ok(result)
 }
 
 #[tauri::command(rename_all = "snake_case")]

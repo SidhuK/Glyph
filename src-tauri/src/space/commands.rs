@@ -1,19 +1,12 @@
-use serde::Serialize;
 use std::path::PathBuf;
-use tauri::{Emitter, State};
+use tauri::State;
 
+use crate::note_mutation::{emit_changed, SpaceChange};
 use crate::{index::db::reset_schema_cache, window_geometry};
 
 use super::helpers::{canonicalize_dir, create_or_open_impl, SpaceInfo};
 use super::state::SpaceState;
 use super::watcher::create_notes_watcher;
-
-#[derive(Clone, Serialize)]
-struct NoteChangeEvent {
-    space_path: String,
-    rel_path: String,
-    removed: bool,
-}
 
 fn emit_welcome_note_created(
     app: &tauri::AppHandle,
@@ -27,14 +20,10 @@ fn emit_welcome_note_created(
     else {
         return;
     };
-    let _ = app.emit_to(
+    emit_changed(
+        app,
         window.label(),
-        "notes:external_changed",
-        NoteChangeEvent {
-            space_path: info.root.clone(),
-            rel_path,
-            removed: false,
-        },
+        &SpaceChange::create(&info.root, rel_path),
     );
 }
 

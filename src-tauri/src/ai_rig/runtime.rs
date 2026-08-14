@@ -3,7 +3,7 @@ use std::path::Path;
 
 use futures_util::StreamExt;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio_util::sync::CancellationToken;
 
 use rig::{
@@ -75,6 +75,7 @@ pub async fn run_with_rig(
     messages: &[AiMessage],
     mode: &AiAssistantMode,
     space_root: Option<&Path>,
+    window_label: &str,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = space_root.ok_or_else(|| "No space is open".to_string())?;
     let effective_system = if matches!(mode, AiAssistantMode::Create) {
@@ -87,7 +88,14 @@ pub async fn run_with_rig(
         system.to_string()
     };
     let transcript = build_transcript(&effective_system, messages);
-    let tools = ToolBundle::new(root.to_path_buf());
+    let space_state = app.state::<crate::space::SpaceState>();
+    let recent = space_state.recent_local_changes_for_window(window_label);
+    let tools = ToolBundle::new(
+        root.to_path_buf(),
+        app.clone(),
+        window_label.to_string(),
+        recent,
+    );
     let caps = capabilities(&profile.provider);
     let max_tokens = if caps.requires_max_tokens {
         Some(2048)

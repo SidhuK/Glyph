@@ -34,6 +34,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { spaceLabelFromAbsPath } from "../../lib/fileTreeFolderName";
 import { showNativeContextMenu } from "../../lib/nativeContextMenu";
 import { type FileTreeSortMode, loadSettings } from "../../lib/settings";
+import { registerPreviewInvalidator } from "../../lib/spaceChange";
 import type {
 	FileTreeAppearance,
 	FsEntry,
@@ -42,7 +43,7 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isDeleteKey } from "../../utils/keyboard";
-import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { parentDir } from "../../utils/path";
 import { AppearancePicker } from "../AppearancePicker";
 import { ChevronRight } from "../Icons";
 import { EDITOR_TEXT_COLORS, isEditorTextColor } from "../editor/textColors";
@@ -633,7 +634,6 @@ export const FileTreePane = memo(function FileTreePane({
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
-	const [taskSummaryRefreshKey, setTaskSummaryRefreshKey] = useState(0);
 	const [focusedDirPath, setFocusedDirPath] = useState<string | null>(
 		activeDirPath,
 	);
@@ -804,16 +804,11 @@ export const FileTreePane = memo(function FileTreePane({
 	const taskSummariesByPath = useTaskSummariesForPaths(
 		taskSummaryPaths,
 		Boolean(spacePath),
-		taskSummaryRefreshKey,
 	);
 
-	useTauriEvent("notes:external_changed", (payload) => {
-		const relPath = normalizeRelPath(payload.rel_path);
-		if (!relPath || !isMarkdownPath(relPath)) return;
-		invalidatePreviewForPath(relPath, Boolean(payload.removed));
-		if (!taskSummaryPaths.includes(relPath)) return;
-		setTaskSummaryRefreshKey((key) => key + 1);
-	});
+	useEffect(() => {
+		return registerPreviewInvalidator(invalidatePreviewForPath);
+	}, [invalidatePreviewForPath]);
 
 	const handleRequestCreateFolder = useFileTreeCreateFolderScroll(
 		onRequestCreateFolder,

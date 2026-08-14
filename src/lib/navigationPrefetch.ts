@@ -166,6 +166,20 @@ export function prefetchDatabaseDocument(databaseId: string) {
 	});
 }
 
+export async function refetchDatabaseDocument(databaseId: string) {
+	const normalized = databaseId.trim();
+	if (!normalized) {
+		return Promise.reject(new Error("Database id is required."));
+	}
+	const queryKey = navigationQueryKeys.databaseDocument(normalized);
+	await queryClient.cancelQueries({ queryKey });
+	return queryClient.fetchQuery({
+		queryKey,
+		queryFn: () => invoke("databases_get", { database_id: normalized }),
+		staleTime: 0,
+	});
+}
+
 export function getPrefetchedDatabaseDocument(databaseId: string) {
 	return (
 		queryClient.getQueryData<WorkspaceDatabaseDocument>(

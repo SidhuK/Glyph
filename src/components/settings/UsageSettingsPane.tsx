@@ -4,13 +4,12 @@ import { scaleLinear } from "@tanstack/charts-scales/linear";
 import { pie, polar, radialArc } from "@tanstack/charts/polar";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { Chart } from "@tanstack/react-charts";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSpace } from "../../contexts";
 import { type UsageInsights, invoke } from "../../lib/tauri";
-import { useTauriEvent } from "../../lib/tauriEvents";
 
 const usageInsightsQueryKey = (spacePath: string) =>
 	["usage-insights", spacePath] as const;
@@ -317,7 +316,6 @@ function UsageTaskDensityChart({
 export function UsageSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const { spacePath } = useSpace();
-	const queryClient = useQueryClient();
 	const queryKey = usageInsightsQueryKey(spacePath ?? "__no-space__");
 	const insightsQuery = useQuery({
 		queryKey,
@@ -354,17 +352,6 @@ export function UsageSettingsPane() {
 				})) ?? [],
 		[insights?.folders, t],
 	);
-
-	useTauriEvent("notes:external_changed", () => {
-		if (spacePath) {
-			void queryClient.invalidateQueries({ queryKey });
-		}
-	});
-	useTauriEvent("space:fs_changed", () => {
-		if (spacePath) {
-			void queryClient.invalidateQueries({ queryKey });
-		}
-	});
 
 	if (insightsQuery.isLoading) {
 		return <div className="settingsPane usagePane">{t("usage.loading")}</div>;

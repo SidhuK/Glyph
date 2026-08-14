@@ -25,7 +25,6 @@ function summarizeFromCachedMarkdown(
 export function useTaskSummariesForPaths(
 	paths: string[],
 	enabled: boolean | null,
-	refreshKey = 0,
 ) {
 	const taskSummaryPaths = useMemo(
 		() => Array.from(new Set(paths.filter(Boolean))).sort(),
@@ -36,11 +35,7 @@ export function useTaskSummariesForPaths(
 		[taskSummaryPaths],
 	);
 	const summariesQuery = useQuery({
-		queryKey: [
-			...navigationQueryKeys.taskSummaries(),
-			refreshKey,
-			taskSummaryPaths,
-		],
+		queryKey: [...navigationQueryKeys.taskSummaries(), taskSummaryPaths],
 		enabled: enabled === true && taskSummaryPaths.length > 0,
 		staleTime: 30_000,
 		placeholderData: (previousData) =>

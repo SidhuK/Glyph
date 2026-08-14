@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { collectionFolderBreadcrumbParts } from "../../lib/database/collection";
+import {
+	collectionFolderBreadcrumbParts,
+	normalizeCollectionFolderPath,
+} from "../../lib/database/collection";
 import type { DatabasesOpenRequest } from "../../lib/database/openDatabasesRequest";
 import {
 	readStoredSelectedDatabaseId,
@@ -16,15 +19,18 @@ import {
 	invalidateDatabaseSummariesPrefetch,
 	prefetchDatabaseDocument,
 	prefetchDatabaseSummaries,
+	refetchDatabaseDocument,
 	setPrefetchedDatabaseDocument,
 } from "../../lib/navigationPrefetch";
+import type { SpaceChange } from "../../lib/spaceChange";
 import type {
 	WorkspaceDatabaseDefinition,
 	WorkspaceDatabaseDocument,
 	WorkspaceDatabaseSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { useDebouncedNoteChange } from "../useDebouncedNoteChange";
+import { useTauriEvent } from "../../lib/tauriEvents";
+import { normalizeRelPath, parentDir } from "../../utils/path";
 import type { PaneErrorHandlers, SaveDatabaseInput } from "./types";
 
 export interface UseCollectionWorkspaceOptions extends PaneErrorHandlers {
@@ -47,6 +53,41 @@ function resolveInitialViewId(
 		return null;
 	}
 	return resolveSelectedViewId(databaseId, initialDocument.database.views);
+}
+
+const COLLECTION_DOCUMENT_REFRESH_MS = 200;
+
+function changedRelPaths(change: SpaceChange): string[] {
+	if (change.kind === "batch") {
+		return change.changes.flatMap(changedRelPaths);
+	}
+	if (change.kind === "rename") {
+		return [change.from_path, change.to_path];
+	}
+	return [change.rel_path];
+}
+
+function pathTouchesFolder(
+	relPath: string,
+	folder: string,
+	recursive: boolean,
+): boolean {
+	const rel = normalizeRelPath(relPath);
+	const root = normalizeCollectionFolderPath(folder);
+	if (!root) return true;
+	if (rel === root || root.startsWith(`${rel}/`)) return true;
+	if (!rel.startsWith(`${root}/`)) return false;
+	return recursive || parentDir(rel) === root;
+}
+
+function collectionChangeIsRelevant(
+	change: SpaceChange,
+	source: WorkspaceDatabaseDefinition["source"],
+): boolean {
+	if (source.kind !== "folder") return true;
+	return changedRelPaths(change).some((relPath) =>
+		pathTouchesFolder(relPath, source.value, source.recursive),
+	);
 }
 
 export function useCollectionWorkspace({
@@ -78,9 +119,11 @@ export function useCollectionWorkspace({
 	const previousDatabaseIdRef = useRef(selectedDatabaseId);
 	const documentIdRef = useRef(document?.database.id ?? null);
 	const documentRef = useRef(document);
+	const selectedDatabaseIdRef = useRef(selectedDatabaseId);
 	const saveQueueRef = useRef(Promise.resolve());
 	documentIdRef.current = document?.database.id ?? null;
 	documentRef.current = document;
+	selectedDatabaseIdRef.current = selectedDatabaseId;
 
 	const loadSummaries = useCallback(async () => {
 		const next = await prefetchDatabaseSummaries();
@@ -170,6 +213,44 @@ export function useCollectionWorkspace({
 		};
 	}, [clearError, selectedDatabaseId, setError]);
 
+	const collectionRefreshTimerRef = useRef<number | null>(null);
+	useEffect(() => {
+		return () => {
+			if (collectionRefreshTimerRef.current !== null) {
+				window.clearTimeout(collectionRefreshTimerRef.current);
+			}
+		};
+	}, []);
+	useTauriEvent("space:fs_changed", (change) => {
+		const activeDatabaseId = selectedDatabaseIdRef.current;
+		if (!activeDatabaseId) return;
+		const activeDocument = documentRef.current;
+		if (
+			activeDocument &&
+			!collectionChangeIsRelevant(change, activeDocument.database.source)
+		) {
+			return;
+		}
+		if (collectionRefreshTimerRef.current !== null) {
+			window.clearTimeout(collectionRefreshTimerRef.current);
+		}
+		collectionRefreshTimerRef.current = window.setTimeout(() => {
+			collectionRefreshTimerRef.current = null;
+			invalidateDatabasePrefetch(activeDatabaseId);
+			void refetchDatabaseDocument(activeDatabaseId)
+				.then((next) => {
+					if (selectedDatabaseIdRef.current !== activeDatabaseId) return;
+					documentRef.current = next;
+					setDocument(next);
+					clearError();
+				})
+				.catch((cause) => {
+					if (selectedDatabaseIdRef.current !== activeDatabaseId) return;
+					setError(extractErrorMessage(cause));
+				});
+		}, COLLECTION_DOCUMENT_REFRESH_MS);
+	});
+
 	useEffect(() => {
 		if (
 			!selectedDatabaseId ||
@@ -201,27 +282,6 @@ export function useCollectionWorkspace({
 		}
 		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
 	}, [document, selectedDatabaseId, selectedViewId]);
-
-	useDebouncedNoteChange({
-		delayMs: 200,
-		enabled: documentIdRef.current != null,
-		onChange: () => {
-			const activeDatabaseId = documentIdRef.current;
-			if (!activeDatabaseId) return;
-			invalidateDatabasePrefetch(activeDatabaseId);
-			void prefetchDatabaseDocument(activeDatabaseId)
-				.then((next) => {
-					if (documentIdRef.current !== activeDatabaseId) return;
-					documentRef.current = next;
-					setDocument(next);
-					clearError();
-				})
-				.catch((cause) => {
-					if (documentIdRef.current !== activeDatabaseId) return;
-					setError(extractErrorMessage(cause));
-				});
-		},
-	});
 
 	const setSelectedDatabaseId = useCallback((databaseId: string) => {
 		setSelectedDatabaseIdState(databaseId);

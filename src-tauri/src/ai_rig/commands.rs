@@ -355,6 +355,7 @@ pub async fn ai_chat_start(
 
     let app_for_task = app.clone();
     let job_id_for_task = job_id.clone();
+    let window_label = window.label().to_string();
 
     tauri::async_runtime::spawn(async move {
         let ai_state_for_task = app_for_task.state::<AiState>();
@@ -375,6 +376,7 @@ pub async fn ai_chat_start(
             &messages,
             &request.mode,
             Some(space_root.as_path()),
+            &window_label,
             request.thread_id.as_deref(),
         )
         .await;
@@ -391,6 +393,7 @@ pub async fn ai_chat_start(
                     &messages,
                     &request.mode,
                     Some(space_root.as_path()),
+                    &window_label,
                     request.thread_id.as_deref(),
                 )
                 .await;
@@ -479,6 +482,7 @@ pub async fn run_request(
     messages: &[AiMessage],
     mode: &AiAssistantMode,
     space_root: Option<&std::path::Path>,
+    window_label: &str,
     thread_id: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     if matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt) {
@@ -513,7 +517,7 @@ pub async fn run_request(
     }
 
     runtime::run_with_rig(
-        cancel, app, job_id, profile, api_key, system, messages, mode, space_root,
+        cancel, app, job_id, profile, api_key, system, messages, mode, space_root, window_label,
     )
     .await
 }
