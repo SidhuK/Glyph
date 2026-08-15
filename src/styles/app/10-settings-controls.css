@@ -295,13 +295,15 @@
 }
 
 .settingsPeriodNoteBox.settingsField {
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
 	flex-wrap: nowrap;
-	align-items: flex-start;
-	justify-content: flex-start;
+	align-items: start;
+	justify-content: stretch;
 	min-height: 0;
 	min-width: 0;
-	gap: 12px;
+	column-gap: 10px;
+	row-gap: 4px;
 	padding: 12px 14px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
 	border-radius: var(--radius-lg);
@@ -329,8 +331,20 @@
 	background: var(--bg-secondary);
 }
 
+.settingsPeriodNoteBox.settingsField:has(input[type="checkbox"]:checked) {
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+}
+
+:root.light
+	.settingsPeriodNoteBox.settingsField:has(input[type="checkbox"]:checked) {
+	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
+}
+
 .settingsPeriodNoteBox .settingsFieldCopy {
-	flex: 0 1 auto;
+	grid-column: 1;
+	flex: none;
+	min-width: 0;
 }
 
 .settingsPeriodNoteBox .settingsLabel {
@@ -338,6 +352,7 @@
 	font-weight: var(--font-medium);
 	letter-spacing: 0;
 	line-height: 1.3;
+	padding-right: 4px;
 }
 
 .settingsPeriodNoteBox .settingsHelp {
@@ -347,8 +362,10 @@
 
 .settingsPeriodNoteBox .settingsFieldControl,
 .settingsPeriodNoteBox .settingsFieldControlStacked {
-	flex: 0 0 auto;
-	justify-content: flex-start;
+	grid-column: 2;
+	flex: none;
+	align-self: start;
+	justify-content: flex-end;
 	width: auto;
 	max-width: none;
 }
