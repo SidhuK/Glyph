@@ -7,6 +7,7 @@ const PROVIDERS_WITHOUT_API_KEY = new Set<AiProviderKind>([
 	"amp",
 	"claude_code",
 	"cursor",
+	"grok",
 	"opencode",
 	"pi",
 ]);

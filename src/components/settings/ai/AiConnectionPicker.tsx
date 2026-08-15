@@ -30,6 +30,7 @@ const CONNECTION_OPTIONS = [
 		providers: [
 			{ value: "codex_chatgpt", label: "Codex" },
 			{ value: "cursor", label: "Cursor" },
+			{ value: "grok", label: "Grok" },
 			{ value: "claude_code", label: "Claude Code" },
 			{ value: "amp", label: "Amp" },
 			{ value: "opencode", label: "OpenCode" },

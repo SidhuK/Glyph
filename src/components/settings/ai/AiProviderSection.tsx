@@ -10,6 +10,14 @@ import { SettingsSelect } from "../SettingsSelect";
 import { AiConnectionPicker } from "./AiConnectionPicker";
 import { AiModelCombobox } from "./AiModelCombobox";
 
+function usesReasoningControl(provider: AiProviderKind): boolean {
+	return (
+		provider === "codex_chatgpt" ||
+		provider === "pi" ||
+		provider === "grok"
+	);
+}
+
 interface AiProviderSectionProps {
 	profileDraft: AiProfile;
 	availableModels: AiModel[] | null;
@@ -33,8 +41,7 @@ export function AiProviderSection({
 	const selectedModel =
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
-	const shouldShowReasoningSelect =
-		profileDraft.provider === "codex_chatgpt" || profileDraft.provider === "pi";
+	const shouldShowReasoningSelect = usesReasoningControl(profileDraft.provider);
 	const baseUrlPlaceholder =
 		profileDraft.provider === "llama_cpp"
 			? "http://localhost:8080/v1"
@@ -72,13 +79,11 @@ export function AiProviderSection({
 						void onPersistDraft({
 							...profileDraft,
 							model: nextModelId,
-							reasoning_effort:
-								profileDraft.provider === "codex_chatgpt" ||
-								profileDraft.provider === "pi"
-									? stillValid
-										? currentEffort
-										: (nextModel?.default_reasoning_effort ?? currentEffort)
-									: null,
+							reasoning_effort: usesReasoningControl(profileDraft.provider)
+								? stillValid
+									? currentEffort
+									: (nextModel?.default_reasoning_effort ?? currentEffort)
+								: null,
 						});
 					}}
 					onModelsChange={onModelsChange}

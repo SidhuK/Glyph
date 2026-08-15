@@ -14,6 +14,7 @@ pub enum AiProviderKind {
     Amp,
     ClaudeCode,
     Cursor,
+    Grok,
     Opencode,
     Pi,
 }
@@ -32,6 +33,7 @@ impl AiProviderKind {
             Self::Amp => "amp",
             Self::ClaudeCode => "claude_code",
             Self::Cursor => "cursor",
+            Self::Grok => "grok",
             Self::Opencode => "opencode",
             Self::Pi => "pi",
         }
@@ -50,6 +52,7 @@ impl AiProviderKind {
             Self::Amp => "Amp",
             Self::ClaudeCode => "Claude Code",
             Self::Cursor => "Cursor",
+            Self::Grok => "Grok",
             Self::Opencode => "OpenCode",
             Self::Pi => "PI",
         }

@@ -370,6 +370,7 @@ pub async fn run_with_rig(
         | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
         | AiProviderKind::Cursor
+        | AiProviderKind::Grok
         | AiProviderKind::Opencode
         | AiProviderKind::Pi => {
             return Err(
@@ -640,6 +641,9 @@ pub async fn generate_chat_title_with_rig(
         }
         AiProviderKind::Cursor => {
             return Ok("Cursor Chat".to_string());
+        }
+        AiProviderKind::Grok => {
+            return Ok("Grok Chat".to_string());
         }
         AiProviderKind::Opencode => {
             return Ok("OpenCode Chat".to_string());

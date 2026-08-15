@@ -19,6 +19,7 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::Amp
         | AiProviderKind::ClaudeCode
         | AiProviderKind::Cursor
+        | AiProviderKind::Grok
         | AiProviderKind::Opencode
         | AiProviderKind::Pi => ProviderCapabilities {
             requires_max_tokens: false,

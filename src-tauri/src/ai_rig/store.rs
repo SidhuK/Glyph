@@ -69,6 +69,7 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
         (AiProviderKind::Amp, "smart", None, false),
         (AiProviderKind::ClaudeCode, "default", None, false),
         (AiProviderKind::Cursor, "auto", None, false),
+        (AiProviderKind::Grok, "grok-build", None, false),
         (AiProviderKind::Opencode, "", None, true),
         (AiProviderKind::Pi, "", None, true),
     ];
