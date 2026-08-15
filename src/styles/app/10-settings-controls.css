@@ -294,7 +294,41 @@
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
-.settingsPeriodNoteBox.settingsField {
+.settingsPeriodNoteBox {
+	position: relative;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+}
+
+:root.light .settingsPeriodNoteBox {
+	background: var(--bg-primary);
+}
+
+.settingsPeriodNoteBox:has(
+		.settingsFieldInteractive input[type="checkbox"]:not(:disabled)
+	):hover {
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+}
+
+:root.light
+	.settingsPeriodNoteBox:has(
+		.settingsFieldInteractive input[type="checkbox"]:not(:disabled)
+	):hover {
+	background: var(--bg-secondary);
+}
+
+.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+}
+
+:root.light .settingsPeriodNoteBox:has(input[type="checkbox"]:checked) {
+	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
+}
+
+.settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
 	flex-wrap: nowrap;
@@ -305,46 +339,24 @@
 	column-gap: 10px;
 	row-gap: 4px;
 	padding: 12px 14px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	background: transparent;
 }
 
-.settingsPeriodNoteBox.settingsField::after {
+.settingsPeriodNoteBox
+	.settingsFieldInteractive:has(input[type="checkbox"]:not(:disabled)):hover {
+	background: transparent;
+}
+
+.settingsPeriodNoteBox .settingsPeriodNoteRow.settingsField::after {
 	display: none;
-}
-
-:root.light .settingsPeriodNoteBox.settingsField {
-	background: var(--bg-primary);
-}
-
-.settingsPeriodNoteBox.settingsFieldInteractive:has(
-		input[type="checkbox"]:not(:disabled)
-	):hover {
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-}
-
-:root.light
-	.settingsPeriodNoteBox.settingsFieldInteractive:has(
-		input[type="checkbox"]:not(:disabled)
-	):hover {
-	background: var(--bg-secondary);
-}
-
-.settingsPeriodNoteBox.settingsField:has(input[type="checkbox"]:checked) {
-	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-}
-
-:root.light
-	.settingsPeriodNoteBox.settingsField:has(input[type="checkbox"]:checked) {
-	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary));
 }
 
 .settingsPeriodNoteBox .settingsFieldCopy {
 	grid-column: 1;
 	flex: none;
 	min-width: 0;
+	position: relative;
+	z-index: 1;
 }
 
 .settingsPeriodNoteBox .settingsLabel {
@@ -368,6 +380,38 @@
 	justify-content: flex-end;
 	width: auto;
 	max-width: none;
+	position: relative;
+	z-index: 1;
+}
+
+.settingsPeriodNoteMark {
+	position: absolute;
+	right: 6px;
+	bottom: -20px;
+	z-index: 0;
+	font-family: var(--font-sans);
+	font-size: 4.75rem;
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: -0.08em;
+	color: var(--text-primary);
+	opacity: 0.07;
+	pointer-events: none;
+	user-select: none;
+}
+
+:root.light .settingsPeriodNoteMark {
+	opacity: 0.055;
+}
+
+.settingsPeriodNoteBox:has(input[type="checkbox"]:checked) .settingsPeriodNoteMark {
+	opacity: 0.11;
+}
+
+:root.light
+	.settingsPeriodNoteBox:has(input[type="checkbox"]:checked)
+	.settingsPeriodNoteMark {
+	opacity: 0.08;
 }
 
 .settingsActions {

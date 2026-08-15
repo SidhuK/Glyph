@@ -61,6 +61,12 @@ const PERIOD_NOTE_SEARCH_IDS = {
 	quarter: "space-quarterly-notes",
 } as const;
 
+const PERIOD_NOTE_MARKS = {
+	week: "W",
+	month: "M",
+	quarter: "Q",
+} as const;
+
 export function SpaceSettingsPane() {
 	const { t } = useTranslation("settings.general");
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
@@ -388,22 +394,26 @@ export function SpaceSettingsPane() {
 					</SettingsRow>
 					<div className="settingsPeriodNoteGrid">
 						{OPTIONAL_PERIOD_KINDS.map((kind) => (
-							<SettingsRow
-								key={kind}
-								className="settingsPeriodNoteBox"
-								searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
-								stacked
-								label={t(`periodNotes.${kind}.label`)}
-								description={t(`periodNotes.${kind}.description`)}
-							>
-								<SettingsToggle
-									checked={periodNotesEnabled[kind]}
-									ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
-									onCheckedChange={(checked) =>
-										void handlePeriodNoteToggle(kind, checked)
-									}
-								/>
-							</SettingsRow>
+							<div key={kind} className="settingsPeriodNoteBox">
+								<span className="settingsPeriodNoteMark" aria-hidden="true">
+									{PERIOD_NOTE_MARKS[kind]}
+								</span>
+								<SettingsRow
+									className="settingsPeriodNoteRow"
+									searchId={PERIOD_NOTE_SEARCH_IDS[kind]}
+									stacked
+									label={t(`periodNotes.${kind}.label`)}
+									description={t(`periodNotes.${kind}.description`)}
+								>
+									<SettingsToggle
+										checked={periodNotesEnabled[kind]}
+										ariaLabel={t(`periodNotes.${kind}.ariaLabel`)}
+										onCheckedChange={(checked) =>
+											void handlePeriodNoteToggle(kind, checked)
+										}
+									/>
+								</SettingsRow>
+							</div>
 						))}
 					</div>
 					{periodNotesError ? (
