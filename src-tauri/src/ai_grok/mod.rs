@@ -158,7 +158,7 @@ fn collect_models_from_config(models: &mut Vec<String>, seen: &mut HashSet<Strin
             let line = line.trim();
             if let Some(rest) = line.strip_prefix("[model.") {
                 let id = rest.trim_end_matches(']').trim_matches('"').trim();
-                if is_grok_model_id(id) || !id.is_empty() {
+                if is_grok_model_id(id) {
                     push_model_id(models, seen, id);
                 }
                 continue;
