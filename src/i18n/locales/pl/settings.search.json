@@ -260,7 +260,14 @@
 		"ai-provider-service": {
 			"title": "Usługa",
 			"section": "Dostawca",
-			"keywords": ["dostawca", "cursor", "grok", "openai", "anthropic", "ollama"]
+			"keywords": [
+				"dostawca",
+				"cursor",
+				"grok",
+				"openai",
+				"anthropic",
+				"ollama"
+			]
 		},
 		"ai-provider-model": {
 			"title": "Model",

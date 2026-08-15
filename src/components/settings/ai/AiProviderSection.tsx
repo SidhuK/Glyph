@@ -12,9 +12,7 @@ import { AiModelCombobox } from "./AiModelCombobox";
 
 function usesReasoningControl(provider: AiProviderKind): boolean {
 	return (
-		provider === "codex_chatgpt" ||
-		provider === "pi" ||
-		provider === "grok"
+		provider === "codex_chatgpt" || provider === "pi" || provider === "grok"
 	);
 }
 
